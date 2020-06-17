@@ -2,7 +2,7 @@
 
 /**
  * Simple helper function to inline scripts and stylesheets into `index.html`.
- * It creates a file named `inlined.html`.
+ * It creates a file named `inlined/index.html`.
  */
 
 import fs from 'fs';
@@ -55,4 +55,5 @@ scripts.forEach(externalScriptTag => {
 */
 let result = dom.serialize();
 
-fs.writeFileSync(path.resolve(distFolder, 'inlined.html'), result);
+fs.mkdirSync(path.resolve(distFolder, 'inlined'));
+fs.writeFileSync(path.resolve(distFolder, 'inlined', 'index.html'), result);

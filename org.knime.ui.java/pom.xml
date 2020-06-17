@@ -9,41 +9,7 @@
     </parent>
 
     <artifactId>knime-ui-java</artifactId>
-    <packaging></packaging>
 
     <name>KNIME UI Java API</name>
     <description>placeholder</description>
-    <url></url>
-    <inceptionYear></inceptionYear>
-    <organization></organization>
-    <licenses></licenses>
-
-    <developers></developers>
-    <contributors></contributors>
-
-    <mailingLists></mailingLists>
-
-    <prerequisites></prerequisites>
-
-    <modules></modules>
-
-    <scm></scm>
-    <issueManagement></issueManagement>
-    <ciManagement></ciManagement>
-
-    <distributionManagement></distributionManagement>
-
-    <properties></properties>
-
-    <dependencyManagement></dependencyManagement>
-    <dependencies></dependencies>
-
-    <repositories></repositories>
-    <pluginRepositories></pluginRepositories>
-
-    <build></build>
-
-    <reporting></reporting>
-
-    <profiles></profiles>
 </project>

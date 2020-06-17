@@ -9,17 +9,28 @@
     </parent>
 
     <artifactId>knime-ui-js</artifactId>
-    <name>KNIME UI</name>
+    <name>KNIME HTML/JS UI</name>
     <description>HTML / JS based UI for KNIME Analytics Platform</description>
+
+    <properties>
+        <node.version>v14.4.0</node.version>
+        <npm.version>6.14.5</npm.version>
+    </properties>
 
     <build>
         <finalName>${project.groupId}.${project.artifactId}_${project.version}</finalName>
+
+        <resources>
+            <resource>
+                <directory>dist/inlined</directory>
+            </resource>
+        </resources>
 
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>1.6.0</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>git submodule update</id>
@@ -50,8 +61,8 @@
                             <goal>install-node-and-npm</goal>
                         </goals>
                         <configuration>
-                            <nodeVersion>v14.4.0</nodeVersion>
-                            <npmVersion>6.14.5</npmVersion>
+                            <nodeVersion>${node.version}</nodeVersion>
+                            <npmVersion>${npm.version}</npmVersion>
                         </configuration>
                     </execution>
 
@@ -76,9 +87,6 @@
                     </execution>
                 </executions>
 
-                <configuration>
-                    <workingDirectory>${js-folder}</workingDirectory>
-                </configuration>
             </plugin>
 
             <plugin>
@@ -87,10 +95,10 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>${js-folder}/.nuxt</directory>
+                            <directory>.nuxt</directory>
                         </fileset>
                         <fileset>
-                            <directory>${js-folder}/dist</directory>
+                            <directory>dist</directory>
                         </fileset>
                     </filesets>
                 </configuration>

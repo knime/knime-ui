@@ -40,9 +40,10 @@ module.exports = {
   testMatch: [
     '<rootDir>/test/unit/**/*.test.js'
   ],
-  watchPlugins: [
-    'jest-watch-typeahead/filename',
-    'jest-watch-typeahead/testname'
-  ],
-  setupFiles: ['<rootDir>/test/unit/jest-setup']
+  setupFiles: ['<rootDir>/test/unit/jest-setup'],
+    globals: {
+        'vue-jest': {
+            hideStyleWarn: true
+        }
+    }
 };
