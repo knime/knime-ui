@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.knime.maven</groupId>
+        <artifactId>ap.parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <groupId>org.knime</groupId>
+    <artifactId>knime-ui</artifactId>
+    <version>${revision}${changelist}</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>org.knime.ui.js</module>
+        <module>org.knime.ui.java</module>
+    </modules>
+
+    <properties>
+        <revision>4.1.0</revision>
+        <changelist>-SNAPSHOT</changelist>
+        <feature-branch-extension.branchListProperty>git.branch</feature-branch-extension.branchListProperty>
+        <feature-branch-extension.appendArtifactoryProperties>false</feature-branch-extension.appendArtifactoryProperties>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>p2-knime-base</id>
+            <url>${knime.base.p2}</url>
+            <layout>p2</layout>
+        </repository>
+        <repository>
+            <id>p2-knime-core</id>
+            <url>${knime.core.p2}</url>
+            <layout>p2</layout>
+        </repository>
+        <repository>
+            <id>p2-knime-shared</id>
+            <url>${knime.shared.p2}</url>
+            <layout>p2</layout>
+        </repository>
+        <repository>
+            <id>p2-knime-tp</id>
+            <url>${knime.tp.p2}</url>
+            <layout>p2</layout>
+        </repository>
+    </repositories>
+</project>

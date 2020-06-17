@@ -1,0 +1,31 @@
+{
+  "name": "knime-ui",
+  "version": "1.0.0",
+  "description": "KNIME HTML based UI",
+  "author": "KNIME AG",
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build && node build/inline-html.mjs",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "test": "jest"
+  },
+  "dependencies": {
+    "nuxt": "2.12.2"
+  },
+  "devDependencies": {
+    "@vue/test-utils": "1.0.0-beta.33",
+    "babel-jest": "24.9.0",
+    "html-inline": "1.2.0",
+    "inline-source-cli": "2.0.0",
+    "jest": "24.9.0",
+    "jsdom": "16.2.2",
+    "stylelint": "10.1.0",
+    "stylelint-config-standard": "18.3.0",
+    "vue-jest": "^4.0.0-beta.3"
+  },
+  "engines": {
+    "node": "14.4.0"
+  },
+  "private": true
+}
