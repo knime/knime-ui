@@ -8,6 +8,7 @@
         <groupId>org.knime.maven</groupId>
         <artifactId>ap.parent</artifactId>
         <version>1.0.0</version>
+        <relativePath>../knime-maven-parent/org.knime.maven.ap.parent/</relativePath>
     </parent>
 
     <groupId>org.knime</groupId>
@@ -15,6 +16,7 @@
     <version>${revision}${changelist}</version>
     <packaging>pom</packaging>
     <name>KNIME UI</name>
+    <description>User Interface for KNIME Analytics Platform Desktop App</description>
 
     <modules>
         <module>org.knime.ui.js</module>
