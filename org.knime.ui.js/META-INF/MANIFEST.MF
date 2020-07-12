@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Browser Based Analytics Platform User Interface
+Bundle-SymbolicName: org.knime.ui.js;singleton:=true
+Bundle-Version: 4.2.0.qualifier
+Bundle-Vendor: KNIME AG, Zurich, Switzerland
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Eclipse-BundleShape: dir

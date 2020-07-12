@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: KNIME UI Java
+Bundle-SymbolicName: org.knime.ui.java;singleton:=true
+Bundle-Version: 4.2.0.qualifier
+Export-Package: org.knime.ui.java.jsonrpc
+Require-Bundle: com.github.briandilley.jsonrpc4j;bundle-version="[1.5.2,2.0.0)",
+ com.knime.gateway;bundle-version="[4.11.0,5.0.0)",
+ org.knime.core;bundle-version="[4.2.0,5.0.0)",
+ com.knime.gateway.remote;bundle-version="[4.11.0,5.0.0)",
+ com.knime.gateway.json;bundle-version="[4.11.0,5.0.0)",
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="[2.11.0,3.0.0)",
+ com.fasterxml.jackson.core.jackson-core;bundle-version="[2.11.0,3.0.0)",
+ org.eclipse.swt.chromium;bundle-version="[76.0.1,77.0.0)",
+ org.eclipse.swt;bundle-version="[3.114.0,4.0.0)",
+ org.eclipse.ui;bundle-version="[3.116.0,4.0.0)",
+ com.fasterxml.jackson.core.jackson-annotations;bundle-version="[2.11.0,3.0.0)",
+ com.knime.gateway.jsonrpc.remote;bundle-version="[4.11.0,5.0.0)",
+ org.eclipse.ui.ide;bundle-version="[3.17.0,4.0.0)",
+ org.knime.ui.js;bundle-version="[4.2.0,5.0.0)"

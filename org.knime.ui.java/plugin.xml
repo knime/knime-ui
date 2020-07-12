@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            category="org.knime.workbench.ui.category"
+            class="org.knime.ui.java.browser.KnimeBrowserView"
+            id="org.knime.ui.java.browser.view"
+            name="KNIME Browser View"
+            restorable="true">
+      </view>
+   </extension>
+
+</plugin>

@@ -8,9 +8,10 @@
         <version>${revision}${changelist}</version>
     </parent>
 
-    <artifactId>knime-ui-js</artifactId>
+    <artifactId>org.knime.ui.js</artifactId>
     <name>KNIME HTML/JS UI</name>
     <description>HTML / JS based UI for KNIME Analytics Platform</description>
+    <packaging>eclipse-plugin</packaging>
 
     <properties>
         <node.version>v14.4.0</node.version>
@@ -19,8 +20,6 @@
     </properties>
 
     <build>
-        <finalName>${project.groupId}.${project.artifactId}_${project.version}</finalName>
-
         <resources>
             <resource>
                 <directory>${resourcedir}</directory>

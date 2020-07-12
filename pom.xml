@@ -8,7 +8,6 @@
         <groupId>org.knime.maven</groupId>
         <artifactId>ap.parent</artifactId>
         <version>1.0.0</version>
-        <relativePath>../knime-maven-parent/org.knime.maven.ap.parent/</relativePath>
     </parent>
 
     <groupId>org.knime</groupId>
@@ -21,10 +20,12 @@
     <modules>
         <module>org.knime.ui.js</module>
         <module>org.knime.ui.java</module>
+        <module>org.knime.features.ui</module>
+        <module>org.knime.update.ui</module>
     </modules>
 
     <properties>
-        <revision>4.3.0</revision>
+        <revision>4.2.0</revision>
         <changelist>-SNAPSHOT</changelist>
         <feature-branch-extension.branchListProperty>git.branch</feature-branch-extension.branchListProperty>
         <feature-branch-extension.appendArtifactoryProperties>false</feature-branch-extension.appendArtifactoryProperties>
@@ -51,5 +52,92 @@
             <url>${knime.tp.p2}</url>
             <layout>p2</layout>
         </repository>
+        <repository>
+            <id>p2-knime-workbench</id>
+            <url>${knime.workbench.p2}</url>
+            <layout>p2</layout>
+        </repository>
+
+       <!--
+       To be removed! Either com-code or probably not needed anymore in the future
+       (currently required due to the not yet re-organized knime-gateway repo).
+        -->
+       <repository>
+            <id>p2-knime-gateway</id>
+            <url>${knime.gateway.p2}</url>
+            <layout>p2</layout>
+        </repository>
+        <repository>
+            <id>p2-js-base</id>
+            <url>${knime.js.base.p2}</url>
+            <layout>p2</layout>
+        </repository>
+        <repository>
+            <id>p2-js-core</id>
+            <url>${knime.js.core.p2}</url>
+            <layout>p2</layout>
+        </repository>
+        <repository>
+            <id>p2-svg</id>
+            <url>${knime.svg.p2}</url>
+            <layout>p2</layout>
+       </repository>
+        <repository>
+            <id>p2-expressions</id>
+            <url>${knime.expressions.p2}</url>
+            <layout>p2</layout>
+       </repository>
+       <repository>
+            <id>p2-executor</id>
+            <url>${knime.executor.p2}</url>
+            <layout>p2</layout>
+       </repository>
+       <repository>
+            <id>p2-knim-com-shared</id>
+            <url>${knime.com.shared.p2}</url>
+            <layout>p2</layout>
+       </repository>
+       <repository>
+            <id>p2-knime-reporting</id>
+            <url>${knime.reporting.p2}</url>
+            <layout>p2</layout>
+       </repository>
+              <repository>
+            <id>p2-knime-product</id>
+            <url>${knime.product.p2}</url>
+            <layout>p2</layout>
+       </repository>
+       <repository>
+            <id>p2-knime-server-api</id>
+            <url>${knime.server.api.p2}</url>
+            <layout>p2</layout>
+       </repository>
+
     </repositories>
+
+    <!-- This whole block is only needed if the repository contains plug-ins that don't have any sources. If it is omitted
+         Tycho will complain. -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.eclipse.tycho.extras</groupId>
+                <artifactId>tycho-source-feature-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>source-feature</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>source-feature</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <excludes>
+                        <!-- List all plug-in that do NOT contain sources here. -->
+                        <plugin id="org.knime.ui.js" />
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
