@@ -1,4 +1,4 @@
-import postcssConfig from '~/webapps-common/webpack/webpack.postcss.config';
+import postcssConfig from 'webapps-common/webpack/webpack.postcss.config';
 
 export default {
     mode: 'spa',
