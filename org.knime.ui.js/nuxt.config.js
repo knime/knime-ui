@@ -1,3 +1,5 @@
+import postcssConfig from '~/webapps-common/webpack/webpack.postcss.config';
+
 export default {
     mode: 'spa',
     head: {
@@ -10,6 +12,7 @@ export default {
     loading: false,
     css: ['@/assets/index.css'],
     build: {
+        postcss: postcssConfig,
         splitChunks: {
             layouts: false,
             pages: false,
@@ -26,6 +29,14 @@ export default {
                         enforce: true
                     }
                 }
+            }
+        },
+        extend(config, { isDev, loaders }) {
+            if (!isDev) {
+                // embed all images and fonts
+                loaders.fontUrl.limit = Infinity;
+                loaders.imgUrl.limit = Infinity;
+                debugger;
             }
         }
     },
