@@ -1,4 +1,6 @@
 @import "../node_modules/typeface-roboto/index.css";
+@import "../node_modules/typeface-roboto-mono/index.css";
+@import "../node_modules/typeface-roboto-condensed/index.css";
 
 html {
   font-family: "Roboto", sans-serif;

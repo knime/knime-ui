@@ -16,6 +16,7 @@
   "dependencies": {
     "nuxt": "2.12.2",
     "typeface-roboto": "0.0.75",
+    "typeface-roboto-condensed": "0.0.75",
     "typeface-roboto-mono": "0.0.75",
     "webapps-common": "file:webapps-common"
   },
