@@ -13,7 +13,4 @@ export default {
 </template>
 
 <style scoped>
-p {
-  stylelint: test;
-}
 </style>

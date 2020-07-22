@@ -36,7 +36,6 @@ export default {
                 // embed all images and fonts
                 loaders.fontUrl.limit = Infinity;
                 loaders.imgUrl.limit = Infinity;
-                debugger;
             }
         }
     },

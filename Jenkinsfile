@@ -28,47 +28,46 @@ timeout(time: 15, unit: 'MINUTES') {
                         '''
                     }
 
-                  //  stage('Security Audit') {
-                  //      env.lastStage = 'Security Audit'
+                    stage('Security Audit') {
+                        env.lastStage = 'Security Audit'
 
-                  //      catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-                  //          retry(3) { // because npm registry sometimes break
-                  //              sh '''
-                  //                  npm audit --production
-                  //              '''
-                  //          }
-                  //      }
-                  //  }
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                            retry(3) { // because npm registry sometimes breaks
+                                sh '''
+                                    npm audit --production
+                                '''
+                            }
+                        }
+                    }
 
-                  //  stage('Static Code Analysis') {
-                  //      env.lastStage = 'Lint'
-                  //      sh '''
-                  //          npm run lint
-                  //      '''
-                  //  }
+                    stage('Static Code Analysis') {
+                        env.lastStage = 'Lint'
+                        sh '''
+                            npm run lint
+                        '''
+                    }
 
-                  //  stage('Unit Tests') {
-                  //      env.lastStage = env.STAGE_NAME
-                  //      catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-                  //      // trows exception on failing test
-                  //          sh '''
-                  //              npm run build_credits
-                  //              npm run coverage -- --ci
-                  //          '''
-                  //      }
-                  //      junit 'coverage/junit.xml'
-                  //  }
+                    stage('Unit Tests') {
+                        env.lastStage = env.STAGE_NAME
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                        // trows exception on failing test
+                            sh '''
+                                npm run coverage -- --ci
+                            '''
+                        }
+                        junit 'coverage/junit.xml'
+                    }
 
-                  //  if (BRANCH_NAME == "master") {
-                  //      stage('Upload Coverage data') {
-                  //          env.lastStage = env.STAGE_NAME
-                  //          withCredentials([usernamePassword(credentialsId: 'SONAR_CREDENTIALS', passwordVariable: 'SONAR_PASSWORD', usernameVariable: 'SONAR_LOGIN')]) {
-                  //              sh '''
-                  //                  npm run sendcoverage
-                  //              '''
-                  //          }
-                  //      }
-                  //  }
+                    if (BRANCH_NAME == "master") {
+                        stage('Upload Coverage data') {
+                            env.lastStage = env.STAGE_NAME
+                            withCredentials([usernamePassword(credentialsId: 'SONAR_CREDENTIALS', passwordVariable: 'SONAR_PASSWORD', usernameVariable: 'SONAR_LOGIN')]) {
+                                sh '''
+                                    npm run sendcoverage
+                                '''
+                            }
+                        }
+                    }
                 }
             }
         },
