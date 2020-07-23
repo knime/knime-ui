@@ -57,62 +57,31 @@
             <url>${knime.workbench.p2}</url>
             <layout>p2</layout>
         </repository>
-
-       <!--
-       To be removed! Either com-code or probably not needed anymore in the future
-       (currently required due to the not yet re-organized knime-gateway repo).
-        -->
        <repository>
             <id>p2-knime-gateway</id>
             <url>${knime.gateway.p2}</url>
             <layout>p2</layout>
         </repository>
-        <repository>
-            <id>p2-js-base</id>
+       <repository>
+            <id>p2-knime-js-base</id>
             <url>${knime.js.base.p2}</url>
             <layout>p2</layout>
         </repository>
-        <repository>
-            <id>p2-js-core</id>
-            <url>${knime.js.core.p2}</url>
-            <layout>p2</layout>
-        </repository>
-        <repository>
-            <id>p2-svg</id>
+       <repository>
+            <id>p2-knime-svg</id>
             <url>${knime.svg.p2}</url>
             <layout>p2</layout>
-       </repository>
-        <repository>
-            <id>p2-expressions</id>
+        </repository>
+       <repository>
+            <id>p2-knime-expressions</id>
             <url>${knime.expressions.p2}</url>
             <layout>p2</layout>
-       </repository>
-       <repository>
-            <id>p2-executor</id>
-            <url>${knime.executor.p2}</url>
-            <layout>p2</layout>
-       </repository>
-       <repository>
-            <id>p2-knim-com-shared</id>
-            <url>${knime.com.shared.p2}</url>
-            <layout>p2</layout>
-       </repository>
+        </repository>
        <repository>
             <id>p2-knime-reporting</id>
             <url>${knime.reporting.p2}</url>
             <layout>p2</layout>
-       </repository>
-              <repository>
-            <id>p2-knime-product</id>
-            <url>${knime.product.p2}</url>
-            <layout>p2</layout>
-       </repository>
-       <repository>
-            <id>p2-knime-server-api</id>
-            <url>${knime.server.api.p2}</url>
-            <layout>p2</layout>
-       </repository>
-
+        </repository>
     </repositories>
 
     <!-- This whole block is only needed if the repository contains plug-ins that don't have any sources. If it is omitted
