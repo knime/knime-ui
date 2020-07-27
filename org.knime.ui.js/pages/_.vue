@@ -1,16 +1,25 @@
 <script>
+import Kanvas from '~/components/Kanvas';
+
 export default {
-    methods: {
-        dummy() {
-            // coverage test
-        }
+    components: {
+        Kanvas
+    },
+    fetch() {
+        this.$store.dispatch('workflows/load');
     }
 };
 </script>
 
 <template>
-  <p>Hello World!</p>
+  <div class="frame">
+    <Kanvas />
+  </div>
 </template>
 
 <style scoped>
+.frame {
+  border: 2px dotted gray;
+  margin: 20px;
+}
 </style>

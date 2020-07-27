@@ -1,6 +1,7 @@
 import postcssConfig from 'webapps-common/webpack/webpack.postcss.config';
+require('dotenv').config();
 
-export default {
+const config = {
     mode: 'spa',
     head: {
         meta: [
@@ -10,6 +11,8 @@ export default {
         ]
     },
     loading: false,
+    plugins: ['~/plugins/constance.js'],
+    modules: ['portal-vue/nuxt'],
     css: ['@/assets/index.css'],
     build: {
         postcss: postcssConfig,
@@ -43,3 +46,13 @@ export default {
         fallback: 'index.html'
     }
 };
+
+if (process.env.NODE_ENV === 'development') {
+    config.dev = true;
+    if (String(process.env.DEV_INCLUDE_DEBUG_CSS) === 'true') {
+        config.css.push('@/assets/debug.css');
+    }
+}
+console.log(config.css);
+
+export default config;

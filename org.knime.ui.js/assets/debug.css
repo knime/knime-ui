@@ -1,0 +1,7 @@
+.hover-area {
+  fill: rgba(0, 0, 0, 0.03) !important;
+}
+
+.port {
+  pointer-events: fill !important; /* Firefox can't handle 'bouding-box' */
+}
