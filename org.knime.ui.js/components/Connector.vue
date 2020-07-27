@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-import portShift from '~/util/portPosition';
+import portShift from '~/util/portShift';
 
 export default {
     props: {

@@ -326,7 +326,7 @@
           },
           {
             "summary": "Inactive Port Object",
-            "inactive": false,
+            "inactive": true,
             "portIndex": 2,
             "portType": {
               "portObjectClassName": "org.knime.core.node.port.image.ImagePortObject",
@@ -337,7 +337,7 @@
           },
           {
             "summary": "Inactive Port Object",
-            "inactive": false,
+            "inactive": true,
             "portIndex": 3,
             "portType": {
               "portObjectClassName": "org.knime.core.node.port.image.ImagePortObject",

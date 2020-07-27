@@ -15,7 +15,7 @@ export default {
             type: Number,
             default: 0
         },
-        inPort: { // true if port is in-coming, false if port is outgoing
+        inPort: { // true if port is incoming, false if port is outgoing
             type: Boolean,
             default: false
         }
@@ -23,7 +23,7 @@ export default {
     computed: {
         // TODO: adjust port color NXT-219
 
-        portDisplayStyle() {
+        portType() {
             // TODO: port type instead of portObectClassName will be delivered by NXT-225
             switch (this.port.portType.portObjectClassName) {
             case 'org.knime.core.node.BufferedDataTable':
@@ -36,6 +36,9 @@ export default {
         },
         shouldFill() {
             return !this.port.portType.optional;
+        },
+        customPortColor() {
+            return 'grey';
         },
         trianglePort() {
             let { x, y, $shapes: { portSize }, inPort, shouldFill } = this;
@@ -66,18 +69,18 @@ export default {
     @mousedown="onMouseDown"
   >
     <polygon
-      v-if="portDisplayStyle === 'data'"
+      v-if="portType === 'data'"
       :points="trianglePort"
-      :fill="shouldFill ? 'black' : 'none'"
-      :stroke="shouldFill ? 'none': 'black'"
+      :fill="shouldFill ? $colors.portColors.data : 'none'"
+      :stroke="shouldFill ? 'none': $colors.portColors.data"
     />
     <circle
-      v-else-if="portDisplayStyle === 'variable'"
+      v-else-if="portType === 'variable'"
       :r="$shapes.portSize/2 - (shouldFill ? 0 : 0.5)"
       :cx="x + $shapes.portSize / (inPort ? -2 : 2)"
       :cy="y"
-      :fill="shouldFill ? 'red' : 'none'"
-      :stroke="shouldFill ? 'none': 'red'"
+      :fill="shouldFill ? $colors.portColors.variable : 'none'"
+      :stroke="shouldFill ? 'none': $colors.portColors.variable"
     />
     <rect
       v-else
@@ -85,12 +88,12 @@ export default {
       :height="$shapes.portSize"
       :x="inPort ? x - $shapes.portSize : x"
       :y="y - $shapes.portSize / 2"
-      fill="#6b6b6b"
+      :fill="customPortColor"
     />
     <line
       v-if="port.inactive"
-      stroke="red"
       stroke-width="1"
+      :stroke="$colors.portColors.inactive"
       :x1="inPort ? x - $shapes.portSize : x"
       :y1="y - $shapes.portSize / 2"
       :x2="inPort ? x : x + $shapes.portSize"
@@ -98,8 +101,8 @@ export default {
     />
     <line
       v-if="port.inactive"
-      stroke="red"
       stroke-width="1"
+      :stroke="$colors.portColors.inactive"
       :x1="inPort ? x : x + $shapes.portSize"
       :y1="y - $shapes.portSize / 2"
       :x2="inPort ? x - $shapes.portSize : x"

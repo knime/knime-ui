@@ -16,7 +16,7 @@ const portShift = (portIndex, portCount) => {
         return [portSize / 2, -portSize / 2];
     }
 
-    // TODO: if metanode { portIndex++; portCount ++; }
+    // TODO: if metanode { portIndex++; portCount ++; } NXT-219
 
     // consider ports on the side
     const middleY = nodeSize / 2;

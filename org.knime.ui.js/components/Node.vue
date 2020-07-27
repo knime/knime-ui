@@ -3,7 +3,7 @@ import { mapState } from 'vuex';
 import Port from '~/components/Port.vue';
 import NodeState from '~/components/NodeState.vue';
 import NodeSelect from '~/components/NodeSelect.vue';
-import portShift from '~/util/portPosition';
+import portShift from '~/util/portShift';
 
 export default {
     components: {
