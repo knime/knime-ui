@@ -3,5 +3,5 @@
 }
 
 .port {
-  pointer-events: fill !important; /* Firefox can't handle 'bouding-box' */
+  pointer-events: fill !important; /* Firefox can't handle 'bounding-box' */
 }

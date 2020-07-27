@@ -1,6 +1,4 @@
 <script>
-/* eslint-disable vue/require-default-prop */ // TODO: reevaluate after API-change NXT-228
-
 import { mapState } from 'vuex';
 import Port from '~/components/Port.vue';
 import NodeState from '~/components/NodeState.vue';
@@ -14,28 +12,28 @@ export default {
         NodeSelect
     },
     props: {
-        inPorts: Array,
-        name: String,
-        nodeAnnotation: Object,
-        nodeID: String,
-        nodeState: Object,
-        nodeType: String,
-        outPorts: Array,
-        progress: Object,
-        selected: Boolean,
-        type: String,
-        uIInfo: Object,
-        rootWorkflowID: String,
+        inPorts: { type: Array, required: true },
+        name: { type: String, required: true },
+        nodeAnnotation: { type: Object, required: true },
+        nodeID: { type: String, required: true },
+        nodeState: { type: Object, required: true },
+        nodeType: { type: String, required: true },
+        outPorts: { type: Array, required: true },
+        progress: { type: Object, required: true },
+        selected: { type: Boolean, required: true },
+        type: { type: String, required: true },
+        uIInfo: { type: Object, required: true },
+        rootWorkflowID: { type: String, required: true },
 
-        deletable: Boolean,
-        hasDialog: Boolean,
-        inactive: Boolean,
-        jobManager: Object,
-        nodeFactoryKey: Object,
-        nodeMessage: Object,
-        parentNodeID: String,
-        resetable: Boolean,
-        webViewNames: Array
+        deletable: { type: Boolean, required: true },
+        hasDialog: { type: Boolean, required: true },
+        inactive: { type: Boolean, required: true },
+        jobManager: { type: Object, required: true },
+        nodeFactoryKey: { type: Object, required: true },
+        nodeMessage: { type: Object, required: true },
+        parentNodeID: { type: String, required: true },
+        resetable: { type: Boolean, required: true },
+        webViewNames: { type: Array, required: true }
     },
     data() {
         let { x, y } = this.uIInfo.bounds;
@@ -52,8 +50,7 @@ export default {
         incomingConnections() {
             // TODO: make this more efficient NXT-228
             const connections = this.workflow.connections;
-            const incomingConnections = Object.values(connections).filter(connection => connection.dest === this.nodeID);
-            return incomingConnections;
+            return Object.values(connections).filter(connection => connection.dest === this.nodeID);
         },
         background() {
             return this.$colors.nodeBackgroundColors[this.nodeType] || this.$colors.nodeBackgroundColors.default;
@@ -70,7 +67,9 @@ export default {
             const incoming = this.incomingConnections.some(connection => connection.destPort === 0);
             // TODO: implement check for outgoing connections NXT-228
             // TODO: make for efficient with new Gateway-API format NXT-228
-            const outgoing = Object.values(this.workflow.connections).some(connection => connection.source === this.nodeID && connection.sourcePort === 0);
+            const outgoing = Object.values(this.workflow.connections).some(
+                connection => connection.source === this.nodeID && connection.sourcePort === 0
+            );
             return [incoming, outgoing];
         },
         combinedOffset() {
@@ -107,7 +106,7 @@ export default {
     >
       {{ name }}
     </text>
- 
+
     <rect
       class="hover-area"
       :width="$shapes.nodeSize+hoverMargin[1]+hoverMargin[3]"
@@ -197,7 +196,7 @@ export default {
 
 .name {
   pointer-events: none;
-  font-family: 'Roboto Condensed';
+  font-family: "Roboto Condensed", sans-serif;
   font-style: normal;
   font-weight: bold;
   font-size: 12px;

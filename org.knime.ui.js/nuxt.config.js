@@ -53,6 +53,5 @@ if (process.env.NODE_ENV === 'development') {
         config.css.push('@/assets/debug.css');
     }
 }
-console.log(config.css);
 
 export default config;

@@ -1,19 +1,18 @@
 <script>
-/* eslint-disable vue/require-default-prop */ // TODO: reevaluate after API-change NXT-228
 import { mapState } from 'vuex';
 import portShift from '~/util/portPosition';
 
 export default {
     props: {
-        type: String,
-        source: String,
-        dest: String,
-        sourcePort: Number,
-        destPort: Number,
-        deletable: Boolean,
-        bendPoints: Array,
-        flowVariablePortConnection: Boolean,
-        destCoordinates: Array
+        type: { type: String, required: true },
+        source: { type: String, required: true },
+        dest: { type: String, required: true },
+        sourcePort: { type: Number, required: true },
+        destPort: { type: Number, required: true },
+        deletable: { type: Boolean, required: true },
+        bendPoints: { type: Array, required: true },
+        flowVariablePortConnection: { type: Boolean, required: true },
+        destCoordinates: { type: Array, required: true }
     },
     computed: {
         ...mapState('workflows', ['workflow']),
@@ -43,8 +42,8 @@ export default {
             const { start: [x1, y1], end: [x2, y2] } = this;
             const width = Math.abs(x1 - x2);
             const height = Math.abs(y1 - y2);
-            // eslint-disable-next-line max-len, no-magic-numbers
-            return `M${x1},${y1} C${x1 + width / 2 + height / 3},${y1} ${x2 - width / 2 - height / 3},${y2}, ${x2},${y2}`;
+            return `M${x1},${y1} C${x1 + width / 2 + height / 3},` + // eslint-disable-line no-magic-numbers
+                `${y1} ${x2 - width / 2 - height / 3},${y2}, ${x2},${y2}`; // eslint-disable-line no-magic-numbers
         }
     }
 };
