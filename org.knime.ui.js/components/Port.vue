@@ -39,13 +39,9 @@ export default {
             return 'grey';
         },
         trianglePort() {
-            let { x, y, $shapes: { portSize }, inPort, shouldFill } = this;
-            
-            if (inPort) {
-                x -= portSize; // if port is in-coming, shift graphic to the left
-            }
-            
-            let [x1, y1, x2, y2] = [x, y - portSize / 2, x + portSize, y + portSize / 2];
+            let { $shapes: { portSize }, shouldFill } = this;
+                        
+            let [x1, y1, x2, y2] = [0, -portSize / 2, portSize, portSize / 2];
 
             // adjust size of triangle so that filled and bordered triangle match
             if (!shouldFill) {
@@ -55,7 +51,7 @@ export default {
                 x2 -= 1;
             }
 
-            return `${x1},${y1} ${x2},${y} ${x1},${y2}`;
+            return `${x1},${y1} ${x2},${0} ${x1},${y2}`;
         }
     }
 };
@@ -63,6 +59,7 @@ export default {
 
 <template>
   <g
+    :transform="`translate(${x - (inPort ? $shapes.portSize : 0)},${y})`"
     class="port"
   >
     <polygon
@@ -73,9 +70,8 @@ export default {
     />
     <circle
       v-else-if="portType === 'variable'"
-      :r="$shapes.portSize/2 - (shouldFill ? 0 : 0.5)"
-      :cx="x + $shapes.portSize / (inPort ? -2 : 2)"
-      :cy="y"
+      :r="$shapes.portSize / 2 - (shouldFill ? 0 : 0.5)"
+      :cx="$shapes.portSize / 2"
       :fill="shouldFill ? $colors.portColors.variable : 'none'"
       :stroke="shouldFill ? 'none': $colors.portColors.variable"
     />
@@ -83,27 +79,25 @@ export default {
       v-else
       :width="$shapes.portSize"
       :height="$shapes.portSize"
-      :x="inPort ? x - $shapes.portSize : x"
-      :y="y - $shapes.portSize / 2"
-      :fill="customPortColor"
+      :y="-$shapes.portSize / 2"
+      :fill="shouldFill ? customPortColor: 'none'"
+      :stroke="shouldFill ? 'none' : customPortColor"
     />
     <line
       v-if="port.inactive"
       stroke-width="1"
       :stroke="$colors.portColors.inactive"
-      :x1="inPort ? x - $shapes.portSize : x"
-      :y1="y - $shapes.portSize / 2"
-      :x2="inPort ? x : x + $shapes.portSize"
-      :y2="y + $shapes.portSize / 2"
+      :y1="-$shapes.portSize / 2"
+      :x2="$shapes.portSize"
+      :y2="$shapes.portSize / 2"
     />
     <line
       v-if="port.inactive"
       stroke-width="1"
       :stroke="$colors.portColors.inactive"
-      :x1="inPort ? x : x + $shapes.portSize"
-      :y1="y - $shapes.portSize / 2"
-      :x2="inPort ? x - $shapes.portSize : x"
-      :y2="y + $shapes.portSize / 2"
+      :x1="$shapes.portSize"
+      :y1="-$shapes.portSize / 2"
+      :y2="$shapes.portSize / 2"
     />
   </g>
 </template>
