@@ -24,7 +24,6 @@ npm install
 
 and then use the following commands. For detailed explanations see [Nuxt.js docs]:
 
-
 ### Launch development server
 
 Compiles all JavaScript sources, assets, … and starts a local web server for development. Includes hot-reloading, so
@@ -33,6 +32,10 @@ code changes will be visible in the browser immediately.
 ```sh
 npm run dev
 ```
+
+#### Debug CSS
+
+When running the dev server, additional style sheets are loaded that assist in debugging if .env-flag 'DEV_INCLUDE_DEBUG_CSS' is set.
 
 ### Testing
 
@@ -90,7 +93,6 @@ mvn install
 ```
 
 to install that package to your local maven repository directly.
-
 
 [nuxt.js]: https://nuxtjs.org/
 [node]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/905281540/Node.js+Installation
