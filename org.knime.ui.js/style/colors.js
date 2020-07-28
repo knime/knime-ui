@@ -32,3 +32,7 @@ export const portColors = {
     other: 'green',
     inactive: 'red'
 };
+
+export const connectorColors = {
+    default: '#c8c8c9'
+};

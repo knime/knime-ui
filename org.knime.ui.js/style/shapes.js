@@ -8,3 +8,5 @@ export const nodeStatusMarginTop = 5;
 export const nodeAnnotationMargin = 70;
 
 export const nodeSelectionBarHeight = 12;
+
+export const connectorWidth = 2;

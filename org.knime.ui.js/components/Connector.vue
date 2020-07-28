@@ -4,15 +4,10 @@ import portShift from '~/util/portShift';
 
 export default {
     props: {
-        type: { type: String, required: true },
         source: { type: String, required: true },
         dest: { type: String, required: true },
         sourcePort: { type: Number, required: true },
-        destPort: { type: Number, required: true },
-        deletable: { type: Boolean, required: true },
-        bendPoints: { type: Array, required: true },
-        flowVariablePortConnection: { type: Boolean, required: true },
-        destCoordinates: { type: Array, required: true }
+        destPort: { type: Number, required: true }
     },
     computed: {
         ...mapState('workflows', ['workflow']),
@@ -43,7 +38,7 @@ export default {
             const width = Math.abs(x1 - x2);
             const height = Math.abs(y1 - y2);
             return `M${x1},${y1} C${x1 + width / 2 + height / 3},` + // eslint-disable-line no-magic-numbers
-                `${y1} ${x2 - width / 2 - height / 3},${y2}, ${x2},${y2}`; // eslint-disable-line no-magic-numbers
+                `${y1} ${x2 - width / 2 - height / 3},${y2} ${x2},${y2}`; // eslint-disable-line no-magic-numbers
         }
     }
 };
@@ -52,9 +47,9 @@ export default {
 <template>
   <path
     :d="path"
-    stroke="#c8c8c9"
+    :stroke="$colors.connectorColors.default"
+    :stroke-width="$shapes.connectorWidth"
     fill="none"
-    stroke-width="1"
   />
 </template>
 
