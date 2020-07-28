@@ -129,7 +129,7 @@ export default {
       v-if="hasDefaultFlowVariablePortConnections[0] || hover || selected"
       :connected="hasDefaultFlowVariablePortConnections[0]"
       :port="inPorts[0]"
-      :x="-$shapes.portSize / 2"
+      :x="$shapes.portSize / 2"
       :y="-$shapes.portSize / 2"
     />
 
@@ -146,7 +146,6 @@ export default {
       :key="`inport-${port.portIndex}`"
       :port="port"
       :x="0"
-      in-port
       :y="portShift(port.portIndex, inPorts.length)[1]"
     />
 

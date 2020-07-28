@@ -14,15 +14,13 @@ export default {
         y: { // y-coordinate of port on the node
             type: Number,
             default: 0
-        },
-        inPort: { // true if port is incoming, false if port is outgoing
-            type: Boolean,
-            default: false
         }
     },
     computed: {
         // TODO: adjust port color NXT-219
-
+        inPort() {
+            return this.port.type === 'NodeInPort';
+        },
         portType() {
             // TODO: port type instead of portObectClassName will be delivered by NXT-225
             switch (this.port.portType.portObjectClassName) {
