@@ -64,7 +64,6 @@ export default {
 <template>
   <g
     class="port"
-    @mousedown="onMouseDown"
   >
     <polygon
       v-if="portType === 'data'"

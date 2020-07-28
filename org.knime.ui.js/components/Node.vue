@@ -12,27 +12,31 @@ export default {
         NodeSelect
     },
     props: {
-        inPorts: { type: Array, required: true },
         name: { type: String, required: true },
-        nodeAnnotation: { type: Object, required: true },
         nodeID: { type: String, required: true },
-        nodeState: { type: Object, required: true },
+        rootWorkflowID: { type: String, required: true },
+        parentNodeID: { type: String, required: true },
+        
         nodeType: { type: String, required: true },
-        outPorts: { type: Array, required: true },
-        progress: { type: Object, required: true },
-        selected: { type: Boolean, required: true },
         type: { type: String, required: true },
         uIInfo: { type: Object, required: true },
-        rootWorkflowID: { type: String, required: true },
-
+        nodeAnnotation: { type: Object, required: true },
+        
+        inactive: { type: Boolean, required: true },
         deletable: { type: Boolean, required: true },
         hasDialog: { type: Boolean, required: true },
-        inactive: { type: Boolean, required: true },
+        resetable: { type: Boolean, required: true },
+        selected: { type: Boolean, required: true },
+
+        inPorts: { type: Array, required: true },
+        outPorts: { type: Array, required: true },
+        
+        nodeState: { type: Object, required: true },
+        progress: { type: Object, required: true },
+        nodeMessage: { type: Object, required: true },
+                
         jobManager: { type: Object, required: true },
         nodeFactoryKey: { type: Object, required: true },
-        nodeMessage: { type: Object, required: true },
-        parentNodeID: { type: String, required: true },
-        resetable: { type: Boolean, required: true },
         webViewNames: { type: Array, required: true }
     },
     data() {
@@ -145,7 +149,6 @@ export default {
       v-for="port of visibleInports"
       :key="`inport-${port.portIndex}`"
       :port="port"
-      :x="0"
       :y="portShift(port.portIndex, inPorts.length)[1]"
     />
 
