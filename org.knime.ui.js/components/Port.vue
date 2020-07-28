@@ -17,7 +17,6 @@ export default {
         }
     },
     computed: {
-        // TODO: adjust port color NXT-219
         inPort() {
             return this.port.type === 'NodeInPort';
         },
@@ -36,6 +35,7 @@ export default {
             return !this.port.portType.optional;
         },
         customPortColor() {
+            // TODO: adjust port color NXT-219
             return 'grey';
         },
         trianglePort() {
