@@ -13,7 +13,7 @@ export default {
 
 <template>
   <div class="frame">
-    <Kanvas />
+    <Kanvas v-if="$store.state.workflows.workflow" />
   </div>
 </template>
 

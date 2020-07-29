@@ -18,7 +18,7 @@ const distFolder = path.join(__dirname, '..', 'dist');
 const html = fs.readFileSync(path.join(distFolder, 'index.html'));
 let dom = new JSDOM(html);
 
-let { window: { document }} = dom;
+let { window: { document } } = dom;
 
 /*
 * remove preload optimizations. They are not required for inlined resources.

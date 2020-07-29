@@ -12,8 +12,8 @@ export const mutations = {
 };
 
 export const actions = {
-    load({ commit }) {
-        const workflow = loadWorkflow();
+    async load({ commit }) {
+        const workflow = await loadWorkflow();
         commit('setWorkflow', workflow);
     }
 };
