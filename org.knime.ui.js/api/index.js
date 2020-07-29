@@ -3,7 +3,7 @@ import mockWorkflow from '~/assets/mockdata/workflow1.json';
 
 // TODO: replace by data from the Gateway-API
 
-export const loadWorkflow = () => ({
+export const  loadWorkflow = () => Promise.resolve({
     ...mockWorkflow.workflow,
     name: 'Open Workflow'
 });
