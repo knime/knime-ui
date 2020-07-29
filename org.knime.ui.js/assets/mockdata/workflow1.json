@@ -107,8 +107,6 @@
             "type": "NodeOutPort"
           }
         ],
-        "inConnections": ["root:2_0"],
-        "outConnections": ["root:4_0"],
         "webViewNames": [],
         "parentNodeID": "root",
         "jobManager": null,

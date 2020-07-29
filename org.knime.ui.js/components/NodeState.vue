@@ -1,15 +1,8 @@
 <script>
 export default {
-    props: {
-        nodeState: {
-            type: Object,
-            required: true
-        }
-    },
     computed: {
         active() {
             // TODO: use actual state with NXT-113
-            // for debugging:
             return {
                 red: true,
                 yellow: true,
@@ -50,19 +43,6 @@ export default {
       :fill="active.green ? '#3CB44B' : 'white'"
       :stroke="active.green ? '#007D00' : '#7B7B7B'"
     />
-    <!-- PERCENTAGE: TO BE IMPLEMENTED NXT-113
-    <div
-      v-if="percentage"
-      class="percentage"
-    >
-      <div class="empty"><span>{{ percentage }}%</span></div>
-      <div
-        class="filled"
-        :style="{ width: `${percentage}%` }"
-      >
-        <span>{{ percentage }}%</span>
-      </div>
-    </div> -->
   </g>
 </template>
 

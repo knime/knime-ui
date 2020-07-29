@@ -43,7 +43,7 @@ describe.each([
         mount = () => { wrapper = shallowMount(Port, { propsData, mocks }); };
     });
 
-    describe('render', () => {
+    describe('renders default', () => {
         beforeEach(() => {
             mount();
         });

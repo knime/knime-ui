@@ -6,6 +6,7 @@ export const nodeStatusHeight = 3 / 8 * nodeSize;
 export const nodeStatusMarginTop = 5;
 
 export const nodeAnnotationMargin = 70;
+export const nodeNameMargin = 12;
 
 export const nodeSelectionBarHeight = 12;
 

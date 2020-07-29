@@ -20,7 +20,7 @@ const portShift = (portIndex, portCount) => {
 
     // consider ports on the side
     const middleY = nodeSize / 2;
-    if (portCount === 2) { return [portSize, middleY]; }
+    if (portCount === 2) { return [0, middleY]; }
 
     const middleIndex = 2;
     const portMargin = 1.5;
@@ -29,7 +29,7 @@ const portShift = (portIndex, portCount) => {
     if (portCount === 3 && portIndex === 2) { portIndex = 3; } // leave the middle port free (index: 2 -> 3)
 
     let dy = middleY + (portIndex - middleIndex) * (portSize + portMargin);
-    return [portSize, dy];
+    return [0, dy];
 };
 
 export default portShift;

@@ -12,24 +12,24 @@ describe('portShift', () => {
     });
 
     it('One Side Port', () => {
-        expect(portShift(1, 2)).toStrictEqual([9, 16]);
+        expect(portShift(1, 2)).toStrictEqual([0, 16]);
     });
 
     it('Two Side Ports', () => {
-        expect(portShift(1, 3)).toStrictEqual([9, 5.5]);
-        expect(portShift(2, 3)).toStrictEqual([9, 26.5]);
+        expect(portShift(1, 3)).toStrictEqual([0, 5.5]);
+        expect(portShift(2, 3)).toStrictEqual([0, 26.5]);
     });
 
     it('Three Side Ports', () => {
-        expect(portShift(1, 4)).toStrictEqual([9, 5.5]);
-        expect(portShift(2, 4)).toStrictEqual([9, 16]);
-        expect(portShift(3, 4)).toStrictEqual([9, 26.5]);
+        expect(portShift(1, 4)).toStrictEqual([0, 5.5]);
+        expect(portShift(2, 4)).toStrictEqual([0, 16]);
+        expect(portShift(3, 4)).toStrictEqual([0, 26.5]);
     });
 
     it('Four Side Ports', () => {
-        expect(portShift(1, 5)).toStrictEqual([9, 5.5]);
-        expect(portShift(2, 5)).toStrictEqual([9, 16]);
-        expect(portShift(3, 5)).toStrictEqual([9, 26.5]);
-        expect(portShift(4, 5)).toStrictEqual([9, 37]);
+        expect(portShift(1, 5)).toStrictEqual([0, 5.5]);
+        expect(portShift(2, 5)).toStrictEqual([0, 16]);
+        expect(portShift(3, 5)).toStrictEqual([0, 26.5]);
+        expect(portShift(4, 5)).toStrictEqual([0, 37]);
     });
 });

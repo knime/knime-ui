@@ -21,7 +21,7 @@ export default {
             const [dx, dy] = portShift(this.sourcePort, this.sourceNode.outPorts.length);
             let { x, y } = this.sourceNode.uIInfo.bounds;
             return [
-                x + this.$shapes.nodeSize + dx,
+                x + this.$shapes.nodeSize + this.$shapes.portSize - dx,
                 y + dy
             ];
         },
@@ -29,7 +29,7 @@ export default {
             const [dx, dy] = portShift(this.destPort, this.targetNode.inPorts.length);
             let { x, y } = this.targetNode.uIInfo.bounds;
             return [
-                x - dx,
+                x - this.$shapes.portSize + dx,
                 y + dy
             ];
         },
