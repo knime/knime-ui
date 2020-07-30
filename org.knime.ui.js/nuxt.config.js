@@ -35,6 +35,8 @@ const config = {
             }
         },
         extend(config, { isDev, loaders }) {
+            // TODO: implement API
+            // config.resolve.alias['~api'] = path.join(__dirname, 'api', 'index.js');
             if (!isDev) {
                 // embed all images and fonts
                 loaders.fontUrl.limit = Infinity;
