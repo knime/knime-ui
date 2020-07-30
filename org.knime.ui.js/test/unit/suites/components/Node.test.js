@@ -99,12 +99,12 @@ describe('Node', () => {
             expect(wrapper.find('.bg').attributes().fill).toBe('#f1933b');
         });
 
-        it('doesn´t show selection frame', () => {
-            expect(wrapper.find(NodeSelect).exists()).toBe(false);
+        it('doesn’t show selection frame', () => {
+            expect(wrapper.findComponent(NodeSelect).exists()).toBe(false);
         });
 
         it('renders node state', () => {
-            expect(wrapper.find(NodeState).exists()).toBe(true);
+            expect(wrapper.findComponent(NodeState).exists()).toBe(true);
         });
 
         it('renders at right position', () => {
@@ -113,7 +113,7 @@ describe('Node', () => {
         });
 
         it('displays all ports at right position', () => {
-            const ports = wrapper.findAll(Port).wrappers;
+            const ports = wrapper.findAllComponents(Port).wrappers;
             const locations = ports.map(p => p.attributes()).map(at => [at.x, at.y].map(parseFloat));
             const portAttrs = ports.map(p => p.props().port.portIndex);
 
@@ -131,11 +131,11 @@ describe('Node', () => {
         it('shows frame on hover', async () => {
             wrapper.find('g').trigger('mouseenter');
             await Vue.nextTick();
-            expect(wrapper.find(NodeSelect).exists()).toBe(true);
+            expect(wrapper.findComponent(NodeSelect).exists()).toBe(true);
 
             wrapper.find('g').trigger('mouseleave');
             await Vue.nextTick();
-            expect(wrapper.find(NodeSelect).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeSelect).exists()).toBe(false);
         });
 
     });
@@ -161,7 +161,7 @@ describe('Node', () => {
         });
 
         it('hides those ports', () => {
-            ports = wrapper.findAll(Port).wrappers;
+            ports = wrapper.findAllComponents(Port).wrappers;
             locations = ports.map(p => p.attributes()).map(at => [at.x, at.y].map(parseFloat));
             expect(locations).toStrictEqual([
                 [0, 16],
@@ -174,7 +174,7 @@ describe('Node', () => {
             wrapper.find('g').trigger('mouseenter');
             await Vue.nextTick();
 
-            ports = wrapper.findAll(Port).wrappers;
+            ports = wrapper.findAllComponents(Port).wrappers;
             locations = ports.map(p => p.attributes()).map(at => [at.x, at.y].map(parseFloat));
             expect(locations).toStrictEqual([
                 [4.5, -4.5],

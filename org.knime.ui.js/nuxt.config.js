@@ -1,5 +1,5 @@
+import path from 'path';
 import postcssConfig from 'webapps-common/webpack/webpack.postcss.config';
-require('dotenv').config();
 
 const config = {
     mode: 'spa',
@@ -35,8 +35,7 @@ const config = {
             }
         },
         extend(config, { isDev, loaders }) {
-            // TODO: implement API
-            // config.resolve.alias['~api'] = path.join(__dirname, 'api', 'index.js');
+            config.resolve.alias['~api'] = path.join(__dirname, 'api', 'index.js');
             if (!isDev) {
                 // embed all images and fonts
                 loaders.fontUrl.limit = Infinity;
@@ -48,12 +47,5 @@ const config = {
         fallback: 'index.html'
     }
 };
-
-if (process.env.NODE_ENV === 'development') {
-    config.dev = true;
-    if (String(process.env.DEV_INCLUDE_DEBUG_CSS) === 'true') {
-        config.css.push('@/assets/debug.css');
-    }
-}
 
 export default config;
