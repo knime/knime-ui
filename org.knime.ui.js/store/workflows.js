@@ -1,7 +1,7 @@
 import Vue from 'vue';
-import { loadWorkflow } from '~/api';
+import { loadWorkflow } from '~api';
 
-export const state = {
+export const state = () => {
     workflow: null
 };
 

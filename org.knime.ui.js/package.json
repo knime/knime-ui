@@ -1,6 +1,6 @@
 {
   "name": "knime-ui",
-  "version": "1.0.0",
+  "version": "0.0.0-unused+see-pom.xml",
   "description": "KNIME HTML based UI",
   "author": "KNIME AG",
   "scripts": {
@@ -41,7 +41,7 @@
     "vue-jest": "3.0.6"
   },
   "engines": {
-    "node": "14.4.0"
+    "node": "14.6.0"
   },
   "private": true
 }

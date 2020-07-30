@@ -7,7 +7,7 @@ The frontend is based on the [Nuxt.js] JavaScript framework.
 
 ### Prerequisites
 
-- Install [Node.js **Version 14**][node]
+- Install [Node.js **Version 14.6.0**][node]
 - Only for test coverage uploads to SonarQube: you also need [Java]™ 8 or 11.
 
 Pull the contained [git submodules](https://stackoverflow.com/a/4438292/5134084) with

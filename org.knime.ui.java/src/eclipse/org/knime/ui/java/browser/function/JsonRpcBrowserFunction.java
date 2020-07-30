@@ -50,11 +50,10 @@ package org.knime.ui.java.browser.function;
 
 import org.eclipse.swt.chromium.Browser;
 import org.eclipse.swt.chromium.BrowserFunction;
+import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
+import org.knime.gateway.impl.service.DefaultWorkflowService;
+import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.ui.java.jsonrpc.InitService;
-
-import com.knime.gateway.json.util.ObjectMapperUtil;
-import com.knime.gateway.jsonrpc.remote.JsonRpcRequestHandler;
-import com.knime.gateway.remote.service.DefaultWorkflowService;
 
 /**
  * Browser function for json-rpc calls which are forwarded to the respective
