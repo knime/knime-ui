@@ -11,7 +11,6 @@ import Port from '~/components/Port.vue';
 
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
-import * as portShift from '~/util/portShift';
 
 const mockPort = ({ outgoing = false, index }) => ({
     summary: 'Variables connection',
