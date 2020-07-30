@@ -10,7 +10,7 @@
     "lint:js": "eslint --ext .js,.mjs,.vue .",
     "lint:css": "stylelint '**/*.{css,vue}'",
     "test:unit": "jest",
-    "coverage": "jest --coverage",
+    "coverage": "jest --passWithNoTests --coverage",
     "sendcoverage": "cross-var sonar-scanner -Dsonar.login=\"$SONAR_LOGIN\" -Dsonar.password=\"$SONAR_PASSWORD\""
   },
   "dependencies": {
