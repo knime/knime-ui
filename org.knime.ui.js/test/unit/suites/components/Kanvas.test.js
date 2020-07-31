@@ -70,12 +70,12 @@ describe('Kanvas', () => {
         });
 
         it('renders nodes', () => {
-            let props = wrapper.findAll(Node).wrappers.map(n => n.props());
+            let props = wrapper.findAllComponents(Node).wrappers.map(n => n.props());
             expect(props).toStrictEqual(Object.values(workflow.nodes));
         });
 
         it('renders connectors', () => {
-            let props = wrapper.findAll(Connector).wrappers.map(c => c.props());
+            let props = wrapper.findAllComponents(Connector).wrappers.map(c => c.props());
             expect(props).toStrictEqual(Object.values(workflow.connections));
         });
     });
