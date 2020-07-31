@@ -33,10 +33,6 @@ code changes will be visible in the browser immediately.
 npm run dev
 ```
 
-#### Debug CSS
-
-When running the dev server, additional style sheets are loaded that assist in debugging if .env-flag 'DEV_INCLUDE_DEBUG_CSS' is set.
-
 ### Testing
 
 #### Running unit tests
