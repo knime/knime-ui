@@ -111,10 +111,16 @@
         "parentNodeID": "root",
         "jobManager": null,
         "nodeType": "Manipulator",
-        "progress": { "progress": null, "message": null },
+        "progress": {
+          "progress": null,
+          "message": null
+        },
         "nodeID": "root:2",
         "resetable": true,
-        "nodeMessage": { "message": "", "type": "RESET" },
+        "nodeMessage": {
+          "message": "",
+          "type": "RESET"
+        },
         "hasDialog": true,
         "nodeAnnotation": {
           "_default": true,
@@ -125,7 +131,12 @@
           "borderColor": 0,
           "backgroundColor": 16777215,
           "text": "",
-          "bounds": { "height": 0, "width": 0, "x": 0, "y": 0 },
+          "bounds": {
+            "height": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
           "version": 20151123,
           "type": "NodeAnnotation"
         },
@@ -134,9 +145,16 @@
           "snapToGrid": false,
           "symbolRelative": true,
           "dropLocation": false,
-          "bounds": { "height": 80, "width": 105, "x": 584, "y": 317 }
+          "bounds": {
+            "height": 80,
+            "width": 105,
+            "x": 584,
+            "y": 317
+          }
         },
-        "nodeState": { "state": "EXECUTED" },
+        "nodeState": {
+          "state": "EXECUTED"
+        },
         "name": "Column Filter",
         "type": "NativeNode"
       },
@@ -198,10 +216,16 @@
         "parentNodeID": "root",
         "jobManager": null,
         "nodeType": "Source",
-        "progress": { "progress": null, "message": null },
+        "progress": {
+          "progress": null,
+          "message": null
+        },
         "nodeID": "root:3",
         "resetable": true,
-        "nodeMessage": { "message": "", "type": "RESET" },
+        "nodeMessage": {
+          "message": "",
+          "type": "RESET"
+        },
         "hasDialog": true,
         "nodeAnnotation": {
           "_default": false,
@@ -229,7 +253,12 @@
           "borderColor": 16777215,
           "backgroundColor": 16777215,
           "text": "Node 3",
-          "bounds": { "height": 24, "width": 143, "x": 229, "y": 359 },
+          "bounds": {
+            "height": 24,
+            "width": 143,
+            "x": 229,
+            "y": 359
+          },
           "version": 20151123,
           "type": "NodeAnnotation"
         },
@@ -238,9 +267,16 @@
           "snapToGrid": false,
           "symbolRelative": true,
           "dropLocation": false,
-          "bounds": { "height": 80, "width": 119, "x": 284, "y": 297 }
+          "bounds": {
+            "height": 80,
+            "width": 119,
+            "x": 284,
+            "y": 297
+          }
         },
-        "nodeState": { "state": "EXECUTED" },
+        "nodeState": {
+          "state": "EXECUTED"
+        },
         "name": "Data Generator",
         "type": "NativeNode"
       },
@@ -349,10 +385,16 @@
         "parentNodeID": "root",
         "jobManager": null,
         "nodeType": "Visualizer",
-        "progress": { "progress": null, "message": null },
+        "progress": {
+          "progress": null,
+          "message": null
+        },
         "nodeID": "root:4",
         "resetable": true,
-        "nodeMessage": { "message": "", "type": "RESET" },
+        "nodeMessage": {
+          "message": "",
+          "type": "RESET"
+        },
         "hasDialog": true,
         "nodeAnnotation": {
           "_default": true,
@@ -363,7 +405,12 @@
           "borderColor": 0,
           "backgroundColor": 16777215,
           "text": "",
-          "bounds": { "height": 0, "width": 0, "x": 0, "y": 0 },
+          "bounds": {
+            "height": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
           "version": 20151123,
           "type": "NodeAnnotation"
         },
@@ -372,9 +419,16 @@
           "snapToGrid": false,
           "symbolRelative": true,
           "dropLocation": false,
-          "bounds": { "height": 80, "width": 74, "x": 724, "y": 317 }
+          "bounds": {
+            "height": 80,
+            "width": 74,
+            "x": 724,
+            "y": 317
+          }
         },
-        "nodeState": { "state": "EXECUTED" },
+        "nodeState": {
+          "state": "EXECUTED"
+        },
         "name": "Bar Chart",
         "type": "NativeNode"
       },
@@ -434,10 +488,16 @@
         "parentNodeID": "root",
         "jobManager": null,
         "nodeType": "Manipulator",
-        "progress": { "progress": null, "message": null },
+        "progress": {
+          "progress": null,
+          "message": null
+        },
         "nodeID": "root:5",
         "resetable": true,
-        "nodeMessage": { "message": "", "type": "RESET" },
+        "nodeMessage": {
+          "message": "",
+          "type": "RESET"
+        },
         "hasDialog": true,
         "nodeAnnotation": {
           "_default": true,
@@ -448,7 +508,12 @@
           "borderColor": 0,
           "backgroundColor": 16777215,
           "text": "",
-          "bounds": { "height": 0, "width": 0, "x": 0, "y": 0 },
+          "bounds": {
+            "height": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
           "version": 20151123,
           "type": "NodeAnnotation"
         },
@@ -457,9 +522,16 @@
           "snapToGrid": false,
           "symbolRelative": true,
           "dropLocation": false,
-          "bounds": { "height": 80, "width": 140, "x": 464, "y": 217 }
+          "bounds": {
+            "height": 80,
+            "width": 140,
+            "x": 464,
+            "y": 217
+          }
         },
-        "nodeState": { "state": "EXECUTED" },
+        "nodeState": {
+          "state": "EXECUTED"
+        },
         "name": "Java Edit Variable",
         "type": "NativeNode"
       },
@@ -537,10 +609,16 @@
         "parentNodeID": "root",
         "jobManager": null,
         "nodeType": "Manipulator",
-        "progress": { "progress": null, "message": null },
+        "progress": {
+          "progress": null,
+          "message": null
+        },
         "nodeID": "root:7",
         "resetable": false,
-        "nodeMessage": { "message": "", "type": "RESET" },
+        "nodeMessage": {
+          "message": "",
+          "type": "RESET"
+        },
         "hasDialog": true,
         "nodeAnnotation": {
           "_default": true,
@@ -551,7 +629,12 @@
           "borderColor": 0,
           "backgroundColor": 16777215,
           "text": "",
-          "bounds": { "height": 0, "width": 0, "x": 0, "y": 0 },
+          "bounds": {
+            "height": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
           "version": 20151123,
           "type": "NodeAnnotation"
         },
@@ -560,9 +643,16 @@
           "snapToGrid": false,
           "symbolRelative": true,
           "dropLocation": false,
-          "bounds": { "height": 97, "width": 110, "x": 364, "y": 477 }
+          "bounds": {
+            "height": 97,
+            "width": 110,
+            "x": 364,
+            "y": 477
+          }
         },
-        "nodeState": { "state": "IDLE" },
+        "nodeState": {
+          "state": "IDLE"
+        },
         "name": "CASE Switch Variable (End)",
         "type": "NativeNode"
       }
@@ -628,7 +718,39 @@
         "borderColor": 16766976,
         "backgroundColor": 8948357,
         "text": " Hinterer Layer ",
-        "bounds": { "height": 263, "width": 621, "x": 200, "y": 160 },
+        "bounds": {
+          "height": 263,
+          "width": 621,
+          "x": 200,
+          "y": 160
+        },
+        "version": null,
+        "type": "WorkflowAnnotation"
+      },
+      "root_1": {
+        "annotationID": "root_1",
+        "textAlignment": "RIGHT",
+        "defaultFontSize": 20,
+        "styleRanges": [
+          {
+            "foregroundColor": 16766976,
+            "start": 0,
+            "fontName": "Ubuntu",
+            "fontStyle": "normal",
+            "fontSize": 18,
+            "length": 17
+          }
+        ],
+        "borderSize": 10,
+        "borderColor": 16712976,
+        "backgroundColor": 6648357,
+        "text": "Zweite Annotation mit ziemlich viel Teeeeeeeeeeeext",
+        "bounds": {
+          "height": 80,
+          "width": 250,
+          "x": 500,
+          "y": 100
+        },
         "version": null,
         "type": "WorkflowAnnotation"
       }

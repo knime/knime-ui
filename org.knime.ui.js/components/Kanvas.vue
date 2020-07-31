@@ -2,11 +2,13 @@
 import { mapState } from 'vuex';
 import Node from '~/components/Node';
 import Connector from '~/components/Connector';
+import Annotation from '~/components/Annotation';
 
 export default {
     components: {
         Node,
-        Connector
+        Connector,
+        Annotation
     },
     computed: {
         ...mapState('workflows', ['workflow']),
@@ -24,6 +26,11 @@ export default {
     <h3 v-else>Loading…</h3>
 
     <!-- TODO: adjust size of Kanvas -->
+    <Annotation
+      v-for="(a, id) of workflow.workflowAnnotations"
+      :key="`annotation-${id}`"
+      v-bind="a"
+    />
     <svg
       :width="1000"
       :height="700"

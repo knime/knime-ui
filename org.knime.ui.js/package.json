@@ -14,7 +14,7 @@
     "sendcoverage": "cross-var sonar-scanner -Dsonar.login=\"$SONAR_LOGIN\" -Dsonar.password=\"$SONAR_PASSWORD\""
   },
   "dependencies": {
-    "nuxt": "2.12.2",
+    "nuxt": "2.14.0",
     "portal-vue": "2.1.7",
     "typeface-roboto": "0.0.75",
     "typeface-roboto-condensed": "0.0.75",
