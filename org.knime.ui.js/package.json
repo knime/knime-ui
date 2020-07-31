@@ -1,16 +1,16 @@
 {
   "name": "knime-ui",
-  "version": "1.0.0",
+  "version": "0.0.0-unused+see-pom.xml",
   "description": "KNIME HTML based UI",
   "author": "KNIME AG",
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build && node buildtools/inline-html.mjs",
     "lint": "npm run lint:js && npm run lint:css",
-    "lint:js": "eslint --ext .js,.vue .",
+    "lint:js": "eslint --ext .js,.mjs,.vue .",
     "lint:css": "stylelint '**/*.{css,vue}'",
-    "test": "jest",
-    "coverage": "jest --coverage",
+    "test:unit": "jest",
+    "coverage": "jest --passWithNoTests --coverage",
     "sendcoverage": "cross-var sonar-scanner -Dsonar.login=\"$SONAR_LOGIN\" -Dsonar.password=\"$SONAR_PASSWORD\""
   },
   "dependencies": {
@@ -22,26 +22,26 @@
     "webapps-common": "file:webapps-common"
   },
   "devDependencies": {
-    "@vue/test-utils": "1.0.0-beta.33",
+    "@vue/test-utils": "1.0.3",
     "babel-core": "7.0.0-bridge.0",
-    "babel-jest": "26.0.1",
+    "babel-jest": "26.1.0",
     "cross-var": "1.1.0",
     "dotenv": "8.2.0",
-    "eslint": "5.16.0",
-    "eslint-plugin-vue": "6.2.2",
-    "jest": "26.0.1",
+    "eslint": "7.5.0",
+    "eslint-plugin-vue": "7.0.0-beta.0",
+    "jest": "26.1.0",
     "jest-junit": "6.4.0",
     "jest-transform-stub": "2.0.0",
-    "jsdom": "16.2.2",
+    "jsdom": "16.3.0",
     "normalize.css": "8.0.1",
     "postcss-css-variables": "0.17.0",
     "sonar-scanner": "3.1.0",
     "stylelint": "13.6.1",
     "stylelint-config-standard": "20.0.0",
-    "vue-jest": "3.0.4"
+    "vue-jest": "3.0.6"
   },
   "engines": {
-    "node": "14.4.0"
+    "node": "14.6.0"
   },
   "private": true
 }

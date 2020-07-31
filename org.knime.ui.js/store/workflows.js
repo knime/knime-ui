@@ -1,7 +1,7 @@
 import Vue from 'vue';
-import { loadWorkflow } from '~/api';
+import { loadWorkflow } from '~api';
 
-export const state = {
+export const state = () => {
     workflow: null
 };
 
@@ -12,8 +12,8 @@ export const mutations = {
 };
 
 export const actions = {
-    load({ commit }) {
-        const workflow = loadWorkflow();
+    async load({ commit }) {
+        const workflow = await loadWorkflow();
         commit('setWorkflow', workflow);
     }
 };

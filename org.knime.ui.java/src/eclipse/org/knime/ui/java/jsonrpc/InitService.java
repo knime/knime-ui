@@ -62,18 +62,18 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.knime.core.node.workflow.NodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.entity.WorkflowSnapshotEnt;
+import org.knime.gateway.api.service.util.ServiceExceptions.NodeNotFoundException;
+import org.knime.gateway.api.service.util.ServiceExceptions.NotASubWorkflowException;
+import org.knime.gateway.impl.project.WorkflowProject;
+import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.service.DefaultWorkflowService;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.googlecode.jsonrpc4j.JsonRpcMethod;
 import com.googlecode.jsonrpc4j.JsonRpcService;
-import com.knime.gateway.entity.NodeIDEnt;
-import com.knime.gateway.entity.WorkflowSnapshotEnt;
-import com.knime.gateway.remote.endpoint.WorkflowProject;
-import com.knime.gateway.remote.endpoint.WorkflowProjectManager;
-import com.knime.gateway.remote.service.DefaultWorkflowService;
-import com.knime.gateway.service.util.ServiceExceptions.NodeNotFoundException;
-import com.knime.gateway.service.util.ServiceExceptions.NotASubWorkflowException;
 
 /**
  * Methods to provide data need to initialize the ui, such as opened workflow.
