@@ -63,15 +63,14 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.knime.core.node.workflow.NodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
-import org.knime.gateway.api.entity.WorkflowSnapshotEnt;
-import org.knime.gateway.api.service.util.ServiceExceptions.NodeNotFoundException;
-import org.knime.gateway.api.service.util.ServiceExceptions.NotASubWorkflowException;
+import org.knime.gateway.api.service.GatewayService;
+import org.knime.gateway.api.webui.entity.WorkflowSnapshotEnt;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
-import org.knime.gateway.impl.service.DefaultWorkflowService;
+import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.googlecode.jsonrpc4j.JsonRpcMethod;
 import com.googlecode.jsonrpc4j.JsonRpcService;
 
@@ -81,17 +80,29 @@ import com.googlecode.jsonrpc4j.JsonRpcService;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 @JsonRpcService("InitService")
-public class InitService {
+public class InitService implements GatewayService {
+	private static final InitService INSTANCE = new InitService();
+	
+	private InitService() {
+		// singleton
+	}
+	
+	/**
+	 * @return the singleton instance for this service
+	 */
+	public static InitService getInstance() {
+		return INSTANCE;
+	}
 
-    private Map<String, WorkflowReference> m_registeredWorkflows = new HashMap<>();
+    private Map<String, WorkflowSnapshotEnt> m_registeredWorkflows = new HashMap<>();
 
     @JsonRpcMethod("getWorkflows")
-    public List<WorkflowReference> getOpenWorkflows() {
+    public List<WorkflowSnapshotEnt> getOpenWorkflows() {
 
         IEditorReference[] editorReferences =
             PlatformUI.getWorkbench().getWorkbenchWindows()[0].getPages()[0].getEditorReferences();
 
-        Map<String, WorkflowReference> newRegisteredWorkflows = new HashMap<>();
+        Map<String, WorkflowSnapshotEnt> newRegisteredWorkflows = new HashMap<>();
         for (IEditorReference ref : editorReferences) {
             if (!ref.getId().equals("org.knime.workbench.editor.WorkflowEditor")) {
                 continue;
@@ -131,7 +142,7 @@ public class InitService {
                         throw new RuntimeException(e);
                     }
                 }
-                newRegisteredWorkflows.put(name, new WorkflowReference(name, uuid, wf));
+                newRegisteredWorkflows.put(name, wf);
             } else {
                 newRegisteredWorkflows.put(name, m_registeredWorkflows.get(name));
             }
@@ -153,24 +164,6 @@ public class InitService {
             }
         }
         return null;
-    }
-
-    @JsonAutoDetect(fieldVisibility = Visibility.ANY)
-    @SuppressWarnings("unused")
-    class WorkflowReference {
-
-		private String name;
-
-        private UUID id;
-
-        private WorkflowSnapshotEnt workflow;
-
-        WorkflowReference(final String name, final UUID id, final WorkflowSnapshotEnt wf) {
-            this.name = name;
-            this.id = id;
-            workflow = wf;
-        }
-
     }
 
 }
