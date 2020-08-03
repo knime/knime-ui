@@ -40,7 +40,7 @@ export default {
         },
         trianglePort() {
             let { $shapes: { portSize }, shouldFill } = this;
-                        
+
             let [x1, y1, x2, y2] = [0, -portSize / 2, portSize, portSize / 2];
 
             // adjust size of triangle so that filled and bordered triangle match

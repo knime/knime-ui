@@ -4,7 +4,7 @@ import portShift from '~/util/portShift';
 
 /**
  * A curved line, connecting one node's output with another node's input port.
- * Must be embedded in an <svg> element.
+ * Must be embedded in an `<svg>` element.
  */
 export default {
     props: {
