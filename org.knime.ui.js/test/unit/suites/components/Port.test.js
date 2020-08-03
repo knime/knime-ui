@@ -53,10 +53,10 @@ describe.each([
         });
 
         it('not inactive', () => {
-            expect(wrapper.find('line').exists()).toBe(false);
+            expect(wrapper.find('path').exists()).toBe(false);
         });
 
-        it('renders unoptional (filled)', () => {
+        it('renders mandatory (filled)', () => {
             let port = currentPort();
             let { fill, stroke } = port.attributes();
 
@@ -66,7 +66,7 @@ describe.each([
 
         it('translates to port position (outgoing)', () => {
             let transform = wrapper.find('g').attributes().transform;
-            expect(transform).toBe(`translate(5,10)`);
+            expect(transform).toBe(`translate(5, 10)`);
         });
     });
 
@@ -74,7 +74,7 @@ describe.each([
         propsData.port.inactive = true;
         mount();
 
-        expect(wrapper.findAll('line').length).toBe(2);
+        expect(wrapper.findAll('path').length).toBe(2);
     });
 
     it('renders optional port', () => {
@@ -93,6 +93,6 @@ describe.each([
         mount();
 
         let transform = wrapper.find('g').attributes().transform;
-        expect(transform).toBe(`translate(${5 - $shapes.portSize},10)`); // eslint-disable-line no-magic-numbers
+        expect(transform).toBe(`translate(${5 - $shapes.portSize}, 10)`); // eslint-disable-line no-magic-numbers
     });
 });

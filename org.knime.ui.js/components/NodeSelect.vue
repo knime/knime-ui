@@ -7,6 +7,7 @@ export default {
         /**
          * Offset relative to the top left of the canvas.
          * This must be provided from outside, since this component is not rendered as a child element of the Node.
+         * @example [100, 50] // 100px from the left, 50px from the top
          */
         offset: {
             type: Array,
@@ -36,6 +37,7 @@ export default {
     }
 };
 </script>
+
 <template>
   <g
     :transform="`translate(${offset[0]}, ${offset[1]})`"
@@ -64,7 +66,6 @@ export default {
 </template>
 
 <style scoped>
-
 text {
   font: normal 10px "Roboto Condensed", sans-serif;
 }
@@ -81,5 +82,4 @@ text {
   stroke: silver;
   pointer-events: none;
 }
-
 </style>
