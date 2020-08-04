@@ -15,7 +15,7 @@ const mockNode = ({ x, y, outPorts, inPorts }) => ({
 });
 
 describe('Connector', () => {
-    let propsData, mocks, mount, wrapper, portShiftMock;
+    let propsData, mocks, wrapper, portShiftMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -23,7 +23,6 @@ describe('Connector', () => {
     });
 
     beforeEach(() => {
-        wrapper = null;
         propsData = {
             source: 'root:1',
             dest: 'root:2',
@@ -36,7 +35,7 @@ describe('Connector', () => {
                     workflow: {
                         nodes: {
                             'root:1': mockNode({ x: 0, y: 0, outPorts: [null, null] }),
-                            'root:2': mockNode({ x: 10, y: 10, inPorts: [null, null, null] })
+                            'root:2': mockNode({ x: 12, y: 14, inPorts: [null, null, null] })
                         }
                     }
                 }
@@ -44,26 +43,23 @@ describe('Connector', () => {
         });
         portShiftMock = jest.spyOn(portShift, 'default');
         mocks = { $shapes, $colors, $store };
-        mount = () => { wrapper = shallowMount(Connector, { propsData, mocks }); };
+        wrapper = shallowMount(Connector, { propsData, mocks });
     });
 
 
     describe('render', () => {
-        beforeEach(() => {
-            mount();
-        });
 
         it('uses portShift', () => {
             expect(portShiftMock).toHaveBeenCalledWith(0, 2);
             expect(portShiftMock).toHaveBeenCalledWith(2, 3);
         });
 
-        it('path equals', () => {
-            const expectedPath = 'M36.5,-4.5 C67.91666666666667,-4.5 -30.416666666666664,36.5 1,36.5';
+        it('draws a path', () => {
+            const expectedPath = 'M36.5,-4.5 C68.25,-4.5 -28.75,40.5 3,40.5';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
 
-        it('styles', () => {
+        it('applies styles', () => {
             const { 'stroke-width': strokeWidth } = wrapper.find('path').attributes();
             expect(parseFloat(strokeWidth)).toBe($shapes.connectorWidth);
         });

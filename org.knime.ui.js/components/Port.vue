@@ -3,15 +3,24 @@
 
 export default {
     props: {
+        /**
+         * Port configuration object
+         */
         port: {
             type: Object,
             required: true
         },
-        x: { // x-coordinate of port on the node
+        /**
+         * x coordinate of the port relative to the top left corner of the node
+         */
+        x: {
             type: Number,
             default: 0
         },
-        y: { // y-coordinate of port on the node
+        /**
+         * y coordinate of the port relative to the top left corner of the node
+         */
+        y: {
             type: Number,
             default: 0
         }
@@ -40,18 +49,18 @@ export default {
         },
         trianglePort() {
             let { $shapes: { portSize }, shouldFill } = this;
-                        
-            let [x1, y1, x2, y2] = [0, -portSize / 2, portSize, portSize / 2];
 
-            // adjust size of triangle so that filled and bordered triangle match
+            let [x1, y1, x2, y3] = [0, -portSize / 2, portSize, portSize / 2];
+
+            // adjust size of triangle so that filled and bordered triangle match, and the line width is exactly 1
             if (!shouldFill) {
-                x1 += 0.5;
-                y1 += 0.5;
-                y2 -= 0.5;
-                x2 -= 1;
+                x1 += 1 / 2;
+                y1 += (1 + Math.sqrt(5)) / 4;
+                x2 -= Math.sqrt(5) / 2;
+                y3 -= (1 + Math.sqrt(5)) / 4;
             }
 
-            return `${x1},${y1} ${x2},${0} ${x1},${y2}`;
+            return `${x1},${y1} ${x2},${0} ${x1},${y3}`;
         }
     }
 };
@@ -59,7 +68,7 @@ export default {
 
 <template>
   <g
-    :transform="`translate(${x - (inPort ? $shapes.portSize : 0)},${y})`"
+    :transform="`translate(${x - (inPort ? $shapes.portSize : 0)}, ${y})`"
     class="port"
   >
     <polygon
@@ -77,27 +86,26 @@ export default {
     />
     <rect
       v-else
-      :width="$shapes.portSize"
-      :height="$shapes.portSize"
-      :y="-$shapes.portSize / 2"
+      :width="$shapes.portSize - (shouldFill ? 0 : 1)"
+      :height="$shapes.portSize - (shouldFill ? 0 : 1)"
+      :x="shouldFill ? 0 : 0.5"
+      :y="-$shapes.portSize / 2 + (shouldFill ? 0 : 0.5)"
       :fill="shouldFill ? customPortColor: 'none'"
       :stroke="shouldFill ? 'none' : customPortColor"
     />
-    <line
+    <path
       v-if="port.inactive"
-      stroke-width="1"
-      :stroke="$colors.portColors.inactive"
-      :y1="-$shapes.portSize / 2"
-      :x2="$shapes.portSize"
-      :y2="$shapes.portSize / 2"
+      stroke-width="3"
+      :stroke="$colors.portColors.inactiveOutline"
+      :d="`M0,-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
+           m-${$shapes.portSize},0 l${$shapes.portSize},-${$shapes.portSize}`"
     />
-    <line
+    <path
       v-if="port.inactive"
       stroke-width="1"
       :stroke="$colors.portColors.inactive"
-      :x1="$shapes.portSize"
-      :y1="-$shapes.portSize / 2"
-      :y2="$shapes.portSize / 2"
+      :d="`M0,-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
+           m-${$shapes.portSize},0 l${$shapes.portSize},-${$shapes.portSize}`"
     />
   </g>
 </template>

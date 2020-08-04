@@ -1,5 +1,3 @@
-export default {
-    loadWorkflows: () => {
-        throw new Error('not implemented');
-    }
+export const loadWorkflow = () => {
+    throw new Error('not implemented');
 };

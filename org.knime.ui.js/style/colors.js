@@ -30,7 +30,8 @@ export const portColors = {
     data: '#000',
     variable: 'red',
     other: 'green',
-    inactive: 'red'
+    inactive: 'red',
+    inactiveOutline: 'hsla(0, 100%, 100%, 66%)'
 };
 
 export const connectorColors = {

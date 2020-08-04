@@ -5,6 +5,11 @@ import NodeState from '~/components/NodeState.vue';
 import NodeSelect from '~/components/NodeSelect.vue';
 import portShift from '~/util/portShift';
 
+/**
+ * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
+ * Must be embedded in an `<svg>` element.
+ * Requires the `portal-vue` module.
+ * */
 export default {
     components: {
         Port,
@@ -12,14 +17,32 @@ export default {
         NodeSelect
     },
     props: {
+        /**
+         * Node name displayed above the node
+         */
         name: { type: String, required: true },
+        /**
+         * Node id, unique to the containing workflow
+         */
         nodeID: { type: String, required: true },
-        
+
+        /**
+         * Node type, e.g. "Learner", "Visualizer", "Component"
+         */
         nodeType: { type: String, required: true },
         uIInfo: { type: Object, required: true },
+        /**
+         * Node annotation, displayed below the node
+         */
         nodeAnnotation: { type: Object, required: true },
 
+        /**
+         * Input ports. List of configuration objects passed-through to the `Port` component
+         */
         inPorts: { type: Array, required: true },
+        /**
+         * Output ports. List of configuration objects passed-through to the `Port` component
+         */
         outPorts: { type: Array, required: true }
     },
     data() {
@@ -39,13 +62,13 @@ export default {
         hasDefaultFlowVariablePortConnections() {
             // TODO: increase efficiency with new Gateway-API format NXT-228
             const connections = this.workflow.connections;
-            const incomingConnections = Object.values(connections).filter(connection => connection.dest === this.nodeID);
+            const incomingConnections = Object.values(connections).filter(connector => connector.dest === this.nodeID);
 
-            const incomingFV = incomingConnections.some(connection => connection.destPort === 0);
-            const outgoingFV = Object.values(this.workflow.connections).some(
+            const incomingFlowVars = incomingConnections.some(connection => connection.destPort === 0);
+            const outgoingFlowVars = Object.values(this.workflow.connections).some(
                 connection => connection.source === this.nodeID && connection.sourcePort === 0
             );
-            return [incomingFV, outgoingFV];
+            return [incomingFlowVars, outgoingFlowVars];
         },
         hoverMargin() {
             // margin around the node's square
@@ -56,7 +79,7 @@ export default {
         portShift,
         onLeaveHoverArea(e) {
             // only disable hover state if the mouse leaves the area of the node
-            if (!this.$el.contains(e.relatedTarget)) { // will be true if the mouse moves over an element outside of this Node
+            if (!this.$el.contains(e.relatedTarget)) {
                 this.hover = false;
             }
         }
@@ -66,9 +89,9 @@ export default {
 
 <template>
   <g
-    :transform="`translate(${offset[0]},${offset[1]})`"
+    :transform="`translate(${offset[0]}, ${offset[1]})`"
     @mouseleave="onLeaveHoverArea"
-    @mouseenter="hover=true"
+    @mouseenter="hover = true"
   >
     <text
       class="name"
@@ -81,11 +104,11 @@ export default {
 
     <rect
       class="hover-area"
-      :width="$shapes.nodeSize+hoverMargin[1]+hoverMargin[3]"
-      :height="$shapes.nodeSize+hoverMargin[0]+hoverMargin[2]"
+      :width="$shapes.nodeSize + hoverMargin[1] + hoverMargin[3]"
+      :height="$shapes.nodeSize + hoverMargin[0] + hoverMargin[2]"
       :x="-hoverMargin[1]"
       :y="-hoverMargin[0]"
-      @mouseenter="hover=true"
+      @mouseenter="hover = true"
       @mouseleave="onLeaveHoverArea"
     />
 

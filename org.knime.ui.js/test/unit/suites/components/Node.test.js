@@ -23,6 +23,7 @@ const mockPort = ({ outgoing = false, index }) => ({
     portName: 'Variable Outport',
     type: outgoing ? 'NodeOutPort' : 'NodeInPort'
 });
+
 const mockConnection = ({ outgoing = false, index }) => ({
     source: outgoing ? 'root:1' : 'root:0',
     sourcePort: outgoing ? index : 1,
@@ -31,7 +32,7 @@ const mockConnection = ({ outgoing = false, index }) => ({
 });
 
 describe('Node', () => {
-    let propsData, mocks, mount, wrapper, $store, workflow, portShiftMock;
+    let propsData, mocks, doShallowMount, wrapper, $store, workflow, portShiftMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -49,8 +50,15 @@ describe('Node', () => {
             uIInfo: { bounds: { x: '500', y: '200' } },
             nodeAnnotation: { text: 'ThatsMyNode' },
 
-            inPorts: [mockPort({ index: 0 }), mockPort({ index: 1 })],
-            outPorts: [mockPort({ outgoing: true, index: 0 }), mockPort({ outgoing: true, index: 1 }), mockPort({ outgoing: true, index: 2 })] // eslint-disable-line max-len
+            inPorts: [
+                mockPort({ index: 0 }),
+                mockPort({ index: 1 })
+            ],
+            outPorts: [
+                mockPort({ index: 0, outgoing: true  }),
+                mockPort({ index: 1, outgoing: true  }),
+                mockPort({ index: 2, outgoing: true  })
+            ]
         };
         workflow = {
             nodes: {
@@ -58,8 +66,8 @@ describe('Node', () => {
             },
             connections: {
                 inA: mockConnection({ index: 0 }),
-                outA: mockConnection({ outgoing: true, index: 0 }),
-                outB: mockConnection({ outgoing: true, index: 2 })
+                outA: mockConnection({ index: 0, outgoing: true }),
+                outB: mockConnection({ index: 2, outgoing: true })
             }
         };
         $store = mockVuexStore({
@@ -67,16 +75,20 @@ describe('Node', () => {
         });
         mocks = { $shapes, $colors, $store };
 
-        if (portShiftMock) { portShiftMock.mockRestore(); }
+        if (portShiftMock) {
+            portShiftMock.mockRestore();
+        }
         portShiftMock = jest.spyOn(Node.methods, 'portShift');
 
-        mount = () => { wrapper = shallowMount(Node, { propsData, mocks }); };
+        doShallowMount = () => {
+            wrapper = shallowMount(Node, { propsData, mocks });
+        };
     });
 
 
     describe('renders default', () => {
         beforeEach(() => {
-            mount();
+            doShallowMount();
         });
 
         it('calls portShift', () => {
@@ -109,12 +121,12 @@ describe('Node', () => {
 
         it('renders at right position', () => {
             const transform = wrapper.find('g').attributes().transform;
-            expect(transform).toBe('translate(500,200)');
+            expect(transform).toBe('translate(500, 200)');
         });
 
         it('displays all ports at right position', () => {
             const ports = wrapper.findAllComponents(Port).wrappers;
-            const locations = ports.map(p => p.attributes()).map(at => [at.x, at.y].map(parseFloat));
+            const locations = ports.map(p => p.attributes()).map(({ x, y }) => [Number(x), Number(y)]);
             const portAttrs = ports.map(p => p.props().port.portIndex);
 
             expect(locations).toStrictEqual([
@@ -140,15 +152,16 @@ describe('Node', () => {
 
     });
 
-    it.each(Object.entries($colors.nodeBackgroundColors))('change node category', (category, color) => {
+    const categoryCases = Object.entries($colors.nodeBackgroundColors);
+    it.each(categoryCases)('renders node category "%s" as color "%s"', (category, color) => {
         propsData.nodeType = category;
-        mount();
+        doShallowMount();
         expect(wrapper.find('.bg').attributes().fill).toBe(color);
     });
 
     it('colors unknown category', () => {
         propsData.nodeType = 'doesnt exist';
-        mount();
+        doShallowMount();
         expect(wrapper.find('.bg').attributes().fill).toBe($colors.nodeBackgroundColors.default);
     });
 
@@ -157,7 +170,7 @@ describe('Node', () => {
         beforeEach(() => {
             delete workflow.connections.inA;
             delete workflow.connections.outA;
-            mount();
+            doShallowMount();
         });
 
         it('hides those ports', () => {

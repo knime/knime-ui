@@ -1,10 +1,21 @@
 <script>
+/**
+ * Selection frame around a node.
+ */
 export default {
     props: {
+        /**
+         * Offset relative to the top left of the canvas.
+         * This must be provided from outside, since this component is not rendered as a child element of the Node.
+         * @example [100, 50] // 100px from the left, 50px from the top
+         */
         offset: {
             type: Array,
             default: () => [0, 0]
         },
+        /**
+         * Node id to be displayed
+         */
         nodeID: {
             type: String,
             default: 'NODE ID MISSING'
@@ -26,13 +37,14 @@ export default {
     }
 };
 </script>
+
 <template>
   <g
-    :transform="`translate(${offset[0]},${offset[1]})`"
-    :class="['selection', {selected}]"
+    :transform="`translate(${offset[0]}, ${offset[1]})`"
+    :class="['selection']"
   >
     <rect
-      :y="-padding[0]-$shapes.nodeSelectionBarHeight"
+      :y="-padding[0] - $shapes.nodeSelectionBarHeight"
       :x="-padding[1]"
       :width="padding[1] + $shapes.nodeSize + padding[3]"
       :height="padding[0] + $shapes.nodeSize + padding[2] + $shapes.nodeSelectionBarHeight"
@@ -54,7 +66,6 @@ export default {
 </template>
 
 <style scoped>
-
 text {
   font: normal 10px "Roboto Condensed", sans-serif;
 }
@@ -71,5 +82,4 @@ text {
   stroke: silver;
   pointer-events: none;
 }
-
 </style>
