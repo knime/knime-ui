@@ -1,6 +1,15 @@
 <script>
+
+const toHexColor = color => color.toString(0x10).padStart(7, '#000000'); // eslint-disable-line no-magic-numbers
+
+/**
+ * A workflow annotation, a rectangular box containing text.
+ */
 export default {
     props: {
+        /**
+         * @values "LEFT", "CENTER", "RIGHT"
+         */
         textAlignment: {
             type: String,
             default: 'LEFT'
@@ -15,16 +24,17 @@ export default {
         },
         borderColor: {
             type: Number,
-            default: 16766976 // knime-yellow
+            default: 0xffd800 // knime-yellow
         },
         backgroundColor: {
             type: Number,
-            default: 16777215 // white
+            default: 0xffffff // white
         },
         bounds: {
             type: Object,
             required: true,
-            validator: ({ x, y, height, width }) => x && y && height && width
+            validator: ({ x, y, height, width }) => typeof x === 'number' && typeof y === 'number' &&
+                typeof height === 'number' && typeof width === 'number'
         },
         text: {
             type: String,
@@ -33,10 +43,10 @@ export default {
     },
     computed: {
         borderColorHex() {
-            return `#${this.borderColor.toString(16).padStart(6, '0')}`; // eslint-disable-line no-magic-numbers
+            return toHexColor(this.borderColor);
         },
         backgroundColorHex() {
-            return `#${this.backgroundColor.toString(16).padStart(6, '0')}`; // eslint-disable-line no-magic-numbers
+            return toHexColor(this.backgroundColor);
         },
 
         style() {

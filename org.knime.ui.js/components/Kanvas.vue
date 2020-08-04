@@ -25,11 +25,11 @@ export default {
     <h3 v-if="workflow">{{ `${workflow.name} - ${nrOfNodes} Nodes` }}</h3>
     <h3 v-else>Loading…</h3>
 
-    <!-- TODO: adjust size of Kanvas -->
+    <!-- TODO: adjust size of Kanvas NXT-243 -->
     <Annotation
-      v-for="(a, id) of workflow.workflowAnnotations"
+      v-for="(annotation, id) of workflow.workflowAnnotations"
       :key="`annotation-${id}`"
-      v-bind="a"
+      v-bind="annotation"
     />
     <svg
       :width="1000"
@@ -37,7 +37,7 @@ export default {
     >
       <Node
         v-for="node in workflow.nodes"
-        :key="`node-${workflow.id}${node.nodeID}`"
+        :key="`node-${workflow.id}-${node.nodeID}`"
         v-bind="node"
       />
       <Connector
