@@ -41,7 +41,7 @@ export default {
 <template>
   <g
     :transform="`translate(${offset[0]}, ${offset[1]})`"
-    :class="['selection']"
+    class="selection"
   >
     <rect
       :y="-padding[0] - $shapes.nodeSelectionBarHeight"

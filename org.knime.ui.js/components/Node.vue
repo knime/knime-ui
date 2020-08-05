@@ -24,17 +24,19 @@ export default {
         /**
          * Node id, unique to the containing workflow
          */
-        nodeID: { type: String, required: true },
+        id: { type: String, required: true },
 
         /**
          * Node type, e.g. "Learner", "Visualizer", "Component"
+         * Is undefined for MetaNodes
          */
-        nodeType: { type: String, required: true },
-        uIInfo: { type: Object, required: true },
+        type: { type: String, required: false },
+
+        position: { type: Object, required: true },
         /**
          * Node annotation, displayed below the node
          */
-        nodeAnnotation: { type: Object, required: true },
+        annotation: { type: Object, required: false },
 
         /**
          * Input ports. List of configuration objects passed-through to the `Port` component
@@ -46,7 +48,7 @@ export default {
         outPorts: { type: Array, required: true }
     },
     data() {
-        let { x, y } = this.uIInfo.bounds;
+        let { x, y } = this.position;
         return {
             offset: [x, y],
             hover: false
@@ -57,18 +59,13 @@ export default {
             'workflow'
         ]),
         background() {
-            return this.$colors.nodeBackgroundColors[this.nodeType] || this.$colors.nodeBackgroundColors.default;
+            return this.$colors.nodeBackgroundColors[this.type] || this.$colors.nodeBackgroundColors.default;
         },
         hasDefaultFlowVariablePortConnections() {
-            // TODO: increase efficiency with new Gateway-API format NXT-228
-            const connections = this.workflow.connections;
-            const incomingConnections = Object.values(connections).filter(connector => connector.dest === this.nodeID);
-
-            const incomingFlowVars = incomingConnections.some(connection => connection.destPort === 0);
-            const outgoingFlowVars = Object.values(this.workflow.connections).some(
-                connection => connection.source === this.nodeID && connection.sourcePort === 0
-            );
-            return [incomingFlowVars, outgoingFlowVars];
+            const incoming = this.inPorts[0] && this.inPorts[0].connectedVia.length;
+            const outgoing = this.outPorts[0] && this.outPorts[0].connectedVia.length;
+            
+            return [incoming, outgoing];
         },
         hoverMargin() {
             // margin around the node's square
@@ -122,31 +119,32 @@ export default {
 
     <template v-for="port of inPorts">
       <Port
-        v-if="port.portIndex !== 0 || hasDefaultFlowVariablePortConnections[0] || hover"
-        :key="`inport-${port.portIndex}`"
+        v-if="port.index !== 0 || hasDefaultFlowVariablePortConnections[0] || hover"
+        :key="`inport-${port.index}`"
         :port="port"
-        :x="portShift(port.portIndex, inPorts.length)[0]"
-        :y="portShift(port.portIndex, inPorts.length)[1]"
+        :x="portShift(port.index, inPorts.length)[0] - $shapes.portSize"
+        :y="portShift(port.index, inPorts.length)[1]"
       />
     </template>
 
     <template v-for="port of outPorts">
       <Port
-        v-if="port.portIndex !== 0 || hasDefaultFlowVariablePortConnections[1] || hover"
-        :key="`outport-${port.portIndex}`"
+        v-if="port.index !== 0 || hasDefaultFlowVariablePortConnections[1] || hover"
+        :key="`outport-${port.index}`"
         :port="port"
-        :x="$shapes.nodeSize - portShift(port.portIndex, outPorts.length)[0]"
-        :y="portShift(port.portIndex, outPorts.length)[1]"
+        :x="$shapes.nodeSize - portShift(port.index, outPorts.length)[0]"
+        :y="portShift(port.index, outPorts.length)[1]"
       />
     </template>
 
     <text
+      v-if="annotation"
       class="annotation"
-      :y="$shapes.nodeAnnotationMargin"
+      :y="$shapes.nodeSize + $shapes.nodeAnnotationMargin"
       :x="$shapes.nodeSize / 2"
       text-anchor="middle"
     >
-      {{ nodeAnnotation.text }}
+      {{ annotation.text }}
     </text>
 
     <NodeState />
@@ -157,7 +155,7 @@ export default {
     >
       <NodeSelect
         :offset="offset"
-        :node-i-d="nodeID"
+        :node-i-d="id"
       />
     </portal>
   </g>

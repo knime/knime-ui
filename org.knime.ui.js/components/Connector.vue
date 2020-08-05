@@ -11,11 +11,11 @@ export default {
         /**
          * Node ID of the connector's source node
         */
-        source: { type: String, required: true },
+        sourceNode: { type: String, required: true },
         /**
          * Node ID of the connector's target node
         */
-        dest: { type: String, required: true },
+        destNode: { type: String, required: true },
         /**
          * Index of the source node's output port that this connector is attached to
         */
@@ -27,23 +27,23 @@ export default {
     },
     computed: {
         ...mapState('workflows', ['workflow']),
-        sourceNode() {
-            return this.workflow.nodes[this.source];
+        source() {
+            return this.workflow.nodes[this.sourceNode];
         },
-        targetNode() {
-            return this.workflow.nodes[this.dest];
+        target() {
+            return this.workflow.nodes[this.destNode];
         },
         start() {
-            const [dx, dy] = portShift(this.sourcePort, this.sourceNode.outPorts.length);
-            let { x, y } = this.sourceNode.uIInfo.bounds;
+            const [dx, dy] = portShift(this.sourcePort, this.source.outPorts.length);
+            let { x, y } = this.source.position;
             return [
                 x + this.$shapes.nodeSize + this.$shapes.portSize - dx,
                 y + dy
             ];
         },
         end() {
-            const [dx, dy] = portShift(this.destPort, this.targetNode.inPorts.length);
-            let { x, y } = this.targetNode.uIInfo.bounds;
+            const [dx, dy] = portShift(this.destPort, this.target.inPorts.length);
+            let { x, y } = this.target.position;
             return [
                 x - this.$shapes.portSize + dx,
                 y + dy

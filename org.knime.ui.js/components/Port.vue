@@ -26,22 +26,8 @@ export default {
         }
     },
     computed: {
-        inPort() {
-            return this.port.type === 'NodeInPort';
-        },
-        portType() {
-            // TODO: port type instead of portObectClassName will be delivered by NXT-225
-            switch (this.port.portType.portObjectClassName) {
-            case 'org.knime.core.node.BufferedDataTable':
-                return 'data';
-            case 'org.knime.core.node.port.flowvariable.FlowVariablePortObject':
-                return 'variable';
-            default:
-                return 'other';
-            }
-        },
         shouldFill() {
-            return !this.port.portType.optional;
+            return !this.port.optional;
         },
         customPortColor() {
             // TODO: adjust port color NXT-219
@@ -68,17 +54,17 @@ export default {
 
 <template>
   <g
-    :transform="`translate(${x - (inPort ? $shapes.portSize : 0)}, ${y})`"
+    :transform="`translate(${x}, ${y})`"
     class="port"
   >
     <polygon
-      v-if="portType === 'data'"
+      v-if="port.type === 'data'"
       :points="trianglePort"
       :fill="shouldFill ? $colors.portColors.data : 'none'"
       :stroke="shouldFill ? 'none': $colors.portColors.data"
     />
     <circle
-      v-else-if="portType === 'variable'"
+      v-else-if="port.type === 'flowVariable'"
       :r="$shapes.portSize / 2 - (shouldFill ? 0 : 0.5)"
       :cx="$shapes.portSize / 2"
       :fill="shouldFill ? $colors.portColors.variable : 'none'"

@@ -8,27 +8,27 @@ const toHexColor = color => color.toString(0x10).padStart(7, '#000000'); // esli
 export default {
     props: {
         /**
-         * @values "LEFT", "CENTER", "RIGHT"
+         * @values "left", "center", "right"
          */
-        textAlignment: {
+        textAlign: {
             type: String,
-            default: 'LEFT'
+            default: 'left'
         },
         defaultFontSize: {
             type: Number,
             default: 12
         },
-        borderSize: {
+        borderWidth: {
             type: Number,
             default: 2
         },
         borderColor: {
-            type: Number,
-            default: 0xffd800 // knime-yellow
+            type: String,
+            default: '#ffd800' // knime-yellow
         },
         backgroundColor: {
-            type: Number,
-            default: 0xffffff // white
+            type: String,
+            default: '#fff' // white
         },
         bounds: {
             type: Object,
@@ -42,26 +42,19 @@ export default {
         }
     },
     computed: {
-        borderColorHex() {
-            return toHexColor(this.borderColor);
-        },
-        backgroundColorHex() {
-            return toHexColor(this.backgroundColor);
-        },
-
         style() {
             const { x, y, height, width } = this.bounds;
 
             return {
                 fontSize: `${this.defaultFontSize}px`,
-                border: `${this.borderSize}px solid ${this.borderColorHex}`,
-                background: this.backgroundColorHex,
+                border: `${this.borderWidth}px solid ${this.borderColor}`,
+                background: this.backgroundColor,
                 width: `${width}px`,
                 height: `${height}px`,
                 left: `${x}px`,
                 top: `${y}px`,
                 zIndex: -1,
-                textAlign: this.textAlignment.toLowerCase()
+                textAlign: this.textAlign
             };
         }
     }

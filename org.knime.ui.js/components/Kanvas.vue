@@ -13,8 +13,7 @@ export default {
     computed: {
         ...mapState('workflows', ['workflow']),
         nrOfNodes() {
-            const nodes = Object.values(this.workflow.nodes || {});
-            return nodes.length;
+            return Object.keys(this.workflow.nodes).length;
         }
     }
 };
@@ -22,8 +21,7 @@ export default {
 
 <template>
   <div>
-    <h3 v-if="workflow">{{ `${workflow.name} - ${nrOfNodes} Nodes` }}</h3>
-    <h3 v-else>Loading…</h3>
+    <h3>{{ `${workflow.name} - ${nrOfNodes} Nodes` }}</h3>
 
     <!-- TODO: adjust size of Kanvas NXT-243 -->
     <Annotation
@@ -32,12 +30,12 @@ export default {
       v-bind="annotation"
     />
     <svg
-      :width="1000"
-      :height="700"
+      :width="1300"
+      :height="900"
     >
       <Node
         v-for="node in workflow.nodes"
-        :key="`node-${workflow.id}-${node.nodeID}`"
+        :key="`node-${workflow.id}-${node.id}`"
         v-bind="node"
       />
       <Connector
