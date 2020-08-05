@@ -58,7 +58,7 @@ export default {
     class="port"
   >
     <polygon
-      v-if="port.type === 'data'"
+      v-if="port.type === 'table'"
       :points="trianglePort"
       :fill="shouldFill ? $colors.portColors.data : 'none'"
       :stroke="shouldFill ? 'none': $colors.portColors.data"

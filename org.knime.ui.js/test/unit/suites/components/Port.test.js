@@ -5,10 +5,10 @@ import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
 describe.each([
-    ['org.knime.core.node.port.flowvariable.FlowVariablePortObject', 'circle', $colors.portColors.variable],
-    ['org.knime.core.node.BufferedDataTable', 'polygon', $colors.portColors.data],
+    ['flowVariable', 'circle', $colors.portColors.variable],
+    ['table', 'polygon', $colors.portColors.data],
     ['other', 'rect', 'grey']
-])('Port (%s)', (portObjectClassName, portTag, portColor) => {
+])('Port (%s)', (portDataType, portTag, portColor) => {
     let propsData, mocks, mount, wrapper;
 
     const currentPort = () => {
@@ -26,17 +26,11 @@ describe.each([
         propsData = {
             x: 5,
             y: 10,
-            inPort: false,
             port: {
-                summary: 'Variables connection',
+                optional: false,
                 inactive: false,
-                portIndex: 0,
-                portType: {
-                    portObjectClassName,
-                    optional: false
-                },
-                portName: 'Variable Outport',
-                type: 'NodeOutPort'
+                index: 0,
+                type: portDataType
             }
         };
         mocks = { $shapes, $colors };
@@ -78,7 +72,7 @@ describe.each([
     });
 
     it('renders optional port', () => {
-        propsData.port.portType.optional = true;
+        propsData.port.optional = true;
         mount();
 
         let port = currentPort();
@@ -86,13 +80,5 @@ describe.each([
 
         expect(fill).toBe('none');
         expect(stroke).toBe(portColor);
-    });
-
-    it('switches side', () => {
-        propsData.port.type = 'NodeInPort';
-        mount();
-
-        let transform = wrapper.find('g').attributes().transform;
-        expect(transform).toBe(`translate(${5 - $shapes.portSize}, 10)`); // eslint-disable-line no-magic-numbers
     });
 });
