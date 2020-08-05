@@ -12,23 +12,19 @@ import Port from '~/components/Port.vue';
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
-const mockPort = ({ outgoing = false, index }) => ({
-    summary: 'Variables connection',
+const mockPort = ({ index, connectedVia = [] }) => ({
     inactive: false,
-    portIndex: index,
-    portType: {
-        portObjectClassName: 'triangle',
-        optional: false
-    },
-    portName: 'Variable Outport',
-    type: outgoing ? 'NodeOutPort' : 'NodeInPort'
+    optional: false,
+    index,
+    type: 'other',
+    connectedVia
 });
 
 const mockConnection = ({ outgoing = false, index }) => ({
-    source: outgoing ? 'root:1' : 'root:0',
+    sourceNode: outgoing ? 'root:1' : 'root:0',
     sourcePort: outgoing ? index : 1,
     destPort: outgoing ? 2 : index,
-    dest: outgoing ? 'root:2' : 'root:1'
+    destNode: outgoing ? 'root:2' : 'root:1'
 });
 
 describe('Node', () => {
@@ -43,21 +39,21 @@ describe('Node', () => {
         wrapper = null;
         propsData = {
             name: 'SuperduperNode',
-            nodeID: 'root:1',
+            id: 'root:1',
 
-            nodeType: 'Source',
+            type: 'Source',
 
-            uIInfo: { bounds: { x: '500', y: '200' } },
-            nodeAnnotation: { text: 'ThatsMyNode' },
+            position: { x: '500', y: '200' },
+            annotation: { text: 'ThatsMyNode' },
 
             inPorts: [
-                mockPort({ index: 0 }),
+                mockPort({ index: 0, connectedVia: ['inA'] }),
                 mockPort({ index: 1 })
             ],
             outPorts: [
-                mockPort({ index: 0, outgoing: true  }),
-                mockPort({ index: 1, outgoing: true  }),
-                mockPort({ index: 2, outgoing: true  })
+                mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] }),
+                mockPort({ index: 1, outgoing: true }),
+                mockPort({ index: 2, outgoing: true, connectedVia: ['outB'] })
             ]
         };
         workflow = {
@@ -127,12 +123,12 @@ describe('Node', () => {
         it('displays all ports at right position', () => {
             const ports = wrapper.findAllComponents(Port).wrappers;
             const locations = ports.map(p => p.attributes()).map(({ x, y }) => [Number(x), Number(y)]);
-            const portAttrs = ports.map(p => p.props().port.portIndex);
+            const portAttrs = ports.map(p => p.props().port.index);
 
             expect(locations).toStrictEqual([
-                [4.5, -4.5],
-                [0, 16],
-                [27.5, -4.5],
+                [-4.5, -4.5], // left flowVariablePort (index 0)
+                [-9, 16],     // left side port (index 1)
+                [27.5, -4.5], // right flowVariablePort (index 0)
                 [32, 5.5],
                 [32, 26.5]
             ]);
@@ -152,15 +148,15 @@ describe('Node', () => {
 
     });
 
-    const categoryCases = Object.entries($colors.nodeBackgroundColors);
-    it.each(categoryCases)('renders node category "%s" as color "%s"', (category, color) => {
-        propsData.nodeType = category;
+    const nodeTypeCases = Object.entries($colors.nodeBackgroundColors);
+    it.each(nodeTypeCases)('renders node category "%s" as color "%s"', (type, color) => {
+        propsData.type = type;
         doShallowMount();
         expect(wrapper.find('.bg').attributes().fill).toBe(color);
     });
 
-    it('colors unknown category', () => {
-        propsData.nodeType = 'doesnt exist';
+    it('colors unknown node type', () => {
+        propsData.type = 'doesnt exist';
         doShallowMount();
         expect(wrapper.find('.bg').attributes().fill).toBe($colors.nodeBackgroundColors.default);
     });
@@ -168,19 +164,23 @@ describe('Node', () => {
     describe('unconnected default-flow-variable-ports', () => {
         let ports, locations;
         beforeEach(() => {
-            delete workflow.connections.inA;
-            delete workflow.connections.outA;
+            propsData.inPorts[0].connectedVia = [];
+            propsData.outPorts[0].connectedVia = [];
             doShallowMount();
         });
 
         it('hides those ports', () => {
             ports = wrapper.findAllComponents(Port).wrappers;
-            locations = ports.map(p => p.attributes()).map(at => [at.x, at.y].map(parseFloat));
+            const locations = ports.map(p => p.attributes()).map(({ x, y }) => [Number(x), Number(y)]);
+            const portAttrs = ports.map(p => p.props().port.index);
+
             expect(locations).toStrictEqual([
-                [0, 16],
+                [-9, 16],
                 [32, 5.5],
                 [32, 26.5]
             ]);
+
+            expect(portAttrs).toStrictEqual([1, 1, 2]);
         });
 
         it('shows those ports on hover', async () => {
@@ -188,10 +188,10 @@ describe('Node', () => {
             await Vue.nextTick();
 
             ports = wrapper.findAllComponents(Port).wrappers;
-            locations = ports.map(p => p.attributes()).map(at => [at.x, at.y].map(parseFloat));
+            const locations = ports.map(p => p.attributes()).map(({ x, y }) => [Number(x), Number(y)]);
             expect(locations).toStrictEqual([
-                [4.5, -4.5],
-                [0, 16],
+                [-4.5, -4.5],
+                [-9, 16],
                 [27.5, -4.5],
                 [32, 5.5],
                 [32, 26.5]
