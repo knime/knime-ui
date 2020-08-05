@@ -47,7 +47,8 @@ export default {
 
             return {
                 fontSize: `${this.defaultFontSize}px`,
-                border: `${this.borderWidth}px solid ${this.borderColor}`,
+                border: `${this.borderWidth}px solid`,
+                borderColor: this.borderColor,
                 background: this.backgroundColor,
                 width: `${width}px`,
                 height: `${height}px`,

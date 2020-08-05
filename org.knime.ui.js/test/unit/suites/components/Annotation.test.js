@@ -8,11 +8,11 @@ describe('Workflow Annotation', () => {
     beforeEach(() => {
         wrapper = null;
         propsData = {
-            textAlignment: 'RIGHT',
+            textAlign: 'right',
             defaultFontSize: 10,
-            borderSize: 4,
-            borderColor: 0,
-            backgroundColor: 0,
+            borderWidth: 4,
+            borderColor: '#000',
+            backgroundColor: '#000',
             bounds: { x: 1, y: 2, width: 100, height: 50 },
             text: 'hallo'
         };
@@ -28,7 +28,8 @@ describe('Workflow Annotation', () => {
         it('styles', () => {
             expect(wrapper.find('div').attributes().style).toBe(
                 'font-size: 10px; ' +
-                'border: 4px solid #000000; ' +
+                'border: 4px solid; ' +
+                'border-color: #000; ' +
                 'background: rgb(0, 0, 0); ' +
                 'width: 100px; ' +
                 'height: 50px; ' +
