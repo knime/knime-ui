@@ -9,7 +9,6 @@ import * as $colors from '~/style/colors';
 import * as portShift from '~/util/portShift';
 
 const mockNode = ({ x, y, outPorts, inPorts }) => ({
-    uIInfo: { bounds: { x, y } },
     inPorts,
     outPorts
 });
@@ -24,8 +23,8 @@ describe('Connector', () => {
 
     beforeEach(() => {
         propsData = {
-            source: 'root:1',
-            dest: 'root:2',
+            sourceNode: 'root:1',
+            destNode: 'root:2',
             sourcePort: 0,
             destPort: 2
         };
@@ -34,8 +33,8 @@ describe('Connector', () => {
                 state: {
                     workflow: {
                         nodes: {
-                            'root:1': mockNode({ x: 0, y: 0, outPorts: [null, null] }),
-                            'root:2': mockNode({ x: 12, y: 14, inPorts: [null, null, null] })
+                            'root:1': { position: { x: 0, y: 0 }, outPorts: [null, null] },
+                            'root:2': { position: { x: 12, y: 14 }, inPorts: [null, null, null] }
                         }
                     }
                 }

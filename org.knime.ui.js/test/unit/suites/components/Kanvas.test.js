@@ -7,18 +7,18 @@ import Kanvas from '~/components/Kanvas.vue';
 import Node from '~/components/Node';
 import Connector from '~/components/Connector.vue';
 
-const mockNode = ({ nodeID }) => ({
+const mockNode = ({ id }) => ({
     name: '',
-    nodeID,
-    uIInfo: { bounds: { x: 0, y: 0 } },
+    id,
+    position: { x: 0, y: 0 },
     inPorts: [],
     outPorts: [],
-    nodeType: '',
-    nodeAnnotation: { text: '' }
+    type: '',
+    annotation: { text: '' }
 });
 const mockConnector = ({ nr }) => ({
-    source: '',
-    dest: '',
+    sourceNode: '',
+    destNode: '',
     sourcePort: nr,
     destPort: 0
 });
@@ -37,9 +37,9 @@ describe('Kanvas', () => {
         workflow = {
             name: 'wf1',
             nodes: {
-                'root:0': mockNode({ nodeID: 'root:0' }),
-                'root:1': mockNode({ nodeID: 'root:1' }),
-                'root:2': mockNode({ nodeID: 'root:2' })
+                'root:0': mockNode({ id: 'root:0' }),
+                'root:1': mockNode({ id: 'root:1' }),
+                'root:2': mockNode({ id: 'root:2' })
             },
             connections: {
                 inA: mockConnector({ nr: 0 }),
