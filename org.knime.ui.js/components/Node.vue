@@ -32,7 +32,11 @@ export default {
          */
         type: { type: String, default: null },
 
-        position: { type: Object, required: true },
+        position: {
+            type: Object,
+            required: true,
+            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
+        },
         /**
          * Node annotation, displayed below the node
          */
@@ -61,12 +65,6 @@ export default {
         background() {
             return this.$colors.nodeBackgroundColors[this.type] || this.$colors.nodeBackgroundColors.default;
         },
-        hasDefaultFlowVariablePortConnections() {
-            const incoming = this.inPorts[0] && this.inPorts[0].connectedVia.length;
-            const outgoing = this.outPorts[0] && this.outPorts[0].connectedVia.length;
-
-            return [incoming, outgoing];
-        },
         hoverMargin() {
             // margin around the node's square
             return [37, 10, 8, 10]; // eslint-disable-line no-magic-numbers
@@ -79,6 +77,10 @@ export default {
             if (!this.$el.contains(e.relatedTarget)) {
                 this.hover = false;
             }
+        },
+        // default flow variable input ports (Mickey Mouse ears) are only shown if connected, or on hover
+        showPort(port) {
+            return port.index !== 0 || port.connectedVia.length || this.hover;
         }
     }
 };
@@ -119,20 +121,20 @@ export default {
 
     <template v-for="port of inPorts">
       <Port
-        v-if="port.index !== 0 || hasDefaultFlowVariablePortConnections[0] || hover"
+        v-if="showPort(port)"
         :key="`inport-${port.index}`"
         :port="port"
-        :x="portShift(port.index, inPorts.length)[0] - $shapes.portSize"
+        :x="portShift(port.index, inPorts.length)[0]"
         :y="portShift(port.index, inPorts.length)[1]"
       />
     </template>
 
     <template v-for="port of outPorts">
       <Port
-        v-if="port.index !== 0 || hasDefaultFlowVariablePortConnections[1] || hover"
+        v-if="showPort(port)"
         :key="`outport-${port.index}`"
         :port="port"
-        :x="$shapes.nodeSize - portShift(port.index, outPorts.length)[0]"
+        :x="portShift(port.index, outPorts.length, true)[0]"
         :y="portShift(port.index, outPorts.length)[1]"
       />
     </template>

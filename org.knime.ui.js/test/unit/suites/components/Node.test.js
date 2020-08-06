@@ -43,7 +43,7 @@ describe('Node', () => {
 
             type: 'Source',
 
-            position: { x: '500', y: '200' },
+            position: { x: 500, y: 200 },
             annotation: { text: 'ThatsMyNode' },
 
             inPorts: [
@@ -126,11 +126,11 @@ describe('Node', () => {
             const portAttrs = ports.map(p => p.props().port.index);
 
             expect(locations).toStrictEqual([
-                [-4.5, -4.5], // left flowVariablePort (index 0)
-                [-9, 16],     // left side port (index 1)
-                [27.5, -4.5], // right flowVariablePort (index 0)
-                [32, 5.5],
-                [32, 26.5]
+                [0, -4.5], // left flowVariablePort (index 0)
+                [-4.5, 16],     // left side port (index 1)
+                [32, -4.5], // right flowVariablePort (index 0)
+                [36.5, 5.5],
+                [36.5, 26.5]
             ]);
 
             expect(portAttrs).toStrictEqual([0, 1, 0, 1, 2]);
@@ -176,9 +176,9 @@ describe('Node', () => {
             const portAttrs = ports.map(p => p.props().port.index);
 
             expect(locations).toStrictEqual([
-                [-9, 16],
-                [32, 5.5],
-                [32, 26.5]
+                [-4.5, 16],
+                [36.5, 5.5],
+                [36.5, 26.5]
             ]);
 
             expect(portAttrs).toStrictEqual([1, 1, 2]);
@@ -191,11 +191,11 @@ describe('Node', () => {
             ports = wrapper.findAllComponents(Port).wrappers;
             const locations = ports.map(p => p.attributes()).map(({ x, y }) => [Number(x), Number(y)]);
             expect(locations).toStrictEqual([
-                [-4.5, -4.5],
-                [-9, 16],
-                [27.5, -4.5],
-                [32, 5.5],
-                [32, 26.5]
+                [0, -4.5],
+                [-4.5, 16],
+                [32, -4.5],
+                [36.5, 5.5],
+                [36.5, 26.5]
             ]);
         });
     });

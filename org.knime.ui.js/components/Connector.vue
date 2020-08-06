@@ -34,10 +34,10 @@ export default {
             return this.workflow.nodes[this.destNode];
         },
         start() {
-            const [dx, dy] = portShift(this.sourcePort, this.source.outPorts.length);
+            const [dx, dy] = portShift(this.sourcePort, this.source.outPorts.length, true);
             let { x, y } = this.source.position;
             return [
-                x + this.$shapes.nodeSize + this.$shapes.portSize - dx,
+                x + dx + this.$shapes.portSize / 2,
                 y + dy
             ];
         },
@@ -45,7 +45,7 @@ export default {
             const [dx, dy] = portShift(this.destPort, this.target.inPorts.length);
             let { x, y } = this.target.position;
             return [
-                x - this.$shapes.portSize + dx,
+                x + dx - this.$shapes.portSize / 2,
                 y + dy
             ];
         },

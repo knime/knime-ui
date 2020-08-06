@@ -8,17 +8,18 @@ export default {
          */
         port: {
             type: Object,
-            required: true
+            required: true,
+            validator: port => typeof port.inactive === 'boolean' && typeof port.type === 'string'
         },
         /**
-         * x coordinate of the port relative to the top left corner of the node
+         * x coordinate of the port's center relative to the top left corner of the node
          */
         x: {
             type: Number,
             default: 0
         },
         /**
-         * y coordinate of the port relative to the top left corner of the node
+         * y coordinate of the port's center relative to the top left corner of the node
          */
         y: {
             type: Number,
@@ -36,7 +37,7 @@ export default {
         trianglePort() {
             let { $shapes: { portSize }, shouldFill } = this;
 
-            let [x1, y1, x2, y3] = [0, -portSize / 2, portSize, portSize / 2];
+            let [x1, y1, x2, y3] = [-portSize / 2, -portSize / 2, portSize / 2, portSize / 2];
 
             // adjust size of triangle so that filled and bordered triangle match, and the line width is exactly 1
             if (!shouldFill) {
@@ -66,7 +67,6 @@ export default {
     <circle
       v-else-if="port.type === 'flowVariable'"
       :r="$shapes.portSize / 2 - (shouldFill ? 0 : 0.5)"
-      :cx="$shapes.portSize / 2"
       :fill="shouldFill ? $colors.portColors.variable : 'none'"
       :stroke="shouldFill ? 'none': $colors.portColors.variable"
     />
@@ -74,7 +74,7 @@ export default {
       v-else
       :width="$shapes.portSize - (shouldFill ? 0 : 1)"
       :height="$shapes.portSize - (shouldFill ? 0 : 1)"
-      :x="shouldFill ? 0 : 0.5"
+      :x="-$shapes.portSize / 2 + (shouldFill ? 0 : 0.5)"
       :y="-$shapes.portSize / 2 + (shouldFill ? 0 : 0.5)"
       :fill="shouldFill ? customPortColor: 'none'"
       :stroke="shouldFill ? 'none' : customPortColor"
@@ -83,14 +83,14 @@ export default {
       v-if="port.inactive"
       stroke-width="3"
       :stroke="$colors.portColors.inactiveOutline"
-      :d="`M0,-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
+      :d="`M-${$shapes.portSize / 2},-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
            m-${$shapes.portSize},0 l${$shapes.portSize},-${$shapes.portSize}`"
     />
     <path
       v-if="port.inactive"
       stroke-width="1"
       :stroke="$colors.portColors.inactive"
-      :d="`M0,-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
+      :d="`M-${$shapes.portSize / 2},-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
            m-${$shapes.portSize},0 l${$shapes.portSize},-${$shapes.portSize}`"
     />
   </g>

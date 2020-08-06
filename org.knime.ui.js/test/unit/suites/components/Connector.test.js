@@ -8,6 +8,10 @@ import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 import * as portShift from '~/util/portShift';
 
+const portMock = {
+    connectedVia: []
+};
+
 describe('Connector', () => {
     let propsData, mocks, wrapper, portShiftMock;
 
@@ -28,8 +32,8 @@ describe('Connector', () => {
                 state: {
                     workflow: {
                         nodes: {
-                            'root:1': { position: { x: 0, y: 0 }, outPorts: [null, null] },
-                            'root:2': { position: { x: 12, y: 14 }, inPorts: [null, null, null] }
+                            'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
+                            'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
                         }
                     }
                 }
@@ -44,7 +48,7 @@ describe('Connector', () => {
     describe('render', () => {
 
         it('uses portShift', () => {
-            expect(portShiftMock).toHaveBeenCalledWith(0, 2);
+            expect(portShiftMock).toHaveBeenCalledWith(0, 2, true);
             expect(portShiftMock).toHaveBeenCalledWith(2, 3);
         });
 
