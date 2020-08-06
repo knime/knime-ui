@@ -100,5 +100,14 @@ export default {
 .port {
   cursor: crosshair;
   pointer-events: bounding-box; /* SVG 2 bounding-box: already works in chromium, defaults to auto in firefox */
+
+  & > * {
+    transition: transform 0.1s linear;
+  }
+
+  &:hover > * {
+    transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
+    transform: scale(1.15);
+  }
 }
 </style>
