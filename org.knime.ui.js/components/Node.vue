@@ -21,6 +21,7 @@ export default {
          * Node name displayed above the node
          */
         name: { type: String, required: true },
+
         /**
          * Node id, unique to the containing workflow
          */
@@ -33,6 +34,7 @@ export default {
         type: { type: String, required: false },
 
         position: { type: Object, required: true },
+        
         /**
          * Node annotation, displayed below the node
          */
@@ -48,9 +50,7 @@ export default {
         outPorts: { type: Array, required: true }
     },
     data() {
-        let { x, y } = this.position;
         return {
-            offset: [x, y],
             hover: false
         };
     },
@@ -86,7 +86,7 @@ export default {
 
 <template>
   <g
-    :transform="`translate(${offset[0]}, ${offset[1]})`"
+    :transform="`translate(${position.x}, ${position.y})`"
     @mouseleave="onLeaveHoverArea"
     @mouseenter="hover = true"
   >
@@ -154,8 +154,9 @@ export default {
       to="node-select"
     >
       <NodeSelect
-        :offset="offset"
-        :node-i-d="id"
+        :x="position.x"
+        :y="position.y"
+        :node-id="id"
       />
     </portal>
   </g>

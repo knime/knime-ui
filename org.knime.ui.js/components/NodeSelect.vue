@@ -5,18 +5,21 @@
 export default {
     props: {
         /**
-         * Offset relative to the top left of the canvas.
+         * X- and Y-Coordinate relative to the top left of the canvas.
          * This must be provided from outside, since this component is not rendered as a child element of the Node.
-         * @example [100, 50] // 100px from the left, 50px from the top
          */
-        offset: {
-            type: Array,
-            default: () => [0, 0]
+        x: {
+            type: Number,
+            default: 0
+        },
+        y: {
+          type: Number,
+          default: 0
         },
         /**
          * Node id to be displayed
          */
-        nodeID: {
+        nodeId: {
             type: String,
             default: 'NODE ID MISSING'
         }
@@ -40,7 +43,7 @@ export default {
 
 <template>
   <g
-    :transform="`translate(${offset[0]}, ${offset[1]})`"
+    :transform="`translate(${x}, ${y})`"
     class="selection"
   >
     <rect
@@ -60,7 +63,7 @@ export default {
       :y="-padding[0] - 3"
       :x="$shapes.nodeSize / 2"
     >
-      {{ nodeID }}
+      {{ nodeId }}
     </text>
   </g>
 </template>
