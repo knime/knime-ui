@@ -8,11 +8,6 @@ import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 import * as portShift from '~/util/portShift';
 
-const mockNode = ({ x, y, outPorts, inPorts }) => ({
-    inPorts,
-    outPorts
-});
-
 describe('Connector', () => {
     let propsData, mocks, wrapper, portShiftMock;
 

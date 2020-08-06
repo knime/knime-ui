@@ -1,7 +1,4 @@
 <script>
-
-const toHexColor = color => color.toString(0x10).padStart(7, '#000000'); // eslint-disable-line no-magic-numbers
-
 /**
  * A workflow annotation, a rectangular box containing text.
  */

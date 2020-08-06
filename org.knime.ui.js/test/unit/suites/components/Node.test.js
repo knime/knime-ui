@@ -162,7 +162,8 @@ describe('Node', () => {
     });
 
     describe('unconnected default-flow-variable-ports', () => {
-        let ports, locations;
+        let ports;
+
         beforeEach(() => {
             propsData.inPorts[0].connectedVia = [];
             propsData.outPorts[0].connectedVia = [];

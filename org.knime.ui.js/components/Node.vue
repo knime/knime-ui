@@ -30,13 +30,13 @@ export default {
          * Node type, e.g. "Learner", "Visualizer", "Component"
          * Is undefined for MetaNodes
          */
-        type: { type: String, required: false },
+        type: { type: String, default: null },
 
         position: { type: Object, required: true },
         /**
          * Node annotation, displayed below the node
          */
-        annotation: { type: Object, required: false },
+        annotation: { type: Object, default: null },
 
         /**
          * Input ports. List of configuration objects passed-through to the `Port` component
@@ -64,7 +64,7 @@ export default {
         hasDefaultFlowVariablePortConnections() {
             const incoming = this.inPorts[0] && this.inPorts[0].connectedVia.length;
             const outgoing = this.outPorts[0] && this.outPorts[0].connectedVia.length;
-            
+
             return [incoming, outgoing];
         },
         hoverMargin() {
