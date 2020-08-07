@@ -35,17 +35,15 @@ export default {
             return 'grey';
         },
         trianglePath() {
-            let { $shapes: { portSize }, shouldFill } = this;
+            let { $shapes: { portSize } } = this;
 
             let [x1, y1, x2, y3] = [-portSize / 2, -portSize / 2, portSize / 2, portSize / 2];
 
             // adjust size of triangle so that filled and bordered triangle match, and the line width is exactly 1
-            if (!shouldFill) {
-                x1 += 1 / 2;
-                y1 += (1 + Math.sqrt(5)) / 4;
-                x2 -= Math.sqrt(5) / 2;
-                y3 -= (1 + Math.sqrt(5)) / 4;
-            }
+            x1 += 1 / 2;
+            y1 += (1 + Math.sqrt(5)) / 4;
+            x2 -= Math.sqrt(5) / 2;
+            y3 -= (1 + Math.sqrt(5)) / 4;
 
             return `${x1},${y1} ${x2},${0} ${x1},${y3}`;
         }
