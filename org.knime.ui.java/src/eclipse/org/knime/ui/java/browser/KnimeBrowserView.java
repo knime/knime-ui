@@ -46,29 +46,39 @@ public class KnimeBrowserView extends ViewPart {
 		if (port == null) {
 			return false;
 		} else {
-			Bundle myBundle = FrameworkUtil.getBundle(KnimeBrowserView.class);
-			try {
-				URL url = myBundle.getEntry("web/debug.html");
-				String path = FileLocator.toFileURL(url).getPath();
-				browser.setUrl("file://" + path);
-				final String debugMsg = "Remote debugger running at http://localhost:" + port;
-				browser.addProgressListener(new ProgressListener() {
-
-					@Override
-					public void completed(final ProgressEvent event) {
-						browser.execute("setText('" + debugMsg + "')");
-						browser.removeProgressListener(this);
-					}
-
-					@Override
-					public void changed(final ProgressEvent event) {
-						//
-					}
-				});
+			String initURL = System.getProperty("org.knime.ui.debug.url");
+			if (initURL != null) {
+				browser.setUrl(initURL);
 				return true;
-			} catch (IOException e) {
-				throw new RuntimeException(e);
+			} else {
+				setDebugMessagePage(browser, port);
+				return true;
 			}
+		}
+	}
+
+	private static void setDebugMessagePage(Browser browser, String port) {
+		Bundle myBundle = FrameworkUtil.getBundle(KnimeBrowserView.class);
+		try {
+			URL url = myBundle.getEntry("web/debug.html");
+			String path = FileLocator.toFileURL(url).getPath();
+			browser.setUrl("file://" + path);
+			final String debugMsg = "Remote debugger running at http://localhost:" + port;
+			browser.addProgressListener(new ProgressListener() {
+
+				@Override
+				public void completed(final ProgressEvent event) {
+					browser.execute("setText('" + debugMsg + "')");
+					browser.removeProgressListener(this);
+				}
+
+				@Override
+				public void changed(final ProgressEvent event) {
+					//
+				}
+			});
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
