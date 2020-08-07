@@ -33,15 +33,15 @@ export default {
         :key="`annotation-${id}`"
         v-bind="annotation"
       />
-      <Node
-        v-for="node in workflow.nodes"
-        :key="`node-${workflow.id}-${node.id}`"
-        v-bind="node"
-      />
       <Connector
         v-for="(connector, id) of workflow.connections"
         :key="`connector-${workflow.id}-${id}`"
         v-bind="connector"
+      />
+      <Node
+        v-for="node in workflow.nodes"
+        :key="`node-${workflow.id}-${node.id}`"
+        v-bind="node"
       />
       <portal-target
         multiple

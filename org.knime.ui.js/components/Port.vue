@@ -8,17 +8,18 @@ export default {
          */
         port: {
             type: Object,
-            required: true
+            required: true,
+            validator: port => typeof port.inactive === 'boolean' && typeof port.type === 'string'
         },
         /**
-         * x coordinate of the port relative to the top left corner of the node
+         * x coordinate of the port's center relative to the top left corner of the node
          */
         x: {
             type: Number,
             default: 0
         },
         /**
-         * y coordinate of the port relative to the top left corner of the node
+         * y coordinate of the port's center relative to the top left corner of the node
          */
         y: {
             type: Number,
@@ -33,18 +34,16 @@ export default {
             // TODO: adjust port color NXT-219
             return 'grey';
         },
-        trianglePort() {
-            let { $shapes: { portSize }, shouldFill } = this;
+        trianglePath() {
+            let { $shapes: { portSize } } = this;
 
-            let [x1, y1, x2, y3] = [0, -portSize / 2, portSize, portSize / 2];
+            let [x1, y1, x2, y3] = [-portSize / 2, -portSize / 2, portSize / 2, portSize / 2];
 
             // adjust size of triangle so that filled and bordered triangle match, and the line width is exactly 1
-            if (!shouldFill) {
-                x1 += 1 / 2;
-                y1 += (1 + Math.sqrt(5)) / 4;
-                x2 -= Math.sqrt(5) / 2;
-                y3 -= (1 + Math.sqrt(5)) / 4;
-            }
+            x1 += 1 / 2;
+            y1 += (1 + Math.sqrt(5)) / 4;
+            x2 -= Math.sqrt(5) / 2;
+            y3 -= (1 + Math.sqrt(5)) / 4;
 
             return `${x1},${y1} ${x2},${0} ${x1},${y3}`;
         }
@@ -57,40 +56,44 @@ export default {
     :transform="`translate(${x}, ${y})`"
     class="port"
   >
+    <!-- data table port -->
     <polygon
       v-if="port.type === 'table'"
-      :points="trianglePort"
-      :fill="shouldFill ? $colors.portColors.data : 'none'"
-      :stroke="shouldFill ? 'none': $colors.portColors.data"
+      :points="trianglePath"
+      :fill="shouldFill ? $colors.portColors.data : 'white'"
+      :stroke="$colors.portColors.data"
     />
+    <!-- flow variable port -->
     <circle
       v-else-if="port.type === 'flowVariable'"
-      :r="$shapes.portSize / 2 - (shouldFill ? 0 : 0.5)"
-      :cx="$shapes.portSize / 2"
-      :fill="shouldFill ? $colors.portColors.variable : 'none'"
-      :stroke="shouldFill ? 'none': $colors.portColors.variable"
+      :r="$shapes.portSize / 2 - 0.5"
+      :fill="shouldFill ? $colors.portColors.variable : 'white'"
+      :stroke="$colors.portColors.variable"
     />
+    <!-- other port -->
     <rect
       v-else
-      :width="$shapes.portSize - (shouldFill ? 0 : 1)"
-      :height="$shapes.portSize - (shouldFill ? 0 : 1)"
-      :x="shouldFill ? 0 : 0.5"
-      :y="-$shapes.portSize / 2 + (shouldFill ? 0 : 0.5)"
-      :fill="shouldFill ? customPortColor: 'none'"
-      :stroke="shouldFill ? 'none' : customPortColor"
+      :width="$shapes.portSize - 1"
+      :height="$shapes.portSize - 1"
+      :x="-$shapes.portSize / 2 + 0.5"
+      :y="-$shapes.portSize / 2 + 0.5"
+      :fill="shouldFill ? customPortColor: 'white'"
+      :stroke="customPortColor"
     />
+    <!-- X outline -->
     <path
       v-if="port.inactive"
       stroke-width="3"
       :stroke="$colors.portColors.inactiveOutline"
-      :d="`M0,-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
+      :d="`M-${$shapes.portSize / 2},-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
            m-${$shapes.portSize},0 l${$shapes.portSize},-${$shapes.portSize}`"
     />
+    <!-- X -->
     <path
       v-if="port.inactive"
       stroke-width="1"
       :stroke="$colors.portColors.inactive"
-      :d="`M0,-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
+      :d="`M-${$shapes.portSize / 2},-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
            m-${$shapes.portSize},0 l${$shapes.portSize},-${$shapes.portSize}`"
     />
   </g>
@@ -100,5 +103,14 @@ export default {
 .port {
   cursor: crosshair;
   pointer-events: bounding-box; /* SVG 2 bounding-box: already works in chromium, defaults to auto in firefox */
+
+  & > * {
+    transition: transform 0.1s linear;
+  }
+
+  &:hover > * {
+    transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
+    transform: scale(1.15);
+  }
 }
 </style>

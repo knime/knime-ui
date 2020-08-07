@@ -50,9 +50,7 @@ package org.knime.ui.java.jsonrpc;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.eclipse.swt.widgets.Display;
@@ -63,15 +61,14 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.knime.core.node.workflow.NodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
-import org.knime.gateway.api.entity.WorkflowSnapshotEnt;
-import org.knime.gateway.api.service.util.ServiceExceptions.NodeNotFoundException;
-import org.knime.gateway.api.service.util.ServiceExceptions.NotASubWorkflowException;
+import org.knime.gateway.api.service.GatewayService;
+import org.knime.gateway.api.webui.entity.WorkflowSnapshotEnt;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NodeNotFoundException;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.NotASubWorkflowException;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
-import org.knime.gateway.impl.service.DefaultWorkflowService;
+import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.googlecode.jsonrpc4j.JsonRpcMethod;
 import com.googlecode.jsonrpc4j.JsonRpcService;
 
@@ -81,96 +78,81 @@ import com.googlecode.jsonrpc4j.JsonRpcService;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 @JsonRpcService("InitService")
-public class InitService {
+public class InitService implements GatewayService {
+	private static final InitService INSTANCE = new InitService();
 
-    private Map<String, WorkflowReference> m_registeredWorkflows = new HashMap<>();
+	private InitService() {
+		// singleton
+	}
 
-    @JsonRpcMethod("getWorkflows")
-    public List<WorkflowReference> getOpenWorkflows() {
+	/**
+	 * @return the singleton instance for this service
+	 */
+	public static InitService getInstance() {
+		return INSTANCE;
+	}
 
-        IEditorReference[] editorReferences =
-            PlatformUI.getWorkbench().getWorkbenchWindows()[0].getPages()[0].getEditorReferences();
+	@JsonRpcMethod("getWorkflows")
+	public List<WorkflowSnapshotEnt> getOpenWorkflows() {
+		IEditorReference[] editorReferences = PlatformUI.getWorkbench().getWorkbenchWindows()[0].getPages()[0]
+				.getEditorReferences();
 
-        Map<String, WorkflowReference> newRegisteredWorkflows = new HashMap<>();
-        for (IEditorReference ref : editorReferences) {
-            if (!ref.getId().equals("org.knime.workbench.editor.WorkflowEditor")) {
-                continue;
-            }
-            String name;
-            try {
-                name = ((FileStoreEditorInput)ref.getEditorInput()).getURI().toString().replace("/workflow.knime", "");
-            } catch (PartInitException e) {
-                throw new RuntimeException(e);
-            }
-            if (!m_registeredWorkflows.containsKey(name)) {
-                UUID uuid = UUID.randomUUID();
-                WorkflowProjectManager.addWorkflowProject(uuid, new WorkflowProject() {
+		List<WorkflowSnapshotEnt> openedWorkflows = new ArrayList<>();
+		for (IEditorReference ref : editorReferences) {
+			if (!ref.getId().equals("org.knime.workbench.editor.WorkflowEditor")) {
+				continue;
+			}
+			String name;
+			try {
+				name = ((FileStoreEditorInput) ref.getEditorInput()).getURI().toString().replace("/workflow.knime", "");
+			} catch (PartInitException e) {
+				throw new RuntimeException(e);
+			}
+			UUID uuid = UUID.randomUUID();
+			WorkflowManager wfm = findWorkflowManager(name);
+			if (wfm != null) {
+				WorkflowProjectManager.addWorkflowProject(uuid, new WorkflowProject() {
 
-                    @Override
-                    public WorkflowManager openProject() {
-                        Display.getDefault().syncExec(() -> ref.getEditor(true));
-                        return findWorkflowManager(name);
-                    }
+					@Override
+					public WorkflowManager openProject() {
+						Display.getDefault().syncExec(() -> ref.getEditor(true));
+						return wfm;
+					}
 
-                    @Override
-                    public String getName() {
-                        return ref.getName();
-                    }
+					@Override
+					public String getName() {
+						return ref.getName();
+					}
 
-                    @Override
-                    public String getID() {
-                        return uuid.toString();
-                    }
-                });
-                WorkflowSnapshotEnt wf = null;
-                WorkflowManager wfm = findWorkflowManager(name);
-                if (wfm != null) {
-                    try {
-                        wf = DefaultWorkflowService.getInstance().getWorkflow(uuid, NodeIDEnt.getRootID());
-                    } catch (NotASubWorkflowException | NodeNotFoundException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                newRegisteredWorkflows.put(name, new WorkflowReference(name, uuid, wf));
-            } else {
-                newRegisteredWorkflows.put(name, m_registeredWorkflows.get(name));
-            }
-        }
-        m_registeredWorkflows = newRegisteredWorkflows;
-        return new ArrayList<>(m_registeredWorkflows.values());
-    }
+					@Override
+					public String getID() {
+						return uuid.toString();
+					}
+				});
+				try {
+					openedWorkflows.add(DefaultWorkflowService.getInstance().getWorkflow(uuid, NodeIDEnt.getRootID()));
+				} catch (NotASubWorkflowException | NodeNotFoundException e) {
+					throw new RuntimeException(e);
+				}
+				WorkflowProjectManager.removeWorkflowProject(uuid);
+			}
+		}
+		return openedWorkflows;
+	}
 
-    private static WorkflowManager findWorkflowManager(final String path) {
-        for (NodeContainer nc : WorkflowManager.ROOT.getNodeContainers()) {
-            if (nc instanceof WorkflowManager) {
-                WorkflowManager wfm = (WorkflowManager)nc;
-                if (wfm.getContext() != null) {
-                    String mountpointURI = wfm.getContext().getMountpointURI().map(URI::toString).orElse(null);
-                    if (path.equals(mountpointURI)) {
-                        return wfm;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    @JsonAutoDetect(fieldVisibility = Visibility.ANY)
-    @SuppressWarnings("unused")
-    class WorkflowReference {
-
-		private String name;
-
-        private UUID id;
-
-        private WorkflowSnapshotEnt workflow;
-
-        WorkflowReference(final String name, final UUID id, final WorkflowSnapshotEnt wf) {
-            this.name = name;
-            this.id = id;
-            workflow = wf;
-        }
-
-    }
+	private static WorkflowManager findWorkflowManager(final String path) {
+		for (NodeContainer nc : WorkflowManager.ROOT.getNodeContainers()) {
+			if (nc instanceof WorkflowManager) {
+				WorkflowManager wfm = (WorkflowManager) nc;
+				if (wfm.getContext() != null) {
+					String mountpointURI = wfm.getContext().getMountpointURI().map(URI::toString).orElse(null);
+					if (path.equals(mountpointURI)) {
+						return wfm;
+					}
+				}
+			}
+		}
+		return null;
+	}
 
 }

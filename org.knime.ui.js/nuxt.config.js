@@ -1,7 +1,13 @@
 import path from 'path';
 import postcssConfig from 'webapps-common/webpack/webpack.postcss.config';
 
+const srcDir = path.resolve(__dirname);
+const commonsDir = path.resolve(srcDir, 'webapps-common');
+
 const config = {
+    alias: {
+        'webapps-common': commonsDir
+    },
     mode: 'spa',
     head: {
         meta: [
@@ -15,7 +21,13 @@ const config = {
     modules: ['portal-vue/nuxt'],
     css: ['@/assets/index.css'],
     build: {
-        postcss: postcssConfig,
+        postcss: {
+            ...postcssConfig,
+            plugins: {
+                'postcss-import': {},
+                'postcss-url': {}
+            }
+        },
         splitChunks: {
             layouts: false,
             pages: false,

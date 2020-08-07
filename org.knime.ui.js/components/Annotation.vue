@@ -1,5 +1,4 @@
 <script>
-
 /**
  * A workflow annotation, a rectangular box containing text.
  */

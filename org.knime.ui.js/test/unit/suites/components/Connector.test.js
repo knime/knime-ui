@@ -8,6 +8,10 @@ import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 import * as portShift from '~/util/portShift';
 
+const portMock = {
+    connectedVia: []
+};
+
 describe('Connector', () => {
     let propsData, mocks, wrapper, portShiftMock;
 
@@ -28,8 +32,8 @@ describe('Connector', () => {
                 state: {
                     workflow: {
                         nodes: {
-                            'root:1': { position: { x: 0, y: 0 }, outPorts: [null, null] },
-                            'root:2': { position: { x: 12, y: 14 }, inPorts: [null, null, null] }
+                            'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
+                            'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
                         }
                     }
                 }
@@ -44,12 +48,12 @@ describe('Connector', () => {
     describe('render', () => {
 
         it('uses portShift', () => {
-            expect(portShiftMock).toHaveBeenCalledWith(0, 2);
+            expect(portShiftMock).toHaveBeenCalledWith(0, 2, true);
             expect(portShiftMock).toHaveBeenCalledWith(2, 3);
         });
 
         it('draws a path', () => {
-            const expectedPath = 'M36.5,-4.5 C68.25,-4.5 -28.75,40.5 3,40.5';
+            const expectedPath = 'M32,-4.5 h4.5 C63.75,-4.5 -24.25,40.5 3,40.5 h4.5';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
 
