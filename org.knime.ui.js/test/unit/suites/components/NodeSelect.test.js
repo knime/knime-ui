@@ -11,8 +11,9 @@ describe('NodeSelect.vue', () => {
         wrapper = shallowMount(NodeSelect, {
             mocks: { $colors, $shapes },
             propsData: {
-                nodeID: 'node1:2:3',
-                offset: [12, 73] // eslint-disable-line no-magic-numbers
+                nodeId: 'node1:2:3',
+                x: 12,
+                y: 73
             }
         });
     });
