@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
+import * as $shapes from '~/style/shapes';
 
 import Annotation from '~/components/Annotation';
 
@@ -16,7 +17,7 @@ describe('Workflow Annotation', () => {
             bounds: { x: 1, y: 2, width: 100, height: 50 },
             text: 'hallo'
         };
-        mocks = {};
+        mocks = { $shapes };
         mount = () => { wrapper = shallowMount(Annotation, { propsData, mocks }); };
     });
 
@@ -26,17 +27,22 @@ describe('Workflow Annotation', () => {
         });
 
         it('styles', () => {
+            expect(wrapper.find('foreignObject').attributes()).toStrictEqual({
+                height: '50',
+                width: '100',
+                x: '1',
+                y: '2'
+            });
+
             expect(wrapper.find('div').attributes().style).toBe(
                 'font-size: 10px; ' +
                 'border: 4px solid; ' +
                 'border-color: #000; ' +
                 'background: rgb(0, 0, 0); ' +
-                'width: 100px; ' +
-                'height: 50px; ' +
-                'left: 1px; ' +
-                'top: 2px; ' +
-                'z-index: -1; ' +
-                'text-align: right;'
+                'width: 62px; ' +
+                'height: 12px; ' +
+                'text-align: right; ' +
+                'padding: 15px;'
             );
         });
 
