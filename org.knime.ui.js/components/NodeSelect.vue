@@ -13,8 +13,8 @@ export default {
             default: 0
         },
         y: {
-          type: Number,
-          default: 0
+            type: Number,
+            default: 0
         },
         /**
          * Node id to be displayed

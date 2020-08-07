@@ -24,15 +24,15 @@ export default {
     <h3>{{ `${workflow.name} - ${nrOfNodes} Nodes` }}</h3>
 
     <!-- TODO: adjust size of Kanvas NXT-243 -->
-    <Annotation
-      v-for="(annotation, id) of workflow.workflowAnnotations"
-      :key="`annotation-${id}`"
-      v-bind="annotation"
-    />
     <svg
       :width="1300"
       :height="900"
     >
+      <Annotation
+        v-for="(annotation, id) of workflow.workflowAnnotations"
+        :key="`annotation-${id}`"
+        v-bind="annotation"
+      />
       <Node
         v-for="node in workflow.nodes"
         :key="`node-${workflow.id}-${node.id}`"
@@ -51,3 +51,9 @@ export default {
     </svg>
   </div>
 </template>
+
+<style scoped>
+h3 {
+  position: fixed;
+}
+</style>

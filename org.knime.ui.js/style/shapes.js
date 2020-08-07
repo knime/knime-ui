@@ -11,3 +11,5 @@ export const nodeNameMargin = 12;
 export const nodeSelectionBarHeight = 12;
 
 export const connectorWidth = 2;
+
+export const annotationPadding = 15;

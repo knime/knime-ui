@@ -1,7 +1,5 @@
 <script>
 
-const toHexColor = color => color.toString(0x10).padStart(7, '#000000'); // eslint-disable-line no-magic-numbers
-
 /**
  * A workflow annotation, a rectangular box containing text.
  */
@@ -43,19 +41,17 @@ export default {
     },
     computed: {
         style() {
-            const { x, y, height, width } = this.bounds;
+            const { height, width } = this.bounds;
 
             return {
                 fontSize: `${this.defaultFontSize}px`,
                 border: `${this.borderWidth}px solid`,
                 borderColor: this.borderColor,
                 background: this.backgroundColor,
-                width: `${width}px`,
-                height: `${height}px`,
-                left: `${x}px`,
-                top: `${y}px`,
-                zIndex: -1,
-                textAlign: this.textAlign
+                width: `${width - 2 * (this.borderWidth + this.$shapes.annotationPadding)}px`,
+                height: `${height - 2 * (this.borderWidth + this.$shapes.annotationPadding)}px`,
+                textAlign: this.textAlign,
+                padding: `${this.$shapes.annotationPadding}px`
             };
         }
     }
@@ -63,13 +59,18 @@ export default {
 </script>
 
 <template>
-  <div :style="style">{{ text }}</div>
+  <foreignObject
+    :x="bounds.x"
+    :y="bounds.y"
+    :width="bounds.width"
+    :height="bounds.height"
+  >
+    <div :style="style">{{ text }}</div>
+  </foreignObject>
 </template>
 
 <style scoped>
 div {
-  position: absolute;
-  padding: 15px;
   border-radius: 2px;
   line-height: 1.33;
 }
