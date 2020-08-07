@@ -55,7 +55,7 @@ describe.each([
             let { fill, stroke } = port.attributes();
 
             expect(fill).toBe(portColor);
-            expect(stroke).toBe('none');
+            expect(stroke).toBe(portColor);
         });
 
         it('translates to port position (outgoing)', () => {
@@ -78,7 +78,7 @@ describe.each([
         let port = currentPort();
         let { fill, stroke } = port.attributes();
 
-        expect(fill).toBe('none');
+        expect(fill).toBe('white');
         expect(stroke).toBe(portColor);
     });
 });

@@ -10,19 +10,19 @@ export default {
     props: {
         /**
          * Node ID of the connector's source node
-        */
+         */
         sourceNode: { type: String, required: true },
         /**
          * Node ID of the connector's target node
-        */
+         */
         destNode: { type: String, required: true },
         /**
          * Index of the source node's output port that this connector is attached to
-        */
+         */
         sourcePort: { type: Number, required: true },
         /**
          * Index of the target node's input port that this connector is attached to
-        */
+         */
         destPort: { type: Number, required: true }
     },
     computed: {
@@ -37,7 +37,7 @@ export default {
             const [dx, dy] = portShift(this.sourcePort, this.source.outPorts.length, true);
             let { x, y } = this.source.position;
             return [
-                x + dx + this.$shapes.portSize / 2,
+                x + dx,
                 y + dy
             ];
         },
@@ -45,18 +45,20 @@ export default {
             const [dx, dy] = portShift(this.destPort, this.target.inPorts.length);
             let { x, y } = this.target.position;
             return [
-                x + dx - this.$shapes.portSize / 2,
+                x + dx,
                 y + dy
             ];
         },
         path() {
             const { start: [x1, y1], end: [x2, y2] } = this;
-            const width = Math.abs(x1 - x2);
+            const width = Math.abs(x1 - x2 + this.$shapes.portSize);
             const height = Math.abs(y1 - y2);
             // TODO: include bendpoints NXT-78 NXT-191
             // Currently, this is creates just an arbitrary curve that seems to work in most cases
-            return `M${x1},${y1} C${x1 + width / 2 + height / 3},` + // eslint-disable-line no-magic-numbers
-                `${y1} ${x2 - width / 2 - height / 3},${y2} ${x2},${y2}`; // eslint-disable-line no-magic-numbers
+            return `M${x1},${y1} h${this.$shapes.portSize / 2} ` + // eslint-disable-line no-magic-numbers
+                `C${x1 + width / 2 + height / 3},${y1} ` + // eslint-disable-line no-magic-numbers
+                `${x2 - width / 2 - height / 3},${y2} ` + // eslint-disable-line no-magic-numbers
+                `${x2 - this.$shapes.portSize / 2},${y2} h${this.$shapes.portSize / 2}`; // eslint-disable-line no-magic-numbers
         }
     }
 };
@@ -72,5 +74,13 @@ export default {
 </template>
 
 <style scoped>
+path {
+  transition: stroke-width 0.1s linear, stroke 0.1s linear;
+  cursor: grab;
+}
 
+path:hover {
+  stroke-width: 2.5;
+  stroke: var(--knime-dove-gray);
+}
 </style>

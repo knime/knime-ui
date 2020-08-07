@@ -53,7 +53,7 @@ describe('Connector', () => {
         });
 
         it('draws a path', () => {
-            const expectedPath = 'M36.5,-4.5 C68.25,-4.5 -28.75,40.5 3,40.5';
+            const expectedPath = 'M32,-4.5 h4.5 C63.75,-4.5 -24.25,40.5 3,40.5 h4.5';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
 

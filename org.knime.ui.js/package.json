@@ -33,7 +33,6 @@
     "jest-transform-stub": "2.0.0",
     "jsdom": "16.3.0",
     "normalize.css": "8.0.1",
-    "postcss-css-variables": "0.17.0",
     "sonar-scanner": "3.1.0",
     "stylelint": "13.6.1",
     "stylelint-config-standard": "20.0.0",

@@ -34,7 +34,7 @@ export default {
             // TODO: adjust port color NXT-219
             return 'grey';
         },
-        trianglePort() {
+        trianglePath() {
             let { $shapes: { portSize }, shouldFill } = this;
 
             let [x1, y1, x2, y3] = [-portSize / 2, -portSize / 2, portSize / 2, portSize / 2];
@@ -58,27 +58,31 @@ export default {
     :transform="`translate(${x}, ${y})`"
     class="port"
   >
+    <!-- data table port -->
     <polygon
       v-if="port.type === 'table'"
-      :points="trianglePort"
-      :fill="shouldFill ? $colors.portColors.data : 'none'"
-      :stroke="shouldFill ? 'none': $colors.portColors.data"
+      :points="trianglePath"
+      :fill="shouldFill ? $colors.portColors.data : 'white'"
+      :stroke="$colors.portColors.data"
     />
+    <!-- flow variable port -->
     <circle
       v-else-if="port.type === 'flowVariable'"
-      :r="$shapes.portSize / 2 - (shouldFill ? 0 : 0.5)"
-      :fill="shouldFill ? $colors.portColors.variable : 'none'"
-      :stroke="shouldFill ? 'none': $colors.portColors.variable"
+      :r="$shapes.portSize / 2 - 0.5"
+      :fill="shouldFill ? $colors.portColors.variable : 'white'"
+      :stroke="$colors.portColors.variable"
     />
+    <!-- other port -->
     <rect
       v-else
-      :width="$shapes.portSize - (shouldFill ? 0 : 1)"
-      :height="$shapes.portSize - (shouldFill ? 0 : 1)"
-      :x="-$shapes.portSize / 2 + (shouldFill ? 0 : 0.5)"
-      :y="-$shapes.portSize / 2 + (shouldFill ? 0 : 0.5)"
-      :fill="shouldFill ? customPortColor: 'none'"
-      :stroke="shouldFill ? 'none' : customPortColor"
+      :width="$shapes.portSize - 1"
+      :height="$shapes.portSize - 1"
+      :x="-$shapes.portSize / 2 + 0.5"
+      :y="-$shapes.portSize / 2 + 0.5"
+      :fill="shouldFill ? customPortColor: 'white'"
+      :stroke="customPortColor"
     />
+    <!-- X outline -->
     <path
       v-if="port.inactive"
       stroke-width="3"
@@ -86,6 +90,7 @@ export default {
       :d="`M-${$shapes.portSize / 2},-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
            m-${$shapes.portSize},0 l${$shapes.portSize},-${$shapes.portSize}`"
     />
+    <!-- X -->
     <path
       v-if="port.inactive"
       stroke-width="1"
