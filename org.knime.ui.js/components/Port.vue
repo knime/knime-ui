@@ -99,7 +99,7 @@ export default {
   </g>
 </template>
 
-<style scoped>
+<style lang="postcss" scoped>
 .port {
   cursor: crosshair;
   pointer-events: bounding-box; /* SVG 2 bounding-box: already works in chromium, defaults to auto in firefox */
