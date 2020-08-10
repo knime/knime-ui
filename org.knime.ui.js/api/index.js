@@ -14,6 +14,9 @@ const fetchFromAP = () => {
 };
 
 export const loadWorkflow = (id) => {
+    if (!RPCworkflows.length) {
+        fetchFromAP();
+    }
     let workflow;
     workflow = RPCworkflows.find(workflow => workflow.name === id);
 
@@ -27,6 +30,8 @@ export const loadWorkflow = (id) => {
 };
 
 export const getWorkflowIDs = () => {
-    fetchFromAP();
+    if (!RPCworkflows.length) {
+        fetchFromAP();
+    }
     return Promise.resolve(RPCworkflows.map(workflow => workflow.name));
 };
