@@ -1,22 +1,39 @@
+const colors = {
+    // non-exhaustive list from the corporate styleguide
+    'KNIME yellow': '#ffd800',
+    'Silver Sand': '#c0c4c6',
+    Avocado: '#cbd9a9',
+    'Meadow light': '#c8e632',
+    Meadow: '#3cb44b',
+    Aquamarine: '#88d8e4',
+    'Aquamarine dark': '#2b94b1',
+    Lavender: '#965591',
+    'Hibiscus dark': '#dc2c87',
+    Coral: '#ff4b4b',
+    Carrot: '#ff9632',
+    Wood: '#d2a384',
+    Stone: '#aaaaaa'
+
+
+};
+
 export const nodeBackgroundColors = {
-    // colors extracted from
-    // https://bitbucket.org/KNIME/knime-workbench/src/bb437123743b220db34e39e4ffd887a307276ff8/org.knime.workbench.editor/icons/node/*.svg
-    default: '#dc2c87', // "unknown"
-    Component: '#bdbebe', // "subnode"
-    Learner: '#c3d03b',
-    LoopEnd: '#88d8ea',
-    LoopStart: '#88d8ea',
-    Manipulator: '#ffd104',
-    Other: '#d2a384',
-    Predictor: '#4eaf75',
-    QuickForm: '#cbd9a9',
-    ScopeEnd: '#92548d',
-    ScopeStart: '#92548d',
-    Sink: '#e64e4f',
-    Source: '#f1933b',
-    VirtualIn: '#9d9d9d',
-    VirtualOut: '#9b9a9a',
-    Visualizer: '#4ba1bf'
+    default: colors['Hibiscus dark'], // "unknown"
+    Component: colors['Silver Sand'],
+    Learner: colors['Meadow light'],
+    LoopEnd: colors.Aquamarine,
+    LoopStart: colors.Aquamarine,
+    Manipulator: colors['KNIME yellow'],
+    Other: colors.Wood,
+    Predictor: colors.Meadow,
+    QuickForm: colors.Avocado,
+    ScopeEnd: colors.Lavender,
+    ScopeStart: colors.Lavender,
+    Sink: colors.Coral,
+    Source: colors.Carrot,
+    VirtualIn: colors.Stone,
+    VirtualOut: colors.Stone,
+    Visualizer: colors['Aquamarine dark']
 };
 
 export const nodeStateBackgroundColors = {

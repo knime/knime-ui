@@ -2,6 +2,7 @@
 import { mapState } from 'vuex';
 import Port from '~/components/Port.vue';
 import NodeState from '~/components/NodeState.vue';
+import NodeTorso from '~/components/NodeTorso.vue';
 import NodeSelect from '~/components/NodeSelect.vue';
 import portShift from '~/util/portShift';
 
@@ -13,6 +14,7 @@ import portShift from '~/util/portShift';
 export default {
     components: {
         Port,
+        NodeTorso,
         NodeState,
         NodeSelect
     },
@@ -28,10 +30,16 @@ export default {
         id: { type: String, required: true },
 
         /**
-         * Node type, e.g. "Learner", "Visualizer", "Component"
+         * Node type, e.g. "Learner", "Visualizer"
          * Is undefined for MetaNodes
          */
         type: { type: String, default: null },
+
+        /**
+         * Node variation.
+         * @values 'node', 'metanode', 'component'
+         */
+        kind: { type: String, default: 'node' },
 
         position: {
             type: Object,
@@ -61,9 +69,6 @@ export default {
         ...mapState('workflows', [
             'workflow'
         ]),
-        background() {
-            return this.$colors.nodeBackgroundColors[this.type] || this.$colors.nodeBackgroundColors.default;
-        },
         hoverMargin() {
             // margin around the node's square
             return [37, 10, 8, 10]; // eslint-disable-line no-magic-numbers
@@ -110,12 +115,9 @@ export default {
       @mouseleave="onLeaveHoverArea"
     />
 
-    <rect
-      class="bg"
-      :width="$shapes.nodeSize"
-      :height="$shapes.nodeSize"
-      :fill="background"
-      rx="2"
+    <NodeTorso
+      :type="type"
+      :kind="kind"
     />
 
     <template v-for="port of inPorts">
@@ -171,10 +173,6 @@ export default {
 .hover-area {
   fill: none;
   pointer-events: fill;
-}
-
-.bg {
-  cursor: grab;
 }
 
 .name {

@@ -35,8 +35,7 @@ export default {
             return !this.port.optional;
         },
         customPortColor() {
-            // TODO: adjust port color NXT-219
-            return 'grey';
+            return this.port.color;
         },
         trianglePath() {
             let { $shapes: { portSize } } = this;
