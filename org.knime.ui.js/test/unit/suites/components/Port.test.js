@@ -7,7 +7,7 @@ import * as $colors from '~/style/colors';
 describe.each([
     ['flowVariable', 'circle', $colors.portColors.variable],
     ['table', 'polygon', $colors.portColors.data],
-    ['other', 'rect', 'grey']
+    ['other', 'rect', '#123442']
 ])('Port (%s)', (portDataType, portTag, portColor) => {
     let propsData, mocks, mount, wrapper;
 
@@ -30,7 +30,8 @@ describe.each([
                 optional: false,
                 inactive: false,
                 index: 0,
-                type: portDataType
+                type: portDataType,
+                color: '#123442'
             }
         };
         mocks = { $shapes, $colors };

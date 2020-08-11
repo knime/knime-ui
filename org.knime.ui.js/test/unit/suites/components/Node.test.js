@@ -43,6 +43,8 @@ describe('Node', () => {
 
             type: 'Source',
 
+            kind: 'node',
+
             position: { x: 500, y: 200 },
             annotation: { text: 'ThatsMyNode' },
 
@@ -103,10 +105,6 @@ describe('Node', () => {
             expect(wrapper.find('.annotation').text()).toBe('ThatsMyNode');
         });
 
-        it('sets background color', () => {
-            expect(wrapper.find('.bg').attributes().fill).toBe('#f1933b');
-        });
-
         it('doesn’t show selection frame', () => {
             expect(wrapper.findComponent(NodeSelect).exists()).toBe(false);
         });
@@ -146,19 +144,6 @@ describe('Node', () => {
             expect(wrapper.findComponent(NodeSelect).exists()).toBe(false);
         });
 
-    });
-
-    const nodeTypeCases = Object.entries($colors.nodeBackgroundColors);
-    it.each(nodeTypeCases)('renders node category "%s" as color "%s"', (type, color) => {
-        propsData.type = type;
-        doShallowMount();
-        expect(wrapper.find('.bg').attributes().fill).toBe(color);
-    });
-
-    it('colors unknown node type', () => {
-        propsData.type = 'doesnt exist';
-        doShallowMount();
-        expect(wrapper.find('.bg').attributes().fill).toBe($colors.nodeBackgroundColors.default);
     });
 
     describe('unconnected default-flow-variable-ports', () => {

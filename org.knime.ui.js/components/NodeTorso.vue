@@ -1,7 +1,7 @@
 <script>
 import NodeTorsoMissing from '~/components/NodeTorsoMissing';
 import NodeTorsoUnknown from '~/components/NodeTorsoUnknown';
-import NodeTorsoSubnode from '~/components/NodeTorsoSubnode';
+import NodeTorsoMetanode from '~/components/NodeTorsoMetanode';
 
 const backgroundPaths = {
     default: 'M0,29.2L0,2.8C0,1.3,1.3,0,2.8,0l26.3,0C30.7,0,32,1.3,32,2.8v26.3c0,1.6-1.3,2.8-2.8,2.8H2.8C1.3,32,0,30.' +
@@ -22,7 +22,7 @@ const backgroundPaths = {
 export default {
     components: {
         NodeTorsoMissing,
-        NodeTorsoSubnode,
+        NodeTorsoMetanode,
         NodeTorsoUnknown
     },
     props: {
@@ -57,7 +57,7 @@ export default {
     v-else-if="type === 'Missing'"
     class="bg"
   />
-  <NodeTorsoSubnode
+  <NodeTorsoMetanode
     v-else-if="kind === 'metanode'"
     class="bg"
   />
