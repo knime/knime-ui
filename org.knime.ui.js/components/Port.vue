@@ -28,6 +28,10 @@ export default {
     },
     computed: {
         shouldFill() {
+            if (this.port.type === 'flowVariable' && this.port.index === 0) {
+                // Mickey Mouse ears are always rendered filled, even though they may technically be optional
+                return true;
+            }
             return !this.port.optional;
         },
         customPortColor() {

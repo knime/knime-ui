@@ -34,7 +34,9 @@ describe.each([
             }
         };
         mocks = { $shapes, $colors };
-        mount = () => { wrapper = shallowMount(Port, { propsData, mocks }); };
+        mount = () => {
+            wrapper = shallowMount(Port, { propsData, mocks });
+        };
     });
 
     describe('renders default', () => {
@@ -73,6 +75,7 @@ describe.each([
 
     it('renders optional port', () => {
         propsData.port.optional = true;
+        propsData.port.index = 1;
         mount();
 
         let port = currentPort();
@@ -81,4 +84,18 @@ describe.each([
         expect(fill).toBe('white');
         expect(stroke).toBe(portColor);
     });
+
+    if (portDataType === 'flowVariable') {
+        it('always renders filled Mickey Mouse ears', () => {
+            propsData.port.optional = true;
+            propsData.port.index = 0;
+            mount();
+
+            let port = currentPort();
+            let { fill, stroke } = port.attributes();
+
+            expect(fill).toBe('red');
+            expect(stroke).toBe(portColor);
+        });
+    }
 });
