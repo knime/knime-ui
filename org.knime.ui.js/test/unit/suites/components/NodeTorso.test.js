@@ -64,6 +64,19 @@ describe('NodeTorso.vue', () => {
             type,
             kind: 'node'
         });
-        expect(wrapper.find('.bg').attributes().fill).toBe(color);
+        let bgs = wrapper.findAll('.bg');
+        expect(bgs.length).toBe(1);
+        expect(bgs.at(0).attributes().fill).toBe(color);
+    });
+
+    it('renders components', () => {
+        let wrapper = doShallowMount({
+            type: 'Learner',
+            kind: 'component'
+        });
+        let bgs = wrapper.findAll('.bg');
+        expect(bgs.length).toBe(2);
+        expect(bgs.at(0).attributes().fill).toBe($colors.nodeBackgroundColors.Component);
+        expect(bgs.at(1).attributes().fill).toBe($colors.nodeBackgroundColors.Learner);
     });
 });

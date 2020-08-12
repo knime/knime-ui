@@ -43,6 +43,11 @@ export default {
         },
         background() {
             return this.$colors.nodeBackgroundColors[this.type] || this.$colors.nodeBackgroundColors.default;
+        },
+        componentBgTransformation() {
+            let offset = this.$shapes.nodeSize / 2;
+            let scaleFactor = this.$shapes.componentBgPortion;
+            return `translate(${offset}, ${offset}) scale(${scaleFactor}) translate(-${offset}, -${offset})`;
         }
     }
 };
@@ -61,14 +66,22 @@ export default {
     v-else-if="kind === 'metanode'"
     class="bg"
   />
-  <path
-    v-else
-    class="bg"
-    :d="backgroundPath"
-    :width="$shapes.nodeSize"
-    :height="$shapes.nodeSize"
-    :fill="background"
-  />
+  <g v-else>
+    <path
+      class="bg"
+      :d="backgroundPath"
+      :fill="kind === 'component' ? $colors.nodeBackgroundColors.Component : background"
+    />
+    <!-- components have two layers of background. This is the inner part, a shrunk version of the outer frame -->
+    <path
+      v-if="kind === 'component'"
+      class="bg"
+      :d="backgroundPath"
+      :fill="background"
+      :transform="componentBgTransformation"
+    />
+    <!-- TODO: icon here NXT-221 -->
+  </g>
 </template>
 
 <style>
