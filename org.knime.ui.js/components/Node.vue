@@ -84,6 +84,10 @@ export default {
         },
         // default flow variable input ports (Mickey Mouse ears) are only shown if connected, or on hover
         showPort(port) {
+            if (this.kind === 'metanode') {
+                // Metanodes don't have Mickey Mouse ears
+                return true;
+            }
             return port.index !== 0 || port.connectedVia.length || this.hover;
         }
     }
@@ -125,8 +129,8 @@ export default {
         v-if="showPort(port)"
         :key="`inport-${port.index}`"
         :port="port"
-        :x="portShift(port.index, inPorts.length)[0]"
-        :y="portShift(port.index, inPorts.length)[1]"
+        :x="portShift(port.index, inPorts.length, kind === 'metanode')[0]"
+        :y="portShift(port.index, inPorts.length, kind === 'metanode')[1]"
       />
     </template>
 
@@ -135,8 +139,8 @@ export default {
         v-if="showPort(port)"
         :key="`outport-${port.index}`"
         :port="port"
-        :x="portShift(port.index, outPorts.length, true)[0]"
-        :y="portShift(port.index, outPorts.length)[1]"
+        :x="portShift(port.index, outPorts.length, kind === 'metanode', true)[0]"
+        :y="portShift(port.index, outPorts.length, kind === 'metanode', true)[1]"
       />
     </template>
 

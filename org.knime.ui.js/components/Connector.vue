@@ -34,7 +34,9 @@ export default {
             return this.workflow.nodes[this.destNode];
         },
         start() {
-            const [dx, dy] = portShift(this.sourcePort, this.source.outPorts.length, true);
+            const [dx, dy] = portShift(
+                this.sourcePort, this.source.outPorts.length, this.source.kind === 'metanode', true
+            );
             let { x, y } = this.source.position;
             return [
                 x + dx,
@@ -42,7 +44,7 @@ export default {
             ];
         },
         end() {
-            const [dx, dy] = portShift(this.destPort, this.target.inPorts.length);
+            const [dx, dy] = portShift(this.destPort, this.target.inPorts.length, this.target.kind === 'metanode');
             let { x, y } = this.target.position;
             return [
                 x + dx,

@@ -8,18 +8,24 @@ import { nodeSize, portSize } from '~/style/shapes';
  *
  * @param {Number} portIndex
  * @param {Number} portCount Total number of ports on the same side of the node
+ * @param {Boolean} isMetanode `true` if this port is attached to a metanode
  * @param {Boolean} isOutPort `true` for an output port, `false` for an input port
  * @returns {[Number, Number]} [x-shift, y-shift]
  */
-const portShift = (portIndex, portCount, isOutPort) => {
+const portShift = (portIndex, portCount, isMetanode, isOutPort) => {
     let x = isOutPort ? nodeSize + portSize / 2 : -portSize / 2;
+
+    if (isMetanode) {
+        // Metanodes don't have Mickey Mouse ears, so all ports are attached to the side, not to the top
+        // This little trick shifts them correctly
+        portIndex++;
+        portCount++;
+    }
 
     if (portIndex === 0) {
         // port is a default Flow-Variable Port
         return [x + (isOutPort ? -1 : 1) * portSize / 2, -portSize / 2];
     }
-
-    // TODO: if metanode { portIndex++; portCount ++; } NXT-219
 
     // consider ports on the side
     const middleY = nodeSize / 2;
