@@ -35,7 +35,7 @@ export default {
          * Node variation.
          * @values 'node', 'metanode', 'component'
          */
-        kind: { type: String, default: 'node' }
+        kind: { type: String, required: true }
     },
     computed: {
         backgroundPath() {
@@ -44,9 +44,9 @@ export default {
         background() {
             return this.$colors.nodeBackgroundColors[this.type];
         },
-        componentBgTransformation() {
+        componentBackgroundTransformation() {
             let offset = this.$shapes.nodeSize / 2;
-            let scaleFactor = this.$shapes.componentBgPortion;
+            let scaleFactor = this.$shapes.componentBackgroundPortion;
             return `translate(${offset}, ${offset}) scale(${scaleFactor}) translate(-${offset}, -${offset})`;
         },
         // Returns false for broken nodes, which can occur during development, but should not occur in production.
@@ -81,7 +81,7 @@ export default {
       class="bg"
       :d="backgroundPath"
       :fill="background"
-      :transform="componentBgTransformation"
+      :transform="componentBackgroundTransformation"
     />
   </g>
   <NodeTorsoUnknown

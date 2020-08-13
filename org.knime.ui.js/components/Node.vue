@@ -39,7 +39,7 @@ export default {
          * Node variation.
          * @values 'node', 'metanode', 'component'
          */
-        kind: { type: String, default: 'node' },
+        kind: { type: String, required: true },
 
         position: {
             type: Object,

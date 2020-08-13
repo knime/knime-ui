@@ -14,4 +14,4 @@ export const connectorWidth = 2;
 
 export const annotationPadding = 15;
 
-export const componentBgPortion = 0.75;
+export const componentBackgroundPortion = 0.75;
