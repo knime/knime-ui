@@ -9,7 +9,7 @@ export default {
         port: {
             type: Object,
             required: true,
-            validator: port => typeof port.inactive === 'boolean' && typeof port.type === 'string'
+            validator: port => (typeof port.inactive === 'boolean' || !port.inactive) && typeof port.type === 'string'
         },
         /**
          * x coordinate of the port's center relative to the top left corner of the node

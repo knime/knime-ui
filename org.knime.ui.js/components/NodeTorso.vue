@@ -42,46 +42,52 @@ export default {
             return backgroundPaths[this.type] || backgroundPaths.default;
         },
         background() {
-            return this.$colors.nodeBackgroundColors[this.type] || this.$colors.nodeBackgroundColors.default;
+            return this.$colors.nodeBackgroundColors[this.type];
         },
         componentBgTransformation() {
             let offset = this.$shapes.nodeSize / 2;
             let scaleFactor = this.$shapes.componentBgPortion;
             return `translate(${offset}, ${offset}) scale(${scaleFactor}) translate(-${offset}, -${offset})`;
+        },
+        // Returns false for broken nodes, which can occur during development, but should not occur in production.
+        isKnownNode() {
+            if (this.kind === 'component') {
+                return this.type === 'Subnode' || Reflect.has(this.$colors.nodeBackgroundColors, this.type);
+            }
+            return this.kind === 'metanode' || Reflect.has(this.$colors.nodeBackgroundColors, this.type);
         }
     }
 };
 </script>
 
 <template>
-  <NodeTorsoUnknown
-    v-if="type === 'Unknown'"
-    class="bg"
-  />
   <NodeTorsoMissing
-    v-else-if="type === 'Missing'"
+    v-if="type === 'Missing'"
     class="bg"
   />
   <NodeTorsoMetanode
     v-else-if="kind === 'metanode'"
     class="bg"
   />
-  <g v-else>
+  <g v-else-if="isKnownNode">
     <path
       class="bg"
       :d="backgroundPath"
       :fill="kind === 'component' ? $colors.nodeBackgroundColors.Component : background"
     />
-    <!-- components have two layers of background. This is the inner part, a shrunk version of the outer frame -->
+    <!-- components may have two layers of background. This is the inner part, a shrunk version of the outer frame -->
     <path
-      v-if="kind === 'component'"
+      v-if="kind === 'component' && type !== 'Subnode'"
       class="bg"
       :d="backgroundPath"
       :fill="background"
       :transform="componentBgTransformation"
     />
-    <!-- TODO: icon here NXT-221 -->
   </g>
+  <NodeTorsoUnknown
+    v-else
+    class="bg"
+  />
 </template>
 
 <style>

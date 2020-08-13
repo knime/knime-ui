@@ -13,12 +13,10 @@ const colors = {
     Carrot: '#ff9632',
     Wood: '#d2a384',
     Stone: '#aaaaaa'
-
-
 };
 
 export const nodeBackgroundColors = {
-    default: colors['Hibiscus dark'], // "unknown"
+    Container: colors.Avocado,
     Component: colors['Silver Sand'],
     Learner: colors['Meadow light'],
     LoopEnd: colors.Aquamarine,

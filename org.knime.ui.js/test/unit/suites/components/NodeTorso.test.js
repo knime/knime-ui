@@ -22,14 +22,6 @@ describe('NodeTorso.vue', () => {
         expect(wrapper.find('.bg').attributes().fill).toBe('#ffd800');
     });
 
-    it('colors unknown node type', () => {
-        let wrapper = doShallowMount({
-            type: 'unknown',
-            kind: 'node'
-        });
-        expect(wrapper.find('.bg').attributes().fill).toBe($colors.nodeBackgroundColors.default);
-    });
-
     it('renders metanodes', () => {
         let wrapper = doShallowMount({
             kind: 'metanode'
@@ -53,7 +45,8 @@ describe('NodeTorso.vue', () => {
 
     it('renders buggy nodes (during development)', () => {
         let wrapper = doShallowMount({
-            type: 'Unknown'
+            type: 'Unknown',
+            kind: 'node'
         });
         expect(wrapper.findComponent(NodeTorsoUnknown).exists()).toBeTruthy();
     });
@@ -69,7 +62,17 @@ describe('NodeTorso.vue', () => {
         expect(bgs.at(0).attributes().fill).toBe(color);
     });
 
-    it('renders components', () => {
+    it('renders plain components', () => {
+        let wrapper = doShallowMount({
+            kind: 'component',
+            type: 'Subnode'
+        });
+        let bgs = wrapper.findAll('.bg');
+        expect(bgs.length).toBe(1);
+        expect(bgs.at(0).attributes().fill).toBe($colors.nodeBackgroundColors.Component);
+    });
+
+    it('renders typed components', () => {
         let wrapper = doShallowMount({
             type: 'Learner',
             kind: 'component'

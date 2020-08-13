@@ -22,7 +22,7 @@ export default {
         /**
          * Node name displayed above the node
          */
-        name: { type: String, required: true },
+        name: { type: String, default: '' },
 
         /**
          * Node id, unique to the containing workflow
