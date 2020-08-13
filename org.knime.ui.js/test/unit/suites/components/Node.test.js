@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { shallowMount, createLocalVue } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
@@ -83,18 +83,9 @@ describe('Node', () => {
         };
     });
 
-
     describe('renders default', () => {
         beforeEach(() => {
             doShallowMount();
-        });
-
-        it('calls portShift', () => {
-            expect(portShiftMock).toHaveBeenCalledWith(0, 2);
-            expect(portShiftMock).toHaveBeenCalledWith(1, 2);
-            expect(portShiftMock).toHaveBeenCalledWith(0, 3);
-            expect(portShiftMock).toHaveBeenCalledWith(1, 3);
-            expect(portShiftMock).toHaveBeenCalledWith(2, 3);
         });
 
         it('display node name', () => {
@@ -145,6 +136,31 @@ describe('Node', () => {
         });
 
     });
+
+    describe('metanode', () => {
+        beforeEach(() => {
+            propsData.kind = 'metanode';
+            doShallowMount();
+        });
+
+        it('displays all ports at right position', () => {
+            const ports = wrapper.findAllComponents(Port).wrappers;
+            const locations = ports.map(p => p.attributes()).map(({ x, y }) => [Number(x), Number(y)]);
+            const portAttrs = ports.map(p => p.props().port.index);
+
+            expect(locations).toStrictEqual([
+                [-4.5, 5.5],
+                [-4.5, 26.5],
+                [36.5, 5.5],
+                [36.5, 16],
+                [36.5, 26.5]
+            ]);
+
+            expect(portAttrs).toStrictEqual([0, 1, 0, 1, 2]);
+        });
+
+    });
+
 
     describe('unconnected default-flow-variable-ports', () => {
         let ports;

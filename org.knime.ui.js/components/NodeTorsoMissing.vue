@@ -1,6 +1,11 @@
 <template>
   <g fill="none">
-    <rect width="32" height="32" rx="2" fill="white" />
+    <rect
+      width="32"
+      height="32"
+      rx="2"
+      fill="white"
+    />
     <path
       d="M32 5.3V4.3H27.9V0H26.9V4.3H22.3V0H21.3V4.3H16.7V0H15.7V4.3H11.1V0H10.1V4.3H5.5V0H4.5V4.3H0V5.3H4.5V9.9H0V10.9H
       4.5V15.5H0V16.5H4.5V21.1H0V22.1H4.5V26.7H0V27.7H4.5V32H5.5V27.7H10.1V32H11.1V27.7H15.7V32H16.7V27.7H21.3V32H22.3V
