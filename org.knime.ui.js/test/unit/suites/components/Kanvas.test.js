@@ -15,7 +15,10 @@ const mockNode = ({ id }) => ({
     outPorts: [],
     type: '',
     annotation: { text: '' },
-    kind: 'node'
+    kind: 'node',
+    icon: 'data:image/',
+    templateId: 'A',
+    state: null
 });
 const mockConnector = ({ nr }) => ({
     sourceNode: '',

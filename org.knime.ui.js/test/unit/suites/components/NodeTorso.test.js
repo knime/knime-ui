@@ -36,9 +36,10 @@ describe('NodeTorso.vue', () => {
         expect(wrapper.findComponent(NodeTorsoMetanode).exists()).toBeTruthy();
     });
 
-    it('renders missing nodes', () => {
+    it.each(['node', 'component'])('renders missing %s', (kind) => {
         let wrapper = doShallowMount({
-            type: 'Missing'
+            type: 'Missing',
+            kind
         });
         expect(wrapper.findComponent(NodeTorsoMissing).exists()).toBeTruthy();
     });
@@ -70,6 +71,7 @@ describe('NodeTorso.vue', () => {
         let bgs = wrapper.findAll('.bg');
         expect(bgs.length).toBe(1);
         expect(bgs.at(0).attributes().fill).toBe($colors.nodeBackgroundColors.Component);
+        expect(wrapper.find('image').exists()).toBeFalsy();
     });
 
     it('renders typed components', () => {
@@ -81,5 +83,14 @@ describe('NodeTorso.vue', () => {
         expect(bgs.length).toBe(2);
         expect(bgs.at(0).attributes().fill).toBe($colors.nodeBackgroundColors.Component);
         expect(bgs.at(1).attributes().fill).toBe($colors.nodeBackgroundColors.Learner);
+    });
+
+    it('renders icon', () => {
+        let wrapper = doShallowMount({
+            type: 'Learner',
+            kind: 'node',
+            icon: 'data:image/0000'
+        });
+        expect(wrapper.find('image').attributes().href).toBe('data:image/0000');
     });
 });

@@ -17,4 +17,4 @@ export const connectorWidth = 2;
 export const annotationPadding = 15;
 
 // TODO 226: delete this
-export const annotationDefaultFontSize = 12;
+export const annotationDefaultFontSize = 11;

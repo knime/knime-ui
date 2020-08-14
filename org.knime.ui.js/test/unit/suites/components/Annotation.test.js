@@ -10,7 +10,6 @@ describe('Workflow Annotation', () => {
         wrapper = null;
         propsData = {
             textAlign: 'right',
-            defaultFontSize: 10,
             borderWidth: 4,
             borderColor: '#000',
             backgroundColor: '#000',
@@ -35,7 +34,7 @@ describe('Workflow Annotation', () => {
             });
 
             expect(wrapper.find('div').attributes().style).toBe(
-                'font-size: 10px; ' +
+                'font-size: 11px; ' +
                 'border: 4px solid; ' +
                 'border-color: #000; ' +
                 'background: rgb(0, 0, 0); ' +
