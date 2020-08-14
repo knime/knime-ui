@@ -57,7 +57,7 @@ export default {
         // Returns false for broken nodes, which can occur during development, but should not occur in production.
         isKnownNode() {
             if (this.kind === 'component') {
-                return this.type === 'Subnode' || Reflect.has(this.$colors.nodeBackgroundColors, this.type);
+                return !this.type || Reflect.has(this.$colors.nodeBackgroundColors, this.type);
             }
             return this.kind === 'metanode' || Reflect.has(this.$colors.nodeBackgroundColors, this.type);
         }
@@ -82,7 +82,7 @@ export default {
     />
     <!-- components may have two layers of background. This is the inner part, a shrunk version of the outer frame -->
     <path
-      v-if="kind === 'component' && type !== 'Subnode'"
+      v-if="kind === 'component' && type"
       class="bg"
       :d="backgroundPath"
       :fill="background"
