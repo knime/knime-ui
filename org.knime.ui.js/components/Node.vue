@@ -188,7 +188,10 @@ export default {
       {{ annotation.text }}
     </text>
 
-    <NodeState />
+    <NodeState
+      v-if="kind !== 'metanode'"
+      v-bind="state"
+    />
 
     <portal
       v-if="hover"
