@@ -17,54 +17,57 @@ export default {
         },
 
         /*
-          returns the upper-left bound [x1, y1],
-          the lower-right bound [x2, y2],
-          height and width of the workflow
+          returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
         */
-        canvasBounds() {
+        workflowBounds() {
             const { nodes = {}, workflowAnnotations = {} } = this.workflow;
             const { nodeSize } = this.$shapes;
 
-            let x1 = Infinity; let y1 = Infinity;
-            let x2 = -Infinity; let y2 = -Infinity;
+            let left = Infinity;
+            let top = Infinity;
+            let right = -Infinity;
+            let bottom = -Infinity;
 
             Object.values(nodes).forEach(({ position: { x, y } }) => {
-                if (x < x1) { x1 = x; }
-                if (y < y1) { y1 = y; }
+                if (x < left) { left = x; }
+                if (y < top) { top = y; }
 
-                if (x + nodeSize > x2) { x2 = x + nodeSize; }
-                if (y + nodeSize > y2) { y2 = y + nodeSize; }
+                if (x + nodeSize > right) { right = x + nodeSize; }
+                if (y + nodeSize > bottom) { bottom = y + nodeSize; }
             });
             Object.values(workflowAnnotations).forEach(({ bounds: { x, y, height, width } }) => {
-                if (x < x1) { x1 = x; }
-                if (y < y1) { y1 = y; }
+                if (x < left) { left = x; }
+                if (y < top) { top = y; }
 
-                if (x + width > x2) { x2 = x + width; }
-                if (y + height > y2) { y2 = y + height; }
+                if (x + width > right) { right = x + width; }
+                if (y + height > bottom) { bottom = y + height; }
             });
 
             // there are neither nodes nor workflows annotations
-            if (x1 === Infinity) {
-                x1 = 0; y1 = 0;
-                x2 = 0; y2 = 0;
+            if (left === Infinity) {
+                left = 0;
+                top = 0;
+                right = 0;
+                bottom = 0;
             }
-            
+
             return {
-                x1,
-                y1,
-                x2,
-                y2,
-                width: x2 - x1,
-                height: y2 - y1
+                left,
+                top,
+                right,
+                bottom
             };
         },
-        paddedBounds() {
+
+        svgBounds() {
             const { canvasPadding } = this.$shapes;
+            let { left, top, right, bottom } = this.workflowBounds;
+            let x = Math.min(0, left);
+            let y = Math.min(0, top);
+            let width = right - x + canvasPadding;
+            let height = bottom - y + canvasPadding;
             return {
-                x: this.canvasBounds.x1 - canvasPadding,
-                y: this.canvasBounds.y1 - canvasPadding,
-                width: this.canvasBounds.width + 2 * canvasPadding,
-                height: this.canvasBounds.height + 2 * canvasPadding
+                x, y, width, height
             };
         }
     }
@@ -76,9 +79,9 @@ export default {
     <h3>{{ `${workflow.name} - ${nrOfNodes} Nodes` }}</h3>
 
     <svg
-      :width="paddedBounds.width"
-      :height="paddedBounds.height"
-      :viewBox="`${paddedBounds.x} ${paddedBounds.y} ${paddedBounds.width} ${paddedBounds.height}`"
+      :width="svgBounds.width"
+      :height="svgBounds.height"
+      :viewBox="`${svgBounds.x} ${svgBounds.y} ${svgBounds.width} ${svgBounds.height}`"
     >
       <Annotation
         v-for="(annotation, id) of workflow.workflowAnnotations"
