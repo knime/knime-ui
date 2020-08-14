@@ -44,11 +44,11 @@ export const nodeStateBackgroundColors = {
 export const portColors = {
     data: '#000',
     variable: 'red',
-    other: 'green',
-    inactive: 'red',
-    inactiveOutline: 'hsla(0, 100%, 100%, 66%)'
+    inactive: 'red', // "×"
+    inactiveOutline: 'hsla(0, 100%, 100%, 66%)' // outline around "×"
 };
 
 export const connectorColors = {
-    default: '#c8c8c9'
+    default: colors['Silver Sand'],
+    variable: portColors.variable
 };

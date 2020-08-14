@@ -23,7 +23,11 @@ export default {
         /**
          * Index of the target node's input port that this connector is attached to
          */
-        destPort: { type: Number, required: true }
+        destPort: { type: Number, required: true },
+        /**
+         * Determines whether this connector is rendered in alternative color
+         */
+        flowVariableConnection: { type: Boolean, default: false }
     },
     computed: {
         ...mapState('workflows', ['workflow']),
@@ -61,6 +65,12 @@ export default {
                 `C${x1 + width / 2 + height / 3},${y1} ` + // eslint-disable-line no-magic-numbers
                 `${x2 - width / 2 - height / 3},${y2} ` + // eslint-disable-line no-magic-numbers
                 `${x2 - this.$shapes.portSize / 2},${y2} h${this.$shapes.portSize / 2}`; // eslint-disable-line no-magic-numbers
+        },
+        strokeColor() {
+            if (this.flowVariableConnection) {
+                return this.$colors.connectorColors.variable;
+            }
+            return this.$colors.connectorColors.default;
         }
     }
 };
@@ -69,7 +79,7 @@ export default {
 <template>
   <path
     :d="path"
-    :stroke="$colors.connectorColors.default"
+    :stroke="strokeColor"
     :stroke-width="$shapes.connectorWidth"
     fill="none"
   />
@@ -77,12 +87,12 @@ export default {
 
 <style scoped>
 path {
-  transition: stroke-width 0.1s linear, stroke 0.1s linear;
+  transition: stroke-width 0.1s linear, stroke 1.2s linear;
   cursor: grab;
 }
 
 path:hover {
   stroke-width: 2.5;
-  stroke: var(--knime-dove-gray);
+  filter: brightness(85%) hue-rotate(-20deg);
 }
 </style>
