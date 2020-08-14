@@ -16,7 +16,8 @@ const mockNode = ({ id, position }) => ({
     inPorts: [],
     outPorts: [],
     type: '',
-    annotation: { text: '' }
+    annotation: { text: '' },
+    kind: 'node'
 });
 const mockConnector = ({ nr }) => ({
     sourceNode: '',

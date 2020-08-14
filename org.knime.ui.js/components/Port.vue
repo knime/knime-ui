@@ -9,7 +9,7 @@ export default {
         port: {
             type: Object,
             required: true,
-            validator: port => typeof port.inactive === 'boolean' && typeof port.type === 'string'
+            validator: port => (typeof port.inactive === 'boolean' || !port.inactive) && typeof port.type === 'string'
         },
         /**
          * x coordinate of the port's center relative to the top left corner of the node
@@ -28,11 +28,14 @@ export default {
     },
     computed: {
         shouldFill() {
+            if (this.port.type === 'flowVariable' && this.port.index === 0) {
+                // Mickey Mouse ears are always rendered filled, even though they may technically be optional
+                return true;
+            }
             return !this.port.optional;
         },
         customPortColor() {
-            // TODO: adjust port color NXT-219
-            return 'grey';
+            return this.port.color;
         },
         trianglePath() {
             let { $shapes: { portSize } } = this;

@@ -1,6 +1,7 @@
 /* eslint-disable no-magic-numbers */
 export const nodeSize = 32;
 export const portSize = 9;
+export const componentBackgroundPortion = 0.75;
 
 export const nodeStatusHeight = 3 / 8 * nodeSize;
 export const nodeStatusMarginTop = 5;
