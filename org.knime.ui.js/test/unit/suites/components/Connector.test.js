@@ -105,14 +105,14 @@ describe('Connector', () => {
             wrapper = shallowMount(Connector, {
                 propsData: {
                     ...propsData,
-                    flowVariablePort: true
+                    flowVariableConnection: true
                 },
                 mocks
             });
 
             const { 'stroke-width': strokeWidth, stroke } = wrapper.find('path').attributes();
             expect(parseFloat(strokeWidth)).toBe($shapes.connectorWidth);
-            expect(stroke).toBe($colors.connectorColors.default);
+            expect(stroke).toBe($colors.connectorColors.variable);
         });
 
         it('applies styles for other ports', () => {

@@ -81,18 +81,23 @@ export default {
     :d="path"
     :stroke="strokeColor"
     :stroke-width="$shapes.connectorWidth"
+    :class="{ variable: flowVariableConnection }"
     fill="none"
   />
 </template>
 
 <style scoped>
 path {
-  transition: stroke-width 0.1s linear, stroke 1.2s linear;
+  transition: stroke-width 0.1s linear, stroke 0.2s linear;
   cursor: grab;
 }
 
 path:hover {
   stroke-width: 2.5;
-  filter: brightness(85%) hue-rotate(-20deg);
+  stroke: var(--knime-dove-gray);
+}
+
+path.variable:hover {
+  stroke: var(--knime-coral-dark);
 }
 </style>
