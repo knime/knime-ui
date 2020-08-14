@@ -35,7 +35,12 @@ export default {
          * Node variation.
          * @values 'node', 'metanode', 'component'
          */
-        kind: { type: String, required: true }
+        kind: { type: String, required: true, validator: kind => ['node', 'metanode', 'component'].includes(kind) },
+        
+        /**
+         * data-url containing Base64-encoded icon
+         */
+        icon: { type: String, default: null, validator: url => url.startsWith('data:image/') }
     },
     computed: {
         backgroundPath() {
@@ -83,6 +88,14 @@ export default {
       :fill="background"
       :transform="componentBackgroundTransformation"
     />
+    <image
+      v-if="icon"
+      x="8"
+      y="8"
+      width="16"
+      height="16"
+      :href="icon"
+    />
   </g>
   <NodeTorsoUnknown
     v-else
@@ -91,7 +104,8 @@ export default {
 </template>
 
 <style>
-.bg {
+.bg,
+image {
   cursor: grab;
 }
 </style>

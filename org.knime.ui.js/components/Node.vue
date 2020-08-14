@@ -20,36 +20,15 @@ export default {
     },
     props: {
         /**
-         * Node name displayed above the node
-         */
-        name: { type: String, default: '' },
-
-        /**
          * Node id, unique to the containing workflow
          */
         id: { type: String, required: true },
 
         /**
-         * Node type, e.g. "Learner", "Visualizer"
-         * Is undefined for MetaNodes
-         */
-        type: { type: String, default: null },
-
-        /**
          * Node variation.
          * @values 'node', 'metanode', 'component'
          */
-        kind: { type: String, required: true },
-
-        position: {
-            type: Object,
-            required: true,
-            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
-        },
-        /**
-         * Node annotation, displayed below the node
-         */
-        annotation: { type: Object, default: null },
+        kind: { type: String, required: true, validator: kind => ['node', 'metanode', 'component'].includes(kind) },
 
         /**
          * Input ports. List of configuration objects passed-through to the `Port` component
@@ -58,7 +37,50 @@ export default {
         /**
          * Output ports. List of configuration objects passed-through to the `Port` component
          */
-        outPorts: { type: Array, required: true }
+        outPorts: { type: Array, required: true },
+
+
+        position: {
+            type: Object,
+            required: true,
+            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
+        },
+
+        /**
+         * Node annotation, displayed below the node
+         */
+        annotation: { type: Object, default: null },
+        
+        /**
+         * Node name displayed above the node
+         * Only for Component and Metanode
+         */
+        name: { type: String, default: null },
+
+        /**
+         * References a Node template
+         * Only for native nodes
+         */
+        templateId: { type: String, default: null },
+
+        /**
+         * Node type, e.g. "Learner", "Visualizer"
+         * Only for Component
+         */
+        type: { type: String, default: null },
+
+        /**
+         * data-url of icon to be displayed on the node's body
+         * Only for Component but not required
+         */
+        icon: { type: String, default: null, validator: url => url.startsWith('data:image/') },
+
+        /**
+         * Node Execution State
+         * Only for Native and Component
+         */
+        // TODO NXT-223: use that state
+        state: { type: Object, default: null }
     },
     data() {
         return {
@@ -72,6 +94,19 @@ export default {
         hoverMargin() {
             // margin around the node's square
             return [37, 10, 8, 10]; // eslint-disable-line no-magic-numbers
+        },
+
+        /**
+         * native nodes reference a node template that contains static information like icon, name and type
+         * @returns {Object | null} node template
+         */
+        template() {
+            if (this.kind !== 'node') { return null; }
+
+            const template = this.workflow.nodeTemplates[this.templateId];
+            if (!template) { throw new Error(`template not found ${this.templateId}`); }
+
+            return template;
         }
     },
     methods: {
@@ -82,12 +117,10 @@ export default {
                 this.hover = false;
             }
         },
+        
         // default flow variable input ports (Mickey Mouse ears) are only shown if connected, or on hover
         showPort(port) {
-            if (this.kind === 'metanode') {
-                // Metanodes don't have Mickey Mouse ears
-                return true;
-            }
+            if (this.kind === 'metanode') { return true; } // Metanodes don't have Mickey Mouse ears
             return port.index !== 0 || port.connectedVia.length || this.hover;
         }
     }
@@ -106,7 +139,7 @@ export default {
       :y="-$shapes.nodeNameMargin"
       text-anchor="middle"
     >
-      {{ name }}
+      {{ template && template.name || name }}
     </text>
 
     <rect
@@ -120,8 +153,9 @@ export default {
     />
 
     <NodeTorso
-      :type="type"
+      :type="template && template.type || type"
       :kind="kind"
+      :icon="template && template.icon || icon"
     />
 
     <template v-for="port of inPorts">

@@ -9,11 +9,8 @@ export default {
          */
         textAlign: {
             type: String,
-            default: 'left'
-        },
-        defaultFontSize: {
-            type: Number,
-            default: 12
+            default: 'left',
+            validator: val => ['left', 'center', 'right'].includes(val)
         },
         borderWidth: {
             type: Number,
@@ -43,7 +40,7 @@ export default {
             const { height, width } = this.bounds;
 
             return {
-                fontSize: `${this.defaultFontSize}px`,
+                fontSize: `${this.$shapes.annotationDefaultFontSize}px`,
                 border: `${this.borderWidth}px solid`,
                 borderColor: this.borderColor,
                 background: this.backgroundColor,
