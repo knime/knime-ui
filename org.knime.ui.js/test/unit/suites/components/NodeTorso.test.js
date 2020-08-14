@@ -38,15 +38,16 @@ describe('NodeTorso.vue', () => {
 
     it('renders missing nodes', () => {
         let wrapper = doShallowMount({
-            type: 'Missing'
+            type: 'Missing',
+            kind: 'node'
         });
         expect(wrapper.findComponent(NodeTorsoMissing).exists()).toBeTruthy();
     });
 
-    it('renders buggy nodes (during development)', () => {
+    it.each(['node', 'component'])('renders buggy %ss (during development)', (type) => {
         let wrapper = doShallowMount({
             type: 'Unknown',
-            kind: 'node'
+            kind: type
         });
         expect(wrapper.findComponent(NodeTorsoUnknown).exists()).toBeTruthy();
     });
@@ -64,8 +65,7 @@ describe('NodeTorso.vue', () => {
 
     it('renders plain components', () => {
         let wrapper = doShallowMount({
-            kind: 'component',
-            type: 'Subnode'
+            kind: 'component'
         });
         let bgs = wrapper.findAll('.bg');
         expect(bgs.length).toBe(1);
