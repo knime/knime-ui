@@ -90,11 +90,11 @@ export default {
     />
     <image
       v-if="icon"
+      :href="icon"
       x="8"
       y="8"
       width="16"
       height="16"
-      :href="icon"
     />
   </g>
   <NodeTorsoUnknown

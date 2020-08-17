@@ -12,7 +12,12 @@ const colors = {
     Coral: '#ff4b4b',
     Carrot: '#ff9632',
     Wood: '#d2a384',
-    Stone: '#aaaaaa'
+    Stone: '#aaaaaa',
+    Masala: '#3e3a39'
+};
+
+export const textColors = {
+    default: colors.Masala
 };
 
 export const nodeBackgroundColors = {

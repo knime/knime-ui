@@ -3,7 +3,7 @@ export const nodeSize = 32;
 export const portSize = 9;
 
 export const nodeStatusHeight = 12;
-export const nodeStatusMarginTop = 5;
+export const nodeStatusMarginTop = 8;
 
 export const nodeAnnotationMargin = 32;
 export const nodeNameMargin = 12;
