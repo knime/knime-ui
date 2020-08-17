@@ -13,6 +13,6 @@ export const nodeSelectionBarHeight = 12;
 
 export const connectorWidth = 2;
 
-export const annotationPadding = 15;
+export const annotationPadding = 3;
 
 export const canvasPadding = 2 * nodeSize;

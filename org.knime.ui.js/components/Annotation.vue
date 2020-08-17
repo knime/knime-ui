@@ -1,8 +1,11 @@
 <script>
+import LegacyAnnotationText from '~/components/LegacyAnnotationText';
+
 /**
  * A workflow annotation, a rectangular box containing text.
  */
 export default {
+    components: { LegacyAnnotationText },
     props: {
         /**
          * @values "left", "center", "right"
@@ -36,6 +39,10 @@ export default {
         text: {
             type: String,
             default: ''
+        },
+        styleRanges: {
+            type: Array,
+            default: () => []
         }
     },
     computed: {
@@ -50,6 +57,7 @@ export default {
                 width: `${width - 2 * (this.borderWidth + this.$shapes.annotationPadding)}px`,
                 height: `${height - 2 * (this.borderWidth + this.$shapes.annotationPadding)}px`,
                 textAlign: this.textAlign,
+                lineHeight: 1.1,
                 padding: `${this.$shapes.annotationPadding}px`
             };
         }
@@ -64,7 +72,11 @@ export default {
     :width="bounds.width"
     :height="bounds.height"
   >
-    <div :style="style">{{ text }}</div>
+    <LegacyAnnotationText
+      :style="style"
+      :text="text"
+      :style-ranges="styleRanges"
+    />
   </foreignObject>
 </template>
 
