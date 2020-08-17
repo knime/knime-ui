@@ -16,11 +16,11 @@ import Vue from 'vue';
 export const state = () => ({});
 
 export const mutations = {
-    add(state, { nodeId, nodeData, workflowId }) {
+    add(state, { nodeData, workflowId }) {
         if (!Reflect.has(state, workflowId)) {
             Vue.set(state, workflowId, {});
         }
-        Vue.set(state[workflowId], nodeId, nodeData);
+        Vue.set(state[workflowId], nodeData.id, nodeData);
     }
 };
 

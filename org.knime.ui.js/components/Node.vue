@@ -17,6 +17,7 @@ export default {
         NodeState,
         NodeSelect
     },
+    inheritAttrs: false,
     props: {
         /**
          * Node id, unique to the containing workflow

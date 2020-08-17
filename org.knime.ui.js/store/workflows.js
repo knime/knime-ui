@@ -9,7 +9,7 @@ export const state = () => ({
 export const mutations = {
     setWorkflow(state, workflow) {
         // extract nodes
-        let nodes = workflow.nodes;
+        let { nodes = {} } = workflow;
         let nodeIds = Object.keys(nodes);
         let workflowData = {
             ...workflow,
@@ -18,7 +18,6 @@ export const mutations = {
         // …and move them to Nodes store
         nodeIds.forEach((nodeId) => {
             this.commit('nodes/add', {
-                nodeId,
                 workflowId: workflow.id,
                 nodeData: nodes[nodeId]
             }, { root: true });

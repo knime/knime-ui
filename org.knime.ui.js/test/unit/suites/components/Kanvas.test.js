@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { shallowMount, createLocalVue } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
@@ -8,6 +8,7 @@ import * as $shapes from '~/style/shapes';
 import Kanvas from '~/components/Kanvas.vue';
 import Node from '~/components/Node';
 import Connector from '~/components/Connector.vue';
+
 const { canvasPadding, nodeSize } = $shapes;
 
 const mockNode = ({ id, position }) => ({
@@ -20,7 +21,6 @@ const mockNode = ({ id, position }) => ({
     annotation: { text: '' },
     kind: 'node',
     icon: 'data:image/',
-    templateId: 'A',
     state: null
 });
 const mockConnector = ({ nr }) => ({
@@ -31,7 +31,7 @@ const mockConnector = ({ nr }) => ({
 });
 
 describe('Kanvas', () => {
-    let propsData, mocks, mount, wrapper, $store, workflow;
+    let propsData, mocks, mount, wrapper, $store, workflow, nodeData;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -40,14 +40,16 @@ describe('Kanvas', () => {
 
     beforeEach(() => {
         wrapper = null;
+        nodeData = {
+            'root:0': mockNode({ id: 'root:0', position: { x: -32, y: -32 } }),
+            'root:1': mockNode({ id: 'root:1', position: { x: 50, y: 50 } }),
+            'root:2': mockNode({ id: 'root:2', position: { x: 0, y: 100 } })
+        };
         propsData = {};
         workflow = {
+            id: 'some id',
             name: 'wf1',
-            nodes: {
-                'root:0': mockNode({ id: 'root:0', position: { x: -32, y: -32 } }),
-                'root:1': mockNode({ id: 'root:1', position: { x: 50, y: 50 } }),
-                'root:2': mockNode({ id: 'root:2', position: { x: 0, y: 100 } })
-            },
+            nodeIds: ['root:0', 'root:1', 'root:2'],
             connections: {
                 inA: mockConnector({ nr: 0 }),
                 outA: mockConnector({ nr: 1 }),
@@ -55,11 +57,23 @@ describe('Kanvas', () => {
             }
         };
         $store = mockVuexStore({
-            workflows: { state: { workflow } }
+            workflows: { state: { workflow } },
+            nodes: {
+                state: {
+                    'some id': nodeData
+                },
+                getters: {
+                    icon() { return ({ workflowId, nodeId }) => `data:image/${workflowId}-${nodeId}`; },
+                    name() { return ({ workflowId, nodeId }) => `name-${workflowId}-${nodeId}`; },
+                    type() { return ({ workflowId, nodeId }) => `type-${workflowId}-${nodeId}`; }
+                }
+            }
         });
 
         mocks = { $store, $shapes };
-        mount = () => { wrapper = shallowMount(Kanvas, { propsData, mocks }); };
+        mount = () => {
+            wrapper = shallowMount(Kanvas, { propsData, mocks });
+        };
     });
 
 
@@ -77,8 +91,17 @@ describe('Kanvas', () => {
         });
 
         it('renders nodes', () => {
-            let props = wrapper.findAllComponents(Node).wrappers.map(n => n.props());
-            expect(props).toStrictEqual(Object.values(workflow.nodes));
+            wrapper.findAllComponents(Node).wrappers.forEach((n, i) => {
+                let props = n.props();
+                let nodeId = workflow.nodeIds[i];
+                let expected = {
+                    ...nodeData[nodeId],
+                    icon: `data:image/some id-${nodeId}`,
+                    name: `name-some id-${nodeId}`,
+                    type: `type-some id-${nodeId}`
+                };
+                expect(props).toStrictEqual(expected);
+            });
         });
 
         it('renders connectors', () => {
@@ -102,7 +125,7 @@ describe('Kanvas', () => {
         });
 
         it('calculates dimensions of empty workflow', () => {
-            delete workflow.nodes;
+            workflow.nodeIds = [];
             mount();
 
             const { width, height, viewBox } = wrapper.find('svg').attributes();
@@ -116,9 +139,8 @@ describe('Kanvas', () => {
         });
 
         it('calculates dimensions of workflow containing one node away from the top left corner', () => {
-            workflow.nodes = {
-                'root:0': mockNode({ id: 'root:2', position: { x: 200, y: 200 } })
-            };
+            workflow.nodeIds = ['root:0'];
+            nodeData['root:0'] = mockNode({ id: 'root:2', position: { x: 200, y: 200 } });
             mount();
 
             const { width, height, viewBox } = wrapper.find('svg').attributes();
@@ -132,7 +154,7 @@ describe('Kanvas', () => {
         });
 
         it('calculates dimensions of workflow containing annotations only', () => {
-            delete workflow.nodes;
+            workflow.nodeIds = [];
             workflow.workflowAnnotations = {
                 'root:1': {
                     bounds: {
@@ -156,9 +178,8 @@ describe('Kanvas', () => {
         });
 
         it('calculates dimensions of workflow containing overlapping node + annotation', () => {
-            workflow.nodes = {
-                'root:1': mockNode({ id: 'root:1', position: { x: 10, y: 10 } })
-            };
+            workflow.nodeIds = ['root:1'];
+            nodeData['root:1'] = mockNode({ id: 'root:1', position: { x: 10, y: 10 } });
             workflow.workflowAnnotations = {
                 'root:1': {
                     bounds: {

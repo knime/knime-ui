@@ -1,6 +1,5 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
@@ -21,19 +20,9 @@ const mockPort = ({ index, connectedVia = [] }) => ({
     connectedVia
 });
 
-const mockConnection = ({ outgoing = false, index }) => ({
-    sourceNode: outgoing ? 'root:1' : 'root:0',
-    sourcePort: outgoing ? index : 1,
-    destPort: outgoing ? 2 : index,
-    destNode: outgoing ? 'root:2' : 'root:1'
-});
-
 const commonNode = {
     id: 'root:1',
     kind: 'node',
-
-    position: { x: 500, y: 200 },
-    annotation: { text: 'ThatsMyNode' },
 
     inPorts: [
         mockPort({ index: 0, connectedVia: ['inA'] }),
@@ -43,7 +32,16 @@ const commonNode = {
         mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] }),
         mockPort({ index: 1, outgoing: true }),
         mockPort({ index: 2, outgoing: true, connectedVia: ['outB'] })
-    ]
+    ],
+
+    position: { x: 500, y: 200 },
+    annotation: { text: 'ThatsMyNode' },
+
+    name: 'My Name',
+    type: 'Source',
+
+    icon: 'data:image/icon'
+
 };
 const nativeNode = {
     ...commonNode,
@@ -63,7 +61,7 @@ const metaNode = {
 };
 
 describe('Node', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store, workflow, portShiftMock;
+    let propsData, mocks, doShallowMount, wrapper, portShiftMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -75,27 +73,8 @@ describe('Node', () => {
         propsData = {
             // insert node before mounting
         };
-        workflow = {
-            nodes: {
-                [propsData.nodeID]: propsData
-            },
-            connections: {
-                inA: mockConnection({ index: 0 }),
-                outA: mockConnection({ index: 0, outgoing: true }),
-                outB: mockConnection({ index: 2, outgoing: true })
-            },
-            nodeTemplates: {
-                A: {
-                    icon: 'data:image/nodeIcon',
-                    name: 't for template',
-                    type: 'Sink'
-                }
-            }
-        };
-        $store = mockVuexStore({
-            workflows: { state: { workflow } }
-        });
-        mocks = { $shapes, $colors, $store };
+
+        mocks = { $shapes, $colors };
 
         if (portShiftMock) {
             portShiftMock.mockRestore();
@@ -107,47 +86,22 @@ describe('Node', () => {
         };
     });
 
-    describe('kind-specific properties', () => {
-
-        it.each([
-            ['native', nativeNode, 't for template'],
-            ['component', componentNode, 'c for component'],
-            ['metanode', metaNode, 'm for meta']
-        ])('name of %s', (kind, node, expectedName) => {
-            propsData = { ...node };
-            doShallowMount();
-            expect(wrapper.find('.name').text()).toBe(expectedName);
-        });
-
-        it.each([
-            ['native', nativeNode, 'Sink'],
-            ['component', componentNode, 'Source'],
-            ['metanode', metaNode, null]
-        ])('torso shape of %s', (kind, node, expectedType) => {
-            propsData = { ...node };
-            doShallowMount();
-            expect(wrapper.findComponent(NodeTorso).props().type).toBe(expectedType);
-        });
-
-        it.each([
-            ['native', nativeNode, 'data:image/nodeIcon'],
-            ['component', componentNode, 'data:image/componentIcon'],
-            ['metanode', metaNode, null]
-        ])('icon of %s', (kind, node, expectedIcon) => {
-            propsData = { ...node };
-            doShallowMount();
-            expect(wrapper.findComponent(NodeTorso).props().icon).toBe(expectedIcon);
-        });
-    });
-
-    describe('common properties', () => {
+    describe('features', () => {
         beforeEach(() => {
-            propsData = { ...nativeNode };
+            propsData = { ...commonNode };
             doShallowMount();
+        });
+
+        it('displays name (plaintext)', () => {
+            expect(wrapper.find('.name').text()).toBe('My Name');
         });
 
         it('displays annotation (plaintext)', () => {
             expect(wrapper.find('.annotation').text()).toBe('ThatsMyNode');
+        });
+
+        it('displays icon', () => {
+            expect(wrapper.findComponent(NodeTorso).props().icon).toBe('data:image/icon');
         });
 
         it('doesn’t show selection frame', () => {
