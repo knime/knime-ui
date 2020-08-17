@@ -1,5 +1,4 @@
 <script>
-import { mapState } from 'vuex';
 import Port from '~/components/Port.vue';
 import NodeState from '~/components/NodeState.vue';
 import NodeTorso from '~/components/NodeTorso.vue';
@@ -50,7 +49,7 @@ export default {
          * Node annotation, displayed below the node
          */
         annotation: { type: Object, default: null },
-        
+
         /**
          * Node name displayed above the node
          * Only for Component and Metanode
@@ -58,14 +57,7 @@ export default {
         name: { type: String, default: null },
 
         /**
-         * References a Node template
-         * Only for native nodes
-         */
-        templateId: { type: String, default: null },
-
-        /**
          * Node type, e.g. "Learner", "Visualizer"
-         * Only for Component
          */
         type: { type: String, default: null },
 
@@ -88,25 +80,9 @@ export default {
         };
     },
     computed: {
-        ...mapState('workflows', [
-            'workflow'
-        ]),
         hoverMargin() {
             // margin around the node's square
             return [37, 10, 8, 10]; // eslint-disable-line no-magic-numbers
-        },
-
-        /**
-         * native nodes reference a node template that contains static information like icon, name and type
-         * @returns {Object | null} node template
-         */
-        template() {
-            if (this.kind !== 'node') { return null; }
-
-            const template = this.workflow.nodeTemplates[this.templateId];
-            if (!template) { throw new Error(`template not found ${this.templateId}`); }
-
-            return template;
         }
     },
     methods: {
@@ -117,7 +93,7 @@ export default {
                 this.hover = false;
             }
         },
-        
+
         // default flow variable input ports (Mickey Mouse ears) are only shown if connected, or on hover
         showPort(port) {
             if (this.kind === 'metanode') { return true; } // Metanodes don't have Mickey Mouse ears
@@ -139,7 +115,7 @@ export default {
       :y="-$shapes.nodeNameMargin"
       text-anchor="middle"
     >
-      {{ template && template.name || name }}
+      {{ name }}
     </text>
 
     <rect
@@ -153,9 +129,9 @@ export default {
     />
 
     <NodeTorso
-      :type="template && template.type || type"
+      :type="type"
       :kind="kind"
-      :icon="template && template.icon || icon"
+      :icon="icon"
     />
 
     <template v-for="port of inPorts">

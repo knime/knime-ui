@@ -13,15 +13,16 @@ export default {
     computed: {
         ...mapState('workflows', ['workflow']),
         nrOfNodes() {
-            return Object.keys(this.workflow.nodes || {}).length;
+            return this.workflow.nodeIds.length;
         },
 
         /*
           returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
         */
         workflowBounds() {
-            const { nodes = {}, workflowAnnotations = {} } = this.workflow;
+            const { nodeIds, workflowAnnotations = {} } = this.workflow;
             const { nodeSize } = this.$shapes;
+            let nodes = nodeIds.map(nodeId => this.$store.state.nodes[this.workflow.id][nodeId]);
 
             let left = Infinity;
             let top = Infinity;
@@ -94,9 +95,12 @@ export default {
         v-bind="connector"
       />
       <Node
-        v-for="node in workflow.nodes"
-        :key="`node-${workflow.id}-${node.id}`"
-        v-bind="node"
+        v-for="nodeId in workflow.nodeIds"
+        :key="`node-${workflow.id}-${nodeId}`"
+        :icon="$store.getters['nodes/icon']({ workflowId: workflow.id, nodeId })"
+        :name="$store.getters['nodes/name']({ workflowId: workflow.id, nodeId })"
+        :type="$store.getters['nodes/type']({ workflowId: workflow.id, nodeId })"
+        v-bind="$store.state.nodes[workflow.id][nodeId]"
       />
       <portal-target
         multiple

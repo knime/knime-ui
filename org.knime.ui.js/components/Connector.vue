@@ -7,6 +7,7 @@ import portShift from '~/util/portShift';
  * Must be embedded in an `<svg>` element.
  */
 export default {
+    inheritAttrs: false,
     props: {
         /**
          * Node ID of the connector's source node
@@ -28,10 +29,10 @@ export default {
     computed: {
         ...mapState('workflows', ['workflow']),
         source() {
-            return this.workflow.nodes[this.sourceNode];
+            return this.$store.state.nodes[this.workflow.id][this.sourceNode];
         },
         target() {
-            return this.workflow.nodes[this.destNode];
+            return this.$store.state.nodes[this.workflow.id][this.destNode];
         },
         start() {
             const [dx, dy] = portShift(
