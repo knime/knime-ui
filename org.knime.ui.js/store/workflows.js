@@ -1,4 +1,3 @@
-import Vue from 'vue';
 import { getWorkflowIDs, loadWorkflow } from '~api';
 
 export const state = () => ({
@@ -25,7 +24,7 @@ export const mutations = {
         delete workflowData.nodes;
 
         // extract templates
-        let nodeTemplates = workflow.nodeTemplates;
+        let { nodeTemplates = {} } = workflow;
         let nodeTemplateIds = Object.keys(nodeTemplates);
         // …and move them to template store
         nodeTemplateIds.forEach((templateId) => {
@@ -36,7 +35,7 @@ export const mutations = {
         });
         delete workflowData.nodeTemplates;
 
-        Vue.set(state, 'workflow', workflowData);
+        state.workflow = workflowData;
     },
     setOpenWorkflowIDs(state, workflowIDs) {
         state.openWorkflowIDs = workflowIDs;
