@@ -134,7 +134,6 @@ public class InitService implements GatewayService {
 				} catch (NotASubWorkflowException | NodeNotFoundException e) {
 					throw new RuntimeException(e);
 				}
-				WorkflowProjectManager.removeWorkflowProject(uuid);
 			}
 		}
 		return openedWorkflows;

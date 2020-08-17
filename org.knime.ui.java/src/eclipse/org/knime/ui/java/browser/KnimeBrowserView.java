@@ -2,6 +2,7 @@ package org.knime.ui.java.browser;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.function.BiConsumer;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
@@ -10,10 +11,18 @@ import org.eclipse.swt.browser.ProgressEvent;
 import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.chromium.Browser;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.part.ViewPart;
+import org.knime.gateway.api.webui.entity.EventEnt;
+import org.knime.gateway.impl.webui.service.DefaultEventService;
+import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.ui.java.browser.function.JsonRpcBrowserFunction;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Simple view containing a browser initialized with the knime-ui webapp (or a
@@ -24,6 +33,7 @@ import org.osgi.framework.FrameworkUtil;
 public class KnimeBrowserView extends ViewPart {
 
 	protected Browser m_browser;
+	private BiConsumer<String, EventEnt> m_eventConsumer;
 
 	@Override
 	public void createPartControl(final Composite parent) {
@@ -39,6 +49,20 @@ public class KnimeBrowserView extends ViewPart {
 				throw new RuntimeException(e);
 			}
 		}
+		m_eventConsumer = createEventConsumer(m_browser);
+		DefaultEventService.getInstance().addEventConsumer(m_eventConsumer);
+	}
+
+	private static BiConsumer<String, EventEnt> createEventConsumer(Browser browser) {
+		return (name, event) -> {
+			// wrap event into a jsonrpc notification (method == event-name) and serialize
+			ObjectMapper mapper = ObjectMapperUtil.getInstance().getObjectMapper();
+			ObjectNode jsonrpc = mapper.createObjectNode();
+			ArrayNode params = jsonrpc.arrayNode();
+			params.addPOJO(event);
+			String message = jsonrpc.put("jsonrpc", "2.0").put("method", name).set("params", params).toString();
+			Display.getDefault().asyncExec(() -> browser.execute("jsonrpcNotification('" + message + "')"));
+		};
 	}
 
 	private static boolean displayDebugMessageIfInDebugMode(Browser browser) {
@@ -84,7 +108,7 @@ public class KnimeBrowserView extends ViewPart {
 
 	@Override
 	public void dispose() {
-		//
+		DefaultEventService.getInstance().removeEventConsumer(m_eventConsumer);
 	}
 
 	@Override
