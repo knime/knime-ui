@@ -84,5 +84,7 @@ export default {
 div {
   border-radius: 2px;
   line-height: 1.33;
+  cursor: default;
+  user-select: none;
 }
 </style>

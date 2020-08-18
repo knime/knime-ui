@@ -1,21 +1,14 @@
 <script>
-
-const validateStyleRanges = function (styleRanges)  {
-    if (!Array.isArray(styleRanges)) {
-        return false;
-    }
-    for (let i = 0; i < styleRanges.length; i++) {
-        let range = styleRanges[i];
-        if (typeof range.length !== 'number' || typeof range.start !== 'number') {
-            return false;
-        }
-        let nextRange = styleRanges[i + 1];
-        if (nextRange && range.start + range.length > nextRange.start) {
-            return false;
-        }
-    }
-    return true;
-};
+/**
+ * Check validity of styleRanges array.
+ * @param {Array} styleRanges A list of style ranges to be applied to the given text. Each entry must contain numerical
+ * `start` and `length` properties.
+ * @param {String=} text Optional. If this text is given, the validator checks if its lengths matches the length of the
+ * styleRange array. Otherwise this test is skipped.
+ * @returns {boolean} true if the styleRange is valid
+ */
+import { applyStyleRanges } from '~/util/styleRanges';
+import consola from 'consola';
 
 export default {
     props: {
@@ -25,29 +18,28 @@ export default {
         },
         styleRanges: {
             type: Array,
-            default: () => [],
-            validator: validateStyleRanges
+            default: () => []
         }
     },
     computed: {
         styledText() {
-            return this.styleRanges.map(styleRange => ({
-                ...styleRange,
-                text: this.text.substr(styleRange.start, styleRange.length)
-            }));
+            let { textRanges, isValid } = applyStyleRanges(this.styleRanges, this.text);
+            if (!isValid) {
+                consola.warn(`Invalid styleRanges: ${JSON.stringify(this.styleRanges)}. Using default style.`);
+            }
+            return textRanges;
         }
     }
 };
 </script>
 
 <template>
-  <!-- eslint-disable-next-line vue/no-v-html -->
   <div>
     <span
       v-for="(part, i) in styledText"
       :key="`text-${i}`"
       :style="{
-        fontSize: part.fontSize +'px',
+        fontSize: part.fontSize ? part.fontSize +'px' : null,
         color: part.color,
         fontWeight: part.bold ? 'bold': null,
         fontStyle: part.italic ? 'italic' : null
