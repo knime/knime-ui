@@ -26,11 +26,18 @@ export default {
         }
     },
     computed: {
+        /**
+         * sets the different lights of the traffic light
+         * @returns {[boolean, boolean, boolean] | undefined}
+         * @example [true, false, false] means [red: on, yellow: off, green: off]
+         * @example 'undefined' means no traffic light should be shown
+         */
         trafficLight() {
             return {
                 IDLE: [true, false, false],
                 CONFIGURED: [false, true, false],
                 EXECUTED: [false, false, true],
+                HALTED: [false, false, true], // TODO NXT-279: for now halted is the same state as executed
                 null: [false, false, false]
             }[this.state];
         },
@@ -130,6 +137,7 @@ export default {
     <!-- ERRORS & WARNINGS -->
     <g
       v-if="error"
+      class="error"
       :transform="`translate(${$shapes.nodeSize / 2}, ${$shapes.nodeStatusHeight})`"
     >
       <circle
@@ -153,6 +161,7 @@ export default {
     </g>
     <g
       v-else-if="warning"
+      class="warning"
       :transform="`translate(${$shapes.nodeSize / 2 - 6}, 4)`"
     >
       <path
