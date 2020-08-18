@@ -39,14 +39,6 @@ export const nodeBackgroundColors = {
     Visualizer: colors['Aquamarine dark']
 };
 
-// TODO: what is this needed for?
-export const nodeStateBackgroundColors = {
-    IDLE: '#c02a49',
-    CONFIGURED: '#fcd23e',
-    EXECUTED: '#4ea643',
-    EXECUTING: '#f2f9ff'
-};
-
 export const portColors = {
     data: '#000',
     variable: 'red',

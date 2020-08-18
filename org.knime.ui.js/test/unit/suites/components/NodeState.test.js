@@ -4,6 +4,7 @@ import { shallowMount, createLocalVue } from '@vue/test-utils';
 import NodeState from '~/components/NodeState';
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
+import muteConsole from '~/webapps-common/util/test-utils/muteConsole';
 
 describe('NodeState.vue', () => {
     let propsData, mocks, wrapper, mount;
@@ -64,7 +65,7 @@ describe('NodeState.vue', () => {
         if (state) {
             propsData.state = state;
         }
-        mount();
+        muteConsole(mount);
         expect(getTrafficLights()).toStrictEqual(style);
     });
 
