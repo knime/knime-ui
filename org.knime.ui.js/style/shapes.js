@@ -18,3 +18,5 @@ export const annotationPadding = 15;
 
 // TODO 226: delete this
 export const annotationDefaultFontSize = 11;
+
+export const canvasPadding = 2 * nodeSize;

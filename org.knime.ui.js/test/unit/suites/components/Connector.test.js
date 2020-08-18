@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { shallowMount, createLocalVue } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
@@ -100,9 +100,25 @@ describe('Connector', () => {
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
 
-        it('applies styles', () => {
-            const { 'stroke-width': strokeWidth } = wrapper.find('path').attributes();
+        it('applies styles for flow variable ports', () => {
+            mocks = { $shapes, $colors, $store };
+            wrapper = shallowMount(Connector, {
+                propsData: {
+                    ...propsData,
+                    flowVariableConnection: true
+                },
+                mocks
+            });
+
+            const { 'stroke-width': strokeWidth, stroke } = wrapper.find('path').attributes();
             expect(parseFloat(strokeWidth)).toBe($shapes.connectorWidth);
+            expect(stroke).toBe($colors.connectorColors.variable);
+        });
+
+        it('applies styles for other ports', () => {
+            const { 'stroke-width': strokeWidth, stroke } = wrapper.find('path').attributes();
+            expect(parseFloat(strokeWidth)).toBe($shapes.connectorWidth);
+            expect(stroke).toBe($colors.connectorColors.default);
         });
     });
 

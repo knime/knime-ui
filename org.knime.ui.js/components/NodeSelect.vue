@@ -71,6 +71,7 @@ export default {
 <style scoped>
 text {
   font: normal 10px "Roboto Condensed", sans-serif;
+  pointer-events: none;
 }
 
 .selection-frame {
