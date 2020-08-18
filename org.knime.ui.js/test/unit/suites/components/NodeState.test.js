@@ -67,7 +67,7 @@ describe('NodeState.vue', () => {
     });
 
 
-    it('all null state', () => {
+    it('shows all null state', () => {
         expect(wrapper.find('*').text()).toBe('');
         expect(wrapper.find('.warning').exists()).toBe(false);
         expect(wrapper.find('.error').exists()).toBe(false);

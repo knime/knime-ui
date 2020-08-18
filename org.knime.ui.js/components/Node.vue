@@ -50,7 +50,7 @@ export default {
          * Node annotation, displayed below the node
          */
         annotation: { type: Object, default: null },
-        
+
         /**
          * Node name displayed above the node
          * Only for Component and Metanode
@@ -93,7 +93,7 @@ export default {
         ]),
         hoverMargin() {
             // margin around the node's square
-            return [37, 10, 8, 10]; // eslint-disable-line no-magic-numbers
+            return [37, 10, 4, 10]; // eslint-disable-line no-magic-numbers
         },
 
         /**
@@ -101,10 +101,14 @@ export default {
          * @returns {Object | null} node template
          */
         template() {
-            if (this.kind !== 'node') { return null; }
+            if (this.kind !== 'node') {
+                return null;
+            }
 
             const template = this.workflow.nodeTemplates[this.templateId];
-            if (!template) { throw new Error(`template not found ${this.templateId}`); }
+            if (!template) {
+                throw new Error(`template not found ${this.templateId}`);
+            }
 
             return template;
         }
@@ -117,10 +121,13 @@ export default {
                 this.hover = false;
             }
         },
-        
+
         // default flow variable input ports (Mickey Mouse ears) are only shown if connected, or on hover
         showPort(port) {
-            if (this.kind === 'metanode') { return true; } // Metanodes don't have Mickey Mouse ears
+            if (this.kind === 'metanode') {
+                // Metanodes don't have Mickey Mouse ears
+                return true;
+            }
             return port.index !== 0 || port.connectedVia.length || this.hover;
         }
     }
@@ -130,79 +137,81 @@ export default {
 <template>
   <g
     :transform="`translate(${position.x}, ${position.y})`"
-    @mouseleave="onLeaveHoverArea"
-    @mouseenter="hover = true"
   >
-    <text
-      class="name"
-      :x="$shapes.nodeSize / 2"
-      :y="-$shapes.nodeNameMargin"
-      text-anchor="middle"
-    >
-      {{ template && template.name || name }}
-    </text>
-
-    <rect
-      class="hover-area"
-      :width="$shapes.nodeSize + hoverMargin[1] + hoverMargin[3]"
-      :height="$shapes.nodeSize + hoverMargin[0] + hoverMargin[2]"
-      :x="-hoverMargin[1]"
-      :y="-hoverMargin[0]"
-      @mouseenter="hover = true"
+    <g
       @mouseleave="onLeaveHoverArea"
-    />
-
-    <NodeTorso
-      :type="template && template.type || type"
-      :kind="kind"
-      :icon="template && template.icon || icon"
-    />
-
-    <template v-for="port of inPorts">
-      <Port
-        v-if="showPort(port)"
-        :key="`inport-${port.index}`"
-        :port="port"
-        :x="portShift(port.index, inPorts.length, kind === 'metanode')[0]"
-        :y="portShift(port.index, inPorts.length, kind === 'metanode')[1]"
-      />
-    </template>
-
-    <template v-for="port of outPorts">
-      <Port
-        v-if="showPort(port)"
-        :key="`outport-${port.index}`"
-        :port="port"
-        :x="portShift(port.index, outPorts.length, kind === 'metanode', true)[0]"
-        :y="portShift(port.index, outPorts.length, kind === 'metanode', true)[1]"
-      />
-    </template>
-
-    <text
-      v-if="annotation"
-      class="annotation"
-      :y="$shapes.nodeSize + $shapes.nodeAnnotationMargin"
-      :x="$shapes.nodeSize / 2"
-      text-anchor="middle"
+      @mouseenter="hover = true"
     >
-      {{ annotation.text }}
-    </text>
+      <text
+        class="name"
+        :x="$shapes.nodeSize / 2"
+        :y="-$shapes.nodeNameMargin"
+        text-anchor="middle"
+      >
+        {{ template && template.name || name }}
+      </text>
 
+      <rect
+        class="hover-area"
+        :width="$shapes.nodeSize + hoverMargin[1] + hoverMargin[3]"
+        :height="$shapes.nodeSize + hoverMargin[0] + hoverMargin[2]"
+        :x="-hoverMargin[1]"
+        :y="-hoverMargin[0]"
+        @mouseenter="hover = true"
+        @mouseleave="onLeaveHoverArea"
+      />
+
+      <NodeTorso
+        :type="template && template.type || type"
+        :kind="kind"
+        :icon="template && template.icon || icon"
+      />
+
+      <template v-for="port of inPorts">
+        <Port
+          v-if="showPort(port)"
+          :key="`inport-${port.index}`"
+          :port="port"
+          :x="portShift(port.index, inPorts.length, kind === 'metanode')[0]"
+          :y="portShift(port.index, inPorts.length, kind === 'metanode')[1]"
+        />
+      </template>
+
+      <template v-for="port of outPorts">
+        <Port
+          v-if="showPort(port)"
+          :key="`outport-${port.index}`"
+          :port="port"
+          :x="portShift(port.index, outPorts.length, kind === 'metanode', true)[0]"
+          :y="portShift(port.index, outPorts.length, kind === 'metanode', true)[1]"
+        />
+      </template>
+
+      <text
+        v-if="annotation"
+        class="annotation"
+        :y="$shapes.nodeSize + $shapes.nodeAnnotationMargin"
+        :x="$shapes.nodeSize / 2"
+        text-anchor="middle"
+      >
+        {{ annotation.text }}
+      </text>
+
+      <portal
+        v-if="hover"
+        to="node-select"
+      >
+        <NodeSelect
+          :x="position.x"
+          :y="position.y"
+          :node-id="id"
+        />
+      </portal>
+    </g>
     <NodeState
       v-if="kind !== 'metanode'"
       v-bind="state"
     />
-
-    <portal
-      v-if="hover"
-      to="node-select"
-    >
-      <NodeSelect
-        :x="position.x"
-        :y="position.y"
-        :node-id="id"
-      />
-    </portal>
   </g>
 </template>
 

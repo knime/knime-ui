@@ -1,5 +1,4 @@
 <script>
-/* eslint-disable vue/attribute-hyphenation */
 export default {
     props: {
         state: {
@@ -43,6 +42,10 @@ export default {
         },
         progressBarWidth() {
             return this.$shapes.nodeSize * this.progress / 100;
+        },
+        percentageClipPath() {
+            return `view-box polygon(0 0, ${this.progressBarWidth} 0, ` +
+             `${this.progressBarWidth} ${this.$shapes.nodeStatusHeight}, 0 ${this.$shapes.nodeStatusHeight})`;
         }
     }
 };
@@ -56,8 +59,8 @@ export default {
       rx="1"
       fill="#D8DCDD"
     />
-    
-    <!-- NODE'S STATIC STATES -->
+
+    <!-- node's static states -->
     <g v-if="trafficLight">
       <circle
         cx="6"
@@ -91,8 +94,8 @@ export default {
     >
       queued
     </text>
-    
-    <!-- NODE'S ANIMATED EXECUTION STATE -->
+
+    <!-- node's animated execution state -->
     <g
       v-else-if="state === 'EXECUTING'"
     >
@@ -104,7 +107,7 @@ export default {
         :fill="$colors.nodeProgressBar"
       />
 
-      <!-- PROGRESS BAR WITH TEXT -->
+      <!-- progress bar with text -->
       <g v-else>
         <text
           class="progress-text"
@@ -124,7 +127,7 @@ export default {
         <text
           class="progress-text"
           :x="$shapes.nodeSize / 2"
-          :clip-path="`view-box polygon(0 0, ${progressBarWidth} 0, ${progressBarWidth} ${$shapes.nodeStatusHeight}, 0 ${$shapes.nodeStatusHeight})`"
+          :clip-path="percentageClipPath"
           y="8.5"
           fill="white"
           text-anchor="middle"
@@ -133,8 +136,8 @@ export default {
         </text>
       </g>
     </g>
-    
-    <!-- ERRORS & WARNINGS -->
+
+    <!-- errors & warnings -->
     <g
       v-if="error"
       class="error"
@@ -168,7 +171,6 @@ export default {
         d="M5.99982 1.25244L0.518066 10.7474H11.4816L5.99982 1.25244Z"
         fill="#FFD800"
         stroke="#3E3A39"
-        stroke-miterlimit="10"
         stroke-linejoin="round"
       />
       <line
@@ -195,8 +197,13 @@ export default {
 }
 
 @keyframes executing {
-  from { cx: 6px; }
-  to { cx: 26px; }
+  from {
+    cx: 6px;
+  }
+
+  to {
+    cx: 26px;
+  }
 }
 
 .progress-circle {

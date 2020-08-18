@@ -164,11 +164,11 @@ describe('Node', () => {
         });
 
         it('shows frame on hover', async () => {
-            wrapper.find('g').trigger('mouseenter');
+            wrapper.find('g g').trigger('mouseenter');
             await Vue.nextTick();
             expect(wrapper.findComponent(NodeSelect).exists()).toBe(true);
 
-            wrapper.find('g').trigger('mouseleave');
+            wrapper.find('g g').trigger('mouseleave');
             await Vue.nextTick();
             expect(wrapper.findComponent(NodeSelect).exists()).toBe(false);
         });
@@ -246,7 +246,7 @@ describe('Node', () => {
         });
 
         it('shows those ports on hover', async () => {
-            wrapper.find('g').trigger('mouseenter');
+            wrapper.find('g g').trigger('mouseenter');
             await Vue.nextTick();
 
             ports = wrapper.findAllComponents(Port).wrappers;

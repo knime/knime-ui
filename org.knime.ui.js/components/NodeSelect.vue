@@ -26,7 +26,7 @@ export default {
     },
     computed: {
         // eslint-disable-next-line no-magic-numbers
-        padding: () => [25, 22, 20, 22], // padding around node
+        padding: () => [25, 22, 4, 22], // padding around node
         roundness: () => 2, // can be nodeSelectionBarHeight at maximum
         selectionBarPath() {
             const { padding, roundness, $shapes: { nodeSelectionBarHeight, nodeSize } } = this;
