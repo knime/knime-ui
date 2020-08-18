@@ -213,7 +213,7 @@ export default {
   animation-duration: 0.8s;
   animation-direction: alternate;
   animation-iteration-count: infinite;
-  animation-timing-function: ease-in-out;
+  animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1);
 }
 </style>
 
