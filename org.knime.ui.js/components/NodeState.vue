@@ -3,8 +3,10 @@ export default {
     props: {
         state: {
             type: String,
-            default: null,
-            validator: state => ['IDLE', 'CONFIGURED', 'EXECUTED', 'EXECUTING', 'QUEUED', 'HALTED'].includes(state)
+            default: 'null',
+            validator: state => [
+                'null', 'CONFIGURED', 'EXECUTED', 'EXECUTING', 'HALTED', 'IDLE', 'QUEUED'
+            ].includes(state)
         },
         // progress in percentage
         progress: {

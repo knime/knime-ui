@@ -61,7 +61,9 @@ describe('NodeState.vue', () => {
         ]],
         ['any other state', []]
     ])('draws traffic lights for state %s', (state, style) => {
-        propsData.state = state;
+        if (state) {
+            propsData.state = state;
+        }
         mount();
         expect(getTrafficLights()).toStrictEqual(style);
     });
