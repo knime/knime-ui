@@ -67,21 +67,21 @@ export default {
       <circle
         cx="6"
         cy="6"
-        r="3"
+        r="3.5"
         :fill="trafficLight[0] ? $colors.trafficLight.red : $colors.trafficLight.inactive"
         :stroke="trafficLight[0] ? $colors.trafficLight.redBorder : $colors.trafficLight.inactiveBorder"
       />
       <circle
         cx="16"
         cy="6"
-        r="3"
+        r="3.5"
         :fill="trafficLight[1] ? $colors.trafficLight.yellow : $colors.trafficLight.inactive"
         :stroke="trafficLight[1] ? $colors.trafficLight.yellowBorder : $colors.trafficLight.inactiveBorder"
       />
       <circle
         cx="26"
         cy="6"
-        r="3"
+        r="3.5"
         :fill="trafficLight[2] ? $colors.trafficLight.green : $colors.trafficLight.inactive"
         :stroke="trafficLight[2] ? $colors.trafficLight.greenBorder : $colors.trafficLight.inactiveBorder"
       />
