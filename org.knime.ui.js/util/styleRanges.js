@@ -30,11 +30,13 @@ const normalize = (styleRanges, text) => {
     let normalized = JSON.parse(JSON.stringify(styleRanges));
     normalized.sort(({ start }, { start: start2 }) => start - start2);
 
+    // handle empty string
+    if (!text) {
+        return { normalized: [], isValid: normalized.length === 0 };
+    }
+
     // handle empty range list
     if (normalized.length === 0) {
-        if (!text) {
-            return { normalized, isValid: true };
-        }
         return {
             normalized: getFallback(),
             isValid: true

@@ -48,6 +48,16 @@ describe('styleRanges util', () => {
             let result = applyStyleRanges([{ start: 1 }], 'foobar');
             expect(result).toEqual(expected);
         });
+
+        it('rejects empty text when range is present', () => {
+            let result = applyStyleRanges([{ start: 0, length: 1 }], '');
+            let expected = {
+                isValid: false,
+                textRanges: []
+            };
+            expect(result).toEqual(expected);
+        });
+
     });
 
     it('applies styles when single range cover text', () => {

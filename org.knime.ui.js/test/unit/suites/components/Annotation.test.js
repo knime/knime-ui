@@ -2,6 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import * as $shapes from '~/style/shapes';
 
 import Annotation from '~/components/Annotation';
+import LegacyAnnotationText from '~/components/LegacyAnnotationText';
 
 describe('Workflow Annotation', () => {
     let propsData, mocks, mount, wrapper;
@@ -15,7 +16,8 @@ describe('Workflow Annotation', () => {
             borderColor: '#000',
             backgroundColor: '#000',
             bounds: { x: 1, y: 2, width: 100, height: 50 },
-            text: 'hallo'
+            text: 'hallo',
+            styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
         };
         mocks = { $shapes };
         mount = () => { wrapper = shallowMount(Annotation, { propsData, mocks }); };
@@ -34,20 +36,25 @@ describe('Workflow Annotation', () => {
                 y: '2'
             });
 
-            expect(wrapper.find('div').attributes().style).toBe(
+            expect(wrapper.findComponent(LegacyAnnotationText).attributes().style).toBe(
                 'font-size: 10px; ' +
                 'border: 4px solid; ' +
                 'border-color: #000; ' +
                 'background: rgb(0, 0, 0); ' +
-                'width: 62px; ' +
-                'height: 12px; ' +
+                'width: 86px; ' +
+                'height: 36px; ' +
                 'text-align: right; ' +
-                'padding: 15px;'
+                'line-height: 1.1; ' +
+                'padding: 3px;'
             );
         });
 
-        it('renders plain-text', () => {
-            expect(wrapper.find('div').text()).toBe('hallo');
+        it('passes props to LegacyAnnotationText', () => {
+            expect(wrapper.findComponent(LegacyAnnotationText).props('text')).toBe('hallo');
+
+            expect(wrapper.findComponent(LegacyAnnotationText).props('styleRanges')).toEqual(
+                [{ start: 0, length: 2, fontSize: 12 }]
+            );
         });
     });
 });
