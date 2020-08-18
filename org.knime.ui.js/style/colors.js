@@ -16,7 +16,7 @@ const colors = {
     Masala: '#3e3a39'
 };
 
-export const textColors = {
+export const text = {
     default: colors.Masala
 };
 
@@ -39,6 +39,7 @@ export const nodeBackgroundColors = {
     Visualizer: colors['Aquamarine dark']
 };
 
+// TODO: what is this needed for?
 export const nodeStateBackgroundColors = {
     IDLE: '#c02a49',
     CONFIGURED: '#fcd23e',
@@ -57,3 +58,16 @@ export const portColors = {
 export const connectorColors = {
     default: '#c8c8c9'
 };
+
+export const trafficLight = {
+    red: '#D30D52',
+    redBorder: '#A90A42',
+    yellow: '#FFD800',
+    yellowBorder: '#AB9100',
+    green: '#3CB44B',
+    greenBorder: '#007D00',
+    inactive: 'white',
+    inactiveBorder: '#7B7B7B'
+};
+
+export const nodeProgressBar = '#1E6DA8';

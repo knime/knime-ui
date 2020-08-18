@@ -28,11 +28,14 @@ export default {
     computed: {
         trafficLight() {
             return {
-                IDLE: 'red',
-                CONFIGURED: 'yellow',
-                EXECUTED: 'green',
-                null: 'white'
+                IDLE: [true, false, false],
+                CONFIGURED: [false, true, false],
+                EXECUTED: [false, false, true],
+                null: [false, false, false]
             }[this.state];
+        },
+        progressBarWidth() {
+            return this.$shapes.nodeSize * this.progress / 100;
         }
     }
 };
@@ -53,31 +56,31 @@ export default {
         cx="6"
         cy="6"
         r="3"
-        :fill="trafficLight === 'red' ? '#D30D52' : 'white'"
-        :stroke="trafficLight === 'red' ? '#A90A42' : '#7B7B7B'"
+        :fill="trafficLight[0] ? $colors.trafficLight.red : $colors.trafficLight.inactive"
+        :stroke="trafficLight[0] ? $colors.trafficLight.redBorder : $colors.trafficLight.inactiveBorder"
       />
       <circle
         cx="16"
         cy="6"
         r="3"
-        :fill="trafficLight === 'yellow' ? '#FFD800' : 'white'"
-        :stroke="trafficLight === 'yellow' ? '#AB9100' : '#7B7B7B'"
+        :fill="trafficLight[1] ? $colors.trafficLight.yellow : $colors.trafficLight.inactive"
+        :stroke="trafficLight[1] ? $colors.trafficLight.yellowBorder : $colors.trafficLight.inactiveBorder"
       />
       <circle
         cx="26"
         cy="6"
         r="3"
-        :fill="trafficLight === 'green' ? '#3CB44B' : 'white'"
-        :stroke="trafficLight === 'green' ? '#007D00' : '#7B7B7B'"
+        :fill="trafficLight[2] ? $colors.trafficLight.green : $colors.trafficLight.inactive"
+        :stroke="trafficLight[2] ? $colors.trafficLight.greenBorder : $colors.trafficLight.inactiveBorder"
       />
     </g>
     <text
       v-else-if="state === 'QUEUED'"
       class="progress-text"
       :x="$shapes.nodeSize / 2"
-      :fill="$colors.textColors.default"
+      :fill="$colors.text.default"
       text-anchor="middle"
-      y="9"
+      y="8.5"
     >
       queued
     </text>
@@ -85,50 +88,39 @@ export default {
     <!-- NODE'S ANIMATED EXECUTION STATE -->
     <g
       v-else-if="state === 'EXECUTING'"
-      class="progress-circle"
     >
       <circle
         v-if="!progress"
         class="progress-circle"
         r="4"
         :cy="$shapes.nodeStatusHeight / 2"
-        fill="#1E6DA8"
-      >
-        <!-- <animateTransform
-          attributeName="transform"
-          type="translate"
-          from="4"
-          to="28"
-          keySplines=".5 0 .5 1"
-          calcMode="spline"
-          dur="1.5s"
-          repeatCount="indefinite"
-        /> -->
-      </circle>
+        :fill="$colors.nodeProgressBar"
+      />
 
       <!-- PROGRESS BAR WITH TEXT -->
       <g v-else>
-        <!-- <text
+        <text
           class="progress-text"
-          text-anchor="middle"
+          :fill="$colors.text.default"
           :x="$shapes.nodeSize / 2"
-          y="9"
+          text-anchor="middle"
+          y="8.5"
         >
           {{ progress }}%
-        </text> -->
+        </text>
         <rect
           :height="$shapes.nodeStatusHeight"
-          :width="$shapes.nodeSize * progress/100"
-          fill="#1E6DA8"
+          :width="progressBarWidth"
+          :fill="$colors.nodeProgressBar"
           rx="1"
         />
         <text
           class="progress-text"
-          text-anchor="middle"
           :x="$shapes.nodeSize / 2"
-          y="9"
+          :clip-path="`view-box polygon(0 0, ${progressBarWidth} 0, ${progressBarWidth} ${$shapes.nodeStatusHeight}, 0 ${$shapes.nodeStatusHeight})`"
+          y="8.5"
           fill="white"
-          clip-path="inset(0,10,0,20)"
+          text-anchor="middle"
         >
           {{ progress }}%
         </text>
@@ -193,13 +185,13 @@ export default {
   line-height: 9px;
 }
 
-@keyframes move {
+@keyframes executing {
   from { cx: 6px; }
   to { cx: 26px; }
 }
 
 .progress-circle {
-  animation-name: move;
+  animation-name: executing;
   animation-duration: 0.8s;
   animation-direction: alternate;
   animation-iteration-count: infinite;
