@@ -36,7 +36,7 @@ export default {
          * @values 'node', 'metanode', 'component'
          */
         kind: { type: String, required: true, validator: kind => ['node', 'metanode', 'component'].includes(kind) },
-        
+
         /**
          * data-url containing Base64-encoded icon
          */
@@ -95,6 +95,7 @@ export default {
       y="8"
       width="16"
       height="16"
+      pointer-events="none"
     />
   </g>
   <NodeTorsoUnknown

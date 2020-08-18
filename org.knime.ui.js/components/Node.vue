@@ -117,7 +117,7 @@ export default {
         portShift,
         onLeaveHoverArea(e) {
             // only disable hover state if the mouse leaves the area of the node
-            if (!this.$el.contains(e.relatedTarget)) {
+            if (!this.$el.querySelector('.hover-container').contains(e.relatedTarget)) {
                 this.hover = false;
             }
         },
@@ -139,6 +139,7 @@ export default {
     :transform="`translate(${position.x}, ${position.y})`"
   >
     <g
+      class="hover-container"
       @mouseleave="onLeaveHoverArea"
       @mouseenter="hover = true"
     >

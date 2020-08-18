@@ -150,17 +150,17 @@ export default {
         fill="#D30D52"
       />
       <line
-        x1="-2.26"
-        y1="-2.26"
-        x2="2.26"
-        y2="2.26"
+        x1="-2.25"
+        y1="-2.25"
+        x2="2.25"
+        y2="2.25"
         stroke="white"
       />
       <line
-        x1="+2.26"
-        y1="-2.26"
-        x2="-2.26"
-        y2="+2.26"
+        x1="2.25"
+        y1="-2.25"
+        x2="-2.25"
+        y2="2.25"
         stroke="white"
       />
     </g>
@@ -170,7 +170,7 @@ export default {
       :transform="`translate(${$shapes.nodeSize / 2 - 6}, 4)`"
     >
       <path
-        d="M5.99982 1.25244L0.518066 10.7474H11.4816L5.99982 1.25244Z"
+        d="M6,1.25 L0.5,10.75 H11.5 Z"
         fill="#FFD800"
         stroke="#3E3A39"
         stroke-linejoin="round"
