@@ -6,6 +6,7 @@ import LegacyAnnotationText from '~/components/LegacyAnnotationText';
  */
 export default {
     components: { LegacyAnnotationText },
+    inheritAttrs: false,
     props: {
         /**
          * @values "left", "center", "right"
@@ -14,9 +15,12 @@ export default {
             type: String,
             default: 'left'
         },
+        /**
+         * Font size that should be applied to unstyled text
+         */
         defaultFontSize: {
             type: Number,
-            default: 12
+            default: 11
         },
         borderWidth: {
             type: Number,

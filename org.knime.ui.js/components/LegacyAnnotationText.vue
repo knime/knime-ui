@@ -16,6 +16,25 @@ export default {
             type: String,
             default: ''
         },
+        /**
+         * Style ranges as produced by SWT. These take the form
+         * {
+         *     start: <Number>,
+         *     length: <Number>,
+         *     …styleAttributes
+         * }
+         *
+         * @example
+         * [{
+         *     start: 1,
+         *     length: 3,
+         *     bold: true,
+         *     italic: true,
+         *     fontSize: 14
+         * }, {
+         *     …
+         * }]
+         */
         styleRanges: {
             type: Array,
             default: () => []
