@@ -57,7 +57,7 @@ export default {
             const { height, width } = this.bounds;
 
             return {
-                fontSize: `${this.$shapes.annotationDefaultFontSize}px`,
+                fontSize: `${this.defaultFontSize}px`,
                 border: `${this.borderWidth}px solid`,
                 borderColor: this.borderColor,
                 background: this.backgroundColor,
