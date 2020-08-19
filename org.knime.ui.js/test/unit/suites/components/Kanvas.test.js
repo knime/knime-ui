@@ -27,7 +27,8 @@ const mockConnector = ({ nr }) => ({
     sourceNode: '',
     destNode: '',
     sourcePort: nr,
-    destPort: 0
+    destPort: 0,
+    flowVariableConnection: false
 });
 
 describe('Kanvas', () => {
@@ -106,7 +107,7 @@ describe('Kanvas', () => {
 
         it('renders connectors', () => {
             let props = wrapper.findAllComponents(Connector).wrappers.map(c => c.props());
-            expect(props).toStrictEqual(Object.values(workflow.connections));
+            expect(props).toEqual(Object.values(workflow.connections));
         });
 
     });
