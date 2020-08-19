@@ -122,7 +122,7 @@ export default {
         :y="-$shapes.nodeNameMargin"
         text-anchor="middle"
       >
-      {{ name }}
+        {{ name }}
       </text>
 
       <rect
@@ -136,9 +136,9 @@ export default {
       />
 
       <NodeTorso
-      :type="type"
+        :type="type"
         :kind="kind"
-      :icon="icon"
+        :icon="icon"
       />
 
       <template v-for="port of inPorts">
