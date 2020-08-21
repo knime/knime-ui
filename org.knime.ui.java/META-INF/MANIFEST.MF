@@ -3,8 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: KNIME UI Java
 Bundle-SymbolicName: org.knime.ui.java;singleton:=true
 Bundle-Version: 4.3.0.qualifier
-Export-Package: org.knime.ui.java,
- org.knime.ui.java.jsonrpc
+Export-Package: org.knime.ui.java
 Require-Bundle: com.github.briandilley.jsonrpc4j;bundle-version="[1.5.2,2.0.0)",
  org.knime.gateway.api;bundle-version="[4.2.0,5.0.0)",
  org.knime.core;bundle-version="[4.2.0,5.0.0)",
@@ -25,4 +24,5 @@ Require-Bundle: com.github.briandilley.jsonrpc4j;bundle-version="[1.5.2,2.0.0)",
  javax.inject;bundle-version="[1.0.0,2.0.0)",
  org.eclipse.e4.core.di.extensions;bundle-version="[0.15.500,1.0.0)",
  org.eclipse.osgi.services;bundle-version="[3.8.0,4.0.0)",
- org.eclipse.e4.ui.di;bundle-version="[1.2.800,2.0.0)"
+ org.eclipse.e4.ui.di;bundle-version="[1.2.800,2.0.0)",
+ org.knime.workbench.editor;bundle-version="[4.3.0,5.0.0)"

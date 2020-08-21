@@ -50,6 +50,7 @@ package org.knime.ui.java.browser.function;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,38 +62,37 @@ import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.service.DefaultServices;
 import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
-import org.knime.ui.java.jsonrpc.InitService;
 
 /**
  * Browser function for json-rpc calls which are forwarded to the respective
  * gateway service implementations, e.g. {@link DefaultWorkflowService}, and
  * others.
- * 
+ *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 public class JsonRpcBrowserFunction extends BrowserFunction {
 
-    private final JsonRpcRequestHandler m_jsonRpcHandler;
+	private final JsonRpcRequestHandler m_jsonRpcHandler;
 
-    public JsonRpcBrowserFunction(final Browser browser) {
-        super(browser, "jsonrpc");
-        Map<String, GatewayService> services = createJsonRpcServices();
-        services.put("InitService", InitService.getInstance());
-		m_jsonRpcHandler = new JsonRpcRequestHandler(ObjectMapperUtil.getInstance().getObjectMapper(),services);
-	   }
+	public JsonRpcBrowserFunction(final Browser browser) {
+		super(browser, "jsonrpc");
+		Map<String, GatewayService> services = createJsonRpcServices();
+		m_jsonRpcHandler = new JsonRpcRequestHandler(ObjectMapperUtil.getInstance().getObjectMapper(), services);
+	}
 
-		@Override
-		public Object function(final Object[] args) {
-			try {
-				return new String(m_jsonRpcHandler.handle(((String) args[0]).getBytes()));
-			} catch (Exception e) {
-				StringWriter sw = new StringWriter();
-				PrintWriter pw = new PrintWriter(sw);
-				e.printStackTrace(pw);
-				return "Unexpected problem:\n" + sw.toString();
-			}
+	@Override
+	public Object function(final Object[] args) {
+		try {
+			return new String(m_jsonRpcHandler.handle(((String) args[0]).getBytes(StandardCharsets.UTF_8)),
+					StandardCharsets.UTF_8);
+		} catch (Exception e) { // NOSONAR
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			return "Unexpected problem:\n" + sw.toString();
 		}
-  
+	}
+
 	private static Map<String, GatewayService> createJsonRpcServices() {
 		// create all default services and wrap them with the rest wrapper services
 		Map<String, GatewayService> wrappedServices = new HashMap<>();

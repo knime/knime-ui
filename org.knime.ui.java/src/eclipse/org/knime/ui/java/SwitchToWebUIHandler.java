@@ -59,7 +59,7 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class SwitchToWebUIHandler {
+public final class SwitchToWebUIHandler {
 
 	@Inject
 	private MApplication m_app;

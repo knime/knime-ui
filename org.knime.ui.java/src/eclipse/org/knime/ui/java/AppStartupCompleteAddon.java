@@ -53,6 +53,7 @@ import javax.inject.Inject;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.ui.model.application.MApplication;
+import org.eclipse.e4.ui.model.application.ui.MUIElement;
 import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
 import org.eclipse.e4.ui.model.application.ui.menu.MMenu;
 import org.eclipse.e4.ui.model.application.ui.menu.MMenuElement;
@@ -64,8 +65,8 @@ import org.eclipse.swt.widgets.Display;
 import org.osgi.service.event.Event;
 
 /**
- * Registered as fragment with the application model and called as soon as the startup
- * is completed.
+ * Registered as fragment with the application model and called as soon as the
+ * startup is completed.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
@@ -81,18 +82,23 @@ public final class AppStartupCompleteAddon {
 	@Optional
 	public void applicationStarted(@EventTopic(UIEvents.UILifeCycle.APP_STARTUP_COMPLETE) final Event event) {
 
-		// adds the button to switch to the web UI to the upper right corner
-		MTrimContribution tc = (MTrimContribution) m_modelService.cloneSnippet(m_app,
-				"org.knime.ui.java.trimcontribution.0", null);
-		MToolBar toolbar = (MToolBar) tc.getChildren().get(0);
-		MTrimBar trimBar = (MTrimBar) m_modelService.find("org.eclipse.ui.main.toolbar", m_app);
-		Display.getDefault().syncExec(() -> m_modelService.move(toolbar, trimBar));
+		// adds the button to switch to the web UI to the upper right corner (if
+		// not already there)
+		MUIElement el = m_modelService.find("org.knime.ui.java.toolbar.0", m_app);
+		if (el == null) {
+			MTrimContribution tc = (MTrimContribution) m_modelService.cloneSnippet(m_app,
+					"org.knime.ui.java.trimcontribution.0", null);
+			MToolBar toolbar = (MToolBar) tc.getChildren().get(0);
+			MTrimBar trimBar = (MTrimBar) m_modelService.find("org.eclipse.ui.main.toolbar", m_app);
+			Display.getDefault().syncExec(() -> m_modelService.move(toolbar, trimBar));
+		}
 
 		// hack to disable empty top-level menus which would otherwise magically
 		// appear when switching back to the classic perspective
 		m_app.getMenuContributions().forEach(mc -> {
 			List<MMenuElement> children = mc.getChildren();
-			// if there is a menu contribution with exactly one menu which in turn is empty
+			// if there is a menu contribution with exactly one menu which in
+			// turn is empty
 			if (children.size() == 1 && children.get(0) instanceof MMenu
 					&& ((MMenu) children.get(0)).getChildren().isEmpty()) {
 				mc.setVisible(false);
