@@ -36,6 +36,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class KnimeBrowserView {
 
+	private static final String APP_PAGE = "dist/inlined/index.html";
+
+	private static final String EMPTY_PAGE = "about:blank";
+
+	private static final String DEBUG_PAGE = "web/debug.html";
+
 	private Browser m_browser;
 	private BiConsumer<String, EventEnt> m_eventConsumer;
 
@@ -44,14 +50,30 @@ public class KnimeBrowserView {
 		m_browser = new Browser(parent, SWT.NONE);
 		new JsonRpcBrowserFunction(m_browser);
 		new SwitchToJavaUIBrowserFunction(m_browser);
-		if (!displayDebugMessageIfInDebugMode(m_browser)) {
-			URL url = Platform.getBundle("org.knime.ui.js").getEntry("dist/inlined/index.html");
-			try {
-				String path = FileLocator.toFileURL(url).getPath();
-				m_browser.setUrl("file://" + path);
-			} catch (IOException e) {
-				// should never happen
-				throw new RuntimeException(e);
+		setUrl();
+	}
+
+	/**
+	 * Clears the browser's url.
+	 */
+	public void clearUrl() {
+		m_browser.setUrl(EMPTY_PAGE);
+	}
+
+	/**
+	 * Sets the browser's URL to show the web-ui.
+	 */
+	public void setUrl() {
+		if (m_browser.getUrl().equals(EMPTY_PAGE)) {
+			if (!displayDebugMessageIfInDebugMode(m_browser)) { // NOSONAR
+				URL url = Platform.getBundle("org.knime.ui.js").getEntry(APP_PAGE);
+				try {
+					String path = FileLocator.toFileURL(url).getPath();
+					m_browser.setUrl("file://" + path);
+				} catch (IOException e) {
+					// should never happen
+					throw new IllegalStateException(e);
+				}
 			}
 		}
 		m_eventConsumer = createEventConsumer(m_browser);
@@ -99,7 +121,7 @@ public class KnimeBrowserView {
 	private static void setDebugMessagePage(final Browser browser, final String port) {
 		Bundle myBundle = FrameworkUtil.getBundle(KnimeBrowserView.class);
 		try {
-			URL url = myBundle.getEntry("web/debug.html");
+			URL url = myBundle.getEntry(DEBUG_PAGE);
 			String path = FileLocator.toFileURL(url).getPath();
 			browser.setUrl("file://" + path);
 			final String debugMsg = "Remote debugger running at http://localhost:" + port;

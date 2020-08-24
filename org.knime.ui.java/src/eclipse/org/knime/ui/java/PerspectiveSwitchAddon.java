@@ -24,6 +24,7 @@ import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppState;
 import org.knime.gateway.impl.webui.service.DefaultApplicationService;
+import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.osgi.service.event.Event;
 
@@ -57,13 +58,21 @@ public final class PerspectiveSwitchAddon {
 		MPerspective newPerspective = (MPerspective) newValue;
 		MPerspective webUIPerspective = SwitchToWebUIHandler.getWebUIPerspective(m_app, m_modelService);
 
-		if (oldPerspective == webUIPerspective || newPerspective == webUIPerspective) {
-			setTrimsAndMenuVisible(newPerspective != webUIPerspective);
-		}
-
-		if (oldPerspective != webUIPerspective) {
+		if (newPerspective == webUIPerspective) {
 			updateAppState();
+			setTrimsAndMenuVisible(false);
+			getBrowserView().ifPresent(KnimeBrowserView::setUrl);
+		} else if (oldPerspective == webUIPerspective) {
+			setTrimsAndMenuVisible(true);
+			getBrowserView().ifPresent(KnimeBrowserView::clearUrl);
+		} else {
+			//
 		}
+	}
+
+	private java.util.Optional<KnimeBrowserView> getBrowserView() {
+		return java.util.Optional.ofNullable(
+				(KnimeBrowserView) ((MPart) m_modelService.find("org.knime.ui.java.browser.view", m_app)).getObject());
 	}
 
 	private void setTrimsAndMenuVisible(final boolean visible) {
@@ -142,7 +151,7 @@ public final class PerspectiveSwitchAddon {
 		final AtomicReference<WorkflowManager> wfm = new AtomicReference<>();
 		Display.getDefault()
 				.syncExec(() -> wfm.set(((WorkflowEditor) ref.getEditor(true)).getWorkflowManager().orElse(null)));
-		return wfm.get().isProject() ? wfm.get() : null;
+		return wfm.get() == null || !wfm.get().isProject() ? null : wfm.get();
 	}
 
 }
