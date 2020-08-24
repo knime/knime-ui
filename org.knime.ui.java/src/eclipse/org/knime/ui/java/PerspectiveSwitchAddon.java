@@ -140,7 +140,7 @@ public final class PerspectiveSwitchAddon {
 			}
 			if (wp != null) {
 				workflowProjectIds.add(wp.getID());
-				if (editorPart.getTags().contains("active")) {
+				if (editorPart.getParent().getSelectedElement() == editorPart) {
 					activeWorkflowIds.add(wp.getID());
 				}
 			}
