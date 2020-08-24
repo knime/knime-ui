@@ -9,6 +9,7 @@
     "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint --ext .js,.mjs,.vue .",
     "lint:css": "stylelint '**/*.{css,vue}'",
+    "audit": "audit-ci --config audit-ci.config.js",
     "test:unit": "jest",
     "coverage": "jest --coverage",
     "sendcoverage": "cross-var sonar-scanner -Dsonar.login=\"$SONAR_LOGIN\" -Dsonar.password=\"$SONAR_PASSWORD\""
