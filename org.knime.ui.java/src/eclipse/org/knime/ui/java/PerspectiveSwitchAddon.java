@@ -36,6 +36,9 @@ import org.osgi.service.event.Event;
  * perspective is changed (e.g. via toolbar action, perspective switch shortcut,
  * etc.).
  *
+ * <br/><br/>
+ * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
+ *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 public final class PerspectiveSwitchAddon {

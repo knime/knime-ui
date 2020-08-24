@@ -68,6 +68,9 @@ import org.osgi.service.event.Event;
  * Registered as fragment with the application model and called as soon as the
  * startup is completed.
  *
+ * <br/><br/>
+ * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
+ *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 public final class AppStartupCompleteAddon {

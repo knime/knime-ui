@@ -57,6 +57,9 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService;
 /**
  * Handler to switch to the KNIME Web UI.
  *
+ * <br/><br/>
+ * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
+ *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 public final class SwitchToWebUIHandler {

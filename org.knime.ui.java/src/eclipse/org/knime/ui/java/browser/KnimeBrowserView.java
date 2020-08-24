@@ -32,6 +32,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * Simple view containing a browser initialized with the knime-ui webapp (or a
  * debug message if in debug mode) and the {@link JsonRpcBrowserFunction}.
  *
+ * <br/><br/>
+ * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
+ *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 public class KnimeBrowserView {
