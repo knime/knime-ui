@@ -1,9 +1,12 @@
 import { fetchApplicationState, loadWorkflow as loadWorkflowFromApi } from '~api';
 import consola from 'consola';
+import Vue from 'vue';
+import * as $shapes from '~/style/shapes';
 
 export const state = () => ({
     workflow: null,
-    openedWorkflows: []
+    openedWorkflows: [],
+    tooltip: null
 });
 
 export const mutations = {
@@ -43,9 +46,13 @@ export const mutations = {
         delete workflowData.nodeTemplates;
 
         state.workflow = workflowData;
+        state.tooltip = null;
     },
     setOpenedWorkflows(state, descriptors) {
         state.openedWorkflows = descriptors;
+    },
+    setTooltip(state, tooltip) {
+        Vue.set(state, 'tooltip', tooltip);
     }
 };
 
@@ -69,5 +76,79 @@ export const actions = {
         } else {
             throw new Error(`workflow not found: ${id}`);
         }
+    }
+};
+
+export const getters = {
+    nodes(state, getters, rootState) {
+        return rootState.nodes[state.workflow.projectId];
+    },
+    /*
+        returns the true offset from the upper-left corner of the svg for a given point
+    */
+    getAbsoluteCoordinates(state, getters, rootState) {
+        const { x: left, y: top } = getters.svgBounds;
+        return (x, y) => ({ x: x - left, y: y - top });
+    },
+    /*
+        extends the workflowBounds by a fixed padding
+    */
+    svgBounds(state, getters, rootState) {
+        const { canvasPadding } = $shapes;
+        let { left, top, right, bottom } = getters.workflowBounds;
+        let x = Math.min(0, left);
+        let y = Math.min(0, top);
+        let width = right - x + canvasPadding;
+        let height = bottom - y + canvasPadding;
+        return {
+            x, y, width, height
+        };
+    },
+    /*
+        returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
+    */
+    workflowBounds({ workflow }, getters, rootState) {
+        const { nodeIds, workflowAnnotations = [] } = workflow;
+        const { nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight } = $shapes;
+        let nodes = nodeIds.map(nodeId => getters.nodes[nodeId]);
+
+        let left = Infinity;
+        let top = Infinity;
+        let right = -Infinity;
+        let bottom = -Infinity;
+
+        nodes.forEach(({ position: { x, y } }) => {
+            const nodeNameLineHeight = 14;
+            const nodeTop = y - nodeNameMargin - nodeNameLineHeight;
+            const nodeBottom = y + nodeSize + nodeStatusMarginTop + nodeStatusHeight;
+
+            if (x < left) { left = x; }
+            if (nodeTop < top) { top = nodeTop; }
+
+            if (x + nodeSize > right) { right = x + nodeSize; }
+            if (nodeBottom > bottom) { bottom = nodeBottom; }
+        });
+        workflowAnnotations.forEach(({ bounds: { x, y, height, width } }) => {
+            if (x < left) { left = x; }
+            if (y < top) { top = y; }
+
+            if (x + width > right) { right = x + width; }
+            if (y + height > bottom) { bottom = y + height; }
+        });
+
+        // there are neither nodes nor workflows annotations
+        if (left === Infinity) {
+            left = 0;
+            top = 0;
+            right = 0;
+            bottom = 0;
+        }
+
+        return {
+            left,
+            top,
+            right,
+            bottom
+        };
     }
 };

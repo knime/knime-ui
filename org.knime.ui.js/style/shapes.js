@@ -20,3 +20,6 @@ export const workflowAnnotationPadding = 3;
 export const nodeAnnotationPadding = 2;
 
 export const canvasPadding = 2 * nodeSize;
+
+export const tooltipArrowSize = 8;
+export const tooltipMaxWidth = 250;

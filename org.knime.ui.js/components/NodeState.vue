@@ -1,5 +1,8 @@
 <script>
+import { mapMutations, mapGetters } from 'vuex';
+/* eslint-disable vue/attribute-hyphenation */
 export default {
+    inject: ['nodeId'],
     props: {
         state: {
             type: String,
@@ -27,6 +30,7 @@ export default {
         }
     },
     computed: {
+        ...mapGetters('workflows', ['getAbsoluteCoordinates']),
         /**
          * sets the different lights of the traffic light
          * @returns {[boolean, boolean, boolean] | undefined}
@@ -48,13 +52,43 @@ export default {
         percentageClipPath() {
             return `view-box polygon(0 0, ${this.progressBarWidth} 0, ` +
              `${this.progressBarWidth} ${this.$shapes.nodeStatusHeight}, 0 ${this.$shapes.nodeStatusHeight})`;
+        },
+        tooltip() {
+            const { nodeSize, nodeStatusHeight, nodeStatusMarginTop } = this.$shapes;
+            let tooltip = {
+                x: nodeSize / 2,
+                y: nodeSize + nodeStatusMarginTop + nodeStatusHeight + 5, // 5 is the radius of the error symbol
+                anchor: { node: this.nodeId }
+            };
+          
+            if (this.error) {
+                return { ...tooltip, text: this.error, type: 'error' };
+            } else if (this.warning) {
+                return { ...tooltip, text: this.warning, type: 'warning' };
+            } else if (this.progressMessage) {
+                return { ...tooltip, text: this.progressMessage };
+            }
+            return null;
+        }
+    },
+    methods: {
+        ...mapMutations('workflows', ['setTooltip']),
+        onHover() {
+            this.setTooltip(this.tooltip);
+        },
+        offHover() {
+            this.setTooltip(null);
         }
     }
 };
 </script>
 
 <template>
-  <g :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`">
+  <g
+    :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`"
+    @mouseenter="onHover"
+    @mouseleave="offHover"
+  >
     <rect
       :width="$shapes.nodeSize"
       :height="$shapes.nodeStatusHeight"

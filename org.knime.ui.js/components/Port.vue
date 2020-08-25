@@ -1,7 +1,9 @@
 <script>
+import { mapMutations } from 'vuex';
 /* eslint-disable no-magic-numbers */
 
 export default {
+    inject: ['nodeId'],
     props: {
         /**
          * Port configuration object
@@ -49,6 +51,26 @@ export default {
             y3 -= (1 + Math.sqrt(5)) / 4;
 
             return `${x1},${y1} ${x2},${0} ${x1},${y3}`;
+        },
+        tooltip() {
+            const { portSize } = this.$shapes;
+            return {
+                x: this.x,
+                y: this.y - portSize / 2,
+                anchor: { node: this.nodeId },
+                title: this.port.name,
+                text: this.port.info,
+                orientation: 'top'
+            };
+        }
+    },
+    methods: {
+        ...mapMutations('workflows', ['setTooltip']),
+        onHover() {
+            this.setTooltip(this.tooltip);
+        },
+        offHover() {
+            this.setTooltip(null);
         }
     }
 };
@@ -58,6 +80,8 @@ export default {
   <g
     :transform="`translate(${x}, ${y})`"
     class="port"
+    @mouseenter="onHover"
+    @mouseleave="offHover"
   >
     <!-- data table port -->
     <polygon
