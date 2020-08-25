@@ -37,8 +37,7 @@ describe('Workflow Annotation', () => {
 
             expect(wrapper.findComponent(LegacyAnnotationText).attributes().style).toBe(
                 'font-size: 11px; ' +
-                'border: 4px solid; ' +
-                'border-color: #000; ' +
+                'border: 4px solid #000; ' +
                 'background: rgb(0, 0, 0); ' +
                 'width: 86px; ' +
                 'height: 36px; ' +
