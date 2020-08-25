@@ -58,8 +58,7 @@ export default {
 
             return {
                 fontSize: `${this.defaultFontSize}px`,
-                border: `${this.borderWidth}px solid`,
-                borderColor: this.borderColor,
+                border: `${this.borderWidth}px solid ${this.borderColor}`,
                 background: this.backgroundColor,
                 width: `${width - 2 * (this.borderWidth + this.$shapes.annotationPadding)}px`,
                 height: `${height - 2 * (this.borderWidth + this.$shapes.annotationPadding)}px`,

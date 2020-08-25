@@ -95,10 +95,10 @@ export default {
             }
         },
 
-        // default flow variable input ports (Mickey Mouse ears) are only shown if connected, or on hover
+        // default flow variable ports (Mickey Mouse ears) are only shown if connected, or on hover
         showPort(port) {
             if (this.kind === 'metanode') {
-                // Metanodes don't have Mickey Mouse ears
+                // Metanodes don't have Mickey Mouse ears, so port #0 is the first "real" port
                 return true;
             }
             return port.index !== 0 || port.connectedVia.length || this.hover;

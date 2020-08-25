@@ -1,5 +1,5 @@
 // TODO: adjust implementations of all functions to final version of InitService (NXT-186)
-let RPCworkflows = [];
+let rpcWorkflows = [];
 
 const fetchFromAP = () => {
     const req = {
@@ -10,15 +10,15 @@ const fetchFromAP = () => {
     let response = window.jsonrpc(JSON.stringify(req));
 
     response = JSON.parse(response);
-    RPCworkflows = response.result.filter(Boolean).map(r => r.workflow);
+    rpcWorkflows = response.result.filter(Boolean).map(r => r.workflow);
 };
 
 export const loadWorkflow = (id) => {
-    if (!RPCworkflows.length) {
+    if (!rpcWorkflows.length) {
         fetchFromAP();
     }
     let workflow;
-    workflow = RPCworkflows.find(workflow => workflow.name === id);
+    workflow = rpcWorkflows.find(workflow => workflow.name === id);
 
     if (!workflow) { return Promise.resolve(null); }
 
@@ -30,8 +30,6 @@ export const loadWorkflow = (id) => {
 };
 
 export const getWorkflowIDs = () => {
-    if (!RPCworkflows.length) {
-        fetchFromAP();
-    }
-    return Promise.resolve(RPCworkflows.map(workflow => workflow.name));
+    fetchFromAP();
+    return Promise.resolve(rpcWorkflows.map(workflow => workflow.name));
 };
