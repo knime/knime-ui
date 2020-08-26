@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ASCII"?>
+<fragment:ModelFragments xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:advanced="http://www.eclipse.org/ui/2010/UIModel/application/ui/advanced" xmlns:application="http://www.eclipse.org/ui/2010/UIModel/application" xmlns:basic="http://www.eclipse.org/ui/2010/UIModel/application/ui/basic" xmlns:commands="http://www.eclipse.org/ui/2010/UIModel/application/commands" xmlns:fragment="http://www.eclipse.org/ui/2010/UIModel/fragment" xmlns:menu="http://www.eclipse.org/ui/2010/UIModel/application/ui/menu" xmi:id="_QlspYOHxEeqv_LafONhFZw">
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_MLH3UOH4Eeqv_LafONhFZw" featurename="handlers" parentElementId="org.eclipse.e4.legacy.ide.application">
+    <elements xsi:type="commands:Handler" xmi:id="_RzFlYOH4Eeqv_LafONhFZw" elementId="org.knime.ui.java.handler.switch" contributionURI="bundleclass://org.knime.ui.java/org.knime.ui.java.SwitchToWebUIHandler" command="_XgFkcOH4Eeqv_LafONhFZw"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_Vz69kOH4Eeqv_LafONhFZw" featurename="commands" parentElementId="org.eclipse.e4.legacy.ide.application">
+    <elements xsi:type="commands:Command" xmi:id="_XgFkcOH4Eeqv_LafONhFZw" elementId="org.knime.ui.java.command.switch" commandName="Switch to Web UI"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_vKWbgOISEeqv_LafONhFZw" featurename="children" parentElementId="IDEWindow" positionInList="">
+    <elements xsi:type="advanced:PerspectiveStack" xmi:id="_j6wVkOIdEeqv_LafONhFZw" elementId="org.eclipse.ui.ide.perspectivestack">
+      <children xsi:type="advanced:Perspective" xmi:id="_zsE9QOHxEeqv_LafONhFZw" elementId="org.knime.ui.java.perspective" visible="false" selectedElement="_lJevIOH0Eeqv_LafONhFZw" label="WebUI" iconURI="platform:/plugin/org.knime.ui.java/icons/knime.png">
+        <children xsi:type="basic:Part" xmi:id="_lJevIOH0Eeqv_LafONhFZw" elementId="org.knime.ui.java.browser.view" contributionURI="bundleclass://org.knime.ui.java/org.knime.ui.java.browser.KnimeBrowserView" iconURI="platform:/plugin/org.knime.ui.java/icons/knime.png"/>
+      </children>
+    </elements>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_N5ZaYOIhEeqv_LafONhFZw" featurename="addons" parentElementId="org.eclipse.e4.legacy.ide.application">
+    <elements xsi:type="application:Addon" xmi:id="_PIzMwOIhEeqv_LafONhFZw" elementId="org.knime.ui.java.addon.0" contributionURI="bundleclass://org.knime.ui.java/org.knime.ui.java.PerspectiveSwitchAddon"/>
+    <elements xsi:type="application:Addon" xmi:id="_QJa40OK8EeqdIqprVKVB4Q" elementId="org.knime.ui.java.addon.1" contributionURI="bundleclass://org.knime.ui.java/org.knime.ui.java.AppStartupCompleteAddon"/>
+  </fragments>
+  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_SUt_0OLJEeqdIqprVKVB4Q" featurename="snippets" parentElementId="org.eclipse.e4.legacy.ide.application">
+    <elements xsi:type="menu:TrimContribution" xmi:id="_-b2TwOLPEeqdIqprVKVB4Q" elementId="org.knime.ui.java.trimcontribution.0" parentId="org.eclipse.ui.main.toolbar">
+      <children xsi:type="menu:ToolBar" xmi:id="__DZb8OLPEeqdIqprVKVB4Q" elementId="org.knime.ui.java.toolbar.0">
+        <children xsi:type="menu:HandledToolItem" xmi:id="_YL7NIOKwEeqdIqprVKVB4Q" elementId="org.knime.ui.java.handledtoolitem.openknimenext" label="Open KNIME.next" iconURI="platform:/plugin/org.knime.ui.java/icons/switch.png" tooltip="Open the KNIME Web UI" command="_XgFkcOH4Eeqv_LafONhFZw">
+          <tags>FORCE_TEXT</tags>
+        </children>
+      </children>
+    </elements>
+  </fragments>
+</fragment:ModelFragments>

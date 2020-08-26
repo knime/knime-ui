@@ -48,66 +48,35 @@
  */
 package org.knime.ui.java.browser.function;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.swt.chromium.Browser;
 import org.eclipse.swt.chromium.BrowserFunction;
-import org.knime.gateway.api.service.GatewayService;
-import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
-import org.knime.gateway.impl.webui.service.DefaultServices;
-import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
-import org.knime.gateway.json.util.ObjectMapperUtil;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.WorkbenchException;
 
 /**
- * Browser function for json-rpc calls which are forwarded to the respective
- * gateway service implementations, e.g. {@link DefaultWorkflowService}, and
- * others.
+ * Browser function to allow the js webapp to switch back to the classic KNIME perspective.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class JsonRpcBrowserFunction extends BrowserFunction {
+public class SwitchToJavaUIBrowserFunction extends BrowserFunction {
 
-	private final JsonRpcRequestHandler m_jsonRpcHandler;
-
-	public JsonRpcBrowserFunction(final Browser browser) {
-		super(browser, "jsonrpc");
-		Map<String, GatewayService> services = createJsonRpcServices();
-		m_jsonRpcHandler = new JsonRpcRequestHandler(ObjectMapperUtil.getInstance().getObjectMapper(), services);
+	public SwitchToJavaUIBrowserFunction(final Browser browser) {
+		super(browser, "switchToJavaUI");
 	}
 
 	@Override
 	public Object function(final Object[] args) {
+		IWorkbench workbench = PlatformUI.getWorkbench();
+		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
 		try {
-			return new String(m_jsonRpcHandler.handle(((String) args[0]).getBytes(StandardCharsets.UTF_8)),
-					StandardCharsets.UTF_8);
-		} catch (Exception e) { // NOSONAR
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			return "Unexpected problem:\n" + sw.toString();
+			workbench.showPerspective("org.knime.workbench.ui.ModellerPerspective", window);
+		} catch (WorkbenchException e) {
+			// should never happen
+			throw new RuntimeException(e); // NOSONAR
 		}
-	}
-
-	private static Map<String, GatewayService> createJsonRpcServices() {
-		// create all default services and wrap them with the rest wrapper services
-		Map<String, GatewayService> wrappedServices = new HashMap<>();
-
-		// web-ui services
-		List<Class<?>> serviceInterfaces = org.knime.gateway.api.webui.service.util.ListServices
-				.listServiceInterfaces();
-		for (Class<?> serviceInterface : serviceInterfaces) {
-			@SuppressWarnings("unchecked")
-			GatewayService wrappedService = org.knime.gateway.impl.webui.jsonrpc.service.util.WrapWithJsonRpcService
-					.wrap(DefaultServices.getDefaultService((Class<? extends GatewayService>) serviceInterface),
-							serviceInterface);
-			wrappedServices.put(serviceInterface.getSimpleName(), wrappedService);
-		}
-		return wrappedServices;
+		return null;
 	}
 
 }

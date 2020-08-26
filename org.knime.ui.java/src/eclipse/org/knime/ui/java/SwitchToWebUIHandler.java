@@ -43,71 +43,56 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
  *
- * History
- *   May 30, 2020 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.inject.Inject;
 
-import org.eclipse.swt.chromium.Browser;
-import org.eclipse.swt.chromium.BrowserFunction;
-import org.knime.gateway.api.service.GatewayService;
-import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
-import org.knime.gateway.impl.webui.service.DefaultServices;
-import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
-import org.knime.gateway.json.util.ObjectMapperUtil;
+import org.eclipse.e4.core.di.annotations.Execute;
+import org.eclipse.e4.ui.model.application.MApplication;
+import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
 
 /**
- * Browser function for json-rpc calls which are forwarded to the respective
- * gateway service implementations, e.g. {@link DefaultWorkflowService}, and
- * others.
+ * Handler to switch to the KNIME Web UI.
+ *
+ * <br/><br/>
+ * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class JsonRpcBrowserFunction extends BrowserFunction {
+public final class SwitchToWebUIHandler {
 
-	private final JsonRpcRequestHandler m_jsonRpcHandler;
+	@Inject
+	private MApplication m_app;
 
-	public JsonRpcBrowserFunction(final Browser browser) {
-		super(browser, "jsonrpc");
-		Map<String, GatewayService> services = createJsonRpcServices();
-		m_jsonRpcHandler = new JsonRpcRequestHandler(ObjectMapperUtil.getInstance().getObjectMapper(), services);
-	}
+	@Inject
+	private EPartService m_partService;
 
-	@Override
-	public Object function(final Object[] args) {
-		try {
-			return new String(m_jsonRpcHandler.handle(((String) args[0]).getBytes(StandardCharsets.UTF_8)),
-					StandardCharsets.UTF_8);
-		} catch (Exception e) { // NOSONAR
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			return "Unexpected problem:\n" + sw.toString();
+	@Inject
+	private EModelService m_modelService;
+
+	@Execute
+	public void execute() {
+		MPerspective p = getWebUIPerspective(m_app, m_modelService);
+		if (p != null) {
+			if (!p.isVisible()) {
+				p.setVisible(true);
+			}
+			m_partService.switchPerspective(p);
+		} else {
+			throw new IllegalStateException("No KNIME Web UI perspective registered");
 		}
 	}
 
-	private static Map<String, GatewayService> createJsonRpcServices() {
-		// create all default services and wrap them with the rest wrapper services
-		Map<String, GatewayService> wrappedServices = new HashMap<>();
-
-		// web-ui services
-		List<Class<?>> serviceInterfaces = org.knime.gateway.api.webui.service.util.ListServices
-				.listServiceInterfaces();
-		for (Class<?> serviceInterface : serviceInterfaces) {
-			@SuppressWarnings("unchecked")
-			GatewayService wrappedService = org.knime.gateway.impl.webui.jsonrpc.service.util.WrapWithJsonRpcService
-					.wrap(DefaultServices.getDefaultService((Class<? extends GatewayService>) serviceInterface),
-							serviceInterface);
-			wrappedServices.put(serviceInterface.getSimpleName(), wrappedService);
+	static MPerspective getWebUIPerspective(final MApplication app, final EModelService modelService) {
+		MPerspective p = (MPerspective) modelService.find("org.knime.ui.java.perspective", app);
+		if (p == null) {
+			// the id of the perspective changes once switched (no idea why)
+			// -> try the new id, too
+			p = (MPerspective) modelService.find("org.knime.ui.java.perspective.<WebUI>", app);
 		}
-		return wrappedServices;
+		return p;
 	}
-
 }

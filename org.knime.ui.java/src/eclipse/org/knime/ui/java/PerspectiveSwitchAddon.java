@@ -1,0 +1,160 @@
+
+package org.knime.ui.java;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.inject.Inject;
+
+import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.di.extensions.EventTopic;
+import org.eclipse.e4.ui.model.application.MApplication;
+import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
+import org.eclipse.e4.ui.workbench.UIEvents;
+import org.eclipse.e4.ui.workbench.UIEvents.EventTags;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
+import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.gateway.impl.project.WorkflowProject;
+import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.webui.AppState;
+import org.knime.gateway.impl.webui.service.DefaultApplicationService;
+import org.knime.ui.java.browser.KnimeBrowserView;
+import org.knime.workbench.editor2.WorkflowEditor;
+import org.osgi.service.event.Event;
+
+/**
+ * Registered as fragemnt with the application model. Listens to perspective
+ * switch events in order to remove/add stuff (e.g. toolbars, trims etc.).
+ *
+ * Done via listener in order to add/remove that stuff no matter how the
+ * perspective is changed (e.g. via toolbar action, perspective switch shortcut,
+ * etc.).
+ *
+ * <br/><br/>
+ * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
+ *
+ * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ */
+public final class PerspectiveSwitchAddon {
+
+	@Inject
+	private EModelService m_modelService;
+
+	@Inject
+	private MApplication m_app;
+
+	@Inject
+	@Optional
+	public void listen(@EventTopic(UIEvents.ElementContainer.TOPIC_SELECTEDELEMENT) final Event event) {
+		Object newValue = event.getProperty(EventTags.NEW_VALUE);
+		if (!(newValue instanceof MPerspective)) {
+			return;
+		}
+
+		MPerspective oldPerspective = (MPerspective) event.getProperty(EventTags.OLD_VALUE);
+		MPerspective newPerspective = (MPerspective) newValue;
+		MPerspective webUIPerspective = SwitchToWebUIHandler.getWebUIPerspective(m_app, m_modelService);
+
+		if (newPerspective == webUIPerspective) {
+			updateAppState();
+			setTrimsAndMenuVisible(false);
+			getBrowserView().ifPresent(KnimeBrowserView::setUrl);
+		} else if (oldPerspective == webUIPerspective) {
+			setTrimsAndMenuVisible(true);
+			getBrowserView().ifPresent(KnimeBrowserView::clearUrl);
+		} else {
+			//
+		}
+	}
+
+	private java.util.Optional<KnimeBrowserView> getBrowserView() {
+		return java.util.Optional.ofNullable(
+				(KnimeBrowserView) ((MPart) m_modelService.find("org.knime.ui.java.browser.view", m_app)).getObject());
+	}
+
+	private void setTrimsAndMenuVisible(final boolean visible) {
+		m_modelService.find("org.eclipse.ui.trim.status", m_app).setVisible(visible);
+		m_modelService.find("org.eclipse.ui.main.toolbar", m_app).setVisible(visible);
+		MTrimmedWindow window = (MTrimmedWindow) m_app.getChildren().get(0);
+		window.getMainMenu().setToBeRendered(visible);
+	}
+
+	private void updateAppState() {
+		List<String> workflowProjectIds = new ArrayList<>();
+		List<String> activeWorkflowIds = new ArrayList<>();
+		collectOpenWorkflows(workflowProjectIds, activeWorkflowIds);
+
+		DefaultApplicationService.getInstance().updateAppState(new AppState() {
+
+			@Override
+			public List<String> getLoadedWorkflowProjectIds() {
+				return workflowProjectIds;
+			}
+
+			@Override
+			public List<String> getActiveWorkflowProjectIds() {
+				return activeWorkflowIds;
+			}
+
+		});
+	}
+
+	private void collectOpenWorkflows(final List<String> workflowProjectIds, final List<String> activeWorkflowIds) {
+		List<MPart> editorParts = m_modelService.findElements(m_app, "org.eclipse.e4.ui.compatibility.editor",
+				MPart.class);
+		for (MPart editorPart : editorParts) {
+			WorkflowProject wp = WorkflowProjectManager.getWorkflowProject(editorPart.getLabel()).orElse(null);
+			if (wp == null && editorPart.getObject() instanceof CompatibilityPart) {
+				final IEditorReference ref = (IEditorReference) ((CompatibilityPart) editorPart.getObject())
+						.getReference();
+				// TODO editors with no workflow loaded (i.e. opened tabs after
+				// the KNIME start which haven't been touched, yet) are ignored
+				// atm
+				final WorkflowManager wfm = getWorkflowManagerProject(ref);
+				if (wfm != null) {
+					wp = new WorkflowProject() {
+
+						@Override
+						public String getName() {
+							return editorPart.getLabel();
+						}
+
+						@Override
+						public String getID() {
+							return getName();
+						}
+
+						@Override
+						public WorkflowManager openProject() {
+							return wfm;
+						}
+
+					};
+					WorkflowProjectManager.addWorkflowProject(editorPart.getLabel(), wp);
+				} else {
+					//
+				}
+			}
+			if (wp != null) {
+				workflowProjectIds.add(wp.getID());
+				if (editorPart.getParent().getSelectedElement() == editorPart) {
+					activeWorkflowIds.add(wp.getID());
+				}
+			}
+		}
+	}
+
+	private static WorkflowManager getWorkflowManagerProject(final IEditorReference ref) {
+		final AtomicReference<WorkflowManager> wfm = new AtomicReference<>();
+		Display.getDefault()
+				.syncExec(() -> wfm.set(((WorkflowEditor) ref.getEditor(true)).getWorkflowManager().orElse(null)));
+		return wfm.get() == null || !wfm.get().isProject() ? null : wfm.get();
+	}
+
+}

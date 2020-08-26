@@ -43,71 +43,71 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
  *
- * History
- *   May 30, 2020 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.eclipse.swt.chromium.Browser;
-import org.eclipse.swt.chromium.BrowserFunction;
-import org.knime.gateway.api.service.GatewayService;
-import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
-import org.knime.gateway.impl.webui.service.DefaultServices;
-import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
-import org.knime.gateway.json.util.ObjectMapperUtil;
+import javax.inject.Inject;
+
+import org.eclipse.e4.core.di.annotations.Optional;
+import org.eclipse.e4.core.di.extensions.EventTopic;
+import org.eclipse.e4.ui.model.application.MApplication;
+import org.eclipse.e4.ui.model.application.ui.MUIElement;
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
+import org.eclipse.e4.ui.model.application.ui.menu.MMenu;
+import org.eclipse.e4.ui.model.application.ui.menu.MMenuElement;
+import org.eclipse.e4.ui.model.application.ui.menu.MToolBar;
+import org.eclipse.e4.ui.model.application.ui.menu.MTrimContribution;
+import org.eclipse.e4.ui.workbench.UIEvents;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
+import org.eclipse.swt.widgets.Display;
+import org.osgi.service.event.Event;
 
 /**
- * Browser function for json-rpc calls which are forwarded to the respective
- * gateway service implementations, e.g. {@link DefaultWorkflowService}, and
- * others.
+ * Registered as fragment with the application model and called as soon as the
+ * startup is completed.
+ *
+ * <br/><br/>
+ * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class JsonRpcBrowserFunction extends BrowserFunction {
+public final class AppStartupCompleteAddon {
 
-	private final JsonRpcRequestHandler m_jsonRpcHandler;
+	@Inject
+	private MApplication m_app;
 
-	public JsonRpcBrowserFunction(final Browser browser) {
-		super(browser, "jsonrpc");
-		Map<String, GatewayService> services = createJsonRpcServices();
-		m_jsonRpcHandler = new JsonRpcRequestHandler(ObjectMapperUtil.getInstance().getObjectMapper(), services);
-	}
+	@Inject
+	private EModelService m_modelService;
 
-	@Override
-	public Object function(final Object[] args) {
-		try {
-			return new String(m_jsonRpcHandler.handle(((String) args[0]).getBytes(StandardCharsets.UTF_8)),
-					StandardCharsets.UTF_8);
-		} catch (Exception e) { // NOSONAR
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			return "Unexpected problem:\n" + sw.toString();
+	@Inject
+	@Optional
+	public void applicationStarted(@EventTopic(UIEvents.UILifeCycle.APP_STARTUP_COMPLETE) final Event event) {
+
+		// adds the button to switch to the web UI to the upper right corner (if
+		// not already there)
+		MUIElement el = m_modelService.find("org.knime.ui.java.toolbar.0", m_app);
+		if (el == null) {
+			MTrimContribution tc = (MTrimContribution) m_modelService.cloneSnippet(m_app,
+					"org.knime.ui.java.trimcontribution.0", null);
+			MToolBar toolbar = (MToolBar) tc.getChildren().get(0);
+			MTrimBar trimBar = (MTrimBar) m_modelService.find("org.eclipse.ui.main.toolbar", m_app);
+			Display.getDefault().syncExec(() -> m_modelService.move(toolbar, trimBar));
 		}
-	}
 
-	private static Map<String, GatewayService> createJsonRpcServices() {
-		// create all default services and wrap them with the rest wrapper services
-		Map<String, GatewayService> wrappedServices = new HashMap<>();
-
-		// web-ui services
-		List<Class<?>> serviceInterfaces = org.knime.gateway.api.webui.service.util.ListServices
-				.listServiceInterfaces();
-		for (Class<?> serviceInterface : serviceInterfaces) {
-			@SuppressWarnings("unchecked")
-			GatewayService wrappedService = org.knime.gateway.impl.webui.jsonrpc.service.util.WrapWithJsonRpcService
-					.wrap(DefaultServices.getDefaultService((Class<? extends GatewayService>) serviceInterface),
-							serviceInterface);
-			wrappedServices.put(serviceInterface.getSimpleName(), wrappedService);
-		}
-		return wrappedServices;
+		// hack to disable empty top-level menus which would otherwise magically
+		// appear when switching back to the classic perspective
+		m_app.getMenuContributions().forEach(mc -> {
+			List<MMenuElement> children = mc.getChildren();
+			// if there is a menu contribution with exactly one menu which in
+			// turn is empty
+			if (children.size() == 1 && children.get(0) instanceof MMenu
+					&& ((MMenu) children.get(0)).getChildren().isEmpty()) {
+				mc.setVisible(false);
+				mc.setToBeRendered(false);
+			}
+		});
 	}
 
 }

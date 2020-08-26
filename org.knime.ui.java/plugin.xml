@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?eclipse version="3.4"?>
 <plugin>
+
    <extension
          point="org.eclipse.ui.views">
-      <view
-            category="org.knime.workbench.ui.category"
+      <e4view
+            allowMultiple="false"
             class="org.knime.ui.java.browser.KnimeBrowserView"
+            icon="icons/knime.png"
             id="org.knime.ui.java.browser.view"
-            name="KNIME Browser View"
-            restorable="true">
-      </view>
+            name="KNIME Web UI"
+            restorable="false">
+      </e4view>
+   </extension>
+   <extension
+         id="org.knime.ui.java.fragment"
+         point="org.eclipse.e4.workbench.model">
+      <fragment
+            uri="fragment.e4xmi"
+            apply="always">
+      </fragment>
    </extension>
 
 </plugin>
