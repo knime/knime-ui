@@ -52,7 +52,7 @@ The implementations usually make use of certain [services](https://www.vogella.c
 
 ### Debugging: Spies
 
-There are a couple of so called 'spies' which allow one, e.g., to better debug and understand certain parts of the application model. Useful spies are e.g. the model spy (to get a view on the application model tree at random with the ability to change it live) or the event spy (to capture the events floating around).
+There are a couple of so called 'spies' which allow one, e.g., to better debug and understand certain parts of the application model. Useful spies are e.g. the model spy (to get a view on the application model tree at runtime with the ability to change it live) or the event spy (to capture the events floating around).
 
 The spies can be installed from http://download.eclipse.org/e4/snapshots/org.eclipse.e4.tools/latest/. Need to be added to the _target platform_ to make it available in KNIME. I also needed add _Eclipse Tools Developer Resources_  from http://download.eclipse.org/eclipse/updates/4.15 to make it work in KNIME.
 

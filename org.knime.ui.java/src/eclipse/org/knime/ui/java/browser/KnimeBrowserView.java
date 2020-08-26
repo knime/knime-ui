@@ -46,7 +46,6 @@ public class KnimeBrowserView {
 	private static final String DEBUG_PAGE = "web/debug.html";
 
 	private Browser m_browser;
-	private BiConsumer<String, EventEnt> m_eventConsumer;
 
 	@PostConstruct
 	public void createPartControl(final Composite parent) {
@@ -79,8 +78,8 @@ public class KnimeBrowserView {
 				}
 			}
 		}
-		m_eventConsumer = createEventConsumer(m_browser);
-		DefaultEventService.getInstance().addEventConsumer(m_eventConsumer);
+		BiConsumer<String, EventEnt> eventConsumer = createEventConsumer(m_browser);
+		DefaultEventService.getInstance().addEventConsumer(eventConsumer);
 	}
 
 	private static BiConsumer<String, EventEnt> createEventConsumer(final Browser browser) {
@@ -142,7 +141,7 @@ public class KnimeBrowserView {
 				}
 			});
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 }
