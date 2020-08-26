@@ -8,7 +8,16 @@ export default {
     components: {
         LegacyAnnotationText
     },
+    inheritAttrs: false,
     props: {
+        /**
+         * @values "left", "center", "right"
+         */
+        textAlign: {
+            type: String,
+            default: 'center',
+            validator: val => ['left', 'center', 'right'].includes(val)
+        },
         /**
          * Font size that should be applied to unstyled text
          */
@@ -45,6 +54,7 @@ export default {
     computed: {
         textStyle() {
             return {
+                textAlign: this.textAlign,
                 padding: `${this.$shapes.nodeAnnotationPadding}px`,
                 fontSize: `${this.defaultFontSize}px`
             };
@@ -57,10 +67,13 @@ export default {
             return result;
         }
     },
-    mounted() {
-        this.adjustDimensions();
+    watch: {
+        textAlign() { this.adjustDimensions(); },
+        defaultFontSize() { this.adjustDimensions(); },
+        text() { this.adjustDimensions(); },
+        styleRanges() { this.adjustDimensions(); }
     },
-    updated() {
+    mounted() {
         this.adjustDimensions();
     },
     methods: {

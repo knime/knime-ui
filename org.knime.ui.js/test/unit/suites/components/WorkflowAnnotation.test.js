@@ -5,7 +5,7 @@ import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import LegacyAnnotationText from '~/components/LegacyAnnotationText';
 
 describe('Workflow Annotation', () => {
-    let propsData, mocks, mount, wrapper;
+    let propsData, mocks, doShallowMount, wrapper;
 
     beforeEach(() => {
         wrapper = null;
@@ -19,12 +19,12 @@ describe('Workflow Annotation', () => {
             styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
         };
         mocks = { $shapes };
-        mount = () => { wrapper = shallowMount(WorkflowAnnotation, { propsData, mocks }); };
+        doShallowMount = () => { wrapper = shallowMount(WorkflowAnnotation, { propsData, mocks }); };
     });
 
     describe('render default', () => {
         beforeEach(() => {
-            mount();
+            doShallowMount();
         });
 
         it('styles', () => {
