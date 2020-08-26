@@ -47,6 +47,9 @@ export default {
             type: String,
             default: ''
         },
+        /**
+         * passed through to `LegacyAnnotationText`
+         */
         styleRanges: {
             type: Array,
             default: () => []
@@ -60,11 +63,10 @@ export default {
                 fontSize: `${this.defaultFontSize}px`,
                 border: `${this.borderWidth}px solid ${this.borderColor}`,
                 background: this.backgroundColor,
-                width: `${width - 2 * (this.borderWidth + this.$shapes.annotationPadding)}px`,
-                height: `${height - 2 * (this.borderWidth + this.$shapes.annotationPadding)}px`,
+                width: `${width - 2 * (this.borderWidth + this.$shapes.workflowAnnotationPadding)}px`,
+                height: `${height - 2 * (this.borderWidth + this.$shapes.workflowAnnotationPadding)}px`,
                 textAlign: this.textAlign,
-                lineHeight: 1.1,
-                padding: `${this.$shapes.annotationPadding}px`
+                padding: `${this.$shapes.workflowAnnotationPadding}px`
             };
         }
     }
@@ -89,7 +91,6 @@ export default {
 <style scoped>
 div {
   border-radius: 2px;
-  line-height: 1.33;
   cursor: default;
   user-select: none;
 }

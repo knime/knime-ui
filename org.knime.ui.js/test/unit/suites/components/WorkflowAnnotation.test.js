@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import * as $shapes from '~/style/shapes';
 
-import Annotation from '~/components/Annotation';
+import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import LegacyAnnotationText from '~/components/LegacyAnnotationText';
 
 describe('Workflow Annotation', () => {
@@ -19,7 +19,7 @@ describe('Workflow Annotation', () => {
             styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
         };
         mocks = { $shapes };
-        mount = () => { wrapper = shallowMount(Annotation, { propsData, mocks }); };
+        mount = () => { wrapper = shallowMount(WorkflowAnnotation, { propsData, mocks }); };
     });
 
     describe('render default', () => {
@@ -42,7 +42,6 @@ describe('Workflow Annotation', () => {
                 'width: 86px; ' +
                 'height: 36px; ' +
                 'text-align: right; ' +
-                'line-height: 1.1; ' +
                 'padding: 3px;'
             );
         });
