@@ -29,7 +29,7 @@ To add a button the top-trim of the UI.
 The handler implements a certain action (e.g. when clicking a toolbar button) and the command ties it to the respective item (e.g. in a toolbar).
 * _Perspective:_
 The Web-UI perspective is added to the central perspective stack `org.eclipse.ui.ide.perspectivestack` which itself is part of the overall window (id `IDEWindow`).
-* _Snippets:_ Allows one to declarative define an element which is later instantiated in the code and, e.g., added to the application model programmatically. Otherwise the snippet definition won't have an effect. The toolbar item in this plugin, e.g., is defined as a snippet and later programmatically added to the application model (in order to be able to place the button on the right of the top trim bar).
+* _Snippets:_ Allows one to declarative define an element which is later instantiated in the code and, e.g., added to the application model programmatically. Otherwise the snippet definition won't have an effect. The toolbar item and perspective in this plugin are defined as a snippets and later programmatically added to the application model (it just doesn't work in a purely declarative manner).
 * _Add-ons:_
 Global objects registered, e.g., in order to listen to events. Here add-ons are used to listen to perspective switch events and when the application start-up is completed (in order to programmatically manipulate the application model then).
 
