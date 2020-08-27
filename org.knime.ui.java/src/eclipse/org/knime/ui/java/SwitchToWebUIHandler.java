@@ -64,6 +64,8 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService;
  */
 public final class SwitchToWebUIHandler {
 
+	static final String WEB_UI_PERSPECTIVE_ID = "org.knime.ui.java.perspective";
+
 	@Inject
 	private MApplication m_app;
 
@@ -87,11 +89,11 @@ public final class SwitchToWebUIHandler {
 	}
 
 	static MPerspective getWebUIPerspective(final MApplication app, final EModelService modelService) {
-		MPerspective p = (MPerspective) modelService.find("org.knime.ui.java.perspective", app);
+		MPerspective p = (MPerspective) modelService.find(WEB_UI_PERSPECTIVE_ID, app);
 		if (p == null) {
 			// the id of the perspective changes once switched (no idea why)
 			// -> try the new id, too
-			p = (MPerspective) modelService.find("org.knime.ui.java.perspective.<WebUI>", app);
+			p = (MPerspective) modelService.find(WEB_UI_PERSPECTIVE_ID + ".<WebUI>", app);
 		}
 		return p;
 	}

@@ -62,11 +62,11 @@ public final class PerspectiveSwitchAddon {
 		MPerspective webUIPerspective = SwitchToWebUIHandler.getWebUIPerspective(m_app, m_modelService);
 
 		if (newPerspective == webUIPerspective) {
-			updateAppState();
-			setTrimsAndMenuVisible(false);
+			updateAppState(m_modelService, m_app);
+			setTrimsAndMenuVisible(false, m_modelService, m_app);
 			getBrowserView().ifPresent(KnimeBrowserView::setUrl);
 		} else if (oldPerspective == webUIPerspective) {
-			setTrimsAndMenuVisible(true);
+			setTrimsAndMenuVisible(true, m_modelService, m_app);
 			getBrowserView().ifPresent(KnimeBrowserView::clearUrl);
 		} else {
 			//
@@ -78,17 +78,17 @@ public final class PerspectiveSwitchAddon {
 				(KnimeBrowserView) ((MPart) m_modelService.find("org.knime.ui.java.browser.view", m_app)).getObject());
 	}
 
-	private void setTrimsAndMenuVisible(final boolean visible) {
-		m_modelService.find("org.eclipse.ui.trim.status", m_app).setVisible(visible);
-		m_modelService.find("org.eclipse.ui.main.toolbar", m_app).setVisible(visible);
-		MTrimmedWindow window = (MTrimmedWindow) m_app.getChildren().get(0);
+	static void setTrimsAndMenuVisible(final boolean visible, final EModelService modelService, final MApplication app) {
+		modelService.find("org.eclipse.ui.trim.status", app).setVisible(visible);
+		modelService.find("org.eclipse.ui.main.toolbar", app).setVisible(visible);
+		MTrimmedWindow window = (MTrimmedWindow) app.getChildren().get(0);
 		window.getMainMenu().setToBeRendered(visible);
 	}
 
-	private void updateAppState() {
+	private static void updateAppState(final EModelService modelService, final MApplication app) {
 		List<String> workflowProjectIds = new ArrayList<>();
 		List<String> activeWorkflowIds = new ArrayList<>();
-		collectOpenWorkflows(workflowProjectIds, activeWorkflowIds);
+		collectOpenWorkflows(workflowProjectIds, activeWorkflowIds, modelService, app);
 
 		DefaultApplicationService.getInstance().updateAppState(new AppState() {
 
@@ -105,8 +105,9 @@ public final class PerspectiveSwitchAddon {
 		});
 	}
 
-	private void collectOpenWorkflows(final List<String> workflowProjectIds, final List<String> activeWorkflowIds) {
-		List<MPart> editorParts = m_modelService.findElements(m_app, "org.eclipse.e4.ui.compatibility.editor",
+	private static void collectOpenWorkflows(final List<String> workflowProjectIds,
+			final List<String> activeWorkflowIds, final EModelService modelService, final MApplication app) {
+		List<MPart> editorParts = modelService.findElements(app, "org.eclipse.e4.ui.compatibility.editor",
 				MPart.class);
 		for (MPart editorPart : editorParts) {
 			WorkflowProject wp = WorkflowProjectManager.getWorkflowProject(editorPart.getLabel()).orElse(null);

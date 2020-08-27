@@ -46,6 +46,9 @@
  */
 package org.knime.ui.java;
 
+import static org.knime.ui.java.PerspectiveSwitchAddon.setTrimsAndMenuVisible;
+import static org.knime.ui.java.SwitchToWebUIHandler.WEB_UI_PERSPECTIVE_ID;
+
 import java.util.List;
 
 import javax.inject.Inject;
@@ -54,6 +57,8 @@ import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.MUIElement;
+import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
+import org.eclipse.e4.ui.model.application.ui.advanced.MPerspectiveStack;
 import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
 import org.eclipse.e4.ui.model.application.ui.menu.MMenu;
 import org.eclipse.e4.ui.model.application.ui.menu.MMenuElement;
@@ -85,6 +90,13 @@ public final class AppStartupCompleteAddon {
 	@Optional
 	public void applicationStarted(@EventTopic(UIEvents.UILifeCycle.APP_STARTUP_COMPLETE) final Event event) {
 
+		// programmatic manipulations of the application model
+		addSwitchButton();
+		addWebUIPerspective();
+		disableEmptyTopLevelMenus();
+	}
+
+	private void addSwitchButton() {
 		// adds the button to switch to the web UI to the upper right corner (if
 		// not already there)
 		MUIElement el = m_modelService.find("org.knime.ui.java.toolbar.0", m_app);
@@ -95,7 +107,23 @@ public final class AppStartupCompleteAddon {
 			MTrimBar trimBar = (MTrimBar) m_modelService.find("org.eclipse.ui.main.toolbar", m_app);
 			Display.getDefault().syncExec(() -> m_modelService.move(toolbar, trimBar));
 		}
+	}
 
+	private void addWebUIPerspective() {
+		MPerspectiveStack perspectiveStack = (MPerspectiveStack) m_modelService
+				.find("org.eclipse.ui.ide.perspectivestack", m_app);
+		if (perspectiveStack.getChildren().stream().noneMatch(p -> p.getElementId().equals(WEB_UI_PERSPECTIVE_ID))) {
+			MPerspective perspective = (MPerspective) m_modelService.cloneSnippet(m_app, WEB_UI_PERSPECTIVE_ID, null);
+			perspectiveStack.getChildren().add(perspective);
+		} else if (perspectiveStack.getSelectedElement().getElementId().equals(WEB_UI_PERSPECTIVE_ID)) {
+			// make sure the web ui perspective is initialized correctly if visible on start-up
+			Display.getDefault().syncExec(() -> setTrimsAndMenuVisible(false, m_modelService, m_app));
+		} else {
+			//
+		}
+	}
+
+	private void disableEmptyTopLevelMenus() {
 		// hack to disable empty top-level menus which would otherwise magically
 		// appear when switching back to the classic perspective
 		m_app.getMenuContributions().forEach(mc -> {

@@ -6,13 +6,6 @@
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_Vz69kOH4Eeqv_LafONhFZw" featurename="commands" parentElementId="org.eclipse.e4.legacy.ide.application">
     <elements xsi:type="commands:Command" xmi:id="_XgFkcOH4Eeqv_LafONhFZw" elementId="org.knime.ui.java.command.switch" commandName="Switch to Web UI"/>
   </fragments>
-  <fragments xsi:type="fragment:StringModelFragment" xmi:id="_vKWbgOISEeqv_LafONhFZw" featurename="children" parentElementId="IDEWindow" positionInList="">
-    <elements xsi:type="advanced:PerspectiveStack" xmi:id="_j6wVkOIdEeqv_LafONhFZw" elementId="org.eclipse.ui.ide.perspectivestack">
-      <children xsi:type="advanced:Perspective" xmi:id="_zsE9QOHxEeqv_LafONhFZw" elementId="org.knime.ui.java.perspective" visible="false" selectedElement="_lJevIOH0Eeqv_LafONhFZw" label="WebUI" iconURI="platform:/plugin/org.knime.ui.java/icons/knime.png">
-        <children xsi:type="basic:Part" xmi:id="_lJevIOH0Eeqv_LafONhFZw" elementId="org.knime.ui.java.browser.view" contributionURI="bundleclass://org.knime.ui.java/org.knime.ui.java.browser.KnimeBrowserView" iconURI="platform:/plugin/org.knime.ui.java/icons/knime.png"/>
-      </children>
-    </elements>
-  </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_N5ZaYOIhEeqv_LafONhFZw" featurename="addons" parentElementId="org.eclipse.e4.legacy.ide.application">
     <elements xsi:type="application:Addon" xmi:id="_PIzMwOIhEeqv_LafONhFZw" elementId="org.knime.ui.java.addon.0" contributionURI="bundleclass://org.knime.ui.java/org.knime.ui.java.PerspectiveSwitchAddon"/>
     <elements xsi:type="application:Addon" xmi:id="_QJa40OK8EeqdIqprVKVB4Q" elementId="org.knime.ui.java.addon.1" contributionURI="bundleclass://org.knime.ui.java/org.knime.ui.java.AppStartupCompleteAddon"/>
@@ -24,6 +17,9 @@
           <tags>FORCE_TEXT</tags>
         </children>
       </children>
+    </elements>
+    <elements xsi:type="advanced:Perspective" xmi:id="_zsE9QOHxEeqv_LafONhFZw" elementId="org.knime.ui.java.perspective" visible="false" selectedElement="_lJevIOH0Eeqv_LafONhFZw" label="WebUI" iconURI="platform:/plugin/org.knime.ui.java/icons/knime.png">
+      <children xsi:type="basic:Part" xmi:id="_lJevIOH0Eeqv_LafONhFZw" elementId="org.knime.ui.java.browser.view" contributionURI="bundleclass://org.knime.ui.java/org.knime.ui.java.browser.KnimeBrowserView" iconURI="platform:/plugin/org.knime.ui.java/icons/knime.png"/>
     </elements>
   </fragments>
 </fragment:ModelFragments>
