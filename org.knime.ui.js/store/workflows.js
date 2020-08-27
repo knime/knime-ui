@@ -1,12 +1,14 @@
-import { getWorkflowIDs, loadWorkflow } from '~api';
+import { fetchApplicationState, loadWorkflow as loadWorkflowFromApi } from '~api';
+import consola from 'consola';
 
 export const state = () => ({
     workflow: null,
-    openWorkflowIDs: []
+    openedWorkflows: []
 });
 
 export const mutations = {
     setWorkflow(state, workflow) {
+        consola.debug('setting workflow', workflow?.name, workflow?.projectId, workflow);
         // extract nodes
         let { nodes = {} } = workflow;
         let nodeIds = Object.keys(nodes);
@@ -37,18 +39,28 @@ export const mutations = {
 
         state.workflow = workflowData;
     },
-    setOpenWorkflowIDs(state, workflowIDs) {
-        state.openWorkflowIDs = workflowIDs;
+    setOpenedWorkflows(state, descriptors) {
+        state.openedWorkflows = descriptors;
     }
 };
 
 export const actions = {
-    async fetchOpenWorkflowIDs({ commit }) {
-        const ids = await getWorkflowIDs();
-        commit('setOpenWorkflowIDs', ids);
+    async initState({ commit }) {
+        const state = await fetchApplicationState();
+        const { activeWorkflows, openedWorkflows } = state;
+
+        commit('setOpenedWorkflows', openedWorkflows);
+
+        // if there is an active workflow, show it
+        if (activeWorkflows[0]) {
+            commit('setWorkflow', activeWorkflows[0].workflow);
+        }
     },
-    async load({ commit }, id) {
-        const workflow = await loadWorkflow(id);
-        commit('setWorkflow', workflow);
+    async loadWorkflow({ commit }, id) {
+        const workflow = await loadWorkflowFromApi(id);
+
+        if (workflow) {
+            commit('setWorkflow', workflow.workflow);
+        }
     }
 };

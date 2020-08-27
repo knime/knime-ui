@@ -1,37 +1,43 @@
-// TODO: adjust implementations of all functions to final version of InitService (NXT-186)
-let RPCworkflows = [];
+import consola from 'consola';
 
-const fetchFromAP = () => {
+// TODO: adjust implementations of all functions to final version of InitService (NXT-186)
+const rpc = (method, ...args) => {
     const req = {
         jsonrpc: '2.0',
-        method: 'InitService.getWorkflows',
+        method,
+        params: args,
         id: 0
     };
+    consola.info('JSON-RPC:', req);
+
     let response = window.jsonrpc(JSON.stringify(req));
 
-    response = JSON.parse(response);
-    RPCworkflows = response.result.filter(Boolean).map(r => r.workflow);
+    try {
+        response = JSON.parse(response);
+    } catch (e) {
+        throw new Error(`Could not be parsed to JSON: ${response}`);
+    }
+    return response.result;
 };
 
-export const loadWorkflow = (id) => {
-    if (!RPCworkflows.length) {
-        fetchFromAP();
+export const fetchApplicationState = () => {
+    const state = rpc('ApplicationService.getState');
+    consola.debug('current state', state);
+
+    if (state) {
+        return Promise.resolve(state);
+    } else {
+        return Promise.reject(new Error('Empty response'));
     }
-    let workflow;
-    workflow = RPCworkflows.find(workflow => workflow.name === id);
-
-    if (!workflow) { return Promise.resolve(null); }
-
-    return Promise.resolve({
-        ...workflow,
-        id,
-        name: id
-    });
 };
 
-export const getWorkflowIDs = () => {
-    if (!RPCworkflows.length) {
-        fetchFromAP();
+export const loadWorkflow = (projectId) => {
+    const workflow = rpc('WorkflowService.getWorkflow', projectId, 'root');
+    consola.debug('loaded workflow', workflow);
+
+    if (workflow) {
+        return Promise.resolve(workflow);
+    } else {
+        return Promise.reject(new Error(`Couldn't load workflow ${projectId}`));
     }
-    return Promise.resolve(RPCworkflows.map(workflow => workflow.name));
 };
