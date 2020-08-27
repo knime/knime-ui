@@ -110,6 +110,7 @@ export default {
 
 <style scoped>
 foreignObject {
+  font-family: "Roboto Condensed", sans-serif;
   cursor: default;
   user-select: none;
 

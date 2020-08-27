@@ -90,6 +90,7 @@ export default {
 
 <style scoped>
 div {
+  font-family: "Roboto Condensed", sans-serif;
   border-radius: 2px;
   cursor: default;
   user-select: none;
