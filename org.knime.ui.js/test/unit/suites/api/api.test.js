@@ -3,12 +3,14 @@ import * as api from '~/api';
 describe('API', () => {
     beforeAll(() => {
         window.jsonrpc = jest.fn(() => JSON.stringify({
-            result: [{
-                workflow: {
-                    name: 'foo',
-                    dummy: true
-                }
-            }]
+            result: {
+                activeWorkflows: [{
+                    workflow: {
+                        name: 'foo',
+                        dummy: true
+                    }
+                }]
+            }
         }));
     });
 
