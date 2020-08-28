@@ -4,13 +4,13 @@ let rpcWorkflows = [];
 const fetchFromAP = () => {
     const req = {
         jsonrpc: '2.0',
-        method: 'InitService.getWorkflows',
+        method: 'ApplicationService.getState',
         id: 0
     };
     let response = window.jsonrpc(JSON.stringify(req));
 
     response = JSON.parse(response);
-    rpcWorkflows = response.result.filter(Boolean).map(r => r.workflow);
+    rpcWorkflows = response.result.activeWorkflows.filter(Boolean).map(r => r.workflow);
 };
 
 export const loadWorkflow = (id) => {
