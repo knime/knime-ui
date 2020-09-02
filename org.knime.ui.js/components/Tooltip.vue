@@ -3,7 +3,7 @@ import { mapGetters } from 'vuex';
 export default {
     props: {
         text: {
-            type: String,
+            type: [String, Number],
             default: ''
         },
         title: {
@@ -87,8 +87,8 @@ export default {
   margin-left: auto;
   margin-right: auto;
   user-select: none;
-  font-size: 10px; /* design 8px seems to be too small */
-  padding: 5px;
+  font-size: 10px;
+  padding: 4px 5px;
   box-shadow: 0 0 10px rgba(62, 58, 57, 0.3);
   z-index: 1;
 
@@ -148,7 +148,7 @@ export default {
   }
 
   &.bottom::before {
-    top: 0.71px;
+    top: 0.72px;
     transform: translate(-50%, -50%) rotate(-45deg);
   }
 

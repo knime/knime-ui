@@ -25,12 +25,6 @@ export default {
 <template>
   <div>
     <h3>{{ `${workflow.name} - ${nrOfNodes} Nodes` }}</h3>
-    <!-- <portal-target
-      multiple
-      name="tooltips"
-      :style="{height: 0}"
-    /> -->
-
     <div :style="{height: 0}">
       <Tooltip
         v-if="tooltip"

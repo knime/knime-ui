@@ -18,8 +18,7 @@ const config = {
     },
     loading: false,
     plugins: [
-        '~/plugins/constants.js',
-        '~/plugins/directive-tooltip.js'
+        '~/plugins/constants.js'
     ],
     modules: ['portal-vue/nuxt'],
     css: ['@/assets/index.css'],

@@ -1,10 +1,8 @@
 <script>
 import { mapMutations } from 'vuex';
-import dTooltip from '../plugins/directive-tooltip';
 /* eslint-disable no-magic-numbers */
 
 export default {
-    // directives: { tooltip: dTooltip },
     inject: ['nodeId'],
     props: {
         /**
@@ -80,9 +78,10 @@ export default {
 
 <template>
   <g
-    v-tooltip="tooltip"
     :transform="`translate(${x}, ${y})`"
     class="port"
+    @mouseenter="onHover"
+    @mouseleave="offHover"
   >
     <!-- data table port -->
     <polygon
