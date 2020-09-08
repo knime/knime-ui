@@ -37,7 +37,7 @@ describe('Port', () => {
             if (el.exists()) {
                 return el;
             }
-            return undefined; // eslint-disable-line no-undefined
+            return undefined;
         };
 
         beforeEach(() => {

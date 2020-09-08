@@ -50,7 +50,7 @@ const normalize = (styleRanges, text) => {
         if (
             typeof range.length !== 'number' || typeof range.start !== 'number' ||
             range.start < 0 || range.start + range.length > text.length ||
-            (nextRange && (range.start + range.length > nextRange.start)) // eslint-disable-line no-extra-parens
+            (nextRange && (range.start + range.length > nextRange.start))
         ) {
             return {
                 normalized: getFallback(),
