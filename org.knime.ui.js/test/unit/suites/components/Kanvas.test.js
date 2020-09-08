@@ -8,6 +8,8 @@ import * as $shapes from '~/style/shapes';
 import Kanvas from '~/components/Kanvas.vue';
 import Node from '~/components/Node';
 import Connector from '~/components/Connector.vue';
+import Annotation from '~/components/Annotation';
+
 
 const { canvasPadding, nodeSize } = $shapes;
 
@@ -55,7 +57,8 @@ describe('Kanvas', () => {
                 inA: mockConnector({ nr: 0 }),
                 outA: mockConnector({ nr: 1 }),
                 outB: mockConnector({ nr: 2 })
-            }
+            },
+            workflowAnnotations: []
         };
         $store = mockVuexStore({
             workflows: { state: { workflow } },
@@ -109,7 +112,18 @@ describe('Kanvas', () => {
             let props = wrapper.findAllComponents(Connector).wrappers.map(c => c.props());
             expect(props).toEqual(Object.values(workflow.connections));
         });
+    });
 
+    it('renders workflow annotations', () => {
+        workflow.workflowAnnotations = [
+            { id: 'back', bounds: {} },
+            { id: 'middle', bounds: {} },
+            { id: 'front', bounds: {} }
+        ];
+        mount();
+
+        let order = wrapper.findAllComponents(Annotation).wrappers.map(c => c.attributes().id);
+        expect(order).toEqual(['back', 'middle', 'front']);
     });
 
     describe('svg sizes', () => {
@@ -156,16 +170,15 @@ describe('Kanvas', () => {
 
         it('calculates dimensions of workflow containing annotations only', () => {
             workflow.nodeIds = [];
-            workflow.workflowAnnotations = {
-                'root:1': {
-                    bounds: {
-                        x: -10,
-                        y: -10,
-                        width: 20,
-                        height: 20
-                    }
+            workflow.workflowAnnotations = [{
+                id: 'root:1',
+                bounds: {
+                    x: -10,
+                    y: -10,
+                    width: 20,
+                    height: 20
                 }
-            };
+            }];
             mount();
 
             const { width, height, viewBox } = wrapper.find('svg').attributes();
@@ -181,16 +194,15 @@ describe('Kanvas', () => {
         it('calculates dimensions of workflow containing overlapping node + annotation', () => {
             workflow.nodeIds = ['root:1'];
             nodeData['root:1'] = mockNode({ id: 'root:1', position: { x: 10, y: 10 } });
-            workflow.workflowAnnotations = {
-                'root:1': {
-                    bounds: {
-                        x: 26,
-                        y: 26,
-                        width: 26,
-                        height: 26
-                    }
+            workflow.workflowAnnotations = [{
+                id: 'root:1',
+                bounds: {
+                    x: 26,
+                    y: 26,
+                    width: 26,
+                    height: 26
                 }
-            };
+            }];
             mount();
 
             const { width, height, viewBox } = wrapper.find('svg').attributes();

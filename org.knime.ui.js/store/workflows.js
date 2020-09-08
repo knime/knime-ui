@@ -9,6 +9,7 @@ export const state = () => ({
 export const mutations = {
     setWorkflow(state, workflow) {
         consola.debug('setting workflow', workflow?.name, workflow?.projectId, workflow);
+
         // extract nodes
         let { nodes = {} } = workflow;
         let nodeIds = Object.keys(nodes);
@@ -16,7 +17,11 @@ export const mutations = {
             ...workflow,
             nodeIds
         };
-        // …and move them to Nodes store
+
+        // remove all existing nodes of this workflow from Nodes store
+        this.commit('nodes/removeWorkflow', workflow.id, { root: true });
+
+        // …and move all nodes to Nodes store
         nodeIds.forEach((nodeId) => {
             this.commit('nodes/add', {
                 workflowId: workflow.id,
@@ -61,6 +66,8 @@ export const actions = {
 
         if (workflow) {
             commit('setWorkflow', workflow.workflow);
+        } else {
+            throw new Error(`workflow not found: ${id}`);
         }
     }
 };

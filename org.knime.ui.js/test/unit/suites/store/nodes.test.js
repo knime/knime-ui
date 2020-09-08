@@ -51,6 +51,31 @@ describe('node store', () => {
 
             expect(store.state.nodes.aWorkflowId.foo).toStrictEqual(nodes[0]);
         });
+
+        it('removes all nodes of one workflow', () => {
+            store.commit('nodes/add', {
+                workflowId: 'wf0',
+                nodeData: nodes[0]
+            });
+            store.commit('nodes/add', {
+                workflowId: 'wf0',
+                nodeData: nodes[1]
+            });
+            store.commit('nodes/add', {
+                workflowId: 'wf1',
+                nodeData: nodes[0]
+            });
+
+            store.commit('nodes/removeWorkflow', 'wf0');
+
+            // remove non-existent workflow
+            store.commit('nodes/removeWorkflow', 'wf99');
+
+            expect(store.state.nodes.wf0).toBeFalsy();
+            expect(store.state.nodes.wf1).toStrictEqual({
+                foo: nodes[0]
+            });
+        });
     });
 
     describe('getters', () => {

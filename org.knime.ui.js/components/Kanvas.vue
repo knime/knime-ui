@@ -20,7 +20,7 @@ export default {
           returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
         */
         workflowBounds() {
-            const { nodeIds, workflowAnnotations = {} } = this.workflow;
+            const { nodeIds, workflowAnnotations = [] } = this.workflow;
             const { nodeSize } = this.$shapes;
             let nodes = nodeIds.map(nodeId => this.$store.state.nodes[this.workflow.id][nodeId]);
 
@@ -36,7 +36,7 @@ export default {
                 if (x + nodeSize > right) { right = x + nodeSize; }
                 if (y + nodeSize > bottom) { bottom = y + nodeSize; }
             });
-            Object.values(workflowAnnotations).forEach(({ bounds: { x, y, height, width } }) => {
+            workflowAnnotations.forEach(({ bounds: { x, y, height, width } }) => {
                 if (x < left) { left = x; }
                 if (y < top) { top = y; }
 
@@ -85,8 +85,8 @@ export default {
       :viewBox="`${svgBounds.x} ${svgBounds.y} ${svgBounds.width} ${svgBounds.height}`"
     >
       <Annotation
-        v-for="(annotation, id) of workflow.workflowAnnotations"
-        :key="`annotation-${id}`"
+        v-for="annotation of workflow.workflowAnnotations"
+        :key="`annotation-${annotation.id}`"
         v-bind="annotation"
       />
       <Connector

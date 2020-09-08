@@ -1,6 +1,5 @@
 import consola from 'consola';
 
-// TODO: adjust implementations of all functions to final version of InitService (NXT-186)
 const rpc = (method, ...args) => {
     const req = {
         jsonrpc: '2.0',

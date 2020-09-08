@@ -21,6 +21,11 @@ export const mutations = {
             Vue.set(state, workflowId, {});
         }
         Vue.set(state[workflowId], nodeData.id, nodeData);
+    },
+    removeWorkflow(state, workflowId) {
+        if (Reflect.has(state, workflowId)) {
+            Vue.delete(state, workflowId);
+        }
     }
 };
 
