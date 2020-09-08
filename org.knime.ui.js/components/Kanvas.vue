@@ -29,7 +29,7 @@ export default {
             let right = -Infinity;
             let bottom = -Infinity;
 
-            Object.values(nodes).forEach(({ position: { x, y } }) => {
+            nodes.forEach(({ position: { x, y } }) => {
                 if (x < left) { left = x; }
                 if (y < top) { top = y; }
 
