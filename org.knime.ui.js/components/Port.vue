@@ -94,7 +94,7 @@ export default {
     <!-- X -->
     <path
       v-if="port.inactive"
-      stroke-width="1"
+      stroke-width="1.5"
       :stroke="$colors.portColors.inactive"
       :d="`M-${$shapes.portSize / 2},-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
            m-${$shapes.portSize},0 l${$shapes.portSize},-${$shapes.portSize}`"

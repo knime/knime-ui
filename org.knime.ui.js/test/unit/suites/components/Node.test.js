@@ -7,6 +7,7 @@ import Node from '~/components/Node';
 import NodeTorso from '~/components/NodeTorso.vue';
 import NodeSelect from '~/components/NodeSelect.vue';
 import NodeState from '~/components/NodeState.vue';
+import NodeAnnotation from '~/components/NodeAnnotation.vue';
 import Port from '~/components/Port.vue';
 
 import * as $shapes from '~/style/shapes';
@@ -35,7 +36,7 @@ const commonNode = {
     ],
 
     position: { x: 500, y: 200 },
-    annotation: { text: 'ThatsMyNode' },
+    annotation: { text: 'ThatsMyNode', styleRanges: [{ start: 0, length: 2, fontSize: 12 }] },
 
     name: 'My Name',
     type: 'Source',
@@ -96,8 +97,26 @@ describe('Node', () => {
             expect(wrapper.find('.name').text()).toBe('My Name');
         });
 
-        it('displays annotation (plaintext)', () => {
-            expect(wrapper.find('.annotation').text()).toBe('ThatsMyNode');
+        it('displays annotation', () => {
+            expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
+                defaultFontSize: 11,
+                styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
+                text: 'ThatsMyNode',
+                textAlign: 'center',
+                yShift: 20
+            });
+        });
+
+        it('pushes Metanode annotation up', () => {
+            propsData = { ...metaNode };
+            doShallowMount();
+            expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
+                defaultFontSize: 11,
+                styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
+                text: 'ThatsMyNode',
+                textAlign: 'center',
+                yShift: 0
+            });
         });
 
         it('displays icon', () => {

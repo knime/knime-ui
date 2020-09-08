@@ -2,13 +2,13 @@
 import { mapState } from 'vuex';
 import Node from '~/components/Node';
 import Connector from '~/components/Connector';
-import Annotation from '~/components/Annotation';
+import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 
 export default {
     components: {
         Node,
         Connector,
-        Annotation
+        WorkflowAnnotation
     },
     computed: {
         ...mapState('workflows', ['workflow']),
@@ -84,7 +84,7 @@ export default {
       :height="svgBounds.height"
       :viewBox="`${svgBounds.x} ${svgBounds.y} ${svgBounds.width} ${svgBounds.height}`"
     >
-      <Annotation
+      <WorkflowAnnotation
         v-for="annotation of workflow.workflowAnnotations"
         :key="`annotation-${annotation.id}`"
         v-bind="annotation"

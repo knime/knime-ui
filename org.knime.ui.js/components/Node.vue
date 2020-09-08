@@ -3,6 +3,7 @@ import Port from '~/components/Port.vue';
 import NodeState from '~/components/NodeState.vue';
 import NodeTorso from '~/components/NodeTorso.vue';
 import NodeSelect from '~/components/NodeSelect.vue';
+import NodeAnnotation from '~/components/NodeAnnotation.vue';
 import portShift from '~/util/portShift';
 
 /**
@@ -13,6 +14,7 @@ import portShift from '~/util/portShift';
 export default {
     components: {
         Port,
+        NodeAnnotation,
         NodeTorso,
         NodeState,
         NodeSelect
@@ -95,10 +97,10 @@ export default {
             }
         },
 
-        // default flow variable input ports (Mickey Mouse ears) are only shown if connected, or on hover
+        // default flow variable ports (Mickey Mouse ears) are only shown if connected, or on hover
         showPort(port) {
             if (this.kind === 'metanode') {
-                // Metanodes don't have Mickey Mouse ears
+                // Metanodes don't have Mickey Mouse ears, so port #0 is the first "real" port
                 return true;
             }
             return port.index !== 0 || port.connectedVia.length || this.hover;
@@ -161,16 +163,6 @@ export default {
         />
       </template>
 
-      <text
-        v-if="annotation"
-        class="annotation"
-        :y="$shapes.nodeSize + $shapes.nodeAnnotationMargin"
-        :x="$shapes.nodeSize / 2"
-        text-anchor="middle"
-      >
-        {{ annotation.text }}
-      </text>
-
       <portal
         v-if="hover"
         to="node-select"
@@ -185,6 +177,11 @@ export default {
     <NodeState
       v-if="kind !== 'metanode'"
       v-bind="state"
+    />
+    <NodeAnnotation
+      v-if="annotation"
+      v-bind="annotation"
+      :y-shift="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
     />
   </g>
 </template>

@@ -1,11 +1,11 @@
 import { shallowMount } from '@vue/test-utils';
 import * as $shapes from '~/style/shapes';
 
-import Annotation from '~/components/Annotation';
+import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import LegacyAnnotationText from '~/components/LegacyAnnotationText';
 
 describe('Workflow Annotation', () => {
-    let propsData, mocks, mount, wrapper;
+    let propsData, mocks, doShallowMount, wrapper;
 
     beforeEach(() => {
         wrapper = null;
@@ -19,12 +19,12 @@ describe('Workflow Annotation', () => {
             styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
         };
         mocks = { $shapes };
-        mount = () => { wrapper = shallowMount(Annotation, { propsData, mocks }); };
+        doShallowMount = () => { wrapper = shallowMount(WorkflowAnnotation, { propsData, mocks }); };
     });
 
     describe('render default', () => {
         beforeEach(() => {
-            mount();
+            doShallowMount();
         });
 
         it('styles', () => {
@@ -37,13 +37,11 @@ describe('Workflow Annotation', () => {
 
             expect(wrapper.findComponent(LegacyAnnotationText).attributes().style).toBe(
                 'font-size: 11px; ' +
-                'border: 4px solid; ' +
-                'border-color: #000; ' +
+                'border: 4px solid #000; ' +
                 'background: rgb(0, 0, 0); ' +
                 'width: 86px; ' +
                 'height: 36px; ' +
                 'text-align: right; ' +
-                'line-height: 1.1; ' +
                 'padding: 3px;'
             );
         });

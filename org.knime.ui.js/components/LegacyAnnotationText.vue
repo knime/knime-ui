@@ -70,6 +70,7 @@ export default {
 <style lang="postcss" scoped>
 div {
   overflow: hidden;
+  line-height: 1.1;
 }
 
 span {

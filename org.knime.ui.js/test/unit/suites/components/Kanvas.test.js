@@ -8,7 +8,7 @@ import * as $shapes from '~/style/shapes';
 import Kanvas from '~/components/Kanvas.vue';
 import Node from '~/components/Node';
 import Connector from '~/components/Connector.vue';
-import Annotation from '~/components/Annotation';
+import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 
 
 const { canvasPadding, nodeSize } = $shapes;
@@ -122,7 +122,7 @@ describe('Kanvas', () => {
         ];
         mount();
 
-        let order = wrapper.findAllComponents(Annotation).wrappers.map(c => c.attributes().id);
+        let order = wrapper.findAllComponents(WorkflowAnnotation).wrappers.map(c => c.attributes().id);
         expect(order).toEqual(['back', 'middle', 'front']);
     });
 
