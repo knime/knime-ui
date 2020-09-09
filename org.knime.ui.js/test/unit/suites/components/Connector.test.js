@@ -37,7 +37,7 @@ describe('Connector', () => {
                 workflows: {
                     state: {
                         workflow: {
-                            id: 'some id',
+                            projectId: 'some id',
                             nodeIds: ['root:1', 'root:2']
                         }
                     }
@@ -83,7 +83,7 @@ describe('Connector', () => {
                 workflows: {
                     state: {
                         workflow: {
-                            id: 'myId',
+                            projectId: 'myId',
                             nodeIds: ['root:1', 'root:2']
                         }
                     }

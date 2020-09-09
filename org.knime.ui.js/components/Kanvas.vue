@@ -22,7 +22,7 @@ export default {
         workflowBounds() {
             const { nodeIds, workflowAnnotations = [] } = this.workflow;
             const { nodeSize } = this.$shapes;
-            let nodes = nodeIds.map(nodeId => this.$store.state.nodes[this.workflow.id][nodeId]);
+            let nodes = nodeIds.map(nodeId => this.$store.state.nodes[this.workflow.projectId][nodeId]);
 
             let left = Infinity;
             let top = Infinity;
@@ -91,16 +91,16 @@ export default {
       />
       <Connector
         v-for="(connector, id) of workflow.connections"
-        :key="`connector-${workflow.id}-${id}`"
+        :key="`connector-${workflow.projectId}-${id}`"
         v-bind="connector"
       />
       <Node
         v-for="nodeId in workflow.nodeIds"
-        :key="`node-${workflow.id}-${nodeId}`"
-        :icon="$store.getters['nodes/icon']({ workflowId: workflow.id, nodeId })"
-        :name="$store.getters['nodes/name']({ workflowId: workflow.id, nodeId })"
-        :type="$store.getters['nodes/type']({ workflowId: workflow.id, nodeId })"
-        v-bind="$store.state.nodes[workflow.id][nodeId]"
+        :key="`node-${workflow.projectId}-${nodeId}`"
+        :icon="$store.getters['nodes/icon']({ workflowId: workflow.projectId, nodeId })"
+        :name="$store.getters['nodes/name']({ workflowId: workflow.projectId, nodeId })"
+        :type="$store.getters['nodes/type']({ workflowId: workflow.projectId, nodeId })"
+        v-bind="$store.state.nodes[workflow.projectId][nodeId]"
       />
       <portal-target
         multiple

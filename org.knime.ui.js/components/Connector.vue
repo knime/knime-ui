@@ -33,10 +33,10 @@ export default {
     computed: {
         ...mapState('workflows', ['workflow']),
         source() {
-            return this.$store.state.nodes[this.workflow.id][this.sourceNode];
+            return this.$store.state.nodes[this.workflow.projectId][this.sourceNode];
         },
         target() {
-            return this.$store.state.nodes[this.workflow.id][this.destNode];
+            return this.$store.state.nodes[this.workflow.projectId][this.destNode];
         },
         start() {
             const [dx, dy] = portShift(

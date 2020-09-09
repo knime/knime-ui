@@ -63,7 +63,7 @@ describe('workflow store', () => {
 
         it('extracts templates', () => {
             store.commit('workflows/setWorkflow', {
-                id: 'bar',
+                projectId: 'bar',
                 nodeTemplates: {
                     foo: { bla: 1 },
                     bar: { qux: 2 }
@@ -76,12 +76,12 @@ describe('workflow store', () => {
             expect(templateMutationMock).toHaveBeenCalledWith(expect.anything(), {
                 templateData: { qux: 2 }, templateId: 'bar'
             });
-            expect(store.state.workflows.workflow).toStrictEqual({ id: 'bar', nodeIds: [] });
+            expect(store.state.workflows.workflow).toStrictEqual({ projectId: 'bar', nodeIds: [] });
         });
 
         it('extracts nodes', () => {
             store.commit('workflows/setWorkflow', {
-                id: 'quux',
+                projectId: 'quux',
                 nodes: {
                     foo: { bla: 1 },
                     bar: { qux: 2 }
@@ -94,12 +94,12 @@ describe('workflow store', () => {
             expect(nodeMutationMock).toHaveBeenCalledWith(expect.anything(), {
                 nodeData: { qux: 2 }, workflowId: 'quux'
             });
-            expect(store.state.workflows.workflow).toStrictEqual({ id: 'quux', nodeIds: ['foo', 'bar'] });
+            expect(store.state.workflows.workflow).toStrictEqual({ projectId: 'quux', nodeIds: ['foo', 'bar'] });
         });
 
         it('removes existing nodes from node store', () => {
             store.commit('workflows/setWorkflow', {
-                id: 'quux',
+                projectId: 'quux',
                 nodes: {}
             });
 
@@ -110,19 +110,19 @@ describe('workflow store', () => {
     describe('action', () => {
         it('loads workflow sucessfully', async () => {
             await loadStore({
-                loadWorkflow: jest.fn().mockResolvedValue({ workflow: { id: 'wf1' } })
+                loadWorkflow: jest.fn().mockResolvedValue({ workflow: { projectId: 'wf1' } })
             });
 
             const spy = jest.spyOn(store, 'commit');
 
             await store.dispatch('workflows/loadWorkflow', 'wf1');
-            expect(spy).toHaveBeenNthCalledWith(1, 'workflows/setWorkflow', { id: 'wf1' }, undefined); // eslint-disable-line no-undefined
+            expect(spy).toHaveBeenNthCalledWith(1, 'workflows/setWorkflow', { projectId: 'wf1' }, undefined); // eslint-disable-line no-undefined
         });
 
         it('initializes application state', async () => {
             await loadStore({
                 fetchApplicationState: jest.fn().mockResolvedValue({
-                    activeWorkflows: [{ workflow: { id: 'wf1' } }],
+                    activeWorkflows: [{ workflow: { projectId: 'wf1' } }],
                     openedWorkflows: ['wf1', 'wf2']
                 })
             });
@@ -131,7 +131,7 @@ describe('workflow store', () => {
             await store.dispatch('workflows/initState');
 
             expect(spy).toHaveBeenNthCalledWith(1, 'workflows/setOpenedWorkflows', ['wf1', 'wf2'], undefined); // eslint-disable-line no-undefined
-            expect(spy).toHaveBeenNthCalledWith(2, 'workflows/setWorkflow', { id: 'wf1' }, undefined); // eslint-disable-line no-undefined
+            expect(spy).toHaveBeenNthCalledWith(2, 'workflows/setWorkflow', { projectId: 'wf1' }, undefined); // eslint-disable-line no-undefined
 
         });
     });

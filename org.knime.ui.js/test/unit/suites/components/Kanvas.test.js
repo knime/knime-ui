@@ -50,7 +50,7 @@ describe('Kanvas', () => {
         };
         propsData = {};
         workflow = {
-            id: 'some id',
+            projectId: 'some id',
             name: 'wf1',
             nodeIds: ['root:0', 'root:1', 'root:2'],
             connections: {

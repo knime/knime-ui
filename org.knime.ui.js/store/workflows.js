@@ -19,12 +19,12 @@ export const mutations = {
         };
 
         // remove all existing nodes of this workflow from Nodes store
-        this.commit('nodes/removeWorkflow', workflow.id, { root: true });
+        this.commit('nodes/removeWorkflow', workflow.projectId, { root: true });
 
         // …and move all nodes to Nodes store
         nodeIds.forEach((nodeId) => {
             this.commit('nodes/add', {
-                workflowId: workflow.id,
+                workflowId: workflow.projectId,
                 nodeData: nodes[nodeId]
             }, { root: true });
         });
