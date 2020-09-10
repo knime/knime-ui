@@ -93,6 +93,7 @@ export default {
 
 <template>
   <foreignObject
+    class="container"
     :width="width"
     :height="height"
     :x="x"
@@ -108,8 +109,8 @@ export default {
   </foreignObject>
 </template>
 
-<style scoped>
-foreignObject {
+<style lang="postcss" scoped>
+.container {
   font-family: "Roboto Condensed", sans-serif;
   cursor: default;
   user-select: none;

@@ -9,6 +9,7 @@ export const nodeStatusMarginTop = 8;
 export const maxNodeAnnotationWidth = 1000;
 export const nodeAnnotationMarginTop = 12;
 export const nodeNameMargin = 12;
+export const nodeNameLineHeight = 14;
 
 export const componentBackgroundPortion = 0.75;
 

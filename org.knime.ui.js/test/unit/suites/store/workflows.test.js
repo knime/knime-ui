@@ -1,5 +1,7 @@
+/* eslint-disable no-magic-numbers */
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
+import * as $shapes from '~/style/shapes';
 import Vuex from 'vuex';
 
 describe('workflow store', () => {
@@ -15,7 +17,7 @@ describe('workflow store', () => {
         nodeMutationMock = jest.fn();
         removeWorkflowMock = jest.fn();
 
-        loadStore = async (apiMocks = {}) => {
+        loadStore = async ({ apiMocks = {}, nodes = {} } = {}) => {
             /**
              * We have to import the workflow-store dynamically to apply our ~api mocks.
              * Because the module is cached after it is required for the first time,
@@ -38,7 +40,8 @@ describe('workflow store', () => {
                     mutations: {
                         add: nodeMutationMock,
                         removeWorkflow: removeWorkflowMock
-                    }
+                    },
+                    state: nodes
                 }
             });
         };
@@ -56,9 +59,9 @@ describe('workflow store', () => {
         });
 
         it('adds workflows', () => {
-            store.commit('workflows/setWorkflow', { id: 'foo' });
+            store.commit('workflows/setWorkflow', { projectId: 'foo' });
 
-            expect(store.state.workflows.workflow).toStrictEqual({ id: 'foo', nodeIds: [] });
+            expect(store.state.workflows.workflow).toStrictEqual({ projectId: 'foo', nodeIds: [] });
         });
 
         it('extracts templates', () => {
@@ -110,7 +113,9 @@ describe('workflow store', () => {
     describe('action', () => {
         it('loads workflow sucessfully', async () => {
             await loadStore({
-                loadWorkflow: jest.fn().mockResolvedValue({ workflow: { projectId: 'wf1' } })
+                apiMocks: {
+                    loadWorkflow: jest.fn().mockResolvedValue({ workflow: { projectId: 'wf1' } })
+                }
             });
 
             const spy = jest.spyOn(store, 'commit');
@@ -121,10 +126,12 @@ describe('workflow store', () => {
 
         it('initializes application state', async () => {
             await loadStore({
-                fetchApplicationState: jest.fn().mockResolvedValue({
-                    activeWorkflows: [{ workflow: { projectId: 'wf1' } }],
-                    openedWorkflows: ['wf1', 'wf2']
-                })
+                apiMocks: {
+                    fetchApplicationState: jest.fn().mockResolvedValue({
+                        activeWorkflows: [{ workflow: { projectId: 'wf1' } }],
+                        openedWorkflows: ['wf1', 'wf2']
+                    })
+                }
             });
 
             const spy = jest.spyOn(store, 'commit');
@@ -133,6 +140,136 @@ describe('workflow store', () => {
             expect(spy).toHaveBeenNthCalledWith(1, 'workflows/setOpenedWorkflows', ['wf1', 'wf2'], undefined); // eslint-disable-line no-undefined
             expect(spy).toHaveBeenNthCalledWith(2, 'workflows/setWorkflow', { projectId: 'wf1' }, undefined); // eslint-disable-line no-undefined
 
+        });
+    });
+
+    describe('svg sizes', () => {
+        const { canvasPadding, nodeSize, nodeStatusMarginTop, nodeStatusHeight, nodeNameMargin,
+            nodeNameLineHeight } = $shapes;
+
+        it('calculates dimensions of empty workflow', async () => {
+            await loadStore();
+            store.commit('workflows/setWorkflow', {
+                projectId: 'foo',
+                nodeIds: [],
+                workflowAnnotations: []
+            });
+
+            expect(store.getters['workflows/workflowBounds']).toStrictEqual({
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0
+            });
+
+            expect(store.getters['workflows/svgBounds']).toStrictEqual({
+                x: 0,
+                y: 0,
+                width: canvasPadding,
+                height: canvasPadding
+            });
+        });
+
+        it('calculates dimensions of workflow containing one node away from the top left corner', async () => {
+            await loadStore({
+                nodes: {
+                    foo: {
+                        'root:0': {
+                            position: { x: 200, y: 200 }
+                        }
+                    }
+                }
+            });
+            store.commit('workflows/setWorkflow', {
+                projectId: 'foo',
+                nodes: { 'root:0': null },
+                workflowAnnotations: []
+            });
+
+            expect(store.getters['workflows/workflowBounds']).toStrictEqual({
+                left: 200,
+                right: 200 + nodeSize,
+                top: 200 - nodeNameMargin - nodeNameLineHeight,
+                bottom: 200 + nodeSize + nodeStatusMarginTop + nodeStatusHeight
+            });
+
+
+            expect(store.getters['workflows/svgBounds']).toStrictEqual({
+                x: 0,
+                y: 0,
+                width: 296,
+                height: 316
+            });
+        });
+
+        it('calculates dimensions of workflow containing annotations only', async () => {
+            await loadStore();
+            store.commit('workflows/setWorkflow', {
+                projectId: 'foo',
+                nodes: {},
+                workflowAnnotations: [{
+                    id: 'root:1',
+                    bounds: {
+                        x: -10,
+                        y: -10,
+                        width: 20,
+                        height: 20
+                    }
+                }]
+            });
+
+
+            expect(store.getters['workflows/workflowBounds']).toStrictEqual({
+                left: -10,
+                right: 10,
+                top: -10,
+                bottom: 10
+            });
+
+
+            expect(store.getters['workflows/svgBounds']).toStrictEqual({
+                x: -10,
+                y: -10,
+                width: canvasPadding + 20,
+                height: canvasPadding + 20
+            });
+        });
+
+        it('calculates dimensions of workflow containing overlapping node + annotation', async () => {
+            await loadStore({
+                nodes: {
+                    foo: {
+                        'root:0': { position: { x: 10, y: 10 } }
+                    }
+                }
+            });
+            store.commit('workflows/setWorkflow', {
+                projectId: 'foo',
+                nodes: { 'root:0': null },
+                workflowAnnotations: [{
+                    id: 'root:1',
+                    bounds: {
+                        x: 26,
+                        y: 26,
+                        width: 26,
+                        height: 26
+                    }
+                }]
+            });
+
+            expect(store.getters['workflows/workflowBounds']).toStrictEqual({
+                left: 10,
+                right: 52,
+                top: -16,
+                bottom: 62
+            });
+
+            expect(store.getters['workflows/svgBounds']).toStrictEqual({
+                x: 0,
+                y: -16,
+                width: canvasPadding + 52,
+                height: canvasPadding + 78
+            });
         });
     });
 });

@@ -14,7 +14,7 @@ export default {
     },
     computed: {
         ...mapState('workflows', ['workflow', 'tooltip']),
-        ...mapGetters('workflows', ['workflowBounds', 'svgBounds']),
+        ...mapGetters('workflows', ['svgBounds']),
         nrOfNodes() {
             return this.workflow.nodeIds.length;
         }

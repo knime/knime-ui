@@ -109,7 +109,7 @@ export const getters = {
     */
     workflowBounds({ workflow }, getters, rootState) {
         const { nodeIds, workflowAnnotations = [] } = workflow;
-        const { nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight } = $shapes;
+        const { nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight } = $shapes;
         let nodes = nodeIds.map(nodeId => getters.nodes[nodeId]);
 
         let left = Infinity;
@@ -118,7 +118,6 @@ export const getters = {
         let bottom = -Infinity;
 
         nodes.forEach(({ position: { x, y } }) => {
-            const nodeNameLineHeight = 14;
             const nodeTop = y - nodeNameMargin - nodeNameLineHeight;
             const nodeBottom = y + nodeSize + nodeStatusMarginTop + nodeStatusHeight;
 
