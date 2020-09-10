@@ -73,10 +73,10 @@ export default {
     },
     methods: {
         ...mapMutations('workflows', ['setTooltip']),
-        onHover() {
+        onMouseEnter() {
             this.setTooltip(this.tooltip);
         },
-        offHover() {
+        onMouseLeave() {
             this.setTooltip(null);
         }
     }
@@ -86,8 +86,8 @@ export default {
 <template>
   <g
     :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`"
-    @mouseenter="onHover"
-    @mouseleave="offHover"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
   >
     <rect
       :width="$shapes.nodeSize"

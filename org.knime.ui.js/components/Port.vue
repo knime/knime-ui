@@ -66,10 +66,10 @@ export default {
     },
     methods: {
         ...mapMutations('workflows', ['setTooltip']),
-        onHover() {
+        onMouseEnter() {
             this.setTooltip(this.tooltip);
         },
-        offHover() {
+        onMouseLeave() {
             this.setTooltip(null);
         }
     }
@@ -80,8 +80,8 @@ export default {
   <g
     :transform="`translate(${x}, ${y})`"
     class="port"
-    @mouseenter="onHover"
-    @mouseleave="offHover"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
   >
     <!-- data table port -->
     <polygon
