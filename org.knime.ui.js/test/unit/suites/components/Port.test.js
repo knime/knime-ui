@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import { shallowMount } from '@vue/test-utils';
 
 import Port from '~/components/Port';
@@ -99,4 +100,46 @@ describe.each([
             expect(stroke).toBe(portColor);
         });
     }
+
+    it.each(['IDLE'])('draws traffic light for state %s (red)', (state) => {
+        propsData.port.nodeState = state;
+        mount();
+
+        let { fill: bgColor, stroke: stroke1 } = wrapper.findAll('g g circle').wrappers[1].attributes();
+        let [yellowSymbol, greenSymbol] = wrapper.findAll('g g line').wrappers.map(el => el.attributes().stroke);
+
+        expect(bgColor).toBe($colors.trafficLight.red);
+        expect(stroke1).toBe($colors.trafficLight.redBorder);
+
+        expect(yellowSymbol).toBe(undefined);
+        expect(greenSymbol).toBe(undefined);
+    });
+    it.each(['CONFIGURED', 'EXECUTING', 'QUEUED'])('draws traffic light for state %s (yellow)', (state) => {
+        propsData.port.nodeState = state;
+        mount();
+
+        let { fill: bgColor, stroke: stroke1 } = wrapper.findAll('g g circle').wrappers[1].attributes();
+        let [yellowSymbol, greenSymbol] = wrapper.findAll('g g line').wrappers.map(el => el.attributes().stroke);
+
+        expect(bgColor).toBe($colors.trafficLight.yellow);
+        expect(stroke1).toBe($colors.trafficLight.yellowBorder);
+        expect(yellowSymbol).toBe($colors.trafficLight.yellowBorder);
+
+        expect(greenSymbol).toBe(undefined);
+    });
+    it.each(['HALTED', 'EXECUTED'])('draws traffic light for state %s (green)', (state) => {
+        propsData.port.nodeState = state;
+        mount();
+
+        let { fill: bgColor, stroke: stroke1 } = wrapper.findAll('g g circle').wrappers[1].attributes();
+        let [greenSymbol, yellowSymbol] = wrapper.findAll('g g line').wrappers.map(el => el.attributes().stroke);
+
+        expect(bgColor).toBe($colors.trafficLight.green);
+        expect(stroke1).toBe($colors.trafficLight.greenBorder);
+        expect(greenSymbol).toBe($colors.trafficLight.greenBorder);
+
+        expect(yellowSymbol).toBe(undefined);
+    });
+
+
 });

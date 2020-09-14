@@ -7,6 +7,7 @@ import Node from '~/components/Node';
 import NodeTorso from '~/components/NodeTorso.vue';
 import NodeSelect from '~/components/NodeSelect.vue';
 import NodeState from '~/components/NodeState.vue';
+import NodeStateMetanode from '~/components/NodeStateMetanode.vue';
 import NodeAnnotation from '~/components/NodeAnnotation.vue';
 import Port from '~/components/Port.vue';
 
@@ -129,6 +130,14 @@ describe('Node', () => {
 
         it('renders node state', () => {
             expect(wrapper.findComponent(NodeState).exists()).toBe(true);
+            expect(wrapper.findComponent(NodeStateMetanode).exists()).toBe(false);
+        });
+
+        it('renders metanode state', () => {
+            propsData = { ...metaNode };
+            doShallowMount();
+            expect(wrapper.findComponent(NodeStateMetanode).exists()).toBe(true);
+            expect(wrapper.findComponent(NodeState).exists()).toBe(false);
         });
 
         it('renders at right position', () => {
