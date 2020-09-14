@@ -1,5 +1,5 @@
 const colors = {
-    // non-exhaustive list from the corporate styleguide
+    // non-exhaustive list from the corporate style guide
     'KNIME yellow': '#ffd800',
     'Silver Sand': '#c0c4c6',
     Avocado: '#cbd9a9',
@@ -63,3 +63,4 @@ export const trafficLight = {
 };
 
 export const nodeProgressBar = '#1E6DA8';
+export const metanodeState = colors.Masala;

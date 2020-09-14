@@ -1,6 +1,7 @@
 <script>
 import Port from '~/components/Port.vue';
 import NodeState from '~/components/NodeState.vue';
+import NodeStateMetanode from '~/components/NodeStateMetanode.vue';
 import NodeTorso from '~/components/NodeTorso.vue';
 import NodeSelect from '~/components/NodeSelect.vue';
 import NodeAnnotation from '~/components/NodeAnnotation.vue';
@@ -17,6 +18,7 @@ export default {
         NodeAnnotation,
         NodeTorso,
         NodeState,
+        NodeStateMetanode,
         NodeSelect
     },
     inheritAttrs: false,
@@ -72,9 +74,7 @@ export default {
 
         /**
          * Node Execution State
-         * Only for Native and Component
          */
-        // TODO NXT-223: use that state
         state: { type: Object, default: null }
     },
     data() {
@@ -113,6 +113,12 @@ export default {
   <g
     :transform="`translate(${position.x}, ${position.y})`"
   >
+    <NodeAnnotation
+      v-if="annotation"
+      v-bind="annotation"
+      :y-shift="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
+    />
+
     <g
       class="hover-container"
       @mouseleave="onLeaveHoverArea"
@@ -163,6 +169,11 @@ export default {
         />
       </template>
 
+      <NodeStateMetanode
+        v-if="kind === 'metanode'"
+        v-bind="state"
+      />
+
       <portal
         v-if="hover"
         to="node-select"
@@ -174,14 +185,10 @@ export default {
         />
       </portal>
     </g>
+    
     <NodeState
       v-if="kind !== 'metanode'"
       v-bind="state"
-    />
-    <NodeAnnotation
-      v-if="annotation"
-      v-bind="annotation"
-      :y-shift="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
     />
   </g>
 </template>

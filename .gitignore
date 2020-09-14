@@ -95,6 +95,7 @@ sw.*
 .scannerwork/
 **/target/
 **/bin/
+.history/
 
 # Maven Frontend Plugin
 node/
