@@ -1,5 +1,5 @@
 <template>
-  <g fill="#888888">
+  <g :fill="$colors.nodeBackgroundColors.Metanode">
     <rect
       width="32"
       height="32"

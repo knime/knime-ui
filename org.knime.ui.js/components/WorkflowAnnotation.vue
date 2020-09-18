@@ -31,11 +31,11 @@ export default {
         },
         borderColor: {
             type: String,
-            default: '#ffd800' // knime-yellow
+            required: true
         },
         backgroundColor: {
             type: String,
-            default: '#fff' // white
+            required: true
         },
         bounds: {
             type: Object,

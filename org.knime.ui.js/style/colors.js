@@ -13,7 +13,9 @@ const colors = {
     Carrot: '#ff9632',
     Wood: '#d2a384',
     Stone: '#aaaaaa',
-    Masala: '#3e3a39'
+    'Stone Gray': '#888888',
+    Masala: '#3e3a39',
+    Cornflower: '#1e6da8'
 };
 
 export const text = {
@@ -36,7 +38,8 @@ export const nodeBackgroundColors = {
     Source: colors.Carrot,
     VirtualIn: colors.Stone,
     VirtualOut: colors.Stone,
-    Visualizer: colors['Aquamarine dark']
+    Visualizer: colors['Aquamarine dark'],
+    Metanode: colors['Stone Gray']
 };
 
 export const portColors = {
@@ -59,8 +62,9 @@ export const trafficLight = {
     green: '#3CB44B',
     greenBorder: '#007D00',
     inactive: 'white',
-    inactiveBorder: '#7B7B7B'
+    inactiveBorder: '#7B7B7B',
+    background: '#D8DCDD'
 };
 
-export const nodeProgressBar = '#1E6DA8';
+export const nodeProgressBar = colors.Cornflower;
 export const metanodeState = colors.Masala;

@@ -58,8 +58,8 @@ export default {
     <rect
       :width="$shapes.nodeSize"
       :height="$shapes.nodeStatusHeight"
+      :fill="$colors.trafficLight.background"
       rx="1"
-      fill="#D8DCDD"
     />
 
     <!-- node's static states -->
