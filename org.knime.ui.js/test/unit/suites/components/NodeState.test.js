@@ -15,7 +15,7 @@ describe('NodeState.vue', () => {
 
     beforeEach(() => {
         propsData = {
-            state: null,
+            executionState: null,
             progress: null,
             error: null,
             warning: null
@@ -63,7 +63,7 @@ describe('NodeState.vue', () => {
         ['any other state', []]
     ])('draws traffic lights for state %s', (state, style) => {
         if (state) {
-            propsData.state = state;
+            propsData.executionState = state;
         }
         muteConsole(mount);
         expect(getTrafficLights()).toStrictEqual(style);
@@ -78,13 +78,13 @@ describe('NodeState.vue', () => {
     });
 
     it('shows "queued"', () => {
-        propsData.state = 'QUEUED';
+        propsData.executionState = 'QUEUED';
         mount();
         expect(wrapper.find('*').text()).toBe('queued');
     });
 
     it('shows dancing ball', () => {
-        propsData.state = 'EXECUTING';
+        propsData.executionState = 'EXECUTING';
         propsData.progress = null;
         mount();
 
@@ -93,7 +93,7 @@ describe('NodeState.vue', () => {
     });
 
     it('shows progress percentage', () => {
-        propsData.state = 'EXECUTING';
+        propsData.executionState = 'EXECUTING';
         propsData.progress = 50;
         mount();
 
@@ -102,7 +102,7 @@ describe('NodeState.vue', () => {
     });
 
     it('shows error indicator', () => {
-        propsData.error = 'erorr message';
+        propsData.error = 'error message';
         propsData.warning = 'warning message';
         mount();
 

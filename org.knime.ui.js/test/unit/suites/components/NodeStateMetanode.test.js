@@ -5,7 +5,7 @@ import * as $colors from '~/style/colors';
 
 describe('State of Metanode', () => {
     const mount = (state) => shallowMount(NodeStateMetanode, {
-        propsData: { state },
+        propsData: { executionState: state },
         mocks: { $colors }
     });
 

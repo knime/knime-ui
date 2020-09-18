@@ -1,12 +1,12 @@
 <script>
 export default {
     props: {
-        state: {
+        executionState: {
             type: String,
             default: 'null',
-            validator: state => [
+            validator: executionState => [
                 'null', 'CONFIGURED', 'EXECUTED', 'EXECUTING', 'HALTED', 'IDLE', 'QUEUED'
-            ].includes(state)
+            ].includes(executionState)
         },
         // progress in percentage
         progress: {
@@ -40,7 +40,7 @@ export default {
                 EXECUTED: [false, false, true],
                 HALTED: [false, false, true], // TODO NXT-279: for now halted is the same state as executed
                 null: [false, false, false]
-            }[this.state];
+            }[this.executionState];
         },
         progressBarWidth() {
             return this.$shapes.nodeSize * this.progress / 100;
@@ -87,7 +87,7 @@ export default {
       />
     </g>
     <text
-      v-else-if="state === 'QUEUED'"
+      v-else-if="executionState === 'QUEUED'"
       class="progress-text"
       :x="$shapes.nodeSize / 2"
       :fill="$colors.text.default"
@@ -99,7 +99,7 @@ export default {
 
     <!-- node's animated execution state -->
     <g
-      v-else-if="state === 'EXECUTING'"
+      v-else-if="executionState === 'EXECUTING'"
     >
       <circle
         v-if="!progress"
