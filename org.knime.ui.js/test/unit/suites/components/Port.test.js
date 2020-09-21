@@ -9,6 +9,9 @@ describe.each([
     ['table', 'polygon', $colors.portColors.data],
     ['other', 'rect', '#123442']
 ])('Port (%s)', (portDataType, portTag, portColor) => {
+    const provide = {
+        nodeId: 'dummy'
+    };
     let propsData, mocks, mount, wrapper;
 
     const currentPort = () => {
@@ -36,7 +39,7 @@ describe.each([
         };
         mocks = { $shapes, $colors };
         mount = () => {
-            wrapper = shallowMount(Port, { propsData, mocks });
+            wrapper = shallowMount(Port, { propsData, mocks, provide });
         };
     });
 

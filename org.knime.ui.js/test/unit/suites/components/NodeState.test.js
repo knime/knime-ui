@@ -7,6 +7,9 @@ import * as $colors from '~/style/colors';
 import muteConsole from '~/webapps-common/util/test-utils/muteConsole';
 
 describe('NodeState.vue', () => {
+    const provide = {
+        nodeId: 'dummy'
+    };
     let propsData, mocks, wrapper, mount;
 
     beforeAll(() => {
@@ -21,7 +24,7 @@ describe('NodeState.vue', () => {
             warning: null
         };
         mocks = { $shapes, $colors };
-        mount = () => { wrapper = shallowMount(NodeState, { propsData, mocks }); };
+        mount = () => { wrapper = shallowMount(NodeState, { propsData, mocks, provide }); };
     });
 
 
