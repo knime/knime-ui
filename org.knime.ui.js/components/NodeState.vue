@@ -1,6 +1,5 @@
 <script>
 import { mapMutations, mapGetters } from 'vuex';
-/* eslint-disable vue/attribute-hyphenation */
 export default {
     inject: ['nodeId'],
     props: {
@@ -54,13 +53,15 @@ export default {
              `${this.progressBarWidth} ${this.$shapes.nodeStatusHeight}, 0 ${this.$shapes.nodeStatusHeight})`;
         },
         tooltip() {
+            const errorSymbolRadius = 5;
+            const tooltipSpacing = 2;
             const { nodeSize, nodeStatusHeight, nodeStatusMarginTop } = this.$shapes;
             let tooltip = {
                 x: nodeSize / 2,
-                y: nodeSize + nodeStatusMarginTop + nodeStatusHeight + 5, // 5 is the radius of the error symbol
+                y: nodeSize + nodeStatusMarginTop + nodeStatusHeight + errorSymbolRadius + tooltipSpacing,
                 anchor: { node: this.nodeId }
             };
-          
+
             if (this.error) {
                 return { ...tooltip, text: this.error, type: 'error' };
             } else if (this.warning) {
@@ -201,7 +202,7 @@ export default {
     <g
       v-else-if="warning"
       class="warning"
-      :transform="`translate(${$shapes.nodeSize / 2 - 6}, 4)`"
+      :transform="`translate(${$shapes.nodeSize / 2 - 6}, 5.5)`"
     >
       <path
         d="M6,1.25 L0.5,10.75 H11.5 Z"
@@ -234,11 +235,11 @@ export default {
 
 @keyframes executing {
   from {
-    cx: 6px;
+    cx: 6px; /* circle radius */
   }
 
   to {
-    cx: 26px;
+    cx: 26px; /* node width - circle radius */
   }
 }
 

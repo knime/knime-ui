@@ -1,5 +1,6 @@
 <script>
 import { mapGetters } from 'vuex';
+
 export default {
     props: {
         text: {
@@ -36,14 +37,12 @@ export default {
     computed: {
         ...mapGetters('workflows', ['getAbsoluteCoordinates', 'nodes']),
         position() {
-            const { tooltipArrowSize, tooltipMaxWidth } = this.$shapes;
             let { x, y } = this;
-            y += (this.orientation === 'bottom' ? 1 : -1) * tooltipArrowSize;
 
             if (this.anchor && this.anchor.node) {
                 const node = this.nodes[this.anchor.node];
                 const absPos = this.getAbsoluteCoordinates(node.position.x, node.position.y);
-                x += absPos.x - tooltipMaxWidth / 2;
+                x += absPos.x;
                 y += absPos.y;
             }
             return { x, y };
@@ -54,43 +53,40 @@ export default {
 
 <template>
   <div
-    class="wrapper"
+    :class="['wrapper', type, orientation]"
     :style="{
-      '--arrowSize': `${this.$shapes.tooltipArrowSize}px`,
-      position: 'relative',
-      top: `${ position.y }px`,
-      left: `${ position.x }px`,
-      width: `${ $shapes.tooltipMaxWidth }px`,
-      transform: orientation === 'top' ? `translateY(-100%)`: undefined
+      '--arrowSize': `${$shapes.tooltipArrowSize}px`,
+      '--arrowMargin': `${$shapes.portSize / 2}px`,
+      top: `${position.y}px`,
+      left: `${position.x}px`,
+      maxWidth: `${$shapes.tooltipMaxWidth}px`
     }"
   >
     <div
-      :class="['content', type, orientation]"
+      v-if="title"
+      class="title"
     >
-      <div
-        v-if="title"
-        class="title"
-      >
-        {{ title }}
-      </div>
-      {{ text }}
+      {{ title }}
     </div>
+    {{ text }}
   </div>
 </template>
 
 <style lang="postcss" scoped>
-@import "webapps-common/ui/css/variables";
-
-.content {
-  display: table;
+.wrapper {
+  position: absolute;
+  display: inline-block;
   font-family: "Roboto Condensed", sans-serif;
-  margin-left: auto;
-  margin-right: auto;
   user-select: none;
   font-size: 10px;
   padding: 4px 5px;
   box-shadow: 0 0 10px rgba(62, 58, 57, 0.3);
   z-index: 1;
+  transform: translate(-50%, var(--arrowMargin));
+
+  &.top {
+    transform: translate(-50%, calc(-100% - var(--arrowMargin)));
+  }
 
   & .title {
     font-weight: bold;
@@ -148,13 +144,13 @@ export default {
   }
 
   &.bottom::before {
-    top: 0.72px;
+    top: 0;
     transform: translate(-50%, -50%) rotate(-45deg);
   }
 
   &.top::after {
     bottom: 0;
-    transform: translate(-50%, 50%) rotate(-45deg);
+    transform: translate(-50%, 50%) rotate(135deg);
   }
 }
 </style>

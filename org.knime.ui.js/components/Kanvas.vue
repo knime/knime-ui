@@ -25,13 +25,15 @@ export default {
 <template>
   <div>
     <h3>{{ `${workflow.name} - ${nrOfNodes} Nodes` }}</h3>
-    <div :style="{height: 0}">
+    <div
+      v-if="tooltip"
+      class="tooltip-container"
+    >
       <Tooltip
-        v-if="tooltip"
         v-bind="tooltip"
       />
     </div>
-  
+
     <svg
       :id="'kanvas-' + workflow.id"
       :width="svgBounds.width"
@@ -68,5 +70,10 @@ export default {
 <style scoped>
 h3 {
   position: fixed;
+}
+
+.tooltip-container {
+  height: 0;
+  position: relative;
 }
 </style>

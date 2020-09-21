@@ -77,6 +77,8 @@ export default {
         this.adjustDimensions();
     },
     methods: {
+        // foreignObject requires `width` and `height` attributes, or the content is cut off.
+        // So we need to 1. render, 2. measure, 3. update
         adjustDimensions() {
             this.with = this.$shapes.maxNodeAnnotationWidth;
             this.$nextTick(() => { // wait for re-render

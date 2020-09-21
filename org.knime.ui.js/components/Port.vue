@@ -54,9 +54,10 @@ export default {
         },
         tooltip() {
             const { portSize } = this.$shapes;
+            let tooltipSpacing = this.port.type === 'table' ? 0 : 2;
             return {
                 x: this.x,
-                y: this.y - portSize / 2,
+                y: this.y - portSize / 2 - tooltipSpacing,
                 anchor: { node: this.nodeId },
                 title: this.port.name,
                 text: this.port.info,
