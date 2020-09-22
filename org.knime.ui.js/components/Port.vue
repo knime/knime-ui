@@ -53,8 +53,9 @@ export default {
             return `${x1},${y1} ${x2},${0} ${x1},${y3}`;
         },
         tooltip() {
-            const { portSize } = this.$shapes;
+            // table ports have less space than other ports, because the triangular shape naturally creates a gap
             let tooltipSpacing = this.port.type === 'table' ? 0 : 2;
+            const { portSize } = this.$shapes;
             return {
                 x: this.x,
                 y: this.y - portSize / 2 - tooltipSpacing,

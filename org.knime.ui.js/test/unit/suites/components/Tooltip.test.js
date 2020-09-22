@@ -12,7 +12,6 @@ describe('Tooltip', () => {
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
-
     });
 
     beforeEach(() => {
@@ -50,7 +49,7 @@ describe('Tooltip', () => {
     it('respects type', () => {
         doShallowMount();
         expect(wrapper.find('.wrapper').classes()).not.toContain('error');
-        
+
         propsData.type = 'error';
         doShallowMount();
         expect(wrapper.find('.wrapper').classes()).toContain('error');
@@ -103,7 +102,8 @@ describe('Tooltip', () => {
                     },
                     getAbsoluteCoordinates() {
                         return () => ({
-                            x: 40, y: 30
+                            x: 40,
+                            y: 30
                         });
                     }
                 }
@@ -116,6 +116,7 @@ describe('Tooltip', () => {
         mocks.$store = $store;
         doShallowMount();
         expect(wrapper.attributes('style')).toContain('left: 163px;');
+        // eslint-disable-next-line no-magic-numbers
         let top = propsData.y + 30 - Math.SQRT1_2 * $shapes.tooltipArrowSize;
         expect(wrapper.attributes('style')).toContain(`top: ${top}px;`);
     });
