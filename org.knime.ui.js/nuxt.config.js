@@ -1,5 +1,6 @@
 import path from 'path';
 import postcssConfig from 'webapps-common/webpack/webpack.postcss.config';
+import svgConfig from 'webapps-common/webpack/webpack.svg.config';
 
 const srcDir = path.resolve(__dirname);
 const commonsDir = path.resolve(srcDir, 'webapps-common');
@@ -48,11 +49,19 @@ const config = {
         },
         extend(config, { isDev, loaders }) {
             config.resolve.alias['~api'] = path.join(__dirname, 'api', 'index.js');
+            config.resolve.alias['~assets'] = path.join(__dirname, 'assets');
             if (!isDev) {
                 // embed all images and fonts
                 loaders.fontUrl.limit = Infinity;
                 loaders.imgUrl.limit = Infinity;
             }
+
+            // limit nuxt default image rule to raster images because we want to handle svg ourselves
+            const imgRule = config.module.rules.find(rule => String(rule.test) === String(/\.(png|jpe?g|gif|svg|webp)$/i));
+            imgRule.test = /\.(png|jpe?g|gif|webp)$/i;
+
+            // custom image rule for SVG
+            config.module.rules.push(svgConfig);
         }
     },
     generate: {
