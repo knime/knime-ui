@@ -58,7 +58,7 @@ export default {
             return {
                 x: this.x,
                 y: this.y - portSize / 2 - tooltipSpacing,
-                anchor: { node: this.nodeId },
+                anchor: this.nodeId,
                 title: this.port.name,
                 text: this.port.info,
                 orientation: 'top'

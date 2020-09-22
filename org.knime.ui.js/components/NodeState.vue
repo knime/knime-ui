@@ -59,7 +59,7 @@ export default {
             let tooltip = {
                 x: nodeSize / 2,
                 y: nodeSize + nodeStatusMarginTop + nodeStatusHeight + errorSymbolRadius + tooltipSpacing,
-                anchor: { node: this.nodeId }
+                anchor: this.nodeId
             };
 
             if (this.error) {

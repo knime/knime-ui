@@ -35,7 +35,6 @@ export default {
     </div>
 
     <svg
-      :id="'kanvas-' + workflow.id"
       :width="svgBounds.width"
       :height="svgBounds.height"
       :viewBox="`${svgBounds.x} ${svgBounds.y} ${svgBounds.width} ${svgBounds.height}`"

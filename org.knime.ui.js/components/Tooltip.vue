@@ -1,33 +1,57 @@
 <script>
 import { mapGetters } from 'vuex';
 
+/**
+ * A tooltip displaying text and an optional headline
+ */
 export default {
     props: {
+        /**
+         * The text to display
+         */
         text: {
             type: [String, Number],
             default: ''
         },
+        /**
+         * An optional headline
+         */
         title: {
             type: String,
             default: null
         },
+        /**
+         * A reference to a node that this tooltip is attached to
+         */
         anchor: {
-            type: Object,
+            type: String,
             default: null
         },
+        /**
+         * horizontal position of the arrow tip
+         */
         x: {
             type: Number,
             default: 0
         },
+        /**
+         * vertical position of the arrow tip
+         */
         y: {
             type: Number,
             default: 0
         },
+        /**
+         * Type of tooltip. Affects styling
+         */
         type: {
             type: String,
             default: 'default',
             validator: type => ['error', 'warning', 'default'].includes(type)
         },
+        /**
+         * `top` to render the tooltip above the target, `bottom` to render below.
+         */
         orientation: {
             type: String,
             default: 'bottom',
@@ -37,16 +61,16 @@ export default {
     computed: {
         ...mapGetters('workflows', ['getAbsoluteCoordinates', 'nodes']),
         position() {
-            let { x, y } = this;
+            let { x, y, $shapes: { tooltipArrowSize } } = this;
 
-            if (this.anchor && this.anchor.node) {
-                const node = this.nodes[this.anchor.node];
+            if (this.anchor) {
+                const node = this.nodes[this.anchor];
                 const absPos = this.getAbsoluteCoordinates(node.position.x, node.position.y);
                 x += absPos.x;
                 y += absPos.y;
             }
 
-            const arrowHalfDiagonal = Math.SQRT1_2 * this.$shapes.tooltipArrowSize;
+            const arrowHalfDiagonal = Math.SQRT1_2 * tooltipArrowSize;
             if (this.orientation === 'bottom') {
                 y += arrowHalfDiagonal;
             } else {
