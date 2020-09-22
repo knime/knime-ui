@@ -74,6 +74,6 @@ h3 {
 
 .tooltip-container {
   height: 0;
-  position: relative;
+  line-height: 0;
 }
 </style>

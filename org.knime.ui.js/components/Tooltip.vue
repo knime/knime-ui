@@ -45,6 +45,13 @@ export default {
                 x += absPos.x;
                 y += absPos.y;
             }
+
+            const arrowHalfDiagonal = Math.SQRT1_2 * this.$shapes.tooltipArrowSize;
+            if (this.orientation === 'bottom') {
+                y += arrowHalfDiagonal;
+            } else {
+                y -= arrowHalfDiagonal;
+            }
             return { x, y };
         }
     }
@@ -56,7 +63,6 @@ export default {
     :class="['wrapper', type, orientation]"
     :style="{
       '--arrowSize': `${$shapes.tooltipArrowSize}px`,
-      '--arrowMargin': `${$shapes.portSize / 2}px`,
       top: `${position.y}px`,
       left: `${position.x}px`,
       maxWidth: `${$shapes.tooltipMaxWidth}px`
@@ -74,6 +80,9 @@ export default {
 
 <style lang="postcss" scoped>
 .wrapper {
+  --border-width: 1px;
+
+  line-height: initial;
   position: relative;
   text-align: justify;
   display: inline-block;
@@ -83,10 +92,16 @@ export default {
   padding: 4px 5px;
   box-shadow: 0 0 10px rgba(62, 58, 57, 0.3);
   z-index: 1;
-  transform: translate(-50%, var(--arrowMargin));
+  border: var(--border-width) solid;
+  transform: translate(-50%, calc(-1 * var(--border-width)));
 
   &.top {
-    transform: translate(-50%, calc(-100% - var(--arrowMargin)));
+    transform: translate(-50%, calc(-100% + var(--border-width)));
+  }
+
+  &::before,
+  &::after {
+    border: var(--border-width) solid;
   }
 
   & .title {
@@ -98,11 +113,11 @@ export default {
   &.default {
     color: white;
     background-color: var(--knime-masala);
-    border: 1px solid var(--knime-masala);
+    border-color: var(--knime-masala);
 
     &::before,
     &::after {
-      border: 1px solid var(--knime-masala);
+      border-color: var(--knime-masala);
       background-color: var(--knime-masala);
     }
   }
@@ -111,11 +126,11 @@ export default {
     color: var(--knime-masala);
     border-radius: 1px;
     background-color: white;
-    border: 1px solid var(--knime-error);
+    border-color: var(--knime-error);
 
     &::before,
     &::after {
-      border: 1px solid var(--knime-error);
+      border-color: var(--knime-error);
       background-color: white;
     }
   }
@@ -124,19 +139,20 @@ export default {
     color: var(--knime-masala);
     border-radius: 1px;
     background-color: white;
-    border: 1px solid var(--knime-warning);
+    border-color: var(--knime-warning);
 
     &::after,
     &::before {
-      border: 1px solid var(--knime-warning);
+      border-color: var(--knime-warning);
       background-color: white;
     }
   }
 
   &.top::after,
   &.bottom::before {
-    width: calc(var(--arrowSize) - 2px);
-    height: calc(var(--arrowSize) - 2px);
+    width: var(--arrowSize);
+    height: var(--arrowSize);
+    box-sizing: border-box;
     content: '';
     position: absolute;
     left: 50%;
