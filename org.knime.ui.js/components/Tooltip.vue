@@ -74,7 +74,8 @@ export default {
 
 <style lang="postcss" scoped>
 .wrapper {
-  position: absolute;
+  position: relative;
+  text-align: justify;
   display: inline-block;
   font-family: "Roboto Condensed", sans-serif;
   user-select: none;
