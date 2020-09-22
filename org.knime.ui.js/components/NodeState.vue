@@ -1,5 +1,5 @@
 <script>
-import { mapMutations, mapGetters } from 'vuex';
+import { mapMutations } from 'vuex';
 export default {
     inject: ['nodeId'],
     props: {
@@ -29,7 +29,6 @@ export default {
         }
     },
     computed: {
-        ...mapGetters('workflows', ['getAbsoluteCoordinates']),
         /**
          * sets the different lights of the traffic light
          * @returns {[boolean, boolean, boolean] | undefined}
