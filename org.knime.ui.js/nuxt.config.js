@@ -17,7 +17,9 @@ const config = {
         ]
     },
     loading: false,
-    plugins: ['~/plugins/constants.js'],
+    plugins: [
+        '~/plugins/constants.js'
+    ],
     modules: ['portal-vue/nuxt'],
     css: ['@/assets/index.css'],
     build: {

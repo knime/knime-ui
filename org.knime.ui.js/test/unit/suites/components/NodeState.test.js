@@ -1,5 +1,8 @@
 /* eslint-disable no-magic-numbers */
-import { shallowMount, createLocalVue } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { mockVuexStore } from '~/test/unit/test-utils';
+import Vuex from 'vuex';
+import Vue from 'vue';
 
 import NodeState from '~/components/NodeState';
 import * as $shapes from '~/style/shapes';
@@ -7,10 +10,14 @@ import * as $colors from '~/style/colors';
 import muteConsole from '~/webapps-common/util/test-utils/muteConsole';
 
 describe('NodeState.vue', () => {
+    const provide = {
+        nodeId: 'dummy'
+    };
     let propsData, mocks, wrapper, mount;
 
     beforeAll(() => {
-        createLocalVue();
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
     });
 
     beforeEach(() => {
@@ -21,7 +28,9 @@ describe('NodeState.vue', () => {
             warning: null
         };
         mocks = { $shapes, $colors };
-        mount = () => { wrapper = shallowMount(NodeState, { propsData, mocks }); };
+        mount = () => {
+            wrapper = shallowMount(NodeState, { propsData, mocks, provide });
+        };
     });
 
 
@@ -116,5 +125,47 @@ describe('NodeState.vue', () => {
 
         expect(wrapper.find('.warning').exists()).toBe(true);
         expect(wrapper.find('.error').exists()).toBe(false);
+    });
+
+    describe('tooltips', () => {
+        let currentTooltip;
+
+        beforeEach(() => {
+            let $store = mockVuexStore({
+                workflows: {
+                    mutations: {
+                        setTooltip(state, tooltip) {
+                            currentTooltip = tooltip;
+                        }
+                    }
+                }
+            });
+            mocks.$store = $store;
+        });
+
+        it('shows no tooltips by default', async () => {
+            mount();
+            wrapper.find('g').trigger('mouseenter');
+            await Vue.nextTick();
+            expect(currentTooltip).toBeFalsy();
+        });
+
+        it('shows tooltips on error', async () => {
+            propsData.error = 'this is an error';
+            mount();
+            wrapper.find('g').trigger('mouseenter');
+            await Vue.nextTick();
+            expect(currentTooltip).toStrictEqual({
+                anchor: 'dummy',
+                text: 'this is an error',
+                type: 'error',
+                x: 16,
+                y: 59
+            });
+
+            wrapper.find('g').trigger('mouseleave');
+            await Vue.nextTick();
+            expect(currentTooltip).toBeFalsy();
+        });
     });
 });

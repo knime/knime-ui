@@ -1,5 +1,2 @@
 @import "webapps-common/ui/css/variables";
-
-:root {
-  --knime-coral-dark: hsl(0, 69.5%, 41.2%);
-}
+@import "./colors.css";

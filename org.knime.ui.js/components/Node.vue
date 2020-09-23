@@ -22,6 +22,11 @@ export default {
         NodeSelect
     },
     inheritAttrs: false,
+    provide() {
+        return {
+            nodeId: this.id
+        };
+    },
     props: {
         /**
          * Node id, unique to the containing workflow
