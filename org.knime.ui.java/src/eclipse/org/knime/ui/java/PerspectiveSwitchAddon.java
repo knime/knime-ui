@@ -51,8 +51,6 @@ public final class PerspectiveSwitchAddon {
 	@Inject
 	private MApplication m_app;
 
-	private KnimeBrowserView m_browserView = null;
-
 	@Inject
 	@Optional
 	public void listen(@EventTopic(UIEvents.ElementContainer.TOPIC_SELECTEDELEMENT) final Event event) {
