@@ -4,6 +4,7 @@ package org.knime.ui.java;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import javax.inject.Inject;
 
@@ -19,6 +20,7 @@ import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
@@ -49,6 +51,8 @@ public final class PerspectiveSwitchAddon {
 	@Inject
 	private MApplication m_app;
 
+	private KnimeBrowserView m_browserView = null;
+
 	@Inject
 	@Optional
 	public void listen(@EventTopic(UIEvents.ElementContainer.TOPIC_SELECTEDELEMENT) final Event event) {
@@ -64,18 +68,30 @@ public final class PerspectiveSwitchAddon {
 		if (newPerspective == webUIPerspective) {
 			updateAppState(m_modelService, m_app);
 			setTrimsAndMenuVisible(false, m_modelService, m_app);
-			getBrowserView().ifPresent(KnimeBrowserView::setUrl);
+			callOnKnimeBrowserView(KnimeBrowserView::setUrl);
 		} else if (oldPerspective == webUIPerspective) {
 			setTrimsAndMenuVisible(true, m_modelService, m_app);
-			getBrowserView().ifPresent(KnimeBrowserView::clearUrl);
+			callOnKnimeBrowserView(KnimeBrowserView::clearUrl);
 		} else {
 			//
 		}
 	}
 
-	private java.util.Optional<KnimeBrowserView> getBrowserView() {
-		return java.util.Optional.ofNullable(
-				(KnimeBrowserView) ((MPart) m_modelService.find("org.knime.ui.java.browser.view", m_app)).getObject());
+	private void callOnKnimeBrowserView(final Consumer<KnimeBrowserView> call) {
+		List<MPart> views = m_modelService.findElements(m_app, "org.knime.ui.java.browser.view", MPart.class);
+		for (MPart view : views) {
+			if (view.getObject() instanceof KnimeBrowserView) {
+				call.accept((KnimeBrowserView) view.getObject());
+			} else {
+				NodeLogger.getLogger(this.getClass()).warn("Element found for 'org.knime.ui.java.browser.view'"
+						+ " which is not the expected KNIME browser view.");
+			}
+		}
+		if (views.size() > 1) {
+			NodeLogger.getLogger(this.getClass()).warn(views.size()
+					+ " web-ui views have been found while switching the perspective, but only one is expected!");
+
+		}
 	}
 
 	static void setTrimsAndMenuVisible(final boolean visible, final EModelService modelService, final MApplication app) {
