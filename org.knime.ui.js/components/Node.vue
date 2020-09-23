@@ -1,7 +1,6 @@
 <script>
 import Port from '~/components/Port.vue';
 import NodeState from '~/components/NodeState.vue';
-import NodeStateMetanode from '~/components/NodeStateMetanode.vue';
 import NodeTorso from '~/components/NodeTorso.vue';
 import NodeSelect from '~/components/NodeSelect.vue';
 import NodeAnnotation from '~/components/NodeAnnotation.vue';
@@ -18,7 +17,6 @@ export default {
         NodeAnnotation,
         NodeTorso,
         NodeState,
-        NodeStateMetanode,
         NodeSelect
     },
     inheritAttrs: false,
@@ -37,7 +35,11 @@ export default {
          * Node variation.
          * @values 'node', 'metanode', 'component'
          */
-        kind: { type: String, required: true, validator: kind => ['node', 'metanode', 'component'].includes(kind) },
+        kind: {
+            type: String,
+            required: true,
+            validator: kind => ['node', 'metanode', 'component'].includes(kind)
+        },
 
         /**
          * Input ports. List of configuration objects passed-through to the `Port` component
@@ -75,12 +77,22 @@ export default {
          * data-url of icon to be displayed on the node's body
          * Only for Component but not required
          */
-        icon: { type: String, default: null, validator: url => url.startsWith('data:image/') },
+        icon: {
+            type: String,
+            default: null,
+            validator: url => url.startsWith('data:image/')
+        },
 
         /**
          * Node Execution State
          */
-        state: { type: Object, default: null }
+        state: {
+            type: Object,
+            validator(state) {
+                return Reflect.has(state, 'executionState') || Object.keys(state).length === 0;
+            },
+            default: null
+        }
     },
     data() {
         return {
@@ -152,6 +164,7 @@ export default {
         :type="type"
         :kind="kind"
         :icon="icon"
+        :execution-state="state && state.executionState"
       />
 
       <template v-for="port of inPorts">
@@ -174,11 +187,6 @@ export default {
         />
       </template>
 
-      <NodeStateMetanode
-        v-if="kind === 'metanode'"
-        v-bind="state"
-      />
-
       <portal
         v-if="hover"
         to="node-select"
@@ -190,7 +198,7 @@ export default {
         />
       </portal>
     </g>
-    
+
     <NodeState
       v-if="kind !== 'metanode'"
       v-bind="state"

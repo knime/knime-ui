@@ -7,7 +7,6 @@ import Node from '~/components/Node';
 import NodeTorso from '~/components/NodeTorso.vue';
 import NodeSelect from '~/components/NodeSelect.vue';
 import NodeState from '~/components/NodeState.vue';
-import NodeStateMetanode from '~/components/NodeStateMetanode.vue';
 import NodeAnnotation from '~/components/NodeAnnotation.vue';
 import Port from '~/components/Port.vue';
 
@@ -59,7 +58,10 @@ const componentNode = {
 const metaNode = {
     ...commonNode,
     kind: 'metanode',
-    name: 'm for meta'
+    name: 'm for meta',
+    state: {
+        executionState: 'EXECUTED'
+    }
 };
 
 describe('Node', () => {
@@ -130,14 +132,12 @@ describe('Node', () => {
 
         it('renders node state', () => {
             expect(wrapper.findComponent(NodeState).exists()).toBe(true);
-            expect(wrapper.findComponent(NodeStateMetanode).exists()).toBe(false);
         });
 
         it('renders metanode state', () => {
             propsData = { ...metaNode };
             doShallowMount();
-            expect(wrapper.findComponent(NodeStateMetanode).exists()).toBe(true);
-            expect(wrapper.findComponent(NodeState).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeTorso).props('executionState')).toBe('EXECUTED');
         });
 
         it('renders at right position', () => {

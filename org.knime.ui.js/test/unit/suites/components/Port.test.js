@@ -1,4 +1,3 @@
-/* eslint-disable no-undefined */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
