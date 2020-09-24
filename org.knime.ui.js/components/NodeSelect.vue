@@ -68,7 +68,7 @@ export default {
   </g>
 </template>
 
-<style scoped>
+<style lang="postcss" scoped>
 text {
   font: normal 10px "Roboto Condensed", sans-serif;
   pointer-events: none;

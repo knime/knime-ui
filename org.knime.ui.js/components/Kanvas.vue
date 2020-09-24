@@ -62,7 +62,7 @@ export default {
   </div>
 </template>
 
-<style scoped>
+<style lang="postcss" scoped>
 .tooltip-container {
   height: 0;
   line-height: 0;

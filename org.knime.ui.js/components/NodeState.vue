@@ -226,7 +226,7 @@ export default {
   </g>
 </template>
 
-<style scoped>
+<style lang="postcss" scoped>
 .progress-text {
   font-size: 8px;
   line-height: 9px;
