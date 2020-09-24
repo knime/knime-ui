@@ -14,17 +14,13 @@ export default {
     },
     computed: {
         ...mapState('workflows', ['workflow', 'tooltip']),
-        ...mapGetters('workflows', ['svgBounds']),
-        nrOfNodes() {
-            return this.workflow.nodeIds.length;
-        }
+        ...mapGetters('workflows', ['svgBounds'])
     }
 };
 </script>
 
 <template>
   <div>
-    <h3>{{ `${workflow.name} - ${nrOfNodes} Nodes` }}</h3>
     <div
       v-if="tooltip"
       class="tooltip-container"
@@ -67,10 +63,6 @@ export default {
 </template>
 
 <style scoped>
-h3 {
-  position: fixed;
-}
-
 .tooltip-container {
   height: 0;
   line-height: 0;

@@ -90,10 +90,6 @@ describe('Kanvas', () => {
             mount();
         });
 
-        it('renders heading', () => {
-            expect(wrapper.find('h3').text()).toBe('wf1 - 3 Nodes');
-        });
-
         it('has portal for selection frames', () => {
             expect(wrapper.find('portal-target[name="node-select"').exists()).toBe(true);
         });
