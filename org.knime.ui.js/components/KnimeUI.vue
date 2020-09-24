@@ -1,5 +1,5 @@
 <script>
-import { mapActions, mapState } from 'vuex';
+import { mapState } from 'vuex';
 
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/perspective-switch.svg?inline';
 import KnimeIcon from '~assets/knime.svg?inline';
@@ -14,17 +14,18 @@ export default {
         KnimeIcon
     },
     async fetch() {
-        await this.initState();
+        // don't use a mapped action here. Reason: unit-testing
+        await this.$nuxt.context.store.dispatch('workflows/initState');
     },
     computed: {
         ...mapState('workflows', ['workflow'])
     },
     methods: {
-        ...mapActions('workflows', ['initState', 'loadWorkflow']),
         switchToJavaUI() {
             window.switchToJavaUI();
         }
     }
+    
 };
 </script>
 
@@ -50,7 +51,7 @@ export default {
         id="error-no-workflow"
       >
         <h2>
-          No Workflow opened
+          No workflow opened
         </h2>
       </div>
     </main>
