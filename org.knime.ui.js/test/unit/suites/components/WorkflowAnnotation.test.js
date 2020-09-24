@@ -39,8 +39,8 @@ describe('Workflow Annotation', () => {
                 'font-size: 11px; ' +
                 'border: 4px solid #000; ' +
                 'background: rgb(0, 0, 0); ' +
-                'width: 86px; ' +
-                'height: 36px; ' +
+                'width: 100px; ' +
+                'height: 50px; ' +
                 'text-align: right; ' +
                 'padding: 3px;'
             );
