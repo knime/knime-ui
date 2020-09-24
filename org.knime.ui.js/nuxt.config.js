@@ -1,5 +1,6 @@
 import path from 'path';
 import postcssConfig from 'webapps-common/webpack/webpack.postcss.config';
+import svgConfig from 'webapps-common/webpack/webpack.svg.config';
 
 const srcDir = path.resolve(__dirname);
 const commonsDir = path.resolve(srcDir, 'webapps-common');
@@ -55,6 +56,11 @@ const config = {
                 loaders.fontUrl.limit = Infinity;
                 loaders.imgUrl.limit = Infinity;
             }
+            const imgRule = config.module.rules.find(
+                rule => String(rule.test) === String(/\.(png|jpe?g|gif|svg|webp)$/i)
+            );
+            imgRule.test = /\.(png|jpe?g|gif|webp)$/i;
+            config.module.rules.push(svgConfig);
         }
     },
     generate: {
