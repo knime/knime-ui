@@ -63,8 +63,8 @@ export default {
                 fontSize: `${this.defaultFontSize}px`,
                 border: `${this.borderWidth}px solid ${this.borderColor}`,
                 background: this.backgroundColor,
-                width: `${width - 2 * (this.borderWidth + this.$shapes.workflowAnnotationPadding)}px`,
-                height: `${height - 2 * (this.borderWidth + this.$shapes.workflowAnnotationPadding)}px`,
+                width: `${width}px`,
+                height: `${height}px`,
                 textAlign: this.textAlign,
                 padding: `${this.$shapes.workflowAnnotationPadding}px`
             };

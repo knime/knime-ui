@@ -1,3 +1,4 @@
 @import "normalize.css";
+@import "webapps-common/ui/css/basics";
 @import "./fonts.css";
 @import "./variables.css";
