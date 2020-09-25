@@ -1,5 +1,5 @@
 import colors from '~/webapps-common/ui/colors/knimeColors';
-export * as nodeBackgroundColors from '~/webapps-common/ui/colors/nodeColors';
+import nodeColors from '~/webapps-common/ui/colors/nodeColors';
 
 export const text = {
     default: colors.Masala
@@ -11,6 +11,8 @@ export const portColors = {
     inactive: 'red', // "×"
     inactiveOutline: 'hsla(0, 100%, 100%, 66%)' // outline around "×"
 };
+
+export const nodeBackgroundColors = nodeColors;
 
 export const connectorColors = {
     default: colors.SilverSand,

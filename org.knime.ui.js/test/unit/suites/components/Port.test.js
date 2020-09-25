@@ -114,7 +114,7 @@ describe('Port', () => {
                 let port = currentPort();
                 let { fill, stroke } = port.attributes();
 
-                expect(fill).toBe('red');
+                expect(fill).toBe($colors.portColors.variable);
                 expect(stroke).toBe(portColor);
             });
         }
