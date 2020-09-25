@@ -35,12 +35,28 @@ export default {
          * Node variation.
          * @values 'node', 'metanode', 'component'
          */
-        kind: { type: String, required: true, validator: kind => ['node', 'metanode', 'component'].includes(kind) },
+        kind: {
+            type: String,
+            required: true,
+            validator: kind => ['node', 'metanode', 'component'].includes(kind)
+        },
 
         /**
          * data-url containing Base64-encoded icon
          */
-        icon: { type: String, default: null, validator: url => url.startsWith('data:image/') }
+        icon: {
+            type: String,
+            default: null,
+            validator: url => url.startsWith('data:image/')
+        },
+
+        /**
+         * Execution state (only for meta nodes). Passed through to NodeTorsoMetanode
+         */
+        executionState: {
+            type: String,
+            default: null
+        }
     },
     computed: {
         backgroundPath() {
@@ -73,6 +89,7 @@ export default {
   <NodeTorsoMetanode
     v-else-if="kind === 'metanode'"
     class="bg"
+    :execution-state="executionState"
   />
   <g v-else-if="isKnownNode">
     <path

@@ -1,7 +1,9 @@
 <script>
+import { mapMutations } from 'vuex';
 /* eslint-disable no-magic-numbers */
 
 export default {
+    inject: ['nodeId'],
     props: {
         /**
          * Port configuration object
@@ -49,6 +51,42 @@ export default {
             y3 -= (1 + Math.sqrt(5)) / 4;
 
             return `${x1},${y1} ${x2},${0} ${x1},${y3}`;
+        },
+        /**
+         * the traffic light of a metanode port displays the state of the inner node that it is connected to
+         * @returns {'red' | 'yellow' | 'green' | undefined} traffic light color
+         */
+        trafficLight() {
+            return {
+                IDLE: 'red',
+                CONFIGURED: 'yellow',
+                EXECUTING: 'yellow',
+                QUEUED: 'yellow',
+                HALTED: 'green',
+                EXECUTED: 'green'
+            }[this.port.nodeState];
+        },
+        tooltip() {
+            // table ports have less space than other ports, because the triangular shape naturally creates a gap
+            let tooltipSpacing = this.port.type === 'table' ? 0 : 2;
+            const { portSize } = this.$shapes;
+            return {
+                x: this.x,
+                y: this.y - portSize / 2 - tooltipSpacing,
+                anchor: this.nodeId,
+                title: this.port.name,
+                text: this.port.info,
+                orientation: 'top'
+            };
+        }
+    },
+    methods: {
+        ...mapMutations('workflows', ['setTooltip']),
+        onMouseEnter() {
+            this.setTooltip(this.tooltip);
+        },
+        onMouseLeave() {
+            this.setTooltip(null);
         }
     }
 };
@@ -58,6 +96,8 @@ export default {
   <g
     :transform="`translate(${x}, ${y})`"
     class="port"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
   >
     <!-- data table port -->
     <polygon
@@ -99,6 +139,34 @@ export default {
       :d="`M-${$shapes.portSize / 2},-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
            m-${$shapes.portSize},0 l${$shapes.portSize},-${$shapes.portSize}`"
     />
+    <!-- metanode port traffic light -->
+    <g v-if="trafficLight">
+      <circle
+        cx="-5.5"
+        r="3.5"
+        fill="white"
+      />
+      <circle
+        cx="-5.5"
+        r="2.5"
+        :fill="$colors.trafficLight[trafficLight]"
+        :stroke="$colors.trafficLight[trafficLight + 'Border']"
+      />
+      <line
+        v-if="trafficLight === 'yellow'"
+        x1="-5.5"
+        x2="-5.5"
+        y1="-3"
+        y2="3"
+        :stroke="$colors.trafficLight[trafficLight + 'Border']"
+      />
+      <line
+        v-if="trafficLight === 'green'"
+        x1="-8"
+        x2="-2.5"
+        :stroke="$colors.trafficLight[trafficLight + 'Border']"
+      />
+    </g>
   </g>
 </template>
 

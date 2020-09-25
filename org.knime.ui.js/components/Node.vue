@@ -20,6 +20,11 @@ export default {
         NodeSelect
     },
     inheritAttrs: false,
+    provide() {
+        return {
+            nodeId: this.id
+        };
+    },
     props: {
         /**
          * Node id, unique to the containing workflow
@@ -30,7 +35,11 @@ export default {
          * Node variation.
          * @values 'node', 'metanode', 'component'
          */
-        kind: { type: String, required: true, validator: kind => ['node', 'metanode', 'component'].includes(kind) },
+        kind: {
+            type: String,
+            required: true,
+            validator: kind => ['node', 'metanode', 'component'].includes(kind)
+        },
 
         /**
          * Input ports. List of configuration objects passed-through to the `Port` component
@@ -68,14 +77,22 @@ export default {
          * data-url of icon to be displayed on the node's body
          * Only for Component but not required
          */
-        icon: { type: String, default: null, validator: url => url.startsWith('data:image/') },
+        icon: {
+            type: String,
+            default: null,
+            validator: url => url.startsWith('data:image/')
+        },
 
         /**
          * Node Execution State
-         * Only for Native and Component
          */
-        // TODO NXT-223: use that state
-        state: { type: Object, default: null }
+        state: {
+            type: Object,
+            validator(state) {
+                return Reflect.has(state, 'executionState') || Object.keys(state).length === 0;
+            },
+            default: null
+        }
     },
     data() {
         return {
@@ -113,6 +130,12 @@ export default {
   <g
     :transform="`translate(${position.x}, ${position.y})`"
   >
+    <NodeAnnotation
+      v-if="annotation"
+      v-bind="annotation"
+      :y-shift="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
+    />
+
     <g
       class="hover-container"
       @mouseleave="onLeaveHoverArea"
@@ -141,6 +164,7 @@ export default {
         :type="type"
         :kind="kind"
         :icon="icon"
+        :execution-state="state && state.executionState"
       />
 
       <template v-for="port of inPorts">
@@ -174,14 +198,10 @@ export default {
         />
       </portal>
     </g>
+
     <NodeState
       v-if="kind !== 'metanode'"
       v-bind="state"
-    />
-    <NodeAnnotation
-      v-if="annotation"
-      v-bind="annotation"
-      :y-shift="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
     />
   </g>
 </template>

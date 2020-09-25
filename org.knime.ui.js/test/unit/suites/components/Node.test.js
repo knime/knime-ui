@@ -58,7 +58,10 @@ const componentNode = {
 const metaNode = {
     ...commonNode,
     kind: 'metanode',
-    name: 'm for meta'
+    name: 'm for meta',
+    state: {
+        executionState: 'EXECUTED'
+    }
 };
 
 describe('Node', () => {
@@ -129,6 +132,12 @@ describe('Node', () => {
 
         it('renders node state', () => {
             expect(wrapper.findComponent(NodeState).exists()).toBe(true);
+        });
+
+        it('renders metanode state', () => {
+            propsData = { ...metaNode };
+            doShallowMount();
+            expect(wrapper.findComponent(NodeTorso).props('executionState')).toBe('EXECUTED');
         });
 
         it('renders at right position', () => {

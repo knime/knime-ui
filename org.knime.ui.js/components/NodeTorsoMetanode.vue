@@ -1,3 +1,17 @@
+<script>
+export default {
+    props: {
+        executionState: {
+            type: String,
+            default: null,
+            validator: executionState => [
+                'EXECUTED', 'EXECUTING', 'IDLE'
+            ].includes(executionState)
+        }
+    }
+};
+</script>
+
 <template>
   <g fill="#888888">
     <rect
@@ -6,10 +20,12 @@
       rx="2"
       fill="white"
     />
-    <path d="M0 2C0 0.895431 0.895431 0 2 0H8V2H2.75C2.33579 2 2 2.33579 2 2.75V8H0V2Z" />
-    <path d="M2 24H0V30C0 31.1046 0.895431 32 2 32H8V30H2.75C2.33579 30 2 29.6642 2 29.25V24Z" />
-    <path d="M24 30V32H30C31.1046 32 32 31.1046 32 30V24H30V29.25C30 29.6642 29.6642 30 29.25 30H24Z" />
-    <path d="M30 8H32V2C32 0.895431 31.1046 0 30 0H24V2H29.25C29.6642 2 30 2.33579 30 2.75V8Z" />
+    <path
+      d="M0 2C0 0.895431 0.895431 0 2 0H8V2H2.75C2.33579 2 2 2.33579 2 2.75V8H0V2Z
+        M2 24H0V30C0 31.1046 0.895431 32 2 32H8V30H2.75C2.33579 30 2 29.6642 2 29.25V24Z
+        M24 30V32H30C31.1046 32 32 31.1046 32 30V24H30V29.25C30 29.6642 29.6642 30 29.25 30H24Z
+        M30 8H32V2C32 0.895431 31.1046 0 30 0H24V2H29.25C29.6642 2 30 2.33579 30 2.75V8Z"
+    />
     <rect
       x="13"
       width="6"
@@ -31,6 +47,23 @@
       y="13"
       width="2"
       height="6"
+    />
+    <!-- execution status -->
+    <polygon
+      v-if="executionState === 'EXECUTING'"
+      :stroke="$colors.metanodeState"
+      points="11,11  11,21  14.75,18.5  14.75,21  22.25,16  14.75,11  14.75,13.5"
+      fill="transparent"
+      stroke-width="2"
+    />
+
+    <polyline
+      v-else-if="executionState === 'EXECUTED'"
+      :stroke="$colors.metanodeState"
+      points="8,16  14,21.5  24,10.5"
+      fill="transparent"
+      stroke-width="2"
+      stroke-linejoin="round"
     />
   </g>
 </template>
