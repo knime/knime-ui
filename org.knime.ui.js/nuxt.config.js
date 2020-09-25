@@ -51,7 +51,7 @@ const config = {
         },
         extend(config, { isDev, loaders }) {
             config.resolve.alias['~api'] = path.join(__dirname, 'api', 'index.js');
-            config.resolve.alias['~assets'] = path.join(__dirname, 'assets');
+
             if (!isDev) {
                 // embed all images and fonts
                 loaders.fontUrl.limit = Infinity;

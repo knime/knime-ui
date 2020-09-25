@@ -2,10 +2,15 @@
 import { mapState, mapActions } from 'vuex';
 
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/perspective-switch.svg?inline';
-import KnimeIcon from '~assets/knime.svg?inline';
+import KnimeIcon from '~/webapps-common/ui/assets/img/KNIME_Triangle.svg?inline';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import Kanvas from '~/components/Kanvas';
 
+/**
+ * Main page and entry point of Knime Next
+ * Initiates application state
+ * Defines the layout of the application
+ */
 export default {
     components: {
         FunctionButton,
@@ -48,7 +53,7 @@ export default {
       <Kanvas v-if="workflow" />
       <div
         v-else
-        id="error-no-workflow"
+        id="placeholder-no-workflow"
       >
         <h2>
           No workflow opened
@@ -62,17 +67,20 @@ export default {
 
 #knime-ui {
   --side-bar-width: 40px;
-  --ocker: hsl(51, 100%, 30%);
 
   display: grid;
   grid-template-columns: min-content auto;
   grid-template-rows: min-content min-content auto;
-  grid-template-areas: "header header" "sidebar toolbar" "sidebar main";
-  height: calc(100vh - 1px);
+  grid-template-areas:
+    "header header"
+    "sidebar toolbar"
+    "sidebar main";
+  height: calc(100vh);
 }
 
 #sidebar {
-  border-top: 1px solid var(--ocker);
+  box-sizing: border-box;
+  border-top: 1px solid var(--header-separator);
   grid-area: sidebar;
   height: 100%;
   width: var(--side-bar-width);
@@ -80,7 +88,7 @@ export default {
 }
 
 #toolbar {
-  border-top: 1px solid var(--ocker);
+  border-top: 1px solid var(--header-separator);
   height: 50px;
   background-color: var(--knime-porcelain);
   border-bottom: 1px solid var(--knime-silver-sand);
@@ -94,12 +102,15 @@ header {
   border-bottom: 3px solid var(--knime-yellow);
 
   & #knime-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: var(--side-bar-width);
     background-color: var(--knime-black);
     text-align: center;
 
     & svg {
-      margin: 26px 0;
+      width: 26px;
     }
   }
 
@@ -123,9 +134,12 @@ main {
   grid-area: main;
   overflow: auto;
 
-  & #error-no-workflow {
-    text-align: center;
-    color: var(--knime-masala);
+  & #placeholder-no-workflow {
+    height: 55%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--knime-stone-gray);
   }
 }
 
