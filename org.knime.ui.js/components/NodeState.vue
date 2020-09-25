@@ -1,12 +1,14 @@
 <script>
+import { mapMutations } from 'vuex';
 export default {
+    inject: ['nodeId'],
     props: {
-        state: {
+        executionState: {
             type: String,
             default: 'null',
-            validator: state => [
+            validator: executionState => [
                 'null', 'CONFIGURED', 'EXECUTED', 'EXECUTING', 'HALTED', 'IDLE', 'QUEUED'
-            ].includes(state)
+            ].includes(executionState)
         },
         // progress in percentage
         progress: {
@@ -40,7 +42,7 @@ export default {
                 EXECUTED: [false, false, true],
                 HALTED: [false, false, true], // TODO NXT-279: for now halted is the same state as executed
                 null: [false, false, false]
-            }[this.state];
+            }[this.executionState];
         },
         progressBarWidth() {
             return this.$shapes.nodeSize * this.progress / 100;
@@ -48,13 +50,45 @@ export default {
         percentageClipPath() {
             return `view-box polygon(0 0, ${this.progressBarWidth} 0, ` +
              `${this.progressBarWidth} ${this.$shapes.nodeStatusHeight}, 0 ${this.$shapes.nodeStatusHeight})`;
+        },
+        tooltip() {
+            const errorSymbolRadius = 5;
+            const tooltipSpacing = 2;
+            const { nodeSize, nodeStatusHeight, nodeStatusMarginTop } = this.$shapes;
+            let tooltip = {
+                x: nodeSize / 2,
+                y: nodeSize + nodeStatusMarginTop + nodeStatusHeight + errorSymbolRadius + tooltipSpacing,
+                anchor: this.nodeId
+            };
+
+            if (this.error) {
+                return { ...tooltip, text: this.error, type: 'error' };
+            } else if (this.warning) {
+                return { ...tooltip, text: this.warning, type: 'warning' };
+            } else if (this.progressMessage) {
+                return { ...tooltip, text: this.progressMessage };
+            }
+            return null;
+        }
+    },
+    methods: {
+        ...mapMutations('workflows', ['setTooltip']),
+        onMouseEnter() {
+            this.setTooltip(this.tooltip);
+        },
+        onMouseLeave() {
+            this.setTooltip(null);
         }
     }
 };
 </script>
 
 <template>
-  <g :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`">
+  <g
+    :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
+  >
     <rect
       :width="$shapes.nodeSize"
       :height="$shapes.nodeStatusHeight"
@@ -87,7 +121,7 @@ export default {
       />
     </g>
     <text
-      v-else-if="state === 'QUEUED'"
+      v-else-if="executionState === 'QUEUED'"
       class="progress-text"
       :x="$shapes.nodeSize / 2"
       :fill="$colors.text.default"
@@ -99,7 +133,7 @@ export default {
 
     <!-- node's animated execution state -->
     <g
-      v-else-if="state === 'EXECUTING'"
+      v-else-if="executionState === 'EXECUTING'"
     >
       <circle
         v-if="!progress"
@@ -167,7 +201,7 @@ export default {
     <g
       v-else-if="warning"
       class="warning"
-      :transform="`translate(${$shapes.nodeSize / 2 - 6}, 4)`"
+      :transform="`translate(${$shapes.nodeSize / 2 - 6}, 5.5)`"
     >
       <path
         d="M6,1.25 L0.5,10.75 H11.5 Z"
@@ -200,11 +234,11 @@ export default {
 
 @keyframes executing {
   from {
-    cx: 6px;
+    cx: 6px; /* circle radius */
   }
 
   to {
-    cx: 26px;
+    cx: 26px; /* node width - circle radius */
   }
 }
 

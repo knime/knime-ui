@@ -29,11 +29,12 @@ describe('NodeTorso.vue', () => {
         expect(wrapper.findComponent(NodeTorsoMetanode).exists()).toBeTruthy();
     });
 
-    it('renders metanodes', () => {
+    it('renders metanode state', () => {
         let wrapper = doShallowMount({
-            kind: 'metanode'
+            kind: 'metanode',
+            executionState: 'EXECUTED'
         });
-        expect(wrapper.findComponent(NodeTorsoMetanode).exists()).toBeTruthy();
+        expect(wrapper.findComponent(NodeTorsoMetanode).props('executionState')).toBe('EXECUTED');
     });
 
     it.each(['node', 'component'])('renders missing %s', (kind) => {

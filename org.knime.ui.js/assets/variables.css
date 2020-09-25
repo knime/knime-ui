@@ -1,4 +1,2 @@
 @import "webapps-common/ui/css/variables";
-
-:root {
-}
+@import "./colors.css";

@@ -9,6 +9,7 @@ export const nodeStatusMarginTop = 8;
 export const maxNodeAnnotationWidth = 1000;
 export const nodeAnnotationMarginTop = 12;
 export const nodeNameMargin = 12;
+export const nodeNameLineHeight = 14;
 
 export const componentBackgroundPortion = 0.75;
 
@@ -20,3 +21,6 @@ export const workflowAnnotationPadding = 3;
 export const nodeAnnotationPadding = 2;
 
 export const canvasPadding = 2 * nodeSize;
+
+export const tooltipArrowSize = 8;
+export const tooltipMaxWidth = 250;

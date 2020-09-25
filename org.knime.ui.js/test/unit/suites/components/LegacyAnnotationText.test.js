@@ -6,7 +6,7 @@ describe('LegacyAnnotationText.vue', () => {
     it('renders empty text', () => {
         let propsData = {
             text: '',
-            styleRanges: [{ start: 0, length: 10 }]
+            styleRanges: []
         };
         let wrapper = shallowMount(LegacyAnnotationText, { propsData });
         expect(wrapper.findAll('span').length).toBe(0);

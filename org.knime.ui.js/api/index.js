@@ -7,7 +7,7 @@ const rpc = (method, ...args) => {
         params: args,
         id: 0
     };
-    consola.info('JSON-RPC:', req);
+    consola.trace('JSON-RPC:', req);
 
     let response = window.jsonrpc(JSON.stringify(req));
 
@@ -21,7 +21,7 @@ const rpc = (method, ...args) => {
 
 export const fetchApplicationState = () => {
     const state = rpc('ApplicationService.getState');
-    consola.debug('current state', state);
+    consola.debug('Current app state', state);
 
     if (state) {
         return Promise.resolve(state);
@@ -32,7 +32,7 @@ export const fetchApplicationState = () => {
 
 export const loadWorkflow = (projectId) => {
     const workflow = rpc('WorkflowService.getWorkflow', projectId, 'root');
-    consola.debug('loaded workflow', workflow);
+    consola.debug('Loaded workflow', workflow);
 
     if (workflow) {
         return Promise.resolve(workflow);
