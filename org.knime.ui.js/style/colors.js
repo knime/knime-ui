@@ -1,56 +1,19 @@
-const colors = {
-    // non-exhaustive list from the corporate style guide
-    'KNIME yellow': '#ffd800',
-    'Silver Sand': '#c0c4c6',
-    Avocado: '#cbd9a9',
-    'Meadow light': '#c8e632',
-    Meadow: '#3cb44b',
-    Aquamarine: '#88d8e4',
-    'Aquamarine dark': '#2b94b1',
-    Lavender: '#965591',
-    'Hibiscus dark': '#dc2c87',
-    Coral: '#ff4b4b',
-    Carrot: '#ff9632',
-    Wood: '#d2a384',
-    Stone: '#aaaaaa',
-    'Stone Gray': '#888888',
-    Masala: '#3e3a39',
-    Cornflower: '#1e6da8'
-};
+import colors from '~/webapps-common/ui/colors/knimeColors';
+export * as nodeBackgroundColors from '~/webapps-common/ui/colors/nodeColors';
 
 export const text = {
     default: colors.Masala
 };
 
-export const nodeBackgroundColors = {
-    Container: colors.Avocado,
-    Component: colors['Silver Sand'],
-    Learner: colors['Meadow light'],
-    LoopEnd: colors.Aquamarine,
-    LoopStart: colors.Aquamarine,
-    Manipulator: colors['KNIME yellow'],
-    Other: colors.Wood,
-    Predictor: colors.Meadow,
-    QuickForm: colors.Avocado,
-    ScopeEnd: colors.Lavender,
-    ScopeStart: colors.Lavender,
-    Sink: colors.Coral,
-    Source: colors.Carrot,
-    VirtualIn: colors.Stone,
-    VirtualOut: colors.Stone,
-    Visualizer: colors['Aquamarine dark'],
-    Metanode: colors['Stone Gray']
-};
-
 export const portColors = {
-    data: '#000',
-    variable: 'red',
+    data: colors.Black,
+    variable: colors.Coral,
     inactive: 'red', // "×"
     inactiveOutline: 'hsla(0, 100%, 100%, 66%)' // outline around "×"
 };
 
 export const connectorColors = {
-    default: colors['Silver Sand'],
+    default: colors.SilverSand,
     variable: portColors.variable
 };
 
