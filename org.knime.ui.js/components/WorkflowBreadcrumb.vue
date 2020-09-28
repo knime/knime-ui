@@ -47,8 +47,11 @@ export default {
         }
     },
     methods: {
-        onClick(e) {
-            let targetId = e.originalTarget.href.replace(/.*#/, '');
+        onClick({ originalTarget }) {
+            if (!originalTarget.href) {
+                return;
+            }
+            let targetId = originalTarget.href.replace(/.*#/, '');
             this.$store.dispatch('workflow/navigate', targetId);
         }
     }
@@ -58,7 +61,7 @@ export default {
 <template>
   <div
     class="container"
-    @click.prevent="onClick"
+    @click.capture.prevent="onClick"
   >
     <Breadcrumb
       :items="items"
