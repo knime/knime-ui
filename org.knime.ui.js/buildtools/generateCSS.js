@@ -4,15 +4,18 @@ import path from 'path';
 
 import * as colors from '../style/colors';
 
-const assets = ['warning', 'error'];
+const camelToSnake = str => str.replace(/(.?)([A-Z])/g,
+    (_, before, letter) => `${before}${before ? '-' : ''}${letter.toLowerCase()}`);
+
+
+const assets = ['warning', 'error', 'darkeningMask'];
 
 /**
  * Generate colors.css with the above color names from colors.js
  * @returns {void}
  */
 export default function () {
-
-    let rules = assets.map(name => `--${name}-color: ${colors[name]};`);
+    let rules = assets.map(name => `--${camelToSnake(name)}-color: ${colors[name]};`);
     let content = `/* This is an auto-generated file.
  * Do not change manually.
  * Changes should go to style/colors.js.

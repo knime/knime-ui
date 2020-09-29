@@ -5,7 +5,7 @@ import Vuex from 'vuex';
 import KnimeUI from '~/components/KnimeUI';
 import Kanvas from '~/components/Kanvas';
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/perspective-switch.svg?inline';
-import KnimeIcon from '~assets/knime.svg?inline';
+import KnimeIcon from '~/webapps-common/ui/assets/img/KNIME_Triangle.svg?inline';
 
 
 describe('KnimeUI.vue', () => {

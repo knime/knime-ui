@@ -1,6 +1,6 @@
 import path from 'path';
 import postcssConfig from 'webapps-common/webpack/webpack.postcss.config';
-import generateCss from './buildtools/generate-css';
+import generateCss from './buildtools/generateCSS';
 import svgConfig from 'webapps-common/webpack/webpack.svg.config';
 
 const srcDir = path.resolve(__dirname);

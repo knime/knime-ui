@@ -66,7 +66,7 @@ export default {
   </div>
 </template>
 
-<style scoped>
+<style lang="postcss" scoped>
 h3 {
   position: fixed;
 }

@@ -176,7 +176,6 @@ export default {
   &.bottom::before {
     width: var(--arrowSize);
     height: var(--arrowSize);
-    box-sizing: border-box;
     content: '';
     position: absolute;
     left: 50%;
