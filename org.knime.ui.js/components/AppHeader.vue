@@ -1,0 +1,83 @@
+<script>
+import KnimeIcon from '~/webapps-common/ui/assets/img/KNIME_Triangle.svg?inline';
+import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+import SwitchIcon from '~/webapps-common/ui/assets/img/icons/perspective-switch.svg?inline';
+
+/**
+ * Header Bar containing Logo, and Switch to Java UI Button
+ */
+export default {
+    components: {
+        KnimeIcon,
+        FunctionButton,
+        SwitchIcon
+    },
+    methods: {
+        switchToJavaUI() {
+            window.switchToJavaUI();
+        }
+    }
+};
+</script>
+
+<template>
+  <header>
+    <div id="knime-logo">
+      <KnimeIcon />
+    </div>
+    <FunctionButton
+      id="switch-classic"
+      @click="switchToJavaUI"
+    >
+      <SwitchIcon />
+    </FunctionButton>
+  </header>
+</template>
+
+<style lang="postcss" scoped>
+header {
+  display: flex;
+  justify-content: space-between;
+  height: 80px;
+  background-color: var(--knime-masala);
+  border-bottom: 4px solid var(--knime-yellow);
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    width: 100%;
+    height: 1px;
+    background: var(--darkening-mask-color);
+  }
+
+  & #knime-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--side-bar-width);
+    background-color: var(--knime-black);
+    text-align: center;
+
+    & svg {
+      width: 26px;
+      height: 26px;
+    }
+  }
+
+  & #switch-classic {
+    height: 40px;
+    width: 40px;
+    margin: 20px;
+    border: 1px solid var(--knime-dove-gray);
+
+    & svg {
+      width: 26px;
+      height: 26px;
+      stroke: var(--knime-white);
+      stroke-width: calc(32px / 26); /* get 1px stroke width */
+    }
+  }
+}
+</style>
