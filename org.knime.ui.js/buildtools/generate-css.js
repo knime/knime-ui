@@ -25,6 +25,6 @@ export default function () {
 
     let outPath = path.join(__dirname, '..', 'assets', 'colors.css');
 
-    console.info(`Generating ${outPath}`);
+    console.info('Generating assets/colors.css');
     fs.writeFileSync(outPath, content);
 }

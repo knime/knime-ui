@@ -101,23 +101,41 @@ export default {
       <circle
         cx="6"
         cy="6"
-        r="3.5"
+        r="4"
         :fill="trafficLight[0] ? $colors.trafficLight.red : $colors.trafficLight.inactive"
-        :stroke="trafficLight[0] ? $colors.trafficLight.redBorder : $colors.trafficLight.inactiveBorder"
+      />
+      <circle
+        cx="6"
+        cy="6"
+        r="3.5"
+        fill="none"
+        :stroke="trafficLight[0] ? $colors.darkeningMask : $colors.trafficLight.inactiveBorder"
+      />
+      <circle
+        cx="16"
+        cy="6"
+        r="4"
+        :fill="trafficLight[1] ? $colors.trafficLight.yellow : $colors.trafficLight.inactive"
       />
       <circle
         cx="16"
         cy="6"
         r="3.5"
-        :fill="trafficLight[1] ? $colors.trafficLight.yellow : $colors.trafficLight.inactive"
-        :stroke="trafficLight[1] ? $colors.trafficLight.yellowBorder : $colors.trafficLight.inactiveBorder"
+        fill="none"
+        :stroke="trafficLight[1] ? $colors.darkeningMask : $colors.trafficLight.inactiveBorder"
+      />
+      <circle
+        cx="26"
+        cy="6"
+        r="4"
+        :fill="trafficLight[2] ? $colors.trafficLight.green : $colors.trafficLight.inactive"
       />
       <circle
         cx="26"
         cy="6"
         r="3.5"
-        :fill="trafficLight[2] ? $colors.trafficLight.green : $colors.trafficLight.inactive"
-        :stroke="trafficLight[2] ? $colors.trafficLight.greenBorder : $colors.trafficLight.inactiveBorder"
+        fill="none"
+        :stroke="trafficLight[2] ? $colors.darkeningMask : $colors.trafficLight.inactiveBorder"
       />
     </g>
     <text

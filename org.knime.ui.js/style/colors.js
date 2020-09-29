@@ -21,15 +21,14 @@ export const connectorColors = {
 
 export const trafficLight = {
     red: 'hsl(339.1, 88.4%, 43.9%)',
-    redBorder: 'hsl(338.9, 88.8%, 35.1%)',
     yellow: colors.Yellow,
-    yellowBorder: 'hsl(50.9, 100%, 33.5%)',
     green: 'hsl(127.5, 50%, 47.1%)',
-    greenBorder: 'hsl(120, 100%, 24.5%)',
     inactive: 'hsl(0, 0%, 100%)',
     inactiveBorder: 'hsl(0, 0%, 48.2%)',
     background: 'hsl(192, 6.8%, 85.7%)'
 };
+
+export const darkeningMask = 'hsla(0, 0%, 0%, 33.3%)';
 
 export const nodeProgressBar = colors.Cornflower;
 export const metanodeState = colors.Masala;

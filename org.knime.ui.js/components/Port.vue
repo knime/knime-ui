@@ -148,9 +148,14 @@ export default {
       />
       <circle
         cx="-5.5"
-        r="2.5"
+        r="3"
         :fill="$colors.trafficLight[trafficLight]"
-        :stroke="$colors.trafficLight[trafficLight + 'Border']"
+      />
+      <circle
+        cx="-5.5"
+        r="2.5"
+        fill="none"
+        :stroke="$colors.darkeningMask"
       />
       <line
         v-if="trafficLight === 'yellow'"
