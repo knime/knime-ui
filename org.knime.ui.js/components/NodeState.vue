@@ -181,7 +181,7 @@ export default {
     >
       <circle
         r="5"
-        fill="#D30D52"
+        :fill="$colors.error"
       />
       <line
         x1="-2.25"
@@ -205,14 +205,14 @@ export default {
     >
       <path
         d="M6,1.25 L0.5,10.75 H11.5 Z"
-        fill="#FFD800"
-        stroke="#3E3A39"
+        :fill="$colors.warning"
+        :stroke="$colors.named.Masala"
         stroke-linejoin="round"
       />
       <line
         x1="6"
         x2="6"
-        stroke="#3E3A39"
+        :stroke="$colors.named.Masala"
         y1="4.2"
         y2="7.3"
       />
@@ -220,7 +220,7 @@ export default {
         r="0.5"
         cy="8.75"
         cx="6"
-        fill="#3E3A39"
+        :fill="$colors.named.Masala"
       />
     </g>
   </g>

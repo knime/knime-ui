@@ -1,5 +1,6 @@
 import path from 'path';
 import postcssConfig from 'webapps-common/webpack/webpack.postcss.config';
+import generateCss from './buildtools/generate-css';
 
 const srcDir = path.resolve(__dirname);
 const commonsDir = path.resolve(srcDir, 'webapps-common');
@@ -22,6 +23,11 @@ const config = {
     ],
     modules: ['portal-vue/nuxt'],
     css: ['@/assets/index.css'],
+    hooks: {
+        build: {
+            before: generateCss
+        }
+    },
     build: {
         postcss: {
             ...postcssConfig,

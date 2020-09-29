@@ -1,5 +1,5 @@
-import colors from '~/webapps-common/ui/colors/knimeColors';
-import nodeColors from '~/webapps-common/ui/colors/nodeColors';
+import colors from '../webapps-common/ui/colors/knimeColors';
+import nodeColors from '../webapps-common/ui/colors/nodeColors';
 
 export const text = {
     default: colors.Masala
@@ -8,7 +8,7 @@ export const text = {
 export const portColors = {
     data: colors.Black,
     variable: colors.Coral,
-    inactive: 'red', // "×"
+    inactive: 'hsl(0, 100%, 50%)', // "×"
     inactiveOutline: 'hsla(0, 100%, 100%, 66%)' // outline around "×"
 };
 
@@ -20,16 +20,21 @@ export const connectorColors = {
 };
 
 export const trafficLight = {
-    red: '#D30D52',
-    redBorder: '#A90A42',
-    yellow: '#FFD800',
-    yellowBorder: '#AB9100',
-    green: '#3CB44B',
-    greenBorder: '#007D00',
-    inactive: 'white',
-    inactiveBorder: '#7B7B7B',
-    background: '#D8DCDD'
+    red: 'hsl(339.1, 88.4%, 43.9%)',
+    redBorder: 'hsl(338.9, 88.8%, 35.1%)',
+    yellow: colors.Yellow,
+    yellowBorder: 'hsl(50.9, 100%, 33.5%)',
+    green: 'hsl(127.5, 50%, 47.1%)',
+    greenBorder: 'hsl(120, 100%, 24.5%)',
+    inactive: 'hsl(0, 0%, 100%)',
+    inactiveBorder: 'hsl(0, 0%, 48.2%)',
+    background: 'hsl(192, 6.8%, 85.7%)'
 };
 
 export const nodeProgressBar = colors.Cornflower;
 export const metanodeState = colors.Masala;
+
+export const error = trafficLight.red;
+export const warning = colors.Yellow;
+
+export const named = colors;
