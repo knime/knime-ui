@@ -150,11 +150,11 @@ export default {
     color: var(--knime-masala);
     border-radius: 1px;
     background-color: white;
-    border-color: var(--knime-error);
+    border-color: var(--error-color);
 
     &::before,
     &::after {
-      border-color: var(--knime-error);
+      border-color: var(--error-color);
       background-color: white;
     }
   }
@@ -163,11 +163,11 @@ export default {
     color: var(--knime-masala);
     border-radius: 1px;
     background-color: white;
-    border-color: var(--knime-warning);
+    border-color: var(--warning-color);
 
     &::after,
     &::before {
-      border-color: var(--knime-warning);
+      border-color: var(--warning-color);
       background-color: white;
     }
   }
