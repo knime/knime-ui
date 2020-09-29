@@ -71,9 +71,15 @@ describe('Kanvas', () => {
                     'some id': nodeData
                 },
                 getters: {
-                    icon() { return ({ workflowId, nodeId }) => `data:image/${workflowId}-${nodeId}`; },
-                    name() { return ({ workflowId, nodeId }) => `name-${workflowId}-${nodeId}`; },
-                    type() { return ({ workflowId, nodeId }) => `type-${workflowId}-${nodeId}`; }
+                    icon() {
+                        return ({ workflowId, nodeId }) => `data:image/${workflowId}-${nodeId}`;
+                    },
+                    name() {
+                        return ({ workflowId, nodeId }) => `name-${workflowId}-${nodeId}`;
+                    },
+                    type() {
+                        return ({ workflowId, nodeId }) => `type-${workflowId}-${nodeId}`;
+                    }
                 }
             }
         });
@@ -122,8 +128,8 @@ describe('Kanvas', () => {
         const common = { bounds: { x: 0, y: 0, width: 42, height: 42 }, backgroundColor: '#fff', borderColor: '#000' };
         workflow.workflowAnnotations = [
             { ...common, id: 'back' },
-            { ...common,  id: 'middle'},
-            { ...common,  id: 'front'}
+            { ...common, id: 'middle' },
+            { ...common, id: 'front' }
         ];
         mount();
 
