@@ -206,7 +206,7 @@ export default {
   </g>
 </template>
 
-<style scoped>
+<style lang="postcss" scoped>
 * {
   user-select: none;
 }

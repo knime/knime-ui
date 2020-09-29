@@ -31,11 +31,11 @@ export default {
         },
         borderColor: {
             type: String,
-            default: '#ffd800' // knime-yellow
+            required: true
         },
         backgroundColor: {
             type: String,
-            default: '#fff' // white
+            required: true
         },
         bounds: {
             type: Object,
@@ -63,8 +63,8 @@ export default {
                 fontSize: `${this.defaultFontSize}px`,
                 border: `${this.borderWidth}px solid ${this.borderColor}`,
                 background: this.backgroundColor,
-                width: `${width - 2 * (this.borderWidth + this.$shapes.workflowAnnotationPadding)}px`,
-                height: `${height - 2 * (this.borderWidth + this.$shapes.workflowAnnotationPadding)}px`,
+                width: `${width}px`,
+                height: `${height}px`,
                 textAlign: this.textAlign,
                 padding: `${this.$shapes.workflowAnnotationPadding}px`
             };
@@ -88,7 +88,7 @@ export default {
   </foreignObject>
 </template>
 
-<style scoped>
+<style lang="postcss" scoped>
 div {
   font-family: "Roboto Condensed", sans-serif;
   border-radius: 2px;

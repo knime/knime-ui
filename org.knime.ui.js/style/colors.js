@@ -1,66 +1,39 @@
-const colors = {
-    // non-exhaustive list from the corporate style guide
-    'KNIME yellow': '#ffd800',
-    'Silver Sand': '#c0c4c6',
-    Avocado: '#cbd9a9',
-    'Meadow light': '#c8e632',
-    Meadow: '#3cb44b',
-    Aquamarine: '#88d8e4',
-    'Aquamarine dark': '#2b94b1',
-    Lavender: '#965591',
-    'Hibiscus dark': '#dc2c87',
-    Coral: '#ff4b4b',
-    Carrot: '#ff9632',
-    Wood: '#d2a384',
-    Stone: '#aaaaaa',
-    Masala: '#3e3a39'
-};
+import colors from 'webapps-common/ui/colors/knimeColors';
+import nodeColors from 'webapps-common/ui/colors/nodeColors';
 
 export const text = {
     default: colors.Masala
 };
 
-export const nodeBackgroundColors = {
-    Container: colors.Avocado,
-    Component: colors['Silver Sand'],
-    Learner: colors['Meadow light'],
-    LoopEnd: colors.Aquamarine,
-    LoopStart: colors.Aquamarine,
-    Manipulator: colors['KNIME yellow'],
-    Other: colors.Wood,
-    Predictor: colors.Meadow,
-    QuickForm: colors.Avocado,
-    ScopeEnd: colors.Lavender,
-    ScopeStart: colors.Lavender,
-    Sink: colors.Coral,
-    Source: colors.Carrot,
-    VirtualIn: colors.Stone,
-    VirtualOut: colors.Stone,
-    Visualizer: colors['Aquamarine dark']
-};
-
 export const portColors = {
-    data: '#000',
-    variable: 'red',
-    inactive: 'red', // "×"
+    data: colors.Black,
+    variable: colors.Coral,
+    inactive: 'hsl(0, 100%, 50%)', // "×"
     inactiveOutline: 'hsla(0, 100%, 100%, 66%)' // outline around "×"
 };
 
+export const nodeBackgroundColors = nodeColors;
+
 export const connectorColors = {
-    default: colors['Silver Sand'],
+    default: colors.SilverSand,
     variable: portColors.variable
 };
 
 export const trafficLight = {
-    red: '#D30D52',
-    redBorder: '#A90A42',
-    yellow: '#FFD800',
-    yellowBorder: '#AB9100',
-    green: '#3CB44B',
-    greenBorder: '#007D00',
-    inactive: 'white',
-    inactiveBorder: '#7B7B7B'
+    red: 'hsl(339.1, 88.4%, 43.9%)',
+    yellow: colors.Yellow,
+    green: 'hsl(127.5, 50%, 47.1%)',
+    inactive: 'hsl(0, 0%, 100%)',
+    inactiveBorder: 'hsl(0, 0%, 48.2%)',
+    background: 'hsl(192, 6.8%, 85.7%)'
 };
 
-export const nodeProgressBar = '#1E6DA8';
+export const darkeningMask = 'hsla(0, 0%, 0%, 33.3%)';
+
+export const nodeProgressBar = colors.Cornflower;
 export const metanodeState = colors.Masala;
+
+export const error = trafficLight.red;
+export const warning = colors.Yellow;
+
+export const named = colors;

@@ -87,7 +87,7 @@ export default {
   />
 </template>
 
-<style scoped>
+<style lang="postcss" scoped>
 path {
   transition: stroke-width 0.1s linear, stroke 0.2s linear;
   cursor: grab;

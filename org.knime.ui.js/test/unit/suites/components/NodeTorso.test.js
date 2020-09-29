@@ -19,7 +19,7 @@ describe('NodeTorso.vue', () => {
             type: 'Manipulator',
             kind: 'node'
         });
-        expect(wrapper.find('.bg').attributes().fill).toBe('#ffd800');
+        expect(wrapper.find('.bg').attributes().fill).toBe($colors.nodeBackgroundColors.Manipulator);
     });
 
     it('renders metanodes', () => {
@@ -52,7 +52,7 @@ describe('NodeTorso.vue', () => {
         });
         expect(wrapper.findComponent(NodeTorsoUnknown).exists()).toBeTruthy();
     });
-
+    
     const nodeTypeCases = Object.entries($colors.nodeBackgroundColors);
     it.each(nodeTypeCases)('renders node category "%s" as color "%s"', (type, color) => {
         let wrapper = doShallowMount({
@@ -61,6 +61,7 @@ describe('NodeTorso.vue', () => {
         });
         let bgs = wrapper.findAll('.bg');
         expect(bgs.length).toBe(1);
+        // console.log(bgs.at(0).attributes().fill, color);
         expect(bgs.at(0).attributes().fill).toBe(color);
     });
 
