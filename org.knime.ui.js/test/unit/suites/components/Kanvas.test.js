@@ -119,10 +119,11 @@ describe('Kanvas', () => {
     });
 
     it('renders workflow annotations', () => {
+        const common = { bounds: { x: 0, y: 0, width: 42, height: 42 }, backgroundColor: '#fff', borderColor: '#000' };
         workflow.workflowAnnotations = [
-            { id: 'back', bounds: { x: 0, y: 0, width: 42, height: 42 } },
-            { id: 'middle', bounds: { x: 0, y: 0, width: 42, height: 42 } },
-            { id: 'front', bounds: { x: 0, y: 0, width: 42, height: 42 } }
+            { ...common, id: 'back' },
+            { ...common,  id: 'middle'},
+            { ...common,  id: 'front'}
         ];
         mount();
 
