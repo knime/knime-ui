@@ -1,5 +1,5 @@
-import colors from '../webapps-common/ui/colors/knimeColors';
-import nodeColors from '../webapps-common/ui/colors/nodeColors';
+import colors from 'webapps-common/ui/colors/knimeColors';
+import nodeColors from 'webapps-common/ui/colors/nodeColors';
 
 export const text = {
     default: colors.Masala
