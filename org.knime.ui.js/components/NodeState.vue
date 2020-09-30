@@ -98,45 +98,25 @@ export default {
 
     <!-- node's static states -->
     <g v-if="trafficLight">
-      <circle
-        cx="6"
-        cy="6"
-        r="4"
-        :fill="trafficLight[0] ? $colors.trafficLight.red : $colors.trafficLight.inactive"
-      />
-      <circle
-        cx="6"
-        cy="6"
-        r="3.5"
-        fill="none"
-        :stroke="trafficLight[0] ? $colors.darkeningMask : $colors.trafficLight.inactiveBorder"
-      />
-      <circle
-        cx="16"
-        cy="6"
-        r="4"
-        :fill="trafficLight[1] ? $colors.trafficLight.yellow : $colors.trafficLight.inactive"
-      />
-      <circle
-        cx="16"
-        cy="6"
-        r="3.5"
-        fill="none"
-        :stroke="trafficLight[1] ? $colors.darkeningMask : $colors.trafficLight.inactiveBorder"
-      />
-      <circle
-        cx="26"
-        cy="6"
-        r="4"
-        :fill="trafficLight[2] ? $colors.trafficLight.green : $colors.trafficLight.inactive"
-      />
-      <circle
-        cx="26"
-        cy="6"
-        r="3.5"
-        fill="none"
-        :stroke="trafficLight[2] ? $colors.darkeningMask : $colors.trafficLight.inactiveBorder"
-      />
+      <template
+        v-for="(active, index) of trafficLight"
+      >
+        <circle
+          :key="`${index}-bg`"
+          :cx="6 + 10 * index"
+          cy="6"
+          r="4"
+          :fill="active ? $colors.trafficLight[['red', 'yellow', 'green'][index]] : $colors.trafficLight.inactive"
+        />
+        <circle
+          :key="`${index}-border`"
+          :cx="6 + 10 * index"
+          cy="6"
+          r="3.5"
+          fill="none"
+          :stroke="active ? $colors.darkeningMask : $colors.trafficLight.inactiveBorder"
+        />
+      </template>
     </g>
     <text
       v-else-if="executionState === 'QUEUED'"
