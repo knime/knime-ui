@@ -5,6 +5,8 @@ import SwitchIcon from '~/webapps-common/ui/assets/img/icons/perspective-switch.
 import KnimeIcon from '~/webapps-common/ui/assets/img/KNIME_Triangle.svg?inline';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import Kanvas from '~/components/Kanvas';
+import LeftCollapsablePanel from '~/components/LeftCollapsablePanel';
+import WorkflowMetadata from '~/components/WorkflowMetadata';
 
 /**
  * Main page and entry point of Knime Next
@@ -16,7 +18,9 @@ export default {
         FunctionButton,
         Kanvas,
         SwitchIcon,
-        KnimeIcon
+        KnimeIcon,
+        LeftCollapsablePanel,
+        WorkflowMetadata
     },
     async fetch() {
         await this.initState();
@@ -49,7 +53,15 @@ export default {
     </header>
     <nav id="sidebar" />
     <div id="toolbar" />
-    <main>
+    <LeftCollapsablePanel
+      v-if="workflow"
+      id="metadata"
+      width="360px"
+      title="Workflow Metadata"
+    >
+      <WorkflowMetadata />
+    </LeftCollapsablePanel>
+    <main id="workflow">
       <Kanvas v-if="workflow" />
       <div
         v-else
@@ -69,13 +81,18 @@ export default {
   --side-bar-width: 40px;
 
   display: grid;
-  grid-template-columns: min-content auto;
+  grid-template-columns: min-content min-content auto;
   grid-template-rows: min-content min-content auto;
   grid-template-areas:
-    "header header"
-    "sidebar toolbar"
-    "sidebar main";
-  height: calc(100vh);
+    "header header header"
+    "sidebar toolbar toolbar"
+    "sidebar metadata workflow";
+  height: 100vh;
+}
+
+#metadata {
+  grid-area: metadata;
+  border-right: 1px solid var(--knime-silver-sand);
 }
 
 #sidebar {
@@ -88,6 +105,7 @@ export default {
 }
 
 #toolbar {
+  grid-area: toolbar;
   border-top: 1px solid var(--header-separator);
   height: 50px;
   background-color: var(--knime-porcelain);
@@ -130,8 +148,8 @@ header {
   }
 }
 
-main {
-  grid-area: main;
+#workflow {
+  grid-area: workflow;
   overflow: auto;
 
   & #placeholder-no-workflow {

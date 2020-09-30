@@ -45,18 +45,35 @@ describe('KnimeUI.vue', () => {
         };
     });
 
-    it('initiates', async () => {
-        workflow = 'this is a dummy workflow';
-        await doShallowMount();
+    // TODO: test onClick method for preventing navigation
 
-        expect(initState).toHaveBeenCalled();
-        expect(wrapper.findComponent(Kanvas).exists()).toBe(true);
+    describe('workflow loaded', () => {
+        beforeEach(async () => {
+            workflow = 'this is a dummy workflow';
+            await doShallowMount();
+        });
+
+        it('initializes app state', () => {
+            expect(initState).toHaveBeenCalled();
+        });
+
+        it('displays Workflow and Metadata panel', () => {
+            expect(wrapper.findComponent(Kanvas).exists()).toBe(true);
+        });
     });
 
-    it('shows placeholder', async () => {
-        await doShallowMount();
+    describe('no workflow loaded', () => {
+        beforeEach(async () => {
+            await doShallowMount();
+        });
 
-        expect(wrapper.findComponent(Kanvas).exists()).toBe(false);
-        expect(wrapper.find('main').text()).toMatch('No workflow opened');
+        it('shows placeholder', () => {
+            expect(wrapper.findComponent(Kanvas).exists()).toBe(false);
+            expect(wrapper.find('main').text()).toMatch('No workflow opened');
+        });
+
+        it('hides metadata panel', () => {
+            expect(wrapper.find('#metadata').exists()).toBe(false);
+        });
     });
 });
