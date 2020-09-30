@@ -1,4 +1,5 @@
 <script>
+import { mapState } from 'vuex';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import Kanvas from '~/components/Kanvas';
 
@@ -12,6 +13,7 @@ export default {
         Kanvas
     },
     computed: {
+        ...mapState('workflows', ['workflow']),
         hasBreadcrumb() {
             // TODO: show or hide NXT-288
             return true;
@@ -21,12 +23,20 @@ export default {
 </script>
 
 <template>
-  <div class="content">
+  <div class="content" v-if="workflow">
     <WorkflowBreadcrumb
       v-if="hasBreadcrumb"
       class="breadcrumb"
     />
     <Kanvas class="kanvas" />
+  </div>
+  <div
+    v-else
+    class="placeholder"
+  >
+    <h2>
+      No workflow opened
+    </h2>
   </div>
 </template>
 
@@ -44,6 +54,15 @@ export default {
 }
 
 .kanvas {
+  flex-grow: 1;
   overflow: scroll;
+}
+
+.placeholder {
+  height: 55%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--knime-stone-gray);
 }
 </style>

@@ -44,30 +44,45 @@ describe('NodeState.vue', () => {
 
     it.each([
         ['IDLE', [
-            { fill: $colors.trafficLight.red, stroke: $colors.trafficLight.redBorder },
-            { fill: $colors.trafficLight.inactive, stroke: $colors.trafficLight.inactiveBorder },
-            { fill: $colors.trafficLight.inactive, stroke: $colors.trafficLight.inactiveBorder }
+            { fill: $colors.trafficLight.red, stroke: undefined },
+            { fill: 'none', stroke: $colors.darkeningMask },
+            { fill: $colors.trafficLight.inactive, stroke: undefined },
+            { fill: 'none', stroke: $colors.trafficLight.inactiveBorder },
+            { fill: $colors.trafficLight.inactive, stroke: undefined },
+            { fill: 'none', stroke: $colors.trafficLight.inactiveBorder }
         ]],
         ['CONFIGURED', [
-            { fill: $colors.trafficLight.inactive, stroke: $colors.trafficLight.inactiveBorder },
-            { fill: $colors.trafficLight.yellow, stroke: $colors.trafficLight.yellowBorder },
-            { fill: $colors.trafficLight.inactive, stroke: $colors.trafficLight.inactiveBorder }
+            { fill: $colors.trafficLight.inactive, stroke: undefined },
+            { fill: 'none', stroke: $colors.trafficLight.inactiveBorder },
+            { fill: $colors.trafficLight.yellow, stroke: undefined },
+            { fill: 'none', stroke: $colors.darkeningMask },
+            { fill: $colors.trafficLight.inactive, stroke: undefined },
+            { fill: 'none', stroke: $colors.trafficLight.inactiveBorder }
         ]],
         ['EXECUTED', [
-            { fill: $colors.trafficLight.inactive, stroke: $colors.trafficLight.inactiveBorder },
-            { fill: $colors.trafficLight.inactive, stroke: $colors.trafficLight.inactiveBorder },
-            { fill: $colors.trafficLight.green, stroke: $colors.trafficLight.greenBorder }
+            { fill: $colors.trafficLight.inactive, stroke: undefined },
+            { fill: 'none', stroke: $colors.trafficLight.inactiveBorder },
+            { fill: $colors.trafficLight.inactive, stroke: undefined },
+            { fill: 'none', stroke: $colors.trafficLight.inactiveBorder },
+            { fill: $colors.trafficLight.green, stroke: undefined },
+            { fill: 'none', stroke: $colors.darkeningMask }
         ]],
         // TODO NXT-279: for now halted is the same state as executed
         ['HALTED', [
-            { fill: $colors.trafficLight.inactive, stroke: $colors.trafficLight.inactiveBorder },
-            { fill: $colors.trafficLight.inactive, stroke: $colors.trafficLight.inactiveBorder },
-            { fill: $colors.trafficLight.green, stroke: $colors.trafficLight.greenBorder }
+            { fill: $colors.trafficLight.inactive, stroke: undefined },
+            { fill: 'none', stroke: $colors.trafficLight.inactiveBorder },
+            { fill: $colors.trafficLight.inactive, stroke: undefined },
+            { fill: 'none', stroke: $colors.trafficLight.inactiveBorder },
+            { fill: $colors.trafficLight.green, stroke: undefined },
+            { fill: 'none', stroke: $colors.darkeningMask }
         ]],
         [null, [
-            { fill: $colors.trafficLight.inactive, stroke: $colors.trafficLight.inactiveBorder },
-            { fill: $colors.trafficLight.inactive, stroke: $colors.trafficLight.inactiveBorder },
-            { fill: $colors.trafficLight.inactive, stroke: $colors.trafficLight.inactiveBorder }
+            { fill: $colors.trafficLight.inactive, stroke: undefined },
+            { fill: 'none', stroke: $colors.trafficLight.inactiveBorder },
+            { fill: $colors.trafficLight.inactive, stroke: undefined },
+            { fill: 'none', stroke: $colors.trafficLight.inactiveBorder },
+            { fill: $colors.trafficLight.inactive, stroke: undefined },
+            { fill: 'none', stroke: $colors.trafficLight.inactiveBorder }
         ]],
         ['any other state', []]
     ])('draws traffic lights for state %s', (state, style) => {

@@ -92,8 +92,8 @@ export default {
     <rect
       :width="$shapes.nodeSize"
       :height="$shapes.nodeStatusHeight"
+      :fill="$colors.trafficLight.background"
       rx="1"
-      fill="#D8DCDD"
     />
 
     <!-- node's static states -->
@@ -101,23 +101,41 @@ export default {
       <circle
         cx="6"
         cy="6"
-        r="3.5"
+        r="4"
         :fill="trafficLight[0] ? $colors.trafficLight.red : $colors.trafficLight.inactive"
-        :stroke="trafficLight[0] ? $colors.trafficLight.redBorder : $colors.trafficLight.inactiveBorder"
+      />
+      <circle
+        cx="6"
+        cy="6"
+        r="3.5"
+        fill="none"
+        :stroke="trafficLight[0] ? $colors.darkeningMask : $colors.trafficLight.inactiveBorder"
+      />
+      <circle
+        cx="16"
+        cy="6"
+        r="4"
+        :fill="trafficLight[1] ? $colors.trafficLight.yellow : $colors.trafficLight.inactive"
       />
       <circle
         cx="16"
         cy="6"
         r="3.5"
-        :fill="trafficLight[1] ? $colors.trafficLight.yellow : $colors.trafficLight.inactive"
-        :stroke="trafficLight[1] ? $colors.trafficLight.yellowBorder : $colors.trafficLight.inactiveBorder"
+        fill="none"
+        :stroke="trafficLight[1] ? $colors.darkeningMask : $colors.trafficLight.inactiveBorder"
+      />
+      <circle
+        cx="26"
+        cy="6"
+        r="4"
+        :fill="trafficLight[2] ? $colors.trafficLight.green : $colors.trafficLight.inactive"
       />
       <circle
         cx="26"
         cy="6"
         r="3.5"
-        :fill="trafficLight[2] ? $colors.trafficLight.green : $colors.trafficLight.inactive"
-        :stroke="trafficLight[2] ? $colors.trafficLight.greenBorder : $colors.trafficLight.inactiveBorder"
+        fill="none"
+        :stroke="trafficLight[2] ? $colors.darkeningMask : $colors.trafficLight.inactiveBorder"
       />
     </g>
     <text
@@ -181,7 +199,7 @@ export default {
     >
       <circle
         r="5"
-        fill="#D30D52"
+        :fill="$colors.error"
       />
       <line
         x1="-2.25"
@@ -205,14 +223,14 @@ export default {
     >
       <path
         d="M6,1.25 L0.5,10.75 H11.5 Z"
-        fill="#FFD800"
-        stroke="#3E3A39"
+        :fill="$colors.warning"
+        :stroke="$colors.named.Masala"
         stroke-linejoin="round"
       />
       <line
         x1="6"
         x2="6"
-        stroke="#3E3A39"
+        :stroke="$colors.named.Masala"
         y1="4.2"
         y2="7.3"
       />
@@ -220,7 +238,7 @@ export default {
         r="0.5"
         cy="8.75"
         cx="6"
-        fill="#3E3A39"
+        :fill="$colors.named.Masala"
       />
     </g>
   </g>

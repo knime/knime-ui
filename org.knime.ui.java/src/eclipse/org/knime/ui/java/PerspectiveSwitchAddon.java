@@ -1,8 +1,9 @@
 
 package org.knime.ui.java;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -21,7 +22,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.core.util.Pair;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppState;
@@ -100,76 +103,94 @@ public final class PerspectiveSwitchAddon {
 	}
 
 	private static void updateAppState(final EModelService modelService, final MApplication app) {
-		List<String> workflowProjectIds = new ArrayList<>();
-		List<String> activeWorkflowIds = new ArrayList<>();
+		Set<String> workflowProjectIds = new HashSet<>();
+		Set<Pair<String, NodeID>> activeWorkflowIds = new HashSet<>();
 		collectOpenWorkflows(workflowProjectIds, activeWorkflowIds, modelService, app);
 
 		DefaultApplicationService.getInstance().updateAppState(new AppState() {
 
 			@Override
-			public List<String> getLoadedWorkflowProjectIds() {
+			public Set<String> getLoadedWorkflowProjectIds() {
 				return workflowProjectIds;
 			}
 
 			@Override
-			public List<String> getActiveWorkflowProjectIds() {
+			public Set<Pair<String, NodeID>> getActiveWorkflowIds() {
 				return activeWorkflowIds;
 			}
 
 		});
 	}
 
-	private static void collectOpenWorkflows(final List<String> workflowProjectIds,
-			final List<String> activeWorkflowIds, final EModelService modelService, final MApplication app) {
-		List<MPart> editorParts = modelService.findElements(app, "org.eclipse.e4.ui.compatibility.editor",
-				MPart.class);
+	private static void collectOpenWorkflows(final Set<String> workflowProjectIds,
+			final Set<Pair<String, NodeID>> activeWorkflowIds, final EModelService modelService,
+			final MApplication app) {
+		List<MPart> editorParts = modelService.findElements(app, "org.eclipse.e4.ui.compatibility.editor", MPart.class);
 		for (MPart editorPart : editorParts) {
-			WorkflowProject wp = WorkflowProjectManager.getWorkflowProject(editorPart.getLabel()).orElse(null);
-			if (wp == null && editorPart.getObject() instanceof CompatibilityPart) {
-				final IEditorReference ref = (IEditorReference) ((CompatibilityPart) editorPart.getObject())
-						.getReference();
-				// TODO editors with no workflow loaded (i.e. opened tabs after
-				// the KNIME start which haven't been touched, yet) are ignored
-				// atm
-				final WorkflowManager wfm = getWorkflowManagerProject(ref);
-				if (wfm != null) {
-					wp = new WorkflowProject() {
-
-						@Override
-						public String getName() {
-							return editorPart.getLabel();
-						}
-
-						@Override
-						public String getID() {
-							return getName();
-						}
-
-						@Override
-						public WorkflowManager openProject() {
-							return wfm;
-						}
-
-					};
-					WorkflowProjectManager.addWorkflowProject(editorPart.getLabel(), wp);
-				} else {
-					//
+			WorkflowManager wfm = getWorkflowManager(editorPart);
+			if (wfm != null) {
+				WorkflowProject wp = WorkflowProjectManager.getWorkflowProject(getProjectId(wfm)).orElse(null);
+				if (wp == null) {
+					wp = createWorkflowProject(editorPart, wfm);
 				}
-			}
-			if (wp != null) {
-				workflowProjectIds.add(wp.getID());
-				if (editorPart.getParent().getSelectedElement() == editorPart) {
-					activeWorkflowIds.add(wp.getID());
+				if (wp != null) {
+					workflowProjectIds.add(wp.getID());
+				}
+
+				if (isSelectedEditor(editorPart) && wfm != null) {
+					activeWorkflowIds.add(Pair.create(getProjectId(wfm), wfm.getID()));
 				}
 			}
 		}
 	}
 
-	private static WorkflowManager getWorkflowManagerProject(final IEditorReference ref) {
-		final AtomicReference<WorkflowManager> wfm = new AtomicReference<>();
-		Display.getDefault()
-				.syncExec(() -> wfm.set(((WorkflowEditor) ref.getEditor(true)).getWorkflowManager().orElse(null)));
-		return wfm.get() == null || !wfm.get().isProject() ? null : wfm.get();
+	private static boolean isSelectedEditor(final MPart editorPart) {
+		return editorPart.getParent().getSelectedElement() == editorPart;
+	}
+
+	private static WorkflowProject createWorkflowProject(final MPart editorPart, final WorkflowManager wfm) {
+		if (editorPart.getObject() instanceof CompatibilityPart) {
+			// TODO editors with no workflow loaded (i.e. opened tabs after
+			// the KNIME start which haven't been touched, yet) are ignored
+			// atm
+			WorkflowProject wp = new WorkflowProject() {
+
+				@Override
+				public String getName() {
+					return wfm.getName();
+				}
+
+				@Override
+				public String getID() {
+					return getProjectId(wfm);
+				}
+
+				@Override
+				public WorkflowManager openProject() {
+					return wfm;
+				}
+
+			};
+			WorkflowProjectManager.addWorkflowProject(wp.getID(), wp);
+			return wp;
+		}
+		return null;
+	}
+
+	private static String getProjectId(final WorkflowManager wfm) {
+		return wfm.getProjectWFM().getNameWithID();
+	}
+
+	private static WorkflowManager getWorkflowManager(final MPart editorPart) {
+		if (editorPart.getObject() instanceof CompatibilityPart) {
+			final IEditorReference ref = (IEditorReference) ((CompatibilityPart) editorPart.getObject()).getReference();
+			final AtomicReference<WorkflowManager> wfm = new AtomicReference<>();
+			Display.getDefault()
+					.syncExec(() -> wfm.set(((WorkflowEditor) ref.getEditor(true)).getWorkflowManager().orElse(null)));
+			return wfm.get() == null ? null : wfm.get();
+		} else {
+			return null;
+		}
 	}
 
 }
