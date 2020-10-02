@@ -22,7 +22,7 @@ describe('WorkflowTabContent.vue', () => {
             store = mockVuexStore({
                 workflows: {
                     state: {
-                        workflow
+                        activeWorkflow: workflow
                     }
                 }
             });

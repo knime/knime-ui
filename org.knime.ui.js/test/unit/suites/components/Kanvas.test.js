@@ -59,7 +59,7 @@ describe('Kanvas', () => {
         };
         $store = mockVuexStore({
             workflows: {
-                state: { workflow },
+                state: { activeWorkflow: workflow },
                 getters: {
                     svgBounds() {
                         return { x: -5, y: -2, height: 102, width: 100 };

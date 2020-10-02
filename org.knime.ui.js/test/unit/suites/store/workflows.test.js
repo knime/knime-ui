@@ -49,7 +49,7 @@ describe('workflow store', () => {
 
     it('creates an empty store', async () => {
         await loadStore();
-        expect(store.state.workflows.workflow).toBe(null);
+        expect(store.state.workflows.activeWorkflow).toBe(null);
         expect(store.state.workflows.openedWorkflows).toHaveLength(0);
     });
 
@@ -59,13 +59,13 @@ describe('workflow store', () => {
         });
 
         it('adds workflows', () => {
-            store.commit('workflows/setWorkflow', { projectId: 'foo' });
+            store.commit('workflows/setActiveWorkflow', { projectId: 'foo' });
 
-            expect(store.state.workflows.workflow).toStrictEqual({ projectId: 'foo', nodeIds: [] });
+            expect(store.state.workflows.activeWorkflow).toStrictEqual({ projectId: 'foo', nodeIds: [] });
         });
 
         it('extracts templates', () => {
-            store.commit('workflows/setWorkflow', {
+            store.commit('workflows/setActiveWorkflow', {
                 projectId: 'bar',
                 nodeTemplates: {
                     foo: { bla: 1 },
@@ -79,11 +79,11 @@ describe('workflow store', () => {
             expect(templateMutationMock).toHaveBeenCalledWith(expect.anything(), {
                 templateData: { qux: 2 }, templateId: 'bar'
             });
-            expect(store.state.workflows.workflow).toStrictEqual({ projectId: 'bar', nodeIds: [] });
+            expect(store.state.workflows.activeWorkflow).toStrictEqual({ projectId: 'bar', nodeIds: [] });
         });
 
         it('extracts nodes', () => {
-            store.commit('workflows/setWorkflow', {
+            store.commit('workflows/setActiveWorkflow', {
                 projectId: 'quux',
                 nodes: {
                     foo: { bla: 1 },
@@ -97,17 +97,30 @@ describe('workflow store', () => {
             expect(nodeMutationMock).toHaveBeenCalledWith(expect.anything(), {
                 nodeData: { qux: 2 }, workflowId: 'quux'
             });
-            expect(store.state.workflows.workflow).toStrictEqual({ projectId: 'quux', nodeIds: ['foo', 'bar'] });
+            expect(store.state.workflows.activeWorkflow).toStrictEqual(
+                { projectId: 'quux', nodeIds: ['foo', 'bar'] }
+            );
         });
 
         it('removes existing nodes from node store', () => {
-            store.commit('workflows/setWorkflow', {
+            store.commit('workflows/setActiveWorkflow', {
                 projectId: 'quux',
                 nodes: {}
             });
 
             expect(removeWorkflowMock).toHaveBeenCalledWith(expect.anything(), 'quux');
         });
+
+        it('extracts active workflow', () => {
+            store.commit('workflows/setOpenedWorkflows', [
+                { projectId: 'foo' },
+                { projectId: 'bar', activeWorkflow: { workflow: { is: 'dummy' } } }
+            ]);
+
+            expect(store.state.workflows.activeWorkflow).toStrictEqual({ is: 'dummy', projectId: 'bar', nodeIds: [] });
+        });
+
+
     });
 
     describe('action', () => {
@@ -121,7 +134,7 @@ describe('workflow store', () => {
             const spy = jest.spyOn(store, 'commit');
 
             await store.dispatch('workflows/loadWorkflow', 'wf1');
-            expect(spy).toHaveBeenNthCalledWith(1, 'workflows/setWorkflow', { projectId: 'wf1' }, undefined); // eslint-disable-line no-undefined
+            expect(spy).toHaveBeenNthCalledWith(1, 'workflows/setActiveWorkflow', { projectId: 'wf1' }, undefined); // eslint-disable-line no-undefined
         });
 
         it('initializes application state', async () => {
@@ -137,8 +150,7 @@ describe('workflow store', () => {
             const spy = jest.spyOn(store, 'commit');
             await store.dispatch('workflows/initState');
 
-            expect(spy).toHaveBeenNthCalledWith(1, 'workflows/setOpenedWorkflows', ['wf1', 'wf2'], undefined); // eslint-disable-line no-undefined
-            expect(spy).toHaveBeenNthCalledWith(2, 'workflows/setWorkflow', { projectId: 'wf1' }, undefined); // eslint-disable-line no-undefined
+            expect(spy).toHaveBeenNthCalledWith(1, 'workflows/setOpenedWorkflows', ['wf1', 'wf2'], undefined);
 
         });
     });
@@ -149,7 +161,7 @@ describe('workflow store', () => {
 
         it('calculates dimensions of empty workflow', async () => {
             await loadStore();
-            store.commit('workflows/setWorkflow', {
+            store.commit('workflows/setActiveWorkflow', {
                 projectId: 'foo',
                 nodeIds: [],
                 workflowAnnotations: []
@@ -180,7 +192,7 @@ describe('workflow store', () => {
                     }
                 }
             });
-            store.commit('workflows/setWorkflow', {
+            store.commit('workflows/setActiveWorkflow', {
                 projectId: 'foo',
                 nodes: { 'root:0': null },
                 workflowAnnotations: []
@@ -204,7 +216,7 @@ describe('workflow store', () => {
 
         it('calculates dimensions of workflow containing annotations only', async () => {
             await loadStore();
-            store.commit('workflows/setWorkflow', {
+            store.commit('workflows/setActiveWorkflow', {
                 projectId: 'foo',
                 nodes: {},
                 workflowAnnotations: [{
@@ -243,7 +255,7 @@ describe('workflow store', () => {
                     }
                 }
             });
-            store.commit('workflows/setWorkflow', {
+            store.commit('workflows/setActiveWorkflow', {
                 projectId: 'foo',
                 nodes: { 'root:0': null },
                 workflowAnnotations: [{

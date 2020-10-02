@@ -13,7 +13,10 @@ export default {
         Tooltip
     },
     computed: {
-        ...mapState('workflows', ['workflow', 'tooltip']),
+        ...mapState('workflows', {
+            workflow: 'activeWorkflow',
+            tooltip: 'tooltip'
+        }),
         ...mapGetters('workflows', ['svgBounds'])
     }
 };

@@ -13,7 +13,9 @@ export default {
         Kanvas
     },
     computed: {
-        ...mapState('workflows', ['workflow']),
+        ...mapState('workflows', {
+            workflow: 'activeWorkflow'
+        }),
         hasBreadcrumb() {
             // TODO: show or hide NXT-288
             return true;

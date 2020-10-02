@@ -4,14 +4,14 @@ import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 
 export const state = () => ({
-    workflow: null,
+    activeWorkflow: null,
     openedWorkflows: [],
     tooltip: null
 });
 
 export const mutations = {
-    setWorkflow(state, workflow) {
-        consola.debug('setting workflow', workflow?.name, workflow?.projectId, workflow);
+    setActiveWorkflow(state, workflow) {
+        consola.debug('setting workflow', workflow?.info?.name, workflow?.projectId, workflow);
 
         // extract nodes
         let { nodes = {} } = workflow;
@@ -45,11 +45,21 @@ export const mutations = {
         });
         delete workflowData.nodeTemplates;
 
-        state.workflow = workflowData;
+        state.activeWorkflow = workflowData;
         state.tooltip = null;
     },
     setOpenedWorkflows(state, descriptors) {
         state.openedWorkflows = descriptors;
+        // if there is an active workflow, show it
+        let activeWorkflowContainer = descriptors.find(
+            container => typeof container.activeWorkflow !== 'undefined'
+        );
+        if (activeWorkflowContainer) {
+            this.commit('workflows/setActiveWorkflow', {
+                ...activeWorkflowContainer.activeWorkflow.workflow,
+                projectId: activeWorkflowContainer.projectId
+            }, { root: true });
+        }
     },
     setTooltip(state, tooltip) {
         Vue.set(state, 'tooltip', tooltip);
@@ -59,29 +69,28 @@ export const mutations = {
 export const actions = {
     async initState({ commit }) {
         const state = await fetchApplicationState();
-        const { activeWorkflows, openedWorkflows } = state;
+
+        const { openedWorkflows = [] } = state;
 
         commit('setOpenedWorkflows', openedWorkflows);
-
-        // if there is an active workflow, show it
-        if (activeWorkflows[0]) {
-            commit('setWorkflow', activeWorkflows[0].workflow);
-        }
     },
-    async loadWorkflow({ commit }, id) {
-        const workflow = await loadWorkflowFromApi(id);
+    async loadWorkflow({ commit }, projectId) { // TODO: allow loading of sub-workflow NXT-288
+        const workflow = await loadWorkflowFromApi(projectId);
 
         if (workflow) {
-            commit('setWorkflow', workflow.workflow);
+            commit('setActiveWorkflow', {
+                ...workflow.workflow,
+                projectId
+            });
         } else {
-            throw new Error(`workflow not found: ${id}`);
+            throw new Error(`workflow not found: ${projectId}`);
         }
     }
 };
 
 export const getters = {
     nodes(state, getters, rootState) {
-        return rootState.nodes[state.workflow.projectId];
+        return rootState.nodes[state.activeWorkflow.projectId];
     },
     /*
         returns the true offset from the upper-left corner of the svg for a given point
@@ -107,8 +116,8 @@ export const getters = {
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
     */
-    workflowBounds({ workflow }, getters, rootState) {
-        const { nodeIds, workflowAnnotations = [] } = workflow;
+    workflowBounds({ activeWorkflow }, getters, rootState) {
+        const { nodeIds, workflowAnnotations = [] } = activeWorkflow;
         const { nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight } = $shapes;
         let nodes = nodeIds.map(nodeId => getters.nodes[nodeId]);
 
