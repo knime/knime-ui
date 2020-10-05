@@ -20,9 +20,8 @@ export default {
         await this.initState();
     },
     methods: {
-        ...mapActions('workflows', ['initState'])
+        ...mapActions('application', ['initState'])
     }
-
 };
 </script>
 

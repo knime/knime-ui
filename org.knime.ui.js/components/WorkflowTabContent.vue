@@ -13,7 +13,7 @@ export default {
         Kanvas
     },
     computed: {
-        ...mapState('workflows', {
+        ...mapState('workflow', {
             workflow: 'activeWorkflow'
         }),
         hasBreadcrumb() {

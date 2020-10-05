@@ -1,18 +1,22 @@
-import { fetchApplicationState, loadWorkflow as loadWorkflowFromApi } from '~api';
-import consola from 'consola';
+import { loadWorkflow as loadWorkflowFromApi } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 
+/**
+ * Store that holds a workflow graph and the associated tooltips.
+ * A workflow can either be contained in a component / metanode, or it can be the top level workflow.
+ * Note that the notion of "workflow" is different from what users call a "KNIME workflow".
+ * The technical term for the latter in this application is "project".
+ */
+
 export const state = () => ({
     activeWorkflow: null,
-    openedWorkflows: [],
+    activeSnapshotId: null,
     tooltip: null
 });
 
 export const mutations = {
     setActiveWorkflow(state, workflow) {
-        consola.debug('setting workflow', workflow?.info?.name, workflow?.projectId, workflow);
-
         // extract nodes
         let { nodes = {} } = workflow;
         let nodeIds = Object.keys(nodes);
@@ -48,18 +52,8 @@ export const mutations = {
         state.activeWorkflow = workflowData;
         state.tooltip = null;
     },
-    setOpenedWorkflows(state, descriptors) {
-        state.openedWorkflows = descriptors;
-        // if there is an active workflow, show it
-        let activeWorkflowContainer = descriptors.find(
-            container => typeof container.activeWorkflow !== 'undefined'
-        );
-        if (activeWorkflowContainer) {
-            this.commit('workflows/setActiveWorkflow', {
-                ...activeWorkflowContainer.activeWorkflow.workflow,
-                projectId: activeWorkflowContainer.projectId
-            }, { root: true });
-        }
+    setActiveSnapshotId(state, id) {
+        state.activeSnapshotId = id;
     },
     setTooltip(state, tooltip) {
         Vue.set(state, 'tooltip', tooltip);
@@ -67,15 +61,8 @@ export const mutations = {
 };
 
 export const actions = {
-    async initState({ commit }) {
-        const state = await fetchApplicationState();
-
-        const { openedWorkflows = [] } = state;
-
-        commit('setOpenedWorkflows', openedWorkflows);
-    },
-    async loadWorkflow({ commit }, projectId) { // TODO: allow loading of sub-workflow NXT-288
-        const workflow = await loadWorkflowFromApi(projectId);
+    async loadWorkflow({ commit }, projectId, containerId = 'root') {
+        const workflow = await loadWorkflowFromApi(projectId, containerId);
 
         if (workflow) {
             commit('setActiveWorkflow', {
@@ -85,6 +72,10 @@ export const actions = {
         } else {
             throw new Error(`workflow not found: ${projectId}`);
         }
+    },
+    setActiveWorkflowSnapshot({ commit }, { workflow, snapshotId }) {
+        commit('setActiveWorkflow', workflow);
+        commit('setActiveSnapshotId', snapshotId);
     }
 };
 

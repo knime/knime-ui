@@ -72,7 +72,7 @@ export default {
         }
     },
     methods: {
-        ...mapMutations('workflows', ['setTooltip']),
+        ...mapMutations('workflow', ['setTooltip']),
         onMouseEnter() {
             this.setTooltip(this.tooltip);
         },

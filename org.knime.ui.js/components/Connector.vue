@@ -31,7 +31,7 @@ export default {
         flowVariableConnection: { type: Boolean, default: false }
     },
     computed: {
-        ...mapState('workflows', {
+        ...mapState('workflow', {
             workflow: 'activeWorkflow'
         }),
         source() {
