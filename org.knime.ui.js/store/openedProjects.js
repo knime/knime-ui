@@ -24,9 +24,6 @@ export const actions = {
         let openedWorkflows = projects.filter(item => item.activeWorkflow);
         let found = false;
         openedWorkflows.forEach(item => {
-            if (!item.activeWorkflow) {
-                return;
-            }
             if (found) {
                 consola.error('More than one active workflow found. Not supported. Opening only first item.');
                 return;
