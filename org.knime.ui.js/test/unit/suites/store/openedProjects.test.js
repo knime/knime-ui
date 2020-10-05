@@ -82,7 +82,7 @@ describe('Opened projects store', () => {
                 { projectId: '2', name: 'p2' }
             ]);
             store.dispatch('openedProjects/switchProject', '2');
-            expect(loadWorkflow).toHaveBeenCalledWith(expect.anything(), '2');
+            expect(loadWorkflow).toHaveBeenCalledWith(expect.anything(), { projectId: '2' });
             expect(store.state.openedProjects.activeId).toBe('2');
 
         });

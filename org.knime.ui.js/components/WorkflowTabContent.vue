@@ -17,8 +17,7 @@ export default {
             workflow: 'activeWorkflow'
         }),
         hasBreadcrumb() {
-            // TODO: show or hide NXT-288
-            return true;
+            return this.workflow.parents && this.workflow.parents.length > 0;
         }
     }
 };

@@ -134,7 +134,7 @@ describe('workflow store', () => {
 
             const spy = jest.spyOn(store, 'commit');
 
-            await store.dispatch('workflow/loadWorkflow', 'wf1');
+            await store.dispatch('workflow/loadWorkflow', { projectId: 'wf1' });
             expect(spy).toHaveBeenNthCalledWith(1, 'workflow/setActiveWorkflow', { projectId: 'wf1' }, undefined);
         });
 

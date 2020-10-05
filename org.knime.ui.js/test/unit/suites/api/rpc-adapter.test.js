@@ -43,7 +43,9 @@ describe('JSON-RPC adapter', () => {
             error: 'This id is not known'
         }));
 
-        expect(() => rpc('a', 'b', 'c')).toThrow('Error calling JSON-RPC API "a": "This id is not known"');
+        expect(() => rpc('a', 'b', 'c')).toThrow(
+            'Error returned from JSON-RPC API "a", "b", "c": "This id is not known"'
+        );
     });
 
     it('handles missing result', () => {

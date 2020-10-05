@@ -42,7 +42,9 @@ export default (method, ...args) => {
         if (result) {
             consola.error(`Invalid JSON-RPC response ${response}`);
         }
-        throw new Error(`Error calling JSON-RPC API "${method}": ${JSON.stringify(error)}`);
+        throw new Error(
+            `Error returned from JSON-RPC API "${[method, ...args].join('", "')}": ${JSON.stringify(error)}`
+        );
     }
 
     if (typeof result === 'undefined') {

@@ -32,12 +32,12 @@ export const actions = {
                 return;
             }
             found = true;
-            let activeWorkflow = {
+            let activeWorkflowCfg = {
                 ...item.activeWorkflow,
                 projectId: item.projectId
             };
             commit('setActiveId', item.projectId);
-            dispatch('workflow/setActiveWorkflowSnapshot', activeWorkflow, { root: true });
+            dispatch('workflow/setActiveWorkflowSnapshot', activeWorkflowCfg, { root: true });
         });
         if (projects.length && !found) {
             consola.error('No active workflow provided');
@@ -45,6 +45,6 @@ export const actions = {
     },
     switchProject({ state, commit, dispatch }, projectId) {
         commit('setActiveId', projectId);
-        dispatch('workflow/loadWorkflow', projectId, { root: true });
+        dispatch('workflow/loadWorkflow', { projectId }, { root: true });
     }
 };
