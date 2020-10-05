@@ -1,47 +1,85 @@
 <script>
-// TODO: use real data from API
 // TODO: unit test
 import LinkList from '~/webapps-common/ui/components/LinkList';
+import { formatDateString } from '~/webapps-common/util/format';
 
 export default {
     components: {
         LinkList
     },
-    data: () => ({
-        title: 'Indexing and searching plug-in for address database cleansing',
-        lastUpdated: 'Last Update: 18 Feb 2020',
-        description: 'This workflow demonstrates the Indexing & Searching plugin for address database cleansing. It uses fuzzy queries to identify typos in a given address data base. First an index is created on the data table. Once the index has been created it can be queried using a powerful query language. The query syntax bases on the Lucene query syntax and supports among others phrase queries, wildcard queries, fuzzy queries, proximity queries, range queries, term boosting, grouping and boolean operators.',
-        tags: ['ETL', 'query', 'indexing'],
-        externalRessources: [
-            { text: 'Indexing and Searching', url: 'https://google.com' },
-            { text: 'That short paper', url: 'https://bing.com' },
-            { text: 'That verly long and very influential paper', url: 'https://bing.com' },
-            { text: 'Another one', url: 'https://bing.com' }
-        ]
-    })
+    props: {
+        /** Single-line description of the workflow */
+        title: {
+            type: String,
+            default: null
+        },
+        /**  A detailed description of the workflow. */
+        description: {
+            type: String,
+            default: null
+        },
+        /** The date and time of the last change made to this workflow. Formatted as ISO-String */
+        lastEdit: {
+            type: String,
+            default: null
+            // validator: x => x === new Date(x).toISOString()
+        },
+        /** A collection of external ressources (text, url) attached to the workflow */
+        links: {
+            type: Array,
+            default: null
+            // validator: xs => xs.every(({ text, url }) => text && url)
+        },
+        /** A collection of tags the user chose to describe the workflow */
+        tags: {
+            type: Array,
+            default: null
+            // validator: xs => xs.every(x => typeof x === 'string')
+        }
+    },
+    methods: {
+        formatDateString
+    }
 };
 </script>
 
 <template>
   <div class="metadata">
-    <h2 class="title">{{ title }}</h2>
-    <div class="last-updated">Last Update {{ lastUpdated }}</div>
-    <div class="description">{{ description }}</div>
+    <h2 class="title">
+      <span v-if="title">{{ title }}</span>
+      <span
+        v-else
+        class="placeholder"
+      >No title has been set yet</span>
+    </h2>
+    
+    <div class="last-updated">
+      <span v-if="lastEdit">Last Update: {{ formatDateString(lastEdit) }}</span>
+      <span
+        v-else
+        class="placeholder"
+      >Last Update: no update yet</span>
+    </div>
+    
+    <div v-if="description">{{ description }}</div>
 
-    <div
-      v-if="externalRessources"
-      class="external-ressources"
-    >
+    <div class="external-ressources">
       <h2>External Ressources</h2>
-      <LinkList :links="externalRessources" />
+      <LinkList
+        v-if="links && links.length"
+        :links="links"
+      />
+      <div
+        v-else
+        class="placeholder"
+      >
+        No links have been added yet
+      </div>
     </div>
 
-    <div
-      v-if="tags"
-      class="tags"
-    >
+    <div class="tags">
       <h2>Tags</h2>
-      <ul class="tags">
+      <ul v-if="tags && tags.length">
         <li
           v-for="tag of tags"
           :key="tag"
@@ -49,6 +87,12 @@ export default {
           {{ tag }}
         </li>
       </ul>
+      <div
+        v-else
+        class="placeholder"
+      >
+        No tags have been set yet
+      </div>
     </div>
   </div>
 </template>
@@ -64,6 +108,10 @@ export default {
   color: var(--knime-masala);
 }
 
+.placeholder {
+  font-style: italic;
+}
+
 h2 {
   margin: 0;
   font-weight: normal;
@@ -74,10 +122,6 @@ h2 {
 .last-updated {
   margin: 21px 0;
   font-style: italic;
-}
-
-.description {
-  /* margin-bottom: 36px; */
 }
 
 .external-ressources {
@@ -96,11 +140,11 @@ h2 {
 
 .tags {
   margin-top: 38px;
+  padding-top: 5px;
 
   & ul {
     display: flex;
     flex-wrap: wrap;
-    margin-top: 5px;
     list-style: none;
     padding: 0;
 

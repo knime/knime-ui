@@ -26,7 +26,12 @@ export default {
         await this.initState();
     },
     computed: {
-        ...mapState('workflows', ['workflow'])
+        ...mapState('workflows', ['workflow']),
+        placeholderMetadata() {
+            return {
+                title: this.workflow.info.name
+            };
+        }
     },
     methods: {
         ...mapActions('workflows', ['initState']),
@@ -59,7 +64,9 @@ export default {
       width="360px"
       title="Workflow Metadata"
     >
-      <WorkflowMetadata />
+      <WorkflowMetadata
+        v-bind="workflow.metadata || placeholderMetadata"
+      />
     </LeftCollapsablePanel>
     <main id="workflow">
       <Kanvas v-if="workflow" />
