@@ -4,6 +4,7 @@ import Vuex from 'vuex';
 
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import Kanvas from '~/components/Kanvas';
+import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 
 describe('WorkflowTabContent.vue', () => {
     beforeAll(() => {
@@ -14,8 +15,6 @@ describe('WorkflowTabContent.vue', () => {
     let store, workflow, wrapper, doShallowMount;
 
     beforeEach(() => {
-        window.switchToJavaUI = jest.fn();
-
         workflow = null;
 
         doShallowMount = async () => {
@@ -49,5 +48,29 @@ describe('WorkflowTabContent.vue', () => {
 
         expect(wrapper.findComponent(Kanvas).exists()).toBe(false);
         expect(wrapper.find('.placeholder').text()).toMatch('No workflow opened');
+    });
+
+    describe('breadcrumb', () => {
+        it('shows no breadcrumb by default', async () => {
+            await doShallowMount();
+
+            expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(false);
+        });
+
+        it('shows breadcrumb when available', async () => {
+            workflow = {
+                parents: [{
+                    containerType: 'project',
+                    name: 'foo'
+                }, {
+                    containerType: 'component',
+                    containerId: 'root:201',
+                    name: 'Component'
+                }]
+            };
+            await doShallowMount();
+
+            expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(true);
+        });
     });
 });
