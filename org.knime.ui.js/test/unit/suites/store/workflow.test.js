@@ -125,17 +125,40 @@ describe('workflow store', () => {
     });
 
     describe('action', () => {
-        it('loads workflow successfully', async () => {
+        it('loads root workflow successfully', async () => {
+            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true } });
             await loadStore({
                 apiMocks: {
-                    loadWorkflow: jest.fn().mockResolvedValue({ workflow: { projectId: 'wf1' } })
+                    loadWorkflow
                 }
             });
-
-            const spy = jest.spyOn(store, 'commit');
+            const commit = jest.spyOn(store, 'commit');
 
             await store.dispatch('workflow/loadWorkflow', { projectId: 'wf1' });
-            expect(spy).toHaveBeenNthCalledWith(1, 'workflow/setActiveWorkflow', { projectId: 'wf1' }, undefined);
+
+            expect(loadWorkflow).toHaveBeenCalledWith('wf1', 'root');
+            expect(commit).toHaveBeenNthCalledWith(1, 'workflow/setActiveWorkflow', {
+                dummy: true,
+                projectId: 'wf1'
+            }, undefined);
+        });
+
+        it('loads inner workflow successfully', async () => {
+            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true } });
+            await loadStore({
+                apiMocks: {
+                    loadWorkflow
+                }
+            });
+            const commit = jest.spyOn(store, 'commit');
+
+            await store.dispatch('workflow/loadWorkflow', { projectId: 'wf2', containerId: 'root:0:123' });
+
+            expect(loadWorkflow).toHaveBeenCalledWith('wf2', 'root:0:123');
+            expect(commit).toHaveBeenNthCalledWith(1, 'workflow/setActiveWorkflow', {
+                dummy: true,
+                projectId: 'wf2'
+            }, undefined);
         });
 
     });
