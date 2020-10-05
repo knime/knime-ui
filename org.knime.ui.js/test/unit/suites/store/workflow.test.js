@@ -49,8 +49,9 @@ describe('workflow store', () => {
 
     it('creates an empty store', async () => {
         await loadStore();
-        expect(store.state.workflows.activeWorkflow).toBe(null);
-        expect(store.state.workflows.openedWorkflows).toHaveLength(0);
+        expect(store.state.workflow.activeWorkflow).toBe(null);
+        expect(store.state.workflow.activeSnapshotId).toBe(null);
+        expect(store.state.workflow.tooltip).toBe(null);
     });
 
     describe('mutation', () => {
@@ -61,7 +62,7 @@ describe('workflow store', () => {
         it('adds workflows', () => {
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
 
-            expect(store.state.workflows.activeWorkflow).toStrictEqual({ projectId: 'foo', nodeIds: [] });
+            expect(store.state.workflow.activeWorkflow).toStrictEqual({ projectId: 'foo', nodeIds: [] });
         });
 
         it('extracts templates', () => {
@@ -79,7 +80,7 @@ describe('workflow store', () => {
             expect(templateMutationMock).toHaveBeenCalledWith(expect.anything(), {
                 templateData: { qux: 2 }, templateId: 'bar'
             });
-            expect(store.state.workflows.activeWorkflow).toStrictEqual({ projectId: 'bar', nodeIds: [] });
+            expect(store.state.workflow.activeWorkflow).toStrictEqual({ projectId: 'bar', nodeIds: [] });
         });
 
         it('extracts nodes', () => {
@@ -97,7 +98,7 @@ describe('workflow store', () => {
             expect(nodeMutationMock).toHaveBeenCalledWith(expect.anything(), {
                 nodeData: { qux: 2 }, workflowId: 'quux'
             });
-            expect(store.state.workflows.activeWorkflow).toStrictEqual(
+            expect(store.state.workflow.activeWorkflow).toStrictEqual(
                 { projectId: 'quux', nodeIds: ['foo', 'bar'] }
             );
         });
@@ -111,20 +112,20 @@ describe('workflow store', () => {
             expect(removeWorkflowMock).toHaveBeenCalledWith(expect.anything(), 'quux');
         });
 
-        it('extracts active workflow', () => {
-            store.commit('workflow/setOpenedWorkflows', [
-                { projectId: 'foo' },
-                { projectId: 'bar', activeWorkflow: { workflow: { is: 'dummy' } } }
-            ]);
-
-            expect(store.state.workflows.activeWorkflow).toStrictEqual({ is: 'dummy', projectId: 'bar', nodeIds: [] });
+        it('allows setting the snapshot ID', () => {
+            store.commit('workflow/setActiveSnapshotId', 'myId');
+            expect(store.state.workflow.activeSnapshotId).toBe('myId');
         });
 
+        it('allows setting the tooltip', () => {
+            store.commit('workflow/setTooltip', { dummy: true });
+            expect(store.state.workflow.tooltip).toStrictEqual({ dummy: true });
+        });
 
     });
 
     describe('action', () => {
-        it('loads workflow sucessfully', async () => {
+        it('loads workflow successfully', async () => {
             await loadStore({
                 apiMocks: {
                     loadWorkflow: jest.fn().mockResolvedValue({ workflow: { projectId: 'wf1' } })
@@ -137,22 +138,6 @@ describe('workflow store', () => {
             expect(spy).toHaveBeenNthCalledWith(1, 'workflow/setActiveWorkflow', { projectId: 'wf1' }, undefined);
         });
 
-        it('initializes application state', async () => {
-            await loadStore({
-                apiMocks: {
-                    fetchApplicationState: jest.fn().mockResolvedValue({
-                        activeWorkflows: [{ workflow: { projectId: 'wf1' } }],
-                        openedWorkflows: ['wf1', 'wf2']
-                    })
-                }
-            });
-
-            const spy = jest.spyOn(store, 'commit');
-            await store.dispatch('workflow/initState');
-
-            expect(spy).toHaveBeenNthCalledWith(1, 'workflow/setOpenedWorkflows', ['wf1', 'wf2'], undefined);
-
-        });
     });
 
     describe('svg sizes', () => {

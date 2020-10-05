@@ -20,7 +20,7 @@ describe('WorkflowTabContent.vue', () => {
 
         doShallowMount = async () => {
             store = mockVuexStore({
-                workflows: {
+                workflow: {
                     state: {
                         activeWorkflow: workflow
                     }

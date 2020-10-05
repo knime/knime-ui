@@ -147,7 +147,7 @@ describe('NodeState.vue', () => {
 
         beforeEach(() => {
             let $store = mockVuexStore({
-                workflows: {
+                workflow: {
                     mutations: {
                         setTooltip(state, tooltip) {
                             currentTooltip = tooltip;

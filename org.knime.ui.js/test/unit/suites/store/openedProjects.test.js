@@ -69,7 +69,10 @@ describe('Opened projects store', () => {
                 activeId: '1'
             });
 
-            expect(setActiveWorkflowSnapshot).toHaveBeenCalledWith(activeWorkflow);
+            expect(setActiveWorkflowSnapshot).toHaveBeenCalledWith(expect.anything(), {
+                ...activeWorkflow,
+                projectId: '1'
+            });
         });
 
         it('allows switching the active project', () => {

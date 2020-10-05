@@ -25,7 +25,10 @@ export default {
 </script>
 
 <template>
-  <div class="content" v-if="workflow">
+  <div
+    v-if="workflow"
+    class="content"
+  >
     <WorkflowBreadcrumb
       v-if="hasBreadcrumb"
       class="breadcrumb"
