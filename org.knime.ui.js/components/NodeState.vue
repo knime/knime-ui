@@ -10,7 +10,7 @@ export default {
                 'null', 'CONFIGURED', 'EXECUTED', 'EXECUTING', 'HALTED', 'IDLE', 'QUEUED'
             ].includes(executionState)
         },
-        // progress in percentage
+        // progress as a fraction [0-1]
         progress: {
             type: Number,
             default: null
@@ -45,11 +45,15 @@ export default {
             }[this.executionState];
         },
         progressBarWidth() {
-            return this.$shapes.nodeSize * this.progress / 100;
+            let result = this.$shapes.nodeSize * this.clippedProgress;
+            if (result && result < 1) {
+                // fractional pixels just don't look good
+                return 1;
+            }
+            return result;
         },
         percentageClipPath() {
-            return `view-box polygon(0 0, ${this.progressBarWidth} 0, ` +
-             `${this.progressBarWidth} ${this.$shapes.nodeStatusHeight}, 0 ${this.$shapes.nodeStatusHeight})`;
+            return `polygon(0 0, ${100 * this.clippedProgress}% 0, ${100 * this.clippedProgress}% 100%, 0 100%)`;
         },
         tooltip() {
             const errorSymbolRadius = 5;
@@ -69,6 +73,12 @@ export default {
                 return { ...tooltip, text: this.progressMessage };
             }
             return null;
+        },
+        clippedProgress() {
+            return Math.min(Math.max(this.progress, 0), 1);
+        },
+        progressDisplayPercentage() {
+            return Math.round(100 * this.clippedProgress);
         }
     },
     methods: {
@@ -130,7 +140,7 @@ export default {
     </text>
 
     <!-- node's animated execution state -->
-    <g
+    <template
       v-else-if="executionState === 'EXECUTING'"
     >
       <circle
@@ -142,7 +152,7 @@ export default {
       />
 
       <!-- progress bar with text -->
-      <g v-else>
+      <template v-else>
         <text
           class="progress-text"
           :fill="$colors.text.default"
@@ -150,7 +160,7 @@ export default {
           text-anchor="middle"
           y="8.5"
         >
-          {{ progress }}%
+          {{ progressDisplayPercentage }}%
         </text>
         <rect
           :height="$shapes.nodeStatusHeight"
@@ -158,18 +168,25 @@ export default {
           :fill="$colors.nodeProgressBar"
           rx="1"
         />
-        <text
-          class="progress-text"
-          :x="$shapes.nodeSize / 2"
-          :clip-path="percentageClipPath"
-          y="8.5"
-          fill="white"
-          text-anchor="middle"
-        >
-          {{ progress }}%
-        </text>
-      </g>
-    </g>
+        <g :clip-path="percentageClipPath">
+          <!-- spacer for clip-path  -->
+          <rect
+            :height="$shapes.nodeStatusHeight"
+            :width="$shapes.nodeSize"
+            fill="none"
+          />
+          <text
+            class="progress-text"
+            :x="$shapes.nodeSize / 2"
+            y="8.5"
+            fill="white"
+            text-anchor="middle"
+          >
+            {{ progressDisplayPercentage }}%
+          </text>
+        </g>
+      </template>
+    </template>
 
     <!-- errors & warnings -->
     <g
