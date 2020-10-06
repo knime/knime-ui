@@ -58,7 +58,6 @@ export default {
 
 <style lang="postcss" scoped>
 main {
-  grid-area: main;
   display: grid;
   overflow: auto;
   grid-template-columns: min-content auto;

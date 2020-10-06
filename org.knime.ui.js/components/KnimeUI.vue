@@ -46,6 +46,10 @@ export default {
   height: 100vh;
 }
 
+#tab-content {
+  grid-area: main;
+}
+
 #header {
   grid-area: header;
 }

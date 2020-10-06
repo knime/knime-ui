@@ -10,8 +10,13 @@ export const state = () => ({
 });
 
 export const mutations = {
-    setWorkflow(state, workflow) {
-        consola.debug('setting workflow', workflow?.name, workflow?.projectId, workflow);
+    setWorkflow(state, workflowProject) {
+        let { activeWorkflow: { workflow }, projectId } = workflowProject;
+        consola.debug('setting workflow', workflow?.info.name, projectId, workflow);
+
+        // TODO: Hack, to make the front-end work work with the changed api, probably refactor with NXT-288
+        workflow.projectId = projectId;
+
 
         // extract nodes
         let { nodes = {} } = workflow;
@@ -22,12 +27,12 @@ export const mutations = {
         };
 
         // remove all existing nodes of this workflow from Nodes store
-        this.commit('nodes/removeWorkflow', workflow.projectId, { root: true });
+        this.commit('nodes/removeWorkflow', projectId, { root: true });
 
         // …and move all nodes to Nodes store
         nodeIds.forEach((nodeId) => {
             this.commit('nodes/add', {
-                workflowId: workflow.projectId,
+                workflowId: projectId,
                 nodeData: nodes[nodeId]
             }, { root: true });
         });
@@ -36,6 +41,7 @@ export const mutations = {
         // extract templates
         let { nodeTemplates = {} } = workflow;
         let nodeTemplateIds = Object.keys(nodeTemplates);
+
         // …and move them to template store
         nodeTemplateIds.forEach((templateId) => {
             this.commit('nodeTemplates/add', {
@@ -59,20 +65,22 @@ export const mutations = {
 export const actions = {
     async initState({ commit }) {
         const state = await fetchApplicationState();
-        const { activeWorkflows, openedWorkflows } = state;
 
+        const { openedWorkflows } = state;
         commit('setOpenedWorkflows', openedWorkflows);
 
-        // if there is an active workflow, show it
-        if (activeWorkflows[0]) {
-            commit('setWorkflow', activeWorkflows[0].workflow);
+        // if there is at least one active workflow, show the first one
+        const activeWorkflow = openedWorkflows.find(workflow => workflow.activeWorkflow);
+
+        if (activeWorkflow) {
+            commit('setWorkflow', activeWorkflow);
         }
     },
     async loadWorkflow({ commit }, id) {
         const workflow = await loadWorkflowFromApi(id);
 
         if (workflow) {
-            commit('setWorkflow', workflow.workflow);
+            commit('setWorkflow', { activeWorkflow: workflow, projectId: id });
         } else {
             throw new Error(`workflow not found: ${id}`);
         }

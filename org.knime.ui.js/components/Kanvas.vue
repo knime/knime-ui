@@ -24,7 +24,7 @@ export default {
 
 <template>
   <div>
-    <h3>{{ `${workflow.name} - ${nrOfNodes} Nodes` }}</h3>
+    <h3>{{ `${workflow.info.name} - ${nrOfNodes} Nodes` }}</h3>
     <div
       v-if="tooltip"
       class="tooltip-container"

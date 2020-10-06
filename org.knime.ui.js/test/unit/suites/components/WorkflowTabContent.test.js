@@ -4,6 +4,7 @@ import Vuex from 'vuex';
 
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import Kanvas from '~/components/Kanvas';
+import WorkflowMetadata from '~/components/WorkflowMetadata';
 
 describe('WorkflowTabContent.vue', () => {
     beforeAll(() => {
@@ -16,7 +17,14 @@ describe('WorkflowTabContent.vue', () => {
     beforeEach(() => {
         window.switchToJavaUI = jest.fn();
 
-        workflow = null;
+        workflow = {
+            metadata: {
+                title: 'title'
+            },
+            info: {
+                name: 'fileName'
+            }
+        };
 
         doShallowMount = async () => {
             store = mockVuexStore({
@@ -38,22 +46,32 @@ describe('WorkflowTabContent.vue', () => {
     });
 
     describe('workflow loaded', () => {
-        beforeEach(async () => {
-            workflow = 'this is a dummy workflow';
-            await doShallowMount();
-        });
 
-        it('displays Workflow', () => {
+        it('displays Workflow', async () => {
+            await doShallowMount();
+
             expect(wrapper.findComponent(Kanvas).exists()).toBe(true);
         });
 
-        it('shows metadata panel', () => {
-            expect(wrapper.find('#metadata').exists()).toBe(true);
+        it('shows metadata panel with data', async () => {
+            await doShallowMount();
+
+            let metadata = wrapper.findComponent(WorkflowMetadata);
+            expect(metadata.exists()).toBe(true);
+            expect(metadata.props().title).toBe('title');
+        });
+
+        it('uses placeholder metadata if none are given', async () => {
+            delete workflow.metadata;
+            await doShallowMount();
+
+            expect(wrapper.findComponent(WorkflowMetadata).props().title).toBe('fileName');
         });
     });
 
     describe('no workflow loaded', () => {
         beforeEach(async () => {
+            workflow = null;
             await doShallowMount();
         });
 
