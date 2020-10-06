@@ -10,7 +10,7 @@ describe('KnimeUI.vue', () => {
         localVue.use(Vuex);
     });
 
-    let store, doShallowMount, initState, wrapper;
+    let store, doShallowMount, initState;
 
     beforeEach(() => {
         initState = jest.fn();
