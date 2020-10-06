@@ -40,15 +40,11 @@ export default {
         v-bind="workflow.metadata || placeholderMetadata"
       />
     </LeftCollapsablePanel>
-
-    <div
+    
+    <Kanvas
       v-if="workflow"
-      class="scroll-container"
-    >
-      <Kanvas
-        id="kanvas"
-      />
-    </div>
+      id="kanvas"
+    />
     <div
       v-else
       class="placeholder"
@@ -62,7 +58,9 @@ export default {
 
 <style lang="postcss" scoped>
 main {
+  grid-area: main;
   display: grid;
+  overflow: auto;
   grid-template-columns: min-content auto;
   grid-template-rows: min-content auto;
   grid-template-areas:
@@ -83,7 +81,7 @@ main {
   border-right: 1px solid var(--knime-silver-sand);
 }
 
-.scroll-container {
+#kanvas {
   overflow: auto;
   grid-area: workflow;
 }

@@ -29,7 +29,6 @@ export default {
   <div id="knime-ui">
     <AppHeader id="header" />
     <Sidebar id="sidebar" />
-    
     <WorkflowTabContent id="tab-content" />
   </div>
 </template>
@@ -54,9 +53,5 @@ export default {
 #sidebar {
   grid-area: sidebar;
   height: 100%;
-}
-
-#tab-content >>> main {
-  grid-area: main;
 }
 </style>
