@@ -4,13 +4,15 @@ import Node from '~/components/Node';
 import Connector from '~/components/Connector';
 import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import Tooltip from '~/components/Tooltip';
+import MetaNodePortBars from '~/components/MetaNodePortBars';
 
 export default {
     components: {
         Node,
         Connector,
         WorkflowAnnotation,
-        Tooltip
+        Tooltip,
+        MetaNodePortBars
     },
     computed: {
         ...mapState('workflow', {
@@ -42,6 +44,9 @@ export default {
         v-for="annotation of workflow.workflowAnnotations"
         :key="`annotation-${annotation.id}`"
         v-bind="annotation"
+      />
+      <MetaNodePortBars
+        v-if="workflow.info.containerType === 'metanode'"
       />
       <Connector
         v-for="(connector, id) of workflow.connections"

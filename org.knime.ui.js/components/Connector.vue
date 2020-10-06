@@ -41,6 +41,12 @@ export default {
             return this.$store.state.nodes[this.workflow.projectId][this.destNode];
         },
         start() {
+            if (!this.source) {
+                return this.getMetaNodePortPos({
+                    sourceNodeIndex: this.sourcePort,
+                    allPorts: this.workflow.metaInPorts
+                });
+            }
             const [dx, dy] = portShift(
                 this.sourcePort, this.source.outPorts.length, this.source.kind === 'metanode', true
             );
@@ -51,6 +57,12 @@ export default {
             ];
         },
         end() {
+            if (!this.target) {
+                return this.getMetaNodePortPos({
+                    sourceNodeIndex: this.destPort,
+                    allPorts: this.workflow.metaOutPorts
+                });
+            }
             const [dx, dy] = portShift(this.destPort, this.target.inPorts.length, this.target.kind === 'metanode');
             let { x, y } = this.target.position;
             return [
@@ -74,6 +86,14 @@ export default {
                 return this.$colors.connectorColors.variable;
             }
             return this.$colors.connectorColors.default;
+        }
+    },
+    methods: {
+        getMetaNodePortPos({ sourceNodeIndex, allPorts }) {
+            let { ports } = allPorts;
+            // let { ports, xPos } = allPorts;
+            let xPos = allPorts === this.workflow.metaInPorts ? 100 : this.$store.getters['workflow/workflowBounds'].right + this.$shapes.canvasPadding; // HACK
+            return [xPos, ((sourceNodeIndex + 1) / (ports.length + 2)) * 1000];
         }
     }
 };

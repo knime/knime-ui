@@ -129,8 +129,7 @@ export default {
 
         onDoubleClick(e) {
             // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
-            // TODO: Implement metanodes NXT-288
-            if (/* this.kind === 'metanode' || ( */this.kind === 'component' && (e.ctrlKey || e.metaKey)) {
+            if (this.kind === 'metanode' || (this.kind === 'component' && (e.ctrlKey || e.metaKey))) {
                 this.openNode();
             }
         },
