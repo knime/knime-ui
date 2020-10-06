@@ -13,6 +13,7 @@ describe('Node Annotation', () => {
         propsData = {
             textAlign: 'right',
             text: 'hallo',
+            backgroundColor: 'rgb(255, 216, 0)',
             styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
         };
         mocks = { $shapes };
@@ -29,6 +30,7 @@ describe('Node Annotation', () => {
         it('styles', () => {
             expect(wrapper.findComponent(LegacyAnnotationText).attributes().style).toBe(
                 'text-align: right; ' +
+                'background-color: rgb(255, 216, 0); ' +
                 'padding: 2px; ' +
                 'font-size: 11px;'
             );
@@ -36,13 +38,13 @@ describe('Node Annotation', () => {
 
         it('respects yShift', () => {
             expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
-                y: '44'
+                y: '40'
             }));
 
             propsData.yShift = 12;
             doShallowMount();
             expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
-                y: '56'
+                y: '52'
             }));
         });
 
