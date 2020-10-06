@@ -140,32 +140,30 @@ export default {
            m-${$shapes.portSize},0 l${$shapes.portSize},-${$shapes.portSize}`"
     />
     <!-- metanode port traffic light -->
-    <g v-if="trafficLight">
-      <circle
-        cx="-5.5"
-        r="3.5"
-        fill="white"
-      />
-      <circle
-        cx="-5.5"
-        r="2.5"
-        :fill="$colors.trafficLight[trafficLight]"
-        :stroke="$colors.trafficLight[trafficLight + 'Border']"
-      />
-      <line
-        v-if="trafficLight === 'yellow'"
-        x1="-5.5"
-        x2="-5.5"
-        y1="-3"
-        y2="3"
-        :stroke="$colors.trafficLight[trafficLight + 'Border']"
-      />
-      <line
-        v-if="trafficLight === 'green'"
-        x1="-8"
-        x2="-2.5"
-        :stroke="$colors.trafficLight[trafficLight + 'Border']"
-      />
+    <g
+      v-if="trafficLight"
+    >
+      <g
+        transform="translate(-5.5, 0)"
+        fill="none"
+      >
+        <circle
+          r="3.5"
+          fill="white"
+        />
+        <circle
+          r="3"
+          :fill="$colors.trafficLight[trafficLight]"
+        />
+        <path
+          :d="`M2.5,0a1,1 0 0 0 -5,0a1,1 0 0 0 5,0${
+            trafficLight === 'yellow' || trafficLight === 'green' ? 'h-5' : ''
+          }`"
+          fill="none"
+          :stroke="$colors.darkeningMask"
+          :transform="trafficLight === 'yellow' ? 'rotate(90)' : null"
+        />
+      </g>
     </g>
   </g>
 </template>

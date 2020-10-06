@@ -121,7 +121,7 @@ export default {
   />
 </template>
 
-<style>
+<style lang="postcss" scoped>
 .bg,
 image {
   cursor: grab;

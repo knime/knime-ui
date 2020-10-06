@@ -206,7 +206,7 @@ export default {
   </g>
 </template>
 
-<style scoped>
+<style lang="postcss" scoped>
 * {
   user-select: none;
 }
@@ -221,8 +221,8 @@ export default {
   font-family: "Roboto Condensed", sans-serif;
   font-style: normal;
   font-weight: bold;
-  font-size: 12px;
-  line-height: 14px;
+  font-size: 15px;
+  line-height: 17px;
 }
 
 .annotation {

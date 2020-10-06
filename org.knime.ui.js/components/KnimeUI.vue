@@ -1,12 +1,9 @@
 <script>
-import { mapState, mapActions } from 'vuex';
+import { mapActions } from 'vuex';
 
-import SwitchIcon from '~/webapps-common/ui/assets/img/icons/perspective-switch.svg?inline';
-import KnimeIcon from '~/webapps-common/ui/assets/img/KNIME_Triangle.svg?inline';
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
-import Kanvas from '~/components/Kanvas';
-import LeftCollapsablePanel from '~/components/LeftCollapsablePanel';
-import WorkflowMetadata from '~/components/WorkflowMetadata';
+import AppHeader from '~/components/AppHeader';
+import Sidebar from '~/components/Sidebar';
+import WorkflowTabContent from '~/components/WorkflowTabContent';
 
 /**
  * Main page and entry point of Knime Next
@@ -15,157 +12,51 @@ import WorkflowMetadata from '~/components/WorkflowMetadata';
  */
 export default {
     components: {
-        FunctionButton,
-        Kanvas,
-        SwitchIcon,
-        KnimeIcon,
-        LeftCollapsablePanel,
-        WorkflowMetadata
+        AppHeader,
+        Sidebar,
+        WorkflowTabContent
     },
     async fetch() {
         await this.initState();
     },
-    computed: {
-        ...mapState('workflows', ['workflow']),
-        placeholderMetadata() {
-            return {
-                title: this.workflow.info.name
-            };
-        }
-    },
     methods: {
-        ...mapActions('workflows', ['initState']),
-        switchToJavaUI() {
-            window.switchToJavaUI();
-        }
+        ...mapActions('workflows', ['initState'])
     }
-
 };
 </script>
 
 <template>
   <div id="knime-ui">
-    <header>
-      <div id="knime-logo">
-        <KnimeIcon />
-      </div>
-      <FunctionButton
-        id="switch-classic"
-        @click="switchToJavaUI"
-      >
-        <SwitchIcon />
-      </FunctionButton>
-    </header>
-    <nav id="sidebar" />
-    <div id="toolbar" />
-    <LeftCollapsablePanel
-      v-if="workflow"
-      id="metadata"
-      width="360px"
-      title="Workflow Metadata"
-    >
-      <WorkflowMetadata
-        v-bind="workflow.metadata || placeholderMetadata"
-      />
-    </LeftCollapsablePanel>
-    <main id="workflow">
-      <Kanvas v-if="workflow" />
-      <div
-        v-else
-        id="placeholder-no-workflow"
-      >
-        <h2>
-          No workflow opened
-        </h2>
-      </div>
-    </main>
+    <AppHeader id="header" />
+    <Sidebar id="sidebar" />
+    
+    <WorkflowTabContent id="tab-content" />
   </div>
 </template>
 
 <style lang="postcss" scoped>
-
 #knime-ui {
   --side-bar-width: 40px;
 
   display: grid;
-  grid-template-columns: min-content min-content auto;
-  grid-template-rows: min-content min-content auto;
+  grid-template-columns: min-content auto;
+  grid-template-rows: min-content auto;
   grid-template-areas:
-    "header header header"
-    "sidebar toolbar toolbar"
-    "sidebar metadata workflow";
+    "header header"
+    "sidebar main";
   height: 100vh;
 }
 
-#metadata {
-  grid-area: metadata;
-  border-right: 1px solid var(--knime-silver-sand);
+#header {
+  grid-area: header;
 }
 
 #sidebar {
-  box-sizing: border-box;
-  border-top: 1px solid var(--header-separator);
   grid-area: sidebar;
   height: 100%;
-  width: var(--side-bar-width);
-  background-color: var(--knime-black);
 }
 
-#toolbar {
-  grid-area: toolbar;
-  border-top: 1px solid var(--header-separator);
-  height: 50px;
-  background-color: var(--knime-porcelain);
-  border-bottom: 1px solid var(--knime-silver-sand);
+#tab-content >>> main {
+  grid-area: main;
 }
-
-header {
-  display: flex;
-  grid-area: header;
-  height: 80px;
-  background-color: var(--knime-masala);
-  border-bottom: 3px solid var(--knime-yellow);
-
-  & #knime-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--side-bar-width);
-    background-color: var(--knime-black);
-    text-align: center;
-
-    & svg {
-      width: 26px;
-    }
-  }
-
-  & #switch-classic {
-    height: 40px;
-    width: 40px;
-    margin: 20px;
-    margin-left: auto;
-    border: 1px solid var(--knime-dove-gray);
-
-    & svg {
-      width: 26px;
-      height: 26px;
-      stroke: var(--knime-white);
-      stroke-width: calc(32px / 26); /* get 1px stroke width */
-    }
-  }
-}
-
-#workflow {
-  grid-area: workflow;
-  overflow: auto;
-
-  & #placeholder-no-workflow {
-    height: 55%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--knime-stone-gray);
-  }
-}
-
 </style>

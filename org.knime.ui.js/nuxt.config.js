@@ -1,5 +1,6 @@
 import path from 'path';
 import postcssConfig from 'webapps-common/webpack/webpack.postcss.config';
+import generateCss from './buildtools/generateCSS';
 import svgConfig from 'webapps-common/webpack/webpack.svg.config';
 
 const srcDir = path.resolve(__dirname);
@@ -23,6 +24,11 @@ const config = {
     ],
     modules: ['portal-vue/nuxt'],
     css: ['@/assets/index.css'],
+    hooks: {
+        build: {
+            before: generateCss
+        }
+    },
     build: {
         postcss: {
             ...postcssConfig,
