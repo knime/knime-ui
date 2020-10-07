@@ -64,7 +64,7 @@ export default {
     "header header"
     "sidebar main";
   height: 100vh;
-  background: white;
+  background: var(--knime-white);
 }
 
 #header {
