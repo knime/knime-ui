@@ -73,7 +73,7 @@ main {
   grid-template-rows: min-content auto;
   grid-template-areas:
     "toolbar toolbar"
-    "metadata workflow";
+    "metadata kanvas";
 }
 
 #toolbar {
@@ -98,11 +98,11 @@ main {
 
 #kanvas {
   overflow: auto;
-  grid-area: workflow;
+  grid-area: kanvas;
 }
 
 .placeholder {
-  grid-area: workflow;
+  grid-area: kanvas;
   height: 55%;
   display: flex;
   justify-content: center;

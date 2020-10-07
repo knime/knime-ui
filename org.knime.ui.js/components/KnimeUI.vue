@@ -42,12 +42,12 @@ export default {
   grid-template-rows: min-content auto;
   grid-template-areas:
     "header header"
-    "sidebar main";
+    "sidebar workflow";
   height: 100vh;
 }
 
 #tab-content {
-  grid-area: main;
+  grid-area: workflow;
 }
 
 #header {
