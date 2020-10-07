@@ -60,8 +60,8 @@ describe('Kanvas', () => {
             workflowAnnotations: []
         };
         $store = mockVuexStore({
-            workflows: {
-                state: { workflow },
+            workflow: {
+                state: { activeWorkflow: workflow },
                 getters: {
                     svgBounds() {
                         return { x: -5, y: -2, height: 102, width: 100 };
@@ -96,10 +96,6 @@ describe('Kanvas', () => {
     describe('sample workflow', () => {
         beforeEach(() => {
             mount();
-        });
-
-        it('renders heading', () => {
-            expect(wrapper.find('h3').text()).toBe('wf1 - 3 Nodes');
         });
 
         it('has portal for selection frames', () => {

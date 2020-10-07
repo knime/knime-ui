@@ -85,13 +85,18 @@ export default {
   <NodeTorsoMissing
     v-if="type === 'Missing'"
     class="bg"
+    v-on="$listeners"
   />
   <NodeTorsoMetanode
     v-else-if="kind === 'metanode'"
     class="bg"
     :execution-state="executionState"
+    v-on="$listeners"
   />
-  <g v-else-if="isKnownNode">
+  <g
+    v-else-if="isKnownNode"
+    v-on="$listeners"
+  >
     <path
       class="bg"
       :d="backgroundPath"
@@ -118,6 +123,7 @@ export default {
   <NodeTorsoUnknown
     v-else
     class="bg"
+    v-on="$listeners"
   />
 </template>
 

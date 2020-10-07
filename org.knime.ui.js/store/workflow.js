@@ -1,23 +1,22 @@
-import { fetchApplicationState, loadWorkflow as loadWorkflowFromApi } from '~api';
-import consola from 'consola';
+import { loadWorkflow as loadWorkflowFromApi } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 
+/**
+ * Store that holds a workflow graph and the associated tooltips.
+ * A workflow can either be contained in a component / metanode, or it can be the top level workflow.
+ * Note that the notion of "workflow" is different from what users call a "KNIME workflow".
+ * The technical term for the latter in this application is "project".
+ */
+
 export const state = () => ({
-    workflow: null,
-    openedWorkflows: [],
+    activeWorkflow: null,
+    activeSnapshotId: null,
     tooltip: null
 });
 
 export const mutations = {
-    setWorkflow(state, workflowProject) {
-        let { activeWorkflow: { workflow }, projectId } = workflowProject;
-        consola.debug('setting workflow', workflow?.info.name, projectId, workflow);
-
-        // TODO: Hack, to make the front-end work work with the changed api, probably refactor with NXT-288
-        workflow.projectId = projectId;
-
-
+    setActiveWorkflow(state, workflow) {
         // extract nodes
         let { nodes = {} } = workflow;
         let nodeIds = Object.keys(nodes);
@@ -27,12 +26,12 @@ export const mutations = {
         };
 
         // remove all existing nodes of this workflow from Nodes store
-        this.commit('nodes/removeWorkflow', projectId, { root: true });
+        this.commit('nodes/removeWorkflow', workflow.projectId, { root: true });
 
         // …and move all nodes to Nodes store
         nodeIds.forEach((nodeId) => {
             this.commit('nodes/add', {
-                workflowId: projectId,
+                workflowId: workflow.projectId,
                 nodeData: nodes[nodeId]
             }, { root: true });
         });
@@ -51,11 +50,11 @@ export const mutations = {
         });
         delete workflowData.nodeTemplates;
 
-        state.workflow = workflowData;
+        state.activeWorkflow = workflowData;
         state.tooltip = null;
     },
-    setOpenedWorkflows(state, descriptors) {
-        state.openedWorkflows = descriptors;
+    setActiveSnapshotId(state, id) {
+        state.activeSnapshotId = id;
     },
     setTooltip(state, tooltip) {
         Vue.set(state, 'tooltip', tooltip);
@@ -63,33 +62,30 @@ export const mutations = {
 };
 
 export const actions = {
-    async initState({ commit }) {
-        const state = await fetchApplicationState();
-
-        const { openedWorkflows } = state;
-        commit('setOpenedWorkflows', openedWorkflows);
-
-        // if there is at least one active workflow, show the first one
-        const activeWorkflow = openedWorkflows.find(workflow => workflow.activeWorkflow);
-
-        if (activeWorkflow) {
-            commit('setWorkflow', activeWorkflow);
-        }
-    },
-    async loadWorkflow({ commit }, id) {
-        const workflow = await loadWorkflowFromApi(id);
+    async loadWorkflow({ commit, dispatch }, { projectId, containerId = 'root' }) {
+        const workflow = await loadWorkflowFromApi(projectId, containerId);
 
         if (workflow) {
-            commit('setWorkflow', { activeWorkflow: workflow, projectId: id });
+            dispatch('setActiveWorkflowSnapshot', {
+                ...workflow,
+                projectId
+            });
         } else {
-            throw new Error(`workflow not found: ${id}`);
+            throw new Error(`workflow not found: "${projectId}" > "${containerId}"`);
         }
+    },
+    setActiveWorkflowSnapshot({ commit }, { workflow, snapshotId, projectId }) {
+        commit('setActiveWorkflow', {
+            ...workflow,
+            projectId
+        });
+        commit('setActiveSnapshotId', snapshotId);
     }
 };
 
 export const getters = {
     nodes(state, getters, rootState) {
-        return rootState.nodes[state.workflow.projectId];
+        return rootState.nodes[state.activeWorkflow.projectId];
     },
     /*
         returns the true offset from the upper-left corner of the svg for a given point
@@ -115,8 +111,8 @@ export const getters = {
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
     */
-    workflowBounds({ workflow }, getters, rootState) {
-        const { nodeIds, workflowAnnotations = [] } = workflow;
+    workflowBounds({ activeWorkflow }, getters, rootState) {
+        const { nodeIds, workflowAnnotations = [] } = activeWorkflow;
         const { nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight } = $shapes;
         let nodes = nodeIds.map(nodeId => getters.nodes[nodeId]);
 

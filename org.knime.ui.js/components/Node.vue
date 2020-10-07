@@ -1,4 +1,5 @@
 <script>
+import { mapState } from 'vuex';
 import Port from '~/components/Port.vue';
 import NodeState from '~/components/NodeState.vue';
 import NodeTorso from '~/components/NodeTorso.vue';
@@ -100,6 +101,9 @@ export default {
         };
     },
     computed: {
+        ...mapState('openedProjects', {
+            projectId: 'activeId'
+        }),
         hoverMargin() {
             // margin around the node's square
             return [37, 10, 4, 10]; // eslint-disable-line no-magic-numbers
@@ -121,6 +125,18 @@ export default {
                 return true;
             }
             return port.index !== 0 || port.connectedVia.length || this.hover;
+        },
+
+        onDoubleClick(e) {
+            // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
+            // TODO: Implement metanodes NXT-288
+            if (/* this.kind === 'metanode' || ( */this.kind === 'component' && (e.ctrlKey || e.metaKey)) {
+                this.openNode();
+            }
+        },
+
+        openNode() {
+            this.$store.dispatch('workflow/loadWorkflow', { containerId: this.id, projectId: this.projectId });
         }
     }
 };
@@ -165,6 +181,7 @@ export default {
         :kind="kind"
         :icon="icon"
         :execution-state="state && state.executionState"
+        @dblclick="onDoubleClick"
       />
 
       <template v-for="port of inPorts">

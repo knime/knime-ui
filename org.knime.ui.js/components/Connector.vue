@@ -31,7 +31,9 @@ export default {
         flowVariableConnection: { type: Boolean, default: false }
     },
     computed: {
-        ...mapState('workflows', ['workflow']),
+        ...mapState('workflow', {
+            workflow: 'activeWorkflow'
+        }),
         source() {
             return this.$store.state.nodes[this.workflow.projectId][this.sourceNode];
         },

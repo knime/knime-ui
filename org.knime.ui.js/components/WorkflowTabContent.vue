@@ -1,5 +1,6 @@
 <script>
 import { mapState } from 'vuex';
+import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import Kanvas from '~/components/Kanvas';
 import LeftCollapsablePanel from '~/components/LeftCollapsablePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
@@ -13,25 +14,36 @@ export default {
     components: {
         Kanvas,
         LeftCollapsablePanel,
-        WorkflowMetadata
+        WorkflowMetadata,
+        WorkflowBreadcrumb
     },
     computed: {
-        ...mapState('workflows', ['workflow']),
+        ...mapState('workflow', {
+            workflow: 'activeWorkflow'
+        }),
         placeholderMetadata() {
             return {
                 title: this.workflow.info.name
             };
+        },
+        hasBreadcrumb() {
+            return this.workflow.parents && this.workflow.parents.length > 0;
         }
     }
 };
 </script>
 
 <template>
-  <main>
-    <div id="toolbar" />
-    
+  <main
+    v-if="workflow"
+  >
+    <WorkflowBreadcrumb
+      v-if="hasBreadcrumb"
+      class="breadcrumb"
+    />
+
     <LeftCollapsablePanel
-      v-if="workflow"
+      v-if="workflow.info.containerType === 'project'"
       id="metadata"
       width="360px"
       title="Workflow Metadata"
@@ -40,20 +52,17 @@ export default {
         v-bind="workflow.metadata || placeholderMetadata"
       />
     </LeftCollapsablePanel>
-    
-    <Kanvas
-      v-if="workflow"
-      id="kanvas"
-    />
-    <div
-      v-else
-      class="placeholder"
-    >
-      <h2>
-        No workflow opened
-      </h2>
-    </div>
+
+    <Kanvas id="kanvas" />
   </main>
+  <div
+    v-else
+    class="placeholder"
+  >
+    <h2>
+      No workflow opened
+    </h2>
+  </div>
 </template>
 
 <style lang="postcss" scoped>
@@ -69,7 +78,8 @@ main {
 
 #toolbar {
   grid-area: toolbar;
-  border-top: 1px solid var(--header-separator);
+
+  /* border-top: 1px solid var(--header-separator); */
   height: 50px;
   background-color: var(--knime-porcelain);
   border-bottom: 1px solid var(--knime-silver-sand);
@@ -78,6 +88,12 @@ main {
 #metadata {
   grid-area: metadata;
   border-right: 1px solid var(--knime-silver-sand);
+}
+
+.breadcrumb {
+  grid-area: toolbar;
+  min-height: 50px;
+  border-bottom: 1px solid var(--knime-silver-sand);
 }
 
 #kanvas {

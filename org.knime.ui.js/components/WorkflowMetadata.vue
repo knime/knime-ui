@@ -1,5 +1,4 @@
 <script>
-// TODO: unit test
 import LinkList from '~/webapps-common/ui/components/LinkList';
 import { formatDateString } from '~/webapps-common/util/format';
 
@@ -22,19 +21,18 @@ export default {
         lastEdit: {
             type: String,
             default: null
-            // validator: x => x === new Date(x).toISOString()
         },
         /** A collection of external ressources (text, url) attached to the workflow */
         links: {
             type: Array,
-            default: null
-            // validator: xs => xs.every(({ text, url }) => text && url)
+            default: () => [],
+            validator: xs => xs.every(({ text, url }) => text && url)
         },
         /** A collection of tags the user chose to describe the workflow */
         tags: {
             type: Array,
-            default: null
-            // validator: xs => xs.every(x => typeof x === 'string')
+            default: () => [],
+            validator: xs => xs.every(x => typeof x === 'string')
         }
     },
     methods: {
@@ -66,7 +64,7 @@ export default {
     <div class="external-ressources">
       <h2>External Ressources</h2>
       <LinkList
-        v-if="links && links.length"
+        v-if="links.length"
         :links="links"
       />
       <div
@@ -79,7 +77,7 @@ export default {
 
     <div class="tags">
       <h2>Tags</h2>
-      <ul v-if="tags && tags.length">
+      <ul v-if="tags.length">
         <li
           v-for="tag of tags"
           :key="tag"

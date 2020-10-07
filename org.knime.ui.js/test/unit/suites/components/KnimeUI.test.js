@@ -17,7 +17,7 @@ describe('KnimeUI.vue', () => {
 
         doShallowMount = async () => {
             store = mockVuexStore({
-                workflows: {
+                application: {
                     actions: {
                         initState
                     }

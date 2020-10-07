@@ -5,6 +5,7 @@ import Vuex from 'vuex';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import Kanvas from '~/components/Kanvas';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
+import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 
 describe('WorkflowTabContent.vue', () => {
     beforeAll(() => {
@@ -22,15 +23,16 @@ describe('WorkflowTabContent.vue', () => {
                 title: 'title'
             },
             info: {
-                name: 'fileName'
+                name: 'fileName',
+                containerType: 'project'
             }
         };
 
         doShallowMount = async () => {
             store = mockVuexStore({
-                workflows: {
+                workflow: {
                     state: {
-                        workflow
+                        activeWorkflow: workflow
                     }
                 }
             });
@@ -82,6 +84,30 @@ describe('WorkflowTabContent.vue', () => {
 
         it('hides metadata panel', () => {
             expect(wrapper.find('#metadata').exists()).toBe(false);
+        });
+    });
+
+    describe('breadcrumb', () => {
+        it('shows no breadcrumb by default', async () => {
+            await doShallowMount();
+
+            expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(false);
+        });
+
+        it('shows breadcrumb when available', async () => {
+            workflow.parents = [
+                {
+                    containerType: 'project',
+                    name: 'foo'
+                }, {
+                    containerType: 'component',
+                    containerId: 'root:201',
+                    name: 'Component'
+                }
+            ];
+            await doShallowMount();
+
+            expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(true);
         });
     });
 });

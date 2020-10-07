@@ -30,7 +30,7 @@ describe('workflow store', () => {
             }), { virtual: true });
 
             store = mockVuexStore({
-                workflows: await import('~/store/workflows'),
+                workflow: await import('~/store/workflow'),
                 nodeTemplates: {
                     mutations: {
                         add: templateMutationMock
@@ -49,8 +49,9 @@ describe('workflow store', () => {
 
     it('creates an empty store', async () => {
         await loadStore();
-        expect(store.state.workflows.workflow).toBe(null);
-        expect(store.state.workflows.openedWorkflows).toHaveLength(0);
+        expect(store.state.workflow.activeWorkflow).toBe(null);
+        expect(store.state.workflow.activeSnapshotId).toBe(null);
+        expect(store.state.workflow.tooltip).toBe(null);
     });
 
     describe('mutation', () => {
@@ -59,13 +60,13 @@ describe('workflow store', () => {
         });
 
         it('adds workflows', () => {
-            store.commit('workflows/setWorkflow', { projectId: 'foo' });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
 
-            expect(store.state.workflows.workflow).toStrictEqual({ projectId: 'foo', nodeIds: [] });
+            expect(store.state.workflow.activeWorkflow).toStrictEqual({ projectId: 'foo', nodeIds: [] });
         });
 
         it('extracts templates', () => {
-            store.commit('workflows/setWorkflow', {
+            store.commit('workflow/setActiveWorkflow', {
                 projectId: 'bar',
                 nodeTemplates: {
                     foo: { bla: 1 },
@@ -79,11 +80,11 @@ describe('workflow store', () => {
             expect(templateMutationMock).toHaveBeenCalledWith(expect.anything(), {
                 templateData: { qux: 2 }, templateId: 'bar'
             });
-            expect(store.state.workflows.workflow).toStrictEqual({ projectId: 'bar', nodeIds: [] });
+            expect(store.state.workflow.activeWorkflow).toStrictEqual({ projectId: 'bar', nodeIds: [] });
         });
 
         it('extracts nodes', () => {
-            store.commit('workflows/setWorkflow', {
+            store.commit('workflow/setActiveWorkflow', {
                 projectId: 'quux',
                 nodes: {
                     foo: { bla: 1 },
@@ -97,50 +98,69 @@ describe('workflow store', () => {
             expect(nodeMutationMock).toHaveBeenCalledWith(expect.anything(), {
                 nodeData: { qux: 2 }, workflowId: 'quux'
             });
-            expect(store.state.workflows.workflow).toStrictEqual({ projectId: 'quux', nodeIds: ['foo', 'bar'] });
+            expect(store.state.workflow.activeWorkflow).toStrictEqual(
+                { projectId: 'quux', nodeIds: ['foo', 'bar'] }
+            );
         });
 
         it('removes existing nodes from node store', () => {
-            store.commit('workflows/setWorkflow', {
+            store.commit('workflow/setActiveWorkflow', {
                 projectId: 'quux',
                 nodes: {}
             });
 
             expect(removeWorkflowMock).toHaveBeenCalledWith(expect.anything(), 'quux');
         });
+
+        it('allows setting the snapshot ID', () => {
+            store.commit('workflow/setActiveSnapshotId', 'myId');
+            expect(store.state.workflow.activeSnapshotId).toBe('myId');
+        });
+
+        it('allows setting the tooltip', () => {
+            store.commit('workflow/setTooltip', { dummy: true });
+            expect(store.state.workflow.tooltip).toStrictEqual({ dummy: true });
+        });
+
     });
 
     describe('action', () => {
-        it('loads workflow sucessfully', async () => {
+        it('loads root workflow successfully', async () => {
+            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true } });
             await loadStore({
                 apiMocks: {
-                    loadWorkflow: jest.fn().mockResolvedValue({ workflow: { projectId: 'wf1' } })
+                    loadWorkflow
                 }
             });
+            const commit = jest.spyOn(store, 'commit');
 
-            const spy = jest.spyOn(store, 'commit');
+            await store.dispatch('workflow/loadWorkflow', { projectId: 'wf1' });
 
-            await store.dispatch('workflows/loadWorkflow', 'wf1');
-            expect(spy).toHaveBeenNthCalledWith(1, 'workflows/setWorkflow', { projectId: 'wf1' }, undefined); // eslint-disable-line no-undefined
+            expect(loadWorkflow).toHaveBeenCalledWith('wf1', 'root');
+            expect(commit).toHaveBeenNthCalledWith(1, 'workflow/setActiveWorkflow', {
+                dummy: true,
+                projectId: 'wf1'
+            }, undefined);
         });
 
-        it('initializes application state', async () => {
+        it('loads inner workflow successfully', async () => {
+            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true } });
             await loadStore({
                 apiMocks: {
-                    fetchApplicationState: jest.fn().mockResolvedValue({
-                        activeWorkflows: [{ workflow: { projectId: 'wf1' } }],
-                        openedWorkflows: ['wf1', 'wf2']
-                    })
+                    loadWorkflow
                 }
             });
+            const commit = jest.spyOn(store, 'commit');
 
-            const spy = jest.spyOn(store, 'commit');
-            await store.dispatch('workflows/initState');
+            await store.dispatch('workflow/loadWorkflow', { projectId: 'wf2', containerId: 'root:0:123' });
 
-            expect(spy).toHaveBeenNthCalledWith(1, 'workflows/setOpenedWorkflows', ['wf1', 'wf2'], undefined); // eslint-disable-line no-undefined
-            expect(spy).toHaveBeenNthCalledWith(2, 'workflows/setWorkflow', { projectId: 'wf1' }, undefined); // eslint-disable-line no-undefined
-
+            expect(loadWorkflow).toHaveBeenCalledWith('wf2', 'root:0:123');
+            expect(commit).toHaveBeenNthCalledWith(1, 'workflow/setActiveWorkflow', {
+                dummy: true,
+                projectId: 'wf2'
+            }, undefined);
         });
+
     });
 
     describe('svg sizes', () => {
@@ -149,20 +169,20 @@ describe('workflow store', () => {
 
         it('calculates dimensions of empty workflow', async () => {
             await loadStore();
-            store.commit('workflows/setWorkflow', {
+            store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
                 nodeIds: [],
                 workflowAnnotations: []
             });
 
-            expect(store.getters['workflows/workflowBounds']).toStrictEqual({
+            expect(store.getters['workflow/workflowBounds']).toStrictEqual({
                 left: 0,
                 right: 0,
                 top: 0,
                 bottom: 0
             });
 
-            expect(store.getters['workflows/svgBounds']).toStrictEqual({
+            expect(store.getters['workflow/svgBounds']).toStrictEqual({
                 x: 0,
                 y: 0,
                 width: canvasPadding,
@@ -180,13 +200,13 @@ describe('workflow store', () => {
                     }
                 }
             });
-            store.commit('workflows/setWorkflow', {
+            store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
                 nodes: { 'root:0': null },
                 workflowAnnotations: []
             });
 
-            expect(store.getters['workflows/workflowBounds']).toStrictEqual({
+            expect(store.getters['workflow/workflowBounds']).toStrictEqual({
                 left: 200,
                 right: 200 + nodeSize,
                 top: 200 - nodeNameMargin - nodeNameLineHeight,
@@ -194,7 +214,7 @@ describe('workflow store', () => {
             });
 
 
-            expect(store.getters['workflows/svgBounds']).toStrictEqual({
+            expect(store.getters['workflow/svgBounds']).toStrictEqual({
                 x: 0,
                 y: 0,
                 width: 296,
@@ -204,7 +224,7 @@ describe('workflow store', () => {
 
         it('calculates dimensions of workflow containing annotations only', async () => {
             await loadStore();
-            store.commit('workflows/setWorkflow', {
+            store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
                 nodes: {},
                 workflowAnnotations: [{
@@ -219,7 +239,7 @@ describe('workflow store', () => {
             });
 
 
-            expect(store.getters['workflows/workflowBounds']).toStrictEqual({
+            expect(store.getters['workflow/workflowBounds']).toStrictEqual({
                 left: -10,
                 right: 10,
                 top: -10,
@@ -227,7 +247,7 @@ describe('workflow store', () => {
             });
 
 
-            expect(store.getters['workflows/svgBounds']).toStrictEqual({
+            expect(store.getters['workflow/svgBounds']).toStrictEqual({
                 x: -10,
                 y: -10,
                 width: canvasPadding + 20,
@@ -243,7 +263,7 @@ describe('workflow store', () => {
                     }
                 }
             });
-            store.commit('workflows/setWorkflow', {
+            store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
                 nodes: { 'root:0': null },
                 workflowAnnotations: [{
@@ -257,14 +277,14 @@ describe('workflow store', () => {
                 }]
             });
 
-            expect(store.getters['workflows/workflowBounds']).toStrictEqual({
+            expect(store.getters['workflow/workflowBounds']).toStrictEqual({
                 left: 10,
                 right: 52,
                 top: -16,
                 bottom: 62
             });
 
-            expect(store.getters['workflows/svgBounds']).toStrictEqual({
+            expect(store.getters['workflow/svgBounds']).toStrictEqual({
                 x: 0,
                 y: -16,
                 width: canvasPadding + 52,
