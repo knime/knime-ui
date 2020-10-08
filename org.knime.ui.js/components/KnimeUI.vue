@@ -5,6 +5,9 @@ import AppHeader from '~/components/AppHeader';
 import Sidebar from '~/components/Sidebar';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 
+// These fonts will be pre-loaded at application startup
+const requiredFonts = ['Roboto', 'Roboto Condensed', 'Roboto Mono'];
+
 /**
  * Main page and entry point of Knime Next
  * Initiates application state
@@ -16,8 +19,15 @@ export default {
         Sidebar,
         WorkflowTabContent
     },
+    data() {
+        return {
+            loaded: false
+        };
+    },
     async fetch() {
         await this.initState();
+        await Promise.all(requiredFonts.map(fontName => document.fonts.load(`1em ${fontName}`)));
+        this.loaded = true;
     },
     methods: {
         ...mapActions('application', ['initState'])
@@ -26,13 +36,20 @@ export default {
 </script>
 
 <template>
-  <div id="knime-ui">
+  <div
+    v-if="loaded"
+    id="knime-ui"
+  >
     <AppHeader id="header" />
     <Sidebar id="sidebar" />
     <main>
       <WorkflowTabContent />
     </main>
   </div>
+  <div
+    v-else
+    class="loader"
+  />
 </template>
 
 <style lang="postcss" scoped>
@@ -46,6 +63,7 @@ export default {
     "header header"
     "sidebar main";
   height: 100vh;
+  background: var(--knime-white);
 }
 
 #header {
@@ -60,5 +78,18 @@ export default {
 main {
   grid-area: main;
   overflow: auto;
+}
+
+.loader {
+  height: 100vh;
+
+  &::after {
+    content: "Loading…";
+    display: block;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    color: var(--knime-silver-sand);
+  }
 }
 </style>
