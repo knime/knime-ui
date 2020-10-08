@@ -54,13 +54,13 @@ export default {
         },
         /**
          * the traffic light of a metanode port displays the state of the inner node that it is connected to
-         * @returns {'red' | 'yellow' | 'green' | undefined} traffic light color
+         * @returns {'red' | 'yellow' | 'green' | 'blue' | undefined} traffic light color
          */
         trafficLight() {
             return {
                 IDLE: 'red',
                 CONFIGURED: 'yellow',
-                EXECUTING: 'yellow',
+                EXECUTING: 'blue',
                 QUEUED: 'yellow',
                 HALTED: 'green',
                 EXECUTED: 'green'
@@ -148,7 +148,7 @@ export default {
         fill="none"
       >
         <circle
-          r="3.5"
+          r="3.75"
           fill="white"
         />
         <circle

@@ -130,7 +130,7 @@ describe('Port', () => {
             expect(d).not.toContain('h');
             expect(transform).toBeUndefined();
         });
-        it.each(['CONFIGURED', 'EXECUTING', 'QUEUED'])('draws traffic light for state %s (yellow)', (state) => {
+        it.each(['CONFIGURED', 'QUEUED'])('draws traffic light for state %s (yellow)', (state) => {
             propsData.port.nodeState = state;
             mount();
 
@@ -150,6 +150,17 @@ describe('Port', () => {
 
             expect(bgColor).toBe($colors.trafficLight.green);
             expect(d).toContain('h');
+            expect(transform).toBeUndefined();
+        });
+        it.each(['EXECUTING'])('draws traffic light for state %s (blue)', (state) => {
+            propsData.port.nodeState = state;
+            mount();
+
+            let { fill: bgColor } = wrapper.findAll('g g circle').at(1).attributes();
+            let { d, transform } = wrapper.find('g g path').attributes();
+
+            expect(bgColor).toBe($colors.trafficLight.blue);
+            expect(d).not.toContain('h');
             expect(transform).toBeUndefined();
         });
 
