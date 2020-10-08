@@ -72,10 +72,15 @@ export default {
         },
         // Returns false for broken nodes, which can occur during development, but should not occur in production.
         isKnownNode() {
-            if (this.kind === 'component') {
-                return !this.type || Reflect.has(this.$colors.nodeBackgroundColors, this.type);
+            const hasKnownType = Reflect.has(this.$colors.nodeBackgroundColors, this.type);
+            if (this.kind === 'node') {
+                return hasKnownType;
+            } else if (this.kind === 'metanode') {
+                return true;
+            } else {
+                // A component is known if it either has a known type or none at all
+                return !this.type || hasKnownType;
             }
-            return this.kind === 'metanode' || Reflect.has(this.$colors.nodeBackgroundColors, this.type);
         }
     }
 };
