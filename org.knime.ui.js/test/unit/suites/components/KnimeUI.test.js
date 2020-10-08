@@ -14,6 +14,9 @@ describe('KnimeUI.vue', () => {
 
     beforeEach(() => {
         initState = jest.fn();
+        document.fonts = {
+            load: jest.fn()
+        };
 
         doShallowMount = async () => {
             store = mockVuexStore({
@@ -35,8 +38,12 @@ describe('KnimeUI.vue', () => {
     });
 
     it('initiates', async () => {
+        document.fonts.load.mockResolvedValue('dummy');
+
         await doShallowMount();
 
         expect(initState).toHaveBeenCalled();
+        expect(document.fonts.load).toHaveBeenCalledTimes(3);
     });
+
 });
