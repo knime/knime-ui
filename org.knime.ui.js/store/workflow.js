@@ -1,18 +1,22 @@
-import { fetchApplicationState, loadWorkflow as loadWorkflowFromApi } from '~api';
-import consola from 'consola';
+import { loadWorkflow as loadWorkflowFromApi } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 
+/**
+ * Store that holds a workflow graph and the associated tooltips.
+ * A workflow can either be contained in a component / metanode, or it can be the top level workflow.
+ * Note that the notion of "workflow" is different from what users call a "KNIME workflow".
+ * The technical term for the latter in this application is "project".
+ */
+
 export const state = () => ({
-    workflow: null,
-    openedWorkflows: [],
+    activeWorkflow: null,
+    activeSnapshotId: null,
     tooltip: null
 });
 
 export const mutations = {
-    setWorkflow(state, workflow) {
-        consola.debug('setting workflow', workflow?.name, workflow?.projectId, workflow);
-
+    setActiveWorkflow(state, workflow) {
         // extract nodes
         let { nodes = {} } = workflow;
         let nodeIds = Object.keys(nodes);
@@ -45,11 +49,11 @@ export const mutations = {
         });
         delete workflowData.nodeTemplates;
 
-        state.workflow = workflowData;
+        state.activeWorkflow = workflowData;
         state.tooltip = null;
     },
-    setOpenedWorkflows(state, descriptors) {
-        state.openedWorkflows = descriptors;
+    setActiveSnapshotId(state, id) {
+        state.activeSnapshotId = id;
     },
     setTooltip(state, tooltip) {
         Vue.set(state, 'tooltip', tooltip);
@@ -57,31 +61,30 @@ export const mutations = {
 };
 
 export const actions = {
-    async initState({ commit }) {
-        const state = await fetchApplicationState();
-        const { activeWorkflows, openedWorkflows } = state;
-
-        commit('setOpenedWorkflows', openedWorkflows);
-
-        // if there is an active workflow, show it
-        if (activeWorkflows[0]) {
-            commit('setWorkflow', activeWorkflows[0].workflow);
-        }
-    },
-    async loadWorkflow({ commit }, id) {
-        const workflow = await loadWorkflowFromApi(id);
+    async loadWorkflow({ commit, dispatch }, { projectId, containerId = 'root' }) {
+        const workflow = await loadWorkflowFromApi(projectId, containerId);
 
         if (workflow) {
-            commit('setWorkflow', workflow.workflow);
+            dispatch('setActiveWorkflowSnapshot', {
+                ...workflow,
+                projectId
+            });
         } else {
-            throw new Error(`workflow not found: ${id}`);
+            throw new Error(`workflow not found: "${projectId}" > "${containerId}"`);
         }
+    },
+    setActiveWorkflowSnapshot({ commit }, { workflow, snapshotId, projectId }) {
+        commit('setActiveWorkflow', {
+            ...workflow,
+            projectId
+        });
+        commit('setActiveSnapshotId', snapshotId);
     }
 };
 
 export const getters = {
     nodes(state, getters, rootState) {
-        return rootState.nodes[state.workflow.projectId];
+        return rootState.nodes[state.activeWorkflow.projectId];
     },
     /*
         returns the true offset from the upper-left corner of the svg for a given point
@@ -107,8 +110,8 @@ export const getters = {
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
     */
-    workflowBounds({ workflow }, getters, rootState) {
-        const { nodeIds, workflowAnnotations = [] } = workflow;
+    workflowBounds({ activeWorkflow }, getters, rootState) {
+        const { nodeIds, workflowAnnotations = [] } = activeWorkflow;
         const { nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight } = $shapes;
         let nodes = nodeIds.map(nodeId => getters.nodes[nodeId]);
 

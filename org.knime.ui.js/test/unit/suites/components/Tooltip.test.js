@@ -87,7 +87,7 @@ describe('Tooltip', () => {
 
     it('allows anchoring to a node', () => {
         let $store = mockVuexStore({
-            workflows: {
+            workflow: {
                 getters: {
                     nodes() {
                         return {

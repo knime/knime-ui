@@ -31,7 +31,7 @@ module.exports = {
         '!.stylelintrc.js'
     ],
     coveragePathIgnorePatterns: [
-        '^<rootDir>/(.nuxt|coverage|dist|test|target|node_modules|bin|webapps-common)/'
+        '^<rootDir>/(.nuxt|coverage|dist|test|target|node_modules|bin|webapps-common|buildtools)/'
     ],
     watchPathIgnorePatterns: [
         '^<rootDir>/(.nuxt|coverage|dist|target|node_modules|bin|webapps-common)/'

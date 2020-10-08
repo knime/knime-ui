@@ -1,5 +1,6 @@
 <script>
 import { mapState } from 'vuex';
+import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import Kanvas from '~/components/Kanvas';
 
 /**
@@ -8,16 +9,31 @@ import Kanvas from '~/components/Kanvas';
  */
 export default {
     components: {
+        WorkflowBreadcrumb,
         Kanvas
     },
     computed: {
-        ...mapState('workflows', ['workflow'])
+        ...mapState('workflow', {
+            workflow: 'activeWorkflow'
+        }),
+        hasBreadcrumb() {
+            return this.workflow.parents && this.workflow.parents.length > 0;
+        }
     }
 };
 </script>
 
 <template>
-  <Kanvas v-if="workflow" />
+  <div
+    v-if="workflow"
+    class="content"
+  >
+    <WorkflowBreadcrumb
+      v-if="hasBreadcrumb"
+      class="breadcrumb"
+    />
+    <Kanvas class="kanvas" />
+  </div>
   <div
     v-else
     class="placeholder"
@@ -29,6 +45,23 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+.content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.breadcrumb {
+  min-height: 50px;
+  border-bottom: 1px solid var(--knime-silver-sand);
+  flex-shrink: 0;
+}
+
+.kanvas {
+  flex-grow: 1;
+  overflow: scroll;
+}
+
 .placeholder {
   height: 55%;
   display: flex;

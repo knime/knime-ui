@@ -30,9 +30,8 @@ export default {
         this.loaded = true;
     },
     methods: {
-        ...mapActions('workflows', ['initState'])
+        ...mapActions('application', ['initState'])
     }
-
 };
 </script>
 

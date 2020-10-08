@@ -34,9 +34,9 @@ describe('Connector', () => {
     describe('metanode', () => {
         beforeEach(() => {
             $store = mockVuexStore({
-                workflows: {
+                workflow: {
                     state: {
-                        workflow: {
+                        activeWorkflow: {
                             projectId: 'some id',
                             nodeIds: ['root:1', 'root:2']
                         }
@@ -80,9 +80,9 @@ describe('Connector', () => {
 
         beforeEach(() => {
             $store = mockVuexStore({
-                workflows: {
+                workflow: {
                     state: {
-                        workflow: {
+                        activeWorkflow: {
                             projectId: 'myId',
                             nodeIds: ['root:1', 'root:2']
                         }

@@ -10,4 +10,3 @@ Vue.config.getTagNamespace = (tag) => {
     }
     return getTagNamespace(tag);
 };
-
