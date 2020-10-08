@@ -95,7 +95,7 @@ describe('NodeState.vue', () => {
 
 
     it('shows all null state', () => {
-        expect(wrapper.find('*').text()).toBe('');
+        expect(wrapper.text()).toBe('');
         expect(wrapper.find('.warning').exists()).toBe(false);
         expect(wrapper.find('.error').exists()).toBe(false);
         expect(wrapper.find('.progress-circle').exists()).toBe(false);
@@ -104,7 +104,7 @@ describe('NodeState.vue', () => {
     it('shows "queued"', () => {
         propsData.executionState = 'QUEUED';
         mount();
-        expect(wrapper.find('*').text()).toBe('queued');
+        expect(wrapper.text()).toBe('queued');
     });
 
     it('shows dancing ball', () => {
@@ -113,16 +113,27 @@ describe('NodeState.vue', () => {
         mount();
 
         expect(wrapper.find('.progress-circle').exists()).toBe(true);
-        expect(wrapper.find('*').text()).toBe('');
+        expect(wrapper.text()).toBe('');
     });
 
     it('shows progress percentage', () => {
         propsData.executionState = 'EXECUTING';
-        propsData.progress = 50;
+        propsData.progress = 0.5178;
         mount();
 
         expect(wrapper.find('.progress-circle').exists()).toBe(false);
-        expect(wrapper.find('*').text()).toMatch('50%');
+        expect(wrapper.find('[clip-path]').attributes('clip-path')).toBe('polygon(0 0, 51.78% 0, 51.78% 100%, 0 100%)');
+        expect(wrapper.text()).toMatch('52%');
+    });
+
+    it('handles invalid progress percentage', () => {
+        propsData.executionState = 'EXECUTING';
+        propsData.progress = 1.234; // 123.4%
+        mount();
+
+        expect(wrapper.find('.progress-circle').exists()).toBe(false);
+        expect(wrapper.find('[clip-path]').attributes('clip-path')).toBe('polygon(0 0, 100% 0, 100% 100%, 0 100%)');
+        expect(wrapper.text()).toMatch('100%');
     });
 
     it('shows error indicator', () => {
