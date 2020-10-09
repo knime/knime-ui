@@ -2,7 +2,7 @@
 import { mapState } from 'vuex';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import Kanvas from '~/components/Kanvas';
-import LeftCollapsablePanel from '~/components/LeftCollapsablePanel';
+import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
 
 
@@ -13,7 +13,7 @@ import WorkflowMetadata from '~/components/WorkflowMetadata';
 export default {
     components: {
         Kanvas,
-        LeftCollapsablePanel,
+        LeftCollapsiblePanel,
         WorkflowMetadata,
         WorkflowBreadcrumb
     },
@@ -27,7 +27,7 @@ export default {
             };
         },
         hasBreadcrumb() {
-            return this.workflow.parents && this.workflow.parents.length > 0;
+            return this.workflow.parents?.length > 0;
         }
     }
 };
@@ -42,7 +42,7 @@ export default {
       class="breadcrumb"
     />
 
-    <LeftCollapsablePanel
+    <LeftCollapsiblePanel
       v-if="workflow.info.containerType === 'project'"
       id="metadata"
       width="360px"
@@ -51,7 +51,7 @@ export default {
       <WorkflowMetadata
         v-bind="workflow.metadata || placeholderMetadata"
       />
-    </LeftCollapsablePanel>
+    </LeftCollapsiblePanel>
 
     <Kanvas id="kanvas" />
   </main>

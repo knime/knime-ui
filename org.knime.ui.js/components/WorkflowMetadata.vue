@@ -22,17 +22,16 @@ export default {
             type: String,
             default: null
         },
-        /** A collection of external ressources (text, url) attached to the workflow */
+        /** A list of links external resources (text, url) attached to the workflow */
         links: {
             type: Array,
-            default: () => [],
-            validator: xs => xs.every(({ text, url }) => text && url)
+            default: () => []
         },
-        /** A collection of tags the user chose to describe the workflow */
+        /** A list of tags the user chose to describe the workflow */
         tags: {
             type: Array,
             default: () => [],
-            validator: xs => xs.every(x => typeof x === 'string')
+            validator: tags => tags.every(tag => typeof tag === 'string')
         }
     },
     methods: {
@@ -50,7 +49,7 @@ export default {
         class="placeholder"
       >No title has been set yet</span>
     </h2>
-    
+
     <div class="last-updated">
       <span v-if="lastEdit">Last Update: {{ formatDateString(lastEdit) }}</span>
       <span
@@ -58,7 +57,7 @@ export default {
         class="placeholder"
       >Last Update: no update yet</span>
     </div>
-    
+
     <div v-if="description">{{ description }}</div>
 
     <div class="external-ressources">
@@ -99,7 +98,6 @@ export default {
 .metadata {
   box-sizing: border-box;
   padding: 10px 20px;
-  width: 360px;
   font-family: "Roboto Condensed", sans-serif;
   font-size: 18px;
   line-height: 27px;

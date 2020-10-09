@@ -27,7 +27,7 @@ describe('WorkflowMetadata.vue', () => {
                 title: 'Title',
                 lastEdit: '2000-01-01T00:00Z',
                 description: 'Description',
-                links: ['link1'],
+                links: [{ text: 'link1' }],
                 tags: ['tag1']
             }
         });
@@ -37,7 +37,7 @@ describe('WorkflowMetadata.vue', () => {
 
         let linkList = wrapper.findComponent(LinkList);
         expect(linkList.exists()).toBe(true);
-        expect(linkList.props().links).toStrictEqual(['link1']);
+        expect(linkList.props().links).toStrictEqual([{ text: 'link1' }]);
 
         let tags = wrapper.findAll('ul li');
         expect(tags.length).toBe(1);

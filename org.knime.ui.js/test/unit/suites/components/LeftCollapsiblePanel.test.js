@@ -1,15 +1,14 @@
-/* eslint-disable no-magic-numbers */
 import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
-import LeftCollapsablePanel from '~/components/LeftCollapsablePanel';
+import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 
-describe('LeftCollapsablePanel.vue', () => {
+describe('LeftCollapsiblePanel.vue', () => {
 
     let wrapper;
 
     beforeEach(() => {
-        wrapper = shallowMount(LeftCollapsablePanel, {
+        wrapper = shallowMount(LeftCollapsiblePanel, {
             propsData: {
                 title: 'hover-title',
                 width: '200px'
@@ -21,7 +20,7 @@ describe('LeftCollapsablePanel.vue', () => {
         expect(wrapper.find('.container').attributes().style).toBe('width: 200px;');
     });
 
-    it('doesn´t display a hover title', () => {
+    it('doesn’t display a hover title', () => {
         expect(wrapper.find('button').attributes().title).toBeUndefined();
     });
 

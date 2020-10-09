@@ -6,7 +6,10 @@ export default {
         SwitchIcon
     },
     props: {
-        /** Expanded width of the panel's content */
+        /**
+         *  Expanded width of the panel's content.
+         *  Should be a fixed width.
+         */
         width: {
             type: String,
             default: '250px',
@@ -30,9 +33,14 @@ export default {
   <div class="panel">
     <div
       class="container"
-      :style="{width: collapsed ? 0 : width}"
+      :style="{ width: collapsed ? 0 : width }"
     >
-      <slot />
+      <div
+        class="spacer"
+        :style="{ width }"
+      >
+        <slot />
+      </div>
     </div>
     <button
       :title="collapsed ? title: null"
