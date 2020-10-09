@@ -61,8 +61,7 @@ header {
     text-align: center;
 
     & svg {
-      width: 26px;
-      height: 26px;
+      --icon-size: 26;
     }
   }
 
@@ -73,10 +72,9 @@ header {
     border: 1px solid var(--knime-dove-gray);
 
     & svg {
-      width: 26px;
-      height: 26px;
+      --icon-size: 26;
+
       stroke: var(--knime-white);
-      stroke-width: calc(32px / 26); /* get 1px stroke width */
     }
   }
 }

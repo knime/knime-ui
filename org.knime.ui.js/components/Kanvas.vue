@@ -34,6 +34,7 @@ export default {
     </div>
 
     <svg
+      class="custom-size"
       :width="svgBounds.width"
       :height="svgBounds.height"
       :viewBox="`${svgBounds.x} ${svgBounds.y} ${svgBounds.width} ${svgBounds.height}`"

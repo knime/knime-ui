@@ -2,3 +2,21 @@
 @import "webapps-common/ui/css/basics";
 @import "./fonts";
 @import "./variables";
+
+/**
+* This ensures that svg icons have consistent stroke width.
+* @example
+*
+*  #my-svg {
+*    --icon-size: 28;  // 28x28 icon with 1px stroke-width
+*  }
+*
+* Use the `custom-size` class to opt out, for example if the svg is not an icon.
+*/
+svg:not(.custom-size) {
+  --icon-size: 32;
+
+  width: calc(var(--icon-size) * 1px) !important;
+  height: calc(var(--icon-size) * 1px) !important;
+  stroke-width: calc(32px / var(--icon-size)) !important;
+}
