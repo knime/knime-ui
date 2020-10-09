@@ -92,8 +92,9 @@ export default {
         getMetaNodePortPos({ sourceNodeIndex, allPorts }) {
             let { ports } = allPorts;
             // let { ports, xPos } = allPorts;
-            let xPos = allPorts === this.workflow.metaInPorts ? 100 : this.$store.getters['workflow/workflowBounds'].right + this.$shapes.canvasPadding; // HACK
-            return [xPos, ((sourceNodeIndex + 1) / (ports.length + 2)) * 1000];
+            let isIn = allPorts === this.workflow.metaInPorts;
+            let xPos = isIn ? this.$store.getters['workflow/svgBounds'].x + this.$shapes.nodeSize / 2 : this.$store.getters['workflow/workflowBounds'].right + this.$shapes.canvasPadding - 10 - this.$shapes.nodeSize / 2; // HACK
+            return [xPos, ((sourceNodeIndex + 1) / (ports.length + 1)) * this.$store.getters['workflow/svgBounds'].height];
         }
     }
 };

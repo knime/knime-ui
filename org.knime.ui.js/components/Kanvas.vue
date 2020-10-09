@@ -45,13 +45,13 @@ export default {
         :key="`annotation-${annotation.id}`"
         v-bind="annotation"
       />
-      <MetaNodePortBars
-        v-if="workflow.info.containerType === 'metanode'"
-      />
       <Connector
         v-for="(connector, id) of workflow.connections"
         :key="`connector-${workflow.projectId}-${id}`"
         v-bind="connector"
+      />
+      <MetaNodePortBars
+        v-if="workflow.info.containerType === 'metanode'"
       />
       <Node
         v-for="nodeId in workflow.nodeIds"

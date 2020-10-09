@@ -1,6 +1,5 @@
 <script>
 import { mapMutations } from 'vuex';
-/* eslint-disable no-magic-numbers */
 
 export default {
     inject: ['nodeId'],
@@ -45,10 +44,12 @@ export default {
             let [x1, y1, x2, y3] = [-portSize / 2, -portSize / 2, portSize / 2, portSize / 2];
 
             // adjust size of triangle so that filled and bordered triangle match, and the line width is exactly 1
+            /* eslint-disable no-magic-numbers */
             x1 += 1 / 2;
             y1 += (1 + Math.sqrt(5)) / 4;
             x2 -= Math.sqrt(5) / 2;
             y3 -= (1 + Math.sqrt(5)) / 4;
+            /* eslint-enable no-magic-numbers */
 
             return `${x1},${y1} ${x2},${0} ${x1},${y3}`;
         },
