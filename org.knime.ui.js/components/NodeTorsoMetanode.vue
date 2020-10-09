@@ -13,10 +13,7 @@ export default {
 </script>
 
 <template>
-  <g
-    :fill="$colors.nodeBackgroundColors.Metanode"
-    v-on="$listeners"
-  >
+  <g :fill="$colors.nodeBackgroundColors.Metanode">
     <rect
       width="32"
       height="32"

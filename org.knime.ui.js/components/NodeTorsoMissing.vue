@@ -1,8 +1,5 @@
 <template>
-  <g
-    fill="none"
-    v-on="$listeners"
-  >
+  <g fill="none">
     <rect
       width="32"
       height="32"
