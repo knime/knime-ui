@@ -1,7 +1,7 @@
 <template>
   <g
     fill="none"
-      >
+  >
     <rect
       width="32"
       height="32"

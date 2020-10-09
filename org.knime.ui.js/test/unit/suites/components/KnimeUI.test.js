@@ -4,6 +4,8 @@ import Vuex from 'vuex';
 
 import KnimeUI from '~/components/KnimeUI';
 
+const numberOfPreloadedFonts = 3;
+
 describe('KnimeUI.vue', () => {
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -43,7 +45,7 @@ describe('KnimeUI.vue', () => {
         await doShallowMount();
 
         expect(initState).toHaveBeenCalled();
-        expect(document.fonts.load).toHaveBeenCalledTimes(3);
+        expect(document.fonts.load).toHaveBeenCalledTimes(numberOfPreloadedFonts);
     });
 
 });
