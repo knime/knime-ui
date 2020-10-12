@@ -2,6 +2,7 @@
 import LinkList from '~/webapps-common/ui/components/LinkList';
 import { formatDateString } from '~/webapps-common/util/format';
 
+/** Displays metadata attached to a root-level workflow */
 export default {
     components: {
         LinkList

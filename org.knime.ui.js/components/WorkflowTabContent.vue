@@ -78,8 +78,6 @@ main {
 
 #toolbar {
   grid-area: toolbar;
-
-  /* border-top: 1px solid var(--header-separator); */
   height: 50px;
   background-color: var(--knime-porcelain);
   border-bottom: 1px solid var(--knime-silver-sand);

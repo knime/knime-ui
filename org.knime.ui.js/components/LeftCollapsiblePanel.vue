@@ -37,10 +37,7 @@ export default {
       class="container"
       :style="{ width: collapsed ? 0 : width }"
     >
-      <div
-        class="spacer"
-        :style="{ width }"
-      >
+      <div :style="{ width }">
         <slot />
       </div>
     </div>
