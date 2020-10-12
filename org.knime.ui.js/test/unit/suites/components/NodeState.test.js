@@ -11,7 +11,7 @@ import muteConsole from '~/webapps-common/util/test-utils/muteConsole';
 
 describe('NodeState.vue', () => {
     const provide = {
-        nodeId: 'dummy'
+        anchorPoint: { x: 123, y: 456 }
     };
     let propsData, mocks, wrapper, mount;
 
@@ -171,7 +171,7 @@ describe('NodeState.vue', () => {
             wrapper.find('g').trigger('mouseenter');
             await Vue.nextTick();
             expect(currentTooltip).toStrictEqual({
-                anchor: 'dummy',
+                anchorPoint: { x: 123, y: 456 },
                 text: 'this is an error',
                 type: 'error',
                 x: 16,

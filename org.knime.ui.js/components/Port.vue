@@ -2,7 +2,7 @@
 import { mapMutations } from 'vuex';
 
 export default {
-    inject: ['nodeId'],
+    inject: ['anchorPoint'],
     props: {
         /**
          * Port configuration object
@@ -74,7 +74,7 @@ export default {
             return {
                 x: this.x,
                 y: this.y - portSize / 2 - tooltipSpacing,
-                anchor: this.nodeId,
+                anchorPoint: this.anchorPoint,
                 title: this.port.name,
                 text: this.port.info,
                 orientation: 'top'

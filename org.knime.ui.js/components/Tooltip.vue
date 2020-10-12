@@ -21,13 +21,6 @@ export default {
             default: null
         },
         /**
-         * A reference to a node that this tooltip is attached to
-         */
-        anchor: {
-            type: String,
-            default: null
-        },
-        /**
          * horizontal position of the arrow tip
          */
         x: {
@@ -40,6 +33,16 @@ export default {
         y: {
             type: Number,
             default: 0
+        },
+        /**
+         * Optional: a point on the Kanvas that marks the origin of the tooltips's coordinates.
+         * This makes it more conventient to display tooltips e.g. on Nodes, because it allows to pass the node position
+         * as `anchorPoint`, and the tooltip's coordinates relitave to the node.
+         */
+        anchorPoint: {
+            type: Object,
+            default: null,
+            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         },
         /**
          * Type of tooltip. Affects styling
@@ -62,10 +65,8 @@ export default {
         ...mapGetters('workflow', ['getAbsoluteCoordinates', 'nodes']),
         position() {
             let { x, y, $shapes: { tooltipArrowSize } } = this;
-
-            if (this.anchor) {
-                const node = this.nodes[this.anchor];
-                const absPos = this.getAbsoluteCoordinates(node.position.x, node.position.y);
+            if (this.anchorPoint) {
+                const absPos = this.getAbsoluteCoordinates(this.anchorPoint);
                 x += absPos.x;
                 y += absPos.y;
             }

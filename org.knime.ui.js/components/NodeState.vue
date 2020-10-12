@@ -1,7 +1,7 @@
 <script>
 import { mapMutations } from 'vuex';
 export default {
-    inject: ['nodeId'],
+    inject: ['anchorPoint'],
     props: {
         executionState: {
             type: String,
@@ -58,7 +58,7 @@ export default {
             let tooltip = {
                 x: nodeSize / 2,
                 y: nodeSize + nodeStatusMarginTop + nodeStatusHeight + errorSymbolRadius + tooltipSpacing,
-                anchor: this.nodeId
+                anchorPoint: this.anchorPoint
             };
 
             if (this.error) {

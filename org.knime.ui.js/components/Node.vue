@@ -23,7 +23,8 @@ export default {
     inheritAttrs: false,
     provide() {
         return {
-            nodeId: this.id
+            // Provide position as anchorPoint for tooltips
+            anchorPoint: this.position
         };
     },
     props: {

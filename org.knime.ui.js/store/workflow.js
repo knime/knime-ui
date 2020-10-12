@@ -91,7 +91,7 @@ export const getters = {
     */
     getAbsoluteCoordinates(state, getters, rootState) {
         const { x: left, y: top } = getters.svgBounds;
-        return (x, y) => ({ x: x - left, y: y - top });
+        return ({ x, y }) => ({ x: x - left, y: y - top });
     },
     /*
         extends the workflowBounds by a fixed padding
