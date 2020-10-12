@@ -48,6 +48,7 @@ package org.knime.ui.java;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -68,6 +69,7 @@ import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.UIEvents.EventTags;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.knime.core.node.NodeLogger;
@@ -268,24 +270,30 @@ public final class PerspectiveSwitchAddon {
 
 	private static WorkflowManager getWorkflowManager(final MPart editorPart) {
 		if (editorPart.getObject() instanceof CompatibilityPart) {
-			return getWorkflowEditor((CompatibilityPart) editorPart.getObject()).getWorkflowManager().orElse(null);
+			return getWorkflowEditor((CompatibilityPart) editorPart.getObject())
+					.flatMap(WorkflowEditor::getWorkflowManager).orElse(null);
 		} else {
 			return null;
 		}
 	}
 
-	private static WorkflowEditor getWorkflowEditor(final CompatibilityPart part) {
+	private static java.util.Optional<WorkflowEditor> getWorkflowEditor(final CompatibilityPart part) {
 		AtomicReference<WorkflowEditor> ref = new AtomicReference<>();
-		Display.getDefault()
-				.syncExec(() -> ref.set((WorkflowEditor) ((IEditorReference) part.getReference()).getEditor(true)));
-		return ref.get();
+		Display.getDefault().syncExec(() -> {
+			IEditorPart editor = ((IEditorReference) part.getReference()).getEditor(true);
+			if (editor instanceof WorkflowEditor) {
+				ref.set((WorkflowEditor) editor);
+			}
+		});
+		return java.util.Optional.ofNullable(ref.get());
 	}
 
 	private static List<WorkflowEditor> getOpenWorkflowEditors(final EModelService modelService,
 			final MApplication app) {
 		return modelService.findElements(app, "org.eclipse.e4.ui.compatibility.editor", MPart.class).stream()
 				.filter(p -> p.getObject() instanceof CompatibilityPart)
-				.map(p -> getWorkflowEditor((CompatibilityPart) p.getObject())).collect(Collectors.toList());
+				.map(p -> getWorkflowEditor((CompatibilityPart) p.getObject()).orElse(null)).filter(Objects::nonNull)
+				.collect(Collectors.toList());
 	}
 
 }
