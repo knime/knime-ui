@@ -23,9 +23,11 @@ export default {
             default: null
         }
     },
-    data: () => ({
-        collapsed: false
-    })
+    data() {
+        return {
+            collapsed: false
+        };
+    }
 };
 </script>
 
@@ -46,7 +48,7 @@ export default {
       :title="collapsed ? title: null"
       @click="collapsed = !collapsed"
     >
-      <SwitchIcon :style="{transform: collapsed ? 'scaleX(-1)': null}" />
+      <SwitchIcon :style="{ transform: collapsed ? 'scaleX(-1)' : null }" />
     </button>
   </div>
 </template>
