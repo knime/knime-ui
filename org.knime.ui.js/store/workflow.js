@@ -111,7 +111,7 @@ export const getters = {
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
     */
     workflowBounds({ activeWorkflow }, getters, rootState) {
-        const { nodeIds, workflowAnnotations = [] } = activeWorkflow;
+        const { nodeIds, workflowAnnotations = [], metaInPorts, metaOutPorts } = activeWorkflow;
         const { nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight } = $shapes;
         let nodes = nodeIds.map(nodeId => getters.nodes[nodeId]);
 
@@ -145,6 +145,43 @@ export const getters = {
             right = 0;
             bottom = 0;
         }
+
+        // Consider horizontal position of metanode input / output bars.
+        // The logic is as follows:
+        // - if a user has moved an input / output bar, then its x-position is taken as saved.
+        // - else
+        //   - if the view is wide enough, the bar is aligned with the rightmost edge at the time of opening
+        //     (and stays at that position)
+        //   - else (horizontal overflow), the bar is drawn to the right of the workflow contents.
+        //
+        // Note that the vertical dimensions are always equal to the workflow dimensions
+
+        // TODO: get from canvas element NXT-332
+        let kanvasWidth = 1000;
+        // kanvasWidth = document.querySelector('.kanvas').getBoundingClientRect().width;
+
+        if (metaInPorts) {
+            if (metaInPorts.xPos) {
+                let leftBorder = metaInPorts.xPos - $shapes.metaNodeBarWidth;
+                if (leftBorder < left) { left = leftBorder; }
+            } else {
+                left -= $shapes.metaNodeBarWidth;
+            }
+            if (right - left < kanvasWidth) {
+                right = left + kanvasWidth;
+            }
+        }
+
+        if (metaOutPorts) {
+            let rightBorder;
+            if (metaOutPorts.xPos) {
+                rightBorder = metaOutPorts.xPos + $shapes.metaNodeBarWidth;
+            } else {
+                rightBorder = left + kanvasWidth;
+            }
+            if (rightBorder > right) { right = rightBorder; }
+        }
+
 
         return {
             left,

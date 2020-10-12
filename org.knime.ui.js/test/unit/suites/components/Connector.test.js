@@ -66,7 +66,7 @@ describe('Connector', () => {
 
         it('uses portShift', () => {
             expect(portShiftMock).toHaveBeenCalledWith(0, 2, true, true);
-            expect(portShiftMock).toHaveBeenCalledWith(2, 3, true);
+            expect(portShiftMock).toHaveBeenCalledWith(2, 3, true, false);
         });
 
         it('draws a path', () => {
@@ -104,7 +104,7 @@ describe('Connector', () => {
 
         it('uses portShift', () => {
             expect(portShiftMock).toHaveBeenCalledWith(0, 2, false, true);
-            expect(portShiftMock).toHaveBeenCalledWith(2, 3, false);
+            expect(portShiftMock).toHaveBeenCalledWith(2, 3, false, false);
         });
 
         it('draws a path', () => {

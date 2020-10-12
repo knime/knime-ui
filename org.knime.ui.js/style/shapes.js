@@ -24,3 +24,5 @@ export const canvasPadding = 2 * nodeSize;
 
 export const tooltipArrowSize = 8;
 export const tooltipMaxWidth = 250;
+
+export const metaNodeBarWidth = 10;

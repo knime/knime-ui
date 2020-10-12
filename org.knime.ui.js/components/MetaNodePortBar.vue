@@ -1,39 +1,68 @@
 <script>
 import Port from '~/components/Port';
+import { portBar } from '~/mixins';
+import { mapGetters } from 'vuex';
 
+/**
+ * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
+ */
 export default {
     components: { Port },
+    mixins: [portBar],
+    provide() {
+        return {
+            anchorPoint: {
+                x: this.x,
+                y: this.y
+            }
+        };
+    },
     props: {
+        /**
+         * The horizontal coordinate of the bar, at the point where the ports are attached.
+        */
         x: {
             type: Number,
             default: 0
         },
+        /**
+         * The y coordinate of the topmost edge of the bar.
+        */
         y: {
             type: Number,
             default: 0
         },
-        height: {
-            type: Number,
-            default: 0
-        },
+        /**
+         * A list of port configurations, passed-through to `Port`
+         */
         ports: {
             type: Array,
             required: true
         },
+        /**
+         * Type of port bar. One of `in`/`out`. Defaults to `in`.
+         * `in` means the bar containing the metanodes input ports, and vice versa.
+         */
         type: {
             type: String,
-            default: 'in'
+            default: 'in',
+            validator(val = 'in') {
+                return ['in', 'out'].includes(val);
+            }
         }
     },
+    computed: {
+        ...mapGetters('workflow', ['workflowBounds', 'svgBounds'])
+    },
     methods: {
+        // horizontal center of ports
         portPositionX(port) {
             let delta = this.$shapes.portSize / 2;
-            return this.type === 'out' ? -delta : 10 + delta;
+            return this.type === 'out' ? -delta : delta;
         },
+        // vertical center of ports
         portPositionY(port) {
-            let index = port.index;
-            let total = this.ports.length;
-            return this.height * (index + 1) / (total + 1);
+            return this.portBarItemYPos(port.index, this.ports);
         }
     }
 };
@@ -41,11 +70,12 @@ export default {
 
 <template>
   <g
-    :transform="`translate(${x + type === 'out' ? x : x - 10}, ${y})`"
+    :transform="`translate(${x}, ${y})`"
   >
     <rect
-      width="10"
-      :height="height"
+      :width="$shapes.metaNodeBarWidth"
+      :height="portBarHeight"
+      :x="type === 'out' ? null : -$shapes.metaNodeBarWidth"
       :fill="$colors.named.Yellow"
     />
     <Port
