@@ -1,0 +1,9 @@
+/*Remove any space from the left and right of the window and the tool- and status bar and set the
+background color to (almost) black*/
+.MTrimmedWindow.topLevel {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	margin-left: 0px;
+	margin-right: 0px;
+	background-color: #201E1E;
+}
