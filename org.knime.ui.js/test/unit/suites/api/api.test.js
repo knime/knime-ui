@@ -1,5 +1,4 @@
 import * as api from '~/api';
-import consola from 'consola';
 
 describe('API', () => {
 
@@ -50,20 +49,12 @@ describe('API', () => {
     });
 
     describe('error handling', () => {
-        let logLevel;
-
         beforeAll(() => {
-            logLevel = consola.level;
-            consola.level = consola.LogLevel.Silent;
             window.jsonrpc = jest.fn().mockReturnValue(JSON.stringify({
                 jsonrpc: '2.0',
                 error: 'There has been an error',
                 id: -1
             }));
-        });
-
-        afterAll(() => {
-            consola.level = logLevel;
         });
 
 
