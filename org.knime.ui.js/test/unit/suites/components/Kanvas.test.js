@@ -9,6 +9,7 @@ import Kanvas from '~/components/Kanvas.vue';
 import Node from '~/components/Node';
 import Connector from '~/components/Connector.vue';
 import WorkflowAnnotation from '~/components/WorkflowAnnotation';
+import MetaNodePortBars from '~/components/MetaNodePortBars';
 
 const mockNode = ({ id, position }) => ({
     name: '',
@@ -31,7 +32,7 @@ const mockConnector = ({ nr }) => ({
 });
 
 describe('Kanvas', () => {
-    let propsData, mocks, mount, wrapper, $store, workflow, nodeData;
+    let propsData, mocks, doShallowMount, wrapper, $store, workflow, nodeData;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -88,7 +89,7 @@ describe('Kanvas', () => {
         });
 
         mocks = { $store, $shapes };
-        mount = () => {
+        doShallowMount = () => {
             wrapper = shallowMount(Kanvas, { propsData, mocks });
         };
     });
@@ -96,7 +97,7 @@ describe('Kanvas', () => {
 
     describe('sample workflow', () => {
         beforeEach(() => {
-            mount();
+            doShallowMount();
         });
 
         it('has portal for selection frames', () => {
@@ -130,22 +131,34 @@ describe('Kanvas', () => {
             { ...common, id: 'middle' },
             { ...common, id: 'front' }
         ];
-        mount();
+        doShallowMount();
 
         let order = wrapper.findAllComponents(WorkflowAnnotation).wrappers.map(c => c.attributes().id);
         expect(order).toEqual(['back', 'middle', 'front']);
     });
 
+    it('renders metanode ports inside metanodes', () => {
+        workflow.info.containerType = 'metanode';
+        doShallowMount();
+
+        expect(wrapper.findComponent(MetaNodePortBars).exists()).toBe(true);
+    });
+
+    it('doesn’t render metanode ports by default', () => {
+        workflow.info.containerType = 'component';
+        doShallowMount();
+
+        expect(wrapper.findComponent(MetaNodePortBars).exists()).toBe(false);
+    });
+
 
     it('uses svgBounds from store', () => {
-        mount();
+        doShallowMount();
         const { width, height, viewBox } = wrapper.find('svg').attributes();
 
         expect(Number(width)).toBe(100);
         expect(Number(height)).toBe(102);
-        expect(viewBox).toBe(
-            `-5 -2 100 102`
-        );
+        expect(viewBox).toBe('-5 -2 100 102');
     });
 
 });
