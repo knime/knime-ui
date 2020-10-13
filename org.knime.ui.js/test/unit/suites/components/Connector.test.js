@@ -31,7 +31,7 @@ describe('Connector', () => {
     });
 
 
-    describe('metanode', () => {
+    describe('attached to a metanode', () => {
         beforeEach(() => {
             $store = mockVuexStore({
                 workflow: {
@@ -76,7 +76,7 @@ describe('Connector', () => {
 
     });
 
-    describe('other', () => {
+    describe('attached to other node', () => {
 
         beforeEach(() => {
             $store = mockVuexStore({
@@ -134,4 +134,47 @@ describe('Connector', () => {
         });
     });
 
+    describe('attached to port bars inside metanode', () => {
+        beforeEach(() => {
+            $store = mockVuexStore({
+                workflow: {
+                    state: {
+                        activeWorkflow: {
+                            projectId: 'some id',
+                            nodeIds: ['root:1', 'root:2'],
+                            metaInPorts: {
+                                xPos: 100,
+                                ports: [portMock]
+                            },
+                            metaOutPorts: {
+                                xPos: 702,
+                                ports: [portMock, portMock, portMock]
+                            }
+                        }
+                    },
+                    getters: {
+                        svgBounds() {
+                            return {
+                                y: 33,
+                                height: 1236
+                            };
+                        }
+                    }
+                },
+                nodes: {
+                    state: {
+                        'some id': {}
+                    }
+                }
+            });
+            mocks = { $shapes, $colors, $store };
+            wrapper = shallowMount(Connector, { propsData, mocks });
+        });
+
+        it('draws a path', () => {
+            const expectedPath = 'M104.5,651 h4.5 C499.5,651 302.5,960 693,960 h4.5';
+            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+        });
+
+    });
 });
