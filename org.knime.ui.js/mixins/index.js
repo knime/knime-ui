@@ -17,7 +17,7 @@ export const portBar = {
             if (isOut) {
                 return this.workflowBounds.right - metaNodeBarWidth;
             }
-            return Math.min(this.workflowBounds.left, 0) + metaNodeBarWidth;
+            return this.workflowBounds.left + metaNodeBarWidth;
         },
         /**
          * Get the vertical position one of a metanode's port items, either relative to the port bar, or absolute.
@@ -25,7 +25,7 @@ export const portBar = {
          * correctly in the workflow store's load action.
          * @param {Number} index Index of the port
          * @param {Array} ports List of ports
-         * @param {Boolean} absolute `true` for absoulte coordinate, `false` for relative.
+         * @param {Boolean} absolute `true` for absolute coordinate, `false` for relative.
          * @returns {Number} The vertical position
          */
         portBarItemYPos(index, ports, absolute) {
@@ -35,7 +35,7 @@ export const portBar = {
     },
     computed: {
         portBarHeight() {
-            return this.workflowBounds.bottom - this.workflowBounds.top;
+            return this.svgBounds.height;
         }
     }
 };

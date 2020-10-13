@@ -150,34 +150,38 @@ export const getters = {
         // The logic is as follows:
         // - if a user has moved an input / output bar, then its x-position is taken as saved.
         // - else
-        //   - if the view is wide enough, the bar is aligned with the rightmost edge at the time of opening
-        //     (and stays at that position)
-        //   - else (horizontal overflow), the bar is drawn to the right of the workflow contents.
+        //   - input bar
+        //     - if the workflow contents extend to a negative coordinate, render the bar left of the workflow contents
+        //     - else render it at 0.
+        //   - output bar
+        //     - if the view is wide enough, the output bar is rendered at a fixed position
+        //     - else (horizontal overflow), the output bar is drawn to the right of the workflow contents.
         //
         // Note that the vertical dimensions are always equal to the workflow dimensions
 
-        // TODO: get from canvas element NXT-332
-        let kanvasWidth = 1000;
-        // kanvasWidth = document.querySelector('.kanvas').getBoundingClientRect().width;
-
-        if (metaInPorts) {
+        let defaultBarPosition = $shapes.defaultMetanodeBarPosition;
+        if (metaInPorts?.ports?.length) {
             if (metaInPorts.xPos) {
                 let leftBorder = metaInPorts.xPos - $shapes.metaNodeBarWidth;
                 if (leftBorder < left) { left = leftBorder; }
             } else {
                 left -= $shapes.metaNodeBarWidth;
             }
-            if (right - left < kanvasWidth) {
-                right = left + kanvasWidth;
+            if (left > 0) {
+                left = 0;
+            }
+            let minWidth = left + $shapes.metaNodeBarWidth + $shapes.portSize;
+            if (right < minWidth) {
+                right = minWidth;
             }
         }
 
-        if (metaOutPorts) {
+        if (metaOutPorts?.ports?.length) {
             let rightBorder;
             if (metaOutPorts.xPos) {
                 rightBorder = metaOutPorts.xPos + $shapes.metaNodeBarWidth;
             } else {
-                rightBorder = left + kanvasWidth;
+                rightBorder = left + defaultBarPosition;
             }
             if (rightBorder > right) { right = rightBorder; }
         }
