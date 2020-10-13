@@ -7,13 +7,14 @@ import rpc from './json-rpc-adapter.js';
  * @return {Promise} A promise containing the application state as defined in the API
  */
 export const fetchApplicationState = () => {
-    const state = rpc('ApplicationService.getState');
-    consola.debug('Current app state', state);
+    try {
+        const state = rpc('ApplicationService.getState');
+        consola.debug('Current app state', state);
 
-    if (state) {
         return Promise.resolve(state);
-    } else {
-        return Promise.reject(new Error('Empty response'));
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error('Could not load application state'));
     }
 };
 
@@ -25,12 +26,13 @@ export const fetchApplicationState = () => {
  * @return {Promise} A promise containing the workflow as defined in the API
  */
 export const loadWorkflow = (projectId, containerId = 'root') => {
-    const workflow = rpc('WorkflowService.getWorkflow', projectId, containerId);
-    consola.debug('Loaded workflow', workflow);
+    try {
+        const workflow = rpc('WorkflowService.getWorkflow', projectId, containerId);
+        consola.debug('Loaded workflow', workflow);
 
-    if (workflow) {
         return Promise.resolve(workflow);
-    } else {
+    } catch (e) {
+        consola.error(e);
         return Promise.reject(new Error(`Couldn't load workflow "${containerId}" from project "${projectId}"`));
     }
 };
