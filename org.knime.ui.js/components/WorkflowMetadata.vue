@@ -1,11 +1,13 @@
 <script>
 import LinkList from '~/webapps-common/ui/components/LinkList';
+import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 import { formatDateString } from '~/webapps-common/util/format';
 
 /** Displays metadata attached to a root-level workflow */
 export default {
     components: {
-        LinkList
+        LinkList,
+        NodeFeatureList
     },
     props: {
         /** Single-line description of the workflow */
@@ -35,6 +37,33 @@ export default {
             validator: tags => tags.every(tag => typeof tag === 'string')
         }
     },
+    // TODO: delete
+    data: () => ({
+        componentData: {
+            inPorts: [
+                { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data', optional: false, name: 'Corpus of Documents', description: 'An input table containing the original corpus with the related document vectors.' },
+                { objectClass: 'org.knime.ext.textprocessing.data.DocumentVectorPortObject', color: '9b9b9b', dataType: 'DocumentVectorPortObject', optional: false, name: 'Document Vector Model', description: 'A model containing node settings as well as column names of the term feature space.' },
+                { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data', optional: false, name: 'Test Document', description: 'An input table containing the new test document. ' }
+            ],
+            dynInPorts: [],
+            outPorts: [
+                { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data', optional: false, name: 'Selected Similar Documents', description: 'A table containing the selected similar documents' },
+                { objectClass: 'org.knime.core.node.port.flowvariable.FlowVariablePortObject', color: 'ff4b4b', dataType: 'Flow Variable', optional: false, name: 'Count of Most Similar Documents per Input Document', description: 'A single variable set to the count of matching documents per input document' }
+            ],
+            dynOutPorts: [],
+            views: [
+                { name: '3D View', description: 'Select any structure in the table view at the top and see the 3D representation at the bottom. The bottom view may be empty if the structure being selected does not carry 3D coordinate information.' }
+            ],
+            dialog: [
+                {
+                    fields: [
+                        { name: 'Neighbor Count', description: 'Selects the number of similar neighboring documents you would like to output.', optional: false },
+                        { name: 'Min Similarity', description: 'Selects the minimum similarity values you would like to output.', optional: false }
+                    ]
+                }
+            ]
+        }
+    }),
     methods: {
         formatDateString
     }
@@ -44,6 +73,7 @@ export default {
 <template>
   <div class="metadata">
     <h2 class="title">
+      <div class="node-preview" />
       <span v-if="title">{{ title }}</span>
       <span
         v-else
@@ -59,7 +89,17 @@ export default {
       >Last Update: no update yet</span>
     </div>
 
-    <div v-if="description">{{ description }}</div>
+    <div
+      v-if="description"
+      class="description"
+    >
+      {{ description }}
+    </div>
+
+    <NodeFeatureList
+      v-bind="componentData"
+      class="node-feature-list"
+    />
 
     <div class="external-ressources">
       <h2>External Ressources</h2>
@@ -98,22 +138,39 @@ export default {
 <style lang="postcss" scoped>
 .metadata {
   box-sizing: border-box;
-  padding: 10px 20px;
+  padding: 20px 20px;
   font-family: "Roboto Condensed", sans-serif;
   font-size: 18px;
   line-height: 27px;
   color: var(--knime-masala);
+
+  & h2 {
+    margin: 0;
+    font-weight: normal;
+    font-size: 24px;
+    line-height: 36px;
+  }
+
+  & .placeholder {
+    font-style: italic;
+  }
+
+  & > *:last-child {
+    margin-bottom: 0;
+  }
 }
 
-.placeholder {
-  font-style: italic;
-}
+.title {
+  display: flex;
+  align-items: center;
 
-h2 {
-  margin: 0;
-  font-weight: normal;
-  font-size: 24px;
-  line-height: 36px;
+  & .node-preview {
+    height: 80px;
+    width: 80px;
+    margin-right: 9px;
+    background-color: white;
+    flex-shrink: 0;
+  }
 }
 
 .last-updated {
@@ -121,8 +178,75 @@ h2 {
   font-style: italic;
 }
 
+.description {
+  margin-bottom: 20px;
+}
+
+.node-feature-list {
+  margin-bottom: 40px;
+
+  & >>> .shadow-wrapper::after,
+  & >>> .shadow-wrapper::before {
+    display: none;
+  }
+
+  & >>> h6 {
+    font-size: 16px;
+    margin-bottom: 0;
+  }
+
+  & >>> .description {
+    font-size: 16px;
+  }
+
+  & >>> .options li,
+  & >>> .views-list li,
+  & >>> .ports-list .outports,
+  & >>> .ports-list .inports {
+    flex-direction: column;
+  }
+
+  /* Style refinement for Options */
+  & >>> .options .panel {
+    padding-left: 0;
+    margin-left: 52px;
+    margin-top: 3px;
+
+    & li > * {
+      margin-left: 8px;
+    }
+
+    & .option-field-name {
+      margin-bottom: 5px;
+    }
+  }
+
+  /* Style refinement for Views */
+  & >>> .views-list {
+    & .content {
+      margin-top: 5px;
+      margin-left: 60px;
+    }
+
+    & svg {
+      margin-right: 8px;
+    }
+  }
+
+  /* Style refinement for Ports */
+  & >>> .ports-list {
+    & ol {
+      margin-left: 60px;
+    }
+
+    & .type {
+      margin-bottom: 5px;
+    }
+  }
+}
+
 .external-ressources {
-  margin-top: 38px;
+  margin-bottom: 38px;
 
   & ul {
     column-count: 1;
@@ -136,7 +260,6 @@ h2 {
 }
 
 .tags {
-  margin-top: 38px;
   padding-top: 5px;
 
   & ul {
