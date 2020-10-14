@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import portShift from '~/util/portShift';
 import { portBar } from '~/mixins';
 
@@ -36,7 +36,6 @@ export default {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
         }),
-        ...mapGetters('workflow', ['workflowBounds', 'svgBounds']),
         /**
          * The start coordinates of this connector
          * @returns {Object} coordinates containing `x` and `y` properties

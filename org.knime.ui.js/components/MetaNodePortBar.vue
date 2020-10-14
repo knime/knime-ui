@@ -1,7 +1,6 @@
 <script>
 import Port from '~/components/Port';
 import { portBar } from '~/mixins';
-import { mapGetters } from 'vuex';
 
 /**
  * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
@@ -50,9 +49,6 @@ export default {
                 return ['in', 'out'].includes(val);
             }
         }
-    },
-    computed: {
-        ...mapGetters('workflow', ['workflowBounds', 'svgBounds'])
     },
     methods: {
         // horizontal center of ports

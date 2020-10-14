@@ -9,7 +9,7 @@ import MetaNodePortBar from '~/components/MetaNodePortBar';
 
 describe('MetaNodePortBars.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, activeWorkflow;
-    const height = 107;
+    const y = 107;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -34,7 +34,7 @@ describe('MetaNodePortBars.vue', () => {
                     },
                     svgBounds() {
                         return {
-                            y: height
+                            y
                         };
                     }
                 }
@@ -64,7 +64,7 @@ describe('MetaNodePortBars.vue', () => {
         expect(wrapper.findAllComponents(MetaNodePortBar).length).toBe(1);
         let bar = wrapper.findAllComponents(MetaNodePortBar).at(0);
         expect(bar.props('type')).toBe(type);
-        expect(bar.props('y')).toBe(height);
+        expect(bar.props('y')).toBe(y);
         expect(bar.props('ports')).toEqual([dummy]);
     });
 
@@ -80,11 +80,11 @@ describe('MetaNodePortBars.vue', () => {
         expect(wrapper.findAllComponents(MetaNodePortBar).length).toBe(2);
         let inBar = wrapper.findAllComponents(MetaNodePortBar).at(0);
         expect(inBar.props('type')).toBe('in');
-        expect(inBar.props('y')).toBe(height);
+        expect(inBar.props('y')).toBe(y);
         expect(inBar.props('ports')).toEqual([dummy]);
         let outBar = wrapper.findAllComponents(MetaNodePortBar).at(1);
         expect(outBar.props('type')).toBe('out');
-        expect(outBar.props('y')).toBe(height);
+        expect(outBar.props('y')).toBe(y);
         expect(outBar.props('ports')).toEqual([dummy, dummy]);
 
     });

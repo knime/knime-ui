@@ -1,4 +1,5 @@
 import { metaNodeBarWidth } from '~/style/shapes';
+import { mapGetters } from 'vuex';
 
 export const portBar = {
     methods: {
@@ -34,8 +35,12 @@ export const portBar = {
         }
     },
     computed: {
+        ...mapGetters('workflow', ['workflowBounds', 'svgBounds']),
         portBarHeight() {
             return this.svgBounds.height;
+        },
+        portBarYPos() {
+            return this.svgBounds.y;
         }
     }
 };
