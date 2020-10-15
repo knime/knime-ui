@@ -112,7 +112,10 @@ export const getters = {
     */
     workflowBounds({ activeWorkflow }, getters, rootState) {
         const { nodeIds, workflowAnnotations = [], metaInPorts, metaOutPorts } = activeWorkflow;
-        const { nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight } = $shapes;
+        const {
+            nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight, portSize,
+            defaultMetanodeBarPosition, defaultMetaNodeBarHeight, metaNodeBarWidth
+        } = $shapes;
         let nodes = nodeIds.map(nodeId => getters.nodes[nodeId]);
 
         let left = Infinity;
@@ -159,33 +162,38 @@ export const getters = {
         //
         // Note that the vertical dimensions are always equal to the workflow dimensions
 
-        let defaultBarPosition = $shapes.defaultMetanodeBarPosition;
+        let defaultBarPosition = defaultMetanodeBarPosition;
         if (metaInPorts?.ports?.length) {
+            let leftBorder, rightBorder;
             if (metaInPorts.xPos) {
-                let leftBorder = metaInPorts.xPos - $shapes.metaNodeBarWidth;
-                if (leftBorder < left) { left = leftBorder; }
+                leftBorder = metaInPorts.xPos - metaNodeBarWidth;
+                rightBorder = metaInPorts.xPos + portSize;
             } else {
-                left -= $shapes.metaNodeBarWidth;
+                leftBorder = Math.min(0, left) - metaNodeBarWidth;
+                rightBorder = leftBorder + metaNodeBarWidth + portSize;
             }
-            if (left > 0) {
-                left = 0;
-            }
-            let minWidth = left + $shapes.metaNodeBarWidth + $shapes.portSize;
-            if (right < minWidth) {
-                right = minWidth;
-            }
-        }
-
-        if (metaOutPorts?.ports?.length) {
-            let rightBorder;
-            if (metaOutPorts.xPos) {
-                rightBorder = metaOutPorts.xPos + $shapes.metaNodeBarWidth;
-            } else {
-                rightBorder = left + defaultBarPosition;
-            }
+            if (leftBorder < left) { left = leftBorder; }
             if (rightBorder > right) { right = rightBorder; }
         }
 
+        if (metaOutPorts?.ports?.length) {
+            let leftBorder, rightBorder;
+            if (metaOutPorts.xPos) {
+                leftBorder =  metaOutPorts.xPos - portSize;
+                rightBorder = metaOutPorts.xPos + metaNodeBarWidth;
+            } else {
+                leftBorder = Math.min(0, left) + defaultBarPosition - portSize;
+                rightBorder = leftBorder + metaNodeBarWidth + portSize;
+            }
+            if (leftBorder < left) { left = leftBorder; }
+            if (rightBorder > right) { right = rightBorder; }
+        }
+
+        if (metaInPorts?.ports?.length || metaOutPorts?.ports?.length) {
+            if (bottom < Math.min(0, top) + defaultMetaNodeBarHeight) {
+                bottom = Math.min(0, top) + defaultMetaNodeBarHeight;
+            }
+        }
 
         return {
             left,

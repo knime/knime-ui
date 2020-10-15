@@ -28,3 +28,4 @@ export const tooltipMaxWidth = 250;
 // horizontal position of the output ports bar if the user hasn't moved it
 export const defaultMetanodeBarPosition = 1000;
 export const metaNodeBarWidth = 10;
+export const defaultMetaNodeBarHeight = 500;
