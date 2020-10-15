@@ -1,13 +1,15 @@
 <script>
 import LinkList from '~/webapps-common/ui/components/LinkList';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
+import NodeIconGenerated from '~/webapps-common/ui/components/node/NodeIconGenerated';
 import { formatDateString } from '~/webapps-common/util/format';
 
 /** Displays metadata attached to a root-level workflow */
 export default {
     components: {
         LinkList,
-        NodeFeatureList
+        NodeFeatureList,
+        NodeIconGenerated
     },
     props: {
         /** Single-line description of the workflow */
@@ -45,12 +47,35 @@ export default {
                 { objectClass: 'org.knime.ext.textprocessing.data.DocumentVectorPortObject', color: '9b9b9b', dataType: 'DocumentVectorPortObject', optional: false, name: 'Document Vector Model', description: 'A model containing node settings as well as column names of the term feature space.' },
                 { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data', optional: false, name: 'Test Document', description: 'An input table containing the new test document. ' }
             ],
-            dynInPorts: [],
+            dynInPorts: [
+                {
+                    groupName: 'Captured workflow inputs',
+                    groupDescription: 'The dynamic inputs of the workflow fragment starting with this node.',
+                    types: [
+                        { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data' },
+                        { objectClass: 'org.knime.core.node.port.flowvariable.FlowVariablePortObject', color: 'ff4b4b', dataType: 'Flow Variable' },
+                        { objectClass: 'org.knime.core.node.port.image.ImagePortObject', color: '41be78', dataType: 'Image' },
+                        { objectClass: 'org.knime.distance.DistanceMeasurePortObject', color: '9b9b9b', dataType: 'Distance Measure' },
+                        { objectClass: 'org.knime.core.node.port.pmml.PMMLPortObject', color: '1469af', dataType: 'PMML' },
+                        { objectClass: 'org.knime.base.node.mine.bayes.naivebayes.port.NaiveBayesPortObject', color: '1eb9dc', dataType: 'Naive Bayes' },
+                        { objectClass: 'org.knime.base.node.mine.cluster.hierarchical.ClusterTreeModel', color: '9b9b9b', dataType: 'Cluster Tree' },
+                        { objectClass: 'org.knime.base.node.mine.sota.SotaPortObject', color: '1eb9dc', dataType: 'Sota' }
+                    ]
+                }
+            ],
             outPorts: [
                 { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data', optional: false, name: 'Selected Similar Documents', description: 'A table containing the selected similar documents' },
                 { objectClass: 'org.knime.core.node.port.flowvariable.FlowVariablePortObject', color: 'ff4b4b', dataType: 'Flow Variable', optional: false, name: 'Count of Most Similar Documents per Input Document', description: 'A single variable set to the count of matching documents per input document' }
             ],
-            dynOutPorts: [],
+            dynOutPorts: [
+                {
+                    groupName: 'Captured workflow inputs',
+                    groupDescription: 'The dynamic inputs of the workflow fragment starting with this node.',
+                    types: [
+                        { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data' }
+                    ]
+                }
+            ],
             views: [
                 { name: '3D View', description: 'Select any structure in the table view at the top and see the 3D representation at the bottom. The bottom view may be empty if the structure being selected does not carry 3D coordinate information.' }
             ],
@@ -62,6 +87,20 @@ export default {
                     ]
                 }
             ]
+        },
+        nodeIconData: {
+            hasDynPorts: false,
+            isComponent: true,
+            nodeType: 'Sink',
+            inPorts: [
+                { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data', optional: false, name: 'Input data', description: 'Table containing numeric target column to fit the ARIMA model.' }
+            ],
+            outPorts: [
+                { objectClass: 'org.knime.python2.port.PickledObjectFileStorePortObject', color: '1eb9dc', dataType: 'Python', optional: false, name: 'ARIMA Model', description: 'ARIMA model' },
+                { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data', optional: false, name: 'ARIMA Model Summary', description: 'Table containing the coefficient statistics and the following evaluation metrics of the ARIMA model:\r\nRMSE\r\nMAE\r\nMAPE\r\nR2\r\nLog Likelihood\r\nAIC\r\nBIC' },
+                { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data', optional: false, name: 'Residuals', description: 'Table containing the residuals' }
+            ],
+            pictogram: 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAsklEQVR4nGNgoBUwMDBwMDIyakDGIDFiNAqAFJuYmGAoBoonAPEEoBoFilwHNLyeaEMMIEABTUzA2Nh4PooA0Gn12JwN8jc2cZAYWBxoUgBQcwGQnoBiKgEDYGEFF4CGsgIooIgxAKYHOweLTegGE20AkkEGQC+uRzNgApwDDxQiAchFGOpRTMTvGlA0YqqFBmIBIc2wAMelQAFo+n5s6R4kBrKZqFQITR8omYmUMCIaAAD0RELelYkiBgAAAABJRU5ErkJggg=='
         }
     }),
     methods: {
@@ -73,7 +112,9 @@ export default {
 <template>
   <div class="metadata">
     <h2 class="title">
-      <div class="node-preview" />
+      <div class="node-preview">
+        <NodeIconGenerated v-bind="nodeIconData" />
+      </div>
       <span v-if="title">{{ title }}</span>
       <span
         v-else
@@ -201,8 +242,7 @@ export default {
 
   & >>> .options li,
   & >>> .views-list li,
-  & >>> .ports-list .outports,
-  & >>> .ports-list .inports {
+  & >>> .ports-list > * {
     flex-direction: column;
   }
 
