@@ -6,8 +6,8 @@ export const text = {
 };
 
 export const portColors = {
-    data: knimeColors.Black,
-    variable: knimeColors.Coral,
+    table: knimeColors.Black,
+    flowVariable: knimeColors.Coral,
     inactive: 'hsl(0, 100%, 50%)', // "×"
     inactiveOutline: 'hsla(0, 100%, 100%, 66%)' // outline around "×"
 };
