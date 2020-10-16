@@ -2,6 +2,9 @@
 import { mapState } from 'vuex';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import Kanvas from '~/components/Kanvas';
+import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
+import WorkflowMetadata from '~/components/WorkflowMetadata';
+
 
 /**
  * A component that shows the tab contents belonging to one workflow,
@@ -9,31 +12,49 @@ import Kanvas from '~/components/Kanvas';
  */
 export default {
     components: {
-        WorkflowBreadcrumb,
-        Kanvas
+        Kanvas,
+        LeftCollapsiblePanel,
+        WorkflowMetadata,
+        WorkflowBreadcrumb
     },
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
         }),
+        placeholderMetadata() {
+            return {
+                title: this.workflow.info.name
+            };
+        },
         hasBreadcrumb() {
-            return this.workflow.parents && this.workflow.parents.length > 0;
+            return this.workflow.parents?.length > 0;
         }
     }
 };
 </script>
 
 <template>
-  <div
+  <main
     v-if="workflow"
-    class="content"
   >
     <WorkflowBreadcrumb
       v-if="hasBreadcrumb"
       class="breadcrumb"
     />
-    <Kanvas class="kanvas" />
-  </div>
+
+    <LeftCollapsiblePanel
+      v-if="workflow.info.containerType === 'project'"
+      id="metadata"
+      width="360px"
+      title="Workflow Metadata"
+    >
+      <WorkflowMetadata
+        v-bind="workflow.metadata || placeholderMetadata"
+      />
+    </LeftCollapsiblePanel>
+
+    <Kanvas id="kanvas" />
+  </main>
   <div
     v-else
     class="placeholder"
@@ -45,24 +66,41 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-.content {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+main {
+  display: grid;
+  overflow: auto;
+  grid-template-columns: min-content auto;
+  grid-template-rows: min-content auto;
+  grid-template-areas:
+    "toolbar toolbar"
+    "metadata kanvas";
+}
+
+#toolbar {
+  grid-area: toolbar;
+  height: 50px;
+  background-color: var(--knime-porcelain);
+  border-bottom: 1px solid var(--knime-silver-sand);
+}
+
+#metadata {
+  grid-area: metadata;
+  border-right: 1px solid var(--knime-silver-sand);
 }
 
 .breadcrumb {
+  grid-area: toolbar;
   min-height: 50px;
   border-bottom: 1px solid var(--knime-silver-sand);
-  flex-shrink: 0;
 }
 
-.kanvas {
-  flex-grow: 1;
-  overflow: scroll;
+#kanvas {
+  overflow: auto;
+  grid-area: kanvas;
 }
 
 .placeholder {
+  grid-area: kanvas;
   height: 55%;
   display: flex;
   justify-content: center;

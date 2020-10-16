@@ -20,5 +20,13 @@
             apply="always">
       </fragment>
    </extension>
+   <extension
+         point="org.eclipse.e4.ui.css.swt.theme">
+      <theme
+            basestylesheeturi="css/web-ui.css"
+            id="org.knime.ui.java.theme"
+            label="KNIME Web UI">
+      </theme>
+   </extension>
 
 </plugin>

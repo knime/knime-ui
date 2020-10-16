@@ -4,6 +4,7 @@ import Vuex from 'vuex';
 
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import Kanvas from '~/components/Kanvas';
+import WorkflowMetadata from '~/components/WorkflowMetadata';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 
 describe('WorkflowTabContent.vue', () => {
@@ -15,7 +16,17 @@ describe('WorkflowTabContent.vue', () => {
     let store, workflow, wrapper, doShallowMount;
 
     beforeEach(() => {
-        workflow = null;
+        window.switchToJavaUI = jest.fn();
+
+        workflow = {
+            metadata: {
+                title: 'title'
+            },
+            info: {
+                name: 'fileName',
+                containerType: 'project'
+            }
+        };
 
         doShallowMount = async () => {
             store = mockVuexStore({
@@ -36,18 +47,52 @@ describe('WorkflowTabContent.vue', () => {
         };
     });
 
-    it('initiates', async () => {
-        workflow = 'this is a dummy workflow';
-        await doShallowMount();
+    describe('workflow loaded', () => {
 
-        expect(wrapper.findComponent(Kanvas).exists()).toBe(true);
+        it('displays Workflow', async () => {
+            await doShallowMount();
+
+            expect(wrapper.findComponent(Kanvas).exists()).toBe(true);
+        });
+
+        it('shows metadata panel with data', async () => {
+            await doShallowMount();
+
+            let metadata = wrapper.findComponent(WorkflowMetadata);
+            expect(metadata.exists()).toBe(true);
+            expect(metadata.props().title).toBe('title');
+        });
+
+        it('uses placeholder metadata if none are given', async () => {
+            delete workflow.metadata;
+            await doShallowMount();
+
+            expect(wrapper.findComponent(WorkflowMetadata).props().title).toBe('fileName');
+        });
+
+        it('shows no metadata panel if the workflow is not top-level', async () => {
+            workflow.info.containerType = 'component';
+            await doShallowMount();
+
+            let metadata = wrapper.findComponent(WorkflowMetadata);
+            expect(metadata.exists()).toBe(false);
+        });
     });
 
-    it('shows placeholder', async () => {
-        await doShallowMount();
+    describe('no workflow loaded', () => {
+        beforeEach(async () => {
+            workflow = null;
+            await doShallowMount();
+        });
 
-        expect(wrapper.findComponent(Kanvas).exists()).toBe(false);
-        expect(wrapper.find('.placeholder').text()).toMatch('No workflow opened');
+        it('shows placeholder', () => {
+            expect(wrapper.findComponent(Kanvas).exists()).toBe(false);
+            expect(wrapper.find('.placeholder').text()).toMatch('No workflow opened');
+        });
+
+        it('hides metadata panel', () => {
+            expect(wrapper.find('#metadata').exists()).toBe(false);
+        });
     });
 
     describe('breadcrumb', () => {
@@ -58,16 +103,16 @@ describe('WorkflowTabContent.vue', () => {
         });
 
         it('shows breadcrumb when available', async () => {
-            workflow = {
-                parents: [{
+            workflow.parents = [
+                {
                     containerType: 'project',
                     name: 'foo'
                 }, {
                     containerType: 'component',
                     containerId: 'root:201',
                     name: 'Component'
-                }]
-            };
+                }
+            ];
             await doShallowMount();
 
             expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(true);
