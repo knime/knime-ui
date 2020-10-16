@@ -69,6 +69,14 @@ describe('WorkflowTabContent.vue', () => {
 
             expect(wrapper.findComponent(WorkflowMetadata).props().title).toBe('fileName');
         });
+
+        it('shows no metadata panel if the workflow is not top-level', async () => {
+            workflow.info.containerType = 'component';
+            await doShallowMount();
+
+            let metadata = wrapper.findComponent(WorkflowMetadata);
+            expect(metadata.exists()).toBe(false);
+        });
     });
 
     describe('no workflow loaded', () => {
