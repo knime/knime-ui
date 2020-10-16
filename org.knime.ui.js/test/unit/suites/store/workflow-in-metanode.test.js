@@ -210,6 +210,39 @@ describe('workflow store', () => {
                         height: defaultMetaNodeBarHeight + canvasPadding
                     }
                 }
+            },
+            'with content and ports': {
+                additionalProps: {
+                    metaInPorts: {
+                        ports: [{}]
+                    },
+                    metaOutPorts: {
+                        xPos: 500,
+                        ports: [{}]
+                    },
+                    workflowAnnotations: [{
+                        bounds: {
+                            x: -300,
+                            width: 1000,
+                            y: -200,
+                            height: 1000,
+                        }
+                    }]
+                },
+                expected: {
+                    workflowBounds: {
+                        left: -300 - metaNodeBarWidth,
+                        right: 1000 - 300,
+                        top: -200,
+                        bottom: 1000 - 200
+                    },
+                    svgBounds: {
+                        x: -300 - metaNodeBarWidth,
+                        y: -200,
+                        width: defaultMetanodeBarPosition + metaNodeBarWidth + canvasPadding,
+                        height: 1000 + canvasPadding
+                    }
+                }
             }
         };
 

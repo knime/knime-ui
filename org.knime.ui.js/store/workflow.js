@@ -182,7 +182,7 @@ export const getters = {
                 leftBorder =  metaOutPorts.xPos - portSize;
                 rightBorder = metaOutPorts.xPos + metaNodeBarWidth;
             } else {
-                leftBorder = Math.min(0, left) + defaultBarPosition - portSize;
+                leftBorder = left + defaultBarPosition - portSize;
                 rightBorder = leftBorder + metaNodeBarWidth + portSize;
             }
             if (leftBorder < left) { left = leftBorder; }
