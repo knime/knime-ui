@@ -15,7 +15,6 @@ export default {
 <template>
   <g
     :fill="$colors.nodeBackgroundColors.Metanode"
-    v-on="$listeners"
   >
     <rect
       width="32"

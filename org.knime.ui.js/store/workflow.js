@@ -40,6 +40,7 @@ export const mutations = {
         // extract templates
         let { nodeTemplates = {} } = workflow;
         let nodeTemplateIds = Object.keys(nodeTemplates);
+
         // …and move them to template store
         nodeTemplateIds.forEach((templateId) => {
             this.commit('nodeTemplates/add', {

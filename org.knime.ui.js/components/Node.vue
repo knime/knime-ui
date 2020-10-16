@@ -176,13 +176,14 @@ export default {
         @mouseleave="onLeaveHoverArea"
       />
 
-      <NodeTorso
-        :type="type"
-        :kind="kind"
-        :icon="icon"
-        :execution-state="state && state.executionState"
-        @dblclick="onDoubleClick"
-      />
+      <g @dblclick="onDoubleClick">
+        <NodeTorso
+          :type="type"
+          :kind="kind"
+          :icon="icon"
+          :execution-state="state && state.executionState"
+        />
+      </g>
 
       <template v-for="port of inPorts">
         <Port
