@@ -160,7 +160,8 @@ export const getters = {
         //     - if the view is wide enough, the output bar is rendered at a fixed position
         //     - else (horizontal overflow), the output bar is drawn to the right of the workflow contents.
         //
-        // Note that the vertical dimensions are always equal to the workflow dimensions
+        // The vertical dimensions are always equal to the workflow dimensions, unless the workflow is empty,
+        // in which case they get a default height.
 
         let defaultBarPosition = defaultMetanodeBarPosition;
         if (metaInPorts?.ports?.length) {

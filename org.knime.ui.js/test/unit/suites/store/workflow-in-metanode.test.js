@@ -1,8 +1,11 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
-import { canvasPadding, metaNodeBarWidth, portSize, defaultMetaNodeBarHeight, defaultMetanodeBarPosition }
-    from '~/style/shapes';
+import { canvasPadding,
+    defaultMetaNodeBarHeight,
+    defaultMetanodeBarPosition,
+    metaNodeBarWidth,
+    portSize } from '~/style/shapes';
 import Vuex from 'vuex';
 
 describe('workflow store', () => {
@@ -214,6 +217,39 @@ describe('workflow store', () => {
             'with content and ports': {
                 additionalProps: {
                     metaInPorts: {
+                        xPos: -100,
+                        ports: [{}]
+                    },
+                    metaOutPorts: {
+                        ports: [{}]
+                    },
+                    workflowAnnotations: [{
+                        bounds: {
+                            x: 300,
+                            width: 1000,
+                            y: 200,
+                            height: 1000
+                        }
+                    }]
+                },
+                expected: {
+                    svgBounds: {
+                        height: 1264,
+                        width: 1474,
+                        x: -110,
+                        y: 0
+                    },
+                    workflowBounds: {
+                        bottom: 1200,
+                        left: -110,
+                        right: 1300,
+                        top: 200
+                    }
+                }
+            },
+            'with content with negative coordinates and ports': {
+                additionalProps: {
+                    metaInPorts: {
                         ports: [{}]
                     },
                     metaOutPorts: {
@@ -225,7 +261,7 @@ describe('workflow store', () => {
                             x: -300,
                             width: 1000,
                             y: -200,
-                            height: 1000,
+                            height: 1000
                         }
                     }]
                 },
@@ -241,6 +277,32 @@ describe('workflow store', () => {
                         y: -200,
                         width: defaultMetanodeBarPosition + metaNodeBarWidth + canvasPadding,
                         height: 1000 + canvasPadding
+                    }
+                }
+            },
+            'with port bars in reverse order': {
+                additionalProps: {
+                    metaInPorts: {
+                        xPos: 100,
+                        ports: [{}]
+                    },
+                    metaOutPorts: {
+                        xPos: -100,
+                        ports: [{}]
+                    }
+                },
+                expected: {
+                    workflowBounds: {
+                        left: -100 - portSize,
+                        right: 100 + portSize,
+                        top: 0,
+                        bottom: 500
+                    },
+                    svgBounds: {
+                        x: -100 - portSize,
+                        y: 0,
+                        height: 500 + canvasPadding,
+                        width: 282
                     }
                 }
             }
