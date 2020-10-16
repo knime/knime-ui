@@ -90,7 +90,7 @@ public class KnimeBrowserView {
 			ArrayNode params = jsonrpc.arrayNode();
 			params.addPOJO(event);
 			String message = jsonrpc.put("jsonrpc", "2.0").put("method", name).set("params", params).toString();
-			Display.getDefault().asyncExec(() -> browser.execute("jsonrpcNotification('" + message + "')"));
+			Display.getDefault().syncExec(() -> browser.execute("jsonrpcNotification('" + message + "')"));
 		};
 	}
 
