@@ -1,6 +1,6 @@
 <script>
 import { mapMutations } from 'vuex';
-import PortIcon from '~/webapps-common/ui/components/node/PortIcon2';
+import PortIcon from '~/webapps-common/ui/components/node/PortIcon';
 
 /* eslint-disable no-magic-numbers */
 

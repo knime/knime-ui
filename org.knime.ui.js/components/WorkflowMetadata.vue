@@ -1,7 +1,7 @@
 <script>
 import LinkList from '~/webapps-common/ui/components/LinkList';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
-import NodeIconGenerated from '~/webapps-common/ui/components/node/NodeIconGenerated';
+import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { formatDateString } from '~/webapps-common/util/format';
 
 /** Displays metadata attached to a root-level workflow */
@@ -9,7 +9,7 @@ export default {
     components: {
         LinkList,
         NodeFeatureList,
-        NodeIconGenerated
+        NodePreview
     },
     props: {
         /** Single-line description of the workflow */
@@ -43,41 +43,86 @@ export default {
     data: () => ({
         componentData: {
             inPorts: [
-                { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data', optional: false, name: 'Corpus of Documents', description: 'An input table containing the original corpus with the related document vectors.' },
-                { objectClass: 'org.knime.ext.textprocessing.data.DocumentVectorPortObject', color: '9b9b9b', dataType: 'DocumentVectorPortObject', optional: false, name: 'Document Vector Model', description: 'A model containing node settings as well as column names of the term feature space.' },
-                { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data', optional: false, name: 'Test Document', description: 'An input table containing the new test document. ' }
+                { dataType: 'table', typeName: 'Table', optional: false, name: 'Corpus of Documents', description: 'An input table containing the original corpus with the related document vectors.' },
+                { dataType: 'other', color: '#9b9b9b', typeName: 'DocumentVectorPortObject', optional: false, name: 'Document Vector Model', description: 'A model containing node settings as well as column names of the term feature space.' },
+                { dataType: 'table', typeName: 'Table', optional: false, name: 'Test Document', description: 'An input table containing the new test document. ' }
             ],
             dynInPorts: [
                 {
                     groupName: 'Captured workflow inputs',
                     groupDescription: 'The dynamic inputs of the workflow fragment starting with this node.',
                     types: [
-                        { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data' },
-                        { objectClass: 'org.knime.core.node.port.flowvariable.FlowVariablePortObject', color: 'ff4b4b', dataType: 'Flow Variable' },
-                        { objectClass: 'org.knime.core.node.port.image.ImagePortObject', color: '41be78', dataType: 'Image' },
-                        { objectClass: 'org.knime.distance.DistanceMeasurePortObject', color: '9b9b9b', dataType: 'Distance Measure' },
-                        { objectClass: 'org.knime.core.node.port.pmml.PMMLPortObject', color: '1469af', dataType: 'PMML' },
-                        { objectClass: 'org.knime.base.node.mine.bayes.naivebayes.port.NaiveBayesPortObject', color: '1eb9dc', dataType: 'Naive Bayes' },
-                        { objectClass: 'org.knime.base.node.mine.cluster.hierarchical.ClusterTreeModel', color: '9b9b9b', dataType: 'Cluster Tree' },
-                        { objectClass: 'org.knime.base.node.mine.sota.SotaPortObject', color: '1eb9dc', dataType: 'Sota' }
+                        {  dataType: 'table', typeName: 'Table' },
+                        {  dataType: 'flowVariable', typeName: 'Flow Variable' },
+                        {  color: '#41be78', dataType: 'other', typeName: 'Image' },
+                        {  color: '#9b9b9b', dataType: 'other', typeName: 'Distance Measure' },
+                        {  color: '#1469af', dataType: 'other', typeName: 'PMML' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'Naive Bayes' },
+                        {  color: '#9b9b9b', dataType: 'other', typeName: 'Cluster Tree' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'Sota' },
+                        {  color: '#9b9b9b', dataType: 'other', typeName: 'Regression Tree' },
+                        {  color: '#9b9b9b', dataType: 'other', typeName: 'Regression Tree' },
+                        {  color: '#9b9b9b', dataType: 'other', typeName: 'PortObject' },
+                        {  color: '#9b9b9b', dataType: 'other', typeName: 'Feature Elimination' },
+                        {  color: '#9b9b9b', dataType: 'other', typeName: 'Correlation' },
+                        {  color: '#9b9b9b', dataType: 'other', typeName: 'Feature Selection Model' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'Transformation' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'Radial Basis Function' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'PCA' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'Fuzzy Basis Function' },
+                        {  color: '#9b9b9b', dataType: 'other', typeName: 'Tree Ensembles' },
+                        {  color: '#9b9b9b', dataType: 'other', typeName: 'Gradient Boosting Model' },
+                        {  color: '#9b9b9b', dataType: 'other', typeName: 'Tree Ensembles' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'Outlier' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'URI Object' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'Remote Connection' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'URI Object' },
+                        {  color: '#800000', dataType: 'other', typeName: 'Database Query' },
+                        {  color: '#ff4b4b', dataType: 'other', typeName: 'Database Connection' },
+                        {  color: '#cc005b', dataType: 'other', typeName: 'DB Session' },
+                        {  color: '#66002d', dataType: 'other', typeName: 'DB Data' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'FilterDefinition' },
+                        {  color: '#178ba5', dataType: 'other', typeName: 'File System' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'Normalizer' },
+                        {  color: '#9b9b9b', dataType: 'other', typeName: 'PMML Preprocessing' },
+                        {  color: '#9b9b9b', dataType: 'other', typeName: 'CAIM' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'Color' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'Shape' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'Size' },
+                        {  color: '#000000', dataType: 'other', typeName: 'Workflow Port Object' },
+                        {  color: '#9b9b9b', dataType: 'other', typeName: 'KnimeConnection' },
+                        {  color: '#9b9b9b', dataType: 'other', typeName: 'Inactive branch' },
+                        {  color: '#1eb9dc', dataType: 'other', typeName: 'PMML Discretization' }
                     ]
                 }
             ],
             outPorts: [
-                { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data', optional: false, name: 'Selected Similar Documents', description: 'A table containing the selected similar documents' },
-                { objectClass: 'org.knime.core.node.port.flowvariable.FlowVariablePortObject', color: 'ff4b4b', dataType: 'Flow Variable', optional: false, name: 'Count of Most Similar Documents per Input Document', description: 'A single variable set to the count of matching documents per input document' }
+                { dataType: 'table', typeName: 'Table', optional: false, name: 'Selected Similar Documents', description: 'A table containing the selected similar documents' },
+                { dataType: 'flowVariable', typeName: 'Flow Variable', optional: false, name: 'Count of Most Similar Documents per Input Document', description: 'A single variable set to the count of matching documents per input document' }
             ],
             dynOutPorts: [
                 {
-                    groupName: 'Captured workflow inputs',
-                    groupDescription: 'The dynamic inputs of the workflow fragment starting with this node.',
+                    groupName: 'Captured Workflow',
+                    groupDescription: 'The dynamic outputs of the workflow fragment starting with this node.',
                     types: [
-                        { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data' }
+                        {  color: '#2e992e', typeName: 'Workflow', dataType: 'other' },
+                        {  color: '#9b9b9b', typeName: 'Distance Measure', dataType: 'other' }
+                    ]
+                },
+                {
+                    groupName: 'Second DynOutPortGroup',
+                    groupDescription: 'The dynamic outputs of the workflow fragment starting with this node.',
+                    types: [
+                        {  color: '#1eb9dc', typeName: 'Sota', dataType: 'other' }
                     ]
                 }
             ],
             views: [
-                { name: '3D View', description: 'Select any structure in the table view at the top and see the 3D representation at the bottom. The bottom view may be empty if the structure being selected does not carry 3D coordinate information.' }
+                {
+                    name: '3D View',
+                    description: 'Select any structure in the table view at the top and see the 3D representation at the bottom. The bottom view may be empty if the structure being selected does not carry 3D coordinate information.',
+                    interactive: true
+                }
             ],
             dialog: [
                 {
@@ -93,14 +138,14 @@ export default {
             isComponent: true,
             nodeType: 'Sink',
             inPorts: [
-                { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data', optional: false, name: 'Input data', description: 'Table containing numeric target column to fit the ARIMA model.' }
+                {  dataType: 'table', optional: false, name: 'Input data', description: 'Table containing numeric target column to fit the ARIMA model.' }
             ],
             outPorts: [
-                { objectClass: 'org.knime.python2.port.PickledObjectFileStorePortObject', color: '1eb9dc', dataType: 'Python', optional: false, name: 'ARIMA Model', description: 'ARIMA model' },
-                { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data', optional: false, name: 'ARIMA Model Summary', description: 'Table containing the coefficient statistics and the following evaluation metrics of the ARIMA model:\r\nRMSE\r\nMAE\r\nMAPE\r\nR2\r\nLog Likelihood\r\nAIC\r\nBIC' },
-                { objectClass: 'org.knime.core.node.BufferedDataTable', color: '000000', dataType: 'Data', optional: false, name: 'Residuals', description: 'Table containing the residuals' }
+                {  color: '#1eb9dc', dataType: 'other', optional: false, name: 'ARIMA Model', description: 'ARIMA model' },
+                {  dataType: 'table', optional: false, name: 'ARIMA Model Summary', description: 'Table containing the coefficient statistics and the following evaluation metrics of the ARIMA model:\r\nRMSE\r\nMAE\r\nMAPE\r\nR2\r\nLog Likelihood\r\nAIC\r\nBIC' },
+                {  dataType: 'table', optional: false, name: 'Residuals', description: 'Table containing the residuals' }
             ],
-            pictogram: 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAsklEQVR4nGNgoBUwMDBwMDIyakDGIDFiNAqAFJuYmGAoBoonAPEEoBoFilwHNLyeaEMMIEABTUzA2Nh4PooA0Gn12JwN8jc2cZAYWBxoUgBQcwGQnoBiKgEDYGEFF4CGsgIooIgxAKYHOweLTegGE20AkkEGQC+uRzNgApwDDxQiAchFGOpRTMTvGlA0YqqFBmIBIc2wAMelQAFo+n5s6R4kBrKZqFQITR8omYmUMCIaAAD0RELelYkiBgAAAABJRU5ErkJggg=='
+            icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAsklEQVR4nGNgoBUwMDBwMDIyakDGIDFiNAqAFJuYmGAoBoonAPEEoBoFilwHNLyeaEMMIEABTUzA2Nh4PooA0Gn12JwN8jc2cZAYWBxoUgBQcwGQnoBiKgEDYGEFF4CGsgIooIgxAKYHOweLTegGE20AkkEGQC+uRzNgApwDDxQiAchFGOpRTMTvGlA0YqqFBmIBIc2wAMelQAFo+n5s6R4kBrKZqFQITR8omYmUMCIaAAD0RELelYkiBgAAAABJRU5ErkJggg=='
         }
     }),
     methods: {
@@ -113,7 +158,7 @@ export default {
   <div class="metadata">
     <h2 class="title">
       <div class="node-preview">
-        <NodeIconGenerated v-bind="nodeIconData" />
+        <NodePreview v-bind="nodeIconData" />
       </div>
       <span v-if="title">{{ title }}</span>
       <span
@@ -240,12 +285,6 @@ export default {
     font-size: 16px;
   }
 
-  & >>> .options li,
-  & >>> .views-list li,
-  & >>> .ports-list > * {
-    flex-direction: column;
-  }
-
   /* Style refinement for Options */
   & >>> .options .panel {
     padding-left: 0;
@@ -265,7 +304,7 @@ export default {
   & >>> .views-list {
     & .content {
       margin-top: 5px;
-      margin-left: 60px;
+      margin-left: 30px;
     }
 
     & svg {
@@ -275,12 +314,15 @@ export default {
 
   /* Style refinement for Ports */
   & >>> .ports-list {
-    & ol {
-      margin-left: 60px;
-    }
+    & .content {
+      & ol {
+        margin-left: 28px;
+        margin-top: 22px;
+      }
 
-    & .type {
-      margin-bottom: 5px;
+      & .dyn-ports-description {
+        margin-top: 10px;
+      }
     }
   }
 }

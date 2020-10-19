@@ -1,13 +1,13 @@
 import knimeColors from 'webapps-common/ui/colors/knimeColors';
 import nodeColors from 'webapps-common/ui/colors/nodeColors';
+import portColorsCommon from 'webapps-common/ui/colors/portColors';
 
 export const text = {
     default: knimeColors.Masala
 };
 
 export const portColors = {
-    table: knimeColors.Black,
-    flowVariable: knimeColors.Coral,
+    ...portColorsCommon,
     inactive: 'hsl(0, 100%, 50%)', // "×"
     inactiveOutline: 'hsla(0, 100%, 100%, 66%)' // outline around "×"
 };
