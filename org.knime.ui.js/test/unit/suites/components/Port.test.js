@@ -4,7 +4,7 @@ import Vuex from 'vuex';
 import Vue from 'vue';
 
 import Port from '~/components/Port';
-import PortIcon from '~/webapps-common/ui/components/node/PortIcon2';
+import PortIcon from '~/webapps-common/ui/components/node/PortIcon';
 
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';

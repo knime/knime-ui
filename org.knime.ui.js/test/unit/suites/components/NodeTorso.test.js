@@ -2,6 +2,7 @@ import NodeTorso from '~/components/NodeTorso';
 import NodeTorsoMissing from '~/components/NodeTorsoMissing';
 import NodeTorsoUnknown from '~/components/NodeTorsoUnknown';
 import NodeTorsoMetanode from '~/components/NodeTorsoMetanode';
+import NodeTorsoNormal from '~/webapps-common/ui/components/node/NodeTorsoNormal';
 import { shallowMount } from '@vue/test-utils';
 
 import * as $shapes from '~/style/shapes';
@@ -14,12 +15,30 @@ describe('NodeTorso.vue', () => {
         mocks: { $shapes, $colors }
     });
 
-    it('sets background color', () => {
+    it('renders native node', () => {
         let wrapper = doShallowMount({
-            type: 'Manipulator',
-            kind: 'node'
+            kind: 'node',
+            type: 'Sink',
+            icon: 'data:image/icon'
         });
-        expect(wrapper.find('.bg').attributes().fill).toBe($colors.nodeBackgroundColors.Manipulator);
+        expect(wrapper.findComponent(NodeTorsoNormal).props()).toStrictEqual({
+            type: 'Sink',
+            isComponent: false,
+            icon: 'data:image/icon'
+        });
+    });
+
+    it('renders component', () => {
+        let wrapper = doShallowMount({
+            kind: 'component',
+            type: 'Sink',
+            icon: 'data:image/icon'
+        });
+        expect(wrapper.findComponent(NodeTorsoNormal).props()).toStrictEqual({
+            type: 'Sink',
+            isComponent: true,
+            icon: 'data:image/icon'
+        });
     });
 
     it('renders metanodes', () => {
@@ -43,6 +62,7 @@ describe('NodeTorso.vue', () => {
             kind
         });
         expect(wrapper.findComponent(NodeTorsoMissing).exists()).toBeTruthy();
+        expect(wrapper.findComponent(NodeTorsoNormal).exists()).toBeFalsy();
     });
 
     it.each(['node', 'component'])('renders buggy %ss (during development)', (type) => {
@@ -51,46 +71,6 @@ describe('NodeTorso.vue', () => {
             kind: type
         });
         expect(wrapper.findComponent(NodeTorsoUnknown).exists()).toBeTruthy();
-    });
-
-    const nodeTypeCases = Object.entries($colors.nodeBackgroundColors);
-    it.each(nodeTypeCases)('renders node category "%s" as color "%s"', (type, color) => {
-        let wrapper = doShallowMount({
-            type,
-            kind: 'node'
-        });
-        let bgs = wrapper.findAll('.bg');
-        expect(bgs.length).toBe(1);
-        expect(bgs.at(0).attributes().fill).toBe(color);
-    });
-
-    it('renders plain components', () => {
-        let wrapper = doShallowMount({
-            kind: 'component'
-        });
-        let bgs = wrapper.findAll('.bg');
-        expect(bgs.length).toBe(1);
-        expect(bgs.at(0).attributes().fill).toBe($colors.nodeBackgroundColors.Component);
-        expect(wrapper.find('image').exists()).toBeFalsy();
-    });
-
-    it('renders typed components', () => {
-        let wrapper = doShallowMount({
-            type: 'Learner',
-            kind: 'component'
-        });
-        let bgs = wrapper.findAll('.bg');
-        expect(bgs.length).toBe(2);
-        expect(bgs.at(0).attributes().fill).toBe($colors.nodeBackgroundColors.Component);
-        expect(bgs.at(1).attributes().fill).toBe($colors.nodeBackgroundColors.Learner);
-    });
-
-    it('renders icon', () => {
-        let wrapper = doShallowMount({
-            type: 'Learner',
-            kind: 'node',
-            icon: 'data:image/0000'
-        });
-        expect(wrapper.find('image').attributes().href).toBe('data:image/0000');
+        expect(wrapper.findComponent(NodeTorsoNormal).exists()).toBeFalsy();
     });
 });

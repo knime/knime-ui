@@ -136,7 +136,7 @@ export default {
         nodeIconData: {
             hasDynPorts: false,
             isComponent: true,
-            nodeType: 'Sink',
+            type: 'Sink',
             inPorts: [
                 {  dataType: 'table', optional: false, name: 'Input data', description: 'Table containing numeric target column to fit the ARIMA model.' }
             ],
