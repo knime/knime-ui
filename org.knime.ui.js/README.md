@@ -90,6 +90,15 @@ mvn install
 
 to install that package to your local maven repository directly.
 
+## API
+
+This app expects a global function called `jsonrpc` that it can use to call Java code. Such function is injected into
+the global namespace by the AP (or by the dev app). See `json-rpc-adapter.js` for details.
+
+In turn, this app provides a global function called `jsonrpcNotification` that can be used by Java to call JS functions.
+See `json-rpc-notification.js` for details.
+
+
 [nuxt.js]: https://nuxtjs.org/
 [node]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/905281540/Node.js+Installation
 [java]: https://www.oracle.com/technetwork/java/javase/downloads/index.html

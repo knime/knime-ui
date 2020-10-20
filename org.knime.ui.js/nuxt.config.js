@@ -20,7 +20,8 @@ const config = {
     },
     loading: false,
     plugins: [
-        '~/plugins/constants.js'
+        '~/plugins/constants.js',
+        '~/plugins/json-rpc-notification.js'
     ],
     modules: ['portal-vue/nuxt'],
     css: ['@/assets/index.css'],

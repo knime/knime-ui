@@ -51,5 +51,6 @@ export default (method, ...args) => {
         throw new Error(`Invalid JSON-RPC response ${response}`);
     }
 
+    consola.trace('Result:', result);
     return result;
 };

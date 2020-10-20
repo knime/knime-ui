@@ -1,4 +1,4 @@
-import { loadWorkflow as loadWorkflowFromApi } from '~api';
+import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 
@@ -63,16 +63,27 @@ export const mutations = {
 
 export const actions = {
     async loadWorkflow({ commit, dispatch }, { projectId, containerId = 'root' }) {
-        const workflow = await loadWorkflowFromApi(projectId, containerId);
+        const workflow = await loadWorkflowFromApi({ projectId, containerId });
 
         if (workflow) {
+            dispatch('unloadActiveWorkflow');
             dispatch('setActiveWorkflowSnapshot', {
                 ...workflow,
                 projectId
             });
         } else {
-            throw new Error(`workflow not found: "${projectId}" > "${containerId}"`);
+            throw new Error(`Workflow not found: "${projectId}" > "${containerId}"`);
         }
+    },
+    unloadActiveWorkflow({ state, getters }) {
+        if (!state.activeWorkflow) {
+            // nothing to do (no tabs open)
+            return;
+        }
+        let { projectId } = state.activeWorkflow;
+        let workflowId = getters.activeWorkflowId;
+        // this is intentionally not awaiting the response. Unloading can happen in the background.
+        removeEventListener('WorkflowChanged', { projectId, workflowId });
     },
     setActiveWorkflowSnapshot({ commit }, { workflow, snapshotId, projectId }) {
         commit('setActiveWorkflow', {
@@ -80,6 +91,11 @@ export const actions = {
             projectId
         });
         commit('setActiveSnapshotId', snapshotId);
+        let workflowId = workflow.info?.containerId || 'root';
+        addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+    },
+    applyPatch({ commit }, ...args) {
+        console.log('TODO: apply patch', args);
     }
 };
 
@@ -153,5 +169,12 @@ export const getters = {
             right,
             bottom
         };
+    },
+
+    activeWorkflowId({ activeWorkflow }) {
+        if (!activeWorkflow) {
+            return null;
+        }
+        return activeWorkflow?.info.containerId || 'root';
     }
 };
