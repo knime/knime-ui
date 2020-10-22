@@ -74,6 +74,7 @@ export default {
     :is-component="kind === 'component'"
     :icon="icon"
     :type="type"
+    class="bg"
   />
   <NodeTorsoUnknown
     v-else
@@ -82,8 +83,7 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-.bg,
->>> image {
+.bg {
   cursor: grab;
 }
 </style>

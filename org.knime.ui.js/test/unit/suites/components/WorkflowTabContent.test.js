@@ -19,7 +19,7 @@ describe('WorkflowTabContent.vue', () => {
         window.switchToJavaUI = jest.fn();
 
         workflow = {
-            metadata: {
+            projectMetadata: {
                 title: 'title'
             },
             info: {
@@ -55,7 +55,7 @@ describe('WorkflowTabContent.vue', () => {
             expect(wrapper.findComponent(Kanvas).exists()).toBe(true);
         });
 
-        it('shows metadata panel with data', async () => {
+        it('shows metadata panel with workflow metadata data', async () => {
             await doShallowMount();
 
             let metadata = wrapper.findComponent(WorkflowMetadata);
@@ -64,10 +64,57 @@ describe('WorkflowTabContent.vue', () => {
         });
 
         it('uses placeholder metadata if none are given', async () => {
-            delete workflow.metadata;
+            delete workflow.projectMetadata;
             await doShallowMount();
 
             expect(wrapper.findComponent(WorkflowMetadata).props().title).toBe('fileName');
+        });
+
+        it('no metadata for metanodes', async () => {
+            workflow.info.containerType = 'metanode';
+            await doShallowMount();
+
+            expect(wrapper.findComponent(WorkflowMetadata).exists()).toBe(false);
+        });
+
+        it('displays component metadata', async () => {
+            workflow = {
+                info: {
+                    containerType: 'component'
+                },
+                componentMetadata: {
+                    name: 'name',
+                    description: 'description',
+                    inPorts: ['inPorts'],
+                    outPorts: ['outPorts'],
+                    icon: 'icon',
+                    type: 'type',
+                    views: ['views'],
+                    dialogs: ['dialogs']
+                }
+            };
+            await doShallowMount();
+            expect(wrapper.findComponent(WorkflowMetadata).props()).toStrictEqual(
+                expect.objectContaining({
+                    title: 'name',
+                    description: 'description',
+                    isComponent: true,
+                    nodePreview: {
+                        inPorts: ['inPorts'],
+                        outPorts: ['outPorts'],
+                        icon: 'icon',
+                        type: 'type',
+                        isComponent: true,
+                        hasDynPorts: false
+                    },
+                    nodeFeatures: {
+                        inPorts: ['inPorts'],
+                        outPorts: ['outPorts'],
+                        views: ['views'],
+                        dialogs: ['dialogs']
+                    }
+                })
+            );
         });
     });
 
