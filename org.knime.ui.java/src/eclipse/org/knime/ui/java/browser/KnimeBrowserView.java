@@ -99,7 +99,7 @@ public class KnimeBrowserView {
 		try {
 			String message = mapper
 					.writeValueAsString(jsonrpc.put("jsonrpc", "2.0").put("method", name).set("params", params));
-			Display.getDefault().syncExec(() -> browser.execute("jsonrpcNotification('" + message + "')"));
+			Display.getDefault().syncExec(() -> browser.execute("jsonrpcNotification('" + message + "');"));
 		} catch (JsonProcessingException ex) {
 			NodeLogger.getLogger(KnimeBrowserView.class)
 					.error("Problem creating a json-rcp notification in order to send an event", ex);
