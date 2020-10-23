@@ -48,20 +48,13 @@
  */
 package org.knime.ui.java.browser.function;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.eclipse.swt.chromium.Browser;
 import org.eclipse.swt.chromium.BrowserFunction;
-import org.knime.gateway.api.service.GatewayService;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
-import org.knime.gateway.impl.webui.service.DefaultServices;
+import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
-import org.knime.gateway.json.util.ObjectMapperUtil;
 
 /**
  * Browser function for json-rpc calls which are forwarded to the respective
@@ -72,42 +65,19 @@ import org.knime.gateway.json.util.ObjectMapperUtil;
  */
 public class JsonRpcBrowserFunction extends BrowserFunction {
 
+	private static final String FUNCTION_NAME = "jsonrpc";
+
 	private final JsonRpcRequestHandler m_jsonRpcHandler;
 
 	public JsonRpcBrowserFunction(final Browser browser) {
-		super(browser, "jsonrpc");
-		Map<String, GatewayService> services = createJsonRpcServices();
-		m_jsonRpcHandler = new JsonRpcRequestHandler(ObjectMapperUtil.getInstance().getObjectMapper(), services);
+		super(browser, FUNCTION_NAME);
+		m_jsonRpcHandler = new DefaultJsonRpcRequestHandler();
 	}
 
 	@Override
 	public Object function(final Object[] args) {
-		try {
-			return new String(m_jsonRpcHandler.handle(((String) args[0]).getBytes(StandardCharsets.UTF_8)),
-					StandardCharsets.UTF_8);
-		} catch (Exception e) { // NOSONAR
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
-			return "Unexpected problem:\n" + sw.toString();
-		}
-	}
-
-	private static Map<String, GatewayService> createJsonRpcServices() {
-		// create all default services and wrap them with the rest wrapper services
-		Map<String, GatewayService> wrappedServices = new HashMap<>();
-
-		// web-ui services
-		List<Class<?>> serviceInterfaces = org.knime.gateway.api.webui.service.util.ListServices
-				.listServiceInterfaces();
-		for (Class<?> serviceInterface : serviceInterfaces) {
-			@SuppressWarnings("unchecked")
-			GatewayService wrappedService = org.knime.gateway.impl.webui.jsonrpc.service.util.WrapWithJsonRpcService
-					.wrap(DefaultServices.getDefaultService((Class<? extends GatewayService>) serviceInterface),
-							serviceInterface);
-			wrappedServices.put(serviceInterface.getSimpleName(), wrappedService);
-		}
-		return wrappedServices;
+		return new String(m_jsonRpcHandler.handle(((String) args[0]).getBytes(StandardCharsets.UTF_8)),
+				StandardCharsets.UTF_8);
 	}
 
 }

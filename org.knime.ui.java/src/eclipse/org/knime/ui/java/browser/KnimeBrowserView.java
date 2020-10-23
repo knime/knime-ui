@@ -16,6 +16,7 @@ import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.chromium.Browser;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.webui.entity.EventEnt;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
@@ -24,6 +25,7 @@ import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -83,15 +85,25 @@ public class KnimeBrowserView {
 	}
 
 	private static BiConsumer<String, EventEnt> createEventConsumer(final Browser browser) {
-		return (name, event) -> {
-			// wrap event into a jsonrpc notification (method == event-name) and serialize
-			ObjectMapper mapper = ObjectMapperUtil.getInstance().getObjectMapper();
-			ObjectNode jsonrpc = mapper.createObjectNode();
-			ArrayNode params = jsonrpc.arrayNode();
-			params.addPOJO(event);
-			String message = jsonrpc.put("jsonrpc", "2.0").put("method", name).set("params", params).toString();
-			Display.getDefault().asyncExec(() -> browser.execute("jsonrpcNotification('" + message + "')"));
-		};
+		final ObjectMapper mapper = ObjectMapperUtil.getInstance().getObjectMapper();
+		return (name, event) -> createJsonRpcNotificationAndSendToBrowser(browser, mapper, name, event);
+	}
+
+	private static void createJsonRpcNotificationAndSendToBrowser(final Browser browser, final ObjectMapper mapper,
+			final String name, final EventEnt event) {
+		// wrap event into a jsonrpc notification (method == event-name) and
+		// serialize
+		ObjectNode jsonrpc = mapper.createObjectNode();
+		ArrayNode params = jsonrpc.arrayNode();
+		params.addPOJO(event);
+		try {
+			String message = mapper
+					.writeValueAsString(jsonrpc.put("jsonrpc", "2.0").put("method", name).set("params", params));
+			Display.getDefault().syncExec(() -> browser.execute("jsonrpcNotification('" + message + "')"));
+		} catch (JsonProcessingException ex) {
+			NodeLogger.getLogger(KnimeBrowserView.class)
+					.error("Problem creating a json-rcp notification in order to send an event", ex);
+		}
 	}
 
 	@Focus
