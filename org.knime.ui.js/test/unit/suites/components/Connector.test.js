@@ -124,7 +124,7 @@ describe('Connector', () => {
 
             const { 'stroke-width': strokeWidth, stroke } = wrapper.find('path').attributes();
             expect(parseFloat(strokeWidth)).toBe($shapes.connectorWidth);
-            expect(stroke).toBe($colors.connectorColors.variable);
+            expect(stroke).toBe($colors.connectorColors.flowVariable);
         });
 
         it('applies styles for other ports', () => {

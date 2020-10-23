@@ -71,7 +71,7 @@ export default {
         },
         strokeColor() {
             if (this.flowVariableConnection) {
-                return this.$colors.connectorColors.variable;
+                return this.$colors.connectorColors.flowVariable;
             }
             return this.$colors.connectorColors.default;
         }

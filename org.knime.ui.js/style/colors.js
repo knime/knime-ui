@@ -16,7 +16,7 @@ export const nodeBackgroundColors = nodeColors;
 
 export const connectorColors = {
     default: knimeColors.SilverSand,
-    variable: portColors.variable
+    flowVariable: portColors.flowVariable
 };
 
 export const trafficLight = {
