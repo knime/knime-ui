@@ -53,7 +53,7 @@ export default {
 <template>
   <div
     class="container"
-    @click.capture.prevent="onClick"
+    @click.capture.prevent.stop="onClick"
   >
     <Breadcrumb
       :items="items"
