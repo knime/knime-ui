@@ -5,7 +5,7 @@ import * as $shapes from '~/style/shapes';
 import Vuex from 'vuex';
 
 describe('workflow store', () => {
-    let store, localVue, templateMutationMock, loadStore;
+    let store, localVue, templateMutationMock, loadStore, addEventListenerMock, removeEventListenerMock;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -14,6 +14,8 @@ describe('workflow store', () => {
 
     beforeEach(() => {
         templateMutationMock = jest.fn();
+        addEventListenerMock = jest.fn();
+        removeEventListenerMock = jest.fn();
 
         loadStore = async ({ apiMocks = {} } = {}) => {
             /**
@@ -24,8 +26,8 @@ describe('workflow store', () => {
             jest.resetModules();
             jest.doMock('~api', () => ({
                 __esModule: true,
-                addEventListener: () => {
-                },
+                addEventListener: addEventListenerMock,
+                removeEventListener: removeEventListenerMock,
                 ...apiMocks
             }), { virtual: true });
 
@@ -100,7 +102,7 @@ describe('workflow store', () => {
 
     describe('action', () => {
         it('loads root workflow successfully', async () => {
-            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true } });
+            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true }, snapshotId: 'snap' });
             await loadStore({
                 apiMocks: {
                     loadWorkflow
@@ -115,6 +117,12 @@ describe('workflow store', () => {
                 dummy: true,
                 projectId: 'wf1'
             }, undefined);
+            expect(commit).toHaveBeenNthCalledWith(2, 'workflow/setActiveSnapshotId', 'snap', undefined);
+            expect(addEventListenerMock).toHaveBeenCalledWith('WorkflowChanged', {
+                projectId: 'wf1',
+                workflowId: 'root',
+                snapshotId: 'snap'
+            });
         });
 
         it('loads inner workflow successfully', async () => {
@@ -133,6 +141,25 @@ describe('workflow store', () => {
                 dummy: true,
                 projectId: 'wf2'
             }, undefined);
+            expect(addEventListenerMock).toHaveBeenCalledWith('WorkflowChanged', {
+                projectId: 'wf2',
+                workflowId: 'root'
+            });
+        });
+
+        it('unloads workflow when another one is loaded', async () => {
+            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { info: {} } });
+            await loadStore({
+                apiMocks: {
+                    loadWorkflow
+                }
+            });
+            await store.dispatch('workflow/loadWorkflow', { projectId: 'wf1', containerId: 'root:0:12' });
+            await store.dispatch('workflow/loadWorkflow', { projectId: 'wf2', containerId: 'root:0:23' });
+            expect(removeEventListenerMock).toHaveBeenCalledWith('WorkflowChanged', {
+                projectId: 'wf1',
+                workflowId: 'root'
+            });
         });
 
     });
