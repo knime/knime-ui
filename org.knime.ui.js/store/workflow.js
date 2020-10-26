@@ -89,7 +89,7 @@ export const getters = {
     */
     getAbsoluteCoordinates(state, getters, rootState) {
         const { x: left, y: top } = getters.svgBounds;
-        return (x, y) => ({ x: x - left, y: y - top });
+        return ({ x, y }) => ({ x: x - left, y: y - top });
     },
     /*
         extends the workflowBounds by a fixed padding
@@ -109,8 +109,11 @@ export const getters = {
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
     */
     workflowBounds({ activeWorkflow }) {
-        const { nodes = {}, workflowAnnotations = [] } = activeWorkflow;
-        const { nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight } = $shapes;
+        const { nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPorts } = activeWorkflow;
+        const {
+            nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight, portSize,
+            defaultMetanodeBarPosition, defaultMetaNodeBarHeight, metaNodeBarWidth
+        } = $shapes;
 
         let left = Infinity;
         let top = Infinity;
@@ -141,6 +144,53 @@ export const getters = {
             top = 0;
             right = 0;
             bottom = 0;
+        }
+
+        // Consider horizontal position of metanode input / output bars.
+        // The logic is as follows:
+        // - if a user has moved an input / output bar, then its x-position is taken as saved.
+        // - else
+        //   - input bar
+        //     - if the workflow contents extend to a negative coordinate, render the bar left of the workflow contents
+        //     - else render it at 0.
+        //   - output bar
+        //     - if the view is wide enough, the output bar is rendered at a fixed position
+        //     - else (horizontal overflow), the output bar is drawn to the right of the workflow contents.
+        //
+        // The vertical dimensions are always equal to the workflow dimensions, unless the workflow is empty,
+        // in which case they get a default height.
+
+        let defaultBarPosition = defaultMetanodeBarPosition;
+        if (metaInPorts?.ports?.length) {
+            let leftBorder, rightBorder;
+            if (metaInPorts.xPos) {
+                leftBorder = metaInPorts.xPos - metaNodeBarWidth;
+                rightBorder = metaInPorts.xPos + portSize;
+            } else {
+                leftBorder = Math.min(0, left) - metaNodeBarWidth;
+                rightBorder = leftBorder + metaNodeBarWidth + portSize;
+            }
+            if (leftBorder < left) { left = leftBorder; }
+            if (rightBorder > right) { right = rightBorder; }
+        }
+
+        if (metaOutPorts?.ports?.length) {
+            let leftBorder, rightBorder;
+            if (metaOutPorts.xPos) {
+                leftBorder =  metaOutPorts.xPos - portSize;
+                rightBorder = metaOutPorts.xPos + metaNodeBarWidth;
+            } else {
+                leftBorder = left + defaultBarPosition - portSize;
+                rightBorder = leftBorder + metaNodeBarWidth + portSize;
+            }
+            if (leftBorder < left) { left = leftBorder; }
+            if (rightBorder > right) { right = rightBorder; }
+        }
+
+        if (metaInPorts?.ports?.length || metaOutPorts?.ports?.length) {
+            if (bottom < Math.min(0, top) + defaultMetaNodeBarHeight) {
+                bottom = Math.min(0, top) + defaultMetaNodeBarHeight;
+            }
         }
 
         return {

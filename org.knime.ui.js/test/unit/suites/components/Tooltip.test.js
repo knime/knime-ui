@@ -86,6 +86,7 @@ describe('Tooltip', () => {
     });
 
     it('allows anchoring to a node', () => {
+        propsData.anchorPoint = { x: 40, y: 30 };
         let $store = mockVuexStore({
             workflow: {
                 state: {
@@ -103,8 +104,7 @@ describe('Tooltip', () => {
                 getters: {
                     getAbsoluteCoordinates() {
                         return () => ({
-                            x: 40,
-                            y: 30
+                            ...propsData.anchorPoint
                         });
                     }
                 }

@@ -91,9 +91,7 @@ export default {
     class="bg"
     :execution-state="executionState"
   />
-  <g
-    v-else-if="isKnownNode"
-  >
+  <g v-else-if="isKnownNode">
     <path
       class="bg"
       :d="backgroundPath"

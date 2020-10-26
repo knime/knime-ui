@@ -80,6 +80,7 @@ import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppState;
 import org.knime.gateway.impl.webui.service.DefaultApplicationService;
+import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.osgi.service.event.Event;
@@ -136,8 +137,9 @@ public final class PerspectiveSwitchAddon {
 	}
 
 	private void switchToJavaUI() {
-		setTrimsAndMenuVisible(true, m_modelService, m_app);
+		DefaultEventService.getInstance().removeAllEventListeners();
 		callOnKnimeBrowserView(KnimeBrowserView::clearUrl);
+		setTrimsAndMenuVisible(true, m_modelService, m_app);
 		switchToJavaUITheme();
 		// the color of the workflow editor canvas changes when switching back
 		// -> this is a workaround to compensate for it

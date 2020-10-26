@@ -12,7 +12,7 @@ describe('API', () => {
 
     describe('loadWorkflow', () => {
         it('calls jsonrpc', async () => {
-            await api.loadWorkflow({ projectId: 'foo' });
+            let result = await api.loadWorkflow({ projectId: 'foo' });
 
             expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                 jsonrpc: '2.0',
@@ -20,6 +20,8 @@ describe('API', () => {
                 params: ['foo', 'root'],
                 id: 0
             }));
+
+            expect(result).toStrictEqual('dummy');
         });
 
         it('passes the container ID', async () => {
@@ -44,7 +46,37 @@ describe('API', () => {
             params: [],
             id: 0
         }));
+    });
 
+    describe('error handling', () => {
+        beforeAll(() => {
+            window.jsonrpc = jest.fn().mockReturnValue(JSON.stringify({
+                jsonrpc: '2.0',
+                error: 'There has been an error',
+                id: -1
+            }));
+        });
+
+
+        it('handles errors on loadWorkflow', async (done) => {
+            try {
+                await api.loadWorkflow({ projectId: 'foo', containerId: 'bar' });
+                done(new Error('Expected error not thrown'));
+            } catch (e) {
+                let ok = e.message.includes('foo') && e.message.includes('bar');
+                done(!ok);
+            }
+        });
+
+        it('handles errors on fetchApplicationState', async (done) => {
+            try {
+                await api.fetchApplicationState();
+                done(new Error('Error not thrown'));
+            } catch (e) {
+                let ok = e.message.includes('application state');
+                done(!ok);
+            }
+        });
     });
 
 });

@@ -234,23 +234,39 @@ describe('workflow store', () => {
                         width: 20,
                         height: 20
                     }
+                }, {
+                    id: 'root:2',
+                    bounds: {
+                        x: 0,
+                        y: 0,
+                        width: 20,
+                        height: 20
+                    }
+                }, {
+                    id: 'root:3',
+                    bounds: {
+                        x: -5,
+                        y: -5,
+                        width: 20,
+                        height: 20
+                    }
                 }]
             });
 
 
             expect(store.getters['workflow/workflowBounds']).toStrictEqual({
                 left: -10,
-                right: 10,
+                right: 20,
                 top: -10,
-                bottom: 10
+                bottom: 20
             });
 
 
             expect(store.getters['workflow/svgBounds']).toStrictEqual({
                 x: -10,
                 y: -10,
-                width: canvasPadding + 20,
-                height: canvasPadding + 20
+                width: canvasPadding + 30,
+                height: canvasPadding + 30
             });
         });
 
@@ -282,6 +298,32 @@ describe('workflow store', () => {
                 y: -16,
                 width: canvasPadding + 52,
                 height: canvasPadding + 78
+            });
+        });
+
+        it('calculates dimensions of workflow containing multiple nodes', async () => {
+            await loadStore();
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
+                nodes: {
+                    'root:0': { position: { x: 10, y: 10 } },
+                    'root:1': { position: { x: -10, y: -10 } },
+                    'root:2': { position: { x: 20, y: 20 } }
+                }
+            });
+
+            expect(store.getters['workflow/workflowBounds']).toStrictEqual({
+                left: -10,
+                right: 52,
+                top: -36,
+                bottom: 72
+            });
+
+            expect(store.getters['workflow/svgBounds']).toStrictEqual({
+                x: -10,
+                y: -36,
+                width: 126,
+                height: 172
             });
         });
     });

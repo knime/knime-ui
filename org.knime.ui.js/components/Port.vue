@@ -1,9 +1,8 @@
 <script>
 import { mapMutations } from 'vuex';
-/* eslint-disable no-magic-numbers */
 
 export default {
-    inject: ['nodeId'],
+    inject: ['anchorPoint'],
     props: {
         /**
          * Port configuration object
@@ -45,10 +44,12 @@ export default {
             let [x1, y1, x2, y3] = [-portSize / 2, -portSize / 2, portSize / 2, portSize / 2];
 
             // adjust size of triangle so that filled and bordered triangle match, and the line width is exactly 1
+            /* eslint-disable no-magic-numbers */
             x1 += 1 / 2;
             y1 += (1 + Math.sqrt(5)) / 4;
             x2 -= Math.sqrt(5) / 2;
             y3 -= (1 + Math.sqrt(5)) / 4;
+            /* eslint-enable no-magic-numbers */
 
             return `${x1},${y1} ${x2},${0} ${x1},${y3}`;
         },
@@ -73,7 +74,7 @@ export default {
             return {
                 x: this.x,
                 y: this.y - portSize / 2 - tooltipSpacing,
-                anchor: this.nodeId,
+                anchorPoint: this.anchorPoint,
                 title: this.port.name,
                 text: this.port.info,
                 orientation: 'top'
