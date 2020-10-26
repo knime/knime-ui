@@ -1,6 +1,7 @@
 import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
+import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
 
 /**
  * Store that holds a workflow graph and the associated tooltips.
@@ -16,6 +17,7 @@ export const state = () => ({
 });
 
 export const mutations = {
+    ...jsonPatchMutations,
     setActiveWorkflow(state, workflow) {
 
         // extract templates
@@ -46,6 +48,7 @@ export const mutations = {
 };
 
 export const actions = {
+    ...jsonPatchActions,
     async loadWorkflow({ commit, dispatch }, { projectId, containerId = 'root' }) {
         const workflow = await loadWorkflowFromApi({ projectId, containerId });
 

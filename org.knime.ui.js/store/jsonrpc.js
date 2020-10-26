@@ -3,7 +3,10 @@
  * (which is injected into the global namespace via plugin)
  */
 export const actions = {
-    WorkflowChangedEvent({ state, commit, dispatch, getters, rootState, rootGetters }, ...payload) {
-        dispatch('workflow/applyPatch', payload, { root: true });
+    WorkflowChangedEvent({ dispatch }, [{ patch: { ops } }]) {
+        ops.forEach(op => {
+            op.path = `/activeWorkflow${op.path}`;
+        });
+        dispatch('workflow/patch.apply', ops, { root: true });
     }
 };
