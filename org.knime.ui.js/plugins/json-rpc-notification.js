@@ -16,7 +16,7 @@ export default (context) => {
      * @returns {String} A Serialized JSON-RPC response object
      */
     window.jsonrpcNotification = function (json, ...other) {
-        if (typeof json !== 'string' || other.length > 1) {
+        if (typeof json !== 'string' || other.length > 0) {
             consola.error(genericErrorMsg);
             throw new TypeError(genericErrorMsg);
         }
