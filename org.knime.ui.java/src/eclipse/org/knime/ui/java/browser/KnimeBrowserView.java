@@ -55,6 +55,8 @@ public class KnimeBrowserView {
 		new JsonRpcBrowserFunction(m_browser);
 		new SwitchToJavaUIBrowserFunction(m_browser);
 		setUrl();
+		BiConsumer<String, EventEnt> eventConsumer = createEventConsumer(m_browser);
+		DefaultEventService.getInstance().addEventConsumer(eventConsumer);
 	}
 
 	/**
@@ -80,8 +82,6 @@ public class KnimeBrowserView {
 				}
 			}
 		}
-		BiConsumer<String, EventEnt> eventConsumer = createEventConsumer(m_browser);
-		DefaultEventService.getInstance().addEventConsumer(eventConsumer);
 	}
 
 	private static BiConsumer<String, EventEnt> createEventConsumer(final Browser browser) {
