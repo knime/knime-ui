@@ -88,18 +88,19 @@ describe('Tooltip', () => {
     it('allows anchoring to a node', () => {
         let $store = mockVuexStore({
             workflow: {
-                getters: {
-                    nodes() {
-                        return {
+                state: {
+                    activeWorkflow: {
+                        nodes: {
                             nodeId: {
                                 position: {
                                     x: 42,
                                     y: 32
                                 }
                             }
-
-                        };
-                    },
+                        }
+                    }
+                },
+                getters: {
                     getAbsoluteCoordinates() {
                         return () => ({
                             x: 40,

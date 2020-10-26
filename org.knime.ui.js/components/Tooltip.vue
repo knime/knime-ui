@@ -1,5 +1,5 @@
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 
 /**
  * A tooltip displaying text and an optional headline
@@ -59,7 +59,10 @@ export default {
         }
     },
     computed: {
-        ...mapGetters('workflow', ['getAbsoluteCoordinates', 'nodes']),
+        ...mapGetters('workflow', ['getAbsoluteCoordinates']),
+        ...mapState('workflow', {
+            nodes: state => state.activeWorkflow.nodes
+        }),
         position() {
             let { x, y, $shapes: { tooltipArrowSize } } = this;
 

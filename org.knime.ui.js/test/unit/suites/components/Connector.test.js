@@ -37,23 +37,17 @@ describe('Connector', () => {
                 workflow: {
                     state: {
                         activeWorkflow: {
-                            projectId: 'some id',
-                            nodeIds: ['root:1', 'root:2']
-                        }
-                    }
-                },
-                nodes: {
-                    state: {
-                        'some id': {
-                            'root:1': {
-                                kind: 'metanode',
-                                position: { x: 2, y: 2 },
-                                outPorts: [portMock, portMock]
-                            },
-                            'root:2': {
-                                kind: 'metanode',
-                                position: { x: 12, y: 14 },
-                                inPorts: [portMock, portMock, portMock]
+                            nodes: {
+                                'root:1': {
+                                    kind: 'metanode',
+                                    position: { x: 2, y: 2 },
+                                    outPorts: [portMock, portMock]
+                                },
+                                'root:2': {
+                                    kind: 'metanode',
+                                    position: { x: 12, y: 14 },
+                                    inPorts: [portMock, portMock, portMock]
+                                }
                             }
                         }
                     }
@@ -83,16 +77,10 @@ describe('Connector', () => {
                 workflow: {
                     state: {
                         activeWorkflow: {
-                            projectId: 'myId',
-                            nodeIds: ['root:1', 'root:2']
-                        }
-                    }
-                },
-                nodes: {
-                    state: {
-                        myId: {
-                            'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
-                            'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
+                            nodes: {
+                                'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
+                                'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
+                            }
                         }
                     }
                 }

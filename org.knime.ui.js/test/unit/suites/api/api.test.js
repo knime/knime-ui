@@ -12,7 +12,7 @@ describe('API', () => {
 
     describe('loadWorkflow', () => {
         it('calls jsonrpc', async () => {
-            await api.loadWorkflow('foo');
+            await api.loadWorkflow({ projectId: 'foo' });
 
             expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                 jsonrpc: '2.0',
@@ -23,7 +23,7 @@ describe('API', () => {
         });
 
         it('passes the container ID', async () => {
-            await api.loadWorkflow('foo', 'bar');
+            await api.loadWorkflow({ projectId: 'foo', containerId: 'bar' });
 
             expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                 jsonrpc: '2.0',

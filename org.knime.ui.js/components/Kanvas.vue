@@ -49,12 +49,12 @@ export default {
         v-bind="connector"
       />
       <Node
-        v-for="nodeId in workflow.nodeIds"
+        v-for="(node, nodeId) in workflow.nodes"
         :key="`node-${workflow.projectId}-${nodeId}`"
-        :icon="$store.getters['nodes/icon']({ workflowId: workflow.projectId, nodeId })"
-        :name="$store.getters['nodes/name']({ workflowId: workflow.projectId, nodeId })"
-        :type="$store.getters['nodes/type']({ workflowId: workflow.projectId, nodeId })"
-        v-bind="$store.state.nodes[workflow.projectId][nodeId]"
+        :icon="$store.getters['workflow/nodeIcon']({ workflowId: workflow.projectId, nodeId })"
+        :name="$store.getters['workflow/nodeName']({ workflowId: workflow.projectId, nodeId })"
+        :type="$store.getters['workflow/nodeType']({ workflowId: workflow.projectId, nodeId })"
+        v-bind="node"
       />
       <portal-target
         multiple

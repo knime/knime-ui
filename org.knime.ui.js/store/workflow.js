@@ -17,27 +17,11 @@ export const state = () => ({
 
 export const mutations = {
     setActiveWorkflow(state, workflow) {
-        // extract nodes
-        let { nodes = {} } = workflow;
-        let nodeIds = Object.keys(nodes);
-        let workflowData = {
-            ...workflow,
-            nodeIds
-        };
-
-        // remove all existing nodes of this workflow from Nodes store
-        this.commit('nodes/removeWorkflow', workflow.projectId, { root: true });
-
-        // …and move all nodes to Nodes store
-        nodeIds.forEach((nodeId) => {
-            this.commit('nodes/add', {
-                workflowId: workflow.projectId,
-                nodeData: nodes[nodeId]
-            }, { root: true });
-        });
-        delete workflowData.nodes;
 
         // extract templates
+        let workflowData = {
+            ...workflow
+        };
         let { nodeTemplates = {} } = workflow;
         let nodeTemplateIds = Object.keys(nodeTemplates);
 
@@ -93,16 +77,10 @@ export const actions = {
         commit('setActiveSnapshotId', snapshotId);
         let workflowId = workflow.info?.containerId || 'root';
         addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
-    },
-    applyPatch({ commit }, ...args) {
-        console.log('TODO: apply patch', args);
     }
 };
 
 export const getters = {
-    nodes(state, getters, rootState) {
-        return rootState.nodes[state.activeWorkflow.projectId];
-    },
     /*
         returns the true offset from the upper-left corner of the svg for a given point
     */
@@ -127,17 +105,16 @@ export const getters = {
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
     */
-    workflowBounds({ activeWorkflow }, getters, rootState) {
-        const { nodeIds, workflowAnnotations = [] } = activeWorkflow;
+    workflowBounds({ activeWorkflow }) {
+        const { nodes = {}, workflowAnnotations = [] } = activeWorkflow;
         const { nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight } = $shapes;
-        let nodes = nodeIds.map(nodeId => getters.nodes[nodeId]);
 
         let left = Infinity;
         let top = Infinity;
         let right = -Infinity;
         let bottom = -Infinity;
 
-        nodes.forEach(({ position: { x, y } }) => {
+        Object.values(nodes).forEach(({ position: { x, y } }) => {
             const nodeTop = y - nodeNameMargin - nodeNameLineHeight;
             const nodeBottom = y + nodeSize + nodeStatusMarginTop + nodeStatusHeight;
 
@@ -176,5 +153,41 @@ export const getters = {
             return null;
         }
         return activeWorkflow?.info.containerId || 'root';
+    },
+
+    nodeIcon(state, getters, rootState) {
+        return ({ nodeId }) => {
+            let node = state.activeWorkflow.nodes[nodeId];
+            let { templateId } = node;
+            if (templateId) {
+                return rootState.nodeTemplates[templateId].icon;
+            } else {
+                return node.icon;
+            }
+        };
+    },
+
+    nodeName(state, getters, rootState) {
+        return ({ nodeId }) => {
+            let node = state.activeWorkflow.nodes[nodeId];
+            let { templateId } = node;
+            if (templateId) {
+                return rootState.nodeTemplates[templateId].name;
+            } else {
+                return node.name;
+            }
+        };
+    },
+
+    nodeType(state, getters, rootState) {
+        return ({ nodeId }) => {
+            let node = state.activeWorkflow.nodes[nodeId];
+            let { templateId } = node;
+            if (templateId) {
+                return rootState.nodeTemplates[templateId].type;
+            } else {
+                return node.type;
+            }
+        };
     }
 };

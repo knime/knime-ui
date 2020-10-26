@@ -35,10 +35,10 @@ export default {
             workflow: 'activeWorkflow'
         }),
         source() {
-            return this.$store.state.nodes[this.workflow.projectId][this.sourceNode];
+            return this.$store.state.workflow.activeWorkflow.nodes[this.sourceNode];
         },
         target() {
-            return this.$store.state.nodes[this.workflow.projectId][this.destNode];
+            return this.$store.state.workflow.activeWorkflow.nodes[this.destNode];
         },
         start() {
             const [dx, dy] = portShift(
