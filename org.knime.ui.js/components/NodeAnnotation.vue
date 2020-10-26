@@ -25,6 +25,10 @@ export default {
             type: Number,
             default: 11
         },
+        backgroundColor: {
+            type: String,
+            default: null
+        },
         text: {
             type: String,
             default: ''
@@ -55,6 +59,7 @@ export default {
         textStyle() {
             return {
                 textAlign: this.textAlign,
+                backgroundColor: this.backgroundColor,
                 padding: `${this.$shapes.nodeAnnotationPadding}px`,
                 fontSize: `${this.defaultFontSize}px`
             };

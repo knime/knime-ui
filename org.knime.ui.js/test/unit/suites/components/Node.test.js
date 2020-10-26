@@ -37,7 +37,11 @@ const commonNode = {
     ],
 
     position: { x: 500, y: 200 },
-    annotation: { text: 'ThatsMyNode', styleRanges: [{ start: 0, length: 2, fontSize: 12 }] },
+    annotation: {
+        text: 'ThatsMyNode',
+        backgroundColor: 'rgb(255, 216, 0)',
+        styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
+    },
 
     name: 'My Name',
     type: 'Source',
@@ -114,6 +118,7 @@ describe('Node', () => {
 
         it('displays annotation', () => {
             expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
+                backgroundColor: 'rgb(255, 216, 0)',
                 defaultFontSize: 11,
                 styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
                 text: 'ThatsMyNode',
@@ -126,6 +131,7 @@ describe('Node', () => {
             propsData = { ...metaNode };
             doShallowMount();
             expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
+                backgroundColor: 'rgb(255, 216, 0)',
                 defaultFontSize: 11,
                 styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
                 text: 'ThatsMyNode',

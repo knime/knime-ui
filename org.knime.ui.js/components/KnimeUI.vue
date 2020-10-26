@@ -42,9 +42,7 @@ export default {
   >
     <AppHeader id="header" />
     <Sidebar id="sidebar" />
-    <main>
-      <WorkflowTabContent />
-    </main>
+    <WorkflowTabContent id="tab-content" />
   </div>
   <div
     v-else
@@ -61,9 +59,14 @@ export default {
   grid-template-rows: min-content auto;
   grid-template-areas:
     "header header"
-    "sidebar main";
+    "sidebar workflow";
   height: 100vh;
   background: var(--knime-white);
+  overflow: hidden;
+}
+
+#tab-content {
+  grid-area: workflow;
 }
 
 #header {
@@ -73,11 +76,6 @@ export default {
 #sidebar {
   grid-area: sidebar;
   height: 100%;
-}
-
-main {
-  grid-area: main;
-  overflow: auto;
 }
 
 .loader {
