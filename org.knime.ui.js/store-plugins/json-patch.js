@@ -80,8 +80,8 @@ export const mutations = {
     },
 
     'patch.move'(state, { from, path }) {
-        this.commit('patch.copy', { from, path });
-        this.commit('patch.remove', { from, path });
+        mutations['patch.copy'](state, { from, path });
+        mutations['patch.remove'](state, { path: from });
     }
 };
 
@@ -90,7 +90,6 @@ export const actions = {
     'patch.apply'({ commit, rootState }, patch) {
         patch.forEach(cmd => {
             let { op, ...payload } = cmd;
-console.info(op, payload);
             commit(`patch.${op}`, payload);
         });
     }
