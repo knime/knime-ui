@@ -269,7 +269,7 @@ describe('Node', () => {
             await wrapper.find('.hover-container > g').trigger('dblclick');
 
             expect(workflowStoreConfig.actions.loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
-                containerId: 'root:1',
+                workflowId: 'root:1',
                 projectId: 'projectId'
             });
         });
@@ -283,7 +283,7 @@ describe('Node', () => {
             });
 
             expect(workflowStoreConfig.actions.loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
-                containerId: 'root:1',
+                workflowId: 'root:1',
                 projectId: 'projectId'
             });
         });

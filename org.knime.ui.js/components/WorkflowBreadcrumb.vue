@@ -43,8 +43,8 @@ export default {
             if (!target || !target.href) {
                 return;
             }
-            let containerId = target.href.replace(/.*#/, '');
-            this.$store.dispatch('workflow/loadWorkflow', { projectId: this.workflow.projectId, containerId });
+            let workflowId = target.href.replace(/.*#/, '');
+            this.$store.dispatch('workflow/loadWorkflow', { projectId: this.workflow.projectId, workflowId });
         }
     }
 };

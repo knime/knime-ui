@@ -112,7 +112,7 @@ describe('workflow store', () => {
 
             await store.dispatch('workflow/loadWorkflow', { projectId: 'wf1' });
 
-            expect(loadWorkflow).toHaveBeenCalledWith({ containerId: 'root', projectId: 'wf1' });
+            expect(loadWorkflow).toHaveBeenCalledWith({ workflowId: 'root', projectId: 'wf1' });
             expect(commit).toHaveBeenNthCalledWith(1, 'workflow/setActiveWorkflow', {
                 dummy: true,
                 projectId: 'wf1'
@@ -134,9 +134,9 @@ describe('workflow store', () => {
             });
             const commit = jest.spyOn(store, 'commit');
 
-            await store.dispatch('workflow/loadWorkflow', { projectId: 'wf2', containerId: 'root:0:123' });
+            await store.dispatch('workflow/loadWorkflow', { projectId: 'wf2', workflowId: 'root:0:123' });
 
-            expect(loadWorkflow).toHaveBeenCalledWith({ containerId: 'root:0:123', projectId: 'wf2' });
+            expect(loadWorkflow).toHaveBeenCalledWith({ workflowId: 'root:0:123', projectId: 'wf2' });
             expect(commit).toHaveBeenNthCalledWith(1, 'workflow/setActiveWorkflow', {
                 dummy: true,
                 projectId: 'wf2'
@@ -154,8 +154,8 @@ describe('workflow store', () => {
                     loadWorkflow
                 }
             });
-            await store.dispatch('workflow/loadWorkflow', { projectId: 'wf1', containerId: 'root:0:12' });
-            await store.dispatch('workflow/loadWorkflow', { projectId: 'wf2', containerId: 'root:0:23' });
+            await store.dispatch('workflow/loadWorkflow', { projectId: 'wf1', workflowId: 'root:0:12' });
+            await store.dispatch('workflow/loadWorkflow', { projectId: 'wf2', workflowId: 'root:0:23' });
             expect(removeEventListenerMock).toHaveBeenCalledWith('WorkflowChanged', {
                 projectId: 'wf1',
                 workflowId: 'root'

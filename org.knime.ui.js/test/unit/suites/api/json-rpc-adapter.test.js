@@ -27,7 +27,7 @@ describe('JSON-RPC adapter', () => {
             throw new Error('internal error');
         });
 
-        expect(() => rpc('a', 'b', 'c')).toThrow('Error calling JSON-RPC api: a, b, c');
+        expect(() => rpc('a', 'b', 'c')).toThrow('Error calling JSON-RPC api "a", "["b","c"]": internal error');
     });
 
     it('handles syntactically invalid response', () => {
@@ -44,7 +44,7 @@ describe('JSON-RPC adapter', () => {
         }));
 
         expect(() => rpc('a', 'b', 'c')).toThrow(
-            'Error returned from JSON-RPC API "a", "b", "c": "This id is not known"'
+            'Error returned from JSON-RPC API "a", "["b","c"]": "This id is not known"'
         );
     });
 
@@ -64,7 +64,7 @@ describe('JSON-RPC adapter', () => {
         }));
 
         expect(() => rpc('a', 'b', 'c')).toThrow(
-            'Error returned from JSON-RPC API "a", "b", "c": "nothing is fine"'
+            'Error returned from JSON-RPC API "a", "["b","c"]": "nothing is fine"'
         );
     });
 

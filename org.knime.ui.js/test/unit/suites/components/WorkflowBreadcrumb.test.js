@@ -129,7 +129,7 @@ describe('WorkflowBreadcrumb.vue', () => {
             };
             wrapper.vm.onClick(event);
             expect(loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
-                containerId: 'root:0:123',
+                workflowId: 'root:0:123',
                 projectId: 'proj'
             });
         });

@@ -25,7 +25,7 @@ describe('API', () => {
         });
 
         it('passes the container ID', async () => {
-            await api.loadWorkflow({ projectId: 'foo', containerId: 'bar' });
+            await api.loadWorkflow({ projectId: 'foo', workflowId: 'bar' });
 
             expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                 jsonrpc: '2.0',
@@ -60,7 +60,7 @@ describe('API', () => {
 
         it('handles errors on loadWorkflow', async (done) => {
             try {
-                await api.loadWorkflow({ projectId: 'foo', containerId: 'bar' });
+                await api.loadWorkflow({ projectId: 'foo', workflowId: 'bar' });
                 done(new Error('Expected error not thrown'));
             } catch (e) {
                 let ok = e.message.includes('foo') && e.message.includes('bar');

@@ -136,7 +136,7 @@ export default {
         },
 
         openNode() {
-            this.$store.dispatch('workflow/loadWorkflow', { containerId: this.id, projectId: this.projectId });
+            this.$store.dispatch('workflow/loadWorkflow', { workflowId: this.id, projectId: this.projectId });
         }
     }
 };

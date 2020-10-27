@@ -49,8 +49,8 @@ export const mutations = {
 
 export const actions = {
     ...jsonPatchActions,
-    async loadWorkflow({ commit, dispatch }, { projectId, containerId = 'root' }) {
-        const workflow = await loadWorkflowFromApi({ projectId, containerId });
+    async loadWorkflow({ commit, dispatch }, { projectId, workflowId = 'root' }) {
+        const workflow = await loadWorkflowFromApi({ projectId, workflowId });
 
         if (workflow) {
             dispatch('unloadActiveWorkflow');
@@ -59,7 +59,7 @@ export const actions = {
                 projectId
             });
         } else {
-            throw new Error(`Workflow not found: "${projectId}" > "${containerId}"`);
+            throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
     unloadActiveWorkflow({ state, getters }) {

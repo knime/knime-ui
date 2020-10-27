@@ -28,7 +28,7 @@ export default (method, ...args) => {
     try {
         response = window.jsonrpc(JSON.stringify(req));
     } catch (e) {
-        throw new Error(`Error calling JSON-RPC api: ${[method, ...args].join(', ')}`);
+        throw new Error(`Error calling JSON-RPC api "${[method, JSON.stringify(args)].join('", "')}": ${e.message}`);
     }
 
     let result, error;
@@ -43,7 +43,7 @@ export default (method, ...args) => {
             consola.error(`Invalid JSON-RPC response ${response}`);
         }
         throw new Error(
-            `Error returned from JSON-RPC API "${[method, ...args].join('", "')}": ${JSON.stringify(error)}`
+            `Error returned from JSON-RPC API "${[method, JSON.stringify(args)].join('", "')}": ${JSON.stringify(error)}`
         );
     }
 

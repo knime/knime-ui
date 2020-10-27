@@ -21,19 +21,19 @@ export const fetchApplicationState = () => {
 /**
  * Load a specific workflow.
  * @param {String} projectId The ID of the project to load
- * @param {String} containerId The ID of the component / metanode that contains the workflow, or "root" for the
+ * @param {String} workflowId The ID of the component / metanode that contains the workflow, or "root" for the
  *   top-level workflow. Defaults to `'root'`.
  * @return {Promise} A promise containing the workflow as defined in the API
  */
-export const loadWorkflow = ({ projectId, containerId = 'root' }) => {
+export const loadWorkflow = ({ projectId, workflowId = 'root' }) => {
     try {
-        const workflow = rpc('WorkflowService.getWorkflow', projectId, containerId);
+        const workflow = rpc('WorkflowService.getWorkflow', projectId, workflowId);
         consola.debug('Loaded workflow', workflow);
 
         return Promise.resolve(workflow);
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(`Couldn't load workflow "${containerId}" from project "${projectId}"`));
+        return Promise.reject(new Error(`Couldn't load workflow "${workflowId}" from project "${projectId}"`));
     }
 };
 
