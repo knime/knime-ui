@@ -74,6 +74,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.workflow.NodeContainer;
 import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.Pair;
@@ -276,7 +277,11 @@ public final class PerspectiveSwitchAddon {
 	}
 
 	private static String getProjectId(final WorkflowManager wfm) {
-		return wfm.getProjectWFM().getNameWithID();
+		NodeContainer project = wfm.getProjectWFM();
+		if(project == WorkflowManager.ROOT) {
+			project = wfm.getProjectComponent().orElse(null);
+		}
+		return project != null ? project.getNameWithID() : null;
 	}
 
 	private static WorkflowManager getWorkflowManager(final MPart editorPart) {
