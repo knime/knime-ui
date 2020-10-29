@@ -1,6 +1,8 @@
 import knimeColors from 'webapps-common/ui/colors/knimeColors';
 import nodeColors from 'webapps-common/ui/colors/nodeColors';
 
+const applyAlphaHSL = (hsl, alpha) => `${hsl.slice(0, -1)}, ${alpha})`;
+
 export const text = {
     default: knimeColors.Masala
 };
@@ -38,3 +40,5 @@ export const error = trafficLight.red;
 export const warning = knimeColors.Yellow;
 
 export const named = knimeColors;
+
+export const notificationBackground = applyAlphaHSL(knimeColors.AquamarineDark, '20%');

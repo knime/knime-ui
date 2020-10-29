@@ -25,12 +25,14 @@ export default {
         NodeTorsoMetanode,
         NodeTorsoUnknown
     },
+    inject: ['writeProtected'],
     props: {
         /**
          * Node type, e.g. "Learner", "Visualizer"
          * Is undefined for MetaNodes
          */
         type: { type: String, default: null },
+        
         /**
          * Node variation.
          * @values 'node', 'metanode', 'component'
@@ -40,7 +42,7 @@ export default {
             required: true,
             validator: kind => ['node', 'metanode', 'component'].includes(kind)
         },
-
+        
         /**
          * data-url containing Base64-encoded icon
          */
@@ -49,7 +51,7 @@ export default {
             default: null,
             validator: url => url.startsWith('data:image/')
         },
-
+        
         /**
          * Execution state (only for meta nodes). Passed through to NodeTorsoMetanode
          */
@@ -84,14 +86,17 @@ export default {
 <template>
   <NodeTorsoMissing
     v-if="type === 'Missing'"
-    class="bg"
+    :class="['bg', { 'write-protected': writeProtected }]"
   />
   <NodeTorsoMetanode
     v-else-if="kind === 'metanode'"
-    class="bg"
+    :class="['bg', { 'write-protected': writeProtected }]"
     :execution-state="executionState"
   />
-  <g v-else-if="isKnownNode">
+  <g
+    v-else-if="isKnownNode"
+    :class="['bg', { 'write-protected': writeProtected }]"
+  >
     <path
       class="bg"
       :d="backgroundPath"
@@ -117,13 +122,12 @@ export default {
   </g>
   <NodeTorsoUnknown
     v-else
-    class="bg"
+    :class="['bg', { 'write-protected': writeProtected }]"
   />
 </template>
 
 <style lang="postcss" scoped>
-.bg,
-image {
+.bg:not(.write-protected) {
   cursor: grab;
 }
 </style>

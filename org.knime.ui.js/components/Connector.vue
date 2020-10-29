@@ -10,6 +10,7 @@ import { portBar } from '~/mixins';
 export default {
     mixins: [portBar],
     inheritAttrs: false,
+    inject: ['writeProtected'],
     props: {
         /**
          * Node ID of the connector's source node
@@ -115,7 +116,7 @@ export default {
     :d="path"
     :stroke="strokeColor"
     :stroke-width="$shapes.connectorWidth"
-    :class="{ variable: flowVariableConnection }"
+    :class="{ variable: flowVariableConnection, 'write-protected': writeProtected }"
     fill="none"
   />
 </template>
@@ -123,6 +124,9 @@ export default {
 <style lang="postcss" scoped>
 path {
   transition: stroke-width 0.1s linear, stroke 0.2s linear;
+}
+
+path:not(.write-protected) {
   cursor: grab;
 }
 
