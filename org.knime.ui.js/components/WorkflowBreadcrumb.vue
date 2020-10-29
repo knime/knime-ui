@@ -20,7 +20,7 @@ export default {
             let items = parents.map(({ containerType, name, containerId = 'root' }) => ({
                 icon: this.getIcon(containerType),
                 text: name,
-                href: `#${containerId}`
+                href: `#${encodeURIComponent(containerId)}`
             }));
             items.push({
                 text: this.workflow.info.name,
@@ -43,7 +43,8 @@ export default {
             if (!target || !target.href) {
                 return;
             }
-            let workflowId = target.href.replace(/.*#/, '');
+            let { hash } = new URL(target.href, 'file://dummy/');
+            let workflowId = decodeURIComponent(hash.replace(/^#/, ''));
             this.$store.dispatch('workflow/loadWorkflow', { projectId: this.workflow.projectId, workflowId });
         }
     }

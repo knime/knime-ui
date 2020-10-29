@@ -52,6 +52,8 @@ export default {
         v-bind="workflow.metadata || placeholderMetadata"
       />
     </LeftCollapsiblePanel>
+    <!-- This empty div is required to keep the grid layout stable -->
+    <div v-else />
 
     <Kanvas id="kanvas" />
   </main>

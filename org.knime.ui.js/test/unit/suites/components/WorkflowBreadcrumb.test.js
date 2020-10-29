@@ -81,11 +81,11 @@ describe('WorkflowBreadcrumb.vue', () => {
                 icon: null,
                 text: 'foo'
             }, {
-                href: '#root:201',
+                href: '#root%3A201',
                 icon: ComponentIcon,
                 text: 'Comp oh Nent'
             }, {
-                href: '#root:201:0:42',
+                href: '#root%3A201%3A0%3A42',
                 icon: MetaNodeIcon,
                 text: 'Matter Node'
             }, {
@@ -130,6 +130,21 @@ describe('WorkflowBreadcrumb.vue', () => {
             wrapper.vm.onClick(event);
             expect(loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
                 workflowId: 'root:0:123',
+                projectId: 'proj'
+            });
+        });
+
+        it('handles clicks on link with weird characters in ID (which should never occur)', () => {
+            let weirdId = 'root#;,/?:@&=+$-_.!~*\'"()123';
+            const event = {
+                target: {
+                    tagName: 'A',
+                    href: `#${weirdId}`
+                }
+            };
+            wrapper.vm.onClick(event);
+            expect(loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
+                containerId: weirdId,
                 projectId: 'proj'
             });
         });
