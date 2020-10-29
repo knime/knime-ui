@@ -2,6 +2,7 @@ import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListe
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
+import consola from 'consola';
 
 /**
  * Store that holds a workflow graph and the associated tooltips.
@@ -69,8 +70,13 @@ export const actions = {
         }
         let { projectId } = state.activeWorkflow;
         let workflowId = getters.activeWorkflowId;
-        // this is intentionally not awaiting the response. Unloading can happen in the background.
-        removeEventListener('WorkflowChanged', { projectId, workflowId });
+        let { activeSnapshotId: snapshotId } = state;
+        try {
+            // this is intentionally not awaiting the response. Unloading can happen in the background.
+            removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+        } catch (e) {
+            consola.error(e);
+        }
     },
     setActiveWorkflowSnapshot({ commit }, { workflow, snapshotId, projectId }) {
         commit('setActiveWorkflow', {

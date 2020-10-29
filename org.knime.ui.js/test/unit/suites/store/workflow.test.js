@@ -148,7 +148,7 @@ describe('workflow store', () => {
         });
 
         it('unloads workflow when another one is loaded', async () => {
-            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { info: {} } });
+            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { info: {} }, snapshotId: 'snap' });
             await loadStore({
                 apiMocks: {
                     loadWorkflow
@@ -158,7 +158,8 @@ describe('workflow store', () => {
             await store.dispatch('workflow/loadWorkflow', { projectId: 'wf2', workflowId: 'root:0:23' });
             expect(removeEventListenerMock).toHaveBeenCalledWith('WorkflowChanged', {
                 projectId: 'wf1',
-                workflowId: 'root'
+                workflowId: 'root',
+                snapshotId: 'snap'
             });
         });
 
