@@ -16,6 +16,8 @@ export const portColors = {
 
 export const nodeBackgroundColors = nodeColors;
 
+export const linkDecorator = knimeColors.Black;
+
 export const connectorColors = {
     default: knimeColors.SilverSand,
     variable: portColors.variable
