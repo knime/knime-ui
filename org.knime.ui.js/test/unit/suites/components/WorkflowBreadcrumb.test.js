@@ -139,12 +139,12 @@ describe('WorkflowBreadcrumb.vue', () => {
             const event = {
                 target: {
                     tagName: 'A',
-                    href: `#${weirdId}`
+                    href: `#${encodeURIComponent(weirdId)}`
                 }
             };
             wrapper.vm.onClick(event);
             expect(loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
-                containerId: weirdId,
+                workflowId: weirdId,
                 projectId: 'proj'
             });
         });

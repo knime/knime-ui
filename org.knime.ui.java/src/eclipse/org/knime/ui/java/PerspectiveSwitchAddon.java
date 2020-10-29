@@ -52,6 +52,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -102,6 +103,8 @@ public final class PerspectiveSwitchAddon {
 
 	private static final NodeLogger LOGGER = NodeLogger.getLogger(PerspectiveSwitchAddon.class);
 
+	private static Supplier<AppState> appStateSupplier;
+
 	@Inject
 	private EModelService m_modelService;
 
@@ -130,7 +133,7 @@ public final class PerspectiveSwitchAddon {
 	}
 
 	private void switchToWebUI() {
-		updateAppState(m_modelService, m_app);
+		registerAppStateSupplier(m_modelService, m_app);
 		setTrimsAndMenuVisible(false, m_modelService, m_app);
 		callOnKnimeBrowserView(KnimeBrowserView::setUrl);
 		switchToWebUITheme();
@@ -191,12 +194,18 @@ public final class PerspectiveSwitchAddon {
 		window.getMainMenu().setToBeRendered(visible);
 	}
 
-	private static void updateAppState(final EModelService modelService, final MApplication app) {
+	private static void registerAppStateSupplier(final EModelService modelService, final MApplication app) {
+		if (appStateSupplier == null) {
+			appStateSupplier = () -> getAppState(modelService, app);
+			DefaultApplicationService.getInstance().setAppStateSupplier(appStateSupplier);
+		}
+	}
+
+	private static AppState getAppState(final EModelService modelService, final MApplication app) {
 		Set<String> workflowProjectIds = new HashSet<>();
 		Set<Pair<String, NodeID>> activeWorkflowIds = new HashSet<>();
 		collectOpenWorkflows(workflowProjectIds, activeWorkflowIds, modelService, app);
-
-		DefaultApplicationService.getInstance().updateAppState(new AppState() {
+		return new AppState() {
 
 			@Override
 			public Set<String> getLoadedWorkflowProjectIds() {
@@ -208,7 +217,7 @@ public final class PerspectiveSwitchAddon {
 				return activeWorkflowIds;
 			}
 
-		});
+		};
 	}
 
 	private static void collectOpenWorkflows(final Set<String> workflowProjectIds,

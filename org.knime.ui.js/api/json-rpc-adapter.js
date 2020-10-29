@@ -43,7 +43,7 @@ export default (method, ...args) => {
             consola.error(`Invalid JSON-RPC response ${response}`);
         }
         throw new Error(
-            `Error returned from JSON-RPC API "${[method, JSON.stringify(args)].join('", "')}": ${JSON.stringify(error)}`
+            `Error returned from JSON-RPC API ${JSON.stringify([method, args])}: ${JSON.stringify(error)}`
         );
     }
 

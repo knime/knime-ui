@@ -23,11 +23,14 @@ export const fetchApplicationState = () => {
  * @param {String} projectId The ID of the project to load
  * @param {String} workflowId The ID of the component / metanode that contains the workflow, or "root" for the
  *   top-level workflow. Defaults to `'root'`.
+ * @param {String} includeInfoOnAllowedActions Whether to enclose information on the actions
+ *   (such as reset, execute, cancel) allowed on the contained nodes and the entire workflow itself.
+ Defaults to `true`.
  * @return {Promise} A promise containing the workflow as defined in the API
  */
-export const loadWorkflow = ({ projectId, workflowId = 'root' }) => {
+export const loadWorkflow = ({ projectId, workflowId = 'root', includeInfoOnAllowedActions = true }) => {
     try {
-        const workflow = rpc('WorkflowService.getWorkflow', projectId, workflowId);
+        const workflow = rpc('WorkflowService.getWorkflow', projectId, workflowId, includeInfoOnAllowedActions);
         consola.debug('Loaded workflow', workflow);
 
         return Promise.resolve(workflow);

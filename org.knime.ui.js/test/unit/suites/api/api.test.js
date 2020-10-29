@@ -17,7 +17,7 @@ describe('API', () => {
             expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                 jsonrpc: '2.0',
                 method: 'WorkflowService.getWorkflow',
-                params: ['foo', 'root'],
+                params: ['foo', 'root', true],
                 id: 0
             }));
 
@@ -30,7 +30,7 @@ describe('API', () => {
             expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                 jsonrpc: '2.0',
                 method: 'WorkflowService.getWorkflow',
-                params: ['foo', 'bar'],
+                params: ['foo', 'bar', true],
                 id: 0
             }));
 
