@@ -7,6 +7,7 @@ import java.util.function.BiConsumer;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.ui.di.Focus;
@@ -99,7 +100,8 @@ public class KnimeBrowserView {
 		try {
 			String message = mapper
 					.writeValueAsString(jsonrpc.put("jsonrpc", "2.0").put("method", name).set("params", params));
-			Display.getDefault().syncExec(() -> browser.execute("jsonrpcNotification('" + message + "');"));
+			String jsCode = "jsonrpcNotification(\"" + StringEscapeUtils.escapeJava(message) + "\");";
+			Display.getDefault().syncExec(() -> browser.execute(jsCode));
 		} catch (JsonProcessingException ex) {
 			NodeLogger.getLogger(KnimeBrowserView.class)
 					.error("Problem creating a json-rcp notification in order to send an event", ex);
