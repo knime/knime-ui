@@ -62,3 +62,18 @@ const makeToggleEventListener = addOrRemove => (type, args) => {
  */
 export const addEventListener = makeToggleEventListener('add');
 export const removeEventListener = makeToggleEventListener('remove');
+
+
+let nodeStateChanger = (nodeState, errorMessage) => ({ projectId, nodeIds }) => {
+    try {
+        let result = rpc('NodeService.changeNodeStates', projectId, nodeIds, nodeState);
+        return Promise.resolve(result);
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error(errorMessage));
+    }
+};
+
+export const executeNodes = nodeStateChanger('execute', 'Could not execute nodes');
+export const cancelNodeExecution = nodeStateChanger('cancel', 'Could not cancel node execution');
+export const resetNodes = nodeStateChanger('reset', 'Could not reset nodes');

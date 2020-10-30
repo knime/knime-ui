@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
+import WorkflowToolbar from '~/components/Workflowtoolbar';
 import Kanvas from '~/components/Kanvas';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
@@ -15,7 +15,7 @@ export default {
         Kanvas,
         LeftCollapsiblePanel,
         WorkflowMetadata,
-        WorkflowBreadcrumb
+        WorkflowToolbar
     },
     computed: {
         ...mapState('workflow', {
@@ -26,8 +26,8 @@ export default {
                 title: this.workflow.info.name
             };
         },
-        hasBreadcrumb() {
-            return this.workflow.parents?.length > 0;
+        hasLeftPanel() {
+            return this.workflow.info.containerType === 'project';
         }
     }
 };
@@ -36,14 +36,10 @@ export default {
 <template>
   <main
     v-if="workflow"
+    :class="{ hasLeftPanel }"
   >
-    <WorkflowBreadcrumb
-      v-if="hasBreadcrumb"
-      class="breadcrumb"
-    />
-
     <LeftCollapsiblePanel
-      v-if="workflow.info.containerType === 'project'"
+      v-if="hasLeftPanel"
       id="metadata"
       width="360px"
       title="Workflow Metadata"
@@ -52,9 +48,10 @@ export default {
         v-bind="workflow.metadata || placeholderMetadata"
       />
     </LeftCollapsiblePanel>
-    <!-- This empty div is required to keep the grid layout stable -->
-    <div v-else />
 
+    <WorkflowToolbar
+      id="toolbar"
+    />
     <Kanvas id="kanvas" />
   </main>
   <div
@@ -72,28 +69,26 @@ main {
   display: grid;
   overflow: auto;
   grid-template-columns: min-content auto;
-  grid-template-rows: min-content auto;
+  grid-template-rows: 50px auto;
   grid-template-areas:
-    "toolbar toolbar"
+    "metadata toolbar"
     "metadata kanvas";
 }
 
 #toolbar {
   grid-area: toolbar;
-  height: 50px;
+  padding-left: 10px;
   background-color: var(--knime-porcelain);
   border-bottom: 1px solid var(--knime-silver-sand);
+}
+
+main.hasLeftPanel #toolbar {
+  margin-left: -11px;
 }
 
 #metadata {
   grid-area: metadata;
   border-right: 1px solid var(--knime-silver-sand);
-}
-
-.breadcrumb {
-  grid-area: toolbar;
-  min-height: 50px;
-  border-bottom: 1px solid var(--knime-silver-sand);
 }
 
 #kanvas {

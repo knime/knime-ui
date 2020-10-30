@@ -53,7 +53,7 @@ export default {
 
 <template>
   <div
-    class="container"
+    class="breadcrumb-container"
     @click.capture.prevent.stop="onClick"
   >
     <Breadcrumb
@@ -61,12 +61,3 @@ export default {
     />
   </div>
 </template>
-
-<style lang="postcss" scoped>
-.container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: var(--knime-porcelain);
-}
-</style>

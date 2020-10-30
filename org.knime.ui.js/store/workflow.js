@@ -78,13 +78,13 @@ export const actions = {
             consola.error(e);
         }
     },
-    setActiveWorkflowSnapshot({ commit }, { workflow, snapshotId, projectId }) {
+    setActiveWorkflowSnapshot({ commit, getters }, { workflow, snapshotId, projectId }) {
         commit('setActiveWorkflow', {
             ...workflow,
             projectId
         });
         commit('setActiveSnapshotId', snapshotId);
-        let workflowId = workflow.info?.containerId || 'root';
+        let workflowId = getters.activeWorkflowId;
         addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
     }
 };

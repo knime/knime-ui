@@ -28,6 +28,11 @@ export default {
             default: null
         }
     },
+    data() {
+        return {
+            removeWatcher: null
+        };
+    },
     computed: {
         /**
          * sets the different lights of the traffic light
@@ -84,10 +89,23 @@ export default {
     methods: {
         ...mapMutations('workflow', ['setTooltip']),
         onMouseEnter() {
-            this.setTooltip(this.tooltip);
+            if (this.removeWatcher) {
+                this.removeWatcher();
+            }
+            // update the tooltip whenever one of the props change
+            this.removeWatcher = this.$watch(
+                () => [this.error, this.warning, this.progressMessage, this.executionState],
+                function () {
+                    this.setTooltip(this.tooltip); // eslint-disable-line no-invalid-this
+                }, {
+                    immediate: true
+                }
+            );
         },
         onMouseLeave() {
+            this.removeWatcher();
             this.setTooltip(null);
+            this.removeWatcher = null;
         }
     }
 };
