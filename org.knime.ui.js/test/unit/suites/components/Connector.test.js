@@ -13,7 +13,7 @@ const portMock = {
 };
 
 describe('Connector', () => {
-    let propsData, mocks, wrapper, portShiftMock, $store;
+    let propsData, mocks, inject, wrapper, portShiftMock, $store;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -28,8 +28,8 @@ describe('Connector', () => {
             sourcePort: 0,
             destPort: 2
         };
+        inject = { writeProtected: false };
     });
-
 
     describe('attached to a metanode', () => {
         beforeEach(() => {
@@ -61,7 +61,7 @@ describe('Connector', () => {
             });
 
             mocks = { $shapes, $colors, $store };
-            wrapper = shallowMount(Connector, { propsData, mocks });
+            wrapper = shallowMount(Connector, { propsData, mocks, inject });
         });
 
         it('uses portShift', () => {
@@ -99,7 +99,17 @@ describe('Connector', () => {
             });
 
             mocks = { $shapes, $colors, $store };
-            wrapper = shallowMount(Connector, { propsData, mocks });
+            wrapper = shallowMount(Connector, { propsData, mocks, inject });
+        });
+
+        it('no grab cursor on write-protect', () => {
+            expect(wrapper.find('.write-protected').exists()).toBe(false);
+            wrapper = shallowMount(Connector, {
+                propsData,
+                mocks,
+                inject: { writeProtected: true }
+            });
+            expect(wrapper.find('.write-protected').exists()).toBe(false);
         });
 
         it('uses portShift', () => {
@@ -119,7 +129,8 @@ describe('Connector', () => {
                     ...propsData,
                     flowVariableConnection: true
                 },
-                mocks
+                mocks,
+                inject
             });
 
             const { 'stroke-width': strokeWidth, stroke } = wrapper.find('path').attributes();
@@ -168,7 +179,7 @@ describe('Connector', () => {
                 }
             });
             mocks = { $shapes, $colors, $store };
-            wrapper = shallowMount(Connector, { propsData, mocks });
+            wrapper = shallowMount(Connector, { propsData, mocks, inject });
         });
 
         it('draws a path', () => {

@@ -86,16 +86,16 @@ export default {
 <template>
   <NodeTorsoMissing
     v-if="type === 'Missing'"
-    :class="['bg', { 'write-protected': writeProtected }]"
+    :class="{ 'grabbable': !writeProtected }"
   />
   <NodeTorsoMetanode
     v-else-if="kind === 'metanode'"
-    :class="['bg', { 'write-protected': writeProtected }]"
+    :class="{ 'grabbable': !writeProtected }"
     :execution-state="executionState"
   />
   <g
     v-else-if="isKnownNode"
-    :class="['bg', { 'write-protected': writeProtected }]"
+    :class="{ 'grabbable': !writeProtected }"
   >
     <path
       class="bg"
@@ -122,12 +122,12 @@ export default {
   </g>
   <NodeTorsoUnknown
     v-else
-    :class="['bg', { 'write-protected': writeProtected }]"
+    :class="[{ 'write-protected': writeProtected }]"
   />
 </template>
 
 <style lang="postcss" scoped>
-.bg:not(.write-protected) {
+.grabbable {
   cursor: grab;
 }
 </style>

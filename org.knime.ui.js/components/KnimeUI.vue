@@ -62,6 +62,7 @@ export default {
     "sidebar workflow";
   height: 100vh;
   background: var(--knime-white);
+  color: var(--knime-masala);
   overflow: hidden;
 }
 

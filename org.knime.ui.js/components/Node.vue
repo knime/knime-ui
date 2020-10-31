@@ -194,8 +194,7 @@ export default {
           :execution-state="state && state.executionState"
         />
       </g>
-
-      <!-- TODO: add hover -->
+      
       <LinkDecorator
         v-if="link"
         :type="type"

@@ -40,7 +40,6 @@ export default {
 
 <style scoped>
 g > * {
-  /* TODO: Not working */
   pointer-events: none;
 }
 </style>

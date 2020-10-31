@@ -110,6 +110,7 @@ describe('Kanvas', () => {
                 let nodeId = workflow.nodeIds[i];
                 let expected = {
                     ...nodeData[nodeId],
+                    link: null,
                     icon: `data:image/some id-${nodeId}`,
                     name: `name-some id-${nodeId}`,
                     type: `type-some id-${nodeId}`
@@ -122,6 +123,18 @@ describe('Kanvas', () => {
             let props = wrapper.findAllComponents(Connector).wrappers.map(c => c.props());
             expect(props).toEqual(Object.values(workflow.connections));
         });
+
+        it('is not linked', () => {
+            expect(wrapper.find('.write-protected').exists()).toBe(false);
+            expect(wrapper.find('.link-notification').exists()).toBe(false);
+        });
+    });
+
+    it('write-protects and shows warning on being linked', () => {
+        workflow.info.linked = true;
+        doShallowMount();
+        expect(wrapper.find('.write-protected').exists()).toBe(true);
+        expect(wrapper.find('.link-notification').exists()).toBe(true);
     });
 
     it('renders workflow annotations', () => {
