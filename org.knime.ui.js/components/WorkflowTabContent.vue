@@ -101,7 +101,6 @@ main {
 }
 
 .placeholder {
-  grid-area: kanvas;
   height: 55%;
   display: flex;
   justify-content: center;

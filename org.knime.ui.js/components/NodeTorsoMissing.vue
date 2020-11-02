@@ -1,4 +1,4 @@
-<template functional>
+<template>
   <g fill="none">
     <rect
       width="32"
