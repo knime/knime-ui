@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-import WorkflowToolbar from '~/components/Workflowtoolbar';
+import WorkflowToolbar from '~/components/WorkflowToolbar';
 import Kanvas from '~/components/Kanvas';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
