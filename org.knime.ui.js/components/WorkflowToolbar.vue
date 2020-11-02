@@ -7,6 +7,9 @@ import ExecuteAllIcon from '~/assets/execute-all.svg?inline';
 import CancelAllIcon from '~/assets/cancel-execution.svg?inline';
 import ResetAllIcon from '~/webapps-common/ui/assets/img/icons/cogs.svg?inline'; // TODO: use correct icon NXT-113
 
+/**
+ * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
+ */
 export default {
     components: {
         WorkflowBreadcrumb,

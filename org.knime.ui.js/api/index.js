@@ -74,6 +74,26 @@ let nodeStateChanger = (nodeState, errorMessage) => ({ projectId, nodeIds }) => 
     }
 };
 
+/**
+ * Execute nodes or a workflow.
+ * @param {String} cfg.projectId
+ * @param {Array} cfg.nodeIds The nodes to execute.
+ *     If you want to execute an entire workflow, pass the workflow container's id as a single element.
+ */
 export const executeNodes = nodeStateChanger('execute', 'Could not execute nodes');
+
+/**
+ * Cancel node execution.
+ * @param {String} cfg.projectId
+ * @param {Array} cfg.nodeIds The nodes to stop.
+ *     If you want to cancel all nodes in the entire workflow, pass the workflow container's id as a single element.
+ */
 export const cancelNodeExecution = nodeStateChanger('cancel', 'Could not cancel node execution');
+
+/**
+ * Reset executed nodes.
+ * @param {String} cfg.projectId
+ * @param {Array} cfg.nodeIds The nodes to reset.
+ *     If you want to reset all nodes in the entire workflow, pass the workflow container's id as a single element.
+ */
 export const resetNodes = nodeStateChanger('reset', 'Could not reset nodes');

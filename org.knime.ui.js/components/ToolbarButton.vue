@@ -1,4 +1,5 @@
-<template>
+<!-- A native button for use inside a toolbar. This is just used for styling. -->
+<template functional>
   <button tabindex="1">
     <slot />
   </button>
