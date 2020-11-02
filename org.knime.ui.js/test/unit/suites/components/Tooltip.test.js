@@ -85,22 +85,10 @@ describe('Tooltip', () => {
         expect(wrapper.attributes('style')).toContain(`top: ${top}px;`);
     });
 
-    it('allows anchoring to a node', () => {
+    it('allows anchoring to a reference point', () => {
         propsData.anchorPoint = { x: 40, y: 30 };
         let $store = mockVuexStore({
             workflow: {
-                state: {
-                    activeWorkflow: {
-                        nodes: {
-                            nodeId: {
-                                position: {
-                                    x: 42,
-                                    y: 32
-                                }
-                            }
-                        }
-                    }
-                },
                 getters: {
                     getAbsoluteCoordinates() {
                         return () => ({
@@ -110,7 +98,6 @@ describe('Tooltip', () => {
                 }
             }
         });
-        propsData.anchor = 'nodeId';
         propsData.x = 123;
         propsData.y = 345;
         propsData.orientation = 'top';
@@ -121,5 +108,4 @@ describe('Tooltip', () => {
         let top = propsData.y + 30 - Math.SQRT1_2 * $shapes.tooltipArrowSize;
         expect(wrapper.attributes('style')).toContain(`top: ${top}px;`);
     });
-
 });

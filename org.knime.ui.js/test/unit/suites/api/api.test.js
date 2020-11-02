@@ -78,6 +78,16 @@ describe('API', () => {
         }));
     });
 
+    it.each(['add', 'remove'])('%ss event listeners', async (type) => {
+        await api[`${type}EventListener`]('foo', { bar: 1, baz: 2 });
+        expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+            jsonrpc: '2.0',
+            method: `EventService.${type}EventListener`,
+            params: [{ typeId: 'fooEventType', bar: 1, baz: 2 }],
+            id: 0
+        }));
+    });
+
     describe('error handling', () => {
         beforeAll(() => {
             window.jsonrpc = jest.fn().mockReturnValue(JSON.stringify({
@@ -87,14 +97,14 @@ describe('API', () => {
             }));
         });
 
-
         it('handles errors on loadWorkflow', async (done) => {
             try {
                 await api.loadWorkflow({ projectId: 'foo', workflowId: 'bar' });
                 done(new Error('Expected error not thrown'));
             } catch (e) {
-                let ok = e.message.includes('foo') && e.message.includes('bar');
-                done(!ok);
+                expect(e.message).toContain('foo');
+                expect(e.message).toContain('bar');
+                done();
             }
         });
 
@@ -103,8 +113,58 @@ describe('API', () => {
                 await api.fetchApplicationState();
                 done(new Error('Error not thrown'));
             } catch (e) {
-                let ok = e.message.includes('application state');
-                done(!ok);
+                expect(e.message).toContain('application state');
+                done();
+            }
+        });
+
+        it('handles errors on addEventListener', async (done) => {
+            try {
+                await api.addEventListener('foo');
+                done(new Error('Error not thrown'));
+            } catch (e) {
+                expect(e.message).toContain('Couldn\'t register event "foo"');
+                done();
+            }
+        });
+
+        it('handles errors on removeEventListener', async (done) => {
+            try {
+                await api.removeEventListener('foo');
+                done(new Error('Error not thrown'));
+            } catch (e) {
+                expect(e.message).toContain('Couldn\'t unregister event "foo"');
+                done();
+            }
+        });
+
+        it('handles errors on execution', async (done) => {
+            try {
+                await api.executeNodes({});
+                done(new Error('Error not thrown'));
+            } catch (e) {
+                expect(e.message).toContain('Could not execute nodes');
+                done();
+            }
+        });
+
+        it('handles errors on cancellation', async (done) => {
+            try {
+                await api.cancelNodeExecution({});
+                done(new Error('Error not thrown'));
+            } catch (e) {
+                expect(e.message).toContain('Could not cancel node execution');
+                done();
+            }
+        });
+
+        it('handles errors on reset', async (done) => {
+            try {
+                await api.resetNodes({});
+                done(new Error('Error not thrown'));
+            } catch (e) {
+                expect(e.message).toContain('Could not reset nodes');
+                done();
             }
         });
     });

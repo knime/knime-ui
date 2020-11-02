@@ -56,7 +56,7 @@ export const actions = {
 
         if (workflow) {
             dispatch('unloadActiveWorkflow');
-            dispatch('setActiveWorkflowSnapshot', {
+            await dispatch('setActiveWorkflowSnapshot', {
                 ...workflow,
                 projectId
             });
@@ -79,14 +79,14 @@ export const actions = {
             consola.error(e);
         }
     },
-    setActiveWorkflowSnapshot({ commit, getters }, { workflow, snapshotId, projectId }) {
+    async setActiveWorkflowSnapshot({ commit, getters }, { workflow, snapshotId, projectId }) {
         commit('setActiveWorkflow', {
             ...workflow,
             projectId
         });
         commit('setActiveSnapshotId', snapshotId);
         let workflowId = getters.activeWorkflowId;
-        addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+        await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
     },
     /* See docs in API */
     executeNodes({ state }, { nodeIds }) {

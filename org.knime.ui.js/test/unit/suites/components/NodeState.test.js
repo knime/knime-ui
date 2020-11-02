@@ -13,7 +13,7 @@ describe('NodeState.vue', () => {
     const provide = {
         anchorPoint: { x: 123, y: 456 }
     };
-    let propsData, mocks, wrapper, mount;
+    let propsData, mocks, wrapper, doShallowMount;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -28,7 +28,7 @@ describe('NodeState.vue', () => {
             warning: null
         };
         mocks = { $shapes, $colors };
-        mount = () => {
+        doShallowMount = () => {
             wrapper = shallowMount(NodeState, { propsData, mocks, provide });
         };
     });
@@ -89,7 +89,7 @@ describe('NodeState.vue', () => {
         if (state) {
             propsData.executionState = state;
         }
-        muteConsole(mount);
+        muteConsole(doShallowMount);
         expect(getTrafficLights()).toStrictEqual(style);
     });
 
@@ -103,14 +103,14 @@ describe('NodeState.vue', () => {
 
     it('shows "queued"', () => {
         propsData.executionState = 'QUEUED';
-        mount();
+        doShallowMount();
         expect(wrapper.text()).toBe('queued');
     });
 
     it('shows dancing ball', () => {
         propsData.executionState = 'EXECUTING';
         propsData.progress = null;
-        mount();
+        doShallowMount();
 
         expect(wrapper.find('.progress-circle').exists()).toBe(true);
         expect(wrapper.text()).toBe('');
@@ -119,7 +119,7 @@ describe('NodeState.vue', () => {
     it('shows progress percentage', () => {
         propsData.executionState = 'EXECUTING';
         propsData.progress = 0.5178;
-        mount();
+        doShallowMount();
 
         expect(wrapper.find('.progress-circle').exists()).toBe(false);
         expect(wrapper.find('[clip-path]').attributes('clip-path')).toBe('polygon(0 0, 51.78% 0, 51.78% 100%, 0 100%)');
@@ -129,7 +129,7 @@ describe('NodeState.vue', () => {
     it('handles invalid progress percentage', () => {
         propsData.executionState = 'EXECUTING';
         propsData.progress = 1.234; // 123.4%
-        mount();
+        doShallowMount();
 
         expect(wrapper.find('.progress-circle').exists()).toBe(false);
         expect(wrapper.find('[clip-path]').attributes('clip-path')).toBe('polygon(0 0, 100% 0, 100% 100%, 0 100%)');
@@ -139,7 +139,7 @@ describe('NodeState.vue', () => {
     it('shows error indicator', () => {
         propsData.error = 'error message';
         propsData.warning = 'warning message';
-        mount();
+        doShallowMount();
 
         expect(wrapper.find('.error').exists()).toBe(true);
         expect(wrapper.find('.warning').exists()).toBe(false);
@@ -147,7 +147,7 @@ describe('NodeState.vue', () => {
 
     it('shows warning indicator', () => {
         propsData.warning = 'warning message';
-        mount();
+        doShallowMount();
 
         expect(wrapper.find('.warning').exists()).toBe(true);
         expect(wrapper.find('.error').exists()).toBe(false);
@@ -170,7 +170,7 @@ describe('NodeState.vue', () => {
         });
 
         it('shows no tooltips by default', async () => {
-            mount();
+            doShallowMount();
             wrapper.find('g').trigger('mouseenter');
             await Vue.nextTick();
             expect(currentTooltip).toBeFalsy();
@@ -178,7 +178,7 @@ describe('NodeState.vue', () => {
 
         it('shows tooltips on error', async () => {
             propsData.error = 'this is an error';
-            mount();
+            doShallowMount();
             wrapper.find('g').trigger('mouseenter');
             await Vue.nextTick();
             expect(currentTooltip).toStrictEqual({
@@ -192,6 +192,40 @@ describe('NodeState.vue', () => {
             wrapper.find('g').trigger('mouseleave');
             await Vue.nextTick();
             expect(currentTooltip).toBeFalsy();
+        });
+
+        it('updates tooltips on data change', async () => {
+            propsData.progressMessage = 'Progress';
+            doShallowMount();
+            wrapper.find('g').trigger('mouseenter');
+            await Vue.nextTick();
+
+            wrapper.setProps({
+                progressMessage: 'mo Progress'
+            });
+            await Vue.nextTick();
+
+            expect(currentTooltip).toStrictEqual({
+                anchorPoint: { x: 123, y: 456 },
+                text: 'mo Progress',
+                x: 16,
+                y: 59
+            });
+        });
+
+        it('handles watchers', async () => {
+            doShallowMount();
+            let watcherCountBefore = wrapper.vm._watchers.length;
+            wrapper.find('g').trigger('mouseenter');
+            await Vue.nextTick();
+            wrapper.find('g').trigger('mouseenter');
+            await Vue.nextTick();
+            let watcherCountAfter = wrapper.vm._watchers.length;
+            expect(watcherCountAfter).toBe(watcherCountBefore + 1);
+            wrapper.find('g').trigger('mouseleave');
+            await Vue.nextTick();
+            let watcherCountFinally = wrapper.vm._watchers.length;
+            expect(watcherCountFinally).toBe(watcherCountBefore);
         });
     });
 });

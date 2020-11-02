@@ -41,11 +41,18 @@ export const loadWorkflow = ({ projectId, workflowId = 'root', includeInfoOnAllo
 };
 
 const makeToggleEventListener = addOrRemove => (type, args) => {
-    rpc(`EventService.${addOrRemove}EventListener`, {
-        typeId: `${type}EventType`,
-        ...args
-    });
-    consola.debug(addOrRemove, 'event listener', type, args);
+    try {
+        rpc(`EventService.${addOrRemove}EventListener`, {
+            typeId: `${type}EventType`,
+            ...args
+        });
+        consola.debug(addOrRemove, 'event listener', type, args);
+        return Promise.resolve();
+    } catch (e) {
+        consola.error(e);
+        let verb = addOrRemove === 'add' ? 'register' : 'unregister';
+        return Promise.reject(new Error(`Couldn't ${verb} event "${type}" with args ${JSON.stringify(args)}`));
+    }
 };
 
 /**
