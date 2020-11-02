@@ -102,7 +102,7 @@ describe('workflow store', () => {
 
     describe('action', () => {
         it('loads root workflow successfully', async () => {
-            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true }, snapshotId: 'snap' });
+            let loadWorkflow = jest.fn().mockResolvedValue({ dummy: true, workflow: { info: {} }, snapshotId: 'snap' });
             await loadStore({
                 apiMocks: {
                     loadWorkflow
@@ -114,7 +114,7 @@ describe('workflow store', () => {
 
             expect(loadWorkflow).toHaveBeenCalledWith({ workflowId: 'root', projectId: 'wf1' });
             expect(commit).toHaveBeenNthCalledWith(1, 'workflow/setActiveWorkflow', {
-                dummy: true,
+                info: {},
                 projectId: 'wf1'
             }, undefined);
             expect(commit).toHaveBeenNthCalledWith(2, 'workflow/setActiveSnapshotId', 'snap', undefined);
@@ -126,7 +126,7 @@ describe('workflow store', () => {
         });
 
         it('loads inner workflow successfully', async () => {
-            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true } });
+            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true, info: {} } });
             await loadStore({
                 apiMocks: {
                     loadWorkflow
@@ -139,6 +139,7 @@ describe('workflow store', () => {
             expect(loadWorkflow).toHaveBeenCalledWith({ workflowId: 'root:0:123', projectId: 'wf2' });
             expect(commit).toHaveBeenNthCalledWith(1, 'workflow/setActiveWorkflow', {
                 dummy: true,
+                info: {},
                 projectId: 'wf2'
             }, undefined);
             expect(addEventListenerMock).toHaveBeenCalledWith('WorkflowChanged', {
@@ -148,7 +149,7 @@ describe('workflow store', () => {
         });
 
         it('unloads workflow when another one is loaded', async () => {
-            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { info: {} }, snapshotId: 'snap' });
+            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true, info: {} }, snapshotId: 'snap' });
             await loadStore({
                 apiMocks: {
                     loadWorkflow

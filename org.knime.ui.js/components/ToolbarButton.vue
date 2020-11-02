@@ -1,5 +1,5 @@
 <!-- A native button for use inside a toolbar. This is just used for styling. -->
-<template functional>
+<template>
   <button tabindex="1">
     <slot />
   </button>
@@ -26,15 +26,19 @@ button {
     stroke: var(--knime-masala);
   }
 
+  &:disabled {
+    opacity: 0.25;
+    cursor: default;
+  }
 
   &:not(:disabled) {
-
     cursor: pointer;
 
     &:focus {
       background: var(--knime-white);
       color: var(--knime-black);
       border-color: var(--knime-black);
+
       & svg {
         stroke: var(--knime-black);
       }
@@ -44,10 +48,6 @@ button {
       color: var(--knime-white);
       background: var(--knime-masala);
       border-color: var(--knime-masala);
-
-      &:focus {
-        border-color: var(--knime-black);
-      }
     }
 
     &:active {
@@ -56,17 +56,14 @@ button {
       border-color: var(--knime-black);
     }
 
+    &:hover:focus {
+      border-color: var(--knime-black);
+    }
+
     &:hover svg,
     &:active svg {
       stroke: var(--knime-white);
     }
   }
-
-  &:disabled {
-    opacity: 0.25;
-    cursor: default;
-  }
 }
-
-
 </style>

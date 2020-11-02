@@ -2,7 +2,6 @@
 import { mapState, mapGetters } from 'vuex';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import ToolbarButton from '~/components/ToolbarButton';
-import { executeNodes, cancelNodeExecution, resetNodes } from '~api';
 import ExecuteAllIcon from '~/assets/execute-all.svg?inline';
 import CancelAllIcon from '~/assets/cancel-execution.svg?inline';
 import ResetAllIcon from '~/assets/reset-all.svg?inline';
@@ -30,13 +29,19 @@ export default {
     },
     methods: {
         onExecuteBtnClick() {
-            executeNodes({ projectId: this.workflow.projectId, nodeIds: [this.activeWorkflowId] });
+            this.$store.dispatch('workflow/executeNodes', {
+                projectId: this.workflow.projectId, nodeIds: [this.activeWorkflowId]
+            });
         },
         onCancelBtnClick() {
-            cancelNodeExecution({ projectId: this.workflow.projectId, nodeIds: [this.activeWorkflowId] });
+            this.$store.dispatch('workflow/cancelNodeExecution', {
+                projectId: this.workflow.projectId, nodeIds: [this.activeWorkflowId]
+            });
         },
         onResetBtnClick() {
-            resetNodes({ projectId: this.workflow.projectId, nodeIds: [this.activeWorkflowId] });
+            this.$store.dispatch('workflow/resetNodes', {
+                projectId: this.workflow.projectId, nodeIds: [this.activeWorkflowId]
+            });
         }
     }
 };

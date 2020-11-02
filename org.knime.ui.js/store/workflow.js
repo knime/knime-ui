@@ -1,4 +1,5 @@
-import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener } from '~api';
+import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener, executeNodes, cancelNodeExecution,
+    resetNodes } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
@@ -86,6 +87,15 @@ export const actions = {
         commit('setActiveSnapshotId', snapshotId);
         let workflowId = getters.activeWorkflowId;
         addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+    },
+    executeNodes(ctx, { projectId, nodeIds }) {
+        executeNodes({ projectId, nodeIds });
+    },
+    cancelNodeExecution(ctx, { projectId, nodeIds }) {
+        cancelNodeExecution({ projectId, nodeIds });
+    },
+    resetNodes(ctx, { projectId, nodeIds }) {
+        resetNodes({ projectId, nodeIds });
     }
 };
 
