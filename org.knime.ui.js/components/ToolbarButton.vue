@@ -7,11 +7,11 @@
 
 <style lang="postcss" scoped>
 button {
-  --icon-size: 30; /* +2px border */
+  --icon-size: 30; /* +2*1px border */
 
-  width: calc((var(--icon-size) + 1) * 1px);
-  height: calc((var(--icon-size) + 1) * 1px);
-  border-radius: calc((var(--icon-size) + 1) * 0.5px);
+  width: calc((var(--icon-size) + 2) * 1px);
+  height: calc((var(--icon-size) + 2) * 1px);
+  border-radius: calc((var(--icon-size) + 2) / 2 * 1px);
   border: 1px solid var(--knime-silver-sand);
   color: var(--knime-masala);
   background: var(--knime-white);

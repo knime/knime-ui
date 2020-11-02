@@ -38,21 +38,22 @@ export default {
     v-if="workflow"
     :class="{ hasLeftPanel }"
   >
-    <LeftCollapsiblePanel
-      v-if="hasLeftPanel"
-      id="metadata"
-      width="360px"
-      title="Workflow Metadata"
-    >
-      <WorkflowMetadata
-        v-bind="workflow.metadata || placeholderMetadata"
-      />
-    </LeftCollapsiblePanel>
-
     <WorkflowToolbar
       id="toolbar"
     />
-    <Kanvas id="kanvas" />
+    <div class="collapser-kanvas">
+      <LeftCollapsiblePanel
+        v-if="hasLeftPanel"
+        id="metadata"
+        width="360px"
+        title="Workflow Metadata"
+      >
+        <WorkflowMetadata
+          v-bind="workflow.metadata || placeholderMetadata"
+        />
+      </LeftCollapsiblePanel>
+      <Kanvas id="kanvas" />
+    </div>
   </main>
   <div
     v-else
@@ -66,34 +67,37 @@ export default {
 
 <style lang="postcss" scoped>
 main {
-  display: grid;
+  display: flex;
   overflow: auto;
-  grid-template-columns: min-content auto;
-  grid-template-rows: 50px auto;
-  grid-template-areas:
-    "metadata toolbar"
-    "metadata kanvas";
+  flex-direction: column;
+  align-items: stretch;
+  height: 100%;
 }
 
 #toolbar {
-  grid-area: toolbar;
-  padding-left: 10px;
+  height: 50px;
+  flex: 0 0 auto;
+  padding: 10px;
   background-color: var(--knime-porcelain);
   border-bottom: 1px solid var(--knime-silver-sand);
 }
 
-main.hasLeftPanel #toolbar {
-  margin-left: -11px;
+.collapser-kanvas {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: row;
+  align-items: stretch;
+  overflow: hidden;
 }
 
 #metadata {
-  grid-area: metadata;
+  flex: 0 0 auto;
   border-right: 1px solid var(--knime-silver-sand);
 }
 
 #kanvas {
   overflow: auto;
-  grid-area: kanvas;
+  flex: 1 1 auto;
 }
 
 .placeholder {
