@@ -4,7 +4,8 @@ import Vuex from 'vuex';
 
 jest.mock('~/store/jsonrpc', () => ({
     actions: {
-        myAction: () => {}
+        myAction: () => {},
+        erroneousAction: () => {}
     }
 }), { virtual: true });
 
@@ -23,7 +24,8 @@ describe('jsonrpcNotification handler', () => {
         store = mockVuexStore({
             jsonrpc: {
                 actions: {
-                    myAction: actionMock
+                    myAction: actionMock,
+                    erroneousAction: () => { throw new Error('boo!'); }
                 }
             }
         });
@@ -71,6 +73,15 @@ describe('jsonrpcNotification handler', () => {
             }));
         });
 
+        it('returns an error for invalid JSON-RPC with invalid id', () => {
+            let result = window.jsonrpcNotification('{"foo":"bar","id":{}}');
+            expect(result).toBe(JSON.stringify({
+                jsonrpc: '2.0',
+                id: null,
+                error: { code: -32600, message: 'Invalid JSON-RPC format' }
+            }));
+        });
+
         it('returns an error for non-existing methods', () => {
             loadPlugin({ store });
             let result = window.jsonrpcNotification('{"jsonrpc":"2.0","method":"invalidAction","params":["foo"]}');
@@ -79,6 +90,19 @@ describe('jsonrpcNotification handler', () => {
                 jsonrpc: '2.0',
                 error: { code: -32601, message: 'Method "invalidAction" not found' }
             }));
+        });
+
+        it('forwards internal errors', () => {
+            loadPlugin({ store });
+            let result = window.jsonrpcNotification('{"jsonrpc":"2.0","method":"erroneousAction","params":[]}');
+            expect(JSON.parse(result)).toStrictEqual({
+                jsonrpc: '2.0',
+                error: {
+                    code: -32603,
+                    message: 'boo!',
+                    data: expect.stringMatching(/^Error: boo!\n\s*at .*/)
+                }
+            });
         });
     });
 });

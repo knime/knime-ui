@@ -48,6 +48,36 @@ describe('API', () => {
         }));
     });
 
+    it('executes nodes', async () => {
+        await api.executeNodes({ projectId: '123', nodeIds: ['a', 'b', 'c'] });
+        expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'NodeService.changeNodeStates',
+            params: ['123', ['a', 'b', 'c'], 'execute'],
+            id: 0
+        }));
+    });
+
+    it('cancels nodes', async () => {
+        await api.cancelNodeExecution({ projectId: '123', nodeIds: ['a', 'b', 'c'] });
+        expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'NodeService.changeNodeStates',
+            params: ['123', ['a', 'b', 'c'], 'cancel'],
+            id: 0
+        }));
+    });
+
+    it('resets nodes', async () => {
+        await api.resetNodes({ projectId: '123', nodeIds: ['a', 'b', 'c'] });
+        expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'NodeService.changeNodeStates',
+            params: ['123', ['a', 'b', 'c'], 'reset'],
+            id: 0
+        }));
+    });
+
     describe('error handling', () => {
         beforeAll(() => {
             window.jsonrpc = jest.fn().mockReturnValue(JSON.stringify({

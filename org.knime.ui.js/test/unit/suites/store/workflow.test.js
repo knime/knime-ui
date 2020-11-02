@@ -164,6 +164,17 @@ describe('workflow store', () => {
             });
         });
 
+        it.each(['executeNodes', 'cancelNodeExecution', 'resetNodes'])('passes %s to API', async (action) => {
+            let mock = jest.fn();
+            let apiMocks = { [action]: mock };
+            await loadStore({ apiMocks });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+
+            store.dispatch(`workflow/${action}`, { nodeIds: ['x', 'y'] });
+
+            expect(mock).toHaveBeenCalledWith({ nodeIds: ['x', 'y'], projectId: 'foo' });
+        });
+
     });
 
     describe('svg sizes', () => {

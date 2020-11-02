@@ -68,10 +68,8 @@ describe('WorkflowToolbar.vue', () => {
         });
 
         it('triggers store actions when a button is clicked', () => {
-            let projectId = Math.random();
             $store.commit('workflow/setActiveWorkflow', {
                 info: {},
-                projectId,
                 allowedActions: {
                     canExecute: true,
                     canCancel: true,
@@ -86,11 +84,11 @@ describe('WorkflowToolbar.vue', () => {
             expect(resetNodes).not.toHaveBeenCalled();
 
             buttons.at(0).trigger('click');
-            expect(executeNodes).toHaveBeenCalledWith(expect.anything(), { nodeIds: ['root'], projectId });
+            expect(executeNodes).toHaveBeenCalledWith(expect.anything(), { nodeIds: ['root'] });
             buttons.at(1).trigger('click');
-            expect(cancelNodeExecution).toHaveBeenCalledWith(expect.anything(), { nodeIds: ['root'], projectId });
+            expect(cancelNodeExecution).toHaveBeenCalledWith(expect.anything(), { nodeIds: ['root'] });
             buttons.at(2).trigger('click');
-            expect(resetNodes).toHaveBeenCalledWith(expect.anything(), { nodeIds: ['root'], projectId });
+            expect(resetNodes).toHaveBeenCalledWith(expect.anything(), { nodeIds: ['root'] });
         });
 
     });

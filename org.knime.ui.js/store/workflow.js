@@ -88,14 +88,17 @@ export const actions = {
         let workflowId = getters.activeWorkflowId;
         addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
     },
-    executeNodes(ctx, { projectId, nodeIds }) {
-        executeNodes({ projectId, nodeIds });
+    /* See docs in API */
+    executeNodes({ state }, { nodeIds }) {
+        executeNodes({ projectId: state.activeWorkflow.projectId, nodeIds });
     },
-    cancelNodeExecution(ctx, { projectId, nodeIds }) {
-        cancelNodeExecution({ projectId, nodeIds });
+    /* See docs in API */
+    cancelNodeExecution({ state }, { nodeIds }) {
+        cancelNodeExecution({ projectId: state.activeWorkflow.projectId, nodeIds });
     },
-    resetNodes(ctx, { projectId, nodeIds }) {
-        resetNodes({ projectId, nodeIds });
+    /* See docs in API */
+    resetNodes({ state }, { nodeIds }) {
+        resetNodes({ projectId: state.activeWorkflow.projectId, nodeIds });
     }
 };
 

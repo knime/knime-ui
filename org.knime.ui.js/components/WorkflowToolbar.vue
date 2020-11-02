@@ -30,17 +30,17 @@ export default {
     methods: {
         onExecuteBtnClick() {
             this.$store.dispatch('workflow/executeNodes', {
-                projectId: this.workflow.projectId, nodeIds: [this.activeWorkflowId]
+                nodeIds: [this.activeWorkflowId]
             });
         },
         onCancelBtnClick() {
             this.$store.dispatch('workflow/cancelNodeExecution', {
-                projectId: this.workflow.projectId, nodeIds: [this.activeWorkflowId]
+                nodeIds: [this.activeWorkflowId]
             });
         },
         onResetBtnClick() {
             this.$store.dispatch('workflow/resetNodes', {
-                projectId: this.workflow.projectId, nodeIds: [this.activeWorkflowId]
+                nodeIds: [this.activeWorkflowId]
             });
         }
     }
