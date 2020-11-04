@@ -2,13 +2,11 @@
 import { mapMutations } from 'vuex';
 import PortIcon from '~/webapps-common/ui/components/node/PortIcon';
 
-/* eslint-disable no-magic-numbers */
-
 export default {
     components: {
         PortIcon
     },
-    inject: ['nodeId'],
+    inject: ['anchorPoint'],
     props: {
         /**
          * Port configuration object
@@ -67,7 +65,7 @@ export default {
             return {
                 x: this.x,
                 y: this.y - portSize / 2 - tooltipSpacing,
-                anchor: this.nodeId,
+                anchorPoint: this.anchorPoint,
                 title: this.port.name,
                 text: this.port.info,
                 orientation: 'top'

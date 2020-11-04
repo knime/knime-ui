@@ -2,6 +2,7 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
+import { mockVuexStore } from '~/test/unit/test-utils';
 
 import Node from '~/components/Node';
 import NodeTorso from '~/components/NodeTorso.vue';
@@ -69,7 +70,7 @@ const metaNode = {
 };
 
 describe('Node', () => {
-    let propsData, mocks, doShallowMount, wrapper, portShiftMock;
+    let propsData, mocks, doShallowMount, wrapper, portShiftMock, openedProjectsStoreConfig, workflowStoreConfig;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -78,6 +79,16 @@ describe('Node', () => {
 
     beforeEach(() => {
         wrapper = null;
+        workflowStoreConfig = {
+            actions: {
+                loadWorkflow: jest.fn()
+            }
+        };
+        openedProjectsStoreConfig = {
+            state() {
+                return { activeId: 'projectId' };
+            }
+        };
         propsData = {
             // insert node before mounting
         };
@@ -90,6 +101,7 @@ describe('Node', () => {
         portShiftMock = jest.spyOn(Node.methods, 'portShift');
 
         doShallowMount = () => {
+            mocks.$store = mockVuexStore({ openedProjects: openedProjectsStoreConfig, workflow: workflowStoreConfig });
             wrapper = shallowMount(Node, { propsData, mocks });
         };
     });
@@ -247,5 +259,52 @@ describe('Node', () => {
                 [36.5, 26.5]
             ]);
         });
+    });
+
+    describe('opening', () => {
+        it('opens metanode on double click', async () => {
+            propsData = { ...metaNode };
+            doShallowMount();
+            jest.spyOn(mocks.$store, 'dispatch');
+            await wrapper.find('.hover-container > g').trigger('dblclick');
+
+            expect(workflowStoreConfig.actions.loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
+                containerId: 'root:1',
+                projectId: 'projectId'
+            });
+        });
+
+        it('opens component on control-double click', async () => {
+            propsData = { ...componentNode };
+            doShallowMount();
+            jest.spyOn(mocks.$store, 'dispatch');
+            await wrapper.find('.hover-container > g').trigger('dblclick', {
+                ctrlKey: true
+            });
+
+            expect(workflowStoreConfig.actions.loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
+                containerId: 'root:1',
+                projectId: 'projectId'
+            });
+        });
+
+        it('does not open component on double click', async () => {
+            propsData = { ...componentNode };
+            doShallowMount();
+            jest.spyOn(mocks.$store, 'dispatch');
+            await wrapper.find('.hover-container > g').trigger('dblclick');
+
+            expect(workflowStoreConfig.actions.loadWorkflow).not.toHaveBeenCalled();
+        });
+
+        it('does not open native node on double click', async () => {
+            propsData = { ...nativeNode };
+            doShallowMount();
+            jest.spyOn(mocks.$store, 'dispatch');
+            await wrapper.find('.hover-container > g').trigger('dblclick');
+
+            expect(workflowStoreConfig.actions.loadWorkflow).not.toHaveBeenCalled();
+        });
+
     });
 });

@@ -52,6 +52,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -73,6 +74,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.workflow.NodeContainer;
 import org.knime.core.node.workflow.NodeID;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.Pair;
@@ -80,6 +82,7 @@ import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppState;
 import org.knime.gateway.impl.webui.service.DefaultApplicationService;
+import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.osgi.service.event.Event;
@@ -100,6 +103,8 @@ import org.osgi.service.event.Event;
 public final class PerspectiveSwitchAddon {
 
 	private static final NodeLogger LOGGER = NodeLogger.getLogger(PerspectiveSwitchAddon.class);
+
+	private static Supplier<AppState> appStateSupplier;
 
 	@Inject
 	private EModelService m_modelService;
@@ -129,15 +134,16 @@ public final class PerspectiveSwitchAddon {
 	}
 
 	private void switchToWebUI() {
-		updateAppState(m_modelService, m_app);
+		registerAppStateSupplier(m_modelService, m_app);
 		setTrimsAndMenuVisible(false, m_modelService, m_app);
 		callOnKnimeBrowserView(KnimeBrowserView::setUrl);
 		switchToWebUITheme();
 	}
 
 	private void switchToJavaUI() {
-		setTrimsAndMenuVisible(true, m_modelService, m_app);
+		DefaultEventService.getInstance().removeAllEventListeners();
 		callOnKnimeBrowserView(KnimeBrowserView::clearUrl);
+		setTrimsAndMenuVisible(true, m_modelService, m_app);
 		switchToJavaUITheme();
 		// the color of the workflow editor canvas changes when switching back
 		// -> this is a workaround to compensate for it
@@ -189,12 +195,18 @@ public final class PerspectiveSwitchAddon {
 		window.getMainMenu().setToBeRendered(visible);
 	}
 
-	private static void updateAppState(final EModelService modelService, final MApplication app) {
+	private static void registerAppStateSupplier(final EModelService modelService, final MApplication app) {
+		if (appStateSupplier == null) {
+			appStateSupplier = () -> getAppState(modelService, app);
+			DefaultApplicationService.getInstance().setAppStateSupplier(appStateSupplier);
+		}
+	}
+
+	private static AppState getAppState(final EModelService modelService, final MApplication app) {
 		Set<String> workflowProjectIds = new HashSet<>();
 		Set<Pair<String, NodeID>> activeWorkflowIds = new HashSet<>();
 		collectOpenWorkflows(workflowProjectIds, activeWorkflowIds, modelService, app);
-
-		DefaultApplicationService.getInstance().updateAppState(new AppState() {
+		return new AppState() {
 
 			@Override
 			public Set<String> getLoadedWorkflowProjectIds() {
@@ -206,7 +218,7 @@ public final class PerspectiveSwitchAddon {
 				return activeWorkflowIds;
 			}
 
-		});
+		};
 	}
 
 	private static void collectOpenWorkflows(final Set<String> workflowProjectIds,
@@ -265,7 +277,11 @@ public final class PerspectiveSwitchAddon {
 	}
 
 	private static String getProjectId(final WorkflowManager wfm) {
-		return wfm.getProjectWFM().getNameWithID();
+		NodeContainer project = wfm.getProjectWFM();
+		if(project == WorkflowManager.ROOT) {
+			project = wfm.getProjectComponent().orElse(null);
+		}
+		return project != null ? project.getNameWithID() : null;
 	}
 
 	private static WorkflowManager getWorkflowManager(final MPart editorPart) {

@@ -69,6 +69,7 @@ button {
   padding: 0;
   background-color: var(--knime-porcelain);
   cursor: pointer;
+  outline: none;
 
   &:hover {
     background-color: var(--knime-silver-sand-semi);

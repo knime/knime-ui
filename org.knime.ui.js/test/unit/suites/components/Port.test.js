@@ -12,7 +12,7 @@ import * as $colors from '~/style/colors';
 describe('Port', () => {
     let propsData, mocks, mount, wrapper;
     const provide = {
-        nodeId: 'dummy'
+        anchorPoint: { x: 123, y: 456 }
     };
 
     beforeAll(() => {
@@ -183,7 +183,7 @@ describe('Port', () => {
             wrapper.find('g').trigger('mouseenter');
             await Vue.nextTick();
             expect(currentTooltip).toStrictEqual({
-                anchor: 'dummy',
+                anchorPoint: { x: 123, y: 456 },
                 text: 'portInfo',
                 title: 'portName',
                 orientation: 'top',
@@ -203,7 +203,7 @@ describe('Port', () => {
             wrapper.find('g').trigger('mouseenter');
             await Vue.nextTick();
             expect(currentTooltip).toStrictEqual({
-                anchor: 'dummy',
+                anchorPoint: { x: 123, y: 456 },
                 text: 'portInfo',
                 title: 'portName',
                 orientation: 'top',

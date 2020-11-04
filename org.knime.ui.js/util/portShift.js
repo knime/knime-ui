@@ -1,7 +1,7 @@
 import { nodeSize, portSize } from '~/style/shapes';
 
 /**
- * Calculates the position of the center of a port depending on its index and the total number
+ * Calculates the position of the center of a port on a node depending on its index and the total number
  * of ports on the same side of the node.
  *
  * Returns the offset in regard to the upper left corner of the node
