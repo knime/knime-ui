@@ -5,7 +5,7 @@ import NodeTorsoMissing from '~/components/NodeTorsoMissing';
 import NodeTorsoUnknown from '~/components/NodeTorsoUnknown';
 import NodeTorsoMetanode from '~/components/NodeTorsoMetanode';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from "~/test/unit/test-utils";
+import { mockVuexStore } from '~/test/unit/test-utils';
 
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
