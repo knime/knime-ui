@@ -67,6 +67,12 @@ describe('Kanvas', () => {
                 getters: {
                     svgBounds() {
                         return { x: -5, y: -2, height: 102, width: 100 };
+                    },
+                    isLinked() {
+                        return workflow.info.linked;
+                    },
+                    isWritable() {
+                        return !workflow.info.linked;
                     }
                 }
             },

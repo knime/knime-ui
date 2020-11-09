@@ -1,4 +1,5 @@
 <script>
+import { mapGetters } from 'vuex';
 import NodeTorsoMissing from '~/components/NodeTorsoMissing';
 import NodeTorsoUnknown from '~/components/NodeTorsoUnknown';
 import NodeTorsoMetanode from '~/components/NodeTorsoMetanode';
@@ -25,7 +26,6 @@ export default {
         NodeTorsoMetanode,
         NodeTorsoUnknown
     },
-    inject: ['readOnly'],
     props: {
         /**
          * Node type, e.g. "Learner", "Visualizer"
@@ -61,6 +61,9 @@ export default {
         }
     },
     computed: {
+        ...mapGetters('workflow', [
+            'isWritable'
+        ]),
         backgroundPath() {
             return backgroundPaths[this.type] || backgroundPaths.default;
         },
@@ -86,16 +89,16 @@ export default {
 <template>
   <NodeTorsoMissing
     v-if="type === 'Missing'"
-    :class="{ 'grabbable': !readOnly }"
+    :class="{ 'grabbable': isWritable }"
   />
   <NodeTorsoMetanode
     v-else-if="kind === 'metanode'"
-    :class="{ 'grabbable': !readOnly }"
+    :class="{ 'grabbable': isWritable }"
     :execution-state="executionState"
   />
   <g
     v-else-if="isKnownNode"
-    :class="{ 'grabbable': !readOnly }"
+    :class="{ 'grabbable': isWritable }"
   >
     <path
       class="bg"
@@ -122,7 +125,7 @@ export default {
   </g>
   <NodeTorsoUnknown
     v-else
-    :class="[{ 'read-only': readOnly }]"
+    :class="{ 'grabbable': isWritable }"
   />
 </template>
 

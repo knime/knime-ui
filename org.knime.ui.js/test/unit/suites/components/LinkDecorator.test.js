@@ -15,15 +15,13 @@ describe('NodeTorso.vue', () => {
         const paths = wrapper.findAll('path');
         expect(paths.at(0).attributes().fill).toBe($colors.nodeBackgroundColors.Manipulator);
         expect(paths.at(1).attributes().stroke).toBe($colors.linkDecorator);
-        expect(paths.at(2).attributes().stroke).toBe($colors.linkDecorator);
     });
 
     it('unknown type', () => {
         const wrapper = doShallowMount('unknown type');
         const paths = wrapper.findAll('path');
         expect(paths.at(0).attributes().stroke).toBe($colors.linkDecorator);
-        expect(paths.at(1).attributes().stroke).toBe($colors.linkDecorator);
-        expect(paths.length).toBe(2);
+        expect(paths.length).toBe(1);
     });
 
 });

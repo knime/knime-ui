@@ -1,19 +1,41 @@
+import Vuex from 'vuex';
+
 import NodeTorso from '~/components/NodeTorso';
 import NodeTorsoMissing from '~/components/NodeTorsoMissing';
 import NodeTorsoUnknown from '~/components/NodeTorsoUnknown';
 import NodeTorsoMetanode from '~/components/NodeTorsoMetanode';
-import { shallowMount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { mockVuexStore } from "~/test/unit/test-utils";
 
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
 describe('NodeTorso.vue', () => {
 
-    let doShallowMount = (propsData, { readOnly } = {}) => shallowMount(NodeTorso, {
-        propsData,
-        mocks: { $shapes, $colors },
-        provide: { readOnly }
+    beforeAll(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
     });
+
+    let doShallowMount = (propsData, { writable = true } = {}) => {
+        let $store = mockVuexStore({
+            workflow: {
+                getters: {
+                    isWritable() {
+                        return writable;
+                    }
+                }
+            }
+        });
+        return shallowMount(NodeTorso, {
+            propsData,
+            mocks: {
+                $shapes,
+                $colors,
+                $store
+            }
+        });
+    };
 
     it('sets background color', () => {
         let wrapper = doShallowMount({
@@ -99,7 +121,7 @@ describe('NodeTorso.vue', () => {
     it.each(['node', 'metanode', 'component'])('no grab cursor if write-protected %s', (kind) => {
         let wrapper = doShallowMount({
             kind
-        }, { readOnly: true });
+        }, { writable: false });
         expect(wrapper.find('.grabbable').exists()).toBe(false);
     });
 });

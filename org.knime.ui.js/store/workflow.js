@@ -84,6 +84,12 @@ export const actions = {
 };
 
 export const getters = {
+    isLinked({ activeWorkflow }) {
+        return Boolean(activeWorkflow?.info.linked);
+    },
+    isWritable(state, getters) {
+        return !getters.isLinked;
+    },
     nodes(state, getters, rootState) {
         return rootState.nodes[state.activeWorkflow.projectId];
     },

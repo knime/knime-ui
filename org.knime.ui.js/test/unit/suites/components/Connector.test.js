@@ -3,17 +3,20 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
+jest.mock('~api', () => {}, { virtual: true });
+
 import Connector from '~/components/Connector';
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 import * as portShift from '~/util/portShift';
+import * as workflowStoreConfig from '~/store/workflow';
 
 const portMock = {
     connectedVia: []
 };
 
 describe('Connector.vue', () => {
-    let propsData, mocks, provide, wrapper, portShiftMock, $store;
+    let propsData, mocks, wrapper, portShiftMock, $store;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -28,19 +31,18 @@ describe('Connector.vue', () => {
             sourcePort: 0,
             destPort: 2
         };
-        provide = {
-            readOnly: false
-        };
     });
 
     describe('attached to a metanode', () => {
         beforeEach(() => {
             $store = mockVuexStore({
                 workflow: {
+                    ...workflowStoreConfig,
                     state: {
                         activeWorkflow: {
                             projectId: 'some id',
-                            nodeIds: ['root:1', 'root:2']
+                            nodeIds: ['root:1', 'root:2'],
+                            info: {}
                         }
                     }
                 },
@@ -63,7 +65,7 @@ describe('Connector.vue', () => {
             });
 
             mocks = { $shapes, $colors, $store };
-            wrapper = shallowMount(Connector, { propsData, mocks, provide });
+            wrapper = shallowMount(Connector, { propsData, mocks });
         });
 
         it('uses portShift', () => {
@@ -83,10 +85,12 @@ describe('Connector.vue', () => {
         beforeEach(() => {
             $store = mockVuexStore({
                 workflow: {
+                    ...workflowStoreConfig,
                     state: {
                         activeWorkflow: {
                             projectId: 'myId',
-                            nodeIds: ['root:1', 'root:2']
+                            nodeIds: ['root:1', 'root:2'],
+                            info: {}
                         }
                     }
                 },
@@ -101,16 +105,37 @@ describe('Connector.vue', () => {
             });
 
             mocks = { $shapes, $colors, $store };
-            wrapper = shallowMount(Connector, { propsData, mocks, provide });
+            wrapper = shallowMount(Connector, { propsData, mocks });
         });
 
-        it('draws no grab cursor on write-protect', () => {
+        it('draws grab cursor by default', () => {
             expect(wrapper.find('.read-only').exists()).toBe(false);
-            wrapper = shallowMount(Connector, {
-                propsData,
-                mocks,
-                provide: { readOnly: true }
+        });
+
+        it('draws no grab cursor if write protected', () => {
+            mocks.$store = mockVuexStore({
+                workflow: {
+                    ...workflowStoreConfig,
+                    state: {
+                        activeWorkflow: {
+                            projectId: 'myId',
+                            nodeIds: ['root:1', 'root:2'],
+                            info: {
+                                linked: true
+                            }
+                        }
+                    }
+                },
+                nodes: {
+                    state: {
+                        myId: {
+                            'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
+                            'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
+                        }
+                    }
+                }
             });
+            wrapper = shallowMount(Connector, { propsData, mocks });
             expect(wrapper.find('.read-only').exists()).toBe(true);
         });
 
@@ -131,8 +156,7 @@ describe('Connector.vue', () => {
                     ...propsData,
                     flowVariableConnection: true
                 },
-                mocks,
-                provide
+                mocks
             });
 
             const { 'stroke-width': strokeWidth, stroke } = wrapper.find('path').attributes();
@@ -151,6 +175,7 @@ describe('Connector.vue', () => {
         beforeEach(() => {
             $store = mockVuexStore({
                 workflow: {
+                    ...workflowStoreConfig,
                     state: {
                         activeWorkflow: {
                             projectId: 'some id',
@@ -162,10 +187,12 @@ describe('Connector.vue', () => {
                             metaOutPorts: {
                                 xPos: 702,
                                 ports: [portMock, portMock, portMock]
-                            }
+                            },
+                            info: {}
                         }
                     },
                     getters: {
+                        ...workflowStoreConfig.getters,
                         svgBounds() {
                             return {
                                 y: 33,
@@ -181,7 +208,7 @@ describe('Connector.vue', () => {
                 }
             });
             mocks = { $shapes, $colors, $store };
-            wrapper = shallowMount(Connector, { propsData, mocks, provide });
+            wrapper = shallowMount(Connector, { propsData, mocks });
         });
 
         it('draws a path', () => {

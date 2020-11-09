@@ -86,7 +86,7 @@ export default {
             default: null,
             validator: url => url.startsWith('data:image/')
         },
-          
+
         /**
          * Path to the origin of a linked component or metanode
          */
@@ -194,11 +194,10 @@ export default {
           :execution-state="state && state.executionState"
         />
       </g>
-      
+
       <LinkDecorator
         v-if="link"
         :type="type"
-        :is-component="kind === 'component'"
         transform="translate(0,21)"
       />
 

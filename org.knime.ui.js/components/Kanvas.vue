@@ -14,26 +14,24 @@ export default {
         Tooltip,
         MetaNodePortBars
     },
-    provide() {
-        return {
-            readOnly: this.isReadOnly
-        };
-    },
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow',
-            readOnly: state => state.activeWorkflow.info.linked,
             tooltip: 'tooltip'
         }),
-        ...mapGetters('workflow', ['svgBounds'])
+        ...mapGetters('workflow', [
+            'svgBounds',
+            'isLinked',
+            'isWritable'
+        ])
     }
 };
 </script>
 
 <template>
-  <div :class="{ 'read-only': readOnly }">
+  <div :class="{ 'read-only': !isWritable }">
     <div
-      v-if="readOnly"
+      v-if="isLinked"
       class="link-notification"
     >
       <span>
