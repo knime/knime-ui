@@ -5,7 +5,6 @@ import Connector from '~/components/Connector';
 import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import Tooltip from '~/components/Tooltip';
 import MetaNodePortBars from '~/components/MetaNodePortBars';
-import LinkIcon from '~/webapps-common/ui/assets/img/icons/link.svg?inline';
 
 export default {
     components: {
@@ -13,8 +12,7 @@ export default {
         Connector,
         WorkflowAnnotation,
         Tooltip,
-        MetaNodePortBars,
-        LinkIcon
+        MetaNodePortBars
     },
     provide() {
         return {
@@ -24,26 +22,23 @@ export default {
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow',
+            readOnly: state => state.activeWorkflow.info.linked,
             tooltip: 'tooltip'
         }),
-        ...mapGetters('workflow', ['svgBounds']),
-        isReadOnly() {
-            return Boolean(this.workflow.info.linked);
-        }
+        ...mapGetters('workflow', ['svgBounds'])
     }
 };
 </script>
 
 <template>
-  <div :class="{ 'read-only': isReadOnly }">
+  <div :class="{ 'read-only': readOnly }">
     <div
-      v-if="workflow.info.linked"
+      v-if="readOnly"
       class="link-notification"
     >
-      <div>
-        <LinkIcon />
+      <span>
         This is a linked {{ workflow.info.containerType }} and can therefore not be edited.
-      </div>
+      </span>
     </div>
 
     <div
@@ -118,24 +113,13 @@ svg {
 
   /* appearance */
   background-color: var(--notification-background-color);
-  box-shadow: 0 0 10px var(--notification-background-color);
   pointer-events: none;
 
-  & div {
+  & span {
     font-size: 16px;
     align-self: center;
     text-align: center;
     width: 100%;
-  }
-
-  & svg {
-    width: 16px;
-    height: 16px;
-    stroke: var(--knime-masala);
-    stroke-width: calc(32px / 16 * 1.25);
-    position: relative;
-    top: 2px;
-    margin-right: 4px;
   }
 }
 </style>
