@@ -1,7 +1,7 @@
 import knimeColors from 'webapps-common/ui/colors/knimeColors';
 import nodeColors from 'webapps-common/ui/colors/nodeColors';
 
-const applyAlphaHSL = (hsl, alpha) => `${hsl.slice(0, -1)}, ${alpha})`;
+const applyAlphaHSL = (hsl, alpha) => hsl.replace(')', `, ${alpha})`);
 
 export const text = {
     default: knimeColors.Masala
