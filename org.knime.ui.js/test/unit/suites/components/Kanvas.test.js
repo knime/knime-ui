@@ -125,7 +125,7 @@ describe('Kanvas', () => {
         });
 
         it('is not linked', () => {
-            expect(wrapper.find('.write-protected').exists()).toBe(false);
+            expect(wrapper.find('.read-only').exists()).toBe(false);
             expect(wrapper.find('.link-notification').exists()).toBe(false);
         });
     });
@@ -133,7 +133,7 @@ describe('Kanvas', () => {
     it('write-protects and shows warning on being linked', () => {
         workflow.info.linked = true;
         doShallowMount();
-        expect(wrapper.find('.write-protected').exists()).toBe(true);
+        expect(wrapper.find('.read-only').exists()).toBe(true);
         expect(wrapper.find('.link-notification').exists()).toBe(true);
     });
 

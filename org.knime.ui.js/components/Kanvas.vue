@@ -18,7 +18,7 @@ export default {
     },
     provide() {
         return {
-            writeProtected: this.isWriteProtected
+            readOnly: this.isReadOnly
         };
     },
     computed: {
@@ -27,7 +27,7 @@ export default {
             tooltip: 'tooltip'
         }),
         ...mapGetters('workflow', ['svgBounds']),
-        isWriteProtected() {
+        isReadOnly() {
             return Boolean(this.workflow.info.linked);
         }
     }
@@ -35,7 +35,7 @@ export default {
 </script>
 
 <template>
-  <div :class="{ 'write-protected': isWriteProtected }">
+  <div :class="{ 'read-only': isReadOnly }">
     <div
       v-if="workflow.info.linked"
       class="link-notification"
@@ -45,7 +45,7 @@ export default {
         This is a linked {{ workflow.info.containerType }} and can therefore not be edited.
       </div>
     </div>
-    
+
     <div
       v-if="tooltip"
       class="tooltip-container"
@@ -101,7 +101,7 @@ svg {
   line-height: 0;
 }
 
-.write-protected {
+.read-only {
   background-color: var(--knime-gray-ultra-light);
 }
 

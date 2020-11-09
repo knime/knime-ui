@@ -25,14 +25,14 @@ export default {
         NodeTorsoMetanode,
         NodeTorsoUnknown
     },
-    inject: ['writeProtected'],
+    inject: ['readOnly'],
     props: {
         /**
          * Node type, e.g. "Learner", "Visualizer"
          * Is undefined for MetaNodes
          */
         type: { type: String, default: null },
-        
+
         /**
          * Node variation.
          * @values 'node', 'metanode', 'component'
@@ -42,7 +42,7 @@ export default {
             required: true,
             validator: kind => ['node', 'metanode', 'component'].includes(kind)
         },
-        
+
         /**
          * data-url containing Base64-encoded icon
          */
@@ -51,7 +51,7 @@ export default {
             default: null,
             validator: url => url.startsWith('data:image/')
         },
-        
+
         /**
          * Execution state (only for meta nodes). Passed through to NodeTorsoMetanode
          */
@@ -86,16 +86,16 @@ export default {
 <template>
   <NodeTorsoMissing
     v-if="type === 'Missing'"
-    :class="{ 'grabbable': !writeProtected }"
+    :class="{ 'grabbable': !readOnly }"
   />
   <NodeTorsoMetanode
     v-else-if="kind === 'metanode'"
-    :class="{ 'grabbable': !writeProtected }"
+    :class="{ 'grabbable': !readOnly }"
     :execution-state="executionState"
   />
   <g
     v-else-if="isKnownNode"
-    :class="{ 'grabbable': !writeProtected }"
+    :class="{ 'grabbable': !readOnly }"
   >
     <path
       class="bg"
@@ -122,7 +122,7 @@ export default {
   </g>
   <NodeTorsoUnknown
     v-else
-    :class="[{ 'write-protected': writeProtected }]"
+    :class="[{ 'read-only': readOnly }]"
   />
 </template>
 

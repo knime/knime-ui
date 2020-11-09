@@ -9,10 +9,10 @@ import * as $colors from '~/style/colors';
 
 describe('NodeTorso.vue', () => {
 
-    let doShallowMount = (propsData, { writeProtected } = {}) => shallowMount(NodeTorso, {
+    let doShallowMount = (propsData, { readOnly } = {}) => shallowMount(NodeTorso, {
         propsData,
         mocks: { $shapes, $colors },
-        provide: { writeProtected }
+        provide: { readOnly }
     });
 
     it('sets background color', () => {
@@ -99,7 +99,7 @@ describe('NodeTorso.vue', () => {
     it.each(['node', 'metanode', 'component'])('no grab cursor if write-protected %s', (kind) => {
         let wrapper = doShallowMount({
             kind
-        }, { writeProtected: true });
+        }, { readOnly: true });
         expect(wrapper.find('.grabbable').exists()).toBe(false);
     });
 });
