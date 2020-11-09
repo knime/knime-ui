@@ -44,41 +44,66 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   May 30, 2020 (hornm): created
+ *   Nov 9, 2020 (hornm): created
  */
 package org.knime.ui.java.browser.function;
 
+import java.util.Arrays;
+
 import org.eclipse.swt.chromium.Browser;
 import org.eclipse.swt.chromium.BrowserFunction;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.WorkbenchException;
+import org.knime.core.node.NodeLogger;
+import org.knime.core.node.workflow.NativeNodeContainer;
+import org.knime.core.node.workflow.NodeContainer;
+import org.knime.core.node.workflow.SubNodeContainer;
+import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.impl.service.util.DefaultServiceUtil;
+import org.knime.workbench.editor2.actions.OpenInteractiveWebViewAction;
+import org.knime.workbench.editor2.actions.OpenSubnodeWebViewAction;
 
 /**
- * Browser function to allow the js webapp to switch back to the classic KNIME perspective.
+ * Opens the node's view if available.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class SwitchToJavaUIBrowserFunction extends BrowserFunction {
+public class OpenNodeViewBrowserFunction extends BrowserFunction {
 
-	private static final String FUNCTION_NAME = "switchToJavaUI";
+	private static final String FUNCTION_NAME = "openNodeView";
 
-	public SwitchToJavaUIBrowserFunction(final Browser browser) {
+	public OpenNodeViewBrowserFunction(final Browser browser) {
 		super(browser, FUNCTION_NAME);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public Object function(final Object[] args) {
-		IWorkbench workbench = PlatformUI.getWorkbench();
-		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-		try {
-			workbench.showPerspective("org.knime.workbench.ui.ModellerPerspective", window);
-		} catch (WorkbenchException e) {
-			// should never happen
-			throw new RuntimeException(e); // NOSONAR
+	public Object function(final Object[] args) { // NOSONAR
+		if (args == null || args.length != 2 || !(args[0] instanceof String) || !(args[1] instanceof String)) {
+			throw new IllegalArgumentException(
+					"Wrong argument for browser function 'openNodeView'. The arguments are: " + Arrays.toString(args));
 		}
+		NodeContainer nc = DefaultServiceUtil.getNodeContainer((String) args[0], new NodeIDEnt((String) args[1]));
+		if (nc == null) {
+			NodeLogger.getLogger(OpenNodeViewBrowserFunction.class)
+					.warn(String.format("Node with id '%s' not found in workflow with id '%s'", args[0], args[1]));
+			return null;
+		}
+
+		if (nc.getInteractiveWebViews().size() > 0) {
+			if (nc instanceof SubNodeContainer) {
+				OpenSubnodeWebViewAction.openView((SubNodeContainer) nc);
+				return null;
+			} else if (nc instanceof NativeNodeContainer) {
+				OpenInteractiveWebViewAction.openView((NativeNodeContainer) nc,
+						nc.getInteractiveWebViews().get(0).getViewName());
+				return null;
+			} else {
+				//
+			}
+		}
+		NodeLogger.getLogger(OpenNodeViewBrowserFunction.class).warn(String
+				.format("Node with id '%s' in workflow with id '%s' does not have a node view", args[0], args[1]));
 		return null;
 	}
-
 }

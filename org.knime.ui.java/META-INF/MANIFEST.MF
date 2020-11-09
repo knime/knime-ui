@@ -29,5 +29,6 @@ Require-Bundle: com.github.briandilley.jsonrpc4j;bundle-version="[1.5.2,2.0.0)",
  org.eclipse.e4.core.contexts;bundle-version="[1.8.400,2.0.0)",
  org.eclipse.e4.ui.css.swt.theme;bundle-version="[0.12.600,1.0.0)",
  org.apache.commons.commons-text;bundle-version="[1.9.0,2.0.0)",
- org.knime.workbench.core;bundle-version="[4.3.0,5.0.0)"
+ org.knime.workbench.core;bundle-version="[4.3.0,5.0.0)",
+ org.knime.core.wizard;bundle-version="[4.3.0,5.0.0)"
 Bundle-Vendor: KNIME AG, Zurich, Switzerland

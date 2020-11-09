@@ -23,6 +23,7 @@ import org.knime.gateway.api.webui.entity.EventEnt;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.ui.java.browser.function.JsonRpcBrowserFunction;
+import org.knime.ui.java.browser.function.OpenNodeViewBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -74,6 +75,7 @@ public class KnimeBrowserView {
 		});
 		new JsonRpcBrowserFunction(m_browser);
 		new SwitchToJavaUIBrowserFunction(m_browser);
+		new OpenNodeViewBrowserFunction(m_browser);
 		setUrl();
 		BiConsumer<String, EventEnt> eventConsumer = createEventConsumer(m_browser);
 		DefaultEventService.getInstance().addEventConsumer(eventConsumer);
