@@ -30,6 +30,7 @@ import Vue from 'vue';
 */
 
 let resolvePointer = (target, path) => {
+    // unescaping according to RFC 6901
     let parts = path.replace(/^\//, '').split('/').map(x => x.replace(/~1/g, '/').replace(/~0/g, '~'));
     let key = parts.pop();
     while (parts.length) {
