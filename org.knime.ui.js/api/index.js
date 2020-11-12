@@ -56,8 +56,7 @@ const nestedRpcCall = ({ method, params, projectId, nodeId, portIndex }) => {
         params
     };
     let response = rpc('NodeService.doPortRpc', projectId, nodeId, portIndex, JSON.stringify(nestedRpcCall));
-    let result = parseResponse({ response, method, params });
-    return result;
+    return parseResponse({ response, method, params });
 };
 
 /**
@@ -68,7 +67,7 @@ const nestedRpcCall = ({ method, params, projectId, nodeId, portIndex }) => {
  * Remember that port 0 is usually a flow variable port.
  * @return {Promise} A promise containing the table data as defined in the API
  * */
-export const getTable = ({ projectId, nodeId, portIndex }) => {
+export const loadTable = ({ projectId, nodeId, portIndex }) => {
     const rowCount = 400; // The backend is limited to 500-50=450, see org.knime.core.data.cache.WindowCacheTable
     try {
         let table = nestedRpcCall({
@@ -86,5 +85,3 @@ export const getTable = ({ projectId, nodeId, portIndex }) => {
         ));
     }
 };
-
-window.getTable = getTable;

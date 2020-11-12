@@ -91,6 +91,9 @@ export const getters = {
         return !getters.isLinked;
     },
     nodes(state, getters, rootState) {
+        if (!state.activeWorkflow) {
+            return null;
+        }
         return rootState.nodes[state.activeWorkflow.projectId];
     },
     /*

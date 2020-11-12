@@ -50,7 +50,7 @@ describe('API', () => {
         });
     });
 
-    describe('getTable', () => {
+    describe('loadTable', () => {
         it('calls jsonrpc', async () => {
             window.jsonrpc.mockReturnValueOnce(JSON.stringify({
                 jsonrpc: '2.0',
@@ -61,7 +61,7 @@ describe('API', () => {
                     id: -2
                 })
             }));
-            let table = await api.getTable({
+            let table = await api.loadTable({
                 projectId: 'foo',
                 nodeId: 'root:123',
                 portIndex: 2
@@ -108,9 +108,9 @@ describe('API', () => {
             }
         });
 
-        it('handles errors on getTable', async (done) => {
+        it('handles errors on loadTable', async (done) => {
             try {
-                await api.getTable({});
+                await api.loadTable({});
                 done(new Error('Error not thrown'));
             } catch (e) {
                 expect(e.message).toContain('Couldn\'t load table');
@@ -118,7 +118,7 @@ describe('API', () => {
             }
         });
 
-        it('handles nested errors on getTable', async (done) => {
+        it('handles nested errors on loadTable', async (done) => {
             window.jsonrpc.mockReturnValueOnce(JSON.stringify({
                 jsonrpc: '2.0',
                 id: -1,
@@ -131,7 +131,7 @@ describe('API', () => {
             let projectId = 'projectId';
             let nodeId = Math.random();
             try {
-                await api.getTable({ projectId, nodeId, portIndex });
+                await api.loadTable({ projectId, nodeId, portIndex });
                 done(new Error('Error not thrown'));
             } catch (e) {
                 expect(e.message).toBe(

@@ -2,3 +2,8 @@
 @import "webapps-common/ui/css/basics";
 @import "./fonts";
 @import "./variables";
+
+/* prevent "bounce" effect when scrolling with touch pad */
+body {
+  overscroll-behavior: none;
+}
