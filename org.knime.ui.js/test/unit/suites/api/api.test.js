@@ -37,15 +37,44 @@ describe('API', () => {
         });
     });
 
-    it('fetchApplicationState calls jsonrpc', async () => {
-        await api.fetchApplicationState();
+    describe('fetchApplicationState', () => {
+        it('calls jsonrpc', async () => {
+            await api.fetchApplicationState();
 
-        expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'ApplicationService.getState',
-            params: [],
-            id: 0
-        }));
+            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'ApplicationService.getState',
+                params: [],
+                id: 0
+            }));
+        });
+    });
+
+    describe('getTable', () => {
+        it('calls jsonrpc', async () => {
+            window.jsonrpc.mockReturnValueOnce(JSON.stringify({
+                jsonrpc: '2.0',
+                id: -1,
+                result: JSON.stringify({
+                    jsonrpc: '2.0',
+                    result: 'dummy',
+                    id: -2
+                })
+            }));
+            let table = await api.getTable({
+                projectId: 'foo',
+                nodeId: 'root:123',
+                portIndex: 2
+            });
+            let expectedNestedRPC = '{"jsonrpc":"2.0","id":0,"method":"getTable","params":[0,400]}';
+            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'NodeService.doPortRpc',
+                params: ['foo', 'root:123', 2, expectedNestedRPC],
+                id: 0
+            }));
+            expect(table).toBe('dummy');
+        });
     });
 
     describe('error handling', () => {

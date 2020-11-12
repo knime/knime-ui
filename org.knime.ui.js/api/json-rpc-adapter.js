@@ -1,5 +1,7 @@
 import consola from 'consola';
 
+let parseResponse;
+
 /**
  * Call the JSON-RPC API as defined
  * in knime-com-shared/src/master/com.knime.gateway.codegen/src-gen/api/web-ui/gateway.yaml
@@ -31,6 +33,17 @@ export default (method, ...args) => {
         throw new Error(`Error calling JSON-RPC api: ${[method, ...args].join(', ')}`);
     }
 
+    return parseResponse({ response, method, args });
+};
+
+/**
+ * Helper to parse a JSON-RPC response. Throws an Error if the response is invalid
+ * @param {String} response The serialized JSON-RPC response
+ * @param {String} method (only for logging) The method that was called
+ * @param {Array} args (only for logging) The arguments that were passed to the method
+ * @returns {*} The `result` contained in the JSON-RPC object
+ * */
+parseResponse = ({ response, method = '<unknown>', args }) => {
     let result, error;
     try {
         ({ result, error } = JSON.parse(response));
@@ -53,3 +66,5 @@ export default (method, ...args) => {
 
     return result;
 };
+
+export { parseResponse };
