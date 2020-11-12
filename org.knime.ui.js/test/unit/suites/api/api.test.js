@@ -78,8 +78,8 @@ describe('API', () => {
     });
 
     describe('error handling', () => {
-        beforeAll(() => {
-            window.jsonrpc = jest.fn().mockReturnValue(JSON.stringify({
+        beforeEach(() => {
+            window.jsonrpc.mockReturnValueOnce(JSON.stringify({
                 jsonrpc: '2.0',
                 error: 'There has been an error',
                 id: -1
@@ -92,8 +92,9 @@ describe('API', () => {
                 await api.loadWorkflow('foo', 'bar');
                 done(new Error('Expected error not thrown'));
             } catch (e) {
-                let ok = e.message.includes('foo') && e.message.includes('bar');
-                done(!ok);
+                expect(e.message).toContain('foo');
+                expect(e.message).toContain('bar');
+                done();
             }
         });
 
@@ -102,10 +103,42 @@ describe('API', () => {
                 await api.fetchApplicationState();
                 done(new Error('Error not thrown'));
             } catch (e) {
-                let ok = e.message.includes('application state');
-                done(!ok);
+                expect(e.message).toContain('application state');
+                done();
+            }
+        });
+
+        it('handles errors on getTable', async (done) => {
+            try {
+                await api.getTable({});
+                done(new Error('Error not thrown'));
+            } catch (e) {
+                expect(e.message).toContain('Couldn\'t load table');
+                done();
+            }
+        });
+
+        it('handles nested errors on getTable', async (done) => {
+            window.jsonrpc.mockReturnValueOnce(JSON.stringify({
+                jsonrpc: '2.0',
+                id: -1,
+                result: JSON.stringify({
+                    jsonrpc: '2.0',
+                    error: 'foo'
+                })
+            }));
+            let portIndex = 2;
+            let projectId = 'projectId';
+            let nodeId = Math.random();
+            try {
+                await api.getTable({ projectId, nodeId, portIndex });
+                done(new Error('Error not thrown'));
+            } catch (e) {
+                expect(e.message).toBe(
+                    `Couldn't load table data from port ${portIndex} of node "${nodeId}" in project ${projectId}`
+                );
+                done();
             }
         });
     });
-
 });
