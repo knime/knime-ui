@@ -4,6 +4,7 @@ import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import Kanvas from '~/components/Kanvas';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
+import NodeOutput from '~/components/output/NodeOutput';
 
 
 /**
@@ -12,6 +13,7 @@ import WorkflowMetadata from '~/components/WorkflowMetadata';
  */
 export default {
     components: {
+        NodeOutput,
         Kanvas,
         LeftCollapsiblePanel,
         WorkflowMetadata,
@@ -54,6 +56,7 @@ export default {
     </LeftCollapsiblePanel>
 
     <Kanvas id="kanvas" />
+    <NodeOutput id="node-output" />
   </main>
   <div
     v-else
@@ -73,7 +76,8 @@ main {
   grid-template-rows: min-content auto;
   grid-template-areas:
     "toolbar toolbar"
-    "metadata kanvas";
+    "metadata kanvas"
+    "metadata output";
 }
 
 #toolbar {
@@ -97,6 +101,11 @@ main {
 #kanvas {
   overflow: auto;
   grid-area: kanvas;
+}
+
+#node-output {
+  overflow: auto;
+  grid-area: output;
 }
 
 .placeholder {
