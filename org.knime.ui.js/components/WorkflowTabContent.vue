@@ -36,7 +36,6 @@ export default {
 <template>
   <main
     v-if="workflow"
-    :class="{ hasLeftPanel }"
   >
     <WorkflowToolbar
       id="toolbar"

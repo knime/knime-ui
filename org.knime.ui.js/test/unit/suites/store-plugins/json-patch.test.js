@@ -72,7 +72,7 @@ describe('json-patch plugin', () => {
                 expect(store.state.myStore.foo).toStrictEqual({ baz: 2, qux: { bla: ['a', 'b', 'c'] } });
             });
 
-            it('replaces array item', () => {
+            it('removes array item', () => {
                 store.commit('myStore/patch.remove', { path: '/foo/qux/bla/1' });
                 expect(store.state.myStore.foo.qux.bla).toStrictEqual(['a', 'c']);
             });
@@ -96,6 +96,38 @@ describe('json-patch plugin', () => {
                     }
                 });
             });
+            it('copies out of array', () => {
+                store.commit('myStore/patch.copy', { from: '/foo/qux/bla/1', path: '/foo/bar' });
+                expect(store.state.myStore.foo).toStrictEqual({
+                    bar: 'b',
+                    baz: 2,
+                    qux: {
+                        bla: ['a', 'b', 'c']
+                    }
+                });
+            });
+
+            it('copies into array', () => {
+                store.commit('myStore/patch.copy', { from: '/foo/qux/bla/1', path: '/foo/qux/bla/2' });
+                expect(store.state.myStore.foo).toStrictEqual({
+                    bar: 1,
+                    baz: 2,
+                    qux: {
+                        bla: ['a', 'b', 'b', 'c']
+                    }
+                });
+            });
+
+            it('copy-appends to array', () => {
+                store.commit('myStore/patch.copy', { from: '/foo/qux/bla/1', path: '/foo/qux/bla/-' });
+                expect(store.state.myStore.foo).toStrictEqual({
+                    bar: 1,
+                    baz: 2,
+                    qux: {
+                        bla: ['a', 'b', 'c', 'b']
+                    }
+                });
+            });
         });
 
         describe('move', () => {
@@ -107,6 +139,29 @@ describe('json-patch plugin', () => {
                     x: {
                         bla: ['a', 'b', 'c']
                     }
+                });
+            });
+
+            it('moves inside of array', () => {
+                store.commit('myStore/patch.move', { from: '/foo/qux/bla/0', path: '/foo/qux/bla/2' });
+                expect(store.state.myStore.foo).toStrictEqual({
+                    bar: 1,
+                    baz: 2,
+                    qux: {
+                        bla: ['b', 'c', 'a']
+                    }
+                });
+            });
+
+            it('moves out of array', () => {
+                store.commit('myStore/patch.move', { from: '/foo/qux/bla/0', path: '/foo/x' });
+                expect(store.state.myStore.foo).toStrictEqual({
+                    bar: 1,
+                    baz: 2,
+                    qux: {
+                        bla: ['b', 'c']
+                    },
+                    x: 'a'
                 });
             });
         });

@@ -74,19 +74,20 @@ export const mutations = {
     },
 
     'patch.copy'(state, { from, path }) {
-        let [target, key] = resolvePointer(state, path);
         let [source] = resolvePointer(state, `${from}/`);
         let clone = JSON.parse(JSON.stringify(source));
-        Vue.set(target, key, clone);
+
+        mutations['patch.add'](state, { path, value: clone });
     },
 
     'patch.move'(state, { from, path }) {
-        mutations['patch.copy'](state, { from, path });
+        let [source] = resolvePointer(state, `${from}/`);
+
         mutations['patch.remove'](state, { path: from });
+        mutations['patch.add'](state, { path, value: source });
     }
 };
 
-/* eslint-disable no-invalid-this */
 export const actions = {
     'patch.apply'({ commit, rootState }, patch) {
         patch.forEach(cmd => {

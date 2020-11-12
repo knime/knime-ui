@@ -42,11 +42,11 @@ export const loadWorkflow = ({ projectId, workflowId = 'root', includeInfoOnAllo
 
 const makeToggleEventListener = addOrRemove => (type, args) => {
     try {
+        consola.debug(addOrRemove, 'event listener', type, args);
         rpc(`EventService.${addOrRemove}EventListener`, {
             typeId: `${type}EventType`,
             ...args
         });
-        consola.debug(addOrRemove, 'event listener', type, args);
         return Promise.resolve();
     } catch (e) {
         consola.error(e);
