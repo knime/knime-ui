@@ -6,6 +6,8 @@ import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb';
 import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg?inline';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/metanode.svg?inline';
+import LinkedComponentIcon from '~/webapps-common/ui/assets/img/icons/linked-component.svg?inline';
+import LinkedMetanodeIcon from '~/webapps-common/ui/assets/img/icons/linked-metanode.svg?inline';
 
 describe('WorkflowBreadcrumb.vue', () => {
     beforeAll(() => {
@@ -58,19 +60,31 @@ describe('WorkflowBreadcrumb.vue', () => {
     it('renders nested', async () => {
         workflow = {
             info: {
-                name: 'this is a dummy workflow'
+                name: 'this is a dummy workflow',
+                linked: true
             },
             parents: [{
                 containerType: 'project',
                 name: 'foo'
             }, {
                 containerType: 'component',
-                containerId: 'root:201',
+                containerId: 'root:p1',
                 name: 'Comp oh Nent'
             }, {
+                containerType: 'component',
+                containerId: 'root:p2',
+                name: 'L ink Comp oh Nent',
+                linked: true
+            }, {
                 containerType: 'metanode',
-                containerId: 'root:201:0:42',
+                containerId: 'root:p3',
                 name: 'Matter Node'
+            },
+            {
+                containerType: 'metanode',
+                containerId: 'root:p4',
+                name: 'Latter Node',
+                linked: true
             }]
         };
         await doShallowMount();
@@ -81,13 +95,21 @@ describe('WorkflowBreadcrumb.vue', () => {
                 icon: null,
                 text: 'foo'
             }, {
-                href: '#root%3A201',
+                href: '#root%3Ap1',
                 icon: ComponentIcon,
                 text: 'Comp oh Nent'
             }, {
-                href: '#root%3A201%3A0%3A42',
+                href: '#root%3Ap2',
+                icon: LinkedComponentIcon,
+                text: 'L ink Comp oh Nent'
+            }, {
+                href: '#root%3Ap3',
                 icon: MetaNodeIcon,
                 text: 'Matter Node'
+            }, {
+                href: '#root%3Ap4',
+                icon: LinkedMetanodeIcon,
+                text: 'Latter Node'
             }, {
                 icon: null,
                 text: 'this is a dummy workflow'

@@ -1,5 +1,5 @@
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 import portShift from '~/util/portShift';
 import { portBar } from '~/mixins';
 
@@ -35,6 +35,9 @@ export default {
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
+        }),
+        ...mapGetters('workflow', {
+            isWorkflowWritable: 'isWritable'
         }),
         /**
          * The start coordinates of this connector
@@ -115,7 +118,7 @@ export default {
     :d="path"
     :stroke="strokeColor"
     :stroke-width="$shapes.connectorWidth"
-    :class="{ variable: flowVariableConnection }"
+    :class="{ variable: flowVariableConnection, 'read-only': !isWorkflowWritable }"
     fill="none"
   />
 </template>
@@ -123,6 +126,9 @@ export default {
 <style lang="postcss" scoped>
 path {
   transition: stroke-width 0.1s linear, stroke 0.2s linear;
+}
+
+path:not(.read-only) {
   cursor: grab;
 }
 

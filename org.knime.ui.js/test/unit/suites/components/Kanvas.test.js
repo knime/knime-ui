@@ -68,6 +68,12 @@ describe('Kanvas', () => {
                     svgBounds() {
                         return { x: -5, y: -2, height: 102, width: 100 };
                     },
+                    isLinked() {
+                        return workflow.info.linked;
+                    },
+                    isWritable() {
+                        return !workflow.info.linked;
+                    },
                     nodeIcon() {
                         return ({ nodeId }) => `data:image/${nodeId}`;
                     },
@@ -105,7 +111,8 @@ describe('Kanvas', () => {
                     ...nodeData[nodeId],
                     icon: `data:image/${nodeId}`,
                     name: `name-${nodeId}`,
-                    type: `type-${nodeId}`
+                    type: `type-${nodeId}`,
+                    link: null
                 };
                 expect(props).toStrictEqual(expected);
             });
@@ -115,6 +122,18 @@ describe('Kanvas', () => {
             let props = wrapper.findAllComponents(Connector).wrappers.map(c => c.props());
             expect(props).toEqual(Object.values(workflow.connections));
         });
+
+        it('is not linked', () => {
+            expect(wrapper.find('.read-only').exists()).toBe(false);
+            expect(wrapper.find('.link-notification').exists()).toBe(false);
+        });
+    });
+
+    it('write-protects and shows warning on being linked', () => {
+        workflow.info.linked = true;
+        doShallowMount();
+        expect(wrapper.find('.read-only').exists()).toBe(true);
+        expect(wrapper.find('.link-notification').exists()).toBe(true);
     });
 
     it('renders workflow annotations', () => {

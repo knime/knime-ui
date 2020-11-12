@@ -3,16 +3,19 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
+jest.mock('~api', () => { }, { virtual: true });
+
 import Connector from '~/components/Connector';
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 import * as portShift from '~/util/portShift';
+import * as workflowStoreConfig from '~/store/workflow';
 
 const portMock = {
     connectedVia: []
 };
 
-describe('Connector', () => {
+describe('Connector.vue', () => {
     let propsData, mocks, wrapper, portShiftMock, $store;
 
     beforeAll(() => {
@@ -30,11 +33,11 @@ describe('Connector', () => {
         };
     });
 
-
     describe('attached to a metanode', () => {
         beforeEach(() => {
             $store = mockVuexStore({
                 workflow: {
+                    ...workflowStoreConfig,
                     state: {
                         activeWorkflow: {
                             nodes: {
@@ -49,6 +52,11 @@ describe('Connector', () => {
                                     inPorts: [portMock, portMock, portMock]
                                 }
                             }
+                        }
+                    },
+                    getters: {
+                        isWritable() {
+                            return true;
                         }
                     }
                 }
@@ -75,6 +83,7 @@ describe('Connector', () => {
         beforeEach(() => {
             $store = mockVuexStore({
                 workflow: {
+                    ...workflowStoreConfig,
                     state: {
                         activeWorkflow: {
                             nodes: {
@@ -82,12 +91,48 @@ describe('Connector', () => {
                                 'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
                             }
                         }
+                    },
+                    getters: {
+                        isWritable() {
+                            return true;
+                        }
                     }
                 }
             });
 
             mocks = { $shapes, $colors, $store };
             wrapper = shallowMount(Connector, { propsData, mocks });
+        });
+
+        it('draws grab cursor by default', () => {
+            expect(wrapper.find('.read-only').exists()).toBe(false);
+        });
+
+        it('draws no grab cursor if write protected', () => {
+            mocks.$store = mockVuexStore({
+                workflow: {
+                    ...workflowStoreConfig,
+                    state: {
+                        activeWorkflow: {
+                            projectId: 'myId',
+                            nodes: {
+                                'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
+                                'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
+                            },
+                            info: {
+                                linked: true
+                            }
+                        }
+                    },
+                    getters: {
+                        isWritable() {
+                            return false;
+                        }
+                    }
+                }
+            });
+            wrapper = shallowMount(Connector, { propsData, mocks });
+            expect(wrapper.find('.read-only').exists()).toBe(true);
         });
 
         it('uses portShift', () => {
@@ -126,6 +171,7 @@ describe('Connector', () => {
         beforeEach(() => {
             $store = mockVuexStore({
                 workflow: {
+                    ...workflowStoreConfig,
                     state: {
                         activeWorkflow: {
                             projectId: 'some id',
@@ -137,15 +183,20 @@ describe('Connector', () => {
                             metaOutPorts: {
                                 xPos: 702,
                                 ports: [portMock, portMock, portMock]
-                            }
+                            },
+                            info: {}
                         }
                     },
                     getters: {
+                        ...workflowStoreConfig.getters,
                         svgBounds() {
                             return {
                                 y: 33,
                                 height: 1236
                             };
+                        },
+                        isWritable() {
+                            return true;
                         }
                     }
                 }

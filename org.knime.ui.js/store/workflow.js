@@ -103,6 +103,12 @@ export const actions = {
 };
 
 export const getters = {
+    isLinked({ activeWorkflow }) {
+        return Boolean(activeWorkflow?.info.linked);
+    },
+    isWritable(state, getters) {
+        return !getters.isLinked;
+    },
     /*
         returns the true offset from the upper-left corner of the svg for a given point
     */
@@ -196,7 +202,7 @@ export const getters = {
         if (metaOutPorts?.ports?.length) {
             let leftBorder, rightBorder;
             if (metaOutPorts.xPos) {
-                leftBorder =  metaOutPorts.xPos - portSize;
+                leftBorder = metaOutPorts.xPos - portSize;
                 rightBorder = metaOutPorts.xPos + metaNodeBarWidth;
             } else {
                 leftBorder = left + defaultBarPosition - portSize;

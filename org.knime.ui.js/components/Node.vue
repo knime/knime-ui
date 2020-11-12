@@ -5,6 +5,7 @@ import NodeState from '~/components/NodeState.vue';
 import NodeTorso from '~/components/NodeTorso.vue';
 import NodeSelect from '~/components/NodeSelect.vue';
 import NodeAnnotation from '~/components/NodeAnnotation.vue';
+import LinkDecorator from '~/components/LinkDecorator.vue';
 import portShift from '~/util/portShift';
 
 /**
@@ -18,7 +19,8 @@ export default {
         NodeAnnotation,
         NodeTorso,
         NodeState,
-        NodeSelect
+        NodeSelect,
+        LinkDecorator
     },
     inheritAttrs: false,
     provide() {
@@ -83,6 +85,14 @@ export default {
             type: String,
             default: null,
             validator: url => url.startsWith('data:image/')
+        },
+
+        /**
+         * Path to the origin of a linked component or metanode
+         */
+        link: {
+            type: String,
+            default: null
         },
 
         /**
@@ -184,6 +194,12 @@ export default {
           :execution-state="state && state.executionState"
         />
       </g>
+
+      <LinkDecorator
+        v-if="link"
+        :type="type"
+        transform="translate(0,21)"
+      />
 
       <template v-for="port of inPorts">
         <Port

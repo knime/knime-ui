@@ -1,18 +1,41 @@
+import Vuex from 'vuex';
+
 import NodeTorso from '~/components/NodeTorso';
 import NodeTorsoMissing from '~/components/NodeTorsoMissing';
 import NodeTorsoUnknown from '~/components/NodeTorsoUnknown';
 import NodeTorsoMetanode from '~/components/NodeTorsoMetanode';
-import { shallowMount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { mockVuexStore } from '~/test/unit/test-utils';
 
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
 describe('NodeTorso.vue', () => {
 
-    let doShallowMount = propsData => shallowMount(NodeTorso, {
-        propsData,
-        mocks: { $shapes, $colors }
+    beforeAll(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
     });
+
+    let doShallowMount = (propsData, { writable = true } = {}) => {
+        let $store = mockVuexStore({
+            workflow: {
+                getters: {
+                    isWritable() {
+                        return writable;
+                    }
+                }
+            }
+        });
+        return shallowMount(NodeTorso, {
+            propsData,
+            mocks: {
+                $shapes,
+                $colors,
+                $store
+            }
+        });
+    };
 
     it('sets background color', () => {
         let wrapper = doShallowMount({
@@ -20,12 +43,14 @@ describe('NodeTorso.vue', () => {
             kind: 'node'
         });
         expect(wrapper.find('.bg').attributes().fill).toBe($colors.nodeBackgroundColors.Manipulator);
+        expect(wrapper.find('.grabbable').exists()).toBe(true);
     });
 
     it('renders metanodes', () => {
         let wrapper = doShallowMount({
             kind: 'metanode'
         });
+        expect(wrapper.find('.grabbable').exists()).toBe(true);
         expect(wrapper.findComponent(NodeTorsoMetanode).exists()).toBeTruthy();
     });
 
@@ -59,19 +84,18 @@ describe('NodeTorso.vue', () => {
             type,
             kind: 'node'
         });
-        let bgs = wrapper.findAll('.bg');
-        expect(bgs.length).toBe(1);
-        expect(bgs.at(0).attributes().fill).toBe(color);
+        expect(wrapper.find('.component-bg').exists()).toBe(false);
+        expect(wrapper.find('.bg').attributes().fill).toBe(color);
     });
 
     it('renders plain components', () => {
         let wrapper = doShallowMount({
             kind: 'component'
         });
-        let bgs = wrapper.findAll('.bg');
-        expect(bgs.length).toBe(1);
-        expect(bgs.at(0).attributes().fill).toBe($colors.nodeBackgroundColors.Component);
+        expect(wrapper.find('.component-bg').exists()).toBe(false);
+        expect(wrapper.find('.bg').attributes().fill).toBe($colors.nodeBackgroundColors.Component);
         expect(wrapper.find('image').exists()).toBeFalsy();
+        expect(wrapper.find('.grabbable').exists()).toBe(true);
     });
 
     it('renders typed components', () => {
@@ -92,5 +116,12 @@ describe('NodeTorso.vue', () => {
             icon: 'data:image/0000'
         });
         expect(wrapper.find('image').attributes().href).toBe('data:image/0000');
+    });
+
+    it.each(['node', 'metanode', 'component'])('no grab cursor if write-protected %s', (kind) => {
+        let wrapper = doShallowMount({
+            kind
+        }, { writable: false });
+        expect(wrapper.find('.grabbable').exists()).toBe(false);
     });
 });

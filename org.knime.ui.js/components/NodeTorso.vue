@@ -1,4 +1,5 @@
 <script>
+import { mapGetters } from 'vuex';
 import NodeTorsoMissing from '~/components/NodeTorsoMissing';
 import NodeTorsoUnknown from '~/components/NodeTorsoUnknown';
 import NodeTorsoMetanode from '~/components/NodeTorsoMetanode';
@@ -31,6 +32,7 @@ export default {
          * Is undefined for MetaNodes
          */
         type: { type: String, default: null },
+
         /**
          * Node variation.
          * @values 'node', 'metanode', 'component'
@@ -59,6 +61,9 @@ export default {
         }
     },
     computed: {
+        ...mapGetters('workflow', [
+            'isWritable'
+        ]),
         backgroundPath() {
             return backgroundPaths[this.type] || backgroundPaths.default;
         },
@@ -84,14 +89,17 @@ export default {
 <template>
   <NodeTorsoMissing
     v-if="type === 'Missing'"
-    class="bg"
+    :class="{ 'grabbable': isWritable }"
   />
   <NodeTorsoMetanode
     v-else-if="kind === 'metanode'"
-    class="bg"
+    :class="{ 'grabbable': isWritable }"
     :execution-state="executionState"
   />
-  <g v-else-if="isKnownNode">
+  <g
+    v-else-if="isKnownNode"
+    :class="{ 'grabbable': isWritable }"
+  >
     <path
       class="bg"
       :d="backgroundPath"
@@ -117,13 +125,12 @@ export default {
   </g>
   <NodeTorsoUnknown
     v-else
-    class="bg"
+    :class="{ 'grabbable': isWritable }"
   />
 </template>
 
 <style lang="postcss" scoped>
-.bg,
-image {
+.grabbable {
   cursor: grab;
 }
 </style>
