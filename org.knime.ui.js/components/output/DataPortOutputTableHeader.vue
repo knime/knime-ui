@@ -3,7 +3,15 @@ import { mapState } from 'vuex';
 
 export default {
     computed: {
-        ...mapState('datatable', ['columns'])
+        ...mapState('datatable', ['columns', 'cellTypes'])
+    },
+    methods: {
+        formatType({ typeRef }) {
+            if (!Reflect.has(this.cellTypes, typeRef)) {
+                return '';
+            }
+            return this.cellTypes[typeRef].name;
+        }
     }
 };
 </script>
@@ -14,19 +22,46 @@ export default {
       <th
         v-for="(column, index) of columns"
         :key="`table-header-${index}`"
-        :title="column.name"
       >
-        {{ column.name }}
+        <span
+          class="title"
+          :title="column.name"
+        >{{ column.name }}</span>
+        <span class="type">{{ formatType(column) }}</span>
       </th>
     </tr>
   </thead>
 </template>
 
-<style>
+<style lang="postcss" scoped>
 th {
-  text-align: left;
-  max-width: 1000px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  background: var(--knime-porcelain);
+  height: 42px;
+
+  &:not(:last-child) {
+    border-right: 1px solid var(--knime-white);
+  }
 }
+
+span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  display: block;
+  max-width: 100%;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.type {
+  font-weight: 400;
+  font-size: 10px;
+  line-height: 12px;
+  font-style: italic;
+}
+
 </style>

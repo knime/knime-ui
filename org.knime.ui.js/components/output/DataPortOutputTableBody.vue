@@ -26,10 +26,17 @@ export default {
 
 <style>
 td {
-  border-top: 1px solid var(--knime-black);
   white-space: pre;
   max-width: 50vw;
   overflow: hidden;
   text-overflow: ellipsis;
+  border: none;
+  height: 26px;
+  line-height: 26px;
+  font-size: 14px;
+}
+
+tr:not(:last-child) {
+  border-bottom: 1px solid var(--knime-porcelain);
 }
 </style>

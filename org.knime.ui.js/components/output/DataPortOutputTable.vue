@@ -17,8 +17,21 @@ export default {
   </table>
 </template>
 
-<style>
+<style lang="postcss" scoped>
 table {
   min-width: 100%;
+  border-collapse: collapse;
+  font-family: "Roboto Condensed", sans-serif;
+
+  & >>> th,
+  & >>> td {
+    padding: 0 6px;
+    text-align: left;
+    max-width: 1000px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }
+
 </style>
