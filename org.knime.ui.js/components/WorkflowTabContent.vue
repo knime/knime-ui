@@ -24,8 +24,7 @@ export default {
             switch (this.workflow.info.containerType) {
             case 'project':
                 return this.workflow.projectMetadata || { title: this.workflow.info.name };
-            case 'component':
-                // eslint-disable-next-line no-case-declarations
+            case 'component': {
                 const { componentMetadata:
                     { inPorts, outPorts, name, type, icon, description, dialogs, views } } = this.workflow;
                 return {
@@ -35,6 +34,7 @@ export default {
                     nodeFeatures: { inPorts, outPorts, views, dialogs },
                     isComponent: true
                 };
+            }
             default:
                 return null;
             }
