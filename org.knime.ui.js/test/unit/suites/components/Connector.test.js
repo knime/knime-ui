@@ -70,7 +70,7 @@ describe('Connector', () => {
         });
 
         it('draws a path', () => {
-            const expectedPath = 'M38.5,7.5 h4.5 C69.5,7.5 -23.5,40.5 3,40.5 h4.5';
+            const expectedPath = 'M38.5,7.5 h4.5 C69.5,7.5 -23.5,40.5 -1,40.5 h4.5';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
 
@@ -108,7 +108,7 @@ describe('Connector', () => {
         });
 
         it('draws a path', () => {
-            const expectedPath = 'M32,-4.5 h4.5 C63.75,-4.5 -24.25,40.5 3,40.5 h4.5';
+            const expectedPath = 'M32,-4.5 h4.5 C63.75,-4.5 -24.25,40.5 -1,40.5 h4.5';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
 
@@ -172,7 +172,7 @@ describe('Connector', () => {
         });
 
         it('draws a path', () => {
-            const expectedPath = 'M104.5,651 h4.5 C499.5,651 302.5,960 693,960 h4.5';
+            const expectedPath = 'M104.5,651 h4.5 C499.5,651 302.5,960 689,960 h4.5';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
 

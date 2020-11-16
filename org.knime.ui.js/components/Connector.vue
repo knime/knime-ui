@@ -60,7 +60,7 @@ export default {
             return `M${x1},${y1} h${this.$shapes.portSize / 2} ` +
                 `C${x1 + width / 2 + height / 3},${y1} ` +
                 `${x2 - width / 2 - height / 3},${y2} ` +
-                `${x2 - this.$shapes.portSize / 2},${y2} h${this.$shapes.portSize / 2}`;
+                `${x2 - this.$shapes.portSize + 0.5},${y2} h${this.$shapes.portSize / 2}`;
             /* eslint-enable no-magic-numbers */
         },
         strokeColor() {
