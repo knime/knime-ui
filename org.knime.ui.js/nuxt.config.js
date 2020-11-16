@@ -20,6 +20,7 @@ const config = {
     },
     loading: false,
     plugins: [
+        '~/plugins/logger.js',
         '~/plugins/constants.js',
         '~/plugins/json-rpc-notification.js'
     ],

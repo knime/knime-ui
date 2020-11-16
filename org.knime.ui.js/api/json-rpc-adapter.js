@@ -1,5 +1,3 @@
-import consola from 'consola';
-
 let parseResponse;
 
 /**

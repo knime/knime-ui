@@ -1,7 +1,5 @@
 <script>
 import LegacyAnnotationText from '~/components/LegacyAnnotationText';
-import consola from 'consola';
-
 /**
  * A node annotation, a rectangular box containing text.
  */

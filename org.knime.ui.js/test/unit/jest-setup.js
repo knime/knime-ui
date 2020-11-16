@@ -1,9 +1,8 @@
-import Vue from 'vue';
 import consola from 'consola';
+import Vue from 'vue';
 import { level } from '~/jest-logger.config';
 
 consola.level = level;
-
 
 // Workaround for https://github.com/vuejs/vue/issues/11575
 // Can be removed as soon as that ticket is resolved.

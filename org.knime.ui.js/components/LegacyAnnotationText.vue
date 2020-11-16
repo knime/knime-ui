@@ -8,8 +8,6 @@
  * @returns {boolean} true if the styleRange is valid
  */
 import { applyStyleRanges } from '~/util/styleRanges';
-import consola from 'consola';
-
 export default {
     props: {
         text: {

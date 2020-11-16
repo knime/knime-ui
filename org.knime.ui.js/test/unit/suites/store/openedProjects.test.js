@@ -1,8 +1,6 @@
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
-import consola from 'consola';
-
 import * as openedProjectsStoreConfig from '~/store/openedProjects';
 
 describe('Opened projects store', () => {
