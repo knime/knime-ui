@@ -1,6 +1,9 @@
-import { loadWorkflow as loadWorkflowFromApi } from '~api';
+import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener, executeNodes, cancelNodeExecution,
+    resetNodes } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
+import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
+import consola from 'consola';
 
 /**
  * Store that holds a workflow graph and the associated tooltips.
@@ -16,28 +19,13 @@ export const state = () => ({
 });
 
 export const mutations = {
+    ...jsonPatchMutations,
     setActiveWorkflow(state, workflow) {
-        // extract nodes
-        let { nodes = {} } = workflow;
-        let nodeIds = Object.keys(nodes);
-        let workflowData = {
-            ...workflow,
-            nodeIds
-        };
-
-        // remove all existing nodes of this workflow from Nodes store
-        this.commit('nodes/removeWorkflow', workflow.projectId, { root: true });
-
-        // …and move all nodes to Nodes store
-        nodeIds.forEach((nodeId) => {
-            this.commit('nodes/add', {
-                workflowId: workflow.projectId,
-                nodeData: nodes[nodeId]
-            }, { root: true });
-        });
-        delete workflowData.nodes;
 
         // extract templates
+        let workflowData = {
+            ...workflow
+        };
         let { nodeTemplates = {} } = workflow;
         let nodeTemplateIds = Object.keys(nodeTemplates);
 
@@ -62,24 +50,55 @@ export const mutations = {
 };
 
 export const actions = {
-    async loadWorkflow({ commit, dispatch }, { projectId, containerId = 'root' }) {
-        const workflow = await loadWorkflowFromApi(projectId, containerId);
+    ...jsonPatchActions,
+    async loadWorkflow({ commit, dispatch }, { projectId, workflowId = 'root' }) {
+        const workflow = await loadWorkflowFromApi({ projectId, workflowId });
 
         if (workflow) {
-            dispatch('setActiveWorkflowSnapshot', {
+            dispatch('unloadActiveWorkflow');
+            await dispatch('setActiveWorkflowSnapshot', {
                 ...workflow,
                 projectId
             });
         } else {
-            throw new Error(`workflow not found: "${projectId}" > "${containerId}"`);
+            throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    setActiveWorkflowSnapshot({ commit }, { workflow, snapshotId, projectId }) {
+    unloadActiveWorkflow({ state, getters }) {
+        if (!state.activeWorkflow) {
+            // nothing to do (no tabs open)
+            return;
+        }
+        let { projectId } = state.activeWorkflow;
+        let workflowId = getters.activeWorkflowId;
+        let { activeSnapshotId: snapshotId } = state;
+        try {
+            // this is intentionally not awaiting the response. Unloading can happen in the background.
+            removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+        } catch (e) {
+            consola.error(e);
+        }
+    },
+    async setActiveWorkflowSnapshot({ commit, getters }, { workflow, snapshotId, projectId }) {
         commit('setActiveWorkflow', {
             ...workflow,
             projectId
         });
         commit('setActiveSnapshotId', snapshotId);
+        let workflowId = getters.activeWorkflowId;
+        await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+    },
+    /* See docs in API */
+    executeNodes({ state }, { nodeIds }) {
+        executeNodes({ projectId: state.activeWorkflow.projectId, nodeIds });
+    },
+    /* See docs in API */
+    cancelNodeExecution({ state }, { nodeIds }) {
+        cancelNodeExecution({ projectId: state.activeWorkflow.projectId, nodeIds });
+    },
+    /* See docs in API */
+    resetNodes({ state }, { nodeIds }) {
+        resetNodes({ projectId: state.activeWorkflow.projectId, nodeIds });
     }
 };
 
@@ -89,12 +108,6 @@ export const getters = {
     },
     isWritable(state, getters) {
         return !getters.isLinked;
-    },
-    nodes(state, getters, rootState) {
-        if (!state.activeWorkflow) {
-            return null;
-        }
-        return rootState.nodes[state.activeWorkflow.projectId];
     },
     /*
         returns the true offset from the upper-left corner of the svg for a given point
@@ -120,20 +133,19 @@ export const getters = {
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
     */
-    workflowBounds({ activeWorkflow }, getters, rootState) {
-        const { nodeIds, workflowAnnotations = [], metaInPorts, metaOutPorts } = activeWorkflow;
+    workflowBounds({ activeWorkflow }) {
+        const { nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPorts } = activeWorkflow;
         const {
             nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight, portSize,
             defaultMetanodeBarPosition, defaultMetaNodeBarHeight, metaNodeBarWidth
         } = $shapes;
-        let nodes = nodeIds.map(nodeId => getters.nodes[nodeId]);
 
         let left = Infinity;
         let top = Infinity;
         let right = -Infinity;
         let bottom = -Infinity;
 
-        nodes.forEach(({ position: { x, y } }) => {
+        Object.values(nodes).forEach(({ position: { x, y } }) => {
             const nodeTop = y - nodeNameMargin - nodeNameLineHeight;
             const nodeBottom = y + nodeSize + nodeStatusMarginTop + nodeStatusHeight;
 
@@ -190,7 +202,7 @@ export const getters = {
         if (metaOutPorts?.ports?.length) {
             let leftBorder, rightBorder;
             if (metaOutPorts.xPos) {
-                leftBorder =  metaOutPorts.xPos - portSize;
+                leftBorder = metaOutPorts.xPos - portSize;
                 rightBorder = metaOutPorts.xPos + metaNodeBarWidth;
             } else {
                 leftBorder = left + defaultBarPosition - portSize;
@@ -211,6 +223,49 @@ export const getters = {
             top,
             right,
             bottom
+        };
+    },
+
+    activeWorkflowId({ activeWorkflow }) {
+        if (!activeWorkflow) {
+            return null;
+        }
+        return activeWorkflow?.info.containerId || 'root';
+    },
+
+    nodeIcon(state, getters, rootState) {
+        return ({ nodeId }) => {
+            let node = state.activeWorkflow.nodes[nodeId];
+            let { templateId } = node;
+            if (templateId) {
+                return rootState.nodeTemplates[templateId].icon;
+            } else {
+                return node.icon;
+            }
+        };
+    },
+
+    nodeName(state, getters, rootState) {
+        return ({ nodeId }) => {
+            let node = state.activeWorkflow.nodes[nodeId];
+            let { templateId } = node;
+            if (templateId) {
+                return rootState.nodeTemplates[templateId].name;
+            } else {
+                return node.name;
+            }
+        };
+    },
+
+    nodeType(state, getters, rootState) {
+        return ({ nodeId }) => {
+            let node = state.activeWorkflow.nodes[nodeId];
+            let { templateId } = node;
+            if (templateId) {
+                return rootState.nodeTemplates[templateId].type;
+            } else {
+                return node.type;
+            }
         };
     }
 };

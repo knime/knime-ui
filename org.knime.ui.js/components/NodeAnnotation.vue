@@ -1,5 +1,6 @@
 <script>
 import LegacyAnnotationText from '~/components/LegacyAnnotationText';
+import consola from 'consola';
 
 /**
  * A node annotation, a rectangular box containing text.
@@ -87,7 +88,11 @@ export default {
         adjustDimensions() {
             this.width = this.$shapes.maxNodeAnnotationWidth;
             this.$nextTick(() => { // wait for re-render
-                let rect = this.$refs.text.$el.getBoundingClientRect();
+                let rect = this.$refs.text?.$el.getBoundingClientRect();
+                if (!rect) {
+                    consola.error('Tried to adjust dimensions of NodeAnnotation, but DOM element is gone');
+                    return;
+                }
                 let width = Math.ceil(rect.width);
                 this.width = width;
                 this.x = (this.$shapes.nodeSize - width) / 2;

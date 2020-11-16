@@ -81,7 +81,7 @@ export default {
          */
         getEndPointCoordinates(type = 'dest') {
             let sourceNodeIndex = this[`${type}Port`];
-            let node = this.$store.state.nodes[this.workflow.projectId]?.[this[`${type}Node`]];
+            let node = this.$store.state.workflow.activeWorkflow.nodes[this[`${type}Node`]];
             if (node) {
                 // connected to a node
                 return this.getRegularNodePortPos({ sourceNodeIndex, type, node });

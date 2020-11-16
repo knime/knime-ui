@@ -22,7 +22,7 @@ export default {
             let items = parents.map(({ containerType, name, containerId = 'root', linked }) => ({
                 icon: this.getIcon(containerType, linked),
                 text: name,
-                href: `#${containerId}`
+                href: `#${encodeURIComponent(containerId)}`
             }));
 
             const { containerType, linked } = this.workflow.info;
@@ -51,8 +51,9 @@ export default {
             if (!target || !target.href) {
                 return;
             }
-            let containerId = target.href.replace(/.*#/, '');
-            this.$store.dispatch('workflow/loadWorkflow', { projectId: this.workflow.projectId, containerId });
+            let { hash } = new URL(target.href, 'file://dummy/');
+            let workflowId = decodeURIComponent(hash.replace(/^#/, ''));
+            this.$store.dispatch('workflow/loadWorkflow', { projectId: this.workflow.projectId, workflowId });
         }
     }
 };
@@ -60,20 +61,11 @@ export default {
 
 <template>
   <div
-    class="container"
-    @click.capture.prevent="onClick"
+    class="breadcrumb-container"
+    @click.capture.prevent.stop="onClick"
   >
     <Breadcrumb
       :items="items"
     />
   </div>
 </template>
-
-<style lang="postcss" scoped>
-.container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: var(--knime-porcelain);
-}
-</style>

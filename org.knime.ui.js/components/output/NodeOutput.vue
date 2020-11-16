@@ -7,7 +7,7 @@ export default {
         DataPortOutputTable
     },
     computed: {
-        ...mapState('datatable', ['totalNumRows', 'totalNumColumns', 'nodes']),
+        ...mapState('datatable', ['totalNumRows', 'totalNumColumns', 'nodes'])
     }
 };
 </script>

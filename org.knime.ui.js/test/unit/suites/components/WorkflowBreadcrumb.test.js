@@ -68,21 +68,21 @@ describe('WorkflowBreadcrumb.vue', () => {
                 name: 'foo'
             }, {
                 containerType: 'component',
-                containerId: 'p1',
+                containerId: 'root:p1',
                 name: 'Comp oh Nent'
             }, {
                 containerType: 'component',
-                containerId: 'p2',
+                containerId: 'root:p2',
                 name: 'L ink Comp oh Nent',
                 linked: true
             }, {
                 containerType: 'metanode',
-                containerId: 'p3',
+                containerId: 'root:p3',
                 name: 'Matter Node'
             },
             {
                 containerType: 'metanode',
-                containerId: 'p4',
+                containerId: 'root:p4',
                 name: 'Latter Node',
                 linked: true
             }]
@@ -95,19 +95,19 @@ describe('WorkflowBreadcrumb.vue', () => {
                 icon: null,
                 text: 'foo'
             }, {
-                href: '#p1',
+                href: '#root%3Ap1',
                 icon: ComponentIcon,
                 text: 'Comp oh Nent'
             }, {
-                href: '#p2',
+                href: '#root%3Ap2',
                 icon: LinkedComponentIcon,
                 text: 'L ink Comp oh Nent'
             }, {
-                href: '#p3',
+                href: '#root%3Ap3',
                 icon: MetaNodeIcon,
                 text: 'Matter Node'
             }, {
-                href: '#p4',
+                href: '#root%3Ap4',
                 icon: LinkedMetanodeIcon,
                 text: 'Latter Node'
             }, {
@@ -151,7 +151,22 @@ describe('WorkflowBreadcrumb.vue', () => {
             };
             wrapper.vm.onClick(event);
             expect(loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
-                containerId: 'root:0:123',
+                workflowId: 'root:0:123',
+                projectId: 'proj'
+            });
+        });
+
+        it('handles clicks on link with weird characters in ID (which should never occur)', () => {
+            let weirdId = 'root#;,/?:@&=+$-_.!~*\'"()123';
+            const event = {
+                target: {
+                    tagName: 'A',
+                    href: `#${encodeURIComponent(weirdId)}`
+                }
+            };
+            wrapper.vm.onClick(event);
+            expect(loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
+                workflowId: weirdId,
                 projectId: 'proj'
             });
         });

@@ -66,10 +66,6 @@ export default {
   overflow: hidden;
 }
 
-#tab-content {
-  grid-area: workflow;
-}
-
 #header {
   grid-area: header;
 }
@@ -77,6 +73,10 @@ export default {
 #sidebar {
   grid-area: sidebar;
   height: 100%;
+}
+
+#tab-content {
+  grid-area: workflow;
 }
 
 .loader {

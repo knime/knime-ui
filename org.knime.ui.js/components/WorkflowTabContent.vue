@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
+import WorkflowToolbar from '~/components/WorkflowToolbar';
 import Kanvas from '~/components/Kanvas';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
@@ -17,7 +17,7 @@ export default {
         Kanvas,
         LeftCollapsiblePanel,
         WorkflowMetadata,
-        WorkflowBreadcrumb
+        WorkflowToolbar
     },
     computed: {
         ...mapState('workflow', {
@@ -28,8 +28,8 @@ export default {
                 title: this.workflow.info.name
             };
         },
-        hasBreadcrumb() {
-            return this.workflow.parents?.length > 0;
+        hasLeftPanel() {
+            return this.workflow.info.containerType === 'project';
         }
     }
 };
@@ -39,24 +39,23 @@ export default {
   <main
     v-if="workflow"
   >
-    <WorkflowBreadcrumb
-      v-if="hasBreadcrumb"
-      class="breadcrumb"
+    <WorkflowToolbar
+      id="toolbar"
     />
-
-    <LeftCollapsiblePanel
-      v-if="workflow.info.containerType === 'project'"
-      id="metadata"
-      width="360px"
-      title="Workflow Metadata"
-    >
-      <WorkflowMetadata
-        v-bind="workflow.metadata || placeholderMetadata"
-      />
-    </LeftCollapsiblePanel>
-
-    <Kanvas id="kanvas" />
-    <NodeOutput id="node-output" />
+    <div class="collapser-kanvas">
+      <LeftCollapsiblePanel
+        v-if="hasLeftPanel"
+        id="metadata"
+        width="360px"
+        title="Workflow Metadata"
+      >
+        <WorkflowMetadata
+          v-bind="workflow.metadata || placeholderMetadata"
+        />
+      </LeftCollapsiblePanel>
+      <Kanvas id="kanvas" />
+      <NodeOutput id="node-output" />
+    </div>
   </main>
   <div
     v-else
@@ -70,37 +69,37 @@ export default {
 
 <style lang="postcss" scoped>
 main {
-  display: grid;
+  display: flex;
   overflow: auto;
-  grid-template-columns: min-content auto;
-  grid-template-rows: min-content auto;
-  grid-template-areas:
-    "toolbar toolbar"
-    "metadata kanvas"
-    "metadata output";
+  flex-direction: column;
+  align-items: stretch;
+  height: 100%;
 }
 
 #toolbar {
-  grid-area: toolbar;
   height: 50px;
+  flex: 0 0 auto;
+  padding: 10px;
   background-color: var(--knime-porcelain);
   border-bottom: 1px solid var(--knime-silver-sand);
 }
 
-#metadata {
-  grid-area: metadata;
-  border-right: 1px solid var(--knime-silver-sand);
+.collapser-kanvas {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: row;
+  align-items: stretch;
+  overflow: hidden;
 }
 
-.breadcrumb {
-  grid-area: toolbar;
-  min-height: 50px;
-  border-bottom: 1px solid var(--knime-silver-sand);
+#metadata {
+  flex: 0 0 auto;
+  border-right: 1px solid var(--knime-silver-sand);
 }
 
 #kanvas {
   overflow: auto;
-  grid-area: kanvas;
+  flex: 1 1 auto;
 }
 
 #node-output {
@@ -109,7 +108,6 @@ main {
 }
 
 .placeholder {
-  grid-area: kanvas;
   height: 55%;
   display: flex;
   justify-content: center;

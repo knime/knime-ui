@@ -30,7 +30,7 @@ export default (method, ...args) => {
     try {
         response = window.jsonrpc(JSON.stringify(req));
     } catch (e) {
-        throw new Error(`Error calling JSON-RPC api: ${[method, ...args].join(', ')}`);
+        throw new Error(`Error calling JSON-RPC api "${[method, JSON.stringify(args)].join('", "')}": ${e.message}`);
     }
 
     return parseResponse({ response, method, args });
@@ -64,6 +64,7 @@ parseResponse = ({ response, method = '<unknown>', args }) => {
         throw new Error(`Invalid JSON-RPC response ${response}`);
     }
 
+    consola.trace('Result:', result);
     return result;
 };
 

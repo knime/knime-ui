@@ -3,7 +3,7 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
-jest.mock('~api', () => {}, { virtual: true });
+jest.mock('~api', () => { }, { virtual: true });
 
 import Connector from '~/components/Connector';
 import * as $shapes from '~/style/shapes';
@@ -40,25 +40,23 @@ describe('Connector.vue', () => {
                     ...workflowStoreConfig,
                     state: {
                         activeWorkflow: {
-                            projectId: 'some id',
-                            nodeIds: ['root:1', 'root:2'],
-                            info: {}
-                        }
-                    }
-                },
-                nodes: {
-                    state: {
-                        'some id': {
-                            'root:1': {
-                                kind: 'metanode',
-                                position: { x: 2, y: 2 },
-                                outPorts: [portMock, portMock]
-                            },
-                            'root:2': {
-                                kind: 'metanode',
-                                position: { x: 12, y: 14 },
-                                inPorts: [portMock, portMock, portMock]
+                            nodes: {
+                                'root:1': {
+                                    kind: 'metanode',
+                                    position: { x: 2, y: 2 },
+                                    outPorts: [portMock, portMock]
+                                },
+                                'root:2': {
+                                    kind: 'metanode',
+                                    position: { x: 12, y: 14 },
+                                    inPorts: [portMock, portMock, portMock]
+                                }
                             }
+                        }
+                    },
+                    getters: {
+                        isWritable() {
+                            return true;
                         }
                     }
                 }
@@ -88,17 +86,15 @@ describe('Connector.vue', () => {
                     ...workflowStoreConfig,
                     state: {
                         activeWorkflow: {
-                            projectId: 'myId',
-                            nodeIds: ['root:1', 'root:2'],
-                            info: {}
+                            nodes: {
+                                'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
+                                'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
+                            }
                         }
-                    }
-                },
-                nodes: {
-                    state: {
-                        myId: {
-                            'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
-                            'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
+                    },
+                    getters: {
+                        isWritable() {
+                            return true;
                         }
                     }
                 }
@@ -119,18 +115,18 @@ describe('Connector.vue', () => {
                     state: {
                         activeWorkflow: {
                             projectId: 'myId',
-                            nodeIds: ['root:1', 'root:2'],
+                            nodes: {
+                                'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
+                                'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
+                            },
                             info: {
                                 linked: true
                             }
                         }
-                    }
-                },
-                nodes: {
-                    state: {
-                        myId: {
-                            'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
-                            'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
+                    },
+                    getters: {
+                        isWritable() {
+                            return false;
                         }
                     }
                 }
@@ -179,7 +175,7 @@ describe('Connector.vue', () => {
                     state: {
                         activeWorkflow: {
                             projectId: 'some id',
-                            nodeIds: ['root:1', 'root:2'],
+                            nodes: {},
                             metaInPorts: {
                                 xPos: 100,
                                 ports: [portMock]
@@ -198,12 +194,10 @@ describe('Connector.vue', () => {
                                 y: 33,
                                 height: 1236
                             };
+                        },
+                        isWritable() {
+                            return true;
                         }
-                    }
-                },
-                nodes: {
-                    state: {
-                        'some id': {}
                     }
                 }
             });
