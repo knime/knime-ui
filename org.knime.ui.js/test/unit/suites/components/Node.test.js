@@ -9,6 +9,7 @@ import NodeTorso from '~/components/NodeTorso.vue';
 import NodeSelect from '~/components/NodeSelect.vue';
 import NodeState from '~/components/NodeState.vue';
 import NodeAnnotation from '~/components/NodeAnnotation.vue';
+import LinkDecorator from '~/components/LinkDecorator.vue';
 import Port from '~/components/Port.vue';
 
 import * as $shapes from '~/style/shapes';
@@ -114,6 +115,13 @@ describe('Node', () => {
 
         it('displays name (plaintext)', () => {
             expect(wrapper.find('.name').text()).toBe('My Name');
+        });
+
+        it('shows/hides LinkDecorator', () => {
+            expect(wrapper.findComponent(LinkDecorator).exists()).toBe(false);
+            propsData.link = 'linkylinky';
+            doShallowMount();
+            expect(wrapper.findComponent(LinkDecorator).exists()).toBe(true);
         });
 
         it('displays annotation', () => {
@@ -269,7 +277,7 @@ describe('Node', () => {
             await wrapper.find('.hover-container > g').trigger('dblclick');
 
             expect(workflowStoreConfig.actions.loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
-                containerId: 'root:1',
+                workflowId: 'root:1',
                 projectId: 'projectId'
             });
         });
@@ -283,7 +291,7 @@ describe('Node', () => {
             });
 
             expect(workflowStoreConfig.actions.loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
-                containerId: 'root:1',
+                workflowId: 'root:1',
                 projectId: 'projectId'
             });
         });

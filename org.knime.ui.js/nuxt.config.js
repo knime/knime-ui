@@ -22,7 +22,8 @@ const config = {
     plugins: [
         // To work together with knime-ui-internal and to configure logging for the other plugins, 'logger' must be plugin number zero
         '~/plugins/logger.js',
-        '~/plugins/constants.js'
+        '~/plugins/constants.js',
+        '~/plugins/json-rpc-notification.js'
     ],
     modules: ['portal-vue/nuxt'],
     css: ['@/assets/index.css'],

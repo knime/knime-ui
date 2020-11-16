@@ -8,7 +8,7 @@ const camelToSnake = str => str.replace(/(.?)([A-Z])/g,
     (_, before, letter) => `${before}${before ? '-' : ''}${letter.toLowerCase()}`);
 
 
-const assets = ['warning', 'error', 'darkeningMask'];
+const assets = ['warning', 'error', 'darkeningMask', 'notificationBackground'];
 
 /**
  * Generate colors.css with the above color names from colors.js

@@ -62,11 +62,8 @@ export default {
     "sidebar workflow";
   height: 100vh;
   background: var(--knime-white);
+  color: var(--knime-masala);
   overflow: hidden;
-}
-
-#tab-content {
-  grid-area: workflow;
 }
 
 #header {
@@ -76,6 +73,10 @@ export default {
 #sidebar {
   grid-area: sidebar;
   height: 100%;
+}
+
+#tab-content {
+  grid-area: workflow;
 }
 
 .loader {

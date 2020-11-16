@@ -14,6 +14,8 @@ export const portColors = {
 
 export const nodeBackgroundColors = nodeColors;
 
+export const linkDecorator = knimeColors.Black;
+
 export const connectorColors = {
     default: knimeColors.SilverSand,
     flowVariable: portColors.flowVariable
@@ -36,5 +38,7 @@ export const metanodeState = knimeColors.Masala;
 
 export const error = trafficLight.red;
 export const warning = knimeColors.Yellow;
+
+export const notificationBackground = 'hsla(206, 42%, 86%, 90%)';
 
 export const named = knimeColors;

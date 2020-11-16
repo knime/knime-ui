@@ -1,21 +1,44 @@
+import Vuex from 'vuex';
+
 import NodeTorso from '~/components/NodeTorso';
 import NodeTorsoMissing from '~/components/NodeTorsoMissing';
 import NodeTorsoUnknown from '~/components/NodeTorsoUnknown';
 import NodeTorsoMetanode from '~/components/NodeTorsoMetanode';
 import NodeTorsoNormal from '~/webapps-common/ui/components/node/NodeTorsoNormal';
-import { shallowMount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { mockVuexStore } from '~/test/unit/test-utils';
 
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
 describe('NodeTorso.vue', () => {
 
-    let doShallowMount = propsData => shallowMount(NodeTorso, {
-        propsData,
-        mocks: { $shapes, $colors }
+    beforeAll(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
     });
 
-    it('renders native node', () => {
+    let doShallowMount = (propsData, { writable = true } = {}) => {
+        let $store = mockVuexStore({
+            workflow: {
+                getters: {
+                    isWritable() {
+                        return writable;
+                    }
+                }
+            }
+        });
+        return shallowMount(NodeTorso, {
+            propsData,
+            mocks: {
+                $shapes,
+                $colors,
+                $store
+            }
+        });
+    };
+
+    it('sets background color', () => {
         let wrapper = doShallowMount({
             kind: 'node',
             type: 'Sink',
@@ -39,6 +62,7 @@ describe('NodeTorso.vue', () => {
             isComponent: true,
             icon: 'data:image/icon'
         });
+        expect(wrapper.find('.grabbable').exists()).toBe(true);
     });
 
     it('renders metanodes', () => {
@@ -46,6 +70,7 @@ describe('NodeTorso.vue', () => {
             kind: 'metanode'
         });
         expect(wrapper.findComponent(NodeTorsoMetanode).exists()).toBeTruthy();
+        expect(wrapper.find('.grabbable').exists()).toBe(true);
     });
 
     it('renders metanode state', () => {
@@ -72,5 +97,12 @@ describe('NodeTorso.vue', () => {
         });
         expect(wrapper.findComponent(NodeTorsoUnknown).exists()).toBeTruthy();
         expect(wrapper.findComponent(NodeTorsoNormal).exists()).toBeFalsy();
+    });
+
+    it.each(['node', 'metanode', 'component'])('no grab cursor if write-protected %s', (kind) => {
+        let wrapper = doShallowMount({
+            kind
+        }, { writable: false });
+        expect(wrapper.find('.grabbable').exists()).toBe(false);
     });
 });

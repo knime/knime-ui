@@ -27,7 +27,7 @@ describe('JSON-RPC adapter', () => {
             throw new Error('internal error');
         });
 
-        expect(() => rpc('a', 'b', 'c')).toThrow('Error calling JSON-RPC api: a, b, c');
+        expect(() => rpc('a', 'b', 'c')).toThrow('Error calling JSON-RPC api "a", "["b","c"]": internal error');
     });
 
     it('handles syntactically invalid response', () => {

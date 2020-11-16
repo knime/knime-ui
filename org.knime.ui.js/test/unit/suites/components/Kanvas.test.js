@@ -53,7 +53,7 @@ describe('Kanvas', () => {
                 containerType: 'project',
                 name: 'wf1'
             },
-            nodeIds: ['root:0', 'root:1', 'root:2'],
+            nodes: nodeData,
             connections: {
                 inA: mockConnector({ nr: 0 }),
                 outA: mockConnector({ nr: 1 }),
@@ -67,22 +67,21 @@ describe('Kanvas', () => {
                 getters: {
                     svgBounds() {
                         return { x: -5, y: -2, height: 102, width: 100 };
-                    }
-                }
-            },
-            nodes: {
-                state: {
-                    'some id': nodeData
-                },
-                getters: {
-                    icon() {
-                        return ({ workflowId, nodeId }) => `data:image/${workflowId}-${nodeId}`;
                     },
-                    name() {
-                        return ({ workflowId, nodeId }) => `name-${workflowId}-${nodeId}`;
+                    isLinked() {
+                        return workflow.info.linked;
                     },
-                    type() {
-                        return ({ workflowId, nodeId }) => `type-${workflowId}-${nodeId}`;
+                    isWritable() {
+                        return !workflow.info.linked;
+                    },
+                    nodeIcon() {
+                        return ({ nodeId }) => `data:image/${nodeId}`;
+                    },
+                    nodeName() {
+                        return ({ nodeId }) => `name-${nodeId}`;
+                    },
+                    nodeType() {
+                        return ({ nodeId }) => `type-${nodeId}`;
                     }
                 }
             }
@@ -107,12 +106,13 @@ describe('Kanvas', () => {
         it('renders nodes', () => {
             wrapper.findAllComponents(Node).wrappers.forEach((n, i) => {
                 let props = n.props();
-                let nodeId = workflow.nodeIds[i];
+                let nodeId = props.id;
                 let expected = {
                     ...nodeData[nodeId],
-                    icon: `data:image/some id-${nodeId}`,
-                    name: `name-some id-${nodeId}`,
-                    type: `type-some id-${nodeId}`
+                    icon: `data:image/${nodeId}`,
+                    name: `name-${nodeId}`,
+                    type: `type-${nodeId}`,
+                    link: null
                 };
                 expect(props).toStrictEqual(expected);
             });
@@ -122,6 +122,18 @@ describe('Kanvas', () => {
             let props = wrapper.findAllComponents(Connector).wrappers.map(c => c.props());
             expect(props).toEqual(Object.values(workflow.connections));
         });
+
+        it('is not linked', () => {
+            expect(wrapper.find('.read-only').exists()).toBe(false);
+            expect(wrapper.find('.link-notification').exists()).toBe(false);
+        });
+    });
+
+    it('write-protects and shows warning on being linked', () => {
+        workflow.info.linked = true;
+        doShallowMount();
+        expect(wrapper.find('.read-only').exists()).toBe(true);
+        expect(wrapper.find('.link-notification').exists()).toBe(true);
     });
 
     it('renders workflow annotations', () => {

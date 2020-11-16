@@ -5,7 +5,7 @@ import Vuex from 'vuex';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import Kanvas from '~/components/Kanvas';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
-import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
+import WorkflowToolbar from '~/components/WorkflowToolbar';
 
 describe('WorkflowTabContent.vue', () => {
     beforeAll(() => {
@@ -134,27 +134,18 @@ describe('WorkflowTabContent.vue', () => {
         });
     });
 
-    describe('breadcrumb', () => {
-        it('shows no breadcrumb by default', async () => {
+    describe('toolbar', () => {
+        it('shows no toolbar by default', async () => {
+            workflow = null;
             await doShallowMount();
 
-            expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(false);
+            expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(false);
         });
 
         it('shows breadcrumb when available', async () => {
-            workflow.parents = [
-                {
-                    containerType: 'project',
-                    name: 'foo'
-                }, {
-                    containerType: 'component',
-                    containerId: 'root:201',
-                    name: 'Component'
-                }
-            ];
             await doShallowMount();
 
-            expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(true);
+            expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(true);
         });
     });
 });

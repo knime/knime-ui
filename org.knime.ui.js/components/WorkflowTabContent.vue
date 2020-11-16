@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
+import WorkflowToolbar from '~/components/WorkflowToolbar';
 import Kanvas from '~/components/Kanvas';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
@@ -14,7 +14,7 @@ export default {
         Kanvas,
         LeftCollapsiblePanel,
         WorkflowMetadata,
-        WorkflowBreadcrumb
+        WorkflowToolbar
     },
     computed: {
         ...mapState('workflow', {
@@ -31,28 +31,16 @@ export default {
                 return {
                     title: name,
                     description,
-                    nodePreview: {
-                        inPorts,
-                        outPorts,
-                        icon,
-                        type,
-                        isComponent: true,
-                        hasDynPorts: false
-                    },
-                    nodeFeatures: {
-                        inPorts,
-                        outPorts,
-                        views,
-                        dialogs
-                    },
+                    nodePreview: { inPorts, outPorts, icon, type, isComponent: true, hasDynPorts: false },
+                    nodeFeatures: { inPorts, outPorts, views, dialogs },
                     isComponent: true
                 };
             default:
                 return null;
             }
         },
-        hasBreadcrumb() {
-            return this.workflow.parents?.length > 0;
+        hasLeftPanel() {
+            return this.workflow.info.containerType === 'project';
         }
     }
 };
@@ -62,23 +50,23 @@ export default {
   <main
     v-if="workflow"
   >
-    <WorkflowBreadcrumb
-      v-if="hasBreadcrumb"
-      class="breadcrumb"
+    <WorkflowToolbar
+      id="toolbar"
     />
+    <div class="collapser-kanvas">
+      <LeftCollapsiblePanel
+        v-if="metadata"
+        id="metadata"
+        width="360px"
+        title="Workflow Metadata"
+      >
+        <WorkflowMetadata
+          v-bind="metadata"
+        />
+      </LeftCollapsiblePanel>
 
-    <LeftCollapsiblePanel
-      v-if="metadata"
-      id="metadata"
-      width="360px"
-      title="Workflow Metadata"
-    >
-      <WorkflowMetadata
-        v-bind="metadata"
-      />
-    </LeftCollapsiblePanel>
-
-    <Kanvas id="kanvas" />
+      <Kanvas id="kanvas" />
+    </div>
   </main>
   <div
     v-else
@@ -92,40 +80,40 @@ export default {
 
 <style lang="postcss" scoped>
 main {
-  display: grid;
+  display: flex;
   overflow: auto;
-  grid-template-columns: min-content auto;
-  grid-template-rows: min-content auto;
-  grid-template-areas:
-    "toolbar toolbar"
-    "metadata kanvas";
+  flex-direction: column;
+  align-items: stretch;
+  height: 100%;
 }
 
 #toolbar {
-  grid-area: toolbar;
   height: 50px;
+  flex: 0 0 auto;
+  padding: 10px;
   background-color: var(--knime-porcelain);
   border-bottom: 1px solid var(--knime-silver-sand);
 }
 
-#metadata {
-  grid-area: metadata;
-  border-right: 1px solid var(--knime-silver-sand);
+.collapser-kanvas {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: row;
+  align-items: stretch;
+  overflow: hidden;
 }
 
-.breadcrumb {
-  grid-area: toolbar;
-  min-height: 50px;
-  border-bottom: 1px solid var(--knime-silver-sand);
+#metadata {
+  flex: 0 0 auto;
+  border-right: 1px solid var(--knime-silver-sand);
 }
 
 #kanvas {
   overflow: auto;
-  grid-area: kanvas;
+  flex: 1 1 auto;
 }
 
 .placeholder {
-  grid-area: kanvas;
   height: 55%;
   display: flex;
   justify-content: center;

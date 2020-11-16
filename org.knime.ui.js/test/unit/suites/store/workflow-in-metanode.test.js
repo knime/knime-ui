@@ -9,7 +9,7 @@ import { canvasPadding,
 import Vuex from 'vuex';
 
 describe('workflow store', () => {
-    let store, localVue, templateMutationMock, nodeMutationMock, removeWorkflowMock, loadStore;
+    let store, localVue, templateMutationMock, loadStore;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -18,8 +18,6 @@ describe('workflow store', () => {
 
     beforeEach(() => {
         templateMutationMock = jest.fn();
-        nodeMutationMock = jest.fn();
-        removeWorkflowMock = jest.fn();
 
         loadStore = async ({ apiMocks = {}, nodes = {} } = {}) => {
             /**
@@ -39,13 +37,6 @@ describe('workflow store', () => {
                     mutations: {
                         add: templateMutationMock
                     }
-                },
-                nodes: {
-                    mutations: {
-                        add: nodeMutationMock,
-                        removeWorkflow: removeWorkflowMock
-                    },
-                    state: nodes
                 }
             });
         };

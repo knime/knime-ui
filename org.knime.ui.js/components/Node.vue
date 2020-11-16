@@ -5,6 +5,7 @@ import NodeState from '~/components/NodeState.vue';
 import NodeTorso from '~/components/NodeTorso.vue';
 import NodeSelect from '~/components/NodeSelect.vue';
 import NodeAnnotation from '~/components/NodeAnnotation.vue';
+import LinkDecorator from '~/components/LinkDecorator.vue';
 import portShift from '~/util/portShift';
 
 /**
@@ -18,7 +19,8 @@ export default {
         NodeAnnotation,
         NodeTorso,
         NodeState,
-        NodeSelect
+        NodeSelect,
+        LinkDecorator
     },
     inheritAttrs: false,
     provide() {
@@ -86,6 +88,14 @@ export default {
         },
 
         /**
+         * Path to the origin of a linked component or metanode
+         */
+        link: {
+            type: String,
+            default: null
+        },
+
+        /**
          * Node Execution State
          */
         state: {
@@ -136,7 +146,7 @@ export default {
         },
 
         openNode() {
-            this.$store.dispatch('workflow/loadWorkflow', { containerId: this.id, projectId: this.projectId });
+            this.$store.dispatch('workflow/loadWorkflow', { workflowId: this.id, projectId: this.projectId });
         }
     }
 };
@@ -184,6 +194,12 @@ export default {
           :execution-state="state && state.executionState"
         />
       </g>
+
+      <LinkDecorator
+        v-if="link"
+        :type="type"
+        transform="translate(0,21)"
+      />
 
       <template v-for="port of inPorts">
         <Port

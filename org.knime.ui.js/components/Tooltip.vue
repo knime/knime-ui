@@ -62,7 +62,7 @@ export default {
         }
     },
     computed: {
-        ...mapGetters('workflow', ['getAbsoluteCoordinates', 'nodes']),
+        ...mapGetters('workflow', ['getAbsoluteCoordinates']),
         position() {
             let { x, y, $shapes: { tooltipArrowSize } } = this;
             if (this.anchorPoint) {
