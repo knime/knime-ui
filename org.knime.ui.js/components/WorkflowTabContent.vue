@@ -53,8 +53,10 @@ export default {
           v-bind="workflow.metadata || placeholderMetadata"
         />
       </LeftCollapsiblePanel>
-      <Kanvas id="kanvas" />
-      <NodeOutput id="node-output" />
+      <div class="stacked">
+        <Kanvas id="kanvas" />
+        <NodeOutput id="node-output" />
+      </div>
     </div>
   </main>
   <div
@@ -97,14 +99,21 @@ main {
   border-right: 1px solid var(--knime-silver-sand);
 }
 
+.stacked {
+  flex: 1 1 auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 #kanvas {
   overflow: auto;
-  flex: 1 1 auto;
+  flex: 1 0 67%;
 }
 
 #node-output {
   overflow: auto;
-  grid-area: output;
+  flex: 0 0 33%;
 }
 
 .placeholder {
