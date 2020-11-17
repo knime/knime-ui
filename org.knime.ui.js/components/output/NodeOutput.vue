@@ -1,24 +1,63 @@
 <script>
 import { mapState } from 'vuex';
 import DataPortOutputTable from '~/components/output/DataPortOutputTable';
+import OutputPortSelectorBar from '~/components/output/OutputPortSelectorBar';
 
 export default {
     components: {
+        OutputPortSelectorBar,
         DataPortOutputTable
     },
     computed: {
-        ...mapState('datatable', ['totalNumRows', 'totalNumColumns', 'nodes'])
+        ...mapState('datatable', ['totalNumRows', 'totalNumColumns']),
+        ...mapState('workflow', {
+            nodes: state => state.activeWorkflow.nodes
+        }),
+        selectedNodes() {
+            let nodes = Object.values(this.nodes || {});
+            return nodes.filter(node => node.selected);
+        },
+        selectedNode() {
+            if (this.selectedNodes.length === 1) {
+                return this.selectedNodes[0];
+            }
+            return null;
+        },
+        outPorts() {
+            return this.selectedNode?.outPorts || [];
+        },
+        placeholderText() {
+            switch (this.selectedNodes.length) {
+            case 0:
+                return 'Select a node to show its output data';
+            case 1:
+                return 'The selected node has no output port';
+            default:
+                return 'Select a single node to show its output data';
+            }
+        }
     }
 };
 </script>
 
 <template>
   <div class="output-container">
-    <span class="counts">
-      <span class="count">Rows: {{ totalNumRows }}</span><!--
-      --><span class="count">Columns: {{ totalNumColumns }}</span>
-    </span>
-    <DataPortOutputTable class="table" />
+    <template v-if="selectedNode && outPorts.length > 0">
+      <OutputPortSelectorBar
+        :node="selectedNode"
+      />
+      <span class="counts">
+        <span class="count">Rows: {{ totalNumRows }}</span><!--
+        --><span class="count">Columns: {{ totalNumColumns }}</span>
+      </span>
+      <DataPortOutputTable class="table" />
+    </template>
+    <div
+      v-else
+      class="placeholder"
+    >
+      {{ placeholderText }}
+    </div>
   </div>
 </template>
 
@@ -34,7 +73,7 @@ export default {
   right: 10px;
   height: 19px;
   line-height: 19px;
-  top: 16px;
+  top: 75px;
   font-size: 14px;
 }
 
@@ -48,6 +87,10 @@ export default {
 }
 
 .table {
-  margin-top: 45px;
+  margin-top: 25px;
+}
+
+.placeholder {
+  text-align: center;
 }
 </style>

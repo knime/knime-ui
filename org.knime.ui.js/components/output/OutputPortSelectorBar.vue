@@ -1,0 +1,134 @@
+<script>
+import FlowVarTabIcon from '~/assets/flow-variables.svg?inline';
+import portIcon from './PortIconRenderer';
+import TabBar, { tabBarMixin } from '~/webapps-common/ui/components/TabBar';
+
+export default {
+    components: {
+        TabBar
+    },
+    mixins: [tabBarMixin],
+    provide() { // TODO: remove NXT-19
+        return {
+            anchorPoint: null
+        };
+    },
+    props: {
+        node: {
+            type: Object,
+            default: () => ({})
+        }
+    },
+    computed: {
+        isMetaNode() {
+            return this.node.kind === 'metanode';
+        },
+        outPorts() {
+            return this.node.outPorts || [];
+        },
+        possibleTabValues() {
+            let { outPorts } = this;
+            if (!outPorts.length) {
+                return [];
+            }
+            // Metanodes don't have Mickey Mouse ears, so all ports are actual output ports.
+            // For normal nodes, the 0th port is the hidden flow variable port.
+            let firstPortIndex = this.isMetaNode ? 0 : 1;
+            let result = [];
+            for (let i = firstPortIndex; i < this.outPorts.length; i++) {
+                let port = outPorts[i];
+                result.push({
+                    value: String(port.index),
+                    label: `${i - firstPortIndex + 1}: ${port.name}`,
+                    icon: portIcon(port),
+                    disabled: port.inactive || !this.supportsPortType(port.type)
+                });
+            }
+            if (!this.isMetaNode) {
+                result.push({
+                    value: '0',
+                    label: 'Flow Variables',
+                    icon: FlowVarTabIcon,
+                    disabled: true
+                });
+            }
+            return result;
+        }
+    },
+    watch: {
+        activeTab(value) {
+            this.onChange(value);
+        },
+        node() {
+            // when the node changes, reset the tab bar selection
+            tabBarMixin.created.apply(this);
+        }
+    },
+    methods: {
+        supportsPortType(type) {
+            return type === 'table';
+        },
+        onChange(value) {
+            /**
+             * Update event. Fired when the selection is changed.
+             * This also happens implicitly on initialization / when the `node` prop changes
+             *
+             * @event update:value
+             * @type {String}
+             */
+            this.$emit('update:value', value);
+        }
+    }
+};
+</script>
+
+<template>
+  <TabBar
+    name="output-port"
+    :value.sync="activeTab"
+    :possible-values="possibleTabValues"
+    @update:value="onChange"
+  />
+</template>
+
+<style scoped lang="postcss">
+/* override carousel scroller */
+.shadow-wrapper {
+  margin: 0;
+
+  &::before,
+  &::after {
+    content: none;
+  }
+
+  & >>> .carousel {
+    padding: 0;
+
+    &::before,
+    &::after {
+      left: 0;
+      right: 0;
+    }
+  }
+}
+
+>>> svg {
+  pointer-events: none;
+}
+
+/* Flow variable icon */
+>>> circle[r="2.5"] {
+  fill: var(--knime-coral);
+}
+
+/* Flow variable icon disabled */
+>>> input:disabled + span circle[r="2.5"] {
+  fill: var(--knime-coral-light);
+}
+
+/* Flow variable icon active/hover */
+>>> input:not(:disabled):checked + span circle[r="2.5"],
+>>> input:not(:disabled) + span:hover circle[r="2.5"] {
+  fill: var(--knime-coral-dark);
+}
+</style>
