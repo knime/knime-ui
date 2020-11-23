@@ -64,7 +64,13 @@ export default {
         },
         node() {
             // when the node changes, reset the tab bar selection
+            let oldActiveTab = this.activeTab;
             this.resetSelection();
+            if (this.activeTab && this.activeTab === oldActiveTab) {
+                // even though the active tab hasn't changed, we need to artificially fire a selection event,
+                // because we're dealing with a new node
+                this.$emit('select', this.activeTab);
+            }
         },
         isExecuted() {
             // when the execution state changes, reset the tab bar selection

@@ -1,9 +1,18 @@
 <script>
 import { mapState } from 'vuex';
+import MissingValueIcon from '~/assets/missing-value.svg?inline';
 
 export default {
+    components: {
+        MissingValueIcon
+    },
     computed: {
         ...mapState('datatable', ['rows'])
+    },
+    methods: {
+        hasValue(cell) {
+            return Reflect.has(cell, 'valueAsString');
+        }
     }
 };
 </script>
@@ -18,7 +27,10 @@ export default {
         v-for="(cell, cellIndex) of row.cells"
         :key="`cell-${rowIndex}-${cellIndex}`"
       >
-        {{ cell.valueAsString }}
+        <template v-if="hasValue(cell)">
+          {{ cell.valueAsString }}
+        </template>
+        <MissingValueIcon v-else />
       </td>
     </tr>
   </tbody>
@@ -34,6 +46,13 @@ td {
   height: 26px;
   line-height: 26px;
   font-size: 14px;
+
+  & svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: calc(32px / 16);
+    vertical-align: -3px;
+  }
 }
 
 tr:not(:last-child) {
