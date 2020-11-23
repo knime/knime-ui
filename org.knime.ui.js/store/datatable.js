@@ -30,5 +30,8 @@ export const actions = {
     async load({ commit }, { projectId, nodeId, portIndex }) {
         let table = await loadTable({ projectId, nodeId, portIndex });
         commit('setTable', table);
+    },
+    clear({ commit }) {
+        commit('clear');
     }
 };

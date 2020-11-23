@@ -11,13 +11,20 @@ export default {
 </script>
 
 <template>
-  <table>
-    <DataPortOutputTableHeader />
-    <DataPortOutputTableBody />
-  </table>
+  <div class="scroll-container">
+    <table>
+      <DataPortOutputTableHeader />
+      <DataPortOutputTableBody />
+    </table>
+  </div>
 </template>
 
 <style lang="postcss" scoped>
+.scroll-container {
+  width: 100%;
+  overflow: auto;
+}
+
 table {
   min-width: 100%;
   border-collapse: collapse;

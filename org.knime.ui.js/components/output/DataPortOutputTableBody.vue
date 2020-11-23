@@ -24,7 +24,7 @@ export default {
   </tbody>
 </template>
 
-<style>
+<style lang="postcss" scoped>
 td {
   white-space: pre;
   max-width: 50vw;

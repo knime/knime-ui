@@ -26,6 +26,9 @@ export default {
         outPorts() {
             return this.node.outPorts || [];
         },
+        isExecuted() {
+            return this.node.state?.executionState === 'EXECUTED';
+        },
         possibleTabValues() {
             let { outPorts } = this;
             if (!outPorts.length) {
@@ -41,7 +44,7 @@ export default {
                     value: String(port.index),
                     label: `${i - firstPortIndex + 1}: ${port.name}`,
                     icon: portIcon(port),
-                    disabled: port.inactive || !this.supportsPortType(port.type)
+                    disabled: !this.isExecuted || port.inactive || !this.supportsPortType(port.type)
                 });
             }
             if (!this.isMetaNode) {
@@ -57,26 +60,33 @@ export default {
     },
     watch: {
         activeTab(value) {
-            this.onChange(value);
+            this.onUpdate(value);
         },
         node() {
             // when the node changes, reset the tab bar selection
-            tabBarMixin.created.apply(this);
+            this.resetSelection();
+        },
+        isExecuted() {
+            // when the execution state changes, reset the tab bar selection
+            this.resetSelection();
         }
     },
     methods: {
+        resetSelection() {
+            tabBarMixin.created.apply(this);
+        },
         supportsPortType(type) {
             return type === 'table';
         },
-        onChange(value) {
+        onUpdate(value) {
             /**
              * Update event. Fired when the selection is changed.
              * This also happens implicitly on initialization / when the `node` prop changes
              *
-             * @event update:value
+             * @event select
              * @type {String}
              */
-            this.$emit('update:value', value);
+            this.$emit('select', value);
         }
     }
 };
@@ -87,11 +97,10 @@ export default {
     name="output-port"
     :value.sync="activeTab"
     :possible-values="possibleTabValues"
-    @update:value="onChange"
   />
 </template>
 
-<style scoped lang="postcss">
+<style lang="postcss" scoped>
 /* override carousel scroller */
 .shadow-wrapper {
   margin: 0;

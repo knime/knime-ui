@@ -108,12 +108,11 @@ main {
 
 #kanvas {
   overflow: auto;
-  flex: 1 0 67%;
+  flex: 1 0 60%;
 }
 
 #node-output {
-  overflow: auto;
-  flex: 0 0 33%;
+  flex: 0 0 40%;
 }
 
 .placeholder {

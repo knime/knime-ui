@@ -40,7 +40,7 @@ export default {
   </g>
 </template>
 
-<style scoped>
+<style lang="postcss" scoped>
 g > * {
   pointer-events: none;
 }

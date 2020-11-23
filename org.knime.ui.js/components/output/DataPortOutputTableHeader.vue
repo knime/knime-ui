@@ -37,9 +37,21 @@ export default {
 th {
   background: var(--knime-porcelain);
   height: 42px;
+  position: sticky;
+  top: 0;
 
   &:not(:last-child) {
-    border-right: 1px solid var(--knime-white);
+    /* border-right: 1px solid var(--knime-white); does not work with position: sticky */
+    &::after {
+      content: '';
+      display: block;
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: var(--knime-white);
+    }
   }
 }
 
