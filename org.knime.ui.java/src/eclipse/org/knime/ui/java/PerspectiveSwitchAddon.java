@@ -106,6 +106,8 @@ public final class PerspectiveSwitchAddon {
 
 	private static Supplier<AppState> appStateSupplier;
 
+	private static final Set<String> LOADED_WORKFLOW_IDS = new HashSet<>();
+
 	@Inject
 	private EModelService m_modelService;
 
@@ -142,6 +144,7 @@ public final class PerspectiveSwitchAddon {
 
 	private void switchToJavaUI() {
 		DefaultEventService.getInstance().removeAllEventListeners();
+		disposeAllLoadedWorkflowProjects();
 		callOnKnimeBrowserView(KnimeBrowserView::clearUrl);
 		setTrimsAndMenuVisible(true, m_modelService, m_app);
 		switchToJavaUITheme();
@@ -210,6 +213,7 @@ public final class PerspectiveSwitchAddon {
 
 			@Override
 			public Set<String> getLoadedWorkflowProjectIds() {
+				LOADED_WORKFLOW_IDS.addAll(workflowProjectIds);
 				return workflowProjectIds;
 			}
 
@@ -310,6 +314,13 @@ public final class PerspectiveSwitchAddon {
 				.filter(p -> p.getObject() instanceof CompatibilityPart)
 				.map(p -> getWorkflowEditor((CompatibilityPart) p.getObject()).orElse(null)).filter(Objects::nonNull)
 				.collect(Collectors.toList());
+	}
+
+	private static void disposeAllLoadedWorkflowProjects() {
+		for (String id : LOADED_WORKFLOW_IDS) {
+			WorkflowProjectManager.removeWorkflowProject(id);
+		}
+		LOADED_WORKFLOW_IDS.clear();
 	}
 
 }
