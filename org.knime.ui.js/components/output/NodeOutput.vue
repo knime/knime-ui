@@ -42,7 +42,8 @@ export default {
             return this.selectedNode?.state?.executionState === 'IDLE';
         },
         needsExecution() {
-            return this.selectedNode?.state?.executionState === 'CONFIGURED';
+            return this.selectedNode?.state?.executionState === 'CONFIGURED' &&
+                this.selectedNode?.allowedActions?.canExecute;
         },
         isExecuting() {
             let executionState = this.selectedNode?.state?.executionState;

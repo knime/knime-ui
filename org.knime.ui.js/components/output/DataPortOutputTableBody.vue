@@ -1,10 +1,11 @@
 <script>
 import { mapState } from 'vuex';
 import MissingValueIcon from '~/assets/missing-value.svg?inline';
+import svgWithTitle from '~/webapps-common/ui/util/svgWithTitle';
 
 export default {
     components: {
-        MissingValueIcon
+        MissingValueIcon: svgWithTitle(MissingValueIcon, 'Missing value')
     },
     computed: {
         ...mapState('datatable', ['rows'])
@@ -52,6 +53,7 @@ td {
     height: 16px;
     stroke-width: calc(32px / 16);
     vertical-align: -3px;
+    margin-left: -1px;
   }
 }
 

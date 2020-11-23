@@ -40,11 +40,13 @@ export default {
             let result = [];
             for (let i = firstPortIndex; i < this.outPorts.length; i++) {
                 let port = outPorts[i];
+                let disabled = !this.isExecuted || port.inactive || !this.supportsPortType(port.type);
                 result.push({
                     value: String(port.index),
                     label: `${i - firstPortIndex + 1}: ${port.name}`,
                     icon: portIcon(port),
-                    disabled: !this.isExecuted || port.inactive || !this.supportsPortType(port.type)
+                    disabled,
+                    title: disabled ? 'No output data or unsupported data type' : null
                 });
             }
             if (!this.isMetaNode) {
