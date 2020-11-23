@@ -90,7 +90,7 @@ describe('WorkflowTabContent.vue', () => {
                     icon: 'icon',
                     type: 'type',
                     views: ['views'],
-                    dialogs: ['dialogs']
+                    options: ['options']
                 }
             };
             await doShallowMount();
@@ -111,7 +111,7 @@ describe('WorkflowTabContent.vue', () => {
                         inPorts: ['inPorts'],
                         outPorts: ['outPorts'],
                         views: ['views'],
-                        dialogs: ['dialogs']
+                        options: ['options']
                     }
                 })
             );

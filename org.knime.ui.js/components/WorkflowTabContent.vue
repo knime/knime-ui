@@ -26,12 +26,12 @@ export default {
                 return this.workflow.projectMetadata || { title: this.workflow.info.name };
             case 'component': {
                 const { componentMetadata:
-                    { inPorts, outPorts, name, type, icon, description, dialogs, views } } = this.workflow;
+                    { inPorts, outPorts, name, type, icon, description, options, views } } = this.workflow;
                 return {
                     title: name,
                     description,
                     nodePreview: { inPorts, outPorts, icon, type, isComponent: true, hasDynPorts: false },
-                    nodeFeatures: { inPorts, outPorts, views, dialogs },
+                    nodeFeatures: { inPorts, outPorts, views, options },
                     isComponent: true
                 };
             }
