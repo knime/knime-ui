@@ -2,6 +2,10 @@
 import Port from '~/components/Port';
 import { mapMutations } from 'vuex';
 
+/**
+ * A port with attached tooltip.
+ * See Port.vue for docs on the props
+ */
 export default {
     components: {
         Port
