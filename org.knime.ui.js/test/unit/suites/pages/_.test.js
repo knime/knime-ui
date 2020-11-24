@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import page from '~/pages/_.vue';
+import page from '~/pages/_';
 import KnimeUI from '~/components/KnimeUI';
 
 describe('Application page', () => {

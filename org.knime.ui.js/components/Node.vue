@@ -1,11 +1,11 @@
 <script>
 import { mapState } from 'vuex';
-import Port from '~/components/PortWithTooltip.vue';
-import NodeState from '~/components/NodeState.vue';
-import NodeTorso from '~/components/NodeTorso.vue';
-import NodeSelect from '~/components/NodeSelect.vue';
-import NodeAnnotation from '~/components/NodeAnnotation.vue';
-import LinkDecorator from '~/components/LinkDecorator.vue';
+import Port from '~/components/PortWithTooltip';
+import NodeState from '~/components/NodeState';
+import NodeTorso from '~/components/NodeTorso';
+import NodeSelect from '~/components/NodeSelect';
+import NodeAnnotation from '~/components/NodeAnnotation';
+import LinkDecorator from '~/components/LinkDecorator';
 import portShift from '~/util/portShift';
 
 /**

@@ -5,12 +5,12 @@ import Vue from 'vue';
 import { mockVuexStore } from '~/test/unit/test-utils';
 
 import Node from '~/components/Node';
-import NodeTorso from '~/components/NodeTorso.vue';
-import NodeSelect from '~/components/NodeSelect.vue';
-import NodeState from '~/components/NodeState.vue';
-import NodeAnnotation from '~/components/NodeAnnotation.vue';
-import LinkDecorator from '~/components/LinkDecorator.vue';
-import Port from '~/components/Port.vue';
+import NodeTorso from '~/components/NodeTorso';
+import NodeSelect from '~/components/NodeSelect';
+import NodeState from '~/components/NodeState';
+import NodeAnnotation from '~/components/NodeAnnotation';
+import LinkDecorator from '~/components/LinkDecorator';
+import Port from '~/components/PortWithTooltip';
 
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';

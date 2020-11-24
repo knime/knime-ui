@@ -5,9 +5,9 @@ import Vuex from 'vuex';
 
 import * as $shapes from '~/style/shapes';
 
-import Kanvas from '~/components/Kanvas.vue';
+import Kanvas from '~/components/Kanvas';
 import Node from '~/components/Node';
-import Connector from '~/components/Connector.vue';
+import Connector from '~/components/Connector';
 import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import MetaNodePortBars from '~/components/MetaNodePortBars';
 
