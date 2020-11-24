@@ -2,21 +2,17 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
-
-jest.mock('~api', () => { }, { virtual: true });
-
 import Connector from '~/components/Connector';
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 import * as portShift from '~/util/portShift';
 import * as workflowStoreConfig from '~/store/workflow';
 
-const portMock = {
-    connectedVia: []
-};
+jest.mock('~api', () => {
+}, { virtual: true });
 
 describe('Connector.vue', () => {
-    let propsData, mocks, wrapper, portShiftMock, $store;
+    let portMock, propsData, mocks, wrapper, portShiftMock, $store;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -31,80 +27,101 @@ describe('Connector.vue', () => {
             sourcePort: 0,
             destPort: 2
         };
+        portMock = {
+            type: 'table',
+            connectedVia: []
+        };
     });
 
     describe('attached to a metanode', () => {
+        let doShallowMount;
         beforeEach(() => {
-            $store = mockVuexStore({
-                workflow: {
-                    ...workflowStoreConfig,
-                    state: {
-                        activeWorkflow: {
-                            nodes: {
-                                'root:1': {
-                                    kind: 'metanode',
-                                    position: { x: 2, y: 2 },
-                                    outPorts: [portMock, portMock]
-                                },
-                                'root:2': {
-                                    kind: 'metanode',
-                                    position: { x: 12, y: 14 },
-                                    inPorts: [portMock, portMock, portMock]
+            doShallowMount = () => {
+                $store = mockVuexStore({
+                    workflow: {
+                        ...workflowStoreConfig,
+                        state: {
+                            activeWorkflow: {
+                                nodes: {
+                                    'root:1': {
+                                        kind: 'metanode',
+                                        position: { x: 2, y: 2 },
+                                        outPorts: [portMock, portMock]
+                                    },
+                                    'root:2': {
+                                        kind: 'metanode',
+                                        position: { x: 12, y: 14 },
+                                        inPorts: [portMock, portMock, portMock]
+                                    }
                                 }
                             }
-                        }
-                    },
-                    getters: {
-                        isWritable() {
-                            return true;
+                        },
+                        getters: {
+                            isWritable() {
+                                return true;
+                            }
                         }
                     }
-                }
-            });
+                });
 
-            mocks = { $shapes, $colors, $store };
-            wrapper = shallowMount(Connector, { propsData, mocks });
+                mocks = { $shapes, $colors, $store };
+                wrapper = shallowMount(Connector, { propsData, mocks });
+            };
         });
 
         it('uses portShift', () => {
+            doShallowMount();
             expect(portShiftMock).toHaveBeenCalledWith(0, 2, true, true);
             expect(portShiftMock).toHaveBeenCalledWith(2, 3, true, false);
         });
 
-        it('draws a path', () => {
-            const expectedPath = 'M38.5,7.5 h4.5 C69.5,7.5 -23.5,40.5 -1,40.5 h4.5';
+        it('draws a path between data ports', () => {
+            doShallowMount();
+            const expectedPath = 'M40.5,7.5 C70,7.5 -26,40.5 3.5,40.5';
+            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+        });
+
+        it('draws a path between other ports', () => {
+            portMock.type = 'foo';
+            doShallowMount();
+            const expectedPath = 'M42.5,7.5 C73,7.5 -27,40.5 3.5,40.5';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
 
     });
 
     describe('attached to other node', () => {
+        let doShallowMount;
 
         beforeEach(() => {
-            $store = mockVuexStore({
-                workflow: {
-                    ...workflowStoreConfig,
-                    state: {
-                        activeWorkflow: {
-                            nodes: {
-                                'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
-                                'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
+            doShallowMount = () => {
+
+                $store = mockVuexStore({
+                    workflow: {
+                        ...workflowStoreConfig,
+                        state: {
+                            activeWorkflow: {
+                                nodes: {
+                                    'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
+                                    'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
+                                }
+                            }
+                        },
+                        getters: {
+                            isWritable() {
+                                return true;
                             }
                         }
-                    },
-                    getters: {
-                        isWritable() {
-                            return true;
-                        }
                     }
-                }
-            });
+                });
 
-            mocks = { $shapes, $colors, $store };
-            wrapper = shallowMount(Connector, { propsData, mocks });
+                mocks = { $shapes, $colors, $store };
+                wrapper = shallowMount(Connector, { propsData, mocks });
+            };
         });
 
         it('draws grab cursor by default', () => {
+            doShallowMount();
             expect(wrapper.find('.read-only').exists()).toBe(false);
         });
 
@@ -136,12 +153,21 @@ describe('Connector.vue', () => {
         });
 
         it('uses portShift', () => {
+            doShallowMount();
             expect(portShiftMock).toHaveBeenCalledWith(0, 2, false, true);
             expect(portShiftMock).toHaveBeenCalledWith(2, 3, false, false);
         });
 
-        it('draws a path', () => {
-            const expectedPath = 'M32,-4.5 h4.5 C63.75,-4.5 -24.25,40.5 -1,40.5 h4.5';
+        it('draws a path between data ports', () => {
+            doShallowMount();
+            const expectedPath = 'M34,-4.5 C64.25,-4.5 -26.75,40.5 3.5,40.5';
+            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+        });
+
+        it('draws a path between other ports', () => {
+            portMock.type = 'foo';
+            doShallowMount();
+            const expectedPath = 'M36,-4.5 C67.25,-4.5 -27.75,40.5 3.5,40.5';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
 
@@ -161,6 +187,7 @@ describe('Connector.vue', () => {
         });
 
         it('applies styles for other ports', () => {
+            doShallowMount();
             const { 'stroke-width': strokeWidth, stroke } = wrapper.find('path').attributes();
             expect(parseFloat(strokeWidth)).toBe($shapes.connectorWidth);
             expect(stroke).toBe($colors.connectorColors.default);
@@ -168,45 +195,57 @@ describe('Connector.vue', () => {
     });
 
     describe('attached to port bars inside metanode', () => {
+        let doShallowMount;
+
         beforeEach(() => {
-            $store = mockVuexStore({
-                workflow: {
-                    ...workflowStoreConfig,
-                    state: {
-                        activeWorkflow: {
-                            projectId: 'some id',
-                            nodes: {},
-                            metaInPorts: {
-                                xPos: 100,
-                                ports: [portMock]
-                            },
-                            metaOutPorts: {
-                                xPos: 702,
-                                ports: [portMock, portMock, portMock]
-                            },
-                            info: {}
-                        }
-                    },
-                    getters: {
-                        ...workflowStoreConfig.getters,
-                        svgBounds() {
-                            return {
-                                y: 33,
-                                height: 1236
-                            };
+            doShallowMount = () => {
+                $store = mockVuexStore({
+                    workflow: {
+                        ...workflowStoreConfig,
+                        state: {
+                            activeWorkflow: {
+                                projectId: 'some id',
+                                nodes: {},
+                                metaInPorts: {
+                                    xPos: 100,
+                                    ports: [portMock]
+                                },
+                                metaOutPorts: {
+                                    xPos: 702,
+                                    ports: [portMock, portMock, portMock]
+                                },
+                                info: {}
+                            }
                         },
-                        isWritable() {
-                            return true;
+                        getters: {
+                            ...workflowStoreConfig.getters,
+                            svgBounds() {
+                                return {
+                                    y: 33,
+                                    height: 1236
+                                };
+                            },
+                            isWritable() {
+                                return true;
+                            }
                         }
                     }
-                }
-            });
-            mocks = { $shapes, $colors, $store };
-            wrapper = shallowMount(Connector, { propsData, mocks });
+                });
+                mocks = { $shapes, $colors, $store };
+                wrapper = shallowMount(Connector, { propsData, mocks });
+            };
         });
 
-        it('draws a path', () => {
-            const expectedPath = 'M104.5,651 h4.5 C499.5,651 302.5,960 689,960 h4.5';
+        it('draws a path between data ports', () => {
+            doShallowMount();
+            const expectedPath = 'M106.5,651 C503,651 297,960 693.5,960';
+            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+        });
+
+        it('draws a path between other ports', () => {
+            portMock.type = 'foo';
+            doShallowMount();
+            const expectedPath = 'M108.5,651 C504,651 298,960 693.5,960';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
 
