@@ -1,7 +1,11 @@
 <script>
 import { mapMutations } from 'vuex';
+import PortIcon from '~/webapps-common/ui/components/node/PortIcon';
 
 export default {
+    components: {
+        PortIcon
+    },
     inject: ['anchorPoint'],
     props: {
         /**
@@ -35,23 +39,10 @@ export default {
             }
             return !this.port.optional;
         },
-        customPortColor() {
-            return this.port.color;
-        },
-        trianglePath() {
-            let { $shapes: { portSize } } = this;
-
-            let [x1, y1, x2, y3] = [-portSize / 2, -portSize / 2, portSize / 2, portSize / 2];
-
-            // adjust size of triangle so that filled and bordered triangle match, and the line width is exactly 1
-            /* eslint-disable no-magic-numbers */
-            x1 += 1 / 2;
-            y1 += (1 + Math.sqrt(5)) / 4;
-            x2 -= Math.sqrt(5) / 2;
-            y3 -= (1 + Math.sqrt(5)) / 4;
-            /* eslint-enable no-magic-numbers */
-
-            return `${x1},${y1} ${x2},${0} ${x1},${y3}`;
+        portColor() {
+            // Flow Variable Ports and Data Table Ports have constant colors
+            // Other port types serve their own color
+            return this.$colors.portColors[this.port.type] || this.port.color;
         },
         /**
          * the traffic light of a metanode port displays the state of the inner node that it is connected to
@@ -100,30 +91,12 @@ export default {
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
   >
-    <!-- data table port -->
-    <polygon
-      v-if="port.type === 'table'"
-      :points="trianglePath"
-      :fill="shouldFill ? $colors.portColors.data : 'white'"
-      :stroke="$colors.portColors.data"
+    <PortIcon
+      :data-type="port.type"
+      :color="portColor"
+      :filled="shouldFill"
     />
-    <!-- flow variable port -->
-    <circle
-      v-else-if="port.type === 'flowVariable'"
-      :r="$shapes.portSize / 2 - 0.5"
-      :fill="shouldFill ? $colors.portColors.variable : 'white'"
-      :stroke="$colors.portColors.variable"
-    />
-    <!-- other port -->
-    <rect
-      v-else
-      :width="$shapes.portSize - 1"
-      :height="$shapes.portSize - 1"
-      :x="-$shapes.portSize / 2 + 0.5"
-      :y="-$shapes.portSize / 2 + 0.5"
-      :fill="shouldFill ? customPortColor: 'white'"
-      :stroke="customPortColor"
-    />
+
     <!-- X outline -->
     <path
       v-if="port.inactive"
