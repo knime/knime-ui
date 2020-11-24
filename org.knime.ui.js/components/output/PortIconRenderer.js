@@ -1,4 +1,3 @@
-// TODO: refactor this when NXT-297 is done NXT-19
 import Port from '~/components/Port';
 
 const size = 21;

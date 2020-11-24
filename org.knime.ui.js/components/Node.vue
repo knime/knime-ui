@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-import Port from '~/components/Port.vue';
+import Port from '~/components/PortWithTooltip.vue';
 import NodeState from '~/components/NodeState.vue';
 import NodeTorso from '~/components/NodeTorso.vue';
 import NodeSelect from '~/components/NodeSelect.vue';

@@ -8,11 +8,6 @@ export default {
         TabBar
     },
     mixins: [tabBarMixin],
-    provide() { // TODO: remove NXT-19
-        return {
-            anchorPoint: null
-        };
-    },
     props: {
         node: {
             type: Object,
@@ -41,12 +36,20 @@ export default {
             for (let i = firstPortIndex; i < this.outPorts.length; i++) {
                 let port = outPorts[i];
                 let disabled = !this.isExecuted || port.inactive || !this.supportsPortType(port.type);
+                let title = null;
+                if (disabled) {
+                    if (this.supportsPortType(port.type)) {
+                        title = 'No output data';
+                    } else {
+                        title = 'Unsupported data type';
+                    }
+                }
                 result.push({
                     value: String(port.index),
                     label: `${i - firstPortIndex + 1}: ${port.name}`,
                     icon: portIcon(port),
                     disabled,
-                    title: disabled ? 'No output data or unsupported data type' : null
+                    title
                 });
             }
             if (!this.isMetaNode) {
@@ -54,7 +57,8 @@ export default {
                     value: '0',
                     label: 'Flow Variables',
                     icon: FlowVarTabIcon,
-                    disabled: true
+                    disabled: true,
+                    title: 'Unsupported data type'
                 });
             }
             return result;
