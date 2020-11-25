@@ -4,12 +4,28 @@ import DataPortOutputTable from '~/components/output/DataPortOutputTable';
 import OutputPortSelectorBar from '~/components/output/OutputPortSelectorBar';
 import Button from '~/webapps-common/ui/components/Button';
 import PlayIcon from '~/assets/execute.svg?inline';
+import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 
+export const supportsPort = port => port.type === 'table';
+
+/**
+ * Node output panel, displaying output port selection bar and output table if available, respectively.
+ * The control flow is as follows:
+ * 1. node is selected
+ * 2. This component clears the datatable
+ * 3. OutputPortSelectorBar is initialized (if node has output ports)
+ * 4. OutputPortSelectorBar determines which tabs to render / preselect
+ * 5. OutputPortSelectorBar fires "select" event
+ * 6. This component loads the datatable
+ * 7. When user switches tabs, goto 5
+ * 8. When user switches nodes, goto 1
+ */
 export default {
     components: {
         OutputPortSelectorBar,
         DataPortOutputTable,
         Button,
+        ReloadIcon,
         PlayIcon
     },
     data() {
@@ -42,31 +58,36 @@ export default {
             return this.selectedNode?.state?.executionState === 'IDLE';
         },
         needsExecution() {
-            return this.selectedNode?.state?.executionState === 'CONFIGURED' &&
-                this.selectedNode?.allowedActions?.canExecute;
+            return this.isSupported && this.selectedNode?.allowedActions?.canExecute;
         },
         isExecuting() {
             let executionState = this.selectedNode?.state?.executionState;
             return executionState === 'QUEUED' || executionState === 'EXECUTING';
+        },
+        isSupported() {
+            return this.outPorts.some(port => supportsPort(port));
         },
         placeholderText() {
             switch (this.selectedNodes.length) {
             case 0:
                 return 'Select a node to show its output data';
             case 1:
-                if (this.needsConfiguration) {
-                    return 'Please first configure the selected node';
+                if (!this.outPorts.length) {
+                    return 'The selected node has no output ports';
+                }
+                if (!this.isSupported) {
+                    return 'The selected node has no supported output port';
                 }
                 if (this.needsExecution) {
                     return 'To show the output table, please execute the selected node';
                 }
+                if (this.needsConfiguration) {
+                    return 'Please first configure the selected node';
+                }
                 if (this.isExecuting) {
                     return 'Output is available after execution';
                 }
-                if (this.outPorts.length) {
-                    return 'None of the selected node’s output ports contain supported data';
-                }
-                return 'The selected node has no output port';
+                return 'Internal error: Invalid node state'; // this should never happen
             default:
                 return 'Select a single node to show its output data';
             }
@@ -78,13 +99,13 @@ export default {
             return this.totalNumRows;
         }
     },
-    methods: {
-        // this is also called on tab initialization
-        onTabChange(tab) {
-            this.selectedPortIndex = tab;
+    watch: {
+        selectedNode() {
+            this.selectedPortIndex = null;
+        },
+        selectedPortIndex(tab) {
             if (tab === null) {
-                consola.trace('clearing data table');
-                this.$store.dispatch('datatable/clear');
+                this.clearTable();
             } else {
                 consola.trace('loading table for port', tab);
                 setTimeout(() => { // delay UI blocking at startup
@@ -95,6 +116,12 @@ export default {
                     });
                 }, 0);
             }
+        }
+    },
+    methods: {
+        clearTable() {
+            consola.trace('clearing data table');
+            this.$store.dispatch('datatable/clear');
         },
         executeNode() {
             this.$store.dispatch('workflow/executeNodes', {
@@ -109,8 +136,8 @@ export default {
   <div class="output-container">
     <template v-if="selectedNode && outPorts.length > 0">
       <OutputPortSelectorBar
+        v-model="selectedPortIndex"
         :node="selectedNode"
-        @select="onTabChange"
       />
       <template v-if="selectedPortIndex !== null">
         <span
@@ -128,7 +155,12 @@ export default {
         v-else
         class="placeholder"
       >
-        <span>{{ placeholderText }}</span>
+        <span>
+          <ReloadIcon
+            v-if="isExecuting"
+            class="loading-icon"
+          />
+          {{ placeholderText }}</span>
         <!--Button v-if="needsConfiguration"></Button--> <!-- TODO: implement NXT-21 -->
         <Button
           v-if="needsExecution"
@@ -152,6 +184,12 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@keyframes spin {
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
 .output-container {
   padding: 10px;
   border-top: 1px solid var(--knime-silver-sand);
@@ -196,6 +234,17 @@ export default {
     text-align: center;
     font-style: italic;
     color: var(--knime-masala);
+
+    & .loading-icon {
+      animation: spin 2s linear infinite;
+      width: 24px;
+      height: 24px;
+      stroke-width: calc(32px / 24);
+      margin: auto;
+      stroke: var(--knime-masala);
+      vertical-align: -6px;
+      margin-right: 10px;
+    }
   }
 }
 

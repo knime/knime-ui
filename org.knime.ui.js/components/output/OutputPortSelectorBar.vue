@@ -1,18 +1,33 @@
 <script>
+import Vue from 'vue';
 import FlowVarTabIcon from '~/assets/flow-variables.svg?inline';
 import portIcon from './PortIconRenderer';
 import TabBar, { tabBarMixin } from '~/webapps-common/ui/components/TabBar';
+import { supportsPort } from '~/components/output/NodeOutput';
 
+/**
+ * Tab Bar that displays output ports of a given node.
+ * Can be used like a form element, since it emits an `input` event
+ * */
 export default {
     components: {
         TabBar
     },
     mixins: [tabBarMixin],
     props: {
+        /**
+         * Node as given in a workflow store
+         */
         node: {
             type: Object,
             default: () => ({})
         }
+        // `value` prop: see mixin
+    },
+    data() {
+        return {
+            nodeChanged: false
+        };
     },
     computed: {
         isMetaNode() {
@@ -22,6 +37,9 @@ export default {
             return this.node.outPorts || [];
         },
         isExecuted() {
+            if (this.isMetaNode) {
+                return this.outPorts.map(port => port.nodeState === 'EXECUTED');
+            }
             return this.node.state?.executionState === 'EXECUTED';
         },
         possibleTabValues() {
@@ -35,10 +53,15 @@ export default {
             let result = [];
             for (let i = firstPortIndex; i < this.outPorts.length; i++) {
                 let port = outPorts[i];
-                let disabled = !this.isExecuted || port.inactive || !this.supportsPortType(port.type);
+                let disabled = port.inactive || !supportsPort(port);
+                if (this.isMetaNode) {
+                    disabled = disabled || !this.isExecuted[i];
+                } else {
+                    disabled = disabled || !this.isExecuted;
+                }
                 let title = null;
                 if (disabled) {
-                    if (this.supportsPortType(port.type)) {
+                    if (supportsPort(port)) {
                         title = 'No output data';
                     } else {
                         title = 'Unsupported data type';
@@ -53,6 +76,7 @@ export default {
                 });
             }
             if (!this.isMetaNode) {
+                // hidden flow variable port, displayed as the last tab
                 result.push({
                     value: '0',
                     label: 'Flow Variables',
@@ -66,39 +90,53 @@ export default {
     },
     watch: {
         activeTab(value) {
-            this.onUpdate(value);
+            this.onChange(value);
         },
         node() {
             // when the node changes, reset the tab bar selection
+            consola.trace('Port selector bar got new node');
+            this.nodeChanged = true; // prevent duplicate call of isExecuted watcher
+            Vue.nextTick(() => { this.nodeChanged = false; });
             let oldActiveTab = this.activeTab;
             this.resetSelection();
-            if (this.activeTab && this.activeTab === oldActiveTab) {
-                // even though the active tab hasn't changed, we need to artificially fire a selection event,
+            if (this.activeTab === oldActiveTab) {
+                // even though the active tab hasn't changed, we need to artificially fire an input event,
                 // because we're dealing with a new node
-                this.$emit('select', this.activeTab);
+                this.$emit('input', this.activeTab);
             }
         },
-        isExecuted() {
+        // The user is looking at a node that has just finished executing, just been reset, or
+        // in case of a metanode, one of its port's status has changed
+        isExecuted(after, before) {
+            if (this.nodeChanged) {
+                return;
+            }
+            if (Array.isArray(before)) { // Metanode
+                if (this.activeTab !== null && before[this.activeTab] === after[this.activeTab]) {
+                    // The port corresponding to the tab that the user is currently looking at is not affected
+                    return;
+                }
+            }
             // when the execution state changes, reset the tab bar selection
             this.resetSelection();
         }
     },
     methods: {
+        // this finds the first enabled tab, and selects it
         resetSelection() {
+            consola.trace('Port selector bar resetting selection');
             tabBarMixin.created.apply(this);
         },
-        supportsPortType(type) {
-            return type === 'table';
-        },
-        onUpdate(value) {
+        onChange(value) {
             /**
              * Update event. Fired when the selection is changed.
-             * This also happens implicitly on initialization / when the `node` prop changes
+             * This also happens implicitly on initialization / when the `node` prop changes.
+             * Since this event is named 'input', it allows to use this component like a form element with `v-model`.
              *
              * @event select
              * @type {String}
              */
-            this.$emit('select', value);
+            this.$emit('input', value);
         }
     }
 };
