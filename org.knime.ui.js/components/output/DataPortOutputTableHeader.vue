@@ -3,7 +3,7 @@ import { mapState } from 'vuex';
 
 export default {
     computed: {
-        ...mapState('datatable', ['columns', 'cellTypes'])
+        ...mapState('dataTable', ['columns', 'cellTypes'])
     },
     methods: {
         formatType({ typeRef }) {

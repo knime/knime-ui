@@ -8,7 +8,7 @@ export default {
         MissingValueIcon: svgWithTitle(MissingValueIcon, 'Missing value')
     },
     computed: {
-        ...mapState('datatable', ['rows'])
+        ...mapState('dataTable', ['rows'])
     },
     methods: {
         hasValue(cell) {

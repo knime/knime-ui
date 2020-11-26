@@ -12,11 +12,11 @@ export const supportsPort = port => port.type === 'table';
  * Node output panel, displaying output port selection bar and output table if available, respectively.
  * The control flow is as follows:
  * 1. node is selected
- * 2. This component clears the datatable
+ * 2. This component clears the dataTable
  * 3. OutputPortSelectorBar is initialized (if node has output ports)
  * 4. OutputPortSelectorBar determines which tabs to render / preselect
  * 5. OutputPortSelectorBar fires "select" event
- * 6. This component loads the datatable
+ * 6. This component loads the dataTable
  * 7. When user switches tabs, goto 5
  * 8. When user switches nodes, goto 1
  */
@@ -34,7 +34,7 @@ export default {
         };
     },
     computed: {
-        ...mapState('datatable', ['rows', 'totalNumRows', 'totalNumColumns']),
+        ...mapState('dataTable', ['rows', 'totalNumRows', 'totalNumColumns']),
         ...mapState('workflow', {
             nodes: state => state.activeWorkflow.nodes
         }),
@@ -109,7 +109,7 @@ export default {
             } else {
                 consola.trace('loading table for port', tab);
                 setTimeout(() => { // delay UI blocking at startup
-                    this.$store.dispatch('datatable/load', {
+                    this.$store.dispatch('dataTable/load', {
                         projectId: this.activeProjectId,
                         nodeId: this.selectedNode.id,
                         portIndex: this.selectedPortIndex
@@ -121,7 +121,7 @@ export default {
     methods: {
         clearTable() {
             consola.trace('clearing data table');
-            this.$store.dispatch('datatable/clear');
+            this.$store.dispatch('dataTable/clear');
         },
         executeNode() {
             this.$store.dispatch('workflow/executeNodes', {

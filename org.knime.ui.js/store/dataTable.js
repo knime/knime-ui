@@ -1,3 +1,7 @@
+/**
+ * Store holding data of one of a node's output ports
+ */
+
 import { loadTable } from '~api';
 
 export const state = () => ({
