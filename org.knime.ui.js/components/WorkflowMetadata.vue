@@ -1,11 +1,15 @@
 <script>
 import LinkList from '~/webapps-common/ui/components/LinkList';
+import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
+import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { formatDateString } from '~/webapps-common/util/format';
 
 /** Displays metadata attached to a root-level workflow */
 export default {
     components: {
-        LinkList
+        LinkList,
+        NodeFeatureList,
+        NodePreview
     },
     props: {
         /** Single-line description of the workflow */
@@ -33,6 +37,25 @@ export default {
             type: Array,
             default: () => [],
             validator: tags => tags.every(tag => typeof tag === 'string')
+        },
+        /** Passed through to NodePreview.vue */
+        nodePreview: {
+            type: Object,
+            default: null
+        },
+        /** Passed through to NodeFeatureList.vue */
+        nodeFeatures: {
+            type: Object,
+            default: null
+        },
+        /**
+         * Project or Component.
+         * Tags, Last Update, External ressources cannot be set in the AP for now
+         * Influences whether they are rendered with placeholders or hidden completely
+         */
+        isComponent: {
+            type: Boolean,
+            default: false
         }
     },
     methods: {
@@ -44,6 +67,13 @@ export default {
 <template>
   <div class="metadata">
     <h2 class="title">
+      <div
+        v-if="nodePreview"
+        class="node-preview"
+      >
+        <NodePreview v-bind="nodePreview" />
+      </div>
+      
       <span v-if="title">{{ title }}</span>
       <span
         v-else
@@ -51,7 +81,10 @@ export default {
       >No title has been set yet</span>
     </h2>
 
-    <div class="last-updated">
+    <div
+      v-if="!isComponent"
+      class="last-updated"
+    >
       <span v-if="lastEdit">Last Update: {{ formatDateString(lastEdit) }}</span>
       <span
         v-else
@@ -59,9 +92,26 @@ export default {
       >Last Update: no update yet</span>
     </div>
 
-    <div v-if="description">{{ description }}</div>
+    <div
+      class="description"
+    >
+      <span v-if="description">{{ description }}</span>
+      <span
+        v-else
+        class="placeholder"
+      >No description has been set yet</span>
+    </div>
 
-    <div class="external-ressources">
+    <NodeFeatureList
+      v-if="nodeFeatures"
+      v-bind="nodeFeatures"
+      class="node-feature-list"
+    />
+
+    <div
+      v-if="!isComponent"
+      class="external-ressources"
+    >
       <h2>External Ressources</h2>
       <LinkList
         v-if="links.length"
@@ -75,7 +125,10 @@ export default {
       </div>
     </div>
 
-    <div class="tags">
+    <div
+      v-if="!isComponent"
+      class="tags"
+    >
       <h2>Tags</h2>
       <ul v-if="tags.length">
         <li
@@ -98,31 +151,111 @@ export default {
 <style lang="postcss" scoped>
 .metadata {
   box-sizing: border-box;
-  padding: 10px 20px;
+  padding: 20px 20px;
   font-family: "Roboto Condensed", sans-serif;
   font-size: 18px;
   line-height: 27px;
   color: var(--knime-masala);
-}
 
-.placeholder {
-  font-style: italic;
-}
+  & h2 {
+    margin: 0;
+    font-weight: normal;
+    font-size: 24px;
+    line-height: 36px;
+  }
 
-h2 {
-  margin: 0;
-  font-weight: normal;
-  font-size: 24px;
-  line-height: 36px;
+  & .placeholder {
+    font-style: italic;
+  }
+
+  & > *:last-child {
+    margin-bottom: 0;
+  }
+
+  & .title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+
+    & .node-preview {
+      height: 80px;
+      width: 80px;
+      margin-right: 9px;
+      background-color: white;
+      flex-shrink: 0;
+    }
+  }
 }
 
 .last-updated {
-  margin: 21px 0;
+  margin-bottom: 20px;
   font-style: italic;
 }
 
+.description {
+  margin-bottom: 20px;
+}
+
+.node-feature-list {
+  margin-bottom: 40px;
+
+  & >>> .shadow-wrapper::after,
+  & >>> .shadow-wrapper::before {
+    display: none;
+  }
+
+  & >>> h6 {
+    font-size: 16px;
+    margin-bottom: 0;
+  }
+
+  & >>> .description {
+    font-size: 16px;
+  }
+
+  /* Style refinement for Options */
+  & >>> .options .panel {
+    padding-left: 0;
+    margin-left: 52px;
+
+    & li > * {
+      margin-left: 8px;
+    }
+
+    & .option-field-name {
+      margin-bottom: 5px;
+    }
+  }
+
+  /* Style refinement for Views */
+  & >>> .views-list {
+    & .content {
+      margin-top: 5px;
+      margin-left: 30px;
+    }
+
+    & svg {
+      margin-right: 8px;
+    }
+  }
+
+  /* Style refinement for Ports */
+  & >>> .ports-list {
+    & .content {
+      & ol {
+        margin-left: 28px;
+        margin-top: 22px;
+      }
+
+      & .dyn-ports-description {
+        margin-top: 10px;
+      }
+    }
+  }
+}
+
 .external-ressources {
-  margin-top: 38px;
+  margin-bottom: 38px;
 
   & ul {
     column-count: 1;
@@ -136,7 +269,6 @@ h2 {
 }
 
 .tags {
-  margin-top: 38px;
   padding-top: 5px;
 
   & ul {

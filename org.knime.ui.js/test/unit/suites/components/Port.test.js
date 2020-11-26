@@ -4,6 +4,8 @@ import Vuex from 'vuex';
 import Vue from 'vue';
 
 import Port from '~/components/Port';
+import PortIcon from '~/webapps-common/ui/components/node/PortIcon';
+
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
@@ -19,26 +21,10 @@ describe('Port', () => {
     });
 
     describe.each([
-        ['flowVariable', 'circle', $colors.portColors.variable],
-        ['table', 'polygon', $colors.portColors.data],
-        ['other', 'rect', '#123442']
-    ])('Port (%s)', (portDataType, portTag, portColor) => {
-
-        const currentPort = () => {
-            let el = wrapper.find('polygon');
-            if (el.exists()) {
-                return el;
-            }
-            el = wrapper.find('circle');
-            if (el.exists()) {
-                return el;
-            }
-            el = wrapper.find('rect');
-            if (el.exists()) {
-                return el;
-            }
-            return undefined;
-        };
+        ['flowVariable', $colors.portColors.flowVariable],
+        ['table', $colors.portColors.table],
+        ['other', '#123442']
+    ])('Port (%s)', (portDataType, portColor) => {
 
         beforeEach(() => {
             wrapper = null;
@@ -65,7 +51,9 @@ describe('Port', () => {
             });
 
             it('renders correct port', () => {
-                expect(currentPort().selector).toBe(portTag);
+                const { color, dataType } = wrapper.findComponent(PortIcon).props();
+                expect(dataType).toBe(portDataType);
+                expect(color).toBe(portColor);
             });
 
             it('not inactive', () => {
@@ -73,11 +61,7 @@ describe('Port', () => {
             });
 
             it('renders mandatory (filled)', () => {
-                let port = currentPort();
-                let { fill, stroke } = port.attributes();
-
-                expect(fill).toBe(portColor);
-                expect(stroke).toBe(portColor);
+                expect(wrapper.findComponent(PortIcon).props().filled).toBe(true);
             });
 
             it('translates to port position (outgoing)', () => {
@@ -98,11 +82,8 @@ describe('Port', () => {
             propsData.port.index = 1;
             mount();
 
-            let port = currentPort();
-            let { fill, stroke } = port.attributes();
-
-            expect(fill).toBe('white');
-            expect(stroke).toBe(portColor);
+            const { filled } = wrapper.findComponent(PortIcon).props();
+            expect(filled).toBe(false);
         });
 
         if (portDataType === 'flowVariable') {
@@ -111,11 +92,8 @@ describe('Port', () => {
                 propsData.port.index = 0;
                 mount();
 
-                let port = currentPort();
-                let { fill, stroke } = port.attributes();
-
-                expect(fill).toBe($colors.portColors.variable);
-                expect(stroke).toBe(portColor);
+                const { filled } = wrapper.findComponent(PortIcon).props();
+                expect(filled).toBe(true);
             });
         }
 
