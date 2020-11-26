@@ -1,7 +1,6 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
-import MissingValueIcon from '~/assets/missing-value.svg?inline';
 
 import DataPortOutputTableHeader from '~/components/output/DataPortOutputTableHeader';
 
