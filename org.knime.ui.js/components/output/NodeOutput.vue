@@ -51,11 +51,14 @@ export default {
             }
             return null;
         },
+        isMetaNode() {
+            return this.selectedNode?.kind === 'metanode';
+        },
         outPorts() {
             return this.selectedNode?.outPorts || [];
         },
         needsConfiguration() {
-            return this.selectedNode?.state?.executionState === 'IDLE';
+            return this.selectedNode?.state?.executionState === 'IDLE' && !this.isMetaNode;
         },
         needsExecution() {
             return this.isSupported && this.selectedNode?.allowedActions?.canExecute;
@@ -105,7 +108,8 @@ export default {
         },
         selectedPortIndex(tab) {
             if (tab === null) {
-                this.clearTable();
+                consola.trace('clearing data table');
+                this.$store.dispatch('dataTable/clear');
             } else {
                 consola.trace('loading table for port', tab);
                 setTimeout(() => { // delay UI blocking at startup
@@ -119,10 +123,6 @@ export default {
         }
     },
     methods: {
-        clearTable() {
-            consola.trace('clearing data table');
-            this.$store.dispatch('dataTable/clear');
-        },
         executeNode() {
             this.$store.dispatch('workflow/executeNodes', {
                 nodeIds: [this.selectedNode.id]
