@@ -34,6 +34,9 @@ describe('DataPortOutputTableHeader.vue', () => {
                     }, {
                         name: 'IntCol',
                         typeRef: 'org.knime.core.data.def.IntCell'
+                    }, {
+                        name: 'UnknownCol',
+                        typeRef: 'bogus'
                     }]
                 }
             }
@@ -48,7 +51,7 @@ describe('DataPortOutputTableHeader.vue', () => {
     it('renders rows and columns', () => {
         doShallowMount();
         expect(wrapper.findAll('tr').length).toBe(1);
-        expect(wrapper.findAll('th').length).toBe(2);
+        expect(wrapper.findAll('th').length).toBe(3);
     });
 
     it('renders content', () => {
@@ -58,5 +61,7 @@ describe('DataPortOutputTableHeader.vue', () => {
         expect(cells.at(0).find('.type').text()).toBe('String');
         expect(cells.at(1).find('.title').text()).toBe('IntCol');
         expect(cells.at(1).find('.type').text()).toBe('Number (integer)');
+        expect(cells.at(2).find('.title').text()).toBe('UnknownCol');
+        expect(cells.at(2).find('.type').text()).toBeFalsy();
     });
 });
