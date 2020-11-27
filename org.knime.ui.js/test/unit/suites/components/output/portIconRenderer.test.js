@@ -29,7 +29,7 @@ describe('PortIconRenderer', () => {
         });
         expect(wrapper.element.tagName.toLowerCase()).toBe('svg');
         expect(wrapper.findAll('g').length).toBe(1);
-        expect(wrapper.findAll('g *').length).toBe(3); // 1 circle + 2 paths for "X"
+        expect(wrapper.findAll('g *').length).toBe(1 + 2); // 1 circle + 2 paths for "X"
         expect(wrapper.find('g *').element.tagName.toLowerCase()).toBe('circle');
     });
 });

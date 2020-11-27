@@ -45,10 +45,12 @@ describe('DataPortOutputTableBody.vue', () => {
     it('renders content', () => {
         doShallowMount();
         let cells = wrapper.findAll('td');
+        /* eslint-disable no-magic-numbers */
         expect(cells.at(0).text()).toBe('foo');
         expect(cells.at(1).text()).toBe('');
         expect(cells.at(2).text()).toBe('bar');
         expect(cells.at(3).text()).toBe('baz');
+        /* eslint-enable no-magic-numbers */
     });
 
     it('shows missing value icon', () => {
