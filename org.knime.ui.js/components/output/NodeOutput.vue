@@ -90,7 +90,7 @@ export default {
                 if (this.isExecuting) {
                     return 'Output is available after execution';
                 }
-                return 'Internal error: Invalid node state'; // this should never happen
+                return 'No output available';
             default:
                 return 'Select a single node to show its output data';
             }

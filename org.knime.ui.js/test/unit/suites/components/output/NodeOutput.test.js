@@ -104,7 +104,6 @@ describe('NodeOutput.vue', () => {
             expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
             expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
             expect(wrapper.find('.placeholder').text()).toBe('The selected node has no supported output port');
-
         });
 
         it('renders placeholder if node needs to be executed', () => {
@@ -134,6 +133,15 @@ describe('NodeOutput.vue', () => {
             expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
             expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
             expect(wrapper.find('.placeholder').text()).toBe('Output is available after execution');
+        });
+
+        it('renders placeholder if node is in an unknown state', () => {
+            workflow.state.activeWorkflow.nodes.node1.kind = 'metanode';
+            workflow.state.activeWorkflow.nodes.node1.outPorts[0] = { type: 'table', nodeStatus: 'IDLE' };
+            doShallowMount();
+            expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
+            expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
+            expect(wrapper.find('.placeholder').text()).toBe('No output available');
         });
     });
 
