@@ -1,5 +1,4 @@
-import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener, executeNodes, cancelNodeExecution,
-    resetNodes } from '~api';
+import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener, changeNodeState } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
@@ -21,7 +20,6 @@ export const state = () => ({
 export const mutations = {
     ...jsonPatchMutations,
     setActiveWorkflow(state, workflow) {
-
         // extract templates
         let workflowData = {
             ...workflow
@@ -38,6 +36,9 @@ export const mutations = {
         });
         delete workflowData.nodeTemplates;
 
+        // add selected field to node with initial value false to enable reactivity on this property
+        Object.values(workflowData.nodes).forEach(node => { node.selected = false; });
+
         state.activeWorkflow = workflowData;
         state.tooltip = null;
     },
@@ -46,6 +47,19 @@ export const mutations = {
     },
     setTooltip(state, tooltip) {
         Vue.set(state, 'tooltip', tooltip);
+    },
+    /**
+     * @param {Object} state
+     * @param {Object} selectParams
+     *  nodeIds: Array of nodes to perform action on. Optional
+     *  all: Boolean, perform action on all nodes. Optional
+     *  toggle: Boolean, whether to select or deselect nodes. Optional
+     * @returns {void}
+     */
+    selectNodes({ activeWorkflow: { nodes } }, { nodeIds = [], toggle = true, all = false }) {
+        (all ? Object.keys(nodes) : nodeIds).forEach(nodeId => {
+            nodes[nodeId].selected = toggle;
+        });
     }
 };
 
@@ -89,16 +103,8 @@ export const actions = {
         await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
     },
     /* See docs in API */
-    executeNodes({ state }, { nodeIds }) {
-        executeNodes({ projectId: state.activeWorkflow.projectId, nodeIds });
-    },
-    /* See docs in API */
-    cancelNodeExecution({ state }, { nodeIds }) {
-        cancelNodeExecution({ projectId: state.activeWorkflow.projectId, nodeIds });
-    },
-    /* See docs in API */
-    resetNodes({ state }, { nodeIds }) {
-        resetNodes({ projectId: state.activeWorkflow.projectId, nodeIds });
+    changeNodeState({ state }, { nodeIds, action }) {
+        changeNodeState({ projectId: state.activeWorkflow.projectId, nodeIds, action });
     }
 };
 

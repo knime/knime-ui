@@ -1,6 +1,8 @@
 import knimeColors from 'webapps-common/ui/colors/knimeColors';
 import nodeColors from 'webapps-common/ui/colors/nodeColors';
 
+const applyAlphaHSL = (hsl, alpha) => `${hsl.slice(0, -1)}, ${alpha})`;
+
 export const text = {
     default: knimeColors.Masala
 };
@@ -15,6 +17,16 @@ export const portColors = {
 export const nodeBackgroundColors = nodeColors;
 
 export const linkDecorator = knimeColors.Black;
+
+export const selection = {
+    hoverBackground: applyAlphaHSL(knimeColors.Porcelain, '90%'),
+    // goal: 9% of Cornflower on white background at 10% opacity
+    // step 1: apply 9.9% opacity to Cornflower
+    // step 2: add 10% transparency to the resulting color
+    // results in the same brightness as hoverBackground
+    activeBackground: 'rgba(233, 241, 246, 90%)',
+    activeBorder: knimeColors.Cornflower
+};
 
 export const connectorColors = {
     default: knimeColors.SilverSand,

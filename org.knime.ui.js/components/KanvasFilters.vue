@@ -1,0 +1,49 @@
+<script>
+/* eslint-disable vue/attribute-hyphenation */
+</script>
+<template>
+  <defs>
+    <filter
+      id="node-action-button-shadow"
+      height="200%"
+      width="200%"
+      x="-50%"
+      y="-50%"
+    >
+      <feDropShadow
+        dx="0"
+        dy="2"
+        stdDeviation="5"
+        flood-color="rgba(0,0,0,0.25)"
+      />
+    </filter>
+    <filter
+      id="node-torso-shadow"
+      height="300%"
+      width="300%"
+      x="-75%"
+      y="-75%"
+    >
+      <feDropShadow
+        dx="0"
+        dy="1"
+        stdDeviation="8"
+        flood-color="rgba(0,0,0,0.3)"
+      />
+    </filter>
+    <filter
+      id="node-state-shadow"
+      height="300%"
+      width="300%"
+      x="-75%"
+      y="-75%"
+    >
+      <feDropShadow
+        dx="0"
+        dy="1"
+        stdDeviation="6"
+        flood-color="rgba(0,0,0,0.3)"
+      />
+    </filter>
+  </defs>
+</template>

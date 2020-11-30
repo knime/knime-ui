@@ -29,17 +29,20 @@ export default {
     },
     methods: {
         onExecuteBtnClick() {
-            this.$store.dispatch('workflow/executeNodes', {
+            this.$store.dispatch('workflow/changeNodeState', {
+                action: 'execute',
                 nodeIds: [this.activeWorkflowId]
             });
         },
         onCancelBtnClick() {
-            this.$store.dispatch('workflow/cancelNodeExecution', {
+            this.$store.dispatch('workflow/changeNodeState', {
+                action: 'cancel',
                 nodeIds: [this.activeWorkflowId]
             });
         },
         onResetBtnClick() {
-            this.$store.dispatch('workflow/resetNodes', {
+            this.$store.dispatch('workflow/changeNodeState', {
+                action: 'reset',
                 nodeIds: [this.activeWorkflowId]
             });
         }

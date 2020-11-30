@@ -60,12 +60,14 @@ export default {
 </script>
 
 <template>
-  <div
-    class="breadcrumb-container"
-    @click.capture.prevent.stop="onClick"
-  >
-    <Breadcrumb
-      :items="items"
-    />
-  </div>
+  <Breadcrumb
+    :items="items"
+    @click.capture.prevent.stop.native="onClick"
+  />
 </template>
+
+<style lang="postcss" scoped>
+>>> ul {
+  user-select: none;
+}
+</style>

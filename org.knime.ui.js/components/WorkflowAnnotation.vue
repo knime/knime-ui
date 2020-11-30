@@ -1,6 +1,6 @@
 <script>
 import LegacyAnnotationText from '~/components/LegacyAnnotationText';
-
+import { mapMutations } from 'vuex';
 /**
  * A workflow annotation, a rectangular box containing text.
  */
@@ -69,6 +69,12 @@ export default {
                 padding: `${this.$shapes.workflowAnnotationPadding}px`
             };
         }
+    },
+    methods: {
+        ...mapMutations('workflow', ['selectNodes']),
+        select() {
+            this.selectNodes({ all: true, toggle: false });
+        }
     }
 };
 </script>
@@ -79,6 +85,7 @@ export default {
     :y="bounds.y"
     :width="bounds.width"
     :height="bounds.height"
+    @mousedown.left="select"
   >
     <LegacyAnnotationText
       :style="style"

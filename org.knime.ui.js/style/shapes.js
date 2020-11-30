@@ -11,9 +11,10 @@ export const nodeAnnotationMarginTop = 8;
 export const nodeNameMargin = 12;
 export const nodeNameLineHeight = 14;
 
-export const componentBackgroundPortion = 0.75;
+export const nodeSelectionPadding = [37, 34, 6, 34];
+export const nodeHoverMargin = [46, 18, 8, 18];
 
-export const nodeSelectionBarHeight = 12;
+export const componentBackgroundPortion = 0.75;
 
 export const connectorWidth = 2;
 

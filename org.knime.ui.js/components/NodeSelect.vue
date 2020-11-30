@@ -5,7 +5,7 @@
 export default {
     props: {
         /**
-         * X- and Y-Coordinate relative to the top left of the canvas.
+         * X- and Y-Coordinate of the top left corner of the node torso, relative to the top left of the canvas.
          * This must be provided from outside, since this component is not rendered as a child element of the Node.
          */
         x: {
@@ -16,6 +16,16 @@ export default {
             type: Number,
             default: 0
         },
+        /** if active node is selected otherwise hovered */
+        active: {
+            type: Boolean,
+            default: false
+        },
+        /** Metanodes don't have status bars */
+        hasStatusBar: {
+            type: Boolean,
+            default: true
+        },
         /**
          * Node id to be displayed
          */
@@ -25,17 +35,19 @@ export default {
         }
     },
     computed: {
-        // eslint-disable-next-line no-magic-numbers
-        padding: () => [25, 28, 4, 28], // padding around node
-        roundness: () => 2, // can be nodeSelectionBarHeight at maximum
-        selectionBarPath() {
-            const { padding, roundness, $shapes: { nodeSelectionBarHeight, nodeSize } } = this;
-
-            return `M${-padding[3]},${-padding[0]}
-            v-${nodeSelectionBarHeight - roundness} q 0,-${roundness} ${roundness},-${roundness}
-            h${padding[3] + nodeSize + padding[1] - roundness - roundness} q ${roundness},0 ${roundness},${roundness}
-            v${nodeSelectionBarHeight - roundness}
-            Z`;
+        /**
+         * @returns {Number[]} [up, right, bottom, left] margin around the node's torso
+         */
+        padding() {
+            // eslint-disable-next-line no-magic-numbers
+            const { nodeStatusHeight, nodeStatusMarginTop,
+                nodeSelectionPadding: [top, right, bottom, left] } = this.$shapes;
+            return [
+                top,
+                right,
+                bottom + (this.hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0),
+                left
+            ];
         }
     }
 };
@@ -44,23 +56,21 @@ export default {
 <template>
   <g
     :transform="`translate(${x}, ${y})`"
-    class="selection"
+    :class="['selection', {active}]"
   >
     <rect
-      :y="-padding[0] - $shapes.nodeSelectionBarHeight"
+      :y="-padding[0]"
       :x="-padding[1]"
       :width="padding[1] + $shapes.nodeSize + padding[3]"
-      :height="padding[0] + $shapes.nodeSize + padding[2] + $shapes.nodeSelectionBarHeight"
-      :rx="roundness"
-      class="selection-frame"
-    />
-    <path
-      :d="selectionBarPath"
-      class="selection-bar"
+      :height="padding[0] + $shapes.nodeSize + padding[2]"
+      :fill="active ? $colors.selection.activeBackground : $colors.selection.hoverBackground"
+      :stroke="active ? $colors.selection.activeBorder : null"
+      stroke-width="1"
+      rx="4"
     />
     <text
       text-anchor="middle"
-      :y="-padding[0] - 3"
+      :y="-padding[0] - 15"
       :x="$shapes.nodeSize / 2"
     >
       {{ nodeId }}
@@ -71,19 +81,6 @@ export default {
 <style lang="postcss" scoped>
 text {
   font: normal 10px "Roboto Condensed", sans-serif;
-  pointer-events: none;
-}
-
-.selection-frame {
-  stroke-width: 2px;
-  stroke: silver;
-  fill: rgba(185, 226, 254, 0.2);
-  pointer-events: none;
-}
-
-.selection-bar {
-  fill: silver;
-  stroke: silver;
   pointer-events: none;
 }
 </style>

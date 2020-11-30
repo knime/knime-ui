@@ -1,10 +1,11 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapMutations } from 'vuex';
 import Node from '~/components/Node';
 import Connector from '~/components/Connector';
 import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import Tooltip from '~/components/Tooltip';
 import MetaNodePortBars from '~/components/MetaNodePortBars';
+import KanvasFilters from '~/components/KanvasFilters';
 
 export default {
     components: {
@@ -12,7 +13,18 @@ export default {
         Connector,
         WorkflowAnnotation,
         Tooltip,
-        MetaNodePortBars
+        MetaNodePortBars,
+        KanvasFilters
+    },
+    data() {
+        return {
+            /**
+             *  To avoid for mousedown on node, moving mouse, mouseup on kanvas to deselect nodes
+             *  We track whether a click has been started on the empty Kanvas
+             */
+            clickStartedOnEmptyKanvas: false,
+            keyEventListener: null
+        };
     },
     computed: {
         ...mapState('workflow', {
@@ -24,6 +36,31 @@ export default {
             'isLinked',
             'isWritable'
         ])
+    },
+    mounted() {
+        this.keyEventListener = document.addEventListener('keydown', (e) => {
+            if (e.key === 'a' && e.ctrlKey) {
+                e.stopPropagation();
+                e.preventDefault();
+                this.selectNodes({ all: true });
+            }
+        });
+    },
+    beforeDestroy() {
+        document.removeEventListener('keydown', this.keyEventListener);
+    },
+    methods: {
+        ...mapMutations('workflow', ['selectNodes']),
+        onMouseDown(e) {
+            // if mousedown on empty kanvas set flag
+            this.clickStartedOnEmptyKanvas = e.target === this.$refs.svg;
+        },
+        onSelfMouseUp(e) {
+            // deselect all nodes
+            if (this.clickStartedOnEmptyKanvas) {
+                this.selectNodes({ all: true, toggle: false });
+            }
+        }
     }
 };
 </script>
@@ -47,37 +84,81 @@ export default {
         v-bind="tooltip"
       />
     </div>
-
+    
     <svg
+      ref="svg"
       :width="svgBounds.width"
       :height="svgBounds.height"
       :viewBox="`${svgBounds.x} ${svgBounds.y} ${svgBounds.width} ${svgBounds.height}`"
+      @mousedown.left="onMouseDown"
+      @mouseup.self.left="onSelfMouseUp"
     >
+      
+      <!-- Includes shadows for Nodes -->
+      <KanvasFilters />
+
+      <!-- Workflow Annotation Layer. Background -->
       <WorkflowAnnotation
         v-for="annotation of workflow.workflowAnnotations"
         :key="`annotation-${annotation.id}`"
         v-bind="annotation"
       />
+
+      <!-- Workflow Layer 1: Node Hover Plane -->
+      <portal-target
+        multiple
+        tag="g"
+        name="node-hover"
+      />
+
+      <!-- Workflow Layer 2: Node Selection Plane -->
+      <portal-target
+        multiple
+        tag="g"
+        name="node-selected"
+      />
+
+      <!-- Workflow Layer 2: Connectors -->
       <Connector
         v-for="(connector, id) of workflow.connections"
         :key="`connector-${workflow.projectId}-${id}`"
         v-bind="connector"
       />
+
+      <!-- Workflow Layer 3: Metanode Port Bars (Inside of Metanodes) -->
       <MetaNodePortBars
         v-if="workflow.info.containerType === 'metanode'"
       />
-      <Node
+
+      <!-- Workflow Layer 4: Non-Selected Nodes -->
+      <portal
         v-for="(node, nodeId) in workflow.nodes"
-        :key="`node-${workflow.projectId}-${nodeId}`"
-        :icon="$store.getters['workflow/nodeIcon']({ workflowId: workflow.projectId, nodeId })"
-        :name="$store.getters['workflow/nodeName']({ workflowId: workflow.projectId, nodeId })"
-        :type="$store.getters['workflow/nodeType']({ workflowId: workflow.projectId, nodeId })"
-        v-bind="node"
-      />
+        :key="`node-${workflow.projectId}-${nodeId}-portal`"
+        :disabled="!node.selected"
+        to="selected-nodes"
+        slim
+      >
+        <Node
+          :key="`node-${workflow.projectId}-${nodeId}`"
+          :icon="$store.getters['workflow/nodeIcon']({ workflowId: workflow.projectId, nodeId })"
+          :name="$store.getters['workflow/nodeName']({ workflowId: workflow.projectId, nodeId })"
+          :type="$store.getters['workflow/nodeType']({ workflowId: workflow.projectId, nodeId })"
+          v-bind="node"
+        />
+      </portal>
+
+      <!-- Workflow Layer 4: Selected Nodes -->
       <portal-target
         multiple
         tag="g"
-        name="node-select"
+        name="selected-nodes"
+      />
+
+      <!-- Quick Actions Layer: Buttons for Selected Nodes -->
+      <portal-target
+        multiple
+        tag="g"
+        name="node-actions"
       />
     </svg>
   </div>
@@ -112,6 +193,7 @@ svg {
   /* appearance */
   background-color: var(--notification-background-color);
   pointer-events: none;
+  user-select: none;
 
   & span {
     font-size: 16px;
