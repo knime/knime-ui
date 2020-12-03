@@ -44,46 +44,59 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Nov 9, 2020 (hornm): created
+ *   Dec 3, 2020 (hornm): created
  */
 package org.knime.ui.java.browser.function;
 
+import java.util.Arrays;
+
 import org.eclipse.swt.chromium.Browser;
+import org.eclipse.swt.chromium.BrowserFunction;
 import org.knime.core.node.NodeLogger;
-import org.knime.core.node.workflow.NativeNodeContainer;
 import org.knime.core.node.workflow.NodeContainer;
-import org.knime.core.node.workflow.SubNodeContainer;
-import org.knime.workbench.editor2.actions.OpenInteractiveWebViewAction;
-import org.knime.workbench.editor2.actions.OpenSubnodeWebViewAction;
+import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 
 /**
- * Opens the node's js-view, if available, in an extra browser window.
+ * A browser function targeting a single node, identified by project-id and
+ * node-id.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class OpenNodeViewBrowserFunction extends AbstractNodeBrowserFunction {
+public abstract class AbstractNodeBrowserFunction extends BrowserFunction {
 
-	private static final String FUNCTION_NAME = "openNodeView";
-
-	public OpenNodeViewBrowserFunction(final Browser browser) {
-		super(browser, FUNCTION_NAME);
+	/**
+	 * @param browser
+	 * @param name
+	 */
+	protected AbstractNodeBrowserFunction(final Browser browser, final String name) {
+		super(browser, name);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	protected void apply(final NodeContainer nc) {
-		if (nc.getInteractiveWebViews().size() > 0) {
-			if (nc instanceof SubNodeContainer) {
-				OpenSubnodeWebViewAction.openView((SubNodeContainer) nc);
-				return;
-			} else if (nc instanceof NativeNodeContainer) {
-				OpenInteractiveWebViewAction.openView((NativeNodeContainer) nc,
-						nc.getInteractiveWebViews().get(0).getViewName());
-				return;
-			} else {
-				//
-			}
+	public Object function(final Object[] args) {
+		if (args == null || args.length != 2 || !(args[0] instanceof String) || !(args[1] instanceof String)) {
+			throw new IllegalArgumentException("Wrong argument for browser function '" + getName()
+					+ "'. The arguments are: " + Arrays.toString(args));
 		}
-		NodeLogger.getLogger(OpenNodeViewBrowserFunction.class).warn(String.format(
-				"Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName()));
+		NodeContainer nc = DefaultServiceUtil.getNodeContainer((String) args[0], new NodeIDEnt((String) args[1]));
+		if (nc == null) {
+			NodeLogger.getLogger(AbstractNodeBrowserFunction.class)
+					.warn(String.format("Node with id '%s' not found in workflow with id '%s'", args[0], args[1]));
+		} else {
+			apply(nc);
+		}
+		return null;
 	}
+
+	/**
+	 * Executes the function on the given node container.
+	 *
+	 * @param nc the node container, never <code>null</code>
+	 */
+	protected abstract void apply(NodeContainer nc);
+
 }

@@ -44,46 +44,32 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Nov 9, 2020 (hornm): created
+ *   Dec 3, 2020 (hornm): created
  */
 package org.knime.ui.java.browser.function;
 
+import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
+
 import org.eclipse.swt.chromium.Browser;
-import org.knime.core.node.NodeLogger;
-import org.knime.core.node.workflow.NativeNodeContainer;
 import org.knime.core.node.workflow.NodeContainer;
-import org.knime.core.node.workflow.SubNodeContainer;
-import org.knime.workbench.editor2.actions.OpenInteractiveWebViewAction;
-import org.knime.workbench.editor2.actions.OpenSubnodeWebViewAction;
+import org.knime.workbench.editor2.editparts.NodeContainerEditPart;
 
 /**
- * Opens the node's js-view, if available, in an extra browser window.
+ * Opens the swing dialog of a node.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class OpenNodeViewBrowserFunction extends AbstractNodeBrowserFunction {
+public class OpenNodeDialogBrowserFunction extends AbstractNodeBrowserFunction {
 
-	private static final String FUNCTION_NAME = "openNodeView";
+	private static final String FUNCTION_NAME = "openNodeDialog";
 
-	public OpenNodeViewBrowserFunction(final Browser browser) {
+	public OpenNodeDialogBrowserFunction(final Browser browser) {
 		super(browser, FUNCTION_NAME);
 	}
 
 	@Override
 	protected void apply(final NodeContainer nc) {
-		if (nc.getInteractiveWebViews().size() > 0) {
-			if (nc instanceof SubNodeContainer) {
-				OpenSubnodeWebViewAction.openView((SubNodeContainer) nc);
-				return;
-			} else if (nc instanceof NativeNodeContainer) {
-				OpenInteractiveWebViewAction.openView((NativeNodeContainer) nc,
-						nc.getInteractiveWebViews().get(0).getViewName());
-				return;
-			} else {
-				//
-			}
-		}
-		NodeLogger.getLogger(OpenNodeViewBrowserFunction.class).warn(String.format(
-				"Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName()));
+		NodeContainerEditPart.openDialog(wrap(nc), null);
 	}
+
 }
