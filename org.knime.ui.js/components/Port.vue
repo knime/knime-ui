@@ -92,7 +92,7 @@ export default {
     @mouseleave="onMouseLeave"
   >
     <PortIcon
-      :data-type="port.type"
+      :type="port.type"
       :color="portColor"
       :filled="shouldFill"
     />
