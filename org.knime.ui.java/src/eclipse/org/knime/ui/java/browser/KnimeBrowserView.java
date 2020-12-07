@@ -12,7 +12,10 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.browser.LocationEvent;
+import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.chromium.Browser;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.NodeLogger;
@@ -47,6 +50,28 @@ public class KnimeBrowserView {
 	@PostConstruct
 	public void createPartControl(final Composite parent) {
 		m_browser = new Browser(parent, SWT.NONE);
+		m_browser.addLocationListener(new LocationListener() {
+
+			@Override
+			public void changing(final LocationEvent event) {
+				// Any change of the location (i.e. URL) will be intercepted and the URL opened in the external browser.
+				// Except if the new location URL is the actual APP page, the EMPTY page
+				// or a localhost-URL (for development).
+				if (!(event.location.endsWith(APP_PAGE) || event.location.endsWith(EMPTY_PAGE)
+						 || event.location.startsWith("http://localhost"))) {
+					if (!Program.launch(event.location)) {
+						NodeLogger.getLogger(this.getClass())
+								.error("Failed to open URL in external browser. The URL is: " + event.location);
+					}
+					event.doit = false;
+				}
+			}
+
+			@Override
+			public void changed(final LocationEvent event) {
+				//
+			}
+		});
 		new JsonRpcBrowserFunction(m_browser);
 		new SwitchToJavaUIBrowserFunction(m_browser);
 		setUrl();

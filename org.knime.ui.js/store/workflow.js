@@ -3,8 +3,6 @@ import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListe
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
-import consola from 'consola';
-
 /**
  * Store that holds a workflow graph and the associated tooltips.
  * A workflow can either be contained in a component / metanode, or it can be the top level workflow.

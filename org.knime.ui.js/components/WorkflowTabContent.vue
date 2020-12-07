@@ -5,7 +5,6 @@ import Kanvas from '~/components/Kanvas';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
 
-
 /**
  * A component that shows the tab contents belonging to one workflow,
  * i.e. toolbar, canvas, etc.
@@ -21,10 +20,24 @@ export default {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
         }),
-        placeholderMetadata() {
-            return {
-                title: this.workflow.info.name
-            };
+        metadata() {
+            switch (this.workflow.info.containerType) {
+            case 'project':
+                return this.workflow.projectMetadata || { title: this.workflow.info.name };
+            case 'component': {
+                const { componentMetadata:
+                    { inPorts, outPorts, name, type, icon, description, options, views } } = this.workflow;
+                return {
+                    title: name,
+                    description,
+                    nodePreview: { inPorts, outPorts, icon, type, isComponent: true, hasDynPorts: false },
+                    nodeFeatures: { inPorts, outPorts, views, options },
+                    isComponent: true
+                };
+            }
+            default:
+                return null;
+            }
         },
         hasLeftPanel() {
             return this.workflow.info.containerType === 'project';
@@ -42,15 +55,16 @@ export default {
     />
     <div class="collapser-kanvas">
       <LeftCollapsiblePanel
-        v-if="hasLeftPanel"
+        v-if="metadata"
         id="metadata"
         width="360px"
         title="Workflow Metadata"
       >
         <WorkflowMetadata
-          v-bind="workflow.metadata || placeholderMetadata"
+          v-bind="metadata"
         />
       </LeftCollapsiblePanel>
+
       <Kanvas id="kanvas" />
     </div>
   </main>

@@ -1,5 +1,3 @@
-import consola from 'consola';
-
 /**
 * This store holds the currently opened projects (tabs), but not the contained workflow (see workflows.js)
 */

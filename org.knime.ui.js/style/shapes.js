@@ -20,6 +20,7 @@ export const nodeIdMargin = 16;
 export const nodeActionBarButtonSpread = 25;
 
 export const componentBackgroundPortion = 0.75;
+export const nodeSelectionBarHeight = 12;
 
 export const connectorWidth = 2;
 

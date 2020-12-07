@@ -1,4 +1,3 @@
-import consola from 'consola';
 import rpc from './json-rpc-adapter.js';
 
 /**

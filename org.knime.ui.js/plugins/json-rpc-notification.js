@@ -1,6 +1,4 @@
 import { actions } from '~/store/jsonrpc';
-import consola from 'consola';
-
 const genericErrorMsg = 'Argument must be a JSON serialized JSON-RPC object';
 const errorCodes = {
     parseError: -32700,

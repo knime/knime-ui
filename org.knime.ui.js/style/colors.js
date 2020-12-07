@@ -1,5 +1,6 @@
 import knimeColors from 'webapps-common/ui/colors/knimeColors';
 import nodeColors from 'webapps-common/ui/colors/nodeColors';
+import portColorsCommon from 'webapps-common/ui/colors/portColors';
 
 const applyAlphaHSL = (hsl, alpha) => `${hsl.slice(0, -1)}, ${alpha})`;
 
@@ -8,8 +9,7 @@ export const text = {
 };
 
 export const portColors = {
-    data: knimeColors.Black,
-    variable: knimeColors.Coral,
+    ...portColorsCommon,
     inactive: 'hsl(0, 100%, 50%)', // "×"
     inactiveOutline: 'hsla(0, 100%, 100%, 66%)' // outline around "×"
 };
@@ -30,7 +30,7 @@ export const selection = {
 
 export const connectorColors = {
     default: knimeColors.SilverSand,
-    variable: portColors.variable
+    flowVariable: portColors.flowVariable
 };
 
 export const trafficLight = {

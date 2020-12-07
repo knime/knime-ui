@@ -1,5 +1,3 @@
-import consola from 'consola';
-
 /**
  * Call the JSON-RPC API as defined
  * in knime-com-shared/src/master/com.knime.gateway.codegen/src-gen/api/web-ui/gateway.yaml
