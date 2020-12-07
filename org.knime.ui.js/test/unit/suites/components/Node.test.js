@@ -10,7 +10,6 @@ import NodeState from '~/components/NodeState.vue';
 import NodeAnnotation from '~/components/NodeAnnotation.vue';
 import LinkDecorator from '~/components/LinkDecorator.vue';
 import NodeActionBar from '~/components/NodeActionBar';
-import ActionButton from '~/components/ActionButton';
 import Port from '~/components/Port.vue';
 
 import * as $shapes from '~/style/shapes';
@@ -243,7 +242,7 @@ describe('Node', () => {
             doMount(shallowMount);
             expect(wrapper.findComponent(NodeActionBar).props()).toStrictEqual({
                 nodeId: 'root:1',
-                canExecute: false,
+                canExecute: true,
                 canCancel: false,
                 canReset: false
             });
@@ -282,12 +281,6 @@ describe('Node', () => {
             expect(workflowStoreConfig.mutations.selectNode).not.toHaveBeenCalled();
         });
 
-        it('click on disabled actionButton selects Node', async () => {
-            doMount(deepMount);
-            await wrapper.findComponent(ActionButton).trigger('mousedown', { button: 0 });
-            expect(workflowStoreConfig.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
-        });
-
         it('selection instantly shows default flowVariable ports', async () => {
             propsData = {
                 ...propsData,
@@ -318,7 +311,8 @@ describe('Node', () => {
             propsData = {
                 ...commonNode,
                 inPorts: [mockPort({ index: 0 })],
-                outPorts: [mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] })]
+                outPorts: [mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] })],
+                allowedActions: { canExecute: true, canCancel: true, canReset: true }
             };
             doMount(shallowMount);
 
@@ -327,7 +321,14 @@ describe('Node', () => {
             wrapper.vm.hover = true;
         });
         it('shows selection plane and action buttons', () => {
-            expect(wrapper.findComponent(NodeActionBar).exists()).toBe(true);
+            let actionBar = wrapper.findComponent(NodeActionBar);
+            expect(actionBar.exists()).toBe(true);
+            expect(actionBar.props()).toStrictEqual({
+                canReset: true,
+                canExecute: true,
+                canCancel: true,
+                nodeId: 'root:1'
+            });
         });
 
         it('shows shadows', () => {

@@ -234,10 +234,10 @@ export default {
     >
       <NodeActionBar
         ref="actionbar"
+        v-bind="allowedActions"
         :transform="`translate(${position.x + $shapes.nodeSize / 2} ${position.y - $shapes.nodeSelectionPadding[0]})`"
-        :v-bind="allowedActions"
         :node-id="id"
-        @mousedown.left.native="onLeftMouseDown"
+       
         @action="onAction"
         @mouseleave.native="onLeaveHoverArea"
       />
