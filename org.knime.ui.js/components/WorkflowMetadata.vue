@@ -73,7 +73,7 @@ export default {
       >
         <NodePreview v-bind="nodePreview" />
       </div>
-      
+
       <span v-if="title">{{ title }}</span>
       <span
         v-else
@@ -194,6 +194,8 @@ export default {
 
 .description {
   margin-bottom: 20px;
+  white-space: break-spaces;
+  word-wrap: break-word;
 }
 
 .node-feature-list {
