@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build && node buildtools/inline-html.mjs",
+    "start": "nuxt start",
     "lint": "npm run lint:js && npm run lint:css",
     "lint:js": "eslint --ext .js,.mjs,.vue .",
     "lint:css": "stylelint '**/*.{css,vue}'",

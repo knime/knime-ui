@@ -3,7 +3,6 @@ import { mapState, mapMutations, mapActions } from 'vuex';
 import Port from '~/components/Port.vue';
 import NodeState from '~/components/NodeState.vue';
 import NodeTorso from '~/components/NodeTorso.vue';
-import NodeSelect from '~/components/NodeSelect.vue';
 import NodeAnnotation from '~/components/NodeAnnotation.vue';
 import LinkDecorator from '~/components/LinkDecorator.vue';
 import portShift from '~/util/portShift';
@@ -13,6 +12,9 @@ import NodeActionBar from '~/components/NodeActionBar.vue';
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
  * Must be embedded in an `<svg>` element.
  * Requires the `portal-vue` module.
+ *
+ * If node is hovered default Flow Variable Ports are faded-in.
+ * If node is selected, it will be portalled and redrawn. This causes the default Flow Variable Ports to appear instantly, which is desired.
  * */
 export default {
     components: {
@@ -21,7 +23,6 @@ export default {
         NodeAnnotation,
         NodeTorso,
         NodeState,
-        NodeSelect,
         LinkDecorator
     },
     inheritAttrs: false,
@@ -109,7 +110,7 @@ export default {
         },
 
         /**
-         * Iff node has been selected by user
+         * Node selection state
          */
         selected: {
             type: Boolean,
@@ -117,11 +118,11 @@ export default {
         },
 
         /**
-         *  Passed through to NodeActionBar
+         *  Props passed through to NodeActionBar
          */
         allowedActions: {
             type: Object,
-            default: () => {}
+            default: null
         }
     },
     data() {
@@ -133,24 +134,28 @@ export default {
         ...mapState('openedProjects', {
             projectId: 'activeId'
         }),
-        sanitizedId() {
-            /* For usage as CSS selector we need to remove colons */
-            return this.id.replace(/:/g, '-');
+        nodeSelectionMeasures() {
+            const { nodeStatusHeight, nodeStatusMarginTop, nodeSize,
+                nodeSelectionPadding: [top, right, bottom, left] } = this.$shapes;
+            const hasStatusBar = this.kind !== 'metanode';
+
+            return {
+                y: -top,
+                x: -left,
+                height: (top + nodeSize + bottom) + (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0),
+                width: left + right + nodeSize
+            };
         }
     },
     methods: {
-        ...mapMutations('workflow', ['selectNodes']),
-        ...mapActions('workflow', ['changeNodeState']),
+        ...mapMutations('workflow', ['selectNode', 'deselectNode', 'deselectAllNodes']),
+        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes']),
         portShift,
         onLeaveHoverArea(e) {
-            if (e.relatedTarget?.matches(`.${this.sanitizedId}-hover *`)) {
+            if (this.$refs.actionbar?.$el?.contains(e.relatedTarget)) {
                 // used to test for elements that are logically contained inside this node
                 // but aren't DOM-wise because they were teleported to another layer
-                // those elements need to have that class 'node-id-hover'
-                return;
-            }
-            if (this.$el.querySelector('.hover-container').contains(e.relatedTarget)) {
-                // test if the mouse leaves onto another element that is also contained inside this node's hover area
+                // only applies to ref 'actionbar'
                 return;
             }
                 
@@ -166,10 +171,10 @@ export default {
             }
 
             // the port is either not the 0th, is connected, the node is hovered or selected
-            return port.index !== 0 || port.connectedVia.length || this.hover || this.selected;
+            return port.index !== 0 || Boolean(port.connectedVia.length) || this.hover || this.selected;
         },
 
-        onDoubleClick(e) {
+        onLeftDoubleClick(e) {
             // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
             if (this.kind === 'metanode' || (this.kind === 'component' && (e.ctrlKey || e.metaKey))) {
                 this.openNode();
@@ -180,24 +185,38 @@ export default {
             this.$store.dispatch('workflow/loadWorkflow', { workflowId: this.id, projectId: this.projectId });
         },
 
+        /**
+         * Triggered by NodeActionBar
+         * @param {'executeNodes' | 'cancelNodeExecution' | 'resetNodes' } action
+         * @returns {void}
+         */
         onAction(action) {
-            // possible actions: 'reset', 'cancel', 'execute'
-            this.changeNodeState({ nodeIds: [this.id], action });
+            // calls actions of workflow store
+            this[action]({ nodeIds: [this.id] });
         },
 
-        select(e) {
-            if (e.ctrlKey) {
+        /*
+         * Left-Click         => Select only this node
+         * Left-Click & Shift => Add/Remove this node to/from selection
+         * Left-Click & Ctrl  => do Nothing
+         */
+        onLeftMouseDown(e) {
+            if (e.ctrlKey || e.metaKey) {
                 // user tries to open component or metanode
                 return;
             }
 
             if (e.shiftKey) {
                 // Multi select
-                this.selectNodes({ nodeIds: [this.id], toggle: !this.selected });
+                if (this.selected) {
+                    this.deselectNode(this.id);
+                } else {
+                    this.selectNode(this.id);
+                }
             } else {
                 // Single select
-                this.selectNodes({ all: true, toggle: false });
-                this.selectNodes({ nodeIds: [this.id] });
+                this.deselectAllNodes();
+                this.selectNode(this.id);
             }
         }
     }
@@ -208,29 +227,68 @@ export default {
   <g
     :transform="`translate(${position.x}, ${position.y})`"
   >
+    <!-- NodeActionBar portalled to the front-most layer -->
+    <portal
+      v-if="hover || selected"
+      to="node-actions"
+    >
+      <NodeActionBar
+        ref="actionbar"
+        :transform="`translate(${position.x + $shapes.nodeSize / 2} ${position.y - $shapes.nodeSelectionPadding[0]})`"
+        :v-bind="allowedActions"
+        :node-id="id"
+        @mousedown.left.native="onLeftMouseDown"
+        @action="onAction"
+        @mouseleave.native="onLeaveHoverArea"
+      />
+    </portal>
+    
+    <!-- Node Selection Plane. Portalled to the back -->
+    <portal
+      v-if="selected"
+      to="node-select"
+    >
+      <g :transform="`translate(${position.x}, ${position.y})`">
+        <rect
+          :y="nodeSelectionMeasures.y"
+          :x="nodeSelectionMeasures.x"
+          :width="nodeSelectionMeasures.width"
+          :height="nodeSelectionMeasures.height"
+          :fill="$colors.selection.activeBackground"
+          :stroke="$colors.selection.activeBorder"
+          stroke-width="1"
+          rx="4"
+        />
+      </g>
+    </portal>
+
+    <!-- Annotation needs to be behind ports -->
     <NodeAnnotation
       v-if="annotation"
       v-bind="annotation"
       :y-shift="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
     />
 
+    <!-- Node title. No pointer events -->
+    <text
+      class="name"
+      :x="$shapes.nodeSize / 2"
+      :y="-$shapes.nodeNameMargin"
+      text-anchor="middle"
+    >
+      {{ name }}
+    </text>
+
     <!-- Elements for which mouse hover triggers hover state -->
     <g
+      ref="hoverContainer"
       class="hover-container"
       @mouseleave="onLeaveHoverArea"
       @mouseenter="hover = true"
     >
       <!-- Elements for which a click selects node -->
-      <g @mousedown.left="select">
-        <text
-          class="name"
-          :x="$shapes.nodeSize / 2"
-          :y="-$shapes.nodeNameMargin"
-          text-anchor="middle"
-        >
-          {{ name }}
-        </text>
-
+      <g @mousedown.left="onLeftMouseDown">
+        <!-- Hover Area, larger than the node torso -->
         <rect
           class="hover-area"
           :width="$shapes.nodeSize + $shapes.nodeHoverMargin[1] + $shapes.nodeHoverMargin[3]"
@@ -238,48 +296,32 @@ export default {
           :x="-$shapes.nodeHoverMargin[1]"
           :y="-$shapes.nodeHoverMargin[0]"
         />
-        
         <NodeTorso
-          :class="{ hover: hover, selected: selected }"
           :type="type"
           :kind="kind"
           :icon="icon"
           :execution-state="state && state.executionState"
           :filter="(selected || hover) && 'url(#node-torso-shadow)'"
-          @dblclick.native="onDoubleClick"
+          @dblclick.left.native="onLeftDoubleClick"
         />
         
         <LinkDecorator
           v-if="link"
           :type="type"
-          transform="translate(0,21)"
+          transform="translate(0, 21)"
         />
-
-        <portal
-          v-if="hover || selected"
-          :to="`node-${ selected ? 'selected' : 'hover' }`"
-        >
-          <NodeSelect
-            :x="position.x"
-            :y="position.y"
-            :has-status-bar="kind !== 'metanode'"
-            :node-id="id"
-            :active="selected"
-          />
-        </portal>
 
         <NodeState
           v-if="kind !== 'metanode'"
           v-bind="state"
-          :class="['container', { hover: hover || selected }]"
           :filter="(selected || hover) && 'url(#node-state-shadow)'"
         />
       </g>
 
       <template v-for="port of inPorts">
         <Port
-          v-if="showPort(port)"
           :key="`inport-${port.index}`"
+          :class="`port show-${showPort(port)}`"
           :port="port"
           :x="portShift(port.index, inPorts.length, kind === 'metanode')[0]"
           :y="portShift(port.index, inPorts.length, kind === 'metanode')[1]"
@@ -288,27 +330,13 @@ export default {
 
       <template v-for="port of outPorts">
         <Port
-          v-if="showPort(port)"
           :key="`outport-${port.index}`"
+          :class="`port show-${showPort(port)}`"
           :port="port"
           :x="portShift(port.index, outPorts.length, kind === 'metanode', true)[0]"
           :y="portShift(port.index, outPorts.length, kind === 'metanode', true)[1]"
         />
       </template>
-
-      <portal
-        v-if="hover || selected"
-        to="node-actions"
-      >
-        <NodeActionBar
-          :class="`${sanitizedId}-hover`"
-          :transform="`translate(${position.x + $shapes.nodeSize / 2} ${position.y - $shapes.nodeSelectionPadding[0]})`"
-          :execution-state="state && state.executionState"
-          :allowed-actions="allowedActions"
-          @action="onAction"
-          @mouseleave.native="onLeaveHoverArea"
-        />
-      </portal>
     </g>
   </g>
 </template>
@@ -316,6 +344,20 @@ export default {
 <style lang="postcss" scoped>
 * {
   user-select: none;
+}
+
+.port {
+  opacity: 0;
+  transition: opacity 0.5s 0.75s;
+
+  &.show-true {
+    opacity: 1;
+  }
+
+  &:hover {
+    opacity: 1;
+    transition: none;
+  }
 }
 
 .hover-area {

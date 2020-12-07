@@ -12,7 +12,12 @@ export const nodeNameMargin = 12;
 export const nodeNameLineHeight = 14;
 
 export const nodeSelectionPadding = [37, 34, 6, 34];
+
+// Includes the NodeActionButtons. If more that 3 Buttons will be present
+// it either needs to be widened or another hover area is needed
 export const nodeHoverMargin = [46, 18, 8, 18];
+export const nodeIdMargin = 16;
+export const nodeActionBarButtonSpread = 25;
 
 export const componentBackgroundPortion = 0.75;
 

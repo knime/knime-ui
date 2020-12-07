@@ -1,67 +1,82 @@
 <script>
-import executeIcon from '../assets/execute.svg?inline';
-import resetIcon from '../assets/reset-all.svg?inline';
-import cancelIcon from '../assets/cancel-execution.svg?inline';
+import ExecuteIcon from '../assets/execute.svg?inline';
+import ResetIcon from '../assets/reset-all.svg?inline';
+import CancelIcon from '../assets/cancel-execution.svg?inline';
 
 import ActionButton from '~/components/ActionButton.vue';
 
-/** Displays a bar of action buttons above nodes */
+/**
+ *  Displays a bar of action buttons above nodes
+ *  Emits Event `action(actionName)`
+ */
 export default {
     components: {
-        ActionButton,
-
-        // [action]Icon
-        executeIcon,
-        cancelIcon,
-        resetIcon
+        ActionButton
     },
     props: {
-        /**
-         * { canCancel: Boolean, canExecute: Boolean, canReset: Boolean }
-         * Provided by Backend
-         */
-        allowedActions: {
-            type: Object,
-            default: () => {}
+        nodeId: {
+            type: String,
+            default: 'NODE ID MISSING'
+        },
+        canExecute: {
+            type: Boolean,
+            default: false
+        },
+        canCancel: {
+            type: Boolean,
+            default: false
+        },
+        canReset: {
+            type: Boolean,
+            default: false
         }
     },
     computed: {
         actions() {
-            return Object.fromEntries(
-                // e.g. turn 'canExecute' into 'execute'
-                // eslint-disable-next-line no-magic-numbers
-                Object.entries(this.allowedActions).map(([key, value]) => [key.slice(3).toLowerCase(), value])
-            );
+            return [
+                ['executeNodes', this.canExecute, ExecuteIcon],
+                ['cancelNodeExecution', this.canCancel, CancelIcon],
+                ['resetNodes', this.canReset, ResetIcon]
+            ];
         },
         /**
          *  returns the x-position of each button depending on the total amount of buttons
-         *  assumes 0-3 buttons
-         *  @returns {Number} x-pos
+         *  @returns {Array<Number>} x-pos
          */
         positions() {
-            switch (Object.keys(this.actions).length) {
-            /* eslint-disable no-magic-numbers */
-            case 1: return [0];
-            case 2: return [-12.5, 12.5];
-            default: return [-25, 0, 25];
-            /* eslint-enable no-magic-numbers */
-            }
+            const { nodeActionBarButtonSpread } = this.$shapes;
+            return [-nodeActionBarButtonSpread, 0, nodeActionBarButtonSpread];
         }
     }
-  
+
 };
 </script>
 
 <template>
   <g>
     <ActionButton
-      v-for="(enabled, action, index) in actions"
+      v-for="([action, enabled, icon], index) in actions"
       :key="action"
       :x="positions[index]"
       :disabled="!enabled"
       @click="$emit('action', action)"
     >
-      <Component :is="`${action}Icon`" />
+      <Component :is="icon" />
     </ActionButton>
+    
+    <text
+      class="node-id"
+      text-anchor="middle"
+      :y="-$shapes.nodeIdMargin"
+    >
+      {{ nodeId }}
+    </text>
   </g>
 </template>
+
+<style scoped>
+.node-id {
+  font: normal 10px "Roboto Condensed", sans-serif;
+  pointer-events: none;
+}
+</style>

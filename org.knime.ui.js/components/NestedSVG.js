@@ -1,9 +1,9 @@
 /**
- * Our default svg-loader discards attributes besides class and style
- * And styling a nested svg via CSS doesn't affect its location or size on the Canvas
- * This functional component passes any attributes directly to the svg element
+ * Our default svg-loader discards attributes besides `class` and `style`.
+ * And styling a nested svg via CSS doesn't affect its location or size on the canvas.
+ * This functional component passes any attributes directly to the svg element.
  *
- * It expects one svg in the default slot
+ * It expects one svg in the default slot.
  */
 export default {
     functional: true,

@@ -26,6 +26,7 @@ export default {
     }
 };
 </script>
+
 <template>
   <g
     :class="['action-button', { disabled }]"
@@ -46,6 +47,7 @@ export default {
     </NestedSvg>
   </g>
 </template>
+
 <style lang="postcss" scoped>
 .action-button {
   & circle {

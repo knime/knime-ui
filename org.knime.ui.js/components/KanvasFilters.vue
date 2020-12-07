@@ -1,6 +1,4 @@
-<script>
-/* eslint-disable vue/attribute-hyphenation */
-</script>
+<!-- eslint-disable vue/attribute-hyphenation -->
 <template>
   <defs>
     <filter
@@ -21,8 +19,8 @@
       id="node-torso-shadow"
       height="300%"
       width="300%"
-      x="-75%"
-      y="-75%"
+      x="-100%"
+      y="-100%"
     >
       <feDropShadow
         dx="0"
@@ -35,8 +33,8 @@
       id="node-state-shadow"
       height="300%"
       width="300%"
-      x="-75%"
-      y="-75%"
+      x="-100%"
+      y="-100%"
     >
       <feDropShadow
         dx="0"

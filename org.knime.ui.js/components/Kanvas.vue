@@ -39,10 +39,10 @@ export default {
     },
     mounted() {
         this.keyEventListener = document.addEventListener('keydown', (e) => {
-            if (e.key === 'a' && e.ctrlKey) {
+            if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
                 e.stopPropagation();
                 e.preventDefault();
-                this.selectNodes({ all: true });
+                this.selectAllNodes();
             }
         });
     },
@@ -50,7 +50,7 @@ export default {
         document.removeEventListener('keydown', this.keyEventListener);
     },
     methods: {
-        ...mapMutations('workflow', ['selectNodes']),
+        ...mapMutations('workflow', ['selectAllNodes', 'deselectAllNodes']),
         onMouseDown(e) {
             // if mousedown on empty kanvas set flag
             this.clickStartedOnEmptyKanvas = e.target === this.$refs.svg;
@@ -58,7 +58,7 @@ export default {
         onSelfMouseUp(e) {
             // deselect all nodes
             if (this.clickStartedOnEmptyKanvas) {
-                this.selectNodes({ all: true, toggle: false });
+                this.deselectAllNodes();
             }
         }
     }
@@ -104,18 +104,11 @@ export default {
         v-bind="annotation"
       />
 
-      <!-- Workflow Layer 1: Node Hover Plane -->
+      <!-- Workflow Layer 1: Node Selection Plane -->
       <portal-target
         multiple
         tag="g"
-        name="node-hover"
-      />
-
-      <!-- Workflow Layer 2: Node Selection Plane -->
-      <portal-target
-        multiple
-        tag="g"
-        name="node-selected"
+        name="node-select"
       />
 
       <!-- Workflow Layer 2: Connectors -->
@@ -130,7 +123,10 @@ export default {
         v-if="workflow.info.containerType === 'metanode'"
       />
 
-      <!-- Workflow Layer 4: Non-Selected Nodes -->
+      <!-- Non-Selected Nodes
+        If node is not selected that portal has no effect.
+        If node is selected, the portal will bring it to the front
+       -->
       <portal
         v-for="(node, nodeId) in workflow.nodes"
         :key="`node-${workflow.projectId}-${nodeId}-portal`"
@@ -147,14 +143,14 @@ export default {
         />
       </portal>
 
-      <!-- Workflow Layer 4: Selected Nodes -->
+      <!-- Selected Nodes -->
       <portal-target
         multiple
         tag="g"
         name="selected-nodes"
       />
 
-      <!-- Quick Actions Layer: Buttons for Selected Nodes -->
+      <!-- Quick Actions Layer: Buttons for Hovered & Selected Nodes and their ids -->
       <portal-target
         multiple
         tag="g"

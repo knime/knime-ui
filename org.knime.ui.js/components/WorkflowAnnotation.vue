@@ -71,9 +71,9 @@ export default {
         }
     },
     methods: {
-        ...mapMutations('workflow', ['selectNodes']),
+        ...mapMutations('workflow', ['deselectAllNodes']),
         select() {
-            this.selectNodes({ all: true, toggle: false });
+            this.deselectAllNodes();
         }
     }
 };
