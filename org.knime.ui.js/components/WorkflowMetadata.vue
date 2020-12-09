@@ -112,7 +112,7 @@ export default {
       v-if="!isComponent"
       class="external-ressources"
     >
-      <h2>External Ressources</h2>
+      <h2>External resources</h2>
       <LinkList
         v-if="links.length"
         :links="links"
