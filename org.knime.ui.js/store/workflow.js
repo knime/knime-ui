@@ -122,10 +122,14 @@ export const getters = {
     svgBounds(state, getters, rootState) {
         const { canvasPadding } = $shapes;
         let { left, top, right, bottom } = getters.workflowBounds;
+
+        // always draw the origin (0,0)
         let x = Math.min(0, left);
         let y = Math.min(0, top);
-        let width = right - x + canvasPadding;
-        let height = bottom - y + canvasPadding;
+
+        // (width of workflow) + padding + (account for origin shift to center workflow)
+        let width = (right - x) + canvasPadding + (left - x);
+        let height = (bottom - y) + canvasPadding + (top - y);
         return {
             x, y, width, height
         };

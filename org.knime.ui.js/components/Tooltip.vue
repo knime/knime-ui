@@ -118,7 +118,7 @@ export default {
   display: inline-block;
   font-family: "Roboto Condensed", sans-serif;
   user-select: none;
-  font-size: 10px;
+  font-size: 12px;
   padding: 4px 5px;
   box-shadow: 0 0 10px rgba(62, 58, 57, 0.3);
   z-index: 1;
@@ -132,6 +132,7 @@ export default {
   &::before,
   &::after {
     border: var(--border-width) solid;
+    z-index: -1;
   }
 
   & .title {

@@ -1,4 +1,4 @@
-export const maxZoomLevel = 19;
+export const maxZoomLevel = 27;
 export const minZoomLevel = -38;
 
 const defaultLevel = 0;
@@ -24,5 +24,8 @@ export const mutations = {
 export const getters = {
     factor(state) {
         return Math.round(1000 * Math.pow(zoomMultiplier, state.level)) / 1000;
+    },
+    minZoom() {
+
     }
 };
