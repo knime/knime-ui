@@ -1,6 +1,19 @@
 <!-- A native button for use inside a toolbar. This is just used for styling. -->
+<script>
+export default {
+    props: {
+        round: {
+            type: Boolean,
+            default: true
+        }
+    }
+};
+</script>
 <template>
-  <button tabindex="1">
+  <button
+    tabindex="1"
+    :class="{round}"
+  >
     <slot />
   </button>
 </template>
@@ -9,15 +22,18 @@
 button {
   --icon-size: 30; /* +2*1px border */
 
-  width: calc((var(--icon-size) + 2) * 1px);
   height: calc((var(--icon-size) + 2) * 1px);
-  border-radius: calc((var(--icon-size) + 2) / 2 * 1px);
   border: 1px solid var(--knime-silver-sand);
   color: var(--knime-masala);
   background: var(--knime-white);
   outline: none;
   padding: 0;
   margin-right: 5px;
+
+  &.round {
+    width: calc((var(--icon-size) + 2) * 1px);
+    border-radius: calc((var(--icon-size) + 2) / 2 * 1px);
+  }
 
   & svg {
     width: calc(var(--icon-size) * 1px);

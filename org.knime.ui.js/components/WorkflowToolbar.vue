@@ -17,12 +17,20 @@ export default {
         CancelAllIcon,
         ResetAllIcon
     },
+    filters: {
+        displayZoom(factor) {
+            return `${Math.round(factor * 100)} %`;
+        }
+    },
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow',
             allowedActions: state => state.activeWorkflow?.allowedActions || {}
         }),
         ...mapGetters('workflow', ['activeWorkflowId']),
+        ...mapGetters('zoom', {
+            zoomFactor: 'factor'
+        }),
         hasBreadcrumb() {
             return this.workflow.parents?.length > 0;
         }
@@ -42,6 +50,9 @@ export default {
             this.$store.dispatch('workflow/resetNodes', {
                 nodeIds: [this.activeWorkflowId]
             });
+        },
+        resetZoom() {
+            this.$store.commit('zoom/reset');
         }
     }
 };
@@ -77,6 +88,15 @@ export default {
       v-if="hasBreadcrumb"
       class="breadcrumb"
     />
+
+    <ToolbarButton
+      title="Reset to default"
+      class="zoom"
+      :round="false"
+      @click.native="resetZoom"
+    >
+      {{ zoomFactor | displayZoom }}
+    </ToolbarButton>
   </div>
 </template>
 
@@ -97,5 +117,11 @@ export default {
   text-align: center;
   white-space: pre;
   flex: 1;
+}
+
+.zoom {
+  padding: 4px 8px;
+  font-size: 16px;
+  margin-left: auto;
 }
 </style>

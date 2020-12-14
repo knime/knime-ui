@@ -63,6 +63,7 @@ export default {
     },
     computed: {
         ...mapGetters('workflow', ['getAbsoluteCoordinates']),
+        ...mapGetters('zoom', { zoomFactor: 'factor' }),
         position() {
             let { x, y, $shapes: { tooltipArrowSize } } = this;
             if (this.anchorPoint) {
@@ -70,6 +71,10 @@ export default {
                 x += absPos.x;
                 y += absPos.y;
             }
+
+            x *= this.zoomFactor;
+            y *= this.zoomFactor;
+
 
             const arrowHalfDiagonal = Math.SQRT1_2 * tooltipArrowSize;
             if (this.orientation === 'bottom') {
