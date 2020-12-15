@@ -72,7 +72,7 @@ export default {
     },
     methods: {
         ...mapMutations('workflow', ['deselectAllNodes']),
-        select() {
+        onMouseDown() {
             this.deselectAllNodes();
         }
     }
@@ -85,7 +85,7 @@ export default {
     :y="bounds.y"
     :width="bounds.width"
     :height="bounds.height"
-    @mousedown.left="select"
+    @mousedown.left="onMouseDown"
   >
     <LegacyAnnotationText
       :style="style"
