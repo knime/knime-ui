@@ -40,8 +40,8 @@ describe('Port', () => {
             });
 
             it('renders correct port', () => {
-                const { color, dataType } = wrapper.findComponent(PortIcon).props();
-                expect(dataType).toBe(portDataType);
+                const { color, type } = wrapper.findComponent(PortIcon).props();
+                expect(type).toBe(portDataType);
                 expect(color).toBe(portColor);
             });
 

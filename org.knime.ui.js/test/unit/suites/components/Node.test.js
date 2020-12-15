@@ -1,15 +1,15 @@
 /* eslint-disable no-magic-numbers */
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { createLocalVue, shallowMount, mount as deepMount } from '@vue/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
 import { mockVuexStore } from '~/test/unit/test-utils';
 
 import Node from '~/components/Node';
 import NodeTorso from '~/components/NodeTorso';
-import NodeSelect from '~/components/NodeSelect';
 import NodeState from '~/components/NodeState';
 import NodeAnnotation from '~/components/NodeAnnotation';
 import LinkDecorator from '~/components/LinkDecorator';
+import NodeActionBar from '~/components/NodeActionBar';
 import Port from '~/components/PortWithTooltip';
 
 import * as $shapes from '~/style/shapes';
@@ -47,7 +47,8 @@ const commonNode = {
     name: 'My Name',
     type: 'Source',
 
-    icon: 'data:image/icon'
+    icon: 'data:image/icon',
+    selected: false
 
 };
 const nativeNode = {
@@ -71,7 +72,7 @@ const metaNode = {
 };
 
 describe('Node', () => {
-    let propsData, mocks, doShallowMount, wrapper, portShiftMock, openedProjectsStoreConfig, workflowStoreConfig;
+    let propsData, mocks, doMount, wrapper, portShiftMock, openedProjectsStoreConfig, workflowStoreConfig;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -81,8 +82,19 @@ describe('Node', () => {
     beforeEach(() => {
         wrapper = null;
         workflowStoreConfig = {
+            mutations: {
+                selectNode: jest.fn(),
+                deselectNode: jest.fn(),
+                deselectAllNodes: jest.fn()
+            },
             actions: {
-                loadWorkflow: jest.fn()
+                loadWorkflow: jest.fn(),
+                executeNodes: jest.fn(),
+                cancelNodeExecution: jest.fn(),
+                resetNodes: jest.fn()
+            },
+            getters: {
+                isWritable: () => true
             }
         };
         openedProjectsStoreConfig = {
@@ -101,16 +113,16 @@ describe('Node', () => {
         }
         portShiftMock = jest.spyOn(Node.methods, 'portShift');
 
-        doShallowMount = () => {
+        doMount = (mountMethod) => {
             mocks.$store = mockVuexStore({ openedProjects: openedProjectsStoreConfig, workflow: workflowStoreConfig });
-            wrapper = shallowMount(Node, { propsData, mocks });
+            wrapper = mountMethod(Node, { propsData, mocks });
         };
     });
 
     describe('features', () => {
         beforeEach(() => {
             propsData = { ...commonNode };
-            doShallowMount();
+            doMount(shallowMount);
         });
 
         it('displays name (plaintext)', () => {
@@ -120,7 +132,7 @@ describe('Node', () => {
         it('shows/hides LinkDecorator', () => {
             expect(wrapper.findComponent(LinkDecorator).exists()).toBe(false);
             propsData.link = 'linkylinky';
-            doShallowMount();
+            doMount(shallowMount);
             expect(wrapper.findComponent(LinkDecorator).exists()).toBe(true);
         });
 
@@ -137,7 +149,7 @@ describe('Node', () => {
 
         it('pushes Metanode annotation up', () => {
             propsData = { ...metaNode };
-            doShallowMount();
+            doMount(shallowMount);
             expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
                 backgroundColor: 'rgb(255, 216, 0)',
                 defaultFontSize: 11,
@@ -153,7 +165,7 @@ describe('Node', () => {
         });
 
         it('doesn’t show selection frame', () => {
-            expect(wrapper.findComponent(NodeSelect).exists()).toBe(false);
+            expect(wrapper.find('portal[to="node-select"]').exists()).toBe(false);
         });
 
         it('renders node state', () => {
@@ -162,7 +174,7 @@ describe('Node', () => {
 
         it('renders metanode state', () => {
             propsData = { ...metaNode };
-            doShallowMount();
+            doMount(shallowMount);
             expect(wrapper.findComponent(NodeTorso).props('executionState')).toBe('EXECUTED');
         });
 
@@ -170,23 +182,196 @@ describe('Node', () => {
             const transform = wrapper.find('g').attributes().transform;
             expect(transform).toBe('translate(500, 200)');
         });
+    });
 
-        it('shows frame on hover', async () => {
-            wrapper.find('g g').trigger('mouseenter');
-            await Vue.nextTick();
-            expect(wrapper.findComponent(NodeSelect).exists()).toBe(true);
-
-            wrapper.find('g g').trigger('mouseleave');
-            await Vue.nextTick();
-            expect(wrapper.findComponent(NodeSelect).exists()).toBe(false);
+    describe('Node selected', () => {
+        beforeEach(() => {
+            propsData =
+            {
+                ...commonNode,
+                selected: true,
+                allowedActions: { canExecute: true },
+                state: {
+                    executionState: 'IDLE'
+                }
+            };
         });
 
+        it('click on action bar changes node state', () => {
+            doMount(deepMount);
+            let actionBar = wrapper.findComponent(NodeActionBar);
+            actionBar.vm.$emit('action', 'executeNodes');
+
+            expect(workflowStoreConfig.actions.executeNodes).toHaveBeenCalledWith(expect.anything(), {
+                nodeIds: ['root:1']
+            });
+        });
+
+        it('shows frame if selected', () => {
+            doMount(shallowMount);
+            expect(wrapper.find('portal[to="node-select"]').exists()).toBe(true);
+
+            propsData.selected = false;
+            doMount(shallowMount);
+            expect(wrapper.find('portal[to="node-select"]').exists()).toBe(false);
+        });
+
+        it('shows hidden flow variable ports', () => {
+            propsData.inPorts[0].connectedVia = [];
+            propsData.outPorts[0].connectedVia = [];
+            doMount(shallowMount);
+
+            let ports = wrapper.findAllComponents(Port).wrappers;
+            const locations = ports.map(p => p.attributes()).map(({ x, y }) => [Number(x), Number(y)]);
+            expect(locations).toStrictEqual([
+                [0, -4.5],
+                [-4.5, 16],
+                [32, -4.5],
+                [36.5, 5.5],
+                [36.5, 26.5]
+            ]);
+        });
+
+        it('has shadow effect', () => {
+            doMount(shallowMount);
+            expect(wrapper.findComponent(NodeTorso).attributes().filter).toBe('url(#node-torso-shadow)');
+            expect(wrapper.findComponent(NodeState).attributes().filter).toBe('url(#node-state-shadow)');
+        });
+
+        it('renders NodeActionBar at correct position', () => {
+            doMount(shallowMount);
+            expect(wrapper.findComponent(NodeActionBar).props()).toStrictEqual({
+                nodeId: 'root:1',
+                canExecute: true,
+                canCancel: false,
+                canReset: false
+            });
+            expect(wrapper.findComponent(NodeActionBar).attributes().transform).toBe('translate(516 163)');
+        });
+
+        it('click to select', async () => {
+            propsData.selected = false;
+            doMount(shallowMount);
+
+            await wrapper.find('g g g').trigger('mousedown', { button: 0 });
+
+            expect(workflowStoreConfig.mutations.deselectAllNodes).toHaveBeenCalled();
+            expect(workflowStoreConfig.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
+        });
+
+        it('shift-click adds to selection', async () => {
+            propsData.selected = false;
+            doMount(shallowMount);
+
+            await wrapper.find('g g g').trigger('mousedown', { button: 0, shiftKey: true });
+            expect(workflowStoreConfig.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
+        });
+
+        it('shift-click removes from selection', async () => {
+            propsData.selected = true;
+            doMount(shallowMount);
+
+            await wrapper.find('g g g').trigger('mousedown', { button: 0, shiftKey: true });
+            expect(workflowStoreConfig.mutations.deselectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
+        });
+
+        it('ctrl-click doest influence selection', async () => {
+            doMount(shallowMount);
+            await wrapper.find('g g g').trigger('mousedown', { button: 0, ctrlKey: true });
+            expect(workflowStoreConfig.mutations.selectNode).not.toHaveBeenCalled();
+        });
+
+        it('selection instantly shows default flowVariable ports', async () => {
+            propsData = {
+                ...propsData,
+                inPorts: [mockPort({ index: 0 })],
+                outPorts: [mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] })]
+            };
+
+            doMount(shallowMount);
+            let ports = wrapper.findAllComponents(Port);
+
+            // unconnected flowVariable port shown
+            expect(ports.at(0).attributes().class).toBe('port');
+            // connected port visible already
+            expect(ports.at(1).attributes().class).toBe('port');
+
+            wrapper.setProps({ selected: false });
+            await Vue.nextTick();
+
+            // unconnected flowVariable port hidden
+            expect(ports.at(0).attributes().class).toMatch('hidden');
+            // connected port stays visible
+            expect(ports.at(1).attributes().class).not.toMatch('hidden');
+        });
+    });
+
+    describe('Node hover', () => {
+        beforeEach(() => {
+            propsData = {
+                ...commonNode,
+                inPorts: [mockPort({ index: 0 })],
+                outPorts: [mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] })],
+                allowedActions: { canExecute: true, canCancel: true, canReset: true }
+            };
+            doMount(shallowMount);
+
+            expect(wrapper.vm.hover).toBe(false);
+            wrapper.find('.hover-container').trigger('mouseenter');
+            wrapper.vm.hover = true;
+        });
+        it('shows selection plane and action buttons', () => {
+            let actionBar = wrapper.findComponent(NodeActionBar);
+            expect(actionBar.exists()).toBe(true);
+            expect(actionBar.props()).toStrictEqual({
+                canReset: true,
+                canExecute: true,
+                canCancel: true,
+                nodeId: 'root:1'
+            });
+        });
+
+        it('shows shadows', () => {
+            expect(wrapper.findComponent(NodeState).attributes().filter).toBe('url(#node-state-shadow)');
+            expect(wrapper.findComponent(NodeTorso).attributes().filter).toBe('url(#node-torso-shadow)');
+        });
+
+        it('fades-in/out ports', async () => {
+            let ports = wrapper.findAllComponents(Port);
+
+            // unconnected flowVariable port fades in
+            expect(ports.at(0).attributes().class).toBe('port');
+            // connected port visible already
+            expect(ports.at(1).attributes().class).toBe('port');
+
+
+            wrapper.vm.hover = false;
+            await Vue.nextTick();
+
+            // unconnected flowVariable port fades out
+            expect(ports.at(0).attributes().class).toMatch('hidden');
+            // connected port stays visible
+            expect(ports.at(1).attributes().class).not.toMatch('hidden');
+
+        });
+        it('leaving hover container unsets hover', () => {
+            wrapper.find('.hover-container').trigger('mouseleave');
+            expect(wrapper.vm.hover).toBe(false);
+        });
+
+
+        describe('portalled elements need MouseLeave Listener', () => {
+            it('NodeActionBar', () => {
+                wrapper.findComponent(NodeActionBar).trigger('mouseleave');
+                expect(wrapper.vm.hover).toBe(false);
+            });
+        });
     });
 
     describe('port positions', () => {
         it('for meta node', () => {
             propsData = { ...metaNode };
-            doShallowMount();
+            doMount(shallowMount);
 
             const ports = wrapper.findAllComponents(Port).wrappers;
             const locations = ports.map(p => p.attributes()).map(({ x, y }) => [Number(x), Number(y)]);
@@ -208,7 +393,7 @@ describe('Node', () => {
             ['component', componentNode]
         ])('for %s node', (kind, node) => {
             propsData = { ...node };
-            doShallowMount();
+            doMount(shallowMount);
 
             const ports = wrapper.findAllComponents(Port).wrappers;
             const locations = ports.map(p => p.attributes()).map(({ x, y }) => [Number(x), Number(y)]);
@@ -224,57 +409,24 @@ describe('Node', () => {
 
             expect(portAttrs).toStrictEqual([0, 1, 0, 1, 2]);
         });
-    });
 
+        it('always shows ports other than mickey-mouse', () => {
+            propsData = { ...commonNode };
+            doMount(shallowMount);
 
-    describe.each([
-        ['native', nativeNode],
-        ['component', commonNode]
-    ])('unconnected default-flow-variable-ports for %s node', () => {
-        let ports;
-        beforeEach(() => {
-            propsData = { ...nativeNode };
-            propsData.inPorts[0].connectedVia = [];
-            propsData.outPorts[0].connectedVia = [];
-            doShallowMount();
-        });
-
-        it('hides those ports', () => {
-            ports = wrapper.findAllComponents(Port).wrappers;
-            const locations = ports.map(p => p.attributes()).map(({ x, y }) => [Number(x), Number(y)]);
-            const portAttrs = ports.map(p => p.props().port.index);
-
-            expect(locations).toStrictEqual([
-                [-4.5, 16],
-                [36.5, 5.5],
-                [36.5, 26.5]
-            ]);
-
-            expect(portAttrs).toStrictEqual([1, 1, 2]);
-        });
-
-        it('shows those ports on hover', async () => {
-            wrapper.find('g g').trigger('mouseenter');
-            await Vue.nextTick();
-
-            ports = wrapper.findAllComponents(Port).wrappers;
-            const locations = ports.map(p => p.attributes()).map(({ x, y }) => [Number(x), Number(y)]);
-            expect(locations).toStrictEqual([
-                [0, -4.5],
-                [-4.5, 16],
-                [32, -4.5],
-                [36.5, 5.5],
-                [36.5, 26.5]
-            ]);
+            let ports = wrapper.findAllComponents(Port);
+            expect(ports.at(1).attributes().class).toBe('port');
+            expect(ports.at(3).attributes().class).toBe('port');
+            expect(ports.at(4).attributes().class).toBe('port');
         });
     });
 
     describe('opening', () => {
         it('opens metanode on double click', async () => {
             propsData = { ...metaNode };
-            doShallowMount();
+            doMount(shallowMount);
             jest.spyOn(mocks.$store, 'dispatch');
-            await wrapper.find('.hover-container > g').trigger('dblclick');
+            await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
             expect(workflowStoreConfig.actions.loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
                 workflowId: 'root:1',
@@ -284,9 +436,9 @@ describe('Node', () => {
 
         it('opens component on control-double click', async () => {
             propsData = { ...componentNode };
-            doShallowMount();
+            doMount(shallowMount);
             jest.spyOn(mocks.$store, 'dispatch');
-            await wrapper.find('.hover-container > g').trigger('dblclick', {
+            await wrapper.findComponent(NodeTorso).trigger('dblclick', {
                 ctrlKey: true
             });
 
@@ -298,18 +450,18 @@ describe('Node', () => {
 
         it('does not open component on double click', async () => {
             propsData = { ...componentNode };
-            doShallowMount();
+            doMount(shallowMount);
             jest.spyOn(mocks.$store, 'dispatch');
-            await wrapper.find('.hover-container > g').trigger('dblclick');
+            await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
             expect(workflowStoreConfig.actions.loadWorkflow).not.toHaveBeenCalled();
         });
 
         it('does not open native node on double click', async () => {
             propsData = { ...nativeNode };
-            doShallowMount();
+            doMount(shallowMount);
             jest.spyOn(mocks.$store, 'dispatch');
-            await wrapper.find('.hover-container > g').trigger('dblclick');
+            await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
             expect(workflowStoreConfig.actions.loadWorkflow).not.toHaveBeenCalled();
         });

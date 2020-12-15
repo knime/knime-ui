@@ -1,13 +1,6 @@
 <script>
-/**
- * Check validity of styleRanges array.
- * @param {Array} styleRanges A list of style ranges to be applied to the given text. Each entry must contain numerical
- * `start` and `length` properties.
- * @param {String=} text Optional. If this text is given, the validator checks if its lengths matches the length of the
- * styleRange array. Otherwise this test is skipped.
- * @returns {boolean} true if the styleRange is valid
- */
 import { applyStyleRanges } from '~/util/styleRanges';
+
 export default {
     props: {
         text: {

@@ -58,7 +58,7 @@ export default {
         textStyle() {
             return {
                 textAlign: this.textAlign,
-                backgroundColor: this.backgroundColor,
+                backgroundColor: this.backgroundColor === '#FFFFFF' ? 'transparent' : this.backgroundColor,
                 padding: `${this.$shapes.nodeAnnotationPadding}px`,
                 fontSize: `${this.defaultFontSize}px`
             };

@@ -19,7 +19,6 @@ export const state = () => ({
 export const mutations = {
     ...jsonPatchMutations,
     setActiveWorkflow(state, workflow) {
-
         // extract templates
         let workflowData = {
             ...workflow
@@ -36,6 +35,9 @@ export const mutations = {
         });
         delete workflowData.nodeTemplates;
 
+        // add selected field to node with initial value false to enable reactivity on this property
+        Object.values(workflowData.nodes || {}).forEach(node => { node.selected = false; });
+
         state.activeWorkflow = workflowData;
         state.tooltip = null;
     },
@@ -44,6 +46,22 @@ export const mutations = {
     },
     setTooltip(state, tooltip) {
         Vue.set(state, 'tooltip', tooltip);
+    },
+    deselectAllNodes({ activeWorkflow: { nodes } }) {
+        Object.values(nodes).forEach(node => {
+            node.selected = false;
+        });
+    },
+    selectAllNodes({ activeWorkflow: { nodes } }) {
+        Object.values(nodes).forEach(node => {
+            node.selected = true;
+        });
+    },
+    selectNode({ activeWorkflow: { nodes } }, nodeId) {
+        nodes[nodeId].selected = true;
+    },
+    deselectNode({ activeWorkflow: { nodes } }, nodeId) {
+        nodes[nodeId].selected = false;
     }
 };
 

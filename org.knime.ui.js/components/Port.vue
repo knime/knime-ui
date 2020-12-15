@@ -67,7 +67,7 @@ export default {
     class="port"
   >
     <PortIcon
-      :data-type="port.type"
+      :type="port.type"
       :color="portColor"
       :filled="shouldFill"
     />
