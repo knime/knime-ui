@@ -292,17 +292,17 @@ describe('Node', () => {
             let ports = wrapper.findAllComponents(Port);
 
             // unconnected flowVariable port shown
-            expect(ports.at(0).attributes().class).toMatch('port show-true');
+            expect(ports.at(0).attributes().class).toBe('port');
             // connected port visible already
-            expect(ports.at(1).attributes().class).toMatch('port show-true');
+            expect(ports.at(1).attributes().class).toBe('port');
 
-            wrapper.vm.selected = false;
+            wrapper.setProps({ selected: false });
             await Vue.nextTick();
 
             // unconnected flowVariable port hidden
-            expect(ports.at(0).attributes().class).not.toMatch('show-true');
+            expect(ports.at(0).attributes().class).toMatch('hidden');
             // connected port stays visible
-            expect(ports.at(1).attributes().class).toMatch('show-true');
+            expect(ports.at(1).attributes().class).not.toMatch('hidden');
         });
     });
 
@@ -340,18 +340,18 @@ describe('Node', () => {
             let ports = wrapper.findAllComponents(Port);
 
             // unconnected flowVariable port fades in
-            expect(ports.at(0).attributes().class).toMatch('port show-true');
+            expect(ports.at(0).attributes().class).toBe('port');
             // connected port visible already
-            expect(ports.at(1).attributes().class).toMatch('port show-true');
+            expect(ports.at(1).attributes().class).toBe('port');
 
 
             wrapper.vm.hover = false;
             await Vue.nextTick();
 
             // unconnected flowVariable port fades out
-            expect(ports.at(0).attributes().class).not.toMatch('show-true');
+            expect(ports.at(0).attributes().class).toMatch('hidden');
             // connected port stays visible
-            expect(ports.at(1).attributes().class).toMatch('show-true');
+            expect(ports.at(1).attributes().class).not.toMatch('hidden');
 
         });
         it('leaving hover container unsets hover', () => {
@@ -415,9 +415,9 @@ describe('Node', () => {
             doMount(shallowMount);
 
             let ports = wrapper.findAllComponents(Port);
-            expect(ports.at(1).attributes().class).toMatch('port show-true');
-            expect(ports.at(3).attributes().class).toMatch('port show-true');
-            expect(ports.at(4).attributes().class).toMatch('port show-true');
+            expect(ports.at(1).attributes().class).toBe('port');
+            expect(ports.at(3).attributes().class).toBe('port');
+            expect(ports.at(4).attributes().class).toBe('port');
         });
     });
 

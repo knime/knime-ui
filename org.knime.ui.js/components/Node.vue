@@ -14,7 +14,8 @@ import NodeActionBar from '~/components/NodeActionBar.vue';
  * Requires the `portal-vue` module.
  *
  * If node is hovered default Flow Variable Ports are faded-in.
- * If node is selected, it will be portalled and redrawn. This causes the default Flow Variable Ports to appear instantly, which is desired.
+ * If node is selected, it will be portalled and redrawn. This causes the default Flow Variable Ports to appear
+ * instantly, which is desired.
  * */
 export default {
     components: {
@@ -153,25 +154,29 @@ export default {
         portShift,
         onLeaveHoverArea(e) {
             if (this.$refs.actionbar?.$el?.contains(e.relatedTarget)) {
-                // used to test for elements that are logically contained inside this node
-                // but aren't DOM-wise because they were teleported to another layer
-                // only applies to ref 'actionbar'
+                // Used to test for elements that are logically contained inside this node
+                // but aren't DOM-wise because they were teleported to another layer.
+                // Currently only applies to ref 'actionbar'
                 return;
             }
-                
+
             // disable hover state if the mouse leaves the hover area of the node
             this.hover = false;
         },
 
-        // default flow variable ports (Mickey Mouse ears) are only shown if connected, or on hover
+        // default flow variable ports (Mickey Mouse ears) are only shown if connected, selected, or on hover
         showPort(port) {
             if (this.kind === 'metanode') {
                 // Metanodes don't have Mickey Mouse ears, so port #0 is the first "real" port
                 return true;
             }
 
-            // the port is either not the 0th, is connected, the node is hovered or selected
-            return port.index !== 0 || Boolean(port.connectedVia.length) || this.hover || this.selected;
+            if (port.index !== 0) {
+                // The port is not a Mickey Mouse ear
+                return true;
+            }
+
+            return Boolean(port.connectedVia.length) || this.hover || this.selected;
         },
 
         onLeftDoubleClick(e) {
@@ -237,12 +242,12 @@ export default {
         v-bind="allowedActions"
         :transform="`translate(${position.x + $shapes.nodeSize / 2} ${position.y - $shapes.nodeSelectionPadding[0]})`"
         :node-id="id"
-       
+
         @action="onAction"
         @mouseleave.native="onLeaveHoverArea"
       />
     </portal>
-    
+
     <!-- Node Selection Plane. Portalled to the back -->
     <portal
       v-if="selected"
@@ -304,7 +309,7 @@ export default {
           :filter="(selected || hover) && 'url(#node-torso-shadow)'"
           @dblclick.left.native="onLeftDoubleClick"
         />
-        
+
         <LinkDecorator
           v-if="link"
           :type="type"
@@ -321,7 +326,7 @@ export default {
       <template v-for="port of inPorts">
         <Port
           :key="`inport-${port.index}`"
-          :class="`port show-${showPort(port)}`"
+          :class="['port', { hidden: !showPort(port) }]"
           :port="port"
           :x="portShift(port.index, inPorts.length, kind === 'metanode')[0]"
           :y="portShift(port.index, inPorts.length, kind === 'metanode')[1]"
@@ -331,7 +336,7 @@ export default {
       <template v-for="port of outPorts">
         <Port
           :key="`outport-${port.index}`"
-          :class="`port show-${showPort(port)}`"
+          :class="['port', { hidden: !showPort(port) }]"
           :port="port"
           :x="portShift(port.index, outPorts.length, kind === 'metanode', true)[0]"
           :y="portShift(port.index, outPorts.length, kind === 'metanode', true)[1]"
@@ -350,7 +355,7 @@ export default {
   opacity: 0;
   transition: opacity 0.5s 0.75s;
 
-  &.show-true {
+  &:not(.hidden) {
     opacity: 1;
   }
 

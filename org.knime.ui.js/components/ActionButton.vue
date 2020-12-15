@@ -97,7 +97,6 @@ export default {
     &:active {
       transform: scale(0.98) translateY(0.5px);
       transition-duration: 80ms;
-      transition-timing-function: cubic-bezier();
     }
   }
 }

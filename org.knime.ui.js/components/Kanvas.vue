@@ -84,7 +84,7 @@ export default {
         v-bind="tooltip"
       />
     </div>
-    
+
     <svg
       ref="svg"
       :width="svgBounds.width"
@@ -93,7 +93,7 @@ export default {
       @mousedown.left="onMouseDown"
       @mouseup.self.left="onSelfMouseUp"
     >
-      
+
       <!-- Includes shadows for Nodes -->
       <KanvasFilters />
 
@@ -104,21 +104,21 @@ export default {
         v-bind="annotation"
       />
 
-      <!-- Workflow Layer 1: Node Selection Plane -->
+      <!-- Node Selection Plane Layer -->
       <portal-target
         multiple
         tag="g"
         name="node-select"
       />
 
-      <!-- Workflow Layer 2: Connectors -->
+      <!-- Connectors Layer -->
       <Connector
         v-for="(connector, id) of workflow.connections"
         :key="`connector-${workflow.projectId}-${id}`"
         v-bind="connector"
       />
 
-      <!-- Workflow Layer 3: Metanode Port Bars (Inside of Metanodes) -->
+      <!-- Metanode Port Bars (Inside of Metanodes) -->
       <MetaNodePortBars
         v-if="workflow.info.containerType === 'metanode'"
       />
@@ -163,7 +163,6 @@ export default {
 <style lang="postcss" scoped>
 svg {
   color: var(--knime-masala);
-  position: relative; /* needed for z-index to have effect */
 }
 
 .tooltip-container {
