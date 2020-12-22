@@ -125,6 +125,9 @@ export const getters = {
     isWritable(state, getters) {
         return !getters.isLinked;
     },
+    isStreaming({ activeWorkflow }) {
+        return Boolean(activeWorkflow?.info.jobManager);
+    },
     /*
         returns the true offset from the upper-left corner of the svg for a given point
     */
@@ -283,5 +286,14 @@ export const getters = {
                 return node.type;
             }
         };
-    }
+    },
+
+    executionInfo(state, getters, rootState) {
+        return ({ nodeId }) => {
+            let node = state.activeWorkflow.nodes[nodeId];
+            let { templateId } = node;
+            return node.executionInfo;
+        };
+    },
+
 };

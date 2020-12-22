@@ -6,6 +6,7 @@ import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import Tooltip from '~/components/Tooltip';
 import MetaNodePortBars from '~/components/MetaNodePortBars';
 import KanvasFilters from '~/components/KanvasFilters';
+import StreamedIcon from '~/components/../webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
 
 export default {
     components: {
@@ -14,7 +15,8 @@ export default {
         WorkflowAnnotation,
         Tooltip,
         MetaNodePortBars,
-        KanvasFilters
+        KanvasFilters,
+        StreamedIcon
     },
     data() {
         return {
@@ -34,7 +36,8 @@ export default {
         ...mapGetters('workflow', [
             'svgBounds',
             'isLinked',
-            'isWritable'
+            'isWritable',
+            'isStreaming'
         ])
     },
     mounted() {
@@ -74,6 +77,18 @@ export default {
       <span>
         This is a linked {{ workflow.info.containerType }} and can therefore not be edited.
       </span>
+    </div>
+    <div
+      v-if="isStreaming"
+      class="link-notification"
+    >
+      <span>
+        This is a streaming {{ workflow.info.containerType }}.
+      </span>
+      <div style="display: inline-flex">
+      <StreamedIcon class="streamingIcon"> </StreamedIcon>
+       <p>Streaming </p>
+       </div>
     </div>
 
     <div
@@ -139,6 +154,7 @@ export default {
           :icon="$store.getters['workflow/nodeIcon']({ workflowId: workflow.projectId, nodeId })"
           :name="$store.getters['workflow/nodeName']({ workflowId: workflow.projectId, nodeId })"
           :type="$store.getters['workflow/nodeType']({ workflowId: workflow.projectId, nodeId })"
+          :executionInfo="$store.getters['workflow/executionInfo']({ workflowId: workflow.projectId, nodeId })"
           v-bind="node"
         />
       </portal>
@@ -196,5 +212,11 @@ svg {
     text-align: center;
     width: 100%;
   }
+
 }
+  .streamingIcon {
+    margin-right: 5px;
+    width: 32px;
+    float: right;
+  }
 </style>
