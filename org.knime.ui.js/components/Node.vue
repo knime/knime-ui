@@ -335,7 +335,7 @@ export default {
         <StreamingDecorator
           v-if="executionInfo"
           :type="type"
-          :executionInfo="executionInfo"
+          :execution-info="executionInfo"
           transform="translate(21, 21)"
         />
 

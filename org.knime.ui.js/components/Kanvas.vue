@@ -80,15 +80,11 @@ export default {
     </div>
     <div
       v-if="isStreaming"
-      class="link-notification"
+      :class="{isLinked: isLinked}"
+      class="streaming-decorator"
     >
-      <span>
-        This is a streaming {{ workflow.info.containerType }}.
-      </span>
-      <div style="display: inline-flex">
-      <StreamedIcon class="streamingIcon"> </StreamedIcon>
-       <p>Streaming </p>
-       </div>
+      <StreamedIcon class="streamingIcon" />
+      <p :class="{isLinked: isLinked}"> Streaming </p>
     </div>
 
     <div
@@ -213,10 +209,38 @@ svg {
     width: 100%;
   }
 
-}
-  .streamingIcon {
-    margin-right: 5px;
-    width: 32px;
-    float: right;
+  & p {
+    font-size: 16px;
+    align-self: center;
+    text-align: center;
+    margin-right: 10px;
   }
+}
+
+.streamingIcon {
+  margin-right: 5px;
+  width: 32px;
+  float: right;
+}
+
+.streaming-decorator {
+  display: flex;
+  position: sticky;
+  right: 10px;
+  top: 10px;
+  z-index: 2;
+  float: right;
+  margin-right: 10px;
+  height: 40px;
+
+  & p {
+    font-size: 16px;
+    align-self: center;
+    text-align: center;
+  }
+
+  & p.isLinked {
+    margin-right: 10px;
+  }
+}
 </style>

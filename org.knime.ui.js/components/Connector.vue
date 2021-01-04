@@ -2,7 +2,6 @@
 import { mapState, mapGetters } from 'vuex';
 import portShift from '~/util/portShift';
 import { portBar } from '~/mixins';
-import Vue from 'vue'
 
 /**
  * A curved line, connecting one node's output with another node's input port.
@@ -11,13 +10,6 @@ import Vue from 'vue'
 export default {
     mixins: [portBar],
     inheritAttrs: false,
-    data(){
-        return {
-            isMounted: false,
-            updated: 0,
-            size: {width: 0, height: 0}
-        }
-    },
     props: {
         /**
          * Node ID of the connector's source node
@@ -38,15 +30,22 @@ export default {
         /**
          * Determines wheter this connector is steamed at the moment
          */
-        streaming: {type: Boolean, default: false},
+        streaming: { type: Boolean, default: false },
         /**
          * Determines wheter this connector is steamed at the moment
          */
-        label: {type: String, default: ''},
+        label: { type: String, default: '' },
         /**
          * Determines whether this connector is rendered in alternative color
          */
         flowVariableConnection: { type: Boolean, default: false }
+    },
+    data() {
+        return {
+            isMounted: false,
+            updated: 0,
+            size: { width: 0, height: 0 }
+        };
     },
     computed: {
         ...mapState('workflow', {
@@ -109,6 +108,32 @@ export default {
             return this.$refs.textContent.getBBox();
         }
     },
+    watch: {
+        label: {
+            immediate: true,
+            handler(newVal, oldVal) {
+                let self = this;
+                this.$nextTick(() => {
+                    if (self.$refs.textContent) {
+                        const offset = 6;
+                        self.size = {
+                            width: self.$refs.textContent.clientWidth + offset,
+                            height: self.$refs.textContent.clientHeight + offset
+                        };
+                    } else {
+                        self.size = {
+                            width: 0,
+                            height: 0
+                        };
+                    }
+                });
+            },
+            deep: true
+        }
+    },
+    mounted() {
+        this.isMounted = true;
+    },
     methods: {
         /**
          * Determine the end point coordinates of the start point ('source') or end point ('dest') of the connector
@@ -149,54 +174,43 @@ export default {
             return this.streaming;
         },
         getHalfWayPosition() {
-            let halfWay = [this.start[0] + 0.5*(this.end[0] - this.start[0] - this.size.width),
-                        this.start[1] + 0.5*(this.end[1] - this.start[1] - this.size.height) - 13]
+            // Add an offset to the actual middle point to make the text appear above the lines
+            const topOffset = 13;
+            let halfWay = [this.start[0] + (this.end[0] - this.start[0] - this.size.width) / 2,
+                this.start[1] + (this.end[1] - this.start[1] - this.size.height) / 2 - topOffset];
             return halfWay;
-        },
-
-    },
-    watch: {
-        label: {
-            immediate: true,
-            handler(newVal, oldVal) {
-                this.$nextTick(function() {
-                    if (this.$refs.textContent) {
-                        this.size = {
-                            width:this.$refs.textContent.clientWidth +6,
-                            height: this.$refs.textContent.clientHeight +6
-                        }
-                    } else {
-                        this.size = {
-                            width: 0,
-                            height: 0
-                        }
-                    }
-                })
-            },
-            deep: true
         }
-    },
-    mounted(){
-        this.isMounted = true;
+
     }
 };
 </script>
 
 <template>
-    <g>
-        <path
-            :d="path"
-            :stroke="strokeColor"
-            :stroke-width="$shapes.connectorWidth"
-            :class="{ variable: flowVariableConnection, 'read-only': !isWorkflowWritable, 'dashed': getSourceNodeExecutionState()}"
-            fill="none"
-        />
-        <foreignObject v-if="label.length > 0" v-bind:style="size" class="foreinObject"  :transform="'translate(' + this.getHalfWayPosition()[0] + ',' + this.getHalfWayPosition()[1] + ')'">
-            <span class="textWrapper">
-                <p class="streamingLabel" ref="textContent"> {{ label }} </p>
-            </span>
-        </foreignObject>
-    </g>
+  <g>
+    <path
+      :d="path"
+      :stroke="strokeColor"
+      :stroke-width="$shapes.connectorWidth"
+      :class="{ variable: flowVariableConnection, 'read-only': !isWorkflowWritable,
+                'dashed': getSourceNodeExecutionState()}"
+      fill="none"
+    />
+    <foreignObject
+      v-if="label.length > 0"
+      :style="size"
+      class="foreinObject"
+      :transform="'translate(' + getHalfWayPosition()[0] + ',' + getHalfWayPosition()[1] + ')'"
+    >
+      <span class="textWrapper">
+        <p
+          ref="textContent"
+          class="streamingLabel"
+        >
+          {{ label }}
+        </p>
+      </span>
+    </foreignObject>
+  </g>
 </template>
 
 <style lang="postcss" scoped>
@@ -218,42 +232,44 @@ path.variable:hover {
 }
 
 rect {
-    fill: var(--knime-masala);
-    stroke-linecap: round;
+  fill: var(--knime-masala);
+  stroke-linecap: round;
 }
 
 .dashed {
-    stroke-dasharray: 5;
-    stroke-dashoffset: 50;
-    animation: dash 3s linear infinite;
+  stroke-dasharray: 5;
+  stroke-dashoffset: 50;
+  animation: dash 3s linear infinite;
 }
 
 @keyframes dash {
-    from{
-        stroke-dashoffset: 100;
-    }
+  from {
+    stroke-dashoffset: 100;
+  }
+
   to {
     stroke-dashoffset: 0;
   }
 }
+
 .foreinObject {
-    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.25);
-    border-radius: 2px;
-    background-color: var(--knime-masala);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
+  border-radius: 2px;
+  background-color: var(--knime-masala);
 }
 
 .streamingLabel {
-    color: white;
-    font-size: 12px;
-    display: flex;
-    margin-block: 0;
-    align-content: center;
+  color: white;
+  font-size: 12px;
+  display: flex;
+  margin-block: 0;
+  align-content: center;
 }
 
 .textWrapper {
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 </style>

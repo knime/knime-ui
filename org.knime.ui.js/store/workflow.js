@@ -291,9 +291,8 @@ export const getters = {
     executionInfo(state, getters, rootState) {
         return ({ nodeId }) => {
             let node = state.activeWorkflow.nodes[nodeId];
-            let { templateId } = node;
             return node.executionInfo;
         };
-    },
+    }
 
 };

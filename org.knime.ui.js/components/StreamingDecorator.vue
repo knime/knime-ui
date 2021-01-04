@@ -26,8 +26,14 @@ export default {
 
 <template>
   <g>
-      <StreamingSupportedIcon v-if="streamable" class="icon"></StreamingSupportedIcon>
-      <StreamingUnsupportedIcon v-if="!streamable" class="icon"></StreamingUnsupportedIcon>
+    <StreamingSupportedIcon
+      v-if="streamable"
+      class="icon"
+    />
+    <StreamingUnsupportedIcon
+      v-if="!streamable"
+      class="icon"
+    />
   </g>
 </template>
 
@@ -35,7 +41,8 @@ export default {
 g > * {
   pointer-events: none;
 }
+
 .icon {
-    stroke-width: 1;
+  stroke-width: 1;
 }
 </style>
