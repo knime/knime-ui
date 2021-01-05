@@ -25,6 +25,7 @@
     <properties>
         <revision>4.4.0</revision>
         <changelist>-SNAPSHOT</changelist>
+		<changelog.skip>true</changelog.skip>
         <feature-branch-extension.branchListProperty>git.branch</feature-branch-extension.branchListProperty>
         <feature-branch-extension.appendArtifactoryProperties>false</feature-branch-extension.appendArtifactoryProperties>
     </properties>
