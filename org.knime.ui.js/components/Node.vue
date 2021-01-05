@@ -159,9 +159,6 @@ export default {
                 height: (top + nodeSize + bottom) + (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0),
                 width: left + right + nodeSize
             };
-        },
-        isStreamingJobManager() {
-            return this.jobManager.type === 'streaming';
         }
     },
     methods: {

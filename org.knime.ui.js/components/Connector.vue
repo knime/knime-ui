@@ -32,7 +32,7 @@ export default {
          */
         streaming: { type: Boolean, default: false },
         /**
-         * Determines wheter this connector is steamed at the moment
+         * The label shown in the middle of the connector
          */
         label: { type: String, default: '' },
         /**
@@ -42,9 +42,8 @@ export default {
     },
     data() {
         return {
-            isMounted: false,
-            updated: 0,
-            size: { width: 0, height: 0 }
+            width: 0,
+            height: 0
         };
     },
     computed: {
@@ -103,36 +102,10 @@ export default {
                 return this.$colors.connectorColors.flowVariable;
             }
             return this.$colors.connectorColors.default;
-        },
-        wrapperSize() {
-            return this.$refs.textContent.getBBox();
-        }
-    },
-    watch: {
-        label: {
-            immediate: true,
-            handler(newVal, oldVal) {
-                let self = this;
-                this.$nextTick(() => {
-                    if (self.$refs.textContent) {
-                        const offset = 6;
-                        self.size = {
-                            width: self.$refs.textContent.clientWidth + offset,
-                            height: self.$refs.textContent.clientHeight + offset
-                        };
-                    } else {
-                        self.size = {
-                            width: 0,
-                            height: 0
-                        };
-                    }
-                });
-            },
-            deep: true
         }
     },
     mounted() {
-        this.isMounted = true;
+        this.updateSize();
     },
     methods: {
         /**
@@ -170,17 +143,23 @@ export default {
             let y = this.portBarItemYPos(sourceNodeIndex, allPorts.ports, true);
             return [x, y];
         },
-        getSourceNodeExecutionState() {
-            return this.streaming;
-        },
         getHalfWayPosition() {
             // Add an offset to the actual middle point to make the text appear above the lines
-            const topOffset = 13;
-            let halfWay = [this.start[0] + (this.end[0] - this.start[0] - this.size.width) / 2,
-                this.start[1] + (this.end[1] - this.start[1] - this.size.height) / 2 - topOffset];
+            const topOffset = 16;
+            // Calculate the middle point and subtract half of the length of the text element
+            let halfWay = { x: (this.start[0] + (this.end[0] - this.start[0]) / 2) - this.width / 2,
+                y: (this.start[1] + (this.end[1] - this.start[1]) / 2 - topOffset) - this.height / 2 };
             return halfWay;
+        },
+        updateSize() {
+            if (this.$refs.textObject) {
+                this.width = this.$refs.textObject.clientWidth;
+                this.height = this.$refs.textObject.clientHeight;
+            } else {
+                this.width = 0;
+                this.height = 0;
+            }
         }
-
     }
 };
 </script>
@@ -192,18 +171,17 @@ export default {
       :stroke="strokeColor"
       :stroke-width="$shapes.connectorWidth"
       :class="{ variable: flowVariableConnection, 'read-only': !isWorkflowWritable,
-                'dashed': getSourceNodeExecutionState()}"
+                'dashed': streaming}"
       fill="none"
     />
     <foreignObject
       v-if="label.length > 0"
-      :style="size"
+      ref="textObject"
       class="foreinObject"
-      :transform="'translate(' + getHalfWayPosition()[0] + ',' + getHalfWayPosition()[1] + ')'"
+      :transform="'translate(' + getHalfWayPosition().x + ',' + getHalfWayPosition().y + ')'"
     >
       <span class="textWrapper">
         <p
-          ref="textContent"
           class="streamingLabel"
         >
           {{ label }}
@@ -253,9 +231,9 @@ rect {
 }
 
 .foreinObject {
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
-  border-radius: 2px;
-  background-color: var(--knime-masala);
+  /* Set to an abitrary high value */
+  width: 1000px;
+  height: 1000px;
 }
 
 .streamingLabel {
@@ -264,12 +242,16 @@ rect {
   display: flex;
   margin-block: 0;
   align-content: center;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
+  border-radius: 2px;
+  background-color: var(--knime-masala);
+  padding: 5px;
 }
 
 .textWrapper {
   height: 100%;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 }
 </style>

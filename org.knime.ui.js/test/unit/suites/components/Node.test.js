@@ -9,6 +9,7 @@ import NodeTorso from '~/components/NodeTorso';
 import NodeState from '~/components/NodeState';
 import NodeAnnotation from '~/components/NodeAnnotation';
 import LinkDecorator from '~/components/LinkDecorator';
+import StreamingDecorator from '~/components/StreamingDecorator';
 import NodeActionBar from '~/components/NodeActionBar';
 import Port from '~/components/PortWithTooltip';
 
@@ -134,6 +135,13 @@ describe('Node', () => {
             propsData.link = 'linkylinky';
             doMount(shallowMount);
             expect(wrapper.findComponent(LinkDecorator).exists()).toBe(true);
+        });
+
+        it('shows/hides StreamingDecorator', () => {
+            expect(wrapper.findComponent(StreamingDecorator).exists()).toBe(false);
+            propsData.executionInfo = { jobManager: 'sampleJobManager' };
+            doMount(shallowMount);
+            expect(wrapper.findComponent(StreamingDecorator).exists()).toBe(true);
         });
 
         it('displays annotation', () => {

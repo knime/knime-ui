@@ -129,6 +129,39 @@ describe('workflow store', () => {
 
     });
 
+    describe('workflow getters', () => {
+
+        beforeEach(async () => {
+            await loadStore();
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
+                info: {
+                    linked: true,
+                    jobManager: 'someJobManager'
+                }
+            });
+        });
+
+        it('check linked', () => {
+            expect(store.getters['workflow/isLinked']).toBe(true);
+        });
+
+        it('check isWritable', () => {
+            expect(store.getters['workflow/isWritable']).toBe(false);
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
+                info: {
+                    linked: false
+                }
+            });
+            expect(store.getters['workflow/isWritable']).toBe(true);
+        });
+
+        it('check isStreaming', () => {
+            expect(store.getters['workflow/isStreaming']).toBe(true);
+        });
+    });
+
     describe('action', () => {
         it('loads root workflow successfully', async () => {
             let loadWorkflow = jest.fn().mockResolvedValue({ dummy: true, workflow: { info: {} }, snapshotId: 'snap' });
@@ -383,7 +416,8 @@ describe('workflow store', () => {
                     ownData: {
                         icon: 'ownIcon',
                         name: 'ownName',
-                        type: 'ownType'
+                        type: 'ownType',
+                        executionInfo: { jobManager: 'test' }
                     }
                 }
             });
@@ -405,6 +439,11 @@ describe('workflow store', () => {
         it('gets type', () => {
             expect(store.getters['workflow/nodeType']({ nodeId: 'foo' })).toBe('exampleType');
             expect(store.getters['workflow/nodeType']({ nodeId: 'ownData' })).toBe('ownType');
+        });
+        it('gets executionInfo', () => {
+            expect(store.getters['workflow/executionInfo']({ nodeId: 'foo' })).toBe(undefined);
+            expect(store.getters['workflow/executionInfo']({ nodeId: 'ownData' }))
+                .toStrictEqual({ jobManager: 'test' });
         });
     });
 });

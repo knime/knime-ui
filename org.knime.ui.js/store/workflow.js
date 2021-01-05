@@ -288,7 +288,7 @@ export const getters = {
         };
     },
 
-    executionInfo(state, getters, rootState) {
+    executionInfo(state) {
         return ({ nodeId }) => {
             let node = state.activeWorkflow.nodes[nodeId];
             return node.executionInfo;

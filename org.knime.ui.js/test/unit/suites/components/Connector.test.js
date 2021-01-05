@@ -152,6 +152,31 @@ describe('Connector.vue', () => {
             expect(wrapper.find('.read-only').exists()).toBe(true);
         });
 
+        it('draw dashed lines when streaming', () => {
+            mocks.$store = mockVuexStore({
+                workflow: {
+                    ...workflowStoreConfig,
+                    state: {
+                        activeWorkflow: {
+                            projectId: 'myId',
+                            nodes: {
+                                'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
+                                'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
+                            }
+                        }
+                    },
+                    getters: {
+                        isStreaming() {
+                            return true;
+                        }
+                    }
+                }
+            });
+            propsData.streaming = true;
+            wrapper = shallowMount(Connector, { propsData, mocks });
+            expect(wrapper.find('.dashed').exists()).toBe(true);
+        });
+
         it('uses portShift', () => {
             doShallowMount();
             expect(portShiftMock).toHaveBeenCalledWith(0, 2, false, true);
@@ -249,5 +274,19 @@ describe('Connector.vue', () => {
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
 
+    });
+
+    describe('Check label creation', () => {
+        beforeEach(() => {
+            mocks = { $shapes, $colors, $store };
+            wrapper = shallowMount(Connector, { propsData, mocks });
+        });
+
+        it('label should be created if text is provided', () => {
+            expect(wrapper.find('.streamingLabel').exists()).toBe(false);
+            propsData.label = '10';
+            wrapper = shallowMount(Connector, { propsData, mocks });
+            expect(wrapper.find('.streamingLabel').exists()).toBe(true);
+        });
     });
 });
