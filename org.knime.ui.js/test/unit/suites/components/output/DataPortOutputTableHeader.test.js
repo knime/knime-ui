@@ -51,7 +51,7 @@ describe('DataPortOutputTableHeader.vue', () => {
     it('renders rows and columns', () => {
         doShallowMount();
         expect(wrapper.findAll('tr').length).toBe(1);
-        expect(wrapper.findAll('th').length).toBe(3);
+        expect(wrapper.findAll('th').length).toBe(3); // eslint-disable-line no-magic-numbers
     });
 
     it('renders content', () => {
