@@ -50,7 +50,7 @@ export default {
         },
         /**
          * Project or Component.
-         * Tags, Last Update, External ressources cannot be set in the AP for now
+         * Tags, Last Update, External resources cannot be set in the AP for now
          * Influences whether they are rendered with placeholders or hidden completely
          */
         isComponent: {
@@ -110,9 +110,9 @@ export default {
 
     <div
       v-if="!isComponent"
-      class="external-ressources"
+      class="external-resources"
     >
-      <h2>External Ressources</h2>
+      <h2>External resources</h2>
       <LinkList
         v-if="links.length"
         :links="links"
@@ -256,7 +256,7 @@ export default {
   }
 }
 
-.external-ressources {
+.external-resources {
   margin-bottom: 38px;
 
   & ul {

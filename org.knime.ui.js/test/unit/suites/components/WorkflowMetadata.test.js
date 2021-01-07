@@ -15,7 +15,7 @@ describe('WorkflowMetadata.vue', () => {
 
         // show placeholder parents
         expect(wrapper.find('.last-updated').exists()).toBe(true);
-        expect(wrapper.find('.external-ressources').exists()).toBe(true);
+        expect(wrapper.find('.external-resources').exists()).toBe(true);
         expect(wrapper.find('.tags').exists()).toBe(true);
 
         // show placeholder tags
@@ -39,7 +39,7 @@ describe('WorkflowMetadata.vue', () => {
             }
         });
         expect(wrapper.find('.last-updated').exists()).toBe(false);
-        expect(wrapper.find('.external-ressources').exists()).toBe(false);
+        expect(wrapper.find('.external-resources').exists()).toBe(false);
         expect(wrapper.find('.tags').exists()).toBe(false);
     });
 

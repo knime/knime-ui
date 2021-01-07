@@ -23,6 +23,8 @@ import org.knime.gateway.api.webui.entity.EventEnt;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.ui.java.browser.function.JsonRpcBrowserFunction;
+import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
+import org.knime.ui.java.browser.function.OpenNodeViewBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -72,11 +74,17 @@ public class KnimeBrowserView {
 				//
 			}
 		});
-		new JsonRpcBrowserFunction(m_browser);
-		new SwitchToJavaUIBrowserFunction(m_browser);
+		addBrowserFunctions(m_browser);
 		setUrl();
 		BiConsumer<String, EventEnt> eventConsumer = createEventConsumer(m_browser);
 		DefaultEventService.getInstance().addEventConsumer(eventConsumer);
+	}
+
+	private static void addBrowserFunctions(final Browser browser) {
+		new JsonRpcBrowserFunction(browser);
+		new SwitchToJavaUIBrowserFunction(browser);
+		new OpenNodeViewBrowserFunction(browser);
+		new OpenNodeDialogBrowserFunction(browser);
 	}
 
 	/**
@@ -111,8 +119,7 @@ public class KnimeBrowserView {
 
 	private static void createJsonRpcNotificationAndSendToBrowser(final Browser browser, final ObjectMapper mapper,
 			final String name, final EventEnt event) {
-		// wrap event into a jsonrpc notification (method == event-name) and
-		// serialize
+		// wrap event into a jsonrpc notification (method == event-name) and serialize
 		ObjectNode jsonrpc = mapper.createObjectNode();
 		ArrayNode params = jsonrpc.arrayNode();
 		params.addPOJO(event);
@@ -123,7 +130,7 @@ public class KnimeBrowserView {
 			Display.getDefault().syncExec(() -> browser.execute(jsCode));
 		} catch (JsonProcessingException ex) {
 			NodeLogger.getLogger(KnimeBrowserView.class)
-					.error("Problem creating a json-rcp notification in order to send an event", ex);
+					.error("Problem creating a json-rpc notification in order to send an event", ex);
 		}
 	}
 

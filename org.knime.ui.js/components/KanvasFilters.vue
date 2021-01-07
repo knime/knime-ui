@@ -12,7 +12,7 @@
         dx="0"
         dy="2"
         stdDeviation="5"
-        flood-color="rgba(0,0,0,0.25)"
+        flood-color="rgba(0,0,0,0.15)"
       />
     </filter>
     <filter
@@ -26,7 +26,7 @@
         dx="0"
         dy="1"
         stdDeviation="8"
-        flood-color="rgba(0,0,0,0.3)"
+        flood-color="rgba(0,0,0,0.15)"
       />
     </filter>
     <filter
@@ -40,7 +40,7 @@
         dx="0"
         dy="1"
         stdDeviation="6"
-        flood-color="rgba(0,0,0,0.3)"
+        flood-color="rgba(0,0,0,0.15)"
       />
     </filter>
   </defs>

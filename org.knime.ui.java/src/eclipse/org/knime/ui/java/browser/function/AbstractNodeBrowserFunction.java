@@ -44,41 +44,59 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   May 30, 2020 (hornm): created
+ *   Dec 3, 2020 (hornm): created
  */
 package org.knime.ui.java.browser.function;
 
+import java.util.Arrays;
+
 import org.eclipse.swt.chromium.Browser;
 import org.eclipse.swt.chromium.BrowserFunction;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.WorkbenchException;
+import org.knime.core.node.NodeLogger;
+import org.knime.core.node.workflow.NodeContainer;
+import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 
 /**
- * Browser function to allow the js webapp to switch back to the classic KNIME perspective.
+ * A browser function targeting a single node, identified by project-id and
+ * node-id.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class SwitchToJavaUIBrowserFunction extends BrowserFunction {
+public abstract class AbstractNodeBrowserFunction extends BrowserFunction {
 
-	private static final String FUNCTION_NAME = "switchToJavaUI";
-
-	public SwitchToJavaUIBrowserFunction(final Browser browser) {
-		super(browser, FUNCTION_NAME);
+	/**
+	 * @param browser
+	 * @param name
+	 */
+	protected AbstractNodeBrowserFunction(final Browser browser, final String name) {
+		super(browser, name);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Object function(final Object[] args) {
-		IWorkbench workbench = PlatformUI.getWorkbench();
-		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-		try {
-			workbench.showPerspective("org.knime.workbench.ui.ModellerPerspective", window);
-		} catch (WorkbenchException e) {
-			// should never happen
-			throw new RuntimeException(e); // NOSONAR
+		if (args == null || args.length != 2 || !(args[0] instanceof String) || !(args[1] instanceof String)) {
+			throw new IllegalArgumentException("Wrong argument for browser function '" + getName()
+					+ "'. The arguments are: " + Arrays.toString(args));
+		}
+		NodeContainer nc = DefaultServiceUtil.getNodeContainer((String) args[0], new NodeIDEnt((String) args[1]));
+		if (nc == null) {
+			NodeLogger.getLogger(AbstractNodeBrowserFunction.class)
+					.warn(String.format("Node with id '%s' not found in workflow with id '%s'", args[0], args[1]));
+		} else {
+			apply(nc);
 		}
 		return null;
 	}
+
+	/**
+	 * Executes the function on the given node container.
+	 *
+	 * @param nc the node container, never <code>null</code>
+	 */
+	protected abstract void apply(NodeContainer nc);
 
 }

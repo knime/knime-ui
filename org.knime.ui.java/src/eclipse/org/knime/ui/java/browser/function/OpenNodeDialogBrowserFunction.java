@@ -44,41 +44,32 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   May 30, 2020 (hornm): created
+ *   Dec 3, 2020 (hornm): created
  */
 package org.knime.ui.java.browser.function;
 
+import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
+
 import org.eclipse.swt.chromium.Browser;
-import org.eclipse.swt.chromium.BrowserFunction;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.WorkbenchException;
+import org.knime.core.node.workflow.NodeContainer;
+import org.knime.workbench.editor2.editparts.NodeContainerEditPart;
 
 /**
- * Browser function to allow the js webapp to switch back to the classic KNIME perspective.
+ * Opens the swing dialog of a node.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class SwitchToJavaUIBrowserFunction extends BrowserFunction {
+public class OpenNodeDialogBrowserFunction extends AbstractNodeBrowserFunction {
 
-	private static final String FUNCTION_NAME = "switchToJavaUI";
+	private static final String FUNCTION_NAME = "openNodeDialog";
 
-	public SwitchToJavaUIBrowserFunction(final Browser browser) {
+	public OpenNodeDialogBrowserFunction(final Browser browser) {
 		super(browser, FUNCTION_NAME);
 	}
 
 	@Override
-	public Object function(final Object[] args) {
-		IWorkbench workbench = PlatformUI.getWorkbench();
-		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-		try {
-			workbench.showPerspective("org.knime.workbench.ui.ModellerPerspective", window);
-		} catch (WorkbenchException e) {
-			// should never happen
-			throw new RuntimeException(e); // NOSONAR
-		}
-		return null;
+	protected void apply(final NodeContainer nc) {
+		NodeContainerEditPart.openDialog(wrap(nc), null);
 	}
 
 }

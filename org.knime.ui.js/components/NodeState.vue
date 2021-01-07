@@ -121,6 +121,8 @@ export default {
       :width="$shapes.nodeSize"
       :height="$shapes.nodeStatusHeight"
       :fill="$colors.trafficLight.background"
+      :stroke="$colors.darkeningMask"
+      stroke-width=".3"
       rx="1"
     />
 
