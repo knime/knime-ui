@@ -12,16 +12,14 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.chromium.Browser;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.webui.entity.EventEnt;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
+import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.JsonRpcBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeViewBrowserFunction;
@@ -43,48 +41,34 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  */
 public class KnimeBrowserView {
 
-	private static final String APP_PAGE = "dist/inlined/index.html";
+	static final String APP_PAGE = "dist/inlined/index.html";
 
-	private static final String EMPTY_PAGE = "about:blank";
+	static final String EMPTY_PAGE = "about:blank";
+
+	private static final String REMOTE_DEBUGGING_PORT_PROP = "org.eclipse.swt.chromium.remote-debugging-port";
+
+	private static final String DEBUG_URL_PROP = "org.knime.ui.debug.url";
 
 	private Browser m_browser;
 
 	@PostConstruct
 	public void createPartControl(final Composite parent) {
 		m_browser = new Browser(parent, SWT.NONE);
-		m_browser.addLocationListener(new LocationListener() {
-
-			@Override
-			public void changing(final LocationEvent event) {
-				// Any change of the location (i.e. URL) will be intercepted and the URL opened in the external browser.
-				// Except if the new location URL is the actual APP page, the EMPTY page
-				// or a localhost-URL (for development).
-				if (!(event.location.endsWith(APP_PAGE) || event.location.endsWith(EMPTY_PAGE)
-						 || event.location.startsWith("http://localhost"))) {
-					if (!Program.launch(event.location)) {
-						NodeLogger.getLogger(this.getClass())
-								.error("Failed to open URL in external browser. The URL is: " + event.location);
-					}
-					event.doit = false;
-				}
-			}
-
-			@Override
-			public void changed(final LocationEvent event) {
-				//
-			}
-		});
+		m_browser.addLocationListener(new KnimeBrowserLocationListener());
 		addBrowserFunctions(m_browser);
 		setUrl();
 		BiConsumer<String, EventEnt> eventConsumer = createEventConsumer(m_browser);
 		DefaultEventService.getInstance().addEventConsumer(eventConsumer);
 	}
 
-	private static void addBrowserFunctions(final Browser browser) {
+	private void addBrowserFunctions(final Browser browser) {
 		new JsonRpcBrowserFunction(browser);
 		new SwitchToJavaUIBrowserFunction(browser);
 		new OpenNodeViewBrowserFunction(browser);
 		new OpenNodeDialogBrowserFunction(browser);
+		if (isRemoteDebuggingPortSet()) {
+			new InitAppForTestingBrowserFunction(browser, this);
+		}
 	}
 
 	/**
@@ -95,20 +79,43 @@ public class KnimeBrowserView {
 	}
 
 	/**
-	 * Sets the browser's URL to show the web-ui.
+	 * Sets the browser's URL to show the web-ui. The URL is either taken from
+	 * the system property org.knime.ui.debug.url or, if not set, the actual
+	 * file URL is used.
 	 */
 	public void setUrl() {
+		setUrl(false);
+	}
+
+	/**
+	 * Sets the browser's URL to show the web-ui. The URL is either taken from
+	 * the system property org.knime.ui.debug.url or, if not set, the actual
+	 * file URL is used.
+	 *
+	 * @param ignoreEmptyPageAsDebugUrl if <code>true</code> and the debug URL
+	 * (org.knime.ui.debug.url system property) is set to be the empty page (URL
+	 * is about:blank), the debug URL (i.e. empty page) will be ignored and the
+	 * actual file URL is used
+	 */
+	public void setUrl(final boolean ignoreEmptyPageAsDebugUrl) {
 		if (m_browser.getUrl().equals(EMPTY_PAGE)) {
-			if (!setDebugURL(m_browser)) { // NOSONAR
-				URL url = Platform.getBundle("org.knime.ui.js").getEntry(APP_PAGE);
-				try {
-					String path = FileLocator.toFileURL(url).getPath();
-					m_browser.setUrl("file://" + path);
-				} catch (IOException e) {
-					// should never happen
-					throw new IllegalStateException(e);
-				}
+			if (!setDebugURL(m_browser, ignoreEmptyPageAsDebugUrl)) { // NOSONAR
+				setAppUrl();
 			}
+		}
+	}
+
+	/**
+	 * Sets the URL to the actual application page (served from the file system).
+	 */
+	private void setAppUrl() {
+		URL url = Platform.getBundle("org.knime.ui.js").getEntry(APP_PAGE);
+		try {
+			String path = FileLocator.toFileURL(url).getPath();
+			m_browser.setUrl("file://" + path);
+		} catch (IOException e) {
+			// should never happen
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -144,14 +151,18 @@ public class KnimeBrowserView {
 		m_browser.dispose();
 	}
 
-	private static boolean setDebugURL(final Browser browser) {
-		String port = System.getProperty("org.eclipse.swt.chromium.remote-debugging-port");
-		String initURL = System.getProperty("org.knime.ui.debug.url");
-		if (port != null && initURL != null) {
+	private static boolean setDebugURL(final Browser browser, final boolean ignoreEmptyPageAsDebugUrl) {
+		String port = System.getProperty(REMOTE_DEBUGGING_PORT_PROP);
+		String initURL = System.getProperty(DEBUG_URL_PROP);
+		if (port != null && initURL != null && (!ignoreEmptyPageAsDebugUrl || !initURL.equals(EMPTY_PAGE))) {
 			browser.setUrl(initURL);
 			return true;
 		} else {
 			return false;
 		}
+	}
+
+	private static boolean isRemoteDebuggingPortSet() {
+		return System.getProperty(KnimeBrowserView.REMOTE_DEBUGGING_PORT_PROP) != null;
 	}
 }
