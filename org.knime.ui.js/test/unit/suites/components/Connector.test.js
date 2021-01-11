@@ -166,6 +166,9 @@ describe('Connector.vue', () => {
                         }
                     },
                     getters: {
+                        isWritable() {
+                            return true;
+                        },
                         isStreaming() {
                             return true;
                         }
