@@ -176,7 +176,7 @@ describe('Kanvas', () => {
         expect(wrapper.find('.link-notification').exists()).toBe(true);
     });
 
-    it('shows decorater in streaming component', () => {
+    it('shows decorator in streaming component', () => {
         workflow.info.jobManager = 'test';
         doShallowMount();
         expect(wrapper.find('.streaming-decorator').exists()).toBe(true);

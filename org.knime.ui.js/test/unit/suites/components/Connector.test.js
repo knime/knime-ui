@@ -152,7 +152,7 @@ describe('Connector.vue', () => {
             expect(wrapper.find('.read-only').exists()).toBe(true);
         });
 
-        it('draw dashed lines when streaming', () => {
+        it('draws dashed lines when streaming', () => {
             mocks.$store = mockVuexStore({
                 workflow: {
                     ...workflowStoreConfig,

@@ -80,11 +80,10 @@ export default {
     </div>
     <div
       v-if="isStreaming"
-      :class="{isLinked: isLinked}"
-      class="streaming-decorator"
+      :class="['streaming-decorator', { isLinked }]"
     >
       <StreamedIcon class="streamingIcon" />
-      <p :class="{isLinked: isLinked}"> Streaming </p>
+      <p>Streaming</p>
     </div>
 
     <div
@@ -239,7 +238,7 @@ svg {
     text-align: center;
   }
 
-  & p.isLinked {
+  &.isLinked p {
     margin-right: 10px;
   }
 }
