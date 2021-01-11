@@ -18,7 +18,6 @@ export default {
     },
     data() {
         return {
-            containerSize: [0, 0],
             dragging: null
         };
     },
@@ -28,86 +27,83 @@ export default {
             tooltip: 'tooltip'
         }),
         ...mapGetters('workflow', [
-            'svgBounds',
             'isLinked',
             'isWritable'
         ]),
-        ...mapGetters('zoom', {
-            zoomFactor: 'factor'
-        }),
-        width() {
-            return Math.max(this.containerSize[0], this.svgBounds.width * this.zoomFactor);
-        },
-        height() {
-            return Math.max(this.containerSize[1], this.svgBounds.height * this.zoomFactor);
-        },
-        viewBox() {
-            let { x, y, width, height } = this.svgBounds;
-            return `${x} ${y} ${width} ${height}`;
-        }
+        ...mapGetters('canvas', ['zoomFactor', 'contentBounds', 'canvasSize', 'contentViewBox']),
+        ...mapState('canvas', ['containerSize'])
     },
     mounted() {
         this.initContainerSize();
         this.initResizeObserver();
     },
     beforeDestroy() {
-        resizeObserver.disconnect();
+        this.stopResizeObserver();
     },
     methods: {
+        /*
+            Zooming
+        */
         initContainerSize() {
             const { width, height } = this.$el.getBoundingClientRect();
-            this.containerSize = [width, height];
+            this.$store.commit('canvas/setContainerSize', { width, height });
         },
         initResizeObserver() {
             resizeObserver = new ResizeObserver(entries => {
-                const e = entries.find(({ target }) => target === this.$el);
-                if (e?.contentRect) {
-                    const { width, height } = e.contentRect;
-                    this.containerSize = [width, height];
+                const containerEl = entries.find(({ target }) => target === this.$el);
+                if (containerEl?.contentRect) {
+                    const { width, height } = containerEl.contentRect;
+                    this.$store.commit('canvas/setContainerSize', { width, height });
                 }
             });
             resizeObserver.observe(this.$el);
         },
+        stopResizeObserver() {
+            if (resizeObserver) {
+                resizeObserver.disconnect();
+            }
+        },
         onMouseWheel(e) {
-            // returns -1, 0 or 1 depending on scroll direction
-            const clamp = (delta) => {
-                if (delta === 0) { return 0; }
-                return delta < 0 ? -1 : 1;
-            };
-
-            let deltaY = clamp(-e.deltaY);
+            // deltaY is -1, 0 or 1 depending on scroll direction.
+            let deltaY = Math.sign(-e.deltaY);
             
             let oldZoomFactor = this.zoomFactor;
-            this.$store.commit('zoom/increaseLevel', deltaY);
+            this.$store.commit('canvas/increaseLevel', deltaY);
             if (oldZoomFactor === this.zoomFactor) { return; }
             
+            // Zoom factor changed.
+            // Scroll image such that the mouse pointer targets the same point as before (if possible).
+
             /**
-             * Scroll image such that the mouse pointer targets the same point as before (if possible).
              * The formula comes from the observation that for a point (xOrig, yOrig) on the canvas,
-             *
-             *   zoomFactor * xOrig = scrollLeft + x
-             *
+             *    zoomFactor * xOrig = scrollLeft + xScreen
              * so
-             *
-             *   xOrig = (scrollLeft_1 + x_1) / zoomFactor_1 = (scrollLeft_2 + x_2) / zoomFactor_2
-             *
+             *    xOrig = (scrollLeft_1 + xScreen) / zoomFactor_1 = (scrollLeft_2 + xScreen) / zoomFactor_2
              * and solving for scrollLeft_2 yields
-             *
-             *   scrollLeft_2 = zoomFactor_2 / zoomFactor_1 * (scrollLeft_1 + x_1) - x_2
-             *
+             *    scrollLeft_2 = zoomFactor_2 / zoomFactor_1 * (scrollLeft_1 + xScreen) - xScreen
              * Likewise for y.
             */
-            let scroller = this.$el;
-            let bcr = scroller.getBoundingClientRect();
-            let x = e.clientX - bcr.left;
-            let y = e.clientY - bcr.top;
-            let oldScrollLeft = scroller.scrollLeft;
-            let oldScrollTop = scroller.scrollTop;
+            let scrollContainer = this.$el;
+            let bcr = scrollContainer.getBoundingClientRect();
+            let xScreen = e.clientX - bcr.left;
+            let yScreen = e.clientY - bcr.top;
+            let oldScrollLeft = scrollContainer.scrollLeft;
+            let oldScrollTop = scrollContainer.scrollTop;
+
+            // If the user zooms in the scroll bars are adjusted by those values to move the point under the cursor
+            // If zoomed out further then 'fitToScreen', there won't be scrollbars and those numbers will be negative.
+            //  No adjustment will be done
+            let newScrollLeft = this.zoomFactor / oldZoomFactor * (oldScrollLeft + xScreen) - xScreen;
+            let newScrollTop = this.zoomFactor / oldZoomFactor * (oldScrollTop + yScreen) - yScreen;
+
             this.$nextTick(() => {
-                scroller.scrollLeft = this.zoomFactor / oldZoomFactor * (oldScrollLeft + x) - x;
-                scroller.scrollTop = this.zoomFactor / oldZoomFactor * (oldScrollTop + y) - y;
+                scrollContainer.scrollLeft = newScrollLeft;
+                scrollContainer.scrollTop = newScrollTop;
             }, 0);
         },
+        /*
+            Pan
+        */
         onMiddleMouseDown(e) {
             this.dragging = [e.screenX, e.screenY];
             this.$el.setPointerCapture(e.pointerId);
@@ -122,8 +118,11 @@ export default {
             }
         },
         onMiddleMouseUp(e) {
-            this.dragging = null;
-            this.$el.releasePointerCapture(e.pointerId);
+            if (this.dragging) {
+                this.dragging = null;
+                this.$el.releasePointerCapture(e.pointerId);
+                e.stopPropagation();
+            }
         }
     }
 };
@@ -134,6 +133,8 @@ export default {
     :class="{ 'read-only': !isWritable, 'dragging': dragging }"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
+    @pointerdown.left.alt.stop="onMiddleMouseDown"
+    @pointerup.left="onMiddleMouseUp"
     @pointerdown.middle.stop="onMiddleMouseDown"
     @pointerup.middle.stop="onMiddleMouseUp"
     @pointermove="onPointerMove"
@@ -157,12 +158,18 @@ export default {
         />
       </transition>
     </div>
-    <!-- <ZoomContainer :scroller="$refs.scroller"> -->
     <svg
-      :width="width"
-      :height="height"
-      :viewBox="viewBox"
+      :width="canvasSize.width"
+      :height="canvasSize.height"
+      :viewBox="contentViewBox"
     >
+      <rect
+        class="workflow-boundary"
+        :x="contentBounds.x"
+        :y="contentBounds.y"
+        :width="contentBounds.width"
+        :height="contentBounds.height"
+      />
       <WorkflowAnnotation
         v-for="annotation of workflow.workflowAnnotations"
         :key="`annotation-${annotation.id}`"
@@ -203,6 +210,11 @@ svg {
   color: var(--knime-masala);
   position: relative; /* needed for z-index to have effect */
   display: block;
+
+  & .workflow-boundary {
+    stroke: var(--knime-silver-sand);
+    fill: none;
+  }
 }
 
 .tooltip-container {

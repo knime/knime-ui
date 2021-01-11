@@ -5,6 +5,11 @@ import ToolbarButton from '~/components/ToolbarButton';
 import ExecuteAllIcon from '~/assets/execute-all.svg?inline';
 import CancelAllIcon from '~/assets/cancel-execution.svg?inline';
 import ResetAllIcon from '~/assets/reset-all.svg?inline';
+import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+import DropdownIcon from '~/webapps-common/ui/assets/img/icons/arrow-dropdown.svg?inline';
+import SubMenu from '~/webapps-common/ui/components/SubMenu';
+import Button from '~/webapps-common/ui/components/Button';
+import SplitButton from '~/webapps-common/ui/components/SplitButton';
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
@@ -15,12 +20,14 @@ export default {
         ToolbarButton,
         ExecuteAllIcon,
         CancelAllIcon,
-        ResetAllIcon
+        ResetAllIcon,
+        DropdownIcon,
+        SubMenu
     },
-    filters: {
-        displayZoom(factor) {
-            return `${Math.round(factor * 100)} %`;
-        }
+    data() {
+        return {
+            zoomMenuOpen: false
+        };
     },
     computed: {
         ...mapState('workflow', {
@@ -28,14 +35,35 @@ export default {
             allowedActions: state => state.activeWorkflow?.allowedActions || {}
         }),
         ...mapGetters('workflow', ['activeWorkflowId']),
-        ...mapGetters('zoom', {
-            zoomFactor: 'factor'
-        }),
+        ...mapGetters('canvas', ['zoomFactor', 'fitToScreenZoomFactor']),
         hasBreadcrumb() {
             return this.workflow.parents?.length > 0;
+        },
+        zoomMenuItems() {
+            return [
+                {
+                    text: 'Zoom to fit',
+                    value: this.fitToScreenZoomFactor
+                }, {
+                    text: 'Zoom to 75%',
+                    value: 0.75
+                }, {
+                    text: 'Zoom to 100%',
+                    value: 1
+                }, {
+                    text: 'Zoom to 150%',
+                    value: 1.5
+                }
+            ];
         }
     },
+    mounted() {
+        this.$watch('zoomFactor', this.formatZoomInput, { immediate: true });
+    },
     methods: {
+        formatZoomInput() {
+            this.$refs.zoomInput.innerText = `${Math.round(this.zoomFactor * 100)}%`;
+        },
         onExecuteBtnClick() {
             this.$store.dispatch('workflow/executeNodes', {
                 nodeIds: [this.activeWorkflowId]
@@ -51,8 +79,38 @@ export default {
                 nodeIds: [this.activeWorkflowId]
             });
         },
-        resetZoom() {
-            this.$store.commit('zoom/reset');
+        onZoomInputEnter(e) {
+            e.target.blur();
+            e.stopPropagation();
+            e.preventDefault();
+
+            let oldZoomFactor = this.zoomFactor;
+            let newZoomFactor = parseInt(e.target.innerText, 10) / 100;
+            debugger;
+            if (!isNaN(newZoomFactor)) {
+                this.$store.commit('canvas/setFactor', newZoomFactor);
+            }
+            
+            this.$nextTick(() => {
+                if (this.zoomFactor === oldZoomFactor) {
+                    // zoom factor hasn't changed. Reset input field.
+                    this.formatZoomInput();
+                }
+            });
+        },
+        onZoomInputClick(e) {
+            e.target.focus();
+            document.execCommand('selectAll', false, null);
+            e.stopPropagation();
+        },
+        onZoomItemClick(e, item, id) {
+            let newZoomFactor = item.value;
+            this.$refs.zoomInput.blur();
+            this.$store.commit('canvas/setFactor', newZoomFactor);
+        },
+        onZoomMenuToggle(e) {
+            console.log('vlicked');
+            this.$refs.zoomInput.blur();
         }
     }
 };
@@ -89,14 +147,21 @@ export default {
       class="breadcrumb"
     />
 
-    <ToolbarButton
-      title="Reset to default"
+    <SubMenu
       class="zoom"
-      :round="false"
-      @click.native="resetZoom"
+      :items="zoomMenuItems"
+      @item-click="onZoomItemClick"
+      @click.capture="onZoomMenuToggle"
     >
-      {{ zoomFactor | displayZoom }}
-    </ToolbarButton>
+      <div
+        ref="zoomInput"
+        class="zoom-input"
+        contenteditable="true"
+        @click="onZoomInputClick"
+        @keydown.enter="onZoomInputEnter"
+      />
+      <DropdownIcon />
+    </SubMenu>
   </div>
 </template>
 
@@ -105,7 +170,7 @@ export default {
   display: flex;
   align-items: center;
   background: var(--knime-porcelain);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .buttons {
@@ -120,8 +185,30 @@ export default {
 }
 
 .zoom {
-  padding: 4px 8px;
-  font-size: 16px;
   margin-left: auto;
+
+  & >>> .submenu-toggle {
+    padding: 0 13px 0 0;
+    align-items: center;
+
+    & svg {
+      height: 12px;
+      width: 12px;
+      stroke-width: calc(32px / 12);
+      margin-bottom: 1px;
+    }
+
+    &.expanded svg {
+      transform: scaleY(-1);
+    }
+
+    & .zoom-input {
+      cursor: text;
+      padding: 8px 4px 8px 16px;
+      font-size: 14px;
+      font-weight: 400;
+      margin-right: 0;
+    }
+  }
 }
 </style>

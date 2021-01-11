@@ -41,7 +41,7 @@ export default {
          */
         anchorPoint: {
             type: Object,
-            default: null,
+            default: () => ({ x: 0, y: 0 }),
             validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         },
         /**
@@ -62,19 +62,13 @@ export default {
         }
     },
     computed: {
-        ...mapGetters('workflow', ['getAbsoluteCoordinates']),
-        ...mapGetters('zoom', { zoomFactor: 'factor' }),
+        ...mapGetters('canvas', ['zoomFactor', 'originShift', 'getAbsoluteCoordinates']),
         position() {
-            let { x, y, $shapes: { tooltipArrowSize } } = this;
-            if (this.anchorPoint) {
-                const absPos = this.getAbsoluteCoordinates(this.anchorPoint);
-                x += absPos.x;
-                y += absPos.y;
-            }
-
-            x *= this.zoomFactor;
-            y *= this.zoomFactor;
-
+            let { $shapes: { tooltipArrowSize } } = this;
+            let { x, y } = this.getAbsoluteCoordinates({
+                x: this.anchorPoint.x + this.x,
+                y: this.anchorPoint.y + this.y
+            });
 
             const arrowHalfDiagonal = Math.SQRT1_2 * tooltipArrowSize;
             if (this.orientation === 'bottom') {
