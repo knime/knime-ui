@@ -244,7 +244,9 @@ describe('Node', () => {
                 nodeId: 'root:1',
                 canExecute: true,
                 canCancel: false,
-                canReset: false
+                canReset: false,
+                nodeDialog: false,
+                nodeView: null
             });
             expect(wrapper.findComponent(NodeActionBar).attributes().transform).toBe('translate(516 163)');
         });
@@ -327,7 +329,9 @@ describe('Node', () => {
                 canReset: true,
                 canExecute: true,
                 canCancel: true,
-                nodeId: 'root:1'
+                nodeId: 'root:1',
+                nodeDialog: false,
+                nodeView: null
             });
         });
 

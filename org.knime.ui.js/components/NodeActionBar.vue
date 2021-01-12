@@ -2,6 +2,8 @@
 import ExecuteIcon from '../assets/execute.svg?inline';
 import ResetIcon from '../assets/reset-all.svg?inline';
 import CancelIcon from '../assets/cancel-execution.svg?inline';
+import OpenViewIcon from '../webapps-common/ui/assets/img/icons/chart-bars-stacked.svg?inline';
+import OpenDialogIcon from '../webapps-common/ui/assets/img/icons/wrench.svg?inline';
 
 import ActionButton from '~/components/ActionButton.vue';
 
@@ -29,14 +31,24 @@ export default {
         canReset: {
             type: Boolean,
             default: false
+        },
+        nodeView: {
+            type: Object,
+            default: null
+        },
+        nodeDialog: {
+            type: Boolean,
+            default: false
         }
     },
     computed: {
         actions() {
             return [
+                ...this.nodeDialog ? [['openDialog', this.nodeDialog, OpenDialogIcon]] : [],
                 ['executeNodes', this.canExecute, ExecuteIcon],
                 ['cancelNodeExecution', this.canCancel, CancelIcon],
-                ['resetNodes', this.canReset, ResetIcon]
+                ['resetNodes', this.canReset, ResetIcon],
+                ...this.nodeView ? [['openView', this.nodeView?.available, OpenViewIcon]] : []
             ];
         },
         /**
@@ -45,10 +57,13 @@ export default {
          */
         positions() {
             const { nodeActionBarButtonSpread } = this.$shapes;
-            return [-nodeActionBarButtonSpread, 0, nodeActionBarButtonSpread];
+            return [...this.nodeDialog ? [-nodeActionBarButtonSpread * 2] : [],
+                -nodeActionBarButtonSpread,
+                0,
+                nodeActionBarButtonSpread,
+                ...this.nodeView ? [nodeActionBarButtonSpread * 2] : []];
         }
     }
-
 };
 </script>
 

@@ -124,6 +124,16 @@ export default {
         allowedActions: {
             type: Object,
             default: null
+        },
+
+        view: {
+            type: Object,
+            default: null
+        },
+
+        dialog: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -150,7 +160,8 @@ export default {
     },
     methods: {
         ...mapMutations('workflow', ['selectNode', 'deselectNode', 'deselectAllNodes']),
-        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes']),
+        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'openView',
+            'openDialog']),
         portShift,
         onLeaveHoverArea(e) {
             if (this.$refs.actionbar?.$el?.contains(e.relatedTarget)) {
@@ -183,6 +194,9 @@ export default {
             // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
             if (this.kind === 'metanode' || (this.kind === 'component' && (e.ctrlKey || e.metaKey))) {
                 this.openNode();
+            } else if (this.dialog)  {
+                // open node dialog if one is present
+                this.openDialog({ nodeIds: [this.id] });
             }
         },
 
@@ -192,7 +206,7 @@ export default {
 
         /**
          * Triggered by NodeActionBar
-         * @param {'executeNodes' | 'cancelNodeExecution' | 'resetNodes' } action
+         * @param {'executeNodes' | 'cancelNodeExecution' | 'resetNodes' | 'openView' | 'openConfiguration' } action
          * @returns {void}
          */
         onAction(action) {
@@ -240,6 +254,8 @@ export default {
       <NodeActionBar
         ref="actionbar"
         v-bind="allowedActions"
+        :node-dialog="dialog"
+        :node-view="view"
         :transform="`translate(${position.x + $shapes.nodeSize / 2} ${position.y - $shapes.nodeSelectionPadding[0]})`"
         :node-id="id"
 

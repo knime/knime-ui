@@ -1,5 +1,5 @@
 import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener, executeNodes, cancelNodeExecution,
-    resetNodes } from '~api';
+    resetNodes, openView, openDialog } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
@@ -115,6 +115,14 @@ export const actions = {
     /* See docs in API */
     resetNodes({ state }, { nodeIds }) {
         resetNodes({ projectId: state.activeWorkflow.projectId, nodeIds });
+    },
+    /* See docs in API */
+    openView({ state }, { nodeIds }) {
+        openView({ projectId: state.activeWorkflow.projectId, nodeIds });
+    },
+    /* See docs in API */
+    openDialog({ state }, { nodeIds }) {
+        openDialog({ projectId: state.activeWorkflow.projectId, nodeIds });
     }
 };
 
@@ -282,6 +290,20 @@ export const getters = {
             } else {
                 return node.type;
             }
+        };
+    },
+
+    nodeView(state) {
+        return ({ nodeId }) => {
+            let node = state.activeWorkflow.nodes[nodeId];
+            return node.view;
+        };
+    },
+
+    nodeDialog(state) {
+        return ({ nodeId }) => {
+            let node = state.activeWorkflow.nodes[nodeId];
+            return node.dialog;
         };
     }
 };

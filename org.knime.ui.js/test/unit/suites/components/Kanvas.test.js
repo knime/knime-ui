@@ -21,7 +21,9 @@ const mockNode = ({ id, position }) => ({
     annotation: { text: '' },
     kind: 'node',
     icon: 'data:image/',
-    state: null
+    state: null,
+    view: null,
+    dialog: false
 });
 const mockConnector = ({ nr }) => ({
     sourceNode: '',
@@ -86,6 +88,12 @@ describe('Kanvas', () => {
                 },
                 nodeType() {
                     return ({ nodeId }) => `type-${nodeId}`;
+                },
+                nodeView() {
+                    return () => ({ available: true });
+                },
+                nodeDialog() {
+                    return () => false;
                 }
             }
         };
@@ -135,7 +143,9 @@ describe('Kanvas', () => {
                     type: `type-${nodeId}`,
                     link: null,
                     allowedActions: null,
-                    selected: false
+                    selected: false,
+                    dialog: false,
+                    view: { available: true }
                 };
                 expect(props).toStrictEqual(expected);
             });

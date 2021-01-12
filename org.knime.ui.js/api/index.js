@@ -149,3 +149,11 @@ export const loadTable = ({ projectId, nodeId, portIndex }) => {
         ));
     }
 };
+
+export const openView = ({ projectId, nodeIds }) => {
+    window.openNodeView(projectId, nodeIds[0]);
+};
+
+export const openDialog = ({ projectId, nodeIds }) => {
+    window.openNodeDialog(projectId, nodeIds[0]);
+};

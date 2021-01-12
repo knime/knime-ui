@@ -139,6 +139,8 @@ export default {
           :icon="$store.getters['workflow/nodeIcon']({ workflowId: workflow.projectId, nodeId })"
           :name="$store.getters['workflow/nodeName']({ workflowId: workflow.projectId, nodeId })"
           :type="$store.getters['workflow/nodeType']({ workflowId: workflow.projectId, nodeId })"
+          :view="$store.getters['workflow/nodeView']({ workflowId: workflow.projectId, nodeId })"
+          :dialog="$store.getters['workflow/nodeDialog']({ workflowId: workflow.projectId, nodeId })"
           v-bind="node"
         />
       </portal>
