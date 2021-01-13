@@ -18,7 +18,7 @@ export default {
     },
     data() {
         return {
-            dragging: null
+            panning: null
         };
     },
     computed: {
@@ -30,7 +30,7 @@ export default {
             'isLinked',
             'isWritable'
         ]),
-        ...mapGetters('canvas', ['zoomFactor', 'contentBounds', 'canvasSize', 'contentViewBox']),
+        ...mapGetters('canvas', ['zoomFactor', 'contentBounds', 'canvasSize', 'contentViewBox', 'containerOffset']),
         ...mapState('canvas', ['containerSize'])
     },
     mounted() {
@@ -64,62 +64,49 @@ export default {
             }
         },
         onMouseWheel(e) {
-            // deltaY is -1, 0 or 1 depending on scroll direction.
-            let deltaY = Math.sign(-e.deltaY);
+            // delta is -1, 0 or 1 depending on scroll direction.
+            let delta = Math.sign(-e.deltaY);
+
+            // get mouse cursor position on canvas
+            let scrollContainer = this.$el;
+            let bcr = scrollContainer.getBoundingClientRect();
+            let cursorX = e.clientX - bcr.left;
+            let cursorY = e.clientY - bcr.top;
+
+            // get scroll offset
+            let scrollX = scrollContainer.scrollLeft;
+            let scrollY = scrollContainer.scrollTop;
             
             let oldZoomFactor = this.zoomFactor;
-            this.$store.commit('canvas/increaseLevel', deltaY);
+            this.$store.commit('canvas/zoomWithPointer', { delta, cursorX, cursorY, scrollX, scrollY });
             if (oldZoomFactor === this.zoomFactor) { return; }
             
             // Zoom factor changed.
             // Scroll image such that the mouse pointer targets the same point as before (if possible).
-
-            /**
-             * The formula comes from the observation that for a point (xOrig, yOrig) on the canvas,
-             *    zoomFactor * xOrig = scrollLeft + xScreen
-             * so
-             *    xOrig = (scrollLeft_1 + xScreen) / zoomFactor_1 = (scrollLeft_2 + xScreen) / zoomFactor_2
-             * and solving for scrollLeft_2 yields
-             *    scrollLeft_2 = zoomFactor_2 / zoomFactor_1 * (scrollLeft_1 + xScreen) - xScreen
-             * Likewise for y.
-            */
-            let scrollContainer = this.$el;
-            let bcr = scrollContainer.getBoundingClientRect();
-            let xScreen = e.clientX - bcr.left;
-            let yScreen = e.clientY - bcr.top;
-            let oldScrollLeft = scrollContainer.scrollLeft;
-            let oldScrollTop = scrollContainer.scrollTop;
-
-            // If the user zooms in the scroll bars are adjusted by those values to move the point under the cursor
-            // If zoomed out further then 'fitToScreen', there won't be scrollbars and those numbers will be negative.
-            //  No adjustment will be done
-            let newScrollLeft = this.zoomFactor / oldZoomFactor * (oldScrollLeft + xScreen) - xScreen;
-            let newScrollTop = this.zoomFactor / oldZoomFactor * (oldScrollTop + yScreen) - yScreen;
-
             this.$nextTick(() => {
-                scrollContainer.scrollLeft = newScrollLeft;
-                scrollContainer.scrollTop = newScrollTop;
-            }, 0);
+                scrollContainer.scrollLeft = this.containerOffset.left;
+                scrollContainer.scrollTop = this.containerOffset.top;
+            });
         },
         /*
-            Pan
+            Panning
         */
-        onMiddleMouseDown(e) {
-            this.dragging = [e.screenX, e.screenY];
+        beginPan(e) {
+            this.panning = [e.screenX, e.screenY];
             this.$el.setPointerCapture(e.pointerId);
         },
-        onPointerMove(e) {
+        movePan(e) {
             const speedFactor = 1;
-            if (this.dragging) {
-                const delta = [e.screenX - this.dragging[0], e.screenY - this.dragging[1]];
-                this.dragging = [e.screenX, e.screenY];
+            if (this.panning) {
+                const delta = [e.screenX - this.panning[0], e.screenY - this.panning[1]];
+                this.panning = [e.screenX, e.screenY];
                 this.$el.scrollLeft -= delta[0] * speedFactor;
                 this.$el.scrollTop -= delta[1] * speedFactor;
             }
         },
-        onMiddleMouseUp(e) {
-            if (this.dragging) {
-                this.dragging = null;
+        stopPan(e) {
+            if (this.panning) {
+                this.panning = null;
                 this.$el.releasePointerCapture(e.pointerId);
                 e.stopPropagation();
             }
@@ -130,14 +117,14 @@ export default {
 
 <template>
   <div
-    :class="{ 'read-only': !isWritable, 'dragging': dragging }"
+    :class="{ 'read-only': !isWritable, 'panning': panning }"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
-    @pointerdown.left.alt.stop="onMiddleMouseDown"
-    @pointerup.left="onMiddleMouseUp"
-    @pointerdown.middle.stop="onMiddleMouseDown"
-    @pointerup.middle.stop="onMiddleMouseUp"
-    @pointermove="onPointerMove"
+    @pointerdown.middle="beginPan"
+    @pointerup.middle="stopPan"
+    @pointerdown.left.alt="beginPan"
+    @pointerup.left="stopPan"
+    @pointermove="movePan"
   >
     <div
       v-if="isLinked"
@@ -197,12 +184,11 @@ export default {
         name="node-select"
       />
     </svg>
-    <!-- </ZoomContainer> -->
   </div>
 </template>
 
 <style lang="postcss" scoped>
-.dragging {
+.panning {
   cursor: move;
 }
 
@@ -231,7 +217,7 @@ svg {
   }
 
   & .tooltip-enter,
-  & .tooltip-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  & .tooltip-leave-to {
     opacity: 0;
   }
 }

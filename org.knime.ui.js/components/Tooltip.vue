@@ -62,7 +62,7 @@ export default {
         }
     },
     computed: {
-        ...mapGetters('canvas', ['zoomFactor', 'originShift', 'getAbsoluteCoordinates']),
+        ...mapGetters('canvas', ['zoomFactor', 'getAbsoluteCoordinates']),
         position() {
             let { $shapes: { tooltipArrowSize } } = this;
             let { x, y } = this.getAbsoluteCoordinates({

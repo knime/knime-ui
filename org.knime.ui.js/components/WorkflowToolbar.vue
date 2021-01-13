@@ -80,23 +80,23 @@ export default {
             });
         },
         onZoomInputEnter(e) {
-            e.target.blur();
-            e.stopPropagation();
-            e.preventDefault();
-
+            console.log('enter pressed');
+            
             let oldZoomFactor = this.zoomFactor;
             let newZoomFactor = parseInt(e.target.innerText, 10) / 100;
-            debugger;
+            
             if (!isNaN(newZoomFactor)) {
                 this.$store.commit('canvas/setFactor', newZoomFactor);
             }
             
-            this.$nextTick(() => {
-                if (this.zoomFactor === oldZoomFactor) {
-                    // zoom factor hasn't changed. Reset input field.
-                    this.formatZoomInput();
-                }
-            });
+            if (this.zoomFactor === oldZoomFactor) {
+                // zoom factor hasn't changed. Reset input field.
+                this.formatZoomInput();
+            }
+
+            e.stopPropagation();
+            e.preventDefault();
+            e.target.blur();
         },
         onZoomInputClick(e) {
             e.target.focus();
@@ -111,6 +111,10 @@ export default {
         onZoomMenuToggle(e) {
             console.log('vlicked');
             this.$refs.zoomInput.blur();
+        },
+        onZoomInputFocusOut(e) {
+            console.log('focus-lost');
+            this.formatZoomInput();
         }
     }
 };
@@ -159,6 +163,7 @@ export default {
         contenteditable="true"
         @click="onZoomInputClick"
         @keydown.enter="onZoomInputEnter"
+        @focusout.stop="onZoomInputFocusOut"
       />
       <DropdownIcon />
     </SubMenu>
