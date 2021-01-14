@@ -51,12 +51,6 @@ export default {
                 e.stopPropagation();
                 e.preventDefault();
                 this.selectAllNodes();
-            } else if (e.key === '0' && (e.ctrlKey || e.metaKey)) {
-                e.stopPropagation();
-                e.preventDefault();
-                this.resetZoom();
-            } else {
-                console.log('keydown', e);
             }
         });
 
@@ -204,15 +198,6 @@ export default {
 
       <!-- Includes shadows for Nodes -->
       <KanvasFilters />
-
-      <rect
-        v-if="showDebug"
-        class="workflow-boundary"
-        :x="contentBounds.x"
-        :y="contentBounds.y"
-        :width="contentBounds.width"
-        :height="contentBounds.height"
-      />
       
       <!-- Workflow Annotation Layer. Background -->
       <WorkflowAnnotation
