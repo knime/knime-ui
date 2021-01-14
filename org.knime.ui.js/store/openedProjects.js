@@ -13,7 +13,14 @@ export const mutations = {
     },
     setProjects(state, projects) {
         state.items = projects.map(({ projectId, name }) => ({ projectId, name }));
+    },
+    saveState(state, { project, savedState }) {
+        project.savedState = savedState;
     }
+};
+
+export const getters = {
+    activeProject: state => state.items.find(({ projectId }) => projectId === state.activeId)
 };
 
 export const actions = {
@@ -38,8 +45,26 @@ export const actions = {
             consola.error('No active workflow provided');
         }
     },
-    switchProject({ state, commit, dispatch }, projectId) {
+    async switchProject({ state, commit, dispatch }, projectId) {
+        await dispatch('saveTabState');
         commit('setActiveId', projectId);
-        dispatch('workflow/loadWorkflow', { projectId }, { root: true });
+        await dispatch('workflow/loadWorkflow', { projectId }, { root: true });
+        await dispatch('restoreTabState');
+    },
+    saveTabState({ state, commit, dispatch, rootState, getters }, projectId) {
+        let savedState = {
+            canvas: rootState.canvas
+        };
+
+        // deep clone without observers
+        savedState = JSON.parse(JSON.stringify(savedState));
+
+        commit('saveState', { project: getters.activeProject, savedState });
+    },
+    restoreTabState({ state, commit, dispatch, rootState, getters }) {
+        let savedState = getters.activeProject.savedState;
+        if (savedState) {
+            commit('canvas/restoreState', savedState.canvas, { root: true });
+        }
     }
 };

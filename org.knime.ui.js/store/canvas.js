@@ -10,12 +10,36 @@ const clampZoomFactor = (newFactor) => Math.min(Math.max(minZoomFactor, newFacto
 export const state = () => ({
     zoomFactor: defaultZoomFactor,
     containerSize: { width: 0, height: 0 },
-    containerOffset: { left: 0, top: 0 }
+    containerScroll: { left: 0, top: 0 },
+    /*
+        Is updated whenever is container is scrolled, programmatically or by user.
+        Only used to save and restore scroll state. Don't use otherwise.
+    */
+    savedContainerScroll: { left: 0, top: 0 }
 });
 
 export const mutations = {
-    resetZoom(state) {
-        state.zoomFactor = defaultZoomFactor;
+    /*
+        restore zoomFactor
+        overwrite containerScroll with savedContainerScroll
+        no need to restore savedContainerScroll, it will be overwritten
+        don't restore containerSize, it might have changed
+    */
+    restoreState(state, savedState) {
+        state.zoomFactor = savedState.zoomFactor;
+        state.containerScroll = savedState.savedContainerScroll;
+    },
+    setFactor(state, newFactor) {
+        state.zoomFactor = clampZoomFactor(newFactor);
+    },
+    setContainerSize(state, { width, height }) {
+        state.containerSize.width = width;
+        state.containerSize.height = height;
+    },
+    /* save manual scroll by user and automatic scroll from zooming */
+    saveContainerScroll(state, { left, top }) {
+        state.savedContainerScroll.left = left;
+        state.savedContainerScroll.top = top;
     },
     zoomWithPointer(state, { delta, cursorX, cursorY, scrollX, scrollY }) {
         let oldZoomFactor = state.zoomFactor;
@@ -32,18 +56,10 @@ export const mutations = {
          * Likewise for y.
         */
 
-        // If the user zooms in the scroll bars are adjusted by those values to move the point under the cursor
-        // If zoomed out further then 'fitToScreen', there won't be scrollbars and those numbers will be negative.
-        //  No adjustment will be done
-        state.containerOffset.left = newZoomFactor / oldZoomFactor * (scrollX + cursorX) - cursorX;
-        state.containerOffset.top = newZoomFactor / oldZoomFactor * (scrollY + cursorY) - cursorY;
-    },
-    setFactor(state, newFactor) {
-        state.zoomFactor = clampZoomFactor(newFactor);
-    },
-    setContainerSize(state, { width, height }) {
-        state.containerSize.width = width;
-        state.containerSize.height = height;
+        // If the user zooms in, the scroll bars are adjusted by those values to move the point under the cursor
+        // If zoomed out further than 'fitToScreen', there won't be scrollbars and those numbers will be negative. Hence, no scrolling will be done.
+        state.containerScroll.left = newZoomFactor / oldZoomFactor * (scrollX + cursorX) - cursorX;
+        state.containerScroll.top = newZoomFactor / oldZoomFactor * (scrollY + cursorY) - cursorY;
     }
 };
 
@@ -51,8 +67,8 @@ export const getters = {
     zoomFactor(state) {
         return state.zoomFactor;
     },
-    containerOffset(state) {
-        return state.containerOffset;
+    containerScroll(state) {
+        return state.containerScroll;
     },
     /*
         extends the workflowBounds such that the origin is always drawn
@@ -112,7 +128,7 @@ export const getters = {
             viewBox has the size of the workflow
             no offset for left and top
 
-        If content is smaller than container,
+        If content < container,
             canvasSize = containerSize, thus
             viewBoxSize has the size of the container / zoomFactor
             additional space in the viewBox is distributed around content (=workflow)

@@ -30,12 +30,16 @@ export default {
             'isLinked',
             'isWritable'
         ]),
-        ...mapGetters('canvas', ['zoomFactor', 'contentBounds', 'canvasSize', 'contentViewBox', 'containerOffset']),
+        ...mapGetters('canvas', ['zoomFactor', 'contentBounds', 'canvasSize', 'contentViewBox', 'containerScroll']),
         ...mapState('canvas', ['containerSize'])
     },
     mounted() {
         this.initContainerSize();
         this.initResizeObserver();
+        this.$watch('containerScroll', (newVal) => {
+            this.$el.scrollLeft = newVal.left;
+            this.$el.scrollTop = newVal.top;
+        }, { deep: true });
     },
     beforeDestroy() {
         this.stopResizeObserver();
@@ -73,20 +77,11 @@ export default {
             let cursorX = e.clientX - bcr.left;
             let cursorY = e.clientY - bcr.top;
 
-            // get scroll offset
+            // get current scroll offset
             let scrollX = scrollContainer.scrollLeft;
             let scrollY = scrollContainer.scrollTop;
             
-            let oldZoomFactor = this.zoomFactor;
             this.$store.commit('canvas/zoomWithPointer', { delta, cursorX, cursorY, scrollX, scrollY });
-            if (oldZoomFactor === this.zoomFactor) { return; }
-            
-            // Zoom factor changed.
-            // Scroll image such that the mouse pointer targets the same point as before (if possible).
-            this.$nextTick(() => {
-                scrollContainer.scrollLeft = this.containerOffset.left;
-                scrollContainer.scrollTop = this.containerOffset.top;
-            });
         },
         /*
             Panning
@@ -110,6 +105,11 @@ export default {
                 this.$el.releasePointerCapture(e.pointerId);
                 e.stopPropagation();
             }
+        },
+        onScroll(e) {
+            const { target: { scrollLeft, scrollTop } } = e;
+            // could be throttled
+            this.$store.commit('canvas/saveContainerScroll', { left: scrollLeft, top: scrollTop });
         }
     }
 };
@@ -125,6 +125,7 @@ export default {
     @pointerdown.left.alt="beginPan"
     @pointerup.left="stopPan"
     @pointermove="movePan"
+    @scroll="onScroll"
   >
     <div
       v-if="isLinked"
@@ -200,6 +201,7 @@ svg {
   & .workflow-boundary {
     stroke: var(--knime-silver-sand);
     fill: none;
+    display: none;
   }
 }
 
