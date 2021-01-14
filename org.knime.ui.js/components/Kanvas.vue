@@ -1,10 +1,11 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapMutations } from 'vuex';
 import Node from '~/components/Node';
 import Connector from '~/components/Connector';
 import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import Tooltip from '~/components/Tooltip';
 import MetaNodePortBars from '~/components/MetaNodePortBars';
+import KanvasFilters from '~/components/KanvasFilters';
 
 let resizeObserver = null;
 
@@ -14,10 +15,20 @@ export default {
         Connector,
         WorkflowAnnotation,
         Tooltip,
-        MetaNodePortBars
+        MetaNodePortBars,
+        KanvasFilters
     },
     data() {
         return {
+            /**
+             *  To avoid for mousedown on node, moving mouse, mouseup on kanvas to deselect nodes
+             *  We track whether a click has been started on the empty Kanvas
+             */
+            clickStartedOnEmptyKanvas: false,
+            keyEventListener: null,
+            /*
+              Truthy if currently panning. Stores mouse origin
+            */
             panning: null
         };
     },
@@ -34,6 +45,22 @@ export default {
         ...mapState('canvas', ['containerSize'])
     },
     mounted() {
+        // Start Key Listener
+        this.keyEventListener = document.addEventListener('keydown', (e) => {
+            if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
+                e.stopPropagation();
+                e.preventDefault();
+                this.selectAllNodes();
+            } else if (e.key === '0' && (e.ctrlKey || e.metaKey)) {
+                e.stopPropagation();
+                e.preventDefault();
+                this.resetZoom();
+            } else {
+                console.log('keydown', e);
+            }
+        });
+
+        // Start Container Observers
         this.initContainerSize();
         this.initResizeObserver();
         this.$watch('containerScroll', (newVal) => {
@@ -42,12 +69,31 @@ export default {
         }, { deep: true });
     },
     beforeDestroy() {
+        // Stop Key listener
+        document.removeEventListener('keydown', this.keyEventListener);
+        
+        // Stop Resize Observer
         this.stopResizeObserver();
     },
     methods: {
         /*
+          Selection
+        */
+        ...mapMutations('workflow', ['selectAllNodes', 'deselectAllNodes']),
+        onMouseDown(e) {
+            // if mousedown on empty kanvas set flag
+            this.clickStartedOnEmptyKanvas = e.target === this.$refs.svg;
+        },
+        onSelfMouseUp(e) {
+            // deselect all nodes
+            if (this.clickStartedOnEmptyKanvas) {
+                this.deselectAllNodes();
+            }
+        },
+        /*
             Zooming
         */
+        ...mapMutations('canvas', ['resetZoom']),
         initContainerSize() {
             const { width, height } = this.$el.getBoundingClientRect();
             this.$store.commit('canvas/setContainerSize', { width, height });
@@ -146,43 +192,86 @@ export default {
         />
       </transition>
     </div>
+
     <svg
+      ref="svg"
       :width="canvasSize.width"
       :height="canvasSize.height"
       :viewBox="contentViewBox"
+      @mousedown.left="onMouseDown"
+      @mouseup.self.left="onSelfMouseUp"
     >
+
+      <!-- Includes shadows for Nodes -->
+      <KanvasFilters />
+
       <rect
+        v-if="showDebug"
         class="workflow-boundary"
         :x="contentBounds.x"
         :y="contentBounds.y"
         :width="contentBounds.width"
         :height="contentBounds.height"
       />
+      
+      <!-- Workflow Annotation Layer. Background -->
       <WorkflowAnnotation
         v-for="annotation of workflow.workflowAnnotations"
         :key="`annotation-${annotation.id}`"
         v-bind="annotation"
       />
+
+      <!-- Node Selection Plane Layer -->
+      <portal-target
+        multiple
+        tag="g"
+        name="node-select"
+      />
+
+      <!-- Connectors Layer -->
       <Connector
         v-for="(connector, id) of workflow.connections"
         :key="`connector-${workflow.projectId}-${id}`"
         v-bind="connector"
       />
+
+      <!-- Metanode Port Bars (Inside of Metanodes) -->
       <MetaNodePortBars
         v-if="workflow.info.containerType === 'metanode'"
       />
-      <Node
+
+      <!-- Non-Selected Nodes
+        If node is not selected that portal has no effect.
+        If node is selected, the portal will bring it to the front
+       -->
+      <portal
         v-for="(node, nodeId) in workflow.nodes"
-        :key="`node-${workflow.projectId}-${nodeId}`"
-        :icon="$store.getters['workflow/nodeIcon']({ workflowId: workflow.projectId, nodeId })"
-        :name="$store.getters['workflow/nodeName']({ workflowId: workflow.projectId, nodeId })"
-        :type="$store.getters['workflow/nodeType']({ workflowId: workflow.projectId, nodeId })"
-        v-bind="node"
-      />
+        :key="`node-${workflow.projectId}-${nodeId}-portal`"
+        :disabled="!node.selected"
+        to="selected-nodes"
+        slim
+      >
+        <Node
+          :key="`node-${workflow.projectId}-${nodeId}`"
+          :icon="$store.getters['workflow/nodeIcon']({ workflowId: workflow.projectId, nodeId })"
+          :name="$store.getters['workflow/nodeName']({ workflowId: workflow.projectId, nodeId })"
+          :type="$store.getters['workflow/nodeType']({ workflowId: workflow.projectId, nodeId })"
+          v-bind="node"
+        />
+      </portal>
+
+      <!-- Selected Nodes -->
       <portal-target
         multiple
         tag="g"
-        name="node-select"
+        name="selected-nodes"
+      />
+
+      <!-- Quick Actions Layer: Buttons for Hovered & Selected Nodes and their ids -->
+      <portal-target
+        multiple
+        tag="g"
+        name="node-actions"
       />
     </svg>
   </div>
@@ -242,6 +331,7 @@ svg {
   /* appearance */
   background-color: var(--notification-background-color);
   pointer-events: none;
+  user-select: none;
 
   & span {
     font-size: 16px;

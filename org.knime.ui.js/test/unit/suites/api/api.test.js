@@ -37,15 +37,44 @@ describe('API', () => {
         });
     });
 
-    it('fetchApplicationState calls jsonrpc', async () => {
-        await api.fetchApplicationState();
+    describe('fetchApplicationState', () => {
+        it('calls jsonrpc', async () => {
+            await api.fetchApplicationState();
 
-        expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'ApplicationService.getState',
-            params: [],
-            id: 0
-        }));
+            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'ApplicationService.getState',
+                params: [],
+                id: 0
+            }));
+        });
+    });
+
+    describe('loadTable', () => {
+        it('calls jsonrpc', async () => {
+            window.jsonrpc.mockReturnValueOnce(JSON.stringify({
+                jsonrpc: '2.0',
+                id: -1,
+                result: JSON.stringify({
+                    jsonrpc: '2.0',
+                    result: 'dummy',
+                    id: -2
+                })
+            }));
+            let table = await api.loadTable({
+                projectId: 'foo',
+                nodeId: 'root:123',
+                portIndex: 2
+            });
+            let expectedNestedRPC = '{"jsonrpc":"2.0","id":0,"method":"getTable","params":[0,400]}';
+            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'NodeService.doPortRpc',
+                params: ['foo', 'root:123', 2, expectedNestedRPC],
+                id: 0
+            }));
+            expect(table).toBe('dummy');
+        });
     });
 
     it('executes nodes', async () => {
@@ -89,8 +118,8 @@ describe('API', () => {
     });
 
     describe('error handling', () => {
-        beforeAll(() => {
-            window.jsonrpc = jest.fn().mockReturnValue(JSON.stringify({
+        beforeEach(() => {
+            window.jsonrpc.mockReturnValueOnce(JSON.stringify({
                 jsonrpc: '2.0',
                 error: 'There has been an error',
                 id: -1
@@ -114,6 +143,40 @@ describe('API', () => {
                 done(new Error('Error not thrown'));
             } catch (e) {
                 expect(e.message).toContain('application state');
+                done();
+            }
+        });
+
+        it('handles errors on loadTable', async (done) => {
+            try {
+                await api.loadTable({});
+                done(new Error('Error not thrown'));
+            } catch (e) {
+                expect(e.message).toContain('Couldn\'t load table');
+                done();
+            }
+        });
+
+        it('handles nested errors on loadTable', async (done) => {
+            window.jsonrpc.mockReset();
+            window.jsonrpc.mockReturnValueOnce(JSON.stringify({
+                jsonrpc: '2.0',
+                id: -1,
+                result: JSON.stringify({
+                    jsonrpc: '2.0',
+                    error: 'foo'
+                })
+            }));
+            let portIndex = 2;
+            let projectId = 'projectId';
+            let nodeId = Math.random();
+            try {
+                await api.loadTable({ projectId, nodeId, portIndex });
+                done(new Error('Error not thrown'));
+            } catch (e) {
+                expect(e.message).toBe(
+                    `Couldn't load table data from port ${portIndex} of node "${nodeId}" in project ${projectId}`
+                );
                 done();
             }
         });
@@ -168,5 +231,4 @@ describe('API', () => {
             }
         });
     });
-
 });

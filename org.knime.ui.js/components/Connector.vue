@@ -53,17 +53,34 @@ export default {
         end() {
             return this.getEndPointCoordinates('dest');
         },
+        sourceNodeObject() {
+            return this.$store.state.workflow.activeWorkflow.nodes[this.sourceNode];
+        },
+        destNodeObject() {
+            return this.$store.state.workflow.activeWorkflow.nodes[this.destNode];
+        },
+        sourcePortType() {
+            return (this.sourceNodeObject?.outPorts || this.workflow.metaInPorts.ports)[this.sourcePort].type;
+        },
+        destPortType() {
+            return (this.destNodeObject?.inPorts || this.workflow.metaOutPorts.ports)[this.destPort].type;
+        },
         path() {
-            const { start: [x1, y1], end: [x2, y2] } = this;
-            const width = Math.abs(x1 - x2 + this.$shapes.portSize);
+            let { start: [x1, y1], end: [x2, y2] } = this;
+            // These deltas are carefully chosen so that the connector line is hidden behind the flow variable line,
+            // especially for optional ports, even when hovering the port or the connector line.
+            // (Optional output ports are useless, but are technically possible and do exist out in the wild)
+            /* eslint-disable no-magic-numbers */
+            x1 += this.$shapes.portSize / 2 - (this.sourcePortType === 'table' ? 2.5 : 0.5);
+            x2 -= this.$shapes.portSize / 2 - 0.5;
+            const width = Math.abs(x1 - x2);
             const height = Math.abs(y1 - y2);
             // TODO: include bendpoints NXT-78 NXT-191
             // Currently, this is creates just an arbitrary curve that seems to work in most cases
-            /* eslint-disable no-magic-numbers */
-            return `M${x1},${y1} h${this.$shapes.portSize / 2} ` +
+            return `M${x1},${y1} ` +
                 `C${x1 + width / 2 + height / 3},${y1} ` +
                 `${x2 - width / 2 - height / 3},${y2} ` +
-                `${x2 - this.$shapes.portSize + 0.5},${y2} h${this.$shapes.portSize / 2}`;
+                `${x2},${y2}`;
             /* eslint-enable no-magic-numbers */
         },
         strokeColor() {
@@ -81,7 +98,7 @@ export default {
          */
         getEndPointCoordinates(type = 'dest') {
             let sourceNodeIndex = this[`${type}Port`];
-            let node = this.$store.state.workflow.activeWorkflow.nodes[this[`${type}Node`]];
+            let node = this[`${type}NodeObject`];
             if (node) {
                 // connected to a node
                 return this.getRegularNodePortPos({ sourceNodeIndex, type, node });

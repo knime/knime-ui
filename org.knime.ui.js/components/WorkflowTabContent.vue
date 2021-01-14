@@ -4,6 +4,7 @@ import WorkflowToolbar from '~/components/WorkflowToolbar';
 import Kanvas from '~/components/Kanvas';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
+import NodeOutput from '~/components/output/NodeOutput';
 
 /**
  * A component that shows the tab contents belonging to one workflow,
@@ -11,6 +12,7 @@ import WorkflowMetadata from '~/components/WorkflowMetadata';
  */
 export default {
     components: {
+        NodeOutput,
         Kanvas,
         LeftCollapsiblePanel,
         WorkflowMetadata,
@@ -64,8 +66,10 @@ export default {
           v-bind="metadata"
         />
       </LeftCollapsiblePanel>
-
-      <Kanvas id="kanvas" />
+      <div class="stacked">
+        <Kanvas id="kanvas" />
+        <NodeOutput id="node-output" />
+      </div>
     </div>
   </main>
   <div
@@ -108,9 +112,20 @@ main {
   border-right: 1px solid var(--knime-silver-sand);
 }
 
+.stacked {
+  flex: 1 1 auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 #kanvas {
   overflow: auto;
-  flex: 1 1 auto;
+  flex: 1 0 60%;
+}
+
+#node-output {
+  flex: 0 0 40%;
 }
 
 .placeholder {

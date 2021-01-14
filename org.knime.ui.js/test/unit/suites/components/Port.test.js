@@ -1,7 +1,4 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
-import Vuex from 'vuex';
-import Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 
 import Port from '~/components/Port';
 import PortIcon from '~/webapps-common/ui/components/node/PortIcon';
@@ -10,15 +7,7 @@ import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
 describe('Port', () => {
-    let propsData, mocks, mount, wrapper;
-    const provide = {
-        anchorPoint: { x: 123, y: 456 }
-    };
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let propsData, mocks, doShallowMount, wrapper;
 
     describe.each([
         ['flowVariable', $colors.portColors.flowVariable],
@@ -40,14 +29,14 @@ describe('Port', () => {
                 }
             };
             mocks = { $shapes, $colors };
-            mount = () => {
-                wrapper = shallowMount(Port, { propsData, mocks, provide });
+            doShallowMount = () => {
+                wrapper = shallowMount(Port, { propsData, mocks });
             };
         });
 
         describe('renders default', () => {
             beforeEach(() => {
-                mount();
+                doShallowMount();
             });
 
             it('renders correct port', () => {
@@ -72,7 +61,7 @@ describe('Port', () => {
 
         it('renders inactive port', () => {
             propsData.port.inactive = true;
-            mount();
+            doShallowMount();
 
             expect(wrapper.findAll('path').length).toBe(2);
         });
@@ -80,7 +69,7 @@ describe('Port', () => {
         it('renders optional port', () => {
             propsData.port.optional = true;
             propsData.port.index = 1;
-            mount();
+            doShallowMount();
 
             const { filled } = wrapper.findComponent(PortIcon).props();
             expect(filled).toBe(false);
@@ -90,7 +79,7 @@ describe('Port', () => {
             it('always renders filled Mickey Mouse ears', () => {
                 propsData.port.optional = true;
                 propsData.port.index = 0;
-                mount();
+                doShallowMount();
 
                 const { filled } = wrapper.findComponent(PortIcon).props();
                 expect(filled).toBe(true);
@@ -99,7 +88,7 @@ describe('Port', () => {
 
         it.each(['IDLE'])('draws traffic light for state %s (red)', (state) => {
             propsData.port.nodeState = state;
-            mount();
+            doShallowMount();
 
             let { fill: bgColor } = wrapper.findAll('g g circle').at(1).attributes();
             let { d, transform } = wrapper.find('g g path').attributes();
@@ -110,7 +99,7 @@ describe('Port', () => {
         });
         it.each(['CONFIGURED', 'QUEUED'])('draws traffic light for state %s (yellow)', (state) => {
             propsData.port.nodeState = state;
-            mount();
+            doShallowMount();
 
             let { fill: bgColor } = wrapper.findAll('g g circle').at(1).attributes();
             let { d, transform } = wrapper.find('g g path').attributes();
@@ -121,7 +110,7 @@ describe('Port', () => {
         });
         it.each(['HALTED', 'EXECUTED'])('draws traffic light for state %s (green)', (state) => {
             propsData.port.nodeState = state;
-            mount();
+            doShallowMount();
 
             let { fill: bgColor } = wrapper.findAll('g g circle').at(1).attributes();
             let { d, transform } = wrapper.find('g g path').attributes();
@@ -132,7 +121,7 @@ describe('Port', () => {
         });
         it.each(['EXECUTING'])('draws traffic light for state %s (blue)', (state) => {
             propsData.port.nodeState = state;
-            mount();
+            doShallowMount();
 
             let { fill: bgColor } = wrapper.findAll('g g circle').at(1).attributes();
             let { d, transform } = wrapper.find('g g path').attributes();
@@ -143,73 +132,5 @@ describe('Port', () => {
         });
 
 
-    });
-
-    describe('tooltips', () => {
-        let currentTooltip;
-
-        beforeEach(() => {
-            wrapper = null;
-            propsData = {
-                x: 5,
-                y: 10,
-                port: {
-                    optional: false,
-                    inactive: false,
-                    index: 0,
-                    type: 'table',
-                    color: '#123442',
-                    name: 'portName',
-                    info: 'portInfo'
-                }
-            };
-            let $store = mockVuexStore({
-                workflow: {
-                    mutations: {
-                        setTooltip(state, tooltip) {
-                            currentTooltip = tooltip;
-                        }
-                    }
-                }
-            });
-            mocks = { $shapes, $colors, $store };
-            mount = () => {
-                wrapper = shallowMount(Port, { propsData, mocks, provide });
-            };
-        });
-
-        it('shows tooltips on table ports', async () => {
-            mount();
-            wrapper.find('g').trigger('mouseenter');
-            await Vue.nextTick();
-            expect(currentTooltip).toStrictEqual({
-                anchorPoint: { x: 123, y: 456 },
-                text: 'portInfo',
-                title: 'portName',
-                orientation: 'top',
-                x: 5,
-                y: 5.5
-            });
-
-            wrapper.find('g').trigger('mouseleave');
-            await Vue.nextTick();
-            expect(currentTooltip).toBeFalsy();
-        });
-
-        it('shows tooltips for non-table ports', async () => {
-            propsData.port.type = 'something';
-
-            mount();
-            wrapper.find('g').trigger('mouseenter');
-            await Vue.nextTick();
-            expect(currentTooltip).toStrictEqual({
-                anchorPoint: { x: 123, y: 456 },
-                text: 'portInfo',
-                title: 'portName',
-                orientation: 'top',
-                x: 5,
-                y: 3.5 // more space than for table
-            });
-        });
     });
 });

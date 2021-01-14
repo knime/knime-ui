@@ -36,8 +36,8 @@ export default {
         },
         /**
          * Optional: a point on the Kanvas that marks the origin of the tooltips's coordinates.
-         * This makes it more conventient to display tooltips e.g. on Nodes, because it allows to pass the node position
-         * as `anchorPoint`, and the tooltip's coordinates relitave to the node.
+         * This makes it more convenient to display tooltips e.g. on Nodes, because it allows to pass the node position
+         * as `anchorPoint`, and the tooltip's coordinates relative to the node.
          */
         anchorPoint: {
             type: Object,

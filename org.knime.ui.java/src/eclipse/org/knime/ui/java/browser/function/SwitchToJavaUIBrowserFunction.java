@@ -62,8 +62,10 @@ import org.eclipse.ui.WorkbenchException;
  */
 public class SwitchToJavaUIBrowserFunction extends BrowserFunction {
 
+	private static final String FUNCTION_NAME = "switchToJavaUI";
+
 	public SwitchToJavaUIBrowserFunction(final Browser browser) {
-		super(browser, "switchToJavaUI");
+		super(browser, FUNCTION_NAME);
 	}
 
 	@Override

@@ -8,14 +8,6 @@ import { portBar } from '~/mixins';
 export default {
     components: { Port },
     mixins: [portBar],
-    provide() {
-        return {
-            anchorPoint: {
-                x: this.x,
-                y: this.y
-            }
-        };
-    },
     props: {
         /**
          * The horizontal coordinate of the bar, at the point where the ports are attached.

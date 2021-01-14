@@ -17,7 +17,7 @@
         <node.version>v14.6.0</node.version>
         <npm.version>6.14.5</npm.version>
         <resourcedir>dist/inlined</resourcedir>
-		<revision>4.3.0</revision>
+		<revision>4.4.0</revision>
     </properties>
 
     <build>

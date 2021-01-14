@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import LinkDecorator from '~/components/LinkDecorator.vue';
+import LinkDecorator from '~/components/LinkDecorator';
 
 import * as $colors from '~/style/colors';
 

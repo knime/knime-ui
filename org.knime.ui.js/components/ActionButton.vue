@@ -1,0 +1,104 @@
+<script>
+import NestedSvg from './NestedSVG';
+
+/** SVG Button that is displayed above a hovered or selected node */
+export default {
+    components: {
+        NestedSvg
+    },
+    props: {
+        /** x-position of the button */
+        x: {
+            type: [Number, String],
+            default: 0
+        },
+        disabled: {
+            type: Boolean,
+            default: false
+        }
+    },
+    methods: {
+        onClick(e) {
+            if (!this.disabled) {
+                this.$emit('click', e);
+            }
+        }
+    }
+};
+</script>
+
+<template>
+  <g
+    :class="['action-button', { disabled }]"
+    @click="onClick"
+  >
+    <circle
+      r="9.5"
+      :cx="x"
+      filter="url(#node-action-button-shadow)"
+    />
+    <NestedSvg
+      width="20"
+      height="20"
+      :x="x - 10"
+      y="-10"
+    >
+      <slot />
+    </NestedSvg>
+  </g>
+</template>
+
+<style lang="postcss" scoped>
+.action-button {
+  & circle {
+    fill: white;
+    stroke: var(--knime-silver-sand);
+  }
+
+  & >>> svg {
+    stroke-width: calc(32px / 20);
+    stroke: var(--knime-masala);
+    pointer-events: none;
+  }
+
+  &.disabled {
+    & circle {
+      filter: none;
+      stroke: var(--knime-silver-sand);
+    }
+
+    & >>> svg {
+      stroke: var(--knime-silver-sand);
+    }
+  }
+
+  &:not(.disabled) {
+    cursor: pointer;
+
+    &:hover circle {
+      fill: var(--knime-masala);
+      stroke: var(--knime-masala);
+    }
+
+    &:hover >>> svg {
+      stroke: var(--knime-white);
+    }
+
+    &:active circle {
+      fill: var(--knime-black);
+      filter: none;
+      stroke: var(--knime-black);
+    }
+
+    &:active >>> svg {
+      stroke: var(--knime-white);
+    }
+
+    &:active {
+      transform: scale(0.98) translateY(0.5px);
+      transition-duration: 80ms;
+    }
+  }
+}
+
+</style>

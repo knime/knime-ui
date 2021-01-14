@@ -82,8 +82,8 @@ describe('workflow store', () => {
             expect(store.state.workflow.activeWorkflow).toStrictEqual({
                 projectId: 'bar',
                 nodes: {
-                    foo: { bla: 1 },
-                    bar: { qux: 2 }
+                    foo: { bla: 1, selected: false },
+                    bar: { qux: 2, selected: false }
                 }
             });
         });
@@ -96,6 +96,35 @@ describe('workflow store', () => {
         it('allows setting the tooltip', () => {
             store.commit('workflow/setTooltip', { dummy: true });
             expect(store.state.workflow.tooltip).toStrictEqual({ dummy: true });
+        });
+
+        it('selects all nodes', () => {
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'bar',
+                nodes: {
+                    'root:1': { id: 'root:1' },
+                    'root:2': { id: 'root:2' }
+                }
+            });
+
+            let nodes = store.state.workflow.activeWorkflow.nodes;
+
+            store.commit('workflow/selectAllNodes');
+            expect(nodes['root:1'].selected).toBe(true);
+            expect(nodes['root:2'].selected).toBe(true);
+
+            store.commit('workflow/deselectNode', 'root:1');
+            expect(nodes['root:1'].selected).toBe(false);
+            expect(nodes['root:2'].selected).toBe(true);
+
+            store.commit('workflow/selectNode', 'root:1');
+            expect(nodes['root:1'].selected).toBe(true);
+            expect(nodes['root:2'].selected).toBe(true);
+
+            store.commit('workflow/deselectAllNodes');
+            expect(nodes['root:1'].selected).toBe(false);
+            expect(nodes['root:2'].selected).toBe(false);
+
         });
 
     });

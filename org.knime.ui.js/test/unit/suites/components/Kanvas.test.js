@@ -5,9 +5,9 @@ import Vuex from 'vuex';
 
 import * as $shapes from '~/style/shapes';
 
-import Kanvas from '~/components/Kanvas.vue';
+import Kanvas from '~/components/Kanvas';
 import Node from '~/components/Node';
-import Connector from '~/components/Connector.vue';
+import Connector from '~/components/Connector';
 import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import MetaNodePortBars from '~/components/MetaNodePortBars';
 
@@ -32,7 +32,7 @@ const mockConnector = ({ nr }) => ({
 });
 
 describe('Kanvas', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store, workflow, nodeData;
+    let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, nodeData;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -61,31 +61,35 @@ describe('Kanvas', () => {
             },
             workflowAnnotations: []
         };
-        $store = mockVuexStore({
-            workflow: {
-                state: { activeWorkflow: workflow },
-                getters: {
-                    svgBounds() {
-                        return { x: -5, y: -2, height: 102, width: 100 };
-                    },
-                    isLinked() {
-                        return workflow.info.linked;
-                    },
-                    isWritable() {
-                        return !workflow.info.linked;
-                    },
-                    nodeIcon() {
-                        return ({ nodeId }) => `data:image/${nodeId}`;
-                    },
-                    nodeName() {
-                        return ({ nodeId }) => `name-${nodeId}`;
-                    },
-                    nodeType() {
-                        return ({ nodeId }) => `type-${nodeId}`;
-                    }
+        workflowStoreConfig = {
+            state: {
+                activeWorkflow: workflow
+            },
+            mutations: {
+                selectAllNodes: jest.fn()
+            },
+            getters: {
+                svgBounds() {
+                    return { x: -5, y: -2, height: 102, width: 100 };
+                },
+                isLinked() {
+                    return workflow.info.linked;
+                },
+                isWritable() {
+                    return !workflow.info.linked;
+                },
+                nodeIcon() {
+                    return ({ nodeId }) => `data:image/${nodeId}`;
+                },
+                nodeName() {
+                    return ({ nodeId }) => `name-${nodeId}`;
+                },
+                nodeType() {
+                    return ({ nodeId }) => `type-${nodeId}`;
                 }
             }
-        });
+        };
+        $store = mockVuexStore({ workflow: workflowStoreConfig });
 
         mocks = { $store, $shapes };
         doShallowMount = () => {
@@ -93,6 +97,23 @@ describe('Kanvas', () => {
         };
     });
 
+    describe('Shortcuts', () => {
+        it('select all on Ctrl-A', () => {
+            doShallowMount();
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true }));
+            expect(workflowStoreConfig.mutations.selectAllNodes).toHaveBeenCalled();
+        });
+
+        it('adds and removes listener', () => {
+            document.addEventListener = jest.fn().mockReturnValue('shortcut-listener');
+            document.removeEventListener = jest.fn();
+
+            doShallowMount();
+            wrapper.destroy();
+
+            expect(document.removeEventListener).toHaveBeenCalledWith('keydown', 'shortcut-listener');
+        });
+    });
 
     describe('sample workflow', () => {
         beforeEach(() => {
@@ -112,7 +133,9 @@ describe('Kanvas', () => {
                     icon: `data:image/${nodeId}`,
                     name: `name-${nodeId}`,
                     type: `type-${nodeId}`,
-                    link: null
+                    link: null,
+                    allowedActions: null,
+                    selected: false
                 };
                 expect(props).toStrictEqual(expected);
             });

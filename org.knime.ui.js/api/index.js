@@ -1,4 +1,4 @@
-import rpc from './json-rpc-adapter.js';
+import rpc, { parseResponse } from './json-rpc-adapter.js';
 
 /**
  * Fetch "application state", that is: opened tabs etc.
@@ -103,3 +103,49 @@ export const cancelNodeExecution = nodeStateChanger('cancel', 'Could not cancel 
  *     If you want to reset all nodes in the entire workflow, pass the workflow container's id as a single element.
  */
 export const resetNodes = nodeStateChanger('reset', 'Could not reset nodes');
+
+// The Node service offers JSON-RPC forwarding to the Port instance.
+// This is by design, because third-party vendors can provide a custom port implementation with totally
+// different methods. In case of a data port (table), the available methods are defined in
+// org.knime.gateway.impl.rpc.table.TableService
+// (at the time of writing getTable(long start, int size) and getRows(long start, int size))
+// So, to get a table we have to send a JSON-RPC object as a payload to the NodeService, which itself must be called via
+// JSON-RPC. Hence double-wrapping is required.
+// Parameters are described below.
+const nestedRpcCall = ({ method, params, projectId, nodeId, portIndex }) => {
+    let nestedRpcCall = {
+        jsonrpc: '2.0',
+        id: 0,
+        method,
+        params
+    };
+    let response = rpc('NodeService.doPortRpc', projectId, nodeId, portIndex, JSON.stringify(nestedRpcCall));
+    return parseResponse({ response, method, params });
+};
+
+/**
+ * Get the data table associated with a data port.
+ * @param {String} projectId The ID of the project that contains the node
+ * @param {String} nodeId The ID of the node to load data for
+ * @param {String} portIndex The index of the port to load data for.
+ * Remember that port 0 is usually a flow variable port.
+ * @return {Promise} A promise containing the table data as defined in the API
+ * */
+export const loadTable = ({ projectId, nodeId, portIndex }) => {
+    const rowCount = 400; // The backend is limited to 500-50=450, see org.knime.core.data.cache.WindowCacheTable
+    try {
+        let table = nestedRpcCall({
+            projectId,
+            nodeId,
+            portIndex,
+            method: 'getTable',
+            params: [0, rowCount]
+        });
+        return Promise.resolve(table);
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error(
+            `Couldn't load table data from port ${portIndex} of node "${nodeId}" in project ${projectId}`
+        ));
+    }
+};
