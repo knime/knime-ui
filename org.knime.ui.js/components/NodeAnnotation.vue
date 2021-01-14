@@ -1,5 +1,6 @@
 <script>
 import LegacyAnnotationText from '~/components/LegacyAnnotationText';
+import { mapGetters } from 'vuex';
 /**
  * A node annotation, a rectangular box containing text.
  */
@@ -55,6 +56,7 @@ export default {
         };
     },
     computed: {
+        ...mapGetters('canvas', ['zoomFactor']),
         textStyle() {
             return {
                 textAlign: this.textAlign,
@@ -84,17 +86,27 @@ export default {
         // foreignObject requires `width` and `height` attributes, or the content is cut off.
         // So we need to 1. render, 2. measure, 3. update
         adjustDimensions() {
+            
+            // 1. render with max width
             this.width = this.$shapes.maxNodeAnnotationWidth;
             this.$nextTick(() => { // wait for re-render
+                
+                // 2. measure content's actual size
                 let rect = this.$refs.text?.$el.getBoundingClientRect();
                 if (!rect) {
                     consola.error('Tried to adjust dimensions of NodeAnnotation, but DOM element is gone');
                     return;
                 }
-                let width = Math.ceil(rect.width);
-                this.width = width;
-                this.x = (this.$shapes.nodeSize - width) / 2;
+                // account for zoom
+                rect.width /= this.zoomFactor;
+                rect.height /= this.zoomFactor;
+                
+                // 3. set container size to content size
+                this.width = Math.ceil(rect.width);
                 this.height = Math.ceil(rect.height);
+                
+                // center container
+                this.x = (this.$shapes.nodeSize - this.width) / 2;
             });
         }
     }
