@@ -2,8 +2,8 @@
 import ExecuteIcon from '../assets/execute.svg?inline';
 import ResetIcon from '../assets/reset-all.svg?inline';
 import CancelIcon from '../assets/cancel-execution.svg?inline';
-import OpenViewIcon from '../webapps-common/ui/assets/img/icons/chart-bars-stacked.svg?inline';
-import OpenDialogIcon from '../webapps-common/ui/assets/img/icons/wrench.svg?inline';
+import OpenViewIcon from '../assets/open-view.svg?inline';
+import OpenDialogIcon from '../assets/configure-node.svg?inline';
 
 import ActionButton from '~/components/ActionButton.vue';
 
