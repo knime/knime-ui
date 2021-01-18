@@ -94,28 +94,28 @@ describe('Connector.vue', () => {
         let doShallowMount;
 
         beforeEach(() => {
-            doShallowMount = () => {
 
-                $store = mockVuexStore({
-                    workflow: {
-                        ...workflowStoreConfig,
-                        state: {
-                            activeWorkflow: {
-                                nodes: {
-                                    'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
-                                    'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
-                                }
-                            }
-                        },
-                        getters: {
-                            isWritable() {
-                                return true;
+            $store = mockVuexStore({
+                workflow: {
+                    ...workflowStoreConfig,
+                    state: {
+                        activeWorkflow: {
+                            nodes: {
+                                'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
+                                'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
                             }
                         }
+                    },
+                    getters: {
+                        isWritable() {
+                            return true;
+                        }
                     }
-                });
+                }
+            });
 
-                mocks = { $shapes, $colors, $store };
+            mocks = { $shapes, $colors, $store };
+            doShallowMount = () => {
                 wrapper = shallowMount(Connector, { propsData, mocks });
             };
         });
@@ -126,7 +126,7 @@ describe('Connector.vue', () => {
         });
 
         it('draws no grab cursor if write protected', () => {
-            mocks.$store = mockVuexStore({
+            $store = mockVuexStore({
                 workflow: {
                     ...workflowStoreConfig,
                     state: {
@@ -148,12 +148,13 @@ describe('Connector.vue', () => {
                     }
                 }
             });
+            mocks = { $shapes, $colors, $store };
             wrapper = shallowMount(Connector, { propsData, mocks });
             expect(wrapper.find('.read-only').exists()).toBe(true);
         });
 
         it('draws dashed lines when streaming', () => {
-            mocks.$store = mockVuexStore({
+            $store = mockVuexStore({
                 workflow: {
                     ...workflowStoreConfig,
                     state: {
