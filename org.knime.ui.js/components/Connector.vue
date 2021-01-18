@@ -1,11 +1,11 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import { portBar } from '~/mixins/portBar';
-import { connectorPosition } from '~/mixins/connectorPosition';
+import { portBar, connectorPosition } from '~/mixins';
 
 /**
  * A curved line, connecting one node's output with another node's input port.
  * Must be embedded in an `<svg>` element.
+ * Uses the connectorPosition mixin to get the start and end position of the connector.
  */
 export default {
     mixins: [portBar, connectorPosition],

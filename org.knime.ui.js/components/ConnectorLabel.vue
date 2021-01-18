@@ -1,6 +1,10 @@
 <script>
-import { connectorPosition } from '~/mixins/connectorPosition';
+import { connectorPosition } from '~/mixins';
 
+/**
+ * A label displaying the amount of processed rows on the middle of two set points.
+ * Uses the connectorPosition mixin to get the start and end position of the connector.
+ */
 export default {
     mixins: [connectorPosition],
     props: {
@@ -11,8 +15,12 @@ export default {
     },
     data() {
         return {
+            // An arbitrary high value to always show the full label.
             labelWidth: 1000,
+            // An arbitrary height value to make the label visible
             labelHeight: 60,
+            // A value that defines the offset from the label to the actual middle point.
+            // This prevents the label from overlapping the connector line.
             offsetY: 16
         };
     },

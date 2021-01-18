@@ -1,6 +1,6 @@
 <script>
 import Port from '~/components/Port';
-import { portBar } from '~/mixins/portBar';
+import { portBar } from '~/mixins';
 
 /**
  * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
