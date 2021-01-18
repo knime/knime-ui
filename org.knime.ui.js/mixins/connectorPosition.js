@@ -1,0 +1,91 @@
+import { mapState } from 'vuex';
+import portShift from '~/util/portShift';
+
+export const connectorPosition = {
+    props: {
+        /**
+         * Node ID of the connector's source node
+         */
+        sourceNode: { type: String, required: true },
+        /**
+         * Node ID of the connector's target node
+         */
+        destNode: { type: String, required: true },
+        /**
+         * Index of the source node's output port that this connector is attached to
+         */
+        sourcePort: { type: Number, required: true },
+        /**
+         * Index of the target node's input port that this connector is attached to
+         */
+        destPort: { type: Number, required: true }
+    },
+    methods: {
+        /**
+         * Determine the end point coordinates of the start point ('source') or end point ('dest') of the connector
+         * @param {String} type One of 'source' / 'dest'. Defaults to 'dest'
+         * @returns {Array} The coordinates
+         */
+        getEndPointCoordinates(type = 'dest') {
+            let sourceNodeIndex = this[`${type}Port`];
+            let node = this[`${type}NodeObject`];
+            if (node) {
+                // connected to a node
+                return this.getRegularNodePortPos({ sourceNodeIndex, type, node });
+            } else {
+                // connected to a metanode port bar
+                return this.getMetaNodePortPos({ sourceNodeIndex, type });
+            }
+        },
+        getRegularNodePortPos({ sourceNodeIndex, type, node }) {
+            let allPorts = type === 'source' ? node.outPorts : node.inPorts;
+            const [dx, dy] = portShift(
+                sourceNodeIndex, allPorts.length, node.kind === 'metanode', type === 'source'
+            );
+            let { x, y } = node.position;
+            return [
+                x + dx,
+                y + dy
+            ];
+        },
+        getMetaNodePortPos({ sourceNodeIndex, type }) {
+            let allPorts = type === 'source' ? this.workflow.metaInPorts : this.workflow.metaOutPorts;
+            let x = this.portBarXPos(allPorts, type === 'dest');
+            let delta = this.$shapes.portSize / 2;
+            x += type === 'source' ? delta : -delta;
+            let y = this.portBarItemYPos(sourceNodeIndex, allPorts.ports, true);
+            return [x, y];
+        }
+    },
+    computed: {
+        ...mapState('workflow', {
+            workflow: 'activeWorkflow'
+        }),
+        /**
+         * The start coordinates of this connector
+         * @returns {Object} coordinates containing `x` and `y` properties
+         */
+        start() {
+            return this.getEndPointCoordinates('source');
+        },
+        /**
+         * The end coordinates of this connector
+         * @returns {Object} coordinates containing `x` and `y` properties
+         */
+        end() {
+            return this.getEndPointCoordinates('dest');
+        },
+        sourceNodeObject() {
+            return this.$store.state.workflow.activeWorkflow.nodes[this.sourceNode];
+        },
+        destNodeObject() {
+            return this.$store.state.workflow.activeWorkflow.nodes[this.destNode];
+        },
+        sourcePortType() {
+            return (this.sourceNodeObject?.outPorts || this.workflow.metaInPorts.ports)[this.sourcePort].type;
+        },
+        destPortType() {
+            return (this.destNodeObject?.inPorts || this.workflow.metaOutPorts.ports)[this.destPort].type;
+        }
+    }
+};

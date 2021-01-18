@@ -279,18 +279,4 @@ describe('Connector.vue', () => {
         });
 
     });
-
-    describe('Check label creation', () => {
-        beforeEach(() => {
-            mocks = { $shapes, $colors, $store };
-            wrapper = shallowMount(Connector, { propsData, mocks });
-        });
-
-        it('label should be created if text is provided', () => {
-            expect(wrapper.find('.streamingLabel').exists()).toBe(false);
-            propsData.label = '10';
-            wrapper = shallowMount(Connector, { propsData, mocks });
-            expect(wrapper.find('.streamingLabel').exists()).toBe(true);
-        });
-    });
 });

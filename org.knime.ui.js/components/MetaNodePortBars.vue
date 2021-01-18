@@ -1,7 +1,7 @@
 <script>
 import { mapState } from 'vuex';
 import MetaNodePortBar from '~/components/MetaNodePortBar';
-import { portBar } from '~/mixins';
+import { portBar } from '~/mixins/portBar';
 
 /**
  * A pair of MetaNodePortBar items. (Or maybe one or none, depending on whether or not the metanode has in/out ports)

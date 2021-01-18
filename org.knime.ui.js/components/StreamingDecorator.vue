@@ -12,8 +12,15 @@ export default {
         }
     },
     computed: {
+        /**
+         * The streaming decorator should be set either if the node is capable of streaming,
+         * or if it is the streaming component itself, hence the type of the jobManager is set to streaming
+         * @return {boolean} if true the node supports streaming
+         */
         streamable() {
-            return this.executionInfo ? this.executionInfo.streamable || this.executionInfo.jobManager : false;
+            return this.executionInfo
+                ? this.executionInfo.streamable || this.executionInfo.jobManager?.type === 'streaming'
+                : false;
         }
     }
 };

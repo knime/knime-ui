@@ -1,50 +1,24 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import portShift from '~/util/portShift';
-import { portBar } from '~/mixins';
+import { portBar } from '~/mixins/portBar';
+import { connectorPosition } from '~/mixins/connectorPosition';
 
 /**
  * A curved line, connecting one node's output with another node's input port.
  * Must be embedded in an `<svg>` element.
  */
 export default {
-    mixins: [portBar],
+    mixins: [portBar, connectorPosition],
     inheritAttrs: false,
     props: {
-        /**
-         * Node ID of the connector's source node
-         */
-        sourceNode: { type: String, required: true },
-        /**
-         * Node ID of the connector's target node
-         */
-        destNode: { type: String, required: true },
-        /**
-         * Index of the source node's output port that this connector is attached to
-         */
-        sourcePort: { type: Number, required: true },
-        /**
-         * Index of the target node's input port that this connector is attached to
-         */
-        destPort: { type: Number, required: true },
         /**
          * Determines wheter this connector is steamed at the moment
          */
         streaming: { type: Boolean, default: false },
         /**
-         * The label shown in the middle of the connector
-         */
-        label: { type: String, default: '' },
-        /**
          * Determines whether this connector is rendered in alternative color
          */
         flowVariableConnection: { type: Boolean, default: false }
-    },
-    data() {
-        return {
-            width: 0,
-            height: 0
-        };
     },
     computed: {
         ...mapState('workflow', {
@@ -53,32 +27,6 @@ export default {
         ...mapGetters('workflow', {
             isWorkflowWritable: 'isWritable'
         }),
-        /**
-         * The start coordinates of this connector
-         * @returns {Object} coordinates containing `x` and `y` properties
-         */
-        start() {
-            return this.getEndPointCoordinates('source');
-        },
-        /**
-         * The end coordinates of this connector
-         * @returns {Object} coordinates containing `x` and `y` properties
-         */
-        end() {
-            return this.getEndPointCoordinates('dest');
-        },
-        sourceNodeObject() {
-            return this.$store.state.workflow.activeWorkflow.nodes[this.sourceNode];
-        },
-        destNodeObject() {
-            return this.$store.state.workflow.activeWorkflow.nodes[this.destNode];
-        },
-        sourcePortType() {
-            return (this.sourceNodeObject?.outPorts || this.workflow.metaInPorts.ports)[this.sourcePort].type;
-        },
-        destPortType() {
-            return (this.destNodeObject?.inPorts || this.workflow.metaOutPorts.ports)[this.destPort].type;
-        },
         path() {
             let { start: [x1, y1], end: [x2, y2] } = this;
             // These deltas are carefully chosen so that the connector line is hidden behind the flow variable line,
@@ -103,63 +51,6 @@ export default {
             }
             return this.$colors.connectorColors.default;
         }
-    },
-    mounted() {
-        this.updateSize();
-    },
-    methods: {
-        /**
-         * Determine the end point coordinates of the start point ('source') or end point ('dest') of the connector
-         * @param {String} type One of 'source' / 'dest'. Defaults to 'dest'
-         * @returns {Array} The coordinates
-         */
-        getEndPointCoordinates(type = 'dest') {
-            let sourceNodeIndex = this[`${type}Port`];
-            let node = this[`${type}NodeObject`];
-            if (node) {
-                // connected to a node
-                return this.getRegularNodePortPos({ sourceNodeIndex, type, node });
-            } else {
-                // connected to a metanode port bar
-                return this.getMetaNodePortPos({ sourceNodeIndex, type });
-            }
-        },
-        getRegularNodePortPos({ sourceNodeIndex, type, node }) {
-            let allPorts = type === 'source' ? node.outPorts : node.inPorts;
-            const [dx, dy] = portShift(
-                sourceNodeIndex, allPorts.length, node.kind === 'metanode', type === 'source'
-            );
-            let { x, y } = node.position;
-            return [
-                x + dx,
-                y + dy
-            ];
-        },
-        getMetaNodePortPos({ sourceNodeIndex, type }) {
-            let allPorts = type === 'source' ? this.workflow.metaInPorts : this.workflow.metaOutPorts;
-            let x = this.portBarXPos(allPorts, type === 'dest');
-            let delta = this.$shapes.portSize / 2;
-            x += type === 'source' ? delta : -delta;
-            let y = this.portBarItemYPos(sourceNodeIndex, allPorts.ports, true);
-            return [x, y];
-        },
-        getHalfWayPosition() {
-            // Add an offset to the actual middle point to make the text appear above the lines
-            const topOffset = 16;
-            // Calculate the middle point and subtract half of the length of the text element
-            let halfWay = { x: (this.start[0] + (this.end[0] - this.start[0]) / 2) - this.width / 2,
-                y: (this.start[1] + (this.end[1] - this.start[1]) / 2 - topOffset) - this.height / 2 };
-            return halfWay;
-        },
-        updateSize() {
-            if (this.$refs.textObject) {
-                this.width = this.$refs.textObject.clientWidth;
-                this.height = this.$refs.textObject.clientHeight;
-            } else {
-                this.width = 0;
-                this.height = 0;
-            }
-        }
     }
 };
 </script>
@@ -174,20 +65,6 @@ export default {
                 'dashed': streaming}"
       fill="none"
     />
-    <foreignObject
-      v-if="label.length > 0"
-      ref="textObject"
-      class="foreinObject"
-      :transform="'translate(' + getHalfWayPosition().x + ',' + getHalfWayPosition().y + ')'"
-    >
-      <span class="textWrapper">
-        <p
-          class="streamingLabel"
-        >
-          {{ label }}
-        </p>
-      </span>
-    </foreignObject>
   </g>
 </template>
 
@@ -228,30 +105,5 @@ rect {
   to {
     stroke-dashoffset: 0;
   }
-}
-
-.foreinObject {
-  /* Set to an abitrary high value */
-  width: 1000px;
-  height: 1000px;
-}
-
-.streamingLabel {
-  color: white;
-  font-size: 12px;
-  display: flex;
-  margin-block: 0;
-  align-content: center;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
-  border-radius: 2px;
-  background-color: var(--knime-masala);
-  padding: 5px;
-}
-
-.textWrapper {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 </style>

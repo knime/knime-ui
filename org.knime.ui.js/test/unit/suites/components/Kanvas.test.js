@@ -30,8 +30,7 @@ const mockConnector = ({ nr }) => ({
     sourcePort: nr,
     destPort: 0,
     flowVariableConnection: false,
-    streaming: false,
-    label: ''
+    streaming: false
 });
 
 describe('Kanvas', () => {
@@ -173,7 +172,7 @@ describe('Kanvas', () => {
         workflow.info.linked = true;
         doShallowMount();
         expect(wrapper.find('.read-only').exists()).toBe(true);
-        expect(wrapper.find('.link-notification').exists()).toBe(true);
+        expect(wrapper.find('.type-notification').exists()).toBe(true);
     });
 
     it('shows decorator in streaming component', () => {

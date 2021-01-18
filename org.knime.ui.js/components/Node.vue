@@ -127,16 +127,21 @@ export default {
             default: null
         },
 
+        /**
+         *  Information about the node execution. Might not be present if no special node execution info is available
+         *  If given, usually only one of the following properties is set, either the icon, the 'streamble'-flag, or the job-manager
+         */
         executionInfo: {
             type: Object,
             default: null
         },
 
+        /**
+         *  The node/workflow's job manager, if a special one is defined. Otherwise not given.
+         */
         jobManager: {
             type: Object,
-            default() {
-                return null;
-            }
+            default: null
         }
     },
     data() {
@@ -159,6 +164,14 @@ export default {
                 height: (top + nodeSize + bottom) + (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0),
                 width: left + right + nodeSize
             };
+        },
+        /**
+         * Checks if a streamable execution info has been set. The boolean value of the streamable variable does not matter,
+         * as the presence of the variable already indicates that the node is inside of a streaming component
+         * @return {boolean} if true action bar will be hidden
+         */
+        hideActionBar() {
+            return typeof this.executionInfo?.streamable !== 'undefined';
         }
     },
     methods: {
@@ -251,7 +264,7 @@ export default {
       to="node-actions"
     >
       <NodeActionBar
-        v-if="!executionInfo || typeof executionInfo.jobManager != 'undefined'"
+        v-if="!hideActionBar"
         ref="actionbar"
         v-bind="allowedActions"
         :transform="`translate(${position.x + $shapes.nodeSize / 2} ${position.y - $shapes.nodeSelectionPadding[0]})`"

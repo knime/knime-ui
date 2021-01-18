@@ -8,7 +8,7 @@ describe('NodeTorso.vue', () => {
     });
 
     it('streamingSupported', () => {
-        const wrapper = doShallowMount({ jobManager: 'exampleManager' });
+        const wrapper = doShallowMount({ jobManager: { type: 'streaming' } });
         expect(wrapper.find('path.streamable').exists()).toBe(true);
         expect(wrapper.find('path.not-streamable').exists()).toBe(false);
     });
