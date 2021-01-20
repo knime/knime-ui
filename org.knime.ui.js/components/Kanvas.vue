@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters, mapMutations } from 'vuex';
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
 import Node from '~/components/Node';
 import Connector from '~/components/Connector';
 import WorkflowAnnotation from '~/components/WorkflowAnnotation';
@@ -8,6 +8,8 @@ import MetaNodePortBars from '~/components/MetaNodePortBars';
 import KanvasFilters from '~/components/KanvasFilters';
 
 let resizeObserver = null;
+let keyDownEventListener = null;
+let keyUpEventListener = null;
 
 export default {
     components: {
@@ -25,11 +27,11 @@ export default {
              *  We track whether a click has been started on the empty Kanvas
              */
             clickStartedOnEmptyKanvas: false,
-            keyEventListener: null,
             /*
               Truthy if currently panning. Stores mouse origin
             */
-            panning: null
+            panning: null,
+            suggestPanning: false
         };
     },
     computed: {
@@ -46,11 +48,37 @@ export default {
     },
     mounted() {
         // Start Key Listener
-        this.keyEventListener = document.addEventListener('keydown', (e) => {
-            if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
+        keyDownEventListener = document.addEventListener('keydown', (e) => {
+            let handled = true;
+            if (e.ctrlKey || e.metaKey) {
+                // Ctrl- and Meta- Combinations
+                if (e.key === 'a') {
+                    this.selectAllNodes();
+                } else if (e.key === '0') {
+                    this.resetZoom();
+                } else if (e.key === '1') {
+                    this.setZoomToFit();
+                } else if (e.key === '+') {
+                    this.zoomCentered(1);
+                } else if (e.key === '-') {
+                    this.zoomCentered(-1);
+                } else {
+                    handled = false;
+                }
+            } else if (e.key === 'Alt') {
+                this.suggestPanning = true;
+            } else {
+                handled = false;
+            }
+            
+            if (handled) {
                 e.stopPropagation();
                 e.preventDefault();
-                this.selectAllNodes();
+            }
+        });
+        keyUpEventListener = document.addEventListener('keyup', (e) => {
+            if (e.key === 'Alt') {
+                this.suggestPanning = false;
             }
         });
 
@@ -64,7 +92,8 @@ export default {
     },
     beforeDestroy() {
         // Stop Key listener
-        document.removeEventListener('keydown', this.keyEventListener);
+        document.removeEventListener('keydown', keyDownEventListener);
+        document.removeEventListener('keyup', keyUpEventListener);
         
         // Stop Resize Observer
         this.stopResizeObserver();
@@ -88,6 +117,7 @@ export default {
             Zooming
         */
         ...mapMutations('canvas', ['resetZoom']),
+        ...mapActions('canvas', ['setZoomToFit', 'zoomCentered']),
         initContainerSize() {
             const { width, height } = this.$el.getBoundingClientRect();
             this.$store.commit('canvas/setContainerSize', { width, height });
@@ -157,7 +187,7 @@ export default {
 
 <template>
   <div
-    :class="{ 'read-only': !isWritable, 'panning': panning }"
+    :class="{ 'read-only': !isWritable, 'panning': panning || suggestPanning }"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
     @pointerdown.middle="beginPan"
@@ -198,6 +228,15 @@ export default {
 
       <!-- Includes shadows for Nodes -->
       <KanvasFilters />
+      
+      <!-- Only Shown when flag INCLUDE_DEBUG_CSS is set  -->
+      <rect
+        class="workflow-boundary"
+        :x="contentBounds.x"
+        :y="contentBounds.y"
+        :width="contentBounds.width"
+        :height="contentBounds.height"
+      />
       
       <!-- Workflow Annotation Layer. Background -->
       <WorkflowAnnotation
@@ -263,9 +302,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-.panning {
-  cursor: move;
-}
 
 svg {
   color: var(--knime-masala);
@@ -276,6 +312,15 @@ svg {
     stroke: var(--knime-silver-sand);
     fill: none;
     display: none;
+  }
+}
+
+.panning {
+  cursor: move;
+
+  & svg,
+  & svg >>> * {
+    pointer-events: none;
   }
 }
 

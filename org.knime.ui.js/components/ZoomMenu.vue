@@ -22,6 +22,9 @@ export default {
                     text: 'Zoom to 100%',
                     value: 1
                 }, {
+                    text: 'Zoom to 125%',
+                    value: 1.25
+                }, {
                     text: 'Zoom to 150%',
                     value: 1.5
                 }

@@ -29,6 +29,9 @@ export const mutations = {
         state.zoomFactor = savedState.zoomFactor;
         state.containerScroll = savedState.savedContainerScroll;
     },
+    resetZoom(state) {
+        state.zoomFactor = defaultZoomFactor;
+    },
     setFactor(state, newFactor) {
         state.zoomFactor = clampZoomFactor(newFactor);
     },
@@ -60,6 +63,21 @@ export const mutations = {
         // If zoomed out further than 'fitToScreen', there won't be scrollbars and those numbers will be negative. Hence, no scrolling will be done.
         state.containerScroll.left = newZoomFactor / oldZoomFactor * (scrollX + cursorX) - cursorX;
         state.containerScroll.top = newZoomFactor / oldZoomFactor * (scrollY + cursorY) - cursorY;
+    }
+};
+
+export const actions = {
+    setZoomToFit({ commit, getters }) {
+        commit('setFactor', getters.fitToScreenZoomFactor);
+    },
+    zoomCentered({ commit, getters, state }, delta) {
+        commit('zoomWithPointer', {
+            delta,
+            scrollX: state.savedContainerScroll.left,
+            scrollY: state.savedContainerScroll.top,
+            cursorX: state.containerSize.width / 2,
+            cursorY: state.containerSize.height / 2
+        });
     }
 };
 
