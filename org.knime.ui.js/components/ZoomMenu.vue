@@ -1,5 +1,5 @@
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import DropdownIcon from '~/webapps-common/ui/assets/img/icons/arrow-dropdown.svg?inline';
 import SubMenu from '~/webapps-common/ui/components/SubMenu';
 
@@ -9,11 +9,12 @@ export default {
         SubMenu
     },
     computed: {
-        ...mapGetters('canvas', ['zoomFactor', 'fitToScreenZoomFactor']),
+        ...mapState('canvas', ['zoomFactor']),
+        ...mapGetters('canvas', ['fitToScreenZoomFactor']),
         zoomMenuItems() {
             return [
                 {
-                    text: 'Zoom to fit',
+                    text: 'Fit to screen',
                     value: this.fitToScreenZoomFactor
                 }, {
                     text: 'Zoom to 75%',

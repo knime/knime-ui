@@ -43,8 +43,8 @@ export default {
             'isLinked',
             'isWritable'
         ]),
-        ...mapGetters('canvas', ['zoomFactor', 'contentBounds', 'canvasSize', 'contentViewBox', 'containerScroll']),
-        ...mapState('canvas', ['containerSize'])
+        ...mapGetters('canvas', ['contentBounds', 'canvasSize', 'contentViewBox']),
+        ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor'])
     },
     mounted() {
         // Start Key Listener
@@ -229,15 +229,6 @@ export default {
       <!-- Includes shadows for Nodes -->
       <KanvasFilters />
       
-      <!-- Only Shown when flag INCLUDE_DEBUG_CSS is set  -->
-      <rect
-        class="workflow-boundary"
-        :x="contentBounds.x"
-        :y="contentBounds.y"
-        :width="contentBounds.width"
-        :height="contentBounds.height"
-      />
-      
       <!-- Workflow Annotation Layer. Background -->
       <WorkflowAnnotation
         v-for="annotation of workflow.workflowAnnotations"
@@ -297,22 +288,46 @@ export default {
         tag="g"
         name="node-actions"
       />
+
+      <!-- Only Shown when flag INCLUDE_DEBUG_CSS is set  -->
+      <rect
+        class="debug-css"
+        :x="contentBounds.x"
+        :y="contentBounds.y"
+        :width="contentBounds.width"
+        :height="contentBounds.height"
+      />
+      <line
+        y1="-10"
+        y2="10"
+        class="debug-css"
+      />
+      <line
+        x1="-10"
+        x2="10"
+        class="debug-css"
+      />
     </svg>
   </div>
 </template>
 
 <style lang="postcss" scoped>
 
+.debug-css {
+  display: none;
+  stroke: var(--knime-silver-sand);
+  fill: none;
+  pointer-events: none;
+}
+
+line.debug-css {
+  stroke: var(--knime-dove-gray);
+}
+
 svg {
   color: var(--knime-masala);
   position: relative; /* needed for z-index to have effect */
   display: block;
-
-  & .workflow-boundary {
-    stroke: var(--knime-silver-sand);
-    fill: none;
-    display: none;
-  }
 }
 
 .panning {

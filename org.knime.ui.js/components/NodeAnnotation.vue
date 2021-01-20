@@ -1,6 +1,6 @@
 <script>
 import LegacyAnnotationText from '~/components/LegacyAnnotationText';
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 /**
  * A node annotation, a rectangular box containing text.
  */
@@ -56,7 +56,7 @@ export default {
         };
     },
     computed: {
-        ...mapGetters('canvas', ['zoomFactor']),
+        ...mapState('canvas', ['zoomFactor']),
         textStyle() {
             return {
                 textAlign: this.textAlign,
@@ -86,7 +86,6 @@ export default {
         // foreignObject requires `width` and `height` attributes, or the content is cut off.
         // So we need to 1. render, 2. measure, 3. update
         adjustDimensions() {
-            
             // 1. render with max width
             this.width = this.$shapes.maxNodeAnnotationWidth;
             this.$nextTick(() => { // wait for re-render

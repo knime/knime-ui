@@ -19,11 +19,6 @@ export default {
         ResetAllIcon,
         ZoomMenu
     },
-    data() {
-        return {
-            zoomMenuOpen: false
-        };
-    },
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow',
@@ -94,7 +89,6 @@ export default {
   display: flex;
   align-items: center;
   background: var(--knime-porcelain);
-  overflow: visible;
 }
 
 .buttons {

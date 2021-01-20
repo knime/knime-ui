@@ -88,11 +88,12 @@ describe('Tooltip', () => {
     it('allows anchoring to a reference point', () => {
         propsData.anchorPoint = { x: 40, y: 30 };
         let $store = mockVuexStore({
-            workflow: {
+            canvas: {
                 getters: {
                     getAbsoluteCoordinates() {
-                        return () => ({
-                            ...propsData.anchorPoint
+                        return (point) => ({
+                            x: point.x + 1,
+                            y: point.y + 1
                         });
                     }
                 }
@@ -103,9 +104,9 @@ describe('Tooltip', () => {
         propsData.orientation = 'top';
         mocks.$store = $store;
         doShallowMount();
-        expect(wrapper.attributes('style')).toContain('left: 163px;');
+        expect(wrapper.attributes('style')).toContain('left: 164px;');
         // eslint-disable-next-line no-magic-numbers
         let top = propsData.y + 30 - Math.SQRT1_2 * $shapes.tooltipArrowSize;
-        expect(wrapper.attributes('style')).toContain(`top: ${top}px;`);
+        expect(wrapper.attributes('style')).toContain(`top: ${top + 1}px;`);
     });
 });

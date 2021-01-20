@@ -1,12 +1,18 @@
-import { shallowMount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import * as $shapes from '~/style/shapes';
 import Vue from 'vue';
+import Vuex from 'vuex';
 
 import NodeAnnotation from '~/components/NodeAnnotation';
 import LegacyAnnotationText from '~/components/LegacyAnnotationText';
 
 describe('Node Annotation', () => {
-    let propsData, mocks, doShallowMount, wrapper;
+    let propsData, mocks, doShallowMount, wrapper, $store, canvasStoreConfig;
+    beforeAll(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
+    });
 
     beforeEach(() => {
         wrapper = null;
@@ -16,8 +22,16 @@ describe('Node Annotation', () => {
             backgroundColor: 'rgb(255, 216, 0)',
             styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
         };
-        mocks = { $shapes };
+        canvasStoreConfig = {
+            getters: {
+                zoomFactor() {
+                    return 1;
+                }
+            }
+        };
         doShallowMount = () => {
+            $store = mockVuexStore({ canvas: canvasStoreConfig });
+            mocks = { $store, $shapes };
             wrapper = shallowMount(NodeAnnotation, { propsData, mocks });
         };
     });
@@ -70,6 +84,18 @@ describe('Node Annotation', () => {
                 HTMLElement.prototype.getBoundingClientRect = getBCRMock;
                 doShallowMount();
                 await Vue.nextTick();
+            });
+
+            it('correctly measures when zoomed', async () => {
+                canvasStoreConfig.getters.zoomFactor = () => 2;
+
+                doShallowMount();
+                await Vue.nextTick();
+
+                expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+                    height: '65', width: '116', x: '-42'
+                }));
+
             });
 
             it('adjusts dimensions on mount', () => {
