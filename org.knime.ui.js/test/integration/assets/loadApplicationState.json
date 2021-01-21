@@ -1,0 +1,666 @@
+{
+  "description": "Load application state",
+  "request": {
+    "jsonrpc": "2.0",
+    "method": "ApplicationService.getState",
+    "params": [],
+    "id": 0
+  },
+  "response": {
+    "jsonrpc": "2.0",
+    "id": 0,
+    "result": {
+      "openedWorkflows": [
+        {
+          "name": "Execution",
+          "projectId": "Execution 0",
+          "activeWorkflow": {
+            "workflow": {
+              "info": {
+                "name": "Execution",
+                "containerType": "project"
+              },
+              "nodes": {
+                "root:2": {
+                  "position": {
+                    "y": 403,
+                    "x": 84
+                  },
+                  "id": "root:2",
+                  "state": {
+                    "executionState": "CONFIGURED"
+                  },
+                  "kind": "node",
+                  "templateId": "org.knime.testing.node.datagenerator.TestDataNodeFactory",
+                  "outPorts": [
+                    {
+                      "index": 0,
+                      "name": "Variable Outport",
+                      "type": "flowVariable",
+                      "connectedVia": []
+                    },
+                    {
+                      "view": {
+                        "type": "table"
+                      },
+                      "index": 1,
+                      "name": "Generated Table",
+                      "type": "table",
+                      "connectedVia": ["root:9_1", "root:27_1", "root:26_1", "root:27_0", "root:13_1", "root:12_1"]
+                    }
+                  ],
+                  "allowedActions": {
+                    "canExecute": true,
+                    "canCancel": false,
+                    "canReset": false
+                  },
+                  "inPorts": [
+                    {
+                      "optional": true,
+                      "index": 0,
+                      "name": "Variable Inport",
+                      "type": "flowVariable",
+                      "connectedVia": []
+                    }
+                  ]
+                },
+                "root:13": {
+                  "position": {
+                    "y": 324,
+                    "x": 224
+                  },
+                  "id": "root:13",
+                  "state": {
+                    "executionState": "CONFIGURED"
+                  },
+                  "kind": "node",
+                  "templateId": "org.knime.base.node.jsnippet.JavaSnippetNodeFactory",
+                  "outPorts": [
+                    {
+                      "index": 0,
+                      "name": "Variable Outport",
+                      "type": "flowVariable",
+                      "connectedVia": []
+                    },
+                    {
+                      "view": {
+                        "type": "table"
+                      },
+                      "index": 1,
+                      "name": "Appended table",
+                      "type": "table",
+                      "connectedVia": ["root:25_1", "root:25_0"]
+                    }
+                  ],
+                  "allowedActions": {
+                    "canExecute": true,
+                    "canCancel": false,
+                    "canReset": false
+                  },
+                  "inPorts": [
+                    {
+                      "optional": true,
+                      "index": 0,
+                      "name": "Variable Inport",
+                      "type": "flowVariable",
+                      "connectedVia": []
+                    },
+                    {
+                      "optional": false,
+                      "view": {
+                        "type": "table"
+                      },
+                      "index": 1,
+                      "name": "An input table",
+                      "type": "table",
+                      "connectedVia": ["root:13_1"]
+                    }
+                  ]
+                },
+                "root:24": {
+                  "position": {
+                    "y": 324,
+                    "x": 564
+                  },
+                  "name": "Metanode",
+                  "id": "root:24",
+                  "state": {
+                    "executionState": "IDLE"
+                  },
+                  "kind": "metanode",
+                  "outPorts": [],
+                  "allowedActions": {
+                    "canExecute": true,
+                    "canCancel": false,
+                    "canReset": false
+                  },
+                  "inPorts": [
+                    {
+                      "optional": false,
+                      "index": 0,
+                      "name": "Inport 0",
+                      "type": "table",
+                      "connectedVia": ["root:24_0"]
+                    },
+                    {
+                      "optional": false,
+                      "index": 1,
+                      "name": "Inport 1",
+                      "type": "table",
+                      "connectedVia": ["root:24_1"]
+                    }
+                  ]
+                },
+                "root:9": {
+                  "position": {
+                    "y": 103,
+                    "x": 224
+                  },
+                  "id": "root:9",
+                  "state": {
+                    "executionState": "CONFIGURED"
+                  },
+                  "kind": "node",
+                  "templateId": "org.knime.base.node.jsnippet.JavaSnippetNodeFactory",
+                  "outPorts": [
+                    {
+                      "index": 0,
+                      "name": "Variable Outport",
+                      "type": "flowVariable",
+                      "connectedVia": []
+                    },
+                    {
+                      "view": {
+                        "type": "table"
+                      },
+                      "index": 1,
+                      "name": "Appended table",
+                      "type": "table",
+                      "connectedVia": ["root:14_1"]
+                    }
+                  ],
+                  "allowedActions": {
+                    "canExecute": true,
+                    "canCancel": false,
+                    "canReset": false
+                  },
+                  "inPorts": [
+                    {
+                      "optional": true,
+                      "index": 0,
+                      "name": "Variable Inport",
+                      "type": "flowVariable",
+                      "connectedVia": []
+                    },
+                    {
+                      "optional": false,
+                      "view": {
+                        "type": "table"
+                      },
+                      "index": 1,
+                      "name": "An input table",
+                      "type": "table",
+                      "connectedVia": ["root:9_1"]
+                    }
+                  ]
+                },
+                "root:14": {
+                  "position": {
+                    "y": 103,
+                    "x": 324
+                  },
+                  "id": "root:14",
+                  "state": {
+                    "executionState": "CONFIGURED"
+                  },
+                  "kind": "node",
+                  "templateId": "org.knime.base.node.jsnippet.JavaSnippetNodeFactory",
+                  "outPorts": [
+                    {
+                      "index": 0,
+                      "name": "Variable Outport",
+                      "type": "flowVariable",
+                      "connectedVia": []
+                    },
+                    {
+                      "view": {
+                        "type": "table"
+                      },
+                      "index": 1,
+                      "name": "Appended table",
+                      "type": "table",
+                      "connectedVia": ["root:16_1"]
+                    }
+                  ],
+                  "allowedActions": {
+                    "canExecute": true,
+                    "canCancel": false,
+                    "canReset": false
+                  },
+                  "inPorts": [
+                    {
+                      "optional": true,
+                      "index": 0,
+                      "name": "Variable Inport",
+                      "type": "flowVariable",
+                      "connectedVia": []
+                    },
+                    {
+                      "optional": false,
+                      "view": {
+                        "type": "table"
+                      },
+                      "index": 1,
+                      "name": "An input table",
+                      "type": "table",
+                      "connectedVia": ["root:14_1"]
+                    }
+                  ]
+                },
+                "root:25": {
+                  "position": {
+                    "y": 324,
+                    "x": 384
+                  },
+                  "name": "Metanode",
+                  "id": "root:25",
+                  "state": {
+                    "executionState": "IDLE"
+                  },
+                  "kind": "metanode",
+                  "outPorts": [
+                    {
+                      "index": 0,
+                      "name": "Connected to: Appended table",
+                      "type": "table",
+                      "nodeState": "CONFIGURED",
+                      "connectedVia": ["root:24_0"]
+                    },
+                    {
+                      "index": 1,
+                      "name": "Connected to: Appended table",
+                      "type": "table",
+                      "nodeState": "CONFIGURED",
+                      "connectedVia": ["root:24_1"]
+                    }
+                  ],
+                  "allowedActions": {
+                    "canExecute": true,
+                    "canCancel": false,
+                    "canReset": false
+                  },
+                  "inPorts": [
+                    {
+                      "optional": false,
+                      "index": 0,
+                      "name": "Inport 0",
+                      "type": "table",
+                      "connectedVia": ["root:25_0"]
+                    },
+                    {
+                      "optional": false,
+                      "index": 1,
+                      "name": "Inport 1",
+                      "type": "table",
+                      "connectedVia": ["root:25_1"]
+                    }
+                  ]
+                },
+                "root:12": {
+                  "position": {
+                    "y": 503,
+                    "x": 224
+                  },
+                  "id": "root:12",
+                  "state": {
+                    "executionState": "CONFIGURED"
+                  },
+                  "kind": "node",
+                  "templateId": "org.knime.base.node.jsnippet.JavaSnippetNodeFactory",
+                  "outPorts": [
+                    {
+                      "index": 0,
+                      "name": "Variable Outport",
+                      "type": "flowVariable",
+                      "connectedVia": []
+                    },
+                    {
+                      "view": {
+                        "type": "table"
+                      },
+                      "index": 1,
+                      "name": "Appended table",
+                      "type": "table",
+                      "connectedVia": []
+                    }
+                  ],
+                  "allowedActions": {
+                    "canExecute": true,
+                    "canCancel": false,
+                    "canReset": false
+                  },
+                  "inPorts": [
+                    {
+                      "optional": true,
+                      "index": 0,
+                      "name": "Variable Inport",
+                      "type": "flowVariable",
+                      "connectedVia": []
+                    },
+                    {
+                      "optional": false,
+                      "view": {
+                        "type": "table"
+                      },
+                      "index": 1,
+                      "name": "An input table",
+                      "type": "table",
+                      "connectedVia": ["root:12_1"]
+                    }
+                  ]
+                },
+                "root:28": {
+                  "position": {
+                    "y": 443,
+                    "x": 564
+                  },
+                  "name": "Metanode",
+                  "id": "root:28",
+                  "state": {
+                    "executionState": "IDLE"
+                  },
+                  "kind": "metanode",
+                  "outPorts": [],
+                  "allowedActions": {
+                    "canExecute": true,
+                    "canCancel": false,
+                    "canReset": false
+                  },
+                  "inPorts": [
+                    {
+                      "optional": false,
+                      "index": 0,
+                      "name": "Inport 0",
+                      "type": "table",
+                      "connectedVia": ["root:28_0"]
+                    },
+                    {
+                      "optional": false,
+                      "index": 1,
+                      "name": "Inport 1",
+                      "type": "table",
+                      "connectedVia": ["root:28_1"]
+                    }
+                  ]
+                },
+                "root:26": {
+                  "position": {
+                    "y": 205,
+                    "x": 324
+                  },
+                  "name": "Component",
+                  "annotation": {
+                    "text": "",
+                    "textAlign": "center",
+                    "styleRanges": []
+                  },
+                  "id": "root:26",
+                  "state": {
+                    "warning": "Component Output 0:26:0:17: Component does not have input data, execute upstream nodes first",
+                    "executionState": "IDLE"
+                  },
+                  "kind": "component",
+                  "outPorts": [
+                    {
+                      "index": 0,
+                      "name": "Variable Outport",
+                      "type": "flowVariable",
+                      "connectedVia": []
+                    }
+                  ],
+                  "allowedActions": {
+                    "canExecute": true,
+                    "canCancel": false,
+                    "canReset": false
+                  },
+                  "inPorts": [
+                    {
+                      "optional": true,
+                      "index": 0,
+                      "name": "Variable Inport",
+                      "type": "flowVariable",
+                      "connectedVia": []
+                    },
+                    {
+                      "optional": false,
+                      "view": {
+                        "type": "table"
+                      },
+                      "index": 1,
+                      "name": "Inport 1",
+                      "type": "table",
+                      "connectedVia": ["root:26_1"]
+                    }
+                  ]
+                },
+                "root:16": {
+                  "position": {
+                    "y": 103,
+                    "x": 424
+                  },
+                  "id": "root:16",
+                  "state": {
+                    "executionState": "CONFIGURED"
+                  },
+                  "kind": "node",
+                  "templateId": "org.knime.base.node.jsnippet.JavaSnippetNodeFactory",
+                  "outPorts": [
+                    {
+                      "index": 0,
+                      "name": "Variable Outport",
+                      "type": "flowVariable",
+                      "connectedVia": []
+                    },
+                    {
+                      "view": {
+                        "type": "table"
+                      },
+                      "index": 1,
+                      "name": "Appended table",
+                      "type": "table",
+                      "connectedVia": []
+                    }
+                  ],
+                  "allowedActions": {
+                    "canExecute": true,
+                    "canCancel": false,
+                    "canReset": false
+                  },
+                  "inPorts": [
+                    {
+                      "optional": true,
+                      "index": 0,
+                      "name": "Variable Inport",
+                      "type": "flowVariable",
+                      "connectedVia": []
+                    },
+                    {
+                      "optional": false,
+                      "view": {
+                        "type": "table"
+                      },
+                      "index": 1,
+                      "name": "An input table",
+                      "type": "table",
+                      "connectedVia": ["root:16_1"]
+                    }
+                  ]
+                },
+                "root:27": {
+                  "position": {
+                    "y": 443,
+                    "x": 384
+                  },
+                  "name": "Metanode",
+                  "id": "root:27",
+                  "state": {
+                    "executionState": "IDLE"
+                  },
+                  "kind": "metanode",
+                  "outPorts": [
+                    {
+                      "index": 0,
+                      "name": "Connected to: Appended table",
+                      "type": "table",
+                      "nodeState": "CONFIGURED",
+                      "connectedVia": ["root:28_0"]
+                    },
+                    {
+                      "index": 1,
+                      "name": "Connected to: Generated Table",
+                      "type": "table",
+                      "nodeState": "CONFIGURED",
+                      "connectedVia": ["root:28_1"]
+                    }
+                  ],
+                  "allowedActions": {
+                    "canExecute": true,
+                    "canCancel": false,
+                    "canReset": false
+                  },
+                  "inPorts": [
+                    {
+                      "optional": false,
+                      "index": 0,
+                      "name": "Inport 0",
+                      "type": "table",
+                      "connectedVia": ["root:27_0"]
+                    },
+                    {
+                      "optional": false,
+                      "index": 1,
+                      "name": "Inport 1",
+                      "type": "table",
+                      "connectedVia": ["root:27_1"]
+                    }
+                  ]
+                }
+              },
+              "workflowAnnotations": [],
+              "allowedActions": {
+                "canExecute": true,
+                "canCancel": false,
+                "canReset": false
+              },
+              "connections": {
+                "root:24_0": {
+                  "sourceNode": "root:25",
+                  "sourcePort": 0,
+                  "destPort": 0,
+                  "destNode": "root:24"
+                },
+                "root:12_1": {
+                  "sourceNode": "root:2",
+                  "sourcePort": 1,
+                  "destPort": 1,
+                  "destNode": "root:12"
+                },
+                "root:27_0": {
+                  "sourceNode": "root:2",
+                  "sourcePort": 1,
+                  "destPort": 0,
+                  "destNode": "root:27"
+                },
+                "root:26_1": {
+                  "sourceNode": "root:2",
+                  "sourcePort": 1,
+                  "destPort": 1,
+                  "destNode": "root:26"
+                },
+                "root:28_0": {
+                  "sourceNode": "root:27",
+                  "sourcePort": 0,
+                  "destPort": 0,
+                  "destNode": "root:28"
+                },
+                "root:16_1": {
+                  "sourceNode": "root:14",
+                  "sourcePort": 1,
+                  "destPort": 1,
+                  "destNode": "root:16"
+                },
+                "root:27_1": {
+                  "sourceNode": "root:2",
+                  "sourcePort": 1,
+                  "destPort": 1,
+                  "destNode": "root:27"
+                },
+                "root:24_1": {
+                  "sourceNode": "root:25",
+                  "sourcePort": 1,
+                  "destPort": 1,
+                  "destNode": "root:24"
+                },
+                "root:25_0": {
+                  "sourceNode": "root:13",
+                  "sourcePort": 1,
+                  "destPort": 0,
+                  "destNode": "root:25"
+                },
+                "root:13_1": {
+                  "sourceNode": "root:2",
+                  "sourcePort": 1,
+                  "destPort": 1,
+                  "destNode": "root:13"
+                },
+                "root:25_1": {
+                  "sourceNode": "root:13",
+                  "sourcePort": 1,
+                  "destPort": 1,
+                  "destNode": "root:25"
+                },
+                "root:14_1": {
+                  "sourceNode": "root:9",
+                  "sourcePort": 1,
+                  "destPort": 1,
+                  "destNode": "root:14"
+                },
+                "root:9_1": {
+                  "sourceNode": "root:2",
+                  "sourcePort": 1,
+                  "destPort": 1,
+                  "destNode": "root:9"
+                },
+                "root:28_1": {
+                  "sourceNode": "root:27",
+                  "sourcePort": 1,
+                  "destPort": 1,
+                  "destNode": "root:28"
+                }
+              },
+              "nodeTemplates": {
+                "org.knime.base.node.jsnippet.JavaSnippetNodeFactory": {
+                  "name": "Java Snippet",
+                  "type": "Manipulator",
+                  "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMDY3IDc5LjE1Nzc0NywgMjAxNS8wMy8zMC0yMzo0MDo0MiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowYjM2YWM5Ny01ZWJhLTQwZTctOTE4OS1iYmU4ZDdkMGYyNGUiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6QkMxMjk0NUU0NUM2MTFFNUFDNkJBNzc0MkI4RTNBMkQiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6QjFFNjI2MUM0NUM2MTFFNUFDNkJBNzc0MkI4RTNBMkQiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpiMjZmMjcxNS1kZmZiLTRlYTgtYWJjMi0xZDk4N2YzMzE1NzIiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MGIzNmFjOTctNWViYS00MGU3LTkxODktYmJlOGQ3ZDBmMjRlIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+GBI7pwAAAJNJREFUeNpiYmBg+I+OgQBEMBACIDVMMMXImhgZGWG62QgZwoRLAmQIEPwCMpnJMgDJkL9kG4AHrIKGFwMLtoBBcgED2WFALGDBZgsxUQg3gBTFNHEBRkLCphkqBiI6sKZILEkZDNCSNUwext6NNSljcwHUm2FIms8CcTpY7j8eD4M0AqUZcaUHsAtokg5IAQABBgDSc3xHvbV83QAAAABJRU5ErkJggg=="
+                },
+                "org.knime.testing.node.datagenerator.TestDataNodeFactory": {
+                  "name": "Test Data Generator",
+                  "type": "Source"
+                }
+              },
+              "projectMetadata": {
+                "title": "Execution!",
+                "description": "bla",
+                "links": [],
+                "tags": [],
+                "lastEdit": "2020-12-17T16:52:12Z"
+              }
+            },
+            "snapshotId": "0"
+          }
+        }
+      ]
+    }
+  }
+}
