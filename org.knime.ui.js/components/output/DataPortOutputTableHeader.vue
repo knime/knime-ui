@@ -23,7 +23,7 @@ export default {
         <span
           class="title"
           title="Row ID"
-        >{{ 'ID' }}</span>
+        >ID</span>
       </th>
       <th
         v-for="(column, index) of columns"
