@@ -129,18 +129,14 @@ export default {
 
         /**
          *  Information about the node execution. Might not be present if no special node execution info is available
-         *  If given, usually only one of the following properties is set, either the icon, the 'streamble'-flag, or the job-manager
+         *  If given, usually only one of the following properties is set, either the icon, the 'streamble'-flag, or the
+         *  jobManager
          */
         executionInfo: {
             type: Object,
-            default: null
-        },
-
-        /**
-         *  The node/workflow's job manager, if a special one is defined. Otherwise not given.
-         */
-        jobManager: {
-            type: Object,
+            validator(info) {
+                return !info || info.streamable || info.jobManager || info.icon;
+            },
             default: null
         }
     },

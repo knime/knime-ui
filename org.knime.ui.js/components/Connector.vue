@@ -12,7 +12,7 @@ export default {
     inheritAttrs: false,
     props: {
         /**
-         * Determines wheter this connector is steamed at the moment
+         * Determines whether this connector is streamed at the moment
          */
         streaming: { type: Boolean, default: false },
         /**
@@ -61,8 +61,7 @@ export default {
       :d="path"
       :stroke="strokeColor"
       :stroke-width="$shapes.connectorWidth"
-      :class="{ variable: flowVariableConnection, 'read-only': !isWorkflowWritable,
-                'dashed': streaming}"
+      :class="{ variable: flowVariableConnection, 'read-only': !isWorkflowWritable, dashed: streaming }"
       fill="none"
     />
   </g>

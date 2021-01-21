@@ -440,10 +440,5 @@ describe('workflow store', () => {
             expect(store.getters['workflow/nodeType']({ nodeId: 'foo' })).toBe('exampleType');
             expect(store.getters['workflow/nodeType']({ nodeId: 'ownData' })).toBe('ownType');
         });
-        it('gets executionInfo', () => {
-            expect(store.getters['workflow/executionInfo']({ nodeId: 'foo' })).toBe(undefined);
-            expect(store.getters['workflow/executionInfo']({ nodeId: 'ownData' }))
-                .toStrictEqual({ jobManager: 'test' });
-        });
     });
 });

@@ -286,13 +286,6 @@ export const getters = {
                 return node.type;
             }
         };
-    },
-
-    executionInfo(state) {
-        return ({ nodeId }) => {
-            let node = state.activeWorkflow.nodes[nodeId];
-            return node.executionInfo;
-        };
     }
 
 };

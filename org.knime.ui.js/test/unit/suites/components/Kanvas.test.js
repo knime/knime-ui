@@ -21,8 +21,7 @@ const mockNode = ({ id, position }) => ({
     annotation: { text: '' },
     kind: 'node',
     icon: 'data:image/',
-    state: null,
-    jobManager: null
+    state: null
 });
 const mockConnector = ({ nr }) => ({
     sourceNode: '',
