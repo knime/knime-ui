@@ -62,9 +62,7 @@ export const actions = {
         commit('saveState', { project: getters.activeProject, savedState });
     },
     restoreTabState({ state, commit, dispatch, rootState, getters }) {
-        let savedState = getters.activeProject.savedState;
-        if (savedState) {
-            commit('canvas/restoreState', savedState.canvas, { root: true });
-        }
+        let savedState = getters.activeProject.savedState; // is undefined if not saved yet
+        commit('canvas/restoreState', savedState?.canvas, { root: true });
     }
 };

@@ -4,6 +4,12 @@ import Vuex from 'vuex';
 import * as canvasStoreConfig from '~/store/canvas';
 const { defaultZoomFactor, minZoomFactor, maxZoomFactor, zoomMultiplier } = canvasStoreConfig;
 
+const round = n => {
+    const precision = 10;
+    return Number(n.toFixed(precision));
+};
+const findDelta = factor => Math.log(factor) / Math.log(zoomMultiplier);
+
 describe('Opened projects store', () => {
     let localVue, store, workflowBounds;
 
@@ -71,8 +77,85 @@ describe('Opened projects store', () => {
             });
         });
 
-        test('zoomWithPointer', () => {
-            //TODO
+        describe('zoomWithPointer', () => {
+            let state;
+            beforeEach(() => {
+                state = store.state.canvas;
+            });
+
+            it('exponential zoom', () => {
+                expect(state.zoomFactor).toBe(1);
+
+                store.commit('canvas/zoomWithPointer', { delta: 1 });
+                expect(state.zoomFactor).toBe(zoomMultiplier);
+
+                store.commit('canvas/zoomWithPointer', { delta: 1 });
+                expect(state.zoomFactor).toBe(zoomMultiplier * zoomMultiplier);
+
+                store.commit('canvas/zoomWithPointer', { delta: -2 });
+                expect(round(state.zoomFactor)).toBe(1);
+
+                store.commit('canvas/zoomWithPointer', { delta: -1 });
+                expect(round(state.zoomFactor)).toBe(round(1 / zoomMultiplier));
+
+                store.commit('canvas/zoomWithPointer', { delta: -1 });
+                expect(round(state.zoomFactor)).toBe(round(1 / zoomMultiplier / zoomMultiplier));
+            });
+
+            it('respects max and min zoom', () => {
+                const tooManyZoomSteps = 10000;
+                expect(state.zoomFactor).toBe(1);
+
+                store.commit('canvas/zoomWithPointer', { delta: -tooManyZoomSteps });
+                expect(state.zoomFactor).toBe(minZoomFactor);
+
+                store.commit('canvas/zoomWithPointer', { delta: tooManyZoomSteps });
+                expect(state.zoomFactor).toBe(maxZoomFactor);
+            });
+
+            test('content bigger than container - pointer in upper-left corner', () => {
+                store.commit('canvas/setFactor', 1);
+                store.commit('canvas/setContainerSize', {
+                    width: 50,
+                    height: 50
+                });
+                workflowBounds = {
+                    left: 0,
+                    top: 0,
+                    right: 50,
+                    bottom: 50
+                };
+
+                let delta = findDelta(2); // zoom to 200%
+                store.commit('canvas/zoomWithPointer', { delta, cursorX: 0, cursorY: 0, scrollX: 0, scrollY: 0 });
+                expect(state.zoomFactor).toBe(2);
+                expect(state.containerScroll.left).toBe(0);
+                expect(state.containerScroll.top).toBe(0);
+            });
+
+            test('content bigger than container - pointer in bottom-right corner', () => {
+                store.commit('canvas/setFactor', 1);
+                store.commit('canvas/setContainerSize', {
+                    width: 50,
+                    height: 50
+                });
+                workflowBounds = {
+                    left: 0,
+                    top: 0,
+                    right: 50,
+                    bottom: 50
+                };
+
+                let delta = findDelta(2); // zoom to 200%
+                // pointer is in bottom right corner of workflow before zoom
+                store.commit('canvas/zoomWithPointer', { delta, cursorX: 50, cursorY: 50, scrollX: 0, scrollY: 0 });
+                expect(state.zoomFactor).toBe(2);
+
+                expect(state.containerScroll.left).toBe(50); /* eslint-disable-line no-magic-numbers */
+                expect(state.containerScroll.top).toBe(50); /* eslint-disable-line no-magic-numbers */
+            });
+
+
         });
     });
 
@@ -82,6 +165,30 @@ describe('Opened projects store', () => {
             store.dispatch('canvas/setZoomToFit');
             expect(store.state.canvas.zoomFactor).toBe(factor);
         });
+
+        it('zooms in by keyboard', async () => {
+            const state = store.state.canvas;
+
+            store.commit('canvas/setFactor', 1);
+            store.commit('canvas/saveContainerScroll', { left: 0, top: 0 });
+            store.commit('canvas/setContainerSize', {
+                width: 50,
+                height: 50
+            });
+            workflowBounds = {
+                left: 0,
+                top: 0,
+                right: 50,
+                bottom: 50
+            };
+
+            let delta = findDelta(2); // zoom to 200%
+            await store.dispatch('canvas/zoomCentered', delta);
+            expect(state.zoomFactor).toBe(2);
+
+            expect(state.containerScroll.left).toBe(25); /* eslint-disable-line no-magic-numbers */
+            expect(state.containerScroll.top).toBe(25); /* eslint-disable-line no-magic-numbers */
+        });
     });
 
     describe('getters', () => {
@@ -89,57 +196,245 @@ describe('Opened projects store', () => {
             expect(store.getters['canvas/fitToScreenZoomFactor']).toBe(2);
         });
 
+        describe('contentBounds', () => {
+            it('positive coordinates', () => {
+                workflowBounds = {
+                    left: 10,
+                    top: 10,
+                    right: 100,
+                    bottom: 100
+                };
+
+                expect(store.getters['canvas/contentBounds']).toStrictEqual({
+                    left: 0,
+                    top: 0,
+                    width: 110,
+                    height: 110
+                });
+            });
+
+            it('origin inside of workflow', () => {
+                workflowBounds = {
+                    left: -10,
+                    top: -10,
+                    right: 100,
+                    bottom: 100
+                };
+
+                expect(store.getters['canvas/contentBounds']).toStrictEqual({
+                    left: -10,
+                    top: -10,
+                    width: 110,
+                    height: 110
+                });
+            });
+
+            it('negative coordinates', () => {
+                workflowBounds = {
+                    left: -100,
+                    top: -100,
+                    right: -10,
+                    bottom: -10
+                };
+
+                expect(store.getters['canvas/contentBounds']).toStrictEqual({
+                    left: -110,
+                    top: -110,
+                    width: 110,
+                    height: 110
+                });
+            });
+        });
+
+        describe('canvas, viewBox, absoluteCoordinates at 100%', () => {
+            test('content larger than container', () => {
+                store.commit('canvas/setContainerSize', {
+                    width: 50,
+                    height: 50
+                });
+                workflowBounds = {
+                    left: 0,
+                    top: 0,
+                    right: 100,
+                    bottom: 100
+                };
+                expect(store.getters['canvas/canvasSize']).toStrictEqual({
+                    width: 100,
+                    height: 100
+                });
+                expect(store.getters['canvas/expandedViewBox']).toStrictEqual({
+                    top: 0,
+                    left: 0,
+                    width: 100,
+                    height: 100
+                });
+                let origin = { x: 0, y: 0 };
+                expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
+                    x: 0,
+                    y: 0
+                });
+            });
+
+            test('content smaller than container (origin included)', () => {
+                store.commit('canvas/setContainerSize', {
+                    width: 100,
+                    height: 100
+                });
+                workflowBounds = {
+                    left: 0,
+                    top: 0,
+                    right: 50,
+                    bottom: 50
+                };
+                expect(store.getters['canvas/canvasSize']).toStrictEqual({
+                    width: 100,
+                    height: 100
+                });
+                expect(store.getters['canvas/expandedViewBox']).toStrictEqual({
+                    top: -25,
+                    left: -25,
+                    width: 100,
+                    height: 100
+                });
+                let origin = { x: 0, y: 0 };
+                expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
+                    x: 25,
+                    y: 25
+                });
+            });
+
+            test('content smaller than container - (negative, origin not included)', () => {
+                store.commit('canvas/setContainerSize', {
+                    width: 200,
+                    height: 200
+                });
+                workflowBounds = {
+                    left: -100,
+                    top: -100,
+                    right: -50,
+                    bottom: -50
+                };
+                // bounds are expanded to include origin
+                // {-150, -150, 0, 0}
+                expect(store.getters['canvas/canvasSize']).toStrictEqual({
+                    width: 200,
+                    height: 200
+                });
+                // space of 50 to distribute -> expand viewBox by 25 each side
+                expect(store.getters['canvas/expandedViewBox']).toStrictEqual({
+                    top: -175,
+                    left: -175,
+                    width: 200,
+                    height: 200
+                });
+                let origin = { x: 0, y: 0 };
+                expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
+                    x: 175,
+                    y: 175
+                });
+            });
+
+        });
+
+        describe('canvas, viewBox, absoluteCoordinates at 100%', () => {
+            beforeEach(() => {
+                store.commit('canvas/setFactor', 2);
+            });
+
+            test('content larger than container', () => {
+                store.commit('canvas/setContainerSize', {
+                    width: 50,
+                    height: 50
+                });
+                workflowBounds = {
+                    left: 0,
+                    top: 0,
+                    right: 50,
+                    bottom: 50
+                };
+                expect(store.getters['canvas/canvasSize']).toStrictEqual({
+                    width: 100,
+                    height: 100
+                });
+                expect(store.getters['canvas/expandedViewBox']).toStrictEqual({
+                    top: 0,
+                    left: 0,
+                    width: 50,
+                    height: 50
+                });
+                let origin = { x: 0, y: 0 };
+                expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
+                    x: 0,
+                    y: 0
+                });
+            });
+
+            test('content smaller than container (origin included)', () => {
+                store.commit('canvas/setContainerSize', {
+                    width: 200,
+                    height: 200
+                });
+                workflowBounds = {
+                    left: 0,
+                    top: 0,
+                    right: 50,
+                    bottom: 50
+                };
+                // canvas same size as container
+                expect(store.getters['canvas/canvasSize']).toStrictEqual({
+                    width: 200,
+                    height: 200
+                });
+                // viewBox width and height have same proportions as canvas
+                // but are half as big (100, 100)
+                // comparing with workflow, we have 50 to distribute around content
+                // so the shift is -25
+                expect(store.getters['canvas/expandedViewBox']).toStrictEqual({
+                    top: -25,
+                    left: -25,
+                    width: 100,
+                    height: 100
+                });
+                let origin = { x: 0, y: 0 };
+                // origin is shifted by 25 in workflow space.
+                // absolute shift is 50.
+                expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
+                    x: 50,
+                    y: 50
+                });
+            });
+
+            test('content smaller than container - (negative, origin not included)', () => {
+                store.commit('canvas/setContainerSize', {
+                    width: 400,
+                    height: 400
+                });
+                workflowBounds = {
+                    left: -100,
+                    top: -100,
+                    right: -50,
+                    bottom: -50
+                };
+                // bounds are expanded to include origin
+                // {-150, -150, 0, 0}
+                expect(store.getters['canvas/canvasSize']).toStrictEqual({
+                    width: 400,
+                    height: 400
+                });
+                // space of 50 to distribute in worfklow space -> expand viewBox by 25 each side
+                expect(store.getters['canvas/expandedViewBox']).toStrictEqual({
+                    top: -175,
+                    left: -175,
+                    width: 200,
+                    height: 200
+                });
+                let origin = { x: 0, y: 0 };
+                expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
+                    x: 350,
+                    y: 350
+                });
+            });
+
+        });
     });
-
-    describe('contentBounds', () => {
-        it('positive coordinates', () => {
-            workflowBounds = {
-                left: 10,
-                top: 10,
-                right: 100,
-                bottom: 100
-            };
-
-            expect(store.getters['canvas/contentBounds']).toStrictEqual({
-                x: 0,
-                y: 0,
-                width: 110,
-                height: 110
-            });
-        });
-
-        it('origin inside of workflow', () => {
-            workflowBounds = {
-                left: -10,
-                top: -10,
-                right: 100,
-                bottom: 100
-            };
-
-            expect(store.getters['canvas/contentBounds']).toStrictEqual({
-                x: -10,
-                y: -10,
-                width: 110,
-                height: 110
-            });
-        });
-
-        it('negative coordinates', () => {
-            workflowBounds = {
-                left: -100,
-                top: -100,
-                right: -10,
-                bottom: -10
-            };
-
-            expect(store.getters['canvas/contentBounds']).toStrictEqual({
-                x: -110,
-                y: -110,
-                width: 110,
-                height: 110
-            });
-        });
-    });
-
-
 });

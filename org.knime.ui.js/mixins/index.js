@@ -31,7 +31,7 @@ export const portBar = {
          */
         portBarItemYPos(index, ports, absolute) {
             let total = ports.length;
-            return this.portBarHeight * (index + 1) / (total + 1) + (absolute ? this.contentBounds.y : 0);
+            return this.portBarHeight * (index + 1) / (total + 1) + (absolute ? this.contentBounds.top : 0);
         }
     },
     computed: {
@@ -41,7 +41,7 @@ export const portBar = {
             return this.contentBounds.height;
         },
         portBarYPos() {
-            return this.contentBounds.y;
+            return this.contentBounds.top;
         }
     }
 };

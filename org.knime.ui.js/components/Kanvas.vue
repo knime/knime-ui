@@ -10,6 +10,7 @@ import KanvasFilters from '~/components/KanvasFilters';
 let resizeObserver = null;
 let keyDownEventListener = null;
 let keyUpEventListener = null;
+let keyboardZoomEnabled = true;
 
 export default {
     components: {
@@ -43,8 +44,13 @@ export default {
             'isLinked',
             'isWritable'
         ]),
-        ...mapGetters('canvas', ['contentBounds', 'canvasSize', 'contentViewBox']),
-        ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor'])
+        ...mapGetters('canvas', ['contentBounds', 'canvasSize', 'expandedViewBox']),
+        ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor']),
+        viewBox() {
+            let { expandedViewBox } = this;
+            return  `${expandedViewBox.left} ${expandedViewBox.top} ` +
+                    `${expandedViewBox.width} ${expandedViewBox.height}`;
+        }
     },
     mounted() {
         // Start Key Listener
@@ -59,9 +65,26 @@ export default {
                 } else if (e.key === '1') {
                     this.setZoomToFit();
                 } else if (e.key === '+') {
-                    this.zoomCentered(1);
+                    /* zoom in by keyboard is throttled
+                     after zoomCentered it takes time for the scroller-container
+                     to update its scoll position according to the store state
+                     and to save that position in the store again
+                    */
+                    if (keyboardZoomEnabled) {
+                        keyboardZoomEnabled = false;
+                        this.zoomCentered(1);
+                        setTimeout(() => {
+                            keyboardZoomEnabled = true;
+                        }, 100);
+                    }
                 } else if (e.key === '-') {
-                    this.zoomCentered(-1);
+                    if (keyboardZoomEnabled) {
+                        keyboardZoomEnabled = false;
+                        this.zoomCentered(-1);
+                        setTimeout(() => {
+                            keyboardZoomEnabled = true;
+                        }, 100);
+                    }
                 } else {
                     handled = false;
                 }
@@ -221,7 +244,7 @@ export default {
       ref="svg"
       :width="canvasSize.width"
       :height="canvasSize.height"
-      :viewBox="contentViewBox"
+      :viewBox="viewBox"
       @mousedown.left="onMouseDown"
       @mouseup.self.left="onSelfMouseUp"
     >
@@ -292,8 +315,8 @@ export default {
       <!-- Only Shown when flag INCLUDE_DEBUG_CSS is set  -->
       <rect
         class="debug-css"
-        :x="contentBounds.x"
-        :y="contentBounds.y"
+        :x="contentBounds.left"
+        :y="contentBounds.top"
         :width="contentBounds.width"
         :height="contentBounds.height"
       />

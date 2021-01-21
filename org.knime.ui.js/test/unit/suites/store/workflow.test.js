@@ -207,10 +207,8 @@ describe('workflow store', () => {
     });
 
     describe('svg sizes', () => {
-        const {
-            canvasPadding, nodeSize, nodeStatusMarginTop, nodeStatusHeight, nodeNameMargin,
-            nodeNameLineHeight
-        } = $shapes;
+        const { nodeSize, nodeStatusMarginTop, nodeStatusHeight, nodeNameMargin,
+            nodeNameLineHeight } = $shapes;
 
         it('calculates dimensions of empty workflow', async () => {
             await loadStore();
@@ -225,13 +223,6 @@ describe('workflow store', () => {
                 right: 0,
                 top: 0,
                 bottom: 0
-            });
-
-            expect(store.getters['workflow/svgBounds']).toStrictEqual({
-                x: 0,
-                y: 0,
-                width: canvasPadding,
-                height: canvasPadding
             });
         });
 
@@ -252,14 +243,6 @@ describe('workflow store', () => {
                 right: 200 + nodeSize,
                 top: 200 - nodeNameMargin - nodeNameLineHeight,
                 bottom: 200 + nodeSize + nodeStatusMarginTop + nodeStatusHeight
-            });
-
-
-            expect(store.getters['workflow/svgBounds']).toStrictEqual({
-                x: 0,
-                y: 0,
-                width: 296,
-                height: 316
             });
         });
 
@@ -302,14 +285,6 @@ describe('workflow store', () => {
                 top: -10,
                 bottom: 20
             });
-
-
-            expect(store.getters['workflow/svgBounds']).toStrictEqual({
-                x: -10,
-                y: -10,
-                width: canvasPadding + 30,
-                height: canvasPadding + 30
-            });
         });
 
         it('calculates dimensions of workflow containing overlapping node + annotation', async () => {
@@ -334,13 +309,6 @@ describe('workflow store', () => {
                 top: -16,
                 bottom: 62
             });
-
-            expect(store.getters['workflow/svgBounds']).toStrictEqual({
-                x: 0,
-                y: -16,
-                width: canvasPadding + 52,
-                height: canvasPadding + 78
-            });
         });
 
         it('calculates dimensions of workflow containing multiple nodes', async () => {
@@ -359,13 +327,6 @@ describe('workflow store', () => {
                 right: 52,
                 top: -36,
                 bottom: 72
-            });
-
-            expect(store.getters['workflow/svgBounds']).toStrictEqual({
-                x: -10,
-                y: -36,
-                width: 126,
-                height: 172
             });
         });
     });

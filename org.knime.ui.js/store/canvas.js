@@ -20,14 +20,15 @@ export const state = {
 
 export const mutations = {
     /*
-        restore zoomFactor
-        overwrite containerScroll with savedContainerScroll
-        no need to restore savedContainerScroll, it will be overwritten
+        if savedState is undefined, restore defaults
+        else restore zoomFactor, overwrite containerScroll with savedContainerScroll
+        
+        no need to restore savedContainerScroll, it will be overwritten when setting containerScroll
         don't restore containerSize, it might have changed
     */
     restoreState(state, savedState) {
-        state.zoomFactor = savedState.zoomFactor;
-        state.containerScroll = savedState.savedContainerScroll;
+        state.zoomFactor = savedState?.zoomFactor || defaultZoomFactor;
+        state.containerScroll = savedState?.savedContainerScroll || { left: 0, top: 0 };
     },
     resetZoom(state) {
         state.zoomFactor = defaultZoomFactor;
@@ -84,36 +85,36 @@ export const actions = {
 export const getters = {
     /*
         extends the workflowBounds such that the origin is always drawn
-        space added to top and left to include the origin will be appended right and bottom to center the workflow
-        also padding is applied on all four sited
-        */
+        space added to top and left, used to include the origin will be appended right and bottom as well,
+        to center the workflow
+    */
     contentBounds(state, getters, rootState, rootGetters) {
         let { left, top, right, bottom } = rootGetters['workflow/workflowBounds'];
-        
+
         let width = right - left;
         let height = bottom - top;
-        
+
         // always draw the origin (0,0) but center content
         if (left > 0) {
-            width += left + left;
-            left = 0;
+            width += 2 * left; // add distance from left to origin to width two times
+            left = 0; // move rect to the left to include origin
         } else if (right < 0) {
-            width -= right + right;
-            left += right;
-            right = 0;
+            width -= 2 * right; // add distance from right to origin to width two times
+            left += right; // move rect to left to center
+            right = 0; // right is at origin
         }
         if (top > 0) {
-            height += top + top;
+            height += 2 * top;
             top = 0;
         } else if (bottom < 0) {
-            height -= bottom + bottom;
+            height -= 2 * bottom;
             top += bottom;
             bottom = 0;
         }
-       
+
         return {
-            x: left,
-            y: top,
+            left,
+            top,
             width,
             height
         };
@@ -121,7 +122,7 @@ export const getters = {
     /*
         largest zoomFactor s.t. the whole workflow fits inside the container
     */
-    fitToScreenZoomFactor({ containerSize }, { contentBounds }, rootState, rootGetters) {
+    fitToScreenZoomFactor({ containerSize }, { contentBounds }) {
         let { width: containerWidth, height: containerHeight } = containerSize;
         let { width: contentWidth, height: contentHeight } = contentBounds;
         let xFactor = containerWidth / contentWidth;
@@ -139,38 +140,37 @@ export const getters = {
         };
     },
     /*
-        if content is smaller than container, additional space is distributed around the content
-        if content is bigger/equal than container, no offset is added
-    */
-    contentPadding({ containerSize, zoomFactor }, { contentBounds }) {
-        let x = Math.min(0, (contentBounds.width - containerSize.width / zoomFactor) / 2);
-        let y = Math.min(0, (contentBounds.height - containerSize.height / zoomFactor) / 2);
-        return { x, y };
-    },
-    /*
         ViewBox of the SVG
     
-        If content >= container,
+        If zoomed content >= container,
             canvasSize = contentSize * zoomFactor, thus
-            viewBox has the size of the workflow
-            no offset for left and top
+            viewBox has the size of the content
+            no shift for left and top
     
-        If content < container,
+        If zoomed content < container,
             canvasSize = containerSize, thus
-            viewBoxSize has the size of the container / zoomFactor
-            additional space in the viewBox is distributed around content (=workflow)
+            viewBox has the size of the container / zoomFactor
+            viewBox is shifted, s.t. content appears centered
     */
-    contentViewBox({ zoomFactor }, { canvasSize, contentPadding }) {
-        return `${contentPadding.x} ${contentPadding.y} ` +
-            `${canvasSize.width / zoomFactor} ${canvasSize.height / zoomFactor}`;
+    expandedViewBox({ containerSize, zoomFactor }, { canvasSize, contentBounds }) {
+        let shiftX = Math.min(0, (contentBounds.width - containerSize.width / zoomFactor) / 2);
+        let shiftY = Math.min(0, (contentBounds.height - containerSize.height / zoomFactor) / 2);
+
+        return {
+            left: contentBounds.left + shiftX,
+            top: contentBounds.top + shiftY,
+            width: canvasSize.width / zoomFactor,
+            height: canvasSize.height / zoomFactor
+        };
     },
+
     /*
         returns the true offset from the upper-left corner of the Kanvas for a given point on the workflow
     */
-    getAbsoluteCoordinates({ zoomFactor }, { contentBounds, contentPadding }, rootState, rootGetters) {
+    getAbsoluteCoordinates({ zoomFactor }, { expandedViewBox }) {
         return ({ x: origX, y: origY }) => ({
-            x: (origX - contentBounds.x - contentPadding.x) * zoomFactor,
-            y: (origY - contentBounds.y - contentPadding.y) * zoomFactor
+            x: (origX - expandedViewBox.left) * zoomFactor,
+            y: (origY - expandedViewBox.top) * zoomFactor
         });
     }
 };
