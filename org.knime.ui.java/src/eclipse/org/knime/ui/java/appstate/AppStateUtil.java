@@ -157,7 +157,8 @@ public final class AppStateUtil {
 			}
 			if (wp != null) {
 				LOADED_PROJECT_IDS.add(wp.getID());
-				return createOpenedWorkflow(wp.getID(), new NodeIDEnt(wfm.getID()).toString(),
+				return createOpenedWorkflow(wp.getID(),
+						new NodeIDEnt(wfm.getID(), wfm.getProjectComponent().isPresent()).toString(),
 						isSelectedEditor(editorPart));
 			}
 		}
