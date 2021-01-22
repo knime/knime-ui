@@ -75,10 +75,6 @@ timeout(time: 15, unit: 'MINUTES') {
         'Tycho Build': {
             node('maven') {
                 knimetools.defaultTychoBuild(updateSiteProject: 'org.knime.update.ui', disableOWASP: true)
-			    stage('Sonarqube analysis') {
-			        env.lastStage = env.STAGE_NAME
-			        workflowTests.runSonar([])
-			    }
             }
         }
 
