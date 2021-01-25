@@ -29,7 +29,7 @@ describe('Opened projects store', () => {
             canvas: {
                 ...canvasStoreConfig,
                 state: {
-                    ...canvasStoreConfig.state,
+                    ...canvasStoreConfig.state(),
                     containerSize: { width: 200, height: 200 }
                 }
             },
@@ -45,7 +45,7 @@ describe('Opened projects store', () => {
 
     describe('mutations', () => {
         test('resetZoom', () => {
-            store.commit('setFactor', defaultZoomFactor + 1);
+            store.commit('canvas/setFactor', defaultZoomFactor + 1);
             store.commit('canvas/resetZoom');
             expect(store.state.canvas.zoomFactor).toBe(defaultZoomFactor);
         });
