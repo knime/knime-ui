@@ -72,7 +72,7 @@ const metaNode = {
 };
 
 describe('Node', () => {
-    let propsData, mocks, doMount, wrapper, portShiftMock, openedProjectsStoreConfig, workflowStoreConfig;
+    let propsData, mocks, doMount, wrapper, portShiftMock, storeConfig;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -81,25 +81,35 @@ describe('Node', () => {
 
     beforeEach(() => {
         wrapper = null;
-        workflowStoreConfig = {
-            mutations: {
-                selectNode: jest.fn(),
-                deselectNode: jest.fn(),
-                deselectAllNodes: jest.fn()
+        storeConfig = {
+            workflow: {
+                mutations: {
+                    selectNode: jest.fn(),
+                    deselectNode: jest.fn(),
+                    deselectAllNodes: jest.fn()
+                },
+                actions: {
+                    loadWorkflow: jest.fn(),
+                    executeNodes: jest.fn(),
+                    cancelNodeExecution: jest.fn(),
+                    resetNodes: jest.fn()
+                },
+                getters: {
+                    isWritable: () => true
+                }
             },
-            actions: {
-                loadWorkflow: jest.fn(),
-                executeNodes: jest.fn(),
-                cancelNodeExecution: jest.fn(),
-                resetNodes: jest.fn()
+            openedProjects: {
+                state() {
+                    return { activeId: 'projectId' };
+                },
+                actions: {
+                    switchWorkflow: jest.fn()
+                }
             },
-            getters: {
-                isWritable: () => true
-            }
-        };
-        openedProjectsStoreConfig = {
-            state() {
-                return { activeId: 'projectId' };
+            canvas: {
+                state: {
+                    zoomFactor: 1
+                }
             }
         };
         propsData = {
@@ -114,7 +124,7 @@ describe('Node', () => {
         portShiftMock = jest.spyOn(Node.methods, 'portShift');
 
         doMount = (mountMethod) => {
-            mocks.$store = mockVuexStore({ openedProjects: openedProjectsStoreConfig, workflow: workflowStoreConfig });
+            mocks.$store = mockVuexStore(storeConfig);
             wrapper = mountMethod(Node, { propsData, mocks });
         };
     });
@@ -202,7 +212,7 @@ describe('Node', () => {
             let actionBar = wrapper.findComponent(NodeActionBar);
             actionBar.vm.$emit('action', 'executeNodes');
 
-            expect(workflowStoreConfig.actions.executeNodes).toHaveBeenCalledWith(expect.anything(), {
+            expect(storeConfig.workflow.actions.executeNodes).toHaveBeenCalledWith(expect.anything(), {
                 nodeIds: ['root:1']
             });
         });
@@ -255,8 +265,8 @@ describe('Node', () => {
 
             await wrapper.find('g g g').trigger('mousedown', { button: 0 });
 
-            expect(workflowStoreConfig.mutations.deselectAllNodes).toHaveBeenCalled();
-            expect(workflowStoreConfig.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
+            expect(storeConfig.workflow.mutations.deselectAllNodes).toHaveBeenCalled();
+            expect(storeConfig.workflow.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
         });
 
         it('shift-click adds to selection', async () => {
@@ -264,7 +274,7 @@ describe('Node', () => {
             doMount(shallowMount);
 
             await wrapper.find('g g g').trigger('mousedown', { button: 0, shiftKey: true });
-            expect(workflowStoreConfig.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
+            expect(storeConfig.workflow.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
         });
 
         it('shift-click removes from selection', async () => {
@@ -272,13 +282,13 @@ describe('Node', () => {
             doMount(shallowMount);
 
             await wrapper.find('g g g').trigger('mousedown', { button: 0, shiftKey: true });
-            expect(workflowStoreConfig.mutations.deselectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
+            expect(storeConfig.workflow.mutations.deselectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
         });
 
         it('ctrl-click doest influence selection', async () => {
             doMount(shallowMount);
             await wrapper.find('g g g').trigger('mousedown', { button: 0, ctrlKey: true });
-            expect(workflowStoreConfig.mutations.selectNode).not.toHaveBeenCalled();
+            expect(storeConfig.workflow.mutations.selectNode).not.toHaveBeenCalled();
         });
 
         it('selection instantly shows default flowVariable ports', async () => {
@@ -425,10 +435,9 @@ describe('Node', () => {
         it('opens metanode on double click', async () => {
             propsData = { ...metaNode };
             doMount(shallowMount);
-            jest.spyOn(mocks.$store, 'dispatch');
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
-            expect(workflowStoreConfig.actions.loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
+            expect(storeConfig.openedProjects.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
                 workflowId: 'root:1',
                 projectId: 'projectId'
             });
@@ -437,12 +446,11 @@ describe('Node', () => {
         it('opens component on control-double click', async () => {
             propsData = { ...componentNode };
             doMount(shallowMount);
-            jest.spyOn(mocks.$store, 'dispatch');
             await wrapper.findComponent(NodeTorso).trigger('dblclick', {
                 ctrlKey: true
             });
 
-            expect(workflowStoreConfig.actions.loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
+            expect(storeConfig.openedProjects.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
                 workflowId: 'root:1',
                 projectId: 'projectId'
             });
@@ -454,7 +462,7 @@ describe('Node', () => {
             jest.spyOn(mocks.$store, 'dispatch');
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
-            expect(workflowStoreConfig.actions.loadWorkflow).not.toHaveBeenCalled();
+            expect(storeConfig.workflow.actions.loadWorkflow).not.toHaveBeenCalled();
         });
 
         it('does not open native node on double click', async () => {
@@ -463,7 +471,7 @@ describe('Node', () => {
             jest.spyOn(mocks.$store, 'dispatch');
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
-            expect(workflowStoreConfig.actions.loadWorkflow).not.toHaveBeenCalled();
+            expect(storeConfig.workflow.actions.loadWorkflow).not.toHaveBeenCalled();
         });
 
     });

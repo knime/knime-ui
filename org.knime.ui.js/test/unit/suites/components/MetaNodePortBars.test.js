@@ -3,13 +3,15 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
 import * as $shapes from '~/style/shapes';
+import * as canvasStoreConfig from '~/store/canvas';
 
 import MetaNodePortBars from '~/components/MetaNodePortBars';
 import MetaNodePortBar from '~/components/MetaNodePortBar';
 
 describe('MetaNodePortBars.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, activeWorkflow;
-    const y = 107;
+    const top = 107;
+    const extendedBoundsTop = 5;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -29,12 +31,17 @@ describe('MetaNodePortBars.vue', () => {
                     workflowBounds() {
                         return {
                             left: 0,
-                            right: 500
+                            width: 500,
+                            top
                         };
-                    },
-                    svgBounds() {
+                    }
+                }
+            },
+            canvas: {
+                getters: {
+                    contentBounds() {
                         return {
-                            y
+                            top: extendedBoundsTop
                         };
                     }
                 }
@@ -63,8 +70,9 @@ describe('MetaNodePortBars.vue', () => {
         doShallowMount();
         expect(wrapper.findAllComponents(MetaNodePortBar).length).toBe(1);
         let bar = wrapper.findAllComponents(MetaNodePortBar).at(0);
+
         expect(bar.props('type')).toBe(type);
-        expect(bar.props('y')).toBe(y);
+        expect(bar.props('y')).toBe(extendedBoundsTop);
         expect(bar.props('ports')).toEqual([dummy]);
     });
 
@@ -80,12 +88,11 @@ describe('MetaNodePortBars.vue', () => {
         expect(wrapper.findAllComponents(MetaNodePortBar).length).toBe(2);
         let inBar = wrapper.findAllComponents(MetaNodePortBar).at(0);
         expect(inBar.props('type')).toBe('in');
-        expect(inBar.props('y')).toBe(y);
+        expect(inBar.props('y')).toBe(extendedBoundsTop);
         expect(inBar.props('ports')).toEqual([dummy]);
         let outBar = wrapper.findAllComponents(MetaNodePortBar).at(1);
         expect(outBar.props('type')).toBe('out');
-        expect(outBar.props('y')).toBe(y);
+        expect(outBar.props('y')).toBe(extendedBoundsTop);
         expect(outBar.props('ports')).toEqual([dummy, dummy]);
-
     });
 });
