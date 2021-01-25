@@ -219,14 +219,18 @@ describe('Connector.vue', () => {
                         },
                         getters: {
                             ...workflowStoreConfig.getters,
-                            svgBounds() {
-                                return {
-                                    y: 33,
-                                    height: 1236
-                                };
-                            },
                             isWritable() {
                                 return true;
+                            }
+                        }
+                    },
+                    canvas: {
+                        getters: {
+                            contentBounds() {
+                                return {
+                                    top: 33,
+                                    height: 1236
+                                };
                             }
                         }
                     }
