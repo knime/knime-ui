@@ -47,13 +47,18 @@ export default {
                 return null;
             }
         },
-        onClick({ target }) {
+        async onClick({ target }) {
             if (!target || !target.href) {
                 return;
             }
             let { hash } = new URL(target.href, 'file://dummy/');
             let workflowId = decodeURIComponent(hash.replace(/^#/, ''));
-            this.$store.dispatch('workflow/loadWorkflow', { projectId: this.workflow.projectId, workflowId });
+            
+            await this.$store.dispatch('openedProjects/switchWorkflow',
+                {
+                    projectId: this.workflow.projectId,
+                    workflowId
+                });
         }
     }
 };

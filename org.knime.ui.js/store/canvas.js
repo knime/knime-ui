@@ -4,7 +4,7 @@ export const minZoomFactor = 0.1; // 10%
 export const maxZoomFactor = 5; // 500%
 const clampZoomFactor = (newFactor) => Math.min(Math.max(minZoomFactor, newFactor), maxZoomFactor);
 
-export const state = {
+export const state = () => ({
     zoomFactor: defaultZoomFactor,
     containerSize: { width: 0, height: 0 },
     /*
@@ -16,7 +16,7 @@ export const state = {
         Only used to save and restore scroll state. Don't use otherwise.
     */
     savedContainerScroll: { left: 0, top: 0 }
-};
+});
 
 export const mutations = {
     /*

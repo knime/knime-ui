@@ -4,7 +4,8 @@
 
 export const state = () => ({
     items: [],
-    activeId: null
+    activeId: null,
+    savedState: {}
 });
 
 export const mutations = {
@@ -14,13 +15,14 @@ export const mutations = {
     setProjects(state, projects) {
         state.items = projects.map(({ projectId, name }) => ({ projectId, name }));
     },
-    saveState(state, { project, savedState }) {
-        project.savedState = savedState;
+    saveState(state, { projectId, workflowId, savedState }) {
+        let projectState = state.savedState[projectId];
+        if (!projectState) {
+            projectState = {};
+            state.savedState[projectId] = projectState;
+        }
+        projectState[workflowId] = savedState;
     }
-};
-
-export const getters = {
-    activeProject: state => state.items.find(({ projectId }) => projectId === state.activeId)
 };
 
 export const actions = {
@@ -45,13 +47,16 @@ export const actions = {
             consola.error('No active workflow provided');
         }
     },
-    async switchProject({ state, commit, dispatch }, projectId) {
-        await dispatch('saveTabState');
+    async switchWorkflow({ commit, dispatch, rootGetters }, { projectId, workflowId }) {
+        if (rootGetters['workflow/activeWorkflowId']) {
+            await dispatch('saveTabState');
+        }
+
         commit('setActiveId', projectId);
-        await dispatch('workflow/loadWorkflow', { projectId }, { root: true });
+        await dispatch('workflow/loadWorkflow', { projectId, workflowId }, { root: true });
         await dispatch('restoreTabState');
     },
-    saveTabState({ state, commit, dispatch, rootState, getters }, projectId) {
+    saveTabState({ state, commit, rootState, rootGetters }) {
         let savedState = {
             canvas: rootState.canvas
         };
@@ -59,10 +64,17 @@ export const actions = {
         // deep clone without observers
         savedState = JSON.parse(JSON.stringify(savedState));
 
-        commit('saveState', { project: getters.activeProject, savedState });
+        commit('saveState', {
+            projectId: state.activeId,
+            workflowId: rootGetters['workflow/activeWorkflowId'],
+            savedState
+        });
     },
-    restoreTabState({ state, commit, dispatch, rootState, getters }) {
-        let savedState = getters.activeProject.savedState; // is undefined if not saved yet
-        commit('canvas/restoreState', savedState?.canvas, { root: true });
+    restoreTabState({ state: { savedState, activeId }, commit, rootGetters }) {
+        const workflowId = rootGetters['workflow/activeWorkflowId'];
+
+        // is undefined if opened for the first time
+        const savedWorkflowState = savedState[activeId]?.[workflowId];
+        commit('canvas/restoreState', savedWorkflowState?.canvas, { root: true });
     }
 };
