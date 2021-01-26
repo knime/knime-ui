@@ -1,12 +1,15 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
-import { canvasPadding,
+import {
+    canvasPadding,
     defaultMetaNodeBarHeight,
     defaultMetanodeBarPosition,
     metaNodeBarWidth,
-    portSize } from '~/style/shapes';
+    portSize
+} from '~/style/shapes';
 import Vuex from 'vuex';
+import * as canvasStoreConfig from '~/store/canvas'
 
 describe('workflow store', () => {
     let store, localVue, templateMutationMock, loadStore;
@@ -37,7 +40,8 @@ describe('workflow store', () => {
                     mutations: {
                         add: templateMutationMock
                     }
-                }
+                },
+                canvas: canvasStoreConfig
             });
         };
     });
@@ -66,7 +70,7 @@ describe('workflow store', () => {
                 additionalProps: {},
                 expected: {
                     workflowBounds: { left: 0, right: 0, top: 0, bottom: 0 },
-                    svgBounds: { x: 0, y: 0, width: canvasPadding, height: canvasPadding }
+                    contentBounds: { x: 0, y: 0, width: canvasPadding, height: canvasPadding }
                 }
             },
             'with input ports only': {
@@ -82,7 +86,7 @@ describe('workflow store', () => {
                         top: 0,
                         bottom: defaultMetaNodeBarHeight
                     },
-                    svgBounds: {
+                    contentBounds: {
                         x: -metaNodeBarWidth,
                         y: 0,
                         width: metaNodeBarWidth + portSize + canvasPadding,
@@ -103,7 +107,7 @@ describe('workflow store', () => {
                         top: 0,
                         bottom: defaultMetaNodeBarHeight
                     },
-                    svgBounds: {
+                    contentBounds: {
                         x: 0,
                         y: 0,
                         width: defaultMetanodeBarPosition + metaNodeBarWidth + canvasPadding,
@@ -127,7 +131,7 @@ describe('workflow store', () => {
                         top: 0,
                         bottom: defaultMetaNodeBarHeight
                     },
-                    svgBounds: {
+                    contentBounds: {
                         x: -metaNodeBarWidth,
                         y: 0,
                         width: defaultMetanodeBarPosition + metaNodeBarWidth + canvasPadding,
@@ -149,7 +153,7 @@ describe('workflow store', () => {
                         top: 0,
                         bottom: defaultMetaNodeBarHeight
                     },
-                    svgBounds: {
+                    contentBounds: {
                         x: 0,
                         y: 0,
                         width: 123 + portSize + canvasPadding,
@@ -171,7 +175,7 @@ describe('workflow store', () => {
                         top: 0,
                         bottom: defaultMetaNodeBarHeight
                     },
-                    svgBounds: {
+                    contentBounds: {
                         x: 0,
                         y: 0,
                         width: 123 + metaNodeBarWidth + canvasPadding,
@@ -197,7 +201,7 @@ describe('workflow store', () => {
                         top: 0,
                         bottom: defaultMetaNodeBarHeight
                     },
-                    svgBounds: {
+                    contentBounds: {
                         x: 0,
                         y: 0,
                         width: 400 + metaNodeBarWidth + canvasPadding,
@@ -224,7 +228,7 @@ describe('workflow store', () => {
                     }]
                 },
                 expected: {
-                    svgBounds: {
+                    contentBounds: {
                         height: 1264,
                         width: 1474,
                         x: -110,
@@ -263,7 +267,7 @@ describe('workflow store', () => {
                         top: -200,
                         bottom: 1000 - 200
                     },
-                    svgBounds: {
+                    contentBounds: {
                         x: -300 - metaNodeBarWidth,
                         y: -200,
                         width: defaultMetanodeBarPosition + metaNodeBarWidth + canvasPadding,
@@ -289,7 +293,7 @@ describe('workflow store', () => {
                         top: 0,
                         bottom: 500
                     },
-                    svgBounds: {
+                    contentBounds: {
                         x: -100 - portSize,
                         y: 0,
                         height: 500 + canvasPadding,
@@ -306,7 +310,7 @@ describe('workflow store', () => {
             });
             expect({
                 workflowBounds: store.getters['workflow/workflowBounds'],
-                svgBounds: store.getters['workflow/svgBounds']
+                contentBounds: store.getters['canvas/contentBounds']
             }).toStrictEqual(expected);
         });
     });

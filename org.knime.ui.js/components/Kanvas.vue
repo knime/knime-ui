@@ -106,8 +106,8 @@ export default {
         });
 
         // Start Container Observers
-        this.initContainerSize();
-        this.initResizeObserver();
+        // this.initContainerSize();
+        // this.initResizeObserver();
         this.$watch('containerScroll', (newVal) => {
             this.$el.scrollLeft = newVal.left;
             this.$el.scrollTop = newVal.top;
@@ -167,8 +167,8 @@ export default {
             // get mouse cursor position on canvas
             let scrollContainer = this.$el;
             let bcr = scrollContainer.getBoundingClientRect();
-            let cursorX = e.clientX - bcr.left;
-            let cursorY = e.clientY - bcr.top;
+            let cursorX = e.clientX - bcr.x;
+            let cursorY = e.clientY - bcr.y;
 
             // get current scroll offset
             let scrollX = scrollContainer.scrollLeft;
@@ -201,7 +201,10 @@ export default {
         },
         onScroll(e) {
             const { target: { scrollLeft, scrollTop } } = e;
-            // could be throttled
+            /*
+              could be throttled
+              https://developer.mozilla.org/en-US/docs/Web/API/Element/scroll_event
+            */
             this.$store.commit('canvas/saveContainerScroll', { left: scrollLeft, top: scrollTop });
         }
     }
