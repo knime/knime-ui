@@ -51,6 +51,18 @@ describe('Kanvas', () => {
         });
         HTMLElement.prototype.getBoundingClientRect = getBCRMock;
 
+        // Mock ResizeObserver Class
+        window.ResizeObserver = function (callback) {
+            this.callback = callback;
+            this.observe = function (element) {
+                this.element = element;
+            };
+            this.resize = function ({ width, height }) {
+                this.callback([{ target: this.element, contentRect: { width, height } }]);
+            };
+            this.disconnect = jest.fn();
+        };
+
         wrapper = null;
         nodeData = {
             'root:0': mockNode({ id: 'root:0', position: { x: -32, y: -32 } }),
@@ -113,12 +125,13 @@ describe('Kanvas', () => {
                     ...canvasStoreConfig.mutations,
                     resetZoom: jest.fn(),
                     zoomWithPointer: jest.fn(),
-                    saveContainerScroll: jest.fn()
+                    saveContainerScroll: jest.fn(),
+                    setContainerSize: jest.fn()
                 },
                 actions: {
                     ...canvasStoreConfig.actions,
                     setZoomToFit: jest.fn(),
-                    zoomCentered: jest.fn(),
+                    zoomCentered: jest.fn()
                 }
             }
         };
@@ -322,22 +335,51 @@ describe('Kanvas', () => {
             });
         });
 
+        it('observes container resize', () => {
+
+            doShallowMount();
+            wrapper.vm.resizeObserver.resize({ width: 100, height: 50 });
+            expect(storeConfig.canvas.mutations.setContainerSize).toHaveBeenCalledWith(expect.anything(), {
+                width: 100, height: 50
+            });
+
+        });
+
+        it('observes container resize', () => {
+            doShallowMount();
+            let resizeObserver = wrapper.vm.resizeObserver;
+            wrapper.destroy();
+            expect(resizeObserver.disconnect).toHaveBeenCalled();
+        });
+
         it('pans', async () => {
             doShallowMount();
+            wrapper.element.setPointerCapture = jest.fn();
+            wrapper.element.releasePointerCapture = jest.fn();
+
             wrapper.element.scrollLeft = 100;
             wrapper.element.scrollTop = 100;
-            wrapper.element.dispatchEvent(new PointerEvent('pointerdown', {
+            wrapper.trigger('pointerdown', {
                 button: 1, // middle
                 screenX: 100,
-                screenY: 100
-            }));
-            wrapper.element.dispatchEvent(new PointerEvent('pointermove', {
+                screenY: 100,
+                pointerId: -1
+            });
+            expect(wrapper.element.setPointerCapture).toHaveBeenCalledWith(-1);
+
+            wrapper.trigger('pointermove', {
                 screenX: 90,
                 screenY: 90
-            }));
+            });
             await Vue.nextTick();
-            expect(wrapper.element.scrollLeft).toBe(90);
-            expect(wrapper.element.scrollTop).toBe(90);
+            expect(wrapper.element.scrollLeft).toBe(110);
+            expect(wrapper.element.scrollTop).toBe(110);
+
+            wrapper.trigger('pointerup', {
+                pointerId: -1
+            });
+            expect(wrapper.element.releasePointerCapture).toHaveBeenCalledWith(-1);
+
         });
     });
 

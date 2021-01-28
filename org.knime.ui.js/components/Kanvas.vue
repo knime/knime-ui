@@ -7,10 +7,8 @@ import Tooltip from '~/components/Tooltip';
 import MetaNodePortBars from '~/components/MetaNodePortBars';
 import KanvasFilters from '~/components/KanvasFilters';
 
-let resizeObserver = null;
 let keyDownEventListener = null;
 let keyUpEventListener = null;
-let keyboardZoomEnabled = true;
 
 export default {
     components: {
@@ -70,20 +68,20 @@ export default {
                      to update its scoll position according to the store state
                      and to save that position in the store again
                     */
-                    if (keyboardZoomEnabled) {
-                        keyboardZoomEnabled = false;
+                    if (!this.keyboardZoomDisabled) {
+                        this.keyboardZoomDisabled = true;
                         this.zoomCentered(1);
                         setTimeout(() => {
-                            keyboardZoomEnabled = true;
-                        }, 100);
+                            this.keyboardZoomDisabled = false;
+                        }, 200);
                     }
                 } else if (e.key === '-') {
-                    if (keyboardZoomEnabled) {
-                        keyboardZoomEnabled = false;
+                    if (!this.keyboardZoomDisabled) {
+                        this.keyboardZoomDisabled = true;
                         this.zoomCentered(-1);
                         setTimeout(() => {
-                            keyboardZoomEnabled = true;
-                        }, 100);
+                            this.keyboardZoomDisabled = false;
+                        }, 200);
                     }
                 } else {
                     handled = false;
@@ -107,7 +105,7 @@ export default {
 
         // Start Container Observers
         // this.initContainerSize();
-        // this.initResizeObserver();
+        this.initResizeObserver();
         this.$watch('containerScroll', (newVal) => {
             this.$el.scrollLeft = newVal.left;
             this.$el.scrollTop = newVal.top;
@@ -146,18 +144,18 @@ export default {
             this.$store.commit('canvas/setContainerSize', { width, height });
         },
         initResizeObserver() {
-            resizeObserver = new ResizeObserver(entries => {
+            this.resizeObserver = new ResizeObserver(entries => {
                 const containerEl = entries.find(({ target }) => target === this.$el);
                 if (containerEl?.contentRect) {
                     const { width, height } = containerEl.contentRect;
                     this.$store.commit('canvas/setContainerSize', { width, height });
                 }
             });
-            resizeObserver.observe(this.$el);
+            this.resizeObserver.observe(this.$el);
         },
         stopResizeObserver() {
-            if (resizeObserver) {
-                resizeObserver.disconnect();
+            if (this.resizeObserver) {
+                this.resizeObserver.disconnect();
             }
         },
         onMouseWheel(e) {
