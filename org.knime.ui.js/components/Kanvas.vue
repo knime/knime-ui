@@ -6,6 +6,8 @@ import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import Tooltip from '~/components/Tooltip';
 import MetaNodePortBars from '~/components/MetaNodePortBars';
 import KanvasFilters from '~/components/KanvasFilters';
+import StreamedIcon from '~/components/../webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
+import ConnectorLabel from '~/components/ConnectorLabel';
 
 export default {
     components: {
@@ -14,7 +16,9 @@ export default {
         WorkflowAnnotation,
         Tooltip,
         MetaNodePortBars,
-        KanvasFilters
+        KanvasFilters,
+        StreamedIcon,
+        ConnectorLabel
     },
     data() {
         return {
@@ -34,7 +38,8 @@ export default {
         ...mapGetters('workflow', [
             'svgBounds',
             'isLinked',
-            'isWritable'
+            'isWritable',
+            'isStreaming'
         ])
     },
     mounted() {
@@ -67,12 +72,22 @@ export default {
 
 <template>
   <div :class="{ 'read-only': !isWritable }">
+    <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
-      v-if="isLinked"
-      class="link-notification"
+      v-if="isLinked || isStreaming"
+      :class="['type-notification', {onlyStreaming: isStreaming && !isLinked}]"
     >
-      <span>
+      <span
+        v-if="isLinked"
+      >
         This is a linked {{ workflow.info.containerType }} and can therefore not be edited.
+      </span>
+      <span
+        v-if="isStreaming"
+        :class="['streaming-decorator', { isLinked }]"
+      >
+        <StreamedIcon class="streamingIcon" />
+        <p>Streaming</p>
       </span>
     </div>
 
@@ -158,6 +173,12 @@ export default {
         tag="g"
         name="node-actions"
       />
+
+      <ConnectorLabel
+        v-for="(connector, id) of workflow.connections"
+        :key="`connector-label-${workflow.projectId}-${id}`"
+        v-bind="connector"
+      />
     </svg>
   </div>
 </template>
@@ -176,11 +197,11 @@ svg {
   background-color: var(--knime-gray-ultra-light);
 }
 
-.link-notification {
+.type-notification {
   /* positioning */
   display: flex;
   margin: 0 10px;
-  height: 40px;
+  min-height: 40px;
   margin-bottom: -40px;
   left: 10px;
   top: 10px;
@@ -198,5 +219,43 @@ svg {
     text-align: center;
     width: 100%;
   }
+
+  & p {
+    font-size: 16px;
+    align-self: center;
+    text-align: center;
+    margin-right: 10px;
+  }
+}
+
+.streamingIcon {
+  margin-right: 5px;
+  width: 32px;
+}
+
+.streaming-decorator {
+  pointer-events: none;
+  display: flex;
+  margin-right: 10px;
+  height: 40px;
+  justify-content: flex-end;
+  flex-basis: 80px;
+  flex-shrink: 0;
+
+  & p {
+    font-size: 16px;
+    align-self: center;
+    text-align: center;
+  }
+
+  &.isLinked p {
+    margin-right: 10px;
+  }
+}
+
+.onlyStreaming {
+  background-color: unset;
+  justify-content: flex-end;
+  margin-right: 0;
 }
 </style>

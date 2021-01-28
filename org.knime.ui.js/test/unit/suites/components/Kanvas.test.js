@@ -30,7 +30,8 @@ const mockConnector = ({ nr }) => ({
     destNode: '',
     sourcePort: nr,
     destPort: 0,
-    flowVariableConnection: false
+    flowVariableConnection: false,
+    streaming: false
 });
 
 describe('Kanvas', () => {
@@ -55,6 +56,9 @@ describe('Kanvas', () => {
                 containerType: 'project',
                 name: 'wf1'
             },
+            executionInfo: {
+                jobManager: 'test'
+            },
             nodes: nodeData,
             connections: {
                 inA: mockConnector({ nr: 0 }),
@@ -77,6 +81,9 @@ describe('Kanvas', () => {
                 isLinked() {
                     return workflow.info.linked;
                 },
+                isStreaming() {
+                    return workflow.info.jobManager;
+                },
                 isWritable() {
                     return !workflow.info.linked;
                 },
@@ -94,6 +101,9 @@ describe('Kanvas', () => {
                 },
                 nodeDialog() {
                     return () => false;
+                },
+                executionInfo() {
+                    return ({ nodeId }) => workflow.nodes[nodeId].executionInfo;
                 }
             }
         };
@@ -145,7 +155,8 @@ describe('Kanvas', () => {
                     allowedActions: null,
                     selected: false,
                     dialog: false,
-                    view: { available: true }
+                    view: { available: true },
+                    executionInfo: null
                 };
                 expect(props).toStrictEqual(expected);
             });
@@ -160,13 +171,23 @@ describe('Kanvas', () => {
             expect(wrapper.find('.read-only').exists()).toBe(false);
             expect(wrapper.find('.link-notification').exists()).toBe(false);
         });
+
+        it('is not streaming', () => {
+            expect(wrapper.find('.streaming-decorator').exists()).toBe(false);
+        });
     });
 
     it('write-protects and shows warning on being linked', () => {
         workflow.info.linked = true;
         doShallowMount();
         expect(wrapper.find('.read-only').exists()).toBe(true);
-        expect(wrapper.find('.link-notification').exists()).toBe(true);
+        expect(wrapper.find('.type-notification').exists()).toBe(true);
+    });
+
+    it('shows decorator in streaming component', () => {
+        workflow.info.jobManager = 'test';
+        doShallowMount();
+        expect(wrapper.find('.streaming-decorator').exists()).toBe(true);
     });
 
     it('renders workflow annotations', () => {

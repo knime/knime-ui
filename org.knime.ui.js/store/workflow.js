@@ -133,6 +133,9 @@ export const getters = {
     isWritable(state, getters) {
         return !getters.isLinked;
     },
+    isStreaming({ activeWorkflow }) {
+        return Boolean(activeWorkflow?.info.jobManager);
+    },
     /*
         returns the true offset from the upper-left corner of the svg for a given point
     */
@@ -306,4 +309,5 @@ export const getters = {
             return node.dialog;
         };
     }
+
 };

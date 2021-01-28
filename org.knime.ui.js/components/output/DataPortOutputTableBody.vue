@@ -24,6 +24,12 @@ export default {
       v-for="(row, rowIndex) of rows"
       :key="`row-${rowIndex}`"
     >
+      <td>
+        <template v-if="row.id">
+          {{ row.id }}
+        </template>
+        <MissingValueIcon v-else />
+      </td>
       <td
         v-for="(cell, cellIndex) of row.cells"
         :key="`cell-${rowIndex}-${cellIndex}`"

@@ -19,6 +19,12 @@ export default {
 <template>
   <thead>
     <tr>
+      <th>
+        <span
+          class="title"
+          title="Row ID"
+        >ID</span>
+      </th>
       <th
         v-for="(column, index) of columns"
         :key="`table-header-${index}`"

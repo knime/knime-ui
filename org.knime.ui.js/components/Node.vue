@@ -5,6 +5,7 @@ import NodeState from '~/components/NodeState';
 import NodeTorso from '~/components/NodeTorso';
 import NodeAnnotation from '~/components/NodeAnnotation';
 import LinkDecorator from '~/components/LinkDecorator';
+import StreamingDecorator from '~/components/StreamingDecorator';
 import portShift from '~/util/portShift';
 import NodeActionBar from '~/components/NodeActionBar.vue';
 
@@ -24,7 +25,8 @@ export default {
         NodeAnnotation,
         NodeTorso,
         NodeState,
-        LinkDecorator
+        LinkDecorator,
+        StreamingDecorator
     },
     inheritAttrs: false,
     provide() {
@@ -57,7 +59,6 @@ export default {
          * Output ports. List of configuration objects passed-through to the `Port` component
          */
         outPorts: { type: Array, required: true },
-
 
         position: {
             type: Object,
@@ -134,6 +135,18 @@ export default {
         dialog: {
             type: Boolean,
             default: false
+        },
+        /**
+         *  Information about the node execution. Might not be present if no special node execution info is available
+         *  If given, usually only one of the following properties is set, either the icon, the 'streamble'-flag, or the
+         *  jobManager
+         */
+        executionInfo: {
+            type: Object,
+            validator(info) {
+                return !info || info.streamable || info.jobManager || info.icon;
+            },
+            default: null
         }
     },
     data() {
@@ -156,6 +169,14 @@ export default {
                 height: (top + nodeSize + bottom) + (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0),
                 width: left + right + nodeSize
             };
+        },
+        /**
+         * Checks if a streamable execution info has been set. The boolean value of the streamable variable does not matter,
+         * as the presence of the variable already indicates that the node is inside of a streaming component
+         * @return {boolean} if true action bar will be hidden
+         */
+        hideActionBar() {
+            return typeof this.executionInfo?.streamable !== 'undefined';
         }
     },
     methods: {
@@ -252,13 +273,13 @@ export default {
       to="node-actions"
     >
       <NodeActionBar
+        v-if="!hideActionBar"
         ref="actionbar"
         v-bind="allowedActions"
         :node-dialog="dialog"
         :node-view="view"
         :transform="`translate(${position.x + $shapes.nodeSize / 2} ${position.y - $shapes.nodeSelectionPadding[0]})`"
         :node-id="id"
-
         @action="onAction"
         @mouseleave.native="onLeaveHoverArea"
       />
@@ -330,6 +351,13 @@ export default {
           v-if="link"
           :type="type"
           transform="translate(0, 21)"
+        />
+
+        <StreamingDecorator
+          v-if="executionInfo"
+          :type="type"
+          :execution-info="executionInfo"
+          transform="translate(21, 21)"
         />
 
         <NodeState
