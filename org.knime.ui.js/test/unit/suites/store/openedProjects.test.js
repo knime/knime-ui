@@ -25,9 +25,13 @@ describe('Opened projects store', () => {
                 }
             },
             canvas: {
-                state: { saveMe: 'canvas' },
                 mutations: {
                     restoreState: jest.fn()
+                },
+                getters: {
+                    saveState: () => ({
+                        saveMe: 'canvas'
+                    })
                 }
             }
         };

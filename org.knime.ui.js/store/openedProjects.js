@@ -58,7 +58,7 @@ export const actions = {
     },
     saveTabState({ state, commit, rootState, rootGetters }) {
         let savedState = {
-            canvas: rootState.canvas
+            canvas: rootGetters['canvas/saveState']
         };
 
         // deep clone without observers

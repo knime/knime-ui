@@ -1,3 +1,5 @@
+import Vue from 'vue';
+
 export const zoomMultiplier = 1.07;
 export const defaultZoomFactor = 1;
 export const minZoomFactor = 0.1; // 10%
@@ -7,19 +9,13 @@ const clampZoomFactor = (newFactor) => Math.min(Math.max(minZoomFactor, newFacto
 export const state = () => ({
     zoomFactor: defaultZoomFactor,
     suggestPanning: false,
-    containerSize: { width: 0, height: 0 },
-    /*
-        When containerScroll is changed, the container will update
-    */
-    containerScroll: { left: 0, top: 0 },
-    /*
-        Is updated whenever the container is scrolled, programmatically or by user.
-        Only used to save and restore scroll state. Don't use otherwise.
-    */
-    savedContainerScroll: { left: 0, top: 0 }
+    containerSize: { width: 0, height: 0 }
 });
 
 export const mutations = {
+    setScrollContainerElement(state, el) {
+        state.getScrollContainerElement = () => el;
+    },
     /*
         if savedState is undefined, restore defaults
         else restore zoomFactor, overwrite containerScroll with savedContainerScroll
@@ -29,7 +25,12 @@ export const mutations = {
     */
     restoreState(state, savedState) {
         state.zoomFactor = savedState?.zoomFactor || defaultZoomFactor;
-        state.containerScroll = savedState?.savedContainerScroll || { left: 0, top: 0 };
+
+        let el = state.getScrollContainerElement();
+        Vue.nextTick(() => {
+            el.scrollLeft = savedState?.scrollLeft || 0;
+            el.scrollTop = savedState?.scrollTop || 0;
+        });
     },
     resetZoom(state) {
         state.zoomFactor = defaultZoomFactor;
@@ -44,12 +45,7 @@ export const mutations = {
         state.containerSize.width = width;
         state.containerSize.height = height;
     },
-    /* save manual scroll by user and automatic scroll from zooming */
-    saveContainerScroll(state, { left, top }) {
-        state.savedContainerScroll.left = left;
-        state.savedContainerScroll.top = top;
-    },
-    zoomWithPointer(state, { delta, cursorX, cursorY, scrollX, scrollY }) {
+    zoomWithPointer(state, { delta, cursorX, cursorY }) {
         let oldZoomFactor = state.zoomFactor;
         let newZoomFactor = clampZoomFactor(state.zoomFactor * Math.pow(zoomMultiplier, delta));
         state.zoomFactor = newZoomFactor;
@@ -66,8 +62,10 @@ export const mutations = {
 
         // If the user zooms in, the scroll bars are adjusted by those values to move the point under the cursor
         // If zoomed out further than 'fitToScreen', there won't be scrollbars and those numbers will be negative. Hence, no scrolling will be done.
-        state.containerScroll.left = newZoomFactor / oldZoomFactor * (scrollX + cursorX) - cursorX;
-        state.containerScroll.top = newZoomFactor / oldZoomFactor * (scrollY + cursorY) - cursorY;
+        let el = state.getScrollContainerElement();
+        el.scrolled = true;
+        el.scrollLeft = newZoomFactor / oldZoomFactor * (el.scrollLeft + cursorX) - cursorX;
+        el.scrollTop = newZoomFactor / oldZoomFactor * (el.scrollTop + cursorY) - cursorY;
     }
 };
 
@@ -78,8 +76,6 @@ export const actions = {
     zoomCentered({ commit, getters, state }, delta) {
         commit('zoomWithPointer', {
             delta,
-            scrollX: state.savedContainerScroll.left,
-            scrollY: state.savedContainerScroll.top,
             cursorX: state.containerSize.width / 2,
             cursorY: state.containerSize.height / 2
         });
@@ -87,6 +83,14 @@ export const actions = {
 };
 
 export const getters = {
+    saveState({ zoomFactor, getScrollContainerElement }) {
+        let el = getScrollContainerElement();
+        return {
+            zoomFactor,
+            scrollLeft: el.scrollLeft,
+            scrollTop: el.scrollTop
+        };
+    },
     /*
         extends the workflowBounds such that the origin is always drawn
         space added to top and left, used to include the origin will be appended right and bottom as well,

@@ -49,15 +49,13 @@ export default {
     },
     mounted() {
         // Start Container Observers
-        // this.initContainerSize();
+        this.initContainerSize();
+        this.setScrollContainerElement(this.$el);
+
         this.initResizeObserver();
-        this.$watch('containerScroll', (newVal) => {
-            this.$el.scrollLeft = newVal.left;
-            this.$el.scrollTop = newVal.top;
-        }, { deep: true });
     },
     beforeDestroy() {
-        
+        this.setScrollContainerElement(null);
         
         // Stop Resize Observer
         this.stopResizeObserver();
@@ -80,7 +78,7 @@ export default {
         /*
             Zooming
         */
-        ...mapMutations('canvas', ['resetZoom']),
+        ...mapMutations('canvas', ['resetZoom', 'setScrollContainerElement']),
         initContainerSize() {
             const { width, height } = this.$el.getBoundingClientRect();
             this.$store.commit('canvas/setContainerSize', { width, height });
@@ -109,12 +107,8 @@ export default {
             let bcr = scrollContainer.getBoundingClientRect();
             let cursorX = e.clientX - bcr.x;
             let cursorY = e.clientY - bcr.y;
-
-            // get current scroll offset
-            let scrollX = scrollContainer.scrollLeft;
-            let scrollY = scrollContainer.scrollTop;
             
-            this.$store.commit('canvas/zoomWithPointer', { delta, cursorX, cursorY, scrollX, scrollY });
+            this.$store.commit('canvas/zoomWithPointer', { delta, cursorX, cursorY });
         },
         /*
             Panning
@@ -138,14 +132,6 @@ export default {
                 this.$el.releasePointerCapture(e.pointerId);
                 e.stopPropagation();
             }
-        },
-        onScroll(e) {
-            const { target: { scrollLeft, scrollTop } } = e;
-            /*
-              could be throttled
-              https://developer.mozilla.org/en-US/docs/Web/API/Element/scroll_event
-            */
-            this.$store.commit('canvas/saveContainerScroll', { left: scrollLeft, top: scrollTop });
         }
     }
 };
@@ -161,7 +147,6 @@ export default {
     @pointerdown.left.alt="beginPan"
     @pointerup.left="stopPan"
     @pointermove="movePan"
-    @scroll="onScroll"
   >
     <div
       v-if="isLinked"

@@ -125,8 +125,8 @@ describe('Kanvas', () => {
                     ...canvasStoreConfig.mutations,
                     resetZoom: jest.fn(),
                     zoomWithPointer: jest.fn(),
-                    saveContainerScroll: jest.fn(),
-                    setContainerSize: jest.fn()
+                    setContainerSize: jest.fn(),
+                    setScrollContainerElement: jest.fn()
                 },
                 actions: {
                     ...canvasStoreConfig.actions,
@@ -239,27 +239,14 @@ describe('Kanvas', () => {
             expect(viewBox).toBe('-10 -10 50 50');
         });
 
-        it('reacts to scroll change in store', async () => {
+        it('makes scrollContainer accessible to store', () => {
             doShallowMount();
-            expect(wrapper.element.scrollLeft).toBe(0);
-            expect(wrapper.element.scrollLeft).toBe(0);
-
-            // change scrollLeft
-            $store.state.canvas.containerScroll.left = 5;
-            await Vue.nextTick();
-            expect(wrapper.element.scrollLeft).toBe(5);
-            expect(wrapper.element.scrollTop).toBe(0);
-
-            // change scrollTop
-            $store.state.canvas.containerScroll.top = 5;
-            await Vue.nextTick();
-            expect(wrapper.element.scrollTop).toBe(5);
+            expect(storeConfig.canvas.mutations.setScrollContainerElement)
+                .toHaveBeenCalledWith(expect.anything(), wrapper.element);
         });
 
         test('mouse wheel zooms', () => {
             doShallowMount();
-            wrapper.element.scrollLeft = 10;
-            wrapper.element.scrollTop = 10;
 
             wrapper.element.dispatchEvent(new WheelEvent('wheel', {
                 deltaY: -5,
@@ -270,25 +257,11 @@ describe('Kanvas', () => {
             expect(storeConfig.canvas.mutations.zoomWithPointer).toHaveBeenCalledWith(expect.anything(), {
                 delta: 1,
                 cursorX: 5,
-                cursorY: 0,
-                scrollX: 10,
-                scrollY: 10
-            });
-        });
-
-        it('saves scroll by user into store', () => {
-            doShallowMount();
-            wrapper.element.scrollLeft = 100;
-            wrapper.element.scrollTop = 100;
-            wrapper.element.dispatchEvent(new CustomEvent('scroll'));
-            expect(storeConfig.canvas.mutations.saveContainerScroll).toHaveBeenCalledWith(expect.anything(), {
-                left: 100,
-                top: 100
+                cursorY: 0
             });
         });
 
         it('observes container resize', () => {
-
             doShallowMount();
             wrapper.vm.resizeObserver.resize({ width: 100, height: 50 });
             expect(storeConfig.canvas.mutations.setContainerSize).toHaveBeenCalledWith(expect.anything(), {
@@ -297,7 +270,7 @@ describe('Kanvas', () => {
 
         });
 
-        it('observes container resize', () => {
+        it('stop resize observer', () => {
             doShallowMount();
             let resizeObserver = wrapper.vm.resizeObserver;
             wrapper.destroy();

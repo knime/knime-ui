@@ -1,5 +1,6 @@
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
+import Vue from 'vue';
 import Vuex from 'vuex';
 import * as canvasStoreConfig from '~/store/canvas';
 const { defaultZoomFactor, minZoomFactor, maxZoomFactor, zoomMultiplier } = canvasStoreConfig;
@@ -10,8 +11,8 @@ const round = n => {
 };
 const findDelta = factor => Math.log(factor) / Math.log(zoomMultiplier);
 
-describe('Opened projects store', () => {
-    let localVue, store, workflowBounds;
+describe('canvas store', () => {
+    let localVue, store, workflowBounds, scrollContainer;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -25,12 +26,14 @@ describe('Opened projects store', () => {
             right: 100,
             bottom: 100
         };
+        scrollContainer = { scrollLeft: 0, scrollTop: 0 };
         store = mockVuexStore({
             canvas: {
                 ...canvasStoreConfig,
                 state: {
                     ...canvasStoreConfig.state(),
-                    containerSize: { width: 200, height: 200 }
+                    containerSize: { width: 200, height: 200 },
+                    getScrollContainerElement: () => scrollContainer
                 }
             },
             workflow: {
@@ -44,6 +47,26 @@ describe('Opened projects store', () => {
     });
 
     describe('mutations', () => {
+        test('restoreState - no saved state', () => {
+            store.commit('canvas/restoreState', null);
+            expect(store.state.canvas.zoomFactor).toBe(defaultZoomFactor);
+            expect(scrollContainer.scrollLeft).toBe(0);
+            expect(scrollContainer.scrollTop).toBe(0);
+        });
+
+        test('restoreState - saved state', async () => {
+            store.commit('canvas/restoreState', {
+                zoomFactor: 2,
+                scrollLeft: 2,
+                scrollTop: 1
+            });
+            expect(store.state.canvas.zoomFactor).toBe(2);
+
+            await Vue.nextTick();
+            expect(scrollContainer.scrollLeft).toBe(2);
+            expect(scrollContainer.scrollTop).toBe(1);
+        });
+
         test('resetZoom', () => {
             store.commit('canvas/setFactor', defaultZoomFactor + 1);
             store.commit('canvas/resetZoom');
@@ -74,14 +97,6 @@ describe('Opened projects store', () => {
             expect(store.state.canvas.containerSize).toStrictEqual({
                 width: 5,
                 height: 5
-            });
-        });
-
-        test('saveContainerScroll', () => {
-            store.commit('canvas/saveContainerScroll', { left: 5, top: 5 });
-            expect(store.state.canvas.savedContainerScroll).toStrictEqual({
-                left: 5,
-                top: 5
             });
         });
 
@@ -137,8 +152,10 @@ describe('Opened projects store', () => {
                 let delta = findDelta(2); // zoom to 200%
                 store.commit('canvas/zoomWithPointer', { delta, cursorX: 0, cursorY: 0, scrollX: 0, scrollY: 0 });
                 expect(state.zoomFactor).toBe(2);
-                expect(state.containerScroll.left).toBe(0);
-                expect(state.containerScroll.top).toBe(0);
+
+                let scrollContainer = state.getScrollContainerElement();
+                expect(scrollContainer.scrollLeft).toBe(0);
+                expect(scrollContainer.scrollTop).toBe(0);
             });
 
             test('content bigger than container - pointer in bottom-right corner', () => {
@@ -159,11 +176,10 @@ describe('Opened projects store', () => {
                 store.commit('canvas/zoomWithPointer', { delta, cursorX: 50, cursorY: 50, scrollX: 0, scrollY: 0 });
                 expect(state.zoomFactor).toBe(2);
 
-                expect(state.containerScroll.left).toBe(50); /* eslint-disable-line no-magic-numbers */
-                expect(state.containerScroll.top).toBe(50); /* eslint-disable-line no-magic-numbers */
+                let scrollContainer = state.getScrollContainerElement();
+                expect(scrollContainer.scrollLeft).toBe(50); /* eslint-disable-line no-magic-numbers */
+                expect(scrollContainer.scrollTop).toBe(50); /* eslint-disable-line no-magic-numbers */
             });
-
-
         });
     });
 
@@ -178,7 +194,6 @@ describe('Opened projects store', () => {
             const state = store.state.canvas;
 
             store.commit('canvas/setFactor', 1);
-            store.commit('canvas/saveContainerScroll', { left: 0, top: 0 });
             store.commit('canvas/setContainerSize', {
                 width: 50,
                 height: 50
@@ -194,14 +209,26 @@ describe('Opened projects store', () => {
             await store.dispatch('canvas/zoomCentered', delta);
             expect(state.zoomFactor).toBe(2);
 
-            expect(state.containerScroll.left).toBe(25); /* eslint-disable-line no-magic-numbers */
-            expect(state.containerScroll.top).toBe(25); /* eslint-disable-line no-magic-numbers */
+            let scrollContainer = state.getScrollContainerElement();
+            expect(scrollContainer.scrollLeft).toBe(25); /* eslint-disable-line no-magic-numbers */
+            expect(scrollContainer.scrollTop).toBe(25); /* eslint-disable-line no-magic-numbers */
         });
     });
 
     describe('getters', () => {
         test('fitToScreen zoom factor', () => {
             expect(store.getters['canvas/fitToScreenZoomFactor']).toBe(2);
+        });
+
+        test('saveState', () => {
+            scrollContainer.scrollLeft = 50;
+            scrollContainer.scrollTop = 100;
+            store.state.canvas.zoomFactor = 2;
+            expect(store.getters['canvas/saveState']).toStrictEqual({
+                zoomFactor: 2,
+                scrollLeft: 50,
+                scrollTop: 100
+            });
         });
 
         describe('contentBounds', () => {
