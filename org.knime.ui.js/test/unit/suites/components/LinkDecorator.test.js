@@ -3,25 +3,29 @@ import LinkDecorator from '~/components/LinkDecorator';
 
 import * as $colors from '~/style/colors';
 
-describe('NodeTorso.vue', () => {
+describe('LinkDecorator.vue', () => {
 
-    let doShallowMount = (type) => shallowMount(LinkDecorator, {
-        propsData: { type },
+    let doShallowMount = (backgroundType) => shallowMount(LinkDecorator, {
+        propsData: { backgroundType },
         mocks: { $colors }
     });
 
-    it('known type', () => {
+    it('draws background for known type', () => {
         const wrapper = doShallowMount('Manipulator');
-        const paths = wrapper.findAll('path');
-        expect(paths.at(0).attributes().fill).toBe($colors.nodeBackgroundColors.Manipulator);
-        expect(paths.at(1).attributes().stroke).toBe($colors.linkDecorator);
+        expect(wrapper.find('rect').attributes().fill).toBe($colors.nodeBackgroundColors.Manipulator);
+        expect(wrapper.find('path').attributes().stroke).toBe($colors.linkDecorator);
     });
 
-    it('unknown type', () => {
+    it('draws background for metanode', () => {
+        const wrapper = doShallowMount('Metanode');
+        expect(wrapper.find('rect').attributes().fill).toBe('white');
+        expect(wrapper.find('path').attributes().stroke).toBe($colors.linkDecorator);
+    });
+
+    it('draws no background for unknown type', () => {
         const wrapper = doShallowMount('unknown type');
-        const paths = wrapper.findAll('path');
-        expect(paths.at(0).attributes().stroke).toBe($colors.linkDecorator);
-        expect(paths.length).toBe(1);
+        expect(wrapper.find('rect').exists()).toBe(false);
+        expect(wrapper.find('path').attributes().stroke).toBe($colors.linkDecorator);
     });
 
 });

@@ -6,16 +6,20 @@
 export default {
     props: {
         /**
-         * Component type for determining the background color
+         * Node type for determining the background color.
+         * Allows the node types defined in $colors.nodeBackgroundColors and special 'Metanode'
          * */
-        type: {
+        backgroundType: {
             type: String,
             default: null
         }
     },
     computed: {
         backgroundColor() {
-            return this.$colors.nodeBackgroundColors[this.type];
+            if (this.backgroundType === 'Metanode') {
+                return 'white';
+            }
+            return this.$colors.nodeBackgroundColors[this.backgroundType];
         }
     }
 };
@@ -24,10 +28,13 @@ export default {
 <template>
   <g>
     <!-- Colored Background. This makes sure the arrow is well visible even if it overlaps with the node icon -->
-    <path
+    <rect
       v-if="backgroundColor"
-      d="M10.5618 0.436899C10.8432 0.718203 11.0012 1.09973 11.0012 1.49756L11.0012 6.99289L8.00119 6.99289L4.00586
-        6.99978L4.00586 -0.00244141L9.50119 -0.00244115C9.89901 -0.00244115 10.2805 0.155594 10.5618 0.436899Z"
+      width="6"
+      height="6"
+      x="5"
+      rx="1"
+      ry="1"
       :fill="backgroundColor"
     />
     <!-- Arrow -->

@@ -57,6 +57,7 @@ describe('DataPortOutputTableHeader.vue', () => {
     it('renders content', () => {
         doShallowMount();
         let cells = wrapper.findAll('th');
+        /* eslint-disable no-magic-numbers */
         expect(cells.at(0).find('.title').text()).toBe('ID');
         expect(cells.at(1).find('.title').text()).toBe('StringCol');
         expect(cells.at(1).find('.type').text()).toBe('String');
@@ -64,5 +65,6 @@ describe('DataPortOutputTableHeader.vue', () => {
         expect(cells.at(2).find('.type').text()).toBe('Number (integer)');
         expect(cells.at(3).find('.title').text()).toBe('UnknownCol');
         expect(cells.at(3).find('.type').text()).toBeFalsy();
+        /* eslint-enable no-magic-numbers */
     });
 });
