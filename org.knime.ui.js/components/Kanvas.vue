@@ -1,14 +1,11 @@
 <script>
-import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
+import { mapState, mapGetters, mapMutations } from 'vuex';
 import Node from '~/components/Node';
 import Connector from '~/components/Connector';
 import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import Tooltip from '~/components/Tooltip';
 import MetaNodePortBars from '~/components/MetaNodePortBars';
 import KanvasFilters from '~/components/KanvasFilters';
-
-let keyDownEventListener = null;
-let keyUpEventListener = null;
 
 export default {
     components: {
@@ -29,8 +26,7 @@ export default {
             /*
               Truthy if currently panning. Stores mouse origin
             */
-            panning: null,
-            suggestPanning: false
+            panning: null
         };
     },
     computed: {
@@ -43,66 +39,15 @@ export default {
             'isWritable'
         ]),
         ...mapGetters('canvas', ['contentBounds', 'canvasSize', 'expandedViewBox']),
-        ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor']),
+        ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning']),
         viewBox() {
             let { expandedViewBox } = this;
             return  `${expandedViewBox.left} ${expandedViewBox.top} ` +
                     `${expandedViewBox.width} ${expandedViewBox.height}`;
         }
+
     },
     mounted() {
-        // Start Key Listener
-        keyDownEventListener = document.addEventListener('keydown', (e) => {
-            let handled = true;
-            if (e.ctrlKey || e.metaKey) {
-                // Ctrl- and Meta- Combinations
-                if (e.key === 'a') {
-                    this.selectAllNodes();
-                } else if (e.key === '0') {
-                    this.resetZoom();
-                } else if (e.key === '1') {
-                    this.setZoomToFit();
-                } else if (e.key === '+') {
-                    /* zoom in by keyboard is throttled
-                     after zoomCentered it takes time for the scroller-container
-                     to update its scoll position according to the store state
-                     and to save that position in the store again
-                    */
-                    if (!this.keyboardZoomDisabled) {
-                        this.keyboardZoomDisabled = true;
-                        this.zoomCentered(1);
-                        setTimeout(() => {
-                            this.keyboardZoomDisabled = false;
-                        }, 200);
-                    }
-                } else if (e.key === '-') {
-                    if (!this.keyboardZoomDisabled) {
-                        this.keyboardZoomDisabled = true;
-                        this.zoomCentered(-1);
-                        setTimeout(() => {
-                            this.keyboardZoomDisabled = false;
-                        }, 200);
-                    }
-                } else {
-                    handled = false;
-                }
-            } else if (e.key === 'Alt') {
-                this.suggestPanning = true;
-            } else {
-                handled = false;
-            }
-            
-            if (handled) {
-                e.stopPropagation();
-                e.preventDefault();
-            }
-        });
-        keyUpEventListener = document.addEventListener('keyup', (e) => {
-            if (e.key === 'Alt') {
-                this.suggestPanning = false;
-            }
-        });
-
         // Start Container Observers
         // this.initContainerSize();
         this.initResizeObserver();
@@ -112,9 +57,7 @@ export default {
         }, { deep: true });
     },
     beforeDestroy() {
-        // Stop Key listener
-        document.removeEventListener('keydown', keyDownEventListener);
-        document.removeEventListener('keyup', keyUpEventListener);
+        
         
         // Stop Resize Observer
         this.stopResizeObserver();
@@ -123,7 +66,7 @@ export default {
         /*
           Selection
         */
-        ...mapMutations('workflow', ['selectAllNodes', 'deselectAllNodes']),
+        ...mapMutations('workflow', ['deselectAllNodes']),
         onMouseDown(e) {
             // if mousedown on empty kanvas set flag
             this.clickStartedOnEmptyKanvas = e.target === this.$refs.svg;
@@ -138,7 +81,6 @@ export default {
             Zooming
         */
         ...mapMutations('canvas', ['resetZoom']),
-        ...mapActions('canvas', ['setZoomToFit', 'zoomCentered']),
         initContainerSize() {
             const { width, height } = this.$el.getBoundingClientRect();
             this.$store.commit('canvas/setContainerSize', { width, height });

@@ -144,67 +144,6 @@ describe('Kanvas', () => {
         };
     });
 
-    describe('Shortcuts', () => {
-
-        it('Ctrl-A: Select all nodes', () => {
-            doShallowMount();
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true }));
-            expect(workflowStoreConfig.mutations.selectAllNodes).toHaveBeenCalled();
-        });
-
-        it('Ctrl-0: Reset zoom to default', () => {
-            doShallowMount();
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: '0', ctrlKey: true }));
-            expect(storeConfig.canvas.mutations.resetZoom).toHaveBeenCalled();
-        });
-
-        it('Ctrl-1: Zoom to fit', () => {
-            doShallowMount();
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: '1', ctrlKey: true }));
-            expect(storeConfig.canvas.actions.setZoomToFit).toHaveBeenCalled();
-        });
-
-        it('Ctrl +: Zoom in', () => {
-            doShallowMount();
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: '+', ctrlKey: true }));
-            expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), 1);
-        });
-
-        it('Ctrl -: Zoom out', () => {
-            doShallowMount();
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: '-', ctrlKey: true }));
-            expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), -1);
-        });
-
-        it('Alt: Panning mode', async () => {
-            doShallowMount();
-
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt' }));
-            await Vue.nextTick();
-            expect(wrapper.element.className).toMatch('panning');
-
-            document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Alt' }));
-            await Vue.nextTick();
-            expect(wrapper.element.className).not.toMatch('panning');
-        });
-
-        it('adds and removes listener', () => {
-            document.addEventListener = jest.fn()
-                .mockReturnValueOnce('keydown-listener').mockReturnValueOnce('keyup-listener');
-            document.removeEventListener = jest.fn();
-
-            doShallowMount();
-
-            expect(document.addEventListener).toHaveBeenNthCalledWith(1, 'keydown', expect.anything());
-            expect(document.addEventListener).toHaveBeenNthCalledWith(2, 'keyup', expect.anything());
-
-            wrapper.destroy();
-
-            expect(document.removeEventListener).toHaveBeenNthCalledWith(1, 'keydown', 'keydown-listener');
-            expect(document.removeEventListener).toHaveBeenNthCalledWith(2, 'keyup', 'keyup-listener');
-        });
-    });
-
     describe('sample workflow', () => {
         beforeEach(() => {
             doShallowMount();
@@ -277,6 +216,19 @@ describe('Kanvas', () => {
     });
 
     describe('Zoom & Pan', () => {
+
+        it('Suggests Panning', async () => {
+            doShallowMount();
+
+            $store.commit('canvas/setSuggestPanning', true);
+            await Vue.nextTick();
+            expect(wrapper.element.className).toMatch('panning');
+
+            $store.commit('canvas/setSuggestPanning', false);
+            await Vue.nextTick();
+            expect(wrapper.element.className).not.toMatch('panning');
+        });
+
         it('uses canvasSize and viewBox from store', async () => {
             doShallowMount();
             await Vue.nextTick();

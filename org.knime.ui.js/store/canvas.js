@@ -6,6 +6,7 @@ const clampZoomFactor = (newFactor) => Math.min(Math.max(minZoomFactor, newFacto
 
 export const state = () => ({
     zoomFactor: defaultZoomFactor,
+    suggestPanning: false,
     containerSize: { width: 0, height: 0 },
     /*
         When containerScroll is changed, the container will update
@@ -32,6 +33,9 @@ export const mutations = {
     },
     resetZoom(state) {
         state.zoomFactor = defaultZoomFactor;
+    },
+    setSuggestPanning(state, newValue) {
+        state.suggestPanning = newValue;
     },
     setFactor(state, newFactor) {
         state.zoomFactor = clampZoomFactor(newFactor);

@@ -61,6 +61,14 @@ describe('Opened projects store', () => {
             expect(store.state.canvas.zoomFactor).toBe(defaultZoomFactor);
         });
 
+        test('setSuggestPanning', () => {
+            store.commit('canvas/setSuggestPanning', true);
+            expect(store.state.canvas.suggestPanning).toBe(true);
+
+            store.commit('canvas/setSuggestPanning', false);
+            expect(store.state.canvas.suggestPanning).toBe(false);
+        });
+
         test('setContainerSize', () => {
             store.commit('canvas/setContainerSize', { width: 5, height: 5 });
             expect(store.state.canvas.containerSize).toStrictEqual({
