@@ -6,6 +6,11 @@
  */
 export default {
     props: {
+        /**
+         * executionInfo as sent by the backend.
+         * For streaming components, this contains { jobManager: { type: 'streaming' }}.
+         * For nodes contained in a streaming component, it contains { streamable: <Boolean> }
+         * */
         executionInfo: {
             type: Object,
             required: true

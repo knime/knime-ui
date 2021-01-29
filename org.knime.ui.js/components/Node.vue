@@ -350,6 +350,9 @@ export default {
           transform="translate(0, 21)"
         />
 
+        <!-- Nodes contained in a component with a Streaming Job Manager get a little arrow or "x" to indicate their
+        compatibility. Components with a Streaming Job Manager also get a little arrow.
+        In both cases, the backend sets the `executionInfo` attribute. -->
         <StreamingDecorator
           v-if="executionInfo"
           :background-type="decoratorBackgroundType"
