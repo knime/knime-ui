@@ -68,10 +68,10 @@ import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeLogger;
-import org.knime.core.node.workflow.NodeContainer;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.LockFailedException;
+import org.knime.core.util.Pair;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.webui.service.ApplicationService;
 import org.knime.gateway.api.webui.service.WorkflowService;
@@ -112,6 +112,7 @@ public final class AppStateUtil {
 	 * @param app required to retrieve the opened workflow editors
 	 */
 	public static void initAppState(final EModelService modelService, final MApplication app) {
+		clearAppState();
 		DefaultApplicationService appService = DefaultApplicationService.getInstance();
 		appService.setAppStateSupplier(() -> createAppState(collectOpenedWorkflows(modelService, app)));
 	}
@@ -148,17 +149,20 @@ public final class AppStateUtil {
 		return () -> openedWorkflows;
 	}
 
-	private static OpenedWorkflow createOpenedWorkflow(final MPart editorPart) {
+	private static Pair<WorkflowProject, OpenedWorkflow> createOpenedWorkflowAndWorkflowProject(
+			final MPart editorPart) {
 		WorkflowManager wfm = getWorkflowManager(editorPart);
-		if (wfm != null) {
-			WorkflowProject wp = WorkflowProjectManager.getWorkflowProject(getProjectId(wfm)).orElse(null);
+		WorkflowManager projectWfm = getProjectManager(wfm);
+		if (projectWfm != null) {
+			WorkflowProject wp = WorkflowProjectManager.getWorkflowProject(projectWfm.getNameWithID()).orElse(null);
 			if (wp == null) {
-				wp = createWorkflowProject(editorPart, wfm);
+				wp = createWorkflowProject(editorPart, projectWfm);
 			}
 			if (wp != null) {
-				LOADED_PROJECT_IDS.add(wp.getID());
-				return createOpenedWorkflow(wp.getID(), new NodeIDEnt(wfm.getID()).toString(),
+				OpenedWorkflow ow = createOpenedWorkflow(wp.getID(),
+						new NodeIDEnt(wfm.getID(), projectWfm.getProjectComponent().isPresent()).toString(),
 						isSelectedEditor(editorPart));
+				return Pair.create(wp, ow);
 			}
 		}
 		return null;
@@ -188,7 +192,19 @@ public final class AppStateUtil {
 	private static List<OpenedWorkflow> collectOpenedWorkflows(final EModelService modelService,
 			final MApplication app) {
 		List<MPart> editorParts = modelService.findElements(app, "org.eclipse.e4.ui.compatibility.editor", MPart.class);
-		return editorParts.stream().map(AppStateUtil::createOpenedWorkflow).filter(Objects::nonNull)
+
+		return editorParts.stream().map(AppStateUtil::createOpenedWorkflowAndWorkflowProject)//
+				.filter(Objects::nonNull)//
+				.sorted((p1, p2) -> Boolean.compare(p2.getSecond().isVisible(), p1.getSecond().isVisible()))//
+				.filter(p -> {
+					// keep ids of loaded project and filters duplicates
+					// ('non-visible' projects are removed first)
+					return LOADED_PROJECT_IDS.add(p.getFirst().getID());
+				}).map(p -> {
+					WorkflowProject wp = p.getFirst();
+					WorkflowProjectManager.addWorkflowProject(wp.getID(), wp);
+					return p.getSecond();
+				})//
 				.collect(Collectors.toList());
 	}
 
@@ -209,7 +225,7 @@ public final class AppStateUtil {
 
 				@Override
 				public String getID() {
-					return getProjectId(wfm);
+					return wfm.getNameWithID();
 				}
 
 				@Override
@@ -218,18 +234,17 @@ public final class AppStateUtil {
 				}
 
 			};
-			WorkflowProjectManager.addWorkflowProject(wp.getID(), wp);
 			return wp;
 		}
 		return null;
 	}
 
-	private static String getProjectId(final WorkflowManager wfm) {
-		NodeContainer project = wfm.getProjectWFM();
+	private static WorkflowManager getProjectManager(final WorkflowManager wfm) {
+		WorkflowManager project = wfm.getProjectWFM();
 		if (project == WorkflowManager.ROOT) {
-			project = wfm.getProjectComponent().orElse(null);
+			project = wfm.getProjectComponent().map(snc -> snc.getWorkflowManager()).orElse(null);
 		}
-		return project != null ? project.getNameWithID() : null;
+		return project;
 	}
 
 	private static WorkflowManager getWorkflowManager(final MPart editorPart) {
