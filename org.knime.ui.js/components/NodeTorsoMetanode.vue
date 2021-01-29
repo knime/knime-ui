@@ -13,12 +13,12 @@ export default {
 </script>
 
 <template>
-  <g :fill="$colors.nodeBackgroundColors.Metanode">
+  <g :fill="$colors.nodeBackgroundColors.MetanodeSecondary">
     <rect
       width="32"
       height="32"
       rx="2"
-      fill="white"
+      :fill="$colors.nodeBackgroundColors.Metanode"
     />
     <path
       d="M0 2C0 0.895431 0.895431 0 2 0H8V2H2.75C2.33579 2 2 2.33579 2 2.75V8H0V2Z

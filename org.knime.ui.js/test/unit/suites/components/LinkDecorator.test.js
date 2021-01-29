@@ -18,7 +18,7 @@ describe('LinkDecorator.vue', () => {
 
     it('draws background for metanode', () => {
         const wrapper = doShallowMount('Metanode');
-        expect(wrapper.find('rect').attributes().fill).toBe('white');
+        expect(wrapper.find('rect').attributes().fill).toBe($colors.nodeBackgroundColors.Metanode);
         expect(wrapper.find('path').attributes().stroke).toBe($colors.linkDecorator);
     });
 

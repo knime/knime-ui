@@ -7,7 +7,7 @@ export default {
     props: {
         /**
          * Node type for determining the background color.
-         * Allows the node types defined in $colors.nodeBackgroundColors and special 'Metanode'
+         * Allows the node types defined in $colors.nodeBackgroundColors
          * */
         backgroundType: {
             type: String,
@@ -16,9 +16,6 @@ export default {
     },
     computed: {
         backgroundColor() {
-            if (this.backgroundType === 'Metanode') {
-                return 'white';
-            }
             return this.$colors.nodeBackgroundColors[this.backgroundType];
         }
     }
