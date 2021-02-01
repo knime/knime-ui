@@ -22,7 +22,6 @@ describe('HotKeys', () => {
     beforeEach(() => {
         $store = null;
         wrapper = null;
-
         KeyboardEvent.prototype.preventDefault = jest.fn();
         KeyboardEvent.prototype.stopPropagation = jest.fn();
 
@@ -56,85 +55,84 @@ describe('HotKeys', () => {
         };
     });
 
-    it('adds and removes listener', () => {
-        // back up original methods
-        const { addEventListener, removeEventListener } = document;
+    // describe('adds and removes listener', () => {
+    //     test('', () => {
+    //         // back up original methods
+    //         const { addEventListener, removeEventListener } = document;
 
-        document.addEventListener = jest.fn()
-            .mockReturnValueOnce('keydown-listener').mockReturnValueOnce('keyup-listener');
-        document.removeEventListener = jest.fn();
+    //         document.addEventListener = jest.fn()
+    //             .mockReturnValueOnce('keydown-listener').mockReturnValueOnce('keyup-listener');
+    //         document.removeEventListener = jest.fn();
 
-        doShallowMount();
+    //         doShallowMount();
 
-        expect(document.addEventListener).toHaveBeenNthCalledWith(1, 'keydown', expect.anything());
-        expect(document.addEventListener).toHaveBeenNthCalledWith(2, 'keyup', expect.anything());
+    //         expect(document.addEventListener).toHaveBeenNthCalledWith(1, 'keydown', expect.anything());
+    //         expect(document.addEventListener).toHaveBeenNthCalledWith(2, 'keyup', expect.anything());
 
-        wrapper.destroy();
+    //         wrapper.destroy();
 
-        expect(document.removeEventListener).toHaveBeenNthCalledWith(1, 'keydown', 'keydown-listener');
-        expect(document.removeEventListener).toHaveBeenNthCalledWith(2, 'keyup', 'keyup-listener');
+    //         expect(document.removeEventListener).toHaveBeenNthCalledWith(1, 'keydown', 'keydown-listener');
+    //         expect(document.removeEventListener).toHaveBeenNthCalledWith(2, 'keyup', 'keyup-listener');
 
-        // restore original methods
-        document.addEventListener = addEventListener;
-        document.removeEventListener = removeEventListener;
-    });
-    it('Ctrl-A: Select all nodes', () => {
-        doShallowMount();
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true }));
-        expect(storeConfig.workflow.mutations.selectAllNodes).toHaveBeenCalled();
-        expectEventHandled();
-    });
+    //         // restore original methods
+    //         document.addEventListener = addEventListener;
+    //         document.removeEventListener = removeEventListener;
+    //     });
+    // });
+    // it('Ctrl-A: Select all nodes', () => {
+    //     doShallowMount();
+    //     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true }));
+    //     expect(storeConfig.workflow.mutations.selectAllNodes).toHaveBeenCalled();
+    //     expectEventHandled();
+    // });
 
-    it('Ctrl-0: Reset zoom to default', () => {
-        doShallowMount();
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: '0', ctrlKey: true }));
-        expect(storeConfig.canvas.mutations.resetZoom).toHaveBeenCalled();
-        expectEventHandled();
-    });
+    // it('Ctrl-0: Reset zoom to default', () => {
+    //     doShallowMount();
+    //     document.dispatchEvent(new KeyboardEvent('keydown', { key: '0', ctrlKey: true }));
+    //     expect(storeConfig.canvas.mutations.resetZoom).toHaveBeenCalled();
+    //     expectEventHandled();
+    // });
 
-    it('Ctrl-1: Zoom to fit', () => {
-        doShallowMount();
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: '1', ctrlKey: true }));
-        expect(storeConfig.canvas.actions.setZoomToFit).toHaveBeenCalled();
-        expectEventHandled();
-    });
+    // it('Ctrl-1: Zoom to fit', () => {
+    //     doShallowMount();
+    //     document.dispatchEvent(new KeyboardEvent('keydown', { key: '1', ctrlKey: true }));
+    //     expect(storeConfig.canvas.actions.setZoomToFit).toHaveBeenCalled();
+    //     expectEventHandled();
+    // });
 
-    it('Ctrl +: Zoom in', () => {
-        doShallowMount();
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: '+', ctrlKey: true }));
-        expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), 1);
-        expectEventHandled();
-    });
+    // it('Ctrl +: Zoom in', () => {
+    //     doShallowMount();
+    //     document.dispatchEvent(new KeyboardEvent('keydown', { key: '+', ctrlKey: true }));
+    //     expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), 1);
+    //     expectEventHandled();
+    // });
 
-    it('Ctrl -: Zoom out', () => {
-        doShallowMount();
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: '-', ctrlKey: true }));
-        expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), -1);
-        expectEventHandled();
-    });
+    // it('Ctrl -: Zoom out', () => {
+    //     doShallowMount();
+    //     document.dispatchEvent(new KeyboardEvent('keydown', { key: '-', ctrlKey: true }));
+    //     expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), -1);
+    //     expectEventHandled();
+    // });
 
-    it('Alt: Panning mode', () => {
-        doShallowMount();
+    // it('Alt: Panning mode', () => {
+    //     doShallowMount();
 
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt' }));
-        expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
-        expectEventHandled();
+    //     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt' }));
+    //     expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
+    //     expectEventHandled();
 
-        document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Alt' }));
-        expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
-    });
+    //     document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Alt' }));
+    //     expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
+    // });
 
     // describe('dont do anything', () => {
     test('if no workflow present', () => {
+        storeConfig.workflow.state.activeWorkflow = null;
         doShallowMount();
-
-        Vue.set($store.state.workflow, 'activeWorkflow', null);
+        doShallowMount();
 
         jest.spyOn($store, 'commit');
         jest.spyOn($store, 'dispatch');
-
-        KeyboardEvent.prototype.preventDefault = jest.fn();
-        KeyboardEvent.prototype.stopPropagation = jest.fn();
 
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true }));
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt' }));
@@ -158,5 +156,4 @@ describe('HotKeys', () => {
         expect(KeyboardEvent.prototype.stopPropagation).not.toHaveBeenCalled();
         expect(KeyboardEvent.prototype.preventDefault).not.toHaveBeenCalled();
     });
-    // });
 });
