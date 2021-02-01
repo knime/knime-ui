@@ -125,6 +125,9 @@ export const getters = {
     isWritable(state, getters) {
         return !getters.isLinked;
     },
+    isStreaming({ activeWorkflow }) {
+        return Boolean(activeWorkflow?.info.jobManager);
+    },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
     */
@@ -263,4 +266,5 @@ export const getters = {
             }
         };
     }
+
 };

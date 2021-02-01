@@ -51,17 +51,20 @@ describe('DataPortOutputTableHeader.vue', () => {
     it('renders rows and columns', () => {
         doShallowMount();
         expect(wrapper.findAll('tr').length).toBe(1);
-        expect(wrapper.findAll('th').length).toBe(3); // eslint-disable-line no-magic-numbers
+        expect(wrapper.findAll('th').length).toBe(4); // eslint-disable-line no-magic-numbers
     });
 
     it('renders content', () => {
         doShallowMount();
         let cells = wrapper.findAll('th');
-        expect(cells.at(0).find('.title').text()).toBe('StringCol');
-        expect(cells.at(0).find('.type').text()).toBe('String');
-        expect(cells.at(1).find('.title').text()).toBe('IntCol');
-        expect(cells.at(1).find('.type').text()).toBe('Number (integer)');
-        expect(cells.at(2).find('.title').text()).toBe('UnknownCol');
-        expect(cells.at(2).find('.type').text()).toBeFalsy();
+        /* eslint-disable no-magic-numbers */
+        expect(cells.at(0).find('.title').text()).toBe('ID');
+        expect(cells.at(1).find('.title').text()).toBe('StringCol');
+        expect(cells.at(1).find('.type').text()).toBe('String');
+        expect(cells.at(2).find('.title').text()).toBe('IntCol');
+        expect(cells.at(2).find('.type').text()).toBe('Number (integer)');
+        expect(cells.at(3).find('.title').text()).toBe('UnknownCol');
+        expect(cells.at(3).find('.type').text()).toBeFalsy();
+        /* eslint-enable no-magic-numbers */
     });
 });
