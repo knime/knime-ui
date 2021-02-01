@@ -18,11 +18,6 @@ export default {
     },
     data() {
         return {
-            /**
-             *  To avoid for mousedown on node, moving mouse, mouseup on kanvas to deselect nodes
-             *  We track whether a click has been started on the empty Kanvas
-             */
-            clickStartedOnEmptyKanvas: false,
             /*
               Truthy if currently panning. Stores mouse origin
             */
@@ -47,12 +42,18 @@ export default {
         }
 
     },
+    watch: {
+        workflow() {
+            this.$el.focus();
+        }
+    },
     mounted() {
         // Start Container Observers
         this.initContainerSize();
         this.setScrollContainerElement(this.$el);
 
         this.initResizeObserver();
+        this.$el.focus();
     },
     beforeDestroy() {
         this.setScrollContainerElement(null);
@@ -66,7 +67,9 @@ export default {
         */
         ...mapMutations('workflow', ['deselectAllNodes']),
         onMouseDown(e) {
-            // if mousedown on empty kanvas set flag
+            /*  To avoid for [mousedown on node], [moving mouse], [mouseup on kanvas] to deselect nodes,
+             *  we track whether a click has been started on the empty Kanvas
+             */
             this.clickStartedOnEmptyKanvas = e.target === this.$refs.svg;
         },
         onSelfMouseUp(e) {
@@ -139,6 +142,7 @@ export default {
 
 <template>
   <div
+    tabindex="0"
     :class="{ 'read-only': !isWritable, 'panning': panning || suggestPanning }"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
@@ -263,6 +267,9 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+#kanvas:focus {
+  outline: initial;
+}
 
 .debug-css {
   display: none;
