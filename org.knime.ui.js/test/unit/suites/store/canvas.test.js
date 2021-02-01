@@ -47,6 +47,12 @@ describe('canvas store', () => {
     });
 
     describe('mutations', () => {
+
+        test('set & get ScrollContainerElement', () => {
+            store.commit('canvas/setScrollContainerElement', 2);
+            expect(store.state.canvas.getScrollContainerElement()).toBe(2);
+        });
+
         test('restoreState - no saved state', () => {
             store.commit('canvas/restoreState', null);
             expect(store.state.canvas.zoomFactor).toBe(defaultZoomFactor);

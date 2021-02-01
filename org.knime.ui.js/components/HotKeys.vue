@@ -26,7 +26,7 @@ export default {
         ...mapMutations('canvas', ['setSuggestPanning', 'resetZoom']),
         ...mapActions('canvas', ['setZoomToFit', 'zoomCentered']),
         onKeydown(e) {
-            if (!this.activeWorkflow) {
+            if (!this.workflowHotKeysEnabled) {
                 return;
             }
 
