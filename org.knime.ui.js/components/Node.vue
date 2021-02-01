@@ -136,6 +136,7 @@ export default {
             type: Boolean,
             default: false
         },
+
         /**
          *  Information about the node execution. Might not be present if no special node execution info is available
          *  If given, usually only one of the following properties is set, either the icon, the 'streamble'-flag, or the
@@ -177,6 +178,37 @@ export default {
          */
         hideActionBar() {
             return typeof this.executionInfo?.streamable !== 'undefined';
+        },
+        /**
+         * Calculates the width of the hover area of the node.
+         * The size increase if the node is hovered and either a dialog button or the view button is available,
+         * so that the two border action buttons are reachable.
+         * @return {object} the size of the hover area of the node
+         */
+        hoverSize() {
+            const extraSpaceNeeded = this.hover && (this.dialog || this.view);
+            const extraSpace = 60;
+            /* hoverWidth consists of the left and right margin of the hover area
+            plus extra space if more then three buttons are available */
+            let hoverWidth = this.$shapes.nodeSize +
+                    this.$shapes.nodeHoverMargin[1] +
+                    this.$shapes.nodeHoverMargin[3] +
+                    (extraSpaceNeeded ? extraSpace : 0);
+            /* hoverHeight consists of the top and bottom margin of the hover area */
+            let hoverHeight = this.$shapes.nodeSize +
+                               this.$shapes.nodeHoverMargin[0] +
+                               this.$shapes.nodeHoverMargin[2];
+            /* left margin of the node hover area plus the half of the extra space needs to be subtracted to center the element */
+            const offsetWidth = -this.$shapes.nodeHoverMargin[1] - (extraSpaceNeeded ? extraSpace / 2 : 0);
+            /* top margin of the node hover area needs to be subtracted to center the element */
+            const offsetHeight = -this.$shapes.nodeHoverMargin[0];
+
+            return {
+                width: hoverWidth,
+                height: hoverHeight,
+                offsetWidth,
+                offsetHeight
+            };
         }
     },
     methods: {
@@ -227,7 +259,7 @@ export default {
 
         /**
          * Triggered by NodeActionBar
-         * @param {'executeNodes' | 'cancelNodeExecution' | 'resetNodes' | 'openView' | 'openConfiguration' } action
+         * @param {'executeNodes' | 'cancelNodeExecution' | 'resetNodes' | 'openView' | 'openDialog' } action
          * @returns {void}
          */
         onAction(action) {
@@ -333,10 +365,10 @@ export default {
         <!-- Hover Area, larger than the node torso -->
         <rect
           class="hover-area"
-          :width="$shapes.nodeSize + $shapes.nodeHoverMargin[1] + $shapes.nodeHoverMargin[3]"
-          :height="$shapes.nodeSize + $shapes.nodeHoverMargin[0] + $shapes.nodeHoverMargin[2]"
-          :x="-$shapes.nodeHoverMargin[1]"
-          :y="-$shapes.nodeHoverMargin[0]"
+          :width="hoverSize.width"
+          :height="hoverSize.height"
+          :x="hoverSize.offsetWidth"
+          :y="hoverSize.offsetHeight"
         />
         <NodeTorso
           :type="type"

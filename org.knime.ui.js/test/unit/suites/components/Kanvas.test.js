@@ -155,7 +155,7 @@ describe('Kanvas', () => {
                     allowedActions: null,
                     selected: false,
                     dialog: false,
-                    view: { available: true },
+                    view: null,
                     executionInfo: null
                 };
                 expect(props).toStrictEqual(expected);

@@ -45,6 +45,8 @@ const commonNode = {
         styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
     },
 
+    dialog: true,
+
     name: 'My Name',
     type: 'Source',
 
@@ -92,7 +94,9 @@ describe('Node', () => {
                 loadWorkflow: jest.fn(),
                 executeNodes: jest.fn(),
                 cancelNodeExecution: jest.fn(),
-                resetNodes: jest.fn()
+                resetNodes: jest.fn(),
+                openDialog: jest.fn(),
+                openView: jest.fn()
             },
             getters: {
                 isWritable: () => true
@@ -192,6 +196,54 @@ describe('Node', () => {
         });
     });
 
+    describe('Node open dialog and view', () => {
+        beforeEach(() => {
+            propsData =
+            {
+                ...commonNode,
+                selected: true,
+                dialog: true,
+                view: null
+            };
+        });
+
+        it('opens the node config on double click', async () => {
+            doMount(shallowMount);
+            jest.spyOn(mocks.$store, 'dispatch');
+            await wrapper.findComponent(NodeTorso).trigger('dblclick');
+
+            expect(workflowStoreConfig.actions.openDialog).toHaveBeenCalledWith(expect.anything(), {
+                nodeIds: [
+                    'root:1'
+                ]
+            });
+        });
+
+        it('opens the node dialog with the action bar event', () => {
+            doMount(deepMount);
+            jest.spyOn(mocks.$store, 'dispatch');
+            let actionBar = wrapper.findComponent(NodeActionBar);
+            actionBar.vm.$emit('action', 'openDialog');
+            expect(workflowStoreConfig.actions.openDialog).toHaveBeenCalledWith(expect.anything(), {
+                nodeIds: [
+                    'root:1'
+                ]
+            });
+        });
+
+        it('opens the node view with the action bar event', () => {
+            doMount(deepMount);
+            jest.spyOn(mocks.$store, 'dispatch');
+            let actionBar = wrapper.findComponent(NodeActionBar);
+            actionBar.vm.$emit('action', 'openView');
+            expect(workflowStoreConfig.actions.openView).toHaveBeenCalledWith(expect.anything(), {
+                nodeIds: [
+                    'root:1'
+                ]
+            });
+        });
+    });
+
     describe('Node selected', () => {
         beforeEach(() => {
             propsData =
@@ -253,7 +305,7 @@ describe('Node', () => {
                 canExecute: true,
                 canCancel: false,
                 canReset: false,
-                nodeDialog: false,
+                nodeDialog: true,
                 nodeView: null
             });
             expect(wrapper.findComponent(NodeActionBar).attributes().transform).toBe('translate(516 163)');
@@ -322,7 +374,9 @@ describe('Node', () => {
                 ...commonNode,
                 inPorts: [mockPort({ index: 0 })],
                 outPorts: [mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] })],
-                allowedActions: { canExecute: true, canCancel: true, canReset: true }
+                allowedActions: { canExecute: true, canCancel: true, canReset: true },
+                dialog: false,
+                view: { available: true }
             };
             doMount(shallowMount);
 
@@ -330,6 +384,17 @@ describe('Node', () => {
             wrapper.find('.hover-container').trigger('mouseenter');
             wrapper.vm.hover = true;
         });
+
+        it('increases the size of the hover-container on hover', () => {
+            wrapper.find('.hover-container').trigger('mouseleave');
+            wrapper.vm.hover = false;
+            let smallHoverWidth = wrapper.vm.hoverSize.width;
+            wrapper.find('.hover-container').trigger('mouseenter');
+            wrapper.vm.hover = true;
+            let largeHoverWidth = wrapper.vm.hoverSize.width;
+            expect(largeHoverWidth > smallHoverWidth).toBe(true);
+        });
+
         it('shows selection plane and action buttons', () => {
             let actionBar = wrapper.findComponent(NodeActionBar);
             expect(actionBar.exists()).toBe(true);
@@ -339,7 +404,7 @@ describe('Node', () => {
                 canCancel: true,
                 nodeId: 'root:1',
                 nodeDialog: false,
-                nodeView: null
+                nodeView: { available: true }
             });
         });
 

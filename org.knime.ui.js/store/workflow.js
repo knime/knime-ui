@@ -294,20 +294,5 @@ export const getters = {
                 return node.type;
             }
         };
-    },
-
-    nodeView(state) {
-        return ({ nodeId }) => {
-            let node = state.activeWorkflow.nodes[nodeId];
-            return node.view;
-        };
-    },
-
-    nodeDialog(state) {
-        return ({ nodeId }) => {
-            let node = state.activeWorkflow.nodes[nodeId];
-            return node.dialog;
-        };
     }
-
 };
