@@ -3,7 +3,6 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
 import * as $shapes from '~/style/shapes';
-import * as canvasStoreConfig from '~/store/canvas';
 
 import MetaNodePortBars from '~/components/MetaNodePortBars';
 import MetaNodePortBar from '~/components/MetaNodePortBar';
