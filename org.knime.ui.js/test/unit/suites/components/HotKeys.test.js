@@ -2,9 +2,16 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
-import Vue from 'vue';
-
 import HotKeys from '~/components/HotKeys';
+
+jest.mock('lodash', () => ({
+    throttle(func) {
+        return function (...args) {
+            // eslint-disable-next-line no-invalid-this
+            return func.apply(this, args);
+        };
+    }
+}));
 
 const expectEventHandled = () => {
     expect(KeyboardEvent.prototype.preventDefault).toHaveBeenCalled();
@@ -17,6 +24,11 @@ describe('HotKeys', () => {
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
+    });
+
+    afterEach(() => {
+        wrapper.destroy();
+        jest.clearAllMocks();
     });
 
     beforeEach(() => {
@@ -55,77 +67,67 @@ describe('HotKeys', () => {
         };
     });
 
-    // describe('adds and removes listener', () => {
-    //     test('', () => {
-    //         // back up original methods
-    //         const { addEventListener, removeEventListener } = document;
+    test('adds and removes listener', () => {
+        jest.spyOn(document, 'addEventListener');
+        jest.spyOn(document, 'removeEventListener');
+        doShallowMount();
 
-    //         document.addEventListener = jest.fn()
-    //             .mockReturnValueOnce('keydown-listener').mockReturnValueOnce('keyup-listener');
-    //         document.removeEventListener = jest.fn();
+        expect(document.addEventListener).toHaveBeenNthCalledWith(1, 'keydown', wrapper.vm.onKeydown);
+        expect(document.addEventListener).toHaveBeenNthCalledWith(2, 'keyup', wrapper.vm.onKeyup);
 
-    //         doShallowMount();
+        wrapper.destroy();
+        expect(document.removeEventListener).toHaveBeenNthCalledWith(1, 'keydown', wrapper.vm.onKeydown);
+        expect(document.removeEventListener).toHaveBeenNthCalledWith(2, 'keyup', wrapper.vm.onKeyup);
+    });
 
-    //         expect(document.addEventListener).toHaveBeenNthCalledWith(1, 'keydown', expect.anything());
-    //         expect(document.addEventListener).toHaveBeenNthCalledWith(2, 'keyup', expect.anything());
+    it('Ctrl-A: Select all nodes', () => {
+        doShallowMount();
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true }));
+        expect(storeConfig.workflow.mutations.selectAllNodes).toHaveBeenCalled();
+        expectEventHandled();
+    });
 
-    //         wrapper.destroy();
+    it('Ctrl-0: Reset zoom to default', () => {
+        doShallowMount();
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: '0', ctrlKey: true }));
+        expect(storeConfig.canvas.mutations.resetZoom).toHaveBeenCalled();
+        expectEventHandled();
+    });
 
-    //         expect(document.removeEventListener).toHaveBeenNthCalledWith(1, 'keydown', 'keydown-listener');
-    //         expect(document.removeEventListener).toHaveBeenNthCalledWith(2, 'keyup', 'keyup-listener');
+    describe('throttled', () => {
+        it('Ctrl-1: Zoom to fit', () => {
+            doShallowMount();
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: '1', ctrlKey: true }));
+            expect(storeConfig.canvas.actions.setZoomToFit).toHaveBeenCalled();
+            expectEventHandled();
+        });
 
-    //         // restore original methods
-    //         document.addEventListener = addEventListener;
-    //         document.removeEventListener = removeEventListener;
-    //     });
-    // });
-    // it('Ctrl-A: Select all nodes', () => {
-    //     doShallowMount();
-    //     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true }));
-    //     expect(storeConfig.workflow.mutations.selectAllNodes).toHaveBeenCalled();
-    //     expectEventHandled();
-    // });
+        it('Ctrl +: Zoom in', () => {
+            doShallowMount();
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: '+', ctrlKey: true }));
+            expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), 1);
+            expectEventHandled();
+        });
+    });
 
-    // it('Ctrl-0: Reset zoom to default', () => {
-    //     doShallowMount();
-    //     document.dispatchEvent(new KeyboardEvent('keydown', { key: '0', ctrlKey: true }));
-    //     expect(storeConfig.canvas.mutations.resetZoom).toHaveBeenCalled();
-    //     expectEventHandled();
-    // });
+    it('Ctrl -: Zoom out', () => {
+        doShallowMount();
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: '-', ctrlKey: true }));
+        expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), -1);
+        expectEventHandled();
+    });
 
-    // it('Ctrl-1: Zoom to fit', () => {
-    //     doShallowMount();
-    //     document.dispatchEvent(new KeyboardEvent('keydown', { key: '1', ctrlKey: true }));
-    //     expect(storeConfig.canvas.actions.setZoomToFit).toHaveBeenCalled();
-    //     expectEventHandled();
-    // });
+    it('Alt: Panning mode', () => {
+        doShallowMount();
 
-    // it('Ctrl +: Zoom in', () => {
-    //     doShallowMount();
-    //     document.dispatchEvent(new KeyboardEvent('keydown', { key: '+', ctrlKey: true }));
-    //     expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), 1);
-    //     expectEventHandled();
-    // });
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt' }));
+        expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
+        expectEventHandled();
 
-    // it('Ctrl -: Zoom out', () => {
-    //     doShallowMount();
-    //     document.dispatchEvent(new KeyboardEvent('keydown', { key: '-', ctrlKey: true }));
-    //     expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), -1);
-    //     expectEventHandled();
-    // });
+        document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Alt' }));
+        expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
+    });
 
-    // it('Alt: Panning mode', () => {
-    //     doShallowMount();
-
-    //     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt' }));
-    //     expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
-    //     expectEventHandled();
-
-    //     document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Alt' }));
-    //     expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
-    // });
-
-    // describe('dont do anything', () => {
     test('if no workflow present', () => {
         storeConfig.workflow.state.activeWorkflow = null;
         doShallowMount();

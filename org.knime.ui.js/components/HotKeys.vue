@@ -2,7 +2,7 @@
 import { mapActions, mapMutations, mapState } from 'vuex';
 import { throttle } from 'lodash';
 
-const keyboardZoomThrottle = 30;
+const throttledZoomThrottle = 30; // throttle keyboard zoom by 30ms
 
 export default {
     computed: {
@@ -13,19 +13,19 @@ export default {
     },
     mounted() {
         // Start Key Listener
-        this.keyDownEventListener = document.addEventListener('keydown', this.keydown);
-        this.keyUpEventListener = document.addEventListener('keyup', this.keyup);
+        document.addEventListener('keydown', this.onKeydown);
+        document.addEventListener('keyup', this.onKeyup);
     },
     beforeDestroy() {
         // Stop Key listener
-        document.removeEventListener('keydown', this.keyDownEventListener);
-        document.removeEventListener('keyup', this.keyUpEventListener);
+        document.removeEventListener('keydown', this.onKeydown);
+        document.removeEventListener('keyup', this.onKeyup);
     },
     methods: {
         ...mapMutations('workflow', ['selectAllNodes', 'deselectAllNodes']),
         ...mapMutations('canvas', ['setSuggestPanning', 'resetZoom']),
         ...mapActions('canvas', ['setZoomToFit', 'zoomCentered']),
-        keydown(e) {
+        onKeydown(e) {
             if (!this.activeWorkflow) {
                 return;
             }
@@ -40,9 +40,9 @@ export default {
                 } else if (e.key === '1') {
                     this.setZoomToFit();
                 } else if (e.key === '+') {
-                    this.keyboardZoom(1);
+                    this.throttledZoom(1);
                 } else if (e.key === '-') {
-                    this.keyboardZoom(-1);
+                    this.throttledZoom(-1);
                 } else {
                     handled = false;
                 }
@@ -57,20 +57,15 @@ export default {
                 e.preventDefault();
             }
         },
-        keyup(e) {
+        onKeyup(e) {
             if (e.key === 'Alt') {
                 this.setSuggestPanning(false);
             }
         },
-        /**
-         * zoom in by keyboard is throttled
-         * after zoomCentered it takes time for the scroller-container
-         * to update its scoll position according to the store state
-         * and to save that position in the store again
-         */
-        keyboardZoom: throttle(function (delta) {
+        throttledZoom: throttle(function myf(delta) {
+            // eslint-disable-next-line no-invalid-this
             this.zoomCentered(delta);
-        }, keyboardZoomThrottle)
+        }, throttledZoomThrottle)
     },
     render() {
         return null;
