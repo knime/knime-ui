@@ -49,6 +49,7 @@ export default {
     },
     watch: {
         workflow() {
+            // Focus workflow on change for keyboard strokes to work
             this.$el.focus();
         }
     },
@@ -259,6 +260,12 @@ export default {
         name="node-actions"
       />
 
+      <ConnectorLabel
+        v-for="(connector, id) of workflow.connections"
+        :key="`connector-label-${workflow.projectId}-${id}`"
+        v-bind="connector"
+      />
+
       <!-- Only Shown when flag INCLUDE_DEBUG_CSS is set  -->
       <rect
         class="debug-css"
@@ -277,11 +284,7 @@ export default {
         x2="10"
         class="debug-css"
       />
-      <ConnectorLabel
-        v-for="(connector, id) of workflow.connections"
-        :key="`connector-label-${workflow.projectId}-${id}`"
-        v-bind="connector"
-      />
+      
     </svg>
   </div>
 </template>

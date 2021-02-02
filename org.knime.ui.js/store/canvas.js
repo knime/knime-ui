@@ -13,6 +13,11 @@ export const state = () => ({
 });
 
 export const mutations = {
+    /*
+        The scroll container is saved in the store state so properties
+        like scrollTop etc. can be accessed quickly
+        Saved as result of function to avoid problems with reactivity
+    */
     setScrollContainerElement(state, el) {
         state.getScrollContainerElement = () => el;
     },
