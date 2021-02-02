@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapMutations, mapActions } from 'vuex';
+import { mapActions, mapMutations, mapState } from 'vuex';
 import Port from '~/components/PortWithTooltip';
 import NodeState from '~/components/NodeState';
 import NodeTorso from '~/components/NodeTorso';
@@ -135,7 +135,7 @@ export default {
         executionInfo: {
             type: Object,
             validator(info) {
-                return !info || info.streamable || info.jobManager || info.icon;
+                return !info || Reflect.has(info, 'streamable') || info.jobManager || info.icon;
             },
             default: null
         }
@@ -160,6 +160,18 @@ export default {
                 height: (top + nodeSize + bottom) + (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0),
                 width: left + right + nodeSize
             };
+        },
+        decoratorBackgroundType() {
+            if (this.type) {
+                return this.type;
+            }
+            if (this.kind === 'component') {
+                return 'Component';
+            }
+            if (this.kind === 'metanode') {
+                return 'Metanode';
+            }
+            return null;
         },
         /**
          * Checks if a streamable execution info has been set. The boolean value of the streamable variable does not matter,
@@ -370,13 +382,16 @@ export default {
 
         <LinkDecorator
           v-if="link"
-          :type="type"
+          :background-type="decoratorBackgroundType"
           transform="translate(0, 21)"
         />
 
+        <!-- Nodes contained in a component with a Streaming Job Manager get a little arrow or "x" to indicate their
+        compatibility. Components with a Streaming Job Manager also get a little arrow.
+        In both cases, the backend sets the `executionInfo` attribute. -->
         <StreamingDecorator
           v-if="executionInfo"
-          :type="type"
+          :background-type="decoratorBackgroundType"
           :execution-info="executionInfo"
           transform="translate(21, 21)"
         />
