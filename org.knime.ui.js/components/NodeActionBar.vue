@@ -2,6 +2,8 @@
 import ExecuteIcon from '../assets/execute.svg?inline';
 import ResetIcon from '../assets/reset-all.svg?inline';
 import CancelIcon from '../assets/cancel-execution.svg?inline';
+import PauseIcon from '../assets/pause-execution.svg?inline';
+import StepIcon from '../assets/step-execution.svg?inline';
 
 import ActionButton from '~/components/ActionButton.vue';
 
@@ -29,15 +31,36 @@ export default {
         canReset: {
             type: Boolean,
             default: false
+        },
+        canStep: {
+            type: Boolean,
+            default: false
+        },
+        canPause: {
+            type: Boolean,
+            default: false
+        },
+        canResume: {
+            type: Boolean,
+            default: false
         }
     },
     computed: {
         actions() {
-            return [
+            let nodeActions = [
                 ['executeNodes', this.canExecute, ExecuteIcon],
                 ['cancelNodeExecution', this.canCancel, CancelIcon],
                 ['resetNodes', this.canReset, ResetIcon]
             ];
+            if (this.canPause || this.canResume) {
+                nodeActions[0] = this.canPause
+                    ? ['pauseNodeExecution', true, PauseIcon]
+                    : ['resumeNodeExecution', true, ExecuteIcon];
+            }
+            if (this.canStep) {
+                nodeActions.push(['stepNodeExecution', this.canStep, StepIcon]);
+            }
+            return nodeActions;
         },
         /**
          *  returns the x-position of each button depending on the total amount of buttons
@@ -45,7 +68,8 @@ export default {
          */
         positions() {
             const { nodeActionBarButtonSpread } = this.$shapes;
-            return [-nodeActionBarButtonSpread, 0, nodeActionBarButtonSpread];
+            /* handles even or odd numbers of buttons */
+            return this.actions.map((x, ind, arr) => (ind - ((arr.length - 1) / 2)) * nodeActionBarButtonSpread);
         }
     }
 

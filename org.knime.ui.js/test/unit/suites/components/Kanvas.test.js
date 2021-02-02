@@ -146,7 +146,10 @@ describe('Kanvas', () => {
                     link: null,
                     allowedActions: null,
                     selected: false,
-                    executionInfo: null
+                    executionInfo: null,
+                    loopInfo: {
+                        allowedActions: {}
+                    }
                 };
                 expect(props).toStrictEqual(expected);
             });

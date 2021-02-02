@@ -226,7 +226,8 @@ describe('workflow store', () => {
             });
         });
 
-        it.each(['executeNodes', 'cancelNodeExecution', 'resetNodes'])('passes %s to API', async (action) => {
+        it.each(['executeNodes', 'cancelNodeExecution', 'resetNodes', 'pauseNodeExecution',
+            'resumeNodeExecution', 'stepNodeExecution'])('passes %s to API', async (action) => {
             let mock = jest.fn();
             let apiMocks = { [action]: mock };
             await loadStore({ apiMocks });

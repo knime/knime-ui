@@ -70,9 +70,9 @@ export const addEventListener = makeToggleEventListener('add');
 export const removeEventListener = makeToggleEventListener('remove');
 
 
-let nodeStateChanger = (nodeState, errorMessage) => ({ projectId, nodeIds }) => {
+let nodeStateChanger = (nodeState, errorMessage, action = 'changeNodeStates') => ({ projectId, nodeIds }) => {
     try {
-        let result = rpc('NodeService.changeNodeStates', projectId, nodeIds, nodeState);
+        let result = rpc(`NodeService.${action}`, projectId, nodeIds, nodeState);
         return Promise.resolve(result);
     } catch (e) {
         consola.error(e);
@@ -103,6 +103,32 @@ export const cancelNodeExecution = nodeStateChanger('cancel', 'Could not cancel 
  *     If you want to reset all nodes in the entire workflow, pass the workflow container's id as a single element.
  */
 export const resetNodes = nodeStateChanger('reset', 'Could not reset nodes');
+
+// eslint-disable-next-line arrow-body-style
+let loopStateChanger = (nodeState, errorMessage) => ({ projectId, nodeIds }) => {
+    return nodeStateChanger(nodeState, errorMessage, 'changeLoopState')({ projectId, nodeIds: nodeIds[0] });
+};
+
+/**
+ * Pause executing loop nodes.
+ * @param {String} cfg.projectId
+ * @param {Array} cfg.nodeIds The nodes to pause.
+ */
+export const pauseNodeExecution = loopStateChanger('pause', 'Could not pause execution', 'changeLoopState');
+
+/**
+ * Resume loop execution.
+ * @param {String} cfg.projectId
+ * @param {Array} cfg.nodeIds The loop nodes for execution resumption.
+ */
+export const resumeNodeExecution = loopStateChanger('resume', 'Could not resume execution', 'changeLoopState');
+
+/**
+ * Step loop execution.
+ * @param {String} cfg.projectId
+ * @param {Array} cfg.nodeIds The loop nodes for step execution.
+ */
+export const stepNodeExecution = loopStateChanger('step', 'Could not step execution', 'changeLoopState');
 
 // The Node service offers JSON-RPC forwarding to the Port instance.
 // This is by design, because third-party vendors can provide a custom port implementation with totally

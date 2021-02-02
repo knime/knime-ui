@@ -10,6 +10,7 @@ import NodeState from '~/components/NodeState';
 import NodeAnnotation from '~/components/NodeAnnotation';
 import LinkDecorator from '~/components/LinkDecorator';
 import StreamingDecorator from '~/components/StreamingDecorator';
+import LoopDecorator from '~/components/LoopDecorator';
 import NodeActionBar from '~/components/NodeActionBar';
 import Port from '~/components/PortWithTooltip';
 
@@ -144,6 +145,13 @@ describe('Node', () => {
             expect(wrapper.findComponent(StreamingDecorator).exists()).toBe(true);
         });
 
+        it('shows/hides LoopDecorator', () => {
+            expect(wrapper.findComponent(LoopDecorator).exists()).toBe(false);
+            propsData.type = 'LoopEnd';
+            doMount(shallowMount);
+            expect(wrapper.findComponent(LoopDecorator).exists()).toBe(true);
+        });
+
         it('displays annotation', () => {
             expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
                 backgroundColor: 'rgb(255, 216, 0)',
@@ -252,7 +260,10 @@ describe('Node', () => {
                 nodeId: 'root:1',
                 canExecute: true,
                 canCancel: false,
-                canReset: false
+                canReset: false,
+                canPause: false,
+                canResume: false,
+                canStep: false
             });
             expect(wrapper.findComponent(NodeActionBar).attributes().transform).toBe('translate(516 163)');
         });
@@ -335,6 +346,9 @@ describe('Node', () => {
                 canReset: true,
                 canExecute: true,
                 canCancel: true,
+                canPause: false,
+                canResume: false,
+                canStep: false,
                 nodeId: 'root:1'
             });
         });

@@ -107,6 +107,36 @@ describe('API', () => {
         }));
     });
 
+    it('pauses node execution', async () => {
+        await api.pauseNodeExecution({ projectId: '123', nodeIds: ['loop'] });
+        expect(window.jsonrpc).toHaveBeenLastCalledWith(JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'NodeService.changeLoopState',
+            params: ['123', 'loop', 'pause'],
+            id: 0
+        }));
+    });
+
+    it('resumes node execution', async () => {
+        await api.resumeNodeExecution({ projectId: '123', nodeIds: ['loop'] });
+        expect(window.jsonrpc).toHaveBeenLastCalledWith(JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'NodeService.changeLoopState',
+            params: ['123', 'loop', 'resume'],
+            id: 0
+        }));
+    });
+
+    it('steps node execution', async () => {
+        await api.stepNodeExecution({ projectId: '123', nodeIds: ['loop'] });
+        expect(window.jsonrpc).toHaveBeenLastCalledWith(JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'NodeService.changeLoopState',
+            params: ['123', 'loop', 'step'],
+            id: 0
+        }));
+    });
+
     it.each(['add', 'remove'])('%ss event listeners', async (type) => {
         await api[`${type}EventListener`]('foo', { bar: 1, baz: 2 });
         expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({

@@ -1,0 +1,30 @@
+import { shallowMount } from '@vue/test-utils';
+import LoopDecorator from '~/components/LoopDecorator.vue';
+
+import * as $colors from '~/style/colors';
+
+describe('LoopDecorator.vue', () => {
+
+    let doShallowMount = (loopStatus) => shallowMount(LoopDecorator, {
+        propsData: { loopStatus },
+        mocks: { $colors }
+    });
+
+    it('does not render decorator when loopStatus is missing', () => {
+        const wrapper = doShallowMount();
+        expect(wrapper.find('path').exists()).toBe(false);
+    });
+
+    it('renders decorator when loopStatus is paused', () => {
+        const wrapper = doShallowMount('PAUSED');
+        expect(wrapper.find('path.pause').exists()).toBe(true);
+        expect(wrapper.find('path.running').exists()).toBe(false);
+    });
+
+    it('renders decorator when loopStatus is running', () => {
+        const wrapper = doShallowMount('RUNNING');
+        expect(wrapper.find('path.pause').exists()).toBe(false);
+        expect(wrapper.find('path.running').exists()).toBe(true);
+    });
+
+});
