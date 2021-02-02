@@ -32,23 +32,28 @@ export default {
             type: Boolean,
             default: false
         },
-        nodeView: {
-            type: Object,
+        canOpenView: {
+            type: Boolean,
             default: null
         },
-        nodeDialog: {
+        canOpenDialog: {
             type: Boolean,
-            default: false
+            default: null
         }
     },
     computed: {
+        /**
+         *  returns an array of allowed actions with the corresponding api call,
+         *  a boolean if it is enabled or disabled and an icon. openDialog and openView are only added when the prop is available
+         *  @returns {Array<Array>} Array of allowed actions
+         */
         actions() {
             return [
-                ...this.nodeDialog ? [['openDialog', this.nodeDialog, OpenDialogIcon]] : [],
+                ...this.canOpenDialog === null ? [] : [['openDialog', this.canOpenDialog, OpenDialogIcon]],
                 ['executeNodes', this.canExecute, ExecuteIcon],
                 ['cancelNodeExecution', this.canCancel, CancelIcon],
                 ['resetNodes', this.canReset, ResetIcon],
-                ...this.nodeView ? [['openView', this.nodeView?.available, OpenViewIcon]] : []
+                ...this.canOpenView === null ? [] : [['openView', this.canOpenView, OpenViewIcon]]
             ];
         },
         /**
@@ -57,11 +62,11 @@ export default {
          */
         positions() {
             const { nodeActionBarButtonSpread } = this.$shapes;
-            return [...this.nodeDialog ? [-nodeActionBarButtonSpread * 2] : [],
+            return [...this.canOpenDialog === null ? [] : [-nodeActionBarButtonSpread * 2],
                 -nodeActionBarButtonSpread,
                 0,
                 nodeActionBarButtonSpread,
-                ...this.nodeView ? [nodeActionBarButtonSpread * 2] : []];
+                ...this.canOpenView === null ? [] : [nodeActionBarButtonSpread * 2]];
         }
     }
 };

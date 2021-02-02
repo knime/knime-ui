@@ -202,8 +202,7 @@ describe('Node', () => {
             {
                 ...commonNode,
                 selected: true,
-                dialog: true,
-                view: null
+                allowedActions: { canOpenDialog: true, canOpenView: true }
             };
         });
 
@@ -224,6 +223,7 @@ describe('Node', () => {
             jest.spyOn(mocks.$store, 'dispatch');
             let actionBar = wrapper.findComponent(NodeActionBar);
             actionBar.vm.$emit('action', 'openDialog');
+
             expect(workflowStoreConfig.actions.openDialog).toHaveBeenCalledWith(expect.anything(), {
                 nodeIds: [
                     'root:1'
@@ -236,6 +236,7 @@ describe('Node', () => {
             jest.spyOn(mocks.$store, 'dispatch');
             let actionBar = wrapper.findComponent(NodeActionBar);
             actionBar.vm.$emit('action', 'openView');
+
             expect(workflowStoreConfig.actions.openView).toHaveBeenCalledWith(expect.anything(), {
                 nodeIds: [
                     'root:1'
@@ -250,7 +251,7 @@ describe('Node', () => {
             {
                 ...commonNode,
                 selected: true,
-                allowedActions: { canExecute: true },
+                allowedActions: { canExecute: true, canOpenDialog: true, canOpenView: false },
                 state: {
                     executionState: 'IDLE'
                 }
@@ -305,8 +306,8 @@ describe('Node', () => {
                 canExecute: true,
                 canCancel: false,
                 canReset: false,
-                nodeDialog: true,
-                nodeView: null
+                canOpenDialog: true,
+                canOpenView: false
             });
             expect(wrapper.findComponent(NodeActionBar).attributes().transform).toBe('translate(516 163)');
         });
@@ -374,9 +375,11 @@ describe('Node', () => {
                 ...commonNode,
                 inPorts: [mockPort({ index: 0 })],
                 outPorts: [mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] })],
-                allowedActions: { canExecute: true, canCancel: true, canReset: true },
-                dialog: false,
-                view: { available: true }
+                allowedActions: { canExecute: true,
+                    canCancel: true,
+                    canReset: true,
+                    canOpenDialog: true,
+                    canOpenView: true }
             };
             doMount(shallowMount);
 
@@ -403,8 +406,8 @@ describe('Node', () => {
                 canExecute: true,
                 canCancel: true,
                 nodeId: 'root:1',
-                nodeDialog: false,
-                nodeView: { available: true }
+                canOpenDialog: true,
+                canOpenView: true
             });
         });
 

@@ -127,16 +127,6 @@ export default {
             default: null
         },
 
-        view: {
-            type: Object,
-            default: null
-        },
-
-        dialog: {
-            type: Boolean,
-            default: false
-        },
-
         /**
          *  Information about the node execution. Might not be present if no special node execution info is available
          *  If given, usually only one of the following properties is set, either the icon, the 'streamble'-flag, or the
@@ -186,7 +176,8 @@ export default {
          * @return {object} the size of the hover area of the node
          */
         hoverSize() {
-            const extraSpaceNeeded = this.hover && (this.dialog || this.view);
+            const extraSpaceNeeded = this.hover && (this.allowedActions.canOpenDialog ||
+                                      this.allowedActions.canOpenDialog);
             const extraSpace = 60;
             /* hoverWidth consists of the left and right margin of the hover area
             plus extra space if more then three buttons are available */
@@ -247,7 +238,7 @@ export default {
             // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
             if (this.kind === 'metanode' || (this.kind === 'component' && (e.ctrlKey || e.metaKey))) {
                 this.openNode();
-            } else if (this.dialog)  {
+            } else if (this.allowedActions.canOpenDialog)  {
                 // open node dialog if one is present
                 this.openDialog({ nodeIds: [this.id] });
             }
@@ -308,8 +299,6 @@ export default {
         v-if="!hideActionBar"
         ref="actionbar"
         v-bind="allowedActions"
-        :node-dialog="dialog"
-        :node-view="view"
         :transform="`translate(${position.x + $shapes.nodeSize / 2} ${position.y - $shapes.nodeSelectionPadding[0]})`"
         :node-id="id"
         @action="onAction"

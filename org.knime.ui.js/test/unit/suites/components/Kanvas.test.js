@@ -21,9 +21,7 @@ const mockNode = ({ id, position }) => ({
     annotation: { text: '' },
     kind: 'node',
     icon: 'data:image/',
-    state: null,
-    view: null,
-    dialog: false
+    state: null
 });
 const mockConnector = ({ nr }) => ({
     sourceNode: '',
@@ -96,12 +94,6 @@ describe('Kanvas', () => {
                 nodeType() {
                     return ({ nodeId }) => `type-${nodeId}`;
                 },
-                nodeView() {
-                    return () => ({ available: true });
-                },
-                nodeDialog() {
-                    return () => false;
-                },
                 executionInfo() {
                     return ({ nodeId }) => workflow.nodes[nodeId].executionInfo;
                 }
@@ -154,8 +146,6 @@ describe('Kanvas', () => {
                     link: null,
                     allowedActions: null,
                     selected: false,
-                    dialog: false,
-                    view: null,
                     executionInfo: null
                 };
                 expect(props).toStrictEqual(expected);
