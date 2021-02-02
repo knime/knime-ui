@@ -45,8 +45,6 @@ const commonNode = {
         styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
     },
 
-    dialog: true,
-
     name: 'My Name',
     type: 'Source',
 
