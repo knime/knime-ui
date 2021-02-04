@@ -6,6 +6,11 @@ export const minZoomFactor = 0.1; // 10%
 export const maxZoomFactor = 5; // 500%
 const clampZoomFactor = (newFactor) => Math.min(Math.max(minZoomFactor, newFactor), maxZoomFactor);
 
+/**
+ * Canvas Store manages positioning, zooming, scrolling and
+ * coordinate transformations for the Kanvas component.
+ */
+
 export const state = () => ({
     zoomFactor: defaultZoomFactor,
     suggestPanning: false,
@@ -40,6 +45,9 @@ export const mutations = {
     resetZoom(state) {
         state.zoomFactor = defaultZoomFactor;
     },
+    /*
+     * suggestPanning is set when the Alt-key is pressed and displays a different cursor
+     */
     setSuggestPanning(state, newValue) {
         state.suggestPanning = newValue;
     },
@@ -50,6 +58,9 @@ export const mutations = {
         state.containerSize.width = width;
         state.containerSize.height = height;
     },
+    /*
+     * Zooms in or out of the workflow while fixing the point below the cursor
+     */
     zoomWithPointer(state, { delta, cursorX, cursorY }) {
         let oldZoomFactor = state.zoomFactor;
         let newZoomFactor = clampZoomFactor(state.zoomFactor * Math.pow(zoomMultiplier, delta));
@@ -66,7 +77,8 @@ export const mutations = {
         */
 
         // If the user zooms in, the scroll bars are adjusted by those values to move the point under the cursor
-        // If zoomed out further than 'fitToScreen', there won't be scrollbars and those numbers will be negative. Hence, no scrolling will be done.
+        // If zoomed out further than 'fitToScreen', there won't be scrollbars and those numbers will be negative.
+        // Hence, no scrolling will be done.
         let el = state.getScrollContainerElement();
         el.scrolled = true;
         el.scrollLeft = newZoomFactor / oldZoomFactor * (el.scrollLeft + cursorX) - cursorX;
@@ -75,9 +87,16 @@ export const mutations = {
 };
 
 export const actions = {
+    /*
+     * Applies the largest zoom factor with which the whole workflow is still fully visible
+     */
     setZoomToFit({ commit, getters }) {
         commit('setFactor', getters.fitToScreenZoomFactor);
     },
+
+    /*
+     * Zooms in/out of the workflow while keeping the center fixated
+     */
     zoomCentered({ commit, getters, state }, delta) {
         commit('zoomWithPointer', {
             delta,

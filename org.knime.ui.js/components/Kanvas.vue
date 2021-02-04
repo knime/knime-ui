@@ -127,12 +127,11 @@ export default {
             this.$el.setPointerCapture(e.pointerId);
         },
         movePan(e) {
-            const speedFactor = 1;
             if (this.panning) {
                 const delta = [e.screenX - this.panning[0], e.screenY - this.panning[1]];
                 this.panning = [e.screenX, e.screenY];
-                this.$el.scrollLeft -= delta[0] * speedFactor;
-                this.$el.scrollTop -= delta[1] * speedFactor;
+                this.$el.scrollLeft -= delta[0];
+                this.$el.scrollTop -= delta[1];
             }
         },
         stopPan(e) {

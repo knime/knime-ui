@@ -3,6 +3,9 @@ import { mapGetters, mapState } from 'vuex';
 import DropdownIcon from '~/webapps-common/ui/assets/img/icons/arrow-dropdown.svg?inline';
 import SubMenu from '~/webapps-common/ui/components/SubMenu';
 
+/**
+ * ZoomMenu offers predefined zoom levels and an input field to enter custom zoom levels
+ */
 export default {
     components: {
         DropdownIcon,
@@ -40,12 +43,14 @@ export default {
             this.$refs.zoomInput.innerText = `${Math.round(this.zoomFactor * 100)}%`;
         },
         onZoomInputEnter(e) {
+            // '100' or '100%' works
             let newZoomFactor = parseInt(e.target.innerText, 10) / 100;
             
             if (!isNaN(newZoomFactor)) {
                 this.$store.commit('canvas/setFactor', newZoomFactor);
             }
 
+            // de-focus input. Resets and formats zoom level
             e.target.blur();
         },
         onZoomInputClick(e) {
@@ -53,6 +58,7 @@ export default {
             document.execCommand('selectAll', false, null);
         },
         onZoomInputFocusOut(e) {
+            // Deselect text and reset to formatted value
             window.getSelection().removeAllRanges();
             this.formatZoomInput();
         },

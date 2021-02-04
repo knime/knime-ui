@@ -47,14 +47,14 @@ export default {
                 return null;
             }
         },
-        async onClick({ target }) {
+        onClick({ target }) {
             if (!target || !target.href) {
                 return;
             }
             let { hash } = new URL(target.href, 'file://dummy/');
             let workflowId = decodeURIComponent(hash.replace(/^#/, ''));
             
-            await this.$store.dispatch('openedProjects/switchWorkflow',
+            this.$store.dispatch('openedProjects/switchWorkflow',
                 {
                     projectId: this.workflow.projectId,
                     workflowId

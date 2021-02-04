@@ -1,5 +1,6 @@
 /**
 * This store holds the currently opened projects (tabs), but not the contained workflow (see workflows.js)
+* Upon switching workflows it stores and restores tab-specific ui state like zoom factor and scroll position
 */
 
 export const state = () => ({
