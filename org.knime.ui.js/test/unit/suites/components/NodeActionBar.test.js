@@ -25,9 +25,23 @@ describe('NodeActionBar', () => {
         let wrapper = doMount();
         let buttons = wrapper.findAllComponents(ActionButton);
 
+        /* eslint-disable no-magic-numbers */
         expect(buttons.at(0).props()).toStrictEqual({ x: -25, disabled: true });
         expect(buttons.at(1).props()).toStrictEqual({ x: 0, disabled: true });
         expect(buttons.at(2).props()).toStrictEqual({ x: 25, disabled: true });
+        /* eslint-enable no-magic-numbers */
+    });
+
+    it('renders disabled action buttons with openDialog and without openView', () => {
+        let wrapper = doMount({ canOpenDialog: false });
+        let buttons = wrapper.findAllComponents(ActionButton);
+
+        /* eslint-disable no-magic-numbers */
+        expect(buttons.at(0).props()).toStrictEqual({ x: -37.5, disabled: true });
+        expect(buttons.at(1).props()).toStrictEqual({ x: -12.5, disabled: true });
+        expect(buttons.at(2).props()).toStrictEqual({ x: 12.5, disabled: true });
+        expect(buttons.at(3).props()).toStrictEqual({ x: 37.5, disabled: true });
+        /* eslint-enable no-magic-numbers */
     });
 
     it('renders disabled action buttons with openDialog and openView', () => {
@@ -35,21 +49,23 @@ describe('NodeActionBar', () => {
         let wrapper = doMount({ canOpenDialog: false, canOpenView: false });
         let buttons = wrapper.findAllComponents(ActionButton);
 
+        /* eslint-disable no-magic-numbers */
         expect(buttons.at(0).props()).toStrictEqual({ x: -50, disabled: true });
         expect(buttons.at(1).props()).toStrictEqual({ x: -25, disabled: true });
         expect(buttons.at(2).props()).toStrictEqual({ x: 0, disabled: true });
-        // eslint-disable-next-line no-magic-numbers
         expect(buttons.at(3).props()).toStrictEqual({ x: 25, disabled: true });
-        // eslint-disable-next-line no-magic-numbers
         expect(buttons.at(4).props()).toStrictEqual({ x: 50, disabled: true });
+        /* eslint-enable no-magic-numbers */
     });
 
     it('renders enabled action buttons', () => {
-        let wrapper = doMount({ canOpenDialog: true,
+        let wrapper = doMount({
+            canOpenDialog: true,
             canExecute: true,
             canCancel: true,
             canReset: true,
-            canOpenView: true });
+            canOpenView: true
+        });
         let buttons = wrapper.findAllComponents(ActionButton);
 
         // fires action event

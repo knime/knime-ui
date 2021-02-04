@@ -174,8 +174,8 @@ export default {
             return null;
         },
         /**
-         * Checks if a streamable execution info has been set. The boolean value of the streamable variable does not matter,
-         * as the presence of the variable already indicates that the node is inside of a streaming component
+         * Checks if a streamable execution info has been set. The boolean value of the streamable variable does not
+         * matter, as the presence of the variable already indicates that the node is inside of a streaming component
          * @return {boolean} if true action bar will be hidden
          */
         hideActionBar() {
@@ -183,26 +183,33 @@ export default {
         },
         /**
          * Calculates the width of the hover area of the node.
-         * The size increase if the node is hovered and either a dialog button or the view button is available,
-         * so that the two border action buttons are reachable.
+         * The size increases when the node is hovered and either a dialog button or the view button is available,
+         * so that all the action buttons are reachable.
          * @return {object} the size of the hover area of the node
          */
         hoverSize() {
-            const extraSpaceNeeded = this.hover && (this.allowedActions.canOpenDialog ||
-                                      this.allowedActions.canOpenDialog);
-            const extraSpace = 60;
+            let extraSpace = 0;
+            if (this.hover) {
+                // shows disabled button if false, hides button if null
+                if (typeof this.allowedActions.canOpenDialog === 'boolean') {
+                    extraSpace += this.$shapes.nodeActionBarButtonSpread;
+                }
+                if (typeof this.allowedActions.canOpenView === 'boolean') {
+                    extraSpace += this.$shapes.nodeActionBarButtonSpread;
+                }
+            }
             /* hoverWidth consists of the left and right margin of the hover area
             plus extra space if more then three buttons are available */
             let hoverWidth = this.$shapes.nodeSize +
                     this.$shapes.nodeHoverMargin[1] +
                     this.$shapes.nodeHoverMargin[3] +
-                    (extraSpaceNeeded ? extraSpace : 0);
+                    extraSpace;
             /* hoverHeight consists of the top and bottom margin of the hover area */
             let hoverHeight = this.$shapes.nodeSize +
                                this.$shapes.nodeHoverMargin[0] +
                                this.$shapes.nodeHoverMargin[2];
             /* left margin of the node hover area plus the half of the extra space needs to be subtracted to center the element */
-            const offsetWidth = -this.$shapes.nodeHoverMargin[1] - (extraSpaceNeeded ? extraSpace / 2 : 0);
+            const offsetWidth = -this.$shapes.nodeHoverMargin[1] - extraSpace / 2;
             /* top margin of the node hover area needs to be subtracted to center the element */
             const offsetHeight = -this.$shapes.nodeHoverMargin[0];
 

@@ -48,13 +48,19 @@ export default {
          *  @returns {Array<Array>} Array of allowed actions
          */
         actions() {
-            return [
-                ...this.canOpenDialog === null ? [] : [['openDialog', this.canOpenDialog, OpenDialogIcon]],
+            let result = [
                 ['executeNodes', this.canExecute, ExecuteIcon],
                 ['cancelNodeExecution', this.canCancel, CancelIcon],
-                ['resetNodes', this.canReset, ResetIcon],
-                ...this.canOpenView === null ? [] : [['openView', this.canOpenView, OpenViewIcon]]
+                ['resetNodes', this.canReset, ResetIcon]
             ];
+            // shows disabled button if false, hides button if null
+            if (typeof this.canOpenDialog === 'boolean') {
+                result.unshift(['openDialog', this.canOpenDialog, OpenDialogIcon]);
+            }
+            if (typeof this.canOpenView === 'boolean') {
+                result.push(['openView', this.canOpenView, OpenViewIcon]);
+            }
+            return result;
         },
         /**
          *  returns the x-position of each button depending on the total amount of buttons
@@ -62,11 +68,9 @@ export default {
          */
         positions() {
             const { nodeActionBarButtonSpread } = this.$shapes;
-            return [...this.canOpenDialog === null ? [] : [-nodeActionBarButtonSpread * 2],
-                -nodeActionBarButtonSpread,
-                0,
-                nodeActionBarButtonSpread,
-                ...this.canOpenView === null ? [] : [nodeActionBarButtonSpread * 2]];
+            let buttonCount = this.actions.length;
+            // spread buttons evenly around the horizontal center
+            return this.actions.map((_, i) => (i + (1 - buttonCount) / 2) * nodeActionBarButtonSpread);
         }
     }
 };
@@ -83,7 +87,7 @@ export default {
     >
       <Component :is="icon" />
     </ActionButton>
-    
+
     <text
       class="node-id"
       text-anchor="middle"
