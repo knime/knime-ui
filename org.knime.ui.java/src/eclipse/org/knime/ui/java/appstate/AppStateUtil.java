@@ -152,7 +152,7 @@ public final class AppStateUtil {
 	private static Pair<WorkflowProject, OpenedWorkflow> createOpenedWorkflowAndWorkflowProject(
 			final MPart editorPart) {
 		WorkflowManager wfm = getWorkflowManager(editorPart);
-		WorkflowManager projectWfm = getProjectManager(wfm);
+		WorkflowManager projectWfm = wfm != null ? getProjectManager(wfm) : null;
 		if (projectWfm != null) {
 			WorkflowProject wp = WorkflowProjectManager.getWorkflowProject(projectWfm.getNameWithID()).orElse(null);
 			if (wp == null) {
