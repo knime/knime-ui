@@ -103,13 +103,18 @@ export default {
         }
     },
     watch: {
-        selectedNode() {
-            this.selectedPortIndex = null;
+        selectedNode(newNode, oldNode) {
+            if (oldNode !== newNode) {
+                this.selectedPortIndex = null;
+            }
         },
         selectedPortIndex(tab) {
             if (tab === null) {
                 consola.trace('clearing data table');
                 this.$store.dispatch('dataTable/clear');
+                // If the node has available data, the OutputPortSelectorBar will update the selectedPortIndex at this
+                // point via v-model, selecting the first available tab index, and we will eventually end up in the
+                // "else" branch below
             } else {
                 consola.trace('loading table for port', tab);
                 setTimeout(() => { // delay UI blocking at startup
