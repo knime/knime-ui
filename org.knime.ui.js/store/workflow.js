@@ -117,12 +117,12 @@ export const actions = {
         resetNodes({ projectId: state.activeWorkflow.projectId, nodeIds });
     },
     /* See docs in API */
-    openView({ state }, { nodeIds }) {
-        openView({ projectId: state.activeWorkflow.projectId, nodeIds });
+    openView({ state }, { nodeId }) {
+        openView({ projectId: state.activeWorkflow.projectId, nodeId });
     },
     /* See docs in API */
-    openDialog({ state }, { nodeIds }) {
-        openDialog({ projectId: state.activeWorkflow.projectId, nodeIds });
+    openDialog({ state }, { nodeId }) {
+        openDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     }
 };
 

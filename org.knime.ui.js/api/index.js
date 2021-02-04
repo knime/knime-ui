@@ -104,6 +104,27 @@ export const cancelNodeExecution = nodeStateChanger('cancel', 'Could not cancel 
  */
 export const resetNodes = nodeStateChanger('reset', 'Could not reset nodes');
 
+
+/**
+ * Open the native (Java) configuration dialog of a node.
+ * @param {String} projectId
+ * @param {String} nodeId The node for which to open the dialog.
+ * @returns {void}
+ */
+export const openDialog = ({ projectId, nodeId }) => {
+    window.openNodeDialog(projectId, nodeId);
+};
+
+/**
+ * Open the native (Java) view window of a node.
+ * @param {String} projectId
+ * @param {String} nodeId The node for which to open the view.
+ * @returns {void}
+ */
+export const openView = ({ projectId, nodeId }) => {
+    window.openNodeView(projectId, nodeId);
+};
+
 // The Node service offers JSON-RPC forwarding to the Port instance.
 // This is by design, because third-party vendors can provide a custom port implementation with totally
 // different methods. In case of a data port (table), the available methods are defined in
@@ -148,12 +169,4 @@ export const loadTable = ({ projectId, nodeId, portIndex }) => {
             `Couldn't load table data from port ${portIndex} of node "${nodeId}" in project ${projectId}`
         ));
     }
-};
-
-export const openView = ({ projectId, nodeIds }) => {
-    window.openNodeView(projectId, nodeIds[0]);
-};
-
-export const openDialog = ({ projectId, nodeIds }) => {
-    window.openNodeDialog(projectId, nodeIds[0]);
 };

@@ -185,46 +185,36 @@ export default {
          * Calculates the width of the hover area of the node.
          * The size increases when the node is hovered and either a dialog button or the view button is available,
          * so that all the action buttons are reachable.
-         * @return {object} the size of the hover area of the node
+         * @return {object} the size and position of the hover area of the node
          */
         hoverSize() {
-            let extraSpace = 0;
+            let extraHorizontalSize = 0;
             if (this.hover) {
-                // shows disabled button if false, hides button if null
+                // buttons are showed as disabled if false, hidden if null
                 if (typeof this.allowedActions.canOpenDialog === 'boolean') {
-                    extraSpace += this.$shapes.nodeActionBarButtonSpread;
+                    extraHorizontalSize += this.$shapes.nodeActionBarButtonSpread;
                 }
                 if (typeof this.allowedActions.canOpenView === 'boolean') {
-                    extraSpace += this.$shapes.nodeActionBarButtonSpread;
+                    extraHorizontalSize += this.$shapes.nodeActionBarButtonSpread;
                 }
             }
-            /* hoverWidth consists of the left and right margin of the hover area
-            plus extra space if more then three buttons are available */
-            let hoverWidth = this.$shapes.nodeSize +
-                    this.$shapes.nodeHoverMargin[1] +
-                    this.$shapes.nodeHoverMargin[3] +
-                    extraSpace;
-            /* hoverHeight consists of the top and bottom margin of the hover area */
-            let hoverHeight = this.$shapes.nodeSize +
-                               this.$shapes.nodeHoverMargin[0] +
-                               this.$shapes.nodeHoverMargin[2];
-            /* left margin of the node hover area plus the half of the extra space needs to be subtracted to center the element */
-            const offsetWidth = -this.$shapes.nodeHoverMargin[1] - extraSpace / 2;
-            /* top margin of the node hover area needs to be subtracted to center the element */
-            const offsetHeight = -this.$shapes.nodeHoverMargin[0];
+            let width = this.$shapes.nodeSize + extraHorizontalSize +
+                    this.$shapes.nodeHoverMargin[1] + this.$shapes.nodeHoverMargin[3];
+            let height = this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[0] + this.$shapes.nodeHoverMargin[2];
+            let x = -this.$shapes.nodeHoverMargin[1] - extraHorizontalSize / 2;
+            let y = -this.$shapes.nodeHoverMargin[0];
 
             return {
-                width: hoverWidth,
-                height: hoverHeight,
-                offsetWidth,
-                offsetHeight
+                width,
+                height,
+                x,
+                y
             };
         }
     },
     methods: {
         ...mapMutations('workflow', ['selectNode', 'deselectNode', 'deselectAllNodes']),
-        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'openView',
-            'openDialog']),
+        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'openView', 'openDialog']),
         portShift,
         onLeaveHoverArea(e) {
             if (this.$refs.actionbar?.$el?.contains(e.relatedTarget)) {
@@ -259,7 +249,7 @@ export default {
                 this.openNode();
             } else if (this.allowedActions?.canOpenDialog)  {
                 // open node dialog if one is present
-                this.openDialog({ nodeIds: [this.id] });
+                this.openDialog({ nodeId: this.id });
             }
         },
 
@@ -273,8 +263,13 @@ export default {
          * @returns {void}
          */
         onAction(action) {
+            const multiNodeActions = ['executeNodes', 'cancelNodeExecution', 'resetNodes'];
             // calls actions of workflow store
-            this[action]({ nodeIds: [this.id] });
+            if (multiNodeActions.includes(action)) {
+                this[action]({ nodeIds: [this.id] });
+            } else {
+                this[action]({ nodeId: this.id });
+            }
         },
 
         /*
@@ -375,8 +370,8 @@ export default {
           class="hover-area"
           :width="hoverSize.width"
           :height="hoverSize.height"
-          :x="hoverSize.offsetWidth"
-          :y="hoverSize.offsetHeight"
+          :x="hoverSize.x"
+          :y="hoverSize.y"
         />
         <NodeTorso
           :type="type"

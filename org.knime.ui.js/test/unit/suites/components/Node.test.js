@@ -210,9 +210,7 @@ describe('Node', () => {
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
             expect(workflowStoreConfig.actions.openDialog).toHaveBeenCalledWith(expect.anything(), {
-                nodeIds: [
-                    'root:1'
-                ]
+                nodeId: 'root:1'
             });
         });
 
@@ -223,9 +221,7 @@ describe('Node', () => {
             actionBar.vm.$emit('action', 'openDialog');
 
             expect(workflowStoreConfig.actions.openDialog).toHaveBeenCalledWith(expect.anything(), {
-                nodeIds: [
-                    'root:1'
-                ]
+                nodeId: 'root:1'
             });
         });
 
@@ -236,9 +232,7 @@ describe('Node', () => {
             actionBar.vm.$emit('action', 'openView');
 
             expect(workflowStoreConfig.actions.openView).toHaveBeenCalledWith(expect.anything(), {
-                nodeIds: [
-                    'root:1'
-                ]
+                nodeId: 'root:1'
             });
         });
     });
