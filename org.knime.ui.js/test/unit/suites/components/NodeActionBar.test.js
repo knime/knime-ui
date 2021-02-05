@@ -89,7 +89,7 @@ describe('NodeActionBar', () => {
         expect(wrapper.emitted('action')).toContainEqual(['stepNodeExecution']);
 
         wrapper = doMount({ canStep: true, canPause: false, canResume: true });
-        
+
         buttons = wrapper.findAllComponents(ActionButton);
         buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
         expect(wrapper.emitted('action')).toContainEqual(['resumeNodeExecution']);
@@ -103,16 +103,6 @@ describe('NodeActionBar', () => {
         expect(wrapper.emitted('action')).toContainEqual(['pauseNodeExecution']);
         expect(wrapper.emitted('action')).toContainEqual(['stepNodeExecution']);
         expect(wrapper.emitted('action')).not.toContainEqual(['resumeNodeExecution']);
-    });
-
-    it('evenly spaces 4 action items', () => {
-        let wrapper = doMount({ canExecute: true, canCancel: true, canReset: true, canStep: true });
-        let buttons = wrapper.findAllComponents(ActionButton);
-
-        expect(buttons.at(0).props()).toStrictEqual({ x: -37.5, disabled: false });
-        expect(buttons.at(1).props()).toStrictEqual({ x: -12.5, disabled: false });
-        expect(buttons.at(2).props()).toStrictEqual({ x: 12.5, disabled: false });
-        expect(buttons.at(3).props()).toStrictEqual({ x: 37.5, disabled: false });
     });
 
     it('renders node Id', () => {
