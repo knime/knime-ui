@@ -130,6 +130,27 @@ export const resumeNodeExecution = loopStateChanger('resume', 'Could not resume 
  */
 export const stepNodeExecution = loopStateChanger('step', 'Could not step execution', 'changeLoopState');
 
+
+/**
+ * Open the native (Java) configuration dialog of a node.
+ * @param {String} projectId
+ * @param {String} nodeId The node for which to open the dialog.
+ * @returns {void}
+ */
+export const openDialog = ({ projectId, nodeId }) => {
+    window.openNodeDialog(projectId, nodeId);
+};
+
+/**
+ * Open the native (Java) view window of a node.
+ * @param {String} projectId
+ * @param {String} nodeId The node for which to open the view.
+ * @returns {void}
+ */
+export const openView = ({ projectId, nodeId }) => {
+    window.openNodeView(projectId, nodeId);
+};
+
 // The Node service offers JSON-RPC forwarding to the Port instance.
 // This is by design, because third-party vendors can provide a custom port implementation with totally
 // different methods. In case of a data port (table), the available methods are defined in

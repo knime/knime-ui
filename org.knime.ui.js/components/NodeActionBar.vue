@@ -4,6 +4,8 @@ import ResetIcon from '../assets/reset-all.svg?inline';
 import CancelIcon from '../assets/cancel-execution.svg?inline';
 import PauseIcon from '../assets/pause-execution.svg?inline';
 import StepIcon from '../assets/step-execution.svg?inline';
+import OpenViewIcon from '../assets/open-view.svg?inline';
+import OpenDialogIcon from '../assets/configure-node.svg?inline';
 
 import ActionButton from '~/components/ActionButton.vue';
 
@@ -43,24 +45,47 @@ export default {
         canResume: {
             type: Boolean,
             default: false
+        },
+        canOpenView: {
+            type: Boolean,
+            default: null
+        },
+        canOpenDialog: {
+            type: Boolean,
+            default: null
         }
     },
     computed: {
+        /**
+         *  returns an array of allowed actions with the corresponding api call,
+         *  a boolean if it is enabled or disabled and an icon. openDialog and openView are only added when the prop is available
+         *  @returns {Array<Array>} Array of allowed actions
+         */
         actions() {
-            let nodeActions = [
-                ['executeNodes', this.canExecute, ExecuteIcon],
+            let firstAction;
+            if (this.canPause) {
+                firstAction = ['pauseNodeExecution', true, PauseIcon];
+            } else if (this.canResume) {
+                firstAction = ['resumeNodeExecution', true, ExecuteIcon];
+            } else {
+                firstAction = ['executeNodes', this.canExecute, ExecuteIcon];
+            }
+            let result = [
+                firstAction,
                 ['cancelNodeExecution', this.canCancel, CancelIcon],
                 ['resetNodes', this.canReset, ResetIcon]
             ];
-            if (this.canPause || this.canResume) {
-                nodeActions[0] = this.canPause
-                    ? ['pauseNodeExecution', true, PauseIcon]
-                    : ['resumeNodeExecution', true, ExecuteIcon];
-            }
             if (this.canStep) {
-                nodeActions.push(['stepNodeExecution', this.canStep, StepIcon]);
+                result.push(['stepNodeExecution', true, StepIcon]);
             }
-            return nodeActions;
+            // shows disabled button if false, hides button if null
+            if (typeof this.canOpenDialog === 'boolean') {
+                result.unshift(['openDialog', this.canOpenDialog, OpenDialogIcon]);
+            }
+            if (typeof this.canOpenView === 'boolean') {
+                result.push(['openView', this.canOpenView, OpenViewIcon]);
+            }
+            return result;
         },
         /**
          *  returns the x-position of each button depending on the total amount of buttons
@@ -68,11 +93,11 @@ export default {
          */
         positions() {
             const { nodeActionBarButtonSpread } = this.$shapes;
-            /* handles even or odd numbers of buttons */
-            return this.actions.map((x, ind, arr) => (ind - ((arr.length - 1) / 2)) * nodeActionBarButtonSpread);
+            let buttonCount = this.actions.length;
+            // spread buttons evenly around the horizontal center
+            return this.actions.map((_, i) => (i + (1 - buttonCount) / 2) * nodeActionBarButtonSpread);
         }
     }
-
 };
 </script>
 
@@ -87,7 +112,7 @@ export default {
     >
       <Component :is="icon" />
     </ActionButton>
-    
+
     <text
       class="node-id"
       text-anchor="middle"

@@ -189,4 +189,21 @@ describe('NodeOutput.vue', () => {
         expect(dataTable.actions.clear).toHaveBeenCalled();
 
     });
+
+    it('clears table on node selection', async () => {
+        doShallowMount();
+        wrapper.setData({ selectedPortIndex: 0 });
+        workflow.state.activeWorkflow.nodes.node1.selected = false;
+        await Vue.nextTick();
+        expect(wrapper.vm.selectedPortIndex).toBe(null);
+    });
+
+    it('does not clear table if the same node is re-selected', async () => {
+        doShallowMount();
+        wrapper.setData({ selectedPortIndex: 0 });
+        // triggers the watcher even though nothing has changed
+        Vue.set(workflow.state.activeWorkflow.nodes.node1, 'selected', true);
+        await Vue.nextTick();
+        expect(wrapper.vm.selectedPortIndex).toBe(0);
+    });
 });

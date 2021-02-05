@@ -195,8 +195,8 @@ export default {
             return null;
         },
         /**
-         * Checks if a streamable execution info has been set. The boolean value of the streamable variable does not matter,
-         * as the presence of the variable already indicates that the node is inside of a streaming component
+         * Checks if a streamable execution info has been set. The boolean value of the streamable variable does not
+         * matter, as the presence of the variable already indicates that the node is inside of a streaming component
          * @return {boolean} if true action bar will be hidden
          */
         hideActionBar() {
@@ -207,12 +207,42 @@ export default {
                 ...this.allowedActions,
                 ...this.loopInfo.allowedActions
             };
+        },
+        /**
+         * Calculates the width of the hover area of the node.
+         * The size increases when the node is hovered and either a dialog button or the view button is available,
+         * so that all the action buttons are reachable.
+         * @return {object} the size and position of the hover area of the node
+         */
+        hoverSize() {
+            let extraHorizontalSize = 0;
+            if (this.hover) {
+                // buttons are showed as disabled if false, hidden if null
+                if (typeof this.allowedActions.canOpenDialog === 'boolean') {
+                    extraHorizontalSize += this.$shapes.nodeActionBarButtonSpread;
+                }
+                if (typeof this.allowedActions.canOpenView === 'boolean') {
+                    extraHorizontalSize += this.$shapes.nodeActionBarButtonSpread;
+                }
+            }
+            let width = this.$shapes.nodeSize + extraHorizontalSize +
+                    this.$shapes.nodeHoverMargin[1] + this.$shapes.nodeHoverMargin[3];
+            let height = this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[0] + this.$shapes.nodeHoverMargin[2];
+            let x = -this.$shapes.nodeHoverMargin[1] - extraHorizontalSize / 2;
+            let y = -this.$shapes.nodeHoverMargin[0];
+
+            return {
+                width,
+                height,
+                x,
+                y
+            };
         }
     },
     methods: {
         ...mapMutations('workflow', ['selectNode', 'deselectNode', 'deselectAllNodes']),
         ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes',
-            'pauseNodeExecution', 'resumeNodeExecution', 'stepNodeExecution']),
+            'pauseNodeExecution', 'resumeNodeExecution', 'stepNodeExecution', 'openView', 'openDialog']),
         portShift,
         onLeaveHoverArea(e) {
             if (this.$refs.actionbar?.$el?.contains(e.relatedTarget)) {
@@ -245,6 +275,9 @@ export default {
             // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
             if (this.kind === 'metanode' || (this.kind === 'component' && (e.ctrlKey || e.metaKey))) {
                 this.openNode();
+            } else if (this.allowedActions?.canOpenDialog)  {
+                // open node dialog if one is present
+                this.openDialog({ nodeId: this.id });
             }
         },
 
@@ -254,12 +287,17 @@ export default {
 
         /**
          * Triggered by NodeActionBar
-         * @param {'executeNodes' | 'cancelNodeExecution' | 'resetNodes' } action
+         * @param {'executeNodes' | 'cancelNodeExecution' | 'resetNodes' | 'openView' | 'openDialog' } action
          * @returns {void}
          */
         onAction(action) {
+            const multiNodeActions = ['executeNodes', 'cancelNodeExecution', 'resetNodes'];
             // calls actions of workflow store
-            this[action]({ nodeIds: [this.id] });
+            if (multiNodeActions.includes(action)) {
+                this[action]({ nodeIds: [this.id] });
+            } else {
+                this[action]({ nodeId: this.id });
+            }
         },
 
         /*
@@ -358,10 +396,10 @@ export default {
         <!-- Hover Area, larger than the node torso -->
         <rect
           class="hover-area"
-          :width="$shapes.nodeSize + $shapes.nodeHoverMargin[1] + $shapes.nodeHoverMargin[3]"
-          :height="$shapes.nodeSize + $shapes.nodeHoverMargin[0] + $shapes.nodeHoverMargin[2]"
-          :x="-$shapes.nodeHoverMargin[1]"
-          :y="-$shapes.nodeHoverMargin[0]"
+          :width="hoverSize.width"
+          :height="hoverSize.height"
+          :x="hoverSize.x"
+          :y="hoverSize.y"
         />
         <NodeTorso
           :type="type"

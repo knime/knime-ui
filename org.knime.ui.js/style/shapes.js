@@ -13,9 +13,9 @@ export const nodeNameLineHeight = 14;
 
 export const nodeSelectionPadding = [37, 34, 6, 34];
 
-// Includes the NodeActionButtons. If more that 3 Buttons will be present
-// it either needs to be widened or another hover area is needed
-export const nodeHoverMargin = [46, 18, 8, 18];
+// Margins including 3 NodeActionButtons. If more that 3 Buttons are present,
+// the hover area is widened by Node.vue
+export const nodeHoverMargin = [47, 19, 8, 19];
 export const nodeIdMargin = 16;
 export const nodeActionBarButtonSpread = 25;
 
