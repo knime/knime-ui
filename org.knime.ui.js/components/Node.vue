@@ -291,7 +291,7 @@ export default {
          * @returns {void}
          */
         onAction(action) {
-            const multiNodeActions = ['executeNodes', 'cancelNodeExecution', 'resetNodes'];
+            const multiNodeActions = ['executeNodes', 'cancelNodeExecution', 'resetNodes', ''];
             // calls actions of workflow store
             if (multiNodeActions.includes(action)) {
                 this[action]({ nodeIds: [this.id] });

@@ -36,15 +36,15 @@ export default {
         },
         canStep: {
             type: Boolean,
-            default: false
+            default: null
         },
         canPause: {
             type: Boolean,
-            default: false
+            default: null
         },
         canResume: {
             type: Boolean,
-            default: false
+            default: null
         },
         canOpenView: {
             type: Boolean,
@@ -75,12 +75,12 @@ export default {
                 ['cancelNodeExecution', this.canCancel, CancelIcon],
                 ['resetNodes', this.canReset, ResetIcon]
             ];
-            if (this.canStep) {
-                result.push(['stepNodeExecution', true, StepIcon]);
-            }
             // shows disabled button if false, hides button if null
             if (typeof this.canOpenDialog === 'boolean') {
                 result.unshift(['openDialog', this.canOpenDialog, OpenDialogIcon]);
+            }
+            if (typeof this.canStep === 'boolean') {
+                result.push(['stepNodeExecution', this.canStep, StepIcon]);
             }
             if (typeof this.canOpenView === 'boolean') {
                 result.push(['openView', this.canOpenView, OpenViewIcon]);
