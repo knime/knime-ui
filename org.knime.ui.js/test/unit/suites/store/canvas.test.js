@@ -26,7 +26,14 @@ describe('canvas store', () => {
             right: 100,
             bottom: 100
         };
-        scrollContainer = { scrollLeft: 0, scrollTop: 0 };
+        scrollContainer = {
+            scrollLeft: 0,
+            scrollTop: 0,
+            scrollTo: jest.fn().mockImplementation((left, top) => {
+                scrollContainer.scrollLeft = left;
+                scrollContainer.scrollTop = top;
+            })
+        };
         store = mockVuexStore({
             canvas: {
                 ...canvasStoreConfig,
@@ -215,7 +222,6 @@ describe('canvas store', () => {
             await store.dispatch('canvas/zoomCentered', delta);
             expect(state.zoomFactor).toBe(2);
 
-            let scrollContainer = state.getScrollContainerElement();
             expect(scrollContainer.scrollLeft).toBe(25); /* eslint-disable-line no-magic-numbers */
             expect(scrollContainer.scrollTop).toBe(25); /* eslint-disable-line no-magic-numbers */
         });
@@ -230,7 +236,7 @@ describe('canvas store', () => {
             scrollContainer.scrollLeft = 50;
             scrollContainer.scrollTop = 100;
             store.state.canvas.zoomFactor = 2;
-            expect(store.getters['canvas/saveState']).toStrictEqual({
+            expect(store.getters['canvas/toSave']).toStrictEqual({
                 zoomFactor: 2,
                 scrollLeft: 50,
                 scrollTop: 100

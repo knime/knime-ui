@@ -37,9 +37,12 @@ export const mutations = {
         state.zoomFactor = savedState?.zoomFactor || defaultZoomFactor;
 
         let el = state.getScrollContainerElement();
+        let scrollPosition = [
+            savedState?.scrollLeft || 0,
+            savedState?.scrollTop || 0
+        ];
         Vue.nextTick(() => {
-            el.scrollLeft = savedState?.scrollLeft || 0;
-            el.scrollTop = savedState?.scrollTop || 0;
+            el.scrollTo(...scrollPosition);
         });
     },
     resetZoom(state) {
@@ -80,9 +83,11 @@ export const mutations = {
         // If zoomed out further than 'fitToScreen', there won't be scrollbars and those numbers will be negative.
         // Hence, no scrolling will be done.
         let el = state.getScrollContainerElement();
-        el.scrolled = true;
-        el.scrollLeft = newZoomFactor / oldZoomFactor * (el.scrollLeft + cursorX) - cursorX;
-        el.scrollTop = newZoomFactor / oldZoomFactor * (el.scrollTop + cursorY) - cursorY;
+        let scrollPosition = [
+            newZoomFactor / oldZoomFactor * (el.scrollLeft + cursorX) - cursorX,
+            newZoomFactor / oldZoomFactor * (el.scrollTop + cursorY) - cursorY
+        ];
+        el.scrollTo(...scrollPosition);
     }
 };
 
@@ -107,7 +112,11 @@ export const actions = {
 };
 
 export const getters = {
-    saveState({ zoomFactor, getScrollContainerElement }) {
+    /*
+        returns state that should be remembered and restored
+        upon switching workflows
+    */
+    toSave({ zoomFactor, getScrollContainerElement }) {
         let el = getScrollContainerElement();
         return {
             zoomFactor,

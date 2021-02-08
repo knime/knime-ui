@@ -57,7 +57,6 @@ export default {
         // Start Container Observers
         this.initContainerSize();
         this.setScrollContainerElement(this.$el);
-
         this.initResizeObserver();
         this.$el.focus();
     },
@@ -290,7 +289,7 @@ export default {
 
 <style lang="postcss" scoped>
 #kanvas:focus {
-  outline: initial;
+  outline: none;
 }
 
 .debug-css {

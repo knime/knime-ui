@@ -29,7 +29,7 @@ describe('Opened projects store', () => {
                     restoreState: jest.fn()
                 },
                 getters: {
-                    saveState: () => ({
+                    toSave: () => ({
                         saveMe: 'canvas'
                     })
                 }
@@ -58,9 +58,13 @@ describe('Opened projects store', () => {
                 { projectId: 'foo', name: 'bar' }
             ]);
             expect(store.state.openedProjects.activeId).toBe(null);
+            expect(store.state.openedProjects.savedState).toStrictEqual({
+                foo: {}
+            });
         });
 
         it('allows setting savedState', () => {
+            store.commit('openedProjects/setProjects', [{ projectId: 'p1' }]);
             store.commit('openedProjects/saveState', { projectId: 'p1', workflowId: 'root', savedState: 'SAFE' });
 
             let savedState = store.state.openedProjects.savedState;
@@ -146,9 +150,11 @@ describe('Opened projects store', () => {
             store.dispatch('openedProjects/setProjects', [
                 { projectId: '1', name: 'p1', activeWorkflow: {} }
             ]);
-            expect(store.state.openedProjects.savedState).toStrictEqual({});
+            expect(store.state.openedProjects.savedState).toStrictEqual({
+                '1': {}
+            });
 
-            await store.dispatch('openedProjects/switchWorkflow', '1');
+            await store.dispatch('openedProjects/switchWorkflow', { projectId: '1', workflowId: 'root' });
 
             expect(store.state.openedProjects.savedState).toStrictEqual({
                 '1': {

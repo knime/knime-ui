@@ -6,6 +6,8 @@
 export const state = () => ({
     items: [],
     activeId: null,
+
+    /* Map of projectId -> workflowId -> savedState */
     savedState: {}
 });
 
@@ -15,14 +17,15 @@ export const mutations = {
     },
     setProjects(state, projects) {
         state.items = projects.map(({ projectId, name }) => ({ projectId, name }));
+
+        // add entry to savedState for each project
+        state.savedState = {};
+        state.items.forEach(({ projectId }) => {
+            state.savedState[projectId] = {};
+        });
     },
     saveState(state, { projectId, workflowId, savedState }) {
-        let projectState = state.savedState[projectId];
-        if (!projectState) {
-            projectState = {};
-            state.savedState[projectId] = projectState;
-        }
-        projectState[workflowId] = savedState;
+        state.savedState[projectId][workflowId] = savedState;
     }
 };
 
@@ -50,16 +53,17 @@ export const actions = {
     },
     async switchWorkflow({ commit, dispatch, rootGetters }, { projectId, workflowId }) {
         if (rootGetters['workflow/activeWorkflowId']) {
-            await dispatch('saveTabState');
+            await dispatch('saveState');
         }
 
         commit('setActiveId', projectId);
         await dispatch('workflow/loadWorkflow', { projectId, workflowId }, { root: true });
-        await dispatch('restoreTabState');
+
+        await dispatch('restoreState');
     },
-    saveTabState({ state, commit, rootState, rootGetters }) {
+    saveState({ state, commit, rootState, rootGetters }) {
         let savedState = {
-            canvas: rootGetters['canvas/saveState']
+            canvas: rootGetters['canvas/toSave']
         };
 
         // deep clone without observers
@@ -71,11 +75,11 @@ export const actions = {
             savedState
         });
     },
-    restoreTabState({ state: { savedState, activeId }, commit, rootGetters }) {
+    restoreState({ state: { savedState, activeId }, commit, rootGetters }) {
         const workflowId = rootGetters['workflow/activeWorkflowId'];
 
         // is undefined if opened for the first time
-        const savedWorkflowState = savedState[activeId]?.[workflowId];
+        const savedWorkflowState = savedState[activeId][workflowId];
         commit('canvas/restoreState', savedWorkflowState?.canvas, { root: true });
     }
 };
