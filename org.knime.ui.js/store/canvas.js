@@ -193,7 +193,7 @@ export const getters = {
             viewBox has the size of the container / zoomFactor
             viewBox is shifted, s.t. content appears centered
     */
-    expandedViewBox({ containerSize, zoomFactor }, { canvasSize, contentBounds }) {
+    viewBox({ containerSize, zoomFactor }, { canvasSize, contentBounds }) {
         let shiftX = Math.min(0, (contentBounds.width - containerSize.width / zoomFactor) / 2);
         let shiftY = Math.min(0, (contentBounds.height - containerSize.height / zoomFactor) / 2);
 
@@ -208,10 +208,10 @@ export const getters = {
     /*
         returns the true offset from the upper-left corner of the Kanvas for a given point on the workflow
     */
-    getAbsoluteCoordinates({ zoomFactor }, { expandedViewBox }) {
+    getAbsoluteCoordinates({ zoomFactor }, { viewBox }) {
         return ({ x: origX, y: origY }) => ({
-            x: (origX - expandedViewBox.left) * zoomFactor,
-            y: (origY - expandedViewBox.top) * zoomFactor
+            x: (origX - viewBox.left) * zoomFactor,
+            y: (origY - viewBox.top) * zoomFactor
         });
     }
 };

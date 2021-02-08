@@ -309,7 +309,7 @@ describe('canvas store', () => {
                     width: 100,
                     height: 100
                 });
-                expect(store.getters['canvas/expandedViewBox']).toStrictEqual({
+                expect(store.getters['canvas/viewBox']).toStrictEqual({
                     top: 0,
                     left: 0,
                     width: 100,
@@ -337,7 +337,7 @@ describe('canvas store', () => {
                     width: 100,
                     height: 100
                 });
-                expect(store.getters['canvas/expandedViewBox']).toStrictEqual({
+                expect(store.getters['canvas/viewBox']).toStrictEqual({
                     top: -25,
                     left: -25,
                     width: 100,
@@ -368,7 +368,7 @@ describe('canvas store', () => {
                     height: 200
                 });
                 // space of 50 to distribute -> expand viewBox by 25 each side
-                expect(store.getters['canvas/expandedViewBox']).toStrictEqual({
+                expect(store.getters['canvas/viewBox']).toStrictEqual({
                     top: -175,
                     left: -175,
                     width: 200,
@@ -403,7 +403,7 @@ describe('canvas store', () => {
                     width: 100,
                     height: 100
                 });
-                expect(store.getters['canvas/expandedViewBox']).toStrictEqual({
+                expect(store.getters['canvas/viewBox']).toStrictEqual({
                     top: 0,
                     left: 0,
                     width: 50,
@@ -436,7 +436,7 @@ describe('canvas store', () => {
                 // but are half as big (100, 100)
                 // comparing with workflow, we have 50 to distribute around content
                 // so the shift is -25
-                expect(store.getters['canvas/expandedViewBox']).toStrictEqual({
+                expect(store.getters['canvas/viewBox']).toStrictEqual({
                     top: -25,
                     left: -25,
                     width: 100,
@@ -469,7 +469,7 @@ describe('canvas store', () => {
                     height: 400
                 });
                 // space of 50 to distribute in worfklow space -> expand viewBox by 25 each side
-                expect(store.getters['canvas/expandedViewBox']).toStrictEqual({
+                expect(store.getters['canvas/viewBox']).toStrictEqual({
                     top: -175,
                     left: -175,
                     width: 200,

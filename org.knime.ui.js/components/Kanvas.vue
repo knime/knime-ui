@@ -38,12 +38,12 @@ export default {
             'isWritable',
             'isStreaming'
         ]),
-        ...mapGetters('canvas', ['contentBounds', 'canvasSize', 'expandedViewBox']),
+        ...mapGetters('canvas', ['contentBounds', 'canvasSize', 'viewBox']),
         ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning']),
-        viewBox() {
-            let { expandedViewBox } = this;
-            return  `${expandedViewBox.left} ${expandedViewBox.top} ` +
-                    `${expandedViewBox.width} ${expandedViewBox.height}`;
+        viewBoxString() {
+            let { viewBox } = this;
+            return  `${viewBox.left} ${viewBox.top} ` +
+                    `${viewBox.width} ${viewBox.height}`;
         }
 
     },
@@ -190,7 +190,7 @@ export default {
       ref="svg"
       :width="canvasSize.width"
       :height="canvasSize.height"
-      :viewBox="viewBox"
+      :viewBox="viewBoxString"
       @mousedown.left="onMouseDown"
       @mouseup.self.left="onSelfMouseUp"
     >
