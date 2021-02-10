@@ -75,4 +75,8 @@ export default {
 >>> ul {
   user-select: none;
 }
+
+nav {
+  overflow: hidden;
+}
 </style>
