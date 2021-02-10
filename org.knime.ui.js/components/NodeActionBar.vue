@@ -2,6 +2,8 @@
 import ExecuteIcon from '../assets/execute.svg?inline';
 import ResetIcon from '../assets/reset-all.svg?inline';
 import CancelIcon from '../assets/cancel-execution.svg?inline';
+import OpenViewIcon from '../assets/open-view.svg?inline';
+import OpenDialogIcon from '../assets/configure-node.svg?inline';
 
 import ActionButton from '~/components/ActionButton.vue';
 
@@ -29,15 +31,36 @@ export default {
         canReset: {
             type: Boolean,
             default: false
+        },
+        canOpenView: {
+            type: Boolean,
+            default: null
+        },
+        canOpenDialog: {
+            type: Boolean,
+            default: null
         }
     },
     computed: {
+        /**
+         *  returns an array of allowed actions with the corresponding api call,
+         *  a boolean if it is enabled or disabled and an icon. openDialog and openView are only added when the prop is available
+         *  @returns {Array<Array>} Array of allowed actions
+         */
         actions() {
-            return [
+            let result = [
                 ['executeNodes', this.canExecute, ExecuteIcon],
                 ['cancelNodeExecution', this.canCancel, CancelIcon],
                 ['resetNodes', this.canReset, ResetIcon]
             ];
+            // shows disabled button if false, hides button if null
+            if (typeof this.canOpenDialog === 'boolean') {
+                result.unshift(['openDialog', this.canOpenDialog, OpenDialogIcon]);
+            }
+            if (typeof this.canOpenView === 'boolean') {
+                result.push(['openView', this.canOpenView, OpenViewIcon]);
+            }
+            return result;
         },
         /**
          *  returns the x-position of each button depending on the total amount of buttons
@@ -45,10 +68,11 @@ export default {
          */
         positions() {
             const { nodeActionBarButtonSpread } = this.$shapes;
-            return [-nodeActionBarButtonSpread, 0, nodeActionBarButtonSpread];
+            let buttonCount = this.actions.length;
+            // spread buttons evenly around the horizontal center
+            return this.actions.map((_, i) => (i + (1 - buttonCount) / 2) * nodeActionBarButtonSpread);
         }
     }
-
 };
 </script>
 
@@ -63,7 +87,7 @@ export default {
     >
       <Component :is="icon" />
     </ActionButton>
-    
+
     <text
       class="node-id"
       text-anchor="middle"
