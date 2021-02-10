@@ -43,7 +43,7 @@ describe('OutputPortSelectorBar.vue', () => {
                     value: '0',
                     disabled: true,
                     label: 'Flow Variables',
-                    title: 'Unsupported data type'
+                    title: 'No output data'
                 }]
             },
             executed: {
@@ -77,9 +77,9 @@ describe('OutputPortSelectorBar.vue', () => {
                     title: 'Unsupported data type'
                 }, {
                     value: '0',
-                    disabled: true,
+                    disabled: false,
                     label: 'Flow Variables',
-                    title: 'Unsupported data type'
+                    title: null
                 }]
             },
             'inactive ports': {
@@ -124,9 +124,9 @@ describe('OutputPortSelectorBar.vue', () => {
                     title: null
                 }, {
                     value: '0',
-                    disabled: true,
+                    disabled: false,
                     label: 'Flow Variables',
-                    title: 'Unsupported data type'
+                    title: null
                 }]
             },
             'metanode not executed': {
@@ -149,7 +149,7 @@ describe('OutputPortSelectorBar.vue', () => {
                 expected: [{
                     disabled: true,
                     label: '1: foo',
-                    title: 'Unsupported data type',
+                    title: 'No output data',
                     value: '0'
                 }, {
                     disabled: true,
@@ -184,9 +184,9 @@ describe('OutputPortSelectorBar.vue', () => {
                     }]
                 },
                 expected: [{
-                    disabled: true,
+                    disabled: false,
                     label: '1: foo',
-                    title: 'Unsupported data type',
+                    title: null,
                     value: '0'
                 }, {
                     disabled: false,

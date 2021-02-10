@@ -1,12 +1,13 @@
 <script>
 import { mapState } from 'vuex';
 import DataPortOutputTable from '~/components/output/DataPortOutputTable';
+import FlowVariablePortOutputTable from '~/components/output/FlowVariablePortOutputTable';
 import OutputPortSelectorBar from '~/components/output/OutputPortSelectorBar';
 import Button from '~/webapps-common/ui/components/Button';
 import PlayIcon from '~/assets/execute.svg?inline';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 
-export const supportsPort = port => port.type === 'table';
+export const supportsPort = port => port.type === 'table' || port.type === 'flowVariable';
 
 /**
  * Node output panel, displaying output port selection bar and output table if available, respectively.
@@ -24,6 +25,7 @@ export default {
     components: {
         OutputPortSelectorBar,
         DataPortOutputTable,
+        FlowVariablePortOutputTable,
         Button,
         ReloadIcon,
         PlayIcon
@@ -100,6 +102,10 @@ export default {
                 return `${this.rows.length} of ${this.totalNumRows}`;
             }
             return this.totalNumRows;
+        },
+        // returns the type of the selected output port
+        selectedPortIndexType() {
+            return this.outPorts[this.selectedPortIndex]?.type;
         }
     },
     watch: {
@@ -112,18 +118,28 @@ export default {
             if (tab === null) {
                 consola.trace('clearing data table');
                 this.$store.dispatch('dataTable/clear');
+                this.$store.dispatch('flowVariables/clear');
                 // If the node has available data, the OutputPortSelectorBar will update the selectedPortIndex at this
                 // point via v-model, selecting the first available tab index, and we will eventually end up in the
                 // "else" branch below
             } else {
                 consola.trace('loading table for port', tab);
-                setTimeout(() => { // delay UI blocking at startup
-                    this.$store.dispatch('dataTable/load', {
-                        projectId: this.activeProjectId,
-                        nodeId: this.selectedNode.id,
-                        portIndex: this.selectedPortIndex
-                    });
-                }, 0);
+                if (supportsPort(this.outPorts[tab])) {
+                    // Either loads the data from the dataTable api or the flowVariables api
+                    let dataSource = 'dataTable';
+                    if (this.outPorts[tab]?.type === 'flowVariable') {
+                        dataSource = 'flowVariables';
+                        // clear the data table entires as otherwise the row and column count would stay
+                        this.$store.dispatch('dataTable/clear');
+                    }
+                    setTimeout(() => { // delay UI blocking at startup
+                        this.$store.dispatch(`${dataSource}/load`, {
+                            projectId: this.activeProjectId,
+                            nodeId: this.selectedNode.id,
+                            portIndex: this.selectedPortIndex
+                        });
+                    }, 0);
+                }
             }
         }
     },
@@ -153,6 +169,11 @@ export default {
         --><span class="count">Columns: {{ totalNumColumns }}</span>
         </span>
         <DataPortOutputTable
+          v-if="selectedPortIndexType === 'table'"
+          class="table"
+        />
+        <FlowVariablePortOutputTable
+          v-else-if="selectedPortIndexType === 'flowVariable'"
           class="table"
         />
       </template>

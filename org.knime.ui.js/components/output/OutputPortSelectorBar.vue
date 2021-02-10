@@ -76,13 +76,15 @@ export default {
                 });
             }
             if (!this.isMetaNode) {
+                // is disabled if either the port is inactive or is not executed
+                let disabled = outPorts[0].inactive || !this.isExecuted;
                 // hidden flow variable port, displayed as the last tab
                 result.push({
                     value: '0',
                     label: 'Flow Variables',
                     icon: FlowVarTabIcon,
-                    disabled: true,
-                    title: 'Unsupported data type'
+                    disabled,
+                    title: disabled ? 'No output data' : null
                 });
             }
             return result;

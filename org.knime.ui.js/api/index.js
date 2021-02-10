@@ -127,9 +127,7 @@ export const openView = ({ projectId, nodeId }) => {
 
 // The Node service offers JSON-RPC forwarding to the Port instance.
 // This is by design, because third-party vendors can provide a custom port implementation with totally
-// different methods. In case of a data port (table), the available methods are defined in
-// org.knime.gateway.impl.rpc.table.TableService
-// (at the time of writing getTable(long start, int size) and getRows(long start, int size))
+// different methods.
 // So, to get a table we have to send a JSON-RPC object as a payload to the NodeService, which itself must be called via
 // JSON-RPC. Hence double-wrapping is required.
 // Parameters are described below.
@@ -146,6 +144,8 @@ const nestedRpcCall = ({ method, params, projectId, nodeId, portIndex }) => {
 
 /**
  * Get the data table associated with a data port.
+ * The available methods are defined in org.knime.gateway.impl.rpc.table.TableService
+ * (at the time of writing getTable(long start, int size) and getRows(long start, int size))
  * @param {String} projectId The ID of the project that contains the node
  * @param {String} nodeId The ID of the node to load data for
  * @param {String} portIndex The index of the port to load data for.
@@ -167,6 +167,33 @@ export const loadTable = ({ projectId, nodeId, portIndex }) => {
         consola.error(e);
         return Promise.reject(new Error(
             `Couldn't load table data from port ${portIndex} of node "${nodeId}" in project ${projectId}`
+        ));
+    }
+};
+
+/**
+ * Get the flow variables associated with a flow variable port.
+ * The available methods are defined in org.knime.gateway.impl.rpc.flowvars.FlowVariableService
+ * (at the time of writing getFlowVariables())
+ * @param {String} projectId The ID of the project that contains the node
+ * @param {String} nodeId The ID of the node to load data for
+ * @param {String} portIndex The index of the port to load data for.
+ * Remember that port 0 is usually a flow variable port.
+ * @return {Promise} A promise containing the flow variable data as defined in the API
+ * */
+export const loadFlowVariables = ({ projectId, nodeId, portIndex }) => {
+    try {
+        let flowVariables = nestedRpcCall({
+            projectId,
+            nodeId,
+            portIndex,
+            method: 'getFlowVariables'
+        });
+        return Promise.resolve(flowVariables);
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error(
+            `Couldn't load flow variables of node "${nodeId}" in project ${projectId}`
         ));
     }
 };
