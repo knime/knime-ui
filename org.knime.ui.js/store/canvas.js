@@ -137,21 +137,20 @@ export const getters = {
 
         // always draw the origin (0,0) but center content
         if (left > 0) {
-            width += 2 * left; // add distance from left to origin to width two times
+            width += left; // add distance from left to origin to width
             left = 0; // move rect to the left to include origin
         } else if (right < 0) {
-            width -= 2 * right; // add distance from right to origin to width two times
-            left += right; // move rect to left to center
+            width -= right; // add distance from right to origin
             right = 0; // right is at origin
         }
         if (top > 0) {
-            height += 2 * top;
+            height += top;
             top = 0;
         } else if (bottom < 0) {
-            height -= 2 * bottom;
-            top += bottom;
+            height -= bottom;
             bottom = 0;
         }
+
 
         return {
             left,

@@ -255,8 +255,8 @@ describe('canvas store', () => {
                 expect(store.getters['canvas/contentBounds']).toStrictEqual({
                     left: 0,
                     top: 0,
-                    width: 110,
-                    height: 110
+                    width: 100,
+                    height: 100
                 });
             });
 
@@ -285,10 +285,10 @@ describe('canvas store', () => {
                 };
 
                 expect(store.getters['canvas/contentBounds']).toStrictEqual({
-                    left: -110,
-                    top: -110,
-                    width: 110,
-                    height: 110
+                    left: -100,
+                    top: -100,
+                    width: 100,
+                    height: 100
                 });
             });
         });
@@ -362,22 +362,22 @@ describe('canvas store', () => {
                     bottom: -50
                 };
                 // bounds are expanded to include origin
-                // {-150, -150, 0, 0}
+                // {-100, -100, 0, 0}
                 expect(store.getters['canvas/canvasSize']).toStrictEqual({
                     width: 200,
                     height: 200
                 });
-                // space of 50 to distribute -> expand viewBox by 25 each side
+                // space of 100 to distribute -> expand viewBox by 50 each side
                 expect(store.getters['canvas/viewBox']).toStrictEqual({
-                    top: -175,
-                    left: -175,
+                    top: -150,
+                    left: -150,
                     width: 200,
                     height: 200
                 });
                 let origin = { x: 0, y: 0 };
                 expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
-                    x: 175,
-                    y: 175
+                    x: 150,
+                    y: 150
                 });
             });
 
@@ -463,22 +463,22 @@ describe('canvas store', () => {
                     bottom: -50
                 };
                 // bounds are expanded to include origin
-                // {-150, -150, 0, 0}
+                // {-100, -100, 0, 0}
                 expect(store.getters['canvas/canvasSize']).toStrictEqual({
                     width: 400,
                     height: 400
                 });
-                // space of 50 to distribute in worfklow space -> expand viewBox by 25 each side
+                // space of 100 to distribute in worfklow space -> expand viewBox by 50 each side
                 expect(store.getters['canvas/viewBox']).toStrictEqual({
-                    top: -175,
-                    left: -175,
+                    top: -150,
+                    left: -150,
                     width: 200,
                     height: 200
                 });
                 let origin = { x: 0, y: 0 };
                 expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
-                    x: 350,
-                    y: 350
+                    x: 300,
+                    y: 300
                 });
             });
 
