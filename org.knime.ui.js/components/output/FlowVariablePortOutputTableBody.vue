@@ -26,27 +26,12 @@ export default {
         v-for="column in columns"
         :key="column"
       >
-        <template v-if="flowVariable[column]">
-          {{ flowVariable[column] }}
-        </template>
+        {{ flowVariable[column] }}
       </td>
     </tr>
   </tbody>
 </template>
 
 <style lang="postcss" scoped>
-td {
-  white-space: pre;
-  max-width: 50vw;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border: none;
-  height: 26px;
-  line-height: 26px;
-  font-size: 14px;
-}
-
-tr:not(:last-child) {
-  border-bottom: 1px solid var(--knime-porcelain);
-}
+@import "./outputTableBody.css";
 </style>

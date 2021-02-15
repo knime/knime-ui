@@ -44,26 +44,13 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-td {
-  white-space: pre;
-  max-width: 50vw;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border: none;
-  height: 26px;
-  line-height: 26px;
-  font-size: 14px;
+@import "./outputTableBody.css";
 
-  & svg {
-    width: 16px;
-    height: 16px;
-    stroke-width: calc(32px / 16);
-    vertical-align: -3px;
-    margin-left: -1px;
-  }
-}
-
-tr:not(:last-child) {
-  border-bottom: 1px solid var(--knime-porcelain);
+td svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: calc(32px / 16);
+  vertical-align: -3px;
+  margin-left: -1px;
 }
 </style>
