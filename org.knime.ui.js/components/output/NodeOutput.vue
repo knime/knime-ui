@@ -124,22 +124,15 @@ export default {
                 // "else" branch below
             } else {
                 consola.trace('loading table for port', tab);
-                if (supportsPort(this.outPorts[tab])) {
-                    // Either loads the data from the dataTable api or the flowVariables api
-                    let dataSource = 'dataTable';
-                    if (this.outPorts[tab]?.type === 'flowVariable') {
-                        dataSource = 'flowVariables';
-                        // clear the data table entires as otherwise the row and column count would stay
-                        this.$store.dispatch('dataTable/clear');
-                    }
-                    setTimeout(() => { // delay UI blocking at startup
-                        this.$store.dispatch(`${dataSource}/load`, {
-                            projectId: this.activeProjectId,
-                            nodeId: this.selectedNode.id,
-                            portIndex: this.selectedPortIndex
-                        });
-                    }, 0);
-                }
+                // Either loads the data from the dataTable api or the flowVariables api
+                let dataSource = (this.outPorts[tab]?.type === 'flowVariable') ? 'flowVariables' : 'dataTable';
+                setTimeout(() => { // delay UI blocking at startup
+                    this.$store.dispatch(`${dataSource}/load`, {
+                        projectId: this.activeProjectId,
+                        nodeId: this.selectedNode.id,
+                        portIndex: this.selectedPortIndex
+                    });
+                }, 0);
             }
         }
     },
