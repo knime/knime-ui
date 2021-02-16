@@ -304,9 +304,39 @@ export default {
                 }
             } else {
                 // Single select
-                this.deselectAllNodes();
+                // this.deselectAllNodes();
                 this.selectNode(this.id);
             }
+        },
+
+        // move events from store
+        handleMoveFromStore({ x, y }) {
+            if (this.dragging) {
+                return;
+            }
+            this.dragOffset = [0, 0];
+            this.offset = [x, y];
+        },
+
+        // move events from UI
+
+        onMove({ detail: { deltaX, deltaY, totalDeltaX, totalDeltaY } }) {
+            this.dragOffset = [totalDeltaX, totalDeltaY];
+            this.$store.dispatch(
+                'workflow/moveNodes',
+                { deltaX, deltaY }
+            );
+        },
+        onMoveStart() {
+            this.dragging = true;
+        },
+        onMoveEnd({ detail: { totalDeltaX, totalDeltaY } }) {
+            this.offset = [totalDeltaX, totalDeltaY];
+            this.dragOffset = [0, 0];
+            this.$store.dispatch('workflow/saveNodeMoves', { projectId: this.projectId });
+            setTimeout(() => { // prevent click handler
+                this.dragging = false;
+            }, 0);
         }
     }
 };
@@ -314,6 +344,7 @@ export default {
 
 <template>
   <g
+    v-move="{ onMove, onMoveStart, onMoveEnd }"
     :transform="`translate(${position.x}, ${position.y})`"
     :data-node-id="id"
   >

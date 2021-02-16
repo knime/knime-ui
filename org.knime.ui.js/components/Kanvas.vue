@@ -51,6 +51,11 @@ export default {
         workflow() {
             // Focus workflow on change for keyboard strokes to work
             this.$el.focus();
+        },
+        sortedNodes() {
+            return Object.entries(this.workflow.nodes).sort(([, a], [, b]) => a.selected && !b.selected
+                ? 1
+                : (!a.selected && b.selected) ? -1 : 0);
         }
     },
     mounted() {
@@ -224,31 +229,13 @@ export default {
         v-if="workflow.info.containerType === 'metanode'"
       />
 
-      <!-- Non-Selected Nodes
-        If node is not selected that portal has no effect.
-        If node is selected, the portal will bring it to the front
-       -->
-      <portal
-        v-for="(node, nodeId) in workflow.nodes"
-        :key="`node-${workflow.projectId}-${nodeId}-portal`"
-        :disabled="!node.selected"
-        to="selected-nodes"
-        slim
-      >
-        <Node
-          :key="`node-${workflow.projectId}-${nodeId}`"
-          :icon="$store.getters['workflow/nodeIcon']({ workflowId: workflow.projectId, nodeId })"
-          :name="$store.getters['workflow/nodeName']({ workflowId: workflow.projectId, nodeId })"
-          :type="$store.getters['workflow/nodeType']({ workflowId: workflow.projectId, nodeId })"
-          v-bind="node"
-        />
-      </portal>
-
-      <!-- Selected Nodes -->
-      <portal-target
-        multiple
-        tag="g"
-        name="selected-nodes"
+      <Node
+        v-for="([nodeId, node]) in sortedNodes"
+        :key="`node-${workflow.projectId}-${nodeId}`"
+        :icon="$store.getters['workflow/nodeIcon']({ workflowId: workflow.projectId, nodeId })"
+        :name="$store.getters['workflow/nodeName']({ workflowId: workflow.projectId, nodeId })"
+        :type="$store.getters['workflow/nodeType']({ workflowId: workflow.projectId, nodeId })"
+        v-bind="node"
       />
 
       <!-- Quick Actions Layer: Buttons for Hovered & Selected Nodes and their ids -->

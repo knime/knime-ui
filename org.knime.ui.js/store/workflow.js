@@ -1,5 +1,6 @@
 import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener, executeNodes, cancelNodeExecution,
-    resetNodes, pauseNodeExecution, resumeNodeExecution, stepNodeExecution, openView, openDialog } from '~api';
+    resetNodes, pauseNodeExecution, resumeNodeExecution, stepNodeExecution, openView, openDialog,
+    moveNode } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
@@ -62,6 +63,10 @@ export const mutations = {
     },
     deselectNode({ activeWorkflow: { nodes } }, nodeId) {
         nodes[nodeId].selected = false;
+    },
+    shiftPosition(state, { node, deltaX, deltaY }) {
+        node.position.x += deltaX;
+        node.position.y += deltaY;
     }
 };
 
@@ -135,6 +140,28 @@ export const actions = {
     /* See docs in API */
     openDialog({ state }, { nodeId }) {
         openDialog({ projectId: state.activeWorkflow.projectId, nodeId });
+    },
+    moveNodes({ state, commit, getters }, { deltaX, deltaY }) {
+        const selectedNodes = getters.selectedNodes;
+        selectedNodes.forEach(node => {
+            commit('shiftPosition', { node, deltaX, deltaY });
+        });
+    },
+    saveNodeMoves({ state, getters }, { projectId }) {
+        const selectedNodes = getters.selectedNodes;
+        selectedNodes.forEach(node => {
+            consola.log(`Moving node ${node.id} to (${node.position.x}, ${node.position.y})`);
+            moveNode({
+                projectId,
+                workflowId: state.activeWorkflow.info.containerId,
+                nodeId: [node.id],
+                position: {
+                    x: node.position.x,
+                    y: node.position.y
+                },
+                annotationId: []
+            });
+        });
     }
 };
 
@@ -285,5 +312,10 @@ export const getters = {
                 return node.type;
             }
         };
+    },
+
+    selectedNodes(state) {
+        let activeWorkflow = state.activeWorkflow;
+        return Object.values(activeWorkflow.nodes).filter(node => node.selected);
     }
 };
