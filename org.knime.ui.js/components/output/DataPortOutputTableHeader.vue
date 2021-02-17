@@ -1,6 +1,10 @@
 <script>
 import { mapState } from 'vuex';
 
+/**
+ * Data table header that renders the column names and types of a dataTable
+ * into the header of a table
+ */
 export default {
     computed: {
         ...mapState('dataTable', ['columns', 'cellTypes'])

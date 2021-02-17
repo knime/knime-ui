@@ -3,6 +3,10 @@ import { mapState } from 'vuex';
 import MissingValueIcon from '~/assets/missing-value.svg?inline';
 import svgWithTitle from '~/webapps-common/ui/util/svgWithTitle';
 
+/**
+ * Data table body that renders the content of
+ * a dataTable into a table body
+ */
 export default {
     components: {
         MissingValueIcon: svgWithTitle(MissingValueIcon, 'Missing value')
