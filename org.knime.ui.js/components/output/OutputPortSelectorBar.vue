@@ -56,6 +56,9 @@ export default {
                 let disabled = port.inactive || !supportsPort(port);
                 if (this.isMetaNode) {
                     disabled = disabled || !this.isExecuted[i];
+                } else if (port.type === 'flowVariable') {
+                    // The FlowVariables tab should always be enabled
+                    disabled = false;
                 } else {
                     disabled = disabled || !this.isExecuted;
                 }
@@ -76,15 +79,13 @@ export default {
                 });
             }
             if (!this.isMetaNode) {
-                // is disabled if either the port is inactive or is not executed
-                let disabled = outPorts[0].inactive || !this.isExecuted;
                 // hidden flow variable port, displayed as the last tab
                 result.push({
                     value: '0',
                     label: 'Flow Variables',
                     icon: FlowVarTabIcon,
-                    disabled,
-                    title: disabled ? 'No output data' : null
+                    disabled: false, // flowVariables are always visible
+                    title: null
                 });
             }
             return result;

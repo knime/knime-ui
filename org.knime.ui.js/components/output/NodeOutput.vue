@@ -40,6 +40,7 @@ export default {
         ...mapState('workflow', {
             nodes: state => state.activeWorkflow.nodes
         }),
+        ...mapState('flowVariables', ['flowVariables']),
         ...mapState('openedProjects', {
             activeProjectId: 'activeId'
         }),
@@ -97,11 +98,16 @@ export default {
                 return 'To show the node output, please select only one node';
             }
         },
+        // returns the amount of already loaded rows or the total amount of rows
         rowText() {
             if (this.rows.length < this.totalNumRows) {
                 return `${this.rows.length} of ${this.totalNumRows}`;
             }
             return this.totalNumRows;
+        },
+        // returns the amount of flow variables
+        flowVariablesText() {
+            return this.flowVariables?.length;
         },
         // returns the type of the selected output port
         selectedPortIndexType() {
@@ -155,18 +161,20 @@ export default {
       />
       <template v-if="selectedPortIndex !== null">
         <span
-          v-if="rows"
+          v-if="selectedPortIndexType === 'flowVariable'"
+          class="counts"
+        >
+          <span class="count">Count: {{ flowVariablesText }}</span>
+        </span>
+        <span
+          v-else-if="rows"
           class="counts"
         >
           <span class="count">Rows: {{ rowText }}</span><!--
         --><span class="count">Columns: {{ totalNumColumns }}</span>
         </span>
-        <DataPortOutputTable
-          v-if="selectedPortIndexType === 'table'"
-          class="table"
-        />
-        <FlowVariablePortOutputTable
-          v-else-if="selectedPortIndexType === 'flowVariable'"
+        <Component
+          :is="selectedPortIndexType === 'flowVariable' ? 'FlowVariablePortOutputTable' : 'DataPortOutputTable'"
           class="table"
         />
       </template>
