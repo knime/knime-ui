@@ -62,7 +62,7 @@ export default {
     },
     beforeDestroy() {
         this.setScrollContainerElement(null);
-        
+
         // Stop Resize Observer
         this.stopResizeObserver();
     },
@@ -115,7 +115,7 @@ export default {
             let bcr = scrollContainer.getBoundingClientRect();
             let cursorX = e.clientX - bcr.x;
             let cursorY = e.clientY - bcr.y;
-            
+
             this.$store.commit('canvas/zoomWithPointer', { delta, cursorX, cursorY });
         },
         /*
@@ -197,7 +197,7 @@ export default {
 
       <!-- Includes shadows for Nodes -->
       <KanvasFilters />
-      
+
       <!-- Workflow Annotation Layer. Background -->
       <WorkflowAnnotation
         v-for="annotation of workflow.workflowAnnotations"
@@ -263,26 +263,6 @@ export default {
         :key="`connector-label-${workflow.projectId}-${id}`"
         v-bind="connector"
       />
-
-      <!-- Only Shown when flag INCLUDE_DEBUG_CSS is set  -->
-      <rect
-        class="debug-css"
-        :x="contentBounds.left"
-        :y="contentBounds.top"
-        :width="contentBounds.width"
-        :height="contentBounds.height"
-      />
-      <line
-        y1="-10"
-        y2="10"
-        class="debug-css"
-      />
-      <line
-        x1="-10"
-        x2="10"
-        class="debug-css"
-      />
-      
     </svg>
   </div>
 </template>
