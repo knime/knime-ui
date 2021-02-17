@@ -4,7 +4,7 @@ import Vuex from 'vuex';
 
 describe('flowVariables store', () => {
 
-    let dummyVariable, store, localVue, loadFlowVariables, flowVariablesStoreConfig;
+    let dummyVariable, dummyTable, store, localVue, loadFlowVariables, flowVariablesStoreConfig, dataTableStoreConfig;
 
     beforeAll(async () => {
 
@@ -22,6 +22,12 @@ describe('flowVariables store', () => {
             }
         ];
 
+        dummyTable = {
+            rows: [{
+                cells: [{ valueAsString: 'foo' }, { valueAsString: '42' }]
+            }]
+        };
+
         loadFlowVariables = jest.fn().mockReturnValue(dummyVariable);
 
         jest.doMock('~api', () => ({
@@ -33,11 +39,14 @@ describe('flowVariables store', () => {
         localVue.use(Vuex);
 
         flowVariablesStoreConfig = await import('~/store/flowVariables');
+        dataTableStoreConfig = await import('~/store/dataTable');
+
     });
 
     beforeEach(() => {
         store = mockVuexStore({
-            flowVariables: flowVariablesStoreConfig
+            flowVariables: flowVariablesStoreConfig,
+            dataTable: dataTableStoreConfig
         });
     });
 
@@ -62,7 +71,8 @@ describe('flowVariables store', () => {
         });
     });
 
-    it('can load flowVariables', async () => {
+    it('can load flowVariables and clears the data table when loading flow variables', async () => {
+        store.state.dataTable.rows = dummyTable.rows;
         await store.dispatch('flowVariables/load', {
             projectId: 'dummy',
             nodeId: 'dummy',
@@ -83,6 +93,12 @@ describe('flowVariables store', () => {
                 }
             ]
         });
+        expect(store.state.dataTable).toStrictEqual({
+            cellTypes: {},
+            columns: null,
+            rows: null,
+            totalNumColumns: 0,
+            totalNumRows: 0
+        });
     });
-
 });

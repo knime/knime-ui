@@ -4,7 +4,7 @@ import Vuex from 'vuex';
 
 describe('dataTable store', () => {
 
-    let dummyTable, store, localVue, loadTable, dataTableStoreConfig;
+    let dummyTable, dummyVariable, store, localVue, loadTable, dataTableStoreConfig, flowVariablesTableStoreConfig;
 
     beforeAll(async () => {
 
@@ -41,6 +41,15 @@ describe('dataTable store', () => {
             totalNumRows: 3000
         };
 
+        dummyVariable = [
+            {
+                ownerNodeId: 'testOwner',
+                type: 'StringValue',
+                name: 'testFlowVariable1',
+                value: 'test1'
+            }
+        ];
+
         loadTable = jest.fn().mockReturnValue(dummyTable);
 
         jest.doMock('~api', () => ({
@@ -52,11 +61,13 @@ describe('dataTable store', () => {
         localVue.use(Vuex);
 
         dataTableStoreConfig = await import('~/store/dataTable');
+        flowVariablesTableStoreConfig = await import('~/store/flowVariables');
     });
 
     beforeEach(() => {
         store = mockVuexStore({
-            dataTable: dataTableStoreConfig
+            dataTable: dataTableStoreConfig,
+            flowVariables: flowVariablesTableStoreConfig
         });
     });
 
@@ -93,7 +104,8 @@ describe('dataTable store', () => {
         });
     });
 
-    it('can load a table', async () => {
+    it('can load a table and clears the flow variable tab', async () => {
+        store.state.flowVariables.flowVariables = dummyVariable;
         await store.dispatch('dataTable/load', {
             projectId: 'dummy',
             nodeId: 'dummy',
@@ -105,6 +117,9 @@ describe('dataTable store', () => {
             cellTypes: dummyTable.spec.cellTypes,
             columns: dummyTable.spec.columns,
             totalNumColumns: dummyTable.spec.totalNumColumns
+        });
+        expect(store.state.flowVariables).toStrictEqual({
+            flowVariables: null
         });
     });
 

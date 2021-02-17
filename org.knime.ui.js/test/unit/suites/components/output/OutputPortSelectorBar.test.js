@@ -41,9 +41,9 @@ describe('OutputPortSelectorBar.vue', () => {
                     title: 'Unsupported data type'
                 }, {
                     value: '0',
-                    disabled: true,
+                    disabled: false,
                     label: 'Flow Variables',
-                    title: 'No output data'
+                    title: null
                 }]
             },
             executed: {
@@ -294,7 +294,7 @@ describe('OutputPortSelectorBar.vue', () => {
         });
 
         await Vue.nextTick();
-        expect(wrapper.emitted().input).toStrictEqual([['1'], ['2'], [null]]);
+        expect(wrapper.emitted().input).toStrictEqual([['1'], ['2'], ['0']]);
 
     });
 
@@ -354,7 +354,7 @@ describe('OutputPortSelectorBar.vue', () => {
 
             await doShallowMount();
 
-            expect(wrapper.vm.activeTab).toBe(null);
+            expect(wrapper.vm.activeTab).toBe('0');
 
             store.commit('dummy/setExecutionState', 'EXECUTED');
 

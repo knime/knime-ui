@@ -187,7 +187,7 @@ describe('NodeOutput.vue', () => {
         expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
         expect(wrapper.findComponent(FlowVariablePortOutputTable).exists()).toBe(true);
         expect(wrapper.find('.placeholder').exists()).toBe(false);
-        expect(dataTable.actions.clear).toHaveBeenCalled();
+        expect(wrapper.find('.counts').text()).toBe('Count: 1');
     });
 
     it('executes node on button click', () => {
