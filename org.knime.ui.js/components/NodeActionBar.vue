@@ -81,6 +81,7 @@ export default {
     <ActionButton
       v-for="([action, enabled, icon], index) in actions"
       :key="action"
+      :class="`action-${action}`"
       :x="positions[index]"
       :disabled="!enabled"
       @click="$emit('action', action)"
