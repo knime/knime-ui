@@ -73,7 +73,7 @@ export default {
         placeholderText() {
             switch (this.selectedNodes.length) {
             case 0:
-                return 'Select a node to show its output data';
+                return 'To show the node output, please select a configured or executed node';
             case 1:
                 if (!this.outPorts.length) {
                     return 'The selected node has no output ports';
@@ -92,7 +92,7 @@ export default {
                 }
                 return 'No output available';
             default:
-                return 'Select a single node to show its output data';
+                return 'To show the node output, please select only one node';
             }
         },
         rowText() {
@@ -103,13 +103,18 @@ export default {
         }
     },
     watch: {
-        selectedNode() {
-            this.selectedPortIndex = null;
+        selectedNode(newNode, oldNode) {
+            if (oldNode !== newNode) {
+                this.selectedPortIndex = null;
+            }
         },
         selectedPortIndex(tab) {
             if (tab === null) {
                 consola.trace('clearing data table');
                 this.$store.dispatch('dataTable/clear');
+                // If the node has available data, the OutputPortSelectorBar will update the selectedPortIndex at this
+                // point via v-model, selecting the first available tab index, and we will eventually end up in the
+                // "else" branch below
             } else {
                 consola.trace('loading table for port', tab);
                 setTimeout(() => { // delay UI blocking at startup
@@ -201,7 +206,8 @@ export default {
 
 .counts {
   position: absolute;
-  right: 10px;
+  left: 50%;
+  transform: translateX(-50%);
   height: 19px;
   line-height: 19px;
   top: 75px;
