@@ -15,7 +15,6 @@ export const mutations = {
 
     clear(state) {
         state.flowVariables = null;
-
     }
 };
 
@@ -29,7 +28,7 @@ export const actions = {
      * @returns {void}
      */
     async load({ commit, dispatch }, { projectId, nodeId, portIndex }) {
-        dispatch('dataTable/clear');
+        dispatch('dataTable/clear', null, { root: true });
         let flowVariables = await loadFlowVariables({ projectId, nodeId, portIndex });
         commit('setFlowVariables', flowVariables);
     },

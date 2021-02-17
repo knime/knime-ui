@@ -40,7 +40,7 @@ export const actions = {
      * @returns {void}
      */
     async load({ commit, dispatch }, { projectId, nodeId, portIndex }) {
-        dispatch('flowVariables/clear');
+        dispatch('flowVariables/clear', null, { root: true });
         let table = await loadTable({ projectId, nodeId, portIndex });
         commit('setTable', table);
     },
