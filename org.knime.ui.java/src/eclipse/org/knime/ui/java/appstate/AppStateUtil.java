@@ -81,6 +81,7 @@ import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.AppState;
 import org.knime.gateway.impl.webui.AppState.OpenedWorkflow;
 import org.knime.gateway.impl.webui.service.DefaultApplicationService;
+import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 /**
@@ -124,6 +125,7 @@ public final class AppStateUtil {
 	public static void clearAppState() {
 		disposeAllLoadedWorkflowProjects();
 		DefaultApplicationService.getInstance().clearAppStateSupplier();
+		DefaultEventService.getInstance().removeAllEventListeners();
 	}
 
 	private static void disposeAllLoadedWorkflowProjects() {
