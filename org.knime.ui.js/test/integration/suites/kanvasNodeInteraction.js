@@ -7,6 +7,7 @@ const runTimeout = 8 * 1000;
 const nodeId = 'root:207';
 const nodeSelector = `[data-node-id="${nodeId}"]`;
 
+// workflows can be found in knime-ui/org.knime.ui.js/test/integration/assets/workflows
 module.exports = {
     'init app and open workflow': nightwatch => {
         // open workflow (project)

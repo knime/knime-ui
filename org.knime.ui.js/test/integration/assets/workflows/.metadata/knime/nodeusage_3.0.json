@@ -1,0 +1,23 @@
+
+{
+    "version": "4.4.0.qualifier",
+    "created": "2021-02-17 15:27",
+    "nodestats": {
+        "nodes": [
+        ],
+        "metaNodes": {
+        },
+        "wrappedNodes": {
+        }
+    },
+    "uptime": 19832,
+    "workflowsOpened": 2,
+    "remoteWorkflowsOpened": 0,
+    "workflowsImported": 1,
+    "workflowsExported": 0,
+    "launches": 4,
+    "lastApplicationID": "org.knime.product.KNIME_APPLICATION.0",
+    "timeSinceLastStart": 21478,
+    "crashes": 0,
+    "properlyShutDown": true
+}
