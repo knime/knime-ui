@@ -1,4 +1,5 @@
 /* eslint-disable prefer-arrow-callback,no-magic-numbers */
+const loadWorkflow = require('../utils/loadWorkflow');
 
 const timeout = 3 * 1000;
 const launchTimeout = 5 * 1000;
@@ -10,24 +11,18 @@ const nodeSelector = `[data-node-id="${nodeId}"]`;
 // workflows can be found in knime-ui/org.knime.ui.js/test/integration/assets/workflows
 module.exports = {
     'init app and open workflow': nightwatch => {
-        // open workflow (project)
-        nightwatch.execute(function () {
-            window.initAppForTesting(JSON.stringify({
-                openedWorkflows: [{
-                    projectId: 'test-kanvasNodeInteraction',
-                    workflowId: 'root',
-                    visible: true
-                }]
-            }));
-        });
+        // load workflow
+        loadWorkflow(nightwatch, 'test-kanvasNodeInteraction');
         // check if ui is visible
         nightwatch.waitForElementVisible('#knime-ui svg', launchTimeout);
     },
     'verify workflow': nightwatch => {
         // start state
         nightwatch.assert.not.elementPresent('.action-executeNodes');
-        nightwatch.assert.containsText('#node-output',
-            'To show the node output, please select a configured or executed node');
+        nightwatch.assert.containsText(
+            '#node-output',
+            'To show the node output, please select a configured or executed node'
+        );
 
         // look for node (Data Generator)
         nightwatch.assert.visible(nodeSelector);
@@ -38,11 +33,11 @@ module.exports = {
         // hover
         // TODO: fix hover - might not work?
         /*
-        nightwatch.moveToElement(`${nodeSelector} .hover-area`, 20, 15);
-        nightwatch.assert.visible('.action-executeNodes');
-        nightwatch.moveToElement(`#kanvas`, 5, 5);
-        nightwatch.assert.not.visible('.action-executeNodes');
-        */
+         nightwatch.moveToElement(`${nodeSelector} .hover-area`, 20, 15);
+         nightwatch.assert.visible('.action-executeNodes');
+         nightwatch.moveToElement(`#kanvas`, 5, 5);
+         nightwatch.assert.not.visible('.action-executeNodes');
+         */
 
         // click
         nightwatch.click(nodeSelector);
@@ -93,5 +88,6 @@ module.exports = {
         // un-select node (removes action bar)
         nightwatch.click('#kanvas > svg');
         nightwatch.assert.not.elementPresent('.action-executeNodes');
+        nightwatch.end();
     }
 };
