@@ -2,8 +2,10 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
+import Vue from 'vue';
 
 import * as $shapes from '~/style/shapes';
+import * as canvasStoreConfig from '~/store/canvas';
 
 import Kanvas from '~/components/Kanvas';
 import Node from '~/components/Node';
@@ -33,7 +35,7 @@ const mockConnector = ({ nr }) => ({
 });
 
 describe('Kanvas', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, nodeData;
+    let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, nodeData, storeConfig;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -41,6 +43,27 @@ describe('Kanvas', () => {
     });
 
     beforeEach(() => {
+        let getBCRMock = jest.fn();
+        getBCRMock.mockReturnValue({
+            x: 5,
+            y: 10,
+            width: 15,
+            height: 20
+        });
+        HTMLElement.prototype.getBoundingClientRect = getBCRMock;
+
+        // Mock ResizeObserver Class
+        window.ResizeObserver = function (callback) {
+            this.callback = callback;
+            this.observe = function (element) {
+                this.element = element;
+            };
+            this.resize = function ({ width, height }) {
+                this.callback([{ target: this.element, contentRect: { width, height } }]);
+            };
+            this.disconnect = jest.fn();
+        };
+
         wrapper = null;
         nodeData = {
             'root:0': mockNode({ id: 'root:0', position: { x: -32, y: -32 } }),
@@ -73,8 +96,13 @@ describe('Kanvas', () => {
                 selectAllNodes: jest.fn()
             },
             getters: {
-                svgBounds() {
-                    return { x: -5, y: -2, height: 102, width: 100 };
+                workflowBounds() {
+                    return {
+                        left: -10,
+                        top: -10,
+                        right: 40,
+                        bottom: 40
+                    };
                 },
                 isLinked() {
                     return workflow.info.linked;
@@ -99,30 +127,31 @@ describe('Kanvas', () => {
                 }
             }
         };
-        $store = mockVuexStore({ workflow: workflowStoreConfig });
+        storeConfig = {
+            workflow: workflowStoreConfig,
+            canvas: {
+                ...canvasStoreConfig,
+                mutations: {
+                    ...canvasStoreConfig.mutations,
+                    resetZoom: jest.fn(),
+                    zoomWithPointer: jest.fn(),
+                    setContainerSize: jest.fn(),
+                    setScrollContainerElement: jest.fn()
+                },
+                actions: {
+                    ...canvasStoreConfig.actions,
+                    setZoomToFit: jest.fn(),
+                    zoomCentered: jest.fn()
+                }
+            }
+        };
+
+        $store = mockVuexStore(storeConfig);
 
         mocks = { $store, $shapes };
         doShallowMount = () => {
             wrapper = shallowMount(Kanvas, { propsData, mocks });
         };
-    });
-
-    describe('Shortcuts', () => {
-        it('select all on Ctrl-A', () => {
-            doShallowMount();
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true }));
-            expect(workflowStoreConfig.mutations.selectAllNodes).toHaveBeenCalled();
-        });
-
-        it('adds and removes listener', () => {
-            document.addEventListener = jest.fn().mockReturnValue('shortcut-listener');
-            document.removeEventListener = jest.fn();
-
-            doShallowMount();
-            wrapper.destroy();
-
-            expect(document.removeEventListener).toHaveBeenCalledWith('keydown', 'shortcut-listener');
-        });
     });
 
     describe('sample workflow', () => {
@@ -207,14 +236,98 @@ describe('Kanvas', () => {
         expect(wrapper.findComponent(MetaNodePortBars).exists()).toBe(false);
     });
 
+    describe('Zoom & Pan', () => {
 
-    it('uses svgBounds from store', () => {
-        doShallowMount();
-        const { width, height, viewBox } = wrapper.find('svg').attributes();
+        it('Suggests Panning', async () => {
+            doShallowMount();
 
-        expect(Number(width)).toBe(100);
-        expect(Number(height)).toBe(102);
-        expect(viewBox).toBe('-5 -2 100 102');
+            $store.commit('canvas/setSuggestPanning', true);
+            await Vue.nextTick();
+            expect(wrapper.element.className).toMatch('panning');
+
+            $store.commit('canvas/setSuggestPanning', false);
+            await Vue.nextTick();
+            expect(wrapper.element.className).not.toMatch('panning');
+        });
+
+        it('uses canvasSize and viewBox from store', async () => {
+            doShallowMount();
+            await Vue.nextTick();
+            const { width, height, viewBox } = wrapper.find('svg').attributes();
+
+            expect(Number(width)).toBe(50);
+            expect(Number(height)).toBe(50);
+            expect(viewBox).toBe('-10 -10 50 50');
+        });
+
+        it('makes scrollContainer accessible to store', () => {
+            doShallowMount();
+            expect(storeConfig.canvas.mutations.setScrollContainerElement)
+                .toHaveBeenCalledWith(expect.anything(), wrapper.element);
+        });
+
+        test('mouse wheel zooms', () => {
+            doShallowMount();
+
+            wrapper.element.dispatchEvent(new WheelEvent('wheel', {
+                deltaY: -5,
+                ctrlKey: true,
+                clientX: 10,
+                clientY: 10
+            }));
+            expect(storeConfig.canvas.mutations.zoomWithPointer).toHaveBeenCalledWith(expect.anything(), {
+                delta: 1,
+                cursorX: 5,
+                cursorY: 0
+            });
+        });
+
+        it('observes container resize', () => {
+            doShallowMount();
+            wrapper.vm.resizeObserver.resize({ width: 100, height: 50 });
+            expect(storeConfig.canvas.mutations.setContainerSize).toHaveBeenCalledWith(expect.anything(), {
+                width: 100, height: 50
+            });
+
+        });
+
+        it('stop resize observer', () => {
+            doShallowMount();
+            let resizeObserver = wrapper.vm.resizeObserver;
+            wrapper.destroy();
+            expect(resizeObserver.disconnect).toHaveBeenCalled();
+        });
+
+        it('pans', async () => {
+            doShallowMount();
+            wrapper.element.setPointerCapture = jest.fn();
+            wrapper.element.releasePointerCapture = jest.fn();
+
+            wrapper.element.scrollLeft = 100;
+            wrapper.element.scrollTop = 100;
+            wrapper.trigger('pointerdown', {
+                button: 1, // middle
+                screenX: 100,
+                screenY: 100,
+                pointerId: -1
+            });
+            expect(wrapper.element.setPointerCapture).toHaveBeenCalledWith(-1);
+
+            wrapper.trigger('pointermove', {
+                screenX: 90,
+                screenY: 90
+            });
+            await Vue.nextTick();
+            expect(wrapper.element.scrollLeft).toBe(110);
+            expect(wrapper.element.scrollTop).toBe(110);
+
+            wrapper.trigger('pointerup', {
+                pointerId: -1
+            });
+            expect(wrapper.element.releasePointerCapture).toHaveBeenCalledWith(-1);
+
+        });
     });
+
 
 });

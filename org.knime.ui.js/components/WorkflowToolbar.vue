@@ -5,6 +5,7 @@ import ToolbarButton from '~/components/ToolbarButton';
 import ExecuteAllIcon from '~/assets/execute-all.svg?inline';
 import CancelAllIcon from '~/assets/cancel-execution.svg?inline';
 import ResetAllIcon from '~/assets/reset-all.svg?inline';
+import ZoomMenu from '~/components/ZoomMenu';
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
@@ -15,7 +16,8 @@ export default {
         ToolbarButton,
         ExecuteAllIcon,
         CancelAllIcon,
-        ResetAllIcon
+        ResetAllIcon,
+        ZoomMenu
     },
     computed: {
         ...mapState('workflow', {
@@ -77,6 +79,8 @@ export default {
       v-if="hasBreadcrumb"
       class="breadcrumb"
     />
+
+    <ZoomMenu class="zoommenu" />
   </div>
 </template>
 
@@ -85,7 +89,6 @@ export default {
   display: flex;
   align-items: center;
   background: var(--knime-porcelain);
-  overflow: hidden;
 }
 
 .buttons {

@@ -254,7 +254,7 @@ export default {
         },
 
         openNode() {
-            this.$store.dispatch('workflow/loadWorkflow', { workflowId: this.id, projectId: this.projectId });
+            this.$store.dispatch('openedProjects/switchWorkflow', { workflowId: this.id, projectId: this.projectId });
         },
 
         /**

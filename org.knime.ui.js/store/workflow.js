@@ -137,27 +137,6 @@ export const getters = {
         return Boolean(activeWorkflow?.info.jobManager);
     },
     /*
-        returns the true offset from the upper-left corner of the svg for a given point
-    */
-    getAbsoluteCoordinates(state, getters, rootState) {
-        const { x: left, y: top } = getters.svgBounds;
-        return ({ x, y }) => ({ x: x - left, y: y - top });
-    },
-    /*
-        extends the workflowBounds by a fixed padding
-    */
-    svgBounds(state, getters, rootState) {
-        const { canvasPadding } = $shapes;
-        let { left, top, right, bottom } = getters.workflowBounds;
-        let x = Math.min(0, left);
-        let y = Math.min(0, top);
-        let width = right - x + canvasPadding;
-        let height = bottom - y + canvasPadding;
-        return {
-            x, y, width, height
-        };
-    },
-    /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
     */
     workflowBounds({ activeWorkflow }) {
