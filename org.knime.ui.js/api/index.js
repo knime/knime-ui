@@ -80,7 +80,7 @@ let nodeStateChanger = (nodeState, errorMessage, action = 'changeNodeStates') =>
     }
 };
 
-let workflowOperation = (kind, errorMessage) => ({ projectId, workflowId, nodeId, position, annotationId }) => {
+let workflowCommands = (kind, errorMessage) => ({ projectId, workflowId, nodeId, position, annotationId }) => {
     try {
         let nestedRpcCall = {
             kind,
@@ -88,7 +88,7 @@ let workflowOperation = (kind, errorMessage) => ({ projectId, workflowId, nodeId
             nodeIDs: nodeId,
             annotationIDs: annotationId
         };
-        let result = rpc(`WorkflowService.applyWorkflowOperation`, projectId, workflowId, nestedRpcCall);
+        let result = rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, nestedRpcCall);
         return Promise.resolve(result);
     } catch (e) {
         consola.error(e);
@@ -248,4 +248,4 @@ export const loadFlowVariables = ({ projectId, nodeId, portIndex }) => {
  * @param {Array} cfg.positions the new positions for the nodes
  * @param {Array} cfg.annotationIDs The annotations to move
  */
-export const moveNode = workflowOperation('translate', 'Could not translate nodes/annotations');
+export const moveNode = workflowCommands('translate', 'Could not translate nodes/annotations');

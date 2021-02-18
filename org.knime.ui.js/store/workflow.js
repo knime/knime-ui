@@ -37,7 +37,12 @@ export const mutations = {
         delete workflowData.nodeTemplates;
 
         // add selected field to node with initial value false to enable reactivity on this property
-        Object.values(workflowData.nodes || {}).forEach(node => { node.selected = false; });
+        Object.values(workflowData.nodes || {}).forEach(
+            node => {
+                node.selected = false;
+                node.outlinePosition = { x: node.position.x, y: node.position.y };
+            }
+        );
 
         state.activeWorkflow = workflowData;
         state.tooltip = null;
@@ -67,6 +72,13 @@ export const mutations = {
     shiftPosition(state, { node, deltaX, deltaY }) {
         node.position.x += deltaX;
         node.position.y += deltaY;
+        node.outlinePosition.x += deltaX;
+        node.outlinePosition.y += deltaY;
+    },
+    shiftPositionOutline(state, { node, deltaX, deltaY }) {
+        node.dragging = true;
+        node.outlinePosition.x += deltaX;
+        node.outlinePosition.y += deltaY;
     }
 };
 
@@ -143,22 +155,37 @@ export const actions = {
     },
     moveNodes({ state, commit, getters }, { deltaX, deltaY }) {
         const selectedNodes = getters.selectedNodes;
-        selectedNodes.forEach(node => {
-            commit('shiftPosition', { node, deltaX, deltaY });
-        });
+        if (selectedNodes.length > 2) {
+            selectedNodes.forEach(node => {
+                commit('shiftPositionOutline', { node, deltaX, deltaY });
+            });
+        } else {
+            selectedNodes.forEach(node => {
+                commit('shiftPosition', { node, deltaX, deltaY });
+            });
+        }
     },
     saveNodeMoves({ state, getters }, { projectId }) {
         const selectedNodes = getters.selectedNodes;
         selectedNodes.forEach(node => {
+            let position;
+            if (selectedNodes.length > 2) {
+                position = {
+                    x: node.outlinePosition.x,
+                    y: node.outlinePosition.y
+                };
+            } else {
+                position = {
+                    x: node.position.x,
+                    y: node.position.y
+                };
+            }
             consola.log(`Moving node ${node.id} to (${node.position.x}, ${node.position.y})`);
             moveNode({
                 projectId,
-                workflowId: state.activeWorkflow.info.containerId,
+                workflowId: state.activeWorkflow.info.name,
                 nodeId: [node.id],
-                position: {
-                    x: node.position.x,
-                    y: node.position.y
-                },
+                position,
                 annotationId: []
             });
         });

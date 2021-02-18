@@ -261,6 +261,7 @@ export default {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  contain: strict;
 }
 
 .counts {

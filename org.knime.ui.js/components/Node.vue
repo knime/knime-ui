@@ -68,6 +68,14 @@ export default {
             validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         },
 
+        outlinePosition: {
+            type: Object,
+            required: false,
+            default() {
+                return { x: 0, y: 0 };
+            }
+        },
+
         /**
          * Node annotation, displayed below the node
          */
@@ -159,17 +167,24 @@ export default {
             default: () => ({
                 allowedActions: {}
             })
+        },
+
+        dragging: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
         return {
-            hover: false
+            hover: false,
+            dragOffset: [0, 0]
         };
     },
     computed: {
         ...mapState('openedProjects', {
             projectId: 'activeId'
         }),
+        ...mapState('canvas', ['zoomFactor']),
         nodeSelectionMeasures() {
             const { nodeStatusHeight, nodeStatusMarginTop, nodeSize,
                 nodeSelectionPadding: [top, right, bottom, left] } = this.$shapes;
@@ -276,7 +291,7 @@ export default {
                 this.openNode();
             } else if (this.allowedActions?.canOpenDialog)  {
                 // open node dialog if one is present
-                this.openDialog({ nodeId: this.id });
+                // this.openDialog({ nodeId: this.id });
             }
         },
 
@@ -304,7 +319,9 @@ export default {
                 }
             } else {
                 // Single select
-                // this.deselectAllNodes();
+                if (!this.dragging) {
+                    this.deselectAllNodes();
+                }
                 this.selectNode(this.id);
             }
         },
@@ -319,23 +336,27 @@ export default {
         },
 
         // move events from UI
-
         onMove({ detail: { deltaX, deltaY, totalDeltaX, totalDeltaY } }) {
-            this.dragOffset = [totalDeltaX, totalDeltaY];
+            this.dragOffset = [totalDeltaX / this.zoomFactor, totalDeltaY / this.zoomFactor];
             this.$store.dispatch(
                 'workflow/moveNodes',
-                { deltaX, deltaY }
+                { deltaX: deltaX / this.zoomFactor, deltaY: deltaY / this.zoomFactor }
             );
         },
-        onMoveStart() {
-            this.dragging = true;
+        onMoveStart(e) {
+            // this.dragging = true;
+            if (!this.selected && !e.detail.event.shiftKey) {
+                this.deselectAllNodes();
+                this.selectNode(this.id);
+            }
+            this.selectNode(this.id);
         },
         onMoveEnd({ detail: { totalDeltaX, totalDeltaY } }) {
-            this.offset = [totalDeltaX, totalDeltaY];
+            this.offset = [totalDeltaX / this.zoomFactor, totalDeltaY / this.zoomFactor];
             this.dragOffset = [0, 0];
             this.$store.dispatch('workflow/saveNodeMoves', { projectId: this.projectId });
             setTimeout(() => { // prevent click handler
-                this.dragging = false;
+                // this.$store.commit('workflow/setOutlinePosition', { node: this, outlinePosition: this.position });
             }, 0);
         }
     }
@@ -344,7 +365,7 @@ export default {
 
 <template>
   <g
-    v-move="{ onMove, onMoveStart, onMoveEnd }"
+    v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 200 }"
     :transform="`translate(${position.x}, ${position.y})`"
     :data-node-id="id"
   >
@@ -368,10 +389,25 @@ export default {
       v-if="selected"
       to="node-select"
     >
+      <g
+        v-if="dragging"
+        :transform="`translate(${outlinePosition.x }, ${outlinePosition.y })`"
+      >
+        <rect
+          :x="nodeSelectionMeasures.x"
+          :y="nodeSelectionMeasures.y"
+          :width="nodeSelectionMeasures.width"
+          :height="nodeSelectionMeasures.height"
+          :fill="$colors.selection.activeBackground"
+          :stroke="$colors.selection.activeBorder"
+          stroke-width="1"
+          rx="4"
+        />
+      </g>
       <g :transform="`translate(${position.x}, ${position.y})`">
         <rect
-          :y="nodeSelectionMeasures.y"
           :x="nodeSelectionMeasures.x"
+          :y="nodeSelectionMeasures.y"
           :width="nodeSelectionMeasures.width"
           :height="nodeSelectionMeasures.height"
           :fill="$colors.selection.activeBackground"
@@ -407,7 +443,7 @@ export default {
       @mouseenter="hover = true"
     >
       <!-- Elements for which a click selects node -->
-      <g @mousedown.left="onLeftMouseDown">
+      <g @click.left="onLeftMouseDown">
         <!-- Hover Area, larger than the node torso -->
         <rect
           class="hover-area"
