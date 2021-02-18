@@ -48,33 +48,20 @@
  */
 package org.knime.ui.java.browser.function;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
 import org.eclipse.swt.chromium.Browser;
 import org.eclipse.swt.chromium.BrowserFunction;
-import org.knime.core.node.NodeLogger;
-import org.knime.gateway.impl.webui.AppState.OpenedWorkflow;
 import org.knime.ui.java.appstate.AppStateUtil;
 import org.knime.ui.java.browser.KnimeBrowserView;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
- * Browser function that allows one to programmatically initialise (and
- * parameterize) the application state from JS. It, e.g., determines what
- * workflow are opened from the beginning.
+ * Browser function that allows one to programmatically clear the App. I.e.
+ * clears the app state and sets the url to 'about:blank'.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class InitAppForTestingBrowserFunction extends BrowserFunction {
+public class ClearAppForTestingBrowserFunction extends BrowserFunction {
 
-	private static final String FUNCTION_NAME = "initAppForTesting";
-
-	private static final ObjectMapper MAPPER = new ObjectMapper();
+	private static final String FUNCTION_NAME = "clearAppForTesting";
 
 	private KnimeBrowserView m_knimeBrowser;
 
@@ -82,55 +69,18 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
 	 * Constructor.
 	 *
 	 * @param browser the browser to register this function with
-	 * @param knimeBrowser reference to the knime browser view mainly to be able
-	 * to set an URL
+	 * @param knimeBrowser reference to the knime browser view mainly to be able to set a URL
 	 */
-	public InitAppForTestingBrowserFunction(final Browser browser, final KnimeBrowserView knimeBrowser) {
+	public ClearAppForTestingBrowserFunction(final Browser browser, final KnimeBrowserView knimeBrowser) {
 		super(browser, FUNCTION_NAME);
 		m_knimeBrowser = knimeBrowser;
 	}
 
 	@Override
 	public Object function(final Object[] args) { // NOSONAR it's ok that this method always returns null
-		if (args == null || args.length != 1 || !(args[0] instanceof String)) {
-			throw new IllegalArgumentException("Wrong argument for browser function '" + getName()
-					+ "'. The arguments are: " + Arrays.toString(args));
-		}
-
-		JsonNode appState;
-		try {
-			appState = MAPPER.readValue((String) args[0], JsonNode.class);
-		} catch (JsonProcessingException ex) {
-			NodeLogger.getLogger(this.getClass()).error("Argument couldn't be parsed to JSON", ex);
-			return null;
-		}
-		JsonNode openedWorkflows = appState.get("openedWorkflows");
-		if (openedWorkflows != null) {
-			AppStateUtil.initAppStateForTesting(() -> StreamSupport.stream(openedWorkflows.spliterator(), false)
-					.map(InitAppForTestingBrowserFunction::createOpenedWorkflow).collect(Collectors.toList()));
-		}
-		m_knimeBrowser.setUrl(true);
+		AppStateUtil.clearAppState();
+		m_knimeBrowser.clearUrl();
 		return null;
-	}
-
-	private static OpenedWorkflow createOpenedWorkflow(final JsonNode json) {
-		return new OpenedWorkflow() {
-
-			@Override
-			public boolean isVisible() {
-				return json.get("visible").asBoolean();
-			}
-
-			@Override
-			public String getWorkflowId() {
-				return json.get("workflowId").asText();
-			}
-
-			@Override
-			public String getProjectId() {
-				return json.get("projectId").asText();
-			}
-		};
 	}
 
 }
