@@ -12,6 +12,7 @@ module.exports = (browser, workflowProjectId, workflowId = 'root') => {
     // init params object
     const initParams = {
         openedWorkflows: [{
+            // workflows can be found in 'knime-ui/org.knime.ui.js/test/integration/assets/workflows'
             projectId: workflowProjectId,
             workflowId,
             visible: true

@@ -8,7 +8,6 @@ const runTimeout = 8 * 1000;
 const nodeId = 'root:207';
 const nodeSelector = `[data-node-id="${nodeId}"]`;
 
-// workflows can be found in knime-ui/org.knime.ui.js/test/integration/assets/workflows
 module.exports = {
     'init app and open workflow': nightwatch => {
         // load workflow
@@ -19,26 +18,13 @@ module.exports = {
     'verify workflow': nightwatch => {
         // start state
         nightwatch.assert.not.elementPresent('.action-executeNodes');
-        nightwatch.assert.containsText(
-            '#node-output',
-            'To show the node output, please select a configured or executed node'
-        );
 
         // look for node (Data Generator)
         nightwatch.assert.visible(nodeSelector);
         // check state of node
         nightwatch.assert.elementPresent(`${nodeSelector} .traffic-light-yellow`);
     },
-    'simple node interaction': nightwatch => {
-        // hover
-        // TODO: fix hover - might not work?
-        /*
-         nightwatch.moveToElement(`${nodeSelector} .hover-area`, 20, 15);
-         nightwatch.assert.visible('.action-executeNodes');
-         nightwatch.moveToElement(`#kanvas`, 5, 5);
-         nightwatch.assert.not.visible('.action-executeNodes');
-         */
-
+    'select node': nightwatch => {
         // click
         nightwatch.click(nodeSelector);
         nightwatch.assert.visible('.action-executeNodes');
