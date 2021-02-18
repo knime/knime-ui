@@ -49,7 +49,7 @@ module.exports = {
         nightwatch.assert.containsText(tdSelector, 'Row0');
 
         // TODO: open flow variables when NXT-164 is merged
-        //nightwatch.click({ selector: '#node-output [name="output-port"]', index: 3 });
+        // nightwatch.click({ selector: '#node-output [name="output-port"]', index: 3 });
 
     },
     'select multiple nodes': nightwatch => {
@@ -60,12 +60,17 @@ module.exports = {
         nightwatch.click(idToSelector(206));
         nightwatch.keys(nightwatch.Keys.NULL);
 
-        nightwatch.assert.containsText('#node-output', 'To show the node output, please select only one node');
+        nightwatch.assert.containsText(
+            '#node-output',
+            'To show the node output, please select only one node'
+        );
     },
     'unselect nodes': nightwatch => {
         nightwatch.click('#kanvas > svg');
         nightwatch.assert.containsText(
-            '#node-output', 'To show the node output, please select a configured or executed node');
+            '#node-output',
+            'To show the node output, please select a configured or executed node'
+        );
     },
     're-select executed node': nightwatch => {
         nightwatch.click(nodeSelector);
