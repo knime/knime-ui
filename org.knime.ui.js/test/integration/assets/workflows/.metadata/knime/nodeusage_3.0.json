@@ -6,9 +6,33 @@
         "nodes": [
             {
                 "id": "org.knime.base.node.util.sampledata.SampleDataNodeFactory#Data Generator",
-                "nrexecs": 21,
+                "nrexecs": 26,
+                "nrfails": 1,
+                "exectime": 56853,
+                "nrcreated": 0,
+                "successor": "n/a"
+            },
+            {
+                "id": "org.knime.js.base.node.configuration.input.bool.BooleanDialogNodeFactory#Boolean Configuration",
+                "nrexecs": 1,
                 "nrfails": 0,
-                "exectime": 31134,
+                "exectime": 12,
+                "nrcreated": 0,
+                "successor": "n/a"
+            },
+            {
+                "id": "org.knime.core.node.workflow.virtual.subnode.VirtualSubNodeInputNodeFactory#Component Input",
+                "nrexecs": 1,
+                "nrfails": 0,
+                "exectime": 16,
+                "nrcreated": 0,
+                "successor": "n/a"
+            },
+            {
+                "id": "org.knime.base.node.flowcontrol.sleep.SleepNodeFactory#Wait...",
+                "nrexecs": 5,
+                "nrfails": 8,
+                "exectime": 149455,
                 "nrcreated": 0,
                 "successor": "n/a"
             }
@@ -16,16 +40,20 @@
         "metaNodes": {
         },
         "wrappedNodes": {
+            "nrexecs": 0,
+            "nrfails": 1,
+            "exectime": 23509,
+            "nrcreated": 0
         }
     },
-    "uptime": 3014490,
-    "workflowsOpened": 2,
+    "uptime": 3825700,
+    "workflowsOpened": 8,
     "remoteWorkflowsOpened": 0,
-    "workflowsImported": 1,
+    "workflowsImported": 2,
     "workflowsExported": 0,
-    "launches": 6,
+    "launches": 9,
     "lastApplicationID": "org.knime.product.KNIME_APPLICATION.0",
-    "timeSinceLastStart": 18007576,
-    "crashes": 0,
+    "timeSinceLastStart": 3132813,
+    "crashes": 1,
     "properlyShutDown": false
 }
