@@ -63,8 +63,12 @@ export default {
         needsConfiguration() {
             return this.selectedNode?.state?.executionState === 'IDLE' && !this.isMetaNode;
         },
+        // defines if the ports needs the node to be executed, before the monitor table is shown.
+        // FlowVariable ports do not need to be executed before showing the table
         needsExecution() {
-            return this.isSupported && this.selectedNode?.allowedActions?.canExecute;
+            return this.isSupported &&
+            this.selectedNode?.allowedActions?.canExecute &&
+            this.selectedPortIndexType !== 'flowVariable';
         },
         isExecuting() {
             let executionState = this.selectedNode?.state?.executionState;
@@ -72,6 +76,9 @@ export default {
         },
         isSupported() {
             return this.outPorts.some(port => supportsPort(port));
+        },
+        isInactive() {
+            return this.outPorts[this.selectedPortIndex]?.inactive;
         },
         placeholderText() {
             switch (this.selectedNodes.length) {
@@ -83,6 +90,12 @@ export default {
                 }
                 if (!this.isSupported) {
                     return 'The selected node has no supported output port';
+                }
+                if (this.isInactive) {
+                    return 'This output port is inactive and therefore no data table is available.';
+                }
+                if (!this.supportsSelectedPort) {
+                    return 'Output port is not supported';
                 }
                 if (this.needsExecution) {
                     return 'To show the output table, please execute the selected node';
@@ -112,6 +125,18 @@ export default {
         // returns the type of the selected output port
         selectedPortIndexType() {
             return this.outPorts[this.selectedPortIndex]?.type;
+        },
+        // checks if the selected or the first port is supported
+        supportsSelectedPort() {
+            return supportsPort(this.outPorts[this.selectedPortIndex ? this.selectedPortIndex : 0]);
+        },
+        // the table should be shown if a port is selected, that does not need execution or is executed
+        // and is supported
+        showTable() {
+            return this.selectedPortIndex !== null &&
+            !this.needsExecution &&
+            this.supportsSelectedPort &&
+            !this.isInactive;
         }
     },
     watch: {
@@ -121,7 +146,8 @@ export default {
             }
         },
         selectedPortIndex(tab) {
-            if (tab === null) {
+            // Data should only be loaded if a port is selected and the port is supported and active
+            if (tab === null || !supportsPort(this.outPorts[tab]) || this.isInactive) {
                 consola.trace('clearing data table');
                 this.$store.dispatch('dataTable/clear');
                 this.$store.dispatch('flowVariables/clear');
@@ -159,7 +185,7 @@ export default {
         v-model="selectedPortIndex"
         :node="selectedNode"
       />
-      <template v-if="selectedPortIndex !== null">
+      <template v-if="showTable">
         <span
           v-if="selectedPortIndexType === 'flowVariable'"
           class="counts"
@@ -190,7 +216,7 @@ export default {
           {{ placeholderText }}</span>
         <!--Button v-if="needsConfiguration"></Button--> <!-- TODO: implement NXT-21 -->
         <Button
-          v-if="needsExecution"
+          v-if="needsExecution && !isInactive"
           class="action-button"
           primary
           compact

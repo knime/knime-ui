@@ -156,6 +156,15 @@ describe('NodeOutput.vue', () => {
             expect(wrapper.find('.placeholder').text()).toBe('Output is available after execution');
         });
 
+        it('renders placeholder if selected port is unsupported', () => {
+            workflow.state.activeWorkflow.nodes.node1.outPorts[0] = { type: 'something unsupported' };
+            workflow.state.activeWorkflow.nodes.node1.outPorts[1] = { type: 'table' };
+            doShallowMount();
+            expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
+            expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
+            expect(wrapper.find('.placeholder').text()).toBe('Output port is not supported');
+        });
+
         it('renders placeholder if node is in an unknown state', () => {
             workflow.state.activeWorkflow.nodes.node1.kind = 'metanode';
             workflow.state.activeWorkflow.nodes.node1.outPorts[0] = { type: 'table', nodeStatus: 'IDLE' };
@@ -164,6 +173,18 @@ describe('NodeOutput.vue', () => {
             expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
             expect(wrapper.find('.placeholder').text()).toBe('No output available');
         });
+    });
+
+    it('renders placeholder if selected port is inactive', async () => {
+        workflow.state.activeWorkflow.nodes.node1.outPorts[0] = { inactive: true, type: 'table' };
+        doShallowMount();
+        wrapper.setData({ selectedPortIndex: 0 });
+        await Vue.nextTick();
+        expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
+        expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
+        expect(wrapper.find('.placeholder').text()).toBe(
+            'This output port is inactive and therefore no data table is available.'
+        );
     });
 
     it('renders table if data port is selected', async () => {

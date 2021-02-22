@@ -27,23 +27,21 @@ describe('OutputPortSelectorBar.vue', () => {
                         type: 'foo',
                         index: 2,
                         name: 'baz'
+                    }, {
+                        type: 'flowVariable',
+                        index: 3,
+                        name: 'flow'
                     }]
                 },
                 expected: [{
                     value: '1',
-                    disabled: true,
-                    label: '1: bar',
-                    title: 'No output data'
+                    label: '1: bar'
                 }, {
                     value: '2',
-                    disabled: true,
-                    label: '2: baz',
-                    title: 'Unsupported data type'
+                    label: '2: baz'
                 }, {
                     value: '0',
-                    disabled: false,
-                    label: 'Flow Variables',
-                    title: null
+                    label: 'Flow Variables'
                 }]
             },
             executed: {
@@ -63,23 +61,21 @@ describe('OutputPortSelectorBar.vue', () => {
                         type: 'foo',
                         index: 2,
                         name: 'baz'
+                    }, {
+                        type: 'flowVariable',
+                        index: 3,
+                        name: 'flow'
                     }]
                 },
                 expected: [{
                     value: '1',
-                    disabled: false,
-                    label: '1: bar',
-                    title: null
+                    label: '1: bar'
                 }, {
                     value: '2',
-                    disabled: true,
-                    label: '2: baz',
-                    title: 'Unsupported data type'
+                    label: '2: baz'
                 }, {
                     value: '0',
-                    disabled: false,
-                    label: 'Flow Variables',
-                    title: null
+                    label: 'Flow Variables'
                 }]
             },
             'inactive ports': {
@@ -109,24 +105,16 @@ describe('OutputPortSelectorBar.vue', () => {
                 },
                 expected: [{
                     value: '1',
-                    disabled: true,
-                    label: '1: bar',
-                    title: 'No output data'
+                    label: '1: bar'
                 }, {
                     value: '2',
-                    disabled: true,
-                    label: '2: baz',
-                    title: 'No output data'
+                    label: '2: baz'
                 }, {
                     value: '3',
-                    disabled: false,
-                    label: '3: qux',
-                    title: null
+                    label: '3: qux'
                 }, {
                     value: '0',
-                    disabled: false,
-                    label: 'Flow Variables',
-                    title: null
+                    label: 'Flow Variables'
                 }]
             },
             'metanode not executed': {
@@ -144,23 +132,24 @@ describe('OutputPortSelectorBar.vue', () => {
                         type: 'foo',
                         index: 2,
                         name: 'baz'
+                    }, {
+                        type: 'flowVariable',
+                        index: 3,
+                        name: 'flow'
                     }]
                 },
                 expected: [{
-                    disabled: true,
                     label: '1: foo',
-                    title: 'No output data',
                     value: '0'
                 }, {
-                    disabled: true,
                     label: '2: bar',
-                    title: 'No output data',
                     value: '1'
                 }, {
-                    disabled: true,
                     label: '3: baz',
-                    title: 'Unsupported data type',
                     value: '2'
+                }, {
+                    label: '4: flow',
+                    value: '3'
                 }]
             },
             'metanode executed': {
@@ -184,19 +173,13 @@ describe('OutputPortSelectorBar.vue', () => {
                     }]
                 },
                 expected: [{
-                    disabled: false,
                     label: '1: foo',
-                    title: null,
                     value: '0'
                 }, {
-                    disabled: false,
                     label: '2: bar',
-                    title: null,
                     value: '1'
                 }, {
-                    disabled: false,
                     label: '3: baz',
-                    title: null,
                     value: '2'
                 }]
             }
@@ -294,7 +277,7 @@ describe('OutputPortSelectorBar.vue', () => {
         });
 
         await Vue.nextTick();
-        expect(wrapper.emitted().input).toStrictEqual([['1'], ['2'], ['0']]);
+        expect(wrapper.emitted().input).toStrictEqual([['1'], ['1'], ['1']]);
 
     });
 
@@ -354,7 +337,7 @@ describe('OutputPortSelectorBar.vue', () => {
 
             await doShallowMount();
 
-            expect(wrapper.vm.activeTab).toBe('0');
+            expect(wrapper.vm.activeTab).toBe('1');
 
             store.commit('dummy/setExecutionState', 'EXECUTED');
 
@@ -389,13 +372,13 @@ describe('OutputPortSelectorBar.vue', () => {
 
             await doShallowMount();
 
-            expect(wrapper.vm.activeTab).toBe(null);
+            expect(wrapper.vm.activeTab).toBe('0');
             store.commit('dummy/setPortExecutionState', { portIndex: 2, executionState: 'EXECUTED' });
             await Vue.nextTick();
-            expect(wrapper.vm.activeTab).toStrictEqual('2');
+            expect(wrapper.vm.activeTab).toStrictEqual('0');
             store.commit('dummy/setPortExecutionState', { portIndex: 1, executionState: 'EXECUTED' });
             await Vue.nextTick();
-            expect(wrapper.vm.activeTab).toStrictEqual('2');
+            expect(wrapper.vm.activeTab).toStrictEqual('0');
 
         });
     });
