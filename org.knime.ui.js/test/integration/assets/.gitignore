@@ -1,6 +1,7 @@
 # KNIME
 /workflows/.metadata
 **/.knimeLock
+**/.savedWithData
 
 # KNIME's default new workflow. Not to be checked in
 workflows/KNIME_project/**

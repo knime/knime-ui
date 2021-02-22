@@ -25,7 +25,7 @@ module.exports = {
     },
     'hover node': nightwatch => {
         // hover
-        nightwatch.moveToElement('.hover-area', 5, 5);
+        nightwatch.moveToElement(`${nodeSelector} .hover-area`, 50, 50);
         nightwatch.assert.visible('.action-executeNodes');
 
         nightwatch.moveToElement('#kanvas svg', 5, 5);
