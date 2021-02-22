@@ -60,7 +60,7 @@ module.exports = {
         nightwatch.click({ selector: 'nav.breadcrumb li', index: 0 });
 
         nightwatch.assert.elementPresent('#metadata');
-        nightwatch.assert.containsText('#metadata', 'Test Component');
+        nightwatch.assert.containsText('#metadata', 'Navigate-through-workflow');
         nightwatch.assert.elementPresent(idToSelector('3'));
     }
 
