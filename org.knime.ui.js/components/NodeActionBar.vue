@@ -106,8 +106,10 @@ export default {
         ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes',
             'pauseNodeExecution', 'resumeNodeExecution', 'stepNodeExecution', 'openView', 'openDialog']),
         /**
-         * Triggered by NodeActionBar
-         * @param {'executeNodes' | 'cancelNodeExecution' | 'resetNodes' | 'openView' | 'openDialog' } action
+         * Dispatch single node actions.
+         *
+         * @param {'executeNodes' | 'cancelNodeExecution' | 'resetNodes' | 'openView' | 'openDialog' |
+         *      'pauseNodeExecution' | 'resumeNodeExecution' | 'stepNodeExecution' } action
          * @returns {void}
          */
         onAction(action) {

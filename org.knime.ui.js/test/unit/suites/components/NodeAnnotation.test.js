@@ -1,12 +1,18 @@
-import { shallowMount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import * as $shapes from '~/style/shapes';
 import Vue from 'vue';
+import Vuex from 'vuex';
 
 import NodeAnnotation from '~/components/NodeAnnotation';
 import LegacyAnnotationText from '~/components/LegacyAnnotationText';
 
 describe('Node Annotation', () => {
-    let propsData, mocks, doShallowMount, wrapper;
+    let propsData, mocks, doShallowMount, wrapper, $store;
+    beforeAll(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
+    });
 
     beforeEach(() => {
         wrapper = null;
@@ -16,8 +22,15 @@ describe('Node Annotation', () => {
             backgroundColor: 'rgb(255, 216, 0)',
             styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
         };
-        mocks = { $shapes };
+        $store = mockVuexStore({
+            canvas: {
+                state: {
+                    zoomFactor: 1
+                }
+            }
+        });
         doShallowMount = () => {
+            mocks = { $store, $shapes };
             wrapper = shallowMount(NodeAnnotation, { propsData, mocks });
         };
     });
@@ -70,6 +83,26 @@ describe('Node Annotation', () => {
                 HTMLElement.prototype.getBoundingClientRect = getBCRMock;
                 doShallowMount();
                 await Vue.nextTick();
+            });
+
+            it('correctly measures when zoomed', async () => {
+                $store.state.canvas.zoomFactor = 2;
+
+                getBCRMock.mockReturnValue({
+                    x: 42,
+                    y: 31,
+                    width: 463,
+                    height: 256.4
+                });
+                HTMLElement.prototype.getBoundingClientRect = getBCRMock;
+
+                doShallowMount();
+                await Vue.nextTick();
+
+                expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+                    height: '129', width: '232', x: '-100'
+                }));
+
             });
 
             it('adjusts dimensions on mount', () => {

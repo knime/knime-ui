@@ -251,206 +251,189 @@ describe('workflow store', () => {
 
     });
 
-    describe('svg sizes', () => {
-        const {
-            canvasPadding, nodeSize, nodeStatusMarginTop, nodeStatusHeight, nodeNameMargin,
-            nodeNameLineHeight
-        } = $shapes;
-
-        it('calculates dimensions of empty workflow', async () => {
+    describe('getters', () => {
+        test('isLinked', async () => {
             await loadStore();
             store.commit('workflow/setActiveWorkflow', {
-                projectId: 'foo',
-                nodes: {},
-                workflowAnnotations: []
-            });
-
-            expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0
-            });
-
-            expect(store.getters['workflow/svgBounds']).toStrictEqual({
-                x: 0,
-                y: 0,
-                width: canvasPadding,
-                height: canvasPadding
-            });
-        });
-
-        it('calculates dimensions of workflow containing one node away from the top left corner', async () => {
-            await loadStore();
-            store.commit('workflow/setActiveWorkflow', {
-                projectId: 'foo',
-                nodes: {
-                    'root:0': {
-                        position: { x: 200, y: 200 }
-                    }
-                },
-                workflowAnnotations: []
-            });
-
-            expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                left: 200,
-                right: 200 + nodeSize,
-                top: 200 - nodeNameMargin - nodeNameLineHeight,
-                bottom: 200 + nodeSize + nodeStatusMarginTop + nodeStatusHeight
-            });
-
-
-            expect(store.getters['workflow/svgBounds']).toStrictEqual({
-                x: 0,
-                y: 0,
-                width: 296,
-                height: 316
-            });
-        });
-
-        it('calculates dimensions of workflow containing annotations only', async () => {
-            await loadStore();
-            store.commit('workflow/setActiveWorkflow', {
-                projectId: 'foo',
-                nodes: {},
-                workflowAnnotations: [{
-                    id: 'root:1',
-                    bounds: {
-                        x: -10,
-                        y: -10,
-                        width: 20,
-                        height: 20
-                    }
-                }, {
-                    id: 'root:2',
-                    bounds: {
-                        x: 0,
-                        y: 0,
-                        width: 20,
-                        height: 20
-                    }
-                }, {
-                    id: 'root:3',
-                    bounds: {
-                        x: -5,
-                        y: -5,
-                        width: 20,
-                        height: 20
-                    }
-                }]
-            });
-
-
-            expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                left: -10,
-                right: 20,
-                top: -10,
-                bottom: 20
-            });
-
-
-            expect(store.getters['workflow/svgBounds']).toStrictEqual({
-                x: -10,
-                y: -10,
-                width: canvasPadding + 30,
-                height: canvasPadding + 30
-            });
-        });
-
-        it('calculates dimensions of workflow containing overlapping node + annotation', async () => {
-            await loadStore();
-            store.commit('workflow/setActiveWorkflow', {
-                projectId: 'foo',
-                nodes: { 'root:0': { position: { x: 10, y: 10 } } },
-                workflowAnnotations: [{
-                    id: 'root:1',
-                    bounds: {
-                        x: 26,
-                        y: 26,
-                        width: 26,
-                        height: 26
-                    }
-                }]
-            });
-
-            expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                left: 10,
-                right: 52,
-                top: -16,
-                bottom: 62
-            });
-
-            expect(store.getters['workflow/svgBounds']).toStrictEqual({
-                x: 0,
-                y: -16,
-                width: canvasPadding + 52,
-                height: canvasPadding + 78
-            });
-        });
-
-        it('calculates dimensions of workflow containing multiple nodes', async () => {
-            await loadStore();
-            store.commit('workflow/setActiveWorkflow', {
-                projectId: 'foo',
-                nodes: {
-                    'root:0': { position: { x: 10, y: 10 } },
-                    'root:1': { position: { x: -10, y: -10 } },
-                    'root:2': { position: { x: 20, y: 20 } }
+                info: {
+                    linked: true
                 }
             });
-
-            expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                left: -10,
-                right: 52,
-                top: -36,
-                bottom: 72
-            });
-
-            expect(store.getters['workflow/svgBounds']).toStrictEqual({
-                x: -10,
-                y: -36,
-                width: 126,
-                height: 172
-            });
+            expect(store.getters['workflow/isLinked']).toBe(true);
         });
-    });
 
-    describe('node getters', () => {
-
-        beforeEach(async () => {
+        test('isWritable', async () => {
             await loadStore();
             store.commit('workflow/setActiveWorkflow', {
-                projectId: 'foo',
-                nodes: {
-                    foo: {
-                        templateId: 'bla'
+                info: {
+                    linked: true
+                }
+            });
+            expect(store.getters['workflow/isWritable']).toBe(false);
+        });
+
+        describe('workflowBounds', () => {
+            const { nodeSize, nodeStatusMarginTop, nodeStatusHeight, nodeNameMargin,
+                nodeNameLineHeight } = $shapes;
+
+            it('calculates dimensions of empty workflow', async () => {
+                await loadStore();
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'foo',
+                    nodes: {},
+                    workflowAnnotations: []
+                });
+
+                expect(store.getters['workflow/workflowBounds']).toStrictEqual({
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0
+                });
+            });
+
+            it('calculates dimensions of workflow containing one node away from the top left corner', async () => {
+                await loadStore();
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'foo',
+                    nodes: {
+                        'root:0': {
+                            position: { x: 200, y: 200 }
+                        }
                     },
-                    ownData: {
-                        icon: 'ownIcon',
-                        name: 'ownName',
-                        type: 'ownType',
-                        executionInfo: { jobManager: 'test' }
-                    }
-                }
+                    workflowAnnotations: []
+                });
+
+                expect(store.getters['workflow/workflowBounds']).toStrictEqual({
+                    left: 200,
+                    right: 200 + nodeSize,
+                    top: 200 - nodeNameMargin - nodeNameLineHeight,
+                    bottom: 200 + nodeSize + nodeStatusMarginTop + nodeStatusHeight
+                });
             });
-            store.state.nodeTemplates.bla = {
-                icon: 'exampleIcon',
-                name: 'exampleName',
-                type: 'exampleType'
-            };
+
+            it('calculates dimensions of workflow containing annotations only', async () => {
+                await loadStore();
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'foo',
+                    nodes: {},
+                    workflowAnnotations: [{
+                        id: 'root:1',
+                        bounds: {
+                            x: -10,
+                            y: -10,
+                            width: 20,
+                            height: 20
+                        }
+                    }, {
+                        id: 'root:2',
+                        bounds: {
+                            x: 0,
+                            y: 0,
+                            width: 20,
+                            height: 20
+                        }
+                    }, {
+                        id: 'root:3',
+                        bounds: {
+                            x: -5,
+                            y: -5,
+                            width: 20,
+                            height: 20
+                        }
+                    }]
+                });
+
+
+                expect(store.getters['workflow/workflowBounds']).toStrictEqual({
+                    left: -10,
+                    right: 20,
+                    top: -10,
+                    bottom: 20
+                });
+            });
+
+            it('calculates dimensions of workflow containing overlapping node + annotation', async () => {
+                await loadStore();
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'foo',
+                    nodes: { 'root:0': { position: { x: 10, y: 10 } } },
+                    workflowAnnotations: [{
+                        id: 'root:1',
+                        bounds: {
+                            x: 26,
+                            y: 26,
+                            width: 26,
+                            height: 26
+                        }
+                    }]
+                });
+
+                expect(store.getters['workflow/workflowBounds']).toStrictEqual({
+                    left: 10,
+                    right: 52,
+                    top: -16,
+                    bottom: 62
+                });
+            });
+
+            it('calculates dimensions of workflow containing multiple nodes', async () => {
+                await loadStore();
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'foo',
+                    nodes: {
+                        'root:0': { position: { x: 10, y: 10 } },
+                        'root:1': { position: { x: -10, y: -10 } },
+                        'root:2': { position: { x: 20, y: 20 } }
+                    }
+                });
+
+                expect(store.getters['workflow/workflowBounds']).toStrictEqual({
+                    left: -10,
+                    right: 52,
+                    top: -36,
+                    bottom: 72
+                });
+            });
         });
 
-        it('gets name', () => {
-            expect(store.getters['workflow/nodeName']({ nodeId: 'foo' })).toBe('exampleName');
-            expect(store.getters['workflow/nodeName']({ nodeId: 'ownData' })).toBe('ownName');
-        });
-        it('gets icon', () => {
-            expect(store.getters['workflow/nodeIcon']({ nodeId: 'foo' })).toBe('exampleIcon');
-            expect(store.getters['workflow/nodeIcon']({ nodeId: 'ownData' })).toBe('ownIcon');
-        });
-        it('gets type', () => {
-            expect(store.getters['workflow/nodeType']({ nodeId: 'foo' })).toBe('exampleType');
-            expect(store.getters['workflow/nodeType']({ nodeId: 'ownData' })).toBe('ownType');
+        describe('node getters', () => {
+
+            beforeEach(async () => {
+                await loadStore();
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'foo',
+                    nodes: {
+                        foo: {
+                            templateId: 'bla'
+                        },
+                        ownData: {
+                            icon: 'ownIcon',
+                            name: 'ownName',
+                            type: 'ownType',
+                            executionInfo: { jobManager: 'test' }
+                        }
+                    }
+                });
+                store.state.nodeTemplates.bla = {
+                    icon: 'exampleIcon',
+                    name: 'exampleName',
+                    type: 'exampleType'
+                };
+            });
+
+            it('gets name', () => {
+                expect(store.getters['workflow/nodeName']({ nodeId: 'foo' })).toBe('exampleName');
+                expect(store.getters['workflow/nodeName']({ nodeId: 'ownData' })).toBe('ownName');
+            });
+            it('gets icon', () => {
+                expect(store.getters['workflow/nodeIcon']({ nodeId: 'foo' })).toBe('exampleIcon');
+                expect(store.getters['workflow/nodeIcon']({ nodeId: 'ownData' })).toBe('ownIcon');
+            });
+            it('gets type', () => {
+                expect(store.getters['workflow/nodeType']({ nodeId: 'foo' })).toBe('exampleType');
+                expect(store.getters['workflow/nodeType']({ nodeId: 'ownData' })).toBe('ownType');
+            });
         });
     });
 });

@@ -53,7 +53,12 @@ export default {
             }
             let { hash } = new URL(target.href, 'file://dummy/');
             let workflowId = decodeURIComponent(hash.replace(/^#/, ''));
-            this.$store.dispatch('workflow/loadWorkflow', { projectId: this.workflow.projectId, workflowId });
+            
+            this.$store.dispatch('openedProjects/switchWorkflow',
+                {
+                    projectId: this.workflow.projectId,
+                    workflowId
+                });
         }
     }
 };
@@ -69,5 +74,9 @@ export default {
 <style lang="postcss" scoped>
 >>> ul {
   user-select: none;
+}
+
+nav {
+  overflow: hidden;
 }
 </style>

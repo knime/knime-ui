@@ -4,6 +4,7 @@ import { mapActions } from 'vuex';
 import AppHeader from '~/components/AppHeader';
 import Sidebar from '~/components/Sidebar';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
+import HotKeys from '~/components/HotKeys';
 
 // These fonts will be pre-loaded at application startup
 const requiredFonts = ['Roboto', 'Roboto Condensed', 'Roboto Mono'];
@@ -17,7 +18,8 @@ export default {
     components: {
         AppHeader,
         Sidebar,
-        WorkflowTabContent
+        WorkflowTabContent,
+        HotKeys
     },
     data() {
         return {
@@ -40,6 +42,7 @@ export default {
     v-if="loaded"
     id="knime-ui"
   >
+    <HotKeys />
     <AppHeader id="header" />
     <Sidebar id="sidebar" />
     <WorkflowTabContent id="tab-content" />
