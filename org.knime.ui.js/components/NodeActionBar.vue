@@ -1,5 +1,8 @@
 <script>
+import { mapActions } from 'vuex';
+
 import ExecuteIcon from '../assets/execute.svg?inline';
+import ResumeIcon from '../assets/resume-execution.svg?inline';
 import ResetIcon from '../assets/reset-all.svg?inline';
 import CancelIcon from '../assets/cancel-execution.svg?inline';
 import PauseIcon from '../assets/pause-execution.svg?inline';
@@ -66,7 +69,7 @@ export default {
             if (this.canPause) {
                 firstAction = ['pauseNodeExecution', true, PauseIcon];
             } else if (this.canResume) {
-                firstAction = ['resumeNodeExecution', true, ExecuteIcon];
+                firstAction = ['resumeNodeExecution', true, ResumeIcon];
             } else {
                 firstAction = ['executeNodes', this.canExecute, ExecuteIcon];
             }
@@ -97,6 +100,20 @@ export default {
             // spread buttons evenly around the horizontal center
             return this.actions.map((_, i) => (i + (1 - buttonCount) / 2) * nodeActionBarButtonSpread);
         }
+    },
+
+    methods: {
+        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes',
+            'pauseNodeExecution', 'resumeNodeExecution', 'stepNodeExecution', 'openView', 'openDialog']),
+        /**
+         * Triggered by NodeActionBar
+         * @param {'executeNodes' | 'cancelNodeExecution' | 'resetNodes' | 'openView' | 'openDialog' } action
+         * @returns {void}
+         */
+        onAction(action) {
+            // calls actions of workflow store
+            this[action]({ nodeIds: [this.nodeId] });
+        }
     }
 };
 </script>
@@ -108,7 +125,7 @@ export default {
       :key="action"
       :x="positions[index]"
       :disabled="!enabled"
-      @click="$emit('action', action)"
+      @click="onAction(action)"
     >
       <Component :is="icon" />
     </ActionButton>

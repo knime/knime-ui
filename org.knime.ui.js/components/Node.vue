@@ -240,9 +240,8 @@ export default {
         }
     },
     methods: {
+        ...mapActions('workflow', ['openDialog']),
         ...mapMutations('workflow', ['selectNode', 'deselectNode', 'deselectAllNodes']),
-        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes',
-            'pauseNodeExecution', 'resumeNodeExecution', 'stepNodeExecution', 'openView', 'openDialog']),
         portShift,
         onLeaveHoverArea(e) {
             if (this.$refs.actionbar?.$el?.contains(e.relatedTarget)) {
@@ -283,21 +282,6 @@ export default {
 
         openNode() {
             this.$store.dispatch('workflow/loadWorkflow', { workflowId: this.id, projectId: this.projectId });
-        },
-
-        /**
-         * Triggered by NodeActionBar
-         * @param {'executeNodes' | 'cancelNodeExecution' | 'resetNodes' | 'openView' | 'openDialog' } action
-         * @returns {void}
-         */
-        onAction(action) {
-            const multiNodeActions = ['executeNodes', 'cancelNodeExecution', 'resetNodes', ''];
-            // calls actions of workflow store
-            if (multiNodeActions.includes(action)) {
-                this[action]({ nodeIds: [this.id] });
-            } else {
-                this[action]({ nodeId: this.id });
-            }
         },
 
         /*
@@ -343,7 +327,6 @@ export default {
         v-bind="allNodeActions"
         :transform="`translate(${position.x + $shapes.nodeSize / 2} ${position.y - $shapes.nodeSelectionPadding[0]})`"
         :node-id="id"
-        @action="onAction"
         @mouseleave.native="onLeaveHoverArea"
       />
     </portal>
