@@ -4,20 +4,28 @@
     "created": "2021-02-17 15:27",
     "nodestats": {
         "nodes": [
+            {
+                "id": "org.knime.base.node.util.sampledata.SampleDataNodeFactory#Data Generator",
+                "nrexecs": 21,
+                "nrfails": 0,
+                "exectime": 31134,
+                "nrcreated": 0,
+                "successor": "n/a"
+            }
         ],
         "metaNodes": {
         },
         "wrappedNodes": {
         }
     },
-    "uptime": 19832,
+    "uptime": 3014490,
     "workflowsOpened": 2,
     "remoteWorkflowsOpened": 0,
     "workflowsImported": 1,
     "workflowsExported": 0,
-    "launches": 4,
+    "launches": 6,
     "lastApplicationID": "org.knime.product.KNIME_APPLICATION.0",
-    "timeSinceLastStart": 21478,
+    "timeSinceLastStart": 18007576,
     "crashes": 0,
-    "properlyShutDown": true
+    "properlyShutDown": false
 }
