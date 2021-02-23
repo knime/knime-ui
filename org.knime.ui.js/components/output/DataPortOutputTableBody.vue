@@ -63,7 +63,11 @@ td {
   }
 }
 
-tr:not(:last-child) {
-  border-bottom: 1px solid var(--knime-porcelain);
+tr {
+  content-visibility: auto;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--knime-porcelain);
+  }
 }
 </style>

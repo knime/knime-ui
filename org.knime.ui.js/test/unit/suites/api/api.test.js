@@ -64,9 +64,11 @@ describe('API', () => {
             let table = await api.loadTable({
                 projectId: 'foo',
                 nodeId: 'root:123',
-                portIndex: 2
+                portIndex: 2,
+                offset: 100,
+                batchSize: 450
             });
-            let expectedNestedRPC = '{"jsonrpc":"2.0","id":0,"method":"getTable","params":[0,400]}';
+            let expectedNestedRPC = '{"jsonrpc":"2.0","id":0,"method":"getTable","params":[100,450]}';
             expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                 jsonrpc: '2.0',
                 method: 'NodeService.doPortRpc',

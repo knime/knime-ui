@@ -34,7 +34,7 @@ export default {
         };
     },
     computed: {
-        ...mapState('dataTable', ['rows', 'totalNumRows', 'totalNumColumns']),
+        ...mapState('dataTable', ['rows', 'totalNumRows', 'totalNumColumns', 'isLoading', 'isReady']),
         ...mapState('workflow', {
             nodes: state => state.activeWorkflow.nodes
         }),
@@ -90,6 +90,9 @@ export default {
                 if (this.isExecuting) {
                     return 'Output is available after execution';
                 }
+                if (this.isLoading) {
+                    return 'Loading Table...';
+                }
                 return 'No output available';
             default:
                 return 'To show the node output, please select only one node';
@@ -105,6 +108,7 @@ export default {
     watch: {
         selectedNode(newNode, oldNode) {
             if (oldNode !== newNode) {
+                this.$store.dispatch('dataTable/clear');
                 this.selectedPortIndex = null;
             }
         },
@@ -144,7 +148,7 @@ export default {
         v-model="selectedPortIndex"
         :node="selectedNode"
       />
-      <template v-if="selectedPortIndex !== null">
+      <template v-if="selectedPortIndex !== null && isReady">
         <span
           v-if="rows"
           class="counts"
@@ -162,7 +166,7 @@ export default {
       >
         <span>
           <ReloadIcon
-            v-if="isExecuting"
+            v-if="isExecuting || isLoading"
             class="loading-icon"
           />
           {{ placeholderText }}</span>

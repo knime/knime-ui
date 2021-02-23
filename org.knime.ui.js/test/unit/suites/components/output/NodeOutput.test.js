@@ -30,7 +30,9 @@ describe('NodeOutput.vue', () => {
             state: {
                 rows: ['dummy'],
                 totalNumRows: 1000,
-                totalNumColumns: 200
+                totalNumColumns: 200,
+                isReady: false,
+                isLoading: false
             },
             actions: {
                 load: jest.fn(),
@@ -147,9 +149,23 @@ describe('NodeOutput.vue', () => {
         });
     });
 
-    it('renders table if port is selected', async () => {
+    it('renders placeholder if port is selected while table is loading', async () => {
         workflow.state.activeWorkflow.nodes.node1.outPorts[0] = { type: 'table' };
-        workflow.state.activeWorkflow.nodes.node1.state = { executionState: 'EXECUTING' };
+        dataTable.state.isLoading = true;
+        doShallowMount();
+        wrapper.setData({ selectedPortIndex: 0 });
+        await Vue.nextTick();
+
+        expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
+        expect(wrapper.find('.placeholder').text()).toBe(
+            'Loading Table...'
+        );
+        expect(wrapper.find('.loading-icon').exists()).toBe(true);
+    });
+
+    it('renders table if port is selected and table has loaded', async () => {
+        workflow.state.activeWorkflow.nodes.node1.outPorts[0] = { type: 'table' };
+        dataTable.state.isReady = true;
         doShallowMount();
         wrapper.setData({ selectedPortIndex: 0 });
         await Vue.nextTick();
@@ -195,6 +211,7 @@ describe('NodeOutput.vue', () => {
         wrapper.setData({ selectedPortIndex: 0 });
         workflow.state.activeWorkflow.nodes.node1.selected = false;
         await Vue.nextTick();
+        expect(dataTable.actions.clear).toHaveBeenCalled();
         expect(wrapper.vm.selectedPortIndex).toBe(null);
     });
 
@@ -205,5 +222,6 @@ describe('NodeOutput.vue', () => {
         Vue.set(workflow.state.activeWorkflow.nodes.node1, 'selected', true);
         await Vue.nextTick();
         expect(wrapper.vm.selectedPortIndex).toBe(0);
+        expect(dataTable.actions.clear).not.toHaveBeenCalled();
     });
 });
