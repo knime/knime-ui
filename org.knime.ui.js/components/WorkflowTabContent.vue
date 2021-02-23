@@ -40,9 +40,6 @@ export default {
             default:
                 return null;
             }
-        },
-        hasLeftPanel() {
-            return this.workflow.info.containerType === 'project';
         }
     }
 };

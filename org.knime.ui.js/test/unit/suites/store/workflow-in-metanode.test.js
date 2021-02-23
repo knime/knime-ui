@@ -1,12 +1,9 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
-import { canvasPadding,
-    defaultMetaNodeBarHeight,
-    defaultMetanodeBarPosition,
-    metaNodeBarWidth,
-    portSize } from '~/style/shapes';
+import { defaultMetaNodeBarHeight, defaultMetanodeBarPosition, metaNodeBarWidth, portSize } from '~/style/shapes';
 import Vuex from 'vuex';
+import * as canvasStoreConfig from '~/store/canvas';
 
 describe('workflow store', () => {
     let store, localVue, templateMutationMock, loadStore;
@@ -37,7 +34,8 @@ describe('workflow store', () => {
                     mutations: {
                         add: templateMutationMock
                     }
-                }
+                },
+                canvas: canvasStoreConfig
             });
         };
     });
@@ -65,8 +63,7 @@ describe('workflow store', () => {
             'without any ports': {
                 additionalProps: {},
                 expected: {
-                    workflowBounds: { left: 0, right: 0, top: 0, bottom: 0 },
-                    svgBounds: { x: 0, y: 0, width: canvasPadding, height: canvasPadding }
+                    workflowBounds: { left: 0, right: 0, top: 0, bottom: 0 }
                 }
             },
             'with input ports only': {
@@ -81,12 +78,6 @@ describe('workflow store', () => {
                         right: portSize,
                         top: 0,
                         bottom: defaultMetaNodeBarHeight
-                    },
-                    svgBounds: {
-                        x: -metaNodeBarWidth,
-                        y: 0,
-                        width: metaNodeBarWidth + portSize + canvasPadding,
-                        height: defaultMetaNodeBarHeight + canvasPadding
                     }
                 }
             },
@@ -102,12 +93,6 @@ describe('workflow store', () => {
                         right: defaultMetanodeBarPosition + metaNodeBarWidth,
                         top: 0,
                         bottom: defaultMetaNodeBarHeight
-                    },
-                    svgBounds: {
-                        x: 0,
-                        y: 0,
-                        width: defaultMetanodeBarPosition + metaNodeBarWidth + canvasPadding,
-                        height: defaultMetaNodeBarHeight + canvasPadding
                     }
                 }
             },
@@ -126,12 +111,6 @@ describe('workflow store', () => {
                         right: defaultMetanodeBarPosition,
                         top: 0,
                         bottom: defaultMetaNodeBarHeight
-                    },
-                    svgBounds: {
-                        x: -metaNodeBarWidth,
-                        y: 0,
-                        width: defaultMetanodeBarPosition + metaNodeBarWidth + canvasPadding,
-                        height: defaultMetaNodeBarHeight + canvasPadding
                     }
                 }
             },
@@ -148,12 +127,6 @@ describe('workflow store', () => {
                         right: 123 + portSize,
                         top: 0,
                         bottom: defaultMetaNodeBarHeight
-                    },
-                    svgBounds: {
-                        x: 0,
-                        y: 0,
-                        width: 123 + portSize + canvasPadding,
-                        height: defaultMetaNodeBarHeight + canvasPadding
                     }
                 }
             },
@@ -170,12 +143,6 @@ describe('workflow store', () => {
                         right: 123 + metaNodeBarWidth,
                         top: 0,
                         bottom: defaultMetaNodeBarHeight
-                    },
-                    svgBounds: {
-                        x: 0,
-                        y: 0,
-                        width: 123 + metaNodeBarWidth + canvasPadding,
-                        height: defaultMetaNodeBarHeight + canvasPadding
                     }
                 }
             },
@@ -196,12 +163,6 @@ describe('workflow store', () => {
                         right: 400 + metaNodeBarWidth,
                         top: 0,
                         bottom: defaultMetaNodeBarHeight
-                    },
-                    svgBounds: {
-                        x: 0,
-                        y: 0,
-                        width: 400 + metaNodeBarWidth + canvasPadding,
-                        height: defaultMetaNodeBarHeight + canvasPadding
                     }
                 }
             },
@@ -224,12 +185,6 @@ describe('workflow store', () => {
                     }]
                 },
                 expected: {
-                    svgBounds: {
-                        height: 1264,
-                        width: 1474,
-                        x: -110,
-                        y: 0
-                    },
                     workflowBounds: {
                         bottom: 1200,
                         left: -110,
@@ -262,12 +217,6 @@ describe('workflow store', () => {
                         right: 1000 - 300,
                         top: -200,
                         bottom: 1000 - 200
-                    },
-                    svgBounds: {
-                        x: -300 - metaNodeBarWidth,
-                        y: -200,
-                        width: defaultMetanodeBarPosition + metaNodeBarWidth + canvasPadding,
-                        height: 1000 + canvasPadding
                     }
                 }
             },
@@ -288,12 +237,6 @@ describe('workflow store', () => {
                         right: 100 + portSize,
                         top: 0,
                         bottom: 500
-                    },
-                    svgBounds: {
-                        x: -100 - portSize,
-                        y: 0,
-                        height: 500 + canvasPadding,
-                        width: 282
                     }
                 }
             }
@@ -305,8 +248,7 @@ describe('workflow store', () => {
                 ...additionalProps
             });
             expect({
-                workflowBounds: store.getters['workflow/workflowBounds'],
-                svgBounds: store.getters['workflow/svgBounds']
+                workflowBounds: store.getters['workflow/workflowBounds']
             }).toStrictEqual(expected);
         });
     });

@@ -22,12 +22,10 @@ export default {
     },
     data() {
         return {
-            /**
-             *  To avoid for mousedown on node, moving mouse, mouseup on kanvas to deselect nodes
-             *  We track whether a click has been started on the empty Kanvas
-             */
-            clickStartedOnEmptyKanvas: false,
-            keyEventListener: null
+            /*
+              Truthy if currently panning. Stores mouse origin
+            */
+            panning: null
         };
     },
     computed: {
@@ -36,28 +34,47 @@ export default {
             tooltip: 'tooltip'
         }),
         ...mapGetters('workflow', [
-            'svgBounds',
             'isLinked',
             'isWritable',
             'isStreaming'
-        ])
+        ]),
+        ...mapGetters('canvas', ['contentBounds', 'canvasSize', 'viewBox']),
+        ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning']),
+        viewBoxString() {
+            let { viewBox } = this;
+            return  `${viewBox.left} ${viewBox.top} ` +
+                    `${viewBox.width} ${viewBox.height}`;
+        }
+
+    },
+    watch: {
+        workflow() {
+            // Focus workflow on change for keyboard strokes to work
+            this.$el.focus();
+        }
     },
     mounted() {
-        this.keyEventListener = document.addEventListener('keydown', (e) => {
-            if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
-                e.stopPropagation();
-                e.preventDefault();
-                this.selectAllNodes();
-            }
-        });
+        // Start Container Observers
+        this.initContainerSize();
+        this.setScrollContainerElement(this.$el);
+        this.initResizeObserver();
+        this.$el.focus();
     },
     beforeDestroy() {
-        document.removeEventListener('keydown', this.keyEventListener);
+        this.setScrollContainerElement(null);
+
+        // Stop Resize Observer
+        this.stopResizeObserver();
     },
     methods: {
-        ...mapMutations('workflow', ['selectAllNodes', 'deselectAllNodes']),
+        /*
+          Selection
+        */
+        ...mapMutations('workflow', ['deselectAllNodes']),
         onMouseDown(e) {
-            // if mousedown on empty kanvas set flag
+            /*  To avoid for [mousedown on node], [moving mouse], [mouseup on kanvas] to deselect nodes,
+             *  we track whether a click has been started on the empty Kanvas
+             */
             this.clickStartedOnEmptyKanvas = e.target === this.$refs.svg;
         },
         onSelfMouseUp(e) {
@@ -65,13 +82,80 @@ export default {
             if (this.clickStartedOnEmptyKanvas) {
                 this.deselectAllNodes();
             }
+        },
+        /*
+            Zooming
+        */
+        ...mapMutations('canvas', ['resetZoom', 'setScrollContainerElement']),
+        initContainerSize() {
+            const { width, height } = this.$el.getBoundingClientRect();
+            this.$store.commit('canvas/setContainerSize', { width, height });
+        },
+        initResizeObserver() {
+            this.resizeObserver = new ResizeObserver(entries => {
+                const containerEl = entries.find(({ target }) => target === this.$el);
+                if (containerEl?.contentRect) {
+                    const { width, height } = containerEl.contentRect;
+                    this.$store.commit('canvas/setContainerSize', { width, height });
+                }
+            });
+            this.resizeObserver.observe(this.$el);
+        },
+        stopResizeObserver() {
+            if (this.resizeObserver) {
+                this.resizeObserver.disconnect();
+            }
+        },
+        onMouseWheel(e) {
+            // delta is -1, 0 or 1 depending on scroll direction.
+            let delta = Math.sign(-e.deltaY);
+
+            // get mouse cursor position on canvas
+            let scrollContainer = this.$el;
+            let bcr = scrollContainer.getBoundingClientRect();
+            let cursorX = e.clientX - bcr.x;
+            let cursorY = e.clientY - bcr.y;
+
+            this.$store.commit('canvas/zoomWithPointer', { delta, cursorX, cursorY });
+        },
+        /*
+            Panning
+        */
+        beginPan(e) {
+            this.panning = [e.screenX, e.screenY];
+            this.$el.setPointerCapture(e.pointerId);
+        },
+        movePan(e) {
+            if (this.panning) {
+                const delta = [e.screenX - this.panning[0], e.screenY - this.panning[1]];
+                this.panning = [e.screenX, e.screenY];
+                this.$el.scrollLeft -= delta[0];
+                this.$el.scrollTop -= delta[1];
+            }
+        },
+        stopPan(e) {
+            if (this.panning) {
+                this.panning = null;
+                this.$el.releasePointerCapture(e.pointerId);
+                e.stopPropagation();
+            }
         }
     }
 };
 </script>
 
 <template>
-  <div :class="{ 'read-only': !isWritable }">
+  <div
+    tabindex="0"
+    :class="{ 'read-only': !isWritable, 'panning': panning || suggestPanning }"
+    @wheel.meta.prevent="onMouseWheel"
+    @wheel.ctrl.prevent="onMouseWheel"
+    @pointerdown.middle="beginPan"
+    @pointerup.middle="stopPan"
+    @pointerdown.left.alt="beginPan"
+    @pointerup.left="stopPan"
+    @pointermove="movePan"
+  >
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
       v-if="isLinked || isStreaming"
@@ -92,19 +176,21 @@ export default {
     </div>
 
     <div
-      v-if="tooltip"
       class="tooltip-container"
     >
-      <Tooltip
-        v-bind="tooltip"
-      />
+      <transition name="tooltip">
+        <Tooltip
+          v-if="tooltip"
+          v-bind="tooltip"
+        />
+      </transition>
     </div>
 
     <svg
       ref="svg"
-      :width="svgBounds.width"
-      :height="svgBounds.height"
-      :viewBox="`${svgBounds.x} ${svgBounds.y} ${svgBounds.width} ${svgBounds.height}`"
+      :width="canvasSize.width"
+      :height="canvasSize.height"
+      :viewBox="viewBoxString"
       @mousedown.left="onMouseDown"
       @mouseup.self.left="onSelfMouseUp"
     >
@@ -182,13 +268,53 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+#kanvas:focus {
+  outline: none;
+}
+
+.debug-css {
+  display: none;
+  stroke: var(--knime-silver-sand);
+  fill: none;
+  pointer-events: none;
+}
+
+line.debug-css {
+  stroke: var(--knime-dove-gray);
+}
+
 svg {
   color: var(--knime-masala);
+  position: relative; /* needed for z-index to have effect */
+  display: block;
+}
+
+.panning {
+  cursor: move;
+
+  & svg,
+  & svg >>> * {
+    pointer-events: none;
+  }
 }
 
 .tooltip-container {
   height: 0;
   line-height: 0;
+
+  & .tooltip-enter-active {
+    /* delay entering of tooltip by 0.5 seconds */
+    transition: opacity 150ms 0.5s ease;
+  }
+
+  & .tooltip-leave-active {
+    transition: opacity 150ms ease;
+  }
+
+  & .tooltip-enter,
+  & .tooltip-leave-to {
+    opacity: 0;
+  }
 }
 
 .read-only {

@@ -1,5 +1,5 @@
 import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener, executeNodes, cancelNodeExecution,
-    resetNodes } from '~api';
+    resetNodes, openView, openDialog } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
@@ -115,6 +115,14 @@ export const actions = {
     /* See docs in API */
     resetNodes({ state }, { nodeIds }) {
         resetNodes({ projectId: state.activeWorkflow.projectId, nodeIds });
+    },
+    /* See docs in API */
+    openView({ state }, { nodeId }) {
+        openView({ projectId: state.activeWorkflow.projectId, nodeId });
+    },
+    /* See docs in API */
+    openDialog({ state }, { nodeId }) {
+        openDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     }
 };
 
@@ -127,27 +135,6 @@ export const getters = {
     },
     isStreaming({ activeWorkflow }) {
         return Boolean(activeWorkflow?.info.jobManager);
-    },
-    /*
-        returns the true offset from the upper-left corner of the svg for a given point
-    */
-    getAbsoluteCoordinates(state, getters, rootState) {
-        const { x: left, y: top } = getters.svgBounds;
-        return ({ x, y }) => ({ x: x - left, y: y - top });
-    },
-    /*
-        extends the workflowBounds by a fixed padding
-    */
-    svgBounds(state, getters, rootState) {
-        const { canvasPadding } = $shapes;
-        let { left, top, right, bottom } = getters.workflowBounds;
-        let x = Math.min(0, left);
-        let y = Math.min(0, top);
-        let width = right - x + canvasPadding;
-        let height = bottom - y + canvasPadding;
-        return {
-            x, y, width, height
-        };
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
@@ -287,5 +274,4 @@ export const getters = {
             }
         };
     }
-
 };

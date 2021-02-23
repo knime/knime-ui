@@ -7,7 +7,7 @@ import * as $shapes from '~/style/shapes';
 
 describe('Tooltip', () => {
 
-    let mocks, doShallowMount, propsData, wrapper;
+    let mocks, doShallowMount, propsData, wrapper, storeConfig;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -16,8 +16,16 @@ describe('Tooltip', () => {
 
     beforeEach(() => {
         wrapper = null;
-        mocks = { $shapes };
         propsData = {};
+        storeConfig = {
+            canvas: {
+                getters: {
+                    getAbsoluteCoordinates: () => ({ x, y }) => ({ x: x * 2, y: y * 2 })
+                }
+            }
+        };
+        let $store = mockVuexStore(storeConfig);
+        mocks = { $shapes, $store };
         doShallowMount = () => {
             wrapper = shallowMount(Tooltip, { propsData, mocks });
         };
@@ -70,8 +78,8 @@ describe('Tooltip', () => {
         propsData.x = 123;
         propsData.y = 345;
         doShallowMount();
-        expect(wrapper.attributes('style')).toContain('left: 123px;');
-        let top = propsData.y + Math.SQRT1_2 * $shapes.tooltipArrowSize;
+        expect(wrapper.attributes('style')).toContain('left: 246px;');
+        let top = propsData.y * 2 + Math.SQRT1_2 * $shapes.tooltipArrowSize;
         expect(wrapper.attributes('style')).toContain(`top: ${top}px;`);
     });
 
@@ -80,32 +88,20 @@ describe('Tooltip', () => {
         propsData.y = 345;
         propsData.orientation = 'top';
         doShallowMount();
-        expect(wrapper.attributes('style')).toContain('left: 123px;');
-        let top = propsData.y - Math.SQRT1_2 * $shapes.tooltipArrowSize;
+        expect(wrapper.attributes('style')).toContain('left: 246px;');
+        let top = 2 * propsData.y - Math.SQRT1_2 * $shapes.tooltipArrowSize;
         expect(wrapper.attributes('style')).toContain(`top: ${top}px;`);
     });
 
     it('allows anchoring to a reference point', () => {
         propsData.anchorPoint = { x: 40, y: 30 };
-        let $store = mockVuexStore({
-            workflow: {
-                getters: {
-                    getAbsoluteCoordinates() {
-                        return () => ({
-                            ...propsData.anchorPoint
-                        });
-                    }
-                }
-            }
-        });
         propsData.x = 123;
         propsData.y = 345;
         propsData.orientation = 'top';
-        mocks.$store = $store;
         doShallowMount();
-        expect(wrapper.attributes('style')).toContain('left: 163px;');
+        expect(wrapper.attributes('style')).toContain('left: 326px;');
         // eslint-disable-next-line no-magic-numbers
-        let top = propsData.y + 30 - Math.SQRT1_2 * $shapes.tooltipArrowSize;
+        let top = 2 * (propsData.y + 30) - Math.SQRT1_2 * $shapes.tooltipArrowSize;
         expect(wrapper.attributes('style')).toContain(`top: ${top}px;`);
     });
 });

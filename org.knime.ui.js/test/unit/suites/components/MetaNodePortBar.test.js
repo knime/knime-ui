@@ -28,17 +28,14 @@ describe('MetaNodePortBar.vue', () => {
             ports: []
         };
         $store = mockVuexStore({
-            workflow: {
+            canvas: {
                 state: {},
                 getters: {
-                    workflowBounds() {
+                    contentBounds() {
                         return {
                             left: 0,
-                            right: 500
-                        };
-                    },
-                    svgBounds() {
-                        return {
+                            top: 0,
+                            width: 500,
                             height
                         };
                     }
