@@ -3,7 +3,6 @@
  */
 
 import { loadTable } from '~api';
-import Vue from 'vue';
 
 const firstRows = 100; // batch size for initial load
 const moreRows = 450; // batch size for lazy loading
