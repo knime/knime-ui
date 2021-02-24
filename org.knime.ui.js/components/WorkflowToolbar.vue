@@ -5,6 +5,8 @@ import ToolbarButton from '~/components/ToolbarButton';
 import ExecuteAllIcon from '~/assets/execute-all.svg?inline';
 import CancelAllIcon from '~/assets/cancel-execution.svg?inline';
 import ResetAllIcon from '~/assets/reset-all.svg?inline';
+import RedoIcon from '~/assets/redo.svg?inline';
+import UndoIcon from '~/assets/undo.svg?inline';
 import ZoomMenu from '~/components/ZoomMenu';
 
 /**
@@ -17,6 +19,8 @@ export default {
         ExecuteAllIcon,
         CancelAllIcon,
         ResetAllIcon,
+        UndoIcon,
+        RedoIcon,
         ZoomMenu
     },
     computed: {
@@ -44,6 +48,12 @@ export default {
             this.$store.dispatch('workflow/resetNodes', {
                 nodeIds: [this.activeWorkflowId]
             });
+        },
+        onUndoBtnClick() {
+            this.$store.dispatch('workflow/undo');
+        },
+        onRedoBtnClick() {
+            this.$store.dispatch('workflow/redo');
         }
     }
 };
@@ -52,6 +62,20 @@ export default {
 <template>
   <div class="toolbar">
     <div class="buttons">
+      <ToolbarButton
+        :disabled="!allowedActions.canUndo"
+        title="Undo"
+        @click.native="onUndoBtnClick"
+      >
+        <UndoIcon />
+      </ToolbarButton>
+      <ToolbarButton
+        :disabled="!allowedActions.canRedo"
+        title="Redo"
+        @click.native="onRedoBtnClick"
+      >
+        <RedoIcon />
+      </ToolbarButton>
       <ToolbarButton
         :disabled="!allowedActions.canExecute"
         title="Execute workflow"
