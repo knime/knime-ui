@@ -40,20 +40,20 @@
         "metaNodes": {
         },
         "wrappedNodes": {
-            "nrexecs": 0,
-            "nrfails": 1,
-            "exectime": 23509,
+            "nrexecs": 12,
+            "nrfails": 17,
+            "exectime": 1517614,
             "nrcreated": 0
         }
     },
-    "uptime": 3825700,
-    "workflowsOpened": 8,
+    "uptime": 5035285,
+    "workflowsOpened": 9,
     "remoteWorkflowsOpened": 0,
-    "workflowsImported": 2,
+    "workflowsImported": 3,
     "workflowsExported": 0,
-    "launches": 9,
+    "launches": 13,
     "lastApplicationID": "org.knime.product.KNIME_APPLICATION.0",
-    "timeSinceLastStart": 3132813,
-    "crashes": 1,
-    "properlyShutDown": false
+    "timeSinceLastStart": 2028125,
+    "crashes": 2,
+    "properlyShutDown": true
 }
