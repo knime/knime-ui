@@ -729,7 +729,7 @@ propagated with or for interoperation with KNIME.
 
    <requires>
       <import feature="com.make.chromium.cef.feature" version="76.0.2.202011090652" match="greaterOrEqual"/>
-      <import feature="org.eclipse.swt.chromium.feature" version="76.0.9.202101180249" match="greaterOrEqual"/>
+      <import feature="org.eclipse.swt.chromium.feature" version="76.0.10.202102180658" match="greaterOrEqual"/>
    </requires>
 
    <plugin
