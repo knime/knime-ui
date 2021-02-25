@@ -114,21 +114,21 @@ let loopStateChanger = (nodeState, errorMessage) => ({ projectId, nodeIds }) => 
  * @param {String} cfg.projectId
  * @param {Array} cfg.nodeIds The nodes to pause.
  */
-export const pauseNodeExecution = loopStateChanger('pause', 'Could not pause execution', 'changeLoopState');
+export const pauseNodeExecution = loopStateChanger('pause', 'Could not pause execution');
 
 /**
  * Resume loop execution.
  * @param {String} cfg.projectId
  * @param {Array} cfg.nodeIds The loop nodes for execution resumption.
  */
-export const resumeNodeExecution = loopStateChanger('resume', 'Could not resume execution', 'changeLoopState');
+export const resumeNodeExecution = loopStateChanger('resume', 'Could not resume execution');
 
 /**
  * Step loop execution.
  * @param {String} cfg.projectId
  * @param {Array} cfg.nodeIds The loop nodes for step execution.
  */
-export const stepNodeExecution = loopStateChanger('step', 'Could not step execution', 'changeLoopState');
+export const stepNodeExecution = loopStateChanger('step', 'Could not step execution');
 
 
 /**
