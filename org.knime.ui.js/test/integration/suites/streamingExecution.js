@@ -5,6 +5,7 @@ const launchTimeout = 5 * 1000;
 
 const idToSelector = (id) => `[data-node-id="root:${id}"]`;
 const nodeSelector = idToSelector(6);
+const streamingLabelSelector = (index = 1) => ({ selector: '.textWrapper .streamingLabel', index });
 
 module.exports = {
     'init app and open workflow': nightwatch => {
@@ -58,17 +59,26 @@ module.exports = {
         nightwatch.keys(nightwatch.Keys.NULL);
     },
     'check for streaming connector count update': async nightwatch => {
-        const streamingLabelSelector = (index = 1) => ({ selector: '.textWrapper .streamingLabel', index });
-        nightwatch.expect.element(streamingLabelSelector()).to.be.visible.after(200);
+        nightwatch.expect.element(streamingLabelSelector()).to.be.visible;
 
         // check for updating counter
-        nightwatch.expect.element(streamingLabelSelector()).text.to.not.equal(null).after(500);
-
-        nightwatch.pause(1000);
+        nightwatch.expect.element(streamingLabelSelector()).text.to.not.equal(null);
 
         // get current text on streamingLabel
         const text = await nightwatch.getText(streamingLabelSelector());
 
-        nightwatch.expect.element(streamingLabelSelector()).text.to.not.equal(text.value).after(1000);
+        nightwatch.expect.element(streamingLabelSelector()).text.to.not.equal(text.value).after(200);
+    },
+    'wait for execution to finish': nightwatch => {
+        // wait for green light on data generator
+        nightwatch.waitForElementVisible(`${idToSelector('6:0:1')} .traffic-light-green`, 5 * 1000);
+        // check label to have end value
+        nightwatch.expect.element(streamingLabelSelector(1)).text.to.equal('4.000.000');
+    },
+    'navigate back to workflow': nightwatch => {
+        nightwatch.click({ selector: 'nav.breadcrumb li', index: 0 });
+    },
+    'check for executed state': nightwatch => {
+        nightwatch.expect.element(`${nodeSelector} .traffic-light-green`).to.be.present;
     }
 };
