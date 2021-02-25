@@ -6,9 +6,9 @@
         "nodes": [
             {
                 "id": "org.knime.base.node.util.sampledata.SampleDataNodeFactory#Data Generator",
-                "nrexecs": 26,
+                "nrexecs": 30,
                 "nrfails": 1,
-                "exectime": 56853,
+                "exectime": 65418,
                 "nrcreated": 0,
                 "successor": "n/a"
             },
@@ -30,9 +30,9 @@
             },
             {
                 "id": "org.knime.base.node.flowcontrol.sleep.SleepNodeFactory#Wait...",
-                "nrexecs": 5,
-                "nrfails": 8,
-                "exectime": 149455,
+                "nrexecs": 6,
+                "nrfails": 9,
+                "exectime": 170716,
                 "nrcreated": 0,
                 "successor": "n/a"
             }
@@ -40,20 +40,20 @@
         "metaNodes": {
         },
         "wrappedNodes": {
-            "nrexecs": 12,
-            "nrfails": 17,
-            "exectime": 1517614,
+            "nrexecs": 15,
+            "nrfails": 23,
+            "exectime": 1753019,
             "nrcreated": 0
         }
     },
-    "uptime": 5035285,
-    "workflowsOpened": 9,
+    "uptime": 5017792,
+    "workflowsOpened": 10,
     "remoteWorkflowsOpened": 0,
     "workflowsImported": 3,
     "workflowsExported": 0,
-    "launches": 13,
+    "launches": 14,
     "lastApplicationID": "org.knime.product.KNIME_APPLICATION.0",
-    "timeSinceLastStart": 2028125,
+    "timeSinceLastStart": 4790394,
     "crashes": 2,
-    "properlyShutDown": true
+    "properlyShutDown": false
 }
