@@ -1,4 +1,4 @@
-/* eslint-disable prefer-arrow-callback,no-magic-numbers */
+/* eslint-disable prefer-arrow-callback,no-magic-numbers,no-unused-expressions */
 const loadWorkflow = require('../utils/loadWorkflow');
 
 const launchTimeout = 5 * 1000;
