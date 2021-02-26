@@ -126,7 +126,7 @@ export default {
          */
         allowedActions: {
             type: Object,
-            default: null
+            default: () => ({})
         },
 
         /**
