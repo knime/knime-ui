@@ -42,6 +42,7 @@ export const mutations = {
         state.nodeId = nodeId;
         state.portIndex = portIndex;
     },
+
     setTable(state, { rows, totalNumRows, spec: { cellTypes, columns, totalNumColumns } }) {
         state.rows = rows;
         state.totalNumRows = totalNumRows; // for vertical pagination
@@ -81,7 +82,16 @@ export const getters = {
 };
 
 export const actions = {
-    async load({ commit }, { projectId, nodeId, portIndex }) {
+    /**
+     * Load data table of the given port / node, and also clear the loaded flow variables
+     * (only one of the tables flowVariables/data can be shown at a time)
+     * @param {String} projectId Project ID
+     * @param {String} nodeId Node ID
+     * @param {Number} portIndex Index of the selected port
+     * @returns {void}
+     */
+    async load({ commit, dispatch }, { projectId, nodeId, portIndex }) {
+        dispatch('flowVariables/clear', null, { root: true });
         // indicate loading
         commit('setIsLoading', true);
 
@@ -96,6 +106,7 @@ export const actions = {
         commit('setTableIdentifier', { projectId, nodeId, portIndex });
         commit('setTable', table);
     },
+
     async loadMoreRows({ commit, state: { projectId, nodeId, portIndex, rows } }) {
         consola.trace('loading more table rows');
 

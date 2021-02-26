@@ -4,7 +4,8 @@ import Vuex from 'vuex';
 
 describe('dataTable store', () => {
 
-    let dummyTable, additionalRows, store, localVue, loadTable, dataTableStoreConfig;
+    let dummyTable, dummyVariable, additionalRows, store, localVue, loadTable, dataTableStoreConfig,
+        flowVariablesTableStoreConfig;
 
     beforeAll(async () => {
         localVue = createLocalVue();
@@ -25,7 +26,9 @@ describe('dataTable store', () => {
         dataTableStoreConfig = await import('~/store/dataTable');
     });
 
-    beforeEach(() => {
+    beforeEach(async () => {
+        loadTable.mockClear();
+
         dummyTable = {
             rows: [{
                 cells: [{ valueAsString: 'foo' }, { valueAsString: '42' }]
@@ -58,6 +61,7 @@ describe('dataTable store', () => {
             },
             totalNumRows: 3000
         };
+
         additionalRows = {
             rows: [{
                 cells: [{ valueAsString: 'foo' }, { valueAsString: '42' }]
@@ -66,10 +70,23 @@ describe('dataTable store', () => {
             }]
         };
 
-        loadTable.mockClear();
+        dummyVariable = [
+            {
+                ownerNodeId: 'testOwner',
+                type: 'StringValue',
+                name: 'testFlowVariable1',
+                value: 'test1'
+            }
+        ];
 
+        dataTableStoreConfig = await import('~/store/dataTable');
+        flowVariablesTableStoreConfig = await import('~/store/flowVariables');
+    });
+
+    beforeEach(() => {
         store = mockVuexStore({
-            dataTable: dataTableStoreConfig
+            dataTable: dataTableStoreConfig,
+            flowVariables: flowVariablesTableStoreConfig
         });
     });
 
@@ -174,7 +191,8 @@ describe('dataTable store', () => {
 
     describe('actions', () => {
 
-        it('can load a table', async () => {
+        it('can load a table and clears the flow variable tab', async () => {
+            store.state.flowVariables.flowVariables = dummyVariable;
             let loadTableAction = store.dispatch('dataTable/load', {
                 projectId: '0',
                 nodeId: '1',
@@ -202,6 +220,9 @@ describe('dataTable store', () => {
                 projectId: '0',
                 nodeId: '1',
                 portIndex: 2
+            });
+            expect(store.state.flowVariables).toEqual({
+                flowVariables: null
             });
         });
 

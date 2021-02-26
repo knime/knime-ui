@@ -7,7 +7,10 @@ import { throttle } from 'lodash';
 
 const scrollHandlerThrottle = 500; // 500 ms between checking scroll positions
 const tableVisibleDelay = 500; // table should be layouted and rendered after 500ms
-        
+
+/**
+ * Data table container that contains a DataPortOutputTableHeader and a DataPortOutputTableBody
+ */
 export default {
     components: {
         DataPortOutputTableHeader,
@@ -57,7 +60,7 @@ export default {
             }
             /* eslint-enable no-invalid-this */
         }, tableVisibleDelay);
-        
+
     },
     methods: {
         ...mapActions('dataTable', ['loadMoreRows']),
@@ -71,7 +74,7 @@ export default {
 
             let dataRow = this.$el.querySelector('tbody tr');
             this.dataRowHeight = dataRow.getBoundingClientRect().height;
-                        
+
             // update
             table.style.tableLayout = 'fixed';
             firstCells.forEach((cell, index) => {
@@ -84,7 +87,7 @@ export default {
         onScroll: throttle(function () {
             /* eslint-disable no-invalid-this */
             if (!this.canLoadMoreRows || this.isLoading) { return; }
-            
+
             let hiddenHeight = Math.round(
                 this.$refs.table.getBoundingClientRect().height -
                 this.$el.getBoundingClientRect().height
@@ -93,7 +96,7 @@ export default {
             let scrollDistanceBottom = hiddenHeight - this.$el.scrollTop;
 
             consola.verbose(`scrolling: current ${scrollDistanceBottom}, threshold ${this.lazyLoadingScrollThreshold}`);
-            
+
             if (scrollDistanceBottom <= this.lazyLoadingScrollThreshold) {
                 consola.trace('scrolled below threshold');
                 this.loadMoreRows();
@@ -125,32 +128,15 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "./outputTable.css";
+
 @keyframes spin {
   100% {
     transform: rotate(-360deg);
   }
 }
 
-.scroll-container {
-  width: 100%;
-  overflow: auto;
-}
-
 table {
-  min-width: 100%;
-  border-collapse: collapse;
-  font-family: "Roboto Condensed", sans-serif;
-
-  & >>> th,
-  & >>> td {
-    padding: 0 6px;
-    text-align: left;
-    max-width: 1000px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
   & tfoot {
     font-size: 14px;
     font-style: italic;
