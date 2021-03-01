@@ -83,32 +83,32 @@ export default {
         placeholderText() {
             switch (this.selectedNodes.length) {
             case 0:
-                return 'To show the node output, please select a configured or executed node';
+                return 'To show the node output, please select a configured or executed node.';
             case 1:
                 if (!this.outPorts.length) {
-                    return 'The selected node has no output ports';
+                    return 'The selected node has no output ports.';
                 }
                 if (!this.isSupported) {
-                    return 'The selected node has no supported output port';
+                    return 'The selected node has no supported output port.';
                 }
                 if (this.isInactive) {
                     return 'This output port is inactive and therefore no data table is available.';
                 }
                 if (!this.supportsSelectedPort) {
-                    return 'Output port is not supported';
+                    return 'The data at the output port are not in data table format.';
                 }
                 if (this.needsExecution) {
-                    return 'To show the output table, please execute the selected node';
+                    return 'To show the output table, please execute the selected node.';
                 }
                 if (this.needsConfiguration) {
-                    return 'Please first configure the selected node';
+                    return 'Please first configure the selected node.';
                 }
                 if (this.isExecuting) {
-                    return 'Output is available after execution';
+                    return 'Output is available after execution.';
                 }
-                return 'No output available';
+                return 'No output available.';
             default:
-                return 'To show the node output, please select only one node';
+                return 'To show the node output, please select only one node.';
             }
         },
         // returns the amount of already loaded rows or the total amount of rows
