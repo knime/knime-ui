@@ -1,11 +1,18 @@
-import { shallowMount } from '@vue/test-utils';
+import { shallowMount, createLocalVue } from '@vue/test-utils';
+import Vuex from 'vuex';
+import { mockVuexStore } from '~/test/unit/test-utils';
 import * as $shapes from '~/style/shapes';
 
 import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import LegacyAnnotationText from '~/components/LegacyAnnotationText';
 
 describe('Workflow Annotation', () => {
-    let propsData, mocks, doShallowMount, wrapper;
+    let propsData, mocks, doShallowMount, wrapper, storeConfig;
+
+    beforeAll(() => {
+        let localVue = createLocalVue();
+        localVue.use(Vuex);
+    });
 
     beforeEach(() => {
         wrapper = null;
@@ -18,8 +25,19 @@ describe('Workflow Annotation', () => {
             text: 'hallo',
             styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
         };
-        mocks = { $shapes };
-        doShallowMount = () => { wrapper = shallowMount(WorkflowAnnotation, { propsData, mocks }); };
+        storeConfig = {
+            workflow: {
+                mutations: {
+                    deselectAllNodes: jest.fn()
+                }
+            }
+        };
+
+        doShallowMount = () => {
+            let $store = mockVuexStore(storeConfig);
+            mocks = { $shapes, $store };
+            wrapper = shallowMount(WorkflowAnnotation, { propsData, mocks });
+        };
     });
 
     describe('render default', () => {
@@ -52,6 +70,11 @@ describe('Workflow Annotation', () => {
             expect(wrapper.findComponent(LegacyAnnotationText).props('styleRanges')).toEqual(
                 [{ start: 0, length: 2, fontSize: 12 }]
             );
+        });
+
+        it('deselects all nodes on click', () => {
+            wrapper.trigger('mousedown', { button: 0 });
+            expect(storeConfig.workflow.mutations.deselectAllNodes).toHaveBeenCalled();
         });
     });
 });

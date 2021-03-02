@@ -26,6 +26,10 @@ export default {
         warning: {
             type: String,
             default: null
+        },
+        loopStatus: {
+            type: String,
+            default: null
         }
     },
     data() {
@@ -157,7 +161,7 @@ export default {
       text-anchor="middle"
       y="8.5"
     >
-      queued
+      {{ loopStatus && loopStatus === 'PAUSED' ? 'paused' : 'queued' }}
     </text>
 
     <!-- node's animated execution state -->

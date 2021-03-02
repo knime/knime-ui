@@ -70,9 +70,9 @@ export const addEventListener = makeToggleEventListener('add');
 export const removeEventListener = makeToggleEventListener('remove');
 
 
-let nodeStateChanger = (nodeState, errorMessage) => ({ projectId, nodeIds }) => {
+let nodeStateChanger = (nodeState, errorMessage, action = 'changeNodeStates') => ({ projectId, nodeIds }) => {
     try {
-        let result = rpc('NodeService.changeNodeStates', projectId, nodeIds, nodeState);
+        let result = rpc(`NodeService.${action}`, projectId, nodeIds, nodeState);
         return Promise.resolve(result);
     } catch (e) {
         consola.error(e);
@@ -104,6 +104,32 @@ export const cancelNodeExecution = nodeStateChanger('cancel', 'Could not cancel 
  */
 export const resetNodes = nodeStateChanger('reset', 'Could not reset nodes');
 
+// eslint-disable-next-line arrow-body-style
+let loopStateChanger = (nodeState, errorMessage) => ({ projectId, nodeIds }) => {
+    return nodeStateChanger(nodeState, errorMessage, 'changeLoopState')({ projectId, nodeIds: nodeIds[0] });
+};
+
+/**
+ * Pause executing loop nodes.
+ * @param {String} cfg.projectId
+ * @param {Array} cfg.nodeIds The nodes to pause.
+ */
+export const pauseNodeExecution = loopStateChanger('pause', 'Could not pause execution');
+
+/**
+ * Resume loop execution.
+ * @param {String} cfg.projectId
+ * @param {Array} cfg.nodeIds The loop nodes for execution resumption.
+ */
+export const resumeNodeExecution = loopStateChanger('resume', 'Could not resume execution');
+
+/**
+ * Step loop execution.
+ * @param {String} cfg.projectId
+ * @param {Array} cfg.nodeIds The loop nodes for step execution.
+ */
+export const stepNodeExecution = loopStateChanger('step', 'Could not step execution');
+
 
 /**
  * Open the native (Java) configuration dialog of a node.
@@ -128,8 +154,8 @@ export const openView = ({ projectId, nodeId }) => {
 // The Node service offers JSON-RPC forwarding to the Port instance.
 // This is by design, because third-party vendors can provide a custom port implementation with totally
 // different methods. In case of a data port (table), the available methods are defined in
-// org.knime.gateway.impl.rpc.table.TableService
-// (at the time of writing getTable(long start, int size) and getRows(long start, int size))
+// org.knime.gateway.impl.rpc.*.*Service
+// (at the time of writing getTable(long start, int size), getRows(long start, int size), and getFlowVariables())
 // So, to get a table we have to send a JSON-RPC object as a payload to the NodeService, which itself must be called via
 // JSON-RPC. Hence double-wrapping is required.
 // Parameters are described below.
@@ -167,6 +193,31 @@ export const loadTable = ({ projectId, nodeId, portIndex }) => {
         consola.error(e);
         return Promise.reject(new Error(
             `Couldn't load table data from port ${portIndex} of node "${nodeId}" in project ${projectId}`
+        ));
+    }
+};
+
+/**
+ * Get the flow variables associated with a flow variable port.
+ * @param {String} projectId The ID of the project that contains the node
+ * @param {String} nodeId The ID of the node to load data for
+ * @param {String} portIndex The index of the port to load data for.
+ * Remember that port 0 is usually a flow variable port.
+ * @return {Promise} A promise containing the flow variable data as defined in the API
+ * */
+export const loadFlowVariables = ({ projectId, nodeId, portIndex }) => {
+    try {
+        let flowVariables = nestedRpcCall({
+            projectId,
+            nodeId,
+            portIndex,
+            method: 'getFlowVariables'
+        });
+        return Promise.resolve(flowVariables);
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error(
+            `Couldn't load flow variables of node "${nodeId}" in project ${projectId}`
         ));
     }
 };

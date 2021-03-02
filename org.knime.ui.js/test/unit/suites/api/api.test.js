@@ -77,6 +77,33 @@ describe('API', () => {
         });
     });
 
+    describe('loadFlowVariables', () => {
+        it('calls jsonrpc', async () => {
+            window.jsonrpc.mockReturnValueOnce(JSON.stringify({
+                jsonrpc: '2.0',
+                id: -1,
+                result: JSON.stringify({
+                    jsonrpc: '2.0',
+                    result: 'dummy',
+                    id: -2
+                })
+            }));
+            let flowVariables = await api.loadFlowVariables({
+                projectId: 'foo',
+                nodeId: 'root:123',
+                portIndex: 2
+            });
+            let expectedNestedRPC = '{"jsonrpc":"2.0","id":0,"method":"getFlowVariables"}';
+            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'NodeService.doPortRpc',
+                params: ['foo', 'root:123', 2, expectedNestedRPC],
+                id: 0
+            }));
+            expect(flowVariables).toBe('dummy');
+        });
+    });
+
     it('executes nodes', async () => {
         await api.executeNodes({ projectId: '123', nodeIds: ['a', 'b', 'c'] });
         expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
@@ -103,6 +130,36 @@ describe('API', () => {
             jsonrpc: '2.0',
             method: 'NodeService.changeNodeStates',
             params: ['123', ['a', 'b', 'c'], 'reset'],
+            id: 0
+        }));
+    });
+
+    it('pauses node execution', async () => {
+        await api.pauseNodeExecution({ projectId: '123', nodeIds: ['loop'] });
+        expect(window.jsonrpc).toHaveBeenLastCalledWith(JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'NodeService.changeLoopState',
+            params: ['123', 'loop', 'pause'],
+            id: 0
+        }));
+    });
+
+    it('resumes node execution', async () => {
+        await api.resumeNodeExecution({ projectId: '123', nodeIds: ['loop'] });
+        expect(window.jsonrpc).toHaveBeenLastCalledWith(JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'NodeService.changeLoopState',
+            params: ['123', 'loop', 'resume'],
+            id: 0
+        }));
+    });
+
+    it('steps node execution', async () => {
+        await api.stepNodeExecution({ projectId: '123', nodeIds: ['loop'] });
+        expect(window.jsonrpc).toHaveBeenLastCalledWith(JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'NodeService.changeLoopState',
+            params: ['123', 'loop', 'step'],
             id: 0
         }));
     });
@@ -153,6 +210,16 @@ describe('API', () => {
                 done(new Error('Error not thrown'));
             } catch (e) {
                 expect(e.message).toContain('Couldn\'t load table');
+                done();
+            }
+        });
+
+        it('handles errors on loadFlowVariables', async (done) => {
+            try {
+                await api.loadFlowVariables({});
+                done(new Error('Error not thrown'));
+            } catch (e) {
+                expect(e.message).toContain('Couldn\'t load flow variables');
                 done();
             }
         });

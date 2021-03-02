@@ -15,23 +15,28 @@ describe('WorkflowBreadcrumb.vue', () => {
         localVue.use(Vuex);
     });
 
-    let store, workflow, wrapper, doShallowMount, loadWorkflow;
+    let store, workflow, wrapper, doShallowMount, storeConfig;
 
     beforeEach(() => {
         workflow = null;
-        loadWorkflow = jest.fn();
 
         doShallowMount = async () => {
-            store = mockVuexStore({
+            storeConfig = {
                 workflow: {
                     state: {
                         activeWorkflow: workflow
                     },
                     actions: {
-                        loadWorkflow
+                        loadWorkflow: jest.fn()
+                    }
+                },
+                openedProjects: {
+                    actions: {
+                        switchWorkflow: jest.fn()
                     }
                 }
-            });
+            };
+            store = mockVuexStore(storeConfig);
 
             wrapper = await shallowMountWithAsyncData(
                 WorkflowBreadcrumb,
@@ -139,7 +144,7 @@ describe('WorkflowBreadcrumb.vue', () => {
                 }
             };
             wrapper.vm.onClick(event);
-            expect(loadWorkflow).not.toHaveBeenCalled();
+            expect(storeConfig.workflow.actions.loadWorkflow).not.toHaveBeenCalled();
         });
 
         it('handles clicks on link', () => {
@@ -150,7 +155,7 @@ describe('WorkflowBreadcrumb.vue', () => {
                 }
             };
             wrapper.vm.onClick(event);
-            expect(loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
+            expect(storeConfig.openedProjects.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
                 workflowId: 'root:0:123',
                 projectId: 'proj'
             });
@@ -165,7 +170,7 @@ describe('WorkflowBreadcrumb.vue', () => {
                 }
             };
             wrapper.vm.onClick(event);
-            expect(loadWorkflow).toHaveBeenCalledWith(expect.anything(), {
+            expect(storeConfig.openedProjects.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
                 workflowId: weirdId,
                 projectId: 'proj'
             });

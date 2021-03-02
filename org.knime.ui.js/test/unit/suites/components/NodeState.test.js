@@ -106,6 +106,13 @@ describe('NodeState.vue', () => {
         doShallowMount();
         expect(wrapper.text()).toBe('queued');
     });
+    
+    it('shows "paused"', () => {
+        propsData.executionState = 'QUEUED';
+        propsData.loopStatus = 'PAUSED';
+        doShallowMount();
+        expect(wrapper.text()).toBe('paused');
+    });
 
     it('shows dancing ball', () => {
         propsData.executionState = 'EXECUTING';
