@@ -51,10 +51,7 @@ export const mutations = {
         state.totalNumColumns = totalNumColumns; // for horizontal pagination
     },
     appendRows(state, rows) {
-        // Can be null if node has been deselected before api call returns
-        if (state.rows) {
-            state.rows.push(...rows);
-        }
+        state.rows.push(...rows);
     },
     clear(state) {
         state.rows = null;
@@ -107,7 +104,8 @@ export const actions = {
         commit('setTable', table);
     },
 
-    async loadMoreRows({ commit, state: { projectId, nodeId, portIndex, rows } }) {
+    async loadMoreRows({ commit, state }) {
+        let { projectId, nodeId, portIndex, rows } = state;
         consola.trace('loading more table rows');
 
         // indicate loading
@@ -119,7 +117,12 @@ export const actions = {
             if (!table?.rows) {
                 throw new Error('Loaded table contains no rows');
             }
-            commit('appendRows', table.rows);
+
+            // current nodeId still the same as when request was send
+            // can change if the node has been deselected
+            if (state.nodeId === nodeId) {
+                commit('appendRows', table.rows);
+            }
         } finally {
             // indicate loading finished
             commit('setIsLoading', false);

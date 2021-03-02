@@ -260,6 +260,25 @@ describe('dataTable store', () => {
             });
         });
 
+        test('load more - aborted', async () => {
+            await store.dispatch('dataTable/load', {
+                projectId: '0',
+                nodeId: '1',
+                portIndex: 2
+            });
+
+            // start loading
+            let loadMoreRows = store.dispatch('dataTable/loadMoreRows');
+            // clear table in the meantime
+            await store.dispatch('dataTable/clear');
+            await loadMoreRows;
+
+            // no rows have been added
+            // doesn't throw an error
+            expect(store.state.dataTable.rows).toBe(null);
+
+        });
+
     });
 
 });
