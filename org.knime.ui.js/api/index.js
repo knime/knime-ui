@@ -170,7 +170,6 @@ const nestedRpcCall = ({ method, params, projectId, nodeId, portIndex }) => {
     return parseResponse({ response, method, params });
 };
 
-const maxBatchSize = 450;
 /**
  * Get the data table associated with a data port.
  * @param {String} projectId The ID of the project that contains the node
@@ -182,10 +181,6 @@ const maxBatchSize = 450;
  * @return {Promise} A promise containing the table data as defined in the API
  * */
 export const loadTable = ({ projectId, nodeId, portIndex, offset = 0, batchSize }) => {
-    if (batchSize > maxBatchSize) {
-        return Promise.reject(new Error(`Batch size too large (${batchSize}).` +
-            `Maximum is ${maxBatchSize}. See org.knime.core.data.cache.WindowCacheTable`));
-    }
     try {
         let table = nestedRpcCall({
             projectId,
@@ -198,7 +193,8 @@ export const loadTable = ({ projectId, nodeId, portIndex, offset = 0, batchSize 
     } catch (e) {
         consola.error(e);
         return Promise.reject(new Error(
-            `Couldn't load table data from port ${portIndex} of node "${nodeId}" in project ${projectId}`
+            `Couldn't load table data (start: ${offset}, length: ${batchSize}) ` +
+            `from port ${portIndex} of node "${nodeId}" in project ${projectId}`
         ));
     }
 };

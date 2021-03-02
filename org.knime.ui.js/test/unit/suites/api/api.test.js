@@ -240,11 +240,12 @@ describe('API', () => {
             let projectId = 'projectId';
             let nodeId = Math.random();
             try {
-                await api.loadTable({ projectId, nodeId, portIndex });
+                await api.loadTable({ projectId, nodeId, portIndex, batchSize: 400 });
                 done(new Error('Error not thrown'));
             } catch (e) {
                 expect(e.message).toBe(
-                    `Couldn't load table data from port ${portIndex} of node "${nodeId}" in project ${projectId}`
+                    `Couldn't load table data (start: 0, length: 400) from port` +
+                    ` ${portIndex} of node "${nodeId}" in project ${projectId}`
                 );
                 done();
             }
