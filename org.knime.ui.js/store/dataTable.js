@@ -117,7 +117,7 @@ export const actions = {
         try {
             let table = await loadTable({ projectId, nodeId, portIndex, offset: rows.length, batchSize: moreRows });
             if (!table?.rows) {
-                throw new Error();
+                throw new Error('Loaded table contains no rows');
             }
             commit('appendRows', table.rows);
         } finally {
