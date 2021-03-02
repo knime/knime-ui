@@ -101,7 +101,7 @@ describe('NodeOutput.vue', () => {
         expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(false);
         expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
         expect(wrapper.find('.placeholder').text()).toBe(
-            'To show the node output, please select a configured or executed node'
+            'To show the node output, please select a configured or executed node.'
         );
     });
 
@@ -110,7 +110,7 @@ describe('NodeOutput.vue', () => {
         doShallowMount();
         expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(false);
         expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
-        expect(wrapper.find('.placeholder').text()).toBe('To show the node output, please select only one node');
+        expect(wrapper.find('.placeholder').text()).toBe('To show the node output, please select only one node.');
     });
 
     it('renders placeholder if no output port is present', () => {
@@ -118,7 +118,7 @@ describe('NodeOutput.vue', () => {
         doShallowMount();
         expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(false);
         expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
-        expect(wrapper.find('.placeholder').text()).toBe('The selected node has no output ports');
+        expect(wrapper.find('.placeholder').text()).toBe('The selected node has no output ports.');
     });
 
     describe('placeholder if no port is selected', () => {
@@ -126,7 +126,7 @@ describe('NodeOutput.vue', () => {
             doShallowMount();
             expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
             expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
-            expect(wrapper.find('.placeholder').text()).toBe('The selected node has no supported output port');
+            expect(wrapper.find('.placeholder').text()).toBe('The selected node has no supported output port.');
         });
 
         it('renders placeholder if node needs to be executed', () => {
@@ -136,7 +136,7 @@ describe('NodeOutput.vue', () => {
             expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
             expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
             expect(wrapper.find('.placeholder').text())
-                .toContain('To show the output table, please execute the selected node');
+                .toContain('To show the output table, please execute the selected node.');
             expect(wrapper.findComponent(Button).element.textContent.trim()).toBe('Execute');
         });
 
@@ -146,7 +146,7 @@ describe('NodeOutput.vue', () => {
             doShallowMount();
             expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
             expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
-            expect(wrapper.find('.placeholder').text()).toBe('Please first configure the selected node');
+            expect(wrapper.find('.placeholder').text()).toBe('Please first configure the selected node.');
         });
 
         it('renders placeholder while node is executing', () => {
@@ -155,7 +155,7 @@ describe('NodeOutput.vue', () => {
             doShallowMount();
             expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
             expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
-            expect(wrapper.find('.placeholder').text()).toBe('Output is available after execution');
+            expect(wrapper.find('.placeholder').text()).toBe('Output is available after execution.');
         });
 
         it('renders placeholder if selected port is unsupported', () => {
@@ -164,7 +164,9 @@ describe('NodeOutput.vue', () => {
             doShallowMount();
             expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
             expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
-            expect(wrapper.find('.placeholder').text()).toBe('Output port is not supported');
+            expect(wrapper.find('.placeholder').text()).toBe(
+                'The data at the output port are not in data table format.'
+            );
         });
 
         it('renders placeholder if node is in an unknown state', () => {
@@ -173,7 +175,7 @@ describe('NodeOutput.vue', () => {
             doShallowMount();
             expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
             expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
-            expect(wrapper.find('.placeholder').text()).toBe('No output available');
+            expect(wrapper.find('.placeholder').text()).toBe('No output available.');
         });
     });
 
@@ -234,7 +236,7 @@ describe('NodeOutput.vue', () => {
         expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
         expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
         expect(wrapper.find('.placeholder').text())
-            .toContain('To show the output table, please execute the selected node');
+            .toContain('To show the output table, please execute the selected node.');
         wrapper.findComponent(Button).vm.$emit('click');
         expect(workflow.actions.executeNodes).toHaveBeenCalledWith(expect.anything(), { nodeIds: ['node1'] });
     });
