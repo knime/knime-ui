@@ -7,9 +7,11 @@ import { throttle } from 'lodash';
 
 const scrollHandlerThrottle = 500; // 500 ms between checking scroll positions
 const tableVisibleDelay = 500; // table should be layouted and rendered after 500ms
-
+const lazyLoadTriggerRowSmall = 50; // if the table is 'small', load more rows after reaching 50 rows from the bottom
+const lazyLoadTriggerRowLarge = 150; // if the table is 'small', load more rows after reaching 50 rows from the bottom
+const lazyLoadSmallLargeThreshold = 200; // if the table has strictly less rows than threshold, use small trigger else large trigger
 /**
- * Data table container that contains a DataPortOutputTableHeader and a DataPortOutputTableBody
+ * Data table container that contains a DataPortOutputTableHeader, a DataPortOutputTableBody and a footer
  */
 export default {
     components: {
@@ -27,21 +29,19 @@ export default {
         ...mapState('dataTable', ['isLoading', 'rows']),
         ...mapGetters('dataTable', ['canLoadMoreRows']),
         /**
-         * if the table shows less than 200 elements,
-         * lazy loading should be triggered when the 50th last element is in view
+         * if the table shows less than lazyLoadSmallLargeThreshold (200) elements,
+         * lazy loading should be triggered when the lazyLoadTriggerRowSmall-th (50th) last element is in view
          *
-         * for >= 200 elements,
-         * lazy loading will be triggered when the 150th last element is in view
+         * for >= lazyLoadSmallLargeThreshold (200) elements,
+         * lazy loading will be triggered when the lazyLoadTriggerRowLarge-th (150th) last element is in view
          * @returns {Number | NaN} scroll threshold from bottom in pixels
          */
         lazyLoadingScrollThreshold() {
-            /* eslint-disable no-magic-numbers */
-            if (this.rows?.length < 200) {
-                return this.dataRowHeight * 50;
+            if (this.rows?.length < lazyLoadSmallLargeThreshold) {
+                return this.dataRowHeight * lazyLoadTriggerRowSmall;
             } else {
-                return this.dataRowHeight * 150;
+                return this.dataRowHeight * lazyLoadTriggerRowLarge;
             }
-            /* eslint-enable no-magic-numbers */
         }
     },
     mounted() {
@@ -64,6 +64,10 @@ export default {
     },
     methods: {
         ...mapActions('dataTable', ['loadMoreRows']),
+        /*
+         * Measures the width of the header cells that have been set by the browser's layouting algorithm.
+         * Sets the layout permanently and disables the browser's layouting algorithm
+         */
         fixLayout() {
             // measure
             let table = this.$el.querySelector('table');
@@ -88,14 +92,15 @@ export default {
             /* eslint-disable no-invalid-this */
             if (!this.canLoadMoreRows || this.isLoading) { return; }
 
-            let hiddenHeight = Math.round(
+            let hiddenHeight =
                 this.$refs.table.getBoundingClientRect().height -
-                this.$el.getBoundingClientRect().height
-            );
+                this.$el.getBoundingClientRect().height;
 
             let scrollDistanceBottom = hiddenHeight - this.$el.scrollTop;
 
-            consola.verbose(`scrolling: current ${scrollDistanceBottom}, threshold ${this.lazyLoadingScrollThreshold}`);
+            consola.verbose(
+                `scrolling: current ${Math.round(scrollDistanceBottom)}, threshold ${this.lazyLoadingScrollThreshold}`
+            );
 
             if (scrollDistanceBottom <= this.lazyLoadingScrollThreshold) {
                 consola.trace('scrolled below threshold');
