@@ -112,18 +112,23 @@ describe('workflow store', () => {
             store.commit('workflow/selectAllNodes');
             expect(nodes['root:1'].selected).toBe(true);
             expect(nodes['root:2'].selected).toBe(true);
+            expect(store.state.workflow.selectedNodes).toStrictEqual(['root:1', 'root:2']);
 
             store.commit('workflow/deselectNode', 'root:1');
             expect(nodes['root:1'].selected).toBe(false);
             expect(nodes['root:2'].selected).toBe(true);
+            expect(store.state.workflow.selectedNodes).toStrictEqual(['root:2']);
 
             store.commit('workflow/selectNode', 'root:1');
             expect(nodes['root:1'].selected).toBe(true);
             expect(nodes['root:2'].selected).toBe(true);
+            expect(store.state.workflow.selectedNodes).toStrictEqual(['root:2', 'root:1']);
+
 
             store.commit('workflow/deselectAllNodes');
             expect(nodes['root:1'].selected).toBe(false);
             expect(nodes['root:2'].selected).toBe(false);
+            expect(store.state.workflow.selectedNodes).toStrictEqual([]);
 
         });
 
@@ -162,7 +167,7 @@ describe('workflow store', () => {
         });
     });
 
-    describe('action', () => {
+    describe('actions', () => {
         it('loads root workflow successfully', async () => {
             let loadWorkflow = jest.fn().mockResolvedValue({ dummy: true, workflow: { info: {} }, snapshotId: 'snap' });
             await loadStore({
@@ -226,15 +231,43 @@ describe('workflow store', () => {
             });
         });
 
-        it.each(['executeNodes', 'cancelNodeExecution', 'resetNodes'])('passes %s to API', async (action) => {
+        it.each([
+            ['executeNodes', 'execute'],
+            ['cancelNodeExecution', 'cancel'],
+            ['resetNodes', 'reset']
+        ])('passes %s to API', async (fn, action) => {
             let mock = jest.fn();
-            let apiMocks = { [action]: mock };
+            let apiMocks = { changeNodeState: mock };
             await loadStore({ apiMocks });
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: {} });
 
-            store.dispatch(`workflow/${action}`, { nodeIds: ['x', 'y'] });
+            store.dispatch(`workflow/${fn}`, ['x', 'y']);
 
-            expect(mock).toHaveBeenCalledWith({ nodeIds: ['x', 'y'], projectId: 'foo' });
+            expect(mock).toHaveBeenCalledWith({ nodeIds: ['x', 'y'], projectId: 'foo', action });
+        });
+
+        test('overloaded changeNodeState', async () => {
+            let mock = jest.fn();
+            let apiMocks = { changeNodeState: mock };
+            await loadStore({ apiMocks });
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
+                info: {},
+                nodes: {
+                    'root:1': {},
+                    'root:2': {}
+                }
+            });
+
+            store.dispatch(`workflow/changeNodeState`, { nodes: 'all' });
+            expect(mock).toHaveBeenCalledWith({ nodeIds: ['root'], projectId: 'foo' });
+
+            store.commit('workflow/selectAllNodes');
+            store.dispatch(`workflow/changeNodeState`, { nodes: 'selected' });
+            expect(mock).toHaveBeenCalledWith({ nodeIds: ['root:1', 'root:2'], projectId: 'foo' });
+
+            store.dispatch(`workflow/changeNodeState`, { nodes: ['root:2'] });
+            expect(mock).toHaveBeenCalledWith({ nodeIds: ['root:2'], projectId: 'foo' });
         });
 
         it.each(['openView', 'openDialog'])('passes %s to API', async (action) => {

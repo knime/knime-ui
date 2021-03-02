@@ -1,5 +1,7 @@
-import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener, executeNodes, cancelNodeExecution,
-    resetNodes, openView, openDialog } from '~api';
+import {
+    loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener,
+    openView, openDialog, changeNodeState
+} from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
@@ -13,7 +15,8 @@ import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '..
 export const state = () => ({
     activeWorkflow: null,
     activeSnapshotId: null,
-    tooltip: null
+    tooltip: null,
+    selectedNodes: []
 });
 
 export const mutations = {
@@ -40,6 +43,7 @@ export const mutations = {
 
         state.activeWorkflow = workflowData;
         state.tooltip = null;
+        state.selectedNodes = [];
     },
     setActiveSnapshotId(state, id) {
         state.activeSnapshotId = id;
@@ -47,21 +51,29 @@ export const mutations = {
     setTooltip(state, tooltip) {
         Vue.set(state, 'tooltip', tooltip);
     },
-    deselectAllNodes({ activeWorkflow: { nodes } }) {
-        Object.values(nodes).forEach(node => {
-            node.selected = false;
-        });
+    deselectAllNodes(state) {
+        if (state.selectedNodes.length) {
+            Object.values(state.activeWorkflow.nodes).forEach(node => {
+                node.selected = false;
+            });
+            Vue.set(state, 'selectedNodes', []);
+        }
     },
-    selectAllNodes({ activeWorkflow: { nodes } }) {
-        Object.values(nodes).forEach(node => {
+    selectAllNodes(state) {
+        Object.values(state.activeWorkflow.nodes).forEach(node => {
             node.selected = true;
         });
+        Vue.set(state, 'selectedNodes', Object.keys(state.activeWorkflow.nodes));
     },
-    selectNode({ activeWorkflow: { nodes } }, nodeId) {
-        nodes[nodeId].selected = true;
+    selectNode(state, nodeId) {
+        state.activeWorkflow.nodes[nodeId].selected = true;
+        // assumes node is not already selected
+        state.selectedNodes.push(nodeId);
     },
-    deselectNode({ activeWorkflow: { nodes } }, nodeId) {
-        nodes[nodeId].selected = false;
+    deselectNode(state, nodeId) {
+        state.activeWorkflow.nodes[nodeId].selected = false;
+        let index = state.selectedNodes.indexOf(nodeId);
+        state.selectedNodes.splice(index, 1);
     }
 };
 
@@ -104,17 +116,28 @@ export const actions = {
         let workflowId = getters.activeWorkflowId;
         await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
     },
-    /* See docs in API */
-    executeNodes({ state }, { nodeIds }) {
-        executeNodes({ projectId: state.activeWorkflow.projectId, nodeIds });
+    changeNodeState({ state, getters }, { action, nodes }) {
+        let { selectedNodes, activeWorkflow: { projectId } } = state;
+        let { activeWorkflowId } = getters;
+
+        if (Array.isArray(nodes)) {
+            changeNodeState({ projectId, nodeIds: nodes, action });
+        } else if (nodes === 'all') {
+            changeNodeState({ projectId, nodeIds: [activeWorkflowId], action });
+        } else if (nodes === 'selected') {
+            changeNodeState({ projectId, nodeIds: selectedNodes, action });
+        } else {
+            throw new Error();
+        }
     },
-    /* See docs in API */
-    cancelNodeExecution({ state }, { nodeIds }) {
-        cancelNodeExecution({ projectId: state.activeWorkflow.projectId, nodeIds });
+    executeNodes({ dispatch }, nodes) {
+        dispatch('changeNodeState', { action: 'execute', nodes });
     },
-    /* See docs in API */
-    resetNodes({ state }, { nodeIds }) {
-        resetNodes({ projectId: state.activeWorkflow.projectId, nodeIds });
+    resetNodes({ dispatch }, nodes) {
+        dispatch('changeNodeState', { action: 'reset', nodes });
+    },
+    cancelNodeExecution({ dispatch }, nodes) {
+        dispatch('changeNodeState', { action: 'cancel', nodes });
     },
     /* See docs in API */
     openView({ state }, { nodeId }) {
