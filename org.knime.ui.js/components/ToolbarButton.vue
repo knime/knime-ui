@@ -9,7 +9,8 @@
 button {
   --icon-size: 30; /* +2*1px border */
 
-  width: calc((var(--icon-size) + 2) * 1px);
+  display: flex;
+  align-items: center;
   height: calc((var(--icon-size) + 2) * 1px);
   border-radius: calc((var(--icon-size) + 2) / 2 * 1px);
   border: 1px solid var(--knime-silver-sand);

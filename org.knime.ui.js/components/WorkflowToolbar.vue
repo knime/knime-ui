@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapActions } from 'vuex';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import ToolbarButton from '~/components/ToolbarButton';
 import ExecuteAllIcon from '~/assets/execute-all.svg?inline';
@@ -24,27 +24,25 @@ export default {
             workflow: 'activeWorkflow',
             allowedActions: state => state.activeWorkflow?.allowedActions || {}
         }),
-        ...mapGetters('workflow', ['activeWorkflowId']),
+        ...mapState('workflow', ['selectedNodes']),
         hasBreadcrumb() {
             return this.workflow.parents?.length > 0;
+        },
+        hasSelection() {
+            return this.selectedNodes.length > 0;
+        },
+        canExecuteSelection() {
+            return this.selectedNodes.some(nodeId => this.workflow.nodes[nodeId].allowedActions.canExecute);
+        },
+        canCancelSelection() {
+            return this.selectedNodes.some(nodeId => this.workflow.nodes[nodeId].allowedActions.canCancel);
+        },
+        canResetSelection() {
+            return this.selectedNodes.some(nodeId => this.workflow.nodes[nodeId].allowedActions.canReset);
         }
     },
     methods: {
-        onExecuteBtnClick() {
-            this.$store.dispatch('workflow/executeNodes', {
-                nodeIds: [this.activeWorkflowId]
-            });
-        },
-        onCancelBtnClick() {
-            this.$store.dispatch('workflow/cancelNodeExecution', {
-                nodeIds: [this.activeWorkflowId]
-            });
-        },
-        onResetBtnClick() {
-            this.$store.dispatch('workflow/resetNodes', {
-                nodeIds: [this.activeWorkflowId]
-            });
-        }
+        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes'])
     }
 };
 </script>
@@ -52,27 +50,64 @@ export default {
 <template>
   <div class="toolbar">
     <div class="buttons">
-      <ToolbarButton
-        :disabled="!allowedActions.canExecute"
-        title="Execute workflow"
-        @click.native="onExecuteBtnClick"
-      >
-        <ExecuteAllIcon />
-      </ToolbarButton>
-      <ToolbarButton
-        :disabled="!allowedActions.canCancel"
-        title="Cancel workflow execution"
-        @click.native="onCancelBtnClick"
-      >
-        <CancelAllIcon />
-      </ToolbarButton>
-      <ToolbarButton
-        :disabled="!allowedActions.canReset"
-        title="Reset executed nodes"
-        @click.native="onResetBtnClick"
-      >
-        <ResetAllIcon />
-      </ToolbarButton>
+      <template v-if="!hasSelection">
+        <ToolbarButton
+          class="with-text"
+          :disabled="!allowedActions.canExecute"
+          title="Execute workflow – ⇧F7"
+          @click.native="executeNodes('all')"
+        >
+          <ExecuteAllIcon />
+          Execute all
+        </ToolbarButton>
+        <ToolbarButton
+          class="with-text"
+          :disabled="!allowedActions.canCancel"
+          title="Cancel workflow execution – ⇧F9"
+          @click.native="cancelNodeExecution('all')"
+        >
+          <CancelAllIcon />
+          Cancel all
+        </ToolbarButton>
+        <ToolbarButton
+          class="with-text"
+          :disabled="!allowedActions.canReset"
+          title="Reset executed nodes – ⇧F8"
+          @click.native="resetNodes('all')"
+        >
+          <ResetAllIcon />
+          Reset all
+        </ToolbarButton>
+      </template>
+      <template v-else>
+        <ToolbarButton
+          class="with-text"
+          :disabled="!canExecuteSelection"
+          title="Execute selected nodes – F7"
+          @click.native="executeNodes('selected')"
+        >
+          <ExecuteAllIcon />
+          Execute selected
+        </ToolbarButton>
+        <ToolbarButton
+          class="with-text"
+          :disabled="!canCancelSelection"
+          title="Cancel selected nodes – F9"
+          @click.native="cancelNodeExecution('selected')"
+        >
+          <CancelAllIcon />
+          Cancel selected
+        </ToolbarButton>
+        <ToolbarButton
+          class="with-text"
+          :disabled="!canResetSelection"
+          title="Reset selected nodes – F8"
+          @click.native="resetNodes('selected')"
+        >
+          <ResetAllIcon />
+          Reset selected
+        </ToolbarButton>
+      </template>
     </div>
 
     <WorkflowBreadcrumb
@@ -94,6 +129,11 @@ export default {
 .buttons {
   flex-shrink: 0;
   display: flex;
+
+  & .with-text {
+    padding-right: 9px;
+    padding-left: 2px;
+  }
 }
 
 .breadcrumb {
