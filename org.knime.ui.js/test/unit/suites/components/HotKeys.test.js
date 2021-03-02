@@ -44,6 +44,11 @@ describe('HotKeys', () => {
                 },
                 mutations: {
                     selectAllNodes: jest.fn()
+                },
+                actions: {
+                    executeNodes: jest.fn(),
+                    cancelNodeExecution: jest.fn(),
+                    resetNodes: jest.fn()
                 }
             },
             canvas: {
@@ -80,41 +85,77 @@ describe('HotKeys', () => {
         expect(document.removeEventListener).toHaveBeenNthCalledWith(2, 'keyup', wrapper.vm.onKeyup);
     });
 
-    it('Ctrl-A: Select all nodes', () => {
-        doShallowMount();
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true }));
-        expect(storeConfig.workflow.mutations.selectAllNodes).toHaveBeenCalled();
-        expectEventHandled();
-    });
+    describe('Shortcuts', () => {
+        beforeEach(() => doShallowMount());
+        afterEach(() => expectEventHandled());
 
-    it('Ctrl-0: Reset zoom to default', () => {
-        doShallowMount();
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: '0', ctrlKey: true }));
-        expect(storeConfig.canvas.mutations.resetZoom).toHaveBeenCalled();
-        expectEventHandled();
-    });
 
-    describe('throttled', () => {
+        it('Ctrl-A: Select all nodes', () => {
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true }));
+            expect(storeConfig.workflow.mutations.selectAllNodes).toHaveBeenCalled();
+        });
+
+        it('F7: execute selected nodes', () => {
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F7' }));
+            expect(storeConfig.workflow.actions.executeNodes).toHaveBeenCalledWith(expect.anything(), 'selected');
+            expect(storeConfig.workflow.actions.executeNodes).not.toHaveBeenCalledWith(expect.anything(), 'all');
+        });
+
+        it('Shift F7: execute all nodes', () => {
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F7', shiftKey: true }));
+            expect(storeConfig.workflow.actions.executeNodes).toHaveBeenCalledWith(expect.anything(), 'all');
+            expect(storeConfig.workflow.actions.executeNodes).not.toHaveBeenCalledWith(expect.anything(), 'selected');
+        });
+
+        it('F8: reset selected nodes', () => {
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F8' }));
+            expect(storeConfig.workflow.actions.resetNodes).toHaveBeenCalledWith(expect.anything(), 'selected');
+            expect(storeConfig.workflow.actions.resetNodes).not.toHaveBeenCalledWith(expect.anything(), 'all');
+        });
+
+        it('Shift F8: reset all nodes', () => {
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F8', shiftKey: true }));
+            expect(storeConfig.workflow.actions.resetNodes).toHaveBeenCalledWith(expect.anything(), 'all');
+            expect(storeConfig.workflow.actions.resetNodes).not.toHaveBeenCalledWith(expect.anything(), 'selected');
+        });
+
+        it('F9: reset selected nodes', () => {
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F9' }));
+            expect(storeConfig.workflow.actions.cancelNodeExecution)
+                .toHaveBeenCalledWith(expect.anything(), 'selected');
+            expect(storeConfig.workflow.actions.cancelNodeExecution)
+                .not.toHaveBeenCalledWith(expect.anything(), 'all');
+        });
+
+        it('Shift F9: reset all nodes', () => {
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F9', shiftKey: true }));
+            expect(storeConfig.workflow.actions.cancelNodeExecution).toHaveBeenCalledWith(expect.anything(), 'all');
+            expect(storeConfig.workflow.actions.cancelNodeExecution)
+                .not.toHaveBeenCalledWith(expect.anything(), 'selected');
+        });
+
+
+        it('Ctrl-0: Reset zoom to default', () => {
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: '0', ctrlKey: true }));
+            expect(storeConfig.canvas.mutations.resetZoom).toHaveBeenCalled();
+        });
+
         it('Ctrl-1: Zoom to fit', () => {
-            doShallowMount();
             document.dispatchEvent(new KeyboardEvent('keydown', { key: '1', ctrlKey: true }));
             expect(storeConfig.canvas.actions.setZoomToFit).toHaveBeenCalled();
-            expectEventHandled();
         });
 
-        it('Ctrl +: Zoom in', () => {
-            doShallowMount();
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: '+', ctrlKey: true }));
-            expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), 1);
-            expectEventHandled();
-        });
-    });
+        describe('throttled', () => {
+            it('Ctrl +: Zoom in', () => {
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: '+', ctrlKey: true }));
+                expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), 1);
+            });
 
-    it('Ctrl -: Zoom out', () => {
-        doShallowMount();
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: '-', ctrlKey: true }));
-        expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), -1);
-        expectEventHandled();
+            it('Ctrl -: Zoom out', () => {
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: '-', ctrlKey: true }));
+                expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), -1);
+            });
+        });
     });
 
     it('Alt: Panning mode', () => {

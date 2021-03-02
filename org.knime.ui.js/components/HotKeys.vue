@@ -7,14 +7,6 @@ const throttledZoomThrottle = 30; // throttle keyboard zoom by 30ms
 /**
  * This Component handles keyboard shortcuts by listening to keydown/up-Events
  * on document and dispatching actions to the corresponding store.
- *
- * Shortcuts
- *      Ctrl-A: Select all nodes
- *      Ctrl-0: Reset zoom (100%)
- *      Ctrl-1: Zoom to fit
- *      Ctrl +: Zoom in
- *      Ctrl -: Zoom out
- * pressed Alt: Suggest panning to the user by changing cursor
  */
 export default {
     computed: {
@@ -28,6 +20,7 @@ export default {
         // Start Key Listener
         document.addEventListener('keydown', this.onKeydown);
         document.addEventListener('keyup', this.onKeyup);
+        this.setupShortcuts();
     },
     beforeDestroy() {
         // Stop Key listener
@@ -36,39 +29,59 @@ export default {
     },
     methods: {
         ...mapMutations('workflow', ['selectAllNodes', 'deselectAllNodes']),
+        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes']),
         ...mapMutations('canvas', ['setSuggestPanning', 'resetZoom']),
         ...mapActions('canvas', ['setZoomToFit', 'zoomCentered']),
+        setupShortcuts() {
+            this.workflowHotKeys = [
+                ['Ctrl', 'A', this.selectAllNodes],
+                ['Ctrl', '1', this.setZoomToFit],
+                ['Ctrl', '0', this.resetZoom],
+                ['Ctrl', '+', () => this.throttledZoom(1)],
+                ['Ctrl', '-', () => this.throttledZoom(-1)],
+                ['F7', () => this.executeNodes('selected')],
+                ['F9', () => this.cancelNodeExecution('selected')],
+                ['F8', () => this.resetNodes('selected')],
+                ['Shift', 'F7', () => this.executeNodes('all')],
+                ['Shift', 'F9', () => this.cancelNodeExecution('all')],
+                ['Shift', 'F8', () => this.resetNodes('all')]
+            ];
+        },
         onKeydown(e) {
-            // currently, there are only workflow hotkeys
-            if (!this.workflowHotKeysEnabled) {
+            // Pressed key is just a modifier
+            if (e.key === 'Control' || e.key === 'Shift') {
                 return;
             }
 
-            let handled = true;
-            if (e.ctrlKey || e.metaKey) {
-                // Ctrl- and Meta- Combinations
-                if (e.key === 'a') {
-                    this.selectAllNodes();
-                } else if (e.key === '0') {
-                    this.resetZoom();
-                } else if (e.key === '1') {
-                    this.setZoomToFit();
-                } else if (e.key === '+') {
-                    this.throttledZoom(1);
-                } else if (e.key === '-') {
-                    this.throttledZoom(-1);
-                } else {
-                    handled = false;
-                }
-            } else if (e.key === 'Alt') {
+            if (e.key === 'Alt' && this.workflowHotKeysEnabled) {
                 this.setSuggestPanning(true);
-            } else {
-                handled = false;
-            }
-            
-            if (handled) {
                 e.stopPropagation();
                 e.preventDefault();
+                return;
+            }
+
+            if (this.workflowHotKeysEnabled) {
+                this.findAndExecute(this.workflowHotKeys, e);
+            }
+        },
+        findAndExecute(shortcuts, e) {
+            for (let shortcut of shortcuts) {
+                let modifiers = [...shortcut];
+                let fn = modifiers.pop();
+                let key = modifiers.pop();
+
+                if (
+                    (e.ctrlKey || e.metaKey) === modifiers.includes('Ctrl') &&
+                    e.shiftKey === modifiers.includes('Shift') &&
+                    e.altKey === modifiers.includes('Alt') &&
+                    e.key.toUpperCase() === key
+                ) {
+                    consola.trace('Shortcut', shortcut);
+                    e.stopPropagation();
+                    e.preventDefault();
+                    fn();
+                    break;
+                }
             }
         },
         onKeyup(e) {
