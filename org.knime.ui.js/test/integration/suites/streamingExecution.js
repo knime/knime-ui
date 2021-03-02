@@ -71,12 +71,12 @@ module.exports = {
     },
     'wait for execution to finish': nightwatch => {
         // wait for green light on data generator
-        nightwatch.waitForElementVisible(`${idToSelector('6:0:1')} .traffic-light-green`, 5 * 1000);
+        nightwatch.waitForElementVisible(`${idToSelector('6:0:1')} .traffic-light-green`, 10 * 1000);
         // check label to have end value
         nightwatch.expect.element(streamingLabelSelector(1)).text.to.equal('4.000.000');
     },
     'navigate back to workflow': nightwatch => {
-        nightwatch.click({ selector: 'nav.breadcrumb li', index: 0 });
+        nightwatch.click('nav.breadcrumb li a');
     },
     'check for executed state': nightwatch => {
         nightwatch.expect.element(`${nodeSelector} .traffic-light-green`).to.be.present;
