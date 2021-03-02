@@ -116,12 +116,14 @@ export default {
       <DataPortOutputTableHeader />
       <DataPortOutputTableBody />
       <tfoot v-if="isLoading">
-        <td>
-          <ReloadIcon />
-        </td>
-        <td colspan="5">
-          Loading ...
-        </td>
+        <tr>
+          <td>
+            <ReloadIcon />
+          </td>
+          <td colspan="5">
+            Loading ...
+          </td>
+        </tr>
       </tfoot>
     </table>
   </div>
