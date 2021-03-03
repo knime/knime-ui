@@ -69,41 +69,23 @@ const makeToggleEventListener = addOrRemove => (type, args) => {
 export const addEventListener = makeToggleEventListener('add');
 export const removeEventListener = makeToggleEventListener('remove');
 
-
-let nodeStateChanger = (nodeState, errorMessage) => ({ projectId, nodeIds }) => {
-    try {
-        let result = rpc('NodeService.changeNodeStates', projectId, nodeIds, nodeState);
-        return Promise.resolve(result);
-    } catch (e) {
-        consola.error(e);
-        return Promise.reject(new Error(errorMessage));
-    }
-};
-
 /**
  * Execute nodes or a workflow.
+ * @param {'reset' | 'execute' | 'cancel'} cfg.action
  * @param {String} cfg.projectId
  * @param {Array} cfg.nodeIds The nodes to execute.
  *     If you want to execute an entire workflow, pass the workflow container's id as a single element.
+ * @returns {Promise}
  */
-export const executeNodes = nodeStateChanger('execute', 'Could not execute nodes');
-
-/**
- * Cancel node execution.
- * @param {String} cfg.projectId
- * @param {Array} cfg.nodeIds The nodes to stop.
- *     If you want to cancel all nodes in the entire workflow, pass the workflow container's id as a single element.
- */
-export const cancelNodeExecution = nodeStateChanger('cancel', 'Could not cancel node execution');
-
-/**
- * Reset executed nodes.
- * @param {String} cfg.projectId
- * @param {Array} cfg.nodeIds The nodes to reset.
- *     If you want to reset all nodes in the entire workflow, pass the workflow container's id as a single element.
- */
-export const resetNodes = nodeStateChanger('reset', 'Could not reset nodes');
-
+export const changeNodeState = ({ projectId, nodeIds, action }) => {
+    try {
+        let result = rpc('NodeService.changeNodeStates', projectId, nodeIds, action);
+        return Promise.resolve(result);
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error(`Could not ${action} nodes`));
+    }
+};
 
 /**
  * Open the native (Java) configuration dialog of a node.

@@ -78,31 +78,11 @@ describe('API', () => {
     });
 
     it('executes nodes', async () => {
-        await api.executeNodes({ projectId: '123', nodeIds: ['a', 'b', 'c'] });
+        await api.changeNodeState({ projectId: '123', nodeIds: ['a', 'b', 'c'], action: 'node action' });
         expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
             jsonrpc: '2.0',
             method: 'NodeService.changeNodeStates',
-            params: ['123', ['a', 'b', 'c'], 'execute'],
-            id: 0
-        }));
-    });
-
-    it('cancels nodes', async () => {
-        await api.cancelNodeExecution({ projectId: '123', nodeIds: ['a', 'b', 'c'] });
-        expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'NodeService.changeNodeStates',
-            params: ['123', ['a', 'b', 'c'], 'cancel'],
-            id: 0
-        }));
-    });
-
-    it('resets nodes', async () => {
-        await api.resetNodes({ projectId: '123', nodeIds: ['a', 'b', 'c'] });
-        expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'NodeService.changeNodeStates',
-            params: ['123', ['a', 'b', 'c'], 'reset'],
+            params: ['123', ['a', 'b', 'c'], 'node action'],
             id: 0
         }));
     });
@@ -201,32 +181,12 @@ describe('API', () => {
             }
         });
 
-        it('handles errors on execution', async (done) => {
+        it('handles errors for changeNodeState', async (done) => {
             try {
-                await api.executeNodes({});
+                await api.changeNodeState({ action: 'do action' });
                 done(new Error('Error not thrown'));
             } catch (e) {
-                expect(e.message).toContain('Could not execute nodes');
-                done();
-            }
-        });
-
-        it('handles errors on cancellation', async (done) => {
-            try {
-                await api.cancelNodeExecution({});
-                done(new Error('Error not thrown'));
-            } catch (e) {
-                expect(e.message).toContain('Could not cancel node execution');
-                done();
-            }
-        });
-
-        it('handles errors on reset', async (done) => {
-            try {
-                await api.resetNodes({});
-                done(new Error('Error not thrown'));
-            } catch (e) {
-                expect(e.message).toContain('Could not reset nodes');
+                expect(e.message).toContain('Could not do action nodes');
                 done();
             }
         });
