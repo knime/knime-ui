@@ -204,6 +204,60 @@ describe('Node', () => {
         });
     });
 
+    describe('Action Bar', () => {
+        beforeEach(async () => {
+            propsData = {
+                ...commonNode,
+                allowedActions: {
+                    canOpenDialog: true,
+                    canOpenView: true
+                }
+            };
+            doMount(deepMount);
+            wrapper.vm.hover = true;
+            await Vue.nextTick();
+        });
+
+        it('opens the node dialog with the action bar event', () => {
+            jest.spyOn(mocks.$store, 'dispatch');
+            let actionBar = wrapper.findComponent(NodeActionBar);
+            actionBar.vm.$emit('action', 'openDialog');
+
+            expect(storeConfig.workflow.actions.openDialog).toHaveBeenCalledWith(expect.anything(), {
+                nodeId: 'root:1'
+            });
+        });
+
+        it('opens the node view with the action bar event', () => {
+            jest.spyOn(mocks.$store, 'dispatch');
+            let actionBar = wrapper.findComponent(NodeActionBar);
+            actionBar.vm.$emit('action', 'openView');
+
+            expect(storeConfig.workflow.actions.openView).toHaveBeenCalledWith(expect.anything(), {
+                nodeId: 'root:1'
+            });
+        });
+
+        it('click on action bar changes node state', () => {
+            let actionBar = wrapper.findComponent(NodeActionBar);
+            actionBar.vm.$emit('action', 'executeNodes');
+
+            expect(storeConfig.workflow.actions.executeNodes).toHaveBeenCalledWith(expect.anything(), ['root:1']);
+        });
+
+        it('renders NodeActionBar at correct position', () => {
+            expect(wrapper.findComponent(NodeActionBar).props()).toStrictEqual({
+                nodeId: 'root:1',
+                canExecute: false,
+                canCancel: false,
+                canReset: false,
+                canOpenDialog: true,
+                canOpenView: true
+            });
+            expect(wrapper.findComponent(NodeActionBar).attributes().transform).toBe('translate(516 163)');
+        });
+    });
+
     describe('Node open dialog and view', () => {
         beforeEach(() => {
             propsData =
@@ -223,28 +277,6 @@ describe('Node', () => {
                 nodeId: 'root:1'
             });
         });
-
-        it('opens the node dialog with the action bar event', () => {
-            doMount(deepMount);
-            jest.spyOn(mocks.$store, 'dispatch');
-            let actionBar = wrapper.findComponent(NodeActionBar);
-            actionBar.vm.$emit('action', 'openDialog');
-
-            expect(storeConfig.workflow.actions.openDialog).toHaveBeenCalledWith(expect.anything(), {
-                nodeId: 'root:1'
-            });
-        });
-
-        it('opens the node view with the action bar event', () => {
-            doMount(deepMount);
-            jest.spyOn(mocks.$store, 'dispatch');
-            let actionBar = wrapper.findComponent(NodeActionBar);
-            actionBar.vm.$emit('action', 'openView');
-
-            expect(storeConfig.workflow.actions.openView).toHaveBeenCalledWith(expect.anything(), {
-                nodeId: 'root:1'
-            });
-        });
     });
 
     describe('Node selected', () => {
@@ -258,16 +290,6 @@ describe('Node', () => {
                     executionState: 'IDLE'
                 }
             };
-        });
-
-        it('click on action bar changes node state', () => {
-            doMount(deepMount);
-            let actionBar = wrapper.findComponent(NodeActionBar);
-            actionBar.vm.$emit('action', 'executeNodes');
-
-            expect(storeConfig.workflow.actions.executeNodes).toHaveBeenCalledWith(expect.anything(), {
-                nodeIds: ['root:1']
-            });
         });
 
         it('shows frame if selected', () => {
@@ -299,19 +321,6 @@ describe('Node', () => {
             doMount(shallowMount);
             expect(wrapper.findComponent(NodeTorso).attributes().filter).toBe('url(#node-torso-shadow)');
             expect(wrapper.findComponent(NodeState).attributes().filter).toBe('url(#node-state-shadow)');
-        });
-
-        it('renders NodeActionBar at correct position', () => {
-            doMount(shallowMount);
-            expect(wrapper.findComponent(NodeActionBar).props()).toStrictEqual({
-                nodeId: 'root:1',
-                canExecute: true,
-                canCancel: false,
-                canReset: false,
-                canOpenDialog: true,
-                canOpenView: false
-            });
-            expect(wrapper.findComponent(NodeActionBar).attributes().transform).toBe('translate(516 163)');
         });
 
         it('click to select', async () => {

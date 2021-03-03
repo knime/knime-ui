@@ -178,7 +178,7 @@ export default {
          * matter, as the presence of the variable already indicates that the node is inside of a streaming component
          * @return {boolean} if true action bar will be hidden
          */
-        hideActionBar() {
+        insideStreamingComponent() {
             return typeof this.executionInfo?.streamable !== 'undefined';
         },
         /**
@@ -263,11 +263,12 @@ export default {
          * @returns {void}
          */
         onAction(action) {
-            const multiNodeActions = ['executeNodes', 'cancelNodeExecution', 'resetNodes'];
             // calls actions of workflow store
-            if (multiNodeActions.includes(action)) {
-                this[action]({ nodeIds: [this.id] });
-            } else {
+            switch (action) {
+            case 'executeNodes': case 'cancelNodeExecution': case 'resetNodes':
+                this[action]([this.id]);
+                break;
+            default:
                 this[action]({ nodeId: this.id });
             }
         },
@@ -306,11 +307,10 @@ export default {
   >
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal
-      v-if="hover || selected"
+      v-if="!insideStreamingComponent && hover"
       to="node-actions"
     >
       <NodeActionBar
-        v-if="!hideActionBar"
         ref="actionbar"
         v-bind="allowedActions"
         :transform="`translate(${position.x + $shapes.nodeSize / 2} ${position.y - $shapes.nodeSelectionPadding[0]})`"
