@@ -1,7 +1,5 @@
-import {
-    loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener,
-    openView, openDialog, changeNodeState
-} from '~api';
+import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener,
+    openView, openDialog, changeNodeState } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
