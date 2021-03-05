@@ -101,7 +101,8 @@ describe('dataTable store', () => {
             nodeId: null,
             portIndex: null,
             isReady: false,
-            isLoading: false
+            isLoading: false,
+            requestID: 0
         });
     });
 
@@ -163,7 +164,8 @@ describe('dataTable store', () => {
                 nodeId: null,
                 portIndex: null,
                 isReady: false,
-                isLoading: false
+                isLoading: false,
+                requestID: 1
             });
         });
     });
@@ -276,9 +278,26 @@ describe('dataTable store', () => {
             // no rows have been added
             // doesn't throw an error
             expect(store.state.dataTable.rows).toBe(null);
-
+            expect(store.state.dataTable.requestID).toBe(1);
         });
 
+        test('load table - aborted', async () => {
+            // start loading
+            let loadTable = store.dispatch('dataTable/load', {
+                projectId: '0',
+                nodeId: '1',
+                portIndex: 2
+            });
+
+            // clear table in the meantime
+            await store.dispatch('dataTable/clear');
+            await loadTable;
+
+            // no rows have been added
+            // doesn't throw an error
+            expect(store.state.dataTable.rows).toBe(null);
+            expect(store.state.dataTable.requestID).toBe(1);
+        });
     });
 
 });
