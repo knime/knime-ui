@@ -1,5 +1,5 @@
 import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener,
-    openView, openDialog, changeNodeState } from '~api';
+    openView, openDialog, changeNodeState, changeLoopState } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
@@ -115,17 +115,20 @@ export const actions = {
         await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
     },
     changeNodeState({ state, getters }, { action, nodes }) {
-        let { selectedNodes, activeWorkflow: { projectId } } = state;
-        let { activeWorkflowId } = getters;
+        let { activeWorkflow: { projectId } } = state;
 
         if (Array.isArray(nodes)) {
+            // act upon a list of nodes
             changeNodeState({ projectId, nodeIds: nodes, action });
         } else if (nodes === 'all') {
+            // act upon entire workflow
+            let { activeWorkflowId } = getters;
             changeNodeState({ projectId, nodeIds: [activeWorkflowId], action });
         } else if (nodes === 'selected') {
-            changeNodeState({ projectId, nodeIds: selectedNodes, action });
+            // act upon selected nodes
+            changeNodeState({ projectId, nodeIds: state.selectedNodes, action });
         } else {
-            throw new Error();
+            throw new TypeError("'nodes' has to be of type 'all' | 'selected' | Array<nodeId>]");
         }
     },
     executeNodes({ dispatch }, nodes) {
@@ -138,11 +141,23 @@ export const actions = {
         dispatch('changeNodeState', { action: 'cancel', nodes });
     },
     /* See docs in API */
-    openView({ state }, { nodeId }) {
+    pauseNodeExecution({ state }, nodeId) {
+        changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'pause' });
+    },
+    /* See docs in API */
+    resumeNodeExecution({ state }, nodeId) {
+        changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'resume' });
+    },
+    /* See docs in API */
+    stepNodeExecution({ state }, nodeId) {
+        changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'step' });
+    },
+    /* See docs in API */
+    openView({ state }, nodeId) {
         openView({ projectId: state.activeWorkflow.projectId, nodeId });
     },
     /* See docs in API */
-    openDialog({ state }, { nodeId }) {
+    openDialog({ state }, nodeId) {
         openDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     }
 };

@@ -70,10 +70,10 @@ export const addEventListener = makeToggleEventListener('add');
 export const removeEventListener = makeToggleEventListener('remove');
 
 /**
- * Execute nodes or a workflow.
+ * Do Action on nodes or an entire workflow.
  * @param {'reset' | 'execute' | 'cancel'} cfg.action
  * @param {String} cfg.projectId
- * @param {Array} cfg.nodeIds The nodes to execute.
+ * @param {Array} cfg.nodeIds The nodes to act upon.
  *     If you want to execute an entire workflow, pass the workflow container's id as a single element.
  * @returns {Promise}
  */
@@ -82,8 +82,25 @@ export const changeNodeState = ({ projectId, nodeIds, action }) => {
         let result = rpc('NodeService.changeNodeStates', projectId, nodeIds, action);
         return Promise.resolve(result);
     } catch (e) {
+        // consola.error(e);
+        return Promise.reject(new Error(`Could not ${action} nodes ${nodeIds}`));
+    }
+};
+
+/**
+ * Actions for LoopExecution.
+ * @param {'step' | 'pause' | 'resume'} cfg.action
+ * @param {String} cfg.projectId
+ * @param {String} cfg.nodeId The node to act upon.
+ * @returns {Promise}
+ */
+export const changeLoopState = ({ projectId, nodeId, action }) => {
+    try {
+        let result = rpc(`NodeService.changeLoopState`, projectId, nodeId, action);
+        return Promise.resolve(result);
+    } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(`Could not ${action} nodes`));
+        return Promise.reject(new Error(`Could not ${action} node ${nodeId}`));
     }
 };
 
@@ -94,7 +111,15 @@ export const changeNodeState = ({ projectId, nodeIds, action }) => {
  * @returns {void}
  */
 export const openDialog = ({ projectId, nodeId }) => {
-    window.openNodeDialog(projectId, nodeId);
+    try {
+        // returns falsy on success
+        let result = window.openNodeDialog(projectId, nodeId);
+        if (result) {
+            throw new Error(result);
+        }
+    } catch {
+        consola.error(`Could not open dialog of node ${nodeId}`);
+    }
 };
 
 /**
@@ -104,14 +129,22 @@ export const openDialog = ({ projectId, nodeId }) => {
  * @returns {void}
  */
 export const openView = ({ projectId, nodeId }) => {
-    window.openNodeView(projectId, nodeId);
+    try {
+        // returns falsy on success
+        let result = window.openNodeView(projectId, nodeId);
+        if (result) {
+            throw new Error(result);
+        }
+    } catch {
+        consola.error(`Could not open view of node ${nodeId}`);
+    }
 };
 
 // The Node service offers JSON-RPC forwarding to the Port instance.
 // This is by design, because third-party vendors can provide a custom port implementation with totally
 // different methods. In case of a data port (table), the available methods are defined in
-// org.knime.gateway.impl.rpc.table.TableService
-// (at the time of writing getTable(long start, int size) and getRows(long start, int size))
+// org.knime.gateway.impl.rpc.*.*Service
+// (at the time of writing getTable(long start, int size), getRows(long start, int size), and getFlowVariables())
 // So, to get a table we have to send a JSON-RPC object as a payload to the NodeService, which itself must be called via
 // JSON-RPC. Hence double-wrapping is required.
 // Parameters are described below.
@@ -149,6 +182,31 @@ export const loadTable = ({ projectId, nodeId, portIndex }) => {
         consola.error(e);
         return Promise.reject(new Error(
             `Couldn't load table data from port ${portIndex} of node "${nodeId}" in project ${projectId}`
+        ));
+    }
+};
+
+/**
+ * Get the flow variables associated with a flow variable port.
+ * @param {String} projectId The ID of the project that contains the node
+ * @param {String} nodeId The ID of the node to load data for
+ * @param {String} portIndex The index of the port to load data for.
+ * Remember that port 0 is usually a flow variable port.
+ * @return {Promise} A promise containing the flow variable data as defined in the API
+ * */
+export const loadFlowVariables = ({ projectId, nodeId, portIndex }) => {
+    try {
+        let flowVariables = nestedRpcCall({
+            projectId,
+            nodeId,
+            portIndex,
+            method: 'getFlowVariables'
+        });
+        return Promise.resolve(flowVariables);
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error(
+            `Couldn't load flow variables of node "${nodeId}" in project ${projectId}`
         ));
     }
 };

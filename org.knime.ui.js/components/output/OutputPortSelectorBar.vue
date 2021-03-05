@@ -3,7 +3,6 @@ import Vue from 'vue';
 import FlowVarTabIcon from '~/assets/flow-variables.svg?inline';
 import portIcon from './PortIconRenderer';
 import TabBar, { tabBarMixin } from '~/webapps-common/ui/components/TabBar';
-import { supportsPort } from '~/components/output/NodeOutput';
 
 /**
  * Tab Bar that displays output ports of a given node.
@@ -53,26 +52,16 @@ export default {
             let result = [];
             for (let i = firstPortIndex; i < this.outPorts.length; i++) {
                 let port = outPorts[i];
-                let disabled = port.inactive || !supportsPort(port);
-                if (this.isMetaNode) {
-                    disabled = disabled || !this.isExecuted[i];
-                } else {
-                    disabled = disabled || !this.isExecuted;
-                }
-                let title = null;
-                if (disabled) {
-                    if (supportsPort(port)) {
-                        title = 'No output data';
-                    } else {
-                        title = 'Unsupported data type';
-                    }
+
+                // The flow variable tab should are only shown in metanodes.
+                // Other node types have the Mickey Mouse flow variable port.
+                if (!this.isMetaNode && port.type === 'flowVariable') {
+                    continue;
                 }
                 result.push({
                     value: String(port.index),
                     label: `${i - firstPortIndex + 1}: ${port.name}`,
-                    icon: portIcon(port),
-                    disabled,
-                    title
+                    icon: portIcon(port)
                 });
             }
             if (!this.isMetaNode) {
@@ -80,9 +69,7 @@ export default {
                 result.push({
                     value: '0',
                     label: 'Flow Variables',
-                    icon: FlowVarTabIcon,
-                    disabled: true,
-                    title: 'Unsupported data type'
+                    icon: FlowVarTabIcon
                 });
             }
             return result;

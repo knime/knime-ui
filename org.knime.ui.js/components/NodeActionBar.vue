@@ -1,7 +1,12 @@
 <script>
+import { mapActions } from 'vuex';
+
 import ExecuteIcon from '../assets/execute.svg?inline';
+import ResumeIcon from '../assets/resume-execution.svg?inline';
 import ResetIcon from '../assets/reset-all.svg?inline';
 import CancelIcon from '../assets/cancel-execution.svg?inline';
+import PauseIcon from '../assets/pause-execution.svg?inline';
+import StepIcon from '../assets/step-execution.svg?inline';
 import OpenViewIcon from '../assets/open-view.svg?inline';
 import OpenDialogIcon from '../assets/configure-node.svg?inline';
 
@@ -32,6 +37,18 @@ export default {
             type: Boolean,
             default: false
         },
+        canStep: {
+            type: Boolean,
+            default: null
+        },
+        canPause: {
+            type: Boolean,
+            default: null
+        },
+        canResume: {
+            type: Boolean,
+            default: null
+        },
         canOpenView: {
             type: Boolean,
             default: null
@@ -48,19 +65,33 @@ export default {
          *  @returns {Array<Array>} Array of allowed actions
          */
         actions() {
-            let result = [
-                ['executeNodes', this.canExecute, ExecuteIcon],
-                ['cancelNodeExecution', this.canCancel, CancelIcon],
-                ['resetNodes', this.canReset, ResetIcon]
-            ];
-            // shows disabled button if false, hides button if null
-            if (typeof this.canOpenDialog === 'boolean') {
-                result.unshift(['openDialog', this.canOpenDialog, OpenDialogIcon]);
+            let actions = [];
+
+            if (this.canOpenDialog !== null) {
+                actions.push(['openDialog', this.canOpenDialog, OpenDialogIcon, () => this.openDialog(this.nodeId)]);
             }
-            if (typeof this.canOpenView === 'boolean') {
-                result.push(['openView', this.canOpenView, OpenViewIcon]);
+
+            if (this.canPause) {
+                actions.push(['pause', true, PauseIcon, () => this.pauseNodeExecution(this.nodeId)]);
+            } else if (this.canResume) {
+                actions.push(['resume', true, ResumeIcon, () => this.resumeNodeExecution(this.nodeId)]);
+            } else {
+                actions.push(['execute', this.canExecute, ExecuteIcon, () => this.executeNodes([this.nodeId])]);
             }
-            return result;
+
+            if (this.canStep !== null) {
+                actions.push(['step', this.canStep, StepIcon, () => this.stepNodeExecution(this.nodeId)]);
+            }
+
+            actions.push(
+                ['cancel', this.canCancel, CancelIcon, () => this.cancelNodeExecution([this.nodeId])],
+                ['reset', this.canReset, ResetIcon, () => this.resetNodes([this.nodeId])]
+            );
+            
+            if (this.canOpenView !== null) {
+                actions.push(['openView', this.canOpenView, OpenViewIcon, () => this.openView(this.nodeId)]);
+            }
+            return actions;
         },
         /**
          *  returns the x-position of each button depending on the total amount of buttons
@@ -72,6 +103,11 @@ export default {
             // spread buttons evenly around the horizontal center
             return this.actions.map((_, i) => (i + (1 - buttonCount) / 2) * nodeActionBarButtonSpread);
         }
+    },
+
+    methods: {
+        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes',
+            'pauseNodeExecution', 'resumeNodeExecution', 'stepNodeExecution', 'openView', 'openDialog'])
     }
 };
 </script>
@@ -79,11 +115,11 @@ export default {
 <template>
   <g>
     <ActionButton
-      v-for="([action, enabled, icon], index) in actions"
-      :key="action"
+      v-for="([key, enabled, icon, method], index) in actions"
+      :key="key"
       :x="positions[index]"
       :disabled="!enabled"
-      @click="$emit('action', action)"
+      @click="method"
     >
       <Component :is="icon" />
     </ActionButton>

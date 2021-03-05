@@ -246,6 +246,21 @@ describe('workflow store', () => {
             expect(mock).toHaveBeenCalledWith({ nodeIds: ['x', 'y'], projectId: 'foo', action });
         });
 
+        it.each([
+            ['pauseNodeExecution', 'pause'],
+            ['resumeNodeExecution', 'resume'],
+            ['stepNodeExecution', 'step']
+        ])('passes %s to API', async (fn, action) => {
+            let mock = jest.fn();
+            let apiMocks = { changeLoopState: mock };
+            await loadStore({ apiMocks });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: {} });
+
+            store.dispatch(`workflow/${fn}`, 'node x');
+
+            expect(mock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo', action });
+        });
+
         test('overloaded changeNodeState', async () => {
             let mock = jest.fn();
             let apiMocks = { changeNodeState: mock };
@@ -276,9 +291,9 @@ describe('workflow store', () => {
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
 
-            store.dispatch(`workflow/${action}`, { nodeId: 'x' });
+            store.dispatch(`workflow/${action}`, 'node x');
 
-            expect(mock).toHaveBeenCalledWith({ nodeId: 'x', projectId: 'foo' });
+            expect(mock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo' });
         });
 
     });
