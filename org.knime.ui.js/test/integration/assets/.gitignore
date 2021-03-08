@@ -1,8 +1,9 @@
 # KNIME
-/workflows/.metadata
+/workflows/.metadata/**
+!/workflows/.metadata/.plugins/org.eclipse.core.runtime/.settings/org.knime.workbench.core.prefs
 **/.knimeLock
 **/.savedWithData
 
 # KNIME's default new workflow. Not to be checked in
-workflows/KNIME_project/**
-
+/workflows/KNIME_project/**
+/workflows/Example Workflows/**
