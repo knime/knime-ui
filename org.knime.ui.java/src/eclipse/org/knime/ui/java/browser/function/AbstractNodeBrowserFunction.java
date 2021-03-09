@@ -79,13 +79,16 @@ public abstract class AbstractNodeBrowserFunction extends BrowserFunction {
 	@Override
 	public Object function(final Object[] args) {
 		if (args == null || args.length != 2 || !(args[0] instanceof String) || !(args[1] instanceof String)) {
-			throw new IllegalArgumentException("Wrong argument for browser function '" + getName()
-					+ "'. The arguments are: " + Arrays.toString(args));
+			String message = "Wrong argument for browser function '" + getName() + "'. The arguments are: "
+					+ Arrays.toString(args);
+			NodeLogger.getLogger(AbstractNodeBrowserFunction.class).error(message);
+			return message;
 		}
 		NodeContainer nc = DefaultServiceUtil.getNodeContainer((String) args[0], new NodeIDEnt((String) args[1]));
 		if (nc == null) {
-			NodeLogger.getLogger(AbstractNodeBrowserFunction.class)
-					.warn(String.format("Node with id '%s' not found in workflow with id '%s'", args[0], args[1]));
+			String message = String.format("Node with id '%s' not found in workflow with id '%s'", args[0], args[1]);
+			NodeLogger.getLogger(AbstractNodeBrowserFunction.class).error(message);
+			return message;
 		} else {
 			apply(nc);
 		}
