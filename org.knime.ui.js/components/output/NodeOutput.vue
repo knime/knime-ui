@@ -228,7 +228,7 @@ export default {
         <!--Button v-if="needsConfiguration"></Button--> <!-- TODO: implement NXT-21 -->
         <Button
           v-if="needsExecution && !isInactive"
-          class="action-button"
+          class="action-button node-output-execute"
           primary
           compact
           @click="executeNode"

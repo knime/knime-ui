@@ -52,8 +52,6 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import org.eclipse.swt.browser.ProgressEvent;
-import org.eclipse.swt.browser.ProgressListener;
 import org.eclipse.swt.chromium.Browser;
 import org.eclipse.swt.chromium.BrowserFunction;
 import org.knime.core.node.NodeLogger;
@@ -111,22 +109,7 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
 			AppStateUtil.initAppStateForTesting(() -> StreamSupport.stream(openedWorkflows.spliterator(), false)
 					.map(InitAppForTestingBrowserFunction::createOpenedWorkflow).collect(Collectors.toList()));
 		}
-
-		ProgressListener progressListener = new ProgressListener() {
-
-			@Override
-			public void completed(final ProgressEvent event) {
-				m_knimeBrowser.setUrl(true);
-				getBrowser().removeProgressListener(this);
-			}
-
-			@Override
-			public void changed(final ProgressEvent event) {
-				//
-			}
-		};
-		getBrowser().addProgressListener(progressListener);
-		m_knimeBrowser.clearUrl();
+		m_knimeBrowser.setUrl(true);
 		return null;
 	}
 

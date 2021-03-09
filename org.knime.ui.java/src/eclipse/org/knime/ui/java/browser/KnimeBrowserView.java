@@ -19,6 +19,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.webui.entity.EventEnt;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
+import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.JsonRpcBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
@@ -68,6 +69,7 @@ public class KnimeBrowserView {
 		new OpenNodeDialogBrowserFunction(browser);
 		if (isRemoteDebuggingPortSet()) {
 			new InitAppForTestingBrowserFunction(browser, this);
+			new ClearAppForTestingBrowserFunction(browser, this);
 		}
 	}
 
