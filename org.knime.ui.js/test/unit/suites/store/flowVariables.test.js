@@ -79,21 +79,18 @@ describe('flowVariables store', () => {
             portIndex: 0
         });
         expect(store.state.flowVariables).toStrictEqual({
-            flowVariables: [
-                {
-                    ownerNodeId: 'testOwner',
-                    type: 'StringValue',
-                    name: 'testFlowVariable1',
-                    value: 'test1'
-                },
-                {
-                    type: 'IntValue',
-                    name: 'testFlowVariable2',
-                    value: 'test2'
-                }
-            ]
+            flowVariables: [{
+                ownerNodeId: 'testOwner',
+                type: 'StringValue',
+                name: 'testFlowVariable1',
+                value: 'test1'
+            }, {
+                type: 'IntValue',
+                name: 'testFlowVariable2',
+                value: 'test2'
+            }]
         });
-        expect(store.state.dataTable).toStrictEqual({
+        expect(store.state.dataTable).toMatchObject({
             cellTypes: {},
             columns: null,
             rows: null,

@@ -64,9 +64,11 @@ describe('API', () => {
             let table = await api.loadTable({
                 projectId: 'foo',
                 nodeId: 'root:123',
-                portIndex: 2
+                portIndex: 2,
+                offset: 100,
+                batchSize: 450
             });
-            let expectedNestedRPC = '{"jsonrpc":"2.0","id":0,"method":"getTable","params":[0,400]}';
+            let expectedNestedRPC = '{"jsonrpc":"2.0","id":0,"method":"getTable","params":[100,450]}';
             expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                 jsonrpc: '2.0',
                 method: 'NodeService.doPortRpc',
@@ -198,11 +200,12 @@ describe('API', () => {
             let projectId = 'projectId';
             let nodeId = Math.random();
             try {
-                await api.loadTable({ projectId, nodeId, portIndex });
+                await api.loadTable({ projectId, nodeId, portIndex, batchSize: 400 });
                 done(new Error('Error not thrown'));
             } catch (e) {
                 expect(e.message).toBe(
-                    `Couldn't load table data from port ${portIndex} of node "${nodeId}" in project ${projectId}`
+                    `Couldn't load table data (start: 0, length: 400) from port` +
+                    ` ${portIndex} of node "${nodeId}" in project ${projectId}`
                 );
                 done();
             }

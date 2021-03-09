@@ -87,7 +87,7 @@ export default {
                 ['cancel', this.canCancel, CancelIcon, () => this.cancelNodeExecution([this.nodeId])],
                 ['reset', this.canReset, ResetIcon, () => this.resetNodes([this.nodeId])]
             );
-            
+
             if (this.canOpenView !== null) {
                 actions.push(['openView', this.canOpenView, OpenViewIcon, () => this.openView(this.nodeId)]);
             }
@@ -115,8 +115,9 @@ export default {
 <template>
   <g>
     <ActionButton
-      v-for="([key, enabled, icon, method], index) in actions"
-      :key="key"
+      v-for="([action, enabled, icon, method], index) in actions"
+      :key="action"
+      :class="`action-${action}`"
       :x="positions[index]"
       :disabled="!enabled"
       @click="method"

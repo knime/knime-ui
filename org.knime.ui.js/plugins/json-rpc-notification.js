@@ -1,9 +1,11 @@
 import { actions } from '~/store/jsonrpc';
+
 const genericErrorMsg = 'Argument must be a JSON serialized JSON-RPC object';
-const errorCodes = {
+const errorCodes = { // https://www.jsonrpc.org/specification#error_object
     parseError: -32700,
     invalidRequest: -32600,
-    methodNotFound: -32601
+    methodNotFound: -32601,
+    internalError: -32603
 };
 
 export default (context) => {
@@ -84,12 +86,11 @@ export default (context) => {
                 jsonrpc: '2.0',
                 id,
                 error: {
-                    code: -32603,
+                    code: errorCodes.internalError,
                     message: e.message,
                     data: e.stack
                 }
             });
         }
     };
-    window.context = context;
 };

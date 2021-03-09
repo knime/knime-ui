@@ -126,7 +126,7 @@ export default {
          */
         allowedActions: {
             type: Object,
-            default: null
+            default: () => ({})
         },
 
         /**
@@ -315,6 +315,7 @@ export default {
 <template>
   <g
     :transform="`translate(${position.x}, ${position.y})`"
+    :data-node-id="id"
   >
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal

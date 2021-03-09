@@ -164,24 +164,26 @@ const nestedRpcCall = ({ method, params, projectId, nodeId, portIndex }) => {
  * @param {String} projectId The ID of the project that contains the node
  * @param {String} nodeId The ID of the node to load data for
  * @param {String} portIndex The index of the port to load data for.
+ * @param {String} offset The index of the first row to be loaded
+ * @param {String} batchSize The amount of rows to be loaded. Must be smallEq than 450
  * Remember that port 0 is usually a flow variable port.
  * @return {Promise} A promise containing the table data as defined in the API
  * */
-export const loadTable = ({ projectId, nodeId, portIndex }) => {
-    const rowCount = 400; // The backend is limited to 500-50=450, see org.knime.core.data.cache.WindowCacheTable
+export const loadTable = ({ projectId, nodeId, portIndex, offset = 0, batchSize }) => {
     try {
         let table = nestedRpcCall({
             projectId,
             nodeId,
             portIndex,
             method: 'getTable',
-            params: [0, rowCount]
+            params: [offset, batchSize]
         });
         return Promise.resolve(table);
     } catch (e) {
         consola.error(e);
         return Promise.reject(new Error(
-            `Couldn't load table data from port ${portIndex} of node "${nodeId}" in project ${projectId}`
+            `Couldn't load table data (start: ${offset}, length: ${batchSize}) ` +
+            `from port ${portIndex} of node "${nodeId}" in project ${projectId}`
         ));
     }
 };
