@@ -22,7 +22,7 @@ consola.log(`Waiting for ${URL} …`);
 
 waitOn({
     resources: [URL],
-    timeout: 2 * 60 * 1000
+    timeout: 2 * 60 * 1000 // eslint-disable-line no-magic-numbers
 }, err => {
     if (err) {
         throw err;
