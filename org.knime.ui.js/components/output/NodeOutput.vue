@@ -48,6 +48,9 @@ export default {
             let nodes = Object.values(this.nodes || {});
             return nodes.filter(node => node.selected);
         },
+        isDragging() {
+            return this.selectedNode?.isDragging;
+        },
         selectedNode() {
             if (this.selectedNodes.length === 1) {
                 return this.selectedNodes[0];
@@ -109,7 +112,10 @@ export default {
                 if (this.isLoading) {
                     return 'Loading Table...';
                 }
-                return 'No output available.';
+                if (this.isDragging) {
+                    return 'Data is loaded after node movement';
+                }
+                return 'No output available';
             default:
                 return 'To show the node output, please select only one node.';
             }
@@ -138,7 +144,8 @@ export default {
                 this.selectedPortIndex === null ||
                 !this.supportsSelectedPort ||
                 this.needsExecution ||
-                this.isInactive
+                this.isInactive &&
+                !this.isDragPreventLoadTable
             ) {
                 return false;
             }
@@ -147,6 +154,9 @@ export default {
                 return true;
             }
             return !this.needsConfiguration && !this.isExecuting && this.isReady;
+        },
+        isDragPreventLoadTable() {
+            return this.isDragging && !this.$options.isLoaded;
         }
     },
     watch: {
@@ -154,6 +164,7 @@ export default {
             if (oldNode !== newNode) {
                 this.$store.dispatch('dataTable/clear');
                 this.selectedPortIndex = null;
+                this.$options.isLoaded = false;
             }
         },
         selectedPortIndex(tab) {
@@ -168,16 +179,20 @@ export default {
             } else {
                 consola.trace('loading table for port', tab);
                 // Either loads the data from the dataTable api or the flowVariables api
-                let dataSource = (this.outPorts[tab]?.type === 'flowVariable') ? 'flowVariables' : 'dataTable';
+                let dataSource = this.outPorts[tab]?.type === 'flowVariable' ? 'flowVariables' : 'dataTable';
                 setTimeout(() => { // delay UI blocking at startup
                     this.$store.dispatch(`${dataSource}/load`, {
                         projectId: this.activeProjectId,
                         nodeId: this.selectedNode.id,
                         portIndex: this.selectedPortIndex
                     });
+                    this.$options.isLoaded = true;
                 }, 0);
             }
         }
+    },
+    created() {
+        this.$options.isLoaded = false;
     },
     methods: {
         executeNode() {

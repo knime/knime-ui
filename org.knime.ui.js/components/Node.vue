@@ -9,7 +9,9 @@ import StreamingDecorator from '~/components/StreamingDecorator';
 import LoopDecorator from '~/components/LoopDecorator';
 import portShift from '~/util/portShift';
 import NodeActionBar from '~/components/NodeActionBar.vue';
+import { throttle } from 'lodash';
 
+const moveNodesThrottle = 10; // 10 ms between new move calculations are performed
 /**
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
  * Must be embedded in an `<svg>` element.
@@ -57,22 +59,30 @@ export default {
          * Input ports. List of configuration objects passed-through to the `Port` component
          */
         inPorts: { type: Array, required: true },
+
         /**
          * Output ports. List of configuration objects passed-through to the `Port` component
          */
         outPorts: { type: Array, required: true },
 
+
+        /**
+         * The position of the node. Contains of an x and a y parameter
+         */
         position: {
             type: Object,
             required: true,
             validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         },
 
+        /**
+         * The position of the outline used when mutliple nodes are moved
+         * The outline is only shown if more than a @workflow.moveOutlineTreshold nodes are moved
+         */
         outlinePosition: {
             type: Object,
-            required: false,
             default() {
-                return { x: 0, y: 0 };
+                return null;
             }
         },
 
@@ -168,8 +178,20 @@ export default {
                 allowedActions: {}
             })
         },
+        /**
+         * Defines the size of the grid nodes are aligned to
+         */
+        dragGrid: {
+            type: Object,
+            default() {
+                return { x: 5, y: 5 };
+            }
+        },
 
-        dragging: {
+        /**
+         * true if the node is currently dragged
+         */
+        isDragging: {
             type: Boolean,
             default: false
         }
@@ -177,7 +199,8 @@ export default {
     data() {
         return {
             hover: false,
-            dragOffset: [0, 0]
+            dragOffset: [0, 0],
+            startPos: { x: 0, y: 0 }
         };
     },
     computed: {
@@ -252,6 +275,9 @@ export default {
                 x,
                 y
             };
+        },
+        outlineOffset() {
+            return this.outlinePosition;
         }
     },
     methods: {
@@ -326,23 +352,43 @@ export default {
             }
         },
 
-        // move events from store
-        handleMoveFromStore({ x, y }) {
-            if (this.dragging) {
+        // clears outline position after movement if outline position was used
+        handleMoveFromStore() {
+            if (this.isDragging || this.outlinePosition === null) {
                 return;
             }
-            this.dragOffset = [0, 0];
-            this.offset = [x, y];
-        },
-
-        // move events from UI
-        onMove({ detail: { deltaX, deltaY, totalDeltaX, totalDeltaY } }) {
-            this.dragOffset = [totalDeltaX / this.zoomFactor, totalDeltaY / this.zoomFactor];
-            this.$store.dispatch(
-                'workflow/moveNodes',
-                { deltaX: deltaX / this.zoomFactor, deltaY: deltaY / this.zoomFactor }
+            this.$store.commit(
+                'workflow/resetOutlinePosition',
+                { nodeId: this.id }
             );
         },
+
+        /**
+         * Handles move events of the node
+         * throttled to limit recalculation to every @moveNodesThrottle ms
+         * @param {Object} detail - containing the total amount moved in x and y direction
+         */
+        onMove: throttle(function ({ detail: { totalDeltaX, totalDeltaY } }) {
+            /* eslint-disable no-invalid-this */
+            if (this.isDragging) {
+                // Move node to the next rounded grid position
+                let deltaX = Math.round((this.startPos.x + totalDeltaX / this.zoomFactor) / this.dragGrid.x) *
+                            this.dragGrid.x - this.position.x;
+                let deltaY = Math.round((this.startPos.y + totalDeltaY / this.zoomFactor) / this.dragGrid.y) *
+                            this.dragGrid.y - this.position.y;
+                this.$store.dispatch(
+                    'workflow/moveNodes',
+                    { deltaX, deltaY }
+                );
+            }
+            /* eslint-enable no-invalid-this */
+        }, moveNodesThrottle),
+
+        /**
+         * Handles the start of a move event
+         * @param {Object} e - details of the mousedown event
+         * @returns {void} nothing to return
+         */
         onMoveStart(e) {
             // this.dragging = true;
             if (!this.selected && !e.detail.event.shiftKey) {
@@ -350,13 +396,24 @@ export default {
                 this.selectNode(this.id);
             }
             this.selectNode(this.id);
+            
+            // Move node to a matching grid position
+            this.startPos = { x: this.position.x, y: this.position.y };
+            let deltaX = Math.round(this.position.x / this.dragGrid.x) * this.dragGrid.x - this.position.x;
+            let deltaY = Math.round(this.position.y / this.dragGrid.y) * this.dragGrid.y - this.position.y;
+            this.$store.dispatch(
+                'workflow/moveNodes',
+                { deltaX, deltaY }
+            );
         },
-        onMoveEnd({ detail: { totalDeltaX, totalDeltaY } }) {
-            this.offset = [totalDeltaX / this.zoomFactor, totalDeltaY / this.zoomFactor];
-            this.dragOffset = [0, 0];
-            this.$store.dispatch('workflow/saveNodeMoves', { projectId: this.projectId });
-            setTimeout(() => { // prevent click handler
-                // this.$store.commit('workflow/setOutlinePosition', { node: this, outlinePosition: this.position });
+        /**
+         * Handles the end of a move event
+         * @returns {void} nothing to return
+         */
+        onMoveEnd() {
+            setTimeout(() => {
+                this.setDragging({ nodeId: this.id, isDragging: false });
+                this.$store.dispatch('workflow/saveNodeMoves', { projectId: this.projectId });
             }, 0);
         }
     }
@@ -365,7 +422,7 @@ export default {
 
 <template>
   <g
-    v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 200 }"
+    v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"
     :transform="`translate(${position.x}, ${position.y})`"
     :data-node-id="id"
   >
@@ -390,8 +447,8 @@ export default {
       to="node-select"
     >
       <g
-        v-if="dragging"
-        :transform="`translate(${outlinePosition.x }, ${outlinePosition.y })`"
+        v-if="outlineOffset"
+        :transform="`translate(${outlineOffset.x }, ${outlineOffset.y })`"
       >
         <rect
           :x="nodeSelectionMeasures.x"

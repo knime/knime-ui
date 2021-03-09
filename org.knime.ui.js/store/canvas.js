@@ -4,6 +4,7 @@ export const zoomMultiplier = 1.07;
 export const defaultZoomFactor = 1;
 export const minZoomFactor = 0.1; // 10%
 export const maxZoomFactor = 5; // 500%
+export const gridSize = { x: 5, y: 5 };
 const clampZoomFactor = (newFactor) => Math.min(Math.max(minZoomFactor, newFactor), maxZoomFactor);
 
 /**
@@ -14,7 +15,8 @@ const clampZoomFactor = (newFactor) => Math.min(Math.max(minZoomFactor, newFacto
 export const state = () => ({
     zoomFactor: defaultZoomFactor,
     suggestPanning: false,
-    containerSize: { width: 0, height: 0 }
+    containerSize: { width: 0, height: 0 },
+    gridSize
 });
 
 export const mutations = {

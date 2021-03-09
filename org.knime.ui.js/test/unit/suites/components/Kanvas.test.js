@@ -17,13 +17,16 @@ const mockNode = ({ id, position }) => ({
     name: '',
     id,
     position,
+    outlinePosition: position,
+    isDragging: false,
     inPorts: [],
     outPorts: [],
     type: '',
     annotation: { text: '' },
     kind: 'node',
     icon: 'data:image/',
-    state: null
+    state: null,
+    dragGrid: { x: 5, y: 5 }
 });
 
 const mockConnector = ({ nr }) => ({

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import Vuex from 'vuex';
@@ -88,7 +89,9 @@ describe('Node', () => {
                 mutations: {
                     selectNode: jest.fn(),
                     deselectNode: jest.fn(),
-                    deselectAllNodes: jest.fn()
+                    deselectAllNodes: jest.fn(),
+                    setDragging: jest.fn(),
+                    resetOutlinePosition: jest.fn()
                 },
                 actions: {
                     loadWorkflow: jest.fn(),
@@ -96,7 +99,9 @@ describe('Node', () => {
                     cancelNodeExecution: jest.fn(),
                     resetNodes: jest.fn(),
                     openDialog: jest.fn(),
-                    openView: jest.fn()
+                    openView: jest.fn(),
+                    moveNodes: jest.fn(),
+                    saveNodeMoves: jest.fn()
                 },
                 getters: {
                     isWritable: () => true
@@ -297,7 +302,7 @@ describe('Node', () => {
             propsData.selected = false;
             doMount();
 
-            await wrapper.find('g g g').trigger('mousedown', { button: 0 });
+            await wrapper.find('g g g').trigger('click', { button: 0 });
 
             expect(storeConfig.workflow.mutations.deselectAllNodes).toHaveBeenCalled();
             expect(storeConfig.workflow.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
@@ -307,7 +312,7 @@ describe('Node', () => {
             propsData.selected = false;
             doMount();
 
-            await wrapper.find('g g g').trigger('mousedown', { button: 0, shiftKey: true });
+            await wrapper.find('g g g').trigger('click', { button: 0, shiftKey: true });
             expect(storeConfig.workflow.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
         });
 
@@ -315,7 +320,7 @@ describe('Node', () => {
             propsData.selected = true;
             doMount();
 
-            await wrapper.find('g g g').trigger('mousedown', { button: 0, shiftKey: true });
+            await wrapper.find('g g g').trigger('click', { button: 0, shiftKey: true });
             expect(storeConfig.workflow.mutations.deselectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
         });
 
@@ -530,5 +535,93 @@ describe('Node', () => {
             expect(storeConfig.workflow.actions.loadWorkflow).not.toHaveBeenCalled();
         });
 
+    });
+
+    describe('moving', () => {
+        beforeEach(() => {
+            propsData =
+            {
+                ...commonNode,
+                selected: true,
+                allowedActions: { canExecute: true, canOpenDialog: true, canOpenView: false },
+                state: {
+                    executionState: 'IDLE'
+                }
+            };
+        });
+
+        it('adjusts node position on start of movement', async () => {
+            propsData.selected = false;
+            propsData.position = { x: 199, y: 199 };
+            doMount(shallowMount);
+
+            await wrapper.find('g g g').trigger('click', { button: 0 });
+
+            expect(storeConfig.workflow.mutations.deselectAllNodes).toHaveBeenCalled();
+            expect(storeConfig.workflow.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
+            expect(wrapper.props().isDragging).toBe(false);
+            let moveStartEvent = new CustomEvent('movestart', { detail: { startX: 199, startY: 199 } });
+            wrapper.setProps({ isDragging: true });
+            wrapper.vm.onMoveStart(moveStartEvent);
+            expect(storeConfig.workflow.actions.moveNodes).toBeCalledWith(expect.anything(), { deltaX: 1, deltaY: 1 });
+        });
+
+        it('makes sure outline is not moved when moving a single node and correctly reset after movement', async () => {
+            doMount(shallowMount);
+            wrapper.setProps({ position: { x: 200, y: 200 } });
+            await Vue.nextTick();
+            expect(storeConfig.workflow.mutations.resetOutlinePosition).not.toHaveBeenCalled();
+            wrapper.setProps({ position: { x: 250, y: 250 } });
+            wrapper.setProps({ outlinePosition: { x: 250, y: 250 } });
+            await Vue.nextTick();
+            expect(storeConfig.workflow.mutations.resetOutlinePosition).toHaveBeenCalledTimes(1);
+        });
+
+        it('moves a single node', async () => {
+            doMount(shallowMount);
+            wrapper.vm.startPos.x = 500;
+            wrapper.vm.startPos.y = 200;
+            await wrapper.find('g g g').trigger('click', { button: 0 });
+            
+            expect(storeConfig.workflow.mutations.deselectAllNodes).toHaveBeenCalled();
+            expect(storeConfig.workflow.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
+            expect(wrapper.props().isDragging).toBe(false);
+            wrapper.setProps({ isDragging: true });
+            wrapper.setProps({ position: { x: 500, y: 200 } });
+            await Vue.nextTick();
+            let moveMovingEvent = new CustomEvent('moving', {
+                detail: {
+                    totalDeltaX: 250,
+                    totalDeltaY: 250,
+                    deltaX: 250,
+                    deltaY: 250,
+                    e: { detail: { event: { shiftKey: false } } }
+                }
+            });
+            wrapper.vm.onMove(moveMovingEvent);
+            expect(storeConfig.workflow.actions.moveNodes).toHaveBeenCalledWith(
+                expect.anything(),
+                { deltaX: 250, deltaY: 250 }
+            );
+        });
+
+        it('ends movement of a node', async () => {
+            doMount(shallowMount);
+            jest.useFakeTimers();
+            wrapper.vm.onMoveEnd();
+            // await Vue.nextTick();
+            jest.advanceTimersByTime(5000);
+            await Promise.resolve();
+            jest.runOnlyPendingTimers();
+            expect(storeConfig.workflow.mutations.setDragging).toHaveBeenCalledWith(
+                expect.anything(),
+                { nodeId: 'root:1', isDragging: false }
+            );
+            expect(storeConfig.workflow.actions.saveNodeMoves).toHaveBeenCalledWith(
+                expect.anything(),
+                { projectId: 'projectId' }
+            );
+            jest.useRealTimers();
+        });
     });
 });

@@ -3,9 +3,10 @@ import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import * as $shapes from '~/style/shapes';
 import Vuex from 'vuex';
+import Vue from 'vue';
 
 describe('workflow store', () => {
-    let store, localVue, templateMutationMock, loadStore, addEventListenerMock, removeEventListenerMock;
+    let store, localVue, templateMutationMock, loadStore, addEventListenerMock, removeEventListenerMock, moveNodeMock;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -16,6 +17,7 @@ describe('workflow store', () => {
         templateMutationMock = jest.fn();
         addEventListenerMock = jest.fn();
         removeEventListenerMock = jest.fn();
+        moveNodeMock = jest.fn();
 
         loadStore = async ({ apiMocks = {} } = {}) => {
             /**
@@ -28,7 +30,8 @@ describe('workflow store', () => {
                 __esModule: true,
                 addEventListener: addEventListenerMock,
                 removeEventListener: removeEventListenerMock,
-                ...apiMocks
+                ...apiMocks,
+                moveNode: moveNodeMock
             }), { virtual: true });
 
             store = mockVuexStore({
@@ -82,8 +85,8 @@ describe('workflow store', () => {
             expect(store.state.workflow.activeWorkflow).toStrictEqual({
                 projectId: 'bar',
                 nodes: {
-                    foo: { bla: 1, selected: false },
-                    bar: { qux: 2, selected: false }
+                    foo: { bla: 1, selected: false, isDragging: false, outlinePosition: null },
+                    bar: { qux: 2, selected: false, isDragging: false, outlinePosition: null }
                 }
             });
         });
@@ -125,6 +128,62 @@ describe('workflow store', () => {
             expect(nodes['root:1'].selected).toBe(false);
             expect(nodes['root:2'].selected).toBe(false);
 
+        });
+
+        it('shifts the position of a node', () => {
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'bar',
+                nodes: {
+                    'root:1': { id: 'root:1', position: { x: 0, y: 0 } }
+                }
+            });
+
+            let node = store.state.workflow.activeWorkflow.nodes['root:1'];
+            store.commit('workflow/shiftPosition', { node, deltaX: 50, deltaY: 50 });
+            expect(node.position).toStrictEqual({ x: 50, y: 50 });
+        });
+
+        it('shifts the outline position of a node', () => {
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'bar',
+                nodes: {
+                    'root:1': { id: 'root:1', position: { x: 0, y: 0 } }
+                }
+            });
+
+            let node = store.state.workflow.activeWorkflow.nodes['root:1'];
+            store.commit('workflow/shiftOutlinePosition', { node, deltaX: 50, deltaY: 50 });
+            expect(node.outlinePosition).toStrictEqual({ x: 50, y: 50 });
+        });
+
+        it('resets the position of the outlint', () => {
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'bar',
+                nodes: {
+                    'root:1': { id: 'root:1', position: { x: 0, y: 0 } }
+                }
+            });
+
+            let node = store.state.workflow.activeWorkflow.nodes['root:1'];
+            store.commit('workflow/shiftOutlinePosition', { node, deltaX: 50, deltaY: 50 });
+            expect(node.outlinePosition).toStrictEqual({ x: 50, y: 50 });
+            store.commit('workflow/resetOutlinePosition', { nodeId: node.id });
+            expect(node.outlinePosition).toStrictEqual(null);
+        });
+
+        it('checks node dragging', () => {
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'bar',
+                nodes: {
+                    'root:1': { id: 'root:1' }
+                }
+            });
+
+            let node = store.state.workflow.activeWorkflow.nodes['root:1'];
+            store.commit('workflow/setDragging', { nodeId: 'root:1', isDragging: true });
+            expect(node.isDragging).toBe(true);
+            store.commit('workflow/setDragging', { nodeId: 'root:1', isDragging: false });
+            expect(node.isDragging).toBe(false);
         });
 
     });
@@ -249,6 +308,109 @@ describe('workflow store', () => {
             expect(mock).toHaveBeenCalledWith({ nodeId: 'x', projectId: 'foo' });
         });
 
+        it('moves actual nodes', async () => {
+            await loadStore();
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'bar',
+                nodes: {
+                    foo: { bla: 1, position: { x: 0, y: 0 } },
+                    bar: { qux: 2, position: { x: 50, y: 50 } }
+                }
+            });
+            store.commit('workflow/selectAllNodes');
+            await Vue.nextTick();
+
+            store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
+            let nodes = store.state.workflow.activeWorkflow.nodes;
+            expect(nodes.foo.position).toStrictEqual({ x: 50, y: 50 });
+            expect(nodes.bar.position).toStrictEqual({ x: 100, y: 100 });
+        });
+
+        it('moves nodes outline', async () => {
+            await loadStore();
+            let nodesArray = {};
+            for (let i = 0; i < 11; i++) {
+                let name = `node-${i}`;
+                nodesArray[name] = { bla: 1, position: { x: 0, y: 0 } };
+            }
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'bar',
+                nodes: nodesArray
+            });
+            store.commit('workflow/selectAllNodes');
+            await Vue.nextTick();
+
+            store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
+            let nodes = store.state.workflow.activeWorkflow.nodes;
+            Object.keys(nodesArray).forEach((node) => {
+                expect(nodes[node].outlinePosition).toStrictEqual({ x: 50, y: 50 });
+                expect(nodes[node].position).toStrictEqual({ x: 0, y: 0 });
+            });
+        });
+
+        it('moves subset of node outlines', async () => {
+            await loadStore();
+            let nodesArray = {};
+            for (let i = 0; i < 21; i++) {
+                let name = `node-${i}`;
+                nodesArray[name] = { bla: 1, position: { x: 0, y: 0 } };
+            }
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'bar',
+                nodes: nodesArray
+            });
+            await Vue.nextTick();
+            // select every even node
+            Object.keys(nodesArray).forEach((node, index) => {
+                if (index % 2 === 0) {
+                    store.commit('workflow/selectNode', node);
+                }
+            });
+
+            store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
+            let nodes = store.state.workflow.activeWorkflow.nodes;
+            Object.keys(nodesArray).forEach((node) => {
+                if (nodes[node].selected) {
+                    expect(nodes[node].outlinePosition).toStrictEqual({ x: 50, y: 50 });
+                    expect(nodes[node].position).toStrictEqual({ x: 0, y: 0 });
+                } else {
+                    expect(nodes[node].outlinePosition).toStrictEqual(null);
+                    expect(nodes[node].position).toStrictEqual({ x: 0, y: 0 });
+                }
+            });
+        });
+
+        it.each([
+            [1],
+            [20]
+        ])('saves position after move end for %s nodes', async (amount) => {
+            await loadStore();
+            let nodesArray = {};
+            for (let i = 0; i < amount; i++) {
+                let name = `node-${i}`;
+                nodesArray[name] = { bla: 1, position: { x: 0, y: 0 } };
+            }
+            store.commit('workflow/setActiveWorkflow', {
+                nodes: nodesArray,
+                info: {
+                    name: 'test'
+                }
+            });
+            await Vue.nextTick();
+            Object.keys(nodesArray).forEach((node) => {
+                store.commit('workflow/selectNode', node);
+            });
+
+            store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
+            store.dispatch('workflow/saveNodeMoves', { projectId: 'foo' });
+            expect(moveNodeMock).toHaveBeenNthCalledWith(Math.round(amount / 2), {
+                projectId: 'foo',
+                nodeId: [undefined],
+                workflowId: 'test',
+                position: { x: 50, y: 50 },
+                annotationId: []
+            });
+        });
     });
 
     describe('getters', () => {

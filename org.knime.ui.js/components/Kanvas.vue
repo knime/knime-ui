@@ -39,7 +39,7 @@ export default {
             'isStreaming'
         ]),
         ...mapGetters('canvas', ['contentBounds', 'canvasSize', 'viewBox']),
-        ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning']),
+        ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning', 'gridSize']),
         viewBoxString() {
             let { viewBox } = this;
             return  `${viewBox.left} ${viewBox.top} ` +
@@ -235,6 +235,7 @@ export default {
         :icon="$store.getters['workflow/nodeIcon']({ workflowId: workflow.projectId, nodeId })"
         :name="$store.getters['workflow/nodeName']({ workflowId: workflow.projectId, nodeId })"
         :type="$store.getters['workflow/nodeType']({ workflowId: workflow.projectId, nodeId })"
+        :dragGrid="gridSize"
         v-bind="node"
       />
 

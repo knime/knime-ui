@@ -4,6 +4,11 @@ import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListe
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
+
+
+// Defines the treshhold after which only the node-outline is moved when dragging a node
+const moveNodeOutlineTreshold = 2;
+
 /**
  * Store that holds a workflow graph and the associated tooltips.
  * A workflow can either be contained in a component / metanode, or it can be the top level workflow.
@@ -40,7 +45,8 @@ export const mutations = {
         Object.values(workflowData.nodes || {}).forEach(
             node => {
                 node.selected = false;
-                node.outlinePosition = { x: node.position.x, y: node.position.y };
+                node.isDragging = false;
+                node.outlinePosition = null;
             }
         );
 
@@ -69,16 +75,21 @@ export const mutations = {
     deselectNode({ activeWorkflow: { nodes } }, nodeId) {
         nodes[nodeId].selected = false;
     },
+    // Shift the node position directly if few nodes are selected
     shiftPosition(state, { node, deltaX, deltaY }) {
         node.position.x += deltaX;
         node.position.y += deltaY;
-        node.outlinePosition.x += deltaX;
-        node.outlinePosition.y += deltaY;
     },
-    shiftPositionOutline(state, { node, deltaX, deltaY }) {
-        node.dragging = true;
-        node.outlinePosition.x += deltaX;
-        node.outlinePosition.y += deltaY;
+    // Shift only the outline if more nodes are selected
+    shiftOutlinePosition(state, { node, deltaX, deltaY }) {
+        node.outlinePosition =  { x: node.position.x + deltaX, y: node.position.y + deltaY };
+    },
+    // Reset the position of the outline, called after movement
+    resetOutlinePosition({ activeWorkflow: { nodes } }, { nodeId }) {
+        nodes[nodeId].outlinePosition = null;
+    },
+    setDragging({ activeWorkflow: { nodes } }, { nodeId, isDragging }) {
+        nodes[nodeId].isDragging = isDragging;
     }
 };
 
@@ -153,11 +164,11 @@ export const actions = {
     openDialog({ state }, { nodeId }) {
         openDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
-    moveNodes({ state, commit, getters }, { deltaX, deltaY }) {
+    moveNodes({ commit, getters }, { deltaX, deltaY }) {
         const selectedNodes = getters.selectedNodes;
-        if (selectedNodes.length > 2) {
+        if (selectedNodes.length > moveNodeOutlineTreshold) {
             selectedNodes.forEach(node => {
-                commit('shiftPositionOutline', { node, deltaX, deltaY });
+                commit('shiftOutlinePosition', { node, deltaX, deltaY });
             });
         } else {
             selectedNodes.forEach(node => {
@@ -165,11 +176,12 @@ export const actions = {
             });
         }
     },
+    // Save the position of the nodes after the move is over
     saveNodeMoves({ state, getters }, { projectId }) {
         const selectedNodes = getters.selectedNodes;
         selectedNodes.forEach(node => {
             let position;
-            if (selectedNodes.length > 2) {
+            if (selectedNodes.length > moveNodeOutlineTreshold) {
                 position = {
                     x: node.outlinePosition.x,
                     y: node.outlinePosition.y
@@ -341,6 +353,7 @@ export const getters = {
         };
     },
 
+    // returns the nodes that are currently selected
     selectedNodes(state) {
         let activeWorkflow = state.activeWorkflow;
         return Object.values(activeWorkflow.nodes).filter(node => node.selected);
