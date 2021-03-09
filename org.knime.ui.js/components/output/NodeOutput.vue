@@ -134,18 +134,19 @@ export default {
             return supportsPort(this.outPorts[this.selectedPortIndex ? this.selectedPortIndex : 0]);
         },
         showTable() {
-            // flow variables are always shown
+            if (
+                this.selectedPortIndex === null ||
+                !this.supportsSelectedPort ||
+                this.needsExecution ||
+                this.isInactive
+            ) {
+                return false;
+            }
+            // flow variables can already be shown even if the node is executing
             if (this.selectedPortIndexType === 'flowVariable') {
                 return true;
             }
-            // the table should be shown if a port is selected, that does not need execution or is executed
-            // and is supported
-            return this.selectedPortIndex !== null &&
-                !this.needsExecution &&
-                this.supportsSelectedPort &&
-                !this.isInactive &&
-                // flow variables can already be shown even if the node is executing
-                (this.isReady || this.selectedPortIndexType === 'flowVariable');
+            return !this.needsConfiguration && !this.isExecuting && this.isReady;
         }
     },
     watch: {

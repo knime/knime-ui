@@ -193,7 +193,7 @@ describe('NodeOutput.vue', () => {
         );
     });
 
-    it('renders table if data port is selected', async () => {
+    it('renders placeholder if port is selected while table is loading', async () => {
         workflow.state.activeWorkflow.nodes.node1.outPorts[0] = { type: 'table' };
         dataTable.state.isLoading = true;
         doShallowMount();
