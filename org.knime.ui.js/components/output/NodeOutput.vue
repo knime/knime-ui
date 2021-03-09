@@ -144,7 +144,8 @@ export default {
                 !this.needsExecution &&
                 this.supportsSelectedPort &&
                 !this.isInactive &&
-                this.isReady;
+                // flow variables can already be shown even if the node is executing
+                (this.isReady || this.selectedPortIndexType === 'flowVariable');
         }
     },
     watch: {

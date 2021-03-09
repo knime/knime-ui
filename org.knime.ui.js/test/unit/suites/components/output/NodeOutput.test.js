@@ -10,6 +10,7 @@ import OutputPortSelectorBar from '~/components/output/OutputPortSelectorBar';
 import DataPortOutputTable from '~/components/output/DataPortOutputTable';
 import FlowVariablePortOutputTable from '~/components/output/FlowVariablePortOutputTable';
 import Button from '~/webapps-common/ui/components/Button';
+import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 
 jest.useFakeTimers();
 
@@ -155,6 +156,7 @@ describe('NodeOutput.vue', () => {
             doShallowMount();
             expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
             expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
+            expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
             expect(wrapper.find('.placeholder').text()).toBe('Output is available after execution.');
         });
 
@@ -217,9 +219,21 @@ describe('NodeOutput.vue', () => {
         expect(wrapper.find('.counts').text()).toBe(['Rows: 1 of 1000', 'Columns: 200'].join(''));
     });
 
+    it('renders table if flow variable port is selected and node is still executing', async () => {
+        workflow.state.activeWorkflow.nodes.node1.outPorts[2] = { type: 'flowVariable' };
+        workflow.state.activeWorkflow.nodes.node1.state = { executionState: 'EXECUTING' };
+        doShallowMount();
+        wrapper.setData({ selectedPortIndex: 2 });
+        await Vue.nextTick();
+        expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
+        expect(wrapper.findComponent(FlowVariablePortOutputTable).exists()).toBe(true);
+        expect(wrapper.find('.placeholder').exists()).toBe(false);
+        expect(wrapper.find('.counts').text()).toBe('Count: 1');
+    });
+
     it('renders table if flow variable port is selected', async () => {
         workflow.state.activeWorkflow.nodes.node1.outPorts[0] = { type: 'flowVariable' };
-        workflow.state.activeWorkflow.nodes.node1.state = { executionState: 'EXECUTING' };
+        workflow.state.activeWorkflow.nodes.node1.state = { executionState: 'EXECUTED' };
         doShallowMount();
         wrapper.setData({ selectedPortIndex: 0 });
         await Vue.nextTick();
@@ -243,7 +257,7 @@ describe('NodeOutput.vue', () => {
 
     it('loads table data on tab change', async () => {
         workflow.state.activeWorkflow.nodes.node1.outPorts[2] = { type: 'table' };
-        workflow.state.activeWorkflow.nodes.node1.state = { executionState: 'EXECUTING' };
+        workflow.state.activeWorkflow.nodes.node1.state = { executionState: 'EXECUTED' };
         doShallowMount();
 
         wrapper.setData({ selectedPortIndex: 2 });
@@ -279,9 +293,9 @@ describe('NodeOutput.vue', () => {
         expect(dataTable.actions.clear).not.toHaveBeenCalled();
     });
 
-    it('renders a flow variable table when a flow variable tab is selected', async () => {
+    it('loads/clears the flow variable table when a flow variable tab is selected', async () => {
         workflow.state.activeWorkflow.nodes.node1.outPorts[2] = { type: 'flowVariable' };
-        workflow.state.activeWorkflow.nodes.node1.state = { executionState: 'EXECUTING' };
+        workflow.state.activeWorkflow.nodes.node1.state = { executionState: 'EXECUTED' };
         doShallowMount();
 
         wrapper.setData({ selectedPortIndex: 2 });
