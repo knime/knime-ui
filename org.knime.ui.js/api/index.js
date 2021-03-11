@@ -104,6 +104,7 @@ export const changeLoopState = ({ projectId, nodeId, action }) => {
     }
 };
 
+
 /**
  * Open the native (Java) configuration dialog of a node.
  * @param {String} projectId
@@ -139,6 +140,44 @@ export const openView = ({ projectId, nodeId }) => {
         consola.error(`Could not open view of node ${nodeId}`);
     }
 };
+
+/**
+ * Generates workflow commands that are part of the undo/redo stack
+ * @param {String} command name of the command to be executed
+ * @param {String} errorMessage error message to be logged on failure
+ * @returns {Function}
+ */
+let workflowCommand = (command, errorMessage) => ({ projectId, workflowId, ...args }) => {
+    try {
+        let rpcArgs = {
+            kind: command,
+            ...args
+        };
+        let result = rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
+        return Promise.resolve(result);
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error(errorMessage));
+    }
+};
+
+/**
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param { Array } cfg.nodeIds The nodes to be moved
+ * @param { Array } cfg.annotationIds The annotations to be moved
+ * @param { Array } cfg.delta the delta by which the objects are to be moved
+ */
+export const moveObjects = workflowCommand('translate', 'Could not translate nodes/annotations');
+
+
+/**
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param { Array } cfg.nodeIds The nodes to be deleted
+ * @param { Array } cfg.annotationIds The annotations to be deleted
+ */
+export const deleteObjects = workflowCommand('delete', 'Could not delete nodes/annotations');
 
 // The Node service offers JSON-RPC forwarding to the Port instance.
 // This is by design, because third-party vendors can provide a custom port implementation with totally

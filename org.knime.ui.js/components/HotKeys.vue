@@ -29,7 +29,7 @@ export default {
     },
     methods: {
         ...mapMutations('workflow', ['selectAllNodes', 'deselectAllNodes']),
-        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes']),
+        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedNodes']),
         ...mapMutations('canvas', ['setSuggestPanning', 'resetZoom']),
         ...mapActions('canvas', ['setZoomToFit', 'zoomCentered']),
         setupShortcuts() {
@@ -44,7 +44,9 @@ export default {
                 ['F8', () => this.resetNodes('selected')],
                 ['Shift', 'F7', () => this.executeNodes('all')],
                 ['Shift', 'F9', () => this.cancelNodeExecution('all')],
-                ['Shift', 'F8', () => this.resetNodes('all')]
+                ['Shift', 'F8', () => this.resetNodes('all')],
+                ['DELETE', this.deleteSelectedNodes],
+                ['BACKSPACE', this.deleteSelectedNodes]
             ];
         },
         onKeydown(e) {

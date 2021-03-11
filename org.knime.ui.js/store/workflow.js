@@ -1,5 +1,7 @@
-import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener,
-    openView, openDialog, changeNodeState, changeLoopState } from '~api';
+import {
+    loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener,
+    openView, openDialog, changeNodeState, changeLoopState, deleteObjects
+} from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
@@ -113,6 +115,42 @@ export const actions = {
         commit('setActiveSnapshotId', snapshotId);
         let workflowId = getters.activeWorkflowId;
         await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+    },
+    async deleteSelectedNodes({ state, getters: { activeWorkflowId: workflowId } }) {
+        let { selectedNodes, activeWorkflow: { nodes, projectId } } = state;
+
+        let nodesWithData = [];
+        let nodesWithoutData = [];
+
+        for (let nodeId in selectedNodes) {
+            let node = nodes[nodeId];
+            if (node.allowedActions.canDelete) {
+                (node.state.executionState === 'EXECUTED' ? nodesWithData : nodesWithoutData).push(nodeId);
+            }
+        }
+
+        if (nodesWithoutData.length) {
+            await deleteObjects({
+                projectId,
+                workflowId,
+                nodeIDs: nodesWithoutData,
+                annotationIDs: [],
+                connectionIDs: []
+            });
+            // remove from sight
+            await Vue.nextTick();
+        }
+
+        if (nodesWithData.length &&
+            window.confirm('Some selected nodes contain computed data. Should they be deleted?')) {
+            await deleteObjects({
+                projectId,
+                workflowId,
+                nodeIDs: nodesWithData,
+                annotationIDs: [],
+                connectionIDs: []
+            });
+        }
     },
     changeNodeState({ state, getters }, { action, nodes }) {
         let { activeWorkflow: { projectId } } = state;
