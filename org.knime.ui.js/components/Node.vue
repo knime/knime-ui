@@ -199,7 +199,6 @@ export default {
     data() {
         return {
             hover: false,
-            dragOffset: [0, 0],
             startPos: { x: 0, y: 0 }
         };
     },
@@ -280,6 +279,15 @@ export default {
             return this.outlinePosition;
         }
     },
+    watch: {
+        // if change occures, position has been updated from the store
+        position: {
+            deep: true,
+            handler() {
+                this.handleMoveFromStore();
+            }
+        }
+    },
     methods: {
         ...mapActions('workflow', ['openDialog']),
         ...mapMutations('workflow', ['selectNode', 'deselectNode', 'deselectAllNodes']),
@@ -317,7 +325,7 @@ export default {
                 this.openNode();
             } else if (this.allowedActions?.canOpenDialog)  {
                 // open node dialog if one is present
-                // this.openDialog({ nodeId: this.id });
+                this.openDialog({ nodeId: this.id });
             }
         },
 
@@ -345,7 +353,7 @@ export default {
                 }
             } else {
                 // Single select
-                if (!this.dragging) {
+                if (!this.isDragging) {
                     this.deselectAllNodes();
                 }
                 this.selectNode(this.id);
@@ -390,10 +398,9 @@ export default {
          * @returns {void} nothing to return
          */
         onMoveStart(e) {
-            // this.dragging = true;
+            this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: true });
             if (!this.selected && !e.detail.event.shiftKey) {
                 this.deselectAllNodes();
-                this.selectNode(this.id);
             }
             this.selectNode(this.id);
             
@@ -412,8 +419,12 @@ export default {
          */
         onMoveEnd() {
             setTimeout(() => {
-                this.setDragging({ nodeId: this.id, isDragging: false });
-                this.$store.dispatch('workflow/saveNodeMoves', { projectId: this.projectId });
+                this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: false });
+                this.$store.dispatch('workflow/saveNodeMoves', {
+                    projectId: this.projectId,
+                    startPos: this.startPos,
+                    nodeId: this.id
+                });
             }, 0);
         }
     }

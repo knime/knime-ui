@@ -6,7 +6,8 @@ import Vuex from 'vuex';
 import Vue from 'vue';
 
 describe('workflow store', () => {
-    let store, localVue, templateMutationMock, loadStore, addEventListenerMock, removeEventListenerMock, moveNodeMock;
+    let store, localVue, templateMutationMock, loadStore, addEventListenerMock,
+        removeEventListenerMock, moveObjectsMock;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -17,7 +18,7 @@ describe('workflow store', () => {
         templateMutationMock = jest.fn();
         addEventListenerMock = jest.fn();
         removeEventListenerMock = jest.fn();
-        moveNodeMock = jest.fn();
+        moveObjectsMock = jest.fn();
 
         loadStore = async ({ apiMocks = {} } = {}) => {
             /**
@@ -31,7 +32,7 @@ describe('workflow store', () => {
                 addEventListener: addEventListenerMock,
                 removeEventListener: removeEventListenerMock,
                 ...apiMocks,
-                moveNode: moveNodeMock
+                moveObjects: moveObjectsMock
             }), { virtual: true });
 
             store = mockVuexStore({
@@ -152,7 +153,7 @@ describe('workflow store', () => {
             });
 
             let node = store.state.workflow.activeWorkflow.nodes['root:1'];
-            store.commit('workflow/shiftOutlinePosition', { node, deltaX: 50, deltaY: 50 });
+            store.commit('workflow/shiftOutlinePosition', { node, totalDeltaX: 50, totalDeltaY: 50 });
             expect(node.outlinePosition).toStrictEqual({ x: 50, y: 50 });
         });
 
@@ -165,7 +166,7 @@ describe('workflow store', () => {
             });
 
             let node = store.state.workflow.activeWorkflow.nodes['root:1'];
-            store.commit('workflow/shiftOutlinePosition', { node, deltaX: 50, deltaY: 50 });
+            store.commit('workflow/shiftOutlinePosition', { node, totalDeltaX: 50, totalDeltaY: 50 });
             expect(node.outlinePosition).toStrictEqual({ x: 50, y: 50 });
             store.commit('workflow/resetOutlinePosition', { nodeId: node.id });
             expect(node.outlinePosition).toStrictEqual(null);
@@ -397,18 +398,20 @@ describe('workflow store', () => {
                 }
             });
             await Vue.nextTick();
+            let nodeIds = [];
             Object.keys(nodesArray).forEach((node) => {
                 store.commit('workflow/selectNode', node);
+                nodeIds.push(node.id);
             });
 
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
-            store.dispatch('workflow/saveNodeMoves', { projectId: 'foo' });
-            expect(moveNodeMock).toHaveBeenNthCalledWith(Math.round(amount / 2), {
+            store.dispatch('workflow/saveNodeMoves', { projectId: 'foo', nodeId: 'node-0', startPos: { x: 0, y: 0 } });
+            expect(moveObjectsMock).toHaveBeenNthCalledWith(1, {
                 projectId: 'foo',
-                nodeId: [undefined],
+                nodeIds,
                 workflowId: 'test',
-                position: { x: 50, y: 50 },
-                annotationId: []
+                translation: { x: 50, y: 50 },
+                annotationIds: []
             });
         });
     });

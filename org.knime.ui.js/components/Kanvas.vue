@@ -44,18 +44,24 @@ export default {
             let { viewBox } = this;
             return  `${viewBox.left} ${viewBox.top} ` +
                     `${viewBox.width} ${viewBox.height}`;
+        },
+        // Sort nodes so that selected nodes are rendered in front
+        sortedNodes() {
+            return Object.entries(this.workflow.nodes).sort(([, a], [, b]) => {
+                if (a.selected && !b.selected) {
+                    return 1;
+                } else if (!a.selected && b.selected) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            });
         }
-
     },
     watch: {
         workflow() {
             // Focus workflow on change for keyboard strokes to work
             this.$el.focus();
-        },
-        sortedNodes() {
-            return Object.entries(this.workflow.nodes).sort(([, a], [, b]) => a.selected && !b.selected
-                ? 1
-                : (!a.selected && b.selected) ? -1 : 0);
         }
     },
     mounted() {

@@ -80,15 +80,19 @@ let nodeStateChanger = (nodeState, errorMessage, action = 'changeNodeStates') =>
     }
 };
 
-let workflowCommands = (kind, errorMessage) => ({ projectId, workflowId, nodeId, position, annotationId }) => {
+/**
+ * Generates workflow commands that are part of the undo/redo stack
+ * @param {String} command name of the command to be executed
+ * @param {String} errorMessage error message to be logged on failure
+ * @returns {Function}
+ */
+let workflowCommand = (command, errorMessage) => ({ projectId, workflowId, ...args }) => {
     try {
-        let nestedRpcCall = {
-            kind,
-            position,
-            nodeIDs: nodeId,
-            annotationIDs: annotationId
+        let rpcArgs = {
+            kind: command,
+            ...args
         };
-        let result = rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, nestedRpcCall);
+        let result = rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
         return Promise.resolve(result);
     } catch (e) {
         consola.error(e);
@@ -241,11 +245,10 @@ export const loadFlowVariables = ({ projectId, nodeId, portIndex }) => {
 };
 
 /**
- * Reset executed nodes.
- * @param {String} cfg.projectId
- * @param {String} cfg.workflowId
- * @param {Array} cfg.nodeIds The nodes to move.
- * @param {Array} cfg.positions the new positions for the nodes
- * @param {Array} cfg.annotationIDs The annotations to move
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param { Array } cfg.nodeIds The nodes to be moved
+ * @param { Array } cfg.annotationIds The annotations to be moved
+ * @param { Array } cfg.translation the translation by which the objects are to be moved
  */
-export const moveNode = workflowCommands('translate', 'Could not translate nodes/annotations');
+export const moveObjects = workflowCommand('translate', 'Could not translate nodes/annotations');

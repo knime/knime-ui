@@ -113,9 +113,9 @@ export default {
                     return 'Loading Table...';
                 }
                 if (this.isDragging) {
-                    return 'Data is loaded after node movement';
+                    return 'Data is loaded after node movement...';
                 }
-                return 'No output available';
+                return 'No output available.';
             default:
                 return 'To show the node output, please select only one node.';
             }
@@ -144,8 +144,8 @@ export default {
                 this.selectedPortIndex === null ||
                 !this.supportsSelectedPort ||
                 this.needsExecution ||
-                this.isInactive &&
-                !this.isDragPreventLoadTable
+                this.isInactive ||
+                this.isDragPreventLoadTable
             ) {
                 return false;
             }

@@ -1,6 +1,6 @@
 import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener, executeNodes, cancelNodeExecution,
     resetNodes, pauseNodeExecution, resumeNodeExecution, stepNodeExecution, openView, openDialog,
-    moveNode } from '~api';
+    moveObjects } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
@@ -81,8 +81,8 @@ export const mutations = {
         node.position.y += deltaY;
     },
     // Shift only the outline if more nodes are selected
-    shiftOutlinePosition(state, { node, deltaX, deltaY }) {
-        node.outlinePosition =  { x: node.position.x + deltaX, y: node.position.y + deltaY };
+    shiftOutlinePosition(state, { node, totalDeltaX, totalDeltaY }) {
+        node.outlinePosition =  { x: node.position.x + totalDeltaX, y: node.position.y + totalDeltaY };
     },
     // Reset the position of the outline, called after movement
     resetOutlinePosition({ activeWorkflow: { nodes } }, { nodeId }) {
@@ -168,7 +168,7 @@ export const actions = {
         const selectedNodes = getters.selectedNodes;
         if (selectedNodes.length > moveNodeOutlineTreshold) {
             selectedNodes.forEach(node => {
-                commit('shiftOutlinePosition', { node, deltaX, deltaY });
+                commit('shiftOutlinePosition', { node, totalDeltaX: deltaX, totalDeltaY: deltaY });
             });
         } else {
             selectedNodes.forEach(node => {
@@ -177,29 +177,26 @@ export const actions = {
         }
     },
     // Save the position of the nodes after the move is over
-    saveNodeMoves({ state, getters }, { projectId }) {
+    saveNodeMoves({ state, getters }, { projectId, startPos, nodeId }) {
         const selectedNodes = getters.selectedNodes;
-        selectedNodes.forEach(node => {
-            let position;
-            if (selectedNodes.length > moveNodeOutlineTreshold) {
-                position = {
-                    x: node.outlinePosition.x,
-                    y: node.outlinePosition.y
-                };
-            } else {
-                position = {
-                    x: node.position.x,
-                    y: node.position.y
-                };
-            }
-            consola.log(`Moving node ${node.id} to (${node.position.x}, ${node.position.y})`);
-            moveNode({
-                projectId,
-                workflowId: state.activeWorkflow.info.name,
-                nodeId: [node.id],
-                position,
-                annotationId: []
-            });
+        const relevantNode = state.activeWorkflow.nodes[nodeId];
+        let selectedNodeIds = selectedNodes.map((node) => node.id);
+        let translation;
+        // calculate the translation either relative to the position or the outline position
+        if (selectedNodes.length > moveNodeOutlineTreshold) {
+            translation = { x: relevantNode.outlinePosition.x - startPos.x,
+                y: relevantNode.outlinePosition.y - startPos.y };
+        } else {
+            translation = { x: relevantNode.position.x - startPos.x,
+                y: relevantNode.position.y - startPos.y };
+        }
+
+        moveObjects({
+            projectId,
+            workflowId: state.activeWorkflow.info.name,
+            nodeIds: selectedNodeIds,
+            translation,
+            annotationIds: []
         });
     }
 };
