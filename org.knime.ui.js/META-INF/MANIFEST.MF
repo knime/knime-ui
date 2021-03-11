@@ -4,5 +4,6 @@ Bundle-Name: Browser Based Analytics Platform User Interface
 Bundle-SymbolicName: org.knime.ui.js;singleton:=true
 Bundle-Version: 4.4.0.qualifier
 Bundle-Vendor: KNIME AG, Zurich, Switzerland
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Eclipse-BundleShape: dir
+Automatic-Module-Name: org.knime.ui.js
