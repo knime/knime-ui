@@ -129,11 +129,6 @@ export default {
 .buttons {
   flex-shrink: 0;
   display: flex;
-
-  & .with-text {
-    padding-right: 9px;
-    padding-left: 2px;
-  }
 }
 
 .breadcrumb {

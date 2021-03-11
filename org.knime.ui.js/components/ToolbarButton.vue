@@ -20,6 +20,12 @@ button {
   padding: 0;
   margin-right: 5px;
 
+  &.with-text {
+    font-size: 13px;
+    padding-right: 13px;
+    padding-left: 4px;
+  }
+
   & svg {
     width: calc(var(--icon-size) * 1px);
     height: calc(var(--icon-size) * 1px);

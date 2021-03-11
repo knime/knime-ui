@@ -49,23 +49,25 @@ export default {
         },
         onKeydown(e) {
             // Pressed key is just a modifier
-            if (e.key === 'Control' || e.key === 'Shift') {
+            if (e.key === 'Control' || e.key === 'Shift' || e.key === 'Meta') {
                 return;
             }
 
-            if (e.key === 'Alt' && this.workflowHotKeysEnabled) {
-                this.setSuggestPanning(true);
-                e.stopPropagation();
-                e.preventDefault();
+            if (e.key === 'Alt') {
+                if (this.workflowHotKeysEnabled) {
+                    this.setSuggestPanning(true);
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
                 return;
             }
 
             if (this.workflowHotKeysEnabled) {
-                this.findAndExecute(this.workflowHotKeys, e);
+                this.findAndExecute(e);
             }
         },
-        findAndExecute(shortcuts, e) {
-            for (let shortcut of shortcuts) {
+        findAndExecute(e) {
+            for (let shortcut of this.workflowHotKeys) {
                 let modifiers = [...shortcut];
                 let fn = modifiers.pop();
                 let key = modifiers.pop();

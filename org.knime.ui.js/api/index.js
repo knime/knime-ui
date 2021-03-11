@@ -82,7 +82,7 @@ export const changeNodeState = ({ projectId, nodeIds, action }) => {
         let result = rpc('NodeService.changeNodeStates', projectId, nodeIds, action);
         return Promise.resolve(result);
     } catch (e) {
-        // consola.error(e);
+        consola.error(e);
         return Promise.reject(new Error(`Could not ${action} nodes ${nodeIds}`));
     }
 };
@@ -113,12 +113,12 @@ export const changeLoopState = ({ projectId, nodeId, action }) => {
 export const openDialog = ({ projectId, nodeId }) => {
     try {
         // returns falsy on success
-        let result = window.openNodeDialog(projectId, nodeId);
-        if (result) {
-            throw new Error(result);
+        let error = window.openNodeDialog(projectId, nodeId);
+        if (error) {
+            throw new Error(error);
         }
-    } catch {
-        consola.error(`Could not open dialog of node ${nodeId}`);
+    } catch (e) {
+        consola.error(`Could not open dialog of node ${nodeId}`, e);
     }
 };
 
@@ -131,12 +131,12 @@ export const openDialog = ({ projectId, nodeId }) => {
 export const openView = ({ projectId, nodeId }) => {
     try {
         // returns falsy on success
-        let result = window.openNodeView(projectId, nodeId);
-        if (result) {
-            throw new Error(result);
+        let error = window.openNodeView(projectId, nodeId);
+        if (error) {
+            throw new Error(error);
         }
-    } catch {
-        consola.error(`Could not open view of node ${nodeId}`);
+    } catch (e) {
+        consola.error(`Could not open view of node ${nodeId}`, e);
     }
 };
 
