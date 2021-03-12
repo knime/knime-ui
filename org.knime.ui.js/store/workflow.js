@@ -41,7 +41,7 @@ export const mutations = {
         });
         delete workflowData.nodeTemplates;
 
-        // add selected field to node with initial value false to enable reactivity on this property
+        // add selected, isDragging and outlinePosition field to node with initial value false to enable reactivity on this property
         Object.values(workflowData.nodes || {}).forEach(
             node => {
                 node.selected = false;
@@ -75,19 +75,20 @@ export const mutations = {
     deselectNode({ activeWorkflow: { nodes } }, nodeId) {
         nodes[nodeId].selected = false;
     },
-    // Shift the node position directly if few nodes are selected
+    // Shifts the position of the node for the provided amount
     shiftPosition(state, { node, deltaX, deltaY }) {
         node.position.x += deltaX;
         node.position.y += deltaY;
     },
-    // Shift only the outline if more nodes are selected
+    // Shifts the outline position of the node to the original position + the total move amount
     shiftOutlinePosition(state, { node, totalDeltaX, totalDeltaY }) {
         node.outlinePosition =  { x: node.position.x + totalDeltaX, y: node.position.y + totalDeltaY };
     },
-    // Reset the position of the outline, called after movement
+    // Reset the position of the outline
     resetOutlinePosition({ activeWorkflow: { nodes } }, { nodeId }) {
         nodes[nodeId].outlinePosition = null;
     },
+    // change the isDragging property to the provided Value
     setDragging({ activeWorkflow: { nodes } }, { nodeId, isDragging }) {
         nodes[nodeId].isDragging = isDragging;
     }
@@ -164,6 +165,17 @@ export const actions = {
     openDialog({ state }, { nodeId }) {
         openDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
+
+    /**
+     * Move either the outline of the nodes or the nodes itself,
+     * depeding on the amount of selected nodes. Delta is hereby the amount
+     * of movement to the last position of the node.
+     * @param {Object} context - store context
+     * @param {Object} params
+     * @param {string} params.deltaX - pixels moved since the last
+     * @param {string} params.deltaY - id of the node
+     * @returns {void} - nothing to return
+     */
     moveNodes({ commit, getters }, { deltaX, deltaY }) {
         const selectedNodes = getters.selectedNodes;
         if (selectedNodes.length > moveNodeOutlineTreshold) {
@@ -176,11 +188,20 @@ export const actions = {
             });
         }
     },
-    // Save the position of the nodes after the move is over
-    saveNodeMoves({ state, getters }, { projectId, startPos, nodeId }) {
+
+    /**
+     * Calls the API to save the position of the nodes after the move is over
+     * @param {Object} context - store context
+     * @param {Object} params
+     * @param {string} params.projectId - id of the project
+     * @param {string} params.nodeId - id of the node
+     * @param {Object} params.startPos - start position {x: , y: } of the move event
+     * @returns {void} - nothing to return
+     */
+    saveNodeMoves({ state, getters }, { projectId, nodeId, startPos }) {
         const selectedNodes = getters.selectedNodes;
         const relevantNode = state.activeWorkflow.nodes[nodeId];
-        let selectedNodeIds = selectedNodes.map((node) => node.id);
+        const selectedNodeIds = selectedNodes.map((node) => node.id);
         let translation;
         // calculate the translation either relative to the position or the outline position
         if (selectedNodes.length > moveNodeOutlineTreshold) {
@@ -350,7 +371,11 @@ export const getters = {
         };
     },
 
-    // returns the nodes that are currently selected
+    /**
+     * Returns the nodes that are currently selected
+     * @param {Object} state - the state of the store
+     * @returns {Array} containing the selected nodes
+     */
     selectedNodes(state) {
         let activeWorkflow = state.activeWorkflow;
         return Object.values(activeWorkflow.nodes).filter(node => node.selected);

@@ -1,5 +1,5 @@
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 import DataPortOutputTable from '~/components/output/DataPortOutputTable';
 import FlowVariablePortOutputTable from '~/components/output/FlowVariablePortOutputTable';
 import OutputPortSelectorBar from '~/components/output/OutputPortSelectorBar';
@@ -40,10 +40,10 @@ export default {
         ...mapState('workflow', {
             nodes: state => state.activeWorkflow.nodes
         }),
+        ...mapGetters('workflow', ['activeWorkflowId']),
         ...mapState('flowVariables', ['flowVariables']),
         ...mapState('openedProjects', {
-            activeProjectId: 'activeId',
-            activeWorkflowId: 'activeWorkflowId'
+            activeProjectId: 'activeId'
         }),
         selectedNodes() {
             let nodes = Object.values(this.nodes || {});

@@ -15,6 +15,8 @@ import LoopDecorator from '~/components/LoopDecorator';
 import NodeActionBar from '~/components/NodeActionBar';
 import Port from '~/components/PortWithTooltip';
 
+import '~/plugins/directive-move';
+
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
@@ -566,30 +568,6 @@ describe('Node', () => {
             wrapper.vm.onMoveStart(moveStartEvent);
             expect(storeConfig.workflow.mutations.deselectAllNodes).toHaveBeenCalled();
             expect(storeConfig.workflow.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
-        });
-
-        it('adjusts node position on start of movement', async () => {
-            propsData.selected = false;
-            propsData.position = { x: 199, y: 199 };
-            doMount(shallowMount);
-
-            await wrapper.find('g g g').trigger('click', { button: 0 });
-
-            expect(storeConfig.workflow.mutations.deselectAllNodes).toHaveBeenCalled();
-            expect(storeConfig.workflow.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
-            expect(wrapper.props().isDragging).toBe(false);
-            let moveStartEvent = new CustomEvent('movestart', {
-                detail: {
-                    startX: 199,
-                    startY: 199,
-                    event: {
-                        shiftKey: true
-                    }
-                }
-            });
-            wrapper.setProps({ isDragging: true });
-            wrapper.vm.onMoveStart(moveStartEvent);
-            expect(storeConfig.workflow.actions.moveNodes).toBeCalledWith(expect.anything(), { deltaX: 1, deltaY: 1 });
         });
 
         it('makes sure outline is not moved when moving a single node and correctly reset after movement', async () => {

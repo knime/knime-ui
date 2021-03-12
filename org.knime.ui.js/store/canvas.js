@@ -153,7 +153,6 @@ export const getters = {
             bottom = 0;
         }
 
-
         return {
             left,
             top,

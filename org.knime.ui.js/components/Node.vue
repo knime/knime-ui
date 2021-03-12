@@ -189,7 +189,7 @@ export default {
         },
 
         /**
-         * true if the node is currently dragged
+         * True if the node is currently dragged
          */
         isDragging: {
             type: Boolean,
@@ -199,6 +199,7 @@ export default {
     data() {
         return {
             hover: false,
+            // Start position of the dragging
             startPos: { x: 0, y: 0 }
         };
     },
@@ -274,9 +275,6 @@ export default {
                 x,
                 y
             };
-        },
-        outlineOffset() {
-            return this.outlinePosition;
         }
     },
     watch: {
@@ -338,7 +336,7 @@ export default {
          * Left-Click & Shift => Add/Remove this node to/from selection
          * Left-Click & Ctrl  => do Nothing
          */
-        onLeftMouseDown(e) {
+        onLeftMouseClick(e) {
             if (e.ctrlKey || e.metaKey) {
                 // user tries to open component or metanode
                 return;
@@ -360,7 +358,10 @@ export default {
             }
         },
 
-        // clears outline position after movement if outline position was used
+        /**
+         * Clears the outline position after node movement, if outline position was present
+         * @returns {void} nothing to return
+         */
         handleMoveFromStore() {
             if (this.isDragging || this.outlinePosition === null) {
                 return;
@@ -404,28 +405,20 @@ export default {
             }
             this.selectNode(this.id);
             
-            // Move node to a matching grid position
             this.startPos = { x: this.position.x, y: this.position.y };
-            let deltaX = Math.round(this.position.x / this.dragGrid.x) * this.dragGrid.x - this.position.x;
-            let deltaY = Math.round(this.position.y / this.dragGrid.y) * this.dragGrid.y - this.position.y;
-            this.$store.dispatch(
-                'workflow/moveNodes',
-                { deltaX, deltaY }
-            );
         },
+
         /**
          * Handles the end of a move event
          * @returns {void} nothing to return
          */
         onMoveEnd() {
-            setTimeout(() => {
-                this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: false });
-                this.$store.dispatch('workflow/saveNodeMoves', {
-                    projectId: this.projectId,
-                    startPos: this.startPos,
-                    nodeId: this.id
-                });
-            }, 0);
+            this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: false });
+            this.$store.dispatch('workflow/saveNodeMoves', {
+                projectId: this.projectId,
+                startPos: this.startPos,
+                nodeId: this.id
+            });
         }
     }
 };
@@ -458,8 +451,8 @@ export default {
       to="node-select"
     >
       <g
-        v-if="outlineOffset"
-        :transform="`translate(${outlineOffset.x }, ${outlineOffset.y })`"
+        v-if="outlinePosition"
+        :transform="`translate(${outlinePosition.x }, ${outlinePosition.y })`"
       >
         <rect
           :x="nodeSelectionMeasures.x"
@@ -511,7 +504,7 @@ export default {
       @mouseenter="hover = true"
     >
       <!-- Elements for which a click selects node -->
-      <g @click.left="onLeftMouseDown">
+      <g @click.left="onLeftMouseClick">
         <!-- Hover Area, larger than the node torso -->
         <rect
           class="hover-area"
