@@ -63,6 +63,7 @@ describe('API', () => {
             }));
             let table = await api.loadTable({
                 projectId: 'foo',
+                workflowId: 'root',
                 nodeId: 'root:123',
                 portIndex: 2,
                 offset: 100,
@@ -72,7 +73,7 @@ describe('API', () => {
             expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                 jsonrpc: '2.0',
                 method: 'NodeService.doPortRpc',
-                params: ['foo', 'root:123', 2, expectedNestedRPC],
+                params: ['foo', 'root', 'root:123', 2, expectedNestedRPC],
                 id: 0
             }));
             expect(table).toBe('dummy');
@@ -92,6 +93,7 @@ describe('API', () => {
             }));
             let flowVariables = await api.loadFlowVariables({
                 projectId: 'foo',
+                workflowId: 'root',
                 nodeId: 'root:123',
                 portIndex: 2
             });
@@ -99,7 +101,7 @@ describe('API', () => {
             expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                 jsonrpc: '2.0',
                 method: 'NodeService.doPortRpc',
-                params: ['foo', 'root:123', 2, expectedNestedRPC],
+                params: ['foo', 'root', 'root:123', 2, expectedNestedRPC],
                 id: 0
             }));
             expect(flowVariables).toBe('dummy');
@@ -107,61 +109,61 @@ describe('API', () => {
     });
 
     it('executes nodes', async () => {
-        await api.executeNodes({ projectId: '123', nodeIds: ['a', 'b', 'c'] });
+        await api.executeNodes({ projectId: '123', workflowId: '12', nodeIds: ['a', 'b', 'c'] });
         expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
             jsonrpc: '2.0',
             method: 'NodeService.changeNodeStates',
-            params: ['123', ['a', 'b', 'c'], 'execute'],
+            params: ['123', '12', ['a', 'b', 'c'], 'execute'],
             id: 0
         }));
     });
 
     it('cancels nodes', async () => {
-        await api.cancelNodeExecution({ projectId: '123', nodeIds: ['a', 'b', 'c'] });
+        await api.cancelNodeExecution({ projectId: '123', workflowId: '12', nodeIds: ['a', 'b', 'c'] });
         expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
             jsonrpc: '2.0',
             method: 'NodeService.changeNodeStates',
-            params: ['123', ['a', 'b', 'c'], 'cancel'],
+            params: ['123', '12', ['a', 'b', 'c'], 'cancel'],
             id: 0
         }));
     });
 
     it('resets nodes', async () => {
-        await api.resetNodes({ projectId: '123', nodeIds: ['a', 'b', 'c'] });
+        await api.resetNodes({ projectId: '123', workflowId: '12', nodeIds: ['a', 'b', 'c'] });
         expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
             jsonrpc: '2.0',
             method: 'NodeService.changeNodeStates',
-            params: ['123', ['a', 'b', 'c'], 'reset'],
+            params: ['123', '12', ['a', 'b', 'c'], 'reset'],
             id: 0
         }));
     });
 
     it('pauses node execution', async () => {
-        await api.pauseNodeExecution({ projectId: '123', nodeIds: ['loop'] });
+        await api.pauseNodeExecution({ projectId: '123', workflowId: '12', nodeIds: ['loop'] });
         expect(window.jsonrpc).toHaveBeenLastCalledWith(JSON.stringify({
             jsonrpc: '2.0',
             method: 'NodeService.changeLoopState',
-            params: ['123', 'loop', 'pause'],
+            params: ['123', '12', 'loop', 'pause'],
             id: 0
         }));
     });
 
     it('resumes node execution', async () => {
-        await api.resumeNodeExecution({ projectId: '123', nodeIds: ['loop'] });
+        await api.resumeNodeExecution({ projectId: '123', workflowId: '12', nodeIds: ['loop'] });
         expect(window.jsonrpc).toHaveBeenLastCalledWith(JSON.stringify({
             jsonrpc: '2.0',
             method: 'NodeService.changeLoopState',
-            params: ['123', 'loop', 'resume'],
+            params: ['123', '12', 'loop', 'resume'],
             id: 0
         }));
     });
 
     it('steps node execution', async () => {
-        await api.stepNodeExecution({ projectId: '123', nodeIds: ['loop'] });
+        await api.stepNodeExecution({ projectId: '123', workflowId: '12', nodeIds: ['loop'] });
         expect(window.jsonrpc).toHaveBeenLastCalledWith(JSON.stringify({
             jsonrpc: '2.0',
             method: 'NodeService.changeLoopState',
-            params: ['123', 'loop', 'step'],
+            params: ['123', '12', 'loop', 'step'],
             id: 0
         }));
     });

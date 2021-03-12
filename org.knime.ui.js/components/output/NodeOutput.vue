@@ -42,7 +42,8 @@ export default {
         }),
         ...mapState('flowVariables', ['flowVariables']),
         ...mapState('openedProjects', {
-            activeProjectId: 'activeId'
+            activeProjectId: 'activeId',
+            activeWorkflowId: 'activeWorkflowId'
         }),
         selectedNodes() {
             let nodes = Object.values(this.nodes || {});
@@ -183,6 +184,7 @@ export default {
                 setTimeout(() => { // delay UI blocking at startup
                     this.$store.dispatch(`${dataSource}/load`, {
                         projectId: this.activeProjectId,
+                        workflowId: this.activeWorkflowId,
                         nodeId: this.selectedNode.id,
                         portIndex: this.selectedPortIndex
                     });
