@@ -9,7 +9,7 @@ import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 jest.mock('~api', () => { }, { virtual: true });
 
 describe('WorkflowToolbar.vue', () => {
-    let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper, $store;
+    let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper, $store, selectedNodes;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -20,6 +20,7 @@ describe('WorkflowToolbar.vue', () => {
         wrapper = null;
         propsData = {};
 
+        selectedNodes = [];
         workflow = {
             info: {},
             nodes: {
@@ -49,6 +50,9 @@ describe('WorkflowToolbar.vue', () => {
                     executeNodes: jest.fn(),
                     cancelNodeExecution: jest.fn(),
                     resetNodes: jest.fn()
+                },
+                getters: {
+                    selectedNodes: () => selectedNodes
                 }
             }
         };
@@ -117,7 +121,7 @@ describe('WorkflowToolbar.vue', () => {
 
         describe('Selection', () => {
             it('shows actions for selected', () => {
-                storeConfig.workflow.state.selectedNodes = ['root:1', 'root:2'];
+                selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:2']];
                 doShallowMount();
                 let buttons = wrapper.findAllComponents(ToolbarButton);
                 expect(buttons.at(0).text()).toMatch('selected');
@@ -126,7 +130,7 @@ describe('WorkflowToolbar.vue', () => {
             });
 
             it('disable actions for selection (all false)', () => {
-                storeConfig.workflow.state.selectedNodes = ['root:1', 'root:1'];
+                selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:1']];
                 doShallowMount();
                 let buttons = wrapper.findAllComponents(ToolbarButton);
                 expect(buttons.at(0).attributes('disabled')).toBeTruthy();
@@ -135,7 +139,7 @@ describe('WorkflowToolbar.vue', () => {
             });
 
             it('enable actions for selection (some true)', () => {
-                storeConfig.workflow.state.selectedNodes = ['root:1', 'root:2'];
+                selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:2']];
                 doShallowMount();
                 let buttons = wrapper.findAllComponents(ToolbarButton);
                 expect(buttons.at(0).attributes('disabled')).toBeFalsy();
@@ -144,7 +148,7 @@ describe('WorkflowToolbar.vue', () => {
             });
 
             it('triggers store actions when a button is clicked', () => {
-                storeConfig.workflow.state.selectedNodes = ['root:1', 'root:2'];
+                selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:2']];
                 doShallowMount();
                 let buttons = wrapper.findAllComponents(ToolbarButton);
                 let { executeNodes, cancelNodeExecution, resetNodes } = storeConfig.workflow.actions;
