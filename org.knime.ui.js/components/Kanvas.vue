@@ -92,6 +92,7 @@ export default {
             // deselect all nodes
             if (this.clickStartedOnEmptyKanvas) {
                 this.deselectAllNodes();
+                this.clickStartedOnEmptyKanvas = null;
             }
         },
         /*

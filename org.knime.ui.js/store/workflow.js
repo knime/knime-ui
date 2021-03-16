@@ -7,7 +7,7 @@ import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '..
 
 
 // Defines the treshhold after which only the node-outline is moved when dragging a node
-const moveNodeOutlineTreshold = 2;
+const moveNodeOutlineTreshold = 10;
 
 /**
  * Store that holds a workflow graph and the associated tooltips.

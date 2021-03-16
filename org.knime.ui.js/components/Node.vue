@@ -9,6 +9,7 @@ import StreamingDecorator from '~/components/StreamingDecorator';
 import LoopDecorator from '~/components/LoopDecorator';
 import portShift from '~/util/portShift';
 import NodeActionBar from '~/components/NodeActionBar.vue';
+import NodeSelectionPlane from '~/components/NodeSelectionPlane.vue';
 import { throttle } from 'lodash';
 
 const moveNodesThrottle = 10; // 10 ms between new move calculations are performed
@@ -30,7 +31,8 @@ export default {
         NodeState,
         LinkDecorator,
         StreamingDecorator,
-        LoopDecorator
+        LoopDecorator,
+        NodeSelectionPlane
     },
     inheritAttrs: false,
     provide() {
@@ -208,18 +210,6 @@ export default {
             projectId: 'activeId'
         }),
         ...mapState('canvas', ['zoomFactor']),
-        nodeSelectionMeasures() {
-            const { nodeStatusHeight, nodeStatusMarginTop, nodeSize,
-                nodeSelectionPadding: [top, right, bottom, left] } = this.$shapes;
-            const hasStatusBar = this.kind !== 'metanode';
-
-            return {
-                y: -top,
-                x: -left,
-                height: (top + nodeSize + bottom) + (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0),
-                width: left + right + nodeSize
-            };
-        },
         decoratorBackgroundType() {
             if (this.type) {
                 return this.type;
@@ -342,19 +332,19 @@ export default {
                 return;
             }
 
-            if (e.shiftKey) {
-                // Multi select
-                if (this.selected) {
-                    this.deselectNode(this.id);
+            if (!this.isDragging) {
+                if (e.shiftKey) {
+                    // Multi select
+                    if (this.selected) {
+                        this.deselectNode(this.id);
+                    } else {
+                        this.selectNode(this.id);
+                    }
                 } else {
+                    // Single select
+                    this.deselectAllNodes();
                     this.selectNode(this.id);
                 }
-            } else {
-                // Single select
-                if (!this.isDragging) {
-                    this.deselectAllNodes();
-                }
-                this.selectNode(this.id);
             }
         },
 
@@ -370,6 +360,20 @@ export default {
                 'workflow/resetOutlinePosition',
                 { nodeId: this.id }
             );
+        },
+
+        /**
+         * Handles the start of a move event
+         * @param {Object} e - details of the mousedown event
+         * @returns {void} nothing to return
+         */
+        onMoveStart(e) {
+            this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: true });
+            if (!this.selected && !e.detail.event.shiftKey) {
+                this.deselectAllNodes();
+            }
+            this.selectNode(this.id);
+            this.startPos = { x: this.position.x, y: this.position.y };
         },
 
         /**
@@ -394,31 +398,19 @@ export default {
         }, moveNodesThrottle),
 
         /**
-         * Handles the start of a move event
-         * @param {Object} e - details of the mousedown event
-         * @returns {void} nothing to return
-         */
-        onMoveStart(e) {
-            this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: true });
-            if (!this.selected && !e.detail.event.shiftKey) {
-                this.deselectAllNodes();
-            }
-            this.selectNode(this.id);
-            
-            this.startPos = { x: this.position.x, y: this.position.y };
-        },
-
-        /**
          * Handles the end of a move event
          * @returns {void} nothing to return
          */
         onMoveEnd() {
-            this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: false });
-            this.$store.dispatch('workflow/saveNodeMoves', {
-                projectId: this.projectId,
-                startPos: this.startPos,
-                nodeId: this.id
-            });
+            // Need the timeout to set the dragging to false after all event is completed
+            setTimeout(() => {
+                this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: false });
+                this.$store.dispatch('workflow/saveNodeMoves', {
+                    projectId: this.projectId,
+                    startPos: this.startPos,
+                    nodeId: this.id
+                });
+            }, 0);
         }
     }
 };
@@ -429,6 +421,7 @@ export default {
     v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"
     :transform="`translate(${position.x}, ${position.y})`"
     :data-node-id="id"
+    :class="[{ dragging: isDragging }]"
   >
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal
@@ -450,33 +443,15 @@ export default {
       v-if="selected"
       to="node-select"
     >
-      <g
+      <NodeSelectionPlane
+        :position="position"
+        :kind="kind"
+      />
+      <NodeSelectionPlane
         v-if="outlinePosition"
-        :transform="`translate(${outlinePosition.x }, ${outlinePosition.y })`"
-      >
-        <rect
-          :x="nodeSelectionMeasures.x"
-          :y="nodeSelectionMeasures.y"
-          :width="nodeSelectionMeasures.width"
-          :height="nodeSelectionMeasures.height"
-          :fill="$colors.selection.activeBackground"
-          :stroke="$colors.selection.activeBorder"
-          stroke-width="1"
-          rx="4"
-        />
-      </g>
-      <g :transform="`translate(${position.x}, ${position.y})`">
-        <rect
-          :x="nodeSelectionMeasures.x"
-          :y="nodeSelectionMeasures.y"
-          :width="nodeSelectionMeasures.width"
-          :height="nodeSelectionMeasures.height"
-          :fill="$colors.selection.activeBackground"
-          :stroke="$colors.selection.activeBorder"
-          stroke-width="1"
-          rx="4"
-        />
-      </g>
+        :position="outlinePosition"
+        :kind="kind"
+      />
     </portal>
 
     <!-- Annotation needs to be behind ports -->
@@ -613,5 +588,11 @@ export default {
   line-height: 12px;
   pointer-events: none;
   width: 125px;
+}
+
+.dragging {
+  & >>> .port {
+    pointer-events: none;
+  }
 }
 </style>
