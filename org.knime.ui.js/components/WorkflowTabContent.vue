@@ -5,6 +5,7 @@ import Kanvas from '~/components/Kanvas';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
 import NodeOutput from '~/components/output/NodeOutput';
+import Splitter from '@/components/Splitter';
 
 /**
  * A component that shows the tab contents belonging to one workflow,
@@ -12,6 +13,7 @@ import NodeOutput from '~/components/output/NodeOutput';
  */
 export default {
     components: {
+        Splitter,
         NodeOutput,
         Kanvas,
         LeftCollapsiblePanel,
@@ -63,10 +65,12 @@ export default {
           v-bind="metadata"
         />
       </LeftCollapsiblePanel>
-      <div class="stacked">
+      <Splitter direction="horizontal">
         <Kanvas id="kanvas" />
-        <NodeOutput id="node-output" />
-      </div>
+        <template v-slot:secondary>
+          <NodeOutput id="node-output" />
+        </template>
+      </Splitter>
     </div>
   </main>
   <div
@@ -109,20 +113,14 @@ main {
   border-right: 1px solid var(--knime-silver-sand);
 }
 
-.stacked {
-  flex: 1 1 auto;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
 #kanvas {
   overflow: auto;
-  flex: 1 0 60%;
+  flex: 1 1 100%;
+  height: 100%;
 }
 
 #node-output {
-  flex: 0 0 40%;
+  flex: 1 1 100%;
 }
 
 .placeholder {
