@@ -82,7 +82,7 @@ export const changeNodeState = ({ projectId, nodeIds, action }) => {
         let result = rpc('NodeService.changeNodeStates', projectId, nodeIds, action);
         return Promise.resolve(result);
     } catch (e) {
-        // consola.error(e);
+        consola.error(e);
         return Promise.reject(new Error(`Could not ${action} nodes ${nodeIds}`));
     }
 };
@@ -114,12 +114,12 @@ export const changeLoopState = ({ projectId, nodeId, action }) => {
 export const openDialog = ({ projectId, nodeId }) => {
     try {
         // returns falsy on success
-        let result = window.openNodeDialog(projectId, nodeId);
-        if (result) {
-            throw new Error(result);
+        let error = window.openNodeDialog(projectId, nodeId);
+        if (error) {
+            throw new Error(error);
         }
-    } catch {
-        consola.error(`Could not open dialog of node ${nodeId}`);
+    } catch (e) {
+        consola.error(`Could not open dialog of node ${nodeId}`, e);
     }
 };
 
@@ -132,12 +132,12 @@ export const openDialog = ({ projectId, nodeId }) => {
 export const openView = ({ projectId, nodeId }) => {
     try {
         // returns falsy on success
-        let result = window.openNodeView(projectId, nodeId);
-        if (result) {
-            throw new Error(result);
+        let error = window.openNodeView(projectId, nodeId);
+        if (error) {
+            throw new Error(error);
         }
-    } catch {
-        consola.error(`Could not open view of node ${nodeId}`);
+    } catch (e) {
+        consola.error(`Could not open view of node ${nodeId}`, e);
     }
 };
 
@@ -203,24 +203,26 @@ const nestedRpcCall = ({ method, params, projectId, nodeId, portIndex }) => {
  * @param {String} projectId The ID of the project that contains the node
  * @param {String} nodeId The ID of the node to load data for
  * @param {String} portIndex The index of the port to load data for.
+ * @param {String} offset The index of the first row to be loaded
+ * @param {String} batchSize The amount of rows to be loaded. Must be smallEq than 450
  * Remember that port 0 is usually a flow variable port.
  * @return {Promise} A promise containing the table data as defined in the API
  * */
-export const loadTable = ({ projectId, nodeId, portIndex }) => {
-    const rowCount = 400; // The backend is limited to 500-50=450, see org.knime.core.data.cache.WindowCacheTable
+export const loadTable = ({ projectId, nodeId, portIndex, offset = 0, batchSize }) => {
     try {
         let table = nestedRpcCall({
             projectId,
             nodeId,
             portIndex,
             method: 'getTable',
-            params: [0, rowCount]
+            params: [offset, batchSize]
         });
         return Promise.resolve(table);
     } catch (e) {
         consola.error(e);
         return Promise.reject(new Error(
-            `Couldn't load table data from port ${portIndex} of node "${nodeId}" in project ${projectId}`
+            `Couldn't load table data (start: ${offset}, length: ${batchSize}) ` +
+            `from port ${portIndex} of node "${nodeId}" in project ${projectId}`
         ));
     }
 };

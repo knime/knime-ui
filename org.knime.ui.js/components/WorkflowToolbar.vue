@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapActions } from 'vuex';
+import { mapState, mapGetters, mapActions } from 'vuex';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import ToolbarButton from '~/components/ToolbarButton';
 import ExecuteAllIcon from '~/assets/execute-all.svg?inline';
@@ -26,7 +26,7 @@ export default {
             workflow: 'activeWorkflow',
             allowedActions: state => state.activeWorkflow?.allowedActions || {}
         }),
-        ...mapState('workflow', ['selectedNodes']),
+        ...mapGetters('workflow', ['selectedNodes']),
         hasBreadcrumb() {
             return this.workflow.parents?.length > 0;
         },
@@ -34,16 +34,16 @@ export default {
             return this.selectedNodes.length > 0;
         },
         canExecuteSelection() {
-            return this.selectedNodes.some(nodeId => this.workflow.nodes[nodeId].allowedActions.canExecute);
+            return this.selectedNodes.some(node => node.allowedActions.canExecute);
         },
         canCancelSelection() {
-            return this.selectedNodes.some(nodeId => this.workflow.nodes[nodeId].allowedActions.canCancel);
+            return this.selectedNodes.some(node => node.allowedActions.canCancel);
         },
         canResetSelection() {
-            return this.selectedNodes.some(nodeId => this.workflow.nodes[nodeId].allowedActions.canReset);
+            return this.selectedNodes.some(node => node.allowedActions.canReset);
         },
         canDeleteSelection() {
-            return this.selectedNodes.some(nodeId => this.workflow.nodes[nodeId].allowedActions.canDelete);
+            return this.selectedNodes.some(node => node.allowedActions.canDelete);
         }
     },
     methods: {

@@ -25,6 +25,7 @@ const mockNode = ({ id, position }) => ({
     icon: 'data:image/',
     state: null
 });
+
 const mockConnector = ({ nr }) => ({
     sourceNode: '',
     destNode: '',
@@ -164,7 +165,7 @@ describe('Kanvas', () => {
         });
 
         it('renders nodes', () => {
-            wrapper.findAllComponents(Node).wrappers.forEach((n, i) => {
+            wrapper.findAllComponents(Node).wrappers.forEach((n) => {
                 let props = n.props();
                 let nodeId = props.id;
                 let expected = {
@@ -173,7 +174,7 @@ describe('Kanvas', () => {
                     name: `name-${nodeId}`,
                     type: `type-${nodeId}`,
                     link: null,
-                    allowedActions: null,
+                    allowedActions: {},
                     selected: false,
                     executionInfo: null,
                     loopInfo: {

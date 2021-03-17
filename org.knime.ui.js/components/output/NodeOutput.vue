@@ -36,7 +36,7 @@ export default {
         };
     },
     computed: {
-        ...mapState('dataTable', ['rows', 'totalNumRows', 'totalNumColumns']),
+        ...mapState('dataTable', ['rows', 'totalNumRows', 'totalNumColumns', 'isLoading', 'isReady']),
         ...mapState('workflow', {
             nodes: state => state.activeWorkflow.nodes
         }),
@@ -67,8 +67,8 @@ export default {
         // FlowVariable ports do not need to be executed before showing the table
         needsExecution() {
             return this.isSupported &&
-            this.selectedNode?.allowedActions?.canExecute &&
-            this.selectedPortIndexType !== 'flowVariable';
+                this.selectedNode?.allowedActions?.canExecute &&
+                this.selectedPortIndexType !== 'flowVariable';
         },
         isExecuting() {
             let executionState = this.selectedNode?.state?.executionState;
@@ -106,6 +106,9 @@ export default {
                 if (this.isExecuting) {
                     return 'Output is available after execution.';
                 }
+                if (this.isLoading) {
+                    return 'Loading Table...';
+                }
                 return 'No output available.';
             default:
                 return 'To show the node output, please select only one node.';
@@ -130,20 +133,26 @@ export default {
         supportsSelectedPort() {
             return supportsPort(this.outPorts[this.selectedPortIndex ? this.selectedPortIndex : 0]);
         },
-        // the table should be shown if a port is selected, that does not need execution or is executed
-        // and is supported
         showTable() {
-            return this.selectedPortIndex !== null &&
-            !this.needsExecution &&
-            this.supportsSelectedPort &&
-            !this.isInactive &&
+            if (
+                this.selectedPortIndex === null ||
+                !this.supportsSelectedPort ||
+                this.needsExecution ||
+                this.isInactive
+            ) {
+                return false;
+            }
             // flow variables can already be shown even if the node is executing
-            (!this.isExecuting || this.selectedPortIndexType === 'flowVariable');
+            if (this.selectedPortIndexType === 'flowVariable') {
+                return true;
+            }
+            return !this.needsConfiguration && !this.isExecuting && this.isReady;
         }
     },
     watch: {
         selectedNode(newNode, oldNode) {
             if (oldNode !== newNode) {
+                this.$store.dispatch('dataTable/clear');
                 this.selectedPortIndex = null;
             }
         },
@@ -212,14 +221,14 @@ export default {
       >
         <span>
           <ReloadIcon
-            v-if="isExecuting"
+            v-if="isExecuting || isLoading"
             class="loading-icon"
           />
           {{ placeholderText }}</span>
         <!--Button v-if="needsConfiguration"></Button--> <!-- TODO: implement NXT-21 -->
         <Button
           v-if="needsExecution && !isInactive"
-          class="action-button"
+          class="action-button node-output-execute"
           primary
           compact
           @click="executeNode"

@@ -57,4 +57,12 @@ td svg {
   vertical-align: -3px;
   margin-left: -1px;
 }
+
+tr {
+  content-visibility: auto;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--knime-porcelain);
+  }
+}
 </style>

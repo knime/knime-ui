@@ -15,8 +15,7 @@ import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '..
 export const state = () => ({
     activeWorkflow: null,
     activeSnapshotId: null,
-    tooltip: null,
-    selectedNodes: []
+    tooltip: null
 });
 
 export const mutations = {
@@ -43,7 +42,6 @@ export const mutations = {
 
         state.activeWorkflow = workflowData;
         state.tooltip = null;
-        state.selectedNodes = [];
     },
     setActiveSnapshotId(state, id) {
         state.activeSnapshotId = id;
@@ -52,28 +50,20 @@ export const mutations = {
         Vue.set(state, 'tooltip', tooltip);
     },
     deselectAllNodes(state) {
-        if (state.selectedNodes.length) {
-            Object.values(state.activeWorkflow.nodes).forEach(node => {
-                node.selected = false;
-            });
-            Vue.set(state, 'selectedNodes', []);
-        }
+        Object.values(state.activeWorkflow.nodes).forEach(node => {
+            node.selected = false;
+        });
     },
     selectAllNodes(state) {
         Object.values(state.activeWorkflow.nodes).forEach(node => {
             node.selected = true;
         });
-        Vue.set(state, 'selectedNodes', Object.keys(state.activeWorkflow.nodes));
     },
     selectNode(state, nodeId) {
         state.activeWorkflow.nodes[nodeId].selected = true;
-        // assumes node is not already selected
-        state.selectedNodes.push(nodeId);
     },
     deselectNode(state, nodeId) {
         state.activeWorkflow.nodes[nodeId].selected = false;
-        let index = state.selectedNodes.indexOf(nodeId);
-        state.selectedNodes.splice(index, 1);
     }
 };
 
@@ -154,17 +144,17 @@ export const actions = {
     },
     changeNodeState({ state, getters }, { action, nodes }) {
         let { activeWorkflow: { projectId } } = state;
+        let { activeWorkflowId } = getters;
 
         if (Array.isArray(nodes)) {
             // act upon a list of nodes
             changeNodeState({ projectId, nodeIds: nodes, action });
         } else if (nodes === 'all') {
             // act upon entire workflow
-            let { activeWorkflowId } = getters;
             changeNodeState({ projectId, nodeIds: [activeWorkflowId], action });
         } else if (nodes === 'selected') {
             // act upon selected nodes
-            changeNodeState({ projectId, nodeIds: state.selectedNodes, action });
+            changeNodeState({ projectId, nodeIds: getters.selectedNodes.map(node => node.id), action });
         } else {
             throw new TypeError("'nodes' has to be of type 'all' | 'selected' | Array<nodeId>]");
         }
@@ -209,6 +199,12 @@ export const getters = {
     },
     isStreaming({ activeWorkflow }) {
         return Boolean(activeWorkflow?.info.jobManager);
+    },
+    selectedNodes({ activeWorkflow }) {
+        if (!activeWorkflow) {
+            return [];
+        }
+        return Object.values(activeWorkflow.nodes).filter(node => node.selected);
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow

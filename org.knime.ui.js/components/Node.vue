@@ -126,7 +126,7 @@ export default {
          */
         allowedActions: {
             type: Object,
-            default: null
+            default: () => ({})
         },
 
         /**
@@ -315,13 +315,14 @@ export default {
 <template>
   <g
     :transform="`translate(${position.x}, ${position.y})`"
+    :data-node-id="id"
   >
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal
-      v-if="!insideStreamingComponent && hover"
       to="node-actions"
     >
       <NodeActionBar
+        v-if="!insideStreamingComponent && hover"
         ref="actionbar"
         v-bind="allNodeActions"
         :transform="`translate(${position.x + $shapes.nodeSize / 2} ${position.y - $shapes.nodeSelectionPadding[0]})`"
