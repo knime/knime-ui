@@ -70,7 +70,9 @@ export const addEventListener = makeToggleEventListener('add');
 export const removeEventListener = makeToggleEventListener('remove');
 
 
-let nodeStateChanger = (nodeState, errorMessage, action = 'changeNodeStates') => ({ projectId, workflowId, nodeIds }) => {
+let nodeStateChanger = (nodeState, errorMessage, action = 'changeNodeStates') => (
+    { projectId, workflowId, nodeIds }
+) => {
     try {
         let result = rpc(`NodeService.${action}`, projectId, workflowId, nodeIds, nodeState);
         return Promise.resolve(result);
@@ -192,7 +194,12 @@ const nestedRpcCall = ({ method, params, projectId, workflowId, nodeId, portInde
         method,
         params
     };
-    let response = rpc('NodeService.doPortRpc', projectId, workflowId, nodeId, portIndex, JSON.stringify(nestedRpcCall));
+    let response = rpc('NodeService.doPortRpc',
+        projectId,
+        workflowId,
+        nodeId,
+        portIndex,
+        JSON.stringify(nestedRpcCall));
     return parseResponse({ response, method, params });
 };
 

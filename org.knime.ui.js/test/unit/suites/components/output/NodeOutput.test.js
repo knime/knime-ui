@@ -20,8 +20,6 @@ describe('NodeOutput.vue', () => {
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
-
-
     });
 
     beforeEach(() => {
@@ -71,6 +69,9 @@ describe('NodeOutput.vue', () => {
                     },
                     state: {}
                 }
+            },
+            getters: {
+                activeWorkflowId: jest.fn().mockReturnValue('activeWorkflowId')
             },
             actions: {
                 executeNodes: jest.fn()
@@ -294,7 +295,7 @@ describe('NodeOutput.vue', () => {
         await Vue.nextTick();
         jest.runAllTimers();
         expect(dataTable.actions.load).toHaveBeenCalledWith(expect.anything(), {
-            nodeId: 'node1', portIndex: 2, projectId: 'projectId'
+            nodeId: 'node1', portIndex: 2, projectId: 'projectId', workflowId: 'activeWorkflowId'
         });
 
         wrapper.setData({ selectedPortIndex: null });
@@ -332,7 +333,7 @@ describe('NodeOutput.vue', () => {
         await Vue.nextTick();
         jest.runAllTimers();
         expect(flowVariables.actions.load).toHaveBeenCalledWith(expect.anything(), {
-            nodeId: 'node1', portIndex: 2, projectId: 'projectId'
+            nodeId: 'node1', portIndex: 2, projectId: 'projectId', workflowId: 'activeWorkflowId'
         });
 
         wrapper.setData({ selectedPortIndex: null });

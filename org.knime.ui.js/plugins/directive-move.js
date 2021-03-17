@@ -8,26 +8,34 @@
  * @param {Function=} onMove Optional handler for the `moving` event
  * @param {Function=} onMoveEnd Optional handler for the `moveend` event
  * @param {Number=} threshold Distance that the mouse must have travelled before a move event is fired. Defaults to 5.
+ * @param {boolean=} isProtected Only applies the directive if is false
  *
  * The movestart, moving, and moveend events have a `detail` property which holds the attributes
- * `startX`, `startY`, `deltaX`, `deltaY`, `totalDeltaX`, `totalDeltaY`, `endX`, `endY`
+ * `startX`, `startY`, `deltaX`, `deltaY`, `totalDeltaX`, `totalDeltaY`, `endX`, `endY` and `e`
  * respectively, depending on the event type.
  */
 
 import Vue from 'vue';
 
 let stateMap;
+// Default treshold which needs to be exceeded before the move event is fired
+const defaultTreshold = 5;
 
-const createMousedownHandler = state => (e) => {
+const createMousedownHandler = (state, el) => (e) => {
     e.stopPropagation();
     e.preventDefault();
-    let { screenX, screenY } = e.changedTouches ? e.changedTouches[0] : e;
+    state.pointerId = e.pointerId;
+    el.onpointermove = state.mousemove;
+    let { screenX, screenY } = e;
     delete state.prev;
     state.start = [screenX, screenY];
 };
 
-const createMouseupHandler = state => (e) => {
-    const { screenX, screenY } = e.changedTouches ? e.changedTouches[0] : e;
+const createMouseupHandler = (state, el) => (e) => {
+    el.releasePointerCapture(e.pointerId);
+    el.onpointermove = null;
+    state.pointerId = null;
+    const { screenX, screenY } = e;
     if (state.dragging && state.handlers.onMoveEnd) {
         let [startX, startY] = state.start;
         let event = new CustomEvent('moveend', {
@@ -47,12 +55,12 @@ const createMouseupHandler = state => (e) => {
     delete state.dragging;
 };
 
-const createMousemoveHandler = state => (e) => {
+const createMousemoveHandler = (state) => (e) => {
     if (!state.start) {
         return;
     }
 
-    let { screenX, screenY } = e.touches ? e.touches[0] : e;
+    let { screenX, screenY } = e;
     let [x, y] = [screenX - state.start[0], screenY - state.start[1]];
     if (!state.dragging && Math.max(Math.abs(x), Math.abs(y)) < state.threshold) {
         return;
@@ -81,52 +89,56 @@ const createMousemoveHandler = state => (e) => {
 };
 
 const inserted = (el, { value }) => {
+    // Only insert when the object is writable
+    if (value.isProtected) {
+        return;
+    }
     if (!stateMap) {
         stateMap = new WeakMap();
     }
     let state = {
         handlers: value,
-        threshold: value.threshold || 0,
+        threshold: value.threshold || defaultTreshold,
         dragging: false
     };
     stateMap.set(el, state);
 
-    state.mousedown = createMousedownHandler(state);
-    el.addEventListener('mousedown', state.mousedown);
-    el.addEventListener('touchstart', state.mousedown);
+    state.mousedown = createMousedownHandler(state, el);
+    el.onpointerdown = state.mousedown;
 
-    state.mouseup = createMouseupHandler(state);
-    el.addEventListener('mouseup', state.mouseup);
-    el.addEventListener('touchend', state.mouseup);
-    window.addEventListener('mouseup', state.mouseup);
-    window.addEventListener('touchend', state.mouseup);
+    state.mouseup = createMouseupHandler(state, el);
+    el.onpointerup = state.mouseup;
 
     state.mousemove = createMousemoveHandler(state);
-    window.addEventListener('mousemove', state.mousemove);
-    window.addEventListener('touchmove', state.mousemove);
 };
 
-const unbind = (el) => {
-    let state = stateMap.get(el);
-    if (!state) {
+const unbind = (el, { value }) => {
+    // Only insert when the object is writable
+    if (value.isProtected) {
         return;
     }
-    el.removeEventListener('mousedown', state.mousedown);
-    el.removeEventListener('touchstart', state.mousedown);
-
-    el.removeEventListener('mouseup', state.mouseup);
-    el.removeEventListener('touchend', state.mouseup);
-
-    window.removeEventListener('mouseup', state.mouseup);
-    window.removeEventListener('touchend', state.mouseup);
-
-    window.removeEventListener('mousemove', state.mousemove);
-    window.removeEventListener('touchmove', state.mousemove);
+    el.onpointerdown = null;
+    el.onpointermove = null;
+    el.onpointerup = null;
 
     stateMap.delete(el);
 };
 
+// reapply the pointer capture when the component changes
+// this is necessary, as otherwise the capture is lost on rerender of the view
+const componentUpdated = (el, { value }) => {
+    // Only insert when the object is writable
+    if (value.isProtected) {
+        return;
+    }
+    let state = stateMap.get(el);
+    if (state.pointerId && !el.hasPointerCapture(state.pointerId)) {
+        el.setPointerCapture(state.pointerId);
+    }
+};
+
 Vue.directive('move', {
     inserted,
-    unbind
+    unbind,
+    componentUpdated
 });

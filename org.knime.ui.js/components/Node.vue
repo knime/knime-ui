@@ -1,5 +1,5 @@
 <script>
-import { mapActions, mapMutations, mapState } from 'vuex';
+import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
 import Port from '~/components/PortWithTooltip';
 import NodeState from '~/components/NodeState';
 import NodeTorso from '~/components/NodeTorso';
@@ -209,6 +209,7 @@ export default {
         ...mapState('openedProjects', {
             projectId: 'activeId'
         }),
+        ...mapGetters('workflow', ['isWritable']),
         ...mapState('canvas', ['zoomFactor']),
         decoratorBackgroundType() {
             if (this.type) {
@@ -418,7 +419,7 @@ export default {
 
 <template>
   <g
-    v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"
+    v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5, isProtected: !isWritable}"
     :transform="`translate(${position.x}, ${position.y})`"
     :data-node-id="id"
     :class="[{ dragging: isDragging }]"
