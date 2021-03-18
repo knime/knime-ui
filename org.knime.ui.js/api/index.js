@@ -207,6 +207,7 @@ const nestedRpcCall = ({ method, params, projectId, workflowId, nodeId, portInde
  * Get the data table associated with a data port.
  * @param {String} projectId The ID of the project that contains the node
  * @param {String} nodeId The ID of the node to load data for
+ * @param {String} workflowId The ID of the workflow containing the node
  * @param {String} portIndex The index of the port to load data for.
  * @param {String} offset The index of the first row to be loaded
  * @param {String} batchSize The amount of rows to be loaded. Must be smallEq than 450
@@ -236,8 +237,9 @@ export const loadTable = ({ projectId, workflowId, nodeId, portIndex, offset = 0
 /**
  * Get the flow variables associated with a flow variable port.
  * @param {String} projectId The ID of the project that contains the node
- * @param {String} nodeId The ID of the node to load data for
- * @param {String} portIndex The index of the port to load data for.
+ * @param {String} nodeId The ID of the node to load variables for
+ * @param {String} workflowId The ID of the workflow containing the node
+ * @param {String} portIndex The index of the port to load variables for.
  * Remember that port 0 is usually a flow variable port.
  * @return {Promise} A promise containing the flow variable data as defined in the API
  * */

@@ -18,8 +18,8 @@
 import Vue from 'vue';
 
 let stateMap;
-// Default treshold which needs to be exceeded before the move event is fired
-const defaultTreshold = 5;
+// Default threshold which needs to be exceeded before the move event is fired
+const defaultThreshold = 5;
 
 const createMousedownHandler = (state, el) => (e) => {
     e.stopPropagation();
@@ -98,7 +98,7 @@ const inserted = (el, { value }) => {
     }
     let state = {
         handlers: value,
-        threshold: value.threshold || defaultTreshold,
+        threshold: value.threshold || defaultThreshold,
         dragging: false
     };
     stateMap.set(el, state);

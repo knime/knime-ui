@@ -86,8 +86,8 @@ describe('workflow store', () => {
             expect(store.state.workflow.activeWorkflow).toStrictEqual({
                 projectId: 'bar',
                 nodes: {
-                    foo: { bla: 1, selected: false, isDragging: false, outlinePosition: null },
-                    bar: { qux: 2, selected: false, isDragging: false, outlinePosition: null }
+                    foo: { bla: 1, selected: false, isDragging: false, dragGhostPosition: null },
+                    bar: { qux: 2, selected: false, isDragging: false, dragGhostPosition: null }
                 }
             });
         });
@@ -153,8 +153,8 @@ describe('workflow store', () => {
             });
 
             let node = store.state.workflow.activeWorkflow.nodes['root:1'];
-            store.commit('workflow/shiftOutlinePosition', { node, totalDeltaX: 50, totalDeltaY: 50 });
-            expect(node.outlinePosition).toStrictEqual({ x: 50, y: 50 });
+            store.commit('workflow/shiftDragGhostPosition', { node, totalDeltaX: 50, totalDeltaY: 50 });
+            expect(node.dragGhostPosition).toStrictEqual({ x: 50, y: 50 });
         });
 
         it('resets the position of the outlint', () => {
@@ -166,10 +166,10 @@ describe('workflow store', () => {
             });
 
             let node = store.state.workflow.activeWorkflow.nodes['root:1'];
-            store.commit('workflow/shiftOutlinePosition', { node, totalDeltaX: 50, totalDeltaY: 50 });
-            expect(node.outlinePosition).toStrictEqual({ x: 50, y: 50 });
-            store.commit('workflow/resetOutlinePosition', { nodeId: node.id });
-            expect(node.outlinePosition).toStrictEqual(null);
+            store.commit('workflow/shiftDragGhostPosition', { node, totalDeltaX: 50, totalDeltaY: 50 });
+            expect(node.dragGhostPosition).toStrictEqual({ x: 50, y: 50 });
+            store.commit('workflow/resetDragGhostPosition', { nodeId: node.id });
+            expect(node.dragGhostPosition).toStrictEqual(null);
         });
 
         it('checks node dragging', () => {
@@ -344,7 +344,7 @@ describe('workflow store', () => {
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
             let nodes = store.state.workflow.activeWorkflow.nodes;
             Object.keys(nodesArray).forEach((node) => {
-                expect(nodes[node].outlinePosition).toStrictEqual({ x: 50, y: 50 });
+                expect(nodes[node].dragGhostPosition).toStrictEqual({ x: 50, y: 50 });
                 expect(nodes[node].position).toStrictEqual({ x: 0, y: 0 });
             });
         });
@@ -372,10 +372,10 @@ describe('workflow store', () => {
             let nodes = store.state.workflow.activeWorkflow.nodes;
             Object.keys(nodesArray).forEach((node) => {
                 if (nodes[node].selected) {
-                    expect(nodes[node].outlinePosition).toStrictEqual({ x: 50, y: 50 });
+                    expect(nodes[node].dragGhostPosition).toStrictEqual({ x: 50, y: 50 });
                     expect(nodes[node].position).toStrictEqual({ x: 0, y: 0 });
                 } else {
-                    expect(nodes[node].outlinePosition).toStrictEqual(null);
+                    expect(nodes[node].dragGhostPosition).toStrictEqual(null);
                     expect(nodes[node].position).toStrictEqual({ x: 0, y: 0 });
                 }
             });

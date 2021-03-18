@@ -6,8 +6,9 @@ import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
 
 
-// Defines the treshhold after which only the node-outline is moved when dragging a node
-const moveNodeOutlineTreshold = 10;
+// Defines the number of nodes above which only the node-outline (drag ghost) is shown when dragging a node.
+// This is a performance optimization.
+const moveNodeGhostThreshold = 10;
 
 /**
  * Store that holds a workflow graph and the associated tooltips.
@@ -41,12 +42,12 @@ export const mutations = {
         });
         delete workflowData.nodeTemplates;
 
-        // add selected, isDragging and outlinePosition field to node with initial value false to enable reactivity on this property
+        // add selected, isDragging and dragGhostPosition field to node with initial value false to enable reactivity on this property
         Object.values(workflowData.nodes || {}).forEach(
             node => {
                 node.selected = false;
                 node.isDragging = false;
-                node.outlinePosition = null;
+                node.dragGhostPosition = null;
             }
         );
 
@@ -81,12 +82,12 @@ export const mutations = {
         node.position.y += deltaY;
     },
     // Shifts the outline position of the node to the original position + the total move amount
-    shiftOutlinePosition(state, { node, totalDeltaX, totalDeltaY }) {
-        node.outlinePosition =  { x: node.position.x + totalDeltaX, y: node.position.y + totalDeltaY };
+    shiftDragGhostPosition(state, { node, totalDeltaX, totalDeltaY }) {
+        node.dragGhostPosition =  { x: node.position.x + totalDeltaX, y: node.position.y + totalDeltaY };
     },
     // Reset the position of the outline
-    resetOutlinePosition({ activeWorkflow: { nodes } }, { nodeId }) {
-        nodes[nodeId].outlinePosition = null;
+    resetDragGhostPosition({ activeWorkflow: { nodes } }, { nodeId }) {
+        nodes[nodeId].dragGhostPosition = null;
     },
     // change the isDragging property to the provided Value
     setDragging({ activeWorkflow: { nodes } }, { nodeId, isDragging }) {
@@ -178,9 +179,9 @@ export const actions = {
      */
     moveNodes({ commit, getters }, { deltaX, deltaY }) {
         const selectedNodes = getters.selectedNodes;
-        if (selectedNodes.length > moveNodeOutlineTreshold) {
+        if (selectedNodes.length > moveNodeGhostThreshold) {
             selectedNodes.forEach(node => {
-                commit('shiftOutlinePosition', { node, totalDeltaX: deltaX, totalDeltaY: deltaY });
+                commit('shiftDragGhostPosition', { node, totalDeltaX: deltaX, totalDeltaY: deltaY });
             });
         } else {
             selectedNodes.forEach(node => {
@@ -204,9 +205,9 @@ export const actions = {
         const selectedNodeIds = selectedNodes.map((node) => node.id);
         let translation;
         // calculate the translation either relative to the position or the outline position
-        if (selectedNodes.length > moveNodeOutlineTreshold) {
-            translation = { x: relevantNode.outlinePosition.x - startPos.x,
-                y: relevantNode.outlinePosition.y - startPos.y };
+        if (selectedNodes.length > moveNodeGhostThreshold) {
+            translation = { x: relevantNode.dragGhostPosition.x - startPos.x,
+                y: relevantNode.dragGhostPosition.y - startPos.y };
         } else {
             translation = { x: relevantNode.position.x - startPos.x,
                 y: relevantNode.position.y - startPos.y };

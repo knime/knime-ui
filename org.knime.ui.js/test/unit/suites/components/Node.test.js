@@ -93,7 +93,7 @@ describe('Node', () => {
                     deselectNode: jest.fn(),
                     deselectAllNodes: jest.fn(),
                     setDragging: jest.fn(),
-                    resetOutlinePosition: jest.fn()
+                    resetDragGhostPosition: jest.fn()
                 },
                 actions: {
                     loadWorkflow: jest.fn(),
@@ -574,11 +574,10 @@ describe('Node', () => {
             doMount(shallowMount);
             wrapper.setProps({ position: { x: 200, y: 200 } });
             await Vue.nextTick();
-            expect(storeConfig.workflow.mutations.resetOutlinePosition).not.toHaveBeenCalled();
-            wrapper.setProps({ outlinePosition: { x: 250, y: 250 } });
+            wrapper.setProps({ dragGhostPosition: { x: 250, y: 250 } });
             wrapper.setProps({ position: { x: 250, y: 250 } });
             await Vue.nextTick();
-            expect(storeConfig.workflow.mutations.resetOutlinePosition).toHaveBeenCalledTimes(1);
+            expect(storeConfig.workflow.mutations.resetDragGhostPosition).toHaveBeenCalledTimes(2);
         });
 
         it('moves a single node', async () => {
@@ -586,7 +585,7 @@ describe('Node', () => {
             wrapper.vm.startPos.x = 500;
             wrapper.vm.startPos.y = 200;
             await wrapper.find('g g g').trigger('click', { button: 0 });
-            
+
             expect(storeConfig.workflow.mutations.deselectAllNodes).toHaveBeenCalled();
             expect(storeConfig.workflow.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
             expect(wrapper.props().isDragging).toBe(false);

@@ -34,8 +34,8 @@ describe('directive-move', () => {
         await Vue.nextTick();
         expect(onMove.mock.calls.length).toBe(0);
     });
-    
-    it('moves less then the given treshold', async () => {
+
+    it('moves less then the given threshold', async () => {
         const wrapper  = mount({
             methods: { onMove, onMoveStart, onMoveEnd },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'

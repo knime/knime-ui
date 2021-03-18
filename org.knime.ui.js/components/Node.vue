@@ -1,5 +1,5 @@
 <script>
-import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
+import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
 import Port from '~/components/PortWithTooltip';
 import NodeState from '~/components/NodeState';
 import NodeTorso from '~/components/NodeTorso';
@@ -78,10 +78,10 @@ export default {
         },
 
         /**
-         * The position of the outline used when mutliple nodes are moved
-         * The outline is only shown if more than a @workflow.moveOutlineTreshold nodes are moved
+         * The position of the outline used when multiple nodes are moved
+         * The outline is only shown if more than @workflow#moveNodeGhostThreshold nodes are moved
          */
-        outlinePosition: {
+        dragGhostPosition: {
             type: Object,
             default() {
                 return null;
@@ -255,7 +255,7 @@ export default {
                 }
             }
             let width = this.$shapes.nodeSize + extraHorizontalSize +
-                    this.$shapes.nodeHoverMargin[1] + this.$shapes.nodeHoverMargin[3];
+                this.$shapes.nodeHoverMargin[1] + this.$shapes.nodeHoverMargin[3];
             let height = this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[0] + this.$shapes.nodeHoverMargin[2];
             let x = -this.$shapes.nodeHoverMargin[1] - extraHorizontalSize / 2;
             let y = -this.$shapes.nodeHoverMargin[0];
@@ -269,7 +269,8 @@ export default {
         }
     },
     watch: {
-        // if change occures, position has been updated from the store
+        // If change occurs, position has been updated from the store.
+        // Note that the position is not updated while the node is being dragged, only after it's dropped.
         position: {
             deep: true,
             handler() {
@@ -312,7 +313,7 @@ export default {
             // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
             if (this.kind === 'metanode' || (this.kind === 'component' && (e.ctrlKey || e.metaKey))) {
                 this.openNode();
-            } else if (this.allowedActions?.canOpenDialog)  {
+            } else if (this.allowedActions?.canOpenDialog) {
                 // open node dialog if one is present
                 this.openDialog({ nodeId: this.id });
             }
@@ -328,24 +329,26 @@ export default {
          * Left-Click & Ctrl  => do Nothing
          */
         onLeftMouseClick(e) {
+            if (this.isDragging) {
+                return;
+            }
+
             if (e.ctrlKey || e.metaKey) {
                 // user tries to open component or metanode
                 return;
             }
 
-            if (!this.isDragging) {
-                if (e.shiftKey) {
-                    // Multi select
-                    if (this.selected) {
-                        this.deselectNode(this.id);
-                    } else {
-                        this.selectNode(this.id);
-                    }
+            if (e.shiftKey) {
+                // Multi select
+                if (this.selected) {
+                    this.deselectNode(this.id);
                 } else {
-                    // Single select
-                    this.deselectAllNodes();
                     this.selectNode(this.id);
                 }
+            } else {
+                // Single select
+                this.deselectAllNodes();
+                this.selectNode(this.id);
             }
         },
 
@@ -354,11 +357,11 @@ export default {
          * @returns {void} nothing to return
          */
         handleMoveFromStore() {
-            if (this.isDragging || this.outlinePosition === null) {
+            if (this.isDragging) {
                 return;
             }
             this.$store.commit(
-                'workflow/resetOutlinePosition',
+                'workflow/resetDragGhostPosition',
                 { nodeId: this.id }
             );
         },
@@ -387,9 +390,9 @@ export default {
             if (this.isDragging) {
                 // Move node to the next rounded grid position
                 let deltaX = Math.round((this.startPos.x + totalDeltaX / this.zoomFactor) / this.dragGrid.x) *
-                            this.dragGrid.x - this.position.x;
+                    this.dragGrid.x - this.position.x;
                 let deltaY = Math.round((this.startPos.y + totalDeltaY / this.zoomFactor) / this.dragGrid.y) *
-                            this.dragGrid.y - this.position.y;
+                    this.dragGrid.y - this.position.y;
                 this.$store.dispatch(
                     'workflow/moveNodes',
                     { deltaX, deltaY }
@@ -449,8 +452,8 @@ export default {
         :kind="kind"
       />
       <NodeSelectionPlane
-        v-if="outlinePosition"
-        :position="outlinePosition"
+        v-if="dragGhostPosition"
+        :position="dragGhostPosition"
         :kind="kind"
       />
     </portal>

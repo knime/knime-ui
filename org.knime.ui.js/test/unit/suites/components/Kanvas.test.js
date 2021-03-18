@@ -17,7 +17,7 @@ const mockNode = ({ id, position }) => ({
     name: '',
     id,
     position,
-    outlinePosition: position,
+    dragGhostPosition: position,
     isDragging: false,
     inPorts: [],
     outPorts: [],
