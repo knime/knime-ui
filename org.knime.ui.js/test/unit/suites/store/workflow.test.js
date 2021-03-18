@@ -394,7 +394,7 @@ describe('workflow store', () => {
             store.commit('workflow/setActiveWorkflow', {
                 nodes: nodesArray,
                 info: {
-                    name: 'test'
+                    containerId: 'test'
                 }
             });
             await Vue.nextTick();

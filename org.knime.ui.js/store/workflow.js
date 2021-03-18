@@ -215,7 +215,7 @@ export const actions = {
 
         moveObjects({
             projectId,
-            workflowId: state.activeWorkflow.info.name,
+            workflowId: getters.activeWorkflowId,
             nodeIds: selectedNodeIds,
             translation,
             annotationIds: []
