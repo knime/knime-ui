@@ -65,7 +65,10 @@ export default {
           v-bind="metadata"
         />
       </LeftCollapsiblePanel>
-      <Splitter direction="horizontal">
+      <Splitter
+        id="kanvasOutputSplitter"
+        direction="column"
+      >
         <Kanvas id="kanvas" />
         <template v-slot:secondary>
           <NodeOutput id="node-output" />

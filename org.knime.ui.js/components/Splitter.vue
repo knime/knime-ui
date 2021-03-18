@@ -1,10 +1,17 @@
 <script>
+/**
+ * Splitter component
+ */
 export default {
     props: {
         direction: {
             type: String,
-            default: 'horizontal',
-            validator: val => ['horizontal', 'vertical'].includes(val)
+            default: 'column',
+            validator: val => ['column', 'row'].includes(val)
+        },
+        id: {
+            type: String,
+            required: true
         }
     },
     data() {
@@ -13,7 +20,22 @@ export default {
             secondaryHeight: null
         };
     },
+    watch: {
+        secondaryHeight() {
+            if (this.supportLocalStorage()) {
+                localStorage.setItem(`ui-splitter-${this.id}`, this.secondaryHeight);
+            }
+        }
+    },
+    beforeMount() {
+        if (this.supportLocalStorage()) {
+            this.secondaryHeight = localStorage.getItem(`ui-splitter-${this.id}`);
+        }
+    },
     methods: {
+        supportLocalStorage() {
+            return typeof localStorage !== 'undefined';
+        },
         beginMove(e) {
             this.$refs.handle.onpointermove = this.move;
             this.$refs.handle.setPointerCapture(e.pointerId);
@@ -33,7 +55,10 @@ export default {
 </script>
 
 <template>
-  <div :class="['splitter', direction]">
+  <div
+    :id="id"
+    :class="['splitter', direction]"
+  >
     <div class="primary">
       <slot>Primary</slot>
     </div>
@@ -69,13 +94,13 @@ export default {
   }
 
   & .secondary {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     height: 40%;
     min-height: 15%;
     overflow: hidden;
   }
 
-  &.horizontal {
+  &.column {
     flex-direction: column;
 
     & .handle {
@@ -87,7 +112,7 @@ export default {
     }
   }
 
-  &.vertical {
+  &.row {
     flex-direction: row;
 
     & .handle {
