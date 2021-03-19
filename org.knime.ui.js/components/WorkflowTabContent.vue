@@ -3,7 +3,8 @@ import { mapState } from 'vuex';
 import WorkflowToolbar from '~/components/WorkflowToolbar';
 import Kanvas from '~/components/Kanvas';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
-import WorkflowMetadata from '~/components/WorkflowMetadata';
+// import WorkflowMetadata from '~/components/WorkflowMetadata';
+import NodeRepository from '~/components/NodeRepository';
 import NodeOutput from '~/components/output/NodeOutput';
 import Splitter from '~/components/Splitter';
 
@@ -17,7 +18,8 @@ export default {
         NodeOutput,
         Kanvas,
         LeftCollapsiblePanel,
-        WorkflowMetadata,
+        // WorkflowMetadata,
+        NodeRepository,
         WorkflowToolbar
     },
     computed: {
@@ -29,8 +31,9 @@ export default {
             case 'project':
                 return this.workflow.projectMetadata || { title: this.workflow.info.name };
             case 'component': {
-                const { componentMetadata:
-                    { inPorts, outPorts, name, type, icon, description, options, views } } = this.workflow;
+                const {
+                    componentMetadata: { inPorts, outPorts, name, type, icon, description, options, views }
+                } = this.workflow;
                 return {
                     title: name,
                     description,
@@ -48,12 +51,8 @@ export default {
 </script>
 
 <template>
-  <main
-    v-if="workflow"
-  >
-    <WorkflowToolbar
-      id="toolbar"
-    />
+  <main v-if="workflow">
+    <WorkflowToolbar id="toolbar" />
     <div class="collapser-kanvas">
       <LeftCollapsiblePanel
         v-if="metadata"
@@ -61,9 +60,10 @@ export default {
         width="360px"
         title="Workflow Metadata"
       >
-        <WorkflowMetadata
+        <!-- <WorkflowMetadata
           v-bind="metadata"
-        />
+        /> -->
+        <NodeRepository />
       </LeftCollapsiblePanel>
       <Splitter
         id="kanvasOutputSplitter"
@@ -88,45 +88,55 @@ export default {
 
 <style lang="postcss" scoped>
 main {
-  display: flex;
-  overflow: auto;
-  flex-direction: column;
-  align-items: stretch;
-  height: 100%;
+    display: flex;
+    overflow: auto;
+    flex-direction: column;
+    align-items: stretch;
+    height: 100%;
 }
 
 #toolbar {
-  height: 50px;
-  flex: 0 0 auto;
-  padding: 10px;
-  background-color: var(--knime-porcelain);
-  border-bottom: 1px solid var(--knime-silver-sand);
+    height: 50px;
+    flex: 0 0 auto;
+    padding: 10px;
+    background-color: var(--knime-porcelain);
+    border-bottom: 1px solid var(--knime-silver-sand);
 }
 
 .collapser-kanvas {
-  display: flex;
-  flex-grow: 1;
-  flex-direction: row;
-  align-items: stretch;
-  overflow: hidden;
+    display: flex;
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: stretch;
+    overflow: hidden;
 }
 
 #metadata {
-  flex: 0 0 auto;
-  border-right: 1px solid var(--knime-silver-sand);
+    flex: 0 0 auto;
+    border-right: 1px solid var(--knime-silver-sand);
+}
+
+.stacked {
+    flex: 1 1 auto;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 #kanvas {
-  overflow: auto;
-  flex: 1 1 100%;
-  height: 100%;
+    overflow: auto;
+    flex: 1 0 60%;
+}
+
+#node-output {
+    flex: 0 0 40%;
 }
 
 .placeholder {
-  height: 55%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: var(--knime-stone-gray);
+    height: 55%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--knime-stone-gray);
 }
 </style>
