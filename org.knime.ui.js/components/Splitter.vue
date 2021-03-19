@@ -22,19 +22,27 @@ export default {
     data() {
         return {
             isMove: false,
-            secondaryHeight: this.secondarySize
+            currentSecondarySize: this.secondarySize
         };
+    },
+    computed: {
+        isColumn() {
+            return this.direction === 'column';
+        },
+        isRow() {
+            return this.direction === 'row';
+        }
     },
     watch: {
         secondaryHeight() {
             if (this.supportLocalStorage()) {
-                localStorage.setItem(`ui-splitter-${this.id}`, this.secondaryHeight);
+                localStorage.setItem(`ui-splitter-${this.id}`, this.currentSecondarySize);
             }
         }
     },
     beforeMount() {
         if (this.supportLocalStorage()) {
-            this.secondaryHeight = localStorage.getItem(`ui-splitter-${this.id}`) || this.secondarySize;
+            this.currentSecondarySize = localStorage.getItem(`ui-splitter-${this.id}`) || this.secondarySize;
         }
     },
     methods: {
@@ -52,7 +60,11 @@ export default {
         move(e) {
             if (this.isMove) {
                 const rect = this.$refs.secondary.getBoundingClientRect();
-                this.secondaryHeight = `${rect.height + (rect.y - e.clientY)}px`;
+                if (this.isColumn) {
+                    this.currentSecondarySize = `${rect.height + (rect.y - e.clientY)}px`;
+                } else {
+                    this.currentSecondarySize = `${rect.width + (rect.x - e.clientX)}px`;
+                }
             }
         }
     }
@@ -77,7 +89,7 @@ export default {
     <div
       ref="secondary"
       class="secondary"
-      :style="{'height': secondaryHeight}"
+      :style="{ 'height': isColumn && currentSecondarySize, 'width': isRow && currentSecondarySize }"
     >
       <slot name="secondary">Secondary</slot>
     </div>
@@ -108,7 +120,18 @@ export default {
   &.column {
     flex-direction: column;
 
+    & .primary {
+      min-height: 25%;
+    }
+
+    & .secondary {
+      min-height: 15%;
+    }
+
     & .handle {
+      padding-top: 3px;
+      padding-bottom: 3px;
+      border-top: 1px solid var(--knime-silver-sand);
       cursor: ns-resize;
 
       &.active {
@@ -120,7 +143,18 @@ export default {
   &.row {
     flex-direction: row;
 
+    & .primary {
+      min-width: 25%;
+    }
+
+    & .secondary {
+      min-width: 15%;
+    }
+
     & .handle {
+      padding-left: 3px;
+      padding-right: 3px;
+      border-left: 1px solid var(--knime-silver-sand);
       cursor: ew-resize;
 
       &.active {
@@ -130,10 +164,6 @@ export default {
   }
 
   & .handle {
-    padding-top: 3px;
-    padding-bottom: 3px;
-    border-top: 1px solid var(--knime-silver-sand);
-
     &:hover {
       border-color: var(--knime-dove-gray);
     }

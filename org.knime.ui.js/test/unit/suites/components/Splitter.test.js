@@ -22,8 +22,8 @@ describe('Splitter.vue', () => {
         beforeEach(() => {
             wrapper = mount(Splitter, {
                 propsData: {
-                    direction: 'row',
-                    id: 'test-row',
+                    direction: 'column',
+                    id: 'test-column',
                     secondarySize: '45%'
                 }
             });
@@ -84,15 +84,15 @@ describe('Splitter.vue', () => {
         beforeEach(() => {
             wrapper = shallowMount(Splitter, {
                 propsData: {
-                    direction: 'column',
-                    id: 'test-col'
+                    direction: 'row',
+                    id: 'test-row'
                 }
             });
         });
 
 
         it('uses default size', () => {
-            expect(wrapper.find('.secondary').attributes().style).toBe('height: 40%;');
+            expect(wrapper.find('.secondary').attributes().style).toBe('width: 40%;');
         });
 
         it('doesn’t display a hover title', () => {
@@ -103,6 +103,40 @@ describe('Splitter.vue', () => {
             startMove(wrapper);
             await Vue.nextTick();
             expect(wrapper.findComponent({ ref: 'handle' }).attributes().class).toContain('active');
+        });
+
+        it('move changes width', async () => {
+
+            const handle = wrapper.findComponent({ ref: 'handle' });
+            const secondary = wrapper.findComponent({ ref: 'secondary' });
+
+            handle.element.setPointerCapture = jest.fn();
+            handle.element.releasePointerCapture = jest.fn();
+
+            secondary.element.getBoundingClientRect = jest.fn(() => {
+                return {
+                    x: 200,
+                    width: 150
+                };
+            });
+
+            handle.trigger('pointerdown', {
+                clientX: 100,
+                pointerId: -1
+            });
+            expect(handle.element.setPointerCapture).toHaveBeenCalledWith(-1);
+
+            handle.trigger('pointermove', {
+                clientX: 120
+            });
+            await Vue.nextTick();
+            expect(secondary.attributes().style).toBe('width: 230px;');
+
+            handle.trigger('pointerup', {
+                pointerId: -1
+            });
+            expect(handle.element.releasePointerCapture).toHaveBeenCalledWith(-1);
+
         });
 
     });
