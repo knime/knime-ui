@@ -12,12 +12,17 @@ export default {
         id: {
             type: String,
             required: true
+        },
+        secondarySize: {
+            type: String,
+            default: '40%',
+            validator: (str) => /^\d+[%\w]+$/.test(str)
         }
     },
     data() {
         return {
             isMove: false,
-            secondaryHeight: null
+            secondaryHeight: this.secondarySize
         };
     },
     watch: {
@@ -29,7 +34,7 @@ export default {
     },
     beforeMount() {
         if (this.supportLocalStorage()) {
-            this.secondaryHeight = localStorage.getItem(`ui-splitter-${this.id}`);
+            this.secondaryHeight = localStorage.getItem(`ui-splitter-${this.id}`) || this.secondarySize;
         }
     },
     methods: {
@@ -37,18 +42,18 @@ export default {
             return typeof localStorage !== 'undefined';
         },
         beginMove(e) {
-            this.$refs.handle.onpointermove = this.move;
             this.$refs.handle.setPointerCapture(e.pointerId);
             this.isMove = true;
         },
         stopMove(e) {
-            this.$refs.handle.onpointermove = null;
             this.$refs.handle.releasePointerCapture(e.pointerId);
             this.isMove = false;
         },
         move(e) {
-            const rect = this.$refs.secondary.getBoundingClientRect();
-            this.secondaryHeight = `${rect.height + (rect.y - e.clientY)}px`;
+            if (this.isMove) {
+                const rect = this.$refs.secondary.getBoundingClientRect();
+                this.secondaryHeight = `${rect.height + (rect.y - e.clientY)}px`;
+            }
         }
     }
 };
@@ -67,6 +72,7 @@ export default {
       :class="{'handle': true, 'active': isMove }"
       @pointerdown="beginMove"
       @pointerup="stopMove"
+      @pointermove="move"
     />
     <div
       ref="secondary"
@@ -95,7 +101,6 @@ export default {
 
   & .secondary {
     flex: 0 0 auto;
-    height: 40%;
     min-height: 15%;
     overflow: hidden;
   }
