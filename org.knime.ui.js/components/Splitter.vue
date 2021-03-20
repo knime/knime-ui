@@ -34,7 +34,7 @@ export default {
         }
     },
     watch: {
-        secondaryHeight() {
+        currentSecondarySize() {
             if (this.supportLocalStorage()) {
                 localStorage.setItem(`ui-splitter-${this.id}`, this.currentSecondarySize);
             }
