@@ -2,7 +2,7 @@ import * as api from '~/api';
 
 describe('API', () => {
 
-    beforeAll(() => {
+    beforeEach(() => {
         window.jsonrpc = jest.fn().mockReturnValue(JSON.stringify({
             jsonrpc: '2.0',
             result: 'dummy',
@@ -63,6 +63,7 @@ describe('API', () => {
             }));
             let table = await api.loadTable({
                 projectId: 'foo',
+                workflowId: 'root',
                 nodeId: 'root:123',
                 portIndex: 2,
                 offset: 100,
@@ -72,7 +73,7 @@ describe('API', () => {
             expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                 jsonrpc: '2.0',
                 method: 'NodeService.doPortRpc',
-                params: ['foo', 'root:123', 2, expectedNestedRPC],
+                params: ['foo', 'root', 'root:123', 2, expectedNestedRPC],
                 id: 0
             }));
             expect(table).toBe('dummy');
@@ -92,6 +93,7 @@ describe('API', () => {
             }));
             let flowVariables = await api.loadFlowVariables({
                 projectId: 'foo',
+                workflowId: 'root',
                 nodeId: 'root:123',
                 portIndex: 2
             });
@@ -99,7 +101,7 @@ describe('API', () => {
             expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                 jsonrpc: '2.0',
                 method: 'NodeService.doPortRpc',
-                params: ['foo', 'root:123', 2, expectedNestedRPC],
+                params: ['foo', 'root', 'root:123', 2, expectedNestedRPC],
                 id: 0
             }));
             expect(flowVariables).toBe('dummy');
@@ -107,21 +109,21 @@ describe('API', () => {
     });
 
     it('executes nodes', async () => {
-        await api.changeNodeState({ projectId: '123', nodeIds: ['a', 'b', 'c'], action: 'node action' });
+        await api.changeNodeState({ projectId: '123', workflowId: '12', nodeIds: ['a', 'b'], action: 'node action' });
         expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
             jsonrpc: '2.0',
             method: 'NodeService.changeNodeStates',
-            params: ['123', ['a', 'b', 'c'], 'node action'],
+            params: ['123', '12', ['a', 'b'], 'node action'],
             id: 0
         }));
     });
 
     it('loop action', async () => {
-        await api.changeLoopState({ projectId: '123', nodeId: 'loopy node', action: 'loopy action' });
+        await api.changeLoopState({ projectId: '123', workflowId: '12', nodeId: 'loopy node', action: 'loopy action' });
         expect(window.jsonrpc).toHaveBeenLastCalledWith(JSON.stringify({
             jsonrpc: '2.0',
             method: 'NodeService.changeLoopState',
-            params: ['123', 'loopy node', 'loopy action'],
+            params: ['123', '12', 'loopy node', 'loopy action'],
             id: 0
         }));
     });
