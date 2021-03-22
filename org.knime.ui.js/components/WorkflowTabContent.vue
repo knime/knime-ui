@@ -5,7 +5,7 @@ import Kanvas from '~/components/Kanvas';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
 import NodeOutput from '~/components/output/NodeOutput';
-import Splitter from '@/components/Splitter';
+import Splitter from '~/components/Splitter';
 
 /**
  * A component that shows the tab contents belonging to one workflow,
