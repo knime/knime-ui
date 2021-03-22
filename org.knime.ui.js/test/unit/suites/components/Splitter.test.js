@@ -4,7 +4,12 @@ import Splitter from '~/components/Splitter';
 
 describe('Splitter.vue', () => {
 
-    let wrapper, startMove;
+    let wrapper, startMove, localStorageGetItemSpy, localStorageSetItemSpy;
+
+    // eslint-disable-next-line no-proto
+    localStorageGetItemSpy = jest.spyOn(window.localStorage.__proto__, 'getItem');
+    // eslint-disable-next-line no-proto
+    localStorageSetItemSpy = jest.spyOn(window.localStorage.__proto__, 'setItem');
 
     startMove = (wrapper) => {
         const handle = wrapper.findComponent({ ref: 'handle' });
@@ -79,9 +84,6 @@ describe('Splitter.vue', () => {
             const handle = wrapper.findComponent({ ref: 'handle' });
             const secondary = wrapper.findComponent({ ref: 'secondary' });
 
-            // eslint-disable-next-line no-proto
-            let spy = jest.spyOn(window.localStorage.__proto__, 'setItem');
-
             handle.element.setPointerCapture = jest.fn();
             handle.element.releasePointerCapture = jest.fn();
 
@@ -100,7 +102,7 @@ describe('Splitter.vue', () => {
             });
             await Vue.nextTick();
 
-            expect(spy).toHaveBeenCalledWith('ui-splitter-test-column', '230px');
+            expect(localStorageSetItemSpy).toHaveBeenCalledWith('ui-splitter-test-column', '230px');
 
             handle.trigger('pointerup', {
                 pointerId: -1
@@ -108,9 +110,7 @@ describe('Splitter.vue', () => {
         });
 
         it('loads from to localStorage', () => {
-            // eslint-disable-next-line no-proto
-            let spy = jest.spyOn(window.localStorage.__proto__, 'getItem');
-            spy.mockReturnValue('444px');
+            localStorageGetItemSpy.mockReturnValueOnce('444px');
 
             let wrapper2 = mount(Splitter, {
                 propsData: {
@@ -120,7 +120,7 @@ describe('Splitter.vue', () => {
                 }
             });
 
-            expect(spy).toHaveBeenCalled();
+            expect(localStorageGetItemSpy).toHaveBeenCalled();
 
             const secondary = wrapper2.findComponent({ ref: 'secondary' });
             expect(secondary.attributes().style).toBe('height: 444px;');
