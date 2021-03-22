@@ -74,6 +74,9 @@ describe('NodeOutput.vue', () => {
             },
             actions: {
                 executeNodes: jest.fn()
+            },
+            getters: {
+                activeWorkflowId: () => 'root'
             }
         };
 
@@ -264,7 +267,7 @@ describe('NodeOutput.vue', () => {
         await Vue.nextTick();
         jest.runAllTimers();
         expect(dataTable.actions.load).toHaveBeenCalledWith(expect.anything(), {
-            nodeId: 'node1', portIndex: 2, projectId: 'projectId'
+            nodeId: 'node1', portIndex: 2, projectId: 'projectId', workflowId: 'root'
         });
 
         wrapper.setData({ selectedPortIndex: null });
@@ -302,7 +305,7 @@ describe('NodeOutput.vue', () => {
         await Vue.nextTick();
         jest.runAllTimers();
         expect(flowVariables.actions.load).toHaveBeenCalledWith(expect.anything(), {
-            nodeId: 'node1', portIndex: 2, projectId: 'projectId'
+            nodeId: 'node1', portIndex: 2, projectId: 'projectId', workflowId: 'root'
         });
 
         wrapper.setData({ selectedPortIndex: null });

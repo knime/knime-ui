@@ -73,13 +73,14 @@ export const removeEventListener = makeToggleEventListener('remove');
  * Do Action on nodes or an entire workflow.
  * @param {'reset' | 'execute' | 'cancel'} cfg.action
  * @param {String} cfg.projectId
+ * @param {String} cfg.workflowId
  * @param {Array} cfg.nodeIds The nodes to act upon.
  *     If you want to execute an entire workflow, pass the workflow container's id as a single element.
  * @returns {Promise}
  */
-export const changeNodeState = ({ projectId, nodeIds, action }) => {
+export const changeNodeState = ({ projectId, workflowId, nodeIds, action }) => {
     try {
-        let result = rpc('NodeService.changeNodeStates', projectId, nodeIds, action);
+        let result = rpc('NodeService.changeNodeStates', projectId, workflowId, nodeIds, action);
         return Promise.resolve(result);
     } catch (e) {
         consola.error(e);
@@ -91,12 +92,13 @@ export const changeNodeState = ({ projectId, nodeIds, action }) => {
  * Actions for LoopExecution.
  * @param {'step' | 'pause' | 'resume'} cfg.action
  * @param {String} cfg.projectId
+ * @param {String} cfg.workflowId
  * @param {String} cfg.nodeId The node to act upon.
  * @returns {Promise}
  */
-export const changeLoopState = ({ projectId, nodeId, action }) => {
+export const changeLoopState = ({ projectId, workflowId, nodeId, action }) => {
     try {
-        let result = rpc(`NodeService.changeLoopState`, projectId, nodeId, action);
+        let result = rpc(`NodeService.changeLoopState`, projectId, workflowId, nodeId, action);
         return Promise.resolve(result);
     } catch (e) {
         consola.error(e);
@@ -187,14 +189,14 @@ export const deleteObjects = workflowCommand('delete', 'Could not delete nodes/a
 // So, to get a table we have to send a JSON-RPC object as a payload to the NodeService, which itself must be called via
 // JSON-RPC. Hence double-wrapping is required.
 // Parameters are described below.
-const nestedRpcCall = ({ method, params, projectId, nodeId, portIndex }) => {
-    let nestedRpcCall = {
+const portRPC = ({ method, params, projectId, workflowId, nodeId, portIndex }) => {
+    let nestedRpcCall = JSON.stringify({
         jsonrpc: '2.0',
         id: 0,
         method,
         params
-    };
-    let response = rpc('NodeService.doPortRpc', projectId, nodeId, portIndex, JSON.stringify(nestedRpcCall));
+    });
+    let response = rpc('NodeService.doPortRpc', projectId, workflowId, nodeId, portIndex, nestedRpcCall);
     return parseResponse({ response, method, params });
 };
 
@@ -208,11 +210,12 @@ const nestedRpcCall = ({ method, params, projectId, nodeId, portIndex }) => {
  * Remember that port 0 is usually a flow variable port.
  * @return {Promise} A promise containing the table data as defined in the API
  * */
-export const loadTable = ({ projectId, nodeId, portIndex, offset = 0, batchSize }) => {
+export const loadTable = ({ projectId, workflowId, nodeId, portIndex, offset = 0, batchSize }) => {
     try {
-        let table = nestedRpcCall({
+        let table = portRPC({
             projectId,
             nodeId,
+            workflowId,
             portIndex,
             method: 'getTable',
             params: [offset, batchSize]
@@ -235,10 +238,11 @@ export const loadTable = ({ projectId, nodeId, portIndex, offset = 0, batchSize 
  * Remember that port 0 is usually a flow variable port.
  * @return {Promise} A promise containing the flow variable data as defined in the API
  * */
-export const loadFlowVariables = ({ projectId, nodeId, portIndex }) => {
+export const loadFlowVariables = ({ projectId, workflowId, nodeId, portIndex }) => {
     try {
-        let flowVariables = nestedRpcCall({
+        let flowVariables = portRPC({
             projectId,
+            workflowId,
             nodeId,
             portIndex,
             method: 'getFlowVariables'

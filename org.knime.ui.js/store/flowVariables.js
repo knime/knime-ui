@@ -27,9 +27,9 @@ export const actions = {
      * @param {Number} portIndex Index of the selected port
      * @returns {void}
      */
-    async load({ commit, dispatch }, { projectId, nodeId, portIndex }) {
+    async load({ commit, dispatch }, { projectId, workflowId, nodeId, portIndex }) {
         dispatch('dataTable/clear', null, { root: true });
-        let flowVariables = await loadFlowVariables({ projectId, nodeId, portIndex });
+        let flowVariables = await loadFlowVariables({ projectId, workflowId, nodeId, portIndex });
         commit('setFlowVariables', flowVariables);
     },
     clear({ commit }) {
