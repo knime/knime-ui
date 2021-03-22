@@ -1,18 +1,31 @@
 <script>
 /**
- * Splitter component
+ * Splitter
+ * A component that acts as wrapper with  a primary (default slot) and secondary (slot: secondary) area.
+ * The areas are separated by a vertical (direction: row) or a horizontal line (direction: column)
+ * The height or width of the secondary area can be changed by the user using click and drag.
+ * The current value of the height or width is saved to the local store and loaded on mount.
  */
 export default {
     props: {
+        /**
+         * direction - like `flex-direction` (no reverse support)
+         */
         direction: {
             type: String,
             default: 'column',
             validator: val => ['column', 'row'].includes(val)
         },
+        /**
+         * id is used as html-id and to load and save state
+         */
         id: {
             type: String,
             required: true
         },
+        /**
+         * initial size of secondary area
+         */
         secondarySize: {
             type: String,
             default: '40%',
