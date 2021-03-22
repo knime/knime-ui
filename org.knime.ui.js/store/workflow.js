@@ -1,7 +1,5 @@
-import {
-    loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener,
-    openView, openDialog, changeNodeState, changeLoopState, deleteObjects
-} from '~api';
+import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener,
+    openView, openDialog, changeNodeState, changeLoopState, deleteObjects } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
@@ -25,17 +23,6 @@ export const mutations = {
         let workflowData = {
             ...workflow
         };
-        let { nodeTemplates = {} } = workflow;
-        let nodeTemplateIds = Object.keys(nodeTemplates);
-
-        // …and move them to template store
-        nodeTemplateIds.forEach((templateId) => {
-            this.commit('nodeTemplates/add', {
-                templateId,
-                templateData: nodeTemplates[templateId]
-            }, { root: true });
-        });
-        delete workflowData.nodeTemplates;
 
         // add selected field to node with initial value false to enable reactivity on this property
         Object.values(workflowData.nodes || {}).forEach(node => { node.selected = false; });
@@ -82,13 +69,12 @@ export const actions = {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    unloadActiveWorkflow({ state, getters }) {
+    unloadActiveWorkflow({ state, getters: { activeWorkflowId: workflowId } }) {
         if (!state.activeWorkflow) {
             // nothing to do (no tabs open)
             return;
         }
         let { projectId } = state.activeWorkflow;
-        let workflowId = getters.activeWorkflowId;
         let { activeSnapshotId: snapshotId } = state;
         try {
             // this is intentionally not awaiting the response. Unloading can happen in the background.
@@ -106,40 +92,22 @@ export const actions = {
         let workflowId = getters.activeWorkflowId;
         await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
     },
-    async deleteSelectedNodes({ state, getters: { activeWorkflowId: workflowId } }) {
-        let { selectedNodes, activeWorkflow: { nodes, projectId } } = state;
+    deleteSelectedNodes({
+        state: { activeWorkflow: { projectId } },
+        getters: { activeWorkflowId, selectedNodes }
+    }) {
+        let deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
+        let nonDeletableNodeIds = selectedNodes.filter(node => !node.allowedActions.canDelete).map(node => node.id);
 
-        let nodesWithData = [];
-        let nodesWithoutData = [];
-
-        for (let nodeId in selectedNodes) {
-            let node = nodes[nodeId];
-            if (node.allowedActions.canDelete) {
-                (node.state.executionState === 'EXECUTED' ? nodesWithData : nodesWithoutData).push(nodeId);
-            }
-        }
-
-        if (nodesWithoutData.length) {
-            await deleteObjects({
+        if (deletableNodeIds.length) {
+            deleteObjects({
                 projectId,
-                workflowId,
-                nodeIDs: nodesWithoutData,
-                annotationIDs: [],
-                connectionIDs: []
+                workflowId: activeWorkflowId,
+                nodeIds: deletableNodeIds
             });
-            // remove from sight
-            await Vue.nextTick();
         }
-
-        if (nodesWithData.length &&
-            window.confirm('Some selected nodes contain computed data. Should they be deleted?')) {
-            await deleteObjects({
-                projectId,
-                workflowId,
-                nodeIDs: nodesWithData,
-                annotationIDs: [],
-                connectionIDs: []
-            });
+        if (nonDeletableNodeIds.length) {
+            window.alert(`The following nodes can't be deleted: [${nonDeletableNodeIds.join(', ')}]`);
         }
     },
     changeNodeState({ state, getters }, { action, nodes }) {
@@ -309,36 +277,36 @@ export const getters = {
         return activeWorkflow?.info.containerId || 'root';
     },
 
-    nodeIcon(state, getters, rootState) {
+    nodeIcon({ activeWorkflow }, getters, rootState) {
         return ({ nodeId }) => {
-            let node = state.activeWorkflow.nodes[nodeId];
+            let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
-                return rootState.nodeTemplates[templateId].icon;
+                return activeWorkflow.nodeTemplates[templateId].icon;
             } else {
                 return node.icon;
             }
         };
     },
 
-    nodeName(state, getters, rootState) {
+    nodeName({ activeWorkflow }, getters, rootState) {
         return ({ nodeId }) => {
-            let node = state.activeWorkflow.nodes[nodeId];
+            let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
-                return rootState.nodeTemplates[templateId].name;
+                return activeWorkflow.nodeTemplates[templateId].name;
             } else {
                 return node.name;
             }
         };
     },
 
-    nodeType(state, getters, rootState) {
+    nodeType({ activeWorkflow }, getters, rootState) {
         return ({ nodeId }) => {
-            let node = state.activeWorkflow.nodes[nodeId];
+            let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
-                return rootState.nodeTemplates[templateId].type;
+                return activeWorkflow.nodeTemplates[templateId].type;
             } else {
                 return node.type;
             }

@@ -118,6 +118,42 @@ describe('API', () => {
         }));
     });
 
+    it('deletes objects (empty)', async () => {
+        await api.deleteObjects({ projectId: '123', workflowId: '12' });
+        expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'WorkflowService.executeWorkflowCommand',
+            params: ['123', '12', {
+                kind: 'delete',
+                nodeIds: [],
+                annotationIds: [],
+                connectionIds: []
+            }],
+            id: 0
+        }));
+    });
+
+    it('delete objects (specified)', async () => {
+        await api.deleteObjects({
+            projectId: '123',
+            workflowId: '12',
+            nodeIds: ['root:1'],
+            annotationIds: ['annotation1'],
+            connectionIds: ['root:1_1']
+        });
+        expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'WorkflowService.executeWorkflowCommand',
+            params: ['123', '12', {
+                kind: 'delete',
+                nodeIds: ['root:1'],
+                annotationIds: ['annotation1'],
+                connectionIds: ['root:1_1']
+            }],
+            id: 0
+        }));
+    });
+
     it('loop action', async () => {
         await api.changeLoopState({ projectId: '123', workflowId: '12', nodeId: 'loopy node', action: 'loopy action' });
         expect(window.jsonrpc).toHaveBeenLastCalledWith(JSON.stringify({

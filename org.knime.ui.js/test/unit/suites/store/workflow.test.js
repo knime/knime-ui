@@ -5,7 +5,7 @@ import * as $shapes from '~/style/shapes';
 import Vuex from 'vuex';
 
 describe('workflow store', () => {
-    let store, localVue, templateMutationMock, loadStore, addEventListenerMock, removeEventListenerMock;
+    let store, localVue, loadStore, addEventListenerMock, removeEventListenerMock;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -13,7 +13,6 @@ describe('workflow store', () => {
     });
 
     beforeEach(() => {
-        templateMutationMock = jest.fn();
         addEventListenerMock = jest.fn();
         removeEventListenerMock = jest.fn();
         store = null;
@@ -34,11 +33,6 @@ describe('workflow store', () => {
 
             store = mockVuexStore({
                 workflow: await import('~/store/workflow'),
-                nodeTemplates: {
-                    mutations: {
-                        add: templateMutationMock
-                    }
-                }
             });
         };
     });
@@ -59,34 +53,6 @@ describe('workflow store', () => {
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
 
             expect(store.state.workflow.activeWorkflow).toStrictEqual({ projectId: 'foo' });
-        });
-
-        it('extracts templates', () => {
-            store.commit('workflow/setActiveWorkflow', {
-                projectId: 'bar',
-                nodeTemplates: {
-                    foo: { bla: 1 },
-                    bar: { qux: 2 }
-                },
-                nodes: {
-                    foo: { bla: 1 },
-                    bar: { qux: 2 }
-                }
-            });
-
-            expect(templateMutationMock).toHaveBeenCalledWith(expect.anything(), {
-                templateData: { bla: 1 }, templateId: 'foo'
-            });
-            expect(templateMutationMock).toHaveBeenCalledWith(expect.anything(), {
-                templateData: { qux: 2 }, templateId: 'bar'
-            });
-            expect(store.state.workflow.activeWorkflow).toStrictEqual({
-                projectId: 'bar',
-                nodes: {
-                    foo: { bla: 1, selected: false },
-                    bar: { qux: 2, selected: false }
-                }
-            });
         });
 
         it('allows setting the snapshot ID', () => {
@@ -473,13 +439,16 @@ describe('workflow store', () => {
                             type: 'ownType',
                             executionInfo: { jobManager: 'test' }
                         }
+                    },
+                    nodeTemplates: {
+                        bla: {
+
+                            icon: 'exampleIcon',
+                            name: 'exampleName',
+                            type: 'exampleType'
+                        }
                     }
                 });
-                store.state.nodeTemplates.bla = {
-                    icon: 'exampleIcon',
-                    name: 'exampleName',
-                    type: 'exampleType'
-                };
             });
 
             it('gets name', () => {

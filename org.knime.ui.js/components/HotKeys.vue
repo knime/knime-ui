@@ -1,5 +1,5 @@
 <script>
-import { mapActions, mapMutations, mapState } from 'vuex';
+import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
 import { throttle } from 'lodash';
 
 const throttledZoomThrottle = 30; // throttle keyboard zoom by 30ms
@@ -11,7 +11,8 @@ const throttledZoomThrottle = 30; // throttle keyboard zoom by 30ms
 export default {
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
-        workflowHotKeysEnabled() {
+        ...mapGetters('workflow', ['isWritable']),
+        isWorkflowPresent() {
             // workflow hotkeys are enabled only if a workflow is present
             return Boolean(this.activeWorkflow);
         }
@@ -33,21 +34,37 @@ export default {
         ...mapMutations('canvas', ['setSuggestPanning', 'resetZoom']),
         ...mapActions('canvas', ['setZoomToFit', 'zoomCentered']),
         setupShortcuts() {
-            this.workflowHotKeys = [
-                ['Ctrl', 'A', this.selectAllNodes],
-                ['Ctrl', '1', this.setZoomToFit],
-                ['Ctrl', '0', this.resetZoom],
-                ['Ctrl', '+', () => this.throttledZoom(1)],
-                ['Ctrl', '-', () => this.throttledZoom(-1)],
-                ['F7', () => this.executeNodes('selected')],
-                ['F9', () => this.cancelNodeExecution('selected')],
-                ['F8', () => this.resetNodes('selected')],
-                ['Shift', 'F7', () => this.executeNodes('all')],
-                ['Shift', 'F9', () => this.cancelNodeExecution('all')],
-                ['Shift', 'F8', () => this.resetNodes('all')],
-                ['DELETE', this.deleteSelectedNodes],
-                ['BACKSPACE', this.deleteSelectedNodes]
-            ];
+            this.hotKeys = {
+                canvas: {
+                    condition: () => this.isWorkflowPresent,
+                    hotKeys: [
+                        ['Ctrl', '1', this.setZoomToFit],
+                        ['Ctrl', '0', this.resetZoom],
+                        ['Ctrl', '+', () => this.throttledZoom(1)],
+                        ['Ctrl', '-', () => this.throttledZoom(-1)]
+                    ]
+                },
+                workflow: {
+                    condition: () => this.isWorkflowPresent,
+                    hotKeys: [
+                        ['Ctrl', 'A', this.selectAllNodes],
+                        ['F7', () => this.executeNodes('selected')],
+                        ['F9', () => this.cancelNodeExecution('selected')],
+                        ['F8', () => this.resetNodes('selected')],
+                        ['Shift', 'F7', () => this.executeNodes('all')],
+                        ['Shift', 'F9', () => this.cancelNodeExecution('all')],
+                        ['Shift', 'F8', () => this.resetNodes('all')]
+                    ]
+                },
+                writableWorkflow: {
+                    condition: () => this.isWorkflowPresent && this.isWritable,
+                    hotKeys: [
+                        ['DELETE', this.deleteSelectedNodes],
+                        ['BACKSPACE', this.deleteSelectedNodes]
+                    ]
+                }
+
+            };
         },
         onKeydown(e) {
             // Pressed key is just a modifier
@@ -56,7 +73,7 @@ export default {
             }
 
             if (e.key === 'Alt') {
-                if (this.workflowHotKeysEnabled) {
+                if (this.isWorkflowPresent) {
                     this.setSuggestPanning(true);
                     e.stopPropagation();
                     e.preventDefault();
@@ -64,12 +81,22 @@ export default {
                 return;
             }
 
-            if (this.workflowHotKeysEnabled) {
-                this.findAndExecute(e);
+            // stops after the first matching and enabled hotkey
+            if (Object.values(this.hotKeys).some(
+                ({ condition, hotKeys }) => condition() && this.findAndExecute(hotKeys, e)
+            )) {
+                e.stopPropagation();
+                e.preventDefault();
             }
         },
-        findAndExecute(e) {
-            for (let shortcut of this.workflowHotKeys) {
+        /**
+         * @param {Array} hotKeys Array<[...modifiers, key, function]>
+         * @param {KeyboardEvent} e KeyDown event
+         * @returns {Boolean} has found and executed function
+         * has side effect
+         */
+        findAndExecute(hotKeys, e) {
+            for (let shortcut of hotKeys) {
                 let modifiers = [...shortcut];
                 let fn = modifiers.pop();
                 let key = modifiers.pop();
@@ -81,12 +108,11 @@ export default {
                     e.key.toUpperCase() === key
                 ) {
                     consola.trace('Shortcut', shortcut);
-                    e.stopPropagation();
-                    e.preventDefault();
                     fn();
-                    break;
+                    return true;
                 }
             }
+            return false;
         },
         onKeyup(e) {
             if (e.key === 'Alt') {
