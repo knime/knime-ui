@@ -164,7 +164,7 @@ describe('NodeOutput.vue', () => {
         it('renders placeholder while node is beeing dragged and table was not loaded previously', async () => {
             workflow.state.activeWorkflow.nodes.node1.outPorts[0] = { type: 'table' };
             workflow.state.activeWorkflow.nodes.node1.state = { executionState: 'EXECUTED' };
-            workflow.state.activeWorkflow.nodes.node1.isDragging = true;
+            workflow.state.isDragging = true;
             dataTable.state.isReady = true;
             doShallowMount();
             wrapper.setData({ selectedPortIndex: 0 });
@@ -177,7 +177,7 @@ describe('NodeOutput.vue', () => {
         it('renders table while node is beeing dragged and table has loaded previously', async () => {
             workflow.state.activeWorkflow.nodes.node1.outPorts[0] = { type: 'table' };
             workflow.state.activeWorkflow.nodes.node1.state = { executionState: 'EXECUTED' };
-            workflow.state.activeWorkflow.nodes.node1.isDragging = true;
+            workflow.state.isDragging = true;
             dataTable.state.isReady = true;
             doShallowMount();
             wrapper.setData({ selectedPortIndex: 0 });

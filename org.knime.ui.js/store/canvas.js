@@ -16,7 +16,6 @@ export const state = () => ({
     zoomFactor: defaultZoomFactor,
     suggestPanning: false,
     containerSize: { width: 0, height: 0 },
-    gridSize
 });
 
 export const mutations = {
@@ -213,5 +212,12 @@ export const getters = {
             x: (origX - viewBox.left) * zoomFactor,
             y: (origY - viewBox.top) * zoomFactor
         });
+    },
+
+    /*
+        returns the grid size of the canvas. This size is used to move nodes along the grid
+    */
+    getGridSize() {
+        return gridSize;
     }
 };

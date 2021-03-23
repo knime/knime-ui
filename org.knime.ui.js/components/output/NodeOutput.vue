@@ -38,7 +38,8 @@ export default {
     computed: {
         ...mapState('dataTable', ['rows', 'totalNumRows', 'totalNumColumns', 'isLoading', 'isReady']),
         ...mapState('workflow', {
-            nodes: state => state.activeWorkflow.nodes
+            nodes: state => state.activeWorkflow.nodes,
+            isDragging: 'isDragging'
         }),
         ...mapGetters('workflow', ['activeWorkflowId']),
         ...mapState('flowVariables', ['flowVariables']),
@@ -48,9 +49,6 @@ export default {
         selectedNodes() {
             let nodes = Object.values(this.nodes || {});
             return nodes.filter(node => node.selected);
-        },
-        isDragging() {
-            return this.selectedNode?.isDragging;
         },
         selectedNode() {
             if (this.selectedNodes.length === 1) {

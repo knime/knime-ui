@@ -18,7 +18,7 @@ describe('workflow store', () => {
         templateMutationMock = jest.fn();
         addEventListenerMock = jest.fn();
         removeEventListenerMock = jest.fn();
-        moveObjectsMock = jest.fn();
+        moveObjectsMock = jest.fn().mockReturnValue(Promise.resolve());
 
         loadStore = async ({ apiMocks = {} } = {}) => {
             /**
@@ -86,8 +86,8 @@ describe('workflow store', () => {
             expect(store.state.workflow.activeWorkflow).toStrictEqual({
                 projectId: 'bar',
                 nodes: {
-                    foo: { bla: 1, selected: false, isDragging: false, dragGhostPosition: null },
-                    bar: { qux: 2, selected: false, isDragging: false, dragGhostPosition: null }
+                    foo: { bla: 1, selected: false },
+                    bar: { qux: 2, selected: false }
                 }
             });
         });
@@ -141,20 +141,7 @@ describe('workflow store', () => {
 
             let node = store.state.workflow.activeWorkflow.nodes['root:1'];
             store.commit('workflow/shiftPosition', { node, deltaX: 50, deltaY: 50 });
-            expect(node.position).toStrictEqual({ x: 50, y: 50 });
-        });
-
-        it('shifts the outline position of a node', () => {
-            store.commit('workflow/setActiveWorkflow', {
-                projectId: 'bar',
-                nodes: {
-                    'root:1': { id: 'root:1', position: { x: 0, y: 0 } }
-                }
-            });
-
-            let node = store.state.workflow.activeWorkflow.nodes['root:1'];
-            store.commit('workflow/shiftDragGhostPosition', { node, totalDeltaX: 50, totalDeltaY: 50 });
-            expect(node.dragGhostPosition).toStrictEqual({ x: 50, y: 50 });
+            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
         });
 
         it('resets the position of the outlint', () => {
@@ -166,10 +153,10 @@ describe('workflow store', () => {
             });
 
             let node = store.state.workflow.activeWorkflow.nodes['root:1'];
-            store.commit('workflow/shiftDragGhostPosition', { node, totalDeltaX: 50, totalDeltaY: 50 });
-            expect(node.dragGhostPosition).toStrictEqual({ x: 50, y: 50 });
-            store.commit('workflow/resetDragGhostPosition', { nodeId: node.id });
-            expect(node.dragGhostPosition).toStrictEqual(null);
+            store.commit('workflow/shiftPosition', { node, deltaX: 50, deltaY: 50 });
+            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
+            store.commit('workflow/resetDragPosition', { nodeId: node.id });
+            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 0, y: 0 });
         });
 
         it('checks node dragging', () => {
@@ -180,11 +167,10 @@ describe('workflow store', () => {
                 }
             });
 
-            let node = store.state.workflow.activeWorkflow.nodes['root:1'];
-            store.commit('workflow/setDragging', { nodeId: 'root:1', isDragging: true });
-            expect(node.isDragging).toBe(true);
-            store.commit('workflow/setDragging', { nodeId: 'root:1', isDragging: false });
-            expect(node.isDragging).toBe(false);
+            store.commit('workflow/setDragging', { isDragging: true });
+            expect(store.state.workflow.isDragging).toBe(true);
+            store.commit('workflow/setDragging', { isDragging: false });
+            expect(store.state.workflow.isDragging).toBe(false);
         });
 
     });
@@ -295,7 +281,7 @@ describe('workflow store', () => {
 
             store.dispatch(`workflow/${action}`, { nodeIds: ['x', 'y'] });
 
-            expect(mock).toHaveBeenCalledWith({ nodeIds: ['x', 'y'], projectId: 'foo' });
+            expect(mock).toHaveBeenCalledWith({ nodeIds: ['x', 'y'], projectId: 'foo', workflowId: 'root' });
         });
 
         it.each(['openView', 'openDialog'])('passes %s to API', async (action) => {
@@ -322,9 +308,8 @@ describe('workflow store', () => {
             await Vue.nextTick();
 
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
-            let nodes = store.state.workflow.activeWorkflow.nodes;
-            expect(nodes.foo.position).toStrictEqual({ x: 50, y: 50 });
-            expect(nodes.bar.position).toStrictEqual({ x: 100, y: 100 });
+            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
+            expect(store.state.workflow.moveNodeGhostTresholdExceeded).toBe(false);
         });
 
         it('moves nodes outline', async () => {
@@ -342,11 +327,9 @@ describe('workflow store', () => {
             await Vue.nextTick();
 
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
-            let nodes = store.state.workflow.activeWorkflow.nodes;
-            Object.keys(nodesArray).forEach((node) => {
-                expect(nodes[node].dragGhostPosition).toStrictEqual({ x: 50, y: 50 });
-                expect(nodes[node].position).toStrictEqual({ x: 0, y: 0 });
-            });
+            
+            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
+            expect(store.state.workflow.moveNodeGhostTresholdExceeded).toBe(true);
         });
 
         it('moves subset of node outlines', async () => {
@@ -369,16 +352,9 @@ describe('workflow store', () => {
             });
 
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
-            let nodes = store.state.workflow.activeWorkflow.nodes;
-            Object.keys(nodesArray).forEach((node) => {
-                if (nodes[node].selected) {
-                    expect(nodes[node].dragGhostPosition).toStrictEqual({ x: 50, y: 50 });
-                    expect(nodes[node].position).toStrictEqual({ x: 0, y: 0 });
-                } else {
-                    expect(nodes[node].dragGhostPosition).toStrictEqual(null);
-                    expect(nodes[node].position).toStrictEqual({ x: 0, y: 0 });
-                }
-            });
+            
+            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
+            expect(store.state.workflow.moveNodeGhostTresholdExceeded).toBe(true);
         });
 
         it.each([

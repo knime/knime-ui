@@ -25,6 +25,11 @@ const createMousedownHandler = (state, el) => (e) => {
     e.stopPropagation();
     e.preventDefault();
     state.pointerId = e.pointerId;
+    // This is needed, as otherwise the pointerCapture might not get set if the component does not change
+    if (state.pointerId && !e.target.hasPointerCapture(state.pointerId)) {
+        e.target.setPointerCapture(state.pointerId);
+    }
+
     el.onpointermove = state.mousemove;
     let { screenX, screenY } = e;
     delete state.prev;
@@ -59,7 +64,6 @@ const createMousemoveHandler = (state) => (e) => {
     if (!state.start) {
         return;
     }
-
     let { screenX, screenY } = e;
     let [x, y] = [screenX - state.start[0], screenY - state.start[1]];
     if (!state.dragging && Math.max(Math.abs(x), Math.abs(y)) < state.threshold) {

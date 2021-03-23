@@ -1,6 +1,7 @@
 <script>
 import { mapState, mapGetters, mapMutations } from 'vuex';
 import Node from '~/components/Node';
+import MoveableNodeContainer from '~/components/MoveableNodeContainer';
 import Connector from '~/components/Connector';
 import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import Tooltip from '~/components/Tooltip';
@@ -18,7 +19,8 @@ export default {
         MetaNodePortBars,
         KanvasFilters,
         StreamedIcon,
-        ConnectorLabel
+        ConnectorLabel,
+        MoveableNodeContainer
     },
     data() {
         return {
@@ -235,16 +237,20 @@ export default {
       <MetaNodePortBars
         v-if="workflow.info.containerType === 'metanode'"
       />
-
-      <Node
+      <MoveableNodeContainer
         v-for="([nodeId, node]) in sortedNodes"
+        :id="node.id"
         :key="`node-${workflow.projectId}-${nodeId}`"
-        :icon="$store.getters['workflow/nodeIcon']({ workflowId: workflow.projectId, nodeId })"
-        :name="$store.getters['workflow/nodeName']({ workflowId: workflow.projectId, nodeId })"
-        :type="$store.getters['workflow/nodeType']({ workflowId: workflow.projectId, nodeId })"
-        :dragGrid="gridSize"
-        v-bind="node"
-      />
+        :position="node.position"
+        :kind="node.kind"
+      >
+        <Node
+          :icon="$store.getters['workflow/nodeIcon']({ workflowId: workflow.projectId, nodeId })"
+          :name="$store.getters['workflow/nodeName']({ workflowId: workflow.projectId, nodeId })"
+          :type="$store.getters['workflow/nodeType']({ workflowId: workflow.projectId, nodeId })"
+          v-bind="node"
+        />
+      </MoveableNodeContainer>
 
       <!-- Quick Actions Layer: Buttons for Hovered & Selected Nodes and their ids -->
       <portal-target

@@ -20,7 +20,10 @@ const moveNodeGhostThreshold = 10;
 export const state = () => ({
     activeWorkflow: null,
     activeSnapshotId: null,
-    tooltip: null
+    tooltip: null,
+    isDragging: false,
+    deltaMovePosition: { x: 0, y: 0 },
+    moveNodeGhostTresholdExceeded: false
 });
 
 export const mutations = {
@@ -46,8 +49,6 @@ export const mutations = {
         Object.values(workflowData.nodes || {}).forEach(
             node => {
                 node.selected = false;
-                node.isDragging = false;
-                node.dragGhostPosition = null;
             }
         );
 
@@ -77,21 +78,18 @@ export const mutations = {
         nodes[nodeId].selected = false;
     },
     // Shifts the position of the node for the provided amount
-    shiftPosition(state, { node, deltaX, deltaY }) {
-        node.position.x += deltaX;
-        node.position.y += deltaY;
-    },
-    // Shifts the outline position of the node to the original position + the total move amount
-    shiftDragGhostPosition(state, { node, totalDeltaX, totalDeltaY }) {
-        node.dragGhostPosition =  { x: node.position.x + totalDeltaX, y: node.position.y + totalDeltaY };
+    shiftPosition(state, { deltaX, deltaY, tresholdExceeded }) {
+        state.deltaMovePosition.x = deltaX;
+        state.deltaMovePosition.y = deltaY;
+        state.moveNodeGhostTresholdExceeded = tresholdExceeded;
     },
     // Reset the position of the outline
-    resetDragGhostPosition({ activeWorkflow: { nodes } }, { nodeId }) {
-        nodes[nodeId].dragGhostPosition = null;
+    resetDragPosition(state) {
+        state.deltaMovePosition = { x: 0, y: 0 };
     },
     // change the isDragging property to the provided Value
-    setDragging({ activeWorkflow: { nodes } }, { nodeId, isDragging }) {
-        nodes[nodeId].isDragging = isDragging;
+    setDragging(state, { isDragging }) {
+        state.isDragging = isDragging;
     }
 };
 
@@ -135,28 +133,40 @@ export const actions = {
         await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
     },
     /* See docs in API */
-    executeNodes({ state }, { nodeIds }) {
-        executeNodes({ projectId: state.activeWorkflow.projectId, nodeIds });
+    executeNodes({ state, getters }, { nodeIds }) {
+        executeNodes({ projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            nodeIds });
     },
     /* See docs in API */
-    cancelNodeExecution({ state }, { nodeIds }) {
-        cancelNodeExecution({ projectId: state.activeWorkflow.projectId, nodeIds });
+    cancelNodeExecution({ state, getters }, { nodeIds }) {
+        cancelNodeExecution({ projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            nodeIds });
     },
     /* See docs in API */
-    resetNodes({ state }, { nodeIds }) {
-        resetNodes({ projectId: state.activeWorkflow.projectId, nodeIds });
+    resetNodes({ state, getters }, { nodeIds }) {
+        resetNodes({ projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            nodeIds });
     },
     /* See docs in API */
-    pauseNodeExecution({ state }, { nodeIds }) {
-        pauseNodeExecution({ projectId: state.activeWorkflow.projectId, nodeIds });
+    pauseNodeExecution({ state, getters }, { nodeIds }) {
+        pauseNodeExecution({ projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            nodeIds });
     },
     /* See docs in API */
-    resumeNodeExecution({ state }, { nodeIds }) {
-        resumeNodeExecution({ projectId: state.activeWorkflow.projectId, nodeIds });
+    resumeNodeExecution({ state, getters }, { nodeIds }) {
+        resumeNodeExecution({ projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            nodeIds });
     },
     /* See docs in API */
-    stepNodeExecution({ state }, { nodeIds }) {
-        stepNodeExecution({ projectId: state.activeWorkflow.projectId, nodeIds });
+    stepNodeExecution({ state, getters }, { nodeIds }) {
+        stepNodeExecution({ projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            nodeIds });
     },
     /* See docs in API */
     openView({ state }, { nodeId }) {
@@ -178,16 +188,13 @@ export const actions = {
      * @returns {void} - nothing to return
      */
     moveNodes({ commit, getters }, { deltaX, deltaY }) {
-        const selectedNodes = getters.selectedNodes;
-        if (selectedNodes.length > moveNodeGhostThreshold) {
-            selectedNodes.forEach(node => {
-                commit('shiftDragGhostPosition', { node, totalDeltaX: deltaX, totalDeltaY: deltaY });
-            });
+        let tresholdExceeded;
+        if (getters.selectedNodes.length > moveNodeGhostThreshold) {
+            tresholdExceeded = true;
         } else {
-            selectedNodes.forEach(node => {
-                commit('shiftPosition', { node, deltaX, deltaY });
-            });
+            tresholdExceeded = false;
         }
+        commit('shiftPosition', { deltaX, deltaY, tresholdExceeded });
     },
 
     /**
@@ -199,26 +206,26 @@ export const actions = {
      * @param {Object} params.startPos - start position {x: , y: } of the move event
      * @returns {void} - nothing to return
      */
-    saveNodeMoves({ state, getters }, { projectId, nodeId, startPos }) {
+    saveNodeMoves({ state, getters, commit }, { projectId, nodeId, startPos }) {
         const selectedNodes = getters.selectedNodes;
-        const relevantNode = state.activeWorkflow.nodes[nodeId];
         const selectedNodeIds = selectedNodes.map((node) => node.id);
         let translation;
         // calculate the translation either relative to the position or the outline position
-        if (selectedNodes.length > moveNodeGhostThreshold) {
-            translation = { x: relevantNode.dragGhostPosition.x - startPos.x,
-                y: relevantNode.dragGhostPosition.y - startPos.y };
-        } else {
-            translation = { x: relevantNode.position.x - startPos.x,
-                y: relevantNode.position.y - startPos.y };
-        }
-
+        translation = {
+            x: state.deltaMovePosition.x,
+            y: state.deltaMovePosition.y
+        };
         moveObjects({
             projectId,
             workflowId: getters.activeWorkflowId,
             nodeIds: selectedNodeIds,
             translation,
             annotationIds: []
+        }).then((e) => {
+            // nothing todo when movement is successful
+        }, (error) => {
+            consola.log('The following error occured: ', error);
+            commit('resetDragPosition');
         });
     }
 };
@@ -333,7 +340,7 @@ export const getters = {
         if (!activeWorkflow) {
             return null;
         }
-        return activeWorkflow?.info.containerId || 'root';
+        return activeWorkflow?.info?.containerId || 'root';
     },
 
     nodeIcon(state, getters, rootState) {

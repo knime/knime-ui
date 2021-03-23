@@ -1,5 +1,5 @@
 <script>
-import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
+import { mapActions, mapMutations, mapState } from 'vuex';
 import Port from '~/components/PortWithTooltip';
 import NodeState from '~/components/NodeState';
 import NodeTorso from '~/components/NodeTorso';
@@ -10,9 +10,7 @@ import LoopDecorator from '~/components/LoopDecorator';
 import portShift from '~/util/portShift';
 import NodeActionBar from '~/components/NodeActionBar.vue';
 import NodeSelectionPlane from '~/components/NodeSelectionPlane.vue';
-import { throttle } from 'lodash';
 
-const moveNodesThrottle = 10; // 10 ms between new move calculations are performed
 /**
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
  * Must be embedded in an `<svg>` element.
@@ -67,7 +65,6 @@ export default {
          */
         outPorts: { type: Array, required: true },
 
-
         /**
          * The position of the node. Contains of an x and a y parameter
          */
@@ -75,17 +72,6 @@ export default {
             type: Object,
             required: true,
             validator: position => typeof position.x === 'number' && typeof position.y === 'number'
-        },
-
-        /**
-         * The position of the outline used when multiple nodes are moved
-         * The outline is only shown if more than @workflow#moveNodeGhostThreshold nodes are moved
-         */
-        dragGhostPosition: {
-            type: Object,
-            default() {
-                return null;
-            }
         },
 
         /**
@@ -179,38 +165,18 @@ export default {
             default: () => ({
                 allowedActions: {}
             })
-        },
-        /**
-         * Defines the size of the grid nodes are aligned to
-         */
-        dragGrid: {
-            type: Object,
-            default() {
-                return { x: 5, y: 5 };
-            }
-        },
-
-        /**
-         * True if the node is currently dragged
-         */
-        isDragging: {
-            type: Boolean,
-            default: false
         }
     },
     data() {
         return {
-            hover: false,
-            // Start position of the dragging
-            startPos: { x: 0, y: 0 }
+            hover: false
         };
     },
     computed: {
         ...mapState('openedProjects', {
             projectId: 'activeId'
         }),
-        ...mapGetters('workflow', ['isWritable']),
-        ...mapState('canvas', ['zoomFactor']),
+        ...mapState('workflow', { isDragging: 'isDragging' }),
         decoratorBackgroundType() {
             if (this.type) {
                 return this.type;
@@ -229,7 +195,7 @@ export default {
          * @return {boolean} if true action bar will be hidden
          */
         hideActionBar() {
-            return typeof this.executionInfo?.streamable !== 'undefined';
+            return typeof this.executionInfo?.streamable !== 'undefined' || this.isDragging;
         },
         allNodeActions() {
             return {
@@ -266,16 +232,6 @@ export default {
                 x,
                 y
             };
-        }
-    },
-    watch: {
-        // If change occurs, position has been updated from the store.
-        // Note that the position is not updated while the node is being dragged, only after it's dropped.
-        position: {
-            deep: true,
-            handler() {
-                this.handleMoveFromStore();
-            }
         }
     },
     methods: {
@@ -350,83 +306,13 @@ export default {
                 this.deselectAllNodes();
                 this.selectNode(this.id);
             }
-        },
-
-        /**
-         * Clears the outline position after node movement, if outline position was present
-         * @returns {void} nothing to return
-         */
-        handleMoveFromStore() {
-            if (this.isDragging) {
-                return;
-            }
-            this.$store.commit(
-                'workflow/resetDragGhostPosition',
-                { nodeId: this.id }
-            );
-        },
-
-        /**
-         * Handles the start of a move event
-         * @param {Object} e - details of the mousedown event
-         * @returns {void} nothing to return
-         */
-        onMoveStart(e) {
-            this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: true });
-            if (!this.selected && !e.detail.event.shiftKey) {
-                this.deselectAllNodes();
-            }
-            this.selectNode(this.id);
-            this.startPos = { x: this.position.x, y: this.position.y };
-        },
-
-        /**
-         * Handles move events of the node
-         * throttled to limit recalculation to every @moveNodesThrottle ms
-         * @param {Object} detail - containing the total amount moved in x and y direction
-         */
-        onMove: throttle(function ({ detail: { totalDeltaX, totalDeltaY } }) {
-            /* eslint-disable no-invalid-this */
-            if (this.isDragging) {
-                // Move node to the next rounded grid position
-                let deltaX = Math.round((this.startPos.x + totalDeltaX / this.zoomFactor) / this.dragGrid.x) *
-                    this.dragGrid.x - this.position.x;
-                let deltaY = Math.round((this.startPos.y + totalDeltaY / this.zoomFactor) / this.dragGrid.y) *
-                    this.dragGrid.y - this.position.y;
-                this.$store.dispatch(
-                    'workflow/moveNodes',
-                    { deltaX, deltaY }
-                );
-            }
-            /* eslint-enable no-invalid-this */
-        }, moveNodesThrottle),
-
-        /**
-         * Handles the end of a move event
-         * @returns {void} nothing to return
-         */
-        onMoveEnd() {
-            // Need the timeout to set the dragging to false after all event is completed
-            setTimeout(() => {
-                this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: false });
-                this.$store.dispatch('workflow/saveNodeMoves', {
-                    projectId: this.projectId,
-                    startPos: this.startPos,
-                    nodeId: this.id
-                });
-            }, 0);
         }
     }
 };
 </script>
 
 <template>
-  <g
-    v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5, isProtected: !isWritable}"
-    :transform="`translate(${position.x}, ${position.y})`"
-    :data-node-id="id"
-    :class="[{ dragging: isDragging }]"
-  >
+  <g>
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal
       v-if="hover || selected"
@@ -444,16 +330,11 @@ export default {
 
     <!-- Node Selection Plane. Portalled to the back -->
     <portal
-      v-if="selected"
+      v-if="selected && !isDragging"
       to="node-select"
     >
       <NodeSelectionPlane
         :position="position"
-        :kind="kind"
-      />
-      <NodeSelectionPlane
-        v-if="dragGhostPosition"
-        :position="dragGhostPosition"
         :kind="kind"
       />
     </portal>
@@ -592,11 +473,5 @@ export default {
   line-height: 12px;
   pointer-events: none;
   width: 125px;
-}
-
-.dragging {
-  & >>> .port {
-    pointer-events: none;
-  }
 }
 </style>
