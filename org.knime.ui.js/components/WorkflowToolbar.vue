@@ -8,6 +8,7 @@ import ResetAllIcon from '~/assets/reset-all.svg?inline';
 import ExecuteSelectedIcon from '~/assets/execute-selected.svg?inline';
 import CancelSelectedIcon from '~/assets/cancel-selected.svg?inline';
 import ResetSelectedIcon from '~/assets/reset-selected.svg?inline';
+import DeleteIcon from '~/assets/delete.svg?inline';
 import ZoomMenu from '~/components/ZoomMenu';
 
 /**
@@ -23,6 +24,7 @@ export default {
         ExecuteSelectedIcon,
         CancelSelectedIcon,
         ResetSelectedIcon,
+        DeleteIcon,
         ZoomMenu
     },
     computed: {
@@ -45,10 +47,13 @@ export default {
         },
         canResetSelection() {
             return this.selectedNodes.some(node => node.allowedActions.canReset);
+        },
+        canDeleteSelection() {
+            return this.selectedNodes.some(node => node.allowedActions.canDelete);
         }
     },
     methods: {
-        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes'])
+        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedNodes'])
     }
 };
 </script>
@@ -114,6 +119,15 @@ export default {
           Reset selected
         </ToolbarButton>
       </template>
+      <ToolbarButton
+        class="with-text"
+        :disabled="!canDeleteSelection"
+        title="Delete selection – ⌫ / DEL"
+        @click.native="deleteSelectedNodes"
+      >
+        <DeleteIcon />
+        Delete
+      </ToolbarButton>
     </div>
 
     <WorkflowBreadcrumb
@@ -135,6 +149,12 @@ export default {
 .buttons {
   flex-shrink: 0;
   display: flex;
+  font-size: 14px;
+
+  & .with-text {
+    padding-right: 9px;
+    padding-left: 2px;
+  }
 }
 
 .breadcrumb {
