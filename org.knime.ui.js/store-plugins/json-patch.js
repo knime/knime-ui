@@ -85,14 +85,20 @@ export const mutations = {
 
         mutations['patch.remove'](state, { path: from });
         mutations['patch.add'](state, { path, value: source });
+    },
+    'patch.apply'(state, patch) {
+        // apply patch "atomically"
+        for (let cmd of patch) {
+            let { op, ...payload } = cmd;
+            // call directly - without commit
+            mutations[`patch.${op}`](state, payload);
+        }
     }
 };
 
 export const actions = {
-    'patch.apply'({ commit, rootState }, patch) {
-        patch.forEach(cmd => {
-            let { op, ...payload } = cmd;
-            commit(`patch.${op}`, payload);
-        });
+    'patch.apply'({ state, commit, rootState }, patch) {
+        consola.trace(patch);
+        commit('patch.apply', patch);
     }
 };

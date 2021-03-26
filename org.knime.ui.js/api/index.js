@@ -144,11 +144,13 @@ export const openView = ({ projectId, nodeId }) => {
 
 /**
  * Generates workflow commands that are part of the undo/redo stack
- * @param {String} command name of the command to be executed
- * @param {String} errorMessage error message to be logged on failure
- * @returns {Function}
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param {String} cfg.command name of the command to be executed
+ * @param {String} cfg.args arguments for the command
+ * @returns {Promise}
  */
-let workflowCommand = (command, errorMessage) => ({ projectId, workflowId, ...args }) => {
+let workflowCommand = ({ projectId, workflowId, command, args }) => {
     try {
         let rpcArgs = {
             kind: command,
@@ -158,27 +160,27 @@ let workflowCommand = (command, errorMessage) => ({ projectId, workflowId, ...ar
         return Promise.resolve(result);
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(errorMessage));
+        return Promise.reject(new Error(`Couldn't execute ${command}(${args})`));
     }
 };
 
 /**
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
- * @param { Array } cfg.nodeIds The nodes to be moved
- * @param { Array } cfg.annotationIds The annotations to be moved
- * @param { Array } cfg.delta the delta by which the objects are to be moved
- */
-export const moveObjects = workflowCommand('translate', 'Could not translate nodes/annotations');
-
-
-/**
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
  * @param { Array } cfg.nodeIds The nodes to be deleted
  * @param { Array } cfg.annotationIds The annotations to be deleted
+ * @param { Array } cfg.connectionIds The connections to be deleted
+ * @returns { Promise } Promise
  */
-export const deleteObjects = workflowCommand('delete', 'Could not delete nodes/annotations');
+// eslint-disable-next-line arrow-body-style
+export const deleteObjects = ({ nodeIds = [], annotationIds = [], connectionIds = [], projectId, workflowId }) => {
+    return workflowCommand({
+        command: 'delete',
+        args: { nodeIds, annotationIds, connectionIds },
+        projectId,
+        workflowId
+    });
+};
 
 // The Node service offers JSON-RPC forwarding to the Port instance.
 // This is by design, because third-party vendors can provide a custom port implementation with totally
