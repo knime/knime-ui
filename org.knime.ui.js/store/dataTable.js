@@ -106,14 +106,14 @@ export const actions = {
         // loading done
         commit('setIsLoading', false);
         commit('setIsReady', true);
-        
+
         // layouting starts
         commit('setTableIdentifier', { projectId, nodeId, portIndex });
         commit('setTable', table);
     },
 
     async loadMoreRows({ commit, state }) {
-        let { projectId, nodeId, portIndex, rows, requestID } = state;
+        let { projectId, workflowId, nodeId, portIndex, rows, requestID } = state;
         consola.trace('loading more table rows');
 
         // indicate loading
@@ -121,11 +121,18 @@ export const actions = {
 
         // load more rows
         try {
-            let table = await loadTable({ projectId, nodeId, portIndex, offset: rows.length, batchSize: moreRows });
+            let table = await loadTable({
+                projectId,
+                workflowId,
+                nodeId,
+                portIndex,
+                offset: rows.length,
+                batchSize: moreRows
+            });
             if (!table?.rows) {
                 throw new Error('Loaded table contains no rows');
             }
-            
+
             // if the table has been reset in the meantime the result of this request is ignored
             if (state.requestID === requestID) {
                 commit('appendRows', table.rows);

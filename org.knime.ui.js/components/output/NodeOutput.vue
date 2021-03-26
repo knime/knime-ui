@@ -1,5 +1,5 @@
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 import DataPortOutputTable from '~/components/output/DataPortOutputTable';
 import FlowVariablePortOutputTable from '~/components/output/FlowVariablePortOutputTable';
 import OutputPortSelectorBar from '~/components/output/OutputPortSelectorBar';
@@ -44,6 +44,7 @@ export default {
         ...mapState('openedProjects', {
             activeProjectId: 'activeId'
         }),
+        ...mapGetters('workflow', ['activeWorkflowId']),
         selectedNodes() {
             let nodes = Object.values(this.nodes || {});
             return nodes.filter(node => node.selected);
@@ -172,6 +173,7 @@ export default {
                 setTimeout(() => { // delay UI blocking at startup
                     this.$store.dispatch(`${dataSource}/load`, {
                         projectId: this.activeProjectId,
+                        workflowId: this.activeWorkflowId,
                         nodeId: this.selectedNode.id,
                         portIndex: this.selectedPortIndex
                     });

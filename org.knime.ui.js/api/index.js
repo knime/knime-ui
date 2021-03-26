@@ -69,67 +69,42 @@ const makeToggleEventListener = addOrRemove => (type, args) => {
 export const addEventListener = makeToggleEventListener('add');
 export const removeEventListener = makeToggleEventListener('remove');
 
-
-let nodeStateChanger = (nodeState, errorMessage, action = 'changeNodeStates') => ({ projectId, nodeIds }) => {
+/**
+ * Do Action on nodes or an entire workflow.
+ * @param {'reset' | 'execute' | 'cancel'} cfg.action
+ * @param {String} cfg.projectId
+ * @param {String} cfg.workflowId
+ * @param {Array} cfg.nodeIds The nodes to act upon.
+ *     If you want to execute an entire workflow, pass the workflow container's id as a single element.
+ * @returns {Promise}
+ */
+export const changeNodeState = ({ projectId, workflowId, nodeIds, action }) => {
     try {
-        let result = rpc(`NodeService.${action}`, projectId, nodeIds, nodeState);
+        let result = rpc('NodeService.changeNodeStates', projectId, workflowId, nodeIds, action);
         return Promise.resolve(result);
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(errorMessage));
+        return Promise.reject(new Error(`Could not ${action} nodes ${nodeIds}`));
     }
 };
 
 /**
- * Execute nodes or a workflow.
+ * Actions for LoopExecution.
+ * @param {'step' | 'pause' | 'resume'} cfg.action
  * @param {String} cfg.projectId
- * @param {Array} cfg.nodeIds The nodes to execute.
- *     If you want to execute an entire workflow, pass the workflow container's id as a single element.
+ * @param {String} cfg.workflowId
+ * @param {String} cfg.nodeId The node to act upon.
+ * @returns {Promise}
  */
-export const executeNodes = nodeStateChanger('execute', 'Could not execute nodes');
-
-/**
- * Cancel node execution.
- * @param {String} cfg.projectId
- * @param {Array} cfg.nodeIds The nodes to stop.
- *     If you want to cancel all nodes in the entire workflow, pass the workflow container's id as a single element.
- */
-export const cancelNodeExecution = nodeStateChanger('cancel', 'Could not cancel node execution');
-
-/**
- * Reset executed nodes.
- * @param {String} cfg.projectId
- * @param {Array} cfg.nodeIds The nodes to reset.
- *     If you want to reset all nodes in the entire workflow, pass the workflow container's id as a single element.
- */
-export const resetNodes = nodeStateChanger('reset', 'Could not reset nodes');
-
-// eslint-disable-next-line arrow-body-style
-let loopStateChanger = (nodeState, errorMessage) => ({ projectId, nodeIds }) => {
-    return nodeStateChanger(nodeState, errorMessage, 'changeLoopState')({ projectId, nodeIds: nodeIds[0] });
+export const changeLoopState = ({ projectId, workflowId, nodeId, action }) => {
+    try {
+        let result = rpc(`NodeService.changeLoopState`, projectId, workflowId, nodeId, action);
+        return Promise.resolve(result);
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error(`Could not ${action} node ${nodeId}`));
+    }
 };
-
-/**
- * Pause executing loop nodes.
- * @param {String} cfg.projectId
- * @param {Array} cfg.nodeIds The nodes to pause.
- */
-export const pauseNodeExecution = loopStateChanger('pause', 'Could not pause execution');
-
-/**
- * Resume loop execution.
- * @param {String} cfg.projectId
- * @param {Array} cfg.nodeIds The loop nodes for execution resumption.
- */
-export const resumeNodeExecution = loopStateChanger('resume', 'Could not resume execution');
-
-/**
- * Step loop execution.
- * @param {String} cfg.projectId
- * @param {Array} cfg.nodeIds The loop nodes for step execution.
- */
-export const stepNodeExecution = loopStateChanger('step', 'Could not step execution');
-
 
 /**
  * Open the native (Java) configuration dialog of a node.
@@ -138,7 +113,15 @@ export const stepNodeExecution = loopStateChanger('step', 'Could not step execut
  * @returns {void}
  */
 export const openDialog = ({ projectId, nodeId }) => {
-    window.openNodeDialog(projectId, nodeId);
+    try {
+        // returns falsy on success
+        let error = window.openNodeDialog(projectId, nodeId);
+        if (error) {
+            throw new Error(error);
+        }
+    } catch (e) {
+        consola.error(`Could not open dialog of node ${nodeId}`, e);
+    }
 };
 
 /**
@@ -148,7 +131,55 @@ export const openDialog = ({ projectId, nodeId }) => {
  * @returns {void}
  */
 export const openView = ({ projectId, nodeId }) => {
-    window.openNodeView(projectId, nodeId);
+    try {
+        // returns falsy on success
+        let error = window.openNodeView(projectId, nodeId);
+        if (error) {
+            throw new Error(error);
+        }
+    } catch (e) {
+        consola.error(`Could not open view of node ${nodeId}`, e);
+    }
+};
+
+/**
+ * Generates workflow commands that are part of the undo/redo stack
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param {String} cfg.command name of the command to be executed
+ * @param {String} cfg.args arguments for the command
+ * @returns {Promise}
+ */
+let workflowCommand = ({ projectId, workflowId, command, args }) => {
+    try {
+        let rpcArgs = {
+            kind: command,
+            ...args
+        };
+        let result = rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
+        return Promise.resolve(result);
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error(`Couldn't execute ${command}(${args})`));
+    }
+};
+
+/**
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param { Array } cfg.nodeIds The nodes to be deleted
+ * @param { Array } cfg.annotationIds The annotations to be deleted
+ * @param { Array } cfg.connectionIds The connections to be deleted
+ * @returns { Promise } Promise
+ */
+// eslint-disable-next-line arrow-body-style
+export const deleteObjects = ({ nodeIds = [], annotationIds = [], connectionIds = [], projectId, workflowId }) => {
+    return workflowCommand({
+        command: 'delete',
+        args: { nodeIds, annotationIds, connectionIds },
+        projectId,
+        workflowId
+    });
 };
 
 // The Node service offers JSON-RPC forwarding to the Port instance.
@@ -159,14 +190,14 @@ export const openView = ({ projectId, nodeId }) => {
 // So, to get a table we have to send a JSON-RPC object as a payload to the NodeService, which itself must be called via
 // JSON-RPC. Hence double-wrapping is required.
 // Parameters are described below.
-const nestedRpcCall = ({ method, params, projectId, nodeId, portIndex }) => {
-    let nestedRpcCall = {
+const portRPC = ({ method, params, projectId, workflowId, nodeId, portIndex }) => {
+    let nestedRpcCall = JSON.stringify({
         jsonrpc: '2.0',
         id: 0,
         method,
         params
-    };
-    let response = rpc('NodeService.doPortRpc', projectId, nodeId, portIndex, JSON.stringify(nestedRpcCall));
+    });
+    let response = rpc('NodeService.doPortRpc', projectId, workflowId, nodeId, portIndex, nestedRpcCall);
     return parseResponse({ response, method, params });
 };
 
@@ -180,11 +211,12 @@ const nestedRpcCall = ({ method, params, projectId, nodeId, portIndex }) => {
  * Remember that port 0 is usually a flow variable port.
  * @return {Promise} A promise containing the table data as defined in the API
  * */
-export const loadTable = ({ projectId, nodeId, portIndex, offset = 0, batchSize }) => {
+export const loadTable = ({ projectId, workflowId, nodeId, portIndex, offset = 0, batchSize }) => {
     try {
-        let table = nestedRpcCall({
+        let table = portRPC({
             projectId,
             nodeId,
+            workflowId,
             portIndex,
             method: 'getTable',
             params: [offset, batchSize]
@@ -207,10 +239,11 @@ export const loadTable = ({ projectId, nodeId, portIndex, offset = 0, batchSize 
  * Remember that port 0 is usually a flow variable port.
  * @return {Promise} A promise containing the flow variable data as defined in the API
  * */
-export const loadFlowVariables = ({ projectId, nodeId, portIndex }) => {
+export const loadFlowVariables = ({ projectId, workflowId, nodeId, portIndex }) => {
     try {
-        let flowVariables = nestedRpcCall({
+        let flowVariables = portRPC({
             projectId,
+            workflowId,
             nodeId,
             portIndex,
             method: 'getFlowVariables'

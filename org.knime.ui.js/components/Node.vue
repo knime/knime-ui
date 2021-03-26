@@ -199,7 +199,7 @@ export default {
          * matter, as the presence of the variable already indicates that the node is inside of a streaming component
          * @return {boolean} if true action bar will be hidden
          */
-        hideActionBar() {
+        insideStreamingComponent() {
             return typeof this.executionInfo?.streamable !== 'undefined';
         },
         allNodeActions() {
@@ -276,7 +276,7 @@ export default {
                 this.openNode();
             } else if (this.allowedActions?.canOpenDialog)  {
                 // open node dialog if one is present
-                this.openDialog({ nodeId: this.id });
+                this.openDialog(this.id);
             }
         },
 
@@ -319,11 +319,10 @@ export default {
   >
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal
-      v-if="hover || selected"
       to="node-actions"
     >
       <NodeActionBar
-        v-if="!hideActionBar"
+        v-if="!insideStreamingComponent && hover"
         ref="actionbar"
         v-bind="allNodeActions"
         :transform="`translate(${position.x + $shapes.nodeSize / 2} ${position.y - $shapes.nodeSelectionPadding[0]})`"
