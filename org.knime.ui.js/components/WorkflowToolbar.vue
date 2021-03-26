@@ -5,6 +5,9 @@ import ToolbarButton from '~/components/ToolbarButton';
 import ExecuteAllIcon from '~/assets/execute-all.svg?inline';
 import CancelAllIcon from '~/assets/cancel-execution.svg?inline';
 import ResetAllIcon from '~/assets/reset-all.svg?inline';
+import ExecuteSelectedIcon from '~/assets/execute-selected.svg?inline';
+import CancelSelectedIcon from '~/assets/cancel-selected.svg?inline';
+import ResetSelectedIcon from '~/assets/reset-selected.svg?inline';
 import ZoomMenu from '~/components/ZoomMenu';
 
 /**
@@ -17,6 +20,9 @@ export default {
         ExecuteAllIcon,
         CancelAllIcon,
         ResetAllIcon,
+        ExecuteSelectedIcon,
+        CancelSelectedIcon,
+        ResetSelectedIcon,
         ZoomMenu
     },
     computed: {
@@ -86,7 +92,7 @@ export default {
           title="Execute selected nodes – F7"
           @click.native="executeNodes('selected')"
         >
-          <ExecuteAllIcon />
+          <ExecuteSelectedIcon />
           Execute selected
         </ToolbarButton>
         <ToolbarButton
@@ -95,7 +101,7 @@ export default {
           title="Cancel selected nodes – F9"
           @click.native="cancelNodeExecution('selected')"
         >
-          <CancelAllIcon />
+          <CancelSelectedIcon />
           Cancel selected
         </ToolbarButton>
         <ToolbarButton
@@ -104,7 +110,7 @@ export default {
           title="Reset selected nodes – F8"
           @click.native="resetNodes('selected')"
         >
-          <ResetAllIcon />
+          <ResetSelectedIcon />
           Reset selected
         </ToolbarButton>
       </template>
