@@ -258,7 +258,6 @@ export default {
 
 .output-container {
   padding: 10px;
-  border-top: 1px solid var(--knime-silver-sand);
   position: relative;
   overflow: hidden;
   display: flex;

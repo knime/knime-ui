@@ -6,7 +6,7 @@ import WorkflowTabContent from '~/components/WorkflowTabContent';
 import Kanvas from '~/components/Kanvas';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
 import WorkflowToolbar from '~/components/WorkflowToolbar';
-import NodeOutput from '~/components/output/NodeOutput';
+import Splitter from '~/components/Splitter';
 
 describe('WorkflowTabContent.vue', () => {
     beforeAll(() => {
@@ -59,7 +59,9 @@ describe('WorkflowTabContent.vue', () => {
         it('displays node output', async () => {
             await doShallowMount();
 
-            expect(wrapper.findComponent(NodeOutput).exists()).toBe(true);
+            let splitter = wrapper.findComponent(Splitter);
+            expect(splitter.exists()).toBe(true);
+            expect(splitter.vm.$slots.secondary[0].componentOptions.tag).toBe('NodeOutput');
         });
 
         it('shows metadata panel with workflow metadata data', async () => {
