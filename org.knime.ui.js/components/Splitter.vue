@@ -130,6 +130,21 @@ export default {
     overflow: hidden;
   }
 
+  & .handle {
+    flex: 0 0 auto;
+    background-color: var(--knime-silver-sand);
+    background-clip: content-box;
+    z-index: 1;
+
+    &:hover {
+      background-color: var(--knime-dove-gray);
+    }
+
+    &.active {
+      background-color: var(--knime-masala);
+    }
+  }
+
   &.column {
     flex-direction: column;
 
@@ -142,9 +157,9 @@ export default {
     }
 
     & .handle {
-      padding-top: 3px;
-      padding-bottom: 3px;
-      border-top: 1px solid var(--knime-silver-sand);
+      padding: 3px 0;
+      margin: -3px 0;
+      height: 7px;
       cursor: ns-resize;
 
       &.active {
@@ -165,24 +180,14 @@ export default {
     }
 
     & .handle {
-      padding-left: 3px;
-      padding-right: 3px;
-      border-left: 1px solid var(--knime-silver-sand);
+      padding: 0 3px;
+      margin: 0 -3px;
+      width: 7px;
       cursor: ew-resize;
 
       &.active {
         cursor: col-resize;
       }
-    }
-  }
-
-  & .handle {
-    &:hover {
-      border-color: var(--knime-dove-gray);
-    }
-
-    &.active {
-      border-color: var(--knime-masala);
     }
   }
 }

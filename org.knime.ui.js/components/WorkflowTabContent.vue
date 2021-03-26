@@ -70,7 +70,7 @@ export default {
         direction="column"
       >
         <Kanvas id="kanvas" />
-        <template v-slot:secondary>
+        <template #secondary>
           <NodeOutput id="node-output" />
         </template>
       </Splitter>
