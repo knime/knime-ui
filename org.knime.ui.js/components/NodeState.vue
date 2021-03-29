@@ -65,13 +65,12 @@ export default {
             return `polygon(0 0, ${100 * this.clippedProgress}% 0, ${100 * this.clippedProgress}% 100%, 0 100%)`;
         },
         tooltip() {
-            const errorSymbolRadius = 5;
-            const tooltipSpacing = 2;
             const { nodeSize, nodeStatusHeight, nodeStatusMarginTop } = this.$shapes;
             let tooltip = {
                 x: nodeSize / 2,
-                y: nodeSize + nodeStatusMarginTop + nodeStatusHeight + errorSymbolRadius + tooltipSpacing,
-                anchorPoint: this.anchorPoint
+                y: nodeSize + nodeStatusMarginTop + nodeStatusHeight,
+                anchorPoint: this.anchorPoint,
+                gap: 10
             };
 
             if (this.error) {
@@ -106,10 +105,16 @@ export default {
                 }
             );
         },
-        onMouseLeave() {
-            this.removeWatcher();
-            this.setTooltip(null);
-            this.removeWatcher = null;
+        onMouseLeave({ relatedTarget }) {
+            consola.trace('mouse left to:', relatedTarget?.tagName, relatedTarget?.id,
+                relatedTarget?.classList, relatedTarget);
+            
+            let tooltipContainer = document.getElementById('tooltip-container');
+            if (!tooltipContainer || !tooltipContainer.contains(relatedTarget)) {
+                this.setTooltip(null);
+                this.removeWatcher();
+                this.removeWatcher = null;
+            }
         }
     }
 };

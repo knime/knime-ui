@@ -15,11 +15,12 @@ export default {
     computed: {
         tooltip() {
             // table ports have less space than other ports, because the triangular shape naturally creates a gap
-            let tooltipSpacing = this.port.type === 'table' ? 0 : 2;
+            const gap = this.port.type === 'table' ? 6 : 8; // eslint-disable-line no-magic-numbers
             const { portSize } = this.$shapes;
             return {
                 x: this.x,
-                y: this.y - portSize / 2 - tooltipSpacing,
+                y: this.y - portSize / 2 - 2,
+                gap,
                 anchorPoint: this.anchorPoint,
                 title: this.port.name,
                 text: this.port.info,

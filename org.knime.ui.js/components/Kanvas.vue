@@ -176,6 +176,7 @@ export default {
     </div>
 
     <div
+      id="tooltip-container"
       class="tooltip-container"
     >
       <transition name="tooltip">
