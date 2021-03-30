@@ -5,7 +5,7 @@ import * as $shapes from '~/style/shapes';
 import Vuex from 'vuex';
 
 describe('workflow store', () => {
-    let store, localVue, templateMutationMock, loadStore, addEventListenerMock, removeEventListenerMock;
+    let store, localVue, loadStore, addEventListenerMock, removeEventListenerMock;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -13,9 +13,9 @@ describe('workflow store', () => {
     });
 
     beforeEach(() => {
-        templateMutationMock = jest.fn();
         addEventListenerMock = jest.fn();
         removeEventListenerMock = jest.fn();
+        store = null;
 
         loadStore = async ({ apiMocks = {} } = {}) => {
             /**
@@ -33,11 +33,6 @@ describe('workflow store', () => {
 
             store = mockVuexStore({
                 workflow: await import('~/store/workflow'),
-                nodeTemplates: {
-                    mutations: {
-                        add: templateMutationMock
-                    }
-                }
             });
         };
     });
@@ -60,34 +55,6 @@ describe('workflow store', () => {
             expect(store.state.workflow.activeWorkflow).toStrictEqual({ projectId: 'foo' });
         });
 
-        it('extracts templates', () => {
-            store.commit('workflow/setActiveWorkflow', {
-                projectId: 'bar',
-                nodeTemplates: {
-                    foo: { bla: 1 },
-                    bar: { qux: 2 }
-                },
-                nodes: {
-                    foo: { bla: 1 },
-                    bar: { qux: 2 }
-                }
-            });
-
-            expect(templateMutationMock).toHaveBeenCalledWith(expect.anything(), {
-                templateData: { bla: 1 }, templateId: 'foo'
-            });
-            expect(templateMutationMock).toHaveBeenCalledWith(expect.anything(), {
-                templateData: { qux: 2 }, templateId: 'bar'
-            });
-            expect(store.state.workflow.activeWorkflow).toStrictEqual({
-                projectId: 'bar',
-                nodes: {
-                    foo: { bla: 1, selected: false },
-                    bar: { qux: 2, selected: false }
-                }
-            });
-        });
-
         it('allows setting the snapshot ID', () => {
             store.commit('workflow/setActiveSnapshotId', 'myId');
             expect(store.state.workflow.activeSnapshotId).toBe('myId');
@@ -99,31 +66,45 @@ describe('workflow store', () => {
         });
 
         it('selects all nodes', () => {
-            store.commit('workflow/setActiveWorkflow', {
+            let workflow = {
                 projectId: 'bar',
                 nodes: {
                     'root:1': { id: 'root:1' },
                     'root:2': { id: 'root:2' }
-                }
-            });
+                },
+                info: {}
+            };
+            store.commit('workflow/setActiveWorkflow', workflow);
 
             let nodes = store.state.workflow.activeWorkflow.nodes;
 
             store.commit('workflow/selectAllNodes');
             expect(nodes['root:1'].selected).toBe(true);
             expect(nodes['root:2'].selected).toBe(true);
+            expect(store.getters['workflow/selectedNodes']).toStrictEqual([
+                workflow.nodes['root:1'],
+                workflow.nodes['root:2']
+            ]);
 
             store.commit('workflow/deselectNode', 'root:1');
             expect(nodes['root:1'].selected).toBe(false);
             expect(nodes['root:2'].selected).toBe(true);
+            expect(store.getters['workflow/selectedNodes']).toStrictEqual([
+                workflow.nodes['root:2']
+            ]);
 
             store.commit('workflow/selectNode', 'root:1');
             expect(nodes['root:1'].selected).toBe(true);
             expect(nodes['root:2'].selected).toBe(true);
+            expect(store.getters['workflow/selectedNodes']).toStrictEqual([
+                workflow.nodes['root:1'],
+                workflow.nodes['root:2']
+            ]);
 
             store.commit('workflow/deselectAllNodes');
             expect(nodes['root:1'].selected).toBe(false);
             expect(nodes['root:2'].selected).toBe(false);
+            expect(store.getters['workflow/selectedNodes']).toStrictEqual([]);
 
         });
 
@@ -162,7 +143,7 @@ describe('workflow store', () => {
         });
     });
 
-    describe('action', () => {
+    describe('actions', () => {
         it('loads root workflow successfully', async () => {
             let loadWorkflow = jest.fn().mockResolvedValue({ dummy: true, workflow: { info: {} }, snapshotId: 'snap' });
             await loadStore({
@@ -226,15 +207,61 @@ describe('workflow store', () => {
             });
         });
 
-        it.each(['executeNodes', 'cancelNodeExecution', 'resetNodes'])('passes %s to API', async (action) => {
+        // describe used for debugging
+        describe('each', () => {
+            it.each([
+                ['executeNodes', 'execute'],
+                ['cancelNodeExecution', 'cancel'],
+                ['resetNodes', 'reset']
+            ])('passes %s to API', async (fn, action) => {
+                let mock = jest.fn();
+                let apiMocks = { changeNodeState: mock };
+                await loadStore({ apiMocks });
+                store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: {} });
+
+                store.dispatch(`workflow/${fn}`, ['x', 'y']);
+
+                expect(mock).toHaveBeenCalledWith({ nodeIds: ['x', 'y'], projectId: 'foo', action });
+            });
+
+            it.each([
+                ['pauseNodeExecution', 'pause'],
+                ['resumeNodeExecution', 'resume'],
+                ['stepNodeExecution', 'step']
+            ])('passes %s to API', async (fn, action) => {
+                let mock = jest.fn();
+                let apiMocks = { changeLoopState: mock };
+                await loadStore({ apiMocks });
+                store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: {} });
+
+                store.dispatch(`workflow/${fn}`, 'node x');
+
+                expect(mock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo', action });
+            });
+        });
+
+        test('overloaded changeNodeState', async () => {
             let mock = jest.fn();
-            let apiMocks = { [action]: mock };
+            let apiMocks = { changeNodeState: mock };
             await loadStore({ apiMocks });
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
+                info: {},
+                nodes: {
+                    'root:1': { id: 'root:1' },
+                    'root:2': { id: 'root:2' }
+                }
+            });
 
-            store.dispatch(`workflow/${action}`, { nodeIds: ['x', 'y'] });
+            store.dispatch(`workflow/changeNodeState`, { nodes: 'all' });
+            expect(mock).toHaveBeenCalledWith({ nodeIds: ['root'], projectId: 'foo' });
 
-            expect(mock).toHaveBeenCalledWith({ nodeIds: ['x', 'y'], projectId: 'foo' });
+            store.commit('workflow/selectAllNodes');
+            store.dispatch(`workflow/changeNodeState`, { nodes: 'selected' });
+            expect(mock).toHaveBeenCalledWith({ nodeIds: ['root:1', 'root:2'], projectId: 'foo' });
+
+            store.dispatch(`workflow/changeNodeState`, { nodes: ['root:2'] });
+            expect(mock).toHaveBeenCalledWith({ nodeIds: ['root:2'], projectId: 'foo' });
         });
 
         it.each(['openView', 'openDialog'])('passes %s to API', async (action) => {
@@ -243,9 +270,9 @@ describe('workflow store', () => {
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
 
-            store.dispatch(`workflow/${action}`, { nodeId: 'x' });
+            store.dispatch(`workflow/${action}`, 'node x');
 
-            expect(mock).toHaveBeenCalledWith({ nodeId: 'x', projectId: 'foo' });
+            expect(mock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo' });
         });
 
     });
@@ -412,13 +439,16 @@ describe('workflow store', () => {
                             type: 'ownType',
                             executionInfo: { jobManager: 'test' }
                         }
+                    },
+                    nodeTemplates: {
+                        bla: {
+
+                            icon: 'exampleIcon',
+                            name: 'exampleName',
+                            type: 'exampleType'
+                        }
                     }
                 });
-                store.state.nodeTemplates.bla = {
-                    icon: 'exampleIcon',
-                    name: 'exampleName',
-                    type: 'exampleType'
-                };
             });
 
             it('gets name', () => {

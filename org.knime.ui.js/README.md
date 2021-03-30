@@ -65,6 +65,32 @@ npm run sendcoverage
 It requires the `SONAR_LOGIN` and `SONAR_PASSWORD` environment variables to be set, which must be valid credentials
 for the SonarQube instance configured in `sonar-project.properties`.
 
+
+#### Running integration tests
+
+Integration tests require a running KNIME AP instance with the web frontend running, and a debugger port open.
+To do so, run KNIME with the following parameters which can be added to the `knime.ini`:
+
+```
+-Dorg.eclipse.swt.chromium.remote-debugging-port=8888
+-Dorg.knime.ui.debug.url=about:blank
+```
+
+If you want to run the tests against a locally running dev server, replace `about:blank` with `http://localhost:3000`.
+
+While the old Java based UI is still around, you must make sure to switch to the new UI before launching the tests.
+This can be achieved by manually clicking the button, or via the launch parameter
+`-Dperspective=org.knime.ui.java.perspective` (which didn't work on macOS at the time of writing).
+
+As a workspace, you should select the `test/integration/assets/workflows` folder.
+
+Then, you can run the tests via
+```
+npm run test:integration
+```
+
+Test reports are saved to the `test/integration/reports` folder.
+
 ### Running security audit
 
 npm provides a check against known security issues of used dependencies. Run it by calling

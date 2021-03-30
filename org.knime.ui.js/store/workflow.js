@@ -1,5 +1,5 @@
-import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener, executeNodes, cancelNodeExecution,
-    resetNodes, openView, openDialog } from '~api';
+import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener,
+    openView, openDialog, changeNodeState, changeLoopState, deleteObjects } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
@@ -23,17 +23,6 @@ export const mutations = {
         let workflowData = {
             ...workflow
         };
-        let { nodeTemplates = {} } = workflow;
-        let nodeTemplateIds = Object.keys(nodeTemplates);
-
-        // …and move them to template store
-        nodeTemplateIds.forEach((templateId) => {
-            this.commit('nodeTemplates/add', {
-                templateId,
-                templateData: nodeTemplates[templateId]
-            }, { root: true });
-        });
-        delete workflowData.nodeTemplates;
 
         // add selected field to node with initial value false to enable reactivity on this property
         Object.values(workflowData.nodes || {}).forEach(node => { node.selected = false; });
@@ -47,21 +36,21 @@ export const mutations = {
     setTooltip(state, tooltip) {
         Vue.set(state, 'tooltip', tooltip);
     },
-    deselectAllNodes({ activeWorkflow: { nodes } }) {
-        Object.values(nodes).forEach(node => {
+    deselectAllNodes(state) {
+        Object.values(state.activeWorkflow.nodes).forEach(node => {
             node.selected = false;
         });
     },
-    selectAllNodes({ activeWorkflow: { nodes } }) {
-        Object.values(nodes).forEach(node => {
+    selectAllNodes(state) {
+        Object.values(state.activeWorkflow.nodes).forEach(node => {
             node.selected = true;
         });
     },
-    selectNode({ activeWorkflow: { nodes } }, nodeId) {
-        nodes[nodeId].selected = true;
+    selectNode(state, nodeId) {
+        state.activeWorkflow.nodes[nodeId].selected = true;
     },
-    deselectNode({ activeWorkflow: { nodes } }, nodeId) {
-        nodes[nodeId].selected = false;
+    deselectNode(state, nodeId) {
+        state.activeWorkflow.nodes[nodeId].selected = false;
     }
 };
 
@@ -80,13 +69,12 @@ export const actions = {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    unloadActiveWorkflow({ state, getters }) {
+    unloadActiveWorkflow({ state, getters: { activeWorkflowId: workflowId } }) {
         if (!state.activeWorkflow) {
             // nothing to do (no tabs open)
             return;
         }
         let { projectId } = state.activeWorkflow;
-        let workflowId = getters.activeWorkflowId;
         let { activeSnapshotId: snapshotId } = state;
         try {
             // this is intentionally not awaiting the response. Unloading can happen in the background.
@@ -104,24 +92,68 @@ export const actions = {
         let workflowId = getters.activeWorkflowId;
         await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
     },
-    /* See docs in API */
-    executeNodes({ state }, { nodeIds }) {
-        executeNodes({ projectId: state.activeWorkflow.projectId, nodeIds });
+    deleteSelectedNodes({
+        state: { activeWorkflow: { projectId } },
+        getters: { activeWorkflowId, selectedNodes }
+    }) {
+        let deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
+        let nonDeletableNodeIds = selectedNodes.filter(node => !node.allowedActions.canDelete).map(node => node.id);
+
+        if (deletableNodeIds.length) {
+            deleteObjects({
+                projectId,
+                workflowId: activeWorkflowId,
+                nodeIds: deletableNodeIds
+            });
+        }
+        if (nonDeletableNodeIds.length) {
+            window.alert(`The following nodes can't be deleted: [${nonDeletableNodeIds.join(', ')}]`);
+        }
+    },
+    changeNodeState({ state, getters }, { action, nodes }) {
+        let { activeWorkflow: { projectId } } = state;
+        let { activeWorkflowId } = getters;
+
+        if (Array.isArray(nodes)) {
+            // act upon a list of nodes
+            changeNodeState({ projectId, nodeIds: nodes, action });
+        } else if (nodes === 'all') {
+            // act upon entire workflow
+            changeNodeState({ projectId, nodeIds: [activeWorkflowId], action });
+        } else if (nodes === 'selected') {
+            // act upon selected nodes
+            changeNodeState({ projectId, nodeIds: getters.selectedNodes.map(node => node.id), action });
+        } else {
+            throw new TypeError("'nodes' has to be of type 'all' | 'selected' | Array<nodeId>]");
+        }
+    },
+    executeNodes({ dispatch }, nodes) {
+        dispatch('changeNodeState', { action: 'execute', nodes });
+    },
+    resetNodes({ dispatch }, nodes) {
+        dispatch('changeNodeState', { action: 'reset', nodes });
+    },
+    cancelNodeExecution({ dispatch }, nodes) {
+        dispatch('changeNodeState', { action: 'cancel', nodes });
     },
     /* See docs in API */
-    cancelNodeExecution({ state }, { nodeIds }) {
-        cancelNodeExecution({ projectId: state.activeWorkflow.projectId, nodeIds });
+    pauseNodeExecution({ state }, nodeId) {
+        changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'pause' });
     },
     /* See docs in API */
-    resetNodes({ state }, { nodeIds }) {
-        resetNodes({ projectId: state.activeWorkflow.projectId, nodeIds });
+    resumeNodeExecution({ state }, nodeId) {
+        changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'resume' });
     },
     /* See docs in API */
-    openView({ state }, { nodeId }) {
+    stepNodeExecution({ state }, nodeId) {
+        changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'step' });
+    },
+    /* See docs in API */
+    openView({ state }, nodeId) {
         openView({ projectId: state.activeWorkflow.projectId, nodeId });
     },
     /* See docs in API */
-    openDialog({ state }, { nodeId }) {
+    openDialog({ state }, nodeId) {
         openDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     }
 };
@@ -135,6 +167,12 @@ export const getters = {
     },
     isStreaming({ activeWorkflow }) {
         return Boolean(activeWorkflow?.info.jobManager);
+    },
+    selectedNodes({ activeWorkflow }) {
+        if (!activeWorkflow) {
+            return [];
+        }
+        return Object.values(activeWorkflow.nodes).filter(node => node.selected);
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
@@ -239,36 +277,36 @@ export const getters = {
         return activeWorkflow?.info.containerId || 'root';
     },
 
-    nodeIcon(state, getters, rootState) {
+    nodeIcon({ activeWorkflow }, getters, rootState) {
         return ({ nodeId }) => {
-            let node = state.activeWorkflow.nodes[nodeId];
+            let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
-                return rootState.nodeTemplates[templateId].icon;
+                return activeWorkflow.nodeTemplates[templateId].icon;
             } else {
                 return node.icon;
             }
         };
     },
 
-    nodeName(state, getters, rootState) {
+    nodeName({ activeWorkflow }, getters, rootState) {
         return ({ nodeId }) => {
-            let node = state.activeWorkflow.nodes[nodeId];
+            let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
-                return rootState.nodeTemplates[templateId].name;
+                return activeWorkflow.nodeTemplates[templateId].name;
             } else {
                 return node.name;
             }
         };
     },
 
-    nodeType(state, getters, rootState) {
+    nodeType({ activeWorkflow }, getters, rootState) {
         return ({ nodeId }) => {
-            let node = state.activeWorkflow.nodes[nodeId];
+            let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
-                return rootState.nodeTemplates[templateId].type;
+                return activeWorkflow.nodeTemplates[templateId].type;
             } else {
                 return node.type;
             }

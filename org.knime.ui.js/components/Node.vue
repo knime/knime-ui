@@ -6,6 +6,7 @@ import NodeTorso from '~/components/NodeTorso';
 import NodeAnnotation from '~/components/NodeAnnotation';
 import LinkDecorator from '~/components/LinkDecorator';
 import StreamingDecorator from '~/components/StreamingDecorator';
+import LoopDecorator from '~/components/LoopDecorator';
 import portShift from '~/util/portShift';
 import NodeActionBar from '~/components/NodeActionBar.vue';
 
@@ -26,7 +27,8 @@ export default {
         NodeTorso,
         NodeState,
         LinkDecorator,
-        StreamingDecorator
+        StreamingDecorator,
+        LoopDecorator
     },
     inheritAttrs: false,
     provide() {
@@ -124,7 +126,7 @@ export default {
          */
         allowedActions: {
             type: Object,
-            default: null
+            default: () => ({})
         },
 
         /**
@@ -138,6 +140,25 @@ export default {
                 return !info || Reflect.has(info, 'streamable') || info.jobManager || info.icon;
             },
             default: null
+        },
+
+        /**
+         *  Loop specific configuration options
+         *  @example:
+         *    {
+         *      allowedActions: {
+         *        canResume: true,
+         *        canStep: true,
+         *        canPause: false
+         *      },
+         *      status: 'PAUSED'
+         *    }
+         */
+        loopInfo: {
+            type: Object,
+            default: () => ({
+                allowedActions: {}
+            })
         }
     },
     data() {
@@ -178,8 +199,14 @@ export default {
          * matter, as the presence of the variable already indicates that the node is inside of a streaming component
          * @return {boolean} if true action bar will be hidden
          */
-        hideActionBar() {
+        insideStreamingComponent() {
             return typeof this.executionInfo?.streamable !== 'undefined';
+        },
+        allNodeActions() {
+            return {
+                ...this.allowedActions,
+                ...this.loopInfo.allowedActions
+            };
         },
         /**
          * Calculates the width of the hover area of the node.
@@ -213,8 +240,8 @@ export default {
         }
     },
     methods: {
+        ...mapActions('workflow', ['openDialog']),
         ...mapMutations('workflow', ['selectNode', 'deselectNode', 'deselectAllNodes']),
-        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'openView', 'openDialog']),
         portShift,
         onLeaveHoverArea(e) {
             if (this.$refs.actionbar?.$el?.contains(e.relatedTarget)) {
@@ -249,27 +276,12 @@ export default {
                 this.openNode();
             } else if (this.allowedActions?.canOpenDialog)  {
                 // open node dialog if one is present
-                this.openDialog({ nodeId: this.id });
+                this.openDialog(this.id);
             }
         },
 
         openNode() {
             this.$store.dispatch('openedProjects/switchWorkflow', { workflowId: this.id, projectId: this.projectId });
-        },
-
-        /**
-         * Triggered by NodeActionBar
-         * @param {'executeNodes' | 'cancelNodeExecution' | 'resetNodes' | 'openView' | 'openDialog' } action
-         * @returns {void}
-         */
-        onAction(action) {
-            const multiNodeActions = ['executeNodes', 'cancelNodeExecution', 'resetNodes'];
-            // calls actions of workflow store
-            if (multiNodeActions.includes(action)) {
-                this[action]({ nodeIds: [this.id] });
-            } else {
-                this[action]({ nodeId: this.id });
-            }
         },
 
         /*
@@ -303,19 +315,18 @@ export default {
 <template>
   <g
     :transform="`translate(${position.x}, ${position.y})`"
+    :data-node-id="id"
   >
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal
-      v-if="hover || selected"
       to="node-actions"
     >
       <NodeActionBar
-        v-if="!hideActionBar"
+        v-if="!insideStreamingComponent && hover"
         ref="actionbar"
-        v-bind="allowedActions"
+        v-bind="allNodeActions"
         :transform="`translate(${position.x + $shapes.nodeSize / 2} ${position.y - $shapes.nodeSelectionPadding[0]})`"
         :node-id="id"
-        @action="onAction"
         @mouseleave.native="onLeaveHoverArea"
       />
     </portal>
@@ -398,10 +409,17 @@ export default {
           transform="translate(21, 21)"
         />
 
+        <LoopDecorator
+          v-if="type === 'LoopStart' || type === 'LoopEnd'"
+          :loop-status="loopInfo.status"
+          transform="translate(20, 20)"
+        />
+
         <NodeState
           v-if="kind !== 'metanode'"
           v-bind="state"
           :filter="(selected || hover) && 'url(#node-state-shadow)'"
+          :loop-status="loopInfo.status"
         />
       </g>
 

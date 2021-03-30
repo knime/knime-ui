@@ -15,10 +15,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.chromium.Browser;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Menu;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.webui.entity.EventEnt;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
+import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.JsonRpcBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
@@ -55,6 +57,7 @@ public class KnimeBrowserView {
 	public void createPartControl(final Composite parent) {
 		m_browser = new Browser(parent, SWT.NONE);
 		m_browser.addLocationListener(new KnimeBrowserLocationListener());
+		m_browser.setMenu(new Menu(m_browser.getShell()));
 		addBrowserFunctions(m_browser);
 		setUrl();
 		BiConsumer<String, EventEnt> eventConsumer = createEventConsumer(m_browser);
@@ -68,6 +71,7 @@ public class KnimeBrowserView {
 		new OpenNodeDialogBrowserFunction(browser);
 		if (isRemoteDebuggingPortSet()) {
 			new InitAppForTestingBrowserFunction(browser, this);
+			new ClearAppForTestingBrowserFunction(browser, this);
 		}
 	}
 

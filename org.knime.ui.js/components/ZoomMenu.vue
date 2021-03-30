@@ -91,6 +91,7 @@ export default {
 <style lang="postcss" scoped>
 .zoom {
   margin-left: auto;
+  z-index: 5;
 
   & >>> .submenu-toggle {
     padding: 0 13px 0 0;
@@ -109,6 +110,7 @@ export default {
 
     & .zoom-input {
       cursor: text;
+      width: 54px;
       padding: 8px 4px 8px 16px;
       font-size: 14px;
       font-weight: 400;

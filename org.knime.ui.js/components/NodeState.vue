@@ -26,6 +26,10 @@ export default {
         warning: {
             type: String,
             default: null
+        },
+        loopStatus: {
+            type: String,
+            default: null
         }
     },
     data() {
@@ -136,6 +140,7 @@ export default {
           :cx="6 + 10 * index"
           cy="6"
           r="4"
+          :class="active ? `traffic-light-${['red', 'yellow', 'green'][index]}` : null"
           :fill="active ? $colors.trafficLight[['red', 'yellow', 'green'][index]] : $colors.trafficLight.inactive"
         />
         <circle
@@ -156,7 +161,7 @@ export default {
       text-anchor="middle"
       y="8.5"
     >
-      queued
+      {{ loopStatus && loopStatus === 'PAUSED' ? 'paused' : 'queued' }}
     </text>
 
     <!-- node's animated execution state -->
@@ -174,7 +179,7 @@ export default {
       <!-- progress bar with text -->
       <template v-else>
         <text
-          class="progress-text"
+          class="progress-text progress-bar"
           :fill="$colors.text.default"
           :x="$shapes.nodeSize / 2"
           text-anchor="middle"
