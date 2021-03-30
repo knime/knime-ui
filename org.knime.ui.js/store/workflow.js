@@ -107,7 +107,7 @@ export const actions = {
             });
         }
         if (nonDeletableNodeIds.length) {
-            window.alert(`The following nodes can't be deleted: [${nonDeletableNodeIds.join(', ')}]`);
+            window.alert(`The following nodes can’t be deleted: [${nonDeletableNodeIds.join(', ')}] because they or downstream nodes are executing`);
         }
     },
     changeNodeState({ state, getters }, { action, nodes }) {
