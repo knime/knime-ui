@@ -9,7 +9,7 @@ import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 jest.mock('~api', () => { }, { virtual: true });
 
 describe('WorkflowToolbar.vue', () => {
-    let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper, $store, selectedNodes;
+    let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper, $store, selectedNodes, userAgentGetter;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -49,13 +49,18 @@ describe('WorkflowToolbar.vue', () => {
                 actions: {
                     executeNodes: jest.fn(),
                     cancelNodeExecution: jest.fn(),
-                    resetNodes: jest.fn()
+                    resetNodes: jest.fn(),
+                    deleteNodes: jest.fn(),
+                    undo: jest.fn(),
+                    redo: jest.fn()
                 },
                 getters: {
-                    selectedNodes: () => selectedNodes
+                    selectedNodes: () => () => selectedNodes
                 }
             }
         };
+
+        userAgentGetter = jest.spyOn(window.navigator, 'userAgent', 'get');
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
@@ -65,14 +70,14 @@ describe('WorkflowToolbar.vue', () => {
     });
 
     describe('buttons', () => {
-
+        let buttonArray = ['execute', 'cancel', 'reset', 'delete', 'undo', 'redo'];
         describe('ALL - no selection', () => {
             it('deactivates buttons by default', () => {
                 doShallowMount();
                 let buttons = wrapper.findAllComponents(ToolbarButton);
-                expect(buttons.at(0).attributes('disabled')).toBeTruthy();
-                expect(buttons.at(1).attributes('disabled')).toBeTruthy();
-                expect(buttons.at(2).attributes('disabled')).toBeTruthy();
+                buttonArray.forEach((button, index) => {
+                    expect(buttons.at(index).attributes('disabled')).toBeTruthy();
+                });
             });
 
             it('shows actions for all by default', () => {
@@ -100,15 +105,19 @@ describe('WorkflowToolbar.vue', () => {
                 workflow.allowedActions = {
                     canExecute: true,
                     canCancel: true,
-                    canReset: true
+                    canReset: true,
+                    canUndo: true,
+                    canRedo: true
                 };
                 doShallowMount();
                 let buttons = wrapper.findAllComponents(ToolbarButton);
-                let { executeNodes, cancelNodeExecution, resetNodes } = storeConfig.workflow.actions;
+                let { executeNodes, cancelNodeExecution, resetNodes, undo, redo } = storeConfig.workflow.actions;
 
                 expect(executeNodes).not.toHaveBeenCalled();
                 expect(cancelNodeExecution).not.toHaveBeenCalled();
                 expect(resetNodes).not.toHaveBeenCalled();
+                expect(undo).not.toHaveBeenCalled();
+                expect(redo).not.toHaveBeenCalled();
 
                 buttons.at(0).trigger('click');
                 expect(executeNodes).toHaveBeenCalledWith(expect.anything(), 'all');
@@ -116,6 +125,20 @@ describe('WorkflowToolbar.vue', () => {
                 expect(cancelNodeExecution).toHaveBeenCalledWith(expect.anything(), 'all');
                 buttons.at(2).trigger('click');
                 expect(resetNodes).toHaveBeenCalledWith(expect.anything(), 'all');
+                // eslint-disable-next-line no-magic-numbers
+                buttons.at(4).trigger('click');
+                expect(undo).toHaveBeenCalled();
+                // eslint-disable-next-line no-magic-numbers
+                buttons.at(5).trigger('click');
+                expect(redo).toHaveBeenCalled();
+            });
+
+            it('translates tooltips to mac formats', () => {
+                userAgentGetter.mockReturnValue('mac');
+                doShallowMount();
+                let windowsTooltip = 'Shift + – Delete Ctrl + ';
+                let macTooltip = wrapper.vm.checkForMacShortcuts(windowsTooltip);
+                expect(macTooltip).toMatch('⇧ – ⌫ ⌘ ');
             });
         });
 
