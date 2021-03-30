@@ -165,6 +165,38 @@ let workflowCommand = ({ projectId, workflowId, command, args }) => {
 };
 
 /**
+ * Performs an undo command
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @returns {Promise}
+ */
+let undoWorkflowCommand = ({ projectId, workflowId }) => {
+    try {
+        let result = rpc(`WorkflowService.undoWorkflowCommand`, projectId, workflowId);
+        return Promise.resolve(result);
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error('Couldn\'t undo'));
+    }
+};
+
+/**
+ * Performs a redo command
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @returns {Promise}
+ */
+let redoWorkflowCommand = ({ projectId, workflowId }) => {
+    try {
+        let result = rpc(`WorkflowService.redoWorkflowCommand`, projectId, workflowId);
+        return Promise.resolve(result);
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error('Couldn\'t redo'));
+    }
+};
+
+/**
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
  * @param { Array } cfg.nodeIds The nodes to be deleted
@@ -177,6 +209,32 @@ export const deleteObjects = ({ nodeIds = [], annotationIds = [], connectionIds 
     return workflowCommand({
         command: 'delete',
         args: { nodeIds, annotationIds, connectionIds },
+        projectId,
+        workflowId
+    });
+};
+
+/**
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @returns { Promise } Promise
+ */
+// eslint-disable-next-line arrow-body-style
+export const undo = ({ projectId, workflowId }) => {
+    return undoWorkflowCommand({
+        projectId,
+        workflowId
+    });
+};
+
+/**
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @returns { Promise } Promise
+ */
+// eslint-disable-next-line arrow-body-style
+export const redo = ({ projectId, workflowId }) => {
+    return redoWorkflowCommand({
         projectId,
         workflowId
     });

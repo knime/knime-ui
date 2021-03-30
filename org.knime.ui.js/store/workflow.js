@@ -1,5 +1,5 @@
 import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener,
-    openView, openDialog, changeNodeState, changeLoopState, deleteObjects } from '~api';
+    openView, openDialog, changeNodeState, changeLoopState, deleteObjects, undo, redo } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
@@ -24,9 +24,6 @@ export const mutations = {
             ...workflow
         };
 
-        // add selected field to node with initial value false to enable reactivity on this property
-        Object.values(workflowData.nodes || {}).forEach(node => { node.selected = false; });
-
         state.activeWorkflow = workflowData;
         state.tooltip = null;
     },
@@ -38,19 +35,19 @@ export const mutations = {
     },
     deselectAllNodes(state) {
         Object.values(state.activeWorkflow.nodes).forEach(node => {
-            node.selected = false;
+            Vue.set(node, 'selected', false);
         });
     },
     selectAllNodes(state) {
         Object.values(state.activeWorkflow.nodes).forEach(node => {
-            node.selected = true;
+            Vue.set(node, 'selected', true);
         });
     },
     selectNode(state, nodeId) {
-        state.activeWorkflow.nodes[nodeId].selected = true;
+        Vue.set(state.activeWorkflow.nodes[nodeId], 'selected', true);
     },
     deselectNode(state, nodeId) {
-        state.activeWorkflow.nodes[nodeId].selected = false;
+        Vue.set(state.activeWorkflow.nodes[nodeId], 'selected', false);
     }
 };
 
@@ -96,8 +93,8 @@ export const actions = {
         state: { activeWorkflow: { projectId } },
         getters: { activeWorkflowId, selectedNodes }
     }) {
-        let deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
-        let nonDeletableNodeIds = selectedNodes.filter(node => !node.allowedActions.canDelete).map(node => node.id);
+        let deletableNodeIds = selectedNodes().filter(node => node.allowedActions.canDelete).map(node => node.id);
+        let nonDeletableNodeIds = selectedNodes().filter(node => !node.allowedActions.canDelete).map(node => node.id);
 
         if (deletableNodeIds.length) {
             deleteObjects({
@@ -122,7 +119,7 @@ export const actions = {
             changeNodeState({ projectId, nodeIds: [activeWorkflowId], action });
         } else if (nodes === 'selected') {
             // act upon selected nodes
-            changeNodeState({ projectId, nodeIds: getters.selectedNodes.map(node => node.id), action });
+            changeNodeState({ projectId, nodeIds: getters.selectedNodes().map(node => node.id), action });
         } else {
             throw new TypeError("'nodes' has to be of type 'all' | 'selected' | Array<nodeId>]");
         }
@@ -155,6 +152,16 @@ export const actions = {
     /* See docs in API */
     openDialog({ state }, nodeId) {
         openDialog({ projectId: state.activeWorkflow.projectId, nodeId });
+    },
+    /* See docs in API */
+    undo({ state, getters }) {
+        let { activeWorkflowId } = getters;
+        undo({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
+    },
+    /* See docs in API */
+    redo({ state, getters }) {
+        let { activeWorkflowId } = getters;
+        redo({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
     }
 };
 
@@ -168,7 +175,7 @@ export const getters = {
     isStreaming({ activeWorkflow }) {
         return Boolean(activeWorkflow?.info.jobManager);
     },
-    selectedNodes({ activeWorkflow }) {
+    selectedNodes: ({ activeWorkflow }) => () => {
         if (!activeWorkflow) {
             return [];
         }
@@ -274,7 +281,7 @@ export const getters = {
         if (!activeWorkflow) {
             return null;
         }
-        return activeWorkflow?.info.containerId || 'root';
+        return activeWorkflow?.info?.containerId || 'root';
     },
 
     nodeIcon({ activeWorkflow }, getters, rootState) {

@@ -35,33 +35,40 @@ export default {
             return this.workflow.parents?.length > 0;
         },
         hasSelection() {
-            return this.selectedNodes.length > 0;
+            return this.selectedNodes().length > 0;
         },
         canExecuteSelection() {
-            return this.selectedNodes.some(node => node.allowedActions.canExecute);
+            return this.selectedNodes().some(node => node.allowedActions.canExecute);
         },
         canCancelSelection() {
-            return this.selectedNodes.some(node => node.allowedActions.canCancel);
+            return this.selectedNodes().some(node => node.allowedActions.canCancel);
         },
         canResetSelection() {
-            return this.selectedNodes.some(node => node.allowedActions.canReset);
+            return this.selectedNodes().some(node => node.allowedActions.canReset);
         },
         canDeleteSelection() {
-            return this.selectedNodes.some(node => node.allowedActions.canDelete);
+            return this.selectedNodes().some(node => node.allowedActions.canDelete);
+        },
+        isMac() {
+            return navigator.userAgent.toLowerCase().includes('mac');
         }
     },
     methods: {
-        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedNodes']),
-        onResetBtnClick() {
-            this.$store.dispatch('workflow/resetNodes', {
-                nodeIds: [this.activeWorkflowId]
-            });
-        },
-        onUndoBtnClick() {
-            this.$store.dispatch('workflow/undo');
-        },
-        onRedoBtnClick() {
-            this.$store.dispatch('workflow/redo');
+        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedNodes',
+            'undo', 'redo']),
+        /**
+         * Translates windows/linux shortcuts into mac shortcuts when operating system is mac
+         * @param {String} shortcutTitle the windows/linux compatible shortcuts
+         * @returns {String} the translated string
+         */
+        checkForMacShortcuts(shortcutTitle) {
+            if (this.isMac) {
+                shortcutTitle = shortcutTitle.replace('Shift +', '⇧');
+                shortcutTitle = shortcutTitle.replace('– Delete', '– ⌫');
+                return shortcutTitle.replace('Ctrl + ', '⌘ ');
+            } else {
+                return  shortcutTitle;
+            }
         }
     }
 };
@@ -74,7 +81,7 @@ export default {
         <ToolbarButton
           class="with-text"
           :disabled="!allowedActions.canExecute"
-          title="Execute workflow – Shift + F7"
+          :title="checkForMacShortcuts('Execute workflow – Shift + F7')"
           @click.native="executeNodes('all')"
         >
           <ExecuteAllIcon />
@@ -83,7 +90,7 @@ export default {
         <ToolbarButton
           class="with-text"
           :disabled="!allowedActions.canCancel"
-          title="Cancel workflow execution – Shift + F9"
+          :title="checkForMacShortcuts('Cancel workflow execution – Shift + F9')"
           @click.native="cancelNodeExecution('all')"
         >
           <CancelAllIcon />
@@ -92,7 +99,7 @@ export default {
         <ToolbarButton
           class="with-text"
           :disabled="!allowedActions.canReset"
-          title="Reset executed nodes – Shift + F8"
+          :title="checkForMacShortcuts('Reset executed nodes – Shift + F8')"
           @click.native="resetNodes('all')"
         >
           <ResetAllIcon />
@@ -103,7 +110,7 @@ export default {
         <ToolbarButton
           class="with-text"
           :disabled="!canExecuteSelection"
-          title="Execute selected nodes – F7"
+          :title="checkForMacShortcuts('Execute selected nodes – F7')"
           @click.native="executeNodes('selected')"
         >
           <ExecuteAllIcon />
@@ -112,7 +119,7 @@ export default {
         <ToolbarButton
           class="with-text"
           :disabled="!canCancelSelection"
-          title="Cancel selected nodes – F9"
+          :title="checkForMacShortcuts('Cancel selected nodes – F9')"
           @click.native="cancelNodeExecution('selected')"
         >
           <CancelAllIcon />
@@ -121,7 +128,7 @@ export default {
         <ToolbarButton
           class="with-text"
           :disabled="!canResetSelection"
-          title="Reset selected nodes – F8"
+          :title="checkForMacShortcuts('Reset selected nodes – F8')"
           @click.native="resetNodes('selected')"
         >
           <ResetAllIcon />
@@ -131,7 +138,7 @@ export default {
       <ToolbarButton
         class="with-text"
         :disabled="!canDeleteSelection"
-        title="Delete selection – Delete"
+        :title="checkForMacShortcuts('Delete selection – Delete')"
         @click.native="deleteSelectedNodes"
       >
         <DeleteIcon />
@@ -139,15 +146,15 @@ export default {
       </ToolbarButton>
       <ToolbarButton
         :disabled="!allowedActions.canUndo"
-        title="Undo"
-        @click.native="onUndoBtnClick"
+        :title="checkForMacShortcuts('Undo – Ctrl + Z')"
+        @click.native="undo"
       >
         <UndoIcon />
       </ToolbarButton>
       <ToolbarButton
         :disabled="!allowedActions.canRedo"
-        title="Redo"
-        @click.native="onRedoBtnClick"
+        :title="checkForMacShortcuts('Redo - Ctrl + Shift + Z')"
+        @click.native="redo"
       >
         <RedoIcon />
       </ToolbarButton>
