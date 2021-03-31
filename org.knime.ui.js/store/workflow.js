@@ -50,7 +50,18 @@ export const mutations = {
         state.activeWorkflow.nodes[nodeId].selected = true;
     },
     deselectNode(state, nodeId) {
-        state.activeWorkflow.nodes[nodeId].selected = false;
+        Vue.set(state.activeWorkflow.nodes[nodeId], 'selected', false);
+    },
+    selectConnector(state, connectorId) {
+        Vue.set(state.activeWorkflow.connections[connectorId], 'selected', true);
+    },
+    deselectConnector(state, connectorId) {
+        Vue.set(state.activeWorkflow.connections[connectorId], 'selected', false);
+    },
+    deselectAllConnectors(state) {
+        Object.values(state.activeWorkflow.connections).forEach(connection => {
+            Vue.set(connection, 'selected', false);
+        });
     }
 };
 
@@ -92,22 +103,28 @@ export const actions = {
         let workflowId = getters.activeWorkflowId;
         await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
     },
-    deleteSelectedNodes({
+    deleteSelectedObjects({
         state: { activeWorkflow: { projectId } },
-        getters: { activeWorkflowId, selectedNodes }
+        getters: { activeWorkflowId, selectedNodes, selectedConnections }
     }) {
-        let deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
-        let nonDeletableNodeIds = selectedNodes.filter(node => !node.allowedActions.canDelete).map(node => node.id);
+        let deletableNodeIds = selectedNodes().filter(node => node.allowedActions.canDelete).map(node => node.id);
+        let nonDeletableNodeIds = selectedNodes().filter(node => !node.allowedActions.canDelete).map(node => node.id);
+        let deleteableConnectionIds = selectedConnections().filter(connection => connection.canDelete).
+            map(connection => `${connection.destNode}_${connection.destPort}`);
+        let nonDeletableConnectionIds = selectedConnections().filter(connection => !connection.canDelete).
+            map(connection => `${connection.destNode}_${connection.destPort}`);
 
-        if (deletableNodeIds.length) {
+        if (deletableNodeIds.length || deleteableConnectionIds.length) {
             deleteObjects({
                 projectId,
                 workflowId: activeWorkflowId,
-                nodeIds: deletableNodeIds
+                nodeIds: deletableNodeIds.length ? deletableNodeIds : [],
+                connectionIds: deleteableConnectionIds ? deleteableConnectionIds : []
             });
         }
-        if (nonDeletableNodeIds.length) {
-            window.alert(`The following nodes can't be deleted: [${nonDeletableNodeIds.join(', ')}]`);
+        if (nonDeletableNodeIds.length || nonDeletableConnectionIds.length) {
+            window.alert(`The following nodes can't be deleted: [${nonDeletableNodeIds.join(', ')}] \n
+                          The following connections can't be deleted: [${nonDeletableConnectionIds.join(', ')}]`);
         }
     },
     changeNodeState({ state, getters }, { action, nodes }) {
@@ -168,11 +185,17 @@ export const getters = {
     isStreaming({ activeWorkflow }) {
         return Boolean(activeWorkflow?.info.jobManager);
     },
-    selectedNodes({ activeWorkflow }) {
+    selectedNodes: ({ activeWorkflow }) => () => {
         if (!activeWorkflow) {
             return [];
         }
         return Object.values(activeWorkflow.nodes).filter(node => node.selected);
+    },
+    selectedConnections: ({ activeWorkflow }) => () => {
+        if (!activeWorkflow) {
+            return [];
+        }
+        return Object.values(activeWorkflow.connections).filter(connection => connection.selected);
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow

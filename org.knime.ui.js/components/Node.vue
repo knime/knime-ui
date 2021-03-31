@@ -241,7 +241,7 @@ export default {
     },
     methods: {
         ...mapActions('workflow', ['openDialog']),
-        ...mapMutations('workflow', ['selectNode', 'deselectNode', 'deselectAllNodes']),
+        ...mapMutations('workflow', ['selectNode', 'deselectNode', 'deselectAllNodes', 'deselectAllConnectors']),
         portShift,
         onLeaveHoverArea(e) {
             if (this.$refs.actionbar?.$el?.contains(e.relatedTarget)) {
@@ -305,6 +305,7 @@ export default {
             } else {
                 // Single select
                 this.deselectAllNodes();
+                this.deselectAllConnectors();
                 this.selectNode(this.id);
             }
         }

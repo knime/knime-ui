@@ -70,7 +70,7 @@ export default {
         /*
           Selection
         */
-        ...mapMutations('workflow', ['deselectAllNodes']),
+        ...mapMutations('workflow', ['deselectAllNodes', 'deselectAllConnectors']),
         onMouseDown(e) {
             /*  To avoid for [mousedown on node], [moving mouse], [mouseup on kanvas] to deselect nodes,
              *  we track whether a click has been started on the empty Kanvas
@@ -81,6 +81,7 @@ export default {
             // deselect all nodes
             if (this.clickStartedOnEmptyKanvas) {
                 this.deselectAllNodes();
+                this.deselectAllConnectors();
             }
         },
         /*

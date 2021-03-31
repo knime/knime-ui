@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapMutations } from 'vuex';
 import { portBar, connectorPosition } from '~/mixins';
 
 /**
@@ -18,7 +18,15 @@ export default {
         /**
          * Determines whether this connector is rendered in alternative color
          */
-        flowVariableConnection: { type: Boolean, default: false }
+        flowVariableConnection: { type: Boolean, default: false },
+
+        /**
+         * Connector selection state
+         */
+        selected: {
+            type: Boolean,
+            default: false
+        }
     },
     computed: {
         ...mapState('workflow', {
@@ -50,6 +58,28 @@ export default {
                 return this.$colors.connectorColors.flowVariable;
             }
             return this.$colors.connectorColors.default;
+        },
+        connectionId() {
+            return `${this.destNode}_${this.destPort}`;
+        }
+    },
+    methods: {
+        ...mapMutations('workflow', ['selectConnector', 'deselectConnector', 'deselectAllConnectors',
+            'deselectAllNodes']),
+        onLeftMouseClick(e) {
+            if (e.shiftKey) {
+                // Multi select
+                if (this.selected) {
+                    this.deselectConnector(this.connectionId);
+                } else {
+                    this.selectConnector(this.connectionId);
+                }
+            } else {
+                // Single select
+                this.deselectAllConnectors();
+                this.deselectAllNodes();
+                this.selectConnector(this.connectionId);
+            }
         }
     }
 };
@@ -61,15 +91,18 @@ export default {
       :d="path"
       :stroke="strokeColor"
       :stroke-width="$shapes.connectorWidth"
-      :class="{ variable: flowVariableConnection, 'read-only': !isWorkflowWritable, dashed: streaming }"
+      :class="{ variable: flowVariableConnection, 'read-only': !isWorkflowWritable, dashed: streaming, selected }"
       fill="none"
+      @click.left="onLeftMouseClick"
     />
   </g>
 </template>
 
 <style lang="postcss" scoped>
 path {
-  transition: stroke-width 0.1s linear, stroke 0.2s linear;
+  stroke-width: 1;
+  stroke: var(--knime-stone-gray);
+  transition: stroke-width 0.1s ease-in, stroke 0.1s ease-in;
 }
 
 path:not(.read-only) {
@@ -77,11 +110,25 @@ path:not(.read-only) {
 }
 
 path:hover {
-  stroke-width: 2.5;
+  stroke-width: 3;
+}
+
+path.selected {
+  stroke-width: 3;
   stroke: var(--knime-dove-gray);
 }
 
+path.variable {
+  stroke: var(--knime-coral);
+  transition: stroke-width 0.1s ease-in, stroke 0.1s ease-in;
+}
+
 path.variable:hover {
+  stroke-width: 3;
+}
+
+path.variable.selected {
+  stroke-width: 3;
   stroke: var(--knime-coral-dark);
 }
 

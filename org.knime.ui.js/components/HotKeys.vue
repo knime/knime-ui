@@ -30,7 +30,8 @@ export default {
     },
     methods: {
         ...mapMutations('workflow', ['selectAllNodes', 'deselectAllNodes']),
-        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedNodes']),
+        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedObjects',
+            'undo', 'redo']),
         ...mapMutations('canvas', ['setSuggestPanning', 'resetZoom']),
         ...mapActions('canvas', ['setZoomToFit', 'zoomCentered']),
         setupShortcuts() {
@@ -59,8 +60,8 @@ export default {
                 writableWorkflow: {
                     condition: () => this.isWorkflowPresent && this.isWritable,
                     hotKeys: [
-                        ['DELETE', this.deleteSelectedNodes],
-                        ['BACKSPACE', this.deleteSelectedNodes]
+                        ['DELETE', this.deleteSelectedObjects],
+                        ['BACKSPACE', this.deleteSelectedObjects]
                     ]
                 }
 
