@@ -1,7 +1,6 @@
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
-
 import { mutations, actions } from '~/store-plugins/json-patch';
 
 describe('json-patch plugin', () => {
@@ -17,6 +16,15 @@ describe('json-patch plugin', () => {
             myStore: {
                 mutations,
                 actions,
+                getters: {
+                    reactiveGetter(state) {
+                        let x = state.foo.bar + state.foo.baz;
+                        if (isNaN(x)) {
+                            throw new Error('patch has not been applied atomically');
+                        }
+                        return x;
+                    }
+                },
                 state: {
                     foo: {
                         bar: 1,
@@ -165,26 +173,61 @@ describe('json-patch plugin', () => {
                 });
             });
         });
+
+        describe('apply', () => {
+            it('calls other commits directly', () => {
+                let commitSpy = jest.spyOn(store, 'commit');
+                store.commit('myStore/patch.apply', [
+                    { op: 'move', from: '/foo/qux', path: '/foo/x' },
+                    { op: 'remove', path: '/foo/bar' },
+                    { op: 'add', path: '/foo/test', value: 'qux' }
+                ]);
+                expect(commitSpy).toHaveBeenCalledTimes(1);
+            });
+
+            it("doesn't break Vue's reactivity", () => {
+                // set up reactive getter
+                let fooBaz = store.getters['myStore/reactiveGetter'];
+                expect(fooBaz).toBe(1 + 2);
+
+                // change dependency
+                store.commit('myStore/patch.apply', [{ op: 'replace', path: '/foo/bar', value: 0 }]);
+
+                // check updated getter
+                let newFooBaz = store.getters['myStore/reactiveGetter'];
+                expect(newFooBaz).toBe(2);
+            });
+
+            it('state is applied atomically -> getter re-execution is stalled', () => {
+                // set up reactive getter
+                let fooBaz = store.getters['myStore/reactiveGetter'];
+                expect(fooBaz).toBe(1 + 2);
+
+                // change dependency
+                store.commit('myStore/patch.apply', [
+                    // remove should cause getter to throw
+                    { op: 'remove', path: '/foo/bar' },
+                    // add again to restore previous state
+                    { op: 'add', path: '/foo/bar', value: 1 }
+                ]);
+
+                // check updated getter
+                let newFooBaz = store.getters['myStore/reactiveGetter'];
+                expect(newFooBaz).toBe(1 + 2);
+            });
+        });
     });
 
     describe('actions', () => {
         it('applies patches', () => {
-            store.dispatch('myStore/patch.apply', [{
-                op: 'move', from: '/foo/qux', path: '/foo/x'
-            }, {
-                op: 'remove', path: '/foo/bar'
-            }, {
-                op: 'add', path: '/foo/test', value: 'qux'
-            }]);
-            expect(store.state.myStore).toStrictEqual({
-                foo: {
-                    baz: 2,
-                    test: 'qux',
-                    x: {
-                        bla: ['a', 'b', 'c']
-                    }
-                }
-            });
+            store.commit = jest.fn();
+            let patch = [
+                { op: 'move', from: '/foo/qux', path: '/foo/x' },
+                { op: 'remove', path: '/foo/bar' },
+                { op: 'add', path: '/foo/test', value: 'qux' }
+            ];
+            store.dispatch('myStore/patch.apply', patch);
+            expect(store.commit).toHaveBeenCalledWith('myStore/patch.apply', patch, undefined);
         });
     });
 });

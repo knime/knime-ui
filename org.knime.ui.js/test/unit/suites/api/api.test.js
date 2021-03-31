@@ -2,7 +2,7 @@ import * as api from '~/api';
 
 describe('API', () => {
 
-    beforeAll(() => {
+    beforeEach(() => {
         window.jsonrpc = jest.fn().mockReturnValue(JSON.stringify({
             jsonrpc: '2.0',
             result: 'dummy',
@@ -109,61 +109,57 @@ describe('API', () => {
     });
 
     it('executes nodes', async () => {
-        await api.executeNodes({ projectId: '123', workflowId: '12', nodeIds: ['a', 'b', 'c'] });
+        await api.changeNodeState({ projectId: '123', workflowId: '12', nodeIds: ['a', 'b'], action: 'node action' });
         expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
             jsonrpc: '2.0',
             method: 'NodeService.changeNodeStates',
-            params: ['123', '12', ['a', 'b', 'c'], 'execute'],
+            params: ['123', '12', ['a', 'b'], 'node action'],
             id: 0
         }));
     });
 
-    it('cancels nodes', async () => {
-        await api.cancelNodeExecution({ projectId: '123', workflowId: '12', nodeIds: ['a', 'b', 'c'] });
+    it('deletes objects (empty)', async () => {
+        await api.deleteObjects({ projectId: '123', workflowId: '12' });
         expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
             jsonrpc: '2.0',
-            method: 'NodeService.changeNodeStates',
-            params: ['123', '12', ['a', 'b', 'c'], 'cancel'],
+            method: 'WorkflowService.executeWorkflowCommand',
+            params: ['123', '12', {
+                kind: 'delete',
+                nodeIds: [],
+                annotationIds: [],
+                connectionIds: []
+            }],
             id: 0
         }));
     });
 
-    it('resets nodes', async () => {
-        await api.resetNodes({ projectId: '123', workflowId: '12', nodeIds: ['a', 'b', 'c'] });
+    it('delete objects (specified)', async () => {
+        await api.deleteObjects({
+            projectId: '123',
+            workflowId: '12',
+            nodeIds: ['root:1'],
+            annotationIds: ['annotation1'],
+            connectionIds: ['root:1_1']
+        });
         expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
             jsonrpc: '2.0',
-            method: 'NodeService.changeNodeStates',
-            params: ['123', '12', ['a', 'b', 'c'], 'reset'],
+            method: 'WorkflowService.executeWorkflowCommand',
+            params: ['123', '12', {
+                kind: 'delete',
+                nodeIds: ['root:1'],
+                annotationIds: ['annotation1'],
+                connectionIds: ['root:1_1']
+            }],
             id: 0
         }));
     });
 
-    it('pauses node execution', async () => {
-        await api.pauseNodeExecution({ projectId: '123', workflowId: '12', nodeIds: ['loop'] });
+    it('loop action', async () => {
+        await api.changeLoopState({ projectId: '123', workflowId: '12', nodeId: 'loopy node', action: 'loopy action' });
         expect(window.jsonrpc).toHaveBeenLastCalledWith(JSON.stringify({
             jsonrpc: '2.0',
             method: 'NodeService.changeLoopState',
-            params: ['123', '12', 'loop', 'pause'],
-            id: 0
-        }));
-    });
-
-    it('resumes node execution', async () => {
-        await api.resumeNodeExecution({ projectId: '123', workflowId: '12', nodeIds: ['loop'] });
-        expect(window.jsonrpc).toHaveBeenLastCalledWith(JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'NodeService.changeLoopState',
-            params: ['123', '12', 'loop', 'resume'],
-            id: 0
-        }));
-    });
-
-    it('steps node execution', async () => {
-        await api.stepNodeExecution({ projectId: '123', workflowId: '12', nodeIds: ['loop'] });
-        expect(window.jsonrpc).toHaveBeenLastCalledWith(JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'NodeService.changeLoopState',
-            params: ['123', '12', 'loop', 'step'],
+            params: ['123', '12', 'loopy node', 'loopy action'],
             id: 0
         }));
     });
@@ -273,32 +269,12 @@ describe('API', () => {
             }
         });
 
-        it('handles errors on execution', async (done) => {
+        it('handles errors for changeNodeState', async (done) => {
             try {
-                await api.executeNodes({});
+                await api.changeNodeState({ action: 'do action' });
                 done(new Error('Error not thrown'));
             } catch (e) {
-                expect(e.message).toContain('Could not execute nodes');
-                done();
-            }
-        });
-
-        it('handles errors on cancellation', async (done) => {
-            try {
-                await api.cancelNodeExecution({});
-                done(new Error('Error not thrown'));
-            } catch (e) {
-                expect(e.message).toContain('Could not cancel node execution');
-                done();
-            }
-        });
-
-        it('handles errors on reset', async (done) => {
-            try {
-                await api.resetNodes({});
-                done(new Error('Error not thrown'));
-            } catch (e) {
-                expect(e.message).toContain('Could not reset nodes');
+                expect(e.message).toContain('Could not do action nodes');
                 done();
             }
         });

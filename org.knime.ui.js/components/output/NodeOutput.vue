@@ -46,6 +46,7 @@ export default {
         ...mapState('openedProjects', {
             activeProjectId: 'activeId'
         }),
+        ...mapGetters('workflow', ['activeWorkflowId']),
         selectedNodes() {
             let nodes = Object.values(this.nodes || {});
             return nodes.filter(node => node.selected);
@@ -271,7 +272,6 @@ export default {
 
 .output-container {
   padding: 10px;
-  border-top: 1px solid var(--knime-silver-sand);
   position: relative;
   overflow: hidden;
   display: flex;

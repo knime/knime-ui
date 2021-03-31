@@ -210,25 +210,17 @@ describe('Node', () => {
         });
     });
 
-    describe('Node open dialog and view', () => {
-        beforeEach(() => {
-            propsData =
-            {
-                ...commonNode,
-                selected: true,
-                allowedActions: { canOpenDialog: true, canOpenView: true }
-            };
-        });
+    it('opens the node config on double click', async () => {
+        propsData = {
+            ...commonNode,
+            allowedActions: {
+                canOpenDialog: true
+            }
+        };
+        doMount();
+        await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
-        it('opens the node config on double click', async () => {
-            doMount();
-            jest.spyOn(mocks.$store, 'dispatch');
-            await wrapper.findComponent(NodeTorso).trigger('dblclick');
-
-            expect(storeConfig.workflow.actions.openDialog).toHaveBeenCalledWith(expect.anything(), {
-                nodeId: 'root:1'
-            });
-        });
+        expect(storeConfig.workflow.actions.openDialog).toHaveBeenCalledWith(expect.anything(), 'root:1');
     });
 
     describe('Node selected', () => {
@@ -275,8 +267,10 @@ describe('Node', () => {
             expect(wrapper.findComponent(NodeState).attributes().filter).toBe('url(#node-state-shadow)');
         });
 
-        it('renders NodeActionBar at correct position', () => {
+        it('renders NodeActionBar at correct position', async () => {
             doMount();
+            wrapper.vm.hover = true;
+            await Vue.nextTick();
             expect(wrapper.findComponent(NodeActionBar).props()).toStrictEqual({
                 nodeId: 'root:1',
                 canExecute: true,

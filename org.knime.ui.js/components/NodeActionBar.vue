@@ -65,30 +65,33 @@ export default {
          *  @returns {Array<Array>} Array of allowed actions
          */
         actions() {
-            let firstAction;
+            let actions = [];
+
+            if (this.canOpenDialog !== null) {
+                actions.push(['openDialog', this.canOpenDialog, OpenDialogIcon, () => this.openDialog(this.nodeId)]);
+            }
+
             if (this.canPause) {
-                firstAction = ['pauseNodeExecution', true, PauseIcon];
+                actions.push(['pause', true, PauseIcon, () => this.pauseNodeExecution(this.nodeId)]);
             } else if (this.canResume) {
-                firstAction = ['resumeNodeExecution', true, ResumeIcon];
+                actions.push(['resume', true, ResumeIcon, () => this.resumeNodeExecution(this.nodeId)]);
             } else {
-                firstAction = ['executeNodes', this.canExecute, ExecuteIcon];
+                actions.push(['execute', this.canExecute, ExecuteIcon, () => this.executeNodes([this.nodeId])]);
             }
-            let result = [
-                firstAction,
-                ['cancelNodeExecution', this.canCancel, CancelIcon],
-                ['resetNodes', this.canReset, ResetIcon]
-            ];
-            // shows disabled button if false, hides button if null
-            if (typeof this.canOpenDialog === 'boolean') {
-                result.unshift(['openDialog', this.canOpenDialog, OpenDialogIcon]);
+
+            if (this.canStep !== null) {
+                actions.push(['step', this.canStep, StepIcon, () => this.stepNodeExecution(this.nodeId)]);
             }
-            if (typeof this.canStep === 'boolean') {
-                result.push(['stepNodeExecution', this.canStep, StepIcon]);
+
+            actions.push(
+                ['cancel', this.canCancel, CancelIcon, () => this.cancelNodeExecution([this.nodeId])],
+                ['reset', this.canReset, ResetIcon, () => this.resetNodes([this.nodeId])]
+            );
+
+            if (this.canOpenView !== null) {
+                actions.push(['openView', this.canOpenView, OpenViewIcon, () => this.openView(this.nodeId)]);
             }
-            if (typeof this.canOpenView === 'boolean') {
-                result.push(['openView', this.canOpenView, OpenViewIcon]);
-            }
-            return result;
+            return actions;
         },
         /**
          *  returns the x-position of each button depending on the total amount of buttons
@@ -104,18 +107,7 @@ export default {
 
     methods: {
         ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes',
-            'pauseNodeExecution', 'resumeNodeExecution', 'stepNodeExecution', 'openView', 'openDialog']),
-        /**
-         * Dispatch single node actions.
-         *
-         * @param {'executeNodes' | 'cancelNodeExecution' | 'resetNodes' | 'openView' | 'openDialog' |
-         *      'pauseNodeExecution' | 'resumeNodeExecution' | 'stepNodeExecution' } action
-         * @returns {void}
-         */
-        onAction(action) {
-            // calls actions of workflow store
-            this[action]({ nodeIds: [this.nodeId] });
-        }
+            'pauseNodeExecution', 'resumeNodeExecution', 'stepNodeExecution', 'openView', 'openDialog'])
     }
 };
 </script>
@@ -123,12 +115,12 @@ export default {
 <template>
   <g>
     <ActionButton
-      v-for="([action, enabled, icon], index) in actions"
+      v-for="([action, enabled, icon, method], index) in actions"
       :key="action"
       :class="`action-${action}`"
       :x="positions[index]"
       :disabled="!enabled"
-      @click="onAction(action)"
+      @click="method"
     >
       <Component :is="icon" />
     </ActionButton>
