@@ -3,7 +3,10 @@ import { mapState, mapGetters } from 'vuex';
 import Tooltip from '~/components/Tooltip';
 
 /**
- * A tooltip displaying text and an optional headline
+ * Controller for knime-ui tooltips
+ * Handles positioning, accounts for zooming & scrolling
+ * Closes tooltip when mouse leaves
+ * Prevents native browser zooming by catching Ctrl-Wheel events
  */
 export default {
     components: {
@@ -19,8 +22,11 @@ export default {
         ...mapState('workflow', ['tooltip']),
         ...mapGetters('canvas', ['getAbsoluteCoordinates']),
         ...mapState('canvas', ['zoomFactor']),
+        /*
+            The gap has to grow with the zoomFactor.
+            Using the square root gives a more appropriate visual impression for larger factors
+        */
         zoomedGap() {
-            // The gap has to grow with the zoomFactor. Using the square root gives a more appropriate visual impression for larger factors
             return Math.sqrt(this.zoomFactor) * this.tooltip.gap;
         },
         positionOnCanvas() {
@@ -35,6 +41,7 @@ export default {
             return { x, y };
         },
         position() {
+            // Account for scroll and canvas position
             return {
                 x: this.positionOnCanvas.x + this.canvasOffsetLeft - this.scrollOffsetLeft,
                 y: this.positionOnCanvas.y + this.canvasOffsetTop - this.scrollOffsetTop
@@ -44,30 +51,33 @@ export default {
     watch: {
         tooltip(newTooltip, oldTooltip) {
             if (!oldTooltip) {
-                
                 consola.trace('add kanvas scroll listener for tooltips');
                 
                 let kanvas = document.getElementById('kanvas');
-                this.kanvasScroll = kanvas.addEventListener('scroll', ({ target }) => {
-                    this.scrollOffsetLeft = target.scrollLeft;
-                    this.scrollOffsetTop = target.scrollTop;
-                });
+                
+                // watch kanvas' scroll
                 this.scrollOffsetLeft = kanvas.scrollLeft;
                 this.scrollOffsetTop = kanvas.scrollTop;
+                kanvas.addEventListener('scroll', this.onCanvasScroll);
+                
+                // use kanvas' offset (not watched)
                 this.canvasOffsetLeft = kanvas.offsetLeft;
                 this.canvasOffsetTop = kanvas.offsetTop;
             } else if (!newTooltip) {
-                
                 consola.trace('remove kanvas scroll listener for tooltips');
 
                 let kanvas = document.getElementById('kanvas');
-                kanvas.removeEventListener('scroll', this.kanvasScroll);
+                kanvas.removeEventListener('scroll', this.onCanvasScroll);
             }
         }
     },
     methods: {
         onMouseLeave() {
             this.$store.commit('workflow/setTooltip', null);
+        },
+        onCanvasScroll({ target }) {
+            this.scrollOffsetLeft = target.scrollLeft;
+            this.scrollOffsetTop = target.scrollTop;
         }
     }
 };

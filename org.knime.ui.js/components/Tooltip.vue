@@ -59,6 +59,7 @@ export default {
     },
     computed: {
         expandedGap() {
+            // The arrow tip is outside of the bounding box and rotated by 45°.
             return this.gap + this.$shapes.tooltipArrowSize * Math.SQRT1_2;
         }
     }
@@ -78,9 +79,7 @@ export default {
     }"
   >
     <div class="wrap-arrow">
-      <div
-        :class="['scroller']"
-      >
+      <div class="scroller">
         <div
           v-if="title"
           class="title"

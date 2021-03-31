@@ -1,6 +1,6 @@
 <script>
 import Port from '~/components/Port';
-import { mapMutations } from 'vuex';
+import { tooltip } from '~/mixins';
 
 /**
  * A port with attached tooltip.
@@ -10,6 +10,7 @@ export default {
     components: {
         Port
     },
+    mixins: [tooltip],
     inject: ['anchorPoint'],
     props: { ...Port.props },
     computed: {
@@ -20,25 +21,16 @@ export default {
             return {
                 position: {
                     x: this.x,
-                    y: this.y - portSize / 2 - 2
+                    y: this.y - portSize / 2
                 },
                 gap,
                 anchorPoint: this.anchorPoint,
                 title: this.port.name,
                 text: this.port.info,
-                orientation: 'top'
+                orientation: 'top',
+                touchable: false
             };
         }
-    },
-    methods: {
-        ...mapMutations('workflow', ['setTooltip']),
-        onMouseEnter() {
-            this.setTooltip(this.tooltip);
-        },
-        onMouseLeave() {
-            this.setTooltip(null);
-        }
-
     }
 };
 </script>
@@ -46,7 +38,5 @@ export default {
 <template>
   <Port
     v-bind="this"
-    @mouseenter.native="onMouseEnter"
-    @mouseleave.native="onMouseLeave"
   />
 </template>

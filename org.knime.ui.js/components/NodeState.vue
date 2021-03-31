@@ -1,6 +1,8 @@
 <script>
-import { mapMutations } from 'vuex';
+import { tooltip } from '~/mixins';
+
 export default {
+    mixins: [tooltip],
     inject: ['anchorPoint'],
     props: {
         executionState: {
@@ -31,11 +33,6 @@ export default {
             type: String,
             default: null
         }
-    },
-    data() {
-        return {
-            removeWatcher: null
-        };
     },
     computed: {
         /**
@@ -72,7 +69,8 @@ export default {
                     y: nodeSize + nodeStatusMarginTop + nodeStatusHeight
                 },
                 anchorPoint: this.anchorPoint,
-                gap: 10
+                gap: 10,
+                touchable: true
             };
 
             if (this.error) {
@@ -90,34 +88,6 @@ export default {
         progressDisplayPercentage() {
             return Math.round(100 * this.clippedProgress);
         }
-    },
-    methods: {
-        ...mapMutations('workflow', ['setTooltip']),
-        onMouseEnter() {
-            if (this.removeWatcher) {
-                this.removeWatcher();
-            }
-            // update the tooltip whenever one of the props change
-            this.removeWatcher = this.$watch(
-                () => [this.error, this.warning, this.progressMessage, this.executionState],
-                function () {
-                    this.setTooltip(this.tooltip); // eslint-disable-line no-invalid-this
-                }, {
-                    immediate: true
-                }
-            );
-        },
-        onMouseLeave({ relatedTarget }) {
-            consola.trace('mouse left to:', relatedTarget?.tagName, relatedTarget?.id,
-                relatedTarget?.classList, relatedTarget);
-            
-            let tooltipContainer = document.getElementById('tooltip-container');
-            if (!tooltipContainer || !tooltipContainer.contains(relatedTarget)) {
-                this.setTooltip(null);
-                this.removeWatcher();
-                this.removeWatcher = null;
-            }
-        }
     }
 };
 </script>
@@ -125,8 +95,6 @@ export default {
 <template>
   <g
     :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`"
-    @mouseenter="onMouseEnter"
-    @mouseleave="onMouseLeave"
   >
     <rect
       :width="$shapes.nodeSize"
