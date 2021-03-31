@@ -38,13 +38,14 @@ export default {
     }),
     computed: {
         ...mapGetters('workflow', ['isWritable', 'selectedNodes']),
+        ...mapGetters('canvas', ['gridSize']),
         ...mapState('openedProjects', {
             projectId: 'activeId'
         }),
         ...mapState('workflow', {
             isDragging: 'isDragging',
             deltaMovePosition: 'deltaMovePosition',
-            moveNodeGhostTresholdExceeded: 'moveNodeGhostTresholdExceeded'
+            moveNodeGhostThresholdExceeded: 'moveNodeGhostThresholdExceeded'
         }),
         ...mapState('canvas', ['zoomFactor']),
         // Returns if the current node is selected
@@ -57,7 +58,7 @@ export default {
         },
         // returns the amount the object should be translated. This is either the position of the objec, or the position + the dragged amount
         translationAmount() {
-            return this.isSelected && !this.moveNodeGhostTresholdExceeded ? this.combinedPosition : this.position;
+            return this.isSelected && !this.moveNodeGhostThresholdExceeded ? this.combinedPosition : this.position;
         }
     },
     watch: {
@@ -72,7 +73,6 @@ export default {
     },
     methods: {
         ...mapMutations('workflow', ['selectNode', 'deselectNode', 'deselectAllNodes']),
-        ...mapGetters('canvas', ['getGridSize']),
         /**
          * Resets the drag position in the store. This can only happen here, as otherwise the node
          * will be reset to its position before the actual movement of the store happened.
@@ -105,10 +105,10 @@ export default {
         onMove: throttle(function ({ detail: { totalDeltaX, totalDeltaY } }) {
             /* eslint-disable no-invalid-this */
             // Move node to the next rounded grid position
-            let deltaX = Math.round((this.startPos.x + totalDeltaX / this.zoomFactor) / this.getGridSize().x) *
-                this.getGridSize().x - this.position.x;
-            let deltaY = Math.round((this.startPos.y + totalDeltaY / this.zoomFactor) / this.getGridSize().y) *
-                this.getGridSize().y - this.position.y;
+            let deltaX = Math.round((this.startPos.x + totalDeltaX / this.zoomFactor) / this.gridSize.x) *
+                this.gridSize.x - this.position.x;
+            let deltaY = Math.round((this.startPos.y + totalDeltaY / this.zoomFactor) / this.gridSize.y) *
+                this.gridSize.y - this.position.y;
             this.$store.dispatch(
                 'workflow/moveNodes',
                 { deltaX, deltaY }
@@ -140,7 +140,7 @@ export default {
   >
     <slot />
     <NodeSelectionPlane
-      v-if="isSelected && moveNodeGhostTresholdExceeded && (deltaMovePosition.x !== 0 || deltaMovePosition.y !== 0)"
+      v-if="isSelected && moveNodeGhostThresholdExceeded && (deltaMovePosition.x !== 0 || deltaMovePosition.y !== 0)"
       :position="deltaMovePosition"
       :kind="kind"
     />

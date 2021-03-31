@@ -36,7 +36,7 @@ describe('workflow store', () => {
             }), { virtual: true });
 
             store = mockVuexStore({
-                workflow: await import('~/store/workflow'),
+                workflow: await import('~/store/workflow')
             });
         };
     });
@@ -267,7 +267,9 @@ describe('workflow store', () => {
 
                 store.dispatch(`workflow/${fn}`, ['x', 'y']);
 
-                expect(mock).toHaveBeenCalledWith({ nodeIds: ['x', 'y'], projectId: 'foo', action });
+                expect(mock).toHaveBeenCalledWith({
+                    nodeIds: ['x', 'y'], projectId: 'foo', action, workflowId: 'root'
+                });
             });
 
             it.each([
@@ -300,14 +302,16 @@ describe('workflow store', () => {
             });
 
             store.dispatch(`workflow/changeNodeState`, { nodes: 'all' });
-            expect(mock).toHaveBeenCalledWith({ nodeIds: ['root'], projectId: 'foo' });
+            expect(mock).toHaveBeenLastCalledWith({ nodeIds: ['root'], projectId: 'foo', workflowId: 'root' });
 
             store.commit('workflow/selectAllNodes');
             store.dispatch(`workflow/changeNodeState`, { nodes: 'selected' });
-            expect(mock).toHaveBeenCalledWith({ nodeIds: ['root:1', 'root:2'], projectId: 'foo' });
+            expect(mock).toHaveBeenLastCalledWith({
+                nodeIds: ['root:1', 'root:2'], projectId: 'foo', workflowId: 'root'
+            });
 
             store.dispatch(`workflow/changeNodeState`, { nodes: ['root:2'] });
-            expect(mock).toHaveBeenCalledWith({ nodeIds: ['root:2'], projectId: 'foo', workflowId: 'root' });
+            expect(mock).toHaveBeenLastCalledWith({ nodeIds: ['root:2'], projectId: 'foo', workflowId: 'root' });
         });
 
         it.each(['openView', 'openDialog'])('passes %s to API', async (action) => {
@@ -335,7 +339,7 @@ describe('workflow store', () => {
 
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
-            expect(store.state.workflow.moveNodeGhostTresholdExceeded).toBe(false);
+            expect(store.state.workflow.moveNodeGhostThresholdExceeded).toBe(false);
         });
 
         it('moves nodes outline', async () => {
@@ -355,7 +359,7 @@ describe('workflow store', () => {
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
 
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
-            expect(store.state.workflow.moveNodeGhostTresholdExceeded).toBe(true);
+            expect(store.state.workflow.moveNodeGhostThresholdExceeded).toBe(true);
         });
 
         it('moves subset of node outlines', async () => {
@@ -380,7 +384,7 @@ describe('workflow store', () => {
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
 
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
-            expect(store.state.workflow.moveNodeGhostTresholdExceeded).toBe(true);
+            expect(store.state.workflow.moveNodeGhostThresholdExceeded).toBe(true);
         });
 
         it.each([
@@ -440,8 +444,10 @@ describe('workflow store', () => {
         });
 
         describe('workflowBounds', () => {
-            const { nodeSize, nodeStatusMarginTop, nodeStatusHeight, nodeNameMargin,
-                nodeNameLineHeight } = $shapes;
+            const {
+                nodeSize, nodeStatusMarginTop, nodeStatusHeight, nodeNameMargin,
+                nodeNameLineHeight
+            } = $shapes;
 
             it('calculates dimensions of empty workflow', async () => {
                 await loadStore();
@@ -583,7 +589,6 @@ describe('workflow store', () => {
                     },
                     nodeTemplates: {
                         bla: {
-
                             icon: 'exampleIcon',
                             name: 'exampleName',
                             type: 'exampleType'

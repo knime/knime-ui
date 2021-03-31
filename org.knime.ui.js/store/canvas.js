@@ -15,7 +15,7 @@ const clampZoomFactor = (newFactor) => Math.min(Math.max(minZoomFactor, newFacto
 export const state = () => ({
     zoomFactor: defaultZoomFactor,
     suggestPanning: false,
-    containerSize: { width: 0, height: 0 },
+    containerSize: { width: 0, height: 0 }
 });
 
 export const mutations = {
@@ -30,7 +30,7 @@ export const mutations = {
     /*
         if savedState is undefined, restore defaults
         else restore zoomFactor, overwrite containerScroll with savedContainerScroll
-        
+
         no need to restore savedContainerScroll, it will be overwritten when setting containerScroll
         don't restore containerSize, it might have changed
     */
@@ -181,12 +181,12 @@ export const getters = {
     },
     /*
         ViewBox of the SVG
-    
+
         If zoomed content >= container,
             canvasSize = contentSize * zoomFactor, thus
             viewBox has the size of the content
             no shift for left and top
-    
+
         If zoomed content < container,
             canvasSize = containerSize, thus
             viewBox has the size of the container / zoomFactor
@@ -217,7 +217,7 @@ export const getters = {
     /*
         returns the grid size of the canvas. This size is used to move nodes along the grid
     */
-    getGridSize() {
+    gridSize() {
         return gridSize;
     }
 };

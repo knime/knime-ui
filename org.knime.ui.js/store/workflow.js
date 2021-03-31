@@ -1,8 +1,8 @@
-import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener,
-    openView, openDialog, changeNodeState, changeLoopState, deleteObjects, moveObjects } from '~api';
+import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
+    moveObjects, openDialog, openView, removeEventListener } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
-import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
+import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
 
 
 // Defines the number of nodes above which only the node-outline (drag ghost) is shown when dragging a node.
@@ -22,7 +22,7 @@ export const state = () => ({
     tooltip: null,
     isDragging: false,
     deltaMovePosition: { x: 0, y: 0 },
-    moveNodeGhostTresholdExceeded: false
+    moveNodeGhostThresholdExceeded: false
 });
 
 export const mutations = {
@@ -66,10 +66,10 @@ export const mutations = {
         state.activeWorkflow.nodes[nodeId].selected = false;
     },
     // Shifts the position of the node for the provided amount
-    shiftPosition(state, { deltaX, deltaY, tresholdExceeded }) {
+    shiftPosition(state, { deltaX, deltaY, thresholdExceeded }) {
         state.deltaMovePosition.x = deltaX;
         state.deltaMovePosition.y = deltaY;
-        state.moveNodeGhostTresholdExceeded = tresholdExceeded;
+        state.moveNodeGhostThresholdExceeded = thresholdExceeded;
     },
     // Reset the position of the outline
     resetDragPosition(state) {
@@ -143,13 +143,18 @@ export const actions = {
 
         if (Array.isArray(nodes)) {
             // act upon a list of nodes
-            changeNodeState({ projectId, nodeIds: nodes, action });
+            changeNodeState({ projectId, nodeIds: nodes, action, workflowId: activeWorkflowId });
         } else if (nodes === 'all') {
             // act upon entire workflow
-            changeNodeState({ projectId, nodeIds: [activeWorkflowId], action });
+            changeNodeState({ projectId, nodeIds: [activeWorkflowId], action, workflowId: activeWorkflowId });
         } else if (nodes === 'selected') {
             // act upon selected nodes
-            changeNodeState({ projectId, nodeIds: getters.selectedNodes.map(node => node.id), action });
+            changeNodeState({
+                projectId,
+                nodeIds: getters.selectedNodes.map(node => node.id),
+                action,
+                workflowId: activeWorkflowId
+            });
         } else {
             throw new TypeError("'nodes' has to be of type 'all' | 'selected' | Array<nodeId>]");
         }
@@ -195,13 +200,13 @@ export const actions = {
      * @returns {void} - nothing to return
      */
     moveNodes({ commit, getters }, { deltaX, deltaY }) {
-        let tresholdExceeded;
+        let thresholdExceeded;
         if (getters.selectedNodes.length > moveNodeGhostThreshold) {
-            tresholdExceeded = true;
+            thresholdExceeded = true;
         } else {
-            tresholdExceeded = false;
+            thresholdExceeded = false;
         }
-        commit('shiftPosition', { deltaX, deltaY, tresholdExceeded });
+        commit('shiftPosition', { deltaX, deltaY, thresholdExceeded });
     },
 
     /**

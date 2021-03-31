@@ -122,7 +122,9 @@ export const actions = {
 
         // load more rows
         try {
-            let table = await loadTable({ projectId, workflowId,
+            let table = await loadTable({
+                projectId,
+                workflowId,
                 nodeId,
                 portIndex,
                 offset: rows.length,

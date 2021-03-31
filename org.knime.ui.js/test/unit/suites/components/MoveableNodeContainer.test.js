@@ -35,7 +35,8 @@ describe('MoveableNodeContainer', () => {
                     resetDragPosition: jest.fn()
                 },
                 getters: {
-                    selectedNodes: () => [{ id: 'root:2', selected: true }, { id: 'test2' }]
+                    selectedNodes() { return [{ id: 'root:2', selected: true }, { id: 'test2' }]; },
+                    isWritable() { return true; }
                 },
                 actions: {
                     moveNodes: jest.fn(),
@@ -51,7 +52,7 @@ describe('MoveableNodeContainer', () => {
                     zoomFactor: 1
                 },
                 getters: {
-                    getGridSize() {
+                    gridSize() {
                         return { x: 5, y: 5 };
                     }
                 }

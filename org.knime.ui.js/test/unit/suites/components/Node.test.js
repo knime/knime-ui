@@ -99,7 +99,7 @@ describe('Node', () => {
                     cancelNodeExecution: jest.fn(),
                     resetNodes: jest.fn(),
                     openDialog: jest.fn(),
-                    openView: jest.fn(),
+                    openView: jest.fn()
                 },
                 getters: {
                     isWritable: () => true

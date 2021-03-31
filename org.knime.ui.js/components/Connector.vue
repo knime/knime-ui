@@ -25,7 +25,7 @@ export default {
             workflow: 'activeWorkflow',
             isDragging: 'isDragging',
             deltaMovePosition: 'deltaMovePosition',
-            moveNodeGhostTresholdExceeded: 'moveNodeGhostTresholdExceeded'
+            moveNodeGhostThresholdExceeded: 'moveNodeGhostThresholdExceeded'
         }),
         ...mapGetters('workflow', {
             isWorkflowWritable: 'isWritable',
@@ -34,7 +34,7 @@ export default {
         path() {
             let { start: [x1, y1], end: [x2, y2] } = this;
             // Update position of source or destination node is beeing moved
-            if (this.isDragging && !this.moveNodeGhostTresholdExceeded) {
+            if (this.isDragging && !this.moveNodeGhostThresholdExceeded) {
                 if (this.selectedNodes.filter(node => node.id === this.sourceNode).length > 0) {
                     x1 += this.deltaMovePosition.x;
                     y1 += this.deltaMovePosition.y;
