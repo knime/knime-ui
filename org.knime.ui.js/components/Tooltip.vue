@@ -1,6 +1,4 @@
 <script>
-import { mapGetters } from 'vuex';
-
 /**
  * A tooltip displaying text and an optional headline
  */
@@ -35,16 +33,6 @@ export default {
             default: 0
         },
         /**
-         * Optional: a point on the Kanvas that marks the origin of the tooltips's coordinates.
-         * This makes it more convenient to display tooltips e.g. on Nodes, because it allows to pass the node position
-         * as `anchorPoint`, and the tooltip's coordinates relative to the node.
-         */
-        anchorPoint: {
-            type: Object,
-            default: () => ({ x: 0, y: 0 }),
-            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
-        },
-        /**
          * Type of tooltip. Affects styling
          */
         type: {
@@ -61,7 +49,7 @@ export default {
             validator: orientation => ['bottom', 'top'].includes(orientation)
         },
         /**
-         * gap between the invisible boundaries of the tooltip and the visible part
+         * spacing between the invisible hoverable boundaries of the tooltip and the visible part
          */
         gap: {
             type: Number,
@@ -70,21 +58,8 @@ export default {
 
     },
     computed: {
-        ...mapGetters('canvas', ['getAbsoluteCoordinates']),
-        position() {
-            let { x, y } = this.getAbsoluteCoordinates({
-                x: this.anchorPoint.x + this.x,
-                y: this.anchorPoint.y + this.y
-            });
-            return { x, y };
-        },
-        gapSize() {
+        expandedGap() {
             return this.gap + this.$shapes.tooltipArrowSize * Math.SQRT1_2;
-        }
-    },
-    methods: {
-        onMouseLeave() {
-            this.$store.commit('workflow/setTooltip', null);
         }
     }
 };
@@ -95,13 +70,12 @@ export default {
     :class="['tooltip', orientation, type]"
     :style="{
       '--arrowSize': `${$shapes.tooltipArrowSize}px`,
-      '--gapSize': `${gapSize}px`,
-      top: `${position.y}px`,
-      left: `${position.x}px`,
+      '--gapSize': `${expandedGap}px`,
+      top: `${y}px`,
+      left: `${x}px`,
       maxWidth: `${$shapes.tooltipMaxWidth}px`,
       '--maxHeight': `${$shapes.tooltipMaxHeight}px`
     }"
-    @mouseleave="onMouseLeave"
   >
     <div class="wrap-arrow">
       <div

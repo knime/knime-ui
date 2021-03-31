@@ -67,8 +67,10 @@ export default {
         tooltip() {
             const { nodeSize, nodeStatusHeight, nodeStatusMarginTop } = this.$shapes;
             let tooltip = {
-                x: nodeSize / 2,
-                y: nodeSize + nodeStatusMarginTop + nodeStatusHeight,
+                position: {
+                    x: nodeSize / 2,
+                    y: nodeSize + nodeStatusMarginTop + nodeStatusHeight
+                },
                 anchorPoint: this.anchorPoint,
                 gap: 10
             };

@@ -18,8 +18,10 @@ export default {
             const gap = this.port.type === 'table' ? 6 : 8; // eslint-disable-line no-magic-numbers
             const { portSize } = this.$shapes;
             return {
-                x: this.x,
-                y: this.y - portSize / 2 - 2,
+                position: {
+                    x: this.x,
+                    y: this.y - portSize / 2 - 2
+                },
                 gap,
                 anchorPoint: this.anchorPoint,
                 title: this.port.name,
