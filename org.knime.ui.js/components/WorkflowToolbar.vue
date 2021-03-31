@@ -78,6 +78,20 @@ export default {
 <template>
   <div class="toolbar">
     <div class="buttons">
+      <ToolbarButton
+        :disabled="!allowedActions.canUndo"
+        :title="checkForMacShortcuts('Undo – Ctrl + Z')"
+        @click.native="undo"
+      >
+        <UndoIcon />
+      </ToolbarButton>
+      <ToolbarButton
+        :disabled="!allowedActions.canRedo"
+        :title="checkForMacShortcuts('Redo - Ctrl + Shift + Z')"
+        @click.native="redo"
+      >
+        <RedoIcon />
+      </ToolbarButton>
       <template v-if="!hasSelection">
         <ToolbarButton
           class="with-text"
@@ -144,20 +158,6 @@ export default {
       >
         <DeleteIcon />
         Delete
-      </ToolbarButton>
-      <ToolbarButton
-        :disabled="!allowedActions.canUndo"
-        :title="checkForMacShortcuts('Undo – Ctrl + Z')"
-        @click.native="undo"
-      >
-        <UndoIcon />
-      </ToolbarButton>
-      <ToolbarButton
-        :disabled="!allowedActions.canRedo"
-        :title="checkForMacShortcuts('Redo - Ctrl + Shift + Z')"
-        @click.native="redo"
-      >
-        <RedoIcon />
       </ToolbarButton>
     </div>
 
