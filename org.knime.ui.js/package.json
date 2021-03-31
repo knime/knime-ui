@@ -27,6 +27,7 @@
     "webapps-common": "file:webapps-common"
   },
   "devDependencies": {
+    "@babel/preset-env": "7.12.17",
     "@vue/test-utils": "1.0.3",
     "audit-ci": "3.1.1",
     "babel-core": "7.0.0-bridge.0",
