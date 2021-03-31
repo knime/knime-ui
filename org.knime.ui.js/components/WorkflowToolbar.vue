@@ -49,6 +49,7 @@ export default {
         canDeleteSelection() {
             return this.selectedNodes().some(node => node.allowedActions.canDelete);
         },
+        // Checks if the application is run on a mac
         isMac() {
             return navigator.userAgent.toLowerCase().includes('mac');
         }
