@@ -4,7 +4,6 @@ export const zoomMultiplier = 1.07;
 export const defaultZoomFactor = 1;
 export const minZoomFactor = 0.1; // 10%
 export const maxZoomFactor = 5; // 500%
-export const gridSize = { x: 5, y: 5 };
 const clampZoomFactor = (newFactor) => Math.min(Math.max(minZoomFactor, newFactor), maxZoomFactor);
 
 /**
@@ -212,12 +211,5 @@ export const getters = {
             x: (origX - viewBox.left) * zoomFactor,
             y: (origY - viewBox.top) * zoomFactor
         });
-    },
-
-    /*
-        returns the grid size of the canvas. This size is used to move nodes along the grid
-    */
-    gridSize() {
-        return gridSize;
     }
 };

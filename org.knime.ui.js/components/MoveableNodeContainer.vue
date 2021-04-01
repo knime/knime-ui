@@ -38,7 +38,6 @@ export default {
     }),
     computed: {
         ...mapGetters('workflow', ['isWritable', 'selectedNodes']),
-        ...mapGetters('canvas', ['gridSize']),
         ...mapState('openedProjects', {
             projectId: 'activeId'
         }),
@@ -105,10 +104,11 @@ export default {
         onMove: throttle(function ({ detail: { totalDeltaX, totalDeltaY } }) {
             /* eslint-disable no-invalid-this */
             // Move node to the next rounded grid position
-            let deltaX = Math.round((this.startPos.x + totalDeltaX / this.zoomFactor) / this.gridSize.x) *
-                this.gridSize.x - this.position.x;
-            let deltaY = Math.round((this.startPos.y + totalDeltaY / this.zoomFactor) / this.gridSize.y) *
-                this.gridSize.y - this.position.y;
+            const { gridSize } = this.$shapes;
+            let deltaX = Math.round((this.startPos.x + totalDeltaX / this.zoomFactor) / gridSize.x) *
+                gridSize.x - this.position.x;
+            let deltaY = Math.round((this.startPos.y + totalDeltaY / this.zoomFactor) / gridSize.y) *
+                gridSize.y - this.position.y;
             this.$store.dispatch(
                 'workflow/moveNodes',
                 { deltaX, deltaY }

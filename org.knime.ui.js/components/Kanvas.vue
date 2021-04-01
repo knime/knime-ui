@@ -41,7 +41,7 @@ export default {
             'isStreaming'
         ]),
         ...mapGetters('canvas', ['contentBounds', 'canvasSize', 'viewBox']),
-        ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning', 'gridSize']),
+        ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning']),
         viewBoxString() {
             let { viewBox } = this;
             return  `${viewBox.left} ${viewBox.top} ` +

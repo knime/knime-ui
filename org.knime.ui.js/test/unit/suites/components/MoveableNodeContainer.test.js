@@ -2,6 +2,7 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
 import { mockVuexStore } from '~/test/unit/test-utils';
+import * as $shapes from '~/style/shapes';
 
 import MoveableNodeContainer from '~/components/MoveableNodeContainer';
 
@@ -50,11 +51,6 @@ describe('MoveableNodeContainer', () => {
             canvas: {
                 state: {
                     zoomFactor: 1
-                },
-                getters: {
-                    gridSize() {
-                        return { x: 5, y: 5 };
-                    }
                 }
             },
             openedProjects: {
@@ -67,7 +63,9 @@ describe('MoveableNodeContainer', () => {
             // insert node before mounting
         };
 
-        mocks = { };
+        mocks = {
+            $shapes
+        };
 
         doMount = () => {
             mocks.$store = mockVuexStore(storeConfig);
