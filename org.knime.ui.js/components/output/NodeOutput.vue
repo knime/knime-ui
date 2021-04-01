@@ -271,6 +271,7 @@ export default {
 }
 
 .output-container {
+  height: 100%;
   padding: 10px;
   position: relative;
   overflow: hidden;

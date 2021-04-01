@@ -191,7 +191,7 @@ export const actions = {
 
     /**
      * Move either the outline of the nodes or the nodes itself,
-     * depeding on the amount of selected nodes. Delta is hereby the amount
+     * depending on the amount of selected nodes. Delta is hereby the amount
      * of movement to the last position of the node.
      * @param {Object} context - store context
      * @param {Object} params

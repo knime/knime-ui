@@ -71,7 +71,7 @@ export default {
       >
         <Kanvas id="kanvas" />
         <template #secondary>
-          <NodeOutput id="node-output" />
+          <NodeOutput />
         </template>
       </Splitter>
     </div>
@@ -120,10 +120,6 @@ main {
   overflow: auto;
   flex: 1 1 100%;
   height: 100%;
-}
-
-#node-output {
-  flex: 1 1 100%;
 }
 
 .placeholder {
