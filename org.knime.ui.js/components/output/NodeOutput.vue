@@ -197,9 +197,7 @@ export default {
     },
     methods: {
         executeNode() {
-            this.$store.dispatch('workflow/executeNodes', {
-                nodeIds: [this.selectedNode.id]
-            });
+            this.$store.dispatch('workflow/executeNodes', 'selected');
         }
     }
 };

@@ -283,7 +283,7 @@ describe('NodeOutput.vue', () => {
         expect(wrapper.find('.placeholder').text())
             .toContain('To show the output table, please execute the selected node.');
         wrapper.findComponent(Button).vm.$emit('click');
-        expect(workflow.actions.executeNodes).toHaveBeenCalledWith(expect.anything(), { nodeIds: ['node1'] });
+        expect(workflow.actions.executeNodes).toHaveBeenCalledWith(expect.anything(), 'selected');
     });
 
     it('loads table data on tab change', async () => {
