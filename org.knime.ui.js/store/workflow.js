@@ -200,12 +200,7 @@ export const actions = {
      * @returns {void} - nothing to return
      */
     moveNodes({ commit, getters }, { deltaX, deltaY }) {
-        let thresholdExceeded;
-        if (getters.selectedNodes.length > moveNodeGhostThreshold) {
-            thresholdExceeded = true;
-        } else {
-            thresholdExceeded = false;
-        }
+        let thresholdExceeded = getters.selectedNodes.length > moveNodeGhostThreshold;
         commit('shiftPosition', { deltaX, deltaY, thresholdExceeded });
     },
 

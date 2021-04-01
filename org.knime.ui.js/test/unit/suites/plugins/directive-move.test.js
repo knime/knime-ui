@@ -4,7 +4,7 @@ import Vue from 'vue';
 
 describe('directive-move', () => {
     window.addEventListener = jest.fn();
-    let vm, onMove, onMoveStart, onMoveEnd;
+    let vm, onMove, onMoveStart, onMoveEnd, dummyTarget;
 
 
     beforeEach(() => {
@@ -12,6 +12,10 @@ describe('directive-move', () => {
         onMove = jest.fn();
         onMoveStart = jest.fn();
         onMoveEnd = jest.fn();
+        dummyTarget = {
+            hasPointerCapture() { return false; },
+            setPointerCapture() { /* do nothing */ }
+        };
     });
 
     afterEach(() => {
@@ -29,7 +33,8 @@ describe('directive-move', () => {
             screenX: 100,
             screenY: 100,
             stopPropagation: jest.fn(),
-            preventDefault: jest.fn()
+            preventDefault: jest.fn(),
+            target: dummyTarget
         });
         await Vue.nextTick();
         expect(onMove.mock.calls.length).toBe(0);
@@ -44,13 +49,15 @@ describe('directive-move', () => {
             screenX: 50,
             screenY: 50,
             stopPropagation: jest.fn(),
-            preventDefault: jest.fn()
+            preventDefault: jest.fn(),
+            target: dummyTarget
         });
         wrapper.vm.$vnode.elm.onpointermove({
             screenX: 53,
             screenY: 50,
             stopPropagation: jest.fn(),
-            preventDefault: jest.fn()
+            preventDefault: jest.fn(),
+            target: dummyTarget
         });
         await Vue.nextTick();
         expect(onMove.mock.calls.length).toBe(0);
@@ -65,13 +72,15 @@ describe('directive-move', () => {
             screenX: 50,
             screenY: 50,
             stopPropagation: jest.fn(),
-            preventDefault: jest.fn()
+            preventDefault: jest.fn(),
+            target: dummyTarget
         });
         wrapper.vm.$vnode.elm.onpointermove({
             screenX: 100,
             screenY: 100,
             stopPropagation: jest.fn(),
-            preventDefault: jest.fn()
+            preventDefault: jest.fn(),
+            target: dummyTarget
         });
         await Vue.nextTick();
         expect(onMoveStart.mock.calls[0][0].detail).toStrictEqual(expect.objectContaining({ startX: 50, startY: 50 }));
@@ -85,7 +94,8 @@ describe('directive-move', () => {
             screenX: 150,
             screenY: 150,
             stopPropagation: jest.fn(),
-            preventDefault: jest.fn()
+            preventDefault: jest.fn(),
+            target: dummyTarget
         });
         await Vue.nextTick();
         expect(onMove.mock.calls[1][0].detail).toStrictEqual(expect.objectContaining({
@@ -106,19 +116,22 @@ describe('directive-move', () => {
             screenX: 50,
             screenY: 50,
             stopPropagation: jest.fn(),
-            preventDefault: jest.fn()
+            preventDefault: jest.fn(),
+            target: dummyTarget
         });
         wrapper.vm.$vnode.elm.onpointermove({
             screenX: 100,
             screenY: 100,
             stopPropagation: jest.fn(),
-            preventDefault: jest.fn()
+            preventDefault: jest.fn(),
+            target: dummyTarget
         });
         wrapper.vm.$vnode.elm.onpointerup({
             screenX: 100,
             screenY: 100,
             stopPropagation: jest.fn(),
-            preventDefault: jest.fn()
+            preventDefault: jest.fn(),
+            target: dummyTarget
         });
         expect(onMoveEnd.mock.calls[0][0].detail).toStrictEqual(expect.objectContaining({
             totalDeltaX: 50,

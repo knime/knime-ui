@@ -24,10 +24,11 @@ const defaultThreshold = 5;
 const createMousedownHandler = (state, el) => (e) => {
     e.stopPropagation();
     e.preventDefault();
-    state.pointerId = e.pointerId;
+    let { pointerId } = e;
+    state.pointerId = pointerId;
     // This is needed, as otherwise the pointerCapture might not get set if the component does not change
-    if (state.pointerId && !e.target.hasPointerCapture(state.pointerId)) {
-        e.target.setPointerCapture(state.pointerId);
+    if (!e.target.hasPointerCapture(pointerId)) {
+        e.target.setPointerCapture(pointerId);
     }
 
     el.onpointermove = state.mousemove;
@@ -39,7 +40,7 @@ const createMousedownHandler = (state, el) => (e) => {
 const createMouseupHandler = (state, el) => (e) => {
     el.releasePointerCapture(e.pointerId);
     el.onpointermove = null;
-    state.pointerId = null;
+    delete state.pointerId;
     const { screenX, screenY } = e;
     if (state.dragging && state.handlers.onMoveEnd) {
         let [startX, startY] = state.start;
@@ -136,7 +137,7 @@ const componentUpdated = (el, { value }) => {
         return;
     }
     let state = stateMap.get(el);
-    if (state.pointerId && !el.hasPointerCapture(state.pointerId)) {
+    if (Reflect.has(state, 'pointerId') && !el.hasPointerCapture(state.pointerId)) {
         el.setPointerCapture(state.pointerId);
     }
 };
