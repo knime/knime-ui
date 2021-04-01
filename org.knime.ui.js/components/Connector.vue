@@ -22,13 +22,29 @@ export default {
     },
     computed: {
         ...mapState('workflow', {
-            workflow: 'activeWorkflow'
+            workflow: 'activeWorkflow',
+            isDragging: 'isDragging',
+            deltaMovePosition: 'deltaMovePosition',
+            moveNodeGhostThresholdExceeded: 'moveNodeGhostThresholdExceeded'
         }),
         ...mapGetters('workflow', {
-            isWorkflowWritable: 'isWritable'
+            isWorkflowWritable: 'isWritable',
+            selectedNodes: 'selectedNodes'
         }),
         path() {
             let { start: [x1, y1], end: [x2, y2] } = this;
+            // Update position of source or destination node is being moved
+            if (this.isDragging && !this.moveNodeGhostThresholdExceeded) {
+                let selectedNodes = this.selectedNodes();
+                if (selectedNodes.filter(node => node.id === this.sourceNode).length > 0) {
+                    x1 += this.deltaMovePosition.x;
+                    y1 += this.deltaMovePosition.y;
+                }
+                if (selectedNodes.filter(node => node.id === this.destNode).length > 0) {
+                    x2 += this.deltaMovePosition.x;
+                    y2 += this.deltaMovePosition.y;
+                }
+            }
             // These deltas are carefully chosen so that the connector line is hidden behind the flow variable line,
             // especially for optional ports, even when hovering the port or the connector line.
             // (Optional output ports are useless, but are technically possible and do exist out in the wild)

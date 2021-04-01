@@ -20,8 +20,6 @@ describe('NodeOutput.vue', () => {
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
-
-
     });
 
     beforeEach(() => {
@@ -33,8 +31,7 @@ describe('NodeOutput.vue', () => {
                 rows: ['dummy'],
                 totalNumRows: 1000,
                 totalNumColumns: 200,
-                isReady: false,
-                isLoading: false
+                isReady: false
             },
             actions: {
                 load: jest.fn(),
@@ -66,17 +63,21 @@ describe('NodeOutput.vue', () => {
                         node1: {
                             id: 'node1',
                             selected: true,
-                            outPorts: ['dummy']
+                            outPorts: ['dummy'],
+                            isLoaded: false
                         }
                     },
                     state: {}
                 }
             },
+            getters: {
+                activeWorkflowId: jest.fn().mockReturnValue('activeWorkflowId'),
+                selectedNodes() {
+                    return () => Object.values(workflow.state.activeWorkflow.nodes).filter(node => node.selected);
+                }
+            },
             actions: {
                 executeNodes: jest.fn()
-            },
-            getters: {
-                activeWorkflowId: () => 'root'
             }
         };
 
@@ -161,6 +162,36 @@ describe('NodeOutput.vue', () => {
             expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
             expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
             expect(wrapper.find('.placeholder').text()).toBe('Output is available after execution.');
+        });
+
+        it('renders placeholder while node is beeing dragged and table was not loaded previously', async () => {
+            workflow.state.activeWorkflow.nodes.node1.outPorts[0] = { type: 'table' };
+            workflow.state.activeWorkflow.nodes.node1.state = { executionState: 'EXECUTED' };
+            workflow.state.isDragging = true;
+            dataTable.state.isReady = true;
+            doShallowMount();
+            wrapper.setData({ selectedPortIndex: 0 });
+            await Vue.nextTick();
+            expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
+            expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
+            expect(wrapper.find('.placeholder').text()).toBe('Data is loaded after node movement...');
+        });
+
+        it('renders table while node is beeing dragged and table has loaded previously', async () => {
+            workflow.state.activeWorkflow.nodes.node1.outPorts[0] = { type: 'table' };
+            workflow.state.activeWorkflow.nodes.node1.state = { executionState: 'EXECUTED' };
+            workflow.state.isDragging = true;
+            dataTable.state.isReady = true;
+            doShallowMount();
+            wrapper.setData({ selectedPortIndex: 0 });
+            expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
+            expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
+            expect(wrapper.find('.placeholder').text()).toBe('Data is loaded after node movement...');
+            wrapper.vm.$options.isLoaded = true;
+            await Vue.nextTick();
+            expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
+            expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(true);
+            expect(wrapper.find('.placeholder').exists()).toBe(false);
         });
 
         it('renders placeholder if selected port is unsupported', () => {
@@ -255,7 +286,7 @@ describe('NodeOutput.vue', () => {
         expect(wrapper.find('.placeholder').text())
             .toContain('To show the output table, please execute the selected node.');
         wrapper.findComponent(Button).vm.$emit('click');
-        expect(workflow.actions.executeNodes).toHaveBeenCalledWith(expect.anything(), { nodeIds: ['node1'] });
+        expect(workflow.actions.executeNodes).toHaveBeenCalledWith(expect.anything(), 'selected');
     });
 
     it('loads table data on tab change', async () => {
@@ -267,7 +298,7 @@ describe('NodeOutput.vue', () => {
         await Vue.nextTick();
         jest.runAllTimers();
         expect(dataTable.actions.load).toHaveBeenCalledWith(expect.anything(), {
-            nodeId: 'node1', portIndex: 2, projectId: 'projectId', workflowId: 'root'
+            nodeId: 'node1', portIndex: 2, projectId: 'projectId', workflowId: 'activeWorkflowId'
         });
 
         wrapper.setData({ selectedPortIndex: null });
@@ -305,7 +336,7 @@ describe('NodeOutput.vue', () => {
         await Vue.nextTick();
         jest.runAllTimers();
         expect(flowVariables.actions.load).toHaveBeenCalledWith(expect.anything(), {
-            nodeId: 'node1', portIndex: 2, projectId: 'projectId', workflowId: 'root'
+            nodeId: 'node1', portIndex: 2, projectId: 'projectId', workflowId: 'activeWorkflowId'
         });
 
         wrapper.setData({ selectedPortIndex: null });

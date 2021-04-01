@@ -29,7 +29,7 @@ export const mutations = {
     /*
         if savedState is undefined, restore defaults
         else restore zoomFactor, overwrite containerScroll with savedContainerScroll
-        
+
         no need to restore savedContainerScroll, it will be overwritten when setting containerScroll
         don't restore containerSize, it might have changed
     */
@@ -151,7 +151,6 @@ export const getters = {
             bottom = 0;
         }
 
-
         return {
             left,
             top,
@@ -181,12 +180,12 @@ export const getters = {
     },
     /*
         ViewBox of the SVG
-    
+
         If zoomed content >= container,
             canvasSize = contentSize * zoomFactor, thus
             viewBox has the size of the content
             no shift for left and top
-    
+
         If zoomed content < container,
             canvasSize = containerSize, thus
             viewBox has the size of the container / zoomFactor

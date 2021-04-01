@@ -54,7 +54,7 @@ export default {
 
             // if the initial data fits inside the table without scrolling
             // more data is loaded once
-            let canScroll = this.$refs.table.scrollHeight !== 0;
+            let canScroll = this.$refs.table?.scrollHeight !== 0;
             if (this.canLoadMoreRows && !canScroll) {
                 this.loadMoreRows();
             }
