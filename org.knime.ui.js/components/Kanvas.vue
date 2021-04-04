@@ -1,6 +1,7 @@
 <script>
 import { mapState, mapGetters, mapMutations } from 'vuex';
 import Node from '~/components/Node';
+import MoveableNodeContainer from '~/components/MoveableNodeContainer';
 import Connector from '~/components/Connector';
 import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import Tooltip from '~/components/Tooltip';
@@ -18,7 +19,8 @@ export default {
         MetaNodePortBars,
         KanvasFilters,
         StreamedIcon,
-        ConnectorLabel
+        ConnectorLabel,
+        MoveableNodeContainer
     },
     data() {
         return {
@@ -44,8 +46,19 @@ export default {
             let { viewBox } = this;
             return  `${viewBox.left} ${viewBox.top} ` +
                     `${viewBox.width} ${viewBox.height}`;
+        },
+        // Sort nodes so that selected nodes are rendered in front
+        sortedNodes() {
+            return Object.entries(this.workflow.nodes).sort(([, a], [, b]) => {
+                if (a.selected && !b.selected) {
+                    return 1;
+                } else if (!a.selected && b.selected) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            });
         }
-
     },
     watch: {
         workflow() {
@@ -81,6 +94,7 @@ export default {
             // deselect all nodes
             if (this.clickStartedOnEmptyKanvas) {
                 this.deselectAllNodes();
+                this.clickStartedOnEmptyKanvas = null;
             }
         },
         /*
@@ -223,33 +237,20 @@ export default {
       <MetaNodePortBars
         v-if="workflow.info.containerType === 'metanode'"
       />
-
-      <!-- Non-Selected Nodes
-        If node is not selected that portal has no effect.
-        If node is selected, the portal will bring it to the front
-       -->
-      <portal
-        v-for="(node, nodeId) in workflow.nodes"
-        :key="`node-${workflow.projectId}-${nodeId}-portal`"
-        :disabled="!node.selected"
-        to="selected-nodes"
-        slim
+      <MoveableNodeContainer
+        v-for="([nodeId, node]) in sortedNodes"
+        :id="node.id"
+        :key="`node-${workflow.projectId}-${nodeId}`"
+        :position="node.position"
+        :kind="node.kind"
       >
         <Node
-          :key="`node-${workflow.projectId}-${nodeId}`"
           :icon="$store.getters['workflow/nodeIcon']({ workflowId: workflow.projectId, nodeId })"
           :name="$store.getters['workflow/nodeName']({ workflowId: workflow.projectId, nodeId })"
           :type="$store.getters['workflow/nodeType']({ workflowId: workflow.projectId, nodeId })"
           v-bind="node"
         />
-      </portal>
-
-      <!-- Selected Nodes -->
-      <portal-target
-        multiple
-        tag="g"
-        name="selected-nodes"
-      />
+      </MoveableNodeContainer>
 
       <!-- Quick Actions Layer: Buttons for Hovered & Selected Nodes and their ids -->
       <portal-target

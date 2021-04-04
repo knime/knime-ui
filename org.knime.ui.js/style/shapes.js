@@ -34,3 +34,5 @@ export const tooltipMaxWidth = 250;
 export const defaultMetanodeBarPosition = 1000;
 export const metaNodeBarWidth = 10;
 export const defaultMetaNodeBarHeight = 500;
+
+export const gridSize = { x: 5, y: 5 };
