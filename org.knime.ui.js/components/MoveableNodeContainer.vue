@@ -49,7 +49,7 @@ export default {
         ...mapState('canvas', ['zoomFactor']),
         // Returns if the current node is selected
         isSelected() {
-            return this.selectedNodes.filter(node => node.id === this.id).length > 0;
+            return this.selectedNodes().filter(node => node.id === this.id).length > 0;
         },
         // Combined position of original position + the dragged amount
         combinedPosition() {

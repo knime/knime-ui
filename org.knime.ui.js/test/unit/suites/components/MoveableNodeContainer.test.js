@@ -36,7 +36,7 @@ describe('MoveableNodeContainer', () => {
                     resetDragPosition: jest.fn()
                 },
                 getters: {
-                    selectedNodes() { return [{ id: 'root:2', selected: true }, { id: 'test2' }]; },
+                    selectedNodes() { return () => [{ id: 'root:2', selected: true }, { id: 'test2' }]; },
                     isWritable() { return true; }
                 },
                 actions: {
