@@ -24,6 +24,7 @@ const config = {
         // 'logger' must be plugin number zero
         '~/plugins/logger.js',
         '~/plugins/constants.js',
+        '~/plugins/directive-move.js',
         '~/plugins/json-rpc-notification.js'
     ],
     modules: ['portal-vue/nuxt'],

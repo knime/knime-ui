@@ -97,8 +97,8 @@ export default {
           title="Execute selected nodes – F7"
           @click.native="executeNodes('selected')"
         >
-          <ExecuteSelectedIcon />
-          Execute selected
+          <ExecuteAllIcon />
+          Execute
         </ToolbarButton>
         <ToolbarButton
           class="with-text"
@@ -106,8 +106,8 @@ export default {
           title="Cancel selected nodes – F9"
           @click.native="cancelNodeExecution('selected')"
         >
-          <CancelSelectedIcon />
-          Cancel selected
+          <CancelAllIcon />
+          Cancel
         </ToolbarButton>
         <ToolbarButton
           class="with-text"
@@ -115,8 +115,8 @@ export default {
           title="Reset selected nodes – F8"
           @click.native="resetNodes('selected')"
         >
-          <ResetSelectedIcon />
-          Reset selected
+          <ResetAllIcon />
+          Reset
         </ToolbarButton>
       </template>
       <ToolbarButton

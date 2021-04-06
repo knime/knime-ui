@@ -45,7 +45,7 @@ export default {
         onZoomInputEnter(e) {
             // '100' or '100%' works
             let newZoomFactor = parseInt(e.target.innerText, 10) / 100;
-            
+
             if (!isNaN(newZoomFactor)) {
                 this.$store.commit('canvas/setFactor', newZoomFactor);
             }

@@ -9,7 +9,8 @@ module.exports = {
     // Please refer to the https://www.npmjs.com/package/audit-ci README for details.
     // Remember to add a comment explaining why the exclusion was added.
     allowlist: [
-        
+        // Issue 1658 affects only nightwatch, which we don't run in production
+        '1658|nightwatch>proxy-agent>pac-proxy-agent>pac-resolver>netmask'
     ],
     low: true,
     'package-manager': 'npm'
