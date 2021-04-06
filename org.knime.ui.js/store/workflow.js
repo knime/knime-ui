@@ -1,5 +1,6 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
     moveObjects, openDialog, openView, removeEventListener } from '~api';
+
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -118,6 +119,7 @@ export const actions = {
         if (nonDeletableNodeIds.length || nonDeletableConnectionIds.length) {
             window.alert(`The following nodes can't be deleted: [${nonDeletableNodeIds.join(', ')}] \n
                           The following connections can't be deleted: [${nonDeletableConnectionIds.join(', ')}]`);
+    
         }
     },
     changeNodeState({ state, getters }, { action, nodes }) {

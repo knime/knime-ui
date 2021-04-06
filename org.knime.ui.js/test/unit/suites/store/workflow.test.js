@@ -8,6 +8,7 @@ import Vue from 'vue';
 describe('workflow store', () => {
     let store, localVue, loadStore, addEventListenerMock,
         removeEventListenerMock, moveObjectsMock;
+    
 
     beforeAll(() => {
         localVue = createLocalVue();
