@@ -109,6 +109,7 @@ export default {
 
 <style lang="postcss" scoped>
 .tooltip-container {
+  z-index: 2;
   position: fixed;
   top: 0;
   height: 0;

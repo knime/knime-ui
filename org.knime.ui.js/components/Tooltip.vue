@@ -102,7 +102,6 @@ export default {
 
   position: relative;
   display: inline-block;
-  z-index: 1;
   transform: translate(-50%, calc(-1 * var(--border-width)));
 
   &.top {
