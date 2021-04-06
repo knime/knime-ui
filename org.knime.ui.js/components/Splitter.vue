@@ -113,8 +113,8 @@ export default {
 @import "webapps-common/ui/css/variables";
 
 .splitter {
-  flex: 1 1 auto;
   overflow: hidden;
+  flex: 1 1 auto;
   align-items: stretch;
   display: flex;
 
@@ -125,9 +125,9 @@ export default {
   }
 
   & .secondary {
+    overflow: auto;
     flex: 0 0 auto;
     min-height: 15%;
-    overflow: hidden;
   }
 
   & .handle {

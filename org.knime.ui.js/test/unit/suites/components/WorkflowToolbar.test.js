@@ -124,9 +124,9 @@ describe('WorkflowToolbar.vue', () => {
                 selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:2']];
                 doShallowMount();
                 let buttons = wrapper.findAllComponents(ToolbarButton);
-                expect(buttons.at(0).text()).toMatch('selected');
-                expect(buttons.at(1).text()).toMatch('selected');
-                expect(buttons.at(2).text()).toMatch('selected');
+                expect(buttons.at(0).text()).toMatch('Execute');
+                expect(buttons.at(1).text()).toMatch('Cancel');
+                expect(buttons.at(2).text()).toMatch('Reset');
             });
 
             it('disable actions for selection (all false)', () => {

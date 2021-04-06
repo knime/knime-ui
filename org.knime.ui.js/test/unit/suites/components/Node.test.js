@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import Vuex from 'vuex';
@@ -13,6 +14,8 @@ import StreamingDecorator from '~/components/StreamingDecorator';
 import LoopDecorator from '~/components/LoopDecorator';
 import NodeActionBar from '~/components/NodeActionBar';
 import Port from '~/components/PortWithTooltip';
+
+import '~/plugins/directive-move';
 
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
@@ -205,11 +208,6 @@ describe('Node', () => {
             doMount();
             expect(wrapper.findComponent(NodeTorso).props('executionState')).toBe('EXECUTED');
         });
-
-        it('renders at right position', () => {
-            const transform = wrapper.find('g').attributes().transform;
-            expect(transform).toBe('translate(500, 200)');
-        });
     });
 
     it('opens the node config on double click', async () => {
@@ -291,7 +289,7 @@ describe('Node', () => {
             propsData.selected = false;
             doMount();
 
-            await wrapper.find('g g g').trigger('mousedown', { button: 0 });
+            await wrapper.find('g g g').trigger('click', { button: 0 });
 
             expect(storeConfig.workflow.mutations.deselectAllNodes).toHaveBeenCalled();
             expect(storeConfig.workflow.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
@@ -301,7 +299,7 @@ describe('Node', () => {
             propsData.selected = false;
             doMount();
 
-            await wrapper.find('g g g').trigger('mousedown', { button: 0, shiftKey: true });
+            await wrapper.find('g g g').trigger('click', { button: 0, shiftKey: true });
             expect(storeConfig.workflow.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
         });
 
@@ -309,7 +307,7 @@ describe('Node', () => {
             propsData.selected = true;
             doMount();
 
-            await wrapper.find('g g g').trigger('mousedown', { button: 0, shiftKey: true });
+            await wrapper.find('g g g').trigger('click', { button: 0, shiftKey: true });
             expect(storeConfig.workflow.mutations.deselectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
         });
 
