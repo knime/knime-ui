@@ -1,8 +1,15 @@
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
+import Vue from 'vue';
 
 import KnimeUI from '~/components/KnimeUI';
+import AppHeader from '~/components/AppHeader';
+import Sidebar from '~/components/Sidebar';
+import WorkflowTabContent from '~/components/WorkflowTabContent';
+import HotKeys from '~/components/HotKeys';
+import TooltipContainer from '~/components/TooltipContainer';
+
 
 const numberOfPreloadedFonts = 3;
 
@@ -12,7 +19,7 @@ describe('KnimeUI.vue', () => {
         localVue.use(Vuex);
     });
 
-    let store, doShallowMount, initState;
+    let store, doShallowMount, initState, wrapper;
 
     beforeEach(() => {
         initState = jest.fn();
@@ -29,7 +36,7 @@ describe('KnimeUI.vue', () => {
                 }
             });
 
-            await shallowMountWithAsyncData(
+            wrapper = await shallowMountWithAsyncData(
                 KnimeUI,
                 { store },
                 {
@@ -37,6 +44,33 @@ describe('KnimeUI.vue', () => {
                 }
             );
         };
+    });
+
+    it('renders before loading', async () => {
+        await doShallowMount();
+        expect(wrapper.findComponent(AppHeader).exists()).toBe(true);
+        expect(wrapper.findComponent(Sidebar).exists()).toBe(true);
+        expect(wrapper.findComponent(HotKeys).exists()).toBe(true);
+        expect(wrapper.findComponent(TooltipContainer).exists()).toBe(false);
+        expect(wrapper.findComponent(WorkflowTabContent).exists()).toBe(false);
+    });
+
+    it('renders after loading', async () => {
+        document.fonts.load.mockResolvedValue('dummy');
+        await doShallowMount();
+
+        // await fetch hook
+        await Vue.nextTick();
+        await Vue.nextTick();
+
+        // await rendering
+        await Vue.nextTick();
+
+        expect(wrapper.findComponent(WorkflowTabContent).exists()).toBe(true);
+
+        let tooltipContainer = wrapper.findComponent(TooltipContainer);
+        expect(tooltipContainer.exists()).toBe(true);
+        expect(tooltipContainer.attributes('id')).toBe('tooltip-container');
     });
 
     it('initiates', async () => {

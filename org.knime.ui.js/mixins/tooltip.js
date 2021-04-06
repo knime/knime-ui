@@ -1,6 +1,7 @@
 /**
  * This tooltip mixin handles appearance and disappearance of tooltips
  * The tooltip is reactive. It expects the target component to have a watchable 'tooltip' property, though
+ * The tooltip container is expected to have [id='tooltip-container']
  *
  * There are two modes:
  * 1. [touchable = false] when the mouse leaves the target component the tooltip will be closed
@@ -21,8 +22,8 @@ export const tooltip = {
                 this.removeTooltipWatcher();
             }
 
-            // eslint-disable-next-line no-undefined
-            if (this.tooltip === undefined) {
+            if (this.tooltip === undefined) {  // eslint-disable-line no-undefined
+                consola.error('Tooltip mixin is used without providing a tooltip property');
                 return;
             }
 

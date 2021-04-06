@@ -75,11 +75,13 @@ export default {
       top: `${y}px`,
       left: `${x}px`,
       maxWidth: `${$shapes.tooltipMaxWidth}px`,
-      '--maxHeight': `${$shapes.tooltipMaxHeight}px`
     }"
   >
     <div class="wrap-arrow">
-      <div class="scroller">
+      <div
+        class="scroller"
+        :style="{maxHeight: `${$shapes.tooltipMaxHeight}px`}"
+      >
         <div
           v-if="title"
           class="title"
@@ -116,7 +118,6 @@ export default {
     position: relative;
     z-index: 1;
     padding: 8px 10px 10px 10px;
-    max-height: var(--maxHeight);
     overflow-y: auto;
     font-family: "Roboto Condensed", sans-serif;
     font-size: 13px;
