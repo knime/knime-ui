@@ -9,6 +9,7 @@ import StreamingDecorator from '~/components/StreamingDecorator';
 import LoopDecorator from '~/components/LoopDecorator';
 import portShift from '~/util/portShift';
 import NodeActionBar from '~/components/NodeActionBar.vue';
+import NodeSelectionPlane from '~/components/NodeSelectionPlane.vue';
 
 /**
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
@@ -28,7 +29,8 @@ export default {
         NodeState,
         LinkDecorator,
         StreamingDecorator,
-        LoopDecorator
+        LoopDecorator,
+        NodeSelectionPlane
     },
     inheritAttrs: false,
     provide() {
@@ -57,11 +59,15 @@ export default {
          * Input ports. List of configuration objects passed-through to the `Port` component
          */
         inPorts: { type: Array, required: true },
+
         /**
          * Output ports. List of configuration objects passed-through to the `Port` component
          */
         outPorts: { type: Array, required: true },
 
+        /**
+         * The position of the node. Contains of an x and a y parameter
+         */
         position: {
             type: Object,
             required: true,
@@ -170,18 +176,7 @@ export default {
         ...mapState('openedProjects', {
             projectId: 'activeId'
         }),
-        nodeSelectionMeasures() {
-            const { nodeStatusHeight, nodeStatusMarginTop, nodeSize,
-                nodeSelectionPadding: [top, right, bottom, left] } = this.$shapes;
-            const hasStatusBar = this.kind !== 'metanode';
-
-            return {
-                y: -top,
-                x: -left,
-                height: (top + nodeSize + bottom) + (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0),
-                width: left + right + nodeSize
-            };
-        },
+        ...mapState('workflow', { isDragging: 'isDragging' }),
         decoratorBackgroundType() {
             if (this.type) {
                 return this.type;
@@ -200,7 +195,7 @@ export default {
          * @return {boolean} if true action bar will be hidden
          */
         insideStreamingComponent() {
-            return typeof this.executionInfo?.streamable !== 'undefined';
+            return typeof this.executionInfo?.streamable !== 'undefined' || this.isDragging;
         },
         allNodeActions() {
             return {
@@ -226,7 +221,7 @@ export default {
                 }
             }
             let width = this.$shapes.nodeSize + extraHorizontalSize +
-                    this.$shapes.nodeHoverMargin[1] + this.$shapes.nodeHoverMargin[3];
+                this.$shapes.nodeHoverMargin[1] + this.$shapes.nodeHoverMargin[3];
             let height = this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[0] + this.$shapes.nodeHoverMargin[2];
             let x = -this.$shapes.nodeHoverMargin[1] - extraHorizontalSize / 2;
             let y = -this.$shapes.nodeHoverMargin[0];
@@ -274,7 +269,7 @@ export default {
             // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
             if (this.kind === 'metanode' || (this.kind === 'component' && (e.ctrlKey || e.metaKey))) {
                 this.openNode();
-            } else if (this.allowedActions?.canOpenDialog)  {
+            } else if (this.allowedActions?.canOpenDialog) {
                 // open node dialog if one is present
                 this.openDialog(this.id);
             }
@@ -289,7 +284,11 @@ export default {
          * Left-Click & Shift => Add/Remove this node to/from selection
          * Left-Click & Ctrl  => do Nothing
          */
-        onLeftMouseDown(e) {
+        onLeftMouseClick(e) {
+            if (this.isDragging) {
+                return;
+            }
+
             if (e.ctrlKey || e.metaKey) {
                 // user tries to open component or metanode
                 return;
@@ -313,10 +312,7 @@ export default {
 </script>
 
 <template>
-  <g
-    :transform="`translate(${position.x}, ${position.y})`"
-    :data-node-id="id"
-  >
+  <g>
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal
       to="node-actions"
@@ -333,21 +329,13 @@ export default {
 
     <!-- Node Selection Plane. Portalled to the back -->
     <portal
-      v-if="selected"
+      v-if="selected && !isDragging"
       to="node-select"
     >
-      <g :transform="`translate(${position.x}, ${position.y})`">
-        <rect
-          :y="nodeSelectionMeasures.y"
-          :x="nodeSelectionMeasures.x"
-          :width="nodeSelectionMeasures.width"
-          :height="nodeSelectionMeasures.height"
-          :fill="$colors.selection.activeBackground"
-          :stroke="$colors.selection.activeBorder"
-          stroke-width="1"
-          rx="4"
-        />
-      </g>
+      <NodeSelectionPlane
+        :position="position"
+        :kind="kind"
+      />
     </portal>
 
     <!-- Annotation needs to be behind ports -->
@@ -375,7 +363,7 @@ export default {
       @mouseenter="hover = true"
     >
       <!-- Elements for which a click selects node -->
-      <g @mousedown.left="onLeftMouseDown">
+      <g @click.left="onLeftMouseClick">
         <!-- Hover Area, larger than the node torso -->
         <rect
           class="hover-area"

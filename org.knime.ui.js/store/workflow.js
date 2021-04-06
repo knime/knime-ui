@@ -1,8 +1,14 @@
-import { loadWorkflow as loadWorkflowFromApi, removeEventListener, addEventListener,
-    openView, openDialog, changeNodeState, changeLoopState } from '~api';
+import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
+    moveObjects, openDialog, openView, removeEventListener } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
-import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '../store-plugins/json-patch';
+import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
+
+
+// Defines the number of nodes above which only the node-outline (drag ghost) is shown when dragging a node.
+// This is a performance optimization.
+const moveNodeGhostThreshold = 10;
+
 /**
  * Store that holds a workflow graph and the associated tooltips.
  * A workflow can either be contained in a component / metanode, or it can be the top level workflow.
@@ -13,7 +19,10 @@ import { mutations as jsonPatchMutations, actions as jsonPatchActions } from '..
 export const state = () => ({
     activeWorkflow: null,
     activeSnapshotId: null,
-    tooltip: null
+    tooltip: null,
+    isDragging: false,
+    deltaMovePosition: { x: 0, y: 0 },
+    moveNodeGhostThresholdExceeded: false
 });
 
 export const mutations = {
@@ -23,20 +32,13 @@ export const mutations = {
         let workflowData = {
             ...workflow
         };
-        let { nodeTemplates = {} } = workflow;
-        let nodeTemplateIds = Object.keys(nodeTemplates);
 
-        // …and move them to template store
-        nodeTemplateIds.forEach((templateId) => {
-            this.commit('nodeTemplates/add', {
-                templateId,
-                templateData: nodeTemplates[templateId]
-            }, { root: true });
-        });
-        delete workflowData.nodeTemplates;
-
-        // add selected field to node with initial value false to enable reactivity on this property
-        Object.values(workflowData.nodes || {}).forEach(node => { node.selected = false; });
+        // add selected, isDragging and dragGhostPosition field to node with initial value false to enable reactivity on this property
+        Object.values(workflowData.nodes || {}).forEach(
+            node => {
+                node.selected = false;
+            }
+        );
 
         state.activeWorkflow = workflowData;
         state.tooltip = null;
@@ -62,6 +64,20 @@ export const mutations = {
     },
     deselectNode(state, nodeId) {
         state.activeWorkflow.nodes[nodeId].selected = false;
+    },
+    // Shifts the position of the node for the provided amount
+    shiftPosition(state, { deltaX, deltaY, thresholdExceeded }) {
+        state.deltaMovePosition.x = deltaX;
+        state.deltaMovePosition.y = deltaY;
+        state.moveNodeGhostThresholdExceeded = thresholdExceeded;
+    },
+    // Reset the position of the outline
+    resetDragPosition(state) {
+        state.deltaMovePosition = { x: 0, y: 0 };
+    },
+    // change the isDragging property to the provided Value
+    setDragging(state, { isDragging }) {
+        state.isDragging = isDragging;
     }
 };
 
@@ -80,13 +96,12 @@ export const actions = {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    unloadActiveWorkflow({ state, getters }) {
+    unloadActiveWorkflow({ state, getters: { activeWorkflowId: workflowId } }) {
         if (!state.activeWorkflow) {
             // nothing to do (no tabs open)
             return;
         }
         let { projectId } = state.activeWorkflow;
-        let workflowId = getters.activeWorkflowId;
         let { activeSnapshotId: snapshotId } = state;
         try {
             // this is intentionally not awaiting the response. Unloading can happen in the background.
@@ -104,19 +119,42 @@ export const actions = {
         let workflowId = getters.activeWorkflowId;
         await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
     },
+    deleteSelectedNodes({
+        state: { activeWorkflow: { projectId } },
+        getters: { activeWorkflowId, selectedNodes }
+    }) {
+        let deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
+        let nonDeletableNodeIds = selectedNodes.filter(node => !node.allowedActions.canDelete).map(node => node.id);
+
+        if (deletableNodeIds.length) {
+            deleteObjects({
+                projectId,
+                workflowId: activeWorkflowId,
+                nodeIds: deletableNodeIds
+            });
+        }
+        if (nonDeletableNodeIds.length) {
+            window.alert(`The following nodes can’t be deleted: [${nonDeletableNodeIds.join(', ')}]`);
+        }
+    },
     changeNodeState({ state, getters }, { action, nodes }) {
         let { activeWorkflow: { projectId } } = state;
         let { activeWorkflowId } = getters;
 
         if (Array.isArray(nodes)) {
             // act upon a list of nodes
-            changeNodeState({ projectId, nodeIds: nodes, action });
+            changeNodeState({ projectId, nodeIds: nodes, action, workflowId: activeWorkflowId });
         } else if (nodes === 'all') {
             // act upon entire workflow
-            changeNodeState({ projectId, nodeIds: [activeWorkflowId], action });
+            changeNodeState({ projectId, nodeIds: [activeWorkflowId], action, workflowId: activeWorkflowId });
         } else if (nodes === 'selected') {
             // act upon selected nodes
-            changeNodeState({ projectId, nodeIds: getters.selectedNodes.map(node => node.id), action });
+            changeNodeState({
+                projectId,
+                nodeIds: getters.selectedNodes.map(node => node.id),
+                action,
+                workflowId: activeWorkflowId
+            });
         } else {
             throw new TypeError("'nodes' has to be of type 'all' | 'selected' | Array<nodeId>]");
         }
@@ -149,6 +187,53 @@ export const actions = {
     /* See docs in API */
     openDialog({ state }, nodeId) {
         openDialog({ projectId: state.activeWorkflow.projectId, nodeId });
+    },
+
+    /**
+     * Move either the outline of the nodes or the nodes itself,
+     * depending on the amount of selected nodes. Delta is hereby the amount
+     * of movement to the last position of the node.
+     * @param {Object} context - store context
+     * @param {Object} params
+     * @param {string} params.deltaX - pixels moved since the last
+     * @param {string} params.deltaY - id of the node
+     * @returns {void} - nothing to return
+     */
+    moveNodes({ commit, getters }, { deltaX, deltaY }) {
+        let thresholdExceeded = getters.selectedNodes.length > moveNodeGhostThreshold;
+        commit('shiftPosition', { deltaX, deltaY, thresholdExceeded });
+    },
+
+    /**
+     * Calls the API to save the position of the nodes after the move is over
+     * @param {Object} context - store context
+     * @param {Object} params
+     * @param {string} params.projectId - id of the project
+     * @param {string} params.nodeId - id of the node
+     * @param {Object} params.startPos - start position {x: , y: } of the move event
+     * @returns {void} - nothing to return
+     */
+    saveNodeMoves({ state, getters, commit }, { projectId, nodeId, startPos }) {
+        const selectedNodes = getters.selectedNodes;
+        const selectedNodeIds = selectedNodes.map((node) => node.id);
+        let translation;
+        // calculate the translation either relative to the position or the outline position
+        translation = {
+            x: state.deltaMovePosition.x,
+            y: state.deltaMovePosition.y
+        };
+        moveObjects({
+            projectId,
+            workflowId: getters.activeWorkflowId,
+            nodeIds: selectedNodeIds,
+            translation,
+            annotationIds: []
+        }).then((e) => {
+            // nothing todo when movement is successful
+        }, (error) => {
+            consola.log('The following error occured: ', error);
+            commit('resetDragPosition');
+        });
     }
 };
 
@@ -161,12 +246,6 @@ export const getters = {
     },
     isStreaming({ activeWorkflow }) {
         return Boolean(activeWorkflow?.info.jobManager);
-    },
-    selectedNodes({ activeWorkflow }) {
-        if (!activeWorkflow) {
-            return [];
-        }
-        return Object.values(activeWorkflow.nodes).filter(node => node.selected);
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
@@ -268,42 +347,54 @@ export const getters = {
         if (!activeWorkflow) {
             return null;
         }
-        return activeWorkflow?.info.containerId || 'root';
+        return activeWorkflow?.info?.containerId || 'root';
     },
 
-    nodeIcon(state, getters, rootState) {
+    nodeIcon({ activeWorkflow }, getters, rootState) {
         return ({ nodeId }) => {
-            let node = state.activeWorkflow.nodes[nodeId];
+            let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
-                return rootState.nodeTemplates[templateId].icon;
+                return activeWorkflow.nodeTemplates[templateId].icon;
             } else {
                 return node.icon;
             }
         };
     },
 
-    nodeName(state, getters, rootState) {
+    nodeName({ activeWorkflow }, getters, rootState) {
         return ({ nodeId }) => {
-            let node = state.activeWorkflow.nodes[nodeId];
+            let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
-                return rootState.nodeTemplates[templateId].name;
+                return activeWorkflow.nodeTemplates[templateId].name;
             } else {
                 return node.name;
             }
         };
     },
 
-    nodeType(state, getters, rootState) {
+    nodeType({ activeWorkflow }, getters, rootState) {
         return ({ nodeId }) => {
-            let node = state.activeWorkflow.nodes[nodeId];
+            let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
-                return rootState.nodeTemplates[templateId].type;
+                return activeWorkflow.nodeTemplates[templateId].type;
             } else {
                 return node.type;
             }
         };
+    },
+
+    /**
+     * Returns the nodes that are currently selected
+     * @param {Object} state - the state of the store
+     * @returns {Array} containing the selected nodes
+     */
+    selectedNodes({ activeWorkflow }) {
+        if (!activeWorkflow) {
+            return [];
+        }
+        return Object.values(activeWorkflow.nodes).filter(node => node.selected);
     }
 };

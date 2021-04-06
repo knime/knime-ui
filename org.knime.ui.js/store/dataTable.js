@@ -87,18 +87,19 @@ export const actions = {
      * Load data table of the given port / node, and also clear the loaded flow variables
      * (only one of the tables flowVariables/data can be shown at a time)
      * @param {String} projectId Project ID
+     * @param {String} workflowId Workflow ID
      * @param {String} nodeId Node ID
      * @param {Number} portIndex Index of the selected port
      * @returns {void}
      */
-    async load({ commit, dispatch, state }, { projectId, nodeId, portIndex }) {
+    async load({ commit, dispatch, state }, { projectId, workflowId, nodeId, portIndex }) {
         let { requestID } = state;
         dispatch('flowVariables/clear', null, { root: true });
         // indicate loading
         commit('setIsLoading', true);
 
         // load table
-        let table = await loadTable({ projectId, nodeId, portIndex, batchSize: firstRows });
+        let table = await loadTable({ projectId, workflowId, nodeId, portIndex, batchSize: firstRows });
         if (state.requestID !== requestID) {
             return;
         }
@@ -106,7 +107,7 @@ export const actions = {
         // loading done
         commit('setIsLoading', false);
         commit('setIsReady', true);
-        
+
         // layouting starts
         commit('setTableIdentifier', { projectId, nodeId, portIndex });
         commit('setTable', table);
@@ -121,11 +122,18 @@ export const actions = {
 
         // load more rows
         try {
-            let table = await loadTable({ projectId, workflowId, nodeId, portIndex, offset: rows.length, batchSize: moreRows });
+            let table = await loadTable({
+                projectId,
+                workflowId,
+                nodeId,
+                portIndex,
+                offset: rows.length,
+                batchSize: moreRows
+            });
             if (!table?.rows) {
                 throw new Error('Loaded table contains no rows');
             }
-            
+
             // if the table has been reset in the meantime the result of this request is ignored
             if (state.requestID === requestID) {
                 commit('appendRows', table.rows);

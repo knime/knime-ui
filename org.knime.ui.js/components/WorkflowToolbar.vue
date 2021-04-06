@@ -5,6 +5,7 @@ import ToolbarButton from '~/components/ToolbarButton';
 import ExecuteAllIcon from '~/assets/execute-all.svg?inline';
 import CancelAllIcon from '~/assets/cancel-execution.svg?inline';
 import ResetAllIcon from '~/assets/reset-all.svg?inline';
+import DeleteIcon from '~/assets/delete.svg?inline';
 import ZoomMenu from '~/components/ZoomMenu';
 
 /**
@@ -17,6 +18,7 @@ export default {
         ExecuteAllIcon,
         CancelAllIcon,
         ResetAllIcon,
+        DeleteIcon,
         ZoomMenu
     },
     computed: {
@@ -39,10 +41,13 @@ export default {
         },
         canResetSelection() {
             return this.selectedNodes.some(node => node.allowedActions.canReset);
+        },
+        canDeleteSelection() {
+            return this.selectedNodes.some(node => node.allowedActions.canDelete);
         }
     },
     methods: {
-        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes'])
+        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedNodes'])
     }
 };
 </script>
@@ -87,7 +92,7 @@ export default {
           @click.native="executeNodes('selected')"
         >
           <ExecuteAllIcon />
-          Execute selected
+          Execute
         </ToolbarButton>
         <ToolbarButton
           class="with-text"
@@ -96,7 +101,7 @@ export default {
           @click.native="cancelNodeExecution('selected')"
         >
           <CancelAllIcon />
-          Cancel selected
+          Cancel
         </ToolbarButton>
         <ToolbarButton
           class="with-text"
@@ -105,9 +110,18 @@ export default {
           @click.native="resetNodes('selected')"
         >
           <ResetAllIcon />
-          Reset selected
+          Reset
         </ToolbarButton>
       </template>
+      <ToolbarButton
+        class="with-text"
+        :disabled="!canDeleteSelection"
+        title="Delete selection – ⌫ / DEL"
+        @click.native="deleteSelectedNodes"
+      >
+        <DeleteIcon />
+        Delete
+      </ToolbarButton>
     </div>
 
     <WorkflowBreadcrumb
@@ -129,6 +143,12 @@ export default {
 .buttons {
   flex-shrink: 0;
   display: flex;
+  font-size: 14px;
+
+  & .with-text {
+    padding-right: 9px;
+    padding-left: 2px;
+  }
 }
 
 .breadcrumb {

@@ -142,13 +142,16 @@ export const openView = ({ projectId, nodeId }) => {
     }
 };
 
+
 /**
  * Generates workflow commands that are part of the undo/redo stack
- * @param {String} command name of the command to be executed
- * @param {String} errorMessage error message to be logged on failure
- * @returns {Function}
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param {String} cfg.command name of the command to be executed
+ * @param {String} cfg.args arguments for the command
+ * @returns {Promise}
  */
-let workflowCommand = (command, errorMessage) => ({ projectId, workflowId, ...args }) => {
+const workflowCommand = ({ projectId, workflowId, command, args }) => {
     try {
         let rpcArgs = {
             kind: command,
@@ -158,27 +161,44 @@ let workflowCommand = (command, errorMessage) => ({ projectId, workflowId, ...ar
         return Promise.resolve(result);
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(errorMessage));
+        return Promise.reject(new Error(`Couldn't execute ${command}(${args})`));
     }
 };
 
 /**
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
- * @param { Array } cfg.nodeIds The nodes to be moved
- * @param { Array } cfg.annotationIds The annotations to be moved
- * @param { Array } cfg.delta the delta by which the objects are to be moved
+ * @param { Array } cfg.nodeIds The nodes to be deleted
+ * @param { Array } cfg.annotationIds The annotations to be deleted
+ * @param { Array } cfg.connectionIds The connections to be deleted
+ * @returns { Promise } Promise
  */
-export const moveObjects = workflowCommand('translate', 'Could not translate nodes/annotations');
+export const deleteObjects = ({
+    nodeIds = [], annotationIds = [], connectionIds = [], projectId, workflowId
+}) => workflowCommand({
+    command: 'delete',
+    args: { nodeIds, annotationIds, connectionIds },
+    projectId,
+    workflowId
+});
 
 
 /**
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
- * @param { Array } cfg.nodeIds The nodes to be deleted
- * @param { Array } cfg.annotationIds The annotations to be deleted
+ * @param { Array } cfg.nodeIds The nodes to be moved
+ * @param { Array } cfg.annotationIds The annotations to be moved
+ * @param { Array } cfg.translation the translation by which the objects are to be moved
+ * @returns { Promise } Promise
  */
-export const deleteObjects = workflowCommand('delete', 'Could not delete nodes/annotations');
+export const moveObjects = ({
+    projectId, workflowId, nodeIds = [], translation, annotationIds = []
+}) => workflowCommand({
+    command: 'translate',
+    args: { nodeIds, annotationIds, translation },
+    projectId,
+    workflowId
+});
 
 // The Node service offers JSON-RPC forwarding to the Port instance.
 // This is by design, because third-party vendors can provide a custom port implementation with totally
@@ -189,13 +209,13 @@ export const deleteObjects = workflowCommand('delete', 'Could not delete nodes/a
 // JSON-RPC. Hence double-wrapping is required.
 // Parameters are described below.
 const portRPC = ({ method, params, projectId, workflowId, nodeId, portIndex }) => {
-    let nestedRpcCall = JSON.stringify({
+    let nestedRpcCall = {
         jsonrpc: '2.0',
         id: 0,
         method,
         params
-    });
-    let response = rpc('NodeService.doPortRpc', projectId, workflowId, nodeId, portIndex, nestedRpcCall);
+    };
+    let response = rpc('NodeService.doPortRpc', projectId, workflowId, nodeId, portIndex, JSON.stringify(nestedRpcCall));
     return parseResponse({ response, method, params });
 };
 
@@ -203,6 +223,7 @@ const portRPC = ({ method, params, projectId, workflowId, nodeId, portIndex }) =
  * Get the data table associated with a data port.
  * @param {String} projectId The ID of the project that contains the node
  * @param {String} nodeId The ID of the node to load data for
+ * @param {String} workflowId The ID of the workflow containing the node
  * @param {String} portIndex The index of the port to load data for.
  * @param {String} offset The index of the first row to be loaded
  * @param {String} batchSize The amount of rows to be loaded. Must be smallEq than 450
@@ -232,8 +253,9 @@ export const loadTable = ({ projectId, workflowId, nodeId, portIndex, offset = 0
 /**
  * Get the flow variables associated with a flow variable port.
  * @param {String} projectId The ID of the project that contains the node
- * @param {String} nodeId The ID of the node to load data for
- * @param {String} portIndex The index of the port to load data for.
+ * @param {String} nodeId The ID of the node to load variables for
+ * @param {String} workflowId The ID of the workflow containing the node
+ * @param {String} portIndex The index of the port to load variables for.
  * Remember that port 0 is usually a flow variable port.
  * @return {Promise} A promise containing the flow variable data as defined in the API
  * */
