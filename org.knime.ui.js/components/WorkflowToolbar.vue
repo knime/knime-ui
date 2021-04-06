@@ -129,7 +129,7 @@ export default {
           @click.native="executeNodes('selected')"
         >
           <ExecuteAllIcon />
-          Execute selected
+          Execute
         </ToolbarButton>
         <ToolbarButton
           class="with-text"
@@ -138,7 +138,7 @@ export default {
           @click.native="cancelNodeExecution('selected')"
         >
           <CancelAllIcon />
-          Cancel selected
+          Cancel
         </ToolbarButton>
         <ToolbarButton
           class="with-text"
@@ -147,7 +147,7 @@ export default {
           @click.native="resetNodes('selected')"
         >
           <ResetAllIcon />
-          Reset selected
+          Reset
         </ToolbarButton>
       </template>
       <ToolbarButton
