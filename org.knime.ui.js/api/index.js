@@ -237,13 +237,10 @@ export const moveObjects = ({
  * @param { String } cfg.workflowId
  * @returns { Promise } Promise
  */
-// eslint-disable-next-line arrow-body-style
-export const undo = ({ projectId, workflowId }) => {
-    return undoWorkflowCommand({
-        projectId,
-        workflowId
-    });
-};
+export const undo = ({ projectId, workflowId }) => undoWorkflowCommand({
+    projectId,
+    workflowId
+});
 
 /**
  * @param { String } cfg.projectId
@@ -273,7 +270,10 @@ const portRPC = ({ method, params, projectId, workflowId, nodeId, portIndex }) =
         method,
         params
     };
-    let response = rpc('NodeService.doPortRpc', projectId, workflowId, nodeId, portIndex, JSON.stringify(nestedRpcCall));
+    let response = rpc(
+        'NodeService.doPortRpc',
+        projectId, workflowId, nodeId, portIndex, JSON.stringify(nestedRpcCall)
+    );
     return parseResponse({ response, method, params });
 };
 

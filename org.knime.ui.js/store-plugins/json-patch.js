@@ -98,7 +98,7 @@ export const mutations = {
 
 export const actions = {
     'patch.apply'({ state, commit, rootState }, patch) {
-        consola.trace(patch);
+        consola.trace('Applying patch', patch);
         commit('patch.apply', patch);
     }
 };

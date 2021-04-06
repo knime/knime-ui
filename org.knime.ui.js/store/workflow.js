@@ -406,5 +406,5 @@ export const getters = {
             return [];
         }
         return Object.values(activeWorkflow.nodes).filter(node => node.selected);
-    },
+    }
 };
