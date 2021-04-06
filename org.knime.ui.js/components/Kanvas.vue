@@ -216,6 +216,7 @@ export default {
       <!-- Connectors Layer -->
       <Connector
         v-for="(connector, id) of workflow.connections"
+        :id="id"
         :key="`connector-${workflow.projectId}-${id}`"
         v-bind="connector"
       />

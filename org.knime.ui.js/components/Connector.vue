@@ -26,6 +26,14 @@ export default {
         selected: {
             type: Boolean,
             default: false
+        },
+
+        /**
+         * Connector id
+         */
+        id: {
+            type: String,
+            required: true
         }
     },
     computed: {
@@ -58,9 +66,6 @@ export default {
                 return this.$colors.connectorColors.flowVariable;
             }
             return this.$colors.connectorColors.default;
-        },
-        connectionId() {
-            return `${this.destNode}_${this.destPort}`;
         }
     },
     methods: {
@@ -70,15 +75,15 @@ export default {
             if (e.shiftKey) {
                 // Multi select
                 if (this.selected) {
-                    this.deselectConnector(this.connectionId);
+                    this.deselectConnector(this.id);
                 } else {
-                    this.selectConnector(this.connectionId);
+                    this.selectConnector(this.id);
                 }
             } else {
                 // Single select
                 this.deselectAllConnectors();
                 this.deselectAllNodes();
-                this.selectConnector(this.connectionId);
+                this.selectConnector(this.id);
             }
         }
     }
@@ -89,27 +94,37 @@ export default {
   <g>
     <path
       :d="path"
+      @click.left="onLeftMouseClick"
+    />
+    <path
+      :d="path"
       :stroke="strokeColor"
       :stroke-width="$shapes.connectorWidth"
       :class="{ variable: flowVariableConnection, 'read-only': !isWorkflowWritable, dashed: streaming, selected }"
       fill="none"
-      @click.left="onLeftMouseClick"
     />
   </g>
 </template>
 
 <style lang="postcss" scoped>
 path {
+  stroke: transparent;
+  stroke-width: 8px;
+  fill: none;
+}
+
+path + path {
   stroke-width: 1;
   stroke: var(--knime-stone-gray);
   transition: stroke-width 0.1s ease-in, stroke 0.1s ease-in;
+  pointer-events: none;
 }
 
 path:not(.read-only) {
   cursor: grab;
 }
 
-path:hover {
+path:hover + path {
   stroke-width: 3;
 }
 

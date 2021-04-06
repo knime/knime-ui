@@ -1,5 +1,5 @@
 <script>
-import { mapActions, mapMutations, mapState } from 'vuex';
+import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
 import Port from '~/components/PortWithTooltip';
 import NodeState from '~/components/NodeState';
 import NodeTorso from '~/components/NodeTorso';
@@ -114,14 +114,6 @@ export default {
         },
 
         /**
-         * Node selection state
-         */
-        selected: {
-            type: Boolean,
-            default: false
-        },
-
-        /**
          *  Props passed through to NodeActionBar
          */
         allowedActions: {
@@ -170,6 +162,10 @@ export default {
         ...mapState('openedProjects', {
             projectId: 'activeId'
         }),
+        ...mapGetters('selection', ['selectedNodes']),
+        isNodeSelected() {
+            return this.selectedNodes.filter((node) => node === this.id) > 0;
+        },
         nodeSelectionMeasures() {
             const { nodeStatusHeight, nodeStatusMarginTop, nodeSize,
                 nodeSelectionPadding: [top, right, bottom, left] } = this.$shapes;
@@ -241,7 +237,7 @@ export default {
     },
     methods: {
         ...mapActions('workflow', ['openDialog']),
-        ...mapMutations('workflow', ['selectNode', 'deselectNode', 'deselectAllNodes', 'deselectAllConnectors']),
+        ...mapMutations('selection', ['selectNode', 'deselectNode', 'deselectAllNodes', 'deselectAllConnectors']),
         portShift,
         onLeaveHoverArea(e) {
             if (this.$refs.actionbar?.$el?.contains(e.relatedTarget)) {
@@ -267,7 +263,7 @@ export default {
                 return true;
             }
 
-            return Boolean(port.connectedVia.length) || this.hover || this.selected;
+            return Boolean(port.connectedVia.length) || this.hover || this.isNodeSelected;
         },
 
         onLeftDoubleClick(e) {
@@ -297,16 +293,16 @@ export default {
 
             if (e.shiftKey) {
                 // Multi select
-                if (this.selected) {
+                if (this.isNodeSelected) {
                     this.deselectNode(this.id);
                 } else {
-                    this.selectNode(this.id);
+                    this.selectNode(this);
                 }
             } else {
                 // Single select
                 this.deselectAllNodes();
                 this.deselectAllConnectors();
-                this.selectNode(this.id);
+                this.selectNode(this);
             }
         }
     }
@@ -334,7 +330,7 @@ export default {
 
     <!-- Node Selection Plane. Portalled to the back -->
     <portal
-      v-if="selected"
+      v-if="isNodeSelected"
       to="node-select"
     >
       <g :transform="`translate(${position.x}, ${position.y})`">
@@ -390,7 +386,7 @@ export default {
           :kind="kind"
           :icon="icon"
           :execution-state="state && state.executionState"
-          :filter="(selected || hover) && 'url(#node-torso-shadow)'"
+          :filter="(isNodeSelected || hover) && 'url(#node-torso-shadow)'"
           @dblclick.left.native="onLeftDoubleClick"
         />
 
@@ -419,7 +415,7 @@ export default {
         <NodeState
           v-if="kind !== 'metanode'"
           v-bind="state"
-          :filter="(selected || hover) && 'url(#node-state-shadow)'"
+          :filter="(isNodeSelected || hover) && 'url(#node-state-shadow)'"
           :loop-status="loopInfo.status"
         />
       </g>

@@ -35,33 +35,6 @@ export const mutations = {
     },
     setTooltip(state, tooltip) {
         Vue.set(state, 'tooltip', tooltip);
-    },
-    deselectAllNodes(state) {
-        Object.values(state.activeWorkflow.nodes).forEach(node => {
-            node.selected = false;
-        });
-    },
-    selectAllNodes(state) {
-        Object.values(state.activeWorkflow.nodes).forEach(node => {
-            node.selected = true;
-        });
-    },
-    selectNode(state, nodeId) {
-        state.activeWorkflow.nodes[nodeId].selected = true;
-    },
-    deselectNode(state, nodeId) {
-        Vue.set(state.activeWorkflow.nodes[nodeId], 'selected', false);
-    },
-    selectConnector(state, connectorId) {
-        Vue.set(state.activeWorkflow.connections[connectorId], 'selected', true);
-    },
-    deselectConnector(state, connectorId) {
-        Vue.set(state.activeWorkflow.connections[connectorId], 'selected', false);
-    },
-    deselectAllConnectors(state) {
-        Object.values(state.activeWorkflow.connections).forEach(connection => {
-            Vue.set(connection, 'selected', false);
-        });
     }
 };
 
@@ -105,8 +78,8 @@ export const actions = {
     },
     deleteSelectedObjects({
         state: { activeWorkflow: { projectId } },
-        getters: { activeWorkflowId, selectedNodes, selectedConnections }
-    }) {
+        getters: { activeWorkflowId }
+    }, { selectedNodes, selectedConnections }) {
         let deletableNodeIds = selectedNodes().filter(node => node.allowedActions.canDelete).map(node => node.id);
         let nonDeletableNodeIds = selectedNodes().filter(node => !node.allowedActions.canDelete).map(node => node.id);
         let deleteableConnectionIds = selectedConnections().filter(connection => connection.canDelete).
@@ -184,18 +157,6 @@ export const getters = {
     },
     isStreaming({ activeWorkflow }) {
         return Boolean(activeWorkflow?.info.jobManager);
-    },
-    selectedNodes: ({ activeWorkflow }) => () => {
-        if (!activeWorkflow) {
-            return [];
-        }
-        return Object.values(activeWorkflow.nodes).filter(node => node.selected);
-    },
-    selectedConnections: ({ activeWorkflow }) => () => {
-        if (!activeWorkflow) {
-            return [];
-        }
-        return Object.values(activeWorkflow.connections).filter(connection => connection.selected);
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow

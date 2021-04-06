@@ -26,25 +26,25 @@ export default {
             workflow: 'activeWorkflow',
             allowedActions: state => state.activeWorkflow?.allowedActions || {}
         }),
-        ...mapGetters('workflow', ['selectedNodes', 'selectedConnections']),
+        ...mapGetters('selection', ['selectedNodes', 'selectedConnections']),
         hasBreadcrumb() {
             return this.workflow.parents?.length > 0;
         },
         hasSelection() {
-            return this.selectedNodes().length > 0;
+            return this.selectedNodes.length > 0;
         },
         canExecuteSelection() {
-            return this.selectedNodes().some(node => node.allowedActions.canExecute);
+            return this.selectedNodes.some(node => node.allowedActions.canExecute);
         },
         canCancelSelection() {
-            return this.selectedNodes().some(node => node.allowedActions.canCancel);
+            return this.selectedNodes.some(node => node.allowedActions.canCancel);
         },
         canResetSelection() {
-            return this.selectedNodes().some(node => node.allowedActions.canReset);
+            return this.selectedNodes.some(node => node.allowedActions.canReset);
         },
         canDeleteSelection() {
-            return this.selectedNodes().some(node => node.allowedActions.canDelete) ||
-                    this.selectedConnections().some(connection => connection.canDelete);
+            return this.selectedNodes.some(node => node.allowedActions.canDelete) ||
+                    this.selectedConnections.some(connection => connection.canDelete);
         },
         // Checks if the application is run on a mac
         isMac() {
