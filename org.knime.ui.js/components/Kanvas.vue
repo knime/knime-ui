@@ -224,6 +224,7 @@ export default {
       <MetaNodePortBars
         v-if="workflow.info.containerType === 'metanode'"
       />
+
       <MoveableNodeContainer
         v-for="([nodeId, node]) in sortedNodes"
         :id="node.id"

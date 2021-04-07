@@ -50,7 +50,7 @@ describe('KnimeUI.vue', () => {
         await doShallowMount();
         expect(wrapper.findComponent(AppHeader).exists()).toBe(true);
         expect(wrapper.findComponent(Sidebar).exists()).toBe(true);
-        expect(wrapper.findComponent(HotKeys).exists()).toBe(true);
+        expect(wrapper.findComponent(HotKeys).exists()).toBe(false);
         expect(wrapper.findComponent(TooltipContainer).exists()).toBe(false);
         expect(wrapper.findComponent(WorkflowTabContent).exists()).toBe(false);
     });
@@ -66,11 +66,11 @@ describe('KnimeUI.vue', () => {
         // await rendering
         await Vue.nextTick();
 
-        expect(wrapper.findComponent(WorkflowTabContent).exists()).toBe(true);
-
         let tooltipContainer = wrapper.findComponent(TooltipContainer);
         expect(tooltipContainer.exists()).toBe(true);
         expect(tooltipContainer.attributes('id')).toBe('tooltip-container');
+        expect(wrapper.findComponent(HotKeys).exists()).toBe(true);
+        expect(wrapper.findComponent(WorkflowTabContent).exists()).toBe(true);
     });
 
     it('initiates', async () => {

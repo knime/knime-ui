@@ -39,25 +39,17 @@ export default {
 </script>
 
 <template>
-  <div>
-    <div
-      id="knime-ui"
-    >
+  <div id="knime-ui">
+    <AppHeader id="header" />
+    <Sidebar id="sidebar" />
+    <template v-if="loaded">
       <HotKeys />
-      <AppHeader id="header" />
-      <Sidebar id="sidebar" />
-      <WorkflowTabContent
-        v-if="loaded"
-        id="tab-content"
-      />
-      <div
-        v-else
-        class="loader"
-      />
-    </div>
-    <TooltipContainer
-      v-if="loaded"
-      id="tooltip-container"
+      <WorkflowTabContent id="tab-content" />
+      <TooltipContainer id="tooltip-container" />
+    </template>
+    <div
+      v-else
+      class="loader"
     />
   </div>
 </template>
