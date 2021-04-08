@@ -42,9 +42,9 @@ export default {
                     condition: () => this.isWorkflowPresent,
                     hotKeys: [
                         [...this.hotKeyItems.zoomToFit, this.setZoomToFit],
-                        ['Ctrl', '0', this.resetZoom],
-                        ['Ctrl', '+', () => this.throttledZoom(1)],
-                        ['Ctrl', '-', () => this.throttledZoom(-1)]
+                        [...this.hotKeyItems.resetZoom, this.resetZoom],
+                        [...this.hotKeyItems.zoomIn, () => this.throttledZoom(1)],
+                        [...this.hotKeyItems.zoomOut, () => this.throttledZoom(-1)]
                     ]
                 },
                 workflow: {

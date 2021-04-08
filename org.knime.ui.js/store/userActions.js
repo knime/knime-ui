@@ -9,10 +9,13 @@ import UndoIcon from '~/assets/undo.svg?inline';
 import DeleteIcon from '~/assets/delete.svg?inline';
 
 /**
- * All hotkeys we want to use for actions. Look in HotKeys.vue for the global handling
+ * All hotkeys should be defined here. Look in HotKeys.vue for the global handling
  */
 const hotKeys = {
     zoomToFit: ['Ctrl', '1'],
+    resetZoom: ['Ctrl', '0'],
+    zoomIn: ['Ctrl', '+'],
+    zoomOut: ['Ctrl', '-'],
     selectAllNodes: ['Ctrl', 'A'],
     executeAllNodes: ['Shift', 'F7'],
     cancelAllNodes: ['Shift', 'F9'],
