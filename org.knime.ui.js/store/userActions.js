@@ -30,9 +30,14 @@ const hotKeys = {
  * Mapping of key names to symbols (or shorter display names)
  */
 const hotKeyDisplayMap = {
+    DELETE: 'Delete'
+};
+
+const hotKeyDisplayMapForMac = {
     Shift: '⇧',
     BACKSPACE: '⌫',
-    DELETE: 'DEL'
+    DELETE: '⌫',
+    Ctrl: '⌘'
 };
 
 const actionItemsList = [{
@@ -126,8 +131,7 @@ const actionItemsList = [{
 }, {
     text: 'Delete',
     title: 'Delete selection',
-    hotkey: hotKeys.deleteBackspace,
-    hotkey2: hotKeys.deleteDel,
+    hotkey: hotKeys.deleteDel,
     icon: DeleteIcon,
     storeAction: 'workflow/deleteSelectedNodes',
     storeActionParams: [],
@@ -137,19 +141,23 @@ const actionItemsList = [{
     }
 }];
 
+const testIfIsMac = () => navigator?.userAgent?.toLowerCase()?.includes('mac');
+
 export const getters = {
     actionItems(state, getters, rootState, rootGetters) {
         const selectedNodes = rootGetters['workflow/selectedNodes']();
         const allowedWorkflowActions = rootState.workflow.activeWorkflow?.allowedActions || {};
+        const isMac = testIfIsMac();
 
         return actionItemsList.map(src => {
             let x = Object.assign({}, src);
             // create title with hotkey
-            let hotkeys = x.hotkey.map(h => hotKeyDisplayMap[h] || h);
-            x.title += ` – ${hotkeys.join(' + ')}`;
-
-            if (x.hotkey2) {
-                x.title += ` / ${x.hotkey2.map(h => hotKeyDisplayMap[h] || h)}`;
+            if (isMac) {
+                const hotkeys = x.hotkey.map(h => hotKeyDisplayMapForMac[h] || h);
+                x.title += ` – ${hotkeys.join(' ')}`;
+            } else {
+                const hotkeys = x.hotkey.map(h => hotKeyDisplayMap[h] || h);
+                x.title += ` – ${hotkeys.join(' + ')}`;
             }
 
             // call visible/disabled methods and turn them to booleans

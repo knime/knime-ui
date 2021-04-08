@@ -1,5 +1,5 @@
 <script>
-import { mapGetters, mapState, mapActions } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import ToolbarButton from '~/components/ToolbarButton';
 import ZoomMenu from '~/components/ZoomMenu';
@@ -21,26 +21,6 @@ export default {
         },
         visibleActionItems() {
             return this.actionItems.filter(x => x.menuBar.visible);
-        },
-        // Checks if the application is run on a mac
-        isMac() {
-            return navigator.userAgent.toLowerCase().includes('mac');
-        }
-    },
-    methods: {
-        /**
-         * Translates windows/linux shortcuts into mac shortcuts when operating system is mac
-         * @param {String} shortcutTitle the windows/linux compatible shortcuts
-         * @returns {String} the translated string
-         */
-        checkForMacShortcuts(shortcutTitle) {
-            if (this.isMac) {
-                shortcutTitle = shortcutTitle.replace('Shift +', '⇧');
-                shortcutTitle = shortcutTitle.replace('– Delete', '– ⌫');
-                return shortcutTitle.replace('Ctrl + ', '⌘ ');
-            } else {
-                return  shortcutTitle;
-            }
         }
     }
 };
@@ -54,7 +34,7 @@ export default {
         :key="index"
         :class="a.text ? 'with-text' : ''"
         :disabled="a.menuBar.disabled"
-        :title="checkForMacShortcuts(a.title)"
+        :title="a.title"
         @click.native="$store.dispatch(a.storeAction, ...a.storeActionParams)"
       >
         <Component :is="a.icon" />
