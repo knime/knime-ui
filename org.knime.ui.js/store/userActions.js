@@ -4,6 +4,8 @@ import ResetAllIcon from '~/assets/reset-all.svg?inline';
 import ExecuteSelectedIcon from '~/assets/execute-selected.svg?inline';
 import CancelSelectedIcon from '~/assets/cancel-selected.svg?inline';
 import ResetSelectedIcon from '~/assets/reset-selected.svg?inline';
+import RedoIcon from '~/assets/redo.svg?inline';
+import UndoIcon from '~/assets/undo.svg?inline';
 import DeleteIcon from '~/assets/delete.svg?inline';
 
 /**
@@ -15,6 +17,8 @@ const hotKeys = {
     executeAllNodes: ['Shift', 'F7'],
     cancelAllNodes: ['Shift', 'F9'],
     resetAllNodes: ['Shift', 'F8'],
+    undo: ['Ctrl', 'Z'],
+    redo: ['Ctrl', 'Shift', 'Z'],
     executeSelectedNodes: ['F7'],
     resetSelectedNodes: ['F8'],
     cancelSelectedNodes: ['F9'],
@@ -32,6 +36,28 @@ const hotKeyDisplayMap = {
 };
 
 const actionItemsList = [{
+    text: null,
+    title: 'Undo',
+    hotkey: hotKeys.undo,
+    icon: UndoIcon,
+    storeAction: 'workflow/undo',
+    storeActionParams: [],
+    menuBar: {
+        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canUndo,
+        isVisible: () => true
+    }
+}, {
+    text: null,
+    title: 'Redo',
+    hotkey: hotKeys.redo,
+    icon: RedoIcon,
+    storeAction: 'workflow/redo',
+    storeActionParams: [],
+    menuBar: {
+        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canRedo,
+        isVisible: () => true
+    }
+},{
     text: 'Execute all',
     title: 'Execute workflow',
     hotkey: hotKeys.executeAllNodes,

@@ -2,8 +2,6 @@
 import { mapGetters, mapState, mapActions } from 'vuex';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import ToolbarButton from '~/components/ToolbarButton';
-import RedoIcon from '~/assets/redo.svg?inline';
-import UndoIcon from '~/assets/undo.svg?inline';
 import ZoomMenu from '~/components/ZoomMenu';
 
 /**
@@ -13,15 +11,10 @@ export default {
     components: {
         WorkflowBreadcrumb,
         ToolbarButton,
-        UndoIcon,
-        RedoIcon,
         ZoomMenu
     },
     computed: {
-        ...mapState('workflow', {
-            workflow: 'activeWorkflow',
-            allowedActions: state => state.activeWorkflow?.allowedActions || {}
-        }),
+        ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapGetters('userActions', ['actionItems']),
         hasBreadcrumb() {
             return this.workflow.parents?.length > 0;
@@ -35,7 +28,6 @@ export default {
         }
     },
     methods: {
-        ...mapActions('workflow', ['undo', 'redo']),
         /**
          * Translates windows/linux shortcuts into mac shortcuts when operating system is mac
          * @param {String} shortcutTitle the windows/linux compatible shortcuts
@@ -58,23 +50,9 @@ export default {
   <div class="toolbar">
     <div class="buttons">
       <ToolbarButton
-        :disabled="!allowedActions.canUndo"
-        :title="checkForMacShortcuts('Undo – Ctrl + Z')"
-        @click.native="undo"
-      >
-        <UndoIcon />
-      </ToolbarButton>
-      <ToolbarButton
-        :disabled="!allowedActions.canRedo"
-        :title="checkForMacShortcuts('Redo - Ctrl + Shift + Z')"
-        @click.native="redo"
-      >
-        <RedoIcon />
-      </ToolbarButton>
-      <ToolbarButton
         v-for="(a, index) of visibleActionItems"
         :key="index"
-        class="with-text"
+        :class="a.text ? 'with-text' : ''"
         :disabled="a.menuBar.disabled"
         :title="checkForMacShortcuts(a.title)"
         @click.native="$store.dispatch(a.storeAction, ...a.storeActionParams)"

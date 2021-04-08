@@ -57,8 +57,8 @@ export default {
                         [...this.hotKeyItems.executeAllNodes, () => this.executeNodes('all')],
                         [...this.hotKeyItems.cancelAllNodes, () => this.cancelNodeExecution('all')],
                         [...this.hotKeyItems.resetAllNodes, () => this.resetNodes('all')],
-                        ['Ctrl', 'Z', () => this.undo()],
-                        ['Ctrl', 'Shift', 'Z', () => this.redo()]
+                        [...this.hotKeyItems.undo, () => this.undo()],
+                        [...this.hotKeyItems.redo, () => this.redo()]
                     ]
                 },
                 writableWorkflow: {
