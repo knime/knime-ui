@@ -5,7 +5,6 @@ import DeleteIcon from '~/assets/delete.svg?inline';
 
 /**
  * All hotkeys we want to use for actions. Look in HotKeys.vue for the global handling
- * @type {String[]}
  */
 const hotKeys = {
     zoomToFit: ['Ctrl', '1'],
@@ -22,7 +21,6 @@ const hotKeys = {
 
 /**
  * Mapping of key names to symbols (or shorter display names)
- * @type {{string: string}}
  */
 const hotKeyDisplayMap = {
     Shift: '⇧',
@@ -110,8 +108,6 @@ const actionItemsList = [{
     }
 }];
 
-export const state = () => ({});
-
 export const getters = {
     actionItems(state, getters, rootState, rootGetters) {
         const selectedNodes = rootGetters['workflow/selectedNodes'];
@@ -138,5 +134,4 @@ export const getters = {
     hotKeyItems(state, getters, rootState, rootGetters) {
         return hotKeys;
     }
-
 };
