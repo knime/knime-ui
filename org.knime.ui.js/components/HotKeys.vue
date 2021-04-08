@@ -32,7 +32,8 @@ export default {
     },
     methods: {
         ...mapMutations('workflow', ['selectAllNodes', 'deselectAllNodes']),
-        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedNodes']),
+        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedNodes',
+            'undo', 'redo']),
         ...mapMutations('canvas', ['setSuggestPanning', 'resetZoom']),
         ...mapActions('canvas', ['setZoomToFit', 'zoomCentered']),
         setupShortcuts() {
@@ -55,7 +56,9 @@ export default {
                         [...this.hotKeyItems.resetSelectedNodes, () => this.resetNodes('selected')],
                         [...this.hotKeyItems.executeAllNodes, () => this.executeNodes('all')],
                         [...this.hotKeyItems.cancelAllNodes, () => this.cancelNodeExecution('all')],
-                        [...this.hotKeyItems.resetAllNodes, () => this.resetNodes('all')]
+                        [...this.hotKeyItems.resetAllNodes, () => this.resetNodes('all')],
+                        ['Ctrl', 'Z', () => this.undo()],
+                        ['Ctrl', 'Shift', 'Z', () => this.redo()]
                     ]
                 },
                 writableWorkflow: {

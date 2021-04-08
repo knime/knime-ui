@@ -1,6 +1,9 @@
 import ExecuteAllIcon from '~/assets/execute-all.svg?inline';
 import CancelAllIcon from '~/assets/cancel-execution.svg?inline';
 import ResetAllIcon from '~/assets/reset-all.svg?inline';
+import ExecuteSelectedIcon from '~/assets/execute-selected.svg?inline';
+import CancelSelectedIcon from '~/assets/cancel-selected.svg?inline';
+import ResetSelectedIcon from '~/assets/reset-selected.svg?inline';
 import DeleteIcon from '~/assets/delete.svg?inline';
 
 /**
@@ -65,7 +68,7 @@ const actionItemsList = [{
     text: 'Execute',
     title: 'Execute selected nodes',
     hotkey: hotKeys.executeSelectedNodes,
-    icon: ExecuteAllIcon,
+    icon: ExecuteSelectedIcon,
     storeAction: 'workflow/executeNodes',
     storeActionParams: ['selected'],
     menuBar: {
@@ -76,7 +79,7 @@ const actionItemsList = [{
     text: 'Cancel',
     title: 'Cancel selected nodes',
     hotkey: hotKeys.cancelSelectedNodes,
-    icon: CancelAllIcon,
+    icon: CancelSelectedIcon,
     storeAction: 'workflow/cancelNodeExecution',
     storeActionParams: ['selected'],
     menuBar: {
@@ -87,7 +90,7 @@ const actionItemsList = [{
     text: 'Reset',
     title: 'Reset selected nodes',
     hotkey: hotKeys.resetSelectedNodes,
-    icon: ResetAllIcon,
+    icon: ResetSelectedIcon,
     storeAction: 'workflow/resetNodes',
     storeActionParams: ['selected'],
     menuBar: {
@@ -110,7 +113,7 @@ const actionItemsList = [{
 
 export const getters = {
     actionItems(state, getters, rootState, rootGetters) {
-        const selectedNodes = rootGetters['workflow/selectedNodes'];
+        const selectedNodes = rootGetters['workflow/selectedNodes']();
         const allowedWorkflowActions = rootState.workflow.activeWorkflow?.allowedActions || {};
 
         return actionItemsList.map(src => {

@@ -1,5 +1,5 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
-    moveObjects, openDialog, openView, removeEventListener } from '~api';
+    moveObjects, openDialog, openView, undo, redo, removeEventListener } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -51,19 +51,19 @@ export const mutations = {
     },
     deselectAllNodes(state) {
         Object.values(state.activeWorkflow.nodes).forEach(node => {
-            node.selected = false;
+            Vue.set(node, 'selected', false);
         });
     },
     selectAllNodes(state) {
         Object.values(state.activeWorkflow.nodes).forEach(node => {
-            node.selected = true;
+            Vue.set(node, 'selected', true);
         });
     },
     selectNode(state, nodeId) {
-        state.activeWorkflow.nodes[nodeId].selected = true;
+        Vue.set(state.activeWorkflow.nodes[nodeId], 'selected', true);
     },
     deselectNode(state, nodeId) {
-        state.activeWorkflow.nodes[nodeId].selected = false;
+        Vue.set(state.activeWorkflow.nodes[nodeId], 'selected', false);
     },
     // Shifts the position of the node for the provided amount
     shiftPosition(state, { deltaX, deltaY, thresholdExceeded }) {
@@ -123,8 +123,8 @@ export const actions = {
         state: { activeWorkflow: { projectId } },
         getters: { activeWorkflowId, selectedNodes }
     }) {
-        let deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
-        let nonDeletableNodeIds = selectedNodes.filter(node => !node.allowedActions.canDelete).map(node => node.id);
+        let deletableNodeIds = selectedNodes().filter(node => node.allowedActions.canDelete).map(node => node.id);
+        let nonDeletableNodeIds = selectedNodes().filter(node => !node.allowedActions.canDelete).map(node => node.id);
 
         if (deletableNodeIds.length) {
             deleteObjects({
@@ -151,7 +151,7 @@ export const actions = {
             // act upon selected nodes
             changeNodeState({
                 projectId,
-                nodeIds: getters.selectedNodes.map(node => node.id),
+                nodeIds: getters.selectedNodes().map(node => node.id),
                 action,
                 workflowId: activeWorkflowId
             });
@@ -188,6 +188,16 @@ export const actions = {
     openDialog({ state }, nodeId) {
         openDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
+    /* See docs in API */
+    undo({ state, getters }) {
+        let { activeWorkflowId } = getters;
+        undo({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
+    },
+    /* See docs in API */
+    redo({ state, getters }) {
+        let { activeWorkflowId } = getters;
+        redo({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
+    },
 
     /**
      * Move either the outline of the nodes or the nodes itself,
@@ -200,7 +210,7 @@ export const actions = {
      * @returns {void} - nothing to return
      */
     moveNodes({ commit, getters }, { deltaX, deltaY }) {
-        let thresholdExceeded = getters.selectedNodes.length > moveNodeGhostThreshold;
+        let thresholdExceeded = getters.selectedNodes().length > moveNodeGhostThreshold;
         commit('shiftPosition', { deltaX, deltaY, thresholdExceeded });
     },
 
@@ -214,7 +224,7 @@ export const actions = {
      * @returns {void} - nothing to return
      */
     saveNodeMoves({ state, getters, commit }, { projectId, nodeId, startPos }) {
-        const selectedNodes = getters.selectedNodes;
+        const selectedNodes = getters.selectedNodes();
         const selectedNodeIds = selectedNodes.map((node) => node.id);
         let translation;
         // calculate the translation either relative to the position or the outline position
@@ -391,7 +401,7 @@ export const getters = {
      * @param {Object} state - the state of the store
      * @returns {Array} containing the selected nodes
      */
-    selectedNodes({ activeWorkflow }) {
+    selectedNodes: ({ activeWorkflow }) => () => {
         if (!activeWorkflow) {
             return [];
         }
