@@ -65,7 +65,7 @@ const actionItemsList = [{
         isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canRedo,
         isVisible: () => true
     }
-},{
+}, {
     text: 'Execute all',
     title: 'Execute workflow',
     hotkey: hotKeys.executeAllNodes,
@@ -157,15 +157,18 @@ export const getters = {
             // create title with hotkey
             if (isMac) {
                 const hotkeys = x.hotkey.map(h => hotKeyDisplayMapForMac[h] || h);
-                x.title += ` – ${hotkeys.join(' ')}`;
+                x.hotkeyText = hotkeys.join(' ');
             } else {
                 const hotkeys = x.hotkey.map(h => hotKeyDisplayMap[h] || h);
-                x.title += ` – ${hotkeys.join(' + ')}`;
+                x.hotkeyText = hotkeys.join(' + ');
             }
 
             // call visible/disabled methods and turn them to booleans
             x.menuBar.visible = x.menuBar.isVisible({ selectedNodes, allowedWorkflowActions });
             x.menuBar.disabled = x.menuBar.isDisabled({ selectedNodes, allowedWorkflowActions });
+
+            // FIXME: use seperate logic for context menu
+            x.contextMenu = Object.assign({}, x.menuBar);
 
             return x;
         });

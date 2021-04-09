@@ -34,7 +34,7 @@ export default {
         :key="index"
         :class="a.text ? 'with-text' : ''"
         :disabled="a.menuBar.disabled"
-        :title="a.title"
+        :title="`${a.title} – ${a.hotkeyText}`"
         @click.native="$store.dispatch(a.storeAction, ...a.storeActionParams)"
       >
         <Component :is="a.icon" />

@@ -9,6 +9,7 @@ import MetaNodePortBars from '~/components/MetaNodePortBars';
 import KanvasFilters from '~/components/KanvasFilters';
 import StreamedIcon from '~/components/../webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
 import ConnectorLabel from '~/components/ConnectorLabel';
+import ContextMenu from '~/components/ContextMenu';
 
 export default {
     components: {
@@ -19,6 +20,7 @@ export default {
         MetaNodePortBars,
         KanvasFilters,
         StreamedIcon,
+        ContextMenu,
         ConnectorLabel,
         MoveableNodeContainer
     },
@@ -153,6 +155,10 @@ export default {
                 this.$el.releasePointerCapture(e.pointerId);
                 e.stopPropagation();
             }
+        },
+        contextMenu(e) {
+            console.log('context menu', e);
+            this.$refs.contextMenu.show(e);
         }
     }
 };
@@ -169,7 +175,11 @@ export default {
     @pointerdown.left.alt="beginPan"
     @pointerup.left="stopPan"
     @pointermove="movePan"
+    @contextmenu="contextMenu"
   >
+    <ContextMenu
+      ref="contextMenu"
+    />
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
       v-if="isLinked || isStreaming"
