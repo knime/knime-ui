@@ -78,7 +78,7 @@ export const removeEventListener = makeToggleEventListener('remove');
  *     If you want to execute an entire workflow, pass the workflow container's id as a single element.
  * @returns {Promise}
  */
-export const changeNodeState = ({ projectId, workflowId, nodeIds, action }) => {
+export const changeNodeState = ({ projectId, workflowId, nodeIds = [], action }) => {
     try {
         let result = rpc('NodeService.changeNodeStates', projectId, workflowId, nodeIds, action);
         return Promise.resolve(result);
