@@ -196,7 +196,7 @@ describe('NodeState.vue', () => {
                     x: 16,
                     y: 52
                 },
-                touchable: true,
+                hoverable: true,
                 gap: 10
             });
 
@@ -223,7 +223,7 @@ describe('NodeState.vue', () => {
                     x: 16,
                     y: 52
                 },
-                touchable: true,
+                hoverable: true,
                 gap: 10
             });
         });

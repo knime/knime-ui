@@ -63,7 +63,7 @@ describe('PortWithTooltip.vue', () => {
                 x: 5,
                 y: 5.5
             },
-            touchable: false,
+            hoverable: false,
             gap: 6
         });
 
@@ -87,7 +87,7 @@ describe('PortWithTooltip.vue', () => {
                 x: 5,
                 y: 5.5 // more space than for table
             },
-            touchable: false,
+            hoverable: false,
             gap: 8
         });
     });

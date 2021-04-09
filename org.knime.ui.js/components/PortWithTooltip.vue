@@ -28,7 +28,7 @@ export default {
                 title: this.port.name,
                 text: this.port.info,
                 orientation: 'top',
-                touchable: false
+                hoverable: false
             };
         }
     }

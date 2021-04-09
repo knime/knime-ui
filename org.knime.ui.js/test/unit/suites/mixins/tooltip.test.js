@@ -61,8 +61,8 @@ describe('Tooltip Mixin', () => {
     });
 
     describe('closes tooltip on mouseleave and stops watcher', () => {
-        it.each([false, true])('touchable: %s', async (touchable) => {
-            wrapper.setData({ tooltip: { touchable, text: 'hello there' } });
+        it.each([false, true])('hoverable: %s', async (hoverable) => {
+            wrapper.setData({ tooltip: { hoverable, text: 'hello there' } });
             wrapper.trigger('mouseenter');
             await Vue.nextTick();
 
@@ -82,8 +82,8 @@ describe('Tooltip Mixin', () => {
         });
     });
 
-    it('lets touchable tooltip open on mouseleave - leaves watcher intact', async () => {
-        wrapper.setData({ tooltip: { touchable: true } });
+    it('lets hoverable tooltip open on mouseleave - leaves watcher intact', async () => {
+        wrapper.setData({ tooltip: { hoverable: true } });
         wrapper.trigger('mouseenter');
         await Vue.nextTick();
 

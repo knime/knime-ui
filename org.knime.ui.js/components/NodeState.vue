@@ -70,7 +70,7 @@ export default {
                 },
                 anchorPoint: this.anchorPoint,
                 gap: 10,
-                touchable: true
+                hoverable: true
             };
 
             if (this.error) {

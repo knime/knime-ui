@@ -4,8 +4,8 @@
  * The tooltip container is expected to have [id='tooltip-container']
  *
  * There are two modes:
- * 1. [touchable = false] when the mouse leaves the target component the tooltip will be closed
- * 2. [touchable = true] when the mouse leaves the target but enters the tooltip it will not be closed
+ * 1. [hoverable = false] when the mouse leaves the target component the tooltip will be closed
+ * 2. [hoverable = true] when the mouse leaves the target but enters the tooltip it will not be closed
  */
 export const tooltip = {
     mounted() {
@@ -38,7 +38,7 @@ export const tooltip = {
             consola.trace('mouse left to:', relatedTarget?.tagName, relatedTarget?.id,
                 relatedTarget?.classList);
 
-            if (this.tooltip?.touchable) {
+            if (this.tooltip?.hoverable) {
                 let tooltipContainer = document.getElementById('tooltip-container');
                 if (tooltipContainer && tooltipContainer.contains(relatedTarget)) {
                     // abort removing tooltip
