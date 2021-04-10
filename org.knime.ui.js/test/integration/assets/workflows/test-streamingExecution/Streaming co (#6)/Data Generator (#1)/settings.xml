@@ -8,7 +8,7 @@
 <config key="model">
 <entry key="stddeviation" type="xdouble" value="0.1"/>
 <entry key="noise" type="xdouble" value="0.0"/>
-<entry key="patcount" type="xint" value="1000000"/>
+<entry key="patcount" type="xint" value="4000000"/>
 <entry key="seed" type="xint" value="-844947245"/>
 <config key="clustercount">
 <entry key="array-size" type="xint" value="2"/>

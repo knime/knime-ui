@@ -73,9 +73,9 @@ module.exports = {
     },
     'wait for execution to finish': nightwatch => {
         // wait for green light on data generator
-        nightwatch.waitForElementVisible(`${idToSelector('6:0:1')} .traffic-light-green`, 30 * 1000);
+        nightwatch.waitForElementVisible(`${idToSelector('6:0:1')} .traffic-light-green`, 100 * 1000);
         // check label to have end value
-        nightwatch.expect.element(streamingLabelSelector(1)).text.to.equal('1.000.000');
+        nightwatch.expect.element(streamingLabelSelector(1)).text.to.equal('4.000.000');
     },
     'navigate back to workflow': nightwatch => {
         nightwatch.click('nav.breadcrumb li a');
