@@ -1,5 +1,6 @@
 /* eslint-disable prefer-arrow-callback,no-magic-numbers */
 const loadWorkflow = require('../utils/loadWorkflow');
+const selectors = require('../utils/selectors');
 
 const launchTimeout = 5 * 1000;
 const waitNodeTimeout = 16 * 1000;
@@ -7,9 +8,6 @@ const waitNodeTimeout = 16 * 1000;
 const idToSelector = (id) => `[data-node-id="root:${id}"]`;
 const waitNodeSelector = idToSelector(3);
 const dataGeneratorSelector = idToSelector(2);
-
-const executeAllButtonSelector = '#toolbar button[title^="Execute workflow"]';
-const cancelAllButtonSelector = '#toolbar button[title^="Cancel workflow execution"]';
 
 module.exports = {
     before: nightwatch => {
@@ -26,11 +24,11 @@ module.exports = {
         nightwatch.assert.elementPresent(`${waitNodeSelector} .traffic-light-yellow`);
     },
     'execute workflow via toolbar button': nightwatch => {
-        nightwatch.click(executeAllButtonSelector);
+        nightwatch.click(selectors.executeAllButton);
         nightwatch.waitForElementVisible(`${waitNodeSelector} .progress-circle`);
     },
     'cancel workflow': nightwatch => {
-        nightwatch.click(cancelAllButtonSelector);
+        nightwatch.click(selectors.cancelAllButton);
 
         nightwatch.waitForElementVisible(`${waitNodeSelector} .traffic-light-yellow`);
         nightwatch.assert.visible(`${waitNodeSelector} .warning`);
@@ -38,7 +36,7 @@ module.exports = {
         nightwatch.assert.visible(`${dataGeneratorSelector} .traffic-light-red`);
     },
     'execute workflow again': nightwatch => {
-        nightwatch.click(executeAllButtonSelector);
+        nightwatch.click(selectors.executeAllButton);
         nightwatch.waitForElementVisible(`${waitNodeSelector} .progress-circle`);
 
         nightwatch.waitForElementVisible(`${waitNodeSelector} .traffic-light-green`, waitNodeTimeout);

@@ -1,5 +1,7 @@
 /* eslint-disable prefer-arrow-callback,no-magic-numbers,no-unused-expressions */
 const loadWorkflow = require('../utils/loadWorkflow');
+const modifierKey = require('../utils/modifierKey');
+const selectors = require('../utils/selectors');
 
 const launchTimeout = 5 * 1000;
 
@@ -8,7 +10,7 @@ const nodeSelector = idToSelector(6);
 const streamingLabelSelector = (index = 1) => ({ selector: '.textWrapper .streamingLabel', index });
 
 module.exports = {
-    'init app and open workflow': nightwatch => {
+    before: nightwatch => {
         // load workflow
         loadWorkflow(nightwatch, 'test-streamingExecution');
         // check if ui is visible
@@ -28,7 +30,7 @@ module.exports = {
         nightwatch.expect.element(`${nodeSelector} .streamable`).to.be.visible;
     },
     'open component': nightwatch => {
-        nightwatch.keys(nightwatch.Keys.CONTROL);
+        nightwatch.keys(modifierKey);
         nightwatch.moveToElement(`${nodeSelector}  .hover-area`, 50, 50);
         // NOTE: double click does not offer a selector
         nightwatch.doubleClick();
@@ -41,19 +43,19 @@ module.exports = {
         nightwatch.expect.element(`${idToSelector('6:0:1')} .streamable`).to.be.visible;
         nightwatch.expect.element(`${idToSelector('6:0:2')} .streamable`).to.be.visible;
         nightwatch.expect.element(`${idToSelector('6:0:3')} .streamable`).to.be.visible;
-        nightwatch.expect.element(`${idToSelector('6:0:8')} .not-streamable`).to.be.visible;
         nightwatch.expect.element(`${idToSelector('6:0:6')} .streamable`).to.be.visible;
         nightwatch.expect.element(`${idToSelector('6:0:7')} .streamable`).to.be.visible;
+        nightwatch.expect.element(`${idToSelector('6:0:8')} .not-streamable`).to.be.visible;
     },
     'navigate to workflow via breadcrumb': nightwatch => {
         nightwatch.click({ selector: 'nav.breadcrumb li', index: 0 });
     },
     'execute workflow': nightwatch => {
-        nightwatch.click({ selector: '.buttons button', index: 0 });
+        nightwatch.click(selectors.executeAllButton);
     },
     're-open workflow': nightwatch => {
         // open workflow
-        nightwatch.keys(nightwatch.Keys.CONTROL);
+        nightwatch.keys(modifierKey);
         nightwatch.moveToElement(`${nodeSelector}  .hover-area`, 50, 50);
         nightwatch.doubleClick();
         nightwatch.keys(nightwatch.Keys.NULL);
@@ -71,9 +73,9 @@ module.exports = {
     },
     'wait for execution to finish': nightwatch => {
         // wait for green light on data generator
-        nightwatch.waitForElementVisible(`${idToSelector('6:0:1')} .traffic-light-green`, 10 * 1000);
+        nightwatch.waitForElementVisible(`${idToSelector('6:0:1')} .traffic-light-green`, 30 * 1000);
         // check label to have end value
-        nightwatch.expect.element(streamingLabelSelector(1)).text.to.equal('4.000.000');
+        nightwatch.expect.element(streamingLabelSelector(1)).text.to.equal('1.000.000');
     },
     'navigate back to workflow': nightwatch => {
         nightwatch.click('nav.breadcrumb li a');
