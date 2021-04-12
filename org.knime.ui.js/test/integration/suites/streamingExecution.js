@@ -31,7 +31,7 @@ module.exports = {
     },
     'open component': nightwatch => {
         nightwatch.keys(modifierKey);
-        nightwatch.moveToElement(`${nodeSelector}  .hover-area`, 50, 50);
+        nightwatch.moveToElement(`${nodeSelector} .hover-area`, 50, 50);
         // NOTE: double click does not offer a selector
         nightwatch.doubleClick();
         nightwatch.keys(nightwatch.Keys.NULL);
@@ -56,7 +56,7 @@ module.exports = {
     're-open workflow': nightwatch => {
         // open workflow
         nightwatch.keys(modifierKey);
-        nightwatch.moveToElement(`${nodeSelector}  .hover-area`, 50, 50);
+        nightwatch.moveToElement(`${nodeSelector} .hover-area`, 50, 50);
         nightwatch.doubleClick();
         nightwatch.keys(nightwatch.Keys.NULL);
     },

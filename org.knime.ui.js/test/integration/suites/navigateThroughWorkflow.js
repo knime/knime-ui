@@ -1,12 +1,13 @@
 /* eslint-disable prefer-arrow-callback,no-magic-numbers */
 const loadWorkflow = require('../utils/loadWorkflow');
+const modifierKey = require('../utils/modifierKey');
 
 const launchTimeout = 5 * 1000;
 
 const idToSelector = (id) => `[data-node-id="root:${id}"]`;
 const componentSelector = idToSelector(3);
 module.exports = {
-    'init app and open workflow': nightwatch => {
+    before: nightwatch => {
         // load workflow
         loadWorkflow(nightwatch, 'test-navigateThroughWorkflow');
         // check if ui is visible
@@ -32,8 +33,8 @@ module.exports = {
     },
     'open component': nightwatch => {
         // ctrl + doubleClick
-        nightwatch.keys(nightwatch.Keys.CONTROL);
-        nightwatch.moveToElement(`${componentSelector}  .hover-area`, 50, 50);
+        nightwatch.keys(modifierKey);
+        nightwatch.moveToElement(`${componentSelector} .hover-area`, 50, 50);
         // NOTE: double click does not offer a selector
         nightwatch.doubleClick();
         nightwatch.keys(nightwatch.Keys.NULL);
