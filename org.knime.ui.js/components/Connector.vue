@@ -33,13 +33,14 @@ export default {
         }),
         path() {
             let { start: [x1, y1], end: [x2, y2] } = this;
-            // Update position of source or destination node is beeing moved
+            // Update position of source or destination node is being moved
             if (this.isDragging && !this.moveNodeGhostThresholdExceeded) {
-                if (this.selectedNodes.filter(node => node.id === this.sourceNode).length > 0) {
+                let selectedNodes = this.selectedNodes();
+                if (selectedNodes.filter(node => node.id === this.sourceNode).length > 0) {
                     x1 += this.deltaMovePosition.x;
                     y1 += this.deltaMovePosition.y;
                 }
-                if (this.selectedNodes.filter(node => node.id === this.destNode).length > 0) {
+                if (selectedNodes.filter(node => node.id === this.destNode).length > 0) {
                     x2 += this.deltaMovePosition.x;
                     y2 += this.deltaMovePosition.y;
                 }

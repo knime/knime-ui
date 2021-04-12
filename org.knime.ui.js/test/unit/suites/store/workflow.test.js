@@ -85,7 +85,7 @@ describe('workflow store', () => {
             store.commit('workflow/selectAllNodes');
             expect(nodes['root:1'].selected).toBe(true);
             expect(nodes['root:2'].selected).toBe(true);
-            expect(store.getters['workflow/selectedNodes']).toStrictEqual([
+            expect(store.getters['workflow/selectedNodes']()).toStrictEqual([
                 workflow.nodes['root:1'],
                 workflow.nodes['root:2']
             ]);
@@ -93,14 +93,14 @@ describe('workflow store', () => {
             store.commit('workflow/deselectNode', 'root:1');
             expect(nodes['root:1'].selected).toBe(false);
             expect(nodes['root:2'].selected).toBe(true);
-            expect(store.getters['workflow/selectedNodes']).toStrictEqual([
+            expect(store.getters['workflow/selectedNodes']()).toStrictEqual([
                 workflow.nodes['root:2']
             ]);
 
             store.commit('workflow/selectNode', 'root:1');
             expect(nodes['root:1'].selected).toBe(true);
             expect(nodes['root:2'].selected).toBe(true);
-            expect(store.getters['workflow/selectedNodes']).toStrictEqual([
+            expect(store.getters['workflow/selectedNodes']()).toStrictEqual([
                 workflow.nodes['root:1'],
                 workflow.nodes['root:2']
             ]);
@@ -108,7 +108,7 @@ describe('workflow store', () => {
             store.commit('workflow/deselectAllNodes');
             expect(nodes['root:1'].selected).toBe(false);
             expect(nodes['root:2'].selected).toBe(false);
-            expect(store.getters['workflow/selectedNodes']).toStrictEqual([]);
+            expect(store.getters['workflow/selectedNodes']()).toStrictEqual([]);
 
         });
 
@@ -420,6 +420,28 @@ describe('workflow store', () => {
                 annotationIds: []
             });
         });
+        it('passes undo to the API', async () => {
+            let undo = jest.fn();
+            let apiMocks = { undo };
+            await loadStore({ apiMocks });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+
+            store.dispatch('workflow/undo');
+
+            expect(undo).toHaveBeenCalledWith({ projectId: 'foo', workflowId: 'root' });
+        });
+
+        it('passes redo to the API', async () => {
+            let redo = jest.fn();
+            let apiMocks = { redo };
+            await loadStore({ apiMocks });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+
+            store.dispatch('workflow/redo');
+
+            expect(redo).toHaveBeenCalledWith({ projectId: 'foo', workflowId: 'root' });
+        });
+
     });
 
     describe('getters', () => {

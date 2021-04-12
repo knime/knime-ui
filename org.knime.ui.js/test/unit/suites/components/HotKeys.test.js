@@ -49,7 +49,9 @@ describe('HotKeys', () => {
                     executeNodes: jest.fn(),
                     cancelNodeExecution: jest.fn(),
                     resetNodes: jest.fn(),
-                    deleteSelectedNodes: jest.fn()
+                    deleteSelectedNodes: jest.fn(),
+                    undo: jest.fn(),
+                    redo: jest.fn()
                 },
                 getters: {
                     isWritable: jest.fn().mockReturnValue(true)
@@ -139,6 +141,16 @@ describe('HotKeys', () => {
                 expect(storeConfig.workflow.actions.cancelNodeExecution).toHaveBeenCalledWith(expect.anything(), 'all');
                 expect(storeConfig.workflow.actions.cancelNodeExecution)
                     .not.toHaveBeenCalledWith(expect.anything(), 'selected');
+            });
+
+            it('Command + Z: undo last command', () => {
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Z', ctrlKey: true }));
+                expect(storeConfig.workflow.actions.undo).toHaveBeenCalled();
+            });
+
+            it('Command + Shift + Z: redo last command', () => {
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Z', ctrlKey: true, shiftKey: true }));
+                expect(storeConfig.workflow.actions.redo).toHaveBeenCalled();
             });
         });
 

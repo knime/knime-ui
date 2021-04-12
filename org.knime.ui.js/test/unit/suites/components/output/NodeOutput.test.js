@@ -71,7 +71,10 @@ describe('NodeOutput.vue', () => {
                 }
             },
             getters: {
-                activeWorkflowId: jest.fn().mockReturnValue('activeWorkflowId')
+                activeWorkflowId: jest.fn().mockReturnValue('activeWorkflowId'),
+                selectedNodes() {
+                    return () => Object.values(workflow.state.activeWorkflow.nodes).filter(node => node.selected);
+                }
             },
             actions: {
                 executeNodes: jest.fn()

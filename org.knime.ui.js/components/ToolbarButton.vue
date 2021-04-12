@@ -15,7 +15,7 @@ button {
   border-radius: calc((var(--icon-size) + 2) / 2 * 1px);
   border: 1px solid var(--knime-silver-sand);
   color: var(--knime-masala);
-  background: var(--knime-white);
+  background: transparent;
   outline: none;
   padding: 0;
   margin-right: 5px;
