@@ -2,6 +2,7 @@
 
 const SET_FOCUS_TIMEOUT = 1;
 const FOCUSOUT_TIMEOUT = 50;
+const SCROLLBAR_OFFSET = 4; // px
 
 /*
  * The floating menu is a menu similar to the SubMenu but it has a fixed position and not slots or buttons.
@@ -45,19 +46,13 @@ export default {
         ariaLabel: {
             type: String,
             default: 'menu'
-        },
-        top: {
-            type: Number,
-            required: true
-        },
-        left: {
-            type: Number,
-            required: true
         }
     },
     data() {
         return {
-            isVisible: this.visible
+            isVisible: this.visible,
+            top: 0,
+            left: 0
         };
     },
     computed: {
@@ -127,6 +122,7 @@ export default {
         onDown() {
             this.getNextElement(1).focus();
         },
+        /* We use the bubbling focusOut to hide the menu on clickaway (or focus away with tab). */
         onFocusOut(e) {
             setTimeout(() => {
                 if (this.$el !== document.activeElement &&
@@ -139,7 +135,32 @@ export default {
         closeMenu() {
             this.isVisible = false;
         },
-        showMenu() {
+        calculateMenuPos(el, clickX, clickY) {
+            const menuWidth = el.offsetWidth + SCROLLBAR_OFFSET;
+            const menuHeight = el.offsetHeight + SCROLLBAR_OFFSET;
+
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+
+            let left, top;
+
+            if ((windowWidth - clickX) < menuWidth) {
+                left = windowWidth - menuWidth;
+            } else {
+                left = clickX;
+            }
+
+            if ((windowHeight - clickY) < menuHeight) {
+                top = windowHeight - menuHeight;
+            } else {
+                top = clickY;
+            }
+            return { left, top };
+        },
+        showMenu(x, y) {
+            const { left, top } = this.calculateMenuPos(this.$el, x, y);
+            this.left = left;
+            this.top = top;
             this.isVisible = true;
             setTimeout(() => {
                 this.$el.focus();

@@ -31,44 +31,8 @@ export default {
         onContextMenuItemClick(e, item, id) {
             this.$store.dispatch(item.storeAction, ...item.storeActionParams);
         },
-        /*
-        clickEventHandler(e) {
-            let button = e.which || e.button;
-            if (button === 1) {
-                this.$refs.contextMenu.closeMenu();
-            }
-        },
-        */
-        calculateMenuPos(clickCoordsX, clickCoordsY) {
-            const menu = this.$refs.contextMenu.$el;
-            const menuWidth = menu.offsetWidth + 4;
-            const menuHeight = menu.offsetHeight + 4;
-
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
-
-            let left, top;
-
-            if ((windowWidth - clickCoordsX) < menuWidth) {
-                left = windowWidth - menuWidth;
-            } else {
-                left = clickCoordsX;
-            }
-
-            if ((windowHeight - clickCoordsY) < menuHeight) {
-                top = windowHeight - menuHeight;
-            } else {
-                top = clickCoordsY;
-            }
-            return { left, top };
-        },
         show(e) {
-            const { left, top } = this.calculateMenuPos(e.pageX, e.pageY);
-            this.left = left;
-            this.top = top;
-            // TODO: react to target
-            // document.addEventListener('click', this.clickEventHandler);
-            this.$refs.contextMenu.showMenu();
+            this.$refs.contextMenu.showMenu(e.pageX, e.pageY);
         }
     }
 };
