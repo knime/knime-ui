@@ -262,6 +262,7 @@ export default {
 
     & .disabled { /* via class since <a> elements don't have a native disabled attribute */
       opacity: 0.5;
+      cursor: default;
     }
 
     & a {
