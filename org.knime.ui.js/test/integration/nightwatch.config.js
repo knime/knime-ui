@@ -2,6 +2,7 @@ const port = 4444;
 
 module.exports = {
     src_folders: ['test/integration/suites'],
+    exclude: ['kanvasNodeInteraction.js', 'streamingExecution.js', 'kanvasNodeOutput.js'],
     output_folder: 'test/integration/reports',
     custom_assertions_path: ['test/integration/custom-assertions'],
     webdriver: {
