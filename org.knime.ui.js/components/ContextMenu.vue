@@ -16,12 +16,12 @@ export default {
         };
     },
     computed: {
-        ...mapGetters('userActions', ['actionItems']),
+        ...mapGetters('userActions', ['contextMenuActionItems']),
         contextMenuItems() {
-            return this.actionItems.filter(i => i.contextMenu.visible).map(i => ({
+            return this.contextMenuActionItems.map(i => ({
                 text: i.text,
                 helpText: i.hotkeyText,
-                disabled: i.contextMenu.disabled,
+                disabled: i.disabled,
                 storeAction: i.storeAction,
                 storeActionParams: i.storeActionParams
             }));

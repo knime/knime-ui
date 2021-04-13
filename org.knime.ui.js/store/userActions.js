@@ -43,135 +43,164 @@ const hotKeyDisplayMapForMac = {
     Ctrl: '⌘'
 };
 
-const actionItemsList = [{
-    text: null,
-    title: 'Undo',
-    hotkey: hotKeys.undo,
-    icon: UndoIcon,
-    storeAction: 'workflow/undo',
-    storeActionParams: [],
-    menuBar: {
-        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canUndo,
-        isVisible: () => true
+const actionMap = {
+    undo: {
+        text: null,
+        title: 'Undo',
+        hotkey: hotKeys.undo,
+        icon: UndoIcon,
+        storeAction: 'workflow/undo',
+        storeActionParams: [],
+        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canUndo
+    },
+    redo: {
+        text: null,
+        title: 'Redo',
+        hotkey: hotKeys.redo,
+        icon: RedoIcon,
+        storeAction: 'workflow/redo',
+        storeActionParams: [],
+        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canRedo
+    },
+    executeAll: {
+        text: 'Execute all',
+        title: 'Execute workflow',
+        hotkey: hotKeys.executeAllNodes,
+        icon: ExecuteAllIcon,
+        storeAction: 'workflow/executeNodes',
+        storeActionParams: ['all'],
+        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canExecute
+    },
+    cancelAll: {
+        text: 'Cancel all',
+        title: 'Cancel workflow execution',
+        hotkey: hotKeys.cancelAllNodes,
+        icon: CancelAllIcon,
+        storeAction: 'workflow/cancelNodeExecution',
+        storeActionParams: ['all'],
+        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canCancel
+    },
+    resetAll: {
+        text: 'Reset all',
+        title: 'Reset executed nodes',
+        hotkey: hotKeys.resetAllNodes,
+        icon: ResetAllIcon,
+        storeAction: 'workflow/resetNodes',
+        storeActionParams: ['all'],
+        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canReset
+    },
+    executeSelected: {
+        text: 'Execute',
+        title: 'Execute selected nodes',
+        hotkey: hotKeys.executeSelectedNodes,
+        icon: ExecuteSelectedIcon,
+        storeAction: 'workflow/executeNodes',
+        storeActionParams: ['selected'],
+        isDisabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canExecute)
+    },
+    cancelSelected: {
+        text: 'Cancel',
+        title: 'Cancel selected nodes',
+        hotkey: hotKeys.cancelSelectedNodes,
+        icon: CancelSelectedIcon,
+        storeAction: 'workflow/cancelNodeExecution',
+        storeActionParams: ['selected'],
+        isDisabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canCancel)
+    },
+    resetSelected: {
+        text: 'Reset',
+        title: 'Reset selected nodes',
+        hotkey: hotKeys.resetSelectedNodes,
+        icon: ResetSelectedIcon,
+        storeAction: 'workflow/resetNodes',
+        storeActionParams: ['selected'],
+        isDisabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canReset)
+    },
+    deleteSelected: {
+        text: 'Delete',
+        title: 'Delete selection',
+        hotkey: hotKeys.deleteDel,
+        icon: DeleteIcon,
+        storeAction: 'workflow/deleteSelectedNodes',
+        storeActionParams: [],
+        isDisabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canDelete)
     }
-}, {
-    text: null,
-    title: 'Redo',
-    hotkey: hotKeys.redo,
-    icon: RedoIcon,
-    storeAction: 'workflow/redo',
-    storeActionParams: [],
-    menuBar: {
-        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canRedo,
-        isVisible: () => true
-    }
-}, {
-    text: 'Execute all',
-    title: 'Execute workflow',
-    hotkey: hotKeys.executeAllNodes,
-    icon: ExecuteAllIcon,
-    storeAction: 'workflow/executeNodes',
-    storeActionParams: ['all'],
-    menuBar: {
-        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canExecute,
-        isVisible: ({ selectedNodes }) => selectedNodes.length === 0
-    }
-}, {
-    text: 'Cancel all',
-    title: 'Cancel workflow execution',
-    hotkey: hotKeys.cancelAllNodes,
-    icon: CancelAllIcon,
-    storeAction: 'workflow/cancelNodeExecution',
-    storeActionParams: ['all'],
-    menuBar: {
-        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canCancel,
-        isVisible: ({ selectedNodes }) => selectedNodes.length === 0
-    }
-}, {
-    text: 'Reset all',
-    title: 'Reset executed nodes',
-    hotkey: hotKeys.resetAllNodes,
-    icon: ResetAllIcon,
-    storeAction: 'workflow/resetNodes',
-    storeActionParams: ['all'],
-    menuBar: {
-        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canReset,
-        isVisible: ({ selectedNodes }) => selectedNodes.length === 0
-    }
-}, {
-    text: 'Execute',
-    title: 'Execute selected nodes',
-    hotkey: hotKeys.executeSelectedNodes,
-    icon: ExecuteSelectedIcon,
-    storeAction: 'workflow/executeNodes',
-    storeActionParams: ['selected'],
-    menuBar: {
-        isDisabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canExecute),
-        isVisible: ({ selectedNodes }) => selectedNodes.length > 0
-    }
-}, {
-    text: 'Cancel',
-    title: 'Cancel selected nodes',
-    hotkey: hotKeys.cancelSelectedNodes,
-    icon: CancelSelectedIcon,
-    storeAction: 'workflow/cancelNodeExecution',
-    storeActionParams: ['selected'],
-    menuBar: {
-        isDisabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canCancel),
-        isVisible: ({ selectedNodes }) => selectedNodes.length > 0
-    }
-}, {
-    text: 'Reset',
-    title: 'Reset selected nodes',
-    hotkey: hotKeys.resetSelectedNodes,
-    icon: ResetSelectedIcon,
-    storeAction: 'workflow/resetNodes',
-    storeActionParams: ['selected'],
-    menuBar: {
-        isDisabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canReset),
-        isVisible: ({ selectedNodes }) => selectedNodes.length > 0
-    }
-}, {
-    text: 'Delete',
-    title: 'Delete selection',
-    hotkey: hotKeys.deleteDel,
-    icon: DeleteIcon,
-    storeAction: 'workflow/deleteSelectedNodes',
-    storeActionParams: [],
-    menuBar: {
-        isDisabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canDelete),
-        isVisible: ({ selectedNodes }) => selectedNodes.length > 0
-    }
-}];
+};
 
 const testIfIsMac = () => navigator?.userAgent?.toLowerCase()?.includes('mac');
 
+const mapActions = (actionList, selectedNodes, allowedWorkflowActions) => {
+    const isMac = testIfIsMac();
+    return actionList.map(src => {
+        let x = Object.assign({}, src);
+        // create title with hotkey
+        if (isMac) {
+            const hotkeys = x.hotkey.map(h => hotKeyDisplayMapForMac[h] || h);
+            x.hotkeyText = hotkeys.join(' ');
+        } else {
+            const hotkeys = x.hotkey.map(h => hotKeyDisplayMap[h] || h);
+            x.hotkeyText = hotkeys.join(' + ');
+        }
+
+        // call disabled methods and turn them to booleans
+        x.disabled = x.isDisabled({ selectedNodes, allowedWorkflowActions });
+
+        return x;
+    });
+};
+
 export const getters = {
-    actionItems(state, getters, rootState, rootGetters) {
+
+    mainMenuActionItems(state, getters, rootState, rootGetters) {
         const selectedNodes = rootGetters['workflow/selectedNodes']();
         const allowedWorkflowActions = rootState.workflow.activeWorkflow?.allowedActions || {};
-        const isMac = testIfIsMac();
 
-        return actionItemsList.map(src => {
-            let x = Object.assign({}, src);
-            // create title with hotkey
-            if (isMac) {
-                const hotkeys = x.hotkey.map(h => hotKeyDisplayMapForMac[h] || h);
-                x.hotkeyText = hotkeys.join(' ');
-            } else {
-                const hotkeys = x.hotkey.map(h => hotKeyDisplayMap[h] || h);
-                x.hotkeyText = hotkeys.join(' + ');
-            }
+        let actionList = [
+            actionMap.undo,
+            actionMap.redo
+        ];
 
-            // call visible/disabled methods and turn them to booleans
-            x.menuBar.visible = x.menuBar.isVisible({ selectedNodes, allowedWorkflowActions });
-            x.menuBar.disabled = x.menuBar.isDisabled({ selectedNodes, allowedWorkflowActions });
+        if (selectedNodes.length === 0) {
+            actionList.push(
+                actionMap.executeAll,
+                actionMap.cancelAll,
+                actionMap.resetAll
+            );
+        } else {
+            actionList.push(
+                actionMap.executeSelected,
+                actionMap.cancelSelected,
+                actionMap.resetSelected,
+                actionMap.deleteSelected
+            );
+        }
 
-            // FIXME: use seperate logic for context menu
-            x.contextMenu = Object.assign({}, x.menuBar);
+        return mapActions(actionList, selectedNodes, allowedWorkflowActions);
+    },
 
-            return x;
-        });
+    contextMenuActionItems(state, getters, rootState, rootGetters) {
+        const selectedNodes = rootGetters['workflow/selectedNodes']();
+        const allowedWorkflowActions = rootState.workflow.activeWorkflow?.allowedActions || {};
+
+        let actionList = [
+        ];
+
+        if (selectedNodes.length === 0) {
+            actionList.push(
+                actionMap.executeAll,
+                actionMap.cancelAll,
+                actionMap.resetAll
+            );
+        } else {
+            actionList.push(
+                actionMap.executeSelected,
+                actionMap.cancelSelected,
+                actionMap.resetSelected,
+                actionMap.deleteSelected
+            );
+        }
+
+        return mapActions(actionList, selectedNodes, allowedWorkflowActions);
     },
 
     hotKeyItems(state, getters, rootState, rootGetters) {

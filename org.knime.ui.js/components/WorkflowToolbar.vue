@@ -15,12 +15,12 @@ export default {
     },
     computed: {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
-        ...mapGetters('userActions', ['actionItems']),
+        ...mapGetters('userActions', ['mainMenuActionItems']),
         hasBreadcrumb() {
             return this.workflow.parents?.length > 0;
         },
         visibleActionItems() {
-            return this.actionItems.filter(x => x.menuBar.visible);
+            return this.mainMenuActionItems;
         }
     }
 };
@@ -33,7 +33,7 @@ export default {
         v-for="(a, index) of visibleActionItems"
         :key="index"
         :class="a.text ? 'with-text' : ''"
-        :disabled="a.menuBar.disabled"
+        :disabled="a.disabled"
         :title="`${a.title} – ${a.hotkeyText}`"
         @click.native="$store.dispatch(a.storeAction, ...a.storeActionParams)"
       >
