@@ -123,7 +123,7 @@ const actionMap = {
         icon: DeleteIcon,
         storeAction: 'workflow/deleteSelectedNodes',
         storeActionParams: [],
-        isDisabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canDelete)
+        isDisabled: ({ selectedNodes }) => !selectedNodes.every(node => node.allowedActions.canDelete)
     }
 };
 
