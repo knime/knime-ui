@@ -216,7 +216,10 @@ export default {
             v-if="item.icon"
             class="item-icon"
           />
-          {{ item.text }} | {{ item.helpText }}
+          <div class="label">
+            <span class="text">{{ item.text }}</span>
+            <span class="help">{{ item.helpText }}</span>
+          </div>
         </Component>
       </li>
     </ul>
@@ -229,6 +232,8 @@ export default {
 .floatingmenu {
   position: absolute;
   display: block;
+  min-width: 200px;
+  max-width: 320px;
 
   /* use visibility top/left negative and z-index to have a proper size which we need for position calculation */
   top: -1000px;
@@ -278,6 +283,20 @@ export default {
         width: 18px;
         height: 18px;
         margin-right: 7px;
+      }
+      & .label {
+        display: flex;
+        flex: 1;
+         & .text {
+           flex: 2 1 100%;
+           display: block;
+         }
+         & .help {
+           justify-self: right;
+           text-align: right;
+           display: block;
+           flex: 1 1 20%;
+        }
       }
 
       &:hover {
