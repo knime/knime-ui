@@ -11,8 +11,8 @@ export default {
     },
     data() {
         return {
-            x: 0,
-            y: 0
+            top: 0,
+            left: 0
         };
     },
     computed: {
@@ -39,11 +39,35 @@ export default {
             }
         },
         */
+        calculateMenuPos(clickCoordsX, clickCoordsY) {
+            const menu = this.$refs.contextMenu.$el;
+            const menuWidth = menu.offsetWidth + 4;
+            const menuHeight = menu.offsetHeight + 4;
+
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+
+            let left, top;
+
+            if ((windowWidth - clickCoordsX) < menuWidth) {
+                left = windowWidth - menuWidth;
+            } else {
+                left = clickCoordsX;
+            }
+
+            if ((windowHeight - clickCoordsY) < menuHeight) {
+                top = windowHeight - menuHeight;
+            } else {
+                top = clickCoordsY;
+            }
+            return { left, top };
+        },
         show(e) {
-            this.x = e.pageX;
-            this.y = e.pageY;
+            const { left, top } = this.calculateMenuPos(e.pageX, e.pageY);
+            this.left = left;
+            this.top = top;
             // TODO: react to target
-            //document.addEventListener('click', this.clickEventHandler);
+            // document.addEventListener('click', this.clickEventHandler);
             this.$refs.contextMenu.showMenu();
         }
     }
@@ -56,8 +80,8 @@ export default {
     class="contextMenu"
     :items="contextMenuItems"
     aria-label="Context Menu"
-    :x="x"
-    :y="y"
+    :top="top"
+    :left="left"
     @item-click="onContextMenuItemClick"
   />
 </template>

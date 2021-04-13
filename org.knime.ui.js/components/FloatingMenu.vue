@@ -46,11 +46,11 @@ export default {
             type: String,
             default: 'menu'
         },
-        x: {
+        top: {
             type: Number,
             required: true
         },
-        y: {
+        left: {
             type: Number,
             required: true
         }
@@ -66,6 +66,9 @@ export default {
          */
         listItems() {
             return this.$refs.listItem.map(el => el.$el || el);
+        },
+        positionStyle() {
+            return this.isVisible ? { left: `${this.left}px`, top: `${this.top}px` } : null;
         }
     },
     methods: {
@@ -158,7 +161,7 @@ export default {
   <div
     ref="floatingmenu"
     :class="['floatingmenu', { isVisible }]"
-    :style="{'left': `${x}px`, 'top': `${y}px`}"
+    :style="positionStyle"
     @keydown.esc.stop.prevent="closeMenu"
     @keydown.up.stop.prevent="onUp"
     @keydown.down.stop.prevent="onDown"
@@ -202,10 +205,18 @@ export default {
 
 .floatingmenu {
   position: absolute;
-  display: none;
+  display: block;
+
+  /* use visibility top/left negative and z-index to have a proper size which we need for position calculation */
+  top: -1000px;
+  left: -1000px;
+  visibility: hidden;
 
   &.isVisible {
-    display: block;
+    visibility: visible;
+    & ul {
+      z-index: var(--z-index-common-inline-menu, 1);
+    }
   }
 
   & ul {
@@ -220,11 +231,10 @@ export default {
     text-align: left;
     list-style-type: none;
     box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
-    z-index: var(--z-index-common-inline-menu, 1);
+    z-index: -100;
 
     & .disabled { /* via class since <a> elements don't have a native disabled attribute */
       opacity: 0.5;
-      pointer-events: none;
     }
 
     & a {
