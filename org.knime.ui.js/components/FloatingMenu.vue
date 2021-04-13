@@ -1,7 +1,7 @@
 <script>
 
 const SET_FOCUS_TIMEOUT = 1;
-const FOCUSOUT_TIMEOUT = 25;
+const FOCUSOUT_TIMEOUT = 50;
 
 /*
  * The floating menu is a menu similar to the SubMenu but it has a fixed position and not slots or buttons.
@@ -95,7 +95,6 @@ export default {
          * @emits {item-click}
          */
         onItemClick(event, item) {
-            console.log(item);
             if (item.disabled) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -130,7 +129,9 @@ export default {
         },
         onFocusOut(e) {
             setTimeout(() => {
-                if (this.listItems && !this.listItems.includes(document.activeElement)) {
+                if (this.$el !== document.activeElement &&
+                    this.listItems &&
+                    !this.listItems.includes(document.activeElement)) {
                     this.closeMenu();
                 }
             }, FOCUSOUT_TIMEOUT);
@@ -141,7 +142,7 @@ export default {
         showMenu() {
             this.isVisible = true;
             setTimeout(() => {
-                this.getNextElement(0).focus();
+                this.$el.focus();
             }, SET_FOCUS_TIMEOUT);
         },
         /*
@@ -162,6 +163,7 @@ export default {
     ref="floatingmenu"
     :class="['floatingmenu', { isVisible }]"
     :style="positionStyle"
+    tabindex="0"
     @keydown.esc.stop.prevent="closeMenu"
     @keydown.up.stop.prevent="onUp"
     @keydown.down.stop.prevent="onDown"
@@ -217,6 +219,10 @@ export default {
     & ul {
       z-index: var(--z-index-common-inline-menu, 1);
     }
+  }
+
+  &:focus {
+    outline: none;
   }
 
   & ul {
