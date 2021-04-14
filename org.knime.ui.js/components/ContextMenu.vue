@@ -3,24 +3,18 @@ import { mapGetters } from 'vuex';
 import FloatingMenu from '~/components/FloatingMenu';
 
 /**
- * ContextMenu offers actions for the Kanvas based on the selected or hovered nodes
+ * ContextMenu offers actions for the Kanvas based on the selected nodes.
  */
 export default {
     components: {
         FloatingMenu
-    },
-    data() {
-        return {
-            top: 0,
-            left: 0
-        };
     },
     computed: {
         ...mapGetters('userActions', ['contextMenuActionItems']),
         contextMenuItems() {
             return this.contextMenuActionItems.map(i => ({
                 text: i.text,
-                helpText: i.hotkeyText,
+                hotkeyText: i.hotkeyText,
                 disabled: i.disabled,
                 storeAction: i.storeAction,
                 storeActionParams: i.storeActionParams
@@ -41,17 +35,15 @@ export default {
 <template>
   <FloatingMenu
     ref="contextMenu"
-    class="contextMenu"
+    class="context-menu"
     :items="contextMenuItems"
     aria-label="Context Menu"
-    :top="top"
-    :left="left"
     @item-click="onContextMenuItemClick"
   />
 </template>
 
 <style lang="postcss" scoped>
-.contextMenu {
+.context-menu {
   z-index: 5;
 }
 </style>

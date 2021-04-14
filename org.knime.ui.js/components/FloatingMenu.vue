@@ -5,8 +5,15 @@ const FOCUSOUT_TIMEOUT = 50;
 const SCROLLBAR_OFFSET = 4; // px
 
 /*
- * The floating menu is a menu similar to the SubMenu but it has a fixed position and not slots or buttons.
- * Created for the ContextMenu.
+ * The FloatingMenu component is a menu similar to the SubMenu but with position logic to always be
+ * visible at window borders and absolute top, left coordinates. The menu is hidden
+ * if not activated with `showMenu(x, y)`.
+ *
+ * Example:
+ * |--------------------|
+ * | Menu Item       F9 |
+ * | Another Item    F7 |
+ * |--------------------|
  */
 
 export default {
@@ -21,7 +28,7 @@ export default {
               text: 'Apples',
               icon: HelpIcon,
               disabled: true,
-              helpText: 'CTRL + A'
+              hotkeyText: 'CTRL + A'
            }, {
               href: 'https://en.wikipedia.org/wiki/Orange_(colour)',
               text: 'Oranges',
@@ -29,7 +36,7 @@ export default {
            },  {
               to: '/testing-nuxt-link',
               text: 'Ananas',
-              helpText: 'F9'
+              hotkeyText: 'F9'
            }]
          */
         items: {
@@ -218,7 +225,7 @@ export default {
           />
           <div class="label">
             <span class="text">{{ item.text }}</span>
-            <span class="help">{{ item.helpText }}</span>
+            <span class="hotkey">{{ item.hotkeyText }}</span>
           </div>
         </Component>
       </li>
@@ -287,7 +294,7 @@ export default {
            flex: 2 1 100%;
            display: block;
          }
-         & .help {
+         & .hotkey {
            justify-self: right;
            text-align: right;
            display: block;
