@@ -56,7 +56,9 @@ export default {
                         ['F8', () => this.resetNodes('selected')],
                         ['Shift', 'F7', () => this.executeNodes('all')],
                         ['Shift', 'F9', () => this.cancelNodeExecution('all')],
-                        ['Shift', 'F8', () => this.resetNodes('all')]
+                        ['Shift', 'F8', () => this.resetNodes('all')],
+                        ['Ctrl', 'Z', () => this.undo()],
+                        ['Ctrl', 'Shift', 'Z', () => this.redo()]
                     ]
                 },
                 writableWorkflow: {

@@ -49,8 +49,9 @@ export default {
         ...mapGetters('selection', ['selectedNodes']),
         ...mapGetters('workflow', ['activeWorkflowId']),
         selectedNode() {
-            if (this.selectedNodes.length === 1) {
-                return this.selectedNodes[0];
+            let selectedNodes = this.selectedNodes();
+            if (selectedNodes.length === 1) {
+                return selectedNodes[0];
             }
             return null;
         },
@@ -81,7 +82,7 @@ export default {
             return this.outPorts[this.selectedPortIndex]?.inactive;
         },
         placeholderText() {
-            switch (this.selectedNodes.length) {
+            switch (this.selectedNodes().length) {
             case 0:
                 return 'To show the node output, please select a configured or executed node.';
             case 1:

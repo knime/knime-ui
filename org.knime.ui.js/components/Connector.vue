@@ -45,7 +45,7 @@ export default {
         ...mapGetters('selection', ['isConnectionSelected', 'isNodeSelected']),
         path() {
             let { start: [x1, y1], end: [x2, y2] } = this;
-            // Update position of source or destination node is beeing moved
+            // Update position of source or destination node is being moved
             if (this.isDragging && !this.moveNodeGhostThresholdExceeded) {
                 if (this.isNodeSelected(this.sourceNode)) {
                     x1 += this.deltaMovePosition.x;
