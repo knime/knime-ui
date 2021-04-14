@@ -288,6 +288,7 @@ export default {
             if (this.isDragging) {
                 return;
             }
+            this.$refs.mouseClickable.focus();
 
             if (e.ctrlKey || e.metaKey) {
                 // user tries to open component or metanode
@@ -385,6 +386,9 @@ export default {
     >
       <!-- Elements for which a click selects node -->
       <g
+        ref="mouseClickable"
+        class="mouse-clickable"
+        tabindex="0"
         @click.left="onLeftMouseClick"
         @click.right="onRightMouseClick"
       >
@@ -496,5 +500,9 @@ export default {
   line-height: 12px;
   pointer-events: none;
   width: 125px;
+}
+
+.mouse-clickable:focus {
+  outline: none;
 }
 </style>
