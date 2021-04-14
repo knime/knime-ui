@@ -1,38 +1,66 @@
+import Vue from 'vue';
 /**
  * 
  */
 export const state = () => ({
-    selectedNodes: [],
-    selectedConnections: []
+    selectedNodes: {},
+    selectedConnections: {},
+    isDraggin: false
 });
 
 export const mutations = {
     deselectAllNodes(state) {
-        state.selectedNodes = [];
+        state.selectedNodes = {};
     },
     selectAllNodes(state, nodes) {
         Object.values(nodes).forEach(node => {
-            state.selectedNodes.push(node);
+            Vue.set(state.selectedNodes, node.id, node);
         });
     },
     selectNode(state, node) {
-        state.selectedNodes.push(node);
+        Vue.set(state.selectedNodes, node.id, node);
     },
     deselectNode(state, nodeId) {
-        state.selectedNodes = state.selectedNodes.filter((node) => node.id !== nodeId);
+        Vue.delete(state.selectedNodes, nodeId);
     },
     selectConnector(state, connector) {
-        state.selectedConnections.push(connector);
+        Vue.set(state.selectedConnections, connector.id, connector);
     },
     deselectConnector(state, connectorId) {
-        state.selectedConnections = state.selectedNodes.filter((connector) => connector.id !== connectorId);
+        Vue.delete(state.selectedConnections, connectorId);
     },
     deselectAllConnectors(state) {
-        state.selectedConnections = [];
+        state.selectedConnections = {};
+    },
+    setDragging(state, isDragging) {
+        state.isDragging = isDragging;
+    }
+};
+
+export const actions = {
+    deselectAllObjects({ commit }) {
+        commit('deselectAllNodes');
+        commit('deselectAllConnectors');
     }
 };
 
 export const getters = {
-    selectedNodes: (state) => state.selectedNodes,
-    selectedConnections: (state) => state.selectedConnections
+    selectedNodeIds: (state) => Object.keys(state.selectedNodes),
+    isNodeSelected: (state) => (nodeId) =>  Reflect.has(state.selectedNodes, nodeId),
+    selectedNodes: (state) => {
+        let nodeObjects = [];
+        Object.keys(state.selectedNodes).forEach((node) => {
+            nodeObjects.push(state.selectedNodes[node]);
+        });
+        return nodeObjects;
+    },
+    selectedConnectionIds: (state) => Object.values(state.selectedConnections),
+    selectedConnections: (state) => {
+        let connectionObjects = [];
+        Object.keys(state.selectedConnections).forEach((connection) => {
+            connectionObjects.push(state.selectedConnections[connection]);
+        });
+        return connectionObjects;
+    },
+    isConnectionSelected: (state) => (connectionId) => Reflect.has(state.selectedConnections, connectionId)
 };

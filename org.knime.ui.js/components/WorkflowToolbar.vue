@@ -44,7 +44,7 @@ export default {
         },
         canDeleteSelection() {
             return this.selectedNodes.some(node => node.allowedActions.canDelete) ||
-                    this.selectedConnections.some(connection => connection.canDelete);
+              this.selectedConnections.some(connection => connection.canDelete);
         },
         // Checks if the application is run on a mac
         isMac() {
@@ -54,6 +54,7 @@ export default {
     methods: {
         ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedObjects',
             'undo', 'redo']),
+        ...mapActions('selection', ['deselectAllObjects']),
         /**
          * Translates windows/linux shortcuts into mac shortcuts when operating system is mac
          * @param {String} shortcutTitle the windows/linux compatible shortcuts
@@ -67,6 +68,14 @@ export default {
             } else {
                 return  shortcutTitle;
             }
+        },
+        // deletes all the selected nodes and connectors
+        deleteSelection() {
+            this.$store.dispatch('workflow/deleteSelectedObjects', {
+                selectedNodes: this.selectedNodes,
+                selectedConnections: this.selectedConnections
+            });
+            this.deselectAllObjects();
         }
     }
 };
@@ -137,7 +146,7 @@ export default {
         class="with-text"
         :disabled="!canDeleteSelection"
         :title="checkForMacShortcuts('Delete selection – Delete')"
-        @click.native="deleteSelectedObjects"
+        @click.native="deleteSelection"
       >
         <DeleteIcon />
         Delete

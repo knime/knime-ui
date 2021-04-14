@@ -168,10 +168,7 @@ export default {
         ...mapState('openedProjects', {
             projectId: 'activeId'
         }),
-        ...mapGetters('selection', ['selectedNodes']),
-        isNodeSelected() {
-            return this.selectedNodes.filter((node) => node === this.id) > 0;
-        },
+        ...mapGetters('selection', ['isNodeSelected']),
         nodeSelectionMeasures() {
             const { nodeStatusHeight, nodeStatusMarginTop, nodeSize,
                 nodeSelectionPadding: [top, right, bottom, left] } = this.$shapes;
@@ -270,7 +267,7 @@ export default {
                 return true;
             }
 
-            return Boolean(port.connectedVia.length) || this.hover || this.isNodeSelected;
+            return Boolean(port.connectedVia.length) || this.hover || this.isNodeSelected(this.id);
         },
 
         onLeftDoubleClick(e) {
@@ -301,19 +298,18 @@ export default {
                 // user tries to open component or metanode
                 return;
             }
-
             if (e.shiftKey) {
                 // Multi select
-                if (this.isNodeSelected) {
+                if (this.isNodeSelected(this.id)) {
                     this.deselectNode(this.id);
                 } else {
-                    this.selectNode(this);
+                    this.selectNode(this.$props);
                 }
             } else {
                 // Single select
                 this.deselectAllNodes();
                 this.deselectAllConnectors();
-                this.selectNode(this);
+                this.selectNode(this.$props);
             }
         }
     }
@@ -338,7 +334,7 @@ export default {
 
     <!-- Node Selection Plane. Portalled to the back -->
     <portal
-      v-if="isNodeSelected && !isDragging"
+      v-if="isNodeSelected(id) && !isDragging"
       to="node-select"
     >
       <NodeSelectionPlane
@@ -386,7 +382,7 @@ export default {
           :kind="kind"
           :icon="icon"
           :execution-state="state && state.executionState"
-          :filter="(isNodeSelected || hover) && 'url(#node-torso-shadow)'"
+          :filter="(isNodeSelected(id) || hover) && 'url(#node-torso-shadow)'"
           @dblclick.left.native="onLeftDoubleClick"
         />
 
@@ -415,7 +411,7 @@ export default {
         <NodeState
           v-if="kind !== 'metanode'"
           v-bind="state"
-          :filter="(isNodeSelected || hover) && 'url(#node-state-shadow)'"
+          :filter="(isNodeSelected(id) || hover) && 'url(#node-state-shadow)'"
           :loop-status="loopInfo.status"
         />
       </g>

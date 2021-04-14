@@ -103,9 +103,9 @@ export const actions = {
     }, { selectedNodes, selectedConnections }) {
         let deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
         let nonDeletableNodeIds = selectedNodes.filter(node => !node.allowedActions.canDelete).map(node => node.id);
-        let deleteableConnectionIds = selectedConnections().filter(connection => connection.canDelete).
+        let deleteableConnectionIds = selectedConnections.filter(connection => connection.canDelete).
             map(connection => `${connection.destNode}_${connection.destPort}`);
-        let nonDeletableConnectionIds = selectedConnections().filter(connection => !connection.canDelete).
+        let nonDeletableConnectionIds = selectedConnections.filter(connection => !connection.canDelete).
             map(connection => `${connection.destNode}_${connection.destPort}`);
 
         if (deletableNodeIds.length || deleteableConnectionIds.length) {
@@ -198,8 +198,7 @@ export const actions = {
      * @param {Object} params.startPos - start position {x: , y: } of the move event
      * @returns {void} - nothing to return
      */
-    saveNodeMoves({ state, getters, commit }, { projectId, nodeId, startPos, selectedNodes }) {
-        const selectedNodeIds = selectedNodes.map((node) => node.id);
+    saveNodeMoves({ state, getters, commit }, { projectId, selectedNodes }) {
         let translation;
         // calculate the translation either relative to the position or the outline position
         translation = {
@@ -209,7 +208,7 @@ export const actions = {
         moveObjects({
             projectId,
             workflowId: getters.activeWorkflowId,
-            nodeIds: selectedNodeIds,
+            nodeIds: selectedNodes,
             translation,
             annotationIds: []
         }).then((e) => {

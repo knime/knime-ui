@@ -21,18 +21,14 @@ export default {
         flowVariableConnection: { type: Boolean, default: false },
 
         /**
-         * Connector selection state
-         */
-        selected: {
-            type: Boolean,
-            default: false
-        },
-
-        /**
          * Connector id
          */
         id: {
             type: String,
+            required: true
+        },
+        canDelete: {
+            type: Boolean,
             required: true
         }
     },
@@ -46,18 +42,16 @@ export default {
         ...mapGetters('workflow', {
             isWorkflowWritable: 'isWritable'
         }),
-        ...mapGetters('selection', {
-            selectedNodes: 'selectedNodes'
-        }),
+        ...mapGetters('selection', ['isConnectionSelected', 'isNodeSelected']),
         path() {
             let { start: [x1, y1], end: [x2, y2] } = this;
             // Update position of source or destination node is beeing moved
             if (this.isDragging && !this.moveNodeGhostThresholdExceeded) {
-                if (this.selectedNodes.filter(node => node.id === this.sourceNode).length > 0) {
+                if (this.isNodeSelected(this.sourceNode)) {
                     x1 += this.deltaMovePosition.x;
                     y1 += this.deltaMovePosition.y;
                 }
-                if (this.selectedNodes.filter(node => node.id === this.destNode).length > 0) {
+                if (this.isNodeSelected(this.destNode)) {
                     x2 += this.deltaMovePosition.x;
                     y2 += this.deltaMovePosition.y;
                 }
@@ -94,13 +88,13 @@ export default {
                 if (this.selected) {
                     this.deselectConnector(this.id);
                 } else {
-                    this.selectConnector(this.id);
+                    this.selectConnector(this.$props);
                 }
             } else {
                 // Single select
                 this.deselectAllConnectors();
                 this.deselectAllNodes();
-                this.selectConnector(this.id);
+                this.selectConnector(this.$props);
             }
         }
     }
@@ -117,7 +111,12 @@ export default {
       :d="path"
       :stroke="strokeColor"
       :stroke-width="$shapes.connectorWidth"
-      :class="{ variable: flowVariableConnection, 'read-only': !isWorkflowWritable, dashed: streaming, selected }"
+      :class="{
+        variable: flowVariableConnection,
+        'read-only': !isWorkflowWritable,
+        dashed: streaming,
+        selected: isConnectionSelected(id) && !isDragging
+      }"
       fill="none"
     />
   </g>
@@ -147,7 +146,7 @@ path:hover + path {
 
 path.selected {
   stroke-width: 3;
-  stroke: var(--knime-dove-gray);
+  stroke: var(--knime-cornflower);
 }
 
 path.variable {
@@ -161,7 +160,7 @@ path.variable:hover {
 
 path.variable.selected {
   stroke-width: 3;
-  stroke: var(--knime-coral-dark);
+  stroke: var(--knime-cornflower);
 }
 
 rect {

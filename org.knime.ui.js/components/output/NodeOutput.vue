@@ -46,11 +46,8 @@ export default {
         ...mapState('openedProjects', {
             activeProjectId: 'activeId'
         }),
+        ...mapGetters('selection', ['selectedNodes']),
         ...mapGetters('workflow', ['activeWorkflowId']),
-        selectedNodes() {
-            let nodes = Object.values(this.nodes || {});
-            return nodes.filter(node => node.selected);
-        },
         selectedNode() {
             if (this.selectedNodes.length === 1) {
                 return this.selectedNodes[0];

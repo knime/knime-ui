@@ -12,6 +12,7 @@ export default {
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
         ...mapGetters('workflow', ['isWritable']),
+        ...mapGetters('selection', ['selectedNodes', 'selectedConnections']),
         isWorkflowPresent() {
             // workflow hotkeys are enabled only if a workflow is present
             return Boolean(this.activeWorkflow);
@@ -29,9 +30,10 @@ export default {
         document.removeEventListener('keyup', this.onKeyup);
     },
     methods: {
-        ...mapMutations('workflow', ['selectAllNodes', 'deselectAllNodes']),
+        ...mapMutations('selection', ['selectAllNodes', 'deselectAllNodes']),
         ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedObjects',
             'undo', 'redo']),
+        ...mapActions('selection', ['deselectAllObjects']),
         ...mapMutations('canvas', ['setSuggestPanning', 'resetZoom']),
         ...mapActions('canvas', ['setZoomToFit', 'zoomCentered']),
         setupShortcuts() {
@@ -48,7 +50,7 @@ export default {
                 workflow: {
                     condition: () => this.isWorkflowPresent,
                     hotKeys: [
-                        ['Ctrl', 'A', this.selectAllNodes],
+                        ['Ctrl', 'A', () => this.selectAllNodes(this.activeWorkflow.nodes)],
                         ['F7', () => this.executeNodes('selected')],
                         ['F9', () => this.cancelNodeExecution('selected')],
                         ['F8', () => this.resetNodes('selected')],
@@ -60,8 +62,20 @@ export default {
                 writableWorkflow: {
                     condition: () => this.isWorkflowPresent && this.isWritable,
                     hotKeys: [
-                        ['DELETE', this.deleteSelectedObjects],
-                        ['BACKSPACE', this.deleteSelectedObjects]
+                        ['DELETE', () =>  {
+                            this.deleteSelectedObjects({
+                                selectedNodes: this.selectedNodes,
+                                selectedConnections: this.selectedConnections
+                            });
+                            this.deselectAllObjects();
+                        }],
+                        ['BACKSPACE', () => {
+                            this.deleteSelectedObjects({
+                                selectedNodes: this.selectedNodes,
+                                selectedConnections: this.selectedConnections
+                            });
+                            this.deselectAllObjects();
+                        }]
                     ]
                 }
 
