@@ -242,9 +242,6 @@ export default {
 
   &.isVisible {
     visibility: visible;
-    & ul {
-      z-index: var(--z-index-common-inline-menu, 1);
-    }
   }
 
   &:focus {
@@ -263,7 +260,6 @@ export default {
     text-align: left;
     list-style-type: none;
     box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
-    z-index: -100;
 
     & .disabled { /* via class since <a> elements don't have a native disabled attribute */
       opacity: 0.5;
