@@ -157,7 +157,6 @@ export default {
             }
         },
         contextMenu(e) {
-            console.log('context menu', e);
             this.$refs.contextMenu.show(e);
         }
     }

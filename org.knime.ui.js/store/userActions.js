@@ -9,7 +9,7 @@ import UndoIcon from '~/assets/undo.svg?inline';
 import DeleteIcon from '~/assets/delete.svg?inline';
 
 /**
- * All hotkeys should be defined here. Look in HotKeys.vue for the global handling
+ * All hotkeys should be defined here. Look in HotKeys.vue for the real execution
  */
 const hotKeys = {
     zoomToFit: ['Ctrl', '1'],
@@ -26,7 +26,9 @@ const hotKeys = {
     resetSelectedNodes: ['F8'],
     cancelSelectedNodes: ['F9'],
     deleteBackspace: ['BACKSPACE'],
-    deleteDel: ['DELETE']
+    deleteDel: ['DELETE'],
+    openView: ['F12'],
+    openDialog: ['F6']
 };
 
 /**
@@ -43,7 +45,12 @@ const hotKeyDisplayMapForMac = {
     Ctrl: '⌘'
 };
 
+/**
+ * Actions as used by toolbar and context menu. The hotkey property is only used for user display. Hotkey handling is
+ * done in HotKeys.vue!
+ */
 const actionMap = {
+    // global stuff (toolbar)
     undo: {
         text: null,
         title: 'Undo',
@@ -51,7 +58,7 @@ const actionMap = {
         icon: UndoIcon,
         storeAction: 'workflow/undo',
         storeActionParams: [],
-        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canUndo
+        disabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canUndo
     },
     redo: {
         text: null,
@@ -60,8 +67,9 @@ const actionMap = {
         icon: RedoIcon,
         storeAction: 'workflow/redo',
         storeActionParams: [],
-        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canRedo
+        disabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canRedo
     },
+    // all nodes (nothing selected)
     executeAll: {
         text: 'Execute all',
         title: 'Execute workflow',
@@ -69,7 +77,7 @@ const actionMap = {
         icon: ExecuteAllIcon,
         storeAction: 'workflow/executeNodes',
         storeActionParams: ['all'],
-        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canExecute
+        disabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canExecute
     },
     cancelAll: {
         text: 'Cancel all',
@@ -78,7 +86,7 @@ const actionMap = {
         icon: CancelAllIcon,
         storeAction: 'workflow/cancelNodeExecution',
         storeActionParams: ['all'],
-        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canCancel
+        disabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canCancel
     },
     resetAll: {
         text: 'Reset all',
@@ -87,8 +95,9 @@ const actionMap = {
         icon: ResetAllIcon,
         storeAction: 'workflow/resetNodes',
         storeActionParams: ['all'],
-        isDisabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canReset
+        disabled: ({ allowedWorkflowActions }) => !allowedWorkflowActions.canReset
     },
+    // selected nodes (multiple)
     executeSelected: {
         text: 'Execute',
         title: 'Execute selected nodes',
@@ -96,7 +105,7 @@ const actionMap = {
         icon: ExecuteSelectedIcon,
         storeAction: 'workflow/executeNodes',
         storeActionParams: ['selected'],
-        isDisabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canExecute)
+        disabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canExecute)
     },
     cancelSelected: {
         text: 'Cancel',
@@ -105,7 +114,7 @@ const actionMap = {
         icon: CancelSelectedIcon,
         storeAction: 'workflow/cancelNodeExecution',
         storeActionParams: ['selected'],
-        isDisabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canCancel)
+        disabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canCancel)
     },
     resetSelected: {
         text: 'Reset',
@@ -114,7 +123,7 @@ const actionMap = {
         icon: ResetSelectedIcon,
         storeAction: 'workflow/resetNodes',
         storeActionParams: ['selected'],
-        isDisabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canReset)
+        disabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canReset)
     },
     deleteSelected: {
         text: 'Delete',
@@ -123,7 +132,48 @@ const actionMap = {
         icon: DeleteIcon,
         storeAction: 'workflow/deleteSelectedNodes',
         storeActionParams: [],
-        isDisabled: ({ selectedNodes }) => !selectedNodes.every(node => node.allowedActions.canDelete)
+        disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.allowedActions.canDelete)
+    },
+    // single node
+    resumeLoopExecution: {
+        text: 'Resume loop execution',
+        title: '',
+        hotkey: [],
+        storeAction: 'workflow/resumeNodeExecution',
+        storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
+        disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.allowedActions.canResume)
+    },
+    pauseExecution: {
+        text: 'Pause execution',
+        title: '',
+        hotkey: [],
+        storeAction: 'workflow/pauseNodeExecution',
+        storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
+        disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.allowedActions.canPause)
+    },
+    stepLoopExecution: {
+        text: 'Step loop execution',
+        title: '',
+        hotkey: [],
+        storeAction: 'workflow/stepNodeExecution',
+        storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
+        disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.allowedActions.canStep)
+    },
+    configureNode: {
+        text: 'Configure',
+        title: '',
+        hotkey: hotKeys.openDialog,
+        storeAction: 'workflow/openDialog',
+        storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
+        disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.allowedActions.canOpenDialog)
+    },
+    openView: {
+        text: 'Open view',
+        title: '',
+        hotkey: hotKeys.openView,
+        storeAction: 'workflow/openView',
+        storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
+        disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.allowedActions.canOpenView)
     }
 };
 
@@ -134,16 +184,25 @@ const mapActions = (actionList, selectedNodes, allowedWorkflowActions) => {
     return actionList.map(src => {
         let x = Object.assign({}, src);
         // create title with hotkey
-        if (isMac) {
-            const hotkeys = x.hotkey.map(h => hotKeyDisplayMapForMac[h] || h);
-            x.hotkeyText = hotkeys.join(' ');
-        } else {
-            const hotkeys = x.hotkey.map(h => hotKeyDisplayMap[h] || h);
-            x.hotkeyText = hotkeys.join(' + ');
+        if (x.hotkey) {
+            if (isMac) {
+                const hotkeys = x.hotkey.map(h => hotKeyDisplayMapForMac[h] || h);
+                x.hotkeyText = hotkeys.join(' ');
+            } else {
+                const hotkeys = x.hotkey.map(h => hotKeyDisplayMap[h] || h);
+                x.hotkeyText = hotkeys.join(' + ');
+            }
         }
 
         // call disabled methods and turn them to booleans
-        x.disabled = x.isDisabled({ selectedNodes, allowedWorkflowActions });
+        if (typeof src.disabled === 'function') {
+            x.disabled = src.disabled({ selectedNodes, allowedWorkflowActions });
+        }
+
+        // call action params if they are a function
+        if (typeof src.storeActionParams === 'function') {
+            x.storeActionParams = src.storeActionParams({ selectedNodes });
+        }
 
         return x;
     });
@@ -182,14 +241,26 @@ export const getters = {
         const selectedNodes = rootGetters['workflow/selectedNodes']();
         const allowedWorkflowActions = rootState.workflow.activeWorkflow?.allowedActions || {};
 
-        let actionList = [
-        ];
+        let actionList = [];
 
         if (selectedNodes.length === 0) {
             actionList.push(
                 actionMap.executeAll,
                 actionMap.cancelAll,
                 actionMap.resetAll
+            );
+        } else if (selectedNodes.length === 1) {
+            // different actions for a single node
+            actionList.push(
+                actionMap.executeSelected,
+                actionMap.cancelSelected,
+                actionMap.resumeLoopExecution,
+                actionMap.pauseExecution,
+                actionMap.stepLoopExecution,
+                actionMap.resetSelected,
+                actionMap.configureNode,
+                actionMap.openView,
+                actionMap.deleteSelected
             );
         } else {
             actionList.push(

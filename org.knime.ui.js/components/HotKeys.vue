@@ -12,11 +12,18 @@ const throttledZoomThrottle = 30; // throttle keyboard zoom by 30ms
 export default {
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
-        ...mapGetters('workflow', ['isWritable']),
+        ...mapGetters('workflow', ['isWritable', 'selectedNodes']),
         ...mapGetters('userActions', ['hotKeyItems']),
         isWorkflowPresent() {
             // workflow hotkeys are enabled only if a workflow is present
             return Boolean(this.activeWorkflow);
+        },
+        selectedNode() {
+            const selectedNodes = this.selectedNodes();
+            if (selectedNodes.length === 1) {
+                return selectedNodes[0];
+            }
+            return null;
         }
     },
     mounted() {
@@ -33,7 +40,7 @@ export default {
     methods: {
         ...mapMutations('workflow', ['selectAllNodes', 'deselectAllNodes']),
         ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedNodes',
-            'undo', 'redo']),
+            'undo', 'redo', 'openView', 'openDialog']),
         ...mapMutations('canvas', ['setSuggestPanning', 'resetZoom']),
         ...mapActions('canvas', ['setZoomToFit', 'zoomCentered']),
         setupShortcuts() {
@@ -59,6 +66,13 @@ export default {
                         [...this.hotKeyItems.resetAllNodes, () => this.resetNodes('all')],
                         [...this.hotKeyItems.undo, () => this.undo()],
                         [...this.hotKeyItems.redo, () => this.redo()]
+                    ]
+                },
+                singleSelectedNode: {
+                    condition: () => this.selectedNode,
+                    hotKeys: [
+                        [...this.hotKeyItems.openDialog, () => this.openDialog(this.selectedNode.id)],
+                        [...this.hotKeyItems.openView, () => this.openView(this.selectedNode.id)]
                     ]
                 },
                 writableWorkflow: {
