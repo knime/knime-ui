@@ -1,7 +1,8 @@
 <script>
+import { mixin as clickaway } from 'vue-clickaway';
 
 const SET_FOCUS_TIMEOUT = 1;
-const FOCUSOUT_TIMEOUT = 50;
+const FOCUSOUT_TIMEOUT = 1;
 const SCROLLBAR_OFFSET = 4; // px
 
 /*
@@ -17,6 +18,7 @@ const SCROLLBAR_OFFSET = 4; // px
  */
 
 export default {
+    mixins: [clickaway],
     props: {
         /**
          * Items to be listed in the menu.
@@ -129,16 +131,6 @@ export default {
         onDown() {
             this.getNextElement(1).focus();
         },
-        /* We use the bubbling focusOut to hide the menu on clickaway (or focus away with tab). */
-        onFocusOut(e) {
-            setTimeout(() => {
-                if (this.$el !== document.activeElement &&
-                    this.listItems &&
-                    !this.listItems.includes(document.activeElement)) {
-                    this.closeMenu();
-                }
-            }, FOCUSOUT_TIMEOUT);
-        },
         closeMenu() {
             this.isVisible = false;
         },
@@ -169,9 +161,6 @@ export default {
             this.left = left;
             this.top = top;
             this.isVisible = true;
-            setTimeout(() => {
-                this.$el.focus();
-            }, SET_FOCUS_TIMEOUT);
         },
         /*
          * Manually prevents default event bubbling and propagation for methods which fire blur/focusout events that
@@ -189,13 +178,13 @@ export default {
 <template>
   <div
     ref="floatingmenu"
+    v-on-clickaway="closeMenu"
     :class="['floatingmenu', { isVisible }]"
     :style="positionStyle"
     tabindex="0"
     @keydown.esc.stop.prevent="closeMenu"
     @keydown.up.stop.prevent="onUp"
     @keydown.down.stop.prevent="onDown"
-    @focusout.stop="onFocusOut"
     @mousedown="onPreventEvent"
   >
     <ul
