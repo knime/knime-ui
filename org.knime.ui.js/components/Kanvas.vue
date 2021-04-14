@@ -157,6 +157,9 @@ export default {
             }
         },
         contextMenu(e) {
+            if (e.target === this.$refs.svg) {
+                this.deselectAllNodes();
+            }
             this.$refs.contextMenu.show(e);
         }
     }

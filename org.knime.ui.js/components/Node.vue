@@ -306,6 +306,27 @@ export default {
                 this.deselectAllNodes();
                 this.selectNode(this.id);
             }
+        },
+        onRightMouseClick(e) {
+            if (this.isDragging) {
+                return;
+            }
+
+            if (e.ctrlKey || e.metaKey) {
+                // user tries to open component or metanode
+                return;
+            }
+
+            if (e.shiftKey) {
+                // Multi select
+                this.selectNode(this.id);
+            } else {
+                // Single select
+                if (!this.selected) {
+                    this.deselectAllNodes();
+                    this.selectNode(this.id);
+                }
+            }
         }
     }
 };
@@ -363,7 +384,10 @@ export default {
       @mouseenter="hover = true"
     >
       <!-- Elements for which a click selects node -->
-      <g @click.left="onLeftMouseClick">
+      <g
+        @click.left="onLeftMouseClick"
+        @click.right="onRightMouseClick"
+      >
         <!-- Hover Area, larger than the node torso -->
         <rect
           class="hover-area"

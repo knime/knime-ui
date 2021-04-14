@@ -9,7 +9,7 @@ import UndoIcon from '~/assets/undo.svg?inline';
 import DeleteIcon from '~/assets/delete.svg?inline';
 
 /**
- * All hotkeys should be defined here. Look in HotKeys.vue for the real execution
+ * All hotkeys should be defined here. Look in HotKeys.vue for the real execution handling.
  */
 const hotKeys = {
     zoomToFit: ['Ctrl', '1'],
