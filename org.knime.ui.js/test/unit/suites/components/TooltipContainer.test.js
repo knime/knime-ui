@@ -153,6 +153,26 @@ describe('TooltipContainer', () => {
                 y: 0
             });
         });
+
+        it('passes other props', async () => {
+            let tooltip = {
+                position: { x: 0, y: 0 }, // necessary
+                text: 'text',
+                title: 'title',
+                orientation: 'top',
+                type: 'default'
+            };
+            doShallowMount();
+            $store.commit('workflow/setTooltip', tooltip);
+            await Vue.nextTick();
+
+            expect(wrapper.findComponent(Tooltip).props()).toMatchObject({
+                text: 'text',
+                title: 'title',
+                orientation: 'top',
+                type: 'default'
+            });
+        });
     });
 
     describe('updating', () => {
@@ -176,7 +196,6 @@ describe('TooltipContainer', () => {
 
         test('closing tooltip removes scroll listener', async () => {
             let tooltip = {
-                anchorPoint: { x: 0, y: 0 },
                 position: { x: 0, y: 0 }
             };
 
@@ -186,6 +205,13 @@ describe('TooltipContainer', () => {
 
             $store.commit('workflow/setTooltip', null);
             await Vue.nextTick();
+
+            expect(kanvasElement.removeEventListener).toHaveBeenCalledWith('scroll', wrapper.vm.onCanvasScroll);
+        });
+
+        test('destruction of tooltipContainer removes scroll listener', () => {
+            doShallowMount();
+            wrapper.destroy();
 
             expect(kanvasElement.removeEventListener).toHaveBeenCalledWith('scroll', wrapper.vm.onCanvasScroll);
         });

@@ -28,11 +28,11 @@ export default {
             Using the square root gives a more appropriate visual impression for larger factors
         */
         zoomedGap() {
-            return Math.sqrt(this.zoomFactor) * this.tooltip.gap;
+            return Math.sqrt(this.zoomFactor) * (this.tooltip.gap || 0);
         },
         positionOnCanvas() {
             if (!this.tooltip) { return null; }
-            let { anchorPoint, position } = this.tooltip;
+            let { anchorPoint = { x: 0, y: 0 }, position } = this.tooltip;
 
             // get coordinates relative to kanvas' bounds
             let { x, y } = this.getAbsoluteCoordinates({
@@ -57,6 +57,10 @@ export default {
                 this.closeTooltip();
             }
         }
+    },
+    beforeDestroy() {
+        // clean up event listeners
+        this.closeTooltip();
     },
     methods: {
         openTooltip() {
@@ -96,10 +100,13 @@ export default {
     <transition name="tooltip">
       <Tooltip
         v-if="tooltip"
-        v-bind="tooltip"
         :x="position.x"
         :y="position.y"
         :gap="zoomedGap"
+        :text="tooltip.text"
+        :title="tooltip.title"
+        :orientation="tooltip.orientation"
+        :type="tooltip.type"
         @mouseleave.native="onMouseLeave"
         @wheel.ctrl.native.prevent
       />
