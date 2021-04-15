@@ -2,6 +2,7 @@ import path from 'path';
 import postcssConfig from 'webapps-common/webpack/webpack.postcss.config';
 import generateCss from './buildtools/generateCSS';
 import svgConfig from 'webapps-common/webpack/webpack.svg.config';
+import packageFile from './package.json';
 
 const srcDir = path.resolve(__dirname);
 const commonsDir = path.resolve(srcDir, 'webapps-common');
@@ -9,6 +10,9 @@ const commonsDir = path.resolve(srcDir, 'webapps-common');
 const config = {
     alias: {
         'webapps-common': commonsDir
+    },
+    env: {
+        version: packageFile.version
     },
     mode: 'spa',
     head: {
