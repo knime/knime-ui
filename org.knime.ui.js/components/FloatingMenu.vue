@@ -2,7 +2,6 @@
 import { mixin as clickaway } from 'vue-clickaway';
 
 const SET_FOCUS_TIMEOUT = 1;
-const FOCUSOUT_TIMEOUT = 1;
 const SCROLLBAR_OFFSET = 4; // px
 
 /*
@@ -65,17 +64,18 @@ export default {
         };
     },
     computed: {
-        /**
-         * @returns {Array<Element>} - HTML Elements to use for focus and events.
-         */
-        listItems() {
-            return this.$refs.listItem.map(el => el.$el || el);
-        },
         positionStyle() {
             return this.isVisible ? { left: `${this.left}px`, top: `${this.top}px` } : null;
         }
     },
     methods: {
+        /**
+         * Getter for list items, not in computed as $refs are not reactive!
+         * @returns {Array<Element>} - HTML Elements to use for focus and events.
+         */
+        getListItems() {
+            return this.$refs.listItem.map(el => el.$el || el);
+        },
         /**
          * Returns the next HTML Element from the list of items. If the current focused Element is at the top or bottom
          * of the list, this method will return the opposite end.
@@ -84,9 +84,10 @@ export default {
          * @returns {Element} - the next option Element in the list of items.
          */
         getNextElement(changeInd) {
-            return this.listItems[this.listItems.indexOf(document.activeElement) + changeInd] || (changeInd < 0
-                ? this.listItems[this.listItems.length - 1]
-                : this.listItems[0]);
+            let listItems = this.getListItems();
+            return listItems[listItems.indexOf(document.activeElement) + changeInd] || (changeInd < 0
+                ? listItems[listItems.length - 1]
+                : listItems[0]);
         },
         /**
          * Items can behave as links (either nuxt or native <a>) or buttons. If button behavior is expected, we want to
@@ -161,6 +162,8 @@ export default {
             this.left = left;
             this.top = top;
             this.isVisible = true;
+            // set focus to menu for keyboard nav to work
+            setTimeout(() => this.$el.focus(), SET_FOCUS_TIMEOUT);
         },
         /*
          * Manually prevents default event bubbling and propagation for methods which fire blur/focusout events that
