@@ -2,6 +2,7 @@ const port = 4444;
 
 module.exports = {
     src_folders: ['test/integration/suites'],
+    // TODO: remove exclusions once NXT-512 is done (loading of output table)
     exclude: ['kanvasNodeInteraction.js', 'streamingExecution.js', 'kanvasNodeOutput.js'],
     output_folder: 'test/integration/reports',
     custom_assertions_path: ['test/integration/custom-assertions'],
