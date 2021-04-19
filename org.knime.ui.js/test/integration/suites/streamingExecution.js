@@ -8,6 +8,7 @@ const launchTimeout = 5 * 1000;
 const idToSelector = (id) => `[data-node-id="root:${id}"]`;
 const nodeSelector = idToSelector(6);
 const streamingLabelSelector = (index = 1) => ({ selector: '.textWrapper .streamingLabel', index });
+const doubleClickOffset = { x: 50, y: 50 };
 
 module.exports = {
     before: nightwatch => {
@@ -30,11 +31,11 @@ module.exports = {
         nightwatch.expect.element(`${nodeSelector} .streamable`).to.be.visible;
     },
     'open component': nightwatch => {
-        nightwatch.keys(modifierKey);
-        nightwatch.moveToElement(`${nodeSelector} .hover-area`, 50, 50);
-        // NOTE: double click does not offer a selector
-        nightwatch.doubleClick();
-        nightwatch.keys(nightwatch.Keys.NULL);
+        nightwatch.doubleClickElement({
+            selector: `${nodeSelector} .hover-area`,
+            offset: doubleClickOffset,
+            modifierKey
+        });
     },
     'check for global decorator': nightwatch => {
         nightwatch.expect.element('.type-notification.onlyStreaming').to.be.visible;
@@ -54,11 +55,11 @@ module.exports = {
         nightwatch.click(selectors.executeAllButton);
     },
     're-open workflow': nightwatch => {
-        // open workflow
-        nightwatch.keys(modifierKey);
-        nightwatch.moveToElement(`${nodeSelector} .hover-area`, 50, 50);
-        nightwatch.doubleClick();
-        nightwatch.keys(nightwatch.Keys.NULL);
+        nightwatch.doubleClickElement({
+            selector: `${nodeSelector} .hover-area`,
+            offset: doubleClickOffset,
+            modifierKey
+        });
     },
     'check for streaming connector count update': async nightwatch => {
         nightwatch.expect.element(streamingLabelSelector()).to.be.visible;

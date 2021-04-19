@@ -6,6 +6,8 @@ const launchTimeout = 5 * 1000;
 
 const idToSelector = (id) => `[data-node-id="root:${id}"]`;
 const componentSelector = idToSelector(3);
+const doubleClickOffset = { x: 50, y: 50 };
+
 module.exports = {
     before: nightwatch => {
         // load workflow
@@ -33,18 +35,19 @@ module.exports = {
     },
     'open component': nightwatch => {
         // ctrl + doubleClick
-        nightwatch.keys(modifierKey);
-        nightwatch.moveToElement(`${componentSelector} .hover-area`, 50, 50);
-        // NOTE: double click does not offer a selector
-        nightwatch.doubleClick();
-        nightwatch.keys(nightwatch.Keys.NULL);
-
+        nightwatch.doubleClickElement({
+            selector: `${componentSelector} .hover-area`,
+            offset: doubleClickOffset,
+            modifierKey
+        });
         nightwatch.assert.containsText('#metadata .outports', 'Output ports');
         nightwatch.assert.containsText('#metadata .outports', 'TestData');
     },
     'open metanode': nightwatch => {
-        nightwatch.moveToElement(`${idToSelector('3:0:6')} .hover-area`, 50, 50);
-        nightwatch.doubleClick();
+        nightwatch.doubleClickElement({
+            selector: `${idToSelector('3:0:6')} .hover-area`,
+            offset: doubleClickOffset
+        });
 
         nightwatch.assert.elementPresent(idToSelector('3:0:6:2'));
         nightwatch.assert.not.elementPresent('#metadata');
