@@ -6,11 +6,12 @@ import Vuex from 'vuex';
 import WorkflowToolbar from '~/components/WorkflowToolbar';
 import ToolbarButton from '~/components/ToolbarButton';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
+import * as userActionStoreConfig from '~/store/userActions';
 
 jest.mock('~api', () => { }, { virtual: true });
 
 describe('WorkflowToolbar.vue', () => {
-    let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper, $store, selectedNodes, userAgentGetter;
+    let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper, $store, selectedNodes;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -42,6 +43,7 @@ describe('WorkflowToolbar.vue', () => {
             }
         };
         storeConfig = {
+            userActions: userActionStoreConfig,
             workflow: {
                 state: {
                     activeWorkflow: workflow,
@@ -61,8 +63,6 @@ describe('WorkflowToolbar.vue', () => {
             }
         };
 
-        userAgentGetter = jest.spyOn(window.navigator, 'userAgent', 'get');
-
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
             mocks = { $store };
@@ -71,7 +71,7 @@ describe('WorkflowToolbar.vue', () => {
     });
 
     describe('buttons', () => {
-        let buttonArray = ['undo', 'redo', 'execute', 'cancel', 'reset', 'delete'];
+        let buttonArray = ['undo', 'redo', 'execute', 'cancel', 'reset'];
         describe('ALL - no selection', () => {
             it('deactivates buttons by default', () => {
                 doShallowMount();
@@ -131,14 +131,6 @@ describe('WorkflowToolbar.vue', () => {
                 expect(cancelNodeExecution).toHaveBeenCalledWith(expect.anything(), 'all');
                 buttons.at(4).trigger('click');
                 expect(resetNodes).toHaveBeenCalledWith(expect.anything(), 'all');
-            });
-
-            it('translates tooltips to mac formats', () => {
-                userAgentGetter.mockReturnValue('mac');
-                doShallowMount();
-                let windowsTooltip = 'Shift + – Delete Ctrl + ';
-                let macTooltip = wrapper.vm.checkForMacShortcuts(windowsTooltip);
-                expect(macTooltip).toMatch('⇧ – ⌫ ⌘ ');
             });
         });
 
