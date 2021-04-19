@@ -46,8 +46,8 @@ module.exports = {
         nightwatch.moveToElement(`${idToSelector('3:0:6')} .hover-area`, 50, 50);
         nightwatch.doubleClick();
 
-        nightwatch.assert.not.elementPresent('#metadata');
         nightwatch.assert.elementPresent(idToSelector('3:0:6:2'));
+        nightwatch.assert.not.elementPresent('#metadata');
     },
     'navigate via breadcrumb back to component': nightwatch => {
         nightwatch.click({ selector: 'nav.breadcrumb li', index: 1 });

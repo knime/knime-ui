@@ -138,11 +138,10 @@ stage('Integration Tests') {
                         runWithWatchdog $TIMEOUT "$RUN_CMD" $RUN_ARGS -application org.knime.product.KNIME_APPLICATION \
                             -data "$(path "$WORKSPACE/org.knime.ui.js/test/integration/assets/workflows")" $preferences "" &
 
-                        sleep 20 # wait for AP to start fully
-
                         # run integration tests
                         cd ${WORKSPACE}/org.knime.ui.js
                         npm ci
+                        # This also waits for the CEF debug port to be reachable
                         npm run test:integration
 
                         # shutdown executor
