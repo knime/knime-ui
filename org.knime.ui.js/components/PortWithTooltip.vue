@@ -1,6 +1,6 @@
 <script>
 import Port from '~/components/Port';
-import { mapMutations } from 'vuex';
+import { tooltip } from '~/mixins';
 
 /**
  * A port with attached tooltip.
@@ -10,32 +10,27 @@ export default {
     components: {
         Port
     },
+    mixins: [tooltip],
     inject: ['anchorPoint'],
     props: { ...Port.props },
     computed: {
         tooltip() {
             // table ports have less space than other ports, because the triangular shape naturally creates a gap
-            let tooltipSpacing = this.port.type === 'table' ? 0 : 2;
+            const gap = this.port.type === 'table' ? 6 : 8; // eslint-disable-line no-magic-numbers
             const { portSize } = this.$shapes;
             return {
-                x: this.x,
-                y: this.y - portSize / 2 - tooltipSpacing,
+                position: {
+                    x: this.x,
+                    y: this.y - portSize / 2
+                },
+                gap,
                 anchorPoint: this.anchorPoint,
                 title: this.port.name,
                 text: this.port.info,
-                orientation: 'top'
+                orientation: 'top',
+                hoverable: false
             };
         }
-    },
-    methods: {
-        ...mapMutations('workflow', ['setTooltip']),
-        onMouseEnter() {
-            this.setTooltip(this.tooltip);
-        },
-        onMouseLeave() {
-            this.setTooltip(null);
-        }
-
     }
 };
 </script>
@@ -43,7 +38,5 @@ export default {
 <template>
   <Port
     v-bind="this"
-    @mouseenter.native="onMouseEnter"
-    @mouseleave.native="onMouseLeave"
   />
 </template>

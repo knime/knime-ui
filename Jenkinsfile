@@ -73,7 +73,7 @@ timeout(time: 15, unit: 'MINUTES') {
         },
 
         'Tycho Build': {
-            node('maven && java8') {
+            node('maven && java11') {
                 knimetools.defaultTychoBuild(updateSiteProject: 'org.knime.update.ui', disableOWASP: true)
             }
         }

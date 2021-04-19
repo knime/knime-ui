@@ -1,31 +1,16 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
-import Vuex from 'vuex';
+import { shallowMount } from '@vue/test-utils';
 
 import Tooltip from '~/components/Tooltip';
 import * as $shapes from '~/style/shapes';
 
 describe('Tooltip', () => {
 
-    let mocks, doShallowMount, propsData, wrapper, storeConfig;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let mocks, doShallowMount, propsData, wrapper;
 
     beforeEach(() => {
         wrapper = null;
         propsData = {};
-        storeConfig = {
-            canvas: {
-                getters: {
-                    getAbsoluteCoordinates: () => ({ x, y }) => ({ x: x * 2, y: y * 2 })
-                }
-            }
-        };
-        let $store = mockVuexStore(storeConfig);
-        mocks = { $shapes, $store };
+        mocks = { $shapes };
         doShallowMount = () => {
             wrapper = shallowMount(Tooltip, { propsData, mocks });
         };
@@ -41,67 +26,55 @@ describe('Tooltip', () => {
             text: 'foo'
         };
         doShallowMount();
-        expect(wrapper.text()).toBe('foo');
+        expect(wrapper.find('p').text()).toBe('foo');
+        expect(wrapper.find('.title').exists()).toBe(false);
     });
 
     it('displays title', () => {
         propsData = {
-            text: 'foo',
             title: 'bar'
         };
         doShallowMount();
         expect(wrapper.find('.title').text()).toBe('bar');
-        expect(wrapper.text()).toContain('foo');
+        expect(wrapper.find('p').exists()).toBe(false);
     });
 
     it('respects type', () => {
         doShallowMount();
-        expect(wrapper.find('.wrapper').classes()).not.toContain('error');
+        expect(wrapper.find('.tooltip').classes()).not.toContain('error');
 
         propsData.type = 'error';
         doShallowMount();
-        expect(wrapper.find('.wrapper').classes()).toContain('error');
+        expect(wrapper.find('.tooltip').classes()).toContain('error');
     });
 
-    it('respects orientation', () => {
+    it('respects orientation - default bottom', () => {
         doShallowMount();
-        expect(wrapper.find('.wrapper').classes()).not.toContain('top');
-        expect(wrapper.find('.wrapper').classes()).toContain('bottom');
+        expect(wrapper.find('.tooltip').classes()).not.toContain('top');
+        expect(wrapper.find('.tooltip').classes()).toContain('bottom');
 
         propsData.orientation = 'top';
         doShallowMount();
-        expect(wrapper.find('.wrapper').classes()).toContain('top');
-        expect(wrapper.find('.wrapper').classes()).not.toContain('bottom');
+        expect(wrapper.find('.tooltip').classes()).toContain('top');
+        expect(wrapper.find('.tooltip').classes()).not.toContain('bottom');
     });
 
-    it('allows positioning (bottom)', () => {
+    it('allows positioning', () => {
         propsData.x = 123;
         propsData.y = 345;
+        propsData.gap = 10;
         doShallowMount();
-        expect(wrapper.attributes('style')).toContain('left: 246px;');
-        let top = propsData.y * 2 + Math.SQRT1_2 * $shapes.tooltipArrowSize;
-        expect(wrapper.attributes('style')).toContain(`top: ${top}px;`);
+
+        let gap = propsData.gap + Math.SQRT1_2 * $shapes.tooltipArrowSize;
+        expect(wrapper.attributes('style')).toContain('left: 123px;');
+        expect(wrapper.attributes('style')).toContain('top: 345px;');
+        expect(wrapper.attributes('style')).toContain(`--gapSize: ${gap}`);
+        expect(wrapper.attributes('style')).toContain(`--arrowSize: ${$shapes.tooltipArrowSize}`);
     });
 
-    it('allows positioning (top)', () => {
-        propsData.x = 123;
-        propsData.y = 345;
-        propsData.orientation = 'top';
+    it('sets maximum size', () => {
         doShallowMount();
-        expect(wrapper.attributes('style')).toContain('left: 246px;');
-        let top = 2 * propsData.y - Math.SQRT1_2 * $shapes.tooltipArrowSize;
-        expect(wrapper.attributes('style')).toContain(`top: ${top}px;`);
-    });
-
-    it('allows anchoring to a reference point', () => {
-        propsData.anchorPoint = { x: 40, y: 30 };
-        propsData.x = 123;
-        propsData.y = 345;
-        propsData.orientation = 'top';
-        doShallowMount();
-        expect(wrapper.attributes('style')).toContain('left: 326px;');
-        // eslint-disable-next-line no-magic-numbers
-        let top = 2 * (propsData.y + 30) - Math.SQRT1_2 * $shapes.tooltipArrowSize;
-        expect(wrapper.attributes('style')).toContain(`top: ${top}px;`);
+        expect(wrapper.attributes('style')).toContain(`max-width: ${$shapes.tooltipMaxWidth}`);
+        expect(wrapper.find('.scroller').attributes('style')).toContain(`max-height: ${$shapes.tooltipMaxHeight}`);
     });
 });

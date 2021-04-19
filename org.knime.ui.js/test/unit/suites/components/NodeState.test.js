@@ -106,7 +106,7 @@ describe('NodeState.vue', () => {
         doShallowMount();
         expect(wrapper.text()).toBe('queued');
     });
-    
+
     it('shows "paused"', () => {
         propsData.executionState = 'QUEUED';
         propsData.loopStatus = 'PAUSED';
@@ -192,8 +192,12 @@ describe('NodeState.vue', () => {
                 anchorPoint: { x: 123, y: 456 },
                 text: 'this is an error',
                 type: 'error',
-                x: 16,
-                y: 59
+                position: {
+                    x: 16,
+                    y: 52
+                },
+                hoverable: true,
+                gap: 10
             });
 
             wrapper.find('g').trigger('mouseleave');
@@ -215,24 +219,13 @@ describe('NodeState.vue', () => {
             expect(currentTooltip).toStrictEqual({
                 anchorPoint: { x: 123, y: 456 },
                 text: 'mo Progress',
-                x: 16,
-                y: 59
+                position: {
+                    x: 16,
+                    y: 52
+                },
+                hoverable: true,
+                gap: 10
             });
-        });
-
-        it('handles watchers', async () => {
-            doShallowMount();
-            let watcherCountBefore = wrapper.vm._watchers.length;
-            wrapper.find('g').trigger('mouseenter');
-            await Vue.nextTick();
-            wrapper.find('g').trigger('mouseenter');
-            await Vue.nextTick();
-            let watcherCountAfter = wrapper.vm._watchers.length;
-            expect(watcherCountAfter).toBe(watcherCountBefore + 1);
-            wrapper.find('g').trigger('mouseleave');
-            await Vue.nextTick();
-            let watcherCountFinally = wrapper.vm._watchers.length;
-            expect(watcherCountFinally).toBe(watcherCountBefore);
         });
     });
 });

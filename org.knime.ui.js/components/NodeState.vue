@@ -1,6 +1,8 @@
 <script>
-import { mapMutations } from 'vuex';
+import { tooltip } from '~/mixins';
+
 export default {
+    mixins: [tooltip],
     inject: ['anchorPoint'],
     props: {
         executionState: {
@@ -32,11 +34,6 @@ export default {
             default: null
         }
     },
-    data() {
-        return {
-            removeWatcher: null
-        };
-    },
     computed: {
         /**
          * sets the different lights of the traffic light
@@ -65,13 +62,15 @@ export default {
             return `polygon(0 0, ${100 * this.clippedProgress}% 0, ${100 * this.clippedProgress}% 100%, 0 100%)`;
         },
         tooltip() {
-            const errorSymbolRadius = 5;
-            const tooltipSpacing = 2;
             const { nodeSize, nodeStatusHeight, nodeStatusMarginTop } = this.$shapes;
             let tooltip = {
-                x: nodeSize / 2,
-                y: nodeSize + nodeStatusMarginTop + nodeStatusHeight + errorSymbolRadius + tooltipSpacing,
-                anchorPoint: this.anchorPoint
+                position: {
+                    x: nodeSize / 2,
+                    y: nodeSize + nodeStatusMarginTop + nodeStatusHeight
+                },
+                anchorPoint: this.anchorPoint,
+                gap: 10,
+                hoverable: true
             };
 
             if (this.error) {
@@ -89,28 +88,6 @@ export default {
         progressDisplayPercentage() {
             return Math.round(100 * this.clippedProgress);
         }
-    },
-    methods: {
-        ...mapMutations('workflow', ['setTooltip']),
-        onMouseEnter() {
-            if (this.removeWatcher) {
-                this.removeWatcher();
-            }
-            // update the tooltip whenever one of the props change
-            this.removeWatcher = this.$watch(
-                () => [this.error, this.warning, this.progressMessage, this.executionState],
-                function () {
-                    this.setTooltip(this.tooltip); // eslint-disable-line no-invalid-this
-                }, {
-                    immediate: true
-                }
-            );
-        },
-        onMouseLeave() {
-            this.removeWatcher();
-            this.setTooltip(null);
-            this.removeWatcher = null;
-        }
     }
 };
 </script>
@@ -118,8 +95,6 @@ export default {
 <template>
   <g
     :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`"
-    @mouseenter="onMouseEnter"
-    @mouseleave="onMouseLeave"
   >
     <rect
       :width="$shapes.nodeSize"
