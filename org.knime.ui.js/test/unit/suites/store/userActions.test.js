@@ -87,19 +87,43 @@ describe('userActions store', () => {
         it('actions for a single selected nodes', () => {
             selectedNodes = [workflow.nodes['root:1']];
             loadStore();
-            expect(store.getters['userActions/contextMenuActionItems']).toHaveLength(9);
+            let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
+            expect(contextMenuActionItems).toHaveLength(9);
+            // TODO: add store action (and paramter)
+            expect(contextMenuActionItems[0].text).toBe('Execute');
+            expect(contextMenuActionItems[1].text).toBe('Cancel');
+            expect(contextMenuActionItems[2].text).toBe('Resume loop execution');
+            expect(contextMenuActionItems[3].text).toBe('Pause execution');
+            expect(contextMenuActionItems[4].text).toBe('Step loop execution');
+            expect(contextMenuActionItems[5].text).toBe('Reset');
+            expect(contextMenuActionItems[6].text).toBe('Configure');
+            expect(contextMenuActionItems[7].text).toBe('Open view');
+            expect(contextMenuActionItems[8].text).toBe('Delete');
+
         });
         it('actions for multiple selected nodes', () => {
             selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:2']];
             loadStore();
-            expect(store.getters['userActions/contextMenuActionItems']).toHaveLength(4);
+            let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
+            expect(contextMenuActionItems).toHaveLength(4);
+            expect(contextMenuActionItems[0].text).toBe('Execute');
+            expect(contextMenuActionItems[1].text).toBe('Cancel');
+            expect(contextMenuActionItems[2].text).toBe('Reset');
+            expect(contextMenuActionItems[3].text).toBe('Delete');
         });
         it('actions for workflow, no node selected', () => {
             loadStore();
-            expect(store.getters['userActions/contextMenuActionItems']).toHaveLength(3);
+            let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
+            expect(contextMenuActionItems).toHaveLength(3);
+            for (let i = 0; i < contextMenuActionItems.length; i++) {
+                expect(contextMenuActionItems[i].text).toContain('all');
+            }
         });
     });
 
+    /*
+      Main Menu is still also tested in WorkflowToolbar.test.js
+     */
     describe('main menu', () => {
         it('actions for a single selected nodes', () => {
             selectedNodes = [workflow.nodes['root:1']];
