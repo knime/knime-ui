@@ -20,17 +20,26 @@ describe('userActions store', () => {
             info: {},
             nodes: {
                 'root:1': {
+                    id: 'root:1',
                     allowedActions: {
                         canExecute: false,
                         canCancel: false,
-                        canReset: false
+                        canReset: false,
+                        canPause: true
                     }
                 },
                 'root:2': {
+                    id: 'root:2',
                     allowedActions: {
                         canExecute: true,
                         canCancel: true,
-                        canReset: true
+                        canReset: true,
+                        canPause: true,
+                        canOpenDialog: true,
+                        canOpenView: true,
+                        canStep: true,
+                        canResume: true,
+                        canDelete: true
                     }
                 }
             },
@@ -84,45 +93,140 @@ describe('userActions store', () => {
     });
 
     describe('context menu', () => {
-        it('actions for a single selected nodes', () => {
+        it('provides actions for a single selected node', () => {
             selectedNodes = [workflow.nodes['root:1']];
             loadStore();
             let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
             expect(contextMenuActionItems).toHaveLength(9);
-            // TODO: add store action (and paramter)
+
             expect(contextMenuActionItems[0].text).toBe('Execute');
+            expect(contextMenuActionItems[0].storeAction).toBe('workflow/executeNodes');
+            expect(contextMenuActionItems[0].storeActionParams).toStrictEqual(['selected']);
+            expect(contextMenuActionItems[0].disabled).toBe(true);
+
             expect(contextMenuActionItems[1].text).toBe('Cancel');
+            expect(contextMenuActionItems[1].storeAction).toBe('workflow/cancelNodeExecution');
+            expect(contextMenuActionItems[1].storeActionParams).toStrictEqual(['selected']);
+            expect(contextMenuActionItems[1].disabled).toBe(true);
+
             expect(contextMenuActionItems[2].text).toBe('Resume loop execution');
+            expect(contextMenuActionItems[2].storeAction).toBe('workflow/resumeNodeExecution');
+            expect(contextMenuActionItems[2].storeActionParams).toStrictEqual(['root:1']);
+            expect(contextMenuActionItems[2].disabled).toBe(true);
+
             expect(contextMenuActionItems[3].text).toBe('Pause execution');
+            expect(contextMenuActionItems[3].storeAction).toBe('workflow/pauseNodeExecution');
+            expect(contextMenuActionItems[3].storeActionParams).toStrictEqual(['root:1']);
+            expect(contextMenuActionItems[3].disabled).toBe(false);
+
             expect(contextMenuActionItems[4].text).toBe('Step loop execution');
+            expect(contextMenuActionItems[4].storeAction).toBe('workflow/stepNodeExecution');
+            expect(contextMenuActionItems[4].storeActionParams).toStrictEqual(['root:1']);
+            expect(contextMenuActionItems[4].disabled).toBe(true);
+
             expect(contextMenuActionItems[5].text).toBe('Reset');
+            expect(contextMenuActionItems[5].storeAction).toBe('workflow/resetNodes');
+            expect(contextMenuActionItems[5].storeActionParams).toStrictEqual(['selected']);
+            expect(contextMenuActionItems[5].disabled).toBe(true);
+
             expect(contextMenuActionItems[6].text).toBe('Configure');
+            expect(contextMenuActionItems[6].storeAction).toBe('workflow/openDialog');
+            expect(contextMenuActionItems[6].disabled).toBe(true);
+
             expect(contextMenuActionItems[7].text).toBe('Open view');
+            expect(contextMenuActionItems[7].storeAction).toBe('workflow/openView');
+            expect(contextMenuActionItems[7].disabled).toBe(true);
+
             expect(contextMenuActionItems[8].text).toBe('Delete');
+            expect(contextMenuActionItems[8].storeAction).toBe('workflow/deleteSelectedNodes');
+            expect(contextMenuActionItems[8].storeActionParams).toStrictEqual([]);
+            expect(contextMenuActionItems[8].disabled).toBe(true);
 
         });
-        it('actions for multiple selected nodes', () => {
+
+        it('applies node can* rights correctly', () => {
+            selectedNodes = [workflow.nodes['root:2']];
+            loadStore();
+            let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
+
+            expect(contextMenuActionItems[0].disabled).toBe(false);
+            expect(contextMenuActionItems[1].disabled).toBe(false);
+            expect(contextMenuActionItems[2].disabled).toBe(false);
+            expect(contextMenuActionItems[3].disabled).toBe(false);
+            expect(contextMenuActionItems[4].disabled).toBe(false);
+            expect(contextMenuActionItems[5].disabled).toBe(false);
+            expect(contextMenuActionItems[6].disabled).toBe(false);
+            expect(contextMenuActionItems[7].disabled).toBe(false);
+            expect(contextMenuActionItems[8].disabled).toBe(false);
+
+        });
+
+        it('provides actions for multiple selected nodes', () => {
             selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:2']];
             loadStore();
             let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
             expect(contextMenuActionItems).toHaveLength(4);
+
             expect(contextMenuActionItems[0].text).toBe('Execute');
+            expect(contextMenuActionItems[0].disabled).toBe(false);
+
             expect(contextMenuActionItems[1].text).toBe('Cancel');
+            expect(contextMenuActionItems[1].disabled).toBe(false);
+
             expect(contextMenuActionItems[2].text).toBe('Reset');
+            expect(contextMenuActionItems[2].disabled).toBe(false);
+
             expect(contextMenuActionItems[3].text).toBe('Delete');
+            expect(contextMenuActionItems[3].disabled).toBe(true);
         });
-        it('actions for workflow, no node selected', () => {
+
+        it('enables delete action if all selected nodes canDelete', () => {
+            workflow.nodes['root:1'].allowedActions.canDelete = true;
+            selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:2']];
+            loadStore();
+            let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
+            expect(contextMenuActionItems[3].disabled).toBe(false);
+        });
+
+        it('provides actions for workflow, no node selected', () => {
             loadStore();
             let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
             expect(contextMenuActionItems).toHaveLength(3);
-            for (let i = 0; i < contextMenuActionItems.length; i++) {
-                expect(contextMenuActionItems[i].text).toContain('all');
-            }
+
+            expect(contextMenuActionItems[0].text).toBe('Execute all');
+            expect(contextMenuActionItems[0].storeAction).toBe('workflow/executeNodes');
+            expect(contextMenuActionItems[0].storeActionParams).toStrictEqual(['all']);
+            expect(contextMenuActionItems[0].hotkeyText).toBe('Shift + F7');
+            expect(contextMenuActionItems[0].disabled).toBe(false);
+
+            expect(contextMenuActionItems[1].text).toBe('Cancel');
+            expect(contextMenuActionItems[1].storeAction).toBe('workflow/cancelNodeExecution');
+            expect(contextMenuActionItems[1].storeActionParams).toStrictEqual(['all']);
+            expect(contextMenuActionItems[1].disabled).toBe(false);
+
+            expect(contextMenuActionItems[2].text).toBe('Reset');
+            expect(contextMenuActionItems[2].storeAction).toBe('workflow/resetNodes');
+            expect(contextMenuActionItems[2].storeActionParams).toStrictEqual(['all']);
+            expect(contextMenuActionItems[2].disabled).toBe(false);
+
+        });
+
+        it('provides disabled actions for workflow if rights are missing', () => {
+            workflow.allowedActions.canExecute = false;
+            workflow.allowedActions.canCancel = false;
+            workflow.allowedActions.canReset = false;
+            loadStore();
+            let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
+            expect(contextMenuActionItems).toHaveLength(3);
+
+            expect(contextMenuActionItems[0].disabled).toBe(true);
+            expect(contextMenuActionItems[1].disabled).toBe(true);
+            expect(contextMenuActionItems[2].disabled).toBe(true);
         });
     });
 
     /*
-      Main Menu is still also tested in WorkflowToolbar.test.js
+     Main Menu is still also tested in WorkflowToolbar.test.js
      */
     describe('main menu', () => {
         it('actions for a single selected nodes', () => {
@@ -132,11 +236,13 @@ describe('userActions store', () => {
             expect(items).toHaveLength(6);
             expect(items[0].storeAction).toBe('workflow/undo');
         });
+
         it('actions for multiple selected nodes', () => {
             selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:2']];
             loadStore();
             expect(store.getters['userActions/mainMenuActionItems']).toHaveLength(6);
         });
+
         it('actions for workflow, no node selected', () => {
             loadStore();
             expect(store.getters['userActions/mainMenuActionItems']).toHaveLength(5);
