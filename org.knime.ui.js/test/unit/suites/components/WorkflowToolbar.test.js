@@ -10,7 +10,8 @@ import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 jest.mock('~api', () => { }, { virtual: true });
 
 describe('WorkflowToolbar.vue', () => {
-    let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper, $store, selectedNodes, userAgentGetter;
+    let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper, $store, selectedNodes, selectedConnections,
+        userAgentGetter;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -22,21 +23,26 @@ describe('WorkflowToolbar.vue', () => {
         propsData = {};
 
         selectedNodes = [];
+        selectedConnections = [];
         workflow = {
             info: {},
             nodes: {
                 'root:1': {
+                    id: 'root:1',
                     allowedActions: {
                         canExecute: false,
                         canCancel: false,
-                        canReset: false
+                        canReset: false,
+                        canDelete: false
                     }
                 },
                 'root:2': {
+                    id: 'root:2',
                     allowedActions: {
                         canExecute: true,
                         canCancel: true,
-                        canReset: true
+                        canReset: true,
+                        canDelete: true
                     }
                 }
             }
@@ -44,19 +50,21 @@ describe('WorkflowToolbar.vue', () => {
         storeConfig = {
             workflow: {
                 state: {
-                    activeWorkflow: workflow,
-                    selectedNodes: []
+                    activeWorkflow: workflow
                 },
                 actions: {
                     executeNodes: jest.fn(),
                     cancelNodeExecution: jest.fn(),
                     resetNodes: jest.fn(),
-                    deleteNodes: jest.fn(),
+                    deleteSelectedObjects: jest.fn(),
                     undo: jest.fn(),
                     redo: jest.fn()
-                },
+                }
+            },
+            selection: {
                 getters: {
-                    selectedNodes: () => () => selectedNodes
+                    selectedNodes: () => selectedNodes,
+                    selectedConnections: () => selectedConnections
                 }
             }
         };
@@ -174,11 +182,17 @@ describe('WorkflowToolbar.vue', () => {
                 selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:2']];
                 doShallowMount();
                 let buttons = wrapper.findAllComponents(ToolbarButton);
-                let { executeNodes, cancelNodeExecution, resetNodes } = storeConfig.workflow.actions;
+                let {
+                    executeNodes,
+                    cancelNodeExecution,
+                    resetNodes,
+                    deleteSelectedObjects
+                } = storeConfig.workflow.actions;
 
                 expect(executeNodes).not.toHaveBeenCalled();
                 expect(cancelNodeExecution).not.toHaveBeenCalled();
                 expect(resetNodes).not.toHaveBeenCalled();
+                expect(deleteSelectedObjects).not.toHaveBeenCalled();
 
                 buttons.at(2).trigger('click');
                 expect(executeNodes).toHaveBeenCalledWith(expect.anything(), 'selected');
@@ -186,6 +200,8 @@ describe('WorkflowToolbar.vue', () => {
                 expect(cancelNodeExecution).toHaveBeenCalledWith(expect.anything(), 'selected');
                 buttons.at(4).trigger('click');
                 expect(resetNodes).toHaveBeenCalledWith(expect.anything(), 'selected');
+                buttons.at(5).trigger('click');
+                expect(deleteSelectedObjects).toHaveBeenCalled();
             });
         });
     });

@@ -26,9 +26,11 @@ const mockNode = ({ id, position }) => ({
     state: null
 });
 
-const mockConnector = ({ nr }) => ({
+const mockConnector = ({ nr, id }) => ({
     sourceNode: '',
     destNode: '',
+    id,
+    canDelete: false,
     sourcePort: nr,
     destPort: 0,
     flowVariableConnection: false,
@@ -83,9 +85,9 @@ describe('Kanvas', () => {
             },
             nodes: nodeData,
             connections: {
-                inA: mockConnector({ nr: 0 }),
-                outA: mockConnector({ nr: 1 }),
-                outB: mockConnector({ nr: 2 })
+                inA: mockConnector({ nr: 0, id: 'inA' }),
+                outA: mockConnector({ nr: 1, id: 'outA' }),
+                outB: mockConnector({ nr: 2, id: 'outB' })
             },
             workflowAnnotations: []
         };
@@ -175,7 +177,6 @@ describe('Kanvas', () => {
                     type: `type-${nodeId}`,
                     link: null,
                     allowedActions: {},
-                    selected: false,
                     executionInfo: null,
                     loopInfo: {
                         allowedActions: {}
