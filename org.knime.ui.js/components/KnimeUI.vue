@@ -1,10 +1,10 @@
 <script>
 import { mapActions } from 'vuex';
-
 import AppHeader from '~/components/AppHeader';
 import Sidebar from '~/components/Sidebar';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import HotKeys from '~/components/HotKeys';
+import TooltipContainer from '~/components/TooltipContainer';
 
 // These fonts will be pre-loaded at application startup
 const requiredFonts = ['Roboto', 'Roboto Condensed', 'Roboto Mono'];
@@ -19,7 +19,8 @@ export default {
         AppHeader,
         Sidebar,
         WorkflowTabContent,
-        HotKeys
+        HotKeys,
+        TooltipContainer
     },
     data() {
         return {
@@ -38,19 +39,19 @@ export default {
 </script>
 
 <template>
-  <div
-    v-if="loaded"
-    id="knime-ui"
-  >
-    <HotKeys />
+  <div id="knime-ui">
     <AppHeader id="header" />
     <Sidebar id="sidebar" />
-    <WorkflowTabContent id="tab-content" />
+    <template v-if="loaded">
+      <HotKeys />
+      <WorkflowTabContent id="tab-content" />
+      <TooltipContainer id="tooltip-container" />
+    </template>
+    <div
+      v-else
+      class="loader"
+    />
   </div>
-  <div
-    v-else
-    class="loader"
-  />
 </template>
 
 <style lang="postcss" scoped>

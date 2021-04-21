@@ -142,7 +142,7 @@ export const actions = {
             changeNodeState({ projectId, nodeIds: nodes, action, workflowId: activeWorkflowId });
         } else if (nodes === 'all') {
             // act upon entire workflow
-            changeNodeState({ projectId, nodeIds: [activeWorkflowId], action, workflowId: activeWorkflowId });
+            changeNodeState({ projectId, action, workflowId: activeWorkflowId });
         } else if (nodes === 'selected') {
             // act upon selected nodes
             changeNodeState({

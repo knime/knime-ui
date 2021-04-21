@@ -1,6 +1,4 @@
 <script>
-import { mapGetters } from 'vuex';
-
 /**
  * A tooltip displaying text and an optional headline
  */
@@ -11,7 +9,7 @@ export default {
          */
         text: {
             type: [String, Number],
-            default: ''
+            default: null
         },
         /**
          * An optional headline
@@ -35,16 +33,6 @@ export default {
             default: 0
         },
         /**
-         * Optional: a point on the Kanvas that marks the origin of the tooltips's coordinates.
-         * This makes it more convenient to display tooltips e.g. on Nodes, because it allows to pass the node position
-         * as `anchorPoint`, and the tooltip's coordinates relative to the node.
-         */
-        anchorPoint: {
-            type: Object,
-            default: () => ({ x: 0, y: 0 }),
-            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
-        },
-        /**
          * Type of tooltip. Affects styling
          */
         type: {
@@ -59,24 +47,20 @@ export default {
             type: String,
             default: 'bottom',
             validator: orientation => ['bottom', 'top'].includes(orientation)
+        },
+        /**
+         * spacing between the invisible hoverable boundaries of the tooltip and the visible part
+         */
+        gap: {
+            type: Number,
+            default: 0
         }
+
     },
     computed: {
-        ...mapGetters('canvas', ['getAbsoluteCoordinates']),
-        position() {
-            let { $shapes: { tooltipArrowSize } } = this;
-            let { x, y } = this.getAbsoluteCoordinates({
-                x: this.anchorPoint.x + this.x,
-                y: this.anchorPoint.y + this.y
-            });
-
-            const arrowHalfDiagonal = Math.SQRT1_2 * tooltipArrowSize;
-            if (this.orientation === 'bottom') {
-                y += arrowHalfDiagonal;
-            } else {
-                y -= arrowHalfDiagonal;
-            }
-            return { x, y };
+        expandedGap() {
+            // The arrow tip is outside of the bounding box and rotated by 45°.
+            return this.gap + this.$shapes.tooltipArrowSize * Math.SQRT1_2;
         }
     }
 };
@@ -84,114 +68,153 @@ export default {
 
 <template>
   <div
-    :class="['wrapper', type, orientation]"
+    :class="['tooltip', orientation, type]"
     :style="{
       '--arrowSize': `${$shapes.tooltipArrowSize}px`,
-      top: `${position.y}px`,
-      left: `${position.x}px`,
-      maxWidth: `${$shapes.tooltipMaxWidth}px`
+      '--gapSize': `${expandedGap}px`,
+      top: `${y}px`,
+      left: `${x}px`,
+      maxWidth: `${$shapes.tooltipMaxWidth}px`,
     }"
   >
-    <div
-      v-if="title"
-      class="title"
-    >
-      {{ title }}
+    <div class="wrap-arrow">
+      <div
+        class="scroller"
+        :style="{maxHeight: `${$shapes.tooltipMaxHeight}px`}"
+      >
+        <div
+          v-if="title"
+          class="title"
+        >
+          {{ title }}
+        </div>
+        <p v-if="text">
+          {{ text }}
+        </p>
+      </div>
     </div>
-    {{ text }}
   </div>
 </template>
 
 <style lang="postcss" scoped>
-.wrapper {
+.tooltip {
   --border-width: 1px;
 
-  line-height: initial;
   position: relative;
-  text-align: justify;
   display: inline-block;
-  font-family: "Roboto Condensed", sans-serif;
-  user-select: none;
-  font-size: 12px;
-  padding: 4px 5px;
-  box-shadow: 0 0 10px rgba(62, 58, 57, 0.3);
-  z-index: 1;
-  border: var(--border-width) solid;
   transform: translate(-50%, calc(-1 * var(--border-width)));
 
   &.top {
     transform: translate(-50%, calc(-100% + var(--border-width)));
+    padding-bottom: var(--gapSize);
   }
 
-  &::before,
-  &::after {
+  &.bottom {
+    padding-top: var(--gapSize);
+  }
+
+  & .scroller {
+    position: relative;
+    z-index: 1;
+    padding: 8px 10px 10px 10px;
+    overflow-y: auto;
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 13px;
+    line-height: 19px;
+
+    & .title {
+      font-weight: bold;
+      line-height: 19px;
+    }
+
+    & p {
+      margin: 0;
+    }
+  }
+
+  & .wrap-arrow {
+    box-shadow: 0 0 10px rgba(62, 58, 57, 0.3);
     border: var(--border-width) solid;
-    z-index: -1;
+    position: relative;
   }
 
-  & .title {
-    font-weight: bold;
-    line-height: 12px;
-    margin-bottom: 1px;
-  }
-
-  &.default {
-    color: white;
-    background-color: var(--knime-masala);
-    border-color: var(--knime-masala);
-
-    &::before,
-    &::after {
-      border-color: var(--knime-masala);
-      background-color: var(--knime-masala);
-    }
-  }
-
-  &.error {
-    color: var(--knime-masala);
-    border-radius: 1px;
-    background-color: white;
-    border-color: var(--error-color);
-
-    &::before,
-    &::after {
-      border-color: var(--error-color);
-      background-color: white;
-    }
-  }
-
-  &.warning {
-    color: var(--knime-masala);
-    border-radius: 1px;
-    background-color: white;
-    border-color: var(--warning-color);
-
-    &::after,
-    &::before {
-      border-color: var(--warning-color);
-      background-color: white;
-    }
-  }
-
-  &.top::after,
-  &.bottom::before {
+  &.top .wrap-arrow::after,
+  &.bottom .wrap-arrow::before {
     width: var(--arrowSize);
     height: var(--arrowSize);
     content: '';
     position: absolute;
     left: 50%;
+    border: var(--border-width) solid;
     border-left-color: transparent;
     border-bottom-color: transparent;
   }
 
-  &.bottom::before {
+  &.top .wrap-arrow::after {
+    bottom: 0;
+    transform: translate(-50%, 50%) rotate(135deg);
+  }
+
+  &.bottom .wrap-arrow::before {
     top: 0;
     transform: translate(-50%, -50%) rotate(-45deg);
   }
 
-  &.top::after {
-    bottom: 0;
-    transform: translate(-50%, 50%) rotate(135deg);
+  &.warning {
+    color: var(--knime-masala);
+
+    & .wrap-arrow {
+      border-radius: 1px;
+      border-color: var(--warning-color);
+
+      &::after,
+      &::before {
+        border-color: var(--warning-color);
+        background-color: white;
+      }
+    }
+
+    & .scroller {
+      background-color: white;
+    }
+  }
+
+  &.error {
+    color: var(--knime-masala);
+
+    & .wrap-arrow {
+      border-radius: 1px;
+      border-color: var(--error-color);
+
+      &::after,
+      &::before {
+        border-color: var(--error-color);
+        background-color: white;
+      }
+    }
+
+    & .scroller {
+      background-color: white;
+    }
+  }
+
+  &.default {
+    color: white;
+
+    & .wrap-arrow {
+      border-color: var(--knime-masala);
+
+      &::before,
+      &::after {
+        border-color: var(--knime-masala);
+        background-color: var(--knime-masala);
+      }
+    }
+
+    & .scroller {
+      background-color: var(--knime-masala);
+      padding: 2px 6px 4px 6px;
+    }
   }
 }
 </style>

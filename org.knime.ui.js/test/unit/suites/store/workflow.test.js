@@ -260,7 +260,7 @@ describe('workflow store', () => {
             });
 
             store.dispatch(`workflow/changeNodeState`, { nodes: 'all' });
-            expect(mock).toHaveBeenLastCalledWith({ nodeIds: ['root'], projectId: 'foo', workflowId: 'root' });
+            expect(mock).toHaveBeenLastCalledWith({ projectId: 'foo', workflowId: 'root' });
 
             store.dispatch('selection/selectAllNodes');
             store.dispatch(`workflow/changeNodeState`, { nodes: 'selected' });
