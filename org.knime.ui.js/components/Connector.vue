@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters, mapMutations } from 'vuex';
+import { mapState, mapGetters, mapActions } from 'vuex';
 import { portBar, connectorPosition } from '~/mixins';
 
 /**
@@ -80,21 +80,19 @@ export default {
         }
     },
     methods: {
-        ...mapMutations('selection', ['selectConnector', 'deselectConnector', 'deselectAllConnectors',
-            'deselectAllNodes']),
+        ...mapActions('selection', ['selectConnection', 'deselectConnection', 'deselectAllObjects']),
         onLeftMouseClick(e) {
             if (e.shiftKey) {
                 // Multi select
-                if (this.selected) {
-                    this.deselectConnector(this.id);
+                if (this.isConnectionSelected(this.id)) {
+                    this.deselectConnection(this);
                 } else {
-                    this.selectConnector(this.$props);
+                    this.selectConnection(this);
                 }
             } else {
                 // Single select
-                this.deselectAllConnectors();
-                this.deselectAllNodes();
-                this.selectConnector(this.$props);
+                this.deselectAllObjects();
+                this.selectConnection(this);
             }
         }
     }

@@ -81,11 +81,10 @@ export default {
         },
         // deletes all the selected nodes and connectors
         deleteSelection() {
-            this.$store.dispatch('workflow/deleteSelectedObjects', {
+            this.deleteSelectedObjects({
                 selectedNodes: this.selectedNodes,
                 selectedConnections: this.selectedConnections
             });
-            this.deselectAllObjects();
         }
     }
 };

@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters, mapMutations } from 'vuex';
+import { mapState, mapGetters, mapActions } from 'vuex';
 import { throttle } from 'lodash';
 import NodeSelectionPlane from '~/components/NodeSelectionPlane';
 
@@ -80,7 +80,7 @@ export default {
         }
     },
     methods: {
-        ...mapMutations('selection', ['selectNode', 'deselectNode', 'deselectAllNodes', 'deselectAllConnectors']),
+        ...mapActions('selection', ['selectNode', 'deselectNode', 'deselectAllObjects']),
         /**
          * Resets the drag position in the store. This can only happen here, as otherwise the node
          * will be reset to its position before the actual movement of the store happened.
@@ -99,8 +99,7 @@ export default {
         onMoveStart(e) {
             this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: true });
             if (!e.detail.event.shiftKey && !this.isNodeSelected(this.id)) {
-                this.deselectAllNodes();
-                this.deselectAllConnectors();
+                this.deselectAllObjects();
             }
             this.selectNode(this.activeWorkflow.nodes[this.id]);
             this.startPos = { x: this.position.x, y: this.position.y };
@@ -121,7 +120,7 @@ export default {
                 gridSize.y - this.position.y;
             this.$store.dispatch(
                 'workflow/moveNodes',
-                { deltaX, deltaY, selectedNodes: this.selectedNodeIds }
+                { deltaX, deltaY }
             );
             /* eslint-enable no-invalid-this */
         }, moveNodesThrottle),
@@ -134,8 +133,7 @@ export default {
             this.$store.dispatch('workflow/saveNodeMoves', {
                 projectId: this.projectId,
                 startPos: this.startPos,
-                nodeId: this.id,
-                selectedNodes: this.selectedNodeIds
+                nodeId: this.id
             });
         }
     }

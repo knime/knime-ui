@@ -1,5 +1,5 @@
 <script>
-import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
+import { mapActions, mapState, mapGetters } from 'vuex';
 import Port from '~/components/PortWithTooltip';
 import NodeState from '~/components/NodeState';
 import NodeTorso from '~/components/NodeTorso';
@@ -241,7 +241,7 @@ export default {
     },
     methods: {
         ...mapActions('workflow', ['openDialog']),
-        ...mapMutations('selection', ['selectNode', 'deselectNode', 'deselectAllNodes', 'deselectAllConnectors']),
+        ...mapActions('selection', ['selectNode', 'deselectAllObjects', 'deselectNode']),
         portShift,
         onLeaveHoverArea(e) {
             if (this.$refs.actionbar?.$el?.contains(e.relatedTarget)) {
@@ -301,15 +301,14 @@ export default {
             if (e.shiftKey) {
                 // Multi select
                 if (this.isNodeSelected(this.id)) {
-                    this.deselectNode(this.id);
+                    this.deselectNode(this);
                 } else {
-                    this.selectNode(this.$props);
+                    this.selectNode(this);
                 }
             } else {
                 // Single select
-                this.deselectAllNodes();
-                this.deselectAllConnectors();
-                this.selectNode(this.$props);
+                this.deselectAllObjects();
+                this.selectNode(this);
             }
         }
     }

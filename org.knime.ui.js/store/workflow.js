@@ -96,16 +96,27 @@ export const actions = {
         let workflowId = getters.activeWorkflowId;
         await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
     },
+
+    /**
+     * Deletes all selected objects and displays an error message for the objects, that cannot be deleted.
+     * If the objects can be deleted a deselect event is fired.
+     * @param {Object} context - store context
+     * @returns {void} - nothing to return
+     */
     deleteSelectedObjects({
         state: { activeWorkflow: { projectId } },
-        getters: { activeWorkflowId }
-    }, { selectedNodes, selectedConnections }) {
+        getters: { activeWorkflowId },
+        rootState,
+        dispatch
+    }) {
+        const selectedNodes = Object.values(rootState.selection.selectedNodes);
+        const selectedConnections = Object.values(rootState.selection.selectedConnections);
         let deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
         let nonDeletableNodeIds = selectedNodes.filter(node => !node.allowedActions.canDelete).map(node => node.id);
         let deleteableConnectionIds = selectedConnections.filter(connection => connection.canDelete).
-            map(connection => `${connection.destNode}_${connection.destPort}`);
+            map(connection => connection.id);
         let nonDeletableConnectionIds = selectedConnections.filter(connection => !connection.canDelete).
-            map(connection => `${connection.destNode}_${connection.destPort}`);
+            map(connection => connection.id);
 
         if (deletableNodeIds.length || deleteableConnectionIds.length) {
             deleteObjects({
@@ -114,14 +125,15 @@ export const actions = {
                 nodeIds: deletableNodeIds.length ? deletableNodeIds : [],
                 connectionIds: deleteableConnectionIds ? deleteableConnectionIds : []
             });
+            dispatch('selection/deselectAllObjects', {}, { root: true });
         }
         if (nonDeletableNodeIds.length || nonDeletableConnectionIds.length) {
-            window.alert(`The following nodes can't be deleted: [${nonDeletableNodeIds.join(', ')}] \n
-                          The following connections can't be deleted: [${nonDeletableConnectionIds.join(', ')}]`);
+            window.alert(`The following nodes can't be deleted: [${nonDeletableNodeIds.join(', ')}] \n` +
+                          `The following connections can't be deleted: [${nonDeletableConnectionIds.join(', ')}]`);
     
         }
     },
-    changeNodeState({ state, getters }, { action, nodes }) {
+    changeNodeState({ state, getters, rootGetters }, { action, nodes }) {
         let { activeWorkflow: { projectId } } = state;
         let { activeWorkflowId } = getters;
 
@@ -135,7 +147,7 @@ export const actions = {
             // act upon selected nodes
             changeNodeState({
                 projectId,
-                nodeIds: getters.selectedNodes().map(node => node.id),
+                nodeIds: rootGetters['selection/selectedNodeIds'],
                 action,
                 workflowId: activeWorkflowId
             });
@@ -193,7 +205,8 @@ export const actions = {
      * @param {string} params.deltaY - id of the node
      * @returns {void} - nothing to return
      */
-    moveNodes({ commit }, { deltaX, deltaY, selectedNodes }) {
+    moveNodes({ commit, rootGetters }, { deltaX, deltaY }) {
+        let selectedNodes = rootGetters['selection/selectedNodes'];
         let thresholdExceeded = selectedNodes.length > moveNodeGhostThreshold;
         commit('shiftPosition', { deltaX, deltaY, thresholdExceeded });
     },
@@ -207,8 +220,9 @@ export const actions = {
      * @param {Object} params.startPos - start position {x: , y: } of the move event
      * @returns {void} - nothing to return
      */
-    saveNodeMoves({ state, getters, commit }, { projectId, selectedNodes }) {
+    saveNodeMoves({ state, getters, commit, rootGetters }, { projectId }) {
         let translation;
+        let selectedNodes = rootGetters['selection/selectedNodeIds'];
         // calculate the translation either relative to the position or the outline position
         translation = {
             x: state.deltaMovePosition.x,
