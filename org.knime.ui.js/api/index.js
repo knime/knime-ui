@@ -74,11 +74,11 @@ export const removeEventListener = makeToggleEventListener('remove');
  * @param {'reset' | 'execute' | 'cancel'} cfg.action
  * @param {String} cfg.projectId
  * @param {String} cfg.workflowId
- * @param {Array} cfg.nodeIds The nodes to act upon.
- *     If you want to execute an entire workflow, pass the workflow container's id as a single element.
+ * @param {Array=} cfg.nodeIds The nodes to act upon. Optional.
+ *     If you want to execute an entire workflow, pass nothing.
  * @returns {Promise}
  */
-export const changeNodeState = ({ projectId, workflowId, nodeIds, action }) => {
+export const changeNodeState = ({ projectId, workflowId, nodeIds = [], action }) => {
     try {
         let result = rpc('NodeService.changeNodeStates', projectId, workflowId, nodeIds, action);
         return Promise.resolve(result);

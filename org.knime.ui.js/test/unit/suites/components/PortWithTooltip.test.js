@@ -59,8 +59,12 @@ describe('PortWithTooltip.vue', () => {
             text: 'portInfo',
             title: 'portName',
             orientation: 'top',
-            x: 5,
-            y: 5.5
+            position: {
+                x: 5,
+                y: 5.5
+            },
+            hoverable: false,
+            gap: 6
         });
 
         wrapper.findComponent(Port).trigger('mouseleave');
@@ -79,8 +83,12 @@ describe('PortWithTooltip.vue', () => {
             text: 'portInfo',
             title: 'portName',
             orientation: 'top',
-            x: 5,
-            y: 3.5 // more space than for table
+            position: {
+                x: 5,
+                y: 5.5 // more space than for table
+            },
+            hoverable: false,
+            gap: 8
         });
     });
 });

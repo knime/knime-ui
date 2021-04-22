@@ -4,7 +4,6 @@ import Node from '~/components/Node';
 import MoveableNodeContainer from '~/components/MoveableNodeContainer';
 import Connector from '~/components/Connector';
 import WorkflowAnnotation from '~/components/WorkflowAnnotation';
-import Tooltip from '~/components/Tooltip';
 import MetaNodePortBars from '~/components/MetaNodePortBars';
 import KanvasFilters from '~/components/KanvasFilters';
 import StreamedIcon from '~/components/../webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
@@ -16,7 +15,6 @@ export default {
         Node,
         Connector,
         WorkflowAnnotation,
-        Tooltip,
         MetaNodePortBars,
         KanvasFilters,
         StreamedIcon,
@@ -202,17 +200,6 @@ export default {
       </span>
     </div>
 
-    <div
-      class="tooltip-container"
-    >
-      <transition name="tooltip">
-        <Tooltip
-          v-if="tooltip"
-          v-bind="tooltip"
-        />
-      </transition>
-    </div>
-
     <svg
       ref="svg"
       :width="canvasSize.width"
@@ -250,6 +237,7 @@ export default {
       <MetaNodePortBars
         v-if="workflow.info.containerType === 'metanode'"
       />
+
       <MoveableNodeContainer
         v-for="([nodeId, node]) in sortedNodes"
         :id="node.id"
@@ -309,25 +297,6 @@ svg {
   & svg,
   & svg >>> * {
     pointer-events: none;
-  }
-}
-
-.tooltip-container {
-  height: 0;
-  line-height: 0;
-
-  & .tooltip-enter-active {
-    /* delay entering of tooltip by 0.5 seconds */
-    transition: opacity 150ms 0.5s ease;
-  }
-
-  & .tooltip-leave-active {
-    transition: opacity 150ms ease;
-  }
-
-  & .tooltip-enter,
-  & .tooltip-leave-to {
-    opacity: 0;
   }
 }
 
