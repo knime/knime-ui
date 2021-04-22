@@ -261,19 +261,22 @@ export default {
         height: 18px;
         margin-right: 7px;
       }
+
       & .label {
         display: flex;
         text-align: left;
         flex: 1;
-         & .text {
-           flex: 2 1 100%;
-           display: block;
-         }
-         & .hotkey {
-           justify-self: right;
-           text-align: right;
-           display: block;
-           flex: 1 1 20%;
+
+        & .text {
+          flex: 2 1 100%;
+          display: block;
+        }
+
+        & .hotkey {
+          justify-self: right;
+          text-align: right;
+          display: block;
+          flex: 1 1 20%;
         }
       }
 

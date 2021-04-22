@@ -80,7 +80,7 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.emitted()['item-click']).toBeFalsy();
         });
 
-        it('positions menu to be always visible', async () => {
+        it('positions menu to be always visible', () => {
             const wrapper = shallowMount(FloatingMenu, {
                 propsData: {
                     items
