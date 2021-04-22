@@ -169,18 +169,6 @@ export default {
             projectId: 'activeId'
         }),
         ...mapGetters('selection', ['isNodeSelected']),
-        nodeSelectionMeasures() {
-            const { nodeStatusHeight, nodeStatusMarginTop, nodeSize,
-                nodeSelectionPadding: [top, right, bottom, left] } = this.$shapes;
-            const hasStatusBar = this.kind !== 'metanode';
-
-            return {
-                y: -top,
-                x: -left,
-                height: (top + nodeSize + bottom) + (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0),
-                width: left + right + nodeSize
-            };
-        },
         ...mapState('workflow', { isDragging: 'isDragging' }),
         decoratorBackgroundType() {
             if (this.type) {
