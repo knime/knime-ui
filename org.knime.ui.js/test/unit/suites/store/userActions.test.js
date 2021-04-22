@@ -199,12 +199,12 @@ describe('userActions store', () => {
             expect(contextMenuActionItems[0].hotkeyText).toBe('Shift + F7');
             expect(contextMenuActionItems[0].disabled).toBe(false);
 
-            expect(contextMenuActionItems[1].text).toBe('Cancel');
+            expect(contextMenuActionItems[1].text).toBe('Cancel all');
             expect(contextMenuActionItems[1].storeAction).toBe('workflow/cancelNodeExecution');
             expect(contextMenuActionItems[1].storeActionParams).toStrictEqual(['all']);
             expect(contextMenuActionItems[1].disabled).toBe(false);
 
-            expect(contextMenuActionItems[2].text).toBe('Reset');
+            expect(contextMenuActionItems[2].text).toBe('Reset all');
             expect(contextMenuActionItems[2].storeAction).toBe('workflow/resetNodes');
             expect(contextMenuActionItems[2].storeActionParams).toStrictEqual(['all']);
             expect(contextMenuActionItems[2].disabled).toBe(false);
