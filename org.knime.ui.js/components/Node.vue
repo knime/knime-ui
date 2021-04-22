@@ -309,6 +309,7 @@ export default {
             }
         },
         onRightMouseClick(e) {
+            e.preventDefault();
             if (this.isDragging) {
                 return;
             }
@@ -321,12 +322,10 @@ export default {
             if (e.shiftKey) {
                 // Multi select
                 this.selectNode(this.id);
-            } else {
-                // Single select
-                if (!this.selected) {
-                    this.deselectAllNodes();
-                    this.selectNode(this.id);
-                }
+            } else if (!this.selected) {
+                // single select
+                this.deselectAllNodes();
+                this.selectNode(this.id);
             }
         }
     }

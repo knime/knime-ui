@@ -157,6 +157,7 @@ export default {
             }
         },
         contextMenu(e) {
+            e.preventDefault();
             if (e.target === this.$refs.svg) {
                 this.deselectAllNodes();
             }
