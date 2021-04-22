@@ -21,21 +21,20 @@ export default {
     props: {
         /**
          * Items to be listed in the menu.
-         * Each item has a `text`, optional `icon` and optional `to` / `href` properties, where `to` is for router-links
-         * and `href` for standard (e.g. external) links.
+         * Each item has a `text`, optional `icon`
          * @example
            [{
-              href: 'http://apple.com',
               text: 'Apples',
               icon: HelpIcon,
               disabled: true,
               hotkeyText: 'CTRL + A'
+              userData: {
+                storeAction: 'workflow/executeNodes'
+              }
            }, {
-              href: 'https://en.wikipedia.org/wiki/Orange_(colour)',
               text: 'Oranges',
               icon: StarIcon
            },  {
-              to: '/testing-nuxt-link',
               text: 'Ananas',
               hotkeyText: 'F9'
            }]
@@ -85,9 +84,12 @@ export default {
          */
         getNextElement(changeInd) {
             let listItems = this.getListItems();
-            return listItems[listItems.indexOf(document.activeElement) + changeInd] || (changeInd < 0
+            return listItems[listItems.indexOf(this.getActiveElement()) + changeInd] || (changeInd < 0
                 ? listItems[listItems.length - 1]
                 : listItems[0]);
+        },
+        getActiveElement() {
+            return document.activeElement;
         },
         /**
          * Items can behave as links (either nuxt or native <a>) or buttons. If button behavior is expected, we want to
@@ -101,25 +103,7 @@ export default {
          */
         onItemClick(event, item) {
             if (item.disabled) {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
                 return;
-            }
-            let isButton = !(item.href || item.to);
-            if (isButton) {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-            } else if (event.type !== 'click') {
-                if (event.code === 'Space') {
-                    return;
-                }
-                /* Handle "Enter" on links. Nuxt-link with `to: { name: 'namedRoute' }` do not have an href property
-                and will not automatically react to keyboard events. We must trigger the click to activate the nuxt
-                event listener. */
-                let newEvent = new Event('click');
-                event.target.dispatchEvent(newEvent);
             }
             this.$emit('item-click', event, item, this.id);
             this.closeMenu();
@@ -135,12 +119,12 @@ export default {
         closeMenu() {
             this.isVisible = false;
         },
-        calculateMenuPos(el, clickX, clickY) {
+        calculateMenuPos(el, clickX, clickY, win = window) {
             const menuWidth = el.offsetWidth + SCROLLBAR_OFFSET;
             const menuHeight = el.offsetHeight + SCROLLBAR_OFFSET;
 
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
+            const windowWidth = win.innerWidth;
+            const windowHeight = win.innerHeight;
 
             let left, top;
 
@@ -200,15 +184,11 @@ export default {
         :key="index"
         @click="onItemClick($event, item)"
         @keydown.enter="onItemClick($event, item)"
-        @keydown.space="onItemClick($event, item)"
       >
-        <Component
-          :is="item.to ? 'nuxt-link' : 'a'"
+        <button
           ref="listItem"
           tabindex="0"
           :class="['clickable-item', { disabled: item.disabled }]"
-          :to="item.to"
-          :href="item.href || null"
         >
           <Component
             :is="item.icon"
@@ -219,7 +199,7 @@ export default {
             <span class="text">{{ item.text }}</span>
             <span class="hotkey">{{ item.hotkeyText }}</span>
           </div>
-        </Component>
+        </button>
       </li>
     </ul>
   </div>
@@ -265,10 +245,12 @@ export default {
       cursor: default;
     }
 
-    & a {
+    & button {
+      border: none;
+      background: none;
       padding: 6px 13px;
       display: flex;
-      align-items: center;
+      width: 100%;
       text-decoration: none;
       cursor: pointer;
       white-space: nowrap;
@@ -281,6 +263,7 @@ export default {
       }
       & .label {
         display: flex;
+        text-align: left;
         flex: 1;
          & .text {
            flex: 2 1 100%;
@@ -295,6 +278,7 @@ export default {
       }
 
       &:hover {
+        border: none;
         outline: none;
         background-color: var(--theme-dropdown-background-color-hover);
         color: var(--theme-dropdown-foreground-color-hover);
@@ -310,6 +294,7 @@ export default {
 
       &:active,
       &:focus {
+        border: none;
         outline: none;
         background-color: var(--theme-dropdown-background-color-focus);
         color: var(--theme-dropdown-foreground-color-focus);
