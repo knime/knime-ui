@@ -125,7 +125,7 @@ export const actions = {
                 nodeIds: deletableNodeIds.length ? deletableNodeIds : [],
                 connectionIds: deleteableConnectionIds ? deleteableConnectionIds : []
             });
-            dispatch('selection/deselectAllObjects', {}, { root: true });
+            dispatch('selection/deselectAllObjects', null, { root: true });
         }
         if (nonDeletableNodeIds.length || nonDeletableConnectionIds.length) {
             window.alert(`The following nodes can't be deleted: [${nonDeletableNodeIds.join(', ')}] \n` +

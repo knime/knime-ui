@@ -6,8 +6,7 @@ import Vue from 'vue';
 
 export const state = () => ({
     selectedNodes: {},
-    selectedConnections: {},
-    isDraggin: false
+    selectedConnections: {}
 });
 
 export const mutations = {
@@ -28,6 +27,12 @@ export const mutations = {
         });
     },
 
+    // Clear the selected nodes and the selected connections at once
+    clearSelection(state) {
+        state.selectedNodes = {};
+        state.selectedConnections = {};
+    },
+
     // Add each connection of the provided connections object to the selected connections object.
     // This selected connection object does only keep the id and the can delete attribute of the connection.
     addConnectionsToSelection(state, connections) {
@@ -41,18 +46,14 @@ export const mutations = {
         Object.values(connections).forEach((connection) => {
             Vue.delete(state.selectedConnections, connection.id);
         });
-    },
-    setDragging(state, isDragging) {
-        state.isDragging = isDragging;
     }
 };
 
 export const actions = {
 
     // Deselect all objects, this includes connections and nodes.
-    deselectAllObjects({ commit, state }) {
-        commit('removeNodesFromSelection', state.selectedNodes);
-        commit('removeConnectionsFromSelection', state.selectedConnections);
+    deselectAllObjects({ commit }) {
+        commit('clearSelection');
     },
 
     // Selects all nodes that are present in the current workflow store.
@@ -88,11 +89,11 @@ export const getters = {
 
     // Returns an array of selected node objects.
     selectedNodes: (state) => {
-        let nodeObjects = [];
+        let nodesArray = [];
         Object.keys(state.selectedNodes).forEach((node) => {
-            nodeObjects.push(state.selectedNodes[node]);
+            nodesArray.push(state.selectedNodes[node]);
         });
-        return nodeObjects;
+        return nodesArray;
     },
 
     // Checks if a given node id is present in the selected object.
@@ -103,11 +104,11 @@ export const getters = {
 
     // Returns an array of selected connection objects.
     selectedConnections: (state) => {
-        let connectionObjects = [];
+        let connectionsArray = [];
         Object.keys(state.selectedConnections).forEach((connection) => {
-            connectionObjects.push(state.selectedConnections[connection]);
+            connectionsArray.push(state.selectedConnections[connection]);
         });
-        return connectionObjects;
+        return connectionsArray;
     },
 
     // Checks if a given connetction id is present in the selected object.
