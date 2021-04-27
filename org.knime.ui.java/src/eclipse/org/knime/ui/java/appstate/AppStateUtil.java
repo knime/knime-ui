@@ -123,9 +123,9 @@ public final class AppStateUtil {
 	 * an app state anymore. It also clears references to workflow projects.
 	 */
 	public static void clearAppState() {
-		disposeAllLoadedWorkflowProjects();
 		DefaultApplicationService.getInstance().clearAppStateSupplier();
 		DefaultEventService.getInstance().removeAllEventListeners();
+		disposeAllLoadedWorkflowProjects();
 	}
 
 	private static void disposeAllLoadedWorkflowProjects() {
