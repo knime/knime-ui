@@ -252,10 +252,17 @@ export const getters = {
         return Boolean(activeWorkflow?.info.linked);
     },
     isWritable(state, getters) {
-        return !getters.isLinked;
+        return !(getters.isLinked || getters.isInsideLinked);
+    },
+    isInsideLinked(state, getters) {
+        return Boolean(getters.insideLinkedType);
     },
     isStreaming({ activeWorkflow }) {
         return Boolean(activeWorkflow?.info.jobManager);
+    },
+    insideLinkedType({ activeWorkflow }) {
+        const parents = activeWorkflow?.parents || [];
+        return parents.find(({ linked }) => linked)?.containerType;
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
