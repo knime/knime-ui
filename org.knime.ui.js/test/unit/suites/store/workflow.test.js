@@ -173,7 +173,6 @@ describe('workflow store', () => {
             expect(store.getters['workflow/isLinked']).toBe(true);
         });
 
-
         it('check isWritable', () => {
             expect(store.getters['workflow/isWritable']).toBe(false);
             store.commit('workflow/setActiveWorkflow', {
