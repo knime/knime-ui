@@ -41,7 +41,7 @@ export const mutations = {
         });
     },
 
-    // Removes each connection of the provided connections object to the selected connection object..
+    // Removes each connection of the provided connections object to the selected connection object.
     removeConnectionsFromSelection(state, connections) {
         Object.values(connections).forEach((connection) => {
             Vue.delete(state.selectedConnections, connection.id);
