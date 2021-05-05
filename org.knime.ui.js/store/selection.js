@@ -111,6 +111,6 @@ export const getters = {
         return connectionsArray;
     },
 
-    // Checks if a given connetction id is present in the selected object.
+    // Checks if a given connection id is present in the selected object.
     isConnectionSelected: (state) => (connectionId) => Reflect.has(state.selectedConnections, connectionId)
 };

@@ -436,37 +436,60 @@ describe('workflow store', () => {
             });
         });
 
-        it('tries to delete objects that cannot be deleted', async () => {
-            await loadStore();
+        describe('tries to delete objects that cannot be deleted', () => {
             jest.spyOn(window, 'alert').mockImplementation(() => {});
-            let nodesArray = {};
-            let conenctionsArray = {};
-            let nodeIds = [];
-            let connectionIds = [];
-            let nodeName = `node-1`;
-            nodesArray[nodeName] = { id: nodeName, allowedActions: { canDelete: false } };
-            store.dispatch('selection/selectNode', nodesArray[nodeName]);
-            nodeIds.push(nodeName);
-        
-            let connectorName = `connection-1`;
-            conenctionsArray[connectorName] = { id: connectorName, canDelete: false };
-            store.dispatch('selection/selectConnection', conenctionsArray[connectorName]);
-            connectionIds.push(connectorName);
 
-            store.commit('workflow/setActiveWorkflow', {
-                nodes: nodesArray,
-                connections: conenctionsArray,
-                projectId: 'foo',
-                info: {
-                    containerId: 'test'
-                }
+            let nodeName = `node-1`;
+            let connectorName = `connection-1`;
+            let nodesArray = {};
+            nodesArray[nodeName] = { id: nodeName, allowedActions: { canDelete: false } };
+            let connectionsArray = {};
+            connectionsArray[connectorName] = { id: connectorName, canDelete: false };
+
+            beforeEach(async () => {
+                await loadStore();
+
+                store.commit('workflow/setActiveWorkflow', {
+                    nodes: nodesArray,
+                    connections: connectionsArray,
+                    projectId: 'foo',
+                    info: {
+                        containerId: 'test'
+                    }
+                });
             });
-            await Vue.nextTick();
-            store.dispatch('workflow/deleteSelectedObjects');
-            expect(window.alert).toHaveBeenCalledWith(
-                `The following nodes can't be deleted: [node-1] \n` +
-                 `The following connections can't be deleted: [connection-1]`
-            );
+
+            test('nodes', async () => {
+                store.dispatch('selection/selectNode', nodesArray[nodeName]);
+
+                await Vue.nextTick();
+                store.dispatch('workflow/deleteSelectedObjects');
+                expect(window.alert).toHaveBeenCalledWith(
+                    `The following nodes can’t be deleted: [node-1]`
+                );
+            });
+
+            test('connections', async () => {
+                store.dispatch('selection/selectConnection', connectionsArray[connectorName]);
+
+                await Vue.nextTick();
+                store.dispatch('workflow/deleteSelectedObjects');
+                expect(window.alert).toHaveBeenCalledWith(
+                    `The following connections can’t be deleted: [connection-1]`
+                );
+            });
+
+            test('nodes and connections', async () => {
+                store.dispatch('selection/selectNode', nodesArray[nodeName]);
+                store.dispatch('selection/selectConnection', connectionsArray[connectorName]);
+
+                await Vue.nextTick();
+                store.dispatch('workflow/deleteSelectedObjects');
+                expect(window.alert).toHaveBeenCalledWith(
+                    `The following nodes can’t be deleted: [node-1] \n` +
+                    `The following connections can’t be deleted: [connection-1]`
+                );
+            });
         });
     });
 

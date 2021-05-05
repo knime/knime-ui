@@ -127,10 +127,16 @@ export const actions = {
             });
             dispatch('selection/deselectAllObjects', null, { root: true });
         }
-        if (nonDeletableNodeIds.length || nonDeletableConnectionIds.length) {
-            window.alert(`The following nodes can't be deleted: [${nonDeletableNodeIds.join(', ')}] \n` +
-                          `The following connections can't be deleted: [${nonDeletableConnectionIds.join(', ')}]`);
-    
+
+        let messages = [];
+        if (nonDeletableNodeIds.length) {
+            messages.push(`The following nodes can’t be deleted: [${nonDeletableNodeIds.join(', ')}]`);
+        }
+        if (nonDeletableConnectionIds.length) {
+            messages.push(`The following connections can’t be deleted: [${nonDeletableConnectionIds.join(', ')}]`);
+        }
+        if (messages.length) {
+            window.alert(messages.join(' \n'));
         }
     },
     changeNodeState({ state, getters, rootGetters }, { action, nodes }) {
