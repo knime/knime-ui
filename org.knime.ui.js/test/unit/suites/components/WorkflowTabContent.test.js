@@ -2,6 +2,9 @@ import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 
+import * as panelStoreConfig from '~/store/panel';
+
+import NodeRepository from '~/components/NodeRepository';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import Kanvas from '~/components/Kanvas';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
@@ -35,7 +38,8 @@ describe('WorkflowTabContent.vue', () => {
                     state: {
                         activeWorkflow: workflow
                     }
-                }
+                },
+                panel: panelStoreConfig
             });
 
             wrapper = await shallowMountWithAsyncData(
@@ -69,6 +73,7 @@ describe('WorkflowTabContent.vue', () => {
 
             let metadata = wrapper.findComponent(WorkflowMetadata);
             expect(metadata.exists()).toBe(true);
+            expect(wrapper.findComponent(NodeRepository).exists()).toBe(false);
             expect(metadata.props().title).toBe('title');
         });
 
@@ -84,6 +89,7 @@ describe('WorkflowTabContent.vue', () => {
             await doShallowMount();
 
             expect(wrapper.findComponent(WorkflowMetadata).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeRepository).exists()).toBe(false);
         });
 
         it('displays component metadata', async () => {
@@ -124,6 +130,18 @@ describe('WorkflowTabContent.vue', () => {
                     }
                 })
             );
+        });
+    });
+
+    describe('node repository', () => {
+        beforeEach(async () => {
+            await doShallowMount();
+            wrapper.vm.$store.dispatch('panel/setNodeRepoActive');
+        });
+
+        it('shows NodeRepository', () => {
+            expect(wrapper.findComponent(WorkflowMetadata).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeRepository).exists()).toBe(true);
         });
     });
 

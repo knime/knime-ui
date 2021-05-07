@@ -14,6 +14,7 @@
     "test:unit": "jest",
     "test:integration": "node test/integration/run.mjs",
     "coverage": "jest --coverage",
+    "coverage:watch": "npm run test:unit -- --coverage --watch",
     "sendcoverage": "cross-var sonar-scanner -Dsonar.login=\"$SONAR_LOGIN\" -Dsonar.password=\"$SONAR_PASSWORD\""
   },
   "dependencies": {

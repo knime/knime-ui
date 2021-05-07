@@ -54,28 +54,28 @@ const makeToggleEventListener = addOrRemove => (type, args) => {
     }
 };
 
-export const selectNodes = (numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo) => {
-    const res = rpc('NodeRepositoryService.selectNodes', numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo);
-    return Promise.resolve(res);
-};
+/**
+ * Search the node repository via RPC.
+ *
+ * @param {String} cfg.query - query for specific matches in the returned nodes or empty string.
+ * @param {Array} cfg.tags - tags to filter the results of the search.
+ * @param {Boolean} cfg.allTagsMatch - if the tags are inclusive or exclusive.
+ * @param {Number} cfg.nodeOffset - the numeric offset of the search (for pagination).
+ * @param {Number} cfg.nodeLimit - the number of results which should be returned.
+ * @param {Boolean} cfg.fullTemplateInfo - if the results should contain all node info (incl. img data).
+ * @returns {Object} the node repository search results.
+ */
+export const searchNodes = ({ query, tags, allTagsMatch, nodeOffset, nodeLimit, fullTemplateInfo }) => rpc(
+    'NodeRepositoryService.searchNodes',
+    query,
+    tags,
+    allTagsMatch,
+    nodeOffset,
+    nodeLimit,
+    fullTemplateInfo
+);
 
-export const searchNodes = (query, tags, allTagsMatch, nodeOffset, nodeLimit, fullTemplateInfo) => {
-    const searchResult = rpc(
-        'NodeRepositoryService.searchNodes',
-        query,
-        tags,
-        allTagsMatch,
-        nodeOffset,
-        nodeLimit,
-        fullTemplateInfo
-    );
-    return Promise.resolve(searchResult);
-};
-
-export const getNodeTemplates = templateIds => {
-    const res = rpc('NodeRepositoryService.getNodeTemplates', templateIds);
-    return Promise.resolve(res);
-};
+export const getNodeTemplates = templateIds => rpc('NodeRepositoryService.getNodeTemplates', templateIds);
 
 /**
  * Add or remove event listeners.
@@ -102,7 +102,6 @@ export const removeEventListener = makeToggleEventListener('remove');
  * @returns {Promise}
  */
 export const changeNodeState = ({ projectId, workflowId, nodeIds = [], action }) => {
-// let nodeStateChanger = (nodeState, errorMessage, action = 'changeNodeStates') => ({ projectId, nodeIds }) => {
     try {
         let result = rpc('NodeService.changeNodeStates', projectId, workflowId, nodeIds, action);
         return Promise.resolve(result);

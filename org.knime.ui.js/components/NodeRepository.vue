@@ -1,235 +1,212 @@
 <script>
-import { searchNodes, getNodeTemplates, selectNodes } from '~/api';
-import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
+import { mapState } from 'vuex';
 
-const nodeSearchPageSize = 50;
-const nodeSearchTagsLimit = 10;
-const nodeSelectionTagsLimit = 4;
-const nodeSelectionNumNodesPerTag = 6;
+import Tag from './Tag';
+import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
+import Button from '~/webapps-common/ui/components/Button';
+import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 
 export default {
     components: {
-        NodePreview
+        Tag,
+        NodePreview,
+        Button,
+        CloseIcon
     },
-    data() {
-        return {
-            nodes: [],
-            nodeSelections: [],
-            nodeTemplatesCache: {},
-            numNodes: 0,
-            numSelections: 0,
-            selectedTags: [],
-            tags: [],
-            query: '',
-            timer: null,
-            nodeSearchPage: 0,
-            nodeSelectionPage: 0
-        };
+    computed: {
+        ...mapState('nodeRepo', [
+            'nodes',
+            'nodeTemplates',
+            'totalNumNodes',
+            'selectedTags',
+            'tags'
+        ]),
+        nodeRows() {
+            let rows = [];
+            const N_PER_ROW = 3;
+            if (this.nodes.length) {
+                let numRows = this.nodes.length / N_PER_ROW;
+                for (let i = 0; i < numRows; i++) {
+                    let row = [];
+                    for (let n = 0; n < N_PER_ROW; n++) {
+                        let nodeInd = i * N_PER_ROW + n;
+                        if (nodeInd < this.nodes.length) {
+                            row.push(this.nodes[nodeInd]);
+                        }
+                    }
+                    rows.push(row);
+                }
+            }
+            return rows;
+        }
     },
     mounted() {
-        this.selectNodes(false);
+        this.$store.dispatch('nodeRepo/searchNodes', true);
     },
     methods: {
-        searchDelayed() {
-            if (this.timer) {
-                clearTimeout(this.timer);
-                this.timer = null;
-            }
-            this.timer = setTimeout(() => {
-                this.searchNodes(false);
-            }, 200);
-        },
-        searchNodes(append) {
-            if (this.selectedTags.length === 0 && this.query === '') {
-                this.selectNodes(false);
-                return;
-            } else {
-                this.nodeSelections = [];
-            }
-            if (!append) {
-                this.nodeSearchPage = 0;
-            }
-            searchNodes(
-                this.query,
-                this.selectedTags,
-                true,
-                this.nodeSearchPage * nodeSearchPageSize,
-                nodeSearchPageSize,
-                nodeSearchTagsLimit,
-                false
-            ).then(res => {
-                this.numNodes = res.totalNumNodes;
-                if (append) {
-                    res.nodes.forEach(e => this.nodes.push(e));
-                } else {
-                    this.nodes = res.nodes;
-                }
-                this.tags = res.tags;
-                this.updateNodeTemplatesCache();
-            });
-        },
-        updateNodeTemplatesCache() {
-            let missingTemplates;
-            if (this.nodes.length !== 0) {
-                missingTemplates = this.nodes.map(n => n.id).filter(id => !this.nodeTemplatesCache.hasOwnProperty(id));
-            } else if (this.nodeSelections.length !== 0) {
-                missingTemplates = this.nodeSelections
-                    .flatMap(s => s.nodes)
-                    .map(n => n.id)
-                    .filter(id => !this.nodeTemplatesCache.hasOwnProperty(id));
-            }
-            getNodeTemplates(missingTemplates).then(res => {
-                this.nodeTemplatesCache = { ...this.nodeTemplatesCache, ...res };
-            });
-        },
-        selectNodes(append) {
-            if (!append) {
-                this.nodeSelectionPage = 0;
-            }
-            selectNodes(
-                nodeSelectionNumNodesPerTag,
-                this.nodeSelectionPage * nodeSelectionTagsLimit,
-                nodeSelectionTagsLimit,
-                false
-            ).then(res => {
-                if (append) {
-                    res.selections.forEach(s => this.nodeSelections.push(s));
-                } else {
-                    this.nodeSelections = res.selections;
-                }
-                this.numSelections = res.totalNumSelections;
-                this.updateNodeTemplatesCache();
-            });
-        },
-        nextNodeSearchPage() {
-            this.nodeSearchPage++;
-            this.searchNodes(true);
-        },
-        nextNodeSelectionPage() {
-            this.nodeSelectionPage++;
-            this.selectNodes(true);
+        loadMoreNodes() {
+            this.$store.dispatch('nodeRepo/searchNodes', true);
         },
         selectTag(tag) {
-            this.selectedTags.push(tag);
-            this.searchNodes(false);
+            this.$store.dispatch('nodeRepo/selectTag', tag);
         },
         deselectTag(tag) {
-            this.$delete(this.selectedTags, this.selectedTags.indexOf(tag));
-            this.searchNodes(false);
+            this.$store.dispatch('nodeRepo/deselectTag', tag);
         },
-        clearSearchQuery() {
-            this.query = '';
-            this.searchNodes(false);
+        clearSelectedTags() {
+            this.$store.dispatch('nodeRepo/clearSelectedTags');
         }
     }
 };
 </script>
 <template>
-  <div>
-    <input
-      v-model="query"
-      type="text"
-      @keyup="searchDelayed"
-    >
-    <button @click="clearSearchQuery">clear</button>
-    <div v-if="nodeSelections.length !== 0">
-      Node Selection
+  <div class="repo">
+    <h4>
+      Repository
+    </h4>
+    <span class="break" />
+    <div class="tags">
+      <Tag
+        v-for="tag in tags.filter(t => !selectedTags.includes(t))"
+        :key="tag"
+        @click.native="selectTag(tag)"
+      >
+        {{ tag }}
+      </Tag>
+    </div>
+    <span class="break full" />
+    <div v-if="selectedTags.length">
+      <div class="filter-tags">
+        Filter
+        <Button
+          compact
+          class="clear-button"
+          @click="clearSelectedTags"
+        >
+          Clear
+          <CloseIcon />
+        </Button>
+        <br>
+        <br>
+        <Tag
+          v-for="tag in selectedTags"
+          :key="tag"
+          class="selected-tag"
+          @click.native="deselectTag(tag)"
+        >
+          {{ tag }}
+          <CloseIcon />
+        </Tag>
+      </div>
       <div
-        v-for="selection in nodeSelections"
-        :key="selection.tag"
+        v-for="(row, ind) in nodeRows"
+        :key="ind"
+        class="row"
       >
-        <b>{{ selection.tag }}</b>
-        <div class="grid">
-          <div
-            v-for="n in selection.nodes"
-            :key="n.id"
-          >
-            <div class="title">
-              {{ n.name }}
-            </div>
-            <div
-              v-if="n.id in nodeTemplatesCache"
-              class="node-preview"
-            >
-              <NodePreview v-bind="nodeTemplatesCache[n.id]" />
-            </div>
-          </div>
-        </div>
-        <button @click="selectTag(selection.tag)">more ...</button>
-      </div>
-      <button
-        v-if="nodeSelections.length < numSelections"
-        @click="nextNodeSelectionPage"
-      >
-        Load more selections ...
-      </button>
-    </div>
-    <div v-else>
-      <div>total num nodes: {{ numNodes }}</div>
-      <div>
-        <div>
-          #cached templates: {{ Object.keys(nodeTemplatesCache).length }}
-          <div>
-            selected tags:
-            <button
-              v-for="t in selectedTags"
-              :key="t"
-              @click="deselectTag(t)"
-            >
-              {{ t }}
-            </button>
-          </div>
-          <div>
-            tags:
-            <button
-              v-for="t in tags"
-              :key="t"
-              @click="selectTag(t)"
-            >
-              {{ t }}
-            </button>
-          </div>
-          <div>nodes:</div>
-          <div class="grid">
-            <div
-              v-for="n in nodes"
-              :key="n.id"
-            >
-              <div class="title">
-                {{ n.name }}
-              </div>
-              <div
-                v-if="n.id in nodeTemplatesCache"
-                class="node-preview"
-              >
-                <NodePreview v-bind="nodeTemplatesCache[n.id]" />
-              </div>
-            </div>
-          </div>
-          <button
-            v-if="nodes.length < numNodes"
-            @click="nextNodeSearchPage"
-          >
-            Load more ...
-          </button>
-        </div>
+        <span
+          v-for="nodeId in row"
+          :key="nodeId"
+          class="node"
+        >
+          {{ nodeTemplates[nodeId].name }}
+          <NodePreview v-bind="nodeTemplates[nodeId]" />
+        </span>
       </div>
     </div>
+    <template v-if="selectedTags.length && nodes.length < totalNumNodes">
+      <Button
+        compact
+        with-border
+        class="show-more"
+        @click="loadMoreNodes"
+      >
+        Show more…
+      </Button>
+      <span class="break full" />
+    </template>
   </div>
 </template>
 <style lang="postcss" scoped>
-.node-preview {
-    height: 70px;
-    width: 70px;
-    margin-right: 9px;
-    background-color: white;
-    flex-shrink: 0;
-}
-.grid {
-    display: grid;
-    grid-template-columns: 100px 100px 100px;
-}
-.title {
-    font-size: 12px;
+
+.repo {
+  margin: 15px 20px;
+
+  & h4 {
+    font-size: 18px;
+    font-weight: 400;
+  }
+
+  & .break {
+    height: 1px;
+    width: 100%;
+    display: block;
+    background-color: var(--knime-masala);
+    margin-bottom: 10px;
+
+    &.full {
+      width: 360px;
+      margin-left: -20px;
+    }
+  }
+
+  & .tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 10px;
+  }
+
+  & .filter-tags {
+    margin-bottom: 20px;
+    font-size: 14px;
+
+    & .clear-button {
+      float: right;
+      padding: 0;
+    }
+
+    & .selected-tag >>> svg {
+      stroke: var(--knime-masala);
+      margin: 0 -2px 1px 2px;
+      height: 10px;
+      width: 10px;
+    }
+  }
+
+  & .row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -5px;
+    margin-left: -5px;
+
+    & .node {
+      width: 100px;
+      height: 70px;
+      padding-bottom: 60px;
+      margin: 5px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      font-family: "Roboto Condensed", sans-serif;
+      word-break: break-word;
+
+      & svg {
+        width: 75px;
+        position: absolute;
+        bottom: 0;
+      }
+    }
+  }
+
+  & .show-more {
+    width: 50%;
+    margin: 0 auto 10px;
+    display: block;
+  }
 }
 </style>

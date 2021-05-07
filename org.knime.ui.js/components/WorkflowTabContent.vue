@@ -1,9 +1,9 @@
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 import WorkflowToolbar from '~/components/WorkflowToolbar';
 import Kanvas from '~/components/Kanvas';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
-// import WorkflowMetadata from '~/components/WorkflowMetadata';
+import WorkflowMetadata from '~/components/WorkflowMetadata';
 import NodeRepository from '~/components/NodeRepository';
 import NodeOutput from '~/components/output/NodeOutput';
 import Splitter from '~/components/Splitter';
@@ -18,7 +18,7 @@ export default {
         NodeOutput,
         Kanvas,
         LeftCollapsiblePanel,
-        // WorkflowMetadata,
+        WorkflowMetadata,
         NodeRepository,
         WorkflowToolbar
     },
@@ -26,6 +26,7 @@ export default {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
         }),
+        ...mapGetters('panel', ['wfMetaActive', 'nodeRepoActive']),
         metadata() {
             switch (this.workflow.info.containerType) {
             case 'project':
@@ -55,15 +56,15 @@ export default {
     <WorkflowToolbar id="toolbar" />
     <div class="collapser-kanvas">
       <LeftCollapsiblePanel
-        v-if="metadata"
         id="metadata"
         width="360px"
         title="Workflow Metadata"
       >
-        <!-- <WorkflowMetadata
+        <NodeRepository v-if="nodeRepoActive" />
+        <WorkflowMetadata
+          v-else-if="metadata && wfMetaActive"
           v-bind="metadata"
-        /> -->
-        <NodeRepository />
+        />
       </LeftCollapsiblePanel>
       <Splitter
         id="kanvasOutputSplitter"
@@ -87,56 +88,46 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+
 main {
-    display: flex;
-    overflow: auto;
-    flex-direction: column;
-    align-items: stretch;
-    height: 100%;
+  display: flex;
+  overflow: auto;
+  flex-direction: column;
+  align-items: stretch;
+  height: 100%;
 }
 
 #toolbar {
-    height: 50px;
-    flex: 0 0 auto;
-    padding: 10px;
-    background-color: var(--knime-porcelain);
-    border-bottom: 1px solid var(--knime-silver-sand);
+  height: 50px;
+  flex: 0 0 auto;
+  padding: 10px;
+  background-color: var(--knime-porcelain);
+  border-bottom: 1px solid var(--knime-silver-sand);
 }
 
 .collapser-kanvas {
-    display: flex;
-    flex-grow: 1;
-    flex-direction: row;
-    align-items: stretch;
-    overflow: hidden;
+  display: flex;
+  flex-grow: 1;
+  flex-direction: row;
+  align-items: stretch;
+  overflow: hidden;
 }
 
 #metadata {
-    flex: 0 0 auto;
-    border-right: 1px solid var(--knime-silver-sand);
-}
-
-.stacked {
-    flex: 1 1 auto;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+  flex: 0 0 auto;
+  border-right: 1px solid var(--knime-silver-sand);
 }
 
 #kanvas {
-    overflow: auto;
-    flex: 1 0 60%;
-}
-
-#node-output {
-    flex: 0 0 40%;
+  overflow: auto;
+  flex: 1 0 60%;
 }
 
 .placeholder {
-    height: 55%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--knime-stone-gray);
+  height: 55%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--knime-stone-gray);
 }
 </style>
