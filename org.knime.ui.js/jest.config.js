@@ -5,6 +5,7 @@ module.exports = {
         '^(.*\\.svg)\\?inline$': '$1',
         '^@/(.*)$': '<rootDir>/src/$1',
         '^~/(.*)$': '<rootDir>/$1',
+        '~api': '<rootDir>/api/index.js',
         '^vue$': 'vue/dist/vue.common.js'
     },
     moduleFileExtensions: [

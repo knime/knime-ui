@@ -19,16 +19,16 @@ describe('KnimeUI.vue', () => {
         localVue.use(Vuex);
     });
 
-    let store, doShallowMount, initState, wrapper;
+    let $store, doShallowMountWithAsyncData, initState, wrapper;
 
     beforeEach(() => {
-        initState = jest.fn();
+        initState = jest.fn().mockResolvedValue();
         document.fonts = {
             load: jest.fn()
         };
 
-        doShallowMount = async () => {
-            store = mockVuexStore({
+        doShallowMountWithAsyncData = async () => {
+            $store = mockVuexStore({
                 application: {
                     actions: {
                         initState
@@ -36,18 +36,14 @@ describe('KnimeUI.vue', () => {
                 }
             });
 
-            wrapper = await shallowMountWithAsyncData(
-                KnimeUI,
-                { store },
-                {
-                    mocks: { $store: store }
-                }
-            );
+            wrapper = await shallowMountWithAsyncData(KnimeUI, {
+                mocks: { $store }
+            });
         };
     });
 
     it('renders before loading', async () => {
-        await doShallowMount();
+        await doShallowMountWithAsyncData();
         expect(wrapper.findComponent(AppHeader).exists()).toBe(true);
         expect(wrapper.findComponent(Sidebar).exists()).toBe(true);
         expect(wrapper.findComponent(HotKeys).exists()).toBe(false);
@@ -57,7 +53,7 @@ describe('KnimeUI.vue', () => {
 
     it('renders after loading', async () => {
         document.fonts.load.mockResolvedValue('dummy');
-        await doShallowMount();
+        await doShallowMountWithAsyncData();
 
         // await fetch hook
         await Vue.nextTick();
@@ -76,7 +72,7 @@ describe('KnimeUI.vue', () => {
     it('initiates', async () => {
         document.fonts.load.mockResolvedValue('dummy');
 
-        await doShallowMount();
+        await doShallowMountWithAsyncData();
 
         expect(initState).toHaveBeenCalled();
         expect(document.fonts.load).toHaveBeenCalledTimes(numberOfPreloadedFonts);
