@@ -79,8 +79,8 @@ To do so, run KNIME with the following parameters which can be added to the `kni
 If you want to run the tests against a locally running dev server, replace `about:blank` with `http://localhost:3000`.
 
 While the old Java based UI is still around, you must make sure to switch to the new UI before launching the tests.
-This can be achieved by manually clicking the button, or via the launch parameter
-`-Dperspective=org.knime.ui.java.perspective` (which didn't work on macOS at the time of writing).
+This can be achieved by manually clicking the button, or via the parameter
+`-Dperspective=org.knime.ui.java.perspective`.
 
 As a workspace, you should select the `test/integration/assets/workflows` folder.
 

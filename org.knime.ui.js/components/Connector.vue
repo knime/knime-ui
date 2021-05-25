@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapActions } from 'vuex';
 import { portBar, connectorPosition } from '~/mixins';
 
 /**
@@ -18,7 +18,19 @@ export default {
         /**
          * Determines whether this connector is rendered in alternative color
          */
-        flowVariableConnection: { type: Boolean, default: false }
+        flowVariableConnection: { type: Boolean, default: false },
+
+        /**
+         * Connector id
+         */
+        id: {
+            type: String,
+            required: true
+        },
+        canDelete: {
+            type: Boolean,
+            required: true
+        }
     },
     computed: {
         ...mapState('workflow', {
@@ -28,19 +40,18 @@ export default {
             moveNodeGhostThresholdExceeded: 'moveNodeGhostThresholdExceeded'
         }),
         ...mapGetters('workflow', {
-            isWorkflowWritable: 'isWritable',
-            selectedNodes: 'selectedNodes'
+            isWorkflowWritable: 'isWritable'
         }),
+        ...mapGetters('selection', ['isConnectionSelected', 'isNodeSelected']),
         path() {
             let { start: [x1, y1], end: [x2, y2] } = this;
             // Update position of source or destination node is being moved
             if (this.isDragging && !this.moveNodeGhostThresholdExceeded) {
-                let selectedNodes = this.selectedNodes();
-                if (selectedNodes.filter(node => node.id === this.sourceNode).length > 0) {
+                if (this.isNodeSelected(this.sourceNode)) {
                     x1 += this.deltaMovePosition.x;
                     y1 += this.deltaMovePosition.y;
                 }
-                if (selectedNodes.filter(node => node.id === this.destNode).length > 0) {
+                if (this.isNodeSelected(this.destNode)) {
                     x2 += this.deltaMovePosition.x;
                     y2 += this.deltaMovePosition.y;
                 }
@@ -67,6 +78,23 @@ export default {
             }
             return this.$colors.connectorColors.default;
         }
+    },
+    methods: {
+        ...mapActions('selection', ['selectConnection', 'deselectConnection', 'deselectAllObjects']),
+        onLeftMouseClick(e) {
+            if (e.shiftKey) {
+                // Multi select
+                if (this.isConnectionSelected(this.id)) {
+                    this.deselectConnection(this);
+                } else {
+                    this.selectConnection(this);
+                }
+            } else {
+                // Single select
+                this.deselectAllObjects();
+                this.selectConnection(this);
+            }
+        }
     }
 };
 </script>
@@ -75,9 +103,18 @@ export default {
   <g>
     <path
       :d="path"
+      @click.left="onLeftMouseClick"
+    />
+    <path
+      :d="path"
       :stroke="strokeColor"
       :stroke-width="$shapes.connectorWidth"
-      :class="{ variable: flowVariableConnection, 'read-only': !isWorkflowWritable, dashed: streaming }"
+      :class="{
+        variable: flowVariableConnection,
+        'read-only': !isWorkflowWritable,
+        dashed: streaming,
+        selected: isConnectionSelected(id) && !isDragging
+      }"
       fill="none"
     />
   </g>
@@ -85,20 +122,43 @@ export default {
 
 <style lang="postcss" scoped>
 path {
-  transition: stroke-width 0.1s linear, stroke 0.2s linear;
+  stroke: transparent;
+  stroke-width: 8px;
+  fill: none;
+}
+
+path + path {
+  stroke-width: 1;
+  stroke: var(--knime-stone-gray);
+  transition: stroke-width 0.1s ease-in, stroke 0.1s ease-in;
+  pointer-events: none;
 }
 
 path:not(.read-only) {
   cursor: grab;
 }
 
-path:hover {
-  stroke-width: 2.5;
-  stroke: var(--knime-dove-gray);
+path:hover + path {
+  stroke-width: 3;
+}
+
+path.selected {
+  stroke-width: 3;
+  stroke: var(--knime-cornflower);
+}
+
+path.variable {
+  stroke: var(--knime-coral);
+  transition: stroke-width 0.1s ease-in, stroke 0.1s ease-in;
 }
 
 path.variable:hover {
-  stroke: var(--knime-coral-dark);
+  stroke-width: 3;
+}
+
+path.variable.selected {
+  stroke-width: 3;
+  stroke: var(--knime-cornflower);
 }
 
 rect {

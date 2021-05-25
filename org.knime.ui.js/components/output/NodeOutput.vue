@@ -43,7 +43,7 @@ export default {
         
         // Watch selected nodes
         selectedNodes() {
-            return this.$store.getters['workflow/selectedNodes']();
+            return this.$store.getters['selection/selectedNodes'];
         },
         
         // Step 1: make sure only one node is selected

@@ -55,12 +55,17 @@ describe('NodeOutput.vue', () => {
             },
             getters: {
                 activeWorkflowId: jest.fn().mockReturnValue('workflowId'),
-                selectedNodes() {
-                    return () => Object.values(dummyNodes).filter(node => node.selected);
-                }
             },
             actions: {
                 executeNodes: jest.fn()
+            }
+        };
+
+        let selection = {
+            getters: {
+                selectedNodes(state, getters, rootState, rootGetter) {
+                    return Object.values(rootState.workflow.activeWorkflow.nodes).filter(node => node.selected);
+                }
             }
         };
 
@@ -70,13 +75,14 @@ describe('NodeOutput.vue', () => {
             }
         };
 
-        $store = mockVuexStore({
-            workflow,
-            openedProjects
-        });
-
-        mocks = { $store, $shapes };
         doShallowMount = () => {
+            $store = mockVuexStore({
+                workflow,
+                openedProjects,
+                selection
+            });
+
+            mocks = { $store, $shapes };
             wrapper = shallowMount(NodeOutput, { propsData, mocks });
         };
     });
@@ -91,7 +97,7 @@ describe('NodeOutput.vue', () => {
         });
 
         it('renders placeholder if more than one node is selected', () => {
-            dummyNodes.node2 = dummyNodes.node1;
+            dummyNodes.node2 = JSON.parse(JSON.stringify(dummyNodes.node1));
             doShallowMount();
             expect(wrapper.find('.placeholder').text()).toBe('To show the node output, please select only one node.');
         });
