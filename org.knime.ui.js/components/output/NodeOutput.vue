@@ -170,6 +170,11 @@ export default {
                 this.selectedPortIndex = null;
             }
         },
+        portHasProblem(hasProblem) {
+            if (hasProblem) {
+                this.portViewerState = null;
+            }
+        },
         selectedNode: {
             handler(newNode, oldNode) {
                 consola.trace('Selected Node changed to', newNode?.id);
