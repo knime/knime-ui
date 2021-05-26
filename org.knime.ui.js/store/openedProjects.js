@@ -35,7 +35,7 @@ export const actions = {
         let openedWorkflows = projects.filter(item => item.activeWorkflow);
 
         if (openedWorkflows.length === 0) {
-            throw new Error('No active workflow provided');
+            consola.error('No active workflow provided');
         } else if (openedWorkflows.length > 1) {
             consola.error('More than one active workflow found. Not supported. Opening only first item.');
         }

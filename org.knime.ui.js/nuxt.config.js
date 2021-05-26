@@ -2,7 +2,6 @@ import path from 'path';
 import postcssConfig from 'webapps-common/webpack/webpack.postcss.config';
 import generateCss from './buildtools/generateCSS';
 import svgConfig from 'webapps-common/webpack/webpack.svg.config';
-import packageFile from './package.json';
 
 const srcDir = path.resolve(__dirname);
 const commonsDir = path.resolve(srcDir, 'webapps-common');
@@ -11,10 +10,7 @@ const config = {
     alias: {
         'webapps-common': commonsDir
     },
-    env: {
-        version: packageFile.version
-    },
-    mode: 'spa',
+    ssr: false,
     head: {
         meta: [
             { charset: 'utf-8' },
@@ -74,10 +70,8 @@ const config = {
             }
 
             // limit nuxt default image rule to raster images because we want to handle svg ourselves
-            const imgRule = config.module.rules.find(
-                rule => String(rule.test) === String(/\.(png|jpe?g|gif|svg|webp|avif)$/i)
-            );
-            imgRule.test = /\.(png|jpe?g|gif|webp|avif)$/i;
+            const svgRule = config.module.rules.find(rule => String(rule.test).includes('svg'));
+            svgRule.test = new RegExp(String(svgRule.test).replace('svg|', '').replace('|svg'));
 
             // custom image rule for SVG
             config.module.rules.push(svgConfig);
