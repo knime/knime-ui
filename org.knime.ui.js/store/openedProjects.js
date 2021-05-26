@@ -36,6 +36,7 @@ export const actions = {
 
         if (openedWorkflows.length === 0) {
             consola.error('No active workflow provided');
+            return;
         } else if (openedWorkflows.length > 1) {
             consola.error('More than one active workflow found. Not supported. Opening only first item.');
         }
