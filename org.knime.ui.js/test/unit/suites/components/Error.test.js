@@ -10,10 +10,6 @@ jest.mock('~/webapps-common/util/copyText.js', () => ({
 
 describe('Error.vue', () => {
 
-    beforeEach(() => {
-        // mockCopyText = jest.fn();
-    });
-
     it('renders default', () => {
         const wrapper = shallowMount(Error, {
             propsData: {
@@ -45,8 +41,6 @@ describe('Error.vue', () => {
                 vueInfo: 'error in watcher'
             }
         });
-        // eslint-disable-next-line no-process-env
-        process.env.version = 'v0-beta';
 
         let copyButton = wrapper.findAllComponents(Button).at(0);
         copyButton.trigger('click');
@@ -55,7 +49,7 @@ describe('Error.vue', () => {
 
         expect(copyText).toHaveBeenCalledWith(JSON.stringify({
             app: 'KnimeUI',
-            version: 'v0-beta',
+            // version: 'version' // TODO:NXT-595
             message: 'one-liner',
             vueInfo: 'error in watcher',
             stack: 'stacky'
@@ -72,5 +66,15 @@ describe('Error.vue', () => {
         reloadButton.trigger('click');
 
         expect(window.location.reload).toHaveBeenCalled();
+    });
+
+    it('shows copy success', async () => {
+        const wrapper = mount(Error);
+        let copyButton = wrapper.find('.copy-to-clipboard');
+
+        expect(copyButton.attributes().class).not.toMatch('copied');
+        copyButton.trigger('click');
+        await Vue.nextTick();
+        expect(copyButton.attributes().class).toMatch('copied');
     });
 });

@@ -2,14 +2,24 @@
 import Button from '~/webapps-common/ui/components/Button';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 import CopyIcon from '~/webapps-common/ui/assets/img/icons/copy.svg?inline';
+import CheckIcon from '~/webapps-common/ui/assets/img/icons/check.svg?inline';
 import WarningIcon from '~/assets/error.svg?inline';
 import { copyText } from '~/webapps-common/util/copyText.js';
 
+/**
+ * Error.vue
+ * This Overlay is to be shown whenever an an error is thrown in KNIME UI (Frontend) that hasn't been caught yet
+ * This can include uncaught errors caused or thrown by the backend
+ *
+ * The user can reload the browser page and should be able to continue to work
+ *
+ */
 export default {
     components: {
         Button,
         ReloadIcon,
         CopyIcon,
+        CheckIcon,
         WarningIcon
     },
     props: {
@@ -26,6 +36,9 @@ export default {
             default: null
         }
     },
+    data: () => ({
+        copied: false
+    }),
     methods: {
         reloadApp() {
             window.location.reload();
@@ -33,11 +46,12 @@ export default {
         copyToClipboard() {
             copyText(JSON.stringify({
                 app: 'KnimeUI',
-                version: process.env.version, // eslint-disable-line no-process-env
+                // version: // TODO:NXT-595
                 message: this.message,
                 vueInfo: this.vueInfo,
                 stack: this.stack
             }, null, 2));
+            this.copied = true;
         }
     }
 };
@@ -51,17 +65,22 @@ export default {
     <div class="background" />
     <div class="content">
       <div class="header">
-        <h2><WarningIcon />Sorry! KNIME has stopped due to an error.</h2>
+        <h2><WarningIcon />Sorry! KNIME UI has stopped due to an error.</h2>
         <div class="message">“{{ message }}”</div>
       </div>
       <div class="actions">
         <Button
           with-border
           on-dark
+          :class="['copy-to-clipboard', { copied }]"
           @click="copyToClipboard"
         >
-          <CopyIcon />
-          Copy to clipboard
+          <span class="default">
+            <CopyIcon />
+            Copy to clipboard</span>
+          <span class="success">
+            <CheckIcon />
+            Copied to clipboard</span>
         </Button>
         <Button
           primary
@@ -154,6 +173,41 @@ export default {
       height: 18px;
       stroke: var(--knime-masala);
       stroke-width: calc(32px / 18); /* 1px stroke width */
+    }
+
+    & > .copy-to-clipboard {
+      transition: all 100ms ease;
+      position: relative;
+
+      & .default {
+        position: absolute;
+      }
+
+      & .success {
+        opacity: 0;
+      }
+
+      & > span {
+        transition: opacity 100ms ease;
+      }
+
+      &.copied {
+        background-color: var(--knime-meadow);
+        border-color: var(--knime-meadow);
+        color: var(--knime-white);
+
+        & svg {
+          stroke: var(--knime-white);
+        }
+
+        & .success {
+          opacity: 1;
+        }
+
+        & .default {
+          opacity: 0;
+        }
+      }
     }
   }
 
