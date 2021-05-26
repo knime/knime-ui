@@ -36,24 +36,25 @@ export default {
             workflow: 'activeWorkflow',
             allowedActions: state => state.activeWorkflow?.allowedActions || {}
         }),
-        ...mapGetters('workflow', ['selectedNodes']),
+        ...mapGetters('selection', ['selectedNodes', 'selectedConnections']),
         hasBreadcrumb() {
             return this.workflow.parents?.length > 0;
         },
         hasSelection() {
-            return this.selectedNodes().length > 0;
+            return this.selectedNodes.length > 0;
         },
         canExecuteSelection() {
-            return this.selectedNodes().some(node => node.allowedActions.canExecute);
+            return this.selectedNodes.some(node => node.allowedActions.canExecute);
         },
         canCancelSelection() {
-            return this.selectedNodes().some(node => node.allowedActions.canCancel);
+            return this.selectedNodes.some(node => node.allowedActions.canCancel);
         },
         canResetSelection() {
-            return this.selectedNodes().some(node => node.allowedActions.canReset);
+            return this.selectedNodes.some(node => node.allowedActions.canReset);
         },
         canDeleteSelection() {
-            return this.selectedNodes().some(node => node.allowedActions.canDelete);
+            return this.selectedNodes.some(node => node.allowedActions.canDelete) ||
+              this.selectedConnections.some(connection => connection.canDelete);
         },
         // Checks if the application is run on a mac
         isMac() {
@@ -61,8 +62,9 @@ export default {
         }
     },
     methods: {
-        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedNodes',
+        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedObjects',
             'undo', 'redo']),
+        ...mapActions('selection', ['deselectAllObjects']),
         /**
          * Translates windows/linux shortcuts into mac shortcuts when operating system is mac
          * @param {String} shortcutTitle the windows/linux compatible shortcuts
@@ -76,6 +78,13 @@ export default {
             } else {
                 return  shortcutTitle;
             }
+        },
+        // deletes all the selected nodes and connectors
+        deleteSelection() {
+            this.deleteSelectedObjects({
+                selectedNodes: this.selectedNodes,
+                selectedConnections: this.selectedConnections
+            });
         }
     }
 };
@@ -160,7 +169,7 @@ export default {
         class="with-text"
         :disabled="!canDeleteSelection"
         :title="checkForMacShortcuts('Delete selection – Delete')"
-        @click.native="deleteSelectedNodes"
+        @click.native="deleteSelection"
       >
         <DeleteIcon />
         Delete

@@ -1,0 +1,185 @@
+/* eslint-disable no-magic-numbers */
+import { createLocalVue } from '@vue/test-utils';
+import { mockVuexStore } from '~/test/unit/test-utils';
+import Vuex from 'vuex';
+import * as selectionStoreConfig from '~/store/selection';
+
+describe('workflow store', () => {
+    let $store, storeConfig, localVue;
+
+    beforeAll(() => {
+        localVue = createLocalVue();
+        localVue.use(Vuex);
+    });
+
+    beforeEach(() => {
+        storeConfig = {
+            selection: {
+                ...selectionStoreConfig
+            }
+        };
+
+        $store = mockVuexStore(storeConfig);
+    });
+
+    describe('mutations', () => {
+        test('adding nodes to selection', () => {
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
+            $store.commit('selection/addNodesToSelection', { 'root:1': { id: 'root:1' } });
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(1);
+        });
+
+        test('removes nodes from selection', () => {
+            $store.commit('selection/addNodesToSelection', { 'root:1': { id: 'root:1' } });
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(1);
+            $store.commit('selection/removeNodesFromSelection', { 'root:1': { id: 'root:1' } });
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
+        });
+
+        test('adding connections to selection', () => {
+            expect(Object.keys($store.state.selection.selectedConnections).length).toBe(0);
+            $store.commit('selection/addConnectionsToSelection', { 'root:1': { id: 'root:1' } });
+            expect(Object.keys($store.state.selection.selectedConnections).length).toBe(1);
+        });
+
+        test('removes connections from selection', () => {
+            $store.commit('selection/addConnectionsToSelection', { 'root:1': { id: 'root:1' } });
+            expect(Object.keys($store.state.selection.selectedConnections).length).toBe(1);
+            $store.commit('selection/removeConnectionsFromSelection', { 'root:1': { id: 'root:1' } });
+            expect(Object.keys($store.state.selection.selectedConnections).length).toBe(0);
+        });
+    });
+
+    describe('actions', () => {
+        beforeEach(() => {
+            storeConfig = {
+                selection: {
+                    ...selectionStoreConfig,
+                    state: {
+                        selectedNodes: {
+                            'root:1': {
+                                id: 'root:1'
+                            }
+                        },
+                        selectedConnections: {
+                            'root:1_1': {
+                                id: 'root:1_1'
+                            }
+                        }
+                    }
+                },
+                workflow: {
+                    state: {
+                        activeWorkflow: {
+                            nodes: {
+                                'root:1': { id: 'root:1' },
+                                'root:2': { id: 'root:2' }
+                            }
+                        }
+                    }
+                }
+            };
+    
+            $store = mockVuexStore(storeConfig);
+        });
+
+        test('deselects all selected Objects', () => {
+            $store.dispatch('selection/deselectAllObjects');
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
+            expect(Object.keys($store.state.selection.selectedConnections).length).toBe(0);
+        });
+
+        test('selects all nodes', () => {
+            $store.dispatch('selection/selectAllNodes');
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(2);
+            expect(Object.keys($store.state.selection.selectedConnections).length).toBe(1);
+        });
+
+        test('selects a specific node', () => {
+            $store.dispatch('selection/deselectAllObjects');
+            $store.dispatch('selection/selectNode', { id: 'root:1' });
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(1);
+            expect(Object.keys($store.state.selection.selectedConnections).length).toBe(0);
+        });
+
+        test('deselects a specific node', () => {
+            $store.dispatch('selection/deselectNode', { id: 'root:1' });
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
+            expect(Object.keys($store.state.selection.selectedConnections).length).toBe(1);
+        });
+
+        test('selects a specific connection', () => {
+            $store.dispatch('selection/deselectAllObjects');
+            $store.dispatch('selection/selectConnection', { id: 'root:1_1' });
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
+            expect(Object.keys($store.state.selection.selectedConnections).length).toBe(1);
+        });
+
+        test('deselects a specific connection', () => {
+            $store.dispatch('selection/deselectConnection', { id: 'root:1_1' });
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(1);
+            expect(Object.keys($store.state.selection.selectedConnections).length).toBe(0);
+        });
+    });
+
+    describe('getters', () => {
+        beforeEach(() => {
+            $store.commit('selection/addNodesToSelection', {
+                'root:1': {
+                    id: 'root:1'
+                },
+                'root:2': {
+                    id: 'root:2'
+                }
+            });
+            $store.commit('selection/addConnectionsToSelection', {
+                'root:2_1': {
+                    id: 'root:2_1',
+                    canDelete: true
+                },
+                'root:2_2': {
+                    id: 'root:2_2',
+                    canDelete: true
+                }
+            });
+        });
+
+        test('get all selected node ids', () => {
+            expect($store.getters['selection/selectedNodeIds']).toStrictEqual(['root:1', 'root:2']);
+        });
+        
+        test('get all selected nodes', () => {
+            expect($store.getters['selection/selectedNodes']).toStrictEqual(expect.objectContaining([
+                { id: 'root:1' },
+                { id: 'root:2' }
+            ]));
+        });
+
+        test('test if node is selected', () => {
+            expect($store.getters['selection/isNodeSelected']('root:1')).toBe(true);
+        });
+
+        test('test if node is selected', () => {
+            expect($store.getters['selection/isNodeSelected']('root:3')).toBe(false);
+        });
+
+        test('get all selected connection ids', () => {
+            expect($store.getters['selection/selectedConnectionIds']).toStrictEqual(['root:2_1', 'root:2_2']);
+        });
+
+        test('get all selected connections', () => {
+            expect($store.getters['selection/selectedConnections']).toStrictEqual([
+                { canDelete: true, id: 'root:2_1' },
+                { canDelete: true, id: 'root:2_2' }
+            ]);
+        });
+
+        test('test if connection is selected', () => {
+            expect($store.getters['selection/isConnectionSelected']('root:2_2')).toBe(true);
+        });
+
+        test('test if connection is selected', () => {
+            expect($store.getters['selection/isConnectionSelected']('root:2_3')).toBe(false);
+        });
+    });
+});
