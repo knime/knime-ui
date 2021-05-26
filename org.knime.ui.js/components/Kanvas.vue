@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters, mapMutations } from 'vuex';
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
 import Node from '~/components/Node';
 import MoveableNodeContainer from '~/components/MoveableNodeContainer';
 import Connector from '~/components/Connector';
@@ -81,7 +81,7 @@ export default {
         /*
           Selection
         */
-        ...mapMutations('workflow', ['deselectAllNodes']),
+        ...mapActions('selection', ['deselectAllObjects']),
         onMouseDown(e) {
             /*  To avoid for [mousedown on node], [moving mouse], [mouseup on kanvas] to deselect nodes,
              *  we track whether a click has been started on the empty Kanvas
@@ -91,7 +91,7 @@ export default {
         onSelfMouseUp(e) {
             // deselect all nodes
             if (this.clickStartedOnEmptyKanvas) {
-                this.deselectAllNodes();
+                this.deselectAllObjects();
                 this.clickStartedOnEmptyKanvas = null;
             }
         },
@@ -216,6 +216,7 @@ export default {
       <!-- Connectors Layer -->
       <Connector
         v-for="(connector, id) of workflow.connections"
+        :id="id"
         :key="`connector-${workflow.projectId}-${id}`"
         v-bind="connector"
       />

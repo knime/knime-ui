@@ -6,44 +6,45 @@
 <entry key="memory_policy" type="xstring" value="CacheSmallInMemory"/>
 </config>
 <config key="model">
-<config key="column-filter">
-<entry key="filter-type" type="xstring" value="STANDARD"/>
-<config key="included_names">
-<entry key="array-size" type="xint" value="5"/>
-<entry key="0" type="xstring" value="Universe_0_0"/>
-<entry key="1" type="xstring" value="Universe_0_1"/>
-<entry key="2" type="xstring" value="Universe_1_0"/>
-<entry key="3" type="xstring" value="Universe_1_1"/>
-<entry key="4" type="xstring" value="Cluster Membership"/>
-</config>
-<config key="excluded_names">
+<entry key="scriptImports" type="xstring" value="// Your custom imports:%%00010"/>
+<entry key="scriptFields" type="xstring" value="// Your custom variables:%%00010"/>
+<entry key="scriptBody" type="xstring" value="// Enter your code here:%%00010%%00010     try {%%00010%%00009  Thread.sleep(100);%%00010%%00009} catch (InterruptedException e) {%%00010%%00009%%00009// do nothing%%00010%%00009}%%00010%%00010"/>
+<config key="jarFiles">
 <entry key="array-size" type="xint" value="0"/>
 </config>
-<entry key="enforce_option" type="xstring" value="EnforceExclusion"/>
-<config key="name_pattern">
-<entry key="pattern" type="xstring" value=""/>
-<entry key="type" type="xstring" value="Wildcard"/>
-<entry key="caseSensitive" type="xboolean" value="true"/>
+<config key="outCols">
+<entry key="array-size" type="xint" value="0"/>
 </config>
-<config key="datatype">
-<config key="typelist"/>
+<config key="outVars">
+<entry key="array-size" type="xint" value="0"/>
 </config>
+<config key="inCols">
+<entry key="array-size" type="xint" value="0"/>
+</config>
+<config key="inVars">
+<entry key="array-size" type="xint" value="0"/>
+</config>
+<entry key="version" type="xstring" value="version 1.x"/>
+<entry key="templateUUID" type="xstring" isnull="true" value=""/>
+<entry key="runOnExecute" type="xboolean" value="false"/>
+<config key="bundles">
+<entry key="array-size" type="xint" value="0"/>
 </config>
 </config>
 <entry key="customDescription" type="xstring" isnull="true" value=""/>
 <entry key="state" type="xstring" value="CONFIGURED"/>
-<entry key="factory" type="xstring" value="org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory"/>
-<entry key="node-name" type="xstring" value="Column Filter"/>
-<entry key="node-bundle-name" type="xstring" value="KNIME Base Nodes"/>
-<entry key="node-bundle-symbolic-name" type="xstring" value="org.knime.base"/>
+<entry key="factory" type="xstring" value="org.knime.base.node.jsnippet.JavaSnippetNodeFactory"/>
+<entry key="node-name" type="xstring" value="Java Snippet"/>
+<entry key="node-bundle-name" type="xstring" value="KNIME Java Snippet Nodes"/>
+<entry key="node-bundle-symbolic-name" type="xstring" value="org.knime.jsnippets"/>
 <entry key="node-bundle-vendor" type="xstring" value="KNIME AG, Zurich, Switzerland"/>
-<entry key="node-bundle-version" type="xstring" value="4.4.0.v202103310731"/>
+<entry key="node-bundle-version" type="xstring" value="4.4.0.v202012072036"/>
 <entry key="node-feature-name" type="xstring" isnull="true" value=""/>
 <entry key="node-feature-symbolic-name" type="xstring" isnull="true" value=""/>
 <entry key="node-feature-vendor" type="xstring" isnull="true" value=""/>
 <entry key="node-feature-version" type="xstring" value="0.0.0"/>
 <config key="factory_settings"/>
-<entry key="name" type="xstring" value="Column Filter"/>
+<entry key="name" type="xstring" value="Java Snippet"/>
 <entry key="hasContent" type="xboolean" value="false"/>
 <entry key="isInactive" type="xboolean" value="false"/>
 <config key="ports">

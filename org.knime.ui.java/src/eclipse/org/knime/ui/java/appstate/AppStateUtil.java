@@ -73,11 +73,11 @@ import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.service.ApplicationService;
 import org.knime.gateway.api.webui.service.WorkflowService;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
-import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.AppState;
 import org.knime.gateway.impl.webui.AppState.OpenedWorkflow;
 import org.knime.gateway.impl.webui.service.DefaultApplicationService;
@@ -123,9 +123,9 @@ public final class AppStateUtil {
 	 * an app state anymore. It also clears references to workflow projects.
 	 */
 	public static void clearAppState() {
-		disposeAllLoadedWorkflowProjects();
 		DefaultApplicationService.getInstance().clearAppStateSupplier();
 		DefaultEventService.getInstance().removeAllEventListeners();
+		disposeAllLoadedWorkflowProjects();
 	}
 
 	private static void disposeAllLoadedWorkflowProjects() {
@@ -133,7 +133,7 @@ public final class AppStateUtil {
 			for (String id : loadedWorkflowsForTesting) {
 				WorkflowManager wfm = WorkflowProjectManager.openAndCacheWorkflow(id).orElse(null);
 				try {
-					DefaultServiceUtil.cancelAndCloseLoadedWorkflow(wfm);
+					CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
 				} catch (InterruptedException ex) { // NOSONAR should never happen
 					throw new IllegalStateException(ex);
 				}
@@ -331,7 +331,7 @@ public final class AppStateUtil {
 	private static WorkflowManager loadWorkflowForTesting(final OpenedWorkflow workflow) {
 		File file = new File(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile(), workflow.getProjectId());
 		try {
-			WorkflowManager wfm = DefaultServiceUtil.loadWorkflow(file);
+			WorkflowManager wfm = CoreUtil.loadWorkflow(file);
 			if (loadedWorkflowsForTesting == null) {
 				loadedWorkflowsForTesting = new HashSet<>();
 			}

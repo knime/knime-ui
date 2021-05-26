@@ -42,19 +42,21 @@ describe('HotKeys', () => {
                 state: {
                     activeWorkflow: { someProperty: 0 }
                 },
-                mutations: {
-                    selectAllNodes: jest.fn()
-                },
                 actions: {
                     executeNodes: jest.fn(),
                     cancelNodeExecution: jest.fn(),
                     resetNodes: jest.fn(),
-                    deleteSelectedNodes: jest.fn(),
+                    deleteSelectedObjects: jest.fn(),
                     undo: jest.fn(),
                     redo: jest.fn()
                 },
                 getters: {
                     isWritable: jest.fn().mockReturnValue(true)
+                }
+            },
+            selection: {
+                actions: {
+                    selectAllNodes: jest.fn()
                 }
             },
             canvas: {
@@ -99,7 +101,7 @@ describe('HotKeys', () => {
 
             it('Ctrl-A: Select all nodes', () => {
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true }));
-                expect(storeConfig.workflow.mutations.selectAllNodes).toHaveBeenCalled();
+                expect(storeConfig.selection.actions.selectAllNodes).toHaveBeenCalled();
             });
 
             it('F7: execute selected nodes', () => {
@@ -157,7 +159,7 @@ describe('HotKeys', () => {
         describe('writable Workflow', () => {
             test.each(['delete', 'backspace'])('Delete: %s selection', (key) => {
                 document.dispatchEvent(new KeyboardEvent('keydown', { key }));
-                expect(storeConfig.workflow.actions.deleteSelectedNodes).toHaveBeenCalled();
+                expect(storeConfig.workflow.actions.deleteSelectedObjects).toHaveBeenCalled();
             });
         });
 

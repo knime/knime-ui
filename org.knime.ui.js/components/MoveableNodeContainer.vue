@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters, mapMutations } from 'vuex';
+import { mapState, mapGetters, mapActions } from 'vuex';
 import { throttle } from 'lodash';
 import NodeSelectionPlane from '~/components/NodeSelectionPlane';
 
@@ -37,27 +37,36 @@ export default {
         startPos: { x: 0, y: 0 }
     }),
     computed: {
-        ...mapGetters('workflow', ['isWritable', 'selectedNodes']),
+        ...mapGetters('workflow', ['isWritable']),
+        ...mapGetters('selection', ['selectedNodeIds', 'isNodeSelected']),
         ...mapState('openedProjects', {
             projectId: 'activeId'
         }),
         ...mapState('workflow', {
             isDragging: 'isDragging',
             deltaMovePosition: 'deltaMovePosition',
-            moveNodeGhostThresholdExceeded: 'moveNodeGhostThresholdExceeded'
+            moveNodeGhostThresholdExceeded: 'moveNodeGhostThresholdExceeded',
+            activeWorkflow: 'activeWorkflow'
         }),
         ...mapState('canvas', ['zoomFactor']),
-        // Returns if the current node is selected
-        isSelected() {
-            return this.selectedNodes().filter(node => node.id === this.id).length > 0;
-        },
         // Combined position of original position + the dragged amount
         combinedPosition() {
             return { x: this.position.x + this.deltaMovePosition.x, y: this.position.y + this.deltaMovePosition.y };
         },
         // returns the amount the object should be translated. This is either the position of the objec, or the position + the dragged amount
         translationAmount() {
-            return this.isSelected && !this.moveNodeGhostThresholdExceeded ? this.combinedPosition : this.position;
+            return this.isNodeSelected(this.id) &&
+                !this.moveNodeGhostThresholdExceeded
+                ? this.combinedPosition
+                : this.position;
+        },
+        // If true the outline of the node is shown when dragged.
+        // This is true if the node is selected and more then a predefined amount of nodes are selected
+        // and the node has been moved already
+        showGhostOutline() {
+            return this.isNodeSelected(this.id) &&
+                this.moveNodeGhostThresholdExceeded &&
+                (this.deltaMovePosition.x !== 0 || this.deltaMovePosition.y !== 0);
         }
     },
     watch: {
@@ -71,7 +80,7 @@ export default {
         }
     },
     methods: {
-        ...mapMutations('workflow', ['selectNode', 'deselectNode', 'deselectAllNodes']),
+        ...mapActions('selection', ['selectNode', 'deselectNode', 'deselectAllObjects']),
         /**
          * Resets the drag position in the store. This can only happen here, as otherwise the node
          * will be reset to its position before the actual movement of the store happened.
@@ -89,10 +98,10 @@ export default {
          */
         onMoveStart(e) {
             this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: true });
-            if (!e.detail.event.shiftKey && !this.isSelected) {
-                this.deselectAllNodes();
+            if (!e.detail.event.shiftKey && !this.isNodeSelected(this.id)) {
+                this.deselectAllObjects();
             }
-            this.selectNode(this.id);
+            this.selectNode(this.activeWorkflow.nodes[this.id]);
             this.startPos = { x: this.position.x, y: this.position.y };
         },
 
@@ -136,11 +145,11 @@ export default {
     v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5, isProtected: !isWritable}"
     :transform="`translate(${ translationAmount.x}, ${ translationAmount.y })`"
     :data-node-id="id"
-    :class="[{ dragging: isDragging && isSelected }]"
+    :class="[{ dragging: isDragging && isNodeSelected(id) }]"
   >
     <slot />
     <NodeSelectionPlane
-      v-if="isSelected && moveNodeGhostThresholdExceeded && (deltaMovePosition.x !== 0 || deltaMovePosition.y !== 0)"
+      v-if="showGhostOutline"
       :position="deltaMovePosition"
       :kind="kind"
     />
