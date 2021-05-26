@@ -15,7 +15,8 @@ import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 jest.useFakeTimers();
 
 describe('NodeOutput.vue', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store, dataTable, flowVariables, workflow, openedProjects;
+    let propsData, mocks, doShallowMount, wrapper, $store, dataTable, flowVariables, workflow, openedProjects,
+        selection, computed, currentSelectedNodes;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -62,7 +63,6 @@ describe('NodeOutput.vue', () => {
                     nodes: {
                         node1: {
                             id: 'node1',
-                            selected: true,
                             outPorts: ['dummy'],
                             isLoaded: false
                         }
@@ -71,10 +71,7 @@ describe('NodeOutput.vue', () => {
                 }
             },
             getters: {
-                activeWorkflowId: jest.fn().mockReturnValue('activeWorkflowId'),
-                selectedNodes() {
-                    return () => Object.values(workflow.state.activeWorkflow.nodes).filter(node => node.selected);
-                }
+                activeWorkflowId: jest.fn().mockReturnValue('activeWorkflowId')
             },
             actions: {
                 executeNodes: jest.fn()
@@ -87,21 +84,35 @@ describe('NodeOutput.vue', () => {
             }
         };
 
-        $store = mockVuexStore({
-            dataTable,
-            flowVariables,
-            workflow,
-            openedProjects
-        });
+        currentSelectedNodes = [workflow.state.activeWorkflow.nodes.node1];
 
-        mocks = { $store, $shapes };
+        computed = {
+            selectedNodes: {
+                get() {
+                    return currentSelectedNodes;
+                },
+                set(val) {
+                    currentSelectedNodes = val;
+                }
+            }
+        };
+
         doShallowMount = () => {
-            wrapper = shallowMount(NodeOutput, { propsData, mocks });
+            $store = mockVuexStore({
+                dataTable,
+                flowVariables,
+                workflow,
+                selection,
+                openedProjects
+            });
+    
+            mocks = { $store, $shapes };
+            wrapper = shallowMount(NodeOutput, { propsData, mocks, computed });
         };
     });
 
     it('renders placeholder if no node is selected', () => {
-        workflow.state.activeWorkflow.nodes.node1.selected = false;
+        currentSelectedNodes = [];
         doShallowMount();
         expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(false);
         expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
@@ -111,7 +122,7 @@ describe('NodeOutput.vue', () => {
     });
 
     it('renders placeholder if more than one node is selected', () => {
-        workflow.state.activeWorkflow.nodes.node2 = workflow.state.activeWorkflow.nodes.node1;
+        currentSelectedNodes = [workflow.state.activeWorkflow.nodes.node1, workflow.state.activeWorkflow.nodes.node1];
         doShallowMount();
         expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(false);
         expect(wrapper.findComponent(DataPortOutputTable).exists()).toBe(false);
@@ -217,7 +228,7 @@ describe('NodeOutput.vue', () => {
 
     it('renders placeholder if selected port is inactive', async () => {
         workflow.state.activeWorkflow.nodes.node1.outPorts[0] = { inactive: true, type: 'table' };
-        doShallowMount();
+        doShallowMount(currentSelectedNodes);
         wrapper.setData({ selectedPortIndex: 0 });
         await Vue.nextTick();
         expect(wrapper.findComponent(OutputPortSelectorBar).exists()).toBe(true);
@@ -310,7 +321,7 @@ describe('NodeOutput.vue', () => {
     it('clears table on node selection', async () => {
         doShallowMount();
         wrapper.setData({ selectedPortIndex: 0 });
-        workflow.state.activeWorkflow.nodes.node1.selected = false;
+        wrapper.vm.$options.watch.selectedNode.call(wrapper.vm, 'test');
         await Vue.nextTick();
         expect(dataTable.actions.clear).toHaveBeenCalled();
         expect(wrapper.vm.selectedPortIndex).toBe(null);

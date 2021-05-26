@@ -1,5 +1,6 @@
 /* eslint-disable prefer-arrow-callback,no-magic-numbers */
 const loadWorkflow = require('../utils/loadWorkflow');
+const selectors = require('../utils/selectors');
 
 const launchTimeout = 5 * 1000;
 const runTimeout = 8 * 1000;
@@ -16,9 +17,9 @@ module.exports = {
     },
     'verify workflow': nightwatch => {
         // start state
-        nightwatch.assert.not.elementPresent('.action-executeNodes');
+        nightwatch.assert.not.elementPresent(selectors.executeSelectedButton);
         nightwatch.assert.containsText(
-            '#node-output',
+            '.output-container',
             'To show the node output, please select a configured or executed node'
         );
 
@@ -30,15 +31,15 @@ module.exports = {
     'check output': nightwatch => {
         // run node
         nightwatch.click(nodeSelector);
-        nightwatch.assert.visible('.action-executeNodes');
-        nightwatch.click('.action-executeNodes');
+        nightwatch.assert.visible(selectors.executeSelectedButton);
+        nightwatch.click(selectors.executeSelectedButton);
 
         // wait to finish execution
-        nightwatch.waitForElementVisible('#node-output .table', runTimeout);
+        nightwatch.waitForElementVisible('.output-container .table', runTimeout);
     },
     'switch output tab': nightwatch => {
-        const outputButtonsSelector = '#node-output [name="output-port"] + span';
-        const tdSelector = '#node-output .table td';
+        const outputButtonsSelector = '.output-container [name="output-port"] + span';
+        const tdSelector = '.output-container .table td';
 
         nightwatch.assert.containsText(tdSelector, 'Row0');
 
@@ -48,8 +49,8 @@ module.exports = {
         nightwatch.click({ selector: outputButtonsSelector, index: 0 });
         nightwatch.assert.containsText(tdSelector, 'Row0');
 
-        // TODO: open flow variables when NXT-164 is merged
-        // nightwatch.click({ selector: '#node-output [name="output-port"]', index: 3 });
+        nightwatch.click({ selector: outputButtonsSelector, index: 2 });
+        nightwatch.assert.containsText(`${tdSelector}:nth-child(3)`, 'knime.workspace');
 
     },
     'select multiple nodes': nightwatch => {
@@ -61,20 +62,20 @@ module.exports = {
         nightwatch.keys(nightwatch.Keys.NULL);
 
         nightwatch.assert.containsText(
-            '#node-output',
+            '.output-container',
             'To show the node output, please select only one node'
         );
     },
     'unselect nodes': nightwatch => {
         nightwatch.click('#kanvas > svg');
         nightwatch.assert.containsText(
-            '#node-output',
+            '.output-container',
             'To show the node output, please select a configured or executed node'
         );
     },
     're-select executed node': nightwatch => {
         nightwatch.click(nodeSelector);
-        const tdSelector = '#node-output .table td';
+        const tdSelector = '.output-container .table td';
         nightwatch.assert.containsText(tdSelector, 'Row0');
     }
 };

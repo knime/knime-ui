@@ -10,7 +10,7 @@ const config = {
     alias: {
         'webapps-common': commonsDir
     },
-    mode: 'spa',
+    ssr: false,
     head: {
         meta: [
             { charset: 'utf-8' },
