@@ -89,7 +89,8 @@ describe('Kanvas', () => {
                 outA: mockConnector({ nr: 1, id: 'outA' }),
                 outB: mockConnector({ nr: 2, id: 'outB' })
             },
-            workflowAnnotations: []
+            workflowAnnotations: [],
+            parents: []
         };
         workflowStoreConfig = {
             state: {
@@ -110,11 +111,17 @@ describe('Kanvas', () => {
                 isLinked() {
                     return workflow.info.linked;
                 },
+                isInsideLinked() {
+                    return workflow.parents.some(p => p.linked);
+                },
+                insideLinkedType({ activeWorkflow }) {
+                    return workflow.parents.find(p => p.linked).containerType;
+                },
                 isStreaming() {
                     return workflow.info.jobManager;
                 },
                 isWritable() {
-                    return !workflow.info.linked;
+                    return !(workflow.info.linked || workflow.parents.some(p => p.linked));
                 },
                 nodeIcon() {
                     return ({ nodeId }) => `data:image/${nodeId}`;
@@ -203,6 +210,13 @@ describe('Kanvas', () => {
 
     it('write-protects and shows warning on being linked', () => {
         workflow.info.linked = true;
+        doShallowMount();
+        expect(wrapper.find('.read-only').exists()).toBe(true);
+        expect(wrapper.find('.type-notification').exists()).toBe(true);
+    });
+
+    it('write-protects and shows warning on being inside a linked component or metanode', () => {
+        workflow.parents.push({ linked: true, containerType: 'metanode' });
         doShallowMount();
         expect(wrapper.find('.read-only').exists()).toBe(true);
         expect(wrapper.find('.type-notification').exists()).toBe(true);

@@ -8,7 +8,6 @@ import NodeRepository from '~/components/NodeRepository';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import Kanvas from '~/components/Kanvas';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
-import WorkflowToolbar from '~/components/WorkflowToolbar';
 import Splitter from '~/components/Splitter';
 
 describe('WorkflowTabContent.vue', () => {
