@@ -160,19 +160,4 @@ describe('WorkflowTabContent.vue', () => {
             expect(wrapper.find('#metadata').exists()).toBe(false);
         });
     });
-
-    describe('toolbar', () => {
-        it('shows no toolbar by default', async () => {
-            workflow = null;
-            await doShallowMount();
-
-            expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(false);
-        });
-
-        it('shows breadcrumb when available', async () => {
-            await doShallowMount();
-
-            expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(true);
-        });
-    });
 });

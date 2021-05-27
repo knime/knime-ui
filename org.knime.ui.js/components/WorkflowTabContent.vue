@@ -1,6 +1,5 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import WorkflowToolbar from '~/components/WorkflowToolbar';
 import Kanvas from '~/components/Kanvas';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
@@ -19,8 +18,7 @@ export default {
         Kanvas,
         LeftCollapsiblePanel,
         WorkflowMetadata,
-        NodeRepository,
-        WorkflowToolbar
+        NodeRepository
     },
     computed: {
         ...mapState('workflow', {
@@ -53,7 +51,6 @@ export default {
 
 <template>
   <main v-if="workflow">
-    <WorkflowToolbar id="toolbar" />
     <div class="collapser-kanvas">
       <LeftCollapsiblePanel
         id="metadata"

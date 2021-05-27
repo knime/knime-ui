@@ -17,16 +17,36 @@
   display: inline-block;
   font-weight: 500;
   color: var(--knime-dove-gray);
-}
+  cursor: pointer;
 
-svg {
-  position: relative;
-  top: 3px;
-  width: 14px;
-  height: 14px;
-  stroke-width: calc(32px / 14);
-  stroke: var(--knime-white);
-  margin-right: 3px;
+  & svg {
+    position: relative;
+    stroke-width: calc(32px / 14);
+    margin-right: -3px;
+    height: 7px;
+    width: 7px;
+    stroke: var(--knime-masala);
+  }
+
+  &:hover {
+    color: var(--knime-white);
+    background-color: var(--knime-masala);
+    border-color: var(--knime-masala);
+
+    & svg {
+      stroke: var(--knime-white);
+    }
+  }
+
+  &:active {
+    color: var(--knime-white);
+    background-color: var(--knime-black);
+    border-color: var(--knime-black);
+
+    & svg {
+      stroke: var(--knime-white);
+    }
+  }
 }
 
 @media only screen and (max-width: 900px) {

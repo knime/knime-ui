@@ -108,7 +108,9 @@ export default {
           :key="nodeId"
           class="node"
         >
-          {{ nodeTemplates[nodeId].name }}
+          <label :title="nodeTemplates[nodeId].name">
+            {{ nodeTemplates[nodeId].name }}
+          </label>
           <NodePreview v-bind="nodeTemplates[nodeId]" />
         </span>
       </div>
@@ -130,46 +132,41 @@ export default {
 
 .repo {
   margin: 15px 20px;
+  font-family: "Roboto Condensed", sans-serif;
 
   & h4 {
     font-size: 18px;
     font-weight: 400;
+    margin: 14px auto;
   }
 
   & .break {
     height: 1px;
     width: 100%;
     display: block;
-    background-color: var(--knime-masala);
-    margin-bottom: 10px;
+    background-color: var(--knime-silver-sand);
 
     &.full {
       width: 360px;
       margin-left: -20px;
+      margin-bottom: 14px;
     }
   }
 
   & .tags {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    padding: 10px;
+    justify-content: left;
+    padding: 13px 0;
   }
 
   & .filter-tags {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     font-size: 14px;
 
     & .clear-button {
       float: right;
       padding: 0;
-    }
-
-    & .selected-tag >>> svg {
-      stroke: var(--knime-masala);
-      margin: 0 -2px 1px 2px;
-      height: 10px;
-      width: 10px;
     }
   }
 
@@ -181,19 +178,24 @@ export default {
 
     & .node {
       width: 100px;
-      height: 70px;
-      padding-bottom: 60px;
-      margin: 5px;
+      height: 80px;
+      margin: 0 5px;
       position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-end;
       font-size: 12px;
       font-weight: 700;
       text-align: center;
-      font-family: "Roboto Condensed", sans-serif;
-      word-break: break-word;
+
+      & label {
+        max-height: 26px;
+        max-width: 100px;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+      }
 
       & svg {
         width: 75px;
