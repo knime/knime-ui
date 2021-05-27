@@ -268,7 +268,7 @@ describe('NodeOutput.vue', () => {
             await Vue.nextTick();
 
             expect(portView.isVisible()).toBe(false);
-            expect(wrapper.find('.placeholder').text()).toBe('Loading Data');
+            expect(wrapper.find('.placeholder').text()).toBe('Loading data');
             expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
         });
 

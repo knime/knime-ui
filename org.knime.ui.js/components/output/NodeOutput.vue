@@ -146,7 +146,7 @@ export default {
             let { portViewerState } = this;
             return this.selectionHasProblem || this.nodeHasProblem || this.portHasProblem ||
                 // same loading placeholder for all port views
-                (portViewerState?.state === 'loading' && 'Loading Data') ||
+                (portViewerState?.state === 'loading' && 'Loading data') ||
                 // custom error message per port view
                 (portViewerState?.state === 'error' && portViewerState.message);
         },
