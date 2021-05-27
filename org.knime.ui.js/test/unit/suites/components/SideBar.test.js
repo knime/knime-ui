@@ -3,9 +3,9 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import vuex from 'vuex';
 import * as panelStoreConfig from '~/store/panel';
 
-import SideBar from '~/components/SideBar';
+import Sidebar from '~/components/Sidebar';
 
-describe('SideBar', () => {
+describe('Sidebar', () => {
     let wrapper;
 
     beforeAll(() => {
@@ -14,7 +14,7 @@ describe('SideBar', () => {
     });
 
     beforeEach(() => {
-        wrapper = mount(SideBar, {
+        wrapper = mount(Sidebar, {
             mocks: {
                 $store: mockVuexStore({ panel: panelStoreConfig })
             }
