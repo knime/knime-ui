@@ -514,6 +514,39 @@ describe('workflow store', () => {
             expect(store.getters['workflow/isWritable']).toBe(false);
         });
 
+        test('isInsideLinked defaults to false', async () => {
+            await loadStore();
+            store.commit('workflow/setActiveWorkflow', {
+                parents: [{
+                    containerType: 'component',
+                    linked: false
+                }]
+            });
+            expect(store.getters['workflow/isInsideLinked']).toBe(false);
+        });
+
+        test('isInsideLinked', async () => {
+            await loadStore();
+            store.commit('workflow/setActiveWorkflow', {
+                parents: [{
+                    containerType: 'metanode',
+                    linked: true
+                }]
+            });
+            expect(store.getters['workflow/isInsideLinked']).toBe(true);
+        });
+
+        test('insideLinkedType', async () => {
+            await loadStore();
+            store.commit('workflow/setActiveWorkflow', {
+                parents: [{
+                    containerType: 'metanode',
+                    linked: true
+                }]
+            });
+            expect(store.getters['workflow/insideLinkedType']).toBe('metanode');
+        });
+
         describe('workflowBounds', () => {
             const {
                 nodeSize, nodeStatusMarginTop, nodeStatusHeight, nodeNameMargin,
