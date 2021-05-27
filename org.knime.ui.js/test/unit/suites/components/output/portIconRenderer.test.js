@@ -18,6 +18,7 @@ describe('PortIconRenderer', () => {
         expect(wrapper.findAll('g *').length).toBe(1);
         expect(wrapper.find('g *').element.tagName.toLowerCase()).toBe('polygon');
     });
+    
     it('renders a flowVar port Icon', () => {
         let PortIcon = portIcon({
             type: 'flowVariable',

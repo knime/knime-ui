@@ -13,7 +13,7 @@ export default (portConfig) => ({
         let port = { ...portConfig };
         delete port.nodeState;
         let g = createElement(Port, {
-            props: { port }
+            props: { port, interactive: false }
         });
 
         let attrs = {

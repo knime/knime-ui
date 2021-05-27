@@ -46,7 +46,7 @@
     "nightwatch": "1.6.3",
     "normalize.css": "8.0.1",
     "sonar-scanner": "3.1.0",
-    "stylelint": "^13.13.1",
+    "stylelint": "13.13.1",
     "stylelint-config-standard": "20.0.0",
     "svgo": "1.3.2",
     "svgo-loader": "2.2.1",
