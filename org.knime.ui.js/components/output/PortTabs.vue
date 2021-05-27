@@ -90,7 +90,7 @@ export default {
   }
 }
 
->>> svg {
+>>> svg * {
   pointer-events: none;
 }
 

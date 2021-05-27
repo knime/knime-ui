@@ -48,10 +48,6 @@ describe('Port', () => {
             it('not inactive', () => {
                 expect(wrapper.find('path').exists()).toBe(false);
             });
-
-            it('renders interactive class', () => {
-                expect(wrapper.classes()).toContain('interactive');
-            });
             
             it('renders mandatory (filled)', () => {
                 expect(wrapper.findComponent(PortIcon).props().filled).toBe(true);
@@ -77,13 +73,6 @@ describe('Port', () => {
 
             const { filled } = wrapper.findComponent(PortIcon).props();
             expect(filled).toBe(false);
-        });
-
-        it('renders non-interactive port', () => {
-            propsData.interactive = false;
-            doShallowMount();
-
-            expect(wrapper.classes()).not.toContain('interactive');
         });
 
         if (portDataType === 'flowVariable') {

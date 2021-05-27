@@ -28,13 +28,6 @@ export default {
         y: {
             type: Number,
             default: 0
-        },
-        /**
-         * set to false to disabled mouse hover effects and cursor change
-         */
-        interactive: {
-            type: Boolean,
-            default: true
         }
     },
     computed: {
@@ -71,7 +64,7 @@ export default {
 <template>
   <g
     :transform="`translate(${x}, ${y})`"
-    :class="['port', {interactive}]"
+    class="port"
   >
     <PortIcon
       :type="port.type"
@@ -126,19 +119,16 @@ export default {
 
 <style lang="postcss" scoped>
 .port {
+  cursor: crosshair;
   pointer-events: bounding-box; /* SVG 2 bounding-box: already works in chromium, defaults to auto in firefox */
 
-  &.interactive {
-    cursor: crosshair;
+  & > * {
+    transition: transform 0.1s linear;
+  }
 
-    & > * {
-      transition: transform 0.1s linear;
-    }
-
-    &:hover > * {
-      transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
-      transform: scale(1.15);
-    }
+  &:hover > * {
+    transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
+    transform: scale(1.15);
   }
 }
 </style>

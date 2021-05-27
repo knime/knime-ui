@@ -81,8 +81,8 @@ export default {
         table(newTable, oldTable) {
             if (!oldTable && newTable) {
                 setTimeout(() => {
-                // [table-layout: auto] is used on the first data
-                // for performance reasons this initial layout is fixed and not reevaluated for further rows
+                    // [table-layout: auto] is used on the first data
+                    // for performance reasons this initial layout is fixed and not reevaluated for further rows
                     this.fixLayout();
 
                     // if the initial data fits inside the table without scrolling
@@ -202,7 +202,7 @@ export default {
               <ReloadIcon />
             </td>
             <td colspan="5">
-              Loading ...
+              Loading…
             </td>
           </tr>
         </tfoot>
