@@ -105,8 +105,17 @@ export default {
 }
 
 /* Flow variable icon disabled */
->>> input:disabled + span circle[r="2.5"] {
-  fill: var(--knime-coral-light);
+>>> input:disabled + span {
+  & circle {
+    fill: var(--knime-coral-light);
+    stroke: var(--knime-coral-light);
+  }
+
+  & polygon,
+  & rect {
+    fill: var(--knime-silver-sand);
+    stroke: var(--knime-silver-sand);
+  }
 }
 
 /* Flow variable icon active/hover */
