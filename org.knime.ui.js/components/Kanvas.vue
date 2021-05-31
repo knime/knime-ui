@@ -35,6 +35,8 @@ export default {
         }),
         ...mapGetters('workflow', [
             'isLinked',
+            'isInsideLinked',
+            'insideLinkedType',
             'isWritable',
             'isStreaming'
         ]),
@@ -170,13 +172,18 @@ export default {
   >
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
-      v-if="isLinked || isStreaming"
+      v-if="isLinked || isStreaming || isInsideLinked"
       :class="['type-notification', {onlyStreaming: isStreaming && !isLinked}]"
     >
       <span
         v-if="isLinked"
       >
         This is a linked {{ workflow.info.containerType }} and can therefore not be edited.
+      </span>
+      <span
+        v-if="isInsideLinked"
+      >
+        This is a {{ workflow.info.containerType }} inside a linked {{ insideLinkedType }} and cannot be edited.
       </span>
       <span
         v-if="isStreaming"
