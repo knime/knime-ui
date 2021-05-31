@@ -3,7 +3,7 @@ import Button from '~/webapps-common/ui/components/Button';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 import CopyIcon from '~/webapps-common/ui/assets/img/icons/copy.svg?inline';
 import CheckIcon from '~/webapps-common/ui/assets/img/icons/check.svg?inline';
-import WarningIcon from '~/assets/error.svg?inline';
+import WarningIcon from '~/webapps-common/ui/assets/img/icons/circle-warning.svg?inline';
 import { copyText } from '~/webapps-common/util/copyText.js';
 
 /**
@@ -39,6 +39,13 @@ export default {
     data: () => ({
         copied: false
     }),
+    computed: {
+      errorDetails() {
+        let details = [this.message, this.vueInfo, this.stack];
+        // TODO: NXT-595 add version
+        return details.filter(Boolean).join('\n\n');
+      }
+    },
     methods: {
         reloadApp() {
             window.location.reload();
@@ -46,7 +53,7 @@ export default {
         copyToClipboard() {
             copyText(JSON.stringify({
                 app: 'KnimeUI',
-                // version: // TODO:NXT-595
+                // version: // TODO: NXT-595
                 message: this.message,
                 vueInfo: this.vueInfo,
                 stack: this.stack
@@ -65,30 +72,34 @@ export default {
     <div class="background" />
     <div class="content">
       <div class="header">
-        <h2><WarningIcon />Sorry! KNIME UI has stopped due to an error.</h2>
-        <div class="message">“{{ message }}”</div>
+        <h2><WarningIcon /> Sorry, KNIME UI has stopped due to an error.</h2>
+        <div class="message">
+          Most likely your work isn't lost and hitting the reload button brings you back.
+        </div>
       </div>
       <div class="actions">
-        <Button
-          with-border
-          on-dark
-          :class="['copy-to-clipboard', { copied }]"
-          @click="copyToClipboard"
-        >
-          <span class="default">
-            <CopyIcon />
-            Copy to clipboard</span>
-          <span class="success">
-            <CheckIcon />
-            Copied to clipboard</span>
-        </Button>
         <Button
           primary
           on-dark
           @click="reloadApp"
         >
           <ReloadIcon />
-          Reload app
+          Reload
+        </Button>
+        <Button
+          with-border
+          on-dark
+          :class="['copy-to-clipboard', { copied }]"
+          @click="copyToClipboard"
+        >
+          <span class="success">
+            <CheckIcon />
+            Copied
+          </span>
+          <span class="default">
+            <CopyIcon />
+            Copy error
+          </span>
         </Button>
       </div>
 
@@ -96,7 +107,7 @@ export default {
       <textarea
         class="stack"
         readonly
-      >{{ vueInfo ? vueInfo + '\n' : '' }}{{ stack }}</textarea>
+      >{{errorDetails}}</textarea>
     </div>
   </div>
 </template>
@@ -176,15 +187,11 @@ export default {
     }
 
     & > .copy-to-clipboard {
-      transition: all 100ms ease;
       position: relative;
-
-      & .default {
-        position: absolute;
-      }
 
       & .success {
         opacity: 0;
+        position: absolute;
       }
 
       & > span {

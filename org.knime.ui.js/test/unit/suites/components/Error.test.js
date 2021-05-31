@@ -18,8 +18,7 @@ describe('Error.vue', () => {
                 vueInfo: 'error in watcher'
             }
         });
-        expect(wrapper.find('.message').text()).toBe('“one-liner”');
-        expect(wrapper.find('.stack').text()).toBe('error in watcher\nstacky');
+        expect(wrapper.find('.stack').text()).toBe('one-liner\n\nerror in watcher\n\nstacky');
     });
 
     it('no vueInfo props', () => {
@@ -29,8 +28,7 @@ describe('Error.vue', () => {
                 stack: 'stacky'
             }
         });
-        expect(wrapper.find('.message').text()).toBe('“one-liner”');
-        expect(wrapper.find('.stack').text()).toBe('stacky');
+        expect(wrapper.find('.stack').text()).toBe('one-liner\n\nstacky');
     });
 
     it('copy to clipboard', async () => {
@@ -42,7 +40,7 @@ describe('Error.vue', () => {
             }
         });
 
-        let copyButton = wrapper.findAllComponents(Button).at(0);
+        let copyButton = wrapper.findAllComponents(Button).at(1);
         copyButton.trigger('click');
 
         await Vue.nextTick();
@@ -62,7 +60,7 @@ describe('Error.vue', () => {
         delete window.location;
         window.location = { reload: jest.fn() };
 
-        let reloadButton = wrapper.findAllComponents(Button).at(1);
+        let reloadButton = wrapper.findAllComponents(Button).at(0);
         reloadButton.trigger('click');
 
         expect(window.location.reload).toHaveBeenCalled();
