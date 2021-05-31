@@ -106,14 +106,6 @@ describe('Opened projects store', () => {
                 consola.error = error;
             });
 
-            it('handles missing activeWorkflow', () => {
-                store.dispatch('openedProjects/setProjects', [
-                    { projectId: '0', name: 'p0' }
-                ]);
-                expect(setActiveWorkflowSnapshot).not.toHaveBeenCalled();
-                expect(consola.error).toHaveBeenCalledWith('No active workflow provided');
-            });
-
             it('handles multiple activeWorkflows', () => {
                 let activeWorkflow = { dummy: true };
                 store.dispatch('openedProjects/setProjects', [

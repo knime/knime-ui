@@ -33,23 +33,21 @@ export const actions = {
     setProjects({ commit, dispatch }, projects) {
         commit('setProjects', projects);
         let openedWorkflows = projects.filter(item => item.activeWorkflow);
-        let found = false;
-        openedWorkflows.forEach(item => {
-            if (found) {
-                consola.error('More than one active workflow found. Not supported. Opening only first item.');
-                return;
-            }
-            found = true;
-            let activeWorkflowCfg = {
-                ...item.activeWorkflow,
-                projectId: item.projectId
-            };
-            commit('setActiveId', item.projectId);
-            dispatch('workflow/setActiveWorkflowSnapshot', activeWorkflowCfg, { root: true });
-        });
-        if (projects.length && !found) {
+
+        if (openedWorkflows.length === 0) {
             consola.error('No active workflow provided');
+            return;
+        } else if (openedWorkflows.length > 1) {
+            consola.error('More than one active workflow found. Not supported. Opening only first item.');
         }
+
+        let [workflow] = openedWorkflows;
+        let activeWorkflowCfg = {
+            ...workflow.activeWorkflow,
+            projectId: workflow.projectId
+        };
+        commit('setActiveId', workflow.projectId);
+        dispatch('workflow/setActiveWorkflowSnapshot', activeWorkflowCfg, { root: true });
     },
     async switchWorkflow({ commit, dispatch, rootGetters }, { projectId, workflowId }) {
         if (rootGetters['workflow/activeWorkflowId']) {

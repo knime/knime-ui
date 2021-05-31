@@ -9,6 +9,7 @@ import Sidebar from '~/components/Sidebar';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import HotKeys from '~/components/HotKeys';
 import TooltipContainer from '~/components/TooltipContainer';
+import Error from '~/components/Error';
 
 
 const numberOfPreloadedFonts = 3;
@@ -49,6 +50,21 @@ describe('KnimeUI.vue', () => {
         expect(wrapper.findComponent(HotKeys).exists()).toBe(false);
         expect(wrapper.findComponent(TooltipContainer).exists()).toBe(false);
         expect(wrapper.findComponent(WorkflowTabContent).exists()).toBe(false);
+    });
+
+    it('catches errors in fetch hook', async () => {
+        initState.mockImplementation(() => {
+            throw new TypeError('mhm?');
+        });
+        await doShallowMount();
+        await Vue.nextTick();
+
+        let errorComponent = wrapper.findComponent(Error);
+        expect(errorComponent.exists()).toBe(true);
+        expect(errorComponent.props()).toMatchObject({
+            message: 'mhm?',
+            stack: expect.anything()
+        });
     });
 
     it('renders after loading', async () => {
