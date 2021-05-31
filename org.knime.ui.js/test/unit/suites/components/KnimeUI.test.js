@@ -56,7 +56,7 @@ describe('KnimeUI.vue', () => {
         initState.mockImplementation(() => {
             throw new TypeError('mhm?');
         });
-        await doShallowMount();
+        await doShallowMountWithAsyncData();
         await Vue.nextTick();
 
         let errorComponent = wrapper.findComponent(Error);

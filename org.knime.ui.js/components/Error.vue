@@ -40,11 +40,11 @@ export default {
         copied: false
     }),
     computed: {
-      errorDetails() {
-        let details = [this.message, this.vueInfo, this.stack];
-        // TODO: NXT-595 add version
-        return details.filter(Boolean).join('\n\n');
-      }
+        errorDetails() {
+            let details = [this.message, this.vueInfo, this.stack];
+            // TODO: NXT-595 add version
+            return details.filter(Boolean).join('\n\n');
+        }
     },
     methods: {
         reloadApp() {
@@ -107,7 +107,7 @@ export default {
       <textarea
         class="stack"
         readonly
-      >{{errorDetails}}</textarea>
+      >{{ errorDetails }}</textarea>
     </div>
   </div>
 </template>

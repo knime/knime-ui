@@ -189,7 +189,7 @@ describe('MoveableNodeContainer', () => {
             doMount(shallowMount);
             jest.useFakeTimers();
             wrapper.vm.onMoveEnd();
-            jest.advanceTimersByTime(5000);
+            jest.advanceTimersByTime(5000); /* eslint-disable-line no-magic-numbers */
             await Promise.resolve();
             jest.runOnlyPendingTimers();
             expect(storeConfig.workflow.actions.saveNodeMoves).toHaveBeenCalledWith(

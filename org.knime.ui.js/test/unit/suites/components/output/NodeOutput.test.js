@@ -54,7 +54,7 @@ describe('NodeOutput.vue', () => {
                 isDragging: false
             },
             getters: {
-                activeWorkflowId: jest.fn().mockReturnValue('workflowId'),
+                activeWorkflowId: jest.fn().mockReturnValue('workflowId')
             },
             actions: {
                 executeNodes: jest.fn()
@@ -363,7 +363,7 @@ describe('NodeOutput.vue', () => {
                     ...JSON.parse(JSON.stringify(dummyNodes.node1)),
                     kind: 'node',
                     outPorts: [{ type: 'flowVariable' }, { type: 'table' }],
-                    state: { executionState: 'EXECUTED' },
+                    state: { executionState: 'EXECUTED' }
                 };
 
                 nodeWithManyPorts = {
@@ -373,7 +373,7 @@ describe('NodeOutput.vue', () => {
 
                 nodeWithoutPort = {
                     ...JSON.parse(JSON.stringify(nodeWithPort)),
-                    outPorts: [{ type: 'flowVariable' }],
+                    outPorts: [{ type: 'flowVariable' }]
                 };
 
                 metanode = {
@@ -387,7 +387,7 @@ describe('NodeOutput.vue', () => {
                 ['node without port', () => nodeWithoutPort, '0'],
                 ['component with port', () => ({ ...nodeWithPort, kind: 'component' }), '1'],
                 ['component without port', () => ({ ...nodeWithoutPort, kind: 'component' }), '0'],
-                ['metanode', () => metanode, '0'],
+                ['metanode', () => metanode, '0']
             ])('default ports %s', (_, nodeGetter, defaultPort) => {
                 dummyNodes.node1 = nodeGetter();
                 doShallowMount();
