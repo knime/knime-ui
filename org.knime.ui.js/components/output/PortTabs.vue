@@ -22,6 +22,10 @@ export default {
         value: {
             type: String,
             default: null
+        },
+        disabled: {
+            type: Boolean,
+            default: false
         }
     },
     computed: {
@@ -64,6 +68,7 @@ export default {
   <TabBar
     name="output-port"
     :value="value"
+    :disabled="disabled"
     :possible-values="possibleTabValues"
     @update:value="$emit('input', $event)"
   />

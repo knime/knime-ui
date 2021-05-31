@@ -225,6 +225,7 @@ export default {
       v-if="selectedNode && selectedNode.outPorts.length"
       v-model="selectedPortIndex"
       :node="selectedNode"
+      :disabled="Boolean(nodeHasProblem)"
     />
     <!-- Error Message and Placeholder -->
     <div

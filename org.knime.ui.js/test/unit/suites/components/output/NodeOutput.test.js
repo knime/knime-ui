@@ -145,6 +145,11 @@ describe('NodeOutput.vue', () => {
             expect(wrapper.findComponent(FlowVariablePortView).exists()).toBe(false);
             expect(wrapper.find('.loading-icon').exists()).toBe(false);
             expect(wrapper.find('.action-button').exists()).toBe(false);
+
+            let tabs = wrapper.findComponent(PortTabs);
+            if (tabs.exists()) {
+                expect(tabs.props().disabled).toBe(true);
+            }
         });
     });
 
@@ -231,7 +236,7 @@ describe('NodeOutput.vue', () => {
 
         afterEach(() => {
             expect(wrapper.findComponent(TablePortView).exists()).toBe(false);
-            expect(wrapper.findComponent(PortTabs).exists()).toBe(true);
+            expect(wrapper.findComponent(PortTabs).props().disabled).toBe(false);
         });
     });
 
