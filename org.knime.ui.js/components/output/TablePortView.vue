@@ -39,10 +39,7 @@ export default {
             
             // number of rows unknown. Easier for comparison
             if (table.totalNumRows === -1) { table.totalNumRows = Infinity; }
-            
-            // make this table-object (not it's contained objects) read-only to stop vue from observing the table
-            // vue still reacts on exchanging tables
-            // Object.freeze(table);
+           
             this.table = table;
             
             // show table
