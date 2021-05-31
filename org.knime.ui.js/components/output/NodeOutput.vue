@@ -142,11 +142,14 @@ export default {
         isViewerReady() {
             return this.portViewerState?.state === 'ready';
         },
+        isViewerLoading() {
+            return this.portViewerState?.state === 'loading';
+        },
         placeholderText() {
             let { portViewerState } = this;
             return this.selectionHasProblem || this.nodeHasProblem || this.portHasProblem ||
                 // same loading placeholder for all port views
-                (portViewerState?.state === 'loading' && 'Loading data') ||
+                (this.isViewerLoading && 'Loading data') ||
                 // custom error message per port view
                 (portViewerState?.state === 'error' && portViewerState.message);
         },
@@ -154,8 +157,7 @@ export default {
             return this.placeholderText === needsExecutionMessage;
         },
         showLoader() {
-            return this.placeholderText === outputAvailableAfterExecutionMessage ||
-                this.portViewerState?.state === 'loading';
+            return this.placeholderText === outputAvailableAfterExecutionMessage || this.isViewerLoading;
         }
     },
     watch: {
@@ -227,7 +229,7 @@ export default {
     <!-- Error Message and Placeholder -->
     <div
       v-if="placeholderText"
-      class="placeholder"
+      :class="['placeholder', {isViewerLoading}]"
     >
       <span>
         <ReloadIcon
@@ -264,6 +266,11 @@ export default {
   100% {
     transform: rotate(-360deg);
   }
+}
+
+@keyframes show {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .output-container {
@@ -305,6 +312,13 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+
+  &.isViewerLoading {
+    /* Wait for a short amount of time before rendering loading placeholder
+       to prevent flickering when the table loads very quickly */
+    animation: show 100ms ease-in 150ms;
+    animation-fill-mode: both;
+  }
 
   & span {
     font-size: 16px;
