@@ -95,8 +95,9 @@ export default {
   }
 }
 
+>>> svg,
 >>> svg * {
-  pointer-events: none;
+  pointer-events: none !important;
 }
 
 /* Flow variable icon */
