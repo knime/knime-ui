@@ -75,7 +75,10 @@ export default {
       </Tag>
     </div>
     <span class="break full" />
-    <div v-if="selectedTags.length">
+    <div
+      v-if="selectedTags.length"
+      class="node-section"
+    >
       <div class="filter-tags">
         Filter
         <Button
@@ -124,7 +127,6 @@ export default {
       >
         Show more…
       </Button>
-      <span class="break full" />
     </template>
   </div>
 </template>
@@ -160,53 +162,62 @@ export default {
     padding: 13px 0;
   }
 
-  & .filter-tags {
-    margin-bottom: 12px;
-    font-size: 14px;
+  & .node-section {
+    margin-bottom: 10px;
 
-    & .clear-button {
-      float: right;
-      padding: 0;
-    }
-  }
+    & .filter-tags {
+      margin-bottom: 12px;
 
-  & .row {
-    display: flex;
-    flex-wrap: wrap;
-    margin-right: -5px;
-    margin-left: -5px;
-
-    & .node {
-      width: 100px;
-      height: 80px;
-      margin: 0 5px;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      font-size: 12px;
-      font-weight: 700;
-      text-align: center;
-
-      & label {
-        max-height: 26px;
-        max-width: 100px;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-        overflow: hidden;
+      & > .tag {
+        padding: 4px 6px;
       }
 
-      & svg {
-        width: 75px;
-        position: absolute;
-        bottom: 0;
+      & .clear-button {
+        float: right;
+        padding: 0;
+      }
+    }
+
+    & .row {
+      display: flex;
+      flex-wrap: wrap;
+      margin-right: -5px;
+      margin-left: -5px;
+
+      & .node {
+        width: 100px;
+        height: 75px;
+        margin: 0 5px;
+        padding-bottom: 42px;
+        position: relative;
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: center;
+
+        & label {
+          max-height: 26px;
+          max-width: 100px;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          overflow: hidden;
+        }
+
+        & svg {
+          width: 70px;
+          position: absolute;
+          bottom: -15px;
+        }
       }
     }
   }
 
   & .show-more {
-    width: 50%;
+    color: var(--knime-masala);
+    font-weight: 400;
     margin: 0 auto 10px;
     display: block;
   }

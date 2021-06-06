@@ -25,18 +25,20 @@ export default {
 
 <template>
   <nav>
-    <div
-      :class="{ active: expanded && wfMetaActive }"
-      @click="setWorkflowMetaActive"
-    >
-      <InfoIcon />
-    </div>
-    <div
-      :class="{ active: expanded && nodeRepoActive }"
-      @click="setNodeRepoActive"
-    >
-      <PlusIcon />
-    </div>
+    <ul>
+      <li
+        :class="{ active: expanded && wfMetaActive }"
+        @click="setWorkflowMetaActive"
+      >
+        <InfoIcon />
+      </li>
+      <li
+        :class="{ active: expanded && nodeRepoActive }"
+        @click="setNodeRepoActive"
+      >
+        <PlusIcon />
+      </li>
+    </ul>
   </nav>
 </template>
 
@@ -45,21 +47,31 @@ export default {
 nav {
   width: var(--side-bar-width);
   background-color: var(--knime-black);
-  padding-top: 50px;
 
-  & > div {
-    height: 50px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    background-color: var(--knime-silver-sand);
+  & ul {
+    display: contents;
 
-    &.active {
-      background-color: var(--knime-gray-ultra-light);
-    }
+    & li {
+      height: 50px;
+      width: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background-color: var(--knime-silver-sand);
+      border-bottom: 1px var(--knime-black) solid;
 
-    & svg {
-      height: 30px;
+      &.active {
+        background-color: var(--knime-gray-ultra-light);
+      }
+
+      &:not(.active):hover {
+        background-color: var(--knime-dove-gray);
+        cursor: pointer;
+      }
+
+      & svg {
+        height: 30px;
+      }
     }
   }
 }

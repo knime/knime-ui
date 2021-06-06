@@ -31,14 +31,14 @@ describe('Sidebar', () => {
 
     it('expands and activates wf meta info', () => {
         expect(wrapper.vm.expanded).toBe(false);
-        wrapper.find('div').trigger('click');
+        wrapper.find('li').trigger('click');
         expect(wrapper.vm.expanded).toBe(true);
         expect(wrapper.vm.wfMetaActive).toBe(true);
     });
 
     it('expands and activates node repo', () => {
         expect(wrapper.vm.expanded).toBe(false);
-        wrapper.findAll('div').at(1).trigger('click');
+        wrapper.findAll('li').at(1).trigger('click');
         expect(wrapper.vm.expanded).toBe(true);
         expect(wrapper.vm.nodeRepoActive).toBe(true);
     });
