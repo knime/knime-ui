@@ -1,5 +1,4 @@
 <script>
-import { mapState } from 'vuex';
 import MissingValueIcon from '~/assets/missing-value.svg?inline';
 import svgWithTitle from '~/webapps-common/ui/util/svgWithTitle';
 
@@ -11,12 +10,12 @@ export default {
     components: {
         MissingValueIcon: svgWithTitle(MissingValueIcon, 'Missing value')
     },
-    computed: {
-        ...mapState('dataTable', ['rows'])
+    props: {
+        rows: { type: Array, required: true }
     },
     methods: {
         hasValue(cell) {
-            return Reflect.has(cell, 'valueAsString');
+            return 'valueAsString' in cell;
         }
     }
 };

@@ -6,6 +6,7 @@ import WorkflowToolbar from '~/components/WorkflowToolbar';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import HotKeys from '~/components/HotKeys';
 import TooltipContainer from '~/components/TooltipContainer';
+import Error from '~/components/Error';
 
 // These fonts will be pre-loaded at application startup
 const requiredFonts = ['Roboto', 'Roboto Condensed', 'Roboto Mono'];
@@ -17,6 +18,7 @@ const requiredFonts = ['Roboto', 'Roboto Condensed', 'Roboto Mono'];
  */
 export default {
     components: {
+        Error,
         AppHeader,
         Sidebar,
         WorkflowToolbar,
@@ -26,13 +28,29 @@ export default {
     },
     data() {
         return {
-            loaded: false
+            loaded: false,
+            error: null
         };
     },
     async fetch() {
-        await this.initState();
-        await Promise.all(requiredFonts.map(fontName => document.fonts.load(`1em ${fontName}`)));
-        this.loaded = true;
+        try {
+            await this.initState();
+            await Promise.all(requiredFonts.map(fontName => document.fonts.load(`1em ${fontName}`)));
+            this.loaded = true;
+        } catch ({ message, stack }) {
+            // errors in the fetch hook are not captured by errorCaptured
+            this.error = { message, stack };
+        }
+    },
+    errorCaptured({ message, stack }, vm, vueInfo) {
+        this.error = {
+            message,
+            stack,
+            vueInfo
+        };
+
+        // stop propagation
+        return false;
     },
     methods: {
         ...mapActions('application', ['initState'])
@@ -42,6 +60,12 @@ export default {
 
 <template>
   <div id="knime-ui">
+    <!-- if subsequent errors occur, stick with the first one -->
+    <Error
+      v-if="error"
+      v-once
+      v-bind="error"
+    />
     <AppHeader id="header" />
     <WorkflowToolbar v-if="loaded" id="toolbar" />
     <Sidebar id="sidebar" />

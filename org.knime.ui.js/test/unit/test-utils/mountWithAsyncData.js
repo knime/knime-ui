@@ -7,13 +7,13 @@ let wrapInAsyncData = method => async (component, context, options) => {
 
     // setup spies on redirect and error in order to interrupt mounting
     let redirectSpy, errorSpy, originalRedirect, originalError;
-    if (context.redirect) {
+    if (context?.redirect) {
         // jest.spyOn() does not seem to work on spies
         originalRedirect = context.redirect;
         redirectSpy = jest.fn().mockImplementation(originalRedirect);
         context.redirect = redirectSpy;
     }
-    if (context.error) {
+    if (context?.error) {
         originalError = context.error;
         errorSpy = jest.fn().mockImplementation(originalError);
         context.error = errorSpy;
@@ -61,7 +61,7 @@ let wrapInAsyncData = method => async (component, context, options) => {
         };
     }
 
-    return method(component, options);
+    return method(component, context, options);
 };
 
 const mountWithAsyncData = wrapInAsyncData(mount);

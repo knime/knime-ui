@@ -95,7 +95,7 @@ export default {
     <div
       ref="handle"
       :class="{'handle': true, 'active': isMove }"
-      @pointerdown="beginMove"
+      @pointerdown.left="beginMove"
       @pointerup="stopMove"
       @pointermove="move"
     />

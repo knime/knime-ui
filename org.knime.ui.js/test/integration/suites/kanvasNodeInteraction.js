@@ -60,7 +60,8 @@ module.exports = {
 
         // check table
         nightwatch.waitForElementVisible('.output-container .node-output-execute', runTimeout);
-        nightwatch.assert.containsText('.output-container', 'To show the output table, please execute the selected node');
+        nightwatch.assert.containsText('.output-container',
+            'To show the output table, please execute the selected node');
 
         // check for state
         nightwatch.assert.not.elementPresent(`${nodeSelector} .traffic-light-green`);
