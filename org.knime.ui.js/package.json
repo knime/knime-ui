@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "consola": "2.15.0",
-    "lodash": "4.17.20",
+    "lodash": "4.17.21",
     "nuxt": "2.15.4",
     "portal-vue": "2.1.7",
     "typeface-roboto": "0.0.75",
