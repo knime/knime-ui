@@ -1,0 +1,922 @@
+{
+  "decisions": {
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>css-loader>icss-utils>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/webpack>css-loader>icss-utils>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>css-loader>postcss-modules-local-by-default>icss-utils>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/webpack>css-loader>postcss-modules-local-by-default>icss-utils>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>css-loader>postcss-modules-values>icss-utils>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/webpack>css-loader>postcss-modules-values>icss-utils>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>css-loader>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/webpack>css-loader>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>css-loader>postcss-modules-extract-imports>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/webpack>css-loader>postcss-modules-extract-imports>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>css-loader>postcss-modules-local-by-default>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/webpack>css-loader>postcss-modules-local-by-default>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>css-loader>postcss-modules-scope>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/webpack>css-loader>postcss-modules-scope>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>css-loader>postcss-modules-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/webpack>css-loader>postcss-modules-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078154
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>css-declaration-sorter>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>css-declaration-sorter>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>css-declaration-sorter>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>css-declaration-sorter>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>cssnano-util-raw-cache>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>cssnano-util-raw-cache>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>cssnano-util-raw-cache>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>cssnano-util-raw-cache>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-calc>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-calc>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-calc>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-calc>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-colormin>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-colormin>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-colormin>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-colormin>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-convert-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-convert-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-convert-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-convert-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-discard-comments>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-discard-comments>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-discard-comments>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-discard-comments>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-discard-duplicates>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-discard-duplicates>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-discard-duplicates>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-discard-duplicates>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-discard-empty>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-discard-empty>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-discard-empty>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-discard-empty>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-discard-overridden>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-discard-overridden>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-discard-overridden>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-discard-overridden>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-merge-longhand>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-merge-longhand>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-merge-longhand>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-merge-longhand>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-merge-longhand>stylehacks>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078155
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-merge-longhand>stylehacks>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-merge-longhand>stylehacks>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-merge-longhand>stylehacks>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-merge-rules>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-merge-rules>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-merge-rules>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-merge-rules>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-minify-font-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-minify-font-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-minify-font-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-minify-font-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-minify-gradients>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-minify-gradients>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-minify-gradients>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-minify-gradients>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-minify-params>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-minify-params>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-minify-params>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-minify-params>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-minify-selectors>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-minify-selectors>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-minify-selectors>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-minify-selectors>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-charset>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-charset>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-charset>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-charset>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-display-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-display-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-display-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-display-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-positions>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-positions>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-positions>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078156
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-positions>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-repeat-style>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-repeat-style>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-repeat-style>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-repeat-style>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-string>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-string>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-string>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-string>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-timing-functions>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-timing-functions>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-timing-functions>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-timing-functions>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-unicode>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-unicode>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-unicode>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-unicode>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-url>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-url>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-url>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-url>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-whitespace>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-normalize-whitespace>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-whitespace>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-normalize-whitespace>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-ordered-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-ordered-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-ordered-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-ordered-values>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-reduce-initial>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-reduce-initial>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-reduce-initial>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-reduce-initial>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-reduce-transforms>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-reduce-transforms>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-reduce-transforms>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-reduce-transforms>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-svgo>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-svgo>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-svgo>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078157
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-svgo>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-unique-selectors>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-unique-selectors>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-unique-selectors>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-unique-selectors>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>cssnano>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>cssnano>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-import>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-import>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-loader>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-loader>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>autoprefixer>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>autoprefixer>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|stylelint>autoprefixer>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>css-blank-pseudo>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>css-blank-pseudo>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>css-has-pseudo>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>css-has-pseudo>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>css-prefers-color-scheme>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>css-prefers-color-scheme>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-attribute-case-insensitive>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-attribute-case-insensitive>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-color-functional-notation>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-color-functional-notation>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-color-gray>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-color-gray>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-color-hex-alpha>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-color-hex-alpha>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-color-mod-function>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-color-mod-function>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-color-rebeccapurple>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-color-rebeccapurple>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-custom-media>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-custom-media>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-custom-properties>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-custom-properties>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-custom-selectors>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-custom-selectors>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-dir-pseudo-class>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-dir-pseudo-class>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-double-position-gradients>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078158
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-double-position-gradients>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-env-function>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-env-function>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-focus-visible>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-focus-visible>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-focus-within>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-focus-within>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-font-variant>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-font-variant>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-gap-properties>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-gap-properties>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-image-set-function>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-image-set-function>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-initial>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-initial>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-lab-function>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-lab-function>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-logical>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-logical>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-media-minmax>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-media-minmax>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-nesting>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-nesting>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-overflow-shorthand>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-overflow-shorthand>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-page-break>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-page-break>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-place>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-place>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-pseudo-class-any-link>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-pseudo-class-any-link>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-replace-overflow-wrap>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-replace-overflow-wrap>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-selector-matches>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-selector-matches>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-preset-env>postcss-selector-not>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-preset-env>postcss-selector-not>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>postcss-url>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>postcss-url>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/builder>@nuxt/webpack>vue-loader>@vue/component-compiler-utils>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|nuxt>@nuxt/webpack>vue-loader>@vue/component-compiler-utils>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|stylelint>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|stylelint>postcss-less>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|stylelint>postcss-safe-parser>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|stylelint>postcss-sass>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|stylelint>postcss-scss>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    },
+    "1693|stylelint>sugarss>postcss": {
+      "decision": "postpone",
+      "madeAt": 1623058078159
+    }
+  },
+  "rules": {},
+  "version": 1
+}
