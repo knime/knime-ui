@@ -9,7 +9,7 @@ const idToSelector = (id) => `[data-node-id="root:${id}"]`;
 const nodeSelector = idToSelector(207);
 
 module.exports = {
-    'init app and open workflow': nightwatch => {
+    before: nightwatch => {
         // load workflow
         loadWorkflow(nightwatch, 'test-kanvasNodeInteraction');
         // check if ui is visible
@@ -35,11 +35,11 @@ module.exports = {
         nightwatch.click(selectors.executeSelectedButton);
 
         // wait to finish execution
-        nightwatch.waitForElementVisible('.output-container .table', runTimeout);
+        nightwatch.waitForElementVisible('.output-container table', runTimeout);
     },
     'switch output tab': nightwatch => {
         const outputButtonsSelector = '.output-container [name="output-port"] + span';
-        const tdSelector = '.output-container .table td';
+        const tdSelector = '.output-container table td';
 
         nightwatch.assert.containsText(tdSelector, 'Row0');
 
@@ -75,7 +75,7 @@ module.exports = {
     },
     're-select executed node': nightwatch => {
         nightwatch.click(nodeSelector);
-        const tdSelector = '.output-container .table td';
+        const tdSelector = '.output-container table td';
         nightwatch.assert.containsText(tdSelector, 'Row0');
     }
 };
