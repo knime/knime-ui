@@ -57,11 +57,17 @@ export default {
         width="360px"
         title="Workflow Metadata"
       >
-        <NodeRepository v-if="nodeRepoActive" />
-        <WorkflowMetadata
-          v-else-if="metadata && wfMetaActive"
-          v-bind="metadata"
-        />
+        <transition
+          name="panel-fade"
+        >
+          <NodeRepository v-show="nodeRepoActive" />
+        </transition>
+        <transition name="panel-fade">
+          <WorkflowMetadata
+            v-show="metadata && wfMetaActive"
+            v-bind="metadata"
+          />
+        </transition>
       </LeftCollapsiblePanel>
       <Splitter
         id="kanvasOutputSplitter"
@@ -85,6 +91,20 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+
+.panel-fade-enter-active {
+  transition: opacity 150ms ease-in;
+}
+
+.panel-fade-leave-active {
+  transition: opacity 150ms ease-out;
+}
+
+.panel-fade-enter,
+.panel-fade-leave-to {
+  opacity: 0;
+}
+
 
 main {
   display: flex;

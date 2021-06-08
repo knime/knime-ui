@@ -13,6 +13,9 @@ export default {
         Button,
         CloseIcon
     },
+    fetch() {
+        this.$store.dispatch('nodeRepo/searchNodes', true);
+    },
     computed: {
         ...mapState('nodeRepo', [
             'nodes',
@@ -40,9 +43,6 @@ export default {
             return rows;
         }
     },
-    mounted() {
-        this.$store.dispatch('nodeRepo/searchNodes', true);
-    },
     methods: {
         loadMoreNodes() {
             this.$store.dispatch('nodeRepo/searchNodes', true);
@@ -59,6 +59,7 @@ export default {
     }
 };
 </script>
+
 <template>
   <div class="repo">
     <h4>
@@ -130,11 +131,12 @@ export default {
     </template>
   </div>
 </template>
-<style lang="postcss" scoped>
 
+<style lang="postcss" scoped>
 .repo {
   margin: 15px 20px;
   font-family: "Roboto Condensed", sans-serif;
+  user-select: none;
 
   & h4 {
     font-size: 18px;
