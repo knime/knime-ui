@@ -86,5 +86,4 @@ describe('MetaNodePortBar.vue', () => {
             expect(ports.at(1).props('y')).toEqual(2 * height / (ports.length + 1));
         });
     });
-
 });

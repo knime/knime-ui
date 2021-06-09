@@ -37,6 +37,7 @@ describe('Connector.vue', () => {
 
     describe('attached to a metanode', () => {
         let doShallowMount;
+
         beforeEach(() => {
             doShallowMount = () => {
                 storeConfig = {
@@ -99,14 +100,12 @@ describe('Connector.vue', () => {
             const expectedPath = 'M42.5,7.5 C73,7.5 -27,40.5 3.5,40.5';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
-
     });
 
     describe('attached to other node', () => {
         let doShallowMount;
 
         beforeEach(() => {
-
             storeConfig = {
                 workflow: {
                     ...workflowStoreConfig,
@@ -345,6 +344,5 @@ describe('Connector.vue', () => {
             const expectedPath = 'M108.5,651 C504,651 298,960 693.5,960';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
-
     });
 });

@@ -12,7 +12,6 @@ import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
 describe('NodeTorso.vue', () => {
-
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);

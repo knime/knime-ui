@@ -1,7 +1,6 @@
 import * as api from '~/api';
 
 describe('API', () => {
-
     beforeEach(() => {
         window.jsonrpc = jest.fn().mockReturnValue(JSON.stringify({
             jsonrpc: '2.0',
@@ -33,7 +32,6 @@ describe('API', () => {
                 params: ['foo', 'bar', true],
                 id: 0
             }));
-
         });
     });
 

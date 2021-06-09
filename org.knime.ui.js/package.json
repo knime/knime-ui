@@ -37,6 +37,7 @@
     "cross-var": "1.1.0",
     "eslint": "7.5.0",
     "eslint-plugin-vue": "7.10.0",
+    "eslint-plugin-jest-formatting": "3.0.0",
     "execa": "5.0.0",
     "jest": "26.1.0",
     "jest-junit": "6.4.0",

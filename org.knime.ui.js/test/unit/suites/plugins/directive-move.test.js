@@ -41,7 +41,7 @@ describe('directive-move', () => {
     });
 
     it('moves less then the given threshold', async () => {
-        const wrapper  = mount({
+        const wrapper = mount({
             methods: { onMove, onMoveStart, onMoveEnd },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
@@ -64,7 +64,7 @@ describe('directive-move', () => {
     });
 
     it('moves elements', async () => {
-        const wrapper  = mount({
+        const wrapper = mount({
             methods: { onMove, onMoveStart, onMoveEnd },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
@@ -107,7 +107,7 @@ describe('directive-move', () => {
     });
 
     it('tests move end', () => {
-        const wrapper  = mount({
+        const wrapper = mount({
             methods: { onMove, onMoveStart, onMoveEnd },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
@@ -142,7 +142,7 @@ describe('directive-move', () => {
     });
 
     it('removes the listener', () => {
-        const wrapper  = mount({
+        const wrapper = mount({
             methods: { onMove, onMoveStart, onMoveEnd },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
@@ -154,7 +154,7 @@ describe('directive-move', () => {
 
     it('tests that nothing happens if protected property is set', () => {
         // calls the inserted hook
-        const wrapper  = mount({
+        const wrapper = mount({
             methods: { onMove, onMoveStart, onMoveEnd },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5, isProtected: true }"></div>'
         });

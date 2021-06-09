@@ -89,7 +89,6 @@ export default {
             // 1. render with max width
             this.width = this.$shapes.maxNodeAnnotationWidth;
             this.$nextTick(() => { // wait for re-render
-                
                 // 2. measure content's actual size
                 let rect = this.$refs.text?.$el.getBoundingClientRect();
                 if (!rect) {

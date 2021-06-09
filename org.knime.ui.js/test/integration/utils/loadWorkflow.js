@@ -8,7 +8,6 @@
  * @returns {void}
  */
 module.exports = (browser, workflowProjectId, workflowId = 'root') => {
-
     // init params object
     const initParams = {
         openedWorkflows: [{
