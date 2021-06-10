@@ -4,7 +4,6 @@ import LoopDecorator from '~/components/LoopDecorator.vue';
 import * as $colors from '~/style/colors';
 
 describe('LoopDecorator.vue', () => {
-
     let doShallowMount = (loopStatus) => shallowMount(LoopDecorator, {
         propsData: { loopStatus },
         mocks: { $colors }
@@ -27,5 +26,4 @@ describe('LoopDecorator.vue', () => {
         expect(wrapper.find('g.pause').exists()).toBe(false);
         expect(wrapper.find('g.running').exists()).toBe(true);
     });
-
 });

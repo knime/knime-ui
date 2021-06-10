@@ -4,7 +4,6 @@ import Vuex from 'vuex';
 import * as jsonrpcStoreConfig from '~/store/jsonrpc';
 
 describe('JSON-RPC store', () => {
-
     let store, localVue, patchApplyMock;
 
     beforeAll(() => {

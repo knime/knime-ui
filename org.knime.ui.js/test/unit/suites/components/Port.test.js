@@ -14,7 +14,6 @@ describe('Port', () => {
         ['table', $colors.portColors.table],
         ['other', '#123442']
     ])('Port (%s)', (portDataType, portColor) => {
-
         beforeEach(() => {
             wrapper = null;
             propsData = {
@@ -133,7 +132,5 @@ describe('Port', () => {
             expect(d).not.toContain('h');
             expect(transform).toBeUndefined();
         });
-
-
     });
 });

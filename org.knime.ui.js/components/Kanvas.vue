@@ -44,7 +44,7 @@ export default {
         ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning']),
         viewBoxString() {
             let { viewBox } = this;
-            return  `${viewBox.left} ${viewBox.top} ` +
+            return `${viewBox.left} ${viewBox.top} ` +
                     `${viewBox.width} ${viewBox.height}`;
         },
         // Sort nodes so that selected nodes are rendered in front

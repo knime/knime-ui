@@ -5,12 +5,8 @@ import portShift from '~/util/portShift';
 // portSize: 9
 
 describe('portShift', () => {
-
-
     describe('Metanodes', () => {
-
         describe('input ports', () => {
-
             it('Shifts One Side Port', () => {
                 expect(portShift(0, 1, true)).toStrictEqual([-4.5, 16]);
             });
@@ -60,7 +56,6 @@ describe('portShift', () => {
     });
 
     describe('Other nodes', () => {
-
         describe('input ports', () => {
             it('Shifts Default Flow-Variable-Port', () => {
                 const [dx, dy] = portShift(0, 1);
@@ -118,6 +113,5 @@ describe('portShift', () => {
                 expect(portShift(4, 5, false, true)).toStrictEqual([36.5, 37]);
             });
         });
-
     });
 });

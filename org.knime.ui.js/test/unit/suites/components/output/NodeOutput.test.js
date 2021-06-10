@@ -242,6 +242,7 @@ describe('NodeOutput.vue', () => {
 
     describe('port view', () => {
         let portView;
+
         beforeEach(() => {
             dummyNodes.node1.state.executionState = 'EXECUTED';
             dummyNodes.node1.outPorts[0] = { type: 'table', portObjectVersion: 'ticker' };
@@ -358,6 +359,7 @@ describe('NodeOutput.vue', () => {
 
         describe('select port', () => {
             let nodeWithPort, nodeWithoutPort, metanode, nodeWithManyPorts;
+
             beforeEach(() => {
                 nodeWithPort = {
                     ...JSON.parse(JSON.stringify(dummyNodes.node1)),

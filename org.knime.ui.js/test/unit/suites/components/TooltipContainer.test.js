@@ -8,7 +8,6 @@ import Tooltip from '~/components/Tooltip';
 import TooltipContainer from '~/components/TooltipContainer';
 
 describe('TooltipContainer', () => {
-
     let doShallowMount, wrapper, $store, storeConfig, tooltip, kanvasElement;
 
     beforeAll(() => {
@@ -238,6 +237,4 @@ describe('TooltipContainer', () => {
             });
         });
     });
-
-
 });

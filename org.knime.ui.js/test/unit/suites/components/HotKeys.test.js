@@ -95,10 +95,10 @@ describe('HotKeys', () => {
 
     describe('Shortcuts', () => {
         beforeEach(() => doShallowMount());
+
         afterEach(() => expectEventHandled());
 
         describe('workflow', () => {
-
             it('Ctrl-A: Select all nodes', () => {
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true }));
                 expect(storeConfig.selection.actions.selectAllNodes).toHaveBeenCalled();
@@ -164,7 +164,6 @@ describe('HotKeys', () => {
         });
 
         describe('Canvas', () => {
-
             it('Ctrl-0: Reset zoom to default', () => {
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: '0', ctrlKey: true }));
                 expect(storeConfig.canvas.mutations.resetZoom).toHaveBeenCalled();
@@ -186,7 +185,6 @@ describe('HotKeys', () => {
                     expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), -1);
                 });
             });
-
         });
     });
 

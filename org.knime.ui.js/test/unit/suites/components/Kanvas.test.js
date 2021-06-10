@@ -256,7 +256,6 @@ describe('Kanvas', () => {
     });
 
     describe('Zoom & Pan', () => {
-
         it('Suggests Panning', async () => {
             doShallowMount();
 
@@ -307,7 +306,6 @@ describe('Kanvas', () => {
             expect(storeConfig.canvas.mutations.setContainerSize).toHaveBeenCalledWith(expect.anything(), {
                 width: 100, height: 50
             });
-
         });
 
         it('stop resize observer', () => {
@@ -344,9 +342,6 @@ describe('Kanvas', () => {
                 pointerId: -1
             });
             expect(wrapper.element.releasePointerCapture).toHaveBeenCalledWith(-1);
-
         });
     });
-
-
 });

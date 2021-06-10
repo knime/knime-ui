@@ -9,7 +9,6 @@ import portIcon from '~/components/output/PortIconRenderer';
 
 
 describe('PortTabs.vue', () => {
-
     afterEach(() => {
         jest.clearAllMocks();
     });

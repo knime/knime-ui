@@ -4,7 +4,6 @@ import Tooltip from '~/components/Tooltip';
 import * as $shapes from '~/style/shapes';
 
 describe('Tooltip', () => {
-
     let mocks, doShallowMount, propsData, wrapper;
 
     beforeEach(() => {

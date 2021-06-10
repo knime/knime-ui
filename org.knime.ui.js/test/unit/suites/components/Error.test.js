@@ -9,7 +9,6 @@ jest.mock('~/webapps-common/util/copyText.js', () => ({
 }));
 
 describe('Error.vue', () => {
-
     it('renders default', () => {
         const wrapper = shallowMount(Error, {
             propsData: {

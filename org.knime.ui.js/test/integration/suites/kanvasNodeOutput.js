@@ -51,7 +51,6 @@ module.exports = {
 
         nightwatch.click({ selector: outputButtonsSelector, index: 2 });
         nightwatch.assert.containsText(`${tdSelector}:nth-child(3)`, 'knime.workspace');
-
     },
     'select multiple nodes': nightwatch => {
         nightwatch.click(nodeSelector);

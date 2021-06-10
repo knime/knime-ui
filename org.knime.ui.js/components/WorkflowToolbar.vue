@@ -76,7 +76,7 @@ export default {
                 shortcutTitle = shortcutTitle.replace('– Delete', '– ⌫');
                 return shortcutTitle.replace('Ctrl + ', '⌘ ');
             } else {
-                return  shortcutTitle;
+                return shortcutTitle;
             }
         },
         // deletes all the selected nodes and connectors

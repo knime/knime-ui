@@ -80,6 +80,7 @@ describe('WorkflowToolbar.vue', () => {
 
     describe('buttons', () => {
         let buttonArray = ['undo', 'redo', 'execute', 'cancel', 'reset', 'delete'];
+
         describe('ALL - no selection', () => {
             it('deactivates buttons by default', () => {
                 doShallowMount();
@@ -211,6 +212,7 @@ describe('WorkflowToolbar.vue', () => {
             doShallowMount();
             expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(false);
         });
+
         it('shows breadcrumb if required', () => {
             workflow.parents = [{ dummy: true }];
             doShallowMount();

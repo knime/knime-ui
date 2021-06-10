@@ -4,7 +4,6 @@ import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 
 describe('LeftCollapsiblePanel.vue', () => {
-
     let wrapper;
 
     beforeEach(() => {

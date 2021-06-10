@@ -113,7 +113,6 @@ describe('workflow store', () => {
             store.commit('workflow/setDragging', { isDragging: false });
             expect(store.state.workflow.isDragging).toBe(false);
         });
-
     });
 
     describe('workflow getters', () => {
@@ -375,6 +374,7 @@ describe('workflow store', () => {
                 annotationIds: []
             });
         });
+
         it('passes undo to the API', async () => {
             let undo = jest.fn();
             let apiMocks = { undo };
@@ -703,10 +703,12 @@ describe('workflow store', () => {
                 expect(store.getters['workflow/nodeName']({ nodeId: 'foo' })).toBe('exampleName');
                 expect(store.getters['workflow/nodeName']({ nodeId: 'ownData' })).toBe('ownName');
             });
+
             it('gets icon', () => {
                 expect(store.getters['workflow/nodeIcon']({ nodeId: 'foo' })).toBe('exampleIcon');
                 expect(store.getters['workflow/nodeIcon']({ nodeId: 'ownData' })).toBe('ownIcon');
             });
+
             it('gets type', () => {
                 expect(store.getters['workflow/nodeType']({ nodeId: 'foo' })).toBe('exampleType');
                 expect(store.getters['workflow/nodeType']({ nodeId: 'ownData' })).toBe('ownType');

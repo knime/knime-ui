@@ -22,7 +22,7 @@ export const tooltip = {
                 this.removeTooltipWatcher();
             }
 
-            if (this.tooltip === undefined) {  // eslint-disable-line no-undefined
+            if (this.tooltip === undefined) { // eslint-disable-line no-undefined
                 consola.error('Tooltip mixin is used without providing a tooltip property');
                 return;
             }
