@@ -6,7 +6,7 @@ import Vuex from 'vuex';
 import * as userActionsStoreConfig from '~/store/userActions';
 
 describe('userActions store', () => {
-    let localVue, storeConfig, workflow, loadStore, store, selectedNodes;
+    let localVue, storeConfig, workflow, loadStore, store, selectedNodes, selectedConnections;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -16,6 +16,7 @@ describe('userActions store', () => {
     beforeEach(() => {
         store = null;
         selectedNodes = [];
+        selectedConnections = [];
         workflow = {
             info: {},
             nodes: {
@@ -52,6 +53,12 @@ describe('userActions store', () => {
         loadStore = () => {
             storeConfig = {
                 userActions: userActionsStoreConfig,
+                selection: {
+                    getters: {
+                        selectedNodes: () => selectedNodes || [],
+                        selectedConnections: () => selectedConnections || []
+                    }
+                },
                 workflow: {
                     actions: {
                         executeNodes: jest.fn(),
@@ -60,9 +67,6 @@ describe('userActions store', () => {
                         deleteNodes: jest.fn(),
                         undo: jest.fn(),
                         redo: jest.fn()
-                    },
-                    getters: {
-                        selectedNodes: () => () => selectedNodes || []
                     },
                     state: {
                         activeWorkflow: workflow
@@ -138,7 +142,7 @@ describe('userActions store', () => {
             expect(contextMenuActionItems[7].disabled).toBe(true);
 
             expect(contextMenuActionItems[8].text).toBe('Delete');
-            expect(contextMenuActionItems[8].storeAction).toBe('workflow/deleteSelectedNodes');
+            expect(contextMenuActionItems[8].storeAction).toBe('workflow/deleteSelectedObjects');
             expect(contextMenuActionItems[8].storeActionParams).toStrictEqual([]);
             expect(contextMenuActionItems[8].disabled).toBe(true);
 
@@ -245,7 +249,7 @@ describe('userActions store', () => {
 
         it('actions for workflow, no node selected', () => {
             loadStore();
-            expect(store.getters['userActions/mainMenuActionItems']).toHaveLength(5);
+            expect(store.getters['userActions/mainMenuActionItems']).toHaveLength(6);
         });
     });
 });

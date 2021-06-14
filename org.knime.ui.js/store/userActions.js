@@ -251,7 +251,7 @@ export const getters = {
     },
 
     contextMenuActionItems(state, getters, rootState, rootGetters) {
-        const selectedNodes = rootGetters['workflow/selectedNodes'];
+        const selectedNodes = rootGetters['selection/selectedNodes'];
         const selectedConnections = rootGetters['selection/selectedConnections'];
         const allowedWorkflowActions = rootState.workflow.activeWorkflow?.allowedActions || {};
 
