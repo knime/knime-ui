@@ -80,6 +80,11 @@ export default {
                     this.setSuggestPanning(true);
                     e.stopPropagation();
                     e.preventDefault();
+                    
+                    // disable pressed state when window loses focus
+                    window.addEventListener('blur', () => {
+                        this.setSuggestPanning(false);
+                    }, { once: true });
                 }
                 return;
             }
@@ -122,7 +127,7 @@ export default {
                 this.setSuggestPanning(false);
             }
         },
-        throttledZoom: throttle(function myf(delta) {
+        throttledZoom: throttle(function (delta) {
             this.zoomCentered(delta); // eslint-disable-line no-invalid-this
         }, throttledZoomThrottle)
     },

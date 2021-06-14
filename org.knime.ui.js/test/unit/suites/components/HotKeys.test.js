@@ -2,6 +2,7 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
+import Vue from 'vue';
 import HotKeys from '~/components/HotKeys';
 
 jest.mock('lodash', () => ({
@@ -197,6 +198,20 @@ describe('HotKeys', () => {
 
         document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Alt' }));
         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
+    });
+
+    it('Alt: Cancel panning mode on focus loss', async () => {
+        doShallowMount();
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt' }));
+        expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
+
+        window.dispatchEvent(new FocusEvent('blur'));
+        window.dispatchEvent(new FocusEvent('blur'));
+        await Vue.nextTick();
+
+        // panning mode has been canceled exactly 1 Time
+        expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
+        expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledTimes(1);
     });
 
     describe('condition not fulfilled', () => {
