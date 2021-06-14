@@ -33,13 +33,6 @@ export const mutations = {
             ...workflow
         };
 
-        // add selected, isDragging and dragGhostPosition field to node with initial value false to enable reactivity on this property
-        Object.values(workflowData.nodes || {}).forEach(
-            node => {
-                node.selected = false;
-            }
-        );
-
         state.activeWorkflow = workflowData;
         state.tooltip = null;
     },
@@ -48,22 +41,6 @@ export const mutations = {
     },
     setTooltip(state, tooltip) {
         Vue.set(state, 'tooltip', tooltip);
-    },
-    deselectAllNodes(state) {
-        Object.values(state.activeWorkflow.nodes).forEach(node => {
-            Vue.set(node, 'selected', false);
-        });
-    },
-    selectAllNodes(state) {
-        Object.values(state.activeWorkflow.nodes).forEach(node => {
-            Vue.set(node, 'selected', true);
-        });
-    },
-    selectNode(state, nodeId) {
-        Vue.set(state.activeWorkflow.nodes[nodeId], 'selected', true);
-    },
-    deselectNode(state, nodeId) {
-        Vue.set(state.activeWorkflow.nodes[nodeId], 'selected', false);
     },
     // Shifts the position of the node for the provided amount
     shiftPosition(state, { deltaX, deltaY, thresholdExceeded }) {
@@ -119,25 +96,50 @@ export const actions = {
         let workflowId = getters.activeWorkflowId;
         await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
     },
-    deleteSelectedNodes({
-        state: { activeWorkflow: { projectId } },
-        getters: { activeWorkflowId, selectedNodes }
-    }) {
-        let deletableNodeIds = selectedNodes().filter(node => node.allowedActions.canDelete).map(node => node.id);
-        let nonDeletableNodeIds = selectedNodes().filter(node => !node.allowedActions.canDelete).map(node => node.id);
 
-        if (deletableNodeIds.length) {
+    /**
+     * Deletes all selected objects and displays an error message for the objects, that cannot be deleted.
+     * If the objects can be deleted a deselect event is fired.
+     * @param {Object} context - store context
+     * @returns {void} - nothing to return
+     */
+    deleteSelectedObjects({
+        state: { activeWorkflow: { projectId } },
+        getters: { activeWorkflowId },
+        rootState,
+        dispatch
+    }) {
+        const selectedNodes = Object.values(rootState.selection.selectedNodes);
+        const selectedConnections = Object.values(rootState.selection.selectedConnections);
+        let deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
+        let nonDeletableNodeIds = selectedNodes.filter(node => !node.allowedActions.canDelete).map(node => node.id);
+        let deleteableConnectionIds = selectedConnections.filter(connection => connection.canDelete).
+            map(connection => connection.id);
+        let nonDeletableConnectionIds = selectedConnections.filter(connection => !connection.canDelete).
+            map(connection => connection.id);
+
+        if (deletableNodeIds.length || deleteableConnectionIds.length) {
             deleteObjects({
                 projectId,
                 workflowId: activeWorkflowId,
-                nodeIds: deletableNodeIds
+                nodeIds: deletableNodeIds.length ? deletableNodeIds : [],
+                connectionIds: deleteableConnectionIds ? deleteableConnectionIds : []
             });
+            dispatch('selection/deselectAllObjects', null, { root: true });
         }
+
+        let messages = [];
         if (nonDeletableNodeIds.length) {
-            window.alert(`The following nodes can’t be deleted: [${nonDeletableNodeIds.join(', ')}]`);
+            messages.push(`The following nodes can’t be deleted: [${nonDeletableNodeIds.join(', ')}]`);
+        }
+        if (nonDeletableConnectionIds.length) {
+            messages.push(`The following connections can’t be deleted: [${nonDeletableConnectionIds.join(', ')}]`);
+        }
+        if (messages.length) {
+            window.alert(messages.join(' \n'));
         }
     },
-    changeNodeState({ state, getters }, { action, nodes }) {
+    changeNodeState({ state, getters, rootGetters }, { action, nodes }) {
         let { activeWorkflow: { projectId } } = state;
         let { activeWorkflowId } = getters;
 
@@ -151,7 +153,7 @@ export const actions = {
             // act upon selected nodes
             changeNodeState({
                 projectId,
-                nodeIds: getters.selectedNodes().map(node => node.id),
+                nodeIds: rootGetters['selection/selectedNodeIds'],
                 action,
                 workflowId: activeWorkflowId
             });
@@ -209,8 +211,9 @@ export const actions = {
      * @param {string} params.deltaY - id of the node
      * @returns {void} - nothing to return
      */
-    moveNodes({ commit, getters }, { deltaX, deltaY }) {
-        let thresholdExceeded = getters.selectedNodes().length > moveNodeGhostThreshold;
+    moveNodes({ commit, rootGetters }, { deltaX, deltaY }) {
+        let selectedNodes = rootGetters['selection/selectedNodes'];
+        let thresholdExceeded = selectedNodes.length > moveNodeGhostThreshold;
         commit('shiftPosition', { deltaX, deltaY, thresholdExceeded });
     },
 
@@ -223,10 +226,9 @@ export const actions = {
      * @param {Object} params.startPos - start position {x: , y: } of the move event
      * @returns {void} - nothing to return
      */
-    saveNodeMoves({ state, getters, commit }, { projectId, nodeId, startPos }) {
-        const selectedNodes = getters.selectedNodes();
-        const selectedNodeIds = selectedNodes.map((node) => node.id);
+    saveNodeMoves({ state, getters, commit, rootGetters }, { projectId }) {
         let translation;
+        let selectedNodes = rootGetters['selection/selectedNodeIds'];
         // calculate the translation either relative to the position or the outline position
         translation = {
             x: state.deltaMovePosition.x,
@@ -235,7 +237,7 @@ export const actions = {
         moveObjects({
             projectId,
             workflowId: getters.activeWorkflowId,
-            nodeIds: selectedNodeIds,
+            nodeIds: selectedNodes,
             translation,
             annotationIds: []
         }).then((e) => {
@@ -252,10 +254,17 @@ export const getters = {
         return Boolean(activeWorkflow?.info.linked);
     },
     isWritable(state, getters) {
-        return !getters.isLinked;
+        return !(getters.isLinked || getters.isInsideLinked);
+    },
+    isInsideLinked(state, getters) {
+        return Boolean(getters.insideLinkedType);
     },
     isStreaming({ activeWorkflow }) {
         return Boolean(activeWorkflow?.info.jobManager);
+    },
+    insideLinkedType({ activeWorkflow }) {
+        const parents = activeWorkflow?.parents || [];
+        return parents.find(({ linked }) => linked)?.containerType;
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
@@ -394,17 +403,5 @@ export const getters = {
                 return node.type;
             }
         };
-    },
-
-    /**
-     * Returns the nodes that are currently selected
-     * @param {Object} state - the state of the store
-     * @returns {Array} containing the selected nodes
-     */
-    selectedNodes: ({ activeWorkflow }) => () => {
-        if (!activeWorkflow) {
-            return [];
-        }
-        return Object.values(activeWorkflow.nodes).filter(node => node.selected);
     }
 };

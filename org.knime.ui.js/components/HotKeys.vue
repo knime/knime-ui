@@ -38,8 +38,8 @@ export default {
         document.removeEventListener('keyup', this.onKeyup);
     },
     methods: {
-        ...mapMutations('workflow', ['selectAllNodes', 'deselectAllNodes']),
-        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedNodes',
+        ...mapActions('selection', ['selectAllNodes']),
+        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedObjects',
             'undo', 'redo', 'openView', 'openDialog']),
         ...mapMutations('canvas', ['setSuggestPanning', 'resetZoom']),
         ...mapActions('canvas', ['setZoomToFit', 'zoomCentered']),
@@ -78,8 +78,8 @@ export default {
                 writableWorkflow: {
                     condition: () => this.isWorkflowPresent && this.isWritable,
                     hotKeys: [
-                        [...this.hotKeyItems.deleteDel, this.deleteSelectedNodes],
-                        [...this.hotKeyItems.deleteBackspace, this.deleteSelectedNodes]
+                        [...this.hotKeyItems.deleteDel, this.deleteSelectedObjects],
+                        [...this.hotKeyItems.deleteBackspace, this.deleteSelectedObjects]
                     ]
                 }
 

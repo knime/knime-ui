@@ -39,7 +39,6 @@ describe('json-patch plugin', () => {
     });
 
     describe('mutations', () => {
-
         describe('add', () => {
             it('adds to object', () => {
                 store.commit('myStore/patch.add', { path: '/foo/qux/x', value: '3' });
@@ -84,6 +83,7 @@ describe('json-patch plugin', () => {
                 store.commit('myStore/patch.remove', { path: '/foo/qux/bla/1' });
                 expect(store.state.myStore.foo.qux.bla).toStrictEqual(['a', 'c']);
             });
+
             it('throws an error for non-numeric array indexes', () => {
                 let mutation = () => store.commit('myStore/patch.remove', { path: '/foo/qux/bla/x' });
                 expect(mutation).toThrow('Invalid array index "x"');
@@ -104,6 +104,7 @@ describe('json-patch plugin', () => {
                     }
                 });
             });
+
             it('copies out of array', () => {
                 store.commit('myStore/patch.copy', { from: '/foo/qux/bla/1', path: '/foo/bar' });
                 expect(store.state.myStore.foo).toStrictEqual({

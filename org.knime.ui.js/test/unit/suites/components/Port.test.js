@@ -14,7 +14,6 @@ describe('Port', () => {
         ['table', $colors.portColors.table],
         ['other', '#123442']
     ])('Port (%s)', (portDataType, portColor) => {
-
         beforeEach(() => {
             wrapper = null;
             propsData = {
@@ -48,7 +47,7 @@ describe('Port', () => {
             it('not inactive', () => {
                 expect(wrapper.find('path').exists()).toBe(false);
             });
-
+            
             it('renders mandatory (filled)', () => {
                 expect(wrapper.findComponent(PortIcon).props().filled).toBe(true);
             });
@@ -97,6 +96,7 @@ describe('Port', () => {
             expect(d).not.toContain('h');
             expect(transform).toBeUndefined();
         });
+
         it.each(['CONFIGURED', 'QUEUED'])('draws traffic light for state %s (yellow)', (state) => {
             propsData.port.nodeState = state;
             doShallowMount();
@@ -108,6 +108,7 @@ describe('Port', () => {
             expect(d).toContain('h');
             expect(transform).toBe('rotate(90)');
         });
+
         it.each(['HALTED', 'EXECUTED'])('draws traffic light for state %s (green)', (state) => {
             propsData.port.nodeState = state;
             doShallowMount();
@@ -119,6 +120,7 @@ describe('Port', () => {
             expect(d).toContain('h');
             expect(transform).toBeUndefined();
         });
+
         it.each(['EXECUTING'])('draws traffic light for state %s (blue)', (state) => {
             propsData.port.nodeState = state;
             doShallowMount();
@@ -130,7 +132,5 @@ describe('Port', () => {
             expect(d).not.toContain('h');
             expect(transform).toBeUndefined();
         });
-
-
     });
 });

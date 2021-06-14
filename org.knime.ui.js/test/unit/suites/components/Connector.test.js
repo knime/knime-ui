@@ -12,7 +12,7 @@ jest.mock('~api', () => {
 }, { virtual: true });
 
 describe('Connector.vue', () => {
-    let portMock, propsData, mocks, wrapper, portShiftMock, $store;
+    let portMock, propsData, mocks, wrapper, portShiftMock, $store, storeConfig;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -24,6 +24,8 @@ describe('Connector.vue', () => {
         propsData = {
             sourceNode: 'root:1',
             destNode: 'root:2',
+            id: 'root:2_2',
+            canDelete: true,
             sourcePort: 0,
             destPort: 2
         };
@@ -35,9 +37,10 @@ describe('Connector.vue', () => {
 
     describe('attached to a metanode', () => {
         let doShallowMount;
+
         beforeEach(() => {
             doShallowMount = () => {
-                $store = mockVuexStore({
+                storeConfig = {
                     workflow: {
                         ...workflowStoreConfig,
                         state: {
@@ -61,9 +64,19 @@ describe('Connector.vue', () => {
                                 return true;
                             }
                         }
+                    },
+                    selection: {
+                        getters: {
+                            isConnectionSelected: () => jest.fn()
+                        },
+                        actions: {
+                            selectConnection: jest.fn(),
+                            deselectConnection: jest.fn(),
+                            deselectAllObjects: jest.fn()
+                        }
                     }
-                });
-
+                };
+                $store = mockVuexStore(storeConfig);
                 mocks = { $shapes, $colors, $store };
                 wrapper = shallowMount(Connector, { propsData, mocks });
             };
@@ -87,15 +100,13 @@ describe('Connector.vue', () => {
             const expectedPath = 'M42.5,7.5 C73,7.5 -27,40.5 3.5,40.5';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
-
     });
 
     describe('attached to other node', () => {
         let doShallowMount;
 
         beforeEach(() => {
-
-            $store = mockVuexStore({
+            storeConfig = {
                 workflow: {
                     ...workflowStoreConfig,
                     state: {
@@ -111,11 +122,22 @@ describe('Connector.vue', () => {
                             return true;
                         }
                     }
+                },
+                selection: {
+                    getters: {
+                        isConnectionSelected: () => jest.fn()
+                    },
+                    actions: {
+                        selectConnection: jest.fn(),
+                        deselectConnection: jest.fn(),
+                        deselectAllObjects: jest.fn()
+                    }
                 }
-            });
+            };
 
-            mocks = { $shapes, $colors, $store };
             doShallowMount = () => {
+                $store = mockVuexStore(storeConfig);
+                mocks = { $shapes, $colors, $store };
                 wrapper = shallowMount(Connector, { propsData, mocks });
             };
         });
@@ -123,6 +145,37 @@ describe('Connector.vue', () => {
         it('draws grab cursor by default', () => {
             doShallowMount();
             expect(wrapper.find('.read-only').exists()).toBe(false);
+        });
+
+        it('selects the connection', async () => {
+            doShallowMount();
+            await wrapper.find('g path').trigger('click', { button: 0 });
+
+            expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
+            expect(storeConfig.selection.actions.selectConnection).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ id: 'root:2_2' })
+            );
+        });
+
+        it('shift-click adds to selection', async () => {
+            doShallowMount();
+            await wrapper.find('g path').trigger('click', { button: 0, shiftKey: true });
+
+            expect(storeConfig.selection.actions.deselectConnection).not.toHaveBeenCalled();
+            expect(storeConfig.selection.actions.selectConnection).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ id: 'root:2_2' })
+            );
+        });
+
+        it('shift-click removes from selection', async () => {
+            storeConfig.selection.getters.isConnectionSelected = () => jest.fn().mockReturnValue(true);
+            doShallowMount();
+            await wrapper.find('g path').trigger('click', { button: 0, shiftKey: true });
+
+            expect(storeConfig.selection.actions.deselectConnection).toHaveBeenCalled();
+            expect(storeConfig.selection.actions.selectConnection).not.toHaveBeenCalled();
         });
 
         it('draws no grab cursor if write protected', () => {
@@ -145,6 +198,11 @@ describe('Connector.vue', () => {
                         isWritable() {
                             return false;
                         }
+                    }
+                },
+                selection: {
+                    getters: {
+                        isConnectionSelected: () => jest.fn()
                     }
                 }
             });
@@ -210,14 +268,14 @@ describe('Connector.vue', () => {
                 mocks
             });
 
-            const { 'stroke-width': strokeWidth, stroke } = wrapper.find('path').attributes();
+            const { 'stroke-width': strokeWidth, stroke } = wrapper.findAll('path').at(1).attributes();
             expect(parseFloat(strokeWidth)).toBe($shapes.connectorWidth);
             expect(stroke).toBe($colors.connectorColors.flowVariable);
         });
 
         it('applies styles for other ports', () => {
             doShallowMount();
-            const { 'stroke-width': strokeWidth, stroke } = wrapper.find('path').attributes();
+            const { 'stroke-width': strokeWidth, stroke } = wrapper.findAll('path').at(1).attributes();
             expect(parseFloat(strokeWidth)).toBe($shapes.connectorWidth);
             expect(stroke).toBe($colors.connectorColors.default);
         });
@@ -262,6 +320,11 @@ describe('Connector.vue', () => {
                                 };
                             }
                         }
+                    },
+                    selection: {
+                        getters: {
+                            isConnectionSelected: () => jest.fn()
+                        }
                     }
                 });
                 mocks = { $shapes, $colors, $store };
@@ -281,6 +344,5 @@ describe('Connector.vue', () => {
             const expectedPath = 'M108.5,651 C504,651 298,960 693.5,960';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
-
     });
 });

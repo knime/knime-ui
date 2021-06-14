@@ -24,6 +24,7 @@ describe('styleRanges util', () => {
             isValid: false,
             textRanges: [{ text: 'foobar' }]
         };
+
         it('rejects overlapping ranges', () => {
             let result = applyStyleRanges([{ start: 0, length: 3 }, { start: 1, length: 2 }], 'foobar');
             expect(result).toEqual(expected);
@@ -57,7 +58,6 @@ describe('styleRanges util', () => {
             };
             expect(result).toEqual(expected);
         });
-
     });
 
     it('applies styles when single range cover text', () => {

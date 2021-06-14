@@ -1,5 +1,5 @@
 /*
-Shared css for FlowVariableOutputTableHeader and DataPortOutputTableHeader
+Shared css for FlowVariablePortView and TablePortViewHeader
 */
 th {
   background: var(--knime-porcelain);
@@ -10,7 +10,7 @@ th {
   &:not(:last-child) {
     /* border-right: 1px solid var(--knime-white); does not work with position: sticky */
     &::after {
-      content: '';
+      content: "";
       display: block;
       position: absolute;
       right: 0;

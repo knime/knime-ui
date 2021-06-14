@@ -1,40 +1,27 @@
 /* eslint-disable no-magic-numbers */
-import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
-import Vuex from 'vuex';
+import { shallowMount } from '@vue/test-utils';
 import MissingValueIcon from '~/assets/missing-value.svg?inline';
 
 jest.mock('~/webapps-common/ui/util/svgWithTitle', () => x => x, { virtual: true });
 
-import DataPortOutputTableBody from '~/components/output/DataPortOutputTableBody';
+import TablePortViewBody from '~/components/output/TablePortViewBody';
 
-describe('DataPortOutputTableBody.vue', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+describe('TablePortViewBody.vue', () => {
+    let propsData, doShallowMount, wrapper;
 
     beforeEach(() => {
         wrapper = null;
-        propsData = {};
-        $store = mockVuexStore({
-            dataTable: {
-                state: {
-                    rows: [{
-                        cells: [{ valueAsString: 'foo' }, {}],
-                        id: 'Row0'
-                    }, {
-                        cells: [{ valueAsString: 'bar' }, { valueAsString: 'baz' }]
-                    }]
-                }
-            }
-        });
+        propsData = {
+            rows: [{
+                cells: [{ valueAsString: 'foo' }, {}],
+                id: 'Row0'
+            }, {
+                cells: [{ valueAsString: 'bar' }, { valueAsString: 'baz' }]
+            }]
+        };
 
-        mocks = { $store };
         doShallowMount = () => {
-            wrapper = shallowMount(DataPortOutputTableBody, { propsData, mocks });
+            wrapper = shallowMount(TablePortViewBody, { propsData });
         };
     });
 

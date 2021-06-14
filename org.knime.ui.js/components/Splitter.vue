@@ -95,7 +95,7 @@ export default {
     <div
       ref="handle"
       :class="{'handle': true, 'active': isMove }"
-      @pointerdown="beginMove"
+      @pointerdown.left="beginMove"
       @pointerup="stopMove"
       @pointermove="move"
     />
@@ -122,12 +122,14 @@ export default {
     overflow: auto;
     flex: 1 1 auto;
     min-height: 25%;
+    max-height: 85%;
   }
 
   & .secondary {
     overflow: auto;
     flex: 0 0 auto;
     min-height: 15%;
+    max-height: 75%;
   }
 
   & .handle {

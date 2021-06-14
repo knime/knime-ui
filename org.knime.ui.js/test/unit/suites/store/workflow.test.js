@@ -7,7 +7,7 @@ import Vue from 'vue';
 
 describe('workflow store', () => {
     let store, localVue, loadStore, addEventListenerMock,
-        removeEventListenerMock, moveObjectsMock;
+        removeEventListenerMock, moveObjectsMock, deleteObjectsMock;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -19,6 +19,7 @@ describe('workflow store', () => {
         removeEventListenerMock = jest.fn();
         store = null;
         moveObjectsMock = jest.fn().mockReturnValue(Promise.resolve());
+        deleteObjectsMock = jest.fn().mockReturnValue(Promise.resolve());
 
         loadStore = async ({ apiMocks = {} } = {}) => {
             /**
@@ -32,11 +33,13 @@ describe('workflow store', () => {
                 addEventListener: addEventListenerMock,
                 removeEventListener: removeEventListenerMock,
                 ...apiMocks,
-                moveObjects: moveObjectsMock
+                moveObjects: moveObjectsMock,
+                deleteObjects: deleteObjectsMock
             }), { virtual: true });
 
             store = mockVuexStore({
-                workflow: await import('~/store/workflow')
+                workflow: await import('~/store/workflow'),
+                selection: await import('~/store/selection')
             });
         };
     });
@@ -67,49 +70,6 @@ describe('workflow store', () => {
         it('allows setting the tooltip', () => {
             store.commit('workflow/setTooltip', { dummy: true });
             expect(store.state.workflow.tooltip).toStrictEqual({ dummy: true });
-        });
-
-        it('selects all nodes', () => {
-            let workflow = {
-                projectId: 'bar',
-                nodes: {
-                    'root:1': { id: 'root:1' },
-                    'root:2': { id: 'root:2' }
-                },
-                info: {}
-            };
-            store.commit('workflow/setActiveWorkflow', workflow);
-
-            let nodes = store.state.workflow.activeWorkflow.nodes;
-
-            store.commit('workflow/selectAllNodes');
-            expect(nodes['root:1'].selected).toBe(true);
-            expect(nodes['root:2'].selected).toBe(true);
-            expect(store.getters['workflow/selectedNodes']()).toStrictEqual([
-                workflow.nodes['root:1'],
-                workflow.nodes['root:2']
-            ]);
-
-            store.commit('workflow/deselectNode', 'root:1');
-            expect(nodes['root:1'].selected).toBe(false);
-            expect(nodes['root:2'].selected).toBe(true);
-            expect(store.getters['workflow/selectedNodes']()).toStrictEqual([
-                workflow.nodes['root:2']
-            ]);
-
-            store.commit('workflow/selectNode', 'root:1');
-            expect(nodes['root:1'].selected).toBe(true);
-            expect(nodes['root:2'].selected).toBe(true);
-            expect(store.getters['workflow/selectedNodes']()).toStrictEqual([
-                workflow.nodes['root:1'],
-                workflow.nodes['root:2']
-            ]);
-
-            store.commit('workflow/deselectAllNodes');
-            expect(nodes['root:1'].selected).toBe(false);
-            expect(nodes['root:2'].selected).toBe(false);
-            expect(store.getters['workflow/selectedNodes']()).toStrictEqual([]);
-
         });
 
         it('shifts the position of a node', () => {
@@ -153,11 +113,9 @@ describe('workflow store', () => {
             store.commit('workflow/setDragging', { isDragging: false });
             expect(store.state.workflow.isDragging).toBe(false);
         });
-
     });
 
     describe('workflow getters', () => {
-
         beforeEach(async () => {
             await loadStore();
             store.commit('workflow/setActiveWorkflow', {
@@ -264,7 +222,6 @@ describe('workflow store', () => {
                 let apiMocks = { changeNodeState: mock };
                 await loadStore({ apiMocks });
                 store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: {} });
-
                 store.dispatch(`workflow/${fn}`, ['x', 'y']);
 
                 expect(mock).toHaveBeenCalledWith({
@@ -304,7 +261,7 @@ describe('workflow store', () => {
             store.dispatch(`workflow/changeNodeState`, { nodes: 'all' });
             expect(mock).toHaveBeenLastCalledWith({ projectId: 'foo', workflowId: 'root' });
 
-            store.commit('workflow/selectAllNodes');
+            store.dispatch('selection/selectAllNodes');
             store.dispatch(`workflow/changeNodeState`, { nodes: 'selected' });
             expect(mock).toHaveBeenLastCalledWith({
                 nodeIds: ['root:1', 'root:2'], projectId: 'foo', workflowId: 'root'
@@ -319,7 +276,6 @@ describe('workflow store', () => {
             let apiMocks = { [action]: mock };
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
-
             store.dispatch(`workflow/${action}`, 'node x');
 
             expect(mock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo' });
@@ -334,7 +290,7 @@ describe('workflow store', () => {
                     bar: { qux: 2, position: { x: 50, y: 50 } }
                 }
             });
-            store.commit('workflow/selectAllNodes');
+            store.dispatch('selection/selectAllNodes');
             await Vue.nextTick();
 
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
@@ -347,15 +303,14 @@ describe('workflow store', () => {
             let nodesArray = {};
             for (let i = 0; i < 11; i++) {
                 let name = `node-${i}`;
-                nodesArray[name] = { bla: 1, position: { x: 0, y: 0 } };
+                nodesArray[name] = { bla: 1, position: { x: 0, y: 0 }, id: `node-${i}` };
             }
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'bar',
                 nodes: nodesArray
             });
-            store.commit('workflow/selectAllNodes');
+            store.dispatch('selection/selectAllNodes');
             await Vue.nextTick();
-
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
 
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
@@ -367,7 +322,7 @@ describe('workflow store', () => {
             let nodesArray = {};
             for (let i = 0; i < 21; i++) {
                 let name = `node-${i}`;
-                nodesArray[name] = { bla: 1, position: { x: 0, y: 0 } };
+                nodesArray[name] = { bla: 1, position: { x: 0, y: 0 }, id: name };
             }
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'bar',
@@ -375,12 +330,11 @@ describe('workflow store', () => {
             });
             await Vue.nextTick();
             // select every even node
-            Object.keys(nodesArray).forEach((node, index) => {
+            Object.values(nodesArray).forEach((node, index) => {
                 if (index % 2 === 0) {
-                    store.commit('workflow/selectNode', node);
+                    store.dispatch('selection/selectNode', node);
                 }
             });
-
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
 
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
@@ -395,7 +349,7 @@ describe('workflow store', () => {
             let nodesArray = {};
             for (let i = 0; i < amount; i++) {
                 let name = `node-${i}`;
-                nodesArray[name] = { bla: 1, position: { x: 0, y: 0 } };
+                nodesArray[name] = { bla: 1, position: { x: 0, y: 0 }, id: name };
             }
             store.commit('workflow/setActiveWorkflow', {
                 nodes: nodesArray,
@@ -405,8 +359,8 @@ describe('workflow store', () => {
             });
             await Vue.nextTick();
             let nodeIds = [];
-            Object.keys(nodesArray).forEach((node) => {
-                store.commit('workflow/selectNode', node);
+            Object.values(nodesArray).forEach((node) => {
+                store.dispatch('selection/selectNode', node);
                 nodeIds.push(node.id);
             });
 
@@ -420,6 +374,7 @@ describe('workflow store', () => {
                 annotationIds: []
             });
         });
+
         it('passes undo to the API', async () => {
             let undo = jest.fn();
             let apiMocks = { undo };
@@ -442,6 +397,100 @@ describe('workflow store', () => {
             expect(redo).toHaveBeenCalledWith({ projectId: 'foo', workflowId: 'root' });
         });
 
+        it.each([
+            [1],
+            [20]
+        ])('deletes %s objects', async (amount) => {
+            await loadStore();
+            let nodesArray = {};
+            let conenctionsArray = {};
+            let nodeIds = [];
+            let connectionIds = [];
+            for (let i = 0; i < amount / 2; i++) {
+                let name = `node-${i}`;
+                nodesArray[name] = { id: name, allowedActions: { canDelete: true } };
+                store.dispatch('selection/selectNode', nodesArray[name]);
+                nodeIds.push(name);
+            }
+            for (let i = 0; i < amount / 2; i++) {
+                let name = `connection-${i}`;
+                conenctionsArray[name] = { id: name, canDelete: true };
+                store.dispatch('selection/selectConnection', conenctionsArray[name]);
+                connectionIds.push(name);
+            }
+            store.commit('workflow/setActiveWorkflow', {
+                nodes: nodesArray,
+                connections: conenctionsArray,
+                projectId: 'foo',
+                info: {
+                    containerId: 'test'
+                }
+            });
+            await Vue.nextTick();
+            store.dispatch('workflow/deleteSelectedObjects');
+            expect(deleteObjectsMock).toHaveBeenNthCalledWith(1, {
+                projectId: 'foo',
+                workflowId: 'test',
+                nodeIds,
+                connectionIds
+            });
+        });
+
+        describe('tries to delete objects that cannot be deleted', () => {
+            jest.spyOn(window, 'alert').mockImplementation(() => {});
+
+            let nodeName = `node-1`;
+            let connectorName = `connection-1`;
+            let nodesArray = {};
+            nodesArray[nodeName] = { id: nodeName, allowedActions: { canDelete: false } };
+            let connectionsArray = {};
+            connectionsArray[connectorName] = { id: connectorName, canDelete: false };
+
+            beforeEach(async () => {
+                await loadStore();
+
+                store.commit('workflow/setActiveWorkflow', {
+                    nodes: nodesArray,
+                    connections: connectionsArray,
+                    projectId: 'foo',
+                    info: {
+                        containerId: 'test'
+                    }
+                });
+            });
+
+            test('nodes', async () => {
+                store.dispatch('selection/selectNode', nodesArray[nodeName]);
+
+                await Vue.nextTick();
+                store.dispatch('workflow/deleteSelectedObjects');
+                expect(window.alert).toHaveBeenCalledWith(
+                    `The following nodes can’t be deleted: [node-1]`
+                );
+            });
+
+            test('connections', async () => {
+                store.dispatch('selection/selectConnection', connectionsArray[connectorName]);
+
+                await Vue.nextTick();
+                store.dispatch('workflow/deleteSelectedObjects');
+                expect(window.alert).toHaveBeenCalledWith(
+                    `The following connections can’t be deleted: [connection-1]`
+                );
+            });
+
+            test('nodes and connections', async () => {
+                store.dispatch('selection/selectNode', nodesArray[nodeName]);
+                store.dispatch('selection/selectConnection', connectionsArray[connectorName]);
+
+                await Vue.nextTick();
+                store.dispatch('workflow/deleteSelectedObjects');
+                expect(window.alert).toHaveBeenCalledWith(
+                    `The following nodes can’t be deleted: [node-1] \n` +
+                    `The following connections can’t be deleted: [connection-1]`
+                );
+            });
+        });
     });
 
     describe('getters', () => {
@@ -463,6 +512,39 @@ describe('workflow store', () => {
                 }
             });
             expect(store.getters['workflow/isWritable']).toBe(false);
+        });
+
+        test('isInsideLinked defaults to false', async () => {
+            await loadStore();
+            store.commit('workflow/setActiveWorkflow', {
+                parents: [{
+                    containerType: 'component',
+                    linked: false
+                }]
+            });
+            expect(store.getters['workflow/isInsideLinked']).toBe(false);
+        });
+
+        test('isInsideLinked', async () => {
+            await loadStore();
+            store.commit('workflow/setActiveWorkflow', {
+                parents: [{
+                    containerType: 'metanode',
+                    linked: true
+                }]
+            });
+            expect(store.getters['workflow/isInsideLinked']).toBe(true);
+        });
+
+        test('insideLinkedType', async () => {
+            await loadStore();
+            store.commit('workflow/setActiveWorkflow', {
+                parents: [{
+                    containerType: 'metanode',
+                    linked: true
+                }]
+            });
+            expect(store.getters['workflow/insideLinkedType']).toBe('metanode');
         });
 
         describe('workflowBounds', () => {
@@ -539,7 +621,6 @@ describe('workflow store', () => {
                     }]
                 });
 
-
                 expect(store.getters['workflow/workflowBounds']).toStrictEqual({
                     left: -10,
                     right: 20,
@@ -593,7 +674,6 @@ describe('workflow store', () => {
         });
 
         describe('node getters', () => {
-
             beforeEach(async () => {
                 await loadStore();
                 store.commit('workflow/setActiveWorkflow', {
@@ -623,10 +703,12 @@ describe('workflow store', () => {
                 expect(store.getters['workflow/nodeName']({ nodeId: 'foo' })).toBe('exampleName');
                 expect(store.getters['workflow/nodeName']({ nodeId: 'ownData' })).toBe('ownName');
             });
+
             it('gets icon', () => {
                 expect(store.getters['workflow/nodeIcon']({ nodeId: 'foo' })).toBe('exampleIcon');
                 expect(store.getters['workflow/nodeIcon']({ nodeId: 'ownData' })).toBe('ownIcon');
             });
+
             it('gets type', () => {
                 expect(store.getters['workflow/nodeType']({ nodeId: 'foo' })).toBe('exampleType');
                 expect(store.getters['workflow/nodeType']({ nodeId: 'ownData' })).toBe('ownType');

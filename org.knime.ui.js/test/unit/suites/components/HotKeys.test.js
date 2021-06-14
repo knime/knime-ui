@@ -46,14 +46,11 @@ describe('HotKeys', () => {
                 state: {
                     activeWorkflow: { someProperty: 0 }
                 },
-                mutations: {
-                    selectAllNodes: jest.fn()
-                },
                 actions: {
                     executeNodes: jest.fn(),
                     cancelNodeExecution: jest.fn(),
                     resetNodes: jest.fn(),
-                    deleteSelectedNodes: jest.fn(),
+                    deleteSelectedObjects: jest.fn(),
                     undo: jest.fn(),
                     redo: jest.fn(),
                     openView: jest.fn(),
@@ -62,6 +59,11 @@ describe('HotKeys', () => {
                 getters: {
                     selectedNodes: () => () => selectedNodes,
                     isWritable: jest.fn().mockReturnValue(true)
+                }
+            },
+            selection: {
+                actions: {
+                    selectAllNodes: jest.fn()
                 }
             },
             canvas: {
@@ -100,13 +102,13 @@ describe('HotKeys', () => {
 
     describe('Shortcuts', () => {
         beforeEach(() => doShallowMount());
+
         afterEach(() => expectEventHandled());
 
         describe('workflow', () => {
-
             it('Ctrl-A: Select all nodes', () => {
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true }));
-                expect(storeConfig.workflow.mutations.selectAllNodes).toHaveBeenCalled();
+                expect(storeConfig.selection.actions.selectAllNodes).toHaveBeenCalled();
             });
 
             it('F7: execute selected nodes', () => {
@@ -164,7 +166,7 @@ describe('HotKeys', () => {
         describe('writable Workflow', () => {
             test.each(['delete', 'backspace'])('Delete: %s selection', (key) => {
                 document.dispatchEvent(new KeyboardEvent('keydown', { key }));
-                expect(storeConfig.workflow.actions.deleteSelectedNodes).toHaveBeenCalled();
+                expect(storeConfig.workflow.actions.deleteSelectedObjects).toHaveBeenCalled();
             });
         });
 
@@ -182,7 +184,6 @@ describe('HotKeys', () => {
         });
 
         describe('Canvas', () => {
-
             it('Ctrl-0: Reset zoom to default', () => {
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: '0', ctrlKey: true }));
                 expect(storeConfig.canvas.mutations.resetZoom).toHaveBeenCalled();
@@ -204,7 +205,6 @@ describe('HotKeys', () => {
                     expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), -1);
                 });
             });
-
         });
     });
 

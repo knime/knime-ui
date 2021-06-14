@@ -1,7 +1,7 @@
 /*
-Shared css for FlowVariableOutputTable and DataPortOutputTable
+Shared css for FlowVariablePortView and TablePortView
 */
-.scroll-container {
+.scroller {
   width: 100%;
   overflow: auto;
 }

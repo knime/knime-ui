@@ -52,6 +52,7 @@ import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.program.Program;
 import org.knime.core.node.NodeLogger;
+import org.knime.gateway.impl.webui.service.DefaultEventService;
 
 /**
  * Listens for changes of the URL in the KNIME browser and triggers respective
@@ -69,6 +70,10 @@ public class KnimeBrowserLocationListener implements LocationListener {
 		// or a localhost-URL (for development)
 		if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
 			// let the location change happen without further ado
+		    // except ...
+		    // - remove all event listeners because the webapp is newly loaded and will register
+		    //   required listeners (again) - might be a refresh
+		    DefaultEventService.getInstance().removeAllEventListeners();
 		} else {
 			if (!Program.launch(event.location)) {
 				NodeLogger.getLogger(this.getClass())

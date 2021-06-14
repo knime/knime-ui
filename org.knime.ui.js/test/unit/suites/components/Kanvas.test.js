@@ -26,9 +26,11 @@ const mockNode = ({ id, position }) => ({
     state: null
 });
 
-const mockConnector = ({ nr }) => ({
+const mockConnector = ({ nr, id }) => ({
     sourceNode: '',
     destNode: '',
+    id,
+    canDelete: false,
     sourcePort: nr,
     destPort: 0,
     flowVariableConnection: false,
@@ -83,11 +85,12 @@ describe('Kanvas', () => {
             },
             nodes: nodeData,
             connections: {
-                inA: mockConnector({ nr: 0 }),
-                outA: mockConnector({ nr: 1 }),
-                outB: mockConnector({ nr: 2 })
+                inA: mockConnector({ nr: 0, id: 'inA' }),
+                outA: mockConnector({ nr: 1, id: 'outA' }),
+                outB: mockConnector({ nr: 2, id: 'outB' })
             },
-            workflowAnnotations: []
+            workflowAnnotations: [],
+            parents: []
         };
         workflowStoreConfig = {
             state: {
@@ -108,11 +111,17 @@ describe('Kanvas', () => {
                 isLinked() {
                     return workflow.info.linked;
                 },
+                isInsideLinked() {
+                    return workflow.parents.some(p => p.linked);
+                },
+                insideLinkedType({ activeWorkflow }) {
+                    return workflow.parents.find(p => p.linked).containerType;
+                },
                 isStreaming() {
                     return workflow.info.jobManager;
                 },
                 isWritable() {
-                    return !workflow.info.linked;
+                    return !(workflow.info.linked || workflow.parents.some(p => p.linked));
                 },
                 nodeIcon() {
                     return ({ nodeId }) => `data:image/${nodeId}`;
@@ -175,7 +184,6 @@ describe('Kanvas', () => {
                     type: `type-${nodeId}`,
                     link: null,
                     allowedActions: {},
-                    selected: false,
                     executionInfo: null,
                     loopInfo: {
                         allowedActions: {}
@@ -202,6 +210,13 @@ describe('Kanvas', () => {
 
     it('write-protects and shows warning on being linked', () => {
         workflow.info.linked = true;
+        doShallowMount();
+        expect(wrapper.find('.read-only').exists()).toBe(true);
+        expect(wrapper.find('.type-notification').exists()).toBe(true);
+    });
+
+    it('write-protects and shows warning on being inside a linked component or metanode', () => {
+        workflow.parents.push({ linked: true, containerType: 'metanode' });
         doShallowMount();
         expect(wrapper.find('.read-only').exists()).toBe(true);
         expect(wrapper.find('.type-notification').exists()).toBe(true);
@@ -241,7 +256,6 @@ describe('Kanvas', () => {
     });
 
     describe('Zoom & Pan', () => {
-
         it('Suggests Panning', async () => {
             doShallowMount();
 
@@ -292,7 +306,6 @@ describe('Kanvas', () => {
             expect(storeConfig.canvas.mutations.setContainerSize).toHaveBeenCalledWith(expect.anything(), {
                 width: 100, height: 50
             });
-
         });
 
         it('stop resize observer', () => {
@@ -329,9 +342,6 @@ describe('Kanvas', () => {
                 pointerId: -1
             });
             expect(wrapper.element.releasePointerCapture).toHaveBeenCalledWith(-1);
-
         });
     });
-
-
 });

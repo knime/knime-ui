@@ -26,7 +26,6 @@ describe('ConnectorLabel.vue', () => {
 
     describe('Check label creation', () => {
         beforeEach(() => {
-
             $store = mockVuexStore({
                 workflow: {
                     state: {

@@ -54,7 +54,6 @@ describe('canvas store', () => {
     });
 
     describe('mutations', () => {
-
         test('set & get ScrollContainerElement', () => {
             store.commit('canvas/setScrollContainerElement', 2);
             expect(store.state.canvas.getScrollContainerElement()).toBe(2);
@@ -115,6 +114,7 @@ describe('canvas store', () => {
 
         describe('zoomWithPointer', () => {
             let state;
+
             beforeEach(() => {
                 state = store.state.canvas;
             });
@@ -380,7 +380,6 @@ describe('canvas store', () => {
                     y: 150
                 });
             });
-
         });
 
         describe('canvas, viewBox, absoluteCoordinates at 100%', () => {
@@ -481,7 +480,6 @@ describe('canvas store', () => {
                     y: 300
                 });
             });
-
         });
     });
 });

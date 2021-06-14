@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters, mapMutations } from 'vuex';
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
 import Node from '~/components/Node';
 import MoveableNodeContainer from '~/components/MoveableNodeContainer';
 import Connector from '~/components/Connector';
@@ -37,6 +37,8 @@ export default {
         }),
         ...mapGetters('workflow', [
             'isLinked',
+            'isInsideLinked',
+            'insideLinkedType',
             'isWritable',
             'isStreaming'
         ]),
@@ -44,7 +46,7 @@ export default {
         ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning']),
         viewBoxString() {
             let { viewBox } = this;
-            return  `${viewBox.left} ${viewBox.top} ` +
+            return `${viewBox.left} ${viewBox.top} ` +
                     `${viewBox.width} ${viewBox.height}`;
         },
         // Sort nodes so that selected nodes are rendered in front
@@ -83,7 +85,7 @@ export default {
         /*
           Selection
         */
-        ...mapMutations('workflow', ['deselectAllNodes']),
+        ...mapActions('selection', ['deselectAllObjects']),
         onMouseDown(e) {
             /*  To avoid for [mousedown on node], [moving mouse], [mouseup on kanvas] to deselect nodes,
              *  we track whether a click has been started on the empty Kanvas
@@ -93,7 +95,7 @@ export default {
         onSelfMouseUp(e) {
             // deselect all nodes
             if (this.clickStartedOnEmptyKanvas) {
-                this.deselectAllNodes();
+                this.deselectAllObjects();
                 this.clickStartedOnEmptyKanvas = null;
             }
         },
@@ -183,13 +185,18 @@ export default {
     />
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
-      v-if="isLinked || isStreaming"
+      v-if="isLinked || isStreaming || isInsideLinked"
       :class="['type-notification', {onlyStreaming: isStreaming && !isLinked}]"
     >
       <span
         v-if="isLinked"
       >
         This is a linked {{ workflow.info.containerType }} and can therefore not be edited.
+      </span>
+      <span
+        v-if="isInsideLinked"
+      >
+        This is a {{ workflow.info.containerType }} inside a linked {{ insideLinkedType }} and cannot be edited.
       </span>
       <span
         v-if="isStreaming"
@@ -229,6 +236,7 @@ export default {
       <!-- Connectors Layer -->
       <Connector
         v-for="(connector, id) of workflow.connections"
+        :id="id"
         :key="`connector-${workflow.projectId}-${id}`"
         v-bind="connector"
       />

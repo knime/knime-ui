@@ -41,7 +41,6 @@ describe('workflow store', () => {
     });
 
     describe('metanode content workflows', () => {
-
         let baseWorkflow = {
             projectId: 'foo',
             info: {

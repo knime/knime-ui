@@ -29,14 +29,10 @@ describe('MoveableNodeContainer', () => {
         storeConfig = {
             workflow: {
                 mutations: {
-                    selectNode: jest.fn(),
-                    deselectNode: jest.fn(),
-                    deselectAllNodes: jest.fn(),
                     setDragging: jest.fn(),
                     resetDragPosition: jest.fn()
                 },
                 getters: {
-                    selectedNodes() { return () => [{ id: 'root:2', selected: true }, { id: 'test2' }]; },
                     isWritable() { return true; }
                 },
                 actions: {
@@ -45,7 +41,8 @@ describe('MoveableNodeContainer', () => {
                 },
                 state: {
                     isDragging: false,
-                    deltaMovePosition: { x: 250, y: 250 }
+                    deltaMovePosition: { x: 250, y: 250 },
+                    activeWorkflow: { nodes: { 'root:1': { id: 'root:1' }, 'root:2': { id: 'root:2' } } }
                 }
             },
             canvas: {
@@ -56,6 +53,15 @@ describe('MoveableNodeContainer', () => {
             openedProjects: {
                 state() {
                     return { activeId: 'projectId' };
+                }
+            },
+            selection: {
+                getters: {
+                    isNodeSelected: () => jest.fn()
+                },
+                actions: {
+                    deselectAllObjects: jest.fn(),
+                    selectNode: jest.fn()
                 }
             }
         };
@@ -92,8 +98,8 @@ describe('MoveableNodeContainer', () => {
             expect(transform).toBe('translate(500, 200)');
         });
 
-        it('deselects nodes on movement of undselected node', () => {
-            propsData.selected = false;
+        it('deselects nodes on movement of unselected node', () => {
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(false);
             doMount(shallowMount);
 
             let moveStartEvent = new CustomEvent('movestart', {
@@ -106,11 +112,15 @@ describe('MoveableNodeContainer', () => {
                 }
             });
             wrapper.vm.onMoveStart(moveStartEvent);
-            expect(storeConfig.workflow.mutations.deselectAllNodes).toHaveBeenCalled();
-            expect(storeConfig.workflow.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
+            expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
+            expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ id: 'root:1' })
+            );
         });
 
         it('does not deselect nodes when node is already selected', () => {
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
             propsData.id = 'root:2';
             doMount(shallowMount);
 
@@ -124,8 +134,11 @@ describe('MoveableNodeContainer', () => {
                 }
             });
             wrapper.vm.onMoveStart(moveStartEvent);
-            expect(storeConfig.workflow.mutations.deselectAllNodes).not.toHaveBeenCalled();
-            expect(storeConfig.workflow.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:2');
+            expect(storeConfig.selection.actions.deselectAllObjects).not.toHaveBeenCalled();
+            expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ id: 'root:2' })
+            );
         });
 
         it('makes sure outline is not moved when moving a single node and correctly reset after movement', async () => {
@@ -176,7 +189,7 @@ describe('MoveableNodeContainer', () => {
             doMount(shallowMount);
             jest.useFakeTimers();
             wrapper.vm.onMoveEnd();
-            jest.advanceTimersByTime(5000);
+            jest.advanceTimersByTime(5000); /* eslint-disable-line no-magic-numbers */
             await Promise.resolve();
             jest.runOnlyPendingTimers();
             expect(storeConfig.workflow.actions.saveNodeMoves).toHaveBeenCalledWith(

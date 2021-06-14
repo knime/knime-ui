@@ -130,9 +130,18 @@ const actionMap = {
         title: 'Delete selection',
         hotkey: hotKeys.deleteDel,
         icon: DeleteIcon,
-        storeAction: 'workflow/deleteSelectedNodes',
+        storeAction: 'workflow/deleteSelectedObjects',
         storeActionParams: [],
-        disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.allowedActions.canDelete)
+        disabled({ selectedNodes, selectedConnections }) {
+            // disable for no selections
+            if (selectedNodes.length === 0 && selectedConnections.length === 0) {
+                return true;
+            }
+            const allSelectedDeletable = selectedNodes.every(node => node.allowedActions.canDelete) &&
+                selectedConnections.every(connection => connection.canDelete);
+            // disable if one of the selected objects are not deletable
+            return !allSelectedDeletable;
+        }
     },
     // single node
     resumeLoopExecution: {
@@ -179,7 +188,7 @@ const actionMap = {
 
 const testIfIsMac = () => navigator?.userAgent?.toLowerCase()?.includes('mac');
 
-const mapActions = (actionList, selectedNodes, allowedWorkflowActions) => {
+const mapActions = (actionList, selectedNodes, selectedConnections, allowedWorkflowActions) => {
     const isMac = testIfIsMac();
     return actionList.map(src => {
         let x = Object.assign({}, src);
@@ -196,12 +205,12 @@ const mapActions = (actionList, selectedNodes, allowedWorkflowActions) => {
 
         // call disabled methods and turn them to booleans
         if (typeof src.disabled === 'function') {
-            x.disabled = src.disabled({ selectedNodes, allowedWorkflowActions });
+            x.disabled = src.disabled({ selectedNodes, selectedConnections, allowedWorkflowActions });
         }
 
         // call action params if they are a function
         if (typeof src.storeActionParams === 'function') {
-            x.storeActionParams = src.storeActionParams({ selectedNodes });
+            x.storeActionParams = src.storeActionParams({ selectedNodes, selectedConnections });
         }
 
         return x;
@@ -211,7 +220,8 @@ const mapActions = (actionList, selectedNodes, allowedWorkflowActions) => {
 export const getters = {
 
     mainMenuActionItems(state, getters, rootState, rootGetters) {
-        const selectedNodes = rootGetters['workflow/selectedNodes']();
+        const selectedNodes = rootGetters['selection/selectedNodes'];
+        const selectedConnections = rootGetters['selection/selectedConnections'];
         const allowedWorkflowActions = rootState.workflow.activeWorkflow?.allowedActions || {};
 
         let actionList = [
@@ -229,16 +239,20 @@ export const getters = {
             actionList.push(
                 actionMap.executeSelected,
                 actionMap.cancelSelected,
-                actionMap.resetSelected,
-                actionMap.deleteSelected
+                actionMap.resetSelected
             );
         }
+        // show delete button either way; is disabled for no selection states
+        actionList.push(
+            actionMap.deleteSelected
+        );
 
-        return mapActions(actionList, selectedNodes, allowedWorkflowActions);
+        return mapActions(actionList, selectedNodes, selectedConnections, allowedWorkflowActions);
     },
 
     contextMenuActionItems(state, getters, rootState, rootGetters) {
-        const selectedNodes = rootGetters['workflow/selectedNodes']();
+        const selectedNodes = rootGetters['workflow/selectedNodes'];
+        const selectedConnections = rootGetters['selection/selectedConnections'];
         const allowedWorkflowActions = rootState.workflow.activeWorkflow?.allowedActions || {};
 
         let actionList = [];
@@ -271,7 +285,7 @@ export const getters = {
             );
         }
 
-        return mapActions(actionList, selectedNodes, allowedWorkflowActions);
+        return mapActions(actionList, selectedNodes, selectedConnections, allowedWorkflowActions);
     },
 
     hotKeyItems(state, getters, rootState, rootGetters) {

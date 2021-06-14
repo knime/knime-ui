@@ -88,11 +88,6 @@ describe('Node', () => {
         wrapper = null;
         storeConfig = {
             workflow: {
-                mutations: {
-                    selectNode: jest.fn(),
-                    deselectNode: jest.fn(),
-                    deselectAllNodes: jest.fn()
-                },
                 actions: {
                     loadWorkflow: jest.fn(),
                     executeNodes: jest.fn(),
@@ -113,12 +108,24 @@ describe('Node', () => {
                     switchWorkflow: jest.fn()
                 }
             },
+            selection: {
+                getters: {
+                    isNodeSelected: () => jest.fn()
+                },
+                actions: {
+                    deselectAllObjects: jest.fn(),
+                    selectNode: jest.fn(),
+                    deselectNode: jest.fn()
+                }
+            },
             canvas: {
                 state: {
                     zoomFactor: 1
                 }
             }
         };
+
+
         propsData = {
             // insert node before mounting
         };
@@ -228,7 +235,6 @@ describe('Node', () => {
             propsData =
             {
                 ...commonNode,
-                selected: true,
                 allowedActions: { canExecute: true, canOpenDialog: true, canOpenView: false },
                 state: {
                     executionState: 'IDLE'
@@ -237,10 +243,11 @@ describe('Node', () => {
         });
 
         it('shows frame if selected', () => {
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
             doMount();
             expect(wrapper.find('portal[to="node-select"]').exists()).toBe(true);
 
-            propsData.selected = false;
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(false);
             doMount();
             expect(wrapper.find('portal[to="node-select"]').exists()).toBe(false);
         });
@@ -262,6 +269,7 @@ describe('Node', () => {
         });
 
         it('has shadow effect', () => {
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
             doMount();
             expect(wrapper.findComponent(NodeTorso).attributes().filter).toBe('url(#node-torso-shadow)');
             expect(wrapper.findComponent(NodeState).attributes().filter).toBe('url(#node-state-shadow)');
@@ -286,35 +294,44 @@ describe('Node', () => {
         });
 
         it('click to select', async () => {
-            propsData.selected = false;
             doMount();
 
             await wrapper.find('g g g').trigger('click', { button: 0 });
 
-            expect(storeConfig.workflow.mutations.deselectAllNodes).toHaveBeenCalled();
-            expect(storeConfig.workflow.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
+            expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
+            expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ id: 'root:1' })
+            );
         });
 
         it('shift-click adds to selection', async () => {
-            propsData.selected = false;
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
             doMount();
 
             await wrapper.find('g g g').trigger('click', { button: 0, shiftKey: true });
-            expect(storeConfig.workflow.mutations.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
+
+            expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ id: 'root:1' })
+            );
         });
 
         it('shift-click removes from selection', async () => {
-            propsData.selected = true;
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
             doMount();
 
             await wrapper.find('g g g').trigger('click', { button: 0, shiftKey: true });
-            expect(storeConfig.workflow.mutations.deselectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
+            expect(storeConfig.selection.actions.deselectNode).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ id: 'root:1' })
+            );
         });
 
         it('ctrl-click doest influence selection', async () => {
             doMount();
             await wrapper.find('g g g').trigger('mousedown', { button: 0, ctrlKey: true });
-            expect(storeConfig.workflow.mutations.selectNode).not.toHaveBeenCalled();
+            expect(storeConfig.selection.actions.selectNode).not.toHaveBeenCalled();
         });
 
         it('selection instantly shows default flowVariable ports', async () => {
@@ -323,6 +340,7 @@ describe('Node', () => {
                 inPorts: [mockPort({ index: 0 })],
                 outPorts: [mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] })]
             };
+            storeConfig.selection.getters.isNodeSelected = () => () => true;
 
             doMount();
             let ports = wrapper.findAllComponents(Port);
@@ -332,8 +350,10 @@ describe('Node', () => {
             // connected port visible already
             expect(ports.at(1).attributes().class).toBe('port');
 
-            wrapper.setProps({ selected: false });
+            storeConfig.selection.getters.isNodeSelected = () => () => false;
+            doMount();
             await Vue.nextTick();
+            ports = wrapper.findAllComponents(Port);
 
             // unconnected flowVariable port hidden
             expect(ports.at(0).attributes().class).toMatch('hidden');
@@ -410,8 +430,8 @@ describe('Node', () => {
             expect(ports.at(0).attributes().class).toMatch('hidden');
             // connected port stays visible
             expect(ports.at(1).attributes().class).not.toMatch('hidden');
-
         });
+
         it('leaving hover container unsets hover', () => {
             wrapper.find('.hover-container').trigger('mouseleave');
             expect(wrapper.vm.hover).toBe(false);
@@ -458,7 +478,7 @@ describe('Node', () => {
             const portAttrs = ports.map(p => p.props().port.index);
 
             expect(locations).toStrictEqual([
-                [0, -4.5],  // left flowVariablePort (index 0)
+                [0, -4.5], // left flowVariablePort (index 0)
                 [-4.5, 16], // left side port (index 1)
                 [32, -4.5], // right flowVariablePort (index 0)
                 [36.5, 5.5],
@@ -521,6 +541,5 @@ describe('Node', () => {
 
             expect(storeConfig.workflow.actions.loadWorkflow).not.toHaveBeenCalled();
         });
-
     });
 });
