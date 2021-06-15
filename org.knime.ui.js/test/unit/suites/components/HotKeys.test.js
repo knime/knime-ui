@@ -178,6 +178,7 @@ describe('HotKeys', () => {
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F12' }));
                 expect(storeConfig.workflow.actions.openView).toHaveBeenCalled();
             });
+
             it('F6: Opens dialog', () => {
                 selectedNodes = [{}];
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F6' }));

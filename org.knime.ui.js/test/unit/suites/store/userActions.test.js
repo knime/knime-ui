@@ -145,7 +145,6 @@ describe('userActions store', () => {
             expect(contextMenuActionItems[8].storeAction).toBe('workflow/deleteSelectedObjects');
             expect(contextMenuActionItems[8].storeActionParams).toStrictEqual([]);
             expect(contextMenuActionItems[8].disabled).toBe(true);
-
         });
 
         it('applies node can* rights correctly', () => {
@@ -162,7 +161,6 @@ describe('userActions store', () => {
             expect(contextMenuActionItems[6].disabled).toBe(false);
             expect(contextMenuActionItems[7].disabled).toBe(false);
             expect(contextMenuActionItems[8].disabled).toBe(false);
-
         });
 
         it('provides actions for multiple selected nodes', () => {
@@ -212,7 +210,6 @@ describe('userActions store', () => {
             expect(contextMenuActionItems[2].storeAction).toBe('workflow/resetNodes');
             expect(contextMenuActionItems[2].storeActionParams).toStrictEqual(['all']);
             expect(contextMenuActionItems[2].disabled).toBe(false);
-
         });
 
         it('provides disabled actions for workflow if rights are missing', () => {

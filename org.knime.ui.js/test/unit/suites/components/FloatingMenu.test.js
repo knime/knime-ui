@@ -24,7 +24,6 @@ describe('FloatingMenu.vue', () => {
     });
 
     describe('ContextMenu', () => {
-
         it('renders', () => {
             const wrapper = mount(FloatingMenu, {
                 propsData: {
@@ -111,6 +110,7 @@ describe('FloatingMenu.vue', () => {
                 await Vue.nextTick();
                 expect(wrapper.vm.$el.classList).not.toContain('isVisible');
             });
+
             it('triggers item-click on enter of current focussed item', async () => {
                 items[0].disabled = false;
                 const wrapper = shallowMount(FloatingMenu, {
@@ -128,6 +128,7 @@ describe('FloatingMenu.vue', () => {
                 expect(wrapper.emitted()['item-click']).toBeTruthy();
                 expect(wrapper.emitted()['item-click'][0][1].text).toBe('Oranges');
             });
+
             it('focus item next item on down', async () => {
                 let getActiveElementMock = jest.fn();
                 const wrapper = mount(FloatingMenu, {
@@ -146,6 +147,7 @@ describe('FloatingMenu.vue', () => {
                 await Vue.nextTick();
                 expect(mockNextBtnFocus).toBeCalledTimes(1);
             });
+
             it('focus item prev item on up', async () => {
                 let getActiveElementMock = jest.fn();
                 const wrapper = mount(FloatingMenu, {

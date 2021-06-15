@@ -11,8 +11,7 @@ import * as userActionStoreConfig from '~/store/userActions';
 jest.mock('~api', () => { }, { virtual: true });
 
 describe('WorkflowToolbar.vue', () => {
-    let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper, $store, selectedNodes, selectedConnections,
-        userAgentGetter;
+    let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper, $store, selectedNodes, selectedConnections;
 
     beforeAll(() => {
         const localVue = createLocalVue();

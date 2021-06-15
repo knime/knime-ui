@@ -71,5 +71,4 @@ describe('ContextMenu.vue', () => {
         await Vue.nextTick();
         expect(wrapper.find('.floatingmenu').classes()).toContain('isVisible');
     });
-
 });
