@@ -313,11 +313,11 @@ export default {
 
             if (e.shiftKey) {
                 // Multi select
-                this.selectNode(this.id);
+                this.selectNode(this);
             } else if (!this.selected) {
                 // single select
-                this.deselectAllNodes();
-                this.selectNode(this.id);
+                this.deselectAllObjects();
+                this.selectNode(this);
             }
         }
     }

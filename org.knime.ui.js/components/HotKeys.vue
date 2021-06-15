@@ -12,7 +12,8 @@ const throttledZoomThrottle = 30; // throttle keyboard zoom by 30ms
 export default {
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
-        ...mapGetters('workflow', ['isWritable', 'selectedNodes']),
+        ...mapGetters('selection', ['selectedNodes']),
+        ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('userActions', ['hotKeyItems']),
         isWorkflowPresent() {
             // workflow hotkeys are enabled only if a workflow is present

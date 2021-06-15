@@ -1,6 +1,6 @@
 <script>
 import LegacyAnnotationText from '~/components/LegacyAnnotationText';
-import { mapMutations } from 'vuex';
+import { mapActions } from 'vuex';
 /**
  * A workflow annotation, a rectangular box containing text.
  */
@@ -71,9 +71,9 @@ export default {
         }
     },
     methods: {
-        ...mapMutations('workflow', ['deselectAllNodes']),
+        ...mapActions('selection', ['deselectAllObjects']),
         onMouseDown() {
-            this.deselectAllNodes();
+            this.deselectAllObjects();
         }
     }
 };

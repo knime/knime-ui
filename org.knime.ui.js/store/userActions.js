@@ -114,7 +114,7 @@ const actionMap = {
         icon: CancelSelectedIcon,
         storeAction: 'workflow/cancelNodeExecution',
         storeActionParams: ['selected'],
-        disabled: ({ selectedNodes }) => !selectedNodes.some(node => node.allowedActions.canCancel)
+        disabled: ({ selectedNodes }) => !selectedNodes.some(node => node?.allowedActions.canCancel)
     },
     resetSelected: {
         text: 'Reset',
