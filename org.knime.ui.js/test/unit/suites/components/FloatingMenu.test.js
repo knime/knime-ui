@@ -43,6 +43,20 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.findAll('li').length).toBe(items.length);
         });
 
+        it('renders with disabled items', () => {
+            items[1].disabled = true;
+            const wrapper = shallowMount(FloatingMenu, {
+                propsData: {
+                    items
+                }
+            });
+            expect(wrapper.html()).toBeTruthy();
+            const btn = wrapper.findAll('button').at(1);
+            expect(btn.classes('disabled')).toBeTruthy();
+            expect(btn.attributes('tabindex')).toBeFalsy();
+            expect(wrapper.findAll('button').at(0).attributes('tabindex')).toBe('0');
+        });
+
         it('fires item-click event on click', () => {
             const wrapper = shallowMount(FloatingMenu, {
                 propsData: {

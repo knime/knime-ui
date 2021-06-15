@@ -191,7 +191,7 @@ export default {
       >
         <button
           ref="listItem"
-          :tabindex="disabled ? null: '0'"
+          :tabindex="item.disabled ? null: '0'"
           :class="['clickable-item', { disabled: item.disabled }]"
         >
           <Component
