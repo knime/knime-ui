@@ -10,7 +10,7 @@ describe('FloatingMenu.vue', () => {
     beforeEach(() => {
         items = [{
             text: 'Apples',
-            disabled: true,
+            disabled: false,
             hotkeyText: 'CTRL + A'
         }, {
             text: 'Oranges',
@@ -70,6 +70,7 @@ describe('FloatingMenu.vue', () => {
         });
 
         it('ignores click on disabled items', () => {
+            items[0].disabled = true;
             const wrapper = shallowMount(FloatingMenu, {
                 propsData: {
                     items
@@ -164,6 +165,29 @@ describe('FloatingMenu.vue', () => {
                 wrapper.trigger('keydown.up');
                 await Vue.nextTick();
                 expect(mockPrevButton).toBeCalledTimes(1);
+            });
+
+            it('ignores disabled items on key navigation', async () => {
+                let getActiveElementMock = jest.fn();
+                items[0].disabled = true;
+                const wrapper = mount(FloatingMenu, {
+                    propsData: {
+                        items
+                    }
+                });
+                wrapper.vm.getActiveElement = getActiveElementMock;
+                const btn = wrapper.findAll('button').at(1);
+                const prevBtn = wrapper.findAll('button').at(0);
+                let mockPrevButton = jest.fn();
+                prevBtn.element.focus = mockPrevButton;
+                getActiveElementMock.mockReturnValue(btn.element);
+                const prevBtn2 = wrapper.findAll('button').at(2);
+                let mockPrevButton2 = jest.fn();
+                prevBtn2.element.focus = mockPrevButton2;
+                wrapper.trigger('keydown.up');
+                await Vue.nextTick();
+                expect(mockPrevButton).toBeCalledTimes(0);
+                expect(mockPrevButton2).toBeCalledTimes(1);
             });
         });
     });

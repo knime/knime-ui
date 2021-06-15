@@ -84,6 +84,9 @@ export default {
          */
         getNextElement(changeInd) {
             let listItems = this.getListItems();
+            // filter out disabled items
+            listItems = listItems.filter(x => !x.classList.contains('disabled'));
+            // lookup next item
             return listItems[listItems.indexOf(this.getActiveElement()) + changeInd] || (changeInd < 0
                 ? listItems[listItems.length - 1]
                 : listItems[0]);
@@ -172,6 +175,7 @@ export default {
     @keydown.esc.stop.prevent="closeMenu"
     @keydown.up.stop.prevent="onUp"
     @keydown.down.stop.prevent="onDown"
+    @keydown.tab.stop.prevent=""
     @mousedown="onPreventEvent"
   >
     <ul
@@ -187,7 +191,7 @@ export default {
       >
         <button
           ref="listItem"
-          tabindex="0"
+          :tabindex="disabled ? null: '0'"
           :class="['clickable-item', { disabled: item.disabled }]"
         >
           <Component
@@ -243,6 +247,7 @@ export default {
     & .disabled { /* via class since <a> elements don't have a native disabled attribute */
       opacity: 0.5;
       cursor: default;
+      pointer-events: none;
     }
 
     & button {
