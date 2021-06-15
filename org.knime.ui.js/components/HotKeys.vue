@@ -11,10 +11,26 @@ const throttledZoomThrottle = 30; // throttle keyboard zoom by 30ms
 export default {
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
+        ...mapState('canvas', ['suggestPanning']),
         ...mapGetters('workflow', ['isWritable']),
         isWorkflowPresent() {
             // workflow hotkeys are enabled only if a workflow is present
             return Boolean(this.activeWorkflow);
+        }
+    },
+    watch: {
+        suggestPanning(newValue) {
+            if (newValue) {
+                // listen to blur events while waiting for alt key to be released
+                this.windowBlurListener = () => {
+                    this.setSuggestPanning(false);
+                };
+                window.addEventListener('blur', this.windowBlurListener, { once: true });
+            } else {
+                // remove manually when alt key has been released
+                window.removeEventListener('blur', this.windowBlurListener);
+                this.windowBlurListener = null;
+            }
         }
     },
     mounted() {
@@ -80,11 +96,6 @@ export default {
                     this.setSuggestPanning(true);
                     e.stopPropagation();
                     e.preventDefault();
-                    
-                    // disable pressed state when window loses focus
-                    window.addEventListener('blur', () => {
-                        this.setSuggestPanning(false);
-                    }, { once: true });
                 }
                 return;
             }

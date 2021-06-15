@@ -61,12 +61,17 @@ describe('HotKeys', () => {
                 }
             },
             canvas: {
+                state: {
+                    suggestPanning: false
+                },
                 mutations: {
                     resetZoom: jest.fn(),
                     zoomWithPointer: jest.fn(),
                     saveContainerScroll: jest.fn(),
                     setContainerSize: jest.fn(),
-                    setSuggestPanning: jest.fn()
+                    setSuggestPanning: jest.fn().mockImplementation((state, val) => {
+                        state.suggestPanning = val;
+                    })
                 },
                 actions: {
                     setZoomToFit: jest.fn(),
@@ -189,29 +194,37 @@ describe('HotKeys', () => {
         });
     });
 
-    it('Alt: Panning mode', () => {
+    it('Alt: Panning mode', async () => {
         doShallowMount();
 
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt' }));
+        await Vue.nextTick();
         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
         expectEventHandled();
 
         document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Alt' }));
+        await Vue.nextTick();
         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
+        
+        // this event shall have no effect
+        window.dispatchEvent(new FocusEvent('blur'));
+        await Vue.nextTick();
+        expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledTimes(2);
     });
 
     it('Alt: Cancel panning mode on focus loss', async () => {
         doShallowMount();
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt' }));
+        await Vue.nextTick();
         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
-
+        
         window.dispatchEvent(new FocusEvent('blur'));
         window.dispatchEvent(new FocusEvent('blur'));
         await Vue.nextTick();
 
         // panning mode has been canceled exactly 1 Time
         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
-        expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledTimes(1);
+        expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledTimes(2);
     });
 
     describe('condition not fulfilled', () => {
