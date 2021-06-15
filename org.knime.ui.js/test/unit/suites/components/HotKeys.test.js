@@ -57,13 +57,15 @@ describe('HotKeys', () => {
                     openDialog: jest.fn()
                 },
                 getters: {
-                    selectedNodes: () => () => selectedNodes,
                     isWritable: jest.fn().mockReturnValue(true)
                 }
             },
             selection: {
                 actions: {
                     selectAllNodes: jest.fn()
+                },
+                getters: {
+                    selectedNodes: () => () => selectedNodes
                 }
             },
             canvas: {
