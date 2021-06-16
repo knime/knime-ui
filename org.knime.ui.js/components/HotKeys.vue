@@ -20,7 +20,7 @@ export default {
             return Boolean(this.activeWorkflow);
         },
         selectedNode() {
-            const selectedNodes = this.selectedNodes();
+            const selectedNodes = this.selectedNodes;
             if (selectedNodes.length === 1) {
                 return selectedNodes[0];
             }
