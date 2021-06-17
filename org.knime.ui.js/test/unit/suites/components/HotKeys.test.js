@@ -65,7 +65,7 @@ describe('HotKeys', () => {
                     selectAllNodes: jest.fn()
                 },
                 getters: {
-                    selectedNodes: () => () => selectedNodes
+                    selectedNodes: () => selectedNodes
                 }
             },
             canvas: {
