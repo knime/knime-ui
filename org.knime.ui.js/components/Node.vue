@@ -301,7 +301,6 @@ export default {
             }
         },
         onRightMouseClick(e) {
-            e.preventDefault();
             if (this.isDragging) {
                 return;
             }
@@ -381,7 +380,7 @@ export default {
         class="mouse-clickable"
         tabindex="0"
         @click.left="onLeftMouseClick"
-        @click.right="onRightMouseClick"
+        @click.right.prevent="onRightMouseClick"
       >
         <!-- Hover Area, larger than the node torso -->
         <rect
