@@ -57,7 +57,7 @@ export default {
     },
     data() {
         return {
-            isVisible: this.visible,
+            isVisible: false,
             top: 0,
             left: 0
         };
@@ -111,18 +111,16 @@ export default {
             this.$emit('item-click', event, item, this.id);
             this.closeMenu();
         },
-        /* Handle arrow key "up" events. */
-        onUp() {
+        onArrowUpKey() {
             this.getNextElement(-1).focus();
         },
-        /* Handle arrow key "down" events. */
-        onDown() {
+        onArrowKeyDown() {
             this.getNextElement(1).focus();
         },
         closeMenu() {
             this.isVisible = false;
         },
-        calculateMenuPos(el, clickX, clickY, win = window) {
+        calculateMenuPosition(el, clickX, clickY, win = window) {
             const menuWidth = el.offsetWidth + SCROLLBAR_OFFSET;
             const menuHeight = el.offsetHeight + SCROLLBAR_OFFSET;
 
@@ -145,7 +143,7 @@ export default {
             return { left, top };
         },
         showMenu(x, y) {
-            const { left, top } = this.calculateMenuPos(this.$el, x, y);
+            const { left, top } = this.calculateMenuPosition(this.$el, x, y);
             this.left = left;
             this.top = top;
             this.isVisible = true;
@@ -173,9 +171,9 @@ export default {
     :style="positionStyle"
     tabindex="0"
     @keydown.esc.stop.prevent="closeMenu"
-    @keydown.up.stop.prevent="onUp"
-    @keydown.down.stop.prevent="onDown"
-    @keydown.tab.stop.prevent=""
+    @keydown.up.stop.prevent="onArrowUpKey"
+    @keydown.down.stop.prevent="onArrowKeyDown"
+    @keydown.tab.stop.prevent
     @mousedown="onPreventEvent"
   >
     <ul
