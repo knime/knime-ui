@@ -99,7 +99,7 @@ describe('FloatingMenu.vue', () => {
                 items
             }
         });
-        let { top, left } = wrapper.vm.calculateMenuPos({
+        let { top, left } = wrapper.vm.calculateMenuPosition({
             offsetWidth: 200,
             offsetHeight: 400
         }, 1200, 800, {
