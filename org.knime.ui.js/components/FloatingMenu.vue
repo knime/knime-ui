@@ -1,7 +1,6 @@
 <script>
 import { mixin as clickaway } from 'vue-clickaway';
 
-const SET_FOCUS_TIMEOUT = 1;
 const SCROLLBAR_OFFSET = 4; // px
 
 /*
@@ -148,7 +147,7 @@ export default {
             this.top = top;
             this.isVisible = true;
             // set focus to menu for keyboard nav to work
-            setTimeout(() => this.$el.focus(), SET_FOCUS_TIMEOUT);
+            this.$nextTick(() => this.$el.focus());
         },
         /*
          * Manually prevents default event bubbling and propagation for methods which fire blur/focusout events that
