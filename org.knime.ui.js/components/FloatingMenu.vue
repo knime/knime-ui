@@ -148,15 +148,6 @@ export default {
             this.isVisible = true;
             // set focus to menu for keyboard nav to work
             this.$nextTick(() => this.$el.focus());
-        },
-        /*
-         * Manually prevents default event bubbling and propagation for methods which fire blur/focusout events that
-         * interfere with the refocusing behavior. This allows the timeout to be set extremely low.
-         */
-        onPreventEvent(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            event.stopImmediatePropagation();
         }
     }
 };
@@ -173,7 +164,6 @@ export default {
     @keydown.up.stop.prevent="onArrowUpKey"
     @keydown.down.stop.prevent="onArrowKeyDown"
     @keydown.tab.stop.prevent
-    @mousedown="onPreventEvent"
   >
     <ul
       ref="list"
