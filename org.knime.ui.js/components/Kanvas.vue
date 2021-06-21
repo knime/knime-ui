@@ -156,7 +156,7 @@ export default {
                 e.stopPropagation();
             }
         },
-        contextMenu(e) {
+        onContextMenu(e) {
             if (e.target === this.$refs.svg) {
                 this.deselectAllObjects();
             }
@@ -177,7 +177,7 @@ export default {
     @pointerdown.left.alt="beginPan"
     @pointerup.left="stopPan"
     @pointermove="movePan"
-    @contextmenu.prevent="contextMenu"
+    @contextmenu.prevent="onContextMenu"
   >
     <ContextMenu
       ref="contextMenu"

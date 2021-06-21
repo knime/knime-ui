@@ -113,7 +113,7 @@ export default {
         onArrowUpKey() {
             this.getNextElement(-1).focus();
         },
-        onArrowKeyDown() {
+        onArrowDownKey() {
             this.getNextElement(1).focus();
         },
         closeMenu() {
@@ -162,7 +162,7 @@ export default {
     tabindex="0"
     @keydown.esc.stop.prevent="closeMenu"
     @keydown.up.stop.prevent="onArrowUpKey"
-    @keydown.down.stop.prevent="onArrowKeyDown"
+    @keydown.down.stop.prevent="onArrowDownKey"
     @keydown.tab.stop.prevent
   >
     <ul
