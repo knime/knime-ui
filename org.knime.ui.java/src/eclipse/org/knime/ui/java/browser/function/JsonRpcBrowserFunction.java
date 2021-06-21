@@ -50,11 +50,12 @@ package org.knime.ui.java.browser.function;
 
 import java.nio.charset.StandardCharsets;
 
-import org.eclipse.swt.chromium.Browser;
-import org.eclipse.swt.chromium.BrowserFunction;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
+
+import com.equo.chromium.swt.Browser;
+import com.equo.chromium.swt.BrowserFunction;
 
 /**
  * Browser function for json-rpc calls which are forwarded to the respective

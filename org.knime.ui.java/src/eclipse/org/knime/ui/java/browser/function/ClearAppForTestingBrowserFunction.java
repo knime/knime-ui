@@ -48,10 +48,11 @@
  */
 package org.knime.ui.java.browser.function;
 
-import org.eclipse.swt.chromium.Browser;
-import org.eclipse.swt.chromium.BrowserFunction;
 import org.knime.ui.java.appstate.AppStateUtil;
 import org.knime.ui.java.browser.KnimeBrowserView;
+
+import com.equo.chromium.swt.Browser;
+import com.equo.chromium.swt.BrowserFunction;
 
 /**
  * Browser function that allows one to programmatically clear the App. I.e.

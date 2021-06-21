@@ -48,13 +48,14 @@
  */
 package org.knime.ui.java.browser.function;
 
-import org.eclipse.swt.chromium.Browser;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NativeNodeContainer;
 import org.knime.core.node.workflow.NodeContainer;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.workbench.editor2.actions.OpenInteractiveWebViewAction;
 import org.knime.workbench.editor2.actions.OpenSubnodeWebViewAction;
+
+import com.equo.chromium.swt.Browser;
 
 /**
  * Opens the node's js-view, if available, in an extra browser window.

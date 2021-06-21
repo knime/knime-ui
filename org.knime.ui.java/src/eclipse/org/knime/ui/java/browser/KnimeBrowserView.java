@@ -12,7 +12,6 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.chromium.Browser;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
@@ -27,6 +26,7 @@ import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeViewBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 
+import com.equo.chromium.swt.Browser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -47,7 +47,7 @@ public class KnimeBrowserView {
 
 	static final String EMPTY_PAGE = "about:blank";
 
-	private static final String REMOTE_DEBUGGING_PORT_PROP = "org.eclipse.swt.chromium.remote-debugging-port";
+	private static final String REMOTE_DEBUGGING_PORT_PROP = "chromium.remote_debugging_port";
 
 	private static final String DEBUG_URL_PROP = "org.knime.ui.debug.url";
 
