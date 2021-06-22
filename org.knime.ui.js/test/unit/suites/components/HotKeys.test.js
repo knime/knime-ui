@@ -89,6 +89,7 @@ describe('HotKeys', () => {
     test('adds and removes listener', () => {
         jest.spyOn(document, 'addEventListener');
         jest.spyOn(document, 'removeEventListener');
+        jest.spyOn(window, 'removeEventListener');
         doShallowMount();
 
         expect(document.addEventListener).toHaveBeenNthCalledWith(1, 'keydown', wrapper.vm.onKeydown);
@@ -97,6 +98,7 @@ describe('HotKeys', () => {
         wrapper.destroy();
         expect(document.removeEventListener).toHaveBeenNthCalledWith(1, 'keydown', wrapper.vm.onKeydown);
         expect(document.removeEventListener).toHaveBeenNthCalledWith(2, 'keyup', wrapper.vm.onKeyup);
+        expect(window.removeEventListener).toHaveBeenCalledWith('blur', wrapper.vm.windowBlurListener);
     });
 
     describe('Shortcuts', () => {
@@ -205,7 +207,7 @@ describe('HotKeys', () => {
         document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Alt' }));
         await Vue.nextTick();
         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
-        
+
         // this event shall have no effect
         window.dispatchEvent(new FocusEvent('blur'));
         await Vue.nextTick();
@@ -217,7 +219,7 @@ describe('HotKeys', () => {
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt' }));
         await Vue.nextTick();
         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
-        
+
         window.dispatchEvent(new FocusEvent('blur'));
         window.dispatchEvent(new FocusEvent('blur'));
         await Vue.nextTick();

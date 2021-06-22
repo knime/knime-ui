@@ -43,6 +43,7 @@ export default {
         // Stop Key listener
         document.removeEventListener('keydown', this.onKeydown);
         document.removeEventListener('keyup', this.onKeyup);
+        window.removeEventListener('blur', this.windowBlurListener);
     },
     methods: {
         ...mapActions('selection', ['selectAllNodes']),
