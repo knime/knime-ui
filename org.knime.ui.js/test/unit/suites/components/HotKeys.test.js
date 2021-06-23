@@ -4,6 +4,7 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 import HotKeys from '~/components/HotKeys';
+import * as userActionStoreConfig from '~/store/userActions';
 
 jest.mock('lodash', () => ({
     throttle(func) {
@@ -20,7 +21,8 @@ const expectEventHandled = () => {
 };
 
 describe('HotKeys', () => {
-    let doShallowMount, wrapper, $store, storeConfig;
+    let doShallowMount, wrapper, $store, storeConfig, selectedNodes;
+
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -35,10 +37,12 @@ describe('HotKeys', () => {
     beforeEach(() => {
         $store = null;
         wrapper = null;
+        selectedNodes = [];
         KeyboardEvent.prototype.preventDefault = jest.fn();
         KeyboardEvent.prototype.stopPropagation = jest.fn();
 
         storeConfig = {
+            userActions: userActionStoreConfig,
             workflow: {
                 state: {
                     activeWorkflow: { someProperty: 0 }
@@ -49,7 +53,9 @@ describe('HotKeys', () => {
                     resetNodes: jest.fn(),
                     deleteSelectedObjects: jest.fn(),
                     undo: jest.fn(),
-                    redo: jest.fn()
+                    redo: jest.fn(),
+                    openView: jest.fn(),
+                    openDialog: jest.fn()
                 },
                 getters: {
                     isWritable: jest.fn().mockReturnValue(true)
@@ -58,6 +64,9 @@ describe('HotKeys', () => {
             selection: {
                 actions: {
                     selectAllNodes: jest.fn()
+                },
+                getters: {
+                    selectedNodes: () => selectedNodes
                 }
             },
             canvas: {
@@ -168,6 +177,20 @@ describe('HotKeys', () => {
             test.each(['delete', 'backspace'])('Delete: %s selection', (key) => {
                 document.dispatchEvent(new KeyboardEvent('keydown', { key }));
                 expect(storeConfig.workflow.actions.deleteSelectedObjects).toHaveBeenCalled();
+            });
+        });
+
+        describe('single selected Node', () => {
+            it('F12: Opens view', () => {
+                selectedNodes = [{}];
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F12' }));
+                expect(storeConfig.workflow.actions.openView).toHaveBeenCalled();
+            });
+
+            it('F6: Opens dialog', () => {
+                selectedNodes = [{}];
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F6' }));
+                expect(storeConfig.workflow.actions.openDialog).toHaveBeenCalled();
             });
         });
 

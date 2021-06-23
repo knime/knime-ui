@@ -50,9 +50,10 @@ package org.knime.ui.java.browser.function;
 
 import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
 
-import org.eclipse.swt.chromium.Browser;
 import org.knime.core.node.workflow.NodeContainer;
 import org.knime.workbench.editor2.editparts.NodeContainerEditPart;
+
+import com.equo.chromium.swt.Browser;
 
 /**
  * Opens the swing dialog of a node.

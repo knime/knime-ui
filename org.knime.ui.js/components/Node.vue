@@ -281,6 +281,7 @@ export default {
             if (this.isDragging) {
                 return;
             }
+            this.$refs.mouseClickable.focus();
 
             if (e.ctrlKey || e.metaKey) {
                 // user tries to open component or metanode
@@ -295,6 +296,25 @@ export default {
                 }
             } else {
                 // Single select
+                this.deselectAllObjects();
+                this.selectNode(this);
+            }
+        },
+        onRightMouseClick(e) {
+            if (this.isDragging) {
+                return;
+            }
+
+            if (e.ctrlKey || e.metaKey) {
+                // user tries to open component or metanode
+                return;
+            }
+
+            if (e.shiftKey) {
+                // Multi select
+                this.selectNode(this);
+            } else if (!this.selected) {
+                // single select
                 this.deselectAllObjects();
                 this.selectNode(this);
             }
@@ -355,7 +375,13 @@ export default {
       @mouseenter="hover = true"
     >
       <!-- Elements for which a click selects node -->
-      <g @click.left="onLeftMouseClick">
+      <g
+        ref="mouseClickable"
+        class="mouse-clickable"
+        tabindex="0"
+        @click.left="onLeftMouseClick"
+        @click.right.prevent="onRightMouseClick"
+      >
         <!-- Hover Area, larger than the node torso -->
         <rect
           class="hover-area"
@@ -464,5 +490,9 @@ export default {
   line-height: 12px;
   pointer-events: none;
   width: 125px;
+}
+
+.mouse-clickable:focus {
+  outline: none;
 }
 </style>
