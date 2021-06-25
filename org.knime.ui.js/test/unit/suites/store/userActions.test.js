@@ -23,10 +23,9 @@ describe('userActions store', () => {
                 'root:1': {
                     id: 'root:1',
                     allowedActions: {
-                        canExecute: false,
+                        canExecute: true,
                         canCancel: false,
-                        canReset: false,
-                        canPause: true
+                        canReset: false
                     }
                 },
                 'root:2': {
@@ -35,12 +34,16 @@ describe('userActions store', () => {
                         canExecute: true,
                         canCancel: true,
                         canReset: true,
-                        canPause: true,
                         canOpenDialog: true,
                         canOpenView: true,
-                        canStep: true,
-                        canResume: true,
                         canDelete: true
+                    },
+                    loopInfo: {
+                        allowedActions: {
+                            canPause: true,
+                            canStep: true,
+                            canResume: true
+                        }
                     }
                 }
             },
@@ -106,7 +109,7 @@ describe('userActions store', () => {
             expect(contextMenuActionItems[0].text).toBe('Execute');
             expect(contextMenuActionItems[0].storeAction).toBe('workflow/executeNodes');
             expect(contextMenuActionItems[0].storeActionParams).toStrictEqual(['selected']);
-            expect(contextMenuActionItems[0].disabled).toBe(true);
+            expect(contextMenuActionItems[0].disabled).toBe(false);
 
             expect(contextMenuActionItems[1].text).toBe('Cancel');
             expect(contextMenuActionItems[1].storeAction).toBe('workflow/cancelNodeExecution');
@@ -121,7 +124,7 @@ describe('userActions store', () => {
             expect(contextMenuActionItems[3].text).toBe('Pause execution');
             expect(contextMenuActionItems[3].storeAction).toBe('workflow/pauseNodeExecution');
             expect(contextMenuActionItems[3].storeActionParams).toStrictEqual(['root:1']);
-            expect(contextMenuActionItems[3].disabled).toBe(false);
+            expect(contextMenuActionItems[3].disabled).toBe(true);
 
             expect(contextMenuActionItems[4].text).toBe('Step loop execution');
             expect(contextMenuActionItems[4].storeAction).toBe('workflow/stepNodeExecution');

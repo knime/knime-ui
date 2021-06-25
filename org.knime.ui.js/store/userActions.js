@@ -150,7 +150,7 @@ const actionMap = {
         hotkey: [],
         storeAction: 'workflow/resumeNodeExecution',
         storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
-        disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.allowedActions.canResume)
+        disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.loopInfo?.allowedActions.canResume)
     },
     pauseExecution: {
         text: 'Pause execution',
@@ -158,7 +158,7 @@ const actionMap = {
         hotkey: [],
         storeAction: 'workflow/pauseNodeExecution',
         storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
-        disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.allowedActions.canPause)
+        disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.loopInfo?.allowedActions.canPause)
     },
     stepLoopExecution: {
         text: 'Step loop execution',
@@ -166,7 +166,7 @@ const actionMap = {
         hotkey: [],
         storeAction: 'workflow/stepNodeExecution',
         storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
-        disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.allowedActions.canStep)
+        disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.loopInfo?.allowedActions.canStep)
     },
     configureNode: {
         text: 'Configure',
