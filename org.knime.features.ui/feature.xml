@@ -728,8 +728,8 @@ propagated with or for interoperation with KNIME.
    </license>
 
    <requires>
-      <import feature="com.equo.chromium.cef.feature" version="80.0.0.202106202357" match="perfect"/>
-      <import feature="com.equo.chromium.feature" version="80.0.0.202106210314" match="perfect"/>
+      <import feature="com.equo.chromium.cef.feature" version="80.0.1.202106250421" match="perfect"/>
+      <import feature="com.equo.chromium.feature" version="80.0.1.202106250446" match="perfect"/>
    </requires>
 
    <plugin
