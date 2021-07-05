@@ -47,11 +47,18 @@ export default {
             vueInfo
         };
 
+        consola.error(message, vueInfo, stack);
+
         // stop propagation
         return false;
     },
     methods: {
-        ...mapActions('application', ['initState'])
+        ...mapActions('application', ['initState']),
+        onCloseError() {
+            if (process.env.isDev) { // eslint-disable-line no-process-env
+                this.error = null;
+            }
+        }
     }
 };
 </script>
@@ -63,6 +70,7 @@ export default {
       v-if="error"
       v-once
       v-bind="error"
+      @close="onCloseError"
     />
     <AppHeader id="header" />
     <Sidebar id="sidebar" />
