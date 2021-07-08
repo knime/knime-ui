@@ -101,69 +101,110 @@ describe('userActions store', () => {
 
     describe('context menu', () => {
         it('provides actions for a single selected node', () => {
-            selectedNodes = [workflow.nodes['root:1']];
+            selectedNodes = [workflow.nodes['root:2']];
+            selectedNodes[0].allowedActions.canReset = false;
+            selectedNodes[0].allowedActions.canOpenDialog = false;
             loadStore();
             let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
-            expect(contextMenuActionItems).toHaveLength(9);
+            expect(contextMenuActionItems).toHaveLength(7);
+
+            let i = 0;
+            expect(contextMenuActionItems[i].text).toBe('Pause execution');
+            expect(contextMenuActionItems[i].storeAction).toBe('workflow/pauseNodeExecution');
+            expect(contextMenuActionItems[i].storeActionParams).toStrictEqual(['root:2']);
+            expect(contextMenuActionItems[i].disabled).toBe(false);
+
+            i++;
+
+            expect(contextMenuActionItems[i].text).toBe('Step loop execution');
+            expect(contextMenuActionItems[i].storeAction).toBe('workflow/stepNodeExecution');
+            expect(contextMenuActionItems[i].storeActionParams).toStrictEqual(['root:2']);
+            expect(contextMenuActionItems[i].disabled).toBe(false);
+
+            i++;
+
+            expect(contextMenuActionItems[i].text).toBe('Cancel');
+            expect(contextMenuActionItems[i].storeAction).toBe('workflow/cancelNodeExecution');
+            expect(contextMenuActionItems[i].storeActionParams).toStrictEqual(['selected']);
+            expect(contextMenuActionItems[i].disabled).toBe(false);
+
+            i++;
+
+            expect(contextMenuActionItems[i].text).toBe('Reset');
+            expect(contextMenuActionItems[i].storeAction).toBe('workflow/resetNodes');
+            expect(contextMenuActionItems[i].storeActionParams).toStrictEqual(['selected']);
+            expect(contextMenuActionItems[i].disabled).toBe(true);
+
+            i++;
+
+            expect(contextMenuActionItems[i].text).toBe('Configure');
+            expect(contextMenuActionItems[i].storeAction).toBe('workflow/openDialog');
+            expect(contextMenuActionItems[i].disabled).toBe(true);
+
+            i++;
+
+            expect(contextMenuActionItems[i].text).toBe('Open view');
+            expect(contextMenuActionItems[i].storeAction).toBe('workflow/openView');
+            expect(contextMenuActionItems[i].disabled).toBe(false);
+
+            i++;
+
+            expect(contextMenuActionItems[i].text).toBe('Delete');
+            expect(contextMenuActionItems[i].storeAction).toBe('workflow/deleteSelectedObjects');
+            expect(contextMenuActionItems[i].storeActionParams).toStrictEqual([]);
+            expect(contextMenuActionItems[i].disabled).toBe(false);
+        });
+
+        it('provides execute action if node is not executed', () => {
+            selectedNodes = [workflow.nodes['root:2']];
+            selectedNodes[0].loopInfo.allowedActions.canPause = false;
+            selectedNodes[0].loopInfo.allowedActions.canResume = false;
+            loadStore();
+            let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
+            expect(contextMenuActionItems).toHaveLength(7);
 
             expect(contextMenuActionItems[0].text).toBe('Execute');
             expect(contextMenuActionItems[0].storeAction).toBe('workflow/executeNodes');
             expect(contextMenuActionItems[0].storeActionParams).toStrictEqual(['selected']);
             expect(contextMenuActionItems[0].disabled).toBe(false);
+        });
 
-            expect(contextMenuActionItems[1].text).toBe('Cancel');
-            expect(contextMenuActionItems[1].storeAction).toBe('workflow/cancelNodeExecution');
-            expect(contextMenuActionItems[1].storeActionParams).toStrictEqual(['selected']);
-            expect(contextMenuActionItems[1].disabled).toBe(true);
+        it('provides \'resume loop execution\' action if node is in loop execution', () => {
+            selectedNodes = [workflow.nodes['root:2']];
+            selectedNodes[0].loopInfo.allowedActions.canPause = false;
+            selectedNodes[0].loopInfo.allowedActions.canResume = true;
+            loadStore();
+            let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
+            expect(contextMenuActionItems).toHaveLength(7);
 
-            expect(contextMenuActionItems[2].text).toBe('Resume loop execution');
-            expect(contextMenuActionItems[2].storeAction).toBe('workflow/resumeNodeExecution');
-            expect(contextMenuActionItems[2].storeActionParams).toStrictEqual(['root:1']);
-            expect(contextMenuActionItems[2].disabled).toBe(true);
+            expect(contextMenuActionItems[0].text).toBe('Resume loop execution');
+            expect(contextMenuActionItems[0].storeAction).toBe('workflow/resumeNodeExecution');
+            expect(contextMenuActionItems[0].storeActionParams).toStrictEqual(['root:2']);
+            expect(contextMenuActionItems[0].disabled).toBe(false);
+        });
 
-            expect(contextMenuActionItems[3].text).toBe('Pause execution');
-            expect(contextMenuActionItems[3].storeAction).toBe('workflow/pauseNodeExecution');
-            expect(contextMenuActionItems[3].storeActionParams).toStrictEqual(['root:1']);
-            expect(contextMenuActionItems[3].disabled).toBe(true);
-
-            expect(contextMenuActionItems[4].text).toBe('Step loop execution');
-            expect(contextMenuActionItems[4].storeAction).toBe('workflow/stepNodeExecution');
-            expect(contextMenuActionItems[4].storeActionParams).toStrictEqual(['root:1']);
-            expect(contextMenuActionItems[4].disabled).toBe(true);
-
-            expect(contextMenuActionItems[5].text).toBe('Reset');
-            expect(contextMenuActionItems[5].storeAction).toBe('workflow/resetNodes');
-            expect(contextMenuActionItems[5].storeActionParams).toStrictEqual(['selected']);
-            expect(contextMenuActionItems[5].disabled).toBe(true);
-
-            expect(contextMenuActionItems[6].text).toBe('Configure');
-            expect(contextMenuActionItems[6].storeAction).toBe('workflow/openDialog');
-            expect(contextMenuActionItems[6].disabled).toBe(true);
-
-            expect(contextMenuActionItems[7].text).toBe('Open view');
-            expect(contextMenuActionItems[7].storeAction).toBe('workflow/openView');
-            expect(contextMenuActionItems[7].disabled).toBe(true);
-
-            expect(contextMenuActionItems[8].text).toBe('Delete');
-            expect(contextMenuActionItems[8].storeAction).toBe('workflow/deleteSelectedObjects');
-            expect(contextMenuActionItems[8].storeActionParams).toStrictEqual([]);
-            expect(contextMenuActionItems[8].disabled).toBe(true);
+        it('hides actions if they can never executed for this node', () => {
+            selectedNodes = [workflow.nodes['root:2']];
+            delete selectedNodes[0].allowedActions.canOpenView;
+            delete selectedNodes[0].loopInfo.allowedActions.canStep;
+            loadStore();
+            let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
+            expect(contextMenuActionItems).toHaveLength(5);
         });
 
         it('applies node can* rights correctly', () => {
             selectedNodes = [workflow.nodes['root:2']];
+            selectedNodes[0].allowedActions.canCancel = false;
             loadStore();
             let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
 
             expect(contextMenuActionItems[0].disabled).toBe(false);
             expect(contextMenuActionItems[1].disabled).toBe(false);
-            expect(contextMenuActionItems[2].disabled).toBe(false);
+            expect(contextMenuActionItems[2].disabled).toBe(true);
             expect(contextMenuActionItems[3].disabled).toBe(false);
             expect(contextMenuActionItems[4].disabled).toBe(false);
             expect(contextMenuActionItems[5].disabled).toBe(false);
             expect(contextMenuActionItems[6].disabled).toBe(false);
-            expect(contextMenuActionItems[7].disabled).toBe(false);
-            expect(contextMenuActionItems[8].disabled).toBe(false);
         });
 
         it('provides actions for multiple selected nodes', () => {
