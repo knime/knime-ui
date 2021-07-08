@@ -15,8 +15,8 @@ export const mutations = {
     // This selected node object does keeps the id, the allowed actions, the kind, the outPorts
     // and the node state of the nodes.
     addNodesToSelection(state, nodes) {
-        Object.values(nodes).forEach(({ id, allowedActions, kind, outPorts, state: nodeState }) => {
-            Vue.set(state.selectedNodes, id, { id, allowedActions, kind, outPorts, state: nodeState });
+        Object.values(nodes).forEach(({ id, allowedActions, loopInfo, kind, outPorts, state: nodeState }) => {
+            Vue.set(state.selectedNodes, id, { id, allowedActions, loopInfo, kind, outPorts, state: nodeState });
         });
     },
 
