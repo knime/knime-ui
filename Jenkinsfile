@@ -109,7 +109,6 @@ stage('Integration Tests') {
                     'knime-weka',
                 ],
                 ius: [
-                    'com.make.chromium.cef.dev.feature.feature.group',
                     'com.knime.features.workbench.cef.feature.group'
                 ]
             ]
