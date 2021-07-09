@@ -115,20 +115,26 @@ stage('Integration Tests') {
             ]
 
             // get arguments for prepare instance call
-            def (branches, ius, repositories, jobBaseName) = workflowTests.prepareWorkflowtestNode(dependencies)
+            def (branches, ius, repositories, jobBaseName) = workflowTests.extractConfiguration(dependencies)
 
             try {
-                withEnv(["REPOS=${repositories}", "IUS=${ius}", "TIMEOUT=4200" ]) {
+                withEnv(["REPOS=${repositories}", "ADDITIONAL_IUS=${ius}", "TIMEOUT=4200" ]) {
                     sh '''
                         source common.inc
                         source workflowTests.inc
 
-                        prepareInstance "${REPOS}" "${IUS}" ""
+						export TEMP="$WORKSPACE/tmp"
+    					mkdir -p "$TEMP"
+
+						determineRequiredIUs "$(path "$WORKSPACE/org.knime.ui.js/test/integration/assets/workflows")" "$ADDITIONAL_IUS" "$REPOS"
+
+						DEST="$WORKSPACE/knime_test.app"
+						prepareInstance "$DEST" "$REPOS" "$IUS"
 
                         export TEMP="$WORKSPACE/tmp"
                         export XDG_RUNTIME_DIR="$TEMP"
                         KNIME_TEMP="$TEMP/knime_temp"
-                        RUN_CMD="knime test/knime"
+                        RUN_CMD="$DEST/knime"
                         RUN_ARGS="-noSplash -consoleLog --launcher.suppressErrors"
 
                         Xvfb :$$ -pixdepths 24 -screen 0 1280x1024x24 +extension RANDR &
@@ -146,7 +152,7 @@ stage('Integration Tests') {
 
                         # shutdown executor
                         set -x
-                        cd "${WORKSPACE}/tmp/knime test"
+                        cd "$DEST"
                         testpid=$(grep  "Dknime.test.ppid=" knime.ini | cut -d '=' -f 2)  # this pid info is written by the prepareInstance method
                         EXECUTOR_PID=$(jps -v | grep $testpid | awk '{ print $1 }' | head -1)
                         if [[ -n "$EXECUTOR_PID" ]]; then                        
