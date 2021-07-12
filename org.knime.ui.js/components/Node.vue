@@ -313,7 +313,7 @@ export default {
             if (e.shiftKey) {
                 // Multi select
                 this.selectNode(this);
-            } else if (!this.selected) {
+            } else if (!this.isNodeSelected(this.id)) {
                 // single select
                 this.deselectAllObjects();
                 this.selectNode(this);
