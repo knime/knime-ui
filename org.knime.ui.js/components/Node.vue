@@ -271,7 +271,13 @@ export default {
         openNode() {
             this.$store.dispatch('openedProjects/switchWorkflow', { workflowId: this.id, projectId: this.projectId });
         },
-
+        onMouseClick(e) {
+            if (e.button === 0) {
+                this.onLeftMouseClick(e);
+            } else if (e.button === 2) {
+                this.onRightMouseClick(e);
+            }
+        },
         /*
          * Left-Click         => Select only this node
          * Left-Click & Shift => Add/Remove this node to/from selection
@@ -301,6 +307,7 @@ export default {
             }
         },
         onRightMouseClick(e) {
+            e.preventDefault();
             if (this.isDragging) {
                 return;
             }
@@ -379,8 +386,7 @@ export default {
         ref="mouseClickable"
         class="mouse-clickable"
         tabindex="0"
-        @click.left="onLeftMouseClick"
-        @click.right.prevent="onRightMouseClick"
+        @click="onMouseClick"
       >
         <!-- Hover Area, larger than the node torso -->
         <rect
