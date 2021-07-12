@@ -128,6 +128,7 @@ stage('Integration Tests') {
 						determineRequiredIUs "$(path "$WORKSPACE/org.knime.ui.js/test/integration/assets/workflows")" "$ADDITIONAL_IUS" "$REPOS"
 
 						DEST="$WORKSPACE/knime_test.app"
+						KNIME_INI="$DEST/knime.ini"
 						prepareInstance "$DEST" "$REPOS" "$IUS"
 
                         export TEMP="$WORKSPACE/tmp"
