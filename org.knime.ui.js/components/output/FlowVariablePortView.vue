@@ -38,7 +38,7 @@ export default {
       v-if="table"
       class="counts"
     >
-      <span class="count">Rows: {{ table.length }}</span>
+      <span class="count">Count: {{ table.length }}</span>
     </div>
     <table>
       <thead>
