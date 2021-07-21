@@ -85,14 +85,14 @@ export default {
             if (e.shiftKey) {
                 // Multi select
                 if (this.isConnectionSelected(this.id)) {
-                    this.deselectConnection(this);
+                    this.deselectConnection(this.id);
                 } else {
-                    this.selectConnection(this);
+                    this.selectConnection(this.id);
                 }
             } else {
                 // Single select
                 this.deselectAllObjects();
-                this.selectConnection(this);
+                this.selectConnection(this.id);
             }
         }
     }

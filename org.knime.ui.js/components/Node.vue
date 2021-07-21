@@ -290,14 +290,14 @@ export default {
             if (e.shiftKey) {
                 // Multi select
                 if (this.isNodeSelected(this.id)) {
-                    this.deselectNode(this);
+                    this.deselectNode(this.id);
                 } else {
-                    this.selectNode(this);
+                    this.selectNode(this.id);
                 }
             } else {
                 // Single select
                 this.deselectAllObjects();
-                this.selectNode(this);
+                this.selectNode(this.id);
             }
         },
         onRightMouseClick(e) {
@@ -312,11 +312,11 @@ export default {
 
             if (e.shiftKey) {
                 // Multi select
-                this.selectNode(this);
+                this.selectNode(this.id);
             } else if (!this.selected) {
                 // single select
                 this.deselectAllObjects();
-                this.selectNode(this);
+                this.selectNode(this.id);
             }
         }
     }
