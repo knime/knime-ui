@@ -18,7 +18,7 @@ export const state = () => ({
 
 export const mutations = {
 
-    // Add nodes to selection by nodeIds
+    // Add nodeIds to selection
     addNodesToSelection(state, nodeIds) {
         nodeIds.forEach(id => Vue.set(state.selectedNodes, id, true));
     },
@@ -34,7 +34,7 @@ export const mutations = {
         state.selectedConnections = {};
     },
 
-    //  Add connection to selection.
+    //  Add connectionIds to selection.
     addConnectionsToSelection(state, connectionIds) {
         connectionIds.forEach(id => Vue.set(state.selectedConnections, id, true));
     },
