@@ -154,7 +154,7 @@ describe('Connector.vue', () => {
             expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectConnection).toHaveBeenCalledWith(
                 expect.anything(),
-                expect.objectContaining({ id: 'root:2_2' })
+                expect.stringMatching('root:2_2')
             );
         });
 
@@ -165,7 +165,7 @@ describe('Connector.vue', () => {
             expect(storeConfig.selection.actions.deselectConnection).not.toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectConnection).toHaveBeenCalledWith(
                 expect.anything(),
-                expect.objectContaining({ id: 'root:2_2' })
+                expect.stringMatching('root:2_2')
             );
         });
 

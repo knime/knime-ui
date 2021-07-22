@@ -342,7 +342,7 @@ describe('Node', () => {
 
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
-                expect.objectContaining({ id: 'root:1' })
+                expect.stringMatching('root:1')
             );
         });
 
@@ -363,7 +363,7 @@ describe('Node', () => {
             expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
-                expect.objectContaining({ id: 'root:1' })
+                expect.stringMatching('root:1')
             );
         });
 

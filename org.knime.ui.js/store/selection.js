@@ -18,44 +18,28 @@ export const state = () => ({
 
 export const mutations = {
 
-    /**
-     * Add nodes to selection.
-     * @param  {Object} state - stores internal state
-     * @param {Array.<string>} nodeIds - nodeIds
-     */
+    // Add nodes to selection by nodeIds
     addNodesToSelection(state, nodeIds) {
         nodeIds.forEach(id => Vue.set(state.selectedNodes, id, true));
     },
 
-    /**
-     * Removes each node of the provided nodeIds array from the selected nodes
-     * @param  {Object} state - stores internal state
-     * @param {Array.<string>} nodeIds - nodeIds
-     */
+    // Removes each node of the provided nodeIds array from the selected nodes
     removeNodesFromSelection(state, nodeIds) {
         nodeIds.forEach(id => Vue.delete(state.selectedNodes, id));
     },
 
-    /**
-     * Clear the selected nodes and the selected connections at once
-     */
+    // Clear the selected nodes and the selected connections at once
     clearSelection(state) {
         state.selectedNodes = {};
         state.selectedConnections = {};
     },
 
-    /**
-     * Add connection to selection.
-     * @param {Object} state
-     * @param {Array.<string>} connectionIds
-     */
+    //  Add connection to selection.
     addConnectionsToSelection(state, connectionIds) {
         connectionIds.forEach(id => Vue.set(state.selectedConnections, id, true));
     },
 
-    /**
-     * Removes each connection of the provided connections object to the selected connection object.
-     */
+    // Removes each connection of the provided connections object to the selected connection object.
     removeConnectionsFromSelection(state, connectionIds) {
         connectionIds.forEach(id => {
             Vue.delete(state.selectedConnections, id);
@@ -101,9 +85,7 @@ export const getters = {
     // Returns an array of all selected node ids.
     selectedNodeIds: (state) => Object.keys(state.selectedNodes),
 
-    /**
-     * Returns an array of selected node objects.
-     */
+    // Returns an array of selected node objects.
     selectedNodes(state, getters, rootState) {
         return Object.keys(state.selectedNodes).map(
             (nodeId) => rootState.workflow.activeWorkflow?.nodes[nodeId]

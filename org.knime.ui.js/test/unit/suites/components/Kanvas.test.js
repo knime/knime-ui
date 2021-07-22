@@ -123,14 +123,14 @@ describe('Kanvas', () => {
                 isWritable() {
                     return !(workflow.info.linked || workflow.parents.some(p => p.linked));
                 },
-                nodeIcon() {
-                    return ({ nodeId }) => `data:image/${nodeId}`;
+                getNodeIcon() {
+                    return (nodeId) => `data:image/${nodeId}`;
                 },
-                nodeName() {
-                    return ({ nodeId }) => `name-${nodeId}`;
+                getNodeName() {
+                    return (nodeId) => `name-${nodeId}`;
                 },
-                nodeType() {
-                    return ({ nodeId }) => `type-${nodeId}`;
+                getNodeType() {
+                    return (nodeId) => `type-${nodeId}`;
                 },
                 executionInfo() {
                     return ({ nodeId }) => workflow.nodes[nodeId].executionInfo;
