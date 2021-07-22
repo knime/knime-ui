@@ -102,7 +102,7 @@ export const getters = {
     selectedConnections(state, getters, rootState) {
         // for some unknown reasons the connection object in the activeWorkflow does not contain the id
         return Object.keys(state.selectedConnections).map(
-            (id) => ({ id, ...rootState.workflow.activeWorkflow?.connections[id] })
+            (id) => rootState.workflow.activeWorkflow?.connections[id]
         ).filter(Boolean);
     },
 

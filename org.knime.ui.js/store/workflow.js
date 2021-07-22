@@ -115,10 +115,12 @@ export const actions = {
         const selectedConnections = rootGetters['selection/selectedConnections'];
         const deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
         const nonDeletableNodeIds = selectedNodes.filter(node => !node.allowedActions.canDelete).map(node => node.id);
-        const deleteableConnectionIds = selectedConnections.filter(connection => connection.canDelete).
-            map(connection => connection.id);
-        const nonDeletableConnectionIds = selectedConnections.filter(connection => !connection.canDelete).
-            map(connection => connection.id);
+        const deleteableConnectionIds = selectedConnections.filter(
+            connection => connection.allowedActions.canDelete
+        ).map(connection => connection.id);
+        const nonDeletableConnectionIds = selectedConnections.filter(
+            connection => !connection.allowedActions.canDelete
+        ).map(connection => connection.id);
 
         if (deletableNodeIds.length || deleteableConnectionIds.length) {
             deleteObjects({

@@ -25,7 +25,9 @@ describe('Connector.vue', () => {
             sourceNode: 'root:1',
             destNode: 'root:2',
             id: 'root:2_2',
-            canDelete: true,
+            allowedActions: {
+                canDelete: true
+            },
             sourcePort: 0,
             destPort: 2
         };

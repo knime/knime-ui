@@ -25,8 +25,8 @@ describe('workflow store', () => {
                             'root:2': { id: 'root:2' }
                         },
                         connections: {
-                            'root:2_1': { canDelete: true, id: 'root:2_1' },
-                            'root:2_2': { canDelete: true, id: 'root:2_2' }
+                            'root:2_1': { allowedActions: { canDelete: true }, id: 'root:2_1' },
+                            'root:2_2': { allowedActions: { canDelete: true }, id: 'root:2_2' }
                         }
                     }
                 }
@@ -163,8 +163,8 @@ describe('workflow store', () => {
 
         test('get all selected connections', () => {
             expect($store.getters['selection/selectedConnections']).toStrictEqual([
-                { canDelete: true, id: 'root:2_1' },
-                { canDelete: true, id: 'root:2_2' }
+                { allowedActions: { canDelete: true }, id: 'root:2_1' },
+                { allowedActions: { canDelete: true }, id: 'root:2_2' }
             ]);
         });
 

@@ -30,7 +30,9 @@ const mockConnector = ({ nr, id }) => ({
     sourceNode: '',
     destNode: '',
     id,
-    canDelete: false,
+    allowedActions: {
+        canDelete: false
+    },
     sourcePort: nr,
     destPort: 0,
     flowVariableConnection: false,

@@ -27,9 +27,12 @@ export default {
             type: String,
             required: true
         },
-        canDelete: {
-            type: Boolean,
-            required: true
+        allowedActions: {
+            type: Object,
+            required: true,
+            validate(o) {
+                return o.hasOwnProperty('canDelete');
+            }
         }
     },
     computed: {

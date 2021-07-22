@@ -403,7 +403,7 @@ describe('workflow store', () => {
         ])('deletes %s objects', async (amount) => {
             await loadStore();
             let nodesArray = {};
-            let conenctionsArray = {};
+            let connectionsArray = {};
             let nodeIds = [];
             let connectionIds = [];
             for (let i = 0; i < amount / 2; i++) {
@@ -413,14 +413,14 @@ describe('workflow store', () => {
                 nodeIds.push(id);
             }
             for (let i = 0; i < amount / 2; i++) {
-                let name = `connection-${i}`;
-                conenctionsArray[name] = { id: name, canDelete: true };
-                store.dispatch('selection/selectConnection', conenctionsArray[name].id);
-                connectionIds.push(name);
+                let id = `connection-${i}`;
+                connectionsArray[id] = { id, allowedActions: { canDelete: true } };
+                store.dispatch('selection/selectConnection', id);
+                connectionIds.push(id);
             }
             store.commit('workflow/setActiveWorkflow', {
                 nodes: nodesArray,
-                connections: conenctionsArray,
+                connections: connectionsArray,
                 projectId: 'foo',
                 info: {
                     containerId: 'test'
@@ -444,7 +444,7 @@ describe('workflow store', () => {
             let nodesArray = {};
             nodesArray[nodeName] = { id: nodeName, allowedActions: { canDelete: false } };
             let connectionsArray = {};
-            connectionsArray[connectorName] = { id: connectorName, canDelete: false };
+            connectionsArray[connectorName] = { id: connectorName, allowedActions: { canDelete: false } };
 
             beforeEach(async () => {
                 await loadStore();
