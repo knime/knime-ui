@@ -96,5 +96,4 @@ describe('KnimeUI.vue', () => {
         expect(initState).toHaveBeenCalled();
         expect(document.fonts.load).toHaveBeenCalledTimes(numberOfPreloadedFonts);
     });
-
 });

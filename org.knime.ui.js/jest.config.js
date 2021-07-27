@@ -43,7 +43,7 @@ module.exports = {
     testMatch: [
         '<rootDir>/test/unit/**/*.test.js'
     ],
-    setupFiles: ['<rootDir>/test/unit/jest-setup'],
+    setupFiles: ['<rootDir>/test/unit/jest-setup', 'jest-useragent-mock'],
     globals: {
         'vue-jest': {
             hideStyleWarn: true

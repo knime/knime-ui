@@ -3,7 +3,6 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 
 describe('application store', () => {
-
     let store, setProjects, fetchApplicationState, localVue;
 
     beforeAll(() => {

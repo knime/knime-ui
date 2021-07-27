@@ -4,7 +4,6 @@ import StreamingDecorator from '~/components/StreamingDecorator.vue';
 import * as $colors from '~/style/colors';
 
 describe('StreamingDecorator.vue', () => {
-
     let doShallowMount = (executionInfo, backgroundType) => shallowMount(StreamingDecorator, {
         propsData: { executionInfo, backgroundType },
         mocks: { $colors }
@@ -22,15 +21,12 @@ describe('StreamingDecorator.vue', () => {
             expect(wrapper.find('path.streamable').exists()).toBe(false);
             expect(wrapper.find('path.not-streamable').exists()).toBe(true);
         });
-
     });
 
     describe('background', () => {
-
         it('draws no background for streamable nodes', () => {
             const wrapper = doShallowMount({ streamable: true }, 'Reader');
             expect(wrapper.find('rect').exists()).toBe(false);
-
         });
 
         it('draws background for unstreamable nodes of known type', () => {
@@ -42,7 +38,5 @@ describe('StreamingDecorator.vue', () => {
             const wrapper = doShallowMount({ streamable: false }, 'unknown type');
             expect(wrapper.find('rect').exists()).toBe(false);
         });
-
     });
-
 });

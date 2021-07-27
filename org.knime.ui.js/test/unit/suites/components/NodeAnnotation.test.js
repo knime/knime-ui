@@ -9,6 +9,7 @@ import LegacyAnnotationText from '~/components/LegacyAnnotationText';
 
 describe('Node Annotation', () => {
     let propsData, mocks, doShallowMount, wrapper, $store;
+
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
@@ -102,7 +103,6 @@ describe('Node Annotation', () => {
                 expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
                     height: '129', width: '232', x: '-100'
                 }));
-
             });
 
             it('adjusts dimensions on mount', () => {

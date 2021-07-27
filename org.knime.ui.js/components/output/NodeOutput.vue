@@ -80,7 +80,7 @@ export default {
                 return 'The selected node has no supported output port.';
             }
             
-            let state = node.state.executionState;
+            let state = node.state?.executionState;
             if (state === 'IDLE') {
                 return 'Please first configure the selected node.';
             }

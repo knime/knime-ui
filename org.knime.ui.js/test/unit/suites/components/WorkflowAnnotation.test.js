@@ -26,9 +26,9 @@ describe('Workflow Annotation', () => {
             styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
         };
         storeConfig = {
-            workflow: {
-                mutations: {
-                    deselectAllNodes: jest.fn()
+            selection: {
+                actions: {
+                    deselectAllObjects: jest.fn()
                 }
             }
         };
@@ -74,7 +74,7 @@ describe('Workflow Annotation', () => {
 
         it('deselects all nodes on click', () => {
             wrapper.trigger('mousedown', { button: 0 });
-            expect(storeConfig.workflow.mutations.deselectAllNodes).toHaveBeenCalled();
+            expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
         });
     });
 });

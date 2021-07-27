@@ -2,7 +2,9 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
+import Vue from 'vue';
 import HotKeys from '~/components/HotKeys';
+import * as userActionStoreConfig from '~/store/userActions';
 
 jest.mock('lodash', () => ({
     throttle(func) {
@@ -19,7 +21,8 @@ const expectEventHandled = () => {
 };
 
 describe('HotKeys', () => {
-    let doShallowMount, wrapper, $store, storeConfig;
+    let doShallowMount, wrapper, $store, storeConfig, selectedNodes;
+
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -34,10 +37,12 @@ describe('HotKeys', () => {
     beforeEach(() => {
         $store = null;
         wrapper = null;
+        selectedNodes = [];
         KeyboardEvent.prototype.preventDefault = jest.fn();
         KeyboardEvent.prototype.stopPropagation = jest.fn();
 
         storeConfig = {
+            userActions: userActionStoreConfig,
             workflow: {
                 state: {
                     activeWorkflow: { someProperty: 0 }
@@ -48,7 +53,9 @@ describe('HotKeys', () => {
                     resetNodes: jest.fn(),
                     deleteSelectedObjects: jest.fn(),
                     undo: jest.fn(),
-                    redo: jest.fn()
+                    redo: jest.fn(),
+                    openView: jest.fn(),
+                    openDialog: jest.fn()
                 },
                 getters: {
                     isWritable: jest.fn().mockReturnValue(true)
@@ -57,15 +64,23 @@ describe('HotKeys', () => {
             selection: {
                 actions: {
                     selectAllNodes: jest.fn()
+                },
+                getters: {
+                    selectedNodes: () => selectedNodes
                 }
             },
             canvas: {
+                state: {
+                    suggestPanning: false
+                },
                 mutations: {
                     resetZoom: jest.fn(),
                     zoomWithPointer: jest.fn(),
                     saveContainerScroll: jest.fn(),
                     setContainerSize: jest.fn(),
-                    setSuggestPanning: jest.fn()
+                    setSuggestPanning: jest.fn().mockImplementation((state, val) => {
+                        state.suggestPanning = val;
+                    })
                 },
                 actions: {
                     setZoomToFit: jest.fn(),
@@ -83,6 +98,7 @@ describe('HotKeys', () => {
     test('adds and removes listener', () => {
         jest.spyOn(document, 'addEventListener');
         jest.spyOn(document, 'removeEventListener');
+        jest.spyOn(window, 'removeEventListener');
         doShallowMount();
 
         expect(document.addEventListener).toHaveBeenNthCalledWith(1, 'keydown', wrapper.vm.onKeydown);
@@ -91,14 +107,15 @@ describe('HotKeys', () => {
         wrapper.destroy();
         expect(document.removeEventListener).toHaveBeenNthCalledWith(1, 'keydown', wrapper.vm.onKeydown);
         expect(document.removeEventListener).toHaveBeenNthCalledWith(2, 'keyup', wrapper.vm.onKeyup);
+        expect(window.removeEventListener).toHaveBeenCalledWith('blur', wrapper.vm.windowBlurListener);
     });
 
     describe('Shortcuts', () => {
         beforeEach(() => doShallowMount());
+
         afterEach(() => expectEventHandled());
 
         describe('workflow', () => {
-
             it('Ctrl-A: Select all nodes', () => {
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true }));
                 expect(storeConfig.selection.actions.selectAllNodes).toHaveBeenCalled();
@@ -163,8 +180,21 @@ describe('HotKeys', () => {
             });
         });
 
-        describe('Canvas', () => {
+        describe('single selected Node', () => {
+            it('F12: Opens view', () => {
+                selectedNodes = [{}];
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F12' }));
+                expect(storeConfig.workflow.actions.openView).toHaveBeenCalled();
+            });
 
+            it('F6: Opens dialog', () => {
+                selectedNodes = [{}];
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F6' }));
+                expect(storeConfig.workflow.actions.openDialog).toHaveBeenCalled();
+            });
+        });
+
+        describe('Canvas', () => {
             it('Ctrl-0: Reset zoom to default', () => {
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: '0', ctrlKey: true }));
                 expect(storeConfig.canvas.mutations.resetZoom).toHaveBeenCalled();
@@ -186,19 +216,40 @@ describe('HotKeys', () => {
                     expect(storeConfig.canvas.actions.zoomCentered).toHaveBeenCalledWith(expect.anything(), -1);
                 });
             });
-
         });
     });
 
-    it('Alt: Panning mode', () => {
+    it('Alt: Panning mode', async () => {
         doShallowMount();
 
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt' }));
+        await Vue.nextTick();
         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
         expectEventHandled();
 
         document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Alt' }));
+        await Vue.nextTick();
         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
+
+        // this event shall have no effect
+        window.dispatchEvent(new FocusEvent('blur'));
+        await Vue.nextTick();
+        expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledTimes(2);
+    });
+
+    it('Alt: Cancel panning mode on focus loss', async () => {
+        doShallowMount();
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt' }));
+        await Vue.nextTick();
+        expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
+
+        window.dispatchEvent(new FocusEvent('blur'));
+        window.dispatchEvent(new FocusEvent('blur'));
+        await Vue.nextTick();
+
+        // panning mode has been canceled exactly 1 Time
+        expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
+        expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledTimes(2);
     });
 
     describe('condition not fulfilled', () => {

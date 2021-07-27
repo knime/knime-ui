@@ -52,7 +52,6 @@ describe('WorkflowTabContent.vue', () => {
     });
 
     describe('workflow loaded', () => {
-
         it('displays Workflow', async () => {
             await doShallowMount();
 

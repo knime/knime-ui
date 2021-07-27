@@ -271,7 +271,13 @@ export default {
         openNode() {
             this.$store.dispatch('openedProjects/switchWorkflow', { workflowId: this.id, projectId: this.projectId });
         },
-
+        onMouseClick(e) {
+            if (e.button === 0) {
+                this.onLeftMouseClick(e);
+            } else if (e.button === 2) {
+                this.onRightMouseClick(e);
+            }
+        },
         /*
          * Left-Click         => Select only this node
          * Left-Click & Shift => Add/Remove this node to/from selection
@@ -281,6 +287,7 @@ export default {
             if (this.isDragging) {
                 return;
             }
+            this.$refs.mouseClickable.focus();
 
             if (e.ctrlKey || e.metaKey) {
                 // user tries to open component or metanode
@@ -295,6 +302,26 @@ export default {
                 }
             } else {
                 // Single select
+                this.deselectAllObjects();
+                this.selectNode(this);
+            }
+        },
+        onRightMouseClick(e) {
+            e.preventDefault();
+            if (this.isDragging) {
+                return;
+            }
+
+            if (e.ctrlKey || e.metaKey) {
+                // user tries to open component or metanode
+                return;
+            }
+
+            if (e.shiftKey) {
+                // Multi select
+                this.selectNode(this);
+            } else if (!this.isNodeSelected(this.id)) {
+                // single select
                 this.deselectAllObjects();
                 this.selectNode(this);
             }
@@ -355,7 +382,12 @@ export default {
       @mouseenter="hover = true"
     >
       <!-- Elements for which a click selects node -->
-      <g @click.left="onLeftMouseClick">
+      <g
+        ref="mouseClickable"
+        class="mouse-clickable"
+        tabindex="0"
+        @click="onMouseClick"
+      >
         <!-- Hover Area, larger than the node torso -->
         <rect
           class="hover-area"
@@ -464,5 +496,9 @@ export default {
   line-height: 12px;
   pointer-events: none;
   width: 125px;
+}
+
+.mouse-clickable:focus {
+  outline: none;
 }
 </style>

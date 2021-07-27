@@ -3,7 +3,6 @@ import Vue from 'vue';
 import Splitter from '~/components/Splitter';
 
 describe('Splitter.vue', () => {
-
     let wrapper, startMove, localStorageGetItemSpy, localStorageSetItemSpy;
 
     // eslint-disable-next-line no-proto
@@ -49,7 +48,6 @@ describe('Splitter.vue', () => {
         });
 
         it('move changes height', async () => {
-
             const handle = wrapper.findComponent({ ref: 'handle' });
             const secondary = wrapper.findComponent({ ref: 'secondary' });
 
@@ -77,7 +75,6 @@ describe('Splitter.vue', () => {
                 pointerId: -1
             });
             expect(handle.element.releasePointerCapture).toHaveBeenCalledWith(-1);
-
         });
 
         it('saves to localStorage', async () => {
@@ -125,11 +122,9 @@ describe('Splitter.vue', () => {
             const secondary = wrapper2.findComponent({ ref: 'secondary' });
             expect(secondary.attributes().style).toBe('height: 444px;');
         });
-
     });
 
     describe('direction column', () => {
-
         beforeEach(() => {
             wrapper = shallowMount(Splitter, {
                 propsData: {
@@ -155,7 +150,6 @@ describe('Splitter.vue', () => {
         });
 
         it('move changes width', async () => {
-
             const handle = wrapper.findComponent({ ref: 'handle' });
             const secondary = wrapper.findComponent({ ref: 'secondary' });
 
@@ -183,9 +177,6 @@ describe('Splitter.vue', () => {
                 pointerId: -1
             });
             expect(handle.element.releasePointerCapture).toHaveBeenCalledWith(-1);
-
         });
-
     });
-
 });

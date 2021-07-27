@@ -4,6 +4,7 @@ import { throttle } from 'lodash';
 
 const throttledZoomThrottle = 30; // throttle keyboard zoom by 30ms
 
+
 /**
  * This Component handles keyboard shortcuts by listening to keydown/up-Events
  * on document and dispatching actions to the corresponding store.
@@ -11,10 +12,35 @@ const throttledZoomThrottle = 30; // throttle keyboard zoom by 30ms
 export default {
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
+        ...mapState('canvas', ['suggestPanning']),
+        ...mapGetters('selection', ['selectedNodes']),
         ...mapGetters('workflow', ['isWritable']),
+        ...mapGetters('userActions', ['hotKeyItems']),
         isWorkflowPresent() {
             // workflow hotkeys are enabled only if a workflow is present
             return Boolean(this.activeWorkflow);
+        },
+        selectedNode() {
+            const selectedNodes = this.selectedNodes;
+            if (selectedNodes.length === 1) {
+                return selectedNodes[0];
+            }
+            return null;
+        }
+    },
+    watch: {
+        suggestPanning(newValue) {
+            if (newValue) {
+                // listen to blur events while waiting for alt key to be released
+                this.windowBlurListener = () => {
+                    this.setSuggestPanning(false);
+                };
+                window.addEventListener('blur', this.windowBlurListener, { once: true });
+            } else {
+                // remove manually when alt key has been released
+                window.removeEventListener('blur', this.windowBlurListener);
+                this.windowBlurListener = null;
+            }
         }
     },
     mounted() {
@@ -27,11 +53,12 @@ export default {
         // Stop Key listener
         document.removeEventListener('keydown', this.onKeydown);
         document.removeEventListener('keyup', this.onKeyup);
+        window.removeEventListener('blur', this.windowBlurListener);
     },
     methods: {
         ...mapActions('selection', ['selectAllNodes']),
         ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedObjects',
-            'undo', 'redo']),
+            'undo', 'redo', 'openView', 'openDialog']),
         ...mapMutations('canvas', ['setSuggestPanning', 'resetZoom']),
         ...mapActions('canvas', ['setZoomToFit', 'zoomCentered']),
         setupShortcuts() {
@@ -39,31 +66,38 @@ export default {
                 canvas: {
                     condition: () => this.isWorkflowPresent,
                     hotKeys: [
-                        ['Ctrl', '1', this.setZoomToFit],
-                        ['Ctrl', '0', this.resetZoom],
-                        ['Ctrl', '+', () => this.throttledZoom(1)],
-                        ['Ctrl', '-', () => this.throttledZoom(-1)]
+                        [...this.hotKeyItems.zoomToFit, this.setZoomToFit],
+                        [...this.hotKeyItems.resetZoom, this.resetZoom],
+                        [...this.hotKeyItems.zoomIn, () => this.throttledZoom(1)],
+                        [...this.hotKeyItems.zoomOut, () => this.throttledZoom(-1)]
                     ]
                 },
                 workflow: {
                     condition: () => this.isWorkflowPresent,
                     hotKeys: [
-                        ['Ctrl', 'A', this.selectAllNodes],
-                        ['F7', () => this.executeNodes('selected')],
-                        ['F9', () => this.cancelNodeExecution('selected')],
-                        ['F8', () => this.resetNodes('selected')],
-                        ['Shift', 'F7', () => this.executeNodes('all')],
-                        ['Shift', 'F9', () => this.cancelNodeExecution('all')],
-                        ['Shift', 'F8', () => this.resetNodes('all')],
-                        ['Ctrl', 'Z', () => this.undo()],
-                        ['Ctrl', 'Shift', 'Z', () => this.redo()]
+                        [...this.hotKeyItems.selectAllNodes, this.selectAllNodes],
+                        [...this.hotKeyItems.executeSelectedNodes, () => this.executeNodes('selected')],
+                        [...this.hotKeyItems.cancelSelectedNodes, () => this.cancelNodeExecution('selected')],
+                        [...this.hotKeyItems.resetSelectedNodes, () => this.resetNodes('selected')],
+                        [...this.hotKeyItems.executeAllNodes, () => this.executeNodes('all')],
+                        [...this.hotKeyItems.cancelAllNodes, () => this.cancelNodeExecution('all')],
+                        [...this.hotKeyItems.resetAllNodes, () => this.resetNodes('all')],
+                        [...this.hotKeyItems.undo, () => this.undo()],
+                        [...this.hotKeyItems.redo, () => this.redo()]
+                    ]
+                },
+                singleSelectedNode: {
+                    condition: () => this.selectedNode,
+                    hotKeys: [
+                        [...this.hotKeyItems.openDialog, () => this.openDialog(this.selectedNode.id)],
+                        [...this.hotKeyItems.openView, () => this.openView(this.selectedNode.id)]
                     ]
                 },
                 writableWorkflow: {
                     condition: () => this.isWorkflowPresent && this.isWritable,
                     hotKeys: [
-                        ['DELETE', this.deleteSelectedObjects],
-                        ['BACKSPACE', this.deleteSelectedObjects]
+                        [...this.hotKeyItems.deleteDel, this.deleteSelectedObjects],
+                        [...this.hotKeyItems.deleteBackspace, this.deleteSelectedObjects]
                     ]
                 }
 
@@ -122,7 +156,7 @@ export default {
                 this.setSuggestPanning(false);
             }
         },
-        throttledZoom: throttle(function myf(delta) {
+        throttledZoom: throttle(function (delta) {
             this.zoomCentered(delta); // eslint-disable-line no-invalid-this
         }, throttledZoomThrottle)
     },

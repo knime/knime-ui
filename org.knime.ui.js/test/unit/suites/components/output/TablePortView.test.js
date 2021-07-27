@@ -184,6 +184,7 @@ describe('TablePortView.vue', () => {
                 offset: 2
             });
         });
+
         it('doesnt on normal screens -> overflow scroll', async () => {
             await doMount(shallowMountWithAsyncData);
 
@@ -211,6 +212,7 @@ describe('TablePortView.vue', () => {
 
         describe('scrolling causes lazy loading', () => {
             const windowHeight = 20; // 20 rows, doesn't matter
+
             test('199 items, 50 threshold', async () => {
                 const noRows = 199;
                 const triggerRows = 50;

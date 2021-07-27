@@ -8,6 +8,7 @@ import MetaNodePortBars from '~/components/MetaNodePortBars';
 import KanvasFilters from '~/components/KanvasFilters';
 import StreamedIcon from '~/components/../webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
 import ConnectorLabel from '~/components/ConnectorLabel';
+import ContextMenu from '~/components/ContextMenu';
 
 export default {
     components: {
@@ -17,6 +18,7 @@ export default {
         MetaNodePortBars,
         KanvasFilters,
         StreamedIcon,
+        ContextMenu,
         ConnectorLabel,
         MoveableNodeContainer
     },
@@ -44,7 +46,7 @@ export default {
         ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning']),
         viewBoxString() {
             let { viewBox } = this;
-            return  `${viewBox.left} ${viewBox.top} ` +
+            return `${viewBox.left} ${viewBox.top} ` +
                     `${viewBox.width} ${viewBox.height}`;
         },
         // Sort nodes so that selected nodes are rendered in front
@@ -153,6 +155,12 @@ export default {
                 this.$el.releasePointerCapture(e.pointerId);
                 e.stopPropagation();
             }
+        },
+        onContextMenu(e) {
+            if (e.target === this.$refs.svg) {
+                this.deselectAllObjects();
+            }
+            this.$refs.contextMenu.show(e);
         }
     }
 };
@@ -169,7 +177,11 @@ export default {
     @pointerdown.left.alt="beginPan"
     @pointerup.left="stopPan"
     @pointermove="movePan"
+    @contextmenu.prevent="onContextMenu"
   >
+    <ContextMenu
+      ref="contextMenu"
+    />
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
       v-if="isLinked || isStreaming || isInsideLinked"

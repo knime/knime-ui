@@ -15,8 +15,8 @@ export const mutations = {
     // This selected node object does keeps the id, the allowed actions, the kind, the outPorts
     // and the node state of the nodes.
     addNodesToSelection(state, nodes) {
-        Object.values(nodes).forEach(({ id, allowedActions, kind, outPorts, state: nodeState }) => {
-            Vue.set(state.selectedNodes, id, { id, allowedActions, kind, outPorts, state: nodeState });
+        Object.values(nodes).forEach(({ id, allowedActions, loopInfo, kind, outPorts, state: nodeState }) => {
+            Vue.set(state.selectedNodes, id, { id, allowedActions, loopInfo, kind, outPorts, state: nodeState });
         });
     },
 
@@ -97,7 +97,7 @@ export const getters = {
     },
 
     // Checks if a given node id is present in the selected object.
-    isNodeSelected: (state) => (nodeId) =>  Reflect.has(state.selectedNodes, nodeId),
+    isNodeSelected: (state) => (nodeId) => Reflect.has(state.selectedNodes, nodeId),
 
     // Returns an array of all selected connection ids.
     selectedConnectionIds: (state) => Object.keys(state.selectedConnections),

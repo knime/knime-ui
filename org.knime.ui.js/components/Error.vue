@@ -74,7 +74,7 @@ export default {
       <div class="header">
         <h2><WarningIcon /> Sorry, KNIME UI has stopped due to an error.</h2>
         <div class="message">
-          Most likely your work isn't lost and hitting the reload button brings you back.
+          Most likely your work isn’t lost and hitting the reload button brings you back.
         </div>
       </div>
       <div class="actions">

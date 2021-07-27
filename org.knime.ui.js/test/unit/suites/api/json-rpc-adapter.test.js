@@ -1,7 +1,6 @@
 import rpc from '~/api/json-rpc-adapter';
 
 describe('JSON-RPC adapter', () => {
-
     beforeEach(() => {
         window.jsonrpc = jest.fn();
         window.jsonrpc.mockReturnValue(JSON.stringify({
@@ -67,5 +66,4 @@ describe('JSON-RPC adapter', () => {
             'Error returned from JSON-RPC API ["a",["b","c"]]: "nothing is fine"'
         );
     });
-
 });

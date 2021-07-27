@@ -4,7 +4,6 @@ import LinkDecorator from '~/components/LinkDecorator';
 import * as $colors from '~/style/colors';
 
 describe('LinkDecorator.vue', () => {
-
     let doShallowMount = (backgroundType) => shallowMount(LinkDecorator, {
         propsData: { backgroundType },
         mocks: { $colors }
@@ -27,5 +26,4 @@ describe('LinkDecorator.vue', () => {
         expect(wrapper.find('rect').exists()).toBe(false);
         expect(wrapper.find('path').attributes().stroke).toBe($colors.linkDecorator);
     });
-
 });

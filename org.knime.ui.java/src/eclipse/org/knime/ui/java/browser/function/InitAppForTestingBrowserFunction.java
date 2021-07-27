@@ -52,13 +52,13 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import org.eclipse.swt.chromium.Browser;
-import org.eclipse.swt.chromium.BrowserFunction;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.webui.AppState.OpenedWorkflow;
 import org.knime.ui.java.appstate.AppStateUtil;
 import org.knime.ui.java.browser.KnimeBrowserView;
 
+import com.equo.chromium.swt.Browser;
+import com.equo.chromium.swt.BrowserFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
