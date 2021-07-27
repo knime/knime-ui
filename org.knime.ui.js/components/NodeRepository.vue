@@ -1,20 +1,17 @@
 <script>
 import { mapState } from 'vuex';
 
-import Tag from './Tag';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
+import TagList from '~/webapps-common/ui/components/TagList';
 import Button from '~/webapps-common/ui/components/Button';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 
 export default {
     components: {
-        Tag,
         NodePreview,
+        TagList,
         Button,
         CloseIcon
-    },
-    fetch() {
-        this.$store.dispatch('nodeRepo/searchNodes', true);
     },
     computed: {
         ...mapState('nodeRepo', [
@@ -43,6 +40,9 @@ export default {
             return rows;
         }
     },
+    mounted() {
+        this.$store.dispatch('nodeRepo/searchNodes', true);
+    },
     methods: {
         loadMoreNodes() {
             this.$store.dispatch('nodeRepo/searchNodes', true);
@@ -67,13 +67,11 @@ export default {
     </h4>
     <span class="break" />
     <div class="tags">
-      <Tag
-        v-for="tag in tags.filter(t => !selectedTags.includes(t))"
-        :key="tag"
-        @click.native="selectTag(tag)"
-      >
-        {{ tag }}
-      </Tag>
+      <TagList
+        :tags="tags.filter(t => !selectedTags.includes(t))"
+        :clickable="true"
+        @click="selectTag"
+      />
     </div>
     <span class="break full" />
     <div
@@ -92,15 +90,13 @@ export default {
         </Button>
         <br>
         <br>
-        <Tag
-          v-for="tag in selectedTags"
-          :key="tag"
-          class="selected-tag"
-          @click.native="deselectTag(tag)"
+        <TagList
+          :tags="selectedTags"
+          :clickable="true"
+          @click="deselectTag"
         >
-          {{ tag }}
-          <CloseIcon />
-        </Tag>
+          <CloseIcon slot="icon" />
+        </TagList>
       </div>
       <div
         v-for="(row, ind) in nodeRows"
@@ -169,10 +165,6 @@ export default {
 
     & .filter-tags {
       margin-bottom: 12px;
-
-      & > .tag {
-        padding: 4px 6px;
-      }
 
       & .clear-button {
         float: right;

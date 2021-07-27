@@ -58,7 +58,6 @@ describe('LeftCollapsiblePanel.vue', () => {
     });
 
     describe('closed panel', () => {
-        
         it('collapses panel', () => {
             expect(wrapper.find('.container').attributes().style).toBe('width: 0px;');
         });

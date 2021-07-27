@@ -1,9 +1,11 @@
-import { shallowMount } from '@vue/test-utils';
+import { shallowMount, mount } from '@vue/test-utils';
 
 import WorkflowMetadata from '~/components/WorkflowMetadata';
 import LinkList from '~/webapps-common/ui/components/LinkList';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
+import TagList from '~/webapps-common/ui/components/TagList';
+import Tag from '~/webapps-common/ui/components/Tag';
 
 describe('WorkflowMetadata.vue', () => {
     it.each([
@@ -27,7 +29,7 @@ describe('WorkflowMetadata.vue', () => {
 
         // don't show content containers
         expect(wrapper.findComponent(LinkList).exists()).toBe(false);
-        expect(wrapper.find('.tags ul').exists()).toBe(false);
+        expect(wrapper.find(TagList).exists()).toBe(false);
         expect(wrapper.findComponent(NodeFeatureList).exists()).toBe(false);
         expect(wrapper.findComponent(NodePreview).exists()).toBe(false);
     });
@@ -44,7 +46,7 @@ describe('WorkflowMetadata.vue', () => {
     });
 
     it('renders all metadata', () => {
-        let wrapper = shallowMount(WorkflowMetadata, {
+        let wrapper = mount(WorkflowMetadata, {
             propsData: {
                 title: 'Title',
                 lastEdit: '2000-01-01T00:00Z',
@@ -62,7 +64,8 @@ describe('WorkflowMetadata.vue', () => {
         let linkList = wrapper.findComponent(LinkList);
         expect(linkList.props().links).toStrictEqual([{ text: 'link1' }]);
 
-        let tags = wrapper.findAll('ul li');
+        expect(wrapper.find(TagList).exists()).toBe(true);
+        let tags = wrapper.findAll(Tag);
         expect(tags.length).toBe(1);
         expect(tags.at(0).text()).toBe('tag1');
 

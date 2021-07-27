@@ -57,13 +57,17 @@ export default {
         width="360px"
         title="Workflow Metadata"
       >
-        <transition
-          name="panel-fade"
-        >
-          <NodeRepository v-show="nodeRepoActive" />
+        <transition name="panel-fade">
+          <!-- use v-if & v-show to prevent jumping without delays -->
+          <NodeRepository
+            v-if="nodeRepoActive"
+            v-show="nodeRepoActive"
+          />
         </transition>
         <transition name="panel-fade">
+          <!-- use v-if & v-show to prevent jumping without delays -->
           <WorkflowMetadata
+            v-if="metadata && wfMetaActive"
             v-show="metadata && wfMetaActive"
             v-bind="metadata"
           />
@@ -93,11 +97,11 @@ export default {
 <style lang="postcss" scoped>
 
 .panel-fade-enter-active {
-  transition: opacity 150ms ease-in;
+  transition: all 150ms ease-in;
 }
 
 .panel-fade-leave-active {
-  transition: opacity 150ms ease-out;
+  transition: all 150ms ease-out;
 }
 
 .panel-fade-enter,

@@ -27,13 +27,13 @@ export default {
   <nav>
     <ul>
       <li
-        :class="{ active: expanded && wfMetaActive }"
+        :class="{ active: wfMetaActive }"
         @click="setWorkflowMetaActive"
       >
         <InfoIcon />
       </li>
       <li
-        :class="{ active: expanded && nodeRepoActive }"
+        :class="{ active: nodeRepoActive }"
         @click="setNodeRepoActive"
       >
         <PlusIcon />
@@ -59,18 +59,23 @@ nav {
       justify-content: center;
       background-color: var(--knime-silver-sand);
       border-bottom: 1px var(--knime-black) solid;
-
-      &.active {
-        background-color: var(--knime-gray-ultra-light);
-      }
-
-      &:not(.active):hover {
-        background-color: var(--knime-dove-gray);
-        cursor: pointer;
-      }
+      transition: background-color 150ms ease-out;
 
       & svg {
         height: 30px;
+      }
+
+      &.active {
+        background-color: var(--knime-porcelain);
+      }
+
+      &:not(.active):hover {
+        background-color: var(--knime-white);
+        cursor: pointer;
+
+        & svg {
+          stroke: var(--knime-masala);
+        }
       }
     }
   }

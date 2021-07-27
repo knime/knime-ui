@@ -4,7 +4,6 @@ import Vuex from 'vuex';
 import * as panelStoreConfig from '~/store/panel';
 
 describe('panel store', () => {
-
     let store, localVue;
 
     beforeAll(() => {
