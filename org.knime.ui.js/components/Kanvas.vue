@@ -85,25 +85,6 @@ export default {
     },
     methods: {
         /*
-          Selection
-        */
-        ...mapActions('selection', ['deselectAllObjects']),
-        onMouseDown(e) {
-            /*  To avoid for [mousedown on node], [moving mouse], [mouseup on kanvas] to deselect nodes,
-             *  we track whether a click has been started on the empty Kanvas
-             */
-            this.clickStartedOnEmptyKanvas = e.target === this.$refs.svg;
-            this.clickStartPos = { x: e.clientX, y: e.clientY };
-        },
-        onSelfMouseUp(e) {
-            // deselect all nodes
-            if (this.clickStartedOnEmptyKanvas &&
-                e.clientX === this.clickStartPos.x && e.clientY === this.clickStartPos.y) {
-                this.deselectAllObjects();
-                this.clickStartedOnEmptyKanvas = null;
-            }
-        },
-        /*
             Zooming
         */
         ...mapMutations('canvas', ['resetZoom', 'setScrollContainerElement']),
@@ -189,7 +170,9 @@ export default {
     @pointerup.left="stopPan"
     @pointermove="movePan"
     @contextmenu.prevent="onContextMenu"
+    @pointerdown.left.shift.exact="beginSelection"
     @pointerdown.left.exact="beginSelection"
+    @pointerup.left.shift.exact="endSelection"
     @pointerup.left.exact="endSelection"
   >
     <ContextMenu
@@ -224,8 +207,6 @@ export default {
       :width="canvasSize.width"
       :height="canvasSize.height"
       :viewBox="viewBoxString"
-      @mousedown.left="onMouseDown"
-      @mouseup.self.left="onSelfMouseUp"
     >
 
       <!-- Includes shadows for Nodes -->

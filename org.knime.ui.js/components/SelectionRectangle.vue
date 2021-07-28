@@ -8,12 +8,14 @@ export default {
         startPos: {},
         endPos: {},
         isDragging: false,
+        selectedNodesAtStart: [],
         pointerId: null
     }),
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
         ...mapGetters('canvas', ['viewBox']),
         ...mapState('canvas', ['zoomFactor']),
+        ...mapGetters('selection', ['selectedNodeIds']),
 
         changeDirectionX() {
             return this.endPos.x - this.startPos.x < 0;
@@ -31,21 +33,26 @@ export default {
         ...mapMutations('workflow', ['setDragging']),
         ...mapActions('selection', ['selectNode', 'deselectNode', 'deselectAllObjects']),
         startDragging(e) {
-            let { pointerId } = e;
-            this.pointerId = pointerId;
-            if (!e.target.hasPointerCapture(pointerId)) {
-                e.target.setPointerCapture(pointerId);
+            this.pointerId = e.pointerId;
+            if (!e.target.hasPointerCapture(e.pointerId)) {
+                e.target.setPointerCapture(e.pointerId);
             }
             this.startPos = {
                 x: this.viewBox.left + e.offsetX / this.zoomFactor,
                 y: this.viewBox.top + e.offsetY / this.zoomFactor
             };
-            this.deselectAllObjects();
+            // deselect all objects if we do not hold shift key
+            if (!e.shiftKey) {
+                this.deselectAllObjects();
+            }
+            // remember currently selected nodes, the nodes under the rect will inverse them
+            this.selectedNodesAtStart = [...this.selectedNodeIds];
             this.endPos = this.startPos;
             this.isDragging = true;
         },
         stopDragging(e) {
             this.isDragging = false;
+            this.selectedNodesAtStart = [];
             setTimeout(() => {
                 this.setDragging(false);
                 delete this.pointerId;
@@ -66,22 +73,38 @@ export default {
         selectAllNodesInRectangle(startPos, endPos) {
             Object.values(this.activeWorkflow.nodes).forEach(node => {
                 const { nodeSize } = this.$shapes;
+                let nodeIsInsideOfRect = false;
                 if (node.position.x + nodeSize > startPos.x && node.position.x < endPos.x &&
                     node.position.y + nodeSize > startPos.y && node.position.y < endPos.y) {
-                    this.selectNode(node.id);
+                    nodeIsInsideOfRect = true;
                 } else if (node.position.x < startPos.x && node.position.x + nodeSize > endPos.x &&
                     node.position.y < startPos.y && node.position.y + nodeSize > endPos.y) {
-                    this.selectNode(node.id);
+                    nodeIsInsideOfRect = true;
                 } else if (node.position.x + nodeSize > startPos.x && node.position.x < endPos.x &&
                     node.position.y < startPos.y && node.position.y + nodeSize > endPos.y) {
-                    this.selectNode(node.id);
+                    nodeIsInsideOfRect = true;
                 } else if (node.position.x < startPos.x && node.position.x + nodeSize > endPos.x &&
                     node.position.y + nodeSize > startPos.y && node.position.y < endPos.y) {
-                    this.selectNode(node.id);
-                } else {
-                    this.deselectNode(node.id);
+                    nodeIsInsideOfRect = true;
                 }
+                this.updateSelection(node.id, nodeIsInsideOfRect);
             });
+        },
+        updateSelection(nodeId, nodeIsInsideOfRect) {
+            if (this.selectedNodesAtStart.includes(nodeId)) {
+                if (nodeIsInsideOfRect) {
+                    this.deselectNode(nodeId);
+                } else {
+                    this.selectNode(nodeId);
+                }
+            } else {
+                // eslint-disable-next-line no-lonely-if
+                if (nodeIsInsideOfRect) {
+                    this.selectNode(nodeId);
+                } else {
+                    this.deselectNode(nodeId);
+                }
+            }
         }
     }
 };
