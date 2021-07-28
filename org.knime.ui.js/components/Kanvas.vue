@@ -9,6 +9,7 @@ import KanvasFilters from '~/components/KanvasFilters';
 import StreamedIcon from '~/components/../webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
 import ConnectorLabel from '~/components/ConnectorLabel';
 import ContextMenu from '~/components/ContextMenu';
+import SelectionRectangle from '~/components/SelectionRectangle';
 
 export default {
     components: {
@@ -20,7 +21,8 @@ export default {
         StreamedIcon,
         ContextMenu,
         ConnectorLabel,
-        MoveableNodeContainer
+        MoveableNodeContainer,
+        SelectionRectangle
     },
     data() {
         return {
@@ -91,10 +93,12 @@ export default {
              *  we track whether a click has been started on the empty Kanvas
              */
             this.clickStartedOnEmptyKanvas = e.target === this.$refs.svg;
+            this.clickStartPos = { x: e.clientX, y: e.clientY };
         },
         onSelfMouseUp(e) {
             // deselect all nodes
-            if (this.clickStartedOnEmptyKanvas) {
+            if (this.clickStartedOnEmptyKanvas &&
+                e.clientX === this.clickStartPos.x && e.clientY === this.clickStartPos.y) {
                 this.deselectAllObjects();
                 this.clickStartedOnEmptyKanvas = null;
             }
@@ -142,6 +146,7 @@ export default {
             this.$el.setPointerCapture(e.pointerId);
         },
         movePan(e) {
+            this.$emit('pointermove', e);
             if (this.panning) {
                 const delta = [e.screenX - this.panning[0], e.screenY - this.panning[1]];
                 this.panning = [e.screenX, e.screenY];
@@ -161,6 +166,12 @@ export default {
                 this.deselectAllObjects();
             }
             this.$refs.contextMenu.show(e);
+        },
+        beginSelection(e) {
+            this.$emit('pointerdown', e);
+        },
+        endSelection(e) {
+            this.$emit('pointerup', e);
         }
     }
 };
@@ -178,6 +189,8 @@ export default {
     @pointerup.left="stopPan"
     @pointermove="movePan"
     @contextmenu.prevent="onContextMenu"
+    @pointerdown.left.exact="beginSelection"
+    @pointerup.left.exact="endSelection"
   >
     <ContextMenu
       ref="contextMenu"
@@ -271,6 +284,7 @@ export default {
         :key="`connector-label-${workflow.projectId}-${id}`"
         v-bind="connector"
       />
+      <SelectionRectangle />
     </svg>
   </div>
 </template>
