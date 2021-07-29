@@ -66,8 +66,7 @@ export default {
                     x: this.viewBox.left + e.offsetX / this.zoomFactor,
                     y: this.viewBox.top + e.offsetY / this.zoomFactor
                 };
-                // setTimeout 0 feels much snappier than Vue.nextTick.
-                setTimeout(() => this.selectAllNodesInRectangle(this.startPos, this.endPos), 0);
+                this.$nextTick(() => this.selectAllNodesInRectangle(this.startPos, this.endPos));
             }
             /* eslint-enable no-invalid-this */
         }, moveNodesThrottle),

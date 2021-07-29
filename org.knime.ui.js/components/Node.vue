@@ -465,7 +465,7 @@ export default {
 
 .port {
   opacity: 0;
-  transition: opacity 0.5s 0.75s;
+  /*transition: opacity 0.5s 0.75s;*/
 
   &:not(.hidden) {
     opacity: 1;
