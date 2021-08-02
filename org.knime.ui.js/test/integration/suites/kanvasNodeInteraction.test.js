@@ -5,7 +5,7 @@ const outputContainer = '.output-container';
 const outputTable = `${outputContainer} table`;
 const executeOutputButton = 'button.action-button.button.primary.compact';
 
-Feature('Kanvas Node Interaction');
+Feature('Kanvas node interaction');
 
 Scenario('Load workflow', ({ I }) => {
     I.loadWorkflow('test-kanvasNodeInteraction');
@@ -38,7 +38,7 @@ Scenario('Reset clicked node via action bar button', ({ I }) => {
     I.dontSeeElement({ nodeId: 207, state: state.EXECUTED });
 });
 
-Scenario('Run Node using Output view execute button', ({ I }) => {
+Scenario('Run node using output view execute button', ({ I }) => {
     I.seeElement(executeOutputButton);
     I.click(executeOutputButton);
     I.seeElement({ nodeId: 207, state: state.EXECUTING });
@@ -47,7 +47,7 @@ Scenario('Run Node using Output view execute button', ({ I }) => {
     I.see('Universe_0_1', outputTable);
 });
 
-Scenario('Unselect Node', ({ I }) => {
+Scenario('Unselect node', ({ I }) => {
     I.click(kanvas);
     I.dontSeeElement({ hover: hover.EXECUTE });
 });

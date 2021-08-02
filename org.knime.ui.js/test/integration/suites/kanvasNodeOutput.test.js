@@ -4,7 +4,7 @@ const kanvas = '#kanvas > svg';
 const outputContainer = '.output-container';
 const outputTable = `${outputContainer} table`;
 
-Feature('Kanvas Node Output');
+Feature('Kanvas node output');
 
 Scenario('Load workflow', ({ I }) => {
     I.loadWorkflow('test-kanvasNodeInteraction');
@@ -17,7 +17,7 @@ Scenario('Verify workflow state and first node is present', ({ I }) => {
     I.seeElement({ nodeId: 207, state: state.CONFIGURED });
 });
 
-Scenario('Run Node and check output', ({ I }) => {
+Scenario('Run node and check output', ({ I }) => {
     I.click({ nodeId: 207 });
     I.seeElement({ hover: hover.EXECUTE });
     I.click({ hover: hover.EXECUTE });
@@ -45,12 +45,12 @@ Scenario('Select multiple nodes', ({ I }) => {
     I.see('To show the node output, please select only one node', outputContainer);
 });
 
-Scenario('Unselect Nodes', ({ I }) => {
+Scenario('Unselect nodes', ({ I }) => {
     I.click(kanvas);
     I.see('To show the node output, please select a configured or executed node', outputContainer);
 });
 
-Scenario('Select again first Node', ({ I }) => {
+Scenario('Select again first node', ({ I }) => {
     const firstTableRow = '.output-container table td';
     I.click({ nodeId: 207 });
     I.see('Row0', firstTableRow);

@@ -1,6 +1,6 @@
 const { state } = require('../plugins/locators');
 
-Feature('Navigate Through Workflow');
+Feature.skip('Navigate through workflow');
 
 Scenario('Load workflow', ({ I }) => {
     I.loadWorkflow('test-navigateThroughWorkflow');
@@ -14,7 +14,7 @@ Scenario('Check for panel meta info', ({ I }) => {
     I.see('* navigation into components and metanodes and back and', '#metadata .metadata');
 });
 
-Scenario('Open Component', ({ I }) => {
+Scenario('Open component', ({ I }) => {
     I.doubleClickNodeWithCtrl({ nodeId: 3 });
     I.see('Output ports', '#metadata .outports');
     I.see('TestData', '#metadata .outports');

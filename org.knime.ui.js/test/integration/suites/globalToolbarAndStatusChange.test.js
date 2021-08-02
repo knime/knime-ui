@@ -1,6 +1,6 @@
 const { state, action, misc } = require('../plugins/locators');
 
-Feature('Global Toolbar and status change');
+Feature('Global toolbar and status change');
 
 Scenario('Load workflow', ({ I }) => {
     I.loadWorkflow('test-globalToolbarAndStatusChange');

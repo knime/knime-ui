@@ -12,7 +12,7 @@ Scenario('Check for streaming decorator', ({ I }) => {
     I.seeElement({ nodeId: 6, decorator: decorator.STREAMABLE });
 });
 
-Scenario('Open Component', ({ I }) => {
+Scenario('Open component', ({ I }) => {
     I.doubleClickNodeWithCtrl({ nodeId: 6 });
 });
 
@@ -38,7 +38,7 @@ Scenario('Execute workflow', ({ I }) => {
     I.click({ action: action.EXECUTE_ALL });
 });
 
-Scenario('Reopen Component', ({ I }) => {
+Scenario('Reopen component', ({ I }) => {
     I.doubleClickNodeWithCtrl({ nodeId: 6 });
 });
 

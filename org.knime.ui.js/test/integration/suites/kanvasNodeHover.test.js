@@ -2,7 +2,7 @@ const { state, hover } = require('../plugins/locators');
 
 const kanvas = '#kanvas > svg';
 
-Feature('Kanvas Node hover');
+Feature('Kanvas node hover');
 
 Scenario('Load workflow', ({ I }) => {
     I.loadWorkflow('test-kanvasNodeInteraction');
