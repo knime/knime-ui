@@ -1,42 +1,34 @@
 # CodeceptJS Guide
 
-### codecept.config.js
-- In the root folder.
-- Function:
-    - Add Helpers
-    - Add Plugins
-    - Select driver (Puppeteer, Playwright).
-
 ## Folders
 
 ### assets
-- Place your workflows here.
-- Important: make sure when you are testing through websocket, workflows folder is selected as root on Knime AP.
+- Place workflows required for the tests here.
+- Important: make sure this workflows folder is selected as the workspace of the KNIME AP you're running the tests to.
 
 ### helpers
-- You can use them to access to instance of Puppeteer or Playwright. This way, you can create more sophisticated methods.
+- Use [Helpers](https://codecept.io/helpers/) to access to instance of Puppeteer or Playwright. This way, you can create more sophisticated methods.
+- need to be registered in [codecept.conf.js](codecept.conf.js)
 - Used for specific domain methods.
-- Please, implement your Helper with a _getPage or _getBrowser method. This way, we can easily translate to Playwright, considering both the latter and Puppeteer uses the same API.
-
-[Helpers](https://codecept.io/helpers/)
+- Please, implement your Helper with a `_getPage` or `_getBrowser` method. This way, we can easily translate to Playwright, considering both the latter and Puppeteer uses the same API.
 
 ### plugins
-- Plugins allow to use CodeceptJS internal API to extend functionality.
-- The reason we are using multiple plugins is organization.
-
-[About plugins](https://codecept.io/hooks/)
+- [Plugins](https://codecept.io/hooks/) allows to use CodeceptJS internal API to extend functionality.
+- The reason we are using multiple plugins is organizational.
+- need to be registered in [codecept.conf.js](codecept.conf.js)
 
 ### suites
 - Place your tests here.
 - Remember to use `test.js` as extension
 
 
----
 
 # Misc
 
-### About steps.d.ts, steps_file.js & jsconfig.json
-- CodecetJS require them for autocomplete
+### steps.d.ts, steps_file.js & jsconfig.json
+- CodecetJS require them for autocompletion
 
-### If you don't have autocomplete after creating a new Helper
-- run `npx codeceptjs def .`
+### If autocomplete doesn't work after creating a new helper, run
+```sh
+npx codeceptjs def .
+```

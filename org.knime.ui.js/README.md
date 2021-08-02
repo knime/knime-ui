@@ -106,9 +106,9 @@ Then, you can run the tests via
 ```
 npm run test:integration
 ```
-To run a single test:
+To run a single test add the filename without path, e.g.:
 ```
-npm run test:integration <name-of-test>
+npm run test:integration navigateThroughWorkflow.test.js
 ```
 
 ### Running security audit
