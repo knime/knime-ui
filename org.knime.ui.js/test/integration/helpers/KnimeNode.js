@@ -1,5 +1,6 @@
 const Helper = require('@codeceptjs/helper');
 const { _getCenterNode, _getNodeSelector } = require('./util/KnimeNodeUtil');
+const { _getModifierKey } = require('./util/osUtil');
 
 class KnimeNode extends Helper {
     /**
@@ -57,11 +58,11 @@ class KnimeNode extends Helper {
      */
     async doubleClickNodeWithCtrl(selector) {
         const page = await this._getPage();
+        const modifierKey = _getModifierKey();
 
-        // TODO EQEXT-24 Mac uses Meta key.
-        await page.keyboard.down('Control');
+        await page.keyboard.down(modifierKey);
         await this.doubleClickNode(selector);
-        await page.keyboard.up('Control');
+        await page.keyboard.down(modifierKey);
     }
 }
 
