@@ -7,8 +7,8 @@ export default {
     data: () => ({
         startPos: {},
         endPos: {},
-        isDragging: false,
-        selectedNodesAtStart: [],
+        isActive: false,
+        selectedNodeIdsAtStart: [],
         pointerId: null
     }),
     computed: {
@@ -25,14 +25,14 @@ export default {
         }
     },
     created() {
-        this.$parent.$on('pointerdown', this.startDragging);
-        this.$parent.$on('pointerup', this.stopDragging);
+        this.$parent.$on('pointerdown', this.startRectSelection);
+        this.$parent.$on('pointerup', this.stopRectSelection);
         this.$parent.$on('pointermove', this.mouseMove);
     },
     methods: {
         ...mapMutations('workflow', ['setDragging']),
         ...mapActions('selection', ['selectNode', 'deselectNode', 'deselectAllObjects']),
-        startDragging(e) {
+        startRectSelection(e) {
             this.pointerId = e.pointerId;
             if (!e.target.hasPointerCapture(e.pointerId)) {
                 e.target.setPointerCapture(e.pointerId);
@@ -46,28 +46,34 @@ export default {
                 this.deselectAllObjects();
             }
             // remember currently selected nodes, the nodes under the rect will inverse them
-            this.selectedNodesAtStart = [...this.selectedNodeIds];
+            this.selectedNodeIdsAtStart = [...this.selectedNodeIds];
             this.endPos = this.startPos;
-            this.isDragging = true;
+            this.isActive = true;
         },
-        stopDragging(e) {
-            this.isDragging = false;
-            this.selectedNodesAtStart = [];
-            setTimeout(() => {
+        stopRectSelection(e) {
+            if (!this.isActive || this.pointerId !== e.pointerId) {
+                return;
+            }
+            this.isActive = false;
+            this.selectedNodeIdsAtStart = [];
+            // workflows dragging state changes behavior of nodes
+            this.$nextTick(() => {
                 this.setDragging(false);
-                delete this.pointerId;
-            }, 0);
+                this.pointerId = null;
+            });
         },
         mouseMove: throttle(function (e) {
             /* eslint-disable no-invalid-this */
-            if (this.isDragging) {
-                this.setDragging(true);
-                this.endPos = {
-                    x: this.viewBox.left + e.offsetX / this.zoomFactor,
-                    y: this.viewBox.top + e.offsetY / this.zoomFactor
-                };
-                this.$nextTick(() => this.selectAllNodesInRectangle(this.startPos, this.endPos));
+            if (!this.isActive || this.pointerId !== e.pointerId) {
+                return;
             }
+            this.setDragging(true);
+            this.endPos = {
+                x: this.viewBox.left + e.offsetX / this.zoomFactor,
+                y: this.viewBox.top + e.offsetY / this.zoomFactor
+            };
+            this.$nextTick(() => this.selectAllNodesInRectangle(this.startPos, this.endPos));
+
             /* eslint-enable no-invalid-this */
         }, moveNodesThrottle),
         selectAllNodesInRectangle(startPos, endPos) {
@@ -91,7 +97,7 @@ export default {
             });
         },
         updateSelection(nodeId, nodeIsInsideOfRect) {
-            if (this.selectedNodesAtStart.includes(nodeId)) {
+            if (this.selectedNodeIdsAtStart.includes(nodeId)) {
                 if (nodeIsInsideOfRect) {
                     this.deselectNode(nodeId);
                 } else {
@@ -112,7 +118,7 @@ export default {
 
 <template>
   <rect
-    v-if="isDragging"
+    v-if="isActive"
     :x="(!changeDirectionX ? startPos.x : endPos.x)"
     :y="!changeDirectionY ? startPos.y : endPos.y"
     :width="Math.abs(!changeDirectionX ? endPos.x - startPos.x : startPos.x - endPos.x)"
