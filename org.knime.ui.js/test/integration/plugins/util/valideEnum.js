@@ -1,6 +1,11 @@
 const locators = require('../locators');
 
-// Agregar Jsdoics
+/**
+* Validates if given locator exists.
+* @param {String} enumName Object to be validated.
+* @param {String} providedLocator Property of the object to be validated.
+* @returns {Boolean} 
+*/
 const validateEnum = (enumName, providedLocator) => {
     if (!locators.hasOwnProperty(enumName)) {
         throw new Error(`Invalid enum value ${enumName}. Valid enums are ${Object.keys(locators)}`);
