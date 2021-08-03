@@ -307,7 +307,6 @@ export default {
          * We use the contextmenu event as click with button = 2 was not reliable.
          */
         onContextMenu(e) {
-            e.preventDefault();
             if (this.isDragging) {
                 return;
             }
