@@ -4,7 +4,7 @@ const locators = require('../locators');
 * Validates if given locator exists.
 * @param {String} enumName Object to be validated.
 * @param {String} providedLocator Property of the object to be validated.
-* @returns {Boolean} 
+* @returns {Boolean} Returns true if the providedLocator is a valid property from enumName
 */
 const validateEnum = (enumName, providedLocator) => {
     if (!locators.hasOwnProperty(enumName)) {

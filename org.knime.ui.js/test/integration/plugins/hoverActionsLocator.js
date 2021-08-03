@@ -1,4 +1,4 @@
-const { validateEnum } = require('./util/valideEnum');
+const { validateEnum } = require('./util/validateEnum');
 
 module.exports = () => {
     codeceptjs.locator.addFilter((providedLocator, locatorObj) => {
