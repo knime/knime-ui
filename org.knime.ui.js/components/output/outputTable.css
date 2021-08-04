@@ -1,6 +1,7 @@
 /*
-Shared css for FlowVariablePortView and TablePortView
+Shared CSS for FlowVariablePortView and TablePortView
 */
+
 .scroller {
   width: 100%;
   overflow: auto;
@@ -11,17 +12,16 @@ Shared css for FlowVariablePortView and TablePortView
   height: 19px;
   line-height: 19px;
   font-size: 14px;
-}
 
-.count {
+  & .count {
+    &:not(:first-child) {
+      padding-left: 8px;
+    }
 
-  &:not(:first-child) {
-     padding-left: 8px;
-  }
-
-  &:not(:last-child) {
-    padding-right: 8px;
-    border-right: 1px solid var(--knime-silver-sand);
+    &:not(:last-child) {
+      padding-right: 8px;
+      border-right: 1px solid var(--knime-silver-sand);
+    }
   }
 }
 
