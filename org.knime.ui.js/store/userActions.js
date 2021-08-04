@@ -264,16 +264,35 @@ export const getters = {
                 actionMap.resetAll
             );
         } else if (selectedNodes.length === 1) {
+            const selectedNodeAllAllowedActions = {
+                ...selectedNodes[0].allowedActions,
+                ...selectedNodes[0].loopInfo?.allowedActions
+            };
+
             // different actions for a single node
+            if (selectedNodeAllAllowedActions.canPause) {
+                actionList.push(actionMap.pauseExecution);
+            } else if (selectedNodeAllAllowedActions.canResume) {
+                actionList.push(actionMap.resumeLoopExecution);
+            } else {
+                actionList.push(actionMap.executeSelected);
+            }
+
+            if ('canStep' in selectedNodeAllAllowedActions) {
+                actionList.push(actionMap.stepLoopExecution);
+            }
+
             actionList.push(
-                actionMap.executeSelected,
                 actionMap.cancelSelected,
-                actionMap.resumeLoopExecution,
-                actionMap.pauseExecution,
-                actionMap.stepLoopExecution,
                 actionMap.resetSelected,
-                actionMap.configureNode,
-                actionMap.openView,
+                actionMap.configureNode
+            );
+
+            if ('canOpenView' in selectedNodeAllAllowedActions) {
+                actionList.push(actionMap.openView);
+            }
+
+            actionList.push(
                 actionMap.deleteSelected
             );
         } else {
