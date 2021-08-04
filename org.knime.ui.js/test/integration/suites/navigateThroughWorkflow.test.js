@@ -1,6 +1,6 @@
 const { state } = require('../plugins/locators');
 
-Feature.skip('Navigate through workflow');
+Feature('Navigate through workflow');
 
 Scenario('Load workflow', ({ I }) => {
     I.loadWorkflow('test-navigateThroughWorkflow');
