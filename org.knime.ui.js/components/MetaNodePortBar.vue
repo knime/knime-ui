@@ -42,12 +42,14 @@ export default {
             }
         }
     },
-    methods: {
+    computed: {
         // horizontal center of ports
-        portPositionX(port) {
+        portPositionX() {
             let delta = this.$shapes.portSize / 2;
             return this.type === 'out' ? -delta : delta;
-        },
+        }
+    },
+    methods: {
         // vertical center of ports
         portPositionY(port) {
             return this.portBarItemYPos(port.index, this.ports);
@@ -69,7 +71,7 @@ export default {
     <Port
       v-for="(port, index) of ports"
       :key="`port-${index}`"
-      :x="portPositionX(port)"
+      :x="portPositionX"
       :y="portPositionY(port)"
       :port="port"
     />
