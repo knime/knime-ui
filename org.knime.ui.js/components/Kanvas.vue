@@ -9,6 +9,7 @@ import KanvasFilters from '~/components/KanvasFilters';
 import StreamedIcon from '~/components/../webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
 import ConnectorLabel from '~/components/ConnectorLabel';
 import ContextMenu from '~/components/ContextMenu';
+import { throttle } from 'lodash';
 
 export default {
     components: {
@@ -141,14 +142,16 @@ export default {
             this.panning = [e.screenX, e.screenY];
             this.$el.setPointerCapture(e.pointerId);
         },
-        movePan(e) {
+        movePan: throttle(function (e) {
+            /* eslint-disable no-invalid-this */
             if (this.panning) {
                 const delta = [e.screenX - this.panning[0], e.screenY - this.panning[1]];
                 this.panning = [e.screenX, e.screenY];
                 this.$el.scrollLeft -= delta[0];
                 this.$el.scrollTop -= delta[1];
             }
-        },
+            /* eslint-disable no-invalid-this */
+        }, 50), // eslint-disable-line no-magic-numbers
         stopPan(e) {
             if (this.panning) {
                 this.panning = null;
