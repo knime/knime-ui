@@ -1,6 +1,6 @@
 <script>
 import { mapActions, mapState, mapGetters } from 'vuex';
-import Port from '~/components/PortWithTooltip';
+import PortWithTooltip from '~/components/PortWithTooltip';
 import NodeState from '~/components/NodeState';
 import NodeTorso from '~/components/NodeTorso';
 import NodeAnnotation from '~/components/NodeAnnotation';
@@ -23,7 +23,7 @@ import NodeSelectionPlane from '~/components/NodeSelectionPlane.vue';
 export default {
     components: {
         NodeActionBar,
-        Port,
+        PortWithTooltip,
         NodeAnnotation,
         NodeTorso,
         NodeState,
@@ -169,7 +169,7 @@ export default {
             projectId: 'activeId'
         }),
         ...mapGetters('selection', ['isNodeSelected']),
-        ...mapState('workflow', { isDragging: 'isDragging' }),
+        ...mapState('workflow', ['isDragging']),
         decoratorBackgroundType() {
             if (this.type) {
                 return this.type;
@@ -224,6 +224,20 @@ export default {
                 height,
                 x,
                 y
+            };
+        },
+        /**
+         * @returns {object} the position of all inPorts and outPorts.
+         * The position for each port is an array with two coordinates [x, y].
+         */
+        portPositions() {
+            return {
+                in: this.inPorts.map(
+                    port => portShift(port.index, this.inPorts.length, this.kind === 'metanode')
+                ),
+                out: this.outPorts.map(
+                    port => portShift(port.index, this.outPorts.length, this.kind === 'metanode', true)
+                )
             };
         }
     },
@@ -435,22 +449,22 @@ export default {
       </g>
 
       <template v-for="port of inPorts">
-        <Port
+        <PortWithTooltip
           :key="`inport-${port.index}`"
           :class="['port', { hidden: !showPort(port) }]"
           :port="port"
-          :x="portShift(port.index, inPorts.length, kind === 'metanode')[0]"
-          :y="portShift(port.index, inPorts.length, kind === 'metanode')[1]"
+          :transform="`translate(${ portPositions.in[port.index][0] }, ${ portPositions.in[port.index][1] })`"
+          :position="portPositions.in[port.index]"
         />
       </template>
 
       <template v-for="port of outPorts">
-        <Port
+        <PortWithTooltip
           :key="`outport-${port.index}`"
           :class="['port', { hidden: !showPort(port) }]"
           :port="port"
-          :x="portShift(port.index, outPorts.length, kind === 'metanode', true)[0]"
-          :y="portShift(port.index, outPorts.length, kind === 'metanode', true)[1]"
+          :transform="`translate(${ portPositions.out[port.index][0] }, ${ portPositions.out[port.index][1] })`"
+          :position="portPositions.out[port.index]"
         />
       </template>
     </g>

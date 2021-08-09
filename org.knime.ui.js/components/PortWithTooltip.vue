@@ -12,7 +12,14 @@ export default {
     },
     mixins: [tooltip],
     inject: ['anchorPoint'],
-    props: { ...Port.props },
+    props: {
+        ...Port.props,
+        position: {
+            type: Array,
+            required: true,
+            validator: position => Array.isArray(position) && position.length === 2
+        }
+    },
     computed: {
         tooltip() {
             // table ports have less space than other ports, because the triangular shape naturally creates a gap
@@ -20,8 +27,8 @@ export default {
             const { portSize } = this.$shapes;
             return {
                 position: {
-                    x: this.x,
-                    y: this.y - portSize / 2
+                    x: this.position[0],
+                    y: this.position[1] - portSize / 2
                 },
                 gap,
                 anchorPoint: this.anchorPoint,
@@ -31,12 +38,9 @@ export default {
                 hoverable: false
             };
         }
+    },
+    render(createElement) {
+        return createElement(Port, { props: this.$props, attrs: this.$attrs }, []);
     }
 };
 </script>
-
-<template>
-  <Port
-    v-bind="this"
-  />
-</template>

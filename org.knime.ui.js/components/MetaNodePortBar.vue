@@ -1,12 +1,12 @@
 <script>
-import Port from '~/components/Port';
+import PortWithTooltip from '~/components/PortWithTooltip';
 import { portBar } from '~/mixins';
 
 /**
  * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
  */
 export default {
-    components: { Port },
+    components: { PortWithTooltip },
     mixins: [portBar],
     props: {
         /**
@@ -47,12 +47,11 @@ export default {
         portPositionX() {
             let delta = this.$shapes.portSize / 2;
             return this.type === 'out' ? -delta : delta;
-        }
-    },
-    methods: {
-        // vertical center of ports
-        portPositionY(port) {
-            return this.portBarItemYPos(port.index, this.ports);
+        },
+        portPositions() {
+            // x-coordinate is absolute
+            // y-coordinate is relative to PortBar
+            return this.ports.map(port => [this.portPositionX + this.x, this.portBarItemYPos(port.index, this.ports)]);
         }
     }
 };
@@ -68,11 +67,11 @@ export default {
       :x="type === 'out' ? null : -$shapes.metaNodeBarWidth"
       :fill="$colors.named.Yellow"
     />
-    <Port
+    <PortWithTooltip
       v-for="(port, index) of ports"
       :key="`port-${index}`"
-      :x="portPositionX"
-      :y="portPositionY(port)"
+      :transform="`translate(${ portPositionX }, ${ portPositions[port.index][1] })`"
+      :position="portPositions[port.index]"
       :port="port"
     />
   </g>
