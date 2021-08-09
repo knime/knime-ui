@@ -37,7 +37,7 @@ export default {
         type: {
             type: String,
             default: 'in',
-            validator(val = 'in') {
+            validator(val) {
                 return ['in', 'out'].includes(val);
             }
         }
