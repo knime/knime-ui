@@ -1,16 +1,8 @@
-const Helper = require('@codeceptjs/helper');
+const KnimeHelper = require('./KnimeHelper');
 const { _getCenterNode, _getNodeSelector } = require('./util/KnimeNodeUtil');
 const { _getModifierKey } = require('./util/osUtil');
 
-class KnimeNode extends Helper {
-    /**
-    * Get page instance from Puppeteer.
-    */
-    async _getPage() {
-        const page = await this.helpers.Puppeteer.page;
-        return page;
-    }
-
+class KnimeNode extends KnimeHelper {
     /**
     * Hover an specific Node in the workflow.
     * @param {String} selector The ID of the Node to hover.

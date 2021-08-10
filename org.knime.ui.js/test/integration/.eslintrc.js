@@ -13,6 +13,8 @@ module.exports = {
             rules: {
                 'no-undef': 'off',
                 'new-cap': 'off',
+                'no-use-before-define': 'off',
+                'no-unused-expressions': 'off',
                 'padding-line-between-statements': [
                     'error',
                     { blankLine: 'always', prev: '*', next: 'multiline-expression' }
@@ -22,6 +24,12 @@ module.exports = {
         },
         {
             files: ['./plugins/*.js'],
+            rules: {
+                'no-undef': 'off'
+            }
+        },
+        {
+            files: ['./pages/*.js'],
             rules: {
                 'no-undef': 'off'
             }

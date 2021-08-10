@@ -36,6 +36,10 @@ exports.config = {
         screenshotOnFail: {
             enabled: true
         },
+        commentStep: {
+            enabled: true,
+            registerGlobal: true
+        },
         // Custom plugins:
         nodeLocator: {
             enabled: true,

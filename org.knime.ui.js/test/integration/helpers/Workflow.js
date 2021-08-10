@@ -1,6 +1,6 @@
-const Helper = require('@codeceptjs/helper');
+const KnimeHelper = require('./KnimeHelper');
 
-class Workflow extends Helper {
+class Workflow extends KnimeHelper {
     /**
     * Load a specific workflow.
     * @param {String} projectId ID of the project to load
@@ -9,7 +9,7 @@ class Workflow extends Helper {
     */
     async loadWorkflow(projectId, workflowId = 'root') {
         let { page } = this.helpers.Puppeteer;
-
+    
         const initParameters = {
             openedWorkflows: [{
                 projectId,
@@ -20,10 +20,10 @@ class Workflow extends Helper {
         await page.evaluate(() => {
             window.clearAppForTesting();
         });
-        
+            
         // TODO EQEXT-25 Research alternative solution about loadWorkflow integration test method
         await page.waitForFunction('window.initAppForTesting !== "undefined"');
-        
+            
         await page.evaluate((workflow) => {
             window.initAppForTesting(workflow);
         }, JSON.stringify(initParameters));
