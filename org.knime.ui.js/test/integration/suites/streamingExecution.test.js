@@ -1,26 +1,25 @@
-const { state, decorator, action } = require('../plugins/locators');
+const { state, decorator, action, misc } = require('../plugins/locators');
+const executionTimer = 20;
 
-Feature('Streaming execution test');
+Feature('Streaming execution');
 
-Scenario('Load workflow', ({ I }) => {
+Before(({ I }) => {
+    __`Before each:`;
     I.loadWorkflow('test-streamingExecution');
-    I.dontSeeElement('.action-executeNodes');
     I.seeElement({ nodeId: 6, state: state.CONFIGURED });
 });
 
-Scenario('Check for streaming decorator', ({ I }) => {
+Scenario('Streaming decorator', ({ I }) => {
     I.seeElement({ nodeId: 6, decorator: decorator.STREAMABLE });
 });
 
-Scenario('Open component', ({ I }) => {
+Scenario('Global streaming decorator', ({ I }) => {
     I.doubleClickNodeWithCtrl({ nodeId: 6 });
-});
-
-Scenario('Check for global decorator', ({ I }) => {
     I.seeElement('.type-notification.onlyStreaming');
 });
 
-Scenario('Check for supported and not supported decorators on nodes', ({ I }) => {
+Scenario('Not streaming supported decorators on nodes', ({ I }) => {
+    I.doubleClickNodeWithCtrl({ nodeId: 6 });
     I.seeElement({ nodeId: '6:0:1', decorator: decorator.STREAMABLE });
     I.seeElement({ nodeId: '6:0:2', decorator: decorator.STREAMABLE });
     I.seeElement({ nodeId: '6:0:3', decorator: decorator.STREAMABLE });
@@ -30,40 +29,81 @@ Scenario('Check for supported and not supported decorators on nodes', ({ I }) =>
     I.dontSeeElement({ nodeId: '6:0:8', decorator: decorator.STREAMABLE });
 });
 
-Scenario('Navigate to workflow via breadcrumb', ({ I }) => {
-    I.click({ breadcrumbChild: 1 });
-});
-
-Scenario('Execute workflow', ({ I }) => {
+Scenario('Streaming execution completes with proper count update', async ({ I }) => {
+    __`Execute Stream`;
     I.click({ action: action.EXECUTE_ALL });
-});
-
-Scenario('Reopen component', ({ I }) => {
     I.doubleClickNodeWithCtrl({ nodeId: 6 });
-});
 
-Scenario('Check for streaming connector count update', async ({ I }) => {
-    I.seeElement('.textWrapper .streamingLabel');
+    __`Count update not null`;
     I.dontSee(null, '.textWrapper .streamingLabel');
-    /* eslint-disable no-magic-numbers */
-    const firstBenchmark = await I.grabTextFrom(locate('.textWrapper .streamingLabel').at(3));
-    I.wait(0.2);
-    const secondBenchmark = await I.grabTextFrom(locate('.textWrapper .streamingLabel').at(3));
-    /* eslint-enable no-magic-numbers */
-    I.assertNotEqual(firstBenchmark, secondBenchmark);
-});
 
-Scenario('Wait for execution to finish', ({ I }) => {
-    /* eslint-disable no-magic-numbers */
+    __`Count changes`;
+    const n = await benchmark(I);
+    I.assertNotEqual(n.firstBenchmark, n.secondBenchmark);
+
+    __`Confirm execution inside component`;
+    // eslint-disable-next-line no-magic-numbers
     I.waitForText('4,000,000', 50, locate('.textWrapper .streamingLabel').at(3));
-    I.waitForElement({ nodeId: '6:0:7', state: state.EXECUTED }, 50);
-    /* eslint-enable no-magic-numbers */
-});
+    I.waitForElement({ nodeId: '6:0:7', state: state.EXECUTED }, executionTimer);
 
-Scenario('Navigate back to workflow', ({ I }) => {
+    __`Confirm execution outside component`;
     I.click({ breadcrumbChild: 1 });
-});
-
-Scenario('Check for executed state', ({ I }) => {
     I.seeElement({ nodeId: '6', state: state.EXECUTED });
 });
+
+Scenario('Cancel Stream execution outside component', async ({ I }) => {
+    __`Execute and Cancel outside component`;
+    I.click({ action: action.EXECUTE_ALL });
+    I.wait(1);
+    I.click({ action: action.CANCEL_ALL });
+    I.seeElement({ nodeId: 6, misc: misc.EXECUTION_CANCELLED });
+
+    __`Enter component and check proper "cancelled" state.`;
+    I.doubleClickNodeWithCtrl({ nodeId: 6 });
+    I.dontSeeElement({ nodeId: '6:0:2', misc: misc.ERROR });
+    const n = await benchmark(I);
+    I.assertEqual(n.firstBenchmark, n.secondBenchmark);
+});
+
+Scenario('Cancel Stream execution inside component', async ({ I }) => {
+    executeAndCancelInsideComponent(I);
+
+    __`Count does not change`;
+    const n = await benchmark(I);
+    I.assertEqual(n.firstBenchmark, n.secondBenchmark);
+
+    __`Node state is Configured`;
+    I.seeElement({ nodeId: '6:0:1', state: state.CONFIGURED });
+    I.seeElement({ nodeId: '6:0:2', state: state.CONFIGURED });
+    I.seeElement({ nodeId: '6:0:7', state: state.CONFIGURED });
+    I.seeElement({ nodeId: '6:0:8', state: state.CONFIGURED });
+});
+
+Scenario('Streaming execution after cancelling inside component', async ({ I }) => {
+    executeAndCancelInsideComponent(I);
+
+    __`Confirm execution inside component`;
+    await I.seeElementAndEnabled({ action: action.EXECUTE_ALL }, 'disabled');
+    I.click({ action: action.EXECUTE_ALL });
+    I.dontSeeElement({ nodeId: '6:0:2', misc: misc.ERROR });
+    I.waitForElement({ nodeId: '6:0:7', state: state.EXECUTED }, executionTimer);
+    I.seeElement({ nodeId: '6:0:1', state: state.EXECUTED });
+    I.seeElement({ nodeId: '6:0:8', state: state.EXECUTED });
+});
+
+const benchmark = async (I) => {
+    /* eslint-disable no-magic-numbers */
+    const firstBenchmark = await I.grabTextFrom(locate('.textWrapper .streamingLabel').at(3));
+    I.wait(2);
+    const secondBenchmark = await I.grabTextFrom(locate('.textWrapper .streamingLabel').at(3));
+    /* eslint-enable no-magic-numbers */
+
+    return { firstBenchmark, secondBenchmark };
+};
+
+const executeAndCancelInsideComponent = (I) => {
+    __`Execute Stream and Cancel all inside component`;
+    I.click({ action: action.EXECUTE_ALL });
+    I.doubleClickNodeWithCtrl({ nodeId: 6 });
+    I.click({ action: action.CANCEL_ALL });
+};

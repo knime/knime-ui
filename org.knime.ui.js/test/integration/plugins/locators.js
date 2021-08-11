@@ -101,6 +101,13 @@ module.exports = {
         EXECUTION_CANCELLED: {
             label: 'EXECUTION_CANCELLED',
             css: '.warning '
+        },
+        /**
+        * @property Node exeuction error. Cross Red sign.
+        */
+        ERROR: {
+            label: 'ERROR',
+            css: '.error '
         }
     },
     /**
