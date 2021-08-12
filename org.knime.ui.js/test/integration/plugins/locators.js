@@ -141,6 +141,13 @@ module.exports = {
         CANCEL: {
             label: 'CANCEL',
             css: '.action-button.action-cancel '
+        },
+        /**
+        * @property Step loop execution.
+        */
+        STEP: {
+            label: 'STEP',
+            css: '.action-button.action-step '
         }
     }
 };
