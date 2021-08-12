@@ -18,7 +18,6 @@ module.exports = function () {
             const elementAttribute = await this.grabAttributeFrom(selector, attribute);
             // console.log(elementAttribute);
             if (attribute === 'class') {
-                console.log(elementAttribute);
                 this.assertStringIncludes(elementAttribute, 'disabled');
             }
 

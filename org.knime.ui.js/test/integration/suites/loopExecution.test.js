@@ -23,28 +23,30 @@ Scenario('Hover Loop End and check Action Bar', async ({ I }) => {
     await I.seeElementAndDisabled({ hover: hover.RESET }, 'class');
 });
 
-// Scenario('Step Loop Execution on loop end', async ({ I }) => {
-//     I.hover({ nodeId: 10 });
-//     I.click({ hover: hover.STEP });
+Scenario('Step Loop Execution on loop end', async ({ I }) => {
+    __`Execute Step loop and check action bar`;
+    I.hover({ nodeId: 10 });
+    I.click({ hover: hover.STEP });
 
-//     // Possible ideaL Transfer this to hover methods?
-//     // TODO: Check PAUSED node status
-//     I.seeElementAndEnabled({ hover: hover.OPEN_DIALOG });
-//     I.seeElementAndEnabled({ hover: hover.RESUME }); // todo: ADD LOCATOR FOR RESUME
-//     I.seeElementAndEnabled({ hover: hover.STEP });
-//     I.seeElementAndEnabled({ hover: hover.CANCEL });
-//     // I.seeElementAndDisabled({}) TODO: Check button that is disabled.
+    // TODO: Check PAUSED node status
+    I.seeElementAndEnabled({ hover: hover.OPEN_DIALOG });
+    I.seeElementAndEnabled({ hover: hover.RESUME });
+    I.seeElementAndEnabled({ hover: hover.STEP });
+    I.seeElementAndEnabled({ hover: hover.CANCEL });
+    I.seeElementAndDisabled({ hover: hover.RESET });
 
-//     I.click({ nodeId: 6 });
-//     I.click('Flow Variables');
-//     const firstIteration = await I.grabTextFrom(valueFromCurrentIteration);
-//     I.assert(firstIteration, 0);
+    __`First loop`;
+    I.click({ nodeId: 6 });
+    I.click('Flow Variables');
+    const firstIteration = await I.grabTextFrom(valueFromCurrentIteration);
+    I.assert(firstIteration, 0);
 
-//     I.click({ nodeId: 10 });
-//     I.hover({ nodeId: 10 });
-//     I.click({ hover: hover.STEP });
-//     I.click({ nodeId: 6 });
-//     I.click('Flow Variables');
-//     const secondIteration = await I.grabTextFrom(valueFromCurrentIteration);
-//     I.assert(secondIteration, 1);
-// });
+    __`Second loop`;
+    I.click({ nodeId: 10 });
+    I.hover({ nodeId: 10 });
+    I.click({ hover: hover.STEP });
+    I.click({ nodeId: 6 });
+    I.click('Flow Variables');
+    const secondIteration = await I.grabTextFrom(valueFromCurrentIteration);
+    I.assert(secondIteration, 1);
+});
