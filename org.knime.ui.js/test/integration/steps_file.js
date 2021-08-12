@@ -16,12 +16,13 @@ module.exports = function () {
             this.seeElement(selector);
 
             const elementAttribute = await this.grabAttributeFrom(selector, attribute);
+            // console.log(elementAttribute);
             if (attribute === 'class') {
-                this.assertStringIncludes(attribute, 'disabled');
+                this.assertStringIncludes(elementAttribute, 'disabled');
             }
 
             if (attribute === 'disabled') {
-                this.assertOk(elementAttribute === true, `Asserting if ${selector} is enabled`);
+                this.assertOk(elementAttribute === true, `Asserting if ${JSON.stringify(selector)} is enabled`);
             }
         },
         
@@ -34,12 +35,13 @@ module.exports = function () {
             this.seeElement(selector);
 
             const elementAttribute = await this.grabAttributeFrom(selector, attribute);
+            // console.log(elementAttribute);
             if (attribute === 'class') {
                 const isDisabled = elementAttribute.includes('disabled');
-                this.assertOk(isDisabled === false, `Asserting if ${selector} is enabled`);
+                this.assertOk(isDisabled === false, `Asserting if ${JSON.stringify(selector)} is enabled`);
             }
             if (attribute === 'disabled') {
-                this.assertOk(elementAttribute !== true, `Asserting if ${selector} is enabled`);
+                this.assertOk(elementAttribute !== true, `Asserting if ${JSON.stringify(selector)} is enabled`);
             }
         }
     });
