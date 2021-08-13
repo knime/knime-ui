@@ -191,7 +191,43 @@ module.exports = {
     context: {
         EXECUTE_ALL: {
             label: 'EXECUTE_ALL',
-            xpath: ''
+            xpath: 'Execute all'
+        },
+        CANCEL_ALL: {
+            label: 'CANCEL_ALL',
+            xpath: 'Cancel all'
+        },
+        RESET_ALL: {
+            label: 'RESET_ALL',
+            xpath: 'Reset all'
+        },
+        DELETE: {
+            label: 'DELETE',
+            xpath: 'Delete'
+        },
+        EXECUTE: {
+            label: 'EXECUTE',
+            xpath: 'Execute'
+        },
+        STEP: {
+            label: 'STEP_LOOP_EXECUTION',
+            xpath: 'Step loop execution'
+        },
+        CANCEL: {
+            label: 'CANCEL',
+            xpath: 'Cancel'
+        },
+        RESET: {
+            label: 'RESET',
+            xpath: 'Reset'
+        },
+        CONFIGURE: {
+            label: 'CONFIGURE',
+            xpath: 'Configure'
+        },
+        OPEN_VIEW: {
+            label: 'OPEN_VIEW',
+            xpath: 'Open view'
         }
     }
 };

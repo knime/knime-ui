@@ -56,6 +56,10 @@ exports.config = {
         hoverActionLocator: {
             enabled: true,
             require: './plugins/hoverActionsLocator.js'
+        },
+        contextMenuLocator: {
+            enabled: true,
+            require: './plugins/contextMenuLocator.js'
         }
     }
 };
