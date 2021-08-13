@@ -135,6 +135,7 @@ export default {
       :fill="$colors.text.default"
       text-anchor="middle"
       y="8.5"
+      :data-status="loopStatus"
     >
       {{ loopStatus && loopStatus === 'PAUSED' ? 'paused' : 'queued' }}
     </text>

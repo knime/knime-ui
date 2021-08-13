@@ -33,15 +33,28 @@
 
 ### About the "comments" messages:
 
-```
+```js
 __`Sample step`;
 ```
 - This is known as [Tagged Templates](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates).
 A CodeceptJS plugin called [Comment Step](https://codecept.io/plugins/#commentstep) utilizes them so you can add comments. The comments will be shown in the output.
 
 
+### Locator Builder:
+If you want to create a complex locator, use the [Locator Builder](https://codecept.io/locators/#locator-builder) from CodeceptJS to improve maintainability and readability.
 
-### If autocomplete doesn't work after creating a new helper, run
+Example: I want to assert the value from a table. I can use `index` or `child` but this could change. Also, I could use a complex xPath locator but it's hard to understand.
+
+Using the locator builder:
+
+```js
+// Select td with specific text.
+const currentIteration = locate('td').withText('currentIteration');
+// Select the td next to it.
+const valueFromCurrentIteration = locate('td').after(currentIteration);
+```
+
+### If autocomplete doesn't work after creating a new helper, run inside test/integration:
 ```sh
 npx codeceptjs def .
 ```
