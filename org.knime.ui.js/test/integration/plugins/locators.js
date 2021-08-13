@@ -79,18 +79,18 @@ module.exports = {
             css: '.traffic-light-green '
         },
         /**
-        * @property Node is paused.
+        * @property Loop Node is paused.
         */
         PAUSED: {
             label: 'PAUSED',
-            css: 'text[data-status="PAUSED"]'
+            css: '.pause '
         },
         /**
-        * @property Node ir running. Eg: in a Loop Execution.
+        * @property Loop Node is running.
         */
         RUNNING: {
             label: 'RUNNING',
-            css: 'text[data-status="RUNNING"]'
+            css: '.running '
         }
     },
     /**
