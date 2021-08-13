@@ -19,6 +19,8 @@ Scenario('Open a component', ({ I }) => {
     I.doubleClickNodeWithCtrl({ nodeId: 3 });
     I.see('Output ports', '#metadata .outports');
     I.see('TestData', '#metadata .outports');
+    I.seeElement({ nodeId: '3:0:1' });
+    I.seeElement({ nodeId: '3:0:6' });
 });
 
 Scenario('Open a metanode', ({ I }) => {

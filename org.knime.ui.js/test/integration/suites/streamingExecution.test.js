@@ -9,11 +9,11 @@ Before(({ I }) => {
     I.seeElement({ nodeId: 6, state: state.CONFIGURED });
 });
 
-Scenario('Streaming decorator', ({ I }) => {
+Scenario('Streaming decorators', ({ I }) => {
+    __`Node Streaming decorator`;
     I.seeElement({ nodeId: 6, decorator: decorator.STREAMABLE });
-});
-
-Scenario('Global streaming decorator', ({ I }) => {
+    
+    __`Global Streaming decorator`;
     I.doubleClickNodeWithCtrl({ nodeId: 6 });
     I.seeElement('.type-notification.onlyStreaming');
 });
