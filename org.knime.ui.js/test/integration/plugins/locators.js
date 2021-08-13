@@ -184,5 +184,14 @@ module.exports = {
             label: 'PAUSE',
             css: '.action-button.action-pause '
         }
+    },
+    /**
+    * @object Context menu.
+    */
+    context: {
+        EXECUTE_ALL: {
+            label: 'EXECUTE_ALL',
+            xpath: ''
+        }
     }
 };
