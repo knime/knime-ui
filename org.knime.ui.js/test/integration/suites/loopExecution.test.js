@@ -28,11 +28,12 @@ Scenario('Step Loop Execution on loop end', async ({ I }) => {
     stepOnLoopEnd(I);
 
     I.seeElement({ nodeId: 10, state: state.PAUSED });
-    I.seeElementAndEnabled({ hover: hover.OPEN_DIALOG });
-    I.seeElementAndEnabled({ hover: hover.RESUME });
-    I.seeElementAndEnabled({ hover: hover.STEP });
-    I.seeElementAndEnabled({ hover: hover.CANCEL });
-    I.seeElementAndDisabled({ hover: hover.RESET });
+
+    await I.seeElementAndEnabled({ hover: hover.OPEN_DIALOG });
+    await I.seeElementAndEnabled({ hover: hover.RESUME });
+    await I.seeElementAndEnabled({ hover: hover.STEP });
+    await I.seeElementAndEnabled({ hover: hover.CANCEL });
+    await I.seeElementAndDisabled({ hover: hover.RESET });
 
     __`First loop`;
     I.click({ nodeId: 6 });
@@ -50,12 +51,12 @@ Scenario('Step Loop Execution on loop end', async ({ I }) => {
     I.assert(secondIteration, 1);
 });
 
-Scenario('Resume Step Loop execution', ({ I }) => {
+Scenario('Resume Step Loop execution', async ({ I }) => {
     stepOnLoopEnd(I);
     I.click({ hover: hover.RESUME });
 
-    I.seeElementAndEnabled({ hover: hover.PAUSE });
-    I.seeElementAndEnabled({ hover: hover.CANCEL });
+    await I.seeElementAndEnabled({ hover: hover.PAUSE });
+    await I.seeElementAndEnabled({ hover: hover.CANCEL });
 });
 
 Scenario('Pause Step Loop execution', ({ I }) => {
@@ -66,6 +67,7 @@ Scenario('Pause Step Loop execution', ({ I }) => {
     I.seeElement({ nodeId: 10, state: state.PAUSED });
 });
 
+// NXT-644 (Error when paused loop execution is continued)
 Scenario('Complete Loop execution', ({ I }) => {
     executeOnLoopEnd(I);
     
@@ -73,7 +75,7 @@ Scenario('Complete Loop execution', ({ I }) => {
     I.waitForElement({ nodeId: 10, state: state.EXECUTED }, 30);
 });
 
-// TODO: write issue number
+// NXT-644 (Error when paused loop execution is continued)
 Scenario('Action Bar while selecting another node', ({ I }) => {
     stepOnLoopEnd(I);
 
