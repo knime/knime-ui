@@ -25,11 +25,18 @@ module.exports = {
             css: '#toolbar button[title^="Execute selected nodes"] '
         },
         /**
-        * @property Resets the workflow
+        * @property Resets the workflow.
         */
         RESET_ALL: {
             label: 'RESET_ALL',
             css: '#toolbar button[title^="Reset executed nodes"] '
+        },
+        /**
+        * @property Deletes a node.
+        */
+        DELETE: {
+            label: 'DELETE',
+            css: '#toolbar button[title^="Delete selection"] '
         }
     },
     /**
@@ -70,6 +77,20 @@ module.exports = {
         EXECUTED: {
             label: 'EXECUTED',
             css: '.traffic-light-green '
+        },
+        /**
+        * @property Node is paused.
+        */
+        PAUSED: {
+            label: 'PAUSED',
+            css: 'text[data-status="PAUSED"]'
+        },
+        /**
+        * @property Node ir running. Eg: in a Loop Execution.
+        */
+        RUNNING: {
+            label: 'RUNNING',
+            css: 'text[data-status="RUNNING"]'
         }
     },
     /**
@@ -143,11 +164,25 @@ module.exports = {
             css: '.action-button.action-cancel '
         },
         /**
-        * @property Step loop execution.
+        * @property Advance a Step loop execution.
         */
         STEP: {
             label: 'STEP',
             css: '.action-button.action-step '
+        },
+        /**
+        * @property Resume Step loop execution.
+        */
+        RESUME: {
+            label: 'RESUME',
+            css: '.action-button.action-resume '
+        },
+        /**
+        * @property Pause Step loop execution.
+        */
+        PAUSE: {
+            label: 'PAUSE',
+            css: '.action-button.action-pause '
         }
     }
 };

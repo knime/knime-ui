@@ -25,10 +25,9 @@ Scenario('Hover Loop End and check Action Bar', async ({ I }) => {
 
 Scenario('Step Loop Execution on loop end', async ({ I }) => {
     __`Execute Step loop and check action bar`;
-    I.hover({ nodeId: 10 });
-    I.click({ hover: hover.STEP });
+    stepOnLoopEnd(I);
 
-    // TODO: Check PAUSED node status
+    I.seeElement({ nodeId: 10, state: state.PAUSED });
     I.seeElementAndEnabled({ hover: hover.OPEN_DIALOG });
     I.seeElementAndEnabled({ hover: hover.RESUME });
     I.seeElementAndEnabled({ hover: hover.STEP });
@@ -50,3 +49,56 @@ Scenario('Step Loop Execution on loop end', async ({ I }) => {
     const secondIteration = await I.grabTextFrom(valueFromCurrentIteration);
     I.assert(secondIteration, 1);
 });
+
+Scenario('Resume Step Loop execution', ({ I }) => {
+    stepOnLoopEnd(I);
+    I.click({ hover: hover.RESUME });
+
+    I.seeElementAndEnabled({ hover: hover.PAUSE });
+    I.seeElementAndEnabled({ hover: hover.CANCEL });
+});
+
+Scenario('Pause Step Loop execution', ({ I }) => {
+    executeOnLoopEnd(I);
+    
+    I.click({ hover: hover.PAUSE });
+
+    I.seeElement({ nodeId: 10, state: state.PAUSED });
+});
+
+Scenario('Complete Loop execution', ({ I }) => {
+    executeOnLoopEnd(I);
+    
+    // eslint-disable-next-line no-magic-numbers
+    I.waitForElement({ nodeId: 10, state: state.EXECUTED }, 30);
+});
+
+// TODO: write issue number
+Scenario('Action Bar while selecting another node', ({ I }) => {
+    stepOnLoopEnd(I);
+
+    __`Select another node`;
+    I.click({ nodeId: 7 });
+
+    __`Hover and resume the loop execution while the other node is selected`;
+    I.hover({ nodeId: 10 });
+    I.click({ hover: hover.RESUME });
+
+    __`Check node is running`;
+    I.dontSeeElement('.error-overlay');
+    I.seeElement({ nodeId: 10, state: state.RUNNING });
+});
+
+// Utilities:
+
+const stepOnLoopEnd = (I) => {
+    __`Step Loop Execution in Loop End`;
+    I.hover({ nodeId: 10 });
+    I.click({ hover: hover.STEP });
+};
+
+const executeOnLoopEnd = (I) => {
+    __`Execute Loop Execution in Loop End`;
+    I.hover({ nodeId: 10 });
+    I.click({ hover: hover.EXECUTE });
+};
