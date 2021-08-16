@@ -320,6 +320,7 @@ describe('canvas store', () => {
                     x: 0,
                     y: 0
                 });
+                expect(store.getters['canvas/fromAbsoluteCoordinates']([0, 0])).toStrictEqual([0, 0]);
             });
 
             test('content smaller than container (origin included)', () => {
@@ -348,6 +349,7 @@ describe('canvas store', () => {
                     x: 25,
                     y: 25
                 });
+                expect(store.getters['canvas/fromAbsoluteCoordinates']([25, 25])).toStrictEqual([0, 0]);
             });
 
             test('content smaller than container - (negative, origin not included)', () => {
@@ -379,6 +381,7 @@ describe('canvas store', () => {
                     x: 150,
                     y: 150
                 });
+                expect(store.getters['canvas/fromAbsoluteCoordinates']([150, 150])).toStrictEqual([0, 0]);
             });
         });
 
@@ -413,6 +416,7 @@ describe('canvas store', () => {
                     x: 0,
                     y: 0
                 });
+                expect(store.getters['canvas/fromAbsoluteCoordinates']([0, 0])).toStrictEqual([0, 0]);
             });
 
             test('content smaller than container (origin included)', () => {
@@ -448,6 +452,7 @@ describe('canvas store', () => {
                     x: 50,
                     y: 50
                 });
+                expect(store.getters['canvas/fromAbsoluteCoordinates']([50, 50])).toStrictEqual([0, 0]);
             });
 
             test('content smaller than container - (negative, origin not included)', () => {
@@ -479,6 +484,7 @@ describe('canvas store', () => {
                     x: 300,
                     y: 300
                 });
+                expect(store.getters['canvas/fromAbsoluteCoordinates']([300, 300])).toStrictEqual([0, 0]);
             });
         });
     });

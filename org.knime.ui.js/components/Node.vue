@@ -1,6 +1,6 @@
 <script>
 import { mapActions, mapState, mapGetters } from 'vuex';
-import PortWithTooltip from '~/components/PortWithTooltip';
+import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip.vue';
 import NodeState from '~/components/NodeState';
 import NodeTorso from '~/components/NodeTorso';
 import NodeAnnotation from '~/components/NodeAnnotation';
@@ -23,7 +23,7 @@ import NodeSelectionPlane from '~/components/NodeSelectionPlane.vue';
 export default {
     components: {
         NodeActionBar,
-        PortWithTooltip,
+        DraggablePortWithTooltip,
         NodeAnnotation,
         NodeTorso,
         NodeState,
@@ -161,7 +161,8 @@ export default {
     },
     data() {
         return {
-            hover: false
+            hover: false,
+            connectorHover: false
         };
     },
     computed: {
@@ -343,7 +344,10 @@ export default {
 </script>
 
 <template>
-  <g>
+  <g 
+    @connector-enter="connectorHover = true"
+    @connector-leave="connectorHover = false"
+  >
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal
       to="node-actions"
@@ -448,25 +452,25 @@ export default {
         />
       </g>
 
-      <template v-for="port of inPorts">
-        <PortWithTooltip
-          :key="`inport-${port.index}`"
-          :class="['port', { hidden: !showPort(port) }]"
-          :port="port"
-          :transform="`translate(${ portPositions.in[port.index][0] }, ${ portPositions.in[port.index][1] })`"
-          :position="portPositions.in[port.index]"
-        />
-      </template>
-
-      <template v-for="port of outPorts">
-        <PortWithTooltip
-          :key="`outport-${port.index}`"
-          :class="['port', { hidden: !showPort(port) }]"
-          :port="port"
-          :transform="`translate(${ portPositions.out[port.index][0] }, ${ portPositions.out[port.index][1] })`"
-          :position="portPositions.out[port.index]"
-        />
-      </template>
+      <DraggablePortWithTooltip
+        v-for="port of inPorts"
+        :key="`inport-${port.index}`"
+        :class="['port', { hidden: !showPort(port), show: connectorHover }]"
+        :relative-position="portPositions.in[port.index]"
+        :port="port"
+        :node-id="id"
+        direction="in"
+      />
+      
+      <DraggablePortWithTooltip
+        v-for="port of outPorts"
+        :key="`outport-${port.index}`"
+        :class="['port', { hidden: !showPort(port), show: connectorHover }]"
+        :relative-position="portPositions.out[port.index]"
+        :port="port"
+        :node-id="id"
+        direction="out"
+      />
     </g>
   </g>
 </template>
@@ -478,15 +482,29 @@ export default {
 
 .port {
   opacity: 0;
-  transition: opacity 0.5s 0.75s;
+
+  /* no delay when fading-out flowVar ports */
+  transition: opacity 0.5s;
 
   &:not(.hidden) {
     opacity: 1;
+
+    /* 0.5 seconds delay when showing flowVar ports, when node is hovered */
+    transition: opacity 0.5s 0.5s;
   }
 
   &:hover {
     opacity: 1;
+
+    /* immediately show flowVar ports on direct hover */
     transition: none;
+  }
+
+  &.show {
+    opacity: 1;
+
+    /* fade-in flowVar ports without delay on connectorHover */
+    transition: opacity 0.25s;
   }
 }
 

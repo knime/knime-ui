@@ -6,19 +6,21 @@ export const connectorPosition = {
         /**
          * Node ID of the connector's source node
          */
-        sourceNode: { type: String, required: true },
+        sourceNode: { type: String, default: null },
         /**
          * Node ID of the connector's target node
          */
-        destNode: { type: String, required: true },
+        destNode: { type: String, default: null },
         /**
          * Index of the source node's output port that this connector is attached to
          */
-        sourcePort: { type: Number, required: true },
+        sourcePort: { type: Number, default: null },
         /**
          * Index of the target node's input port that this connector is attached to
          */
-        destPort: { type: Number, required: true }
+        destPort: { type: Number, default: null },
+
+        absolutePoint: { type: Array, default: null },
     },
     methods: {
         /**
@@ -66,26 +68,20 @@ export const connectorPosition = {
          * @returns {Object} coordinates containing `x` and `y` properties
          */
         start() {
-            return this.getEndPointCoordinates('source');
+            return this.sourceNode && this.getEndPointCoordinates('source') || this.absolutePoint;
         },
         /**
          * The end coordinates of this connector
          * @returns {Object} coordinates containing `x` and `y` properties
          */
         end() {
-            return this.getEndPointCoordinates('dest');
+            return this.destNode && this.getEndPointCoordinates('dest') || this.absolutePoint;
         },
         sourceNodeObject() {
             return this.$store.state.workflow.activeWorkflow.nodes[this.sourceNode];
         },
         destNodeObject() {
             return this.$store.state.workflow.activeWorkflow.nodes[this.destNode];
-        },
-        sourcePortType() {
-            return (this.sourceNodeObject?.outPorts || this.workflow.metaInPorts.ports)[this.sourcePort].type;
-        },
-        destPortType() {
-            return (this.destNodeObject?.inPorts || this.workflow.metaOutPorts.ports)[this.destPort].type;
         }
     }
 };

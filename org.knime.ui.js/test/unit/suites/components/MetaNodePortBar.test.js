@@ -7,7 +7,7 @@ import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
 import MetaNodePortBar from '~/components/MetaNodePortBar';
-import Port from '~/components/Port';
+import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip.vue';
 
 describe('MetaNodePortBar.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, $store;
@@ -25,7 +25,8 @@ describe('MetaNodePortBar.vue', () => {
         propsData = {
             x,
             y,
-            ports: []
+            ports: [],
+            containerId: 'metanode:1'
         };
         $store = mockVuexStore({
             canvas: {
@@ -60,30 +61,46 @@ describe('MetaNodePortBar.vue', () => {
             expect(Number(rect.attributes('width'))).toEqual($shapes.metaNodeBarWidth);
             expect(Number(rect.attributes('height'))).toEqual(height);
             if (type === 'in') {
-                expect(Number(rect.attributes('x'))).toEqual(-$shapes.metaNodeBarWidth);
+                expect(Number(rect.attributes('x'))).toEqual(222 - $shapes.metaNodeBarWidth);
             } else {
-                expect(rect.attributes('x')).toBeFalsy();
+                expect(Number(rect.attributes('x'))).toEqual(222);
             }
-            expect(wrapper.find('g').attributes('transform')).toEqual(`translate(${x}, ${y})`);
+            expect(wrapper.find('g').attributes('transform')).toEqual(`translate(0, ${y})`);
         });
 
         it('renders ports', () => {
             propsData.ports = [{
                 index: 0,
-                type: 'type0'
+                type: 'type0',
             }, {
                 index: 1,
                 type: 'type1'
             }];
             doShallowMount();
-            let ports = wrapper.findAllComponents(Port);
+            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
             expect(ports.length).toBe(2);
-            expect(ports.at(0).props('port')).toEqual({ index: 0, type: 'type0' });
-            expect(ports.at(1).props('port')).toEqual({ index: 1, type: 'type1' });
-            expect(ports.at(0).props('x')).toEqual($shapes.portSize / 2 * (type === 'in' ? 1 : -1));
-            expect(ports.at(1).props('x')).toEqual($shapes.portSize / 2 * (type === 'in' ? 1 : -1));
-            expect(ports.at(0).props('y')).toEqual(height / (ports.length + 1));
-            expect(ports.at(1).props('y')).toEqual(2 * height / (ports.length + 1));
+
+            let [port0, port1] = ports.wrappers;
+
+            expect(port0.props()).toStrictEqual({
+                port: propsData.ports[0],
+                direction: type === 'in' ? 'out' : 'in',
+                nodeId: 'metanode:1',
+                relativePosition: [
+                    222 + $shapes.portSize / 2 * (type === 'in' ? 1 : -1),
+                    549 / (ports.length + 1)
+                ]
+            })
+
+            expect(port1.props()).toStrictEqual({
+                port: propsData.ports[1],
+                direction: type === 'in' ? 'out' : 'in',
+                nodeId: 'metanode:1',
+                relativePosition: [
+                    222 + $shapes.portSize / 2 * (type === 'in' ? 1 : -1),
+                    2 * 549 / (ports.length + 1)
+                ]
+            })
         });
     });
 });

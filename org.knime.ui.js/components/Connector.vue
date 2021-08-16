@@ -15,6 +15,7 @@ export default {
          * Determines whether this connector is streamed at the moment
          */
         streaming: { type: Boolean, default: false },
+
         /**
          * Determines whether this connector is rendered in alternative color
          */
@@ -56,11 +57,12 @@ export default {
                     y2 += this.deltaMovePosition.y;
                 }
             }
+            
             // These deltas are carefully chosen so that the connector line is hidden behind the flow variable line,
             // especially for optional ports, even when hovering the port or the connector line.
             // (Optional output ports are useless, but are technically possible and do exist out in the wild)
             /* eslint-disable no-magic-numbers */
-            x1 += this.$shapes.portSize / 2 - (this.sourcePortType === 'table' ? 2.5 : 0.5);
+            x1 += this.$shapes.portSize / 2 - 0.5;
             x2 -= this.$shapes.portSize / 2 - 0.5;
             const width = Math.abs(x1 - x2);
             const height = Math.abs(y1 - y2);

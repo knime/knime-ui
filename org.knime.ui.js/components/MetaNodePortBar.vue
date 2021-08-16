@@ -1,12 +1,12 @@
 <script>
-import PortWithTooltip from '~/components/PortWithTooltip';
+import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip.vue';
 import { portBar } from '~/mixins';
 
 /**
  * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
  */
 export default {
-    components: { PortWithTooltip },
+    components: { DraggablePortWithTooltip },
     mixins: [portBar],
     props: {
         /**
@@ -40,6 +40,11 @@ export default {
             validator(val) {
                 return ['in', 'out'].includes(val);
             }
+        },
+        /** Id of the metanode, this PortBar is inside of */
+        containerId: {
+          type: String,
+          required: true
         }
     },
     computed: {
@@ -51,7 +56,7 @@ export default {
         portPositions() {
             // x-coordinate is absolute
             // y-coordinate is relative to PortBar
-            return this.ports.map(port => [this.portPositionX + this.x, this.portBarItemYPos(port.index, this.ports)]);
+            return this.ports.map(port => [this.x + this.portPositionX, this.portBarItemYPos(port.index, this.ports)]);
         }
     }
 };
@@ -59,20 +64,21 @@ export default {
 
 <template>
   <g
-    :transform="`translate(${x}, ${y})`"
+    :transform="`translate(0, ${y})`"
   >
     <rect
       :width="$shapes.metaNodeBarWidth"
       :height="portBarHeight"
-      :x="type === 'out' ? null : -$shapes.metaNodeBarWidth"
+      :x="type === 'out' ? x : x - $shapes.metaNodeBarWidth"
       :fill="$colors.named.Yellow"
     />
-    <PortWithTooltip
-      v-for="(port, index) of ports"
-      :key="`port-${index}`"
-      :transform="`translate(${ portPositionX }, ${ portPositions[port.index][1] })`"
-      :position="portPositions[port.index]"
+    <DraggablePortWithTooltip
+      v-for="port of ports"
+      :key="port.index"
+      :relative-position="portPositions[port.index]"
       :port="port"
+      :direction="type === 'in' ? 'out' : 'in'"
+      :node-id="containerId"
     />
   </g>
 </template>

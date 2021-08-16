@@ -13,7 +13,7 @@ import LinkDecorator from '~/components/LinkDecorator';
 import StreamingDecorator from '~/components/StreamingDecorator';
 import LoopDecorator from '~/components/LoopDecorator';
 import NodeActionBar from '~/components/NodeActionBar';
-import Port from '~/components/PortWithTooltip';
+import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip.vue';
 
 import '~/plugins/directive-move';
 
@@ -215,6 +215,18 @@ describe('Node', () => {
             doMount();
             expect(wrapper.findComponent(NodeTorso).props('executionState')).toBe('EXECUTED');
         });
+
+        it('renders port with direction and nodeId', () => {
+            const ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
+
+            ports.forEach(port => {
+                expect(port.props('nodeId')).toBe(commonNode.id);
+            })
+
+            ports.forEach((port, index) => {
+                expect(port.props('direction')).toBe(index < commonNode.inPorts.length ? 'in' : 'out');
+            });
+        })
     });
 
     it('opens the node config on double click', async () => {
@@ -257,8 +269,8 @@ describe('Node', () => {
             propsData.outPorts[0].connectedVia = [];
             doMount();
 
-            let ports = wrapper.findAllComponents(Port).wrappers;
-            const locations = ports.map(p => p.attributes()).map(({ x, y }) => [Number(x), Number(y)]);
+            let ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
+            const locations = ports.map(p => p.props().relativePosition);
             expect(locations).toStrictEqual([
                 [0, -4.5],
                 [-4.5, 16],
@@ -376,7 +388,7 @@ describe('Node', () => {
             storeConfig.selection.getters.isNodeSelected = () => () => true;
 
             doMount();
-            let ports = wrapper.findAllComponents(Port);
+            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
 
             // unconnected flowVariable port shown
             expect(ports.at(0).attributes().class).toBe('port');
@@ -386,7 +398,7 @@ describe('Node', () => {
             storeConfig.selection.getters.isNodeSelected = () => () => false;
             doMount();
             await Vue.nextTick();
-            ports = wrapper.findAllComponents(Port);
+            ports = wrapper.findAllComponents(DraggablePortWithTooltip);
 
             // unconnected flowVariable port hidden
             expect(ports.at(0).attributes().class).toMatch('hidden');
@@ -448,7 +460,7 @@ describe('Node', () => {
         });
 
         it('fades-in/out ports', async () => {
-            let ports = wrapper.findAllComponents(Port);
+            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
 
             // unconnected flowVariable port fades in
             expect(ports.at(0).attributes().class).toBe('port');
@@ -479,15 +491,62 @@ describe('Node', () => {
         });
     });
 
+    describe('Connector Drag & Drop', () => {
+        beforeEach(() => {
+            propsData = {
+                ...commonNode,
+                inPorts: [mockPort({ index: 0 })],
+                outPorts: [mockPort({ index: 0, outgoing: true })],
+                allowedActions: {
+                    canExecute: true,
+                    canCancel: true,
+                    canReset: true,
+                    canOpenDialog: true,
+                    canOpenView: true
+                }
+            };
+            doMount();
+        });
+
+        it('hovering with a connector shows hidden ports', async () => {
+            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+
+            // unconnected flowVariable ports are hidden
+            expect(ports.at(0).attributes().class).toMatch('hidden');
+            expect(ports.at(1).attributes().class).toMatch('hidden');
+            // ... and not shown
+            expect(ports.at(0).attributes().class).not.toMatch('show');
+            expect(ports.at(1).attributes().class).not.toMatch('show');
+
+
+            wrapper.trigger('connector-enter');
+            await Vue.nextTick();
+
+
+            // flowVariable ports fade in
+            expect(ports.at(0).attributes().class).toMatch('show');
+            expect(ports.at(1).attributes().class).toMatch('show');
+
+            wrapper.trigger('connector-leave');
+            await Vue.nextTick();
+
+            // flowVariable ports are hidden again
+            expect(ports.at(0).attributes().class).toMatch('hidden');
+            expect(ports.at(1).attributes().class).toMatch('hidden');
+            expect(ports.at(0).attributes().class).not.toMatch('show');
+            expect(ports.at(1).attributes().class).not.toMatch('show');
+        })
+    })
+
     describe('port positions', () => {
         it('for meta node', () => {
             propsData = { ...metaNode };
             doMount();
 
-            const ports = wrapper.findAllComponents(Port).wrappers;
-            const locations = ports.map(p => p.attributes()).map(({ x, y }) => [Number(x), Number(y)]);
+            const ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
+            const locations = ports.map(p => p.props().relativePosition);
             const portAttrs = ports.map(p => p.props().port.index);
-
+            debugger;
             expect(locations).toStrictEqual([
                 [-4.5, 5.5],
                 [-4.5, 26.5],
@@ -506,8 +565,8 @@ describe('Node', () => {
             propsData = { ...node };
             doMount();
 
-            const ports = wrapper.findAllComponents(Port).wrappers;
-            const locations = ports.map(p => p.attributes()).map(({ x, y }) => [Number(x), Number(y)]);
+            const ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
+            const locations = ports.map(p => p.props().relativePosition);
             const portAttrs = ports.map(p => p.props().port.index);
 
             expect(locations).toStrictEqual([
@@ -525,7 +584,7 @@ describe('Node', () => {
             propsData = { ...commonNode };
             doMount();
 
-            let ports = wrapper.findAllComponents(Port);
+            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
             expect(ports.at(1).attributes().class).toBe('port');
             expect(ports.at(3).attributes().class).toBe('port');
             expect(ports.at(4).attributes().class).toBe('port');

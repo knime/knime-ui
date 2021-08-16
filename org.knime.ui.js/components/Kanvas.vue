@@ -279,6 +279,11 @@ export default {
         :key="`connector-label-${workflow.projectId}-${id}`"
         v-bind="connector"
       />
+
+      <portal-target
+        tag="g"
+        name="drag-connector"
+      />
     </svg>
   </div>
 </template>
