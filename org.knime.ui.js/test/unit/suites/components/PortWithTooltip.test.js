@@ -22,8 +22,7 @@ describe('PortWithTooltip.vue', () => {
     beforeEach(() => {
         wrapper = null;
         propsData = {
-            x: 5,
-            y: 10,
+            position: [5, 10],
             port: {
                 optional: false,
                 inactive: false,

@@ -17,8 +17,6 @@ describe('Port', () => {
         beforeEach(() => {
             wrapper = null;
             propsData = {
-                x: 5,
-                y: 10,
                 port: {
                     optional: false,
                     inactive: false,
@@ -47,14 +45,9 @@ describe('Port', () => {
             it('not inactive', () => {
                 expect(wrapper.find('path').exists()).toBe(false);
             });
-            
+
             it('renders mandatory (filled)', () => {
                 expect(wrapper.findComponent(PortIcon).props().filled).toBe(true);
-            });
-
-            it('translates to port position (outgoing)', () => {
-                let transform = wrapper.find('g').attributes().transform;
-                expect(transform).toBe(`translate(5, 10)`);
             });
         });
 
