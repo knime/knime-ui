@@ -514,7 +514,6 @@ describe('workflow store', () => {
                 destPort: 1
             });
         });
-
     });
 
     describe('getters', () => {

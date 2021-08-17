@@ -90,7 +90,7 @@ describe('MetaNodePortBar.vue', () => {
                     222 + $shapes.portSize / 2 * (type === 'in' ? 1 : -1),
                     549 / (ports.length + 1)
                 ]
-            })
+            });
 
             expect(port1.props()).toStrictEqual({
                 port: propsData.ports[1],
@@ -100,7 +100,7 @@ describe('MetaNodePortBar.vue', () => {
                     222 + $shapes.portSize / 2 * (type === 'in' ? 1 : -1),
                     2 * 549 / (ports.length + 1)
                 ]
-            })
+            });
         });
     });
 });

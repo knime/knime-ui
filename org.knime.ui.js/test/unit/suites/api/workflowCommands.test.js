@@ -6,7 +6,6 @@ import { connectNodes, moveObjects, deleteObjects } from '~/api/workflowCommands
 import { workflowCommand } from '~api';
 
 describe('workflow commands', () => {
-
     afterEach(() => {
         workflowCommand.mockReset();
     });
@@ -30,8 +29,8 @@ describe('workflow commands', () => {
                 destinationNodeId: 'dest',
                 destinationPortIdx: 1
             }
-        })
-    })
+        });
+    });
 
     describe('moveObjects', () => {
         test('nodes and annotations', () => {
@@ -51,8 +50,8 @@ describe('workflow commands', () => {
                     annotationIds: ['ann:1', 'ann:2'],
                     translation: [100, 200]
                 }
-            })
-        })
+            });
+        });
 
         test('empty arrays', () => {
             moveObjects({
@@ -69,8 +68,8 @@ describe('workflow commands', () => {
                     annotationIds: [],
                     translation: [100, 200]
                 }
-            })
-        })
+            });
+        });
     });
 
     describe('deleteObjects', () => {
@@ -91,8 +90,8 @@ describe('workflow commands', () => {
                     annotationIds: ['ann:1', 'ann:2'],
                     connectionIds: ['conn:1', 'conn:2'],
                 }
-            })
-        })
+            });
+        });
 
         test('empty arrays', () => {
             deleteObjects({
@@ -108,7 +107,7 @@ describe('workflow commands', () => {
                     annotationIds: [],
                     connectionIds: [],
                 }
-            })
-        })
+            });
+        });
     });
 });

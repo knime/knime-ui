@@ -221,12 +221,12 @@ describe('Node', () => {
 
             ports.forEach(port => {
                 expect(port.props('nodeId')).toBe(commonNode.id);
-            })
+            });
 
             ports.forEach((port, index) => {
                 expect(port.props('direction')).toBe(index < commonNode.inPorts.length ? 'in' : 'out');
             });
-        })
+        });
     });
 
     it('opens the node config on double click', async () => {
@@ -535,8 +535,8 @@ describe('Node', () => {
             expect(ports.at(1).attributes().class).toMatch('hidden');
             expect(ports.at(0).attributes().class).not.toMatch('show');
             expect(ports.at(1).attributes().class).not.toMatch('show');
-        })
-    })
+        });
+    });
 
     describe('port positions', () => {
         it('for meta node', () => {
@@ -546,7 +546,7 @@ describe('Node', () => {
             const ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
             const locations = ports.map(p => p.props().relativePosition);
             const portAttrs = ports.map(p => p.props().port.index);
-            debugger;
+
             expect(locations).toStrictEqual([
                 [-4.5, 5.5],
                 [-4.5, 26.5],

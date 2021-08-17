@@ -133,7 +133,7 @@ export default {
                     );
                 }
 
-                // remember hitTarget    
+                // remember hitTarget
                 this.lastHitTarget = hitTarget;
 
                 /* if leave event hasn't been cancelled:
@@ -142,8 +142,7 @@ export default {
                  */
                 if (hitTarget && leaveEventNotCancelled) {
                     hitTarget.dispatchEvent(
-                        new CustomEvent(
-                            'connector-enter', {
+                        new CustomEvent('connector-enter', {
                             bubbles: true
                         })
                     );
@@ -209,7 +208,7 @@ export default {
     >
       <Connector
         v-bind="dragConnector"
-        class="non-interactive" 
+        class="non-interactive"
       />
       <Port
         class="non-interactive"

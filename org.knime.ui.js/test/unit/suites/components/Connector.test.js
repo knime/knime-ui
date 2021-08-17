@@ -247,7 +247,7 @@ describe('Connector.vue', () => {
 
         it('draws a path between table ports', () => {
             doShallowMount();
-            const expectedPath = 'M36,-4.5 C67.25,-4.5 -27.75,40.5 3.5,40.5'
+            const expectedPath = 'M36,-4.5 C67.25,-4.5 -27.75,40.5 3.5,40.5';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
 
@@ -388,12 +388,12 @@ describe('Connector.vue', () => {
                 absolutePoint: [32, 16],
                 canDelete: false,
                 id: 'drag-connector'
-            }
+            };
             doShallowMount();
 
             const expectedPath = 'M40.5,16 C46.75,16 21.75,16 28,16';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
-        })
+        });
 
         it('draw connector backwards', () => {
             propsData = {
@@ -402,11 +402,11 @@ describe('Connector.vue', () => {
                 absolutePoint: [0, 16],
                 canDelete: false,
                 id: 'drag-connector'
-            }
+            };
             doShallowMount();
 
             const expectedPath = 'M4,16 C13.75,16 13.75,16 23.5,16';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
-        })
-    })
+        });
+    });
 });

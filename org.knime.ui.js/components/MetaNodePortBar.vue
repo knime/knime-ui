@@ -43,8 +43,8 @@ export default {
         },
         /** Id of the metanode, this PortBar is inside of */
         containerId: {
-          type: String,
-          required: true
+            type: String,
+            required: true
         }
     },
     computed: {

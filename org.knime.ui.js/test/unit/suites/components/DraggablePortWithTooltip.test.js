@@ -8,7 +8,6 @@ import Port from '~/components/Port';
 import Connector from '~/components/Connector';
 import Vue from 'vue';
 import { afterEach } from '@jest/globals';
-import { wrap } from 'yargs';
 
 jest.mock('lodash', () => ({
     throttle(func) {
@@ -20,7 +19,6 @@ jest.mock('lodash', () => ({
 }));
 
 describe('DraggablePortWithTooltip', () => {
-
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
@@ -50,13 +48,13 @@ describe('DraggablePortWithTooltip', () => {
                     fromAbsoluteCoordinates: () => x => x
                 }
             }
-        }
+        };
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
             let mocks = { $store };
             wrapper = shallowMount(DraggablePortWithTooltip, { propsData, mocks });
-        }
+        };
     });
 
     it('renders base case', () => {
@@ -94,7 +92,7 @@ describe('DraggablePortWithTooltip', () => {
         test('call api to connect nodes (forward)', () => {
             propsData.nodeId = 'destNode';
             propsData.direction = 'in';
-            propsData.port.index = 1
+            propsData.port.index = 1;
 
             doShallowMount();
 
@@ -116,7 +114,7 @@ describe('DraggablePortWithTooltip', () => {
         test('call api to connect nodes (backwards)', () => {
             propsData.nodeId = 'sourceNode';
             propsData.direction = 'out';
-            propsData.port.index = 0
+            propsData.port.index = 0;
 
             doShallowMount();
 
@@ -134,7 +132,7 @@ describe('DraggablePortWithTooltip', () => {
                 destPort: 1
             });
         });
-    })
+    });
 
     describe('Drag Connector', () => {
         let startDragging, dragAboveTarget, KanvasMock;
@@ -146,7 +144,7 @@ describe('DraggablePortWithTooltip', () => {
                 offsetTop: 8,
                 scrollLeft: 16,
                 scrollTop: 16
-            }
+            };
 
             startDragging = ([x, y] = [0, 0]) => {
                 doShallowMount();
@@ -158,32 +156,28 @@ describe('DraggablePortWithTooltip', () => {
 
                 // Start dragging
                 wrapper.trigger('pointerdown', { pointerId: -1, x, y });
-            }
+            };
 
             dragAboveTarget = (targetElement, [x, y] = [0, 0]) => {
                 document.elementFromPoint = jest.fn().mockReturnValueOnce(targetElement);
 
                 if (targetElement) {
                     targetElement.addEventListener('connector-enter', e => {
-                        debugger;
                         targetElement._connectorEnterEvent = e;
                     });
                     targetElement.addEventListener('connector-move', e => {
-                        debugger;
                         targetElement._connectorMoveEvent = e;
                     });
                     targetElement.addEventListener('connector-leave', e => {
-                        debugger;
                         targetElement._connectorLeaveEvent = e;
                     });
                     targetElement.addEventListener('connector-drop', e => {
-                        debugger;
                         targetElement._connectorDropEvent = e;
                     });
                 }
 
                 wrapper.trigger('pointermove', { x, y });
-            }
+            };
         });
 
         describe('Start Dragging', () => {
@@ -202,7 +196,7 @@ describe('DraggablePortWithTooltip', () => {
                     // connector is bound to 'dragConnector'
                     // connector doesn't receive pointer-events
 
-                    let connector = wrapper.findComponent(Connector)
+                    let connector = wrapper.findComponent(Connector);
                     expect(connector.props()).toMatchObject(wrapper.vm.dragConnector);
                     expect(connector.attributes('class')).toMatch('non-interactive');
 
@@ -245,8 +239,8 @@ describe('DraggablePortWithTooltip', () => {
                     expect(wrapper.vm.dragConnector.sourceNode).toBeFalsy();
                     expect(wrapper.vm.dragConnector.sourcePort).toBeFalsy();
                 });
-            })
-        })
+            });
+        });
 
         describe('Drag Move', () => {
             test('move onto nothing', () => {
@@ -307,7 +301,7 @@ describe('DraggablePortWithTooltip', () => {
                 dragAboveTarget(null, [2, 2]);
 
                 expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([10, 10]);
-            })
+            });
         });
 
         test('releases pointer', () => {
@@ -318,7 +312,6 @@ describe('DraggablePortWithTooltip', () => {
         });
 
         describe('Stop Dragging', () => {
-
             test('dispatches drop event (direction = in)', () => {
                 startDragging();
 

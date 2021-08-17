@@ -41,7 +41,6 @@ export default {
         }
     },
     errorCaptured({ message, stack }, vm, vueInfo) {
-
         consola.error(message, vueInfo, stack);
 
         this.error = {

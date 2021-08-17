@@ -344,7 +344,7 @@ export default {
 </script>
 
 <template>
-  <g 
+  <g
     @connector-enter="connectorHover = true"
     @connector-leave="connectorHover = false"
   >
