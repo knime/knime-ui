@@ -1,4 +1,6 @@
 import rpc, { parseResponse } from './json-rpc-adapter.js';
+export * from './workflowCommands.js';
+export * from './portRPCs';
 
 /**
  * Fetch "application state", that is: opened tabs etc.
@@ -151,7 +153,7 @@ export const openView = ({ projectId, nodeId }) => {
  * @param {String} cfg.args arguments for the command
  * @returns {Promise}
  */
-const workflowCommand = ({ projectId, workflowId, command, args }) => {
+export const workflowCommand = ({ projectId, workflowId, command, args }) => {
     try {
         let rpcArgs = {
             kind: command,
@@ -200,62 +202,6 @@ let redoWorkflowCommand = ({ projectId, workflowId }) => {
 /**
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
- * @param { Array } cfg.nodeIds The nodes to be deleted
- * @param { Array } cfg.annotationIds The annotations to be deleted
- * @param { Array } cfg.connectionIds The connections to be deleted
- * @returns { Promise } Promise
- */
-export const deleteObjects = ({
-    nodeIds = [], annotationIds = [], connectionIds = [], projectId, workflowId
-}) => workflowCommand({
-    command: 'delete',
-    args: { nodeIds, annotationIds, connectionIds },
-    projectId,
-    workflowId
-});
-
-
-/**
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @param { Array } cfg.nodeIds The nodes to be moved
- * @param { Array } cfg.annotationIds The annotations to be moved
- * @param { Array } cfg.translation the translation by which the objects are to be moved
- * @returns { Promise } Promise
- */
-export const moveObjects = ({
-    projectId, workflowId, nodeIds = [], translation, annotationIds = []
-}) => workflowCommand({
-    command: 'translate',
-    args: { nodeIds, annotationIds, translation },
-    projectId,
-    workflowId
-});
-
-/**
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @param { String } cfg.sourceNode node with outPort
- * @param { String } cfg.destNode   node with inPort
- * @param { String } cfg.sourcePort index of outPort
- * @param { String } cfg.destPort   index of inPort
- * @returns { Promise } Promise
- */
-export const connectNodes = ({ projectId, workflowId, sourceNode, sourcePort, destNode, destPort }) => workflowCommand({
-    command: 'connect',
-    args: {
-        sourceNodeId: sourceNode,
-        sourcePortIdx: sourcePort,
-        destinationNodeId: destNode,
-        destinationPortIdx: destPort
-    },
-    projectId,
-    workflowId
-});
-
-/**
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
  * @returns { Promise } Promise
  */
 export const undo = ({ projectId, workflowId }) => undoWorkflowCommand({
@@ -284,7 +230,7 @@ export const redo = ({ projectId, workflowId }) => {
 // So, to get a table we have to send a JSON-RPC object as a payload to the NodeService, which itself must be called via
 // JSON-RPC. Hence double-wrapping is required.
 // Parameters are described below.
-const portRPC = ({ method, params, projectId, workflowId, nodeId, portIndex }) => {
+export const portRPC = ({ method, params, projectId, workflowId, nodeId, portIndex }) => {
     let nestedRpcCall = {
         jsonrpc: '2.0',
         id: 0,
@@ -296,62 +242,4 @@ const portRPC = ({ method, params, projectId, workflowId, nodeId, portIndex }) =
         projectId, workflowId, nodeId, portIndex, JSON.stringify(nestedRpcCall)
     );
     return parseResponse({ response, method, params });
-};
-
-/**
- * Get the data table associated with a data port.
- * @param {String} projectId The ID of the project that contains the node
- * @param {String} nodeId The ID of the node to load data for
- * @param {String} workflowId The ID of the workflow containing the node
- * @param {String} portIndex The index of the port to load data for.
- * @param {String} offset The index of the first row to be loaded
- * @param {String} batchSize The amount of rows to be loaded. Must be smallEq than 450
- * Remember that port 0 is usually a flow variable port.
- * @return {Promise} A promise containing the table data as defined in the API
- * */
-export const loadTable = ({ projectId, workflowId, nodeId, portIndex, offset = 0, batchSize }) => {
-    try {
-        let table = portRPC({
-            projectId,
-            nodeId,
-            workflowId,
-            portIndex,
-            method: 'getTable',
-            params: [offset, batchSize]
-        });
-        return Promise.resolve(table);
-    } catch (e) {
-        consola.error(e);
-        return Promise.reject(new Error(
-            `Couldn't load table data (start: ${offset}, length: ${batchSize}) ` +
-            `from port ${portIndex} of node "${nodeId}" in project ${projectId}`
-        ));
-    }
-};
-
-/**
- * Get the flow variables associated with a flow variable port.
- * @param {String} projectId The ID of the project that contains the node
- * @param {String} nodeId The ID of the node to load variables for
- * @param {String} workflowId The ID of the workflow containing the node
- * @param {String} portIndex The index of the port to load variables for.
- * Remember that port 0 is usually a flow variable port.
- * @return {Promise} A promise containing the flow variable data as defined in the API
- * */
-export const loadFlowVariables = ({ projectId, workflowId, nodeId, portIndex }) => {
-    try {
-        let flowVariables = portRPC({
-            projectId,
-            workflowId,
-            nodeId,
-            portIndex,
-            method: 'getFlowVariables'
-        });
-        return Promise.resolve(flowVariables);
-    } catch (e) {
-        consola.error(e);
-        return Promise.reject(new Error(
-            `Couldn't load flow variables of node "${nodeId}" in project ${projectId}`
-        ));
-    }
 };
