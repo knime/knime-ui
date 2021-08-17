@@ -19,9 +19,9 @@ export default {
         try {
             let { projectId, workflowId, nodeId, portIndex } = this;
             let table = await loadFlowVariables({ projectId, workflowId, nodeId, portIndex });
-            
+
             this.table = table;
-            
+
             // show table
             this.$emit('update', { state: 'ready' });
         } catch (e) {
@@ -34,6 +34,12 @@ export default {
 
 <template>
   <div class="scroll-container">
+    <div
+      v-if="table"
+      class="counts"
+    >
+      <span class="count">Count: {{ table.length }}</span>
+    </div>
     <table>
       <thead>
         <tr>

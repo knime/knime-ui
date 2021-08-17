@@ -98,8 +98,7 @@ To do so, run KNIME with the following parameters which can be added to the `kni
 If you want to run the tests against a locally running dev server, replace `about:blank` with `http://localhost:3000`.
 
 While the old Java based UI is still around, you must make sure to switch to the new UI before launching the tests.
-This can be achieved by manually clicking the button, or via the parameter
-`-Dperspective=org.knime.ui.java.perspective`.
+This can be achieved by manually clicking the button.
 
 As a workspace, you should select the `test/integration/assets/workflows` folder.
 
@@ -107,8 +106,10 @@ Then, you can run the tests via
 ```
 npm run test:integration
 ```
-
-Test reports are saved to the `test/integration/reports` folder.
+To run a single test add the filename without path, e.g.:
+```
+npm run test:integration navigateThroughWorkflow.test.js
+```
 
 ### Running security audit
 

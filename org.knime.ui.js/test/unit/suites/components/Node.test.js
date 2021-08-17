@@ -338,7 +338,7 @@ describe('Node', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
             doMount();
 
-            await wrapper.find('g g g').trigger('click', { button: 2, shiftKey: true });
+            await wrapper.find('g g g').trigger('contextmenu', { shiftKey: true });
 
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
@@ -350,7 +350,7 @@ describe('Node', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
             doMount();
 
-            await wrapper.find('g g g').trigger('click', { button: 2, shiftKey: true });
+            await wrapper.find('g g g').trigger('contextmenu', { shiftKey: true });
             expect(storeConfig.selection.actions.deselectNode).toHaveBeenCalledTimes(0);
         });
 
@@ -358,7 +358,7 @@ describe('Node', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(false);
             doMount();
 
-            await wrapper.find('g g g').trigger('click', { button: 2 });
+            await wrapper.find('g g g').trigger('contextmenu');
 
             expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(

@@ -271,13 +271,6 @@ export default {
         openNode() {
             this.$store.dispatch('openedProjects/switchWorkflow', { workflowId: this.id, projectId: this.projectId });
         },
-        onMouseClick(e) {
-            if (e.button === 0) {
-                this.onLeftMouseClick(e);
-            } else if (e.button === 2) {
-                this.onRightMouseClick(e);
-            }
-        },
         /*
          * Left-Click         => Select only this node
          * Left-Click & Shift => Add/Remove this node to/from selection
@@ -306,17 +299,22 @@ export default {
                 this.selectNode(this);
             }
         },
-        onRightMouseClick(e) {
-            e.preventDefault();
+        /*
+         * Right-Click             => Select only this node and show context menu (done in Kanvas.vue)
+         * Right-Click & Shift     => Add/Remove this node to/from selection and show context menu (via Kanvas)
+         * Right-Click & Ctrl/Meta => Do Nothing, also do not open the context menu
+         *
+         * We use the contextmenu event as click with button = 2 was not reliable.
+         */
+        onContextMenu(e) {
             if (this.isDragging) {
                 return;
             }
-
             if (e.ctrlKey || e.metaKey) {
                 // user tries to open component or metanode
+                e.stopPropagation();
                 return;
             }
-
             if (e.shiftKey) {
                 // Multi select
                 this.selectNode(this);
@@ -380,13 +378,14 @@ export default {
       class="hover-container"
       @mouseleave="onLeaveHoverArea"
       @mouseenter="hover = true"
+      @contextmenu.prevent="onContextMenu"
     >
       <!-- Elements for which a click selects node -->
       <g
         ref="mouseClickable"
         class="mouse-clickable"
         tabindex="0"
-        @click="onMouseClick"
+        @click.left="onLeftMouseClick"
       >
         <!-- Hover Area, larger than the node torso -->
         <rect
