@@ -44,12 +44,10 @@ export default {
         /* ======== Drag Connector ======== */
         positionOnCanvas([x, y]) {
             const { offsetLeft, offsetTop, scrollLeft, scrollTop } = this.kanvasElement;
-            console.time('positionOnCanvas');
             let result = this.fromAbsoluteCoordinates([
                 x - offsetLeft + scrollLeft,
                 y - offsetTop + scrollTop
             ]);
-            console.timeEnd('positionOnCanvas');
             return result;
         },
         onPointerDown(e) {
@@ -76,21 +74,22 @@ export default {
         },
         onPointerUp(e) {
             e.target.releasePointerCapture(e.pointerId);
-            let hitTarget = document.elementFromPoint(e.x, e.y);
-
+            
             let { sourceNode, sourcePort, destNode, destPort } = this.dragConnector;
 
-            hitTarget.dispatchEvent(new CustomEvent(
-                'connector-drop', {
-                detail: {
-                    sourceNode,
-                    sourcePort,
-                    destNode,
-                    destPort
-                },
-                bubbles: true
-            }
-            ));
+            this.lastHitTarget?.dispatchEvent(
+                new CustomEvent(
+                    'connector-drop', {
+                        detail: {
+                            sourceNode,
+                            sourcePort,
+                            destNode,
+                            destPort
+                        },
+                        bubbles: true
+                    }
+                )
+            );
         },
         onLostPointerCapture(e) {
             this.dragConnector = null;
@@ -105,7 +104,7 @@ export default {
             let hitTarget = document.elementFromPoint(e.x, e.y);
 
             // create move event
-            let moveEventNotCancelled;
+            let moveEventNotCancelled = true;
             let moveEvent = new CustomEvent('connector-move', {
                 detail: { x: e.x, y: e.y },
                 bubbles: true,
@@ -191,10 +190,7 @@ export default {
 <template>
   <g
     :transform="`translate(${relativePosition})`"
-    :class="{
-      'targeted': targeted,
-      'isDragging': dragConnector
-    }"
+    :class="{ 'targeted': targeted}"
     @pointerdown.stop="onPointerDown"
     @pointerup.stop="onPointerUp"
     @pointermove.stop="onPointerMove"
@@ -213,7 +209,8 @@ export default {
     >
       <Connector
         v-bind="dragConnector"
-        class="non-interactive" />
+        class="non-interactive" 
+      />
       <Port
         class="non-interactive"
         :port="port"
