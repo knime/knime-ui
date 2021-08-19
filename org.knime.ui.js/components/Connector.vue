@@ -115,6 +115,8 @@ export default {
         dashed: streaming,
         selected: isConnectionSelected(id) && !isDragging
       }"
+      :data-source-node="sourceNode"
+      :data-dest-node="destNode"
       fill="none"
     />
   </g>
