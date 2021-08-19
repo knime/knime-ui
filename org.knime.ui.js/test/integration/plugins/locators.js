@@ -37,6 +37,20 @@ module.exports = {
         DELETE: {
             label: 'DELETE',
             css: '#toolbar button[title^="Delete selection"] '
+        },
+        /**
+        * @property Redo workflow changes.
+        */
+        REDO: {
+            label: 'REDO',
+            css: '#toolbar button[title^="Redo"]'
+        },
+        /**
+                 * @property Undo workflow changes.
+                 */
+        UNDO: {
+            label: 'UNDO',
+            css: '#toolbar button[title^="Undo"]'
         }
     },
     /**

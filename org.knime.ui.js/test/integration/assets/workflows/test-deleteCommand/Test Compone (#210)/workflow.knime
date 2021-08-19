@@ -76,6 +76,22 @@
                 </config>
             </config>
         </config>
+        <config key="node_208">
+            <entry key="id" type="xint" value="208"/>
+            <entry key="node_settings_file" type="xstring" value="CASE Switch Data _Start_ _deprecated_ (#208)/settings.xml"/>
+            <entry key="node_is_meta" type="xboolean" value="false"/>
+            <entry key="node_type" type="xstring" value="NativeNode"/>
+            <entry key="ui_classname" type="xstring" value="org.knime.core.node.workflow.NodeUIInformation"/>
+            <config key="ui_settings">
+                <config key="extrainfo.node.bounds">
+                    <entry key="array-size" type="xint" value="4"/>
+                    <entry key="0" type="xint" value="264"/>
+                    <entry key="1" type="xint" value="297"/>
+                    <entry key="2" type="xint" value="112"/>
+                    <entry key="3" type="xint" value="89"/>
+                </config>
+            </config>
+        </config>
     </config>
     <config key="connections"/>
     <config key="workflow_editor_settings">

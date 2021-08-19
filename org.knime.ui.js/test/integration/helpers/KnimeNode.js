@@ -54,7 +54,26 @@ class KnimeNode extends KnimeHelper {
 
         await page.keyboard.down(modifierKey);
         await this.doubleClickNode(selector);
-        await page.keyboard.down(modifierKey);
+        await page.keyboard.up(modifierKey);
+    }
+
+    /**
+     * Select multiple nodes.
+     * @param {Object} selectors - The ID of the Nodes to drag.
+     */
+    async selectMultipleNodes(...selectors) {
+        if (selectors.length === 0) {
+            throw new Error('No nodes selected');
+        } else {
+            const page = await this._getPage();
+            await page.keyboard.down('Shift');
+    
+            for (let i = 0; i < selectors.length; i++) {
+                await this.selectNode(selectors[i]);
+            }
+
+            await page.keyboard.up('Shift');
+        }
     }
 }
 

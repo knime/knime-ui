@@ -618,10 +618,10 @@ TrFvOcRcC5wAAAAASUVORK5CYII=" xlink:actuate="onLoad"/>
            font-family="&apos;.AppleSystemUIFont&apos;"
            stroke="rgb(150,150,150)" stroke-width="2">
             <path fill="none"
-                  d="M198 39 C200 39 204 39 206 39 C222 39 242 58 258 58 C260 58 264 58 266 58"
+                  d="M77 39 C79 39 83 39 85 39 C101 39 123 49 139 49 C141 49 145 49 147 49"
                   clip-path="url(#clipPath24)" fill-rule="evenodd"/>
             <path fill="none"
-                  d="M77 39 C79 39 83 39 85 39 C101 39 123 49 139 49 C141 49 145 49 147 49"
+                  d="M198 39 C200 39 204 39 206 39 C222 39 242 58 258 58 C260 58 264 58 266 58"
                   clip-path="url(#clipPath24)" fill-rule="evenodd"/>
         </g>
     </g>

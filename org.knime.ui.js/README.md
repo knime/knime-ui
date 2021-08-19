@@ -106,10 +106,18 @@ Then, you can run the tests via
 ```
 npm run test:integration
 ```
-To run a single test add the filename without path, e.g.:
+To run a single test add the filename with path (starting from ./suites), e.g.:
 ```
-npm run test:integration navigateThroughWorkflow.test.js
+npm run test:integration endpoints/workflow/commad/delete.test.js
 ```
+
+Alternatively, you can use "tags". They are written on every test like this: `Feature('Delete command').tag('@delete');`.
+Example to run a single test:
+
+```
+npm run test:integration --grep @delete
+```
+
 
 ### Running security audit
 
