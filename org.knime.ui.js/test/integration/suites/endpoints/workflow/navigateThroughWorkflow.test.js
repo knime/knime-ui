@@ -1,4 +1,4 @@
-const { state } = require('../plugins/locators');
+const { state } = require('../../../plugins/locators');
 
 Feature('Navigate through workflow');
 

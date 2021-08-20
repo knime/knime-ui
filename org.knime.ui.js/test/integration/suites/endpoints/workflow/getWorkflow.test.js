@@ -1,6 +1,4 @@
-// Refers to GET ​/workflows​/{workflow-id}
+// GET getWorkflow(prokectId, workflowId, includeInteractionInfo)
+// Returns a workflowSnapshot
 
-// Open a component
-// Open a metanode
-// Open parent (navigate back)
-
+// Refactor navigateThroughWorklow?

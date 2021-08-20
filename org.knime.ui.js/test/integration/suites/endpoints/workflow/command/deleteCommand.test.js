@@ -1,7 +1,10 @@
+// PUT executeWorkflowCommand( projectId, workflowId, WorkflowCommand.delete)
+// POST redoWorkflowCommand(projectId, workflowId)
+// POST undoWorkflowCommand(projectId, workflowId)
 
-const Trigger = require('../../../../steps/Trigger');
+const { Trigger } = require('../../../../steps/Trigger');
 
-Feature('Delete command').tag('@delete');
+Feature('Delete command').tag('@endpoints-@workflow-@command-@deleteCommand');
 
 Before(({ I }) => {
     __`Before each:`;

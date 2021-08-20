@@ -33,9 +33,6 @@ class KnimeNode extends KnimeHelper {
     async doubleClickNode(selector) {
         const page = await this._getPage();
         const nodeCoordinates = await _getCenterNode(selector, page);
-        // Adding selectNode() to support different resolutions. Sometimes, the node
-        // is not on screen. Also, creating different method because it's going to be useful
-        // for future cases.
         await this.selectNode(selector);
         await page.mouse.click(nodeCoordinates.x, nodeCoordinates.y, {
             clickCount: 2,

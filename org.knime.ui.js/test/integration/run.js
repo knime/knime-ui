@@ -10,7 +10,7 @@ const configPath = 'test/integration/codecept.conf.js';
 
 let testName = '';
 if (process.argv[2]) {
-    testName = `suites/${process.argv[2]}`;
+    testName = `--grep ${process.argv[2]}`;
 }
 
 axios(`${codecept.config.helpers.Puppeteer.url}/json/version`).then((res) => {
