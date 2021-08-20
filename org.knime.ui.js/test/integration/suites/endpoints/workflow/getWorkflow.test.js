@@ -1,4 +1,4 @@
-// GET getWorkflow(prokectId, workflowId, includeInteractionInfo)
+// getWorkflow(prokectId, workflowId, includeInteractionInfo)
 // Returns a workflowSnapshot
 
 // Refactor navigateThroughWorklow?

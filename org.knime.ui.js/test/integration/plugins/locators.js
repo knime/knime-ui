@@ -242,6 +242,14 @@ module.exports = {
         OPEN_VIEW: {
             label: 'OPEN_VIEW',
             xpath: 'Open view'
+        },
+        RESUME: {
+            label: 'RESUME_LOOP_EXECUTION',
+            xpath: 'Resume loop execution'
+        },
+        PAUSE: {
+            label: 'PAUSE',
+            xpath: 'Pause execution'
         }
     }
 };
