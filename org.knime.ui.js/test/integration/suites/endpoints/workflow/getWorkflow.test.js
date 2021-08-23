@@ -1,4 +1,4 @@
-// getWorkflow(prokectId, workflowId, includeInteractionInfo)
+// getWorkflow(projectId, workflowId, includeInteractionInfo)
 
 const { state } = require('../../../plugins/locators');
 
@@ -10,11 +10,6 @@ Before(({ I }) => {
 
     I.seeElement({ nodeId: 3, state: state.CONFIGURED });
     I.seeElement({ nodeId: 6 });
-});
-
-Scenario('Panel meta info', ({ I }) => {
-    I.see('Navigate-through-workflow', '#metadata');
-    I.see('* navigation into components and metanodes and back and', '#metadata .metadata');
 });
 
 Scenario('Open a component', ({ I }) => {
