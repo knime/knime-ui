@@ -13,6 +13,9 @@ const toolbar = {
     },
     redo() {
         I.click({ action: action.REDO });
+    },
+    executeAll() {
+        I.click({ action: action.EXECUTE_ALL });
     }
 };
 
