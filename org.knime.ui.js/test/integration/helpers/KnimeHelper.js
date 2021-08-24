@@ -8,6 +8,14 @@ class KnimeHelper extends Helper {
         const page = await this.helpers.Puppeteer.page;
         return page;
     }
+
+    /**
+    * Drop down mouse left click.
+    */
+    async dropMouse() {
+        const page = await this._getPage();
+        await page.mouse.up();
+    }
 }
 
 module.exports = KnimeHelper;
