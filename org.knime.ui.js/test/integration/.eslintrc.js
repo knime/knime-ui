@@ -9,7 +9,7 @@ module.exports = {
             }
         },
         {
-            files: ['./suites/**/**/**/*.test.js'],
+            files: ['./suites/**/*.test.js'],
             rules: {
                 'no-undef': 'off',
                 'new-cap': 'off',
