@@ -33,9 +33,6 @@ class KnimeNode extends KnimeHelper {
     async doubleClickNode(selector) {
         const page = await this._getPage();
         const nodeCoordinates = await _getCenterNode(selector, page);
-        // Adding selectNode() to support different resolutions. Sometimes, the node
-        // is not on screen. Also, creating different method because it's going to be useful
-        // for future cases.
         await this.selectNode(selector);
         await page.mouse.click(nodeCoordinates.x, nodeCoordinates.y, {
             clickCount: 2,
@@ -86,7 +83,7 @@ class KnimeNode extends KnimeHelper {
 
     /**
      * Select a set of nodes.
-     * @param {Object} Nodes - The ID of the Nodes to drag.
+     * @param {Object} Selectors - The ID of the Nodes to drag.
      */
     async selectMultipleNodes(...selectors) {
         if (selectors.length === 0) {
@@ -98,6 +95,7 @@ class KnimeNode extends KnimeHelper {
             for (let i = 0; i < selectors.length; i++) {
                 await this.selectNode(selectors[i]);
             }
+            await page.keyboard.up('Shift');
         }
     }
 

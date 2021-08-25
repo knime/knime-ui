@@ -16,6 +16,7 @@ Before(({ I }) => {
     I.moveNode({ nodeId: 1 }, 5, 5);
     I.moveNode({ nodeId: 2 }, 5, 5);
     I.moveNode({ nodeId: 3 }, 5, 5);
+    I.moveNode({ nodeId: 6 }, 5, 5);
     I.click('#kanvas');
 });
 
@@ -49,6 +50,22 @@ Scenario('Move multiple nodes', async ({ I }) => {
     __`Check there is a connector`;
     I.seeElement({ sourceNode: 1, destNode: 2 });
     I.seeElement({ sourceNode: 2, destNode: 3 });
+});
+
+Scenario('Move single node inside of a component node', async ({ I }) => {
+    __`Open component`;
+    I.doubleClickNodeWithCtrl({ nodeId: 6 });
+    I.moveNode({ nodeId: '6:0:4' }, 5, 5);
+    __`Move node`;
+    const nodePos = await I.grabNodePosition({ nodeId: '6:0:4' });
+    const movement = { x: 50, y: 50 };
+    I.moveNode({ nodeId: '6:0:4' }, movement.x, movement.y);
+    const nodeFinalPos = await I.grabNodePosition({ nodeId: '6:0:4' });
+    I.assertDeepStrictEqual(nodePos.x + movement.x, nodeFinalPos.x);
+    I.assertDeepStrictEqual(nodePos.y + movement.y, nodeFinalPos.y);
+
+    __`Check there is a connector`;
+    I.seeElement({ sourceNode: '6:0:4', destNode: '6:0:5' });
 });
 
 Scenario('Move single node, undo and redo - Shortcut', async ({ I }) => {
