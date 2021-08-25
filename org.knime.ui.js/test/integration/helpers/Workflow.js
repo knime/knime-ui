@@ -49,6 +49,22 @@ class Workflow extends KnimeHelper {
             await page.keyboard.up('Shift');
         }
     }
+
+    /**
+    * @param {String|Number} selector 'fit' for Fit To Screen or Number to specific zoom.
+    */
+    async selectZoom(selector) {
+        const page = await this._getPage();
+        if (selector === 'fit') {
+            await page.click('#toolbar > div.zoom.zoommenu.submenu > button > svg');
+            await page.click('#toolbar > div.zoom.zoommenu.submenu > ul > li:nth-child(1) > a');
+        }
+        if (typeof selector === 'number') {
+            await page.click('#toolbar > div.zoom.zoommenu.submenu > button > div');
+            await page.keyboard.type(selector.toString());
+            await page.keyboard.press('Enter');
+        }
+    }
 }
 
 module.exports = Workflow;

@@ -1,3 +1,0 @@
-// Interesting properties from schema:
-// - workflow annotations (future)
-// - ...
