@@ -2,7 +2,7 @@
 // - workflow annotations (future)
 // - ...
 
-Feature('Workflow Schema').tag('@schemas-@workflow-@workflow');
+Feature('Workflow Features').tag('@features-@workflow');
 
 Before(({ I }) => {
     __`Before each:`;
@@ -21,7 +21,7 @@ Before(({ I }) => {
     I.seeElement({ nodeId: 133 });
 });
 
-Scenario('move entire workflow without drop should not have direct updating on the nodes', async ({ I }) => {
+Scenario('move entire workflow without drop should not have direct updating on the nodes - Ghost threshold', async ({ I }) => {
     I.selectZoom('fit');
     const moveX = 50;
     const moveY = 50;
