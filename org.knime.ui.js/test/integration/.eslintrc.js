@@ -1,6 +1,7 @@
 module.exports = {
     overrides: [
         {
+            // JsDocs
             files: ['./**/*'],
             rules: {
                 'valid-jsdoc': ['warn', {
@@ -9,6 +10,7 @@ module.exports = {
             }
         },
         {
+            // Tests
             files: ['./suites/**/*.test.js'],
             rules: {
                 'no-undef': 'off',
@@ -23,6 +25,7 @@ module.exports = {
             }
         },
         {
+            // Plugins
             files: ['./plugins/*.js'],
             rules: {
                 'no-undef': 'off'

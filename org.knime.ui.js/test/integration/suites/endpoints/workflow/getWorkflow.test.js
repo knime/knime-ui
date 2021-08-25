@@ -8,7 +8,7 @@ Before(({ I }) => {
     __`Before each:`;
     I.loadWorkflow('test-getWorkflow');
 
-    I.seeElement({ nodeId: 3, state: state.CONFIGURED });
+    I.seeElement({ nodeId: 3 });
     I.seeElement({ nodeId: 6 });
 });
 

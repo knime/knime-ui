@@ -15,14 +15,14 @@
             <entry key="type" type="xstring" value="variable"/>
             <entry key="name" type="xstring" value="maxIterations"/>
             <entry key="class" type="xstring" value="INTEGER"/>
-            <entry key="value" type="xint" value="20000"/>
+            <entry key="value" type="xint" value="5"/>
         </config>
     </config>
     <config key="internal_node_subsettings">
         <entry key="memory_policy" type="xstring" value="CacheSmallInMemory"/>
     </config>
     <config key="model">
-        <entry key="loops" type="xint" value="20000"/>
+        <entry key="loops" type="xint" value="5"/>
     </config>
     <config key="nodeAnnotation">
         <entry key="text" type="xstring" value=""/>
