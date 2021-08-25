@@ -1,7 +1,5 @@
 // getWorkflow(projectId, workflowId, includeInteractionInfo)
 
-const { state } = require('../../../plugins/locators');
-
 Feature('getWorkflow').tag('@endpoints-@workflow-@getWorkflow');
 
 Before(({ I }) => {

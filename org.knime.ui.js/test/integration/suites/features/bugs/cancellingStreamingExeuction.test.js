@@ -24,6 +24,7 @@ Scenario('Cancel exeuction outside component', async ({ I }) => {
     I.assertEqual(n.firstBenchmark, n.secondBenchmark);
 });
 
+// Issue here
 Scenario('Cancel execution inside component', async ({ I }) => {
     executeAndCancelInsideComponent(I);
 
@@ -38,6 +39,8 @@ Scenario('Cancel execution inside component', async ({ I }) => {
     I.seeElement({ nodeId: '6:0:8', state: state.CONFIGURED });
 });
 
+// Issue here
+// This one can potentially break entire Knime AP.
 Scenario('Cancel inside component and Execute', async ({ I }) => {
     executeAndCancelInsideComponent(I);
 
