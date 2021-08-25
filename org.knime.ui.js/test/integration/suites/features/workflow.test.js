@@ -2,11 +2,11 @@
 // - workflow annotations (future)
 // - ...
 
-Feature('Workflow Features').tag('@features-@workflow');
+Feature('Workflow Features').tag('@features-@workflow-@ghostThreshold');
 
 Before(({ I }) => {
     __`Before each:`;
-    I.loadWorkflow('test-workflowSchema');
+    I.loadWorkflow('test-workflowFeatures');
 
     I.seeElement({ nodeId: 131 });
     I.seeElement({ nodeId: 132 });
@@ -21,6 +21,7 @@ Before(({ I }) => {
     I.seeElement({ nodeId: 133 });
 });
 
+// eslint-disable-next-line max-len
 Scenario('move entire workflow without drop should not have direct updating on the nodes - Ghost threshold', async ({ I }) => {
     I.selectZoom('fit');
     const moveX = 50;

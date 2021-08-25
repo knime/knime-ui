@@ -13,10 +13,12 @@ Before(({ I }) => {
     I.seeElement({ nodeId: 1 });
     I.seeElement({ nodeId: 2 });
     I.seeElement({ nodeId: 3 });
+    /* eslint-disable no-magic-numbers */
     I.moveNode({ nodeId: 1 }, 5, 5);
     I.moveNode({ nodeId: 2 }, 5, 5);
     I.moveNode({ nodeId: 3 }, 5, 5);
     I.moveNode({ nodeId: 6 }, 5, 5);
+    /* eslint-enable no-magic-numbers */
     I.click('#kanvas');
 });
 
@@ -55,6 +57,7 @@ Scenario('Move multiple nodes', async ({ I }) => {
 Scenario('Move single node inside of a component node', async ({ I }) => {
     __`Open component`;
     I.doubleClickNodeWithCtrl({ nodeId: 6 });
+    // eslint-disable-next-line no-magic-numbers
     I.moveNode({ nodeId: '6:0:4' }, 5, 5);
     __`Move node`;
     const nodePos = await I.grabNodePosition({ nodeId: '6:0:4' });
