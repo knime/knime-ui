@@ -1,12 +1,10 @@
-const { state } = require('../../../plugins/locators');
-
-Feature('getWorkflow').tag('@endpoints-@workflow-@getWorkflow');
+Feature('Project Metadata').tag('@schemas-@workflow-@projectMetadata');
 
 Before(({ I }) => {
     __`Before each:`;
     I.loadWorkflow('test-getWorkflow');
 
-    I.seeElement({ nodeId: 3, state: state.CONFIGURED });
+    I.seeElement({ nodeId: 3 });
     I.seeElement({ nodeId: 6 });
 });
 

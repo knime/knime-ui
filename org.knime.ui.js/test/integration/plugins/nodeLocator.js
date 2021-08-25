@@ -10,6 +10,10 @@ module.exports = () => {
                 locatorObj.value += providedLocator.state.css;
             }
 
+            if (validateEnum('metanodeState', providedLocator)) {
+                locatorObj.value += providedLocator.metanodeState.css;
+            }
+
             if (validateEnum('decorator', providedLocator)) {
                 locatorObj.value += providedLocator.decorator.css;
             }

@@ -19,6 +19,10 @@ const contextMenu = {
     resumeNode(node) {
         I.rightClick({ nodeId: node });
         I.click({ context: context.RESUME });
+    },
+    deleteNode(node) {
+        I.rightClick({ nodeId: node });
+        I.click({ context: context.DELETE });
     }
 };
 

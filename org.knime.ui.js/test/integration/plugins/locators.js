@@ -53,55 +53,69 @@ module.exports = {
             css: '#toolbar button[title^="Undo"]'
         }
     },
+    metanodeState: {
+        IDLE: {
+            label: 'IDLE',
+            css: '[data-metanodeState="IDLE"] '
+        },
+        EXECUTED: {
+            label: 'EXECUTED',
+            css: '[data-metanodeState="EXECUTED"] '
+        },
+        EXECUTING: {
+            label: 'EXECUTING',
+            css: '[data-metanodeState="EXECUTING"] '
+        }
+    },
     /**
     * @object Node states.
     */
     state: {
         /**
-        * @property Node has been configured correctly, and can be executed.
-        */
+            * @property Node has been configured correctly, and can be executed.
+            */
         CONFIGURED: {
             label: 'CONFIGURED',
             css: '.traffic-light-yellow '
         },
         /**
-        * @property Node is being executed. Shown as a progress bar.
-        */
+            * @property Node is being executed. Shown as a progress bar.
+            */
         EXECUTING: {
             label: 'EXECUTING',
             css: '.progress-bar '
         },
         /**
-        * @property Node is being executed. Shown as a moving circle.
-        */
+            * @property Node is being executed. Shown as a moving circle.
+            */
         EXECUTING_CIRCLE: {
             label: 'EXECUTING_CIRCLE',
             css: '.progress-circle '
         },
         /**
-        * @property Node is waiting for configuration or incoming data.
-        */
+            * @property Node is waiting for configuration or incoming data.
+            */
         IDLE: {
             label: 'IDLE',
             css: '.traffic-light-red '
         },
         /**
-        * @property Node has been successfully executed.
-        */
+            * @property Node has been successfully executed.
+            */
         EXECUTED: {
             label: 'EXECUTED',
             css: '.traffic-light-green '
         },
         /**
-        * @property Loop Node is paused.
-        */
+            * @property Loop Node is paused.
+            */
         PAUSED: {
             label: 'PAUSED',
             css: '.pause '
         },
         /**
-        * @property Loop Node is running.
-        */
+            * @property Loop Node is running.
+            */
         RUNNING: {
             label: 'RUNNING',
             css: '.running '

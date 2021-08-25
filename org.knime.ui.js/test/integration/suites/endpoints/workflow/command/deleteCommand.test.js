@@ -85,6 +85,7 @@ Scenario('Multiple selectors - Shortcut', ({ I }) => {
     I.dontSeeElement({ sourceNode: 208, destNode: 3 });
 });
 
+// Issue here
 Scenario('Single node - Toolbar', ({ I }) => {
     __`Delete node`;
     I.click({ nodeId: 209 });
@@ -115,6 +116,7 @@ Scenario('Single connector - Toolbar', ({ I }) => {
     I.dontSeeElement({ sourceNode: 208, destNode: 3 });
 });
 
+// Issue here
 Scenario('Multiple nodes - Toolbar', ({ I }) => {
     __`Delete nodes`;
     I.selectMultipleNodes({ nodeId: 208 }, { nodeId: 209 }, { nodeId: 210 });
