@@ -22,10 +22,6 @@
     </config>
     <entry key="customDescription" type="xstring" isnull="true" value=""/>
     <entry key="state" type="xstring" value="IDLE"/>
-    <config key="nodecontainer_message">
-        <entry key="type" type="xstring" value="WARNING"/>
-        <entry key="message" type="xstring" value="Contains an unconnected node (&quot;Component Output 0:210:0:8&quot;)"/>
-    </config>
     <entry key="workflow-file" type="xstring" value="workflow.knime"/>
     <entry key="virtual-in-ID" type="xint" value="9"/>
     <config key="inports"/>

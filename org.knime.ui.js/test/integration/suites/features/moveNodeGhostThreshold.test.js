@@ -1,8 +1,6 @@
-// Interesting properties from schema:
-// - workflow annotations (future)
-// - ...
+const { state } = require('../../plugins/locators');
 
-Feature('Workflow Features').tag('@features-@workflow-@ghostThreshold');
+Feature('Workflow Features').tag('@features-@workflow-@moveNodesGhostThreshold');
 
 Before(({ I }) => {
     __`Before each:`;
@@ -12,8 +10,8 @@ Before(({ I }) => {
     I.seeElement({ nodeId: 132 });
     I.seeElement({ nodeId: 123 });
     I.seeElement({ nodeId: 124 });
-    I.seeElement({ nodeId: 128 });
-    I.seeElement({ nodeId: 130 });
+    I.seeElement({ nodeId: 128, state: state.CONFIGURED });
+    I.seeElement({ nodeId: 130, state: state.CONFIGURED });
     I.seeElement({ nodeId: 113 });
     I.seeElement({ nodeId: 126 });
     I.seeElement({ nodeId: 121 });

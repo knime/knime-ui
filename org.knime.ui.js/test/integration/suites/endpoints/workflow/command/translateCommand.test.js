@@ -1,7 +1,6 @@
-// PUT executeWorkflowCommand( projectId, workflowId, WorkflowCommand.translate)
-// POST redoWorkflowCommand(projectId, workflowId)
-// POST undoWorkflowCommand(projectId, workflowId)
+// TranslateCommand: translation, nodeIds
 
+const { state } = require('../../../../plugins/locators');
 const { Trigger } = require('../../../../steps/Trigger');
 
 Feature('Translate command').tag('@endpoints-@workflow-@command-@translateCommand');
@@ -10,14 +9,15 @@ Before(({ I }) => {
     __`Before each:`;
     I.loadWorkflow('test-translateCommand');
 
-    I.seeElement({ nodeId: 1 });
+    I.seeElement({ nodeId: 1, state: state.CONFIGURED });
     I.seeElement({ nodeId: 2 });
+    I.seeElement({ nodeId: 3 });
     I.seeElement({ nodeId: 3 });
     /* eslint-disable no-magic-numbers */
     I.moveNode({ nodeId: 1 }, 5, 5);
     I.moveNode({ nodeId: 2 }, 5, 5);
     I.moveNode({ nodeId: 3 }, 5, 5);
-    I.moveNode({ nodeId: 6 }, 5, 5);
+    I.moveNode({ nodeId: 6, state: state.CONFIGURED }, 5, 5);
     /* eslint-enable no-magic-numbers */
     I.click('#kanvas');
 });

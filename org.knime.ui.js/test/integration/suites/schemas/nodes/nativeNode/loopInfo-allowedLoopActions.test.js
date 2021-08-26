@@ -1,13 +1,8 @@
-// Loop info to assert states:
-// [ RUNNING, PAUSED, FINISHED ]
-
 const { hover, state, context } = require('../../../../plugins/locators');
 const { Trigger } = require('../../../../steps/Trigger');
 
-// Allowed loop actions.test.js
-
 Feature('loopInfo-allowedLoopActions').tag(
-    '@schemas-@node-@nativeNode-@loopInfo-allowedLoopActions'
+    '@schemas-@nodes-@nativeNode-@loopInfo-allowedLoopActions'
 );
 
 Before(({ I }) => {

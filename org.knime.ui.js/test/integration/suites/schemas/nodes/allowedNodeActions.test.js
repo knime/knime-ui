@@ -1,23 +1,16 @@
-// canExecute
-// canCancel
-// canReset
-// canOpenDialog
-// canOpenView
-// canDelete
-
 const { hover, state, action } = require('../../../plugins/locators');
 const { Trigger } = require('../../../steps/Trigger');
 
-Feature('allowedNodeActions').tag('@schemas-@node-@allowedNodeActions');
+Feature('allowedNodeActions').tag('@schemas-@nodes-@allowedNodeActions');
 
 Before(({ I }) => {
     __`Before each:`;
     I.loadWorkflow('test-allowedNodeActions');
 
     I.seeElement({ nodeId: 1 });
-    I.seeElement({ nodeId: 2 });
-    I.seeElement({ nodeId: 3 });
-    I.seeElement({ nodeId: 4 });
+    I.seeElement({ nodeId: 2, state: state.CONFIGURED });
+    I.seeElement({ nodeId: 3, state: state.IDLE });
+    I.seeElement({ nodeId: 4, state: state.CONFIGURED });
 });
 
 Scenario('canExecute', async ({ I }) => {

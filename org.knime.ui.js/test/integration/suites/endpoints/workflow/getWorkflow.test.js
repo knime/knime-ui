@@ -1,4 +1,4 @@
-// getWorkflow(projectId, workflowId, includeInteractionInfo)
+const { state } = require('../../../plugins/locators');
 
 Feature('getWorkflow').tag('@endpoints-@workflow-@getWorkflow');
 
@@ -6,7 +6,7 @@ Before(({ I }) => {
     __`Before each:`;
     I.loadWorkflow('test-getWorkflow');
 
-    I.seeElement({ nodeId: 3 });
+    I.seeElement({ nodeId: 3, state: state.IDLE });
     I.seeElement({ nodeId: 6 });
 });
 
