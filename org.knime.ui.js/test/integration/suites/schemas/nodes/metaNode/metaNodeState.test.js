@@ -1,15 +1,15 @@
-const { metanodeState } = require('../../../../plugins/locators');
+const { metanodeState, state } = require('../../../../plugins/locators');
 const { Trigger } = require('../../../../steps/Trigger');
 
 Feature('loopInfo-allowedLoopActions').tag(
-    '@schemas-@node-@metaNode-@metaNodeState'
+    '@schemas-@nodes-@metaNode-@metaNodeState'
 );
 
 Before(({ I }) => {
     __`Before each:`;
     I.loadWorkflow('test-getWorkflow');
 
-    I.seeElement({ nodeId: 3 });
+    I.seeElement({ nodeId: 3, state: state.IDLE });
     I.seeElement({ nodeId: 6 });
 });
 

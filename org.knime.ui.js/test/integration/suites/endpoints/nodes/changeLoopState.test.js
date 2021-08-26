@@ -1,25 +1,19 @@
-// changeLoopState(projectId, workflowId, nodeIds[], action)
-
 const { state } = require('../../../plugins/locators');
 const { Trigger } = require('../../../steps/Trigger');
 
-Feature('Change Loop State').tag('@endpoints-@node-@changeLoopState');
+Feature('Change Loop State').tag('@endpoints-@nodes-@changeLoopState');
 
 Before(({ I }) => {
     __`Before each:`;
     I.loadWorkflow('test-changeLoopState');
 
-    I.seeElement({ nodeId: 1 });
+    I.seeElement({ nodeId: 1, state: state.CONFIGURED });
     I.seeElement({ nodeId: 6 });
     I.seeElement({ nodeId: 7 });
     I.seeElement({ nodeId: 10 });
-    I.seeElement({ nodeId: 210 });
+    I.seeElement({ nodeId: 210, state: state.IDLE });
     I.seeElement({ nodeId: 211 });
 });
-
-// There's no shortcuts for step loop executions.
-// There's no ToolbarActions for step loop executions.
-// Actually, while you can execute them, that's not a loop specific action, and that's being tested on changeNodeStates.
 
 Scenario('Step / Resume / Pause - actionBar', ({ I }) => {
     __`Step Loop End node`;
@@ -51,7 +45,6 @@ Scenario('Step / Resume / Pause - contextMenu', ({ I }) => {
     I.seeElement({ nodeId: 10, state: state.PAUSED });
 });
 
-// Issue here
 Scenario('WorkflowId - Step / Resume / Pause - contextMenu', ({ I }) => {
     __`Open component`;
     I.doubleClickNodeWithCtrl({ nodeId: 210 });
@@ -71,7 +64,6 @@ Scenario('WorkflowId - Step / Resume / Pause - contextMenu', ({ I }) => {
     I.seeElement({ nodeId: '210:0:10', state: state.PAUSED });
 });
 
-// Issue here
 Scenario('WorkflowId - Step / Resume / Pause - actionBar', ({ I }) => {
     __`Open component`;
     I.doubleClickNodeWithCtrl({ nodeId: 210 });

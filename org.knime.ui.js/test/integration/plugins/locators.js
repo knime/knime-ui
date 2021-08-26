@@ -11,6 +11,13 @@ module.exports = {
             css: '#toolbar button[title^="Cancel workflow execution"] '
         },
         /**
+        * @property Cancel selected node execution.
+        */
+        CANCEL_NODE: {
+            label: 'CANCEL_NODE',
+            css: '#toolbar button[title^="Cancel selected nodes"] '
+        },
+        /**
         * @property Execute all nodes in the workflow.
         */
         EXECUTE_ALL: {
@@ -30,6 +37,13 @@ module.exports = {
         RESET_ALL: {
             label: 'RESET_ALL',
             css: '#toolbar button[title^="Reset executed nodes"] '
+        },
+        /**
+        * @property Execute a specific selected node.
+        */
+        RESET_NODE: {
+            label: 'RESET_NODE',
+            css: '#toolbar button[title^="Reset selected nodes"] '
         },
         /**
         * @property Deletes a node.
@@ -56,15 +70,15 @@ module.exports = {
     metanodeState: {
         IDLE: {
             label: 'IDLE',
-            css: '[data-metanodeState="IDLE"] '
+            css: '[data-test-metanodeState="IDLE"] '
         },
         EXECUTED: {
             label: 'EXECUTED',
-            css: '[data-metanodeState="EXECUTED"] '
+            css: '[data-test-metanodeState="EXECUTED"] '
         },
         EXECUTING: {
             label: 'EXECUTING',
-            css: '[data-metanodeState="EXECUTING"] '
+            css: '[data-test-metanodeState="EXECUTING"] '
         }
     },
     /**

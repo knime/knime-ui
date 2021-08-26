@@ -1,7 +1,6 @@
-// PUT executeWorkflowCommand( projectId, workflowId, WorkflowCommand.delete)
-// POST redoWorkflowCommand(projectId, workflowId)
-// POST undoWorkflowCommand(projectId, workflowId)
+// DeleteCommand: nodeIds, connectionIds
 
+const { state } = require('../../../../plugins/locators');
 const { Trigger } = require('../../../../steps/Trigger');
 
 Feature('Delete command').tag('@endpoints-@workflow-@command-@deleteCommand');
@@ -12,8 +11,8 @@ Before(({ I }) => {
 
     I.seeElement({ nodeId: 3 });
     I.seeElement({ nodeId: 208 });
-    I.seeElement({ nodeId: 209 });
-    I.seeElement({ nodeId: 210 });
+    I.seeElement({ nodeId: 209, state: state.CONFIGURED });
+    I.seeElement({ nodeId: 210, state: state.IDLE });
 });
 
 Scenario('Single node - Shortcut', ({ I }) => {
@@ -85,7 +84,6 @@ Scenario('Multiple selectors - Shortcut', ({ I }) => {
     I.dontSeeElement({ sourceNode: 208, destNode: 3 });
 });
 
-// Issue here
 Scenario('Single node - Toolbar', ({ I }) => {
     __`Delete node`;
     I.click({ nodeId: 209 });
@@ -116,7 +114,6 @@ Scenario('Single connector - Toolbar', ({ I }) => {
     I.dontSeeElement({ sourceNode: 208, destNode: 3 });
 });
 
-// Issue here
 Scenario('Multiple nodes - Toolbar', ({ I }) => {
     __`Delete nodes`;
     I.selectMultipleNodes({ nodeId: 208 }, { nodeId: 209 }, { nodeId: 210 });
@@ -160,11 +157,7 @@ Scenario('Single node - Context Menu', ({ I }) => {
     __`Delete node`;
     Trigger.contextMenu.deleteNode('209');
     I.dontSeeElement({ nodeId: 209 });
-    
-    // No undo/redo in context menu
 });
-
-// You can't delete connectors via context menu
 
 Scenario('Multiple nodes - Context Menu', ({ I }) => {
     __`Delete nodes`;
@@ -173,8 +166,6 @@ Scenario('Multiple nodes - Context Menu', ({ I }) => {
     I.dontSeeElement({ nodeId: 208 });
     I.dontSeeElement({ nodeId: 209 });
     I.dontSeeElement({ nodeId: 210 });
-    
-    // No undo/redo in context menu
 });
 
 Scenario('WorkflowId - Shortcut', ({ I }) => {

@@ -1,6 +1,6 @@
 const getConnectorSelector = (sourceNode, targetNode) => {
-    let selector = `[data-source-node="root:${sourceNode}"]`;
-    selector += `[data-dest-node="root:${targetNode}"]`;
+    let selector = `[data-test-source-node="root:${sourceNode}"]`;
+    selector += `[data-test-dest-node="root:${targetNode}"]`;
     return selector;
 };
 

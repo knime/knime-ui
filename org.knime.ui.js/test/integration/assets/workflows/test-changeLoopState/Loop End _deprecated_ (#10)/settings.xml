@@ -38,7 +38,7 @@
     <entry key="node-feature-name" type="xstring" value="KNIME Base nodes"/>
     <entry key="node-feature-symbolic-name" type="xstring" value="org.knime.features.base.feature.group"/>
     <entry key="node-feature-vendor" type="xstring" value="KNIME AG, Zurich, Switzerland"/>
-    <entry key="node-feature-version" type="xstring" value="4.5.0.v202108100855"/>
+    <entry key="node-feature-version" type="xstring" value="4.5.0.v202108191017"/>
     <config key="factory_settings"/>
     <entry key="name" type="xstring" value="Loop End (deprecated)"/>
     <entry key="hasContent" type="xboolean" value="false"/>

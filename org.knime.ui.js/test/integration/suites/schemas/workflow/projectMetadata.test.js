@@ -1,10 +1,12 @@
+const { state } = require('../../../plugins/locators');
+
 Feature('Project Metadata').tag('@schemas-@workflow-@projectMetadata');
 
 Before(({ I }) => {
     __`Before each:`;
     I.loadWorkflow('test-getWorkflow');
 
-    I.seeElement({ nodeId: 3 });
+    I.seeElement({ nodeId: 3, state: state.IDLE });
     I.seeElement({ nodeId: 6 });
 });
 
@@ -30,6 +32,4 @@ Scenario('Properties of schema:', ({ I }) => {
         I.see('KNIME Website', 'a');
         I.see('KNIME Hub', 'a');
     });
-
-    // "lastEdit" could be done when save option is enabled.
 });

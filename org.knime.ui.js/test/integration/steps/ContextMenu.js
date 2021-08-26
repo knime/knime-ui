@@ -23,6 +23,10 @@ const contextMenu = {
     deleteNode(node) {
         I.rightClick({ nodeId: node });
         I.click({ context: context.DELETE });
+    },
+    cancelNode(node) {
+        I.rightClick({ nodeId: node });
+        I.click({ context: context.CANCEL });
     }
 };
 

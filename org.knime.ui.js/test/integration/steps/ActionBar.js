@@ -19,6 +19,14 @@ const actionBar = {
     resumeNode(node) {
         I.click({ nodeId: node });
         I.click({ hover: hover.RESUME });
+    },
+    cancelNode(node) {
+        I.click({ nodeId: node });
+        I.click({ hover: hover.CANCEL });
+    },
+    resetNode(node) {
+        I.click({ nodeId: node });
+        I.click({ hover: hover.RESET });
     }
 };
 
