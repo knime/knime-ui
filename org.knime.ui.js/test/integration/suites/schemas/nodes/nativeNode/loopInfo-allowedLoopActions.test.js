@@ -2,7 +2,7 @@ const { hover, state, context } = require('../../../../plugins/locators');
 const { Trigger } = require('../../../../steps/Trigger');
 
 Feature('loopInfo-allowedLoopActions').tag(
-    '@schemas-@nodes-@nativeNode-@loopInfo-allowedLoopActions'
+    '@schemas-@nodes-@nativeNode-@loopInfo'
 );
 
 Before(({ I }) => {

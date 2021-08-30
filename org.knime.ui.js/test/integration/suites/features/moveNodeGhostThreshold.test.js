@@ -1,6 +1,6 @@
 const { state } = require('../../plugins/locators');
 
-Feature('Workflow Features').tag('@features-@workflow-@moveNodesGhostThreshold');
+Feature('Move Node Ghost Threshold').tag('@features-@moveNodeGhostThreshold');
 
 Before(({ I }) => {
     __`Before each:`;

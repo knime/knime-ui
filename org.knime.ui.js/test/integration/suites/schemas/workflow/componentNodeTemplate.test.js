@@ -2,7 +2,7 @@ const { part } = require('../../../plugins/locators');
 const learnerHSL = 'hsl(70, 78.3%, 54.9%)'; // Lime orange
 const visualizerHSL = 'hsl(193, 60.9%, 43.1%)'; // Dark turquoise
 
-Feature('componentNodeTemplate').tag('@schemas-@nodes-@componentNodeTemplate');
+Feature('componentNodeTemplate').tag('@schemas-@workflow-@componentNodeTemplate');
 
 Before(({ I }) => {
     __`Before each:`;
