@@ -4,7 +4,9 @@ export default {
         executionState: {
             type: String,
             default: null,
-            validator: executionState => ['EXECUTED', 'EXECUTING', 'IDLE'].includes(executionState)
+            validator: executionState => [
+                'EXECUTED', 'EXECUTING', 'IDLE'
+            ].includes(executionState)
         }
     }
 };
