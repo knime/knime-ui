@@ -1,4 +1,4 @@
-const { state, action } = require('../../plugins/locators');
+const { state, action, misc, decorator } = require('../../plugins/locators');
 const executionTimer = 20;
 
 Feature('streamingExecution').tag('@features-@streamingExecution');

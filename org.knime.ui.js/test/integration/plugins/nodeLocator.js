@@ -21,6 +21,10 @@ module.exports = () => {
             if (validateEnum('misc', providedLocator)) {
                 locatorObj.value += providedLocator.misc.css;
             }
+
+            if (validateEnum('part', providedLocator)) {
+                locatorObj.value += providedLocator.part.css;
+            }
         }
     });
 };
