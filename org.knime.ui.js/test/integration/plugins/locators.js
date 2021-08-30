@@ -279,5 +279,19 @@ module.exports = {
             label: 'PAUSE',
             xpath: 'Pause execution'
         }
+    },
+    /**
+    * @object Part of a node.
+    */
+    part: {
+        /**
+        * @property Inner background.
+        * In a component, changes color depending of type.
+        */
+        TORSO: {
+            label: 'TORSO',
+            css: 'g.grabbable path:nth-child(2)'
+        }
+
     }
 };
