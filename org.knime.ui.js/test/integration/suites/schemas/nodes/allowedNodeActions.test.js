@@ -1,7 +1,7 @@
 const { hover, state, action } = require('../../../plugins/locators');
 const { Trigger } = require('../../../steps/Trigger');
 
-Feature('allowedNodeActions').tag('@schemas-@nodes-@allowedNodeActions');
+Feature('Allowed node actions').tag('@schemas-@nodes-@allowedNodeActions');
 
 Before(({ I }) => {
     __`Before each:`;

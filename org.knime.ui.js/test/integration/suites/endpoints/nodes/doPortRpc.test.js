@@ -1,7 +1,7 @@
 const { state } = require('../../../plugins/locators');
 const { Trigger } = require('../../../steps/Trigger');
 
-Feature('doPortRpc').tag('@endpoints-@node-@doPortRpc');
+Feature('Do Port Rpc').tag('@endpoints-@node-@doPortRpc');
 
 Before(({ I }) => {
     __`Before each:`;
