@@ -70,3 +70,19 @@ const valueFromCurrentIteration = locate("td").after(currentIteration);
 ```sh
 npx codeceptjs def .
 ```
+
+### About "tags":
+
+Example:
+
+```js
+Feature("Change Loop State").tag("@endpoints-@nodes-@changeLoopState");
+```
+
+By adding [Tags](https://codecept.io/advanced/#tags) to your suites, you can then run a specific test via:
+
+```sh
+npm run test:integration @changeLoopState
+```
+
+Keep in mind, this is just a simply `grep`. You can use regex aswell.

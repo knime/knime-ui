@@ -40,11 +40,11 @@ In order to run and debug the web app with a functioning backend:
 - download the AP, e.g. from https://www.knime.com/nightly-build-downloads
 - add VM arguments to the `knime.ini`
 
-| argument | comment |
-|-|-|
-| `-Dchromium.remote_debugging_port=8888`| Enables the CEF remote debugging mode available at the provided port |
+| argument                                         | comment                                                                                                                                                                                |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-Dchromium.remote_debugging_port=8888`          | Enables the CEF remote debugging mode available at the provided port                                                                                                                   |
 | `-Dorg.knime.ui.debug.url=http://localhost:3000` | (Optional) The web app is served from the given URL instead of using the resources bundled with the AP (this parameter only takes effect if the CEF remote debugging mode is enabled!) |
-| `-Dchromium.debug` | (Optional) More verbose debugging output for the CEF |
+| `-Dchromium.debug`                               | (Optional) More verbose debugging output for the CEF                                                                                                                                   |
 
 - start the AP and make sure the _KNIME UI_-feature is installed
   - Menu > File > Install KNIME Extensions
@@ -84,7 +84,6 @@ npm run sendcoverage
 It requires the `SONAR_LOGIN` and `SONAR_PASSWORD` environment variables to be set, which must be valid credentials
 for the SonarQube instance configured in `sonar-project.properties`.
 
-
 #### Running integration tests
 
 Integration tests require a running KNIME AP instance with the web frontend running, and a debugger port open.
@@ -103,25 +102,24 @@ This can be achieved by manually clicking the button.
 As a workspace, you should select the `test/integration/assets/workflows` folder.
 
 Then, you can run the tests via
+
 ```
 npm run test:integration
 ```
+
 To run a single test add the tag as second argument.
 
-You can find tags on any *.test.js file as `Feature('Delete command').tag('@endpoints-@workflow-@command-@deleteCommand');`.
+You can find tags on any \*.test.js file as `Feature('Delete command').tag('@endpoints-@workflow-@command-@deleteCommand');`.
 
-``` sh
+```sh
 # Only runs the deleteCommand file.
 npm run test:integration @deleteCommand
 ```
 
-``` sh
+```sh
 # Runs every test inside the workflow directory.
 npm run test:integration @workflow
 ```
-
-If you want to test a single specific Scenario, you can add a custom tag to that Scenario.
-
 
 ### Running security audit
 
@@ -155,7 +153,6 @@ the global namespace by the AP (or by the dev app). See `json-rpc-adapter.js` fo
 
 In turn, this app provides a global function called `jsonrpcNotification` that can be used by Java to call JS functions.
 See `json-rpc-notification.js` for details.
-
 
 [nuxt.js]: https://nuxtjs.org/
 [node]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/905281540/Node.js+Installation
