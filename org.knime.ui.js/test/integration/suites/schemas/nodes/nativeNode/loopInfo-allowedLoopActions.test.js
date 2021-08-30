@@ -1,7 +1,7 @@
 const { hover, state, context } = require('../../../../plugins/locators');
 const { Trigger } = require('../../../../steps/Trigger');
 
-Feature('loopInfo-allowedLoopActions').tag(
+Feature('Loop info / Allowed loop actions').tag(
     '@schemas-@nodes-@nativeNode-@loopInfo'
 );
 

@@ -1,7 +1,7 @@
 const { metanodeState, state } = require('../../../../plugins/locators');
 const { Trigger } = require('../../../../steps/Trigger');
 
-Feature('loopInfo-allowedLoopActions').tag(
+Feature('Metanode State').tag(
     '@schemas-@nodes-@metaNode-@metaNodeState'
 );
 

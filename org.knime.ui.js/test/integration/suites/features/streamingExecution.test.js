@@ -1,7 +1,7 @@
 const { state, action, misc, decorator } = require('../../plugins/locators');
 const executionTimer = 20;
 
-Feature('streamingExecution').tag('@features-@streamingExecution');
+Feature('Streaming Execution').tag('@features-@streamingExecution');
 
 Before(({ I }) => {
     __`Before each:`;

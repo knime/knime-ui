@@ -1,6 +1,6 @@
 const { state } = require('../../../plugins/locators');
 
-Feature('nodePorts').tag('@schemas-@nodes-@nodePorts');
+Feature('Node ports').tag('@schemas-@nodes-@nodePorts');
 
 Before(({ I }) => {
     __`Before each:`;

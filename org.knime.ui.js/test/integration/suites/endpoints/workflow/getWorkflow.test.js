@@ -1,6 +1,6 @@
 const { state } = require('../../../plugins/locators');
 
-Feature('getWorkflow').tag('@endpoints-@workflow-@getWorkflow');
+Feature('Get Workflow').tag('@endpoints-@workflow-@getWorkflow');
 
 Before(({ I }) => {
     __`Before each:`;
