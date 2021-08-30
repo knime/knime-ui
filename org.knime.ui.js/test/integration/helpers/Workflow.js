@@ -9,7 +9,7 @@ class Workflow extends KnimeHelper {
     *   top-level workflow. Defaults to 'root'.
     */
     async loadWorkflow(projectId, workflowId = 'root') {
-        const page = this.helpers.Puppeteer.page;
+        const { page } = this.helpers.Puppeteer;
     
         const initParameters = {
             openedWorkflows: [{
