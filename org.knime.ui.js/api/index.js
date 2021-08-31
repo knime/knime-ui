@@ -75,6 +75,23 @@ export const searchNodes = ({ query, tags, allTagsMatch, nodeOffset, nodeLimit, 
     fullTemplateInfo
 );
 
+/**
+ * Get repository nodes per category via RPC.
+ *
+ * @param {Number} cfg.numNodesPerTag - The number of nodes per tag to be returned.
+ * @param {Number} cfg.tagsOffset - The number of tags to be skipped (for pagination).
+ * @param {Number} cfg.tagsLimit - The maximum number of tags to be returned (mainly for pagination).
+ * @param {Boolean} cfg.fullTemplateInfo - if the results should contain all node info (incl. img data).
+ * @returns {Object} the node repository selection results.
+ */
+export const selection = ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => rpc(
+    'NodeRepositoryService.selectNodes',
+    numNodesPerTag,
+    tagsOffset,
+    tagsLimit,
+    fullTemplateInfo
+);
+
 export const getNodeTemplates = templateIds => rpc('NodeRepositoryService.getNodeTemplates', templateIds);
 
 /**

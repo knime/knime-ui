@@ -1,4 +1,4 @@
-import { searchNodes, getNodeTemplates } from '~api';
+import { searchNodes, selection, getNodeTemplates } from '~api';
 
 // TODO: NXT-65 add node category support
 // TODO: NXT-115 add node search support
@@ -10,7 +10,42 @@ import { searchNodes, getNodeTemplates } from '~api';
 const nodeSearchPageSize = 21;
 const nodeSearchTagsLimit = 10;
 
+// const compare = (a, b) => {
+//     if (a.type < b.type) {
+//         return -1;
+//     }
+//     if (a.type > b.type) {
+//         return 1;
+//     }
+//     return 0;
+// };
+
+// const groupNodes = (sortedNodes) => {
+//     let categories = [];
+//     sortedNodes.sort(compare);
+//     let categoryNodes = [];
+//     let category = sortedNodes[0].type;
+//     for (let i = 0; i < sortedNodes.length; i++) {
+//         if (category !== sortedNodes[i]?.type) {
+//             // add old node Category to result array
+//             const nodeSet = {
+//                 name: category,
+//                 nodes: categoryNodes
+//             };
+//             categories.push(nodeSet);
+//             // change actual type
+//             category = sortedNodes[i].type;
+//             // reset categoryNodes array with the first node of the new category
+//             categoryNodes = [sortedNodes[i]];
+//         } else if (category === sortedNodes[i].type) {
+//             categoryNodes.push(sortedNodes[i]);
+//         }
+//     }
+//     return categories;
+// };
+
 export const state = () => ({
+    nodesPerCategory: [],
     nodes: [],
     nodeCategories: [],
     nodeTemplates: {},
@@ -22,6 +57,19 @@ export const state = () => ({
 });
 
 export const actions = {
+    async getAllNodes({ dispatch, commit, state }) {
+        commit('setNodeSearchPage', 0);
+        let res = await selection({
+            numNodesPerTag: 6,
+            fullTemplateInfo: true
+        });
+        commit('setNodesPerCategories', res.selections);
+        let tagNodes = [];
+        res.selections.forEach((tag) => { tagNodes = [...tagNodes, ...tag.nodes]; });
+        commit('setNodes', tagNodes);
+        return dispatch('updateNodeTemplates');
+    },
+
     /**
      * Utility method to fetch node repository data. Used for initial data retrieval, but also for searching via query
      * and/or tag filters.
@@ -93,7 +141,7 @@ export const actions = {
      */
     clearSelectedTags({ dispatch, commit }) {
         commit('setSelectedTags', []);
-        dispatch('searchNodes', false);
+        dispatch('getAllNodes');
     },
     /**
      * Update the stored (cached) node template data.
@@ -165,5 +213,8 @@ export const mutations = {
 
     updateNodeTemplates(state, nodeTemplates) {
         Object.keys(nodeTemplates).forEach(node => { state.nodeTemplate = nodeTemplates[node]; });
+    },
+    setNodesPerCategories(state, groupedNodes) {
+        state.nodesPerCategory = groupedNodes;
     }
 };

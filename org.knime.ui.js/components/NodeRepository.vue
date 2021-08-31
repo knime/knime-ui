@@ -5,13 +5,15 @@ import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import TagList from '~/webapps-common/ui/components/TagList';
 import Button from '~/webapps-common/ui/components/Button';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
+import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
 
 export default {
     components: {
         NodePreview,
         TagList,
         Button,
-        CloseIcon
+        CloseIcon,
+        NodeRepositoryCategory
     },
     computed: {
         ...mapState('nodeRepo', [
@@ -19,7 +21,8 @@ export default {
             'nodeTemplates',
             'totalNumNodes',
             'selectedTags',
-            'tags'
+            'tags',
+            'nodesPerCategory'
         ]),
         nodeRows() {
             let rows = [];
@@ -38,9 +41,19 @@ export default {
                 }
             }
             return rows;
+        },
+        categoriesDisplayed() {
+            if (this.selectedTags.length > 0) {
+                const result = {
+                    nodes: this.nodes
+                };
+                return [result];
+            }
+            return this.nodesPerCategory;
         }
     },
     mounted() {
+        this.$store.dispatch('nodeRepo/getAllNodes');
         this.$store.dispatch('nodeRepo/searchNodes', true);
     },
     methods: {
@@ -62,9 +75,7 @@ export default {
 
 <template>
   <div class="repo">
-    <h4>
-      Repository
-    </h4>
+    <h4>Repository</h4>
     <span class="break" />
     <div class="tags">
       <TagList
@@ -115,6 +126,21 @@ export default {
         </span>
       </div>
     </div>
+    <div
+      v-else
+      class="node-section"
+    >
+      <template v-for="(category, ind) in nodesPerCategory">
+        <NodeRepositoryCategory
+          :key="`tag-${ind}`"
+          :category="category"
+        />
+        <span
+          :key="ind"
+          class="break full"
+        />
+      </template>
+    </div>
     <template v-if="selectedTags.length && nodes.length < totalNumNodes">
       <Button
         compact
@@ -140,7 +166,7 @@ export default {
     margin: 14px auto;
   }
 
-  & .break {
+  & .break:not(:last-child) {
     height: 1px;
     width: 100%;
     display: block;
