@@ -3,61 +3,69 @@
     <entry key="created_by" type="xstring" value="4.5.0.v202108270835"/>
     <entry key="created_by_nightly" type="xboolean" value="true"/>
     <entry key="version" type="xstring" value="4.1.0"/>
-    <entry key="name" type="xstring" isnull="true" value=""/>
-    <config key="authorInformation">
-        <entry key="authored-by" type="xstring" value="fauhokama"/>
-        <entry key="authored-when" type="xstring" value="2021-08-27 17:14:26 -0300"/>
-        <entry key="lastEdited-by" type="xstring" value="fauhokama"/>
-        <entry key="lastEdited-when" type="xstring" value="2021-08-31 11:53:21 -0300"/>
+    <entry key="name" type="xstring" value="TestingName"/>
+    <config key="nodeAnnotation">
+        <entry key="text" type="xstring" value=""/>
+        <entry key="bgcolor" type="xint" value="16777215"/>
+        <entry key="x-coordinate" type="xint" value="88"/>
+        <entry key="y-coordinate" type="xint" value="279"/>
+        <entry key="width" type="xint" value="104"/>
+        <entry key="height" type="xint" value="13"/>
+        <entry key="alignment" type="xstring" value="CENTER"/>
+        <entry key="borderSize" type="xint" value="0"/>
+        <entry key="borderColor" type="xint" value="0"/>
+        <entry key="defFontSize" type="xint" value="-1"/>
+        <entry key="annotation-version" type="xint" value="20151123"/>
+        <config key="styles"/>
     </config>
     <entry key="customDescription" type="xstring" isnull="true" value=""/>
     <entry key="state" type="xstring" value="IDLE"/>
     <config key="workflow_credentials"/>
     <config key="nodes">
-        <config key="node_2">
-            <entry key="id" type="xint" value="2"/>
-            <entry key="node_settings_file" type="xstring" value="Component (#2)/settings.xml"/>
-            <entry key="node_is_meta" type="xboolean" value="true"/>
-            <entry key="node_type" type="xstring" value="SubNode"/>
+        <config key="node_1">
+            <entry key="id" type="xint" value="1"/>
+            <entry key="node_settings_file" type="xstring" value="CSV Reader (#1)/settings.xml"/>
+            <entry key="node_is_meta" type="xboolean" value="false"/>
+            <entry key="node_type" type="xstring" value="NativeNode"/>
             <entry key="ui_classname" type="xstring" value="org.knime.core.node.workflow.NodeUIInformation"/>
             <config key="ui_settings">
                 <config key="extrainfo.node.bounds">
                     <entry key="array-size" type="xint" value="4"/>
-                    <entry key="0" type="xint" value="124"/>
-                    <entry key="1" type="xint" value="117"/>
-                    <entry key="2" type="xint" value="68"/>
+                    <entry key="0" type="xint" value="150"/>
+                    <entry key="1" type="xint" value="120"/>
+                    <entry key="2" type="xint" value="69"/>
+                    <entry key="3" type="xint" value="76"/>
+                </config>
+            </config>
+        </config>
+        <config key="node_2">
+            <entry key="id" type="xint" value="2"/>
+            <entry key="node_settings_file" type="xstring" value="Component Input (#2)/settings.xml"/>
+            <entry key="node_is_meta" type="xboolean" value="false"/>
+            <entry key="node_type" type="xstring" value="NativeNode"/>
+            <entry key="ui_classname" type="xstring" value="org.knime.core.node.workflow.NodeUIInformation"/>
+            <config key="ui_settings">
+                <config key="extrainfo.node.bounds">
+                    <entry key="array-size" type="xint" value="4"/>
+                    <entry key="0" type="xint" value="50"/>
+                    <entry key="1" type="xint" value="120"/>
+                    <entry key="2" type="xint" value="101"/>
                     <entry key="3" type="xint" value="76"/>
                 </config>
             </config>
         </config>
         <config key="node_3">
             <entry key="id" type="xint" value="3"/>
-            <entry key="node_settings_file" type="xstring" value="Component (#3)/settings.xml"/>
-            <entry key="node_is_meta" type="xboolean" value="true"/>
-            <entry key="node_type" type="xstring" value="SubNode"/>
+            <entry key="node_settings_file" type="xstring" value="Component Output (#3)/settings.xml"/>
+            <entry key="node_is_meta" type="xboolean" value="false"/>
+            <entry key="node_type" type="xstring" value="NativeNode"/>
             <entry key="ui_classname" type="xstring" value="org.knime.core.node.workflow.NodeUIInformation"/>
             <config key="ui_settings">
                 <config key="extrainfo.node.bounds">
                     <entry key="array-size" type="xint" value="4"/>
-                    <entry key="0" type="xint" value="244"/>
-                    <entry key="1" type="xint" value="117"/>
-                    <entry key="2" type="xint" value="68"/>
-                    <entry key="3" type="xint" value="76"/>
-                </config>
-            </config>
-        </config>
-        <config key="node_4">
-            <entry key="id" type="xint" value="4"/>
-            <entry key="node_settings_file" type="xstring" value="TestingName (#4)/settings.xml"/>
-            <entry key="node_is_meta" type="xboolean" value="true"/>
-            <entry key="node_type" type="xstring" value="SubNode"/>
-            <entry key="ui_classname" type="xstring" value="org.knime.core.node.workflow.NodeUIInformation"/>
-            <config key="ui_settings">
-                <config key="extrainfo.node.bounds">
-                    <entry key="array-size" type="xint" value="4"/>
-                    <entry key="0" type="xint" value="124"/>
-                    <entry key="1" type="xint" value="217"/>
-                    <entry key="2" type="xint" value="75"/>
+                    <entry key="0" type="xint" value="250"/>
+                    <entry key="1" type="xint" value="120"/>
+                    <entry key="2" type="xint" value="111"/>
                     <entry key="3" type="xint" value="76"/>
                 </config>
             </config>
