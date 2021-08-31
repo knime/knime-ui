@@ -1,67 +1,67 @@
 module.exports = {
     /**
-    * @object Toolbar actions.
-    */
+     * @object Toolbar actions.
+     */
     action: {
         /**
-        * @property Cancel all nodes executions.
-        */
+         * @property Cancel all nodes executions.
+         */
         CANCEL_ALL: {
             label: 'CANCEL_ALL',
             css: '#toolbar button[title^="Cancel workflow execution"] '
         },
         /**
-        * @property Cancel selected node execution.
-        */
+         * @property Cancel selected node execution.
+         */
         CANCEL_NODE: {
             label: 'CANCEL_NODE',
             css: '#toolbar button[title^="Cancel selected nodes"] '
         },
         /**
-        * @property Execute all nodes in the workflow.
-        */
+         * @property Execute all nodes in the workflow.
+         */
         EXECUTE_ALL: {
             label: 'EXECUTE_ALL',
             css: '#toolbar button[title^="Execute workflow"] '
         },
         /**
-        * @property Execute a specific selected node.
-        */
+         * @property Execute a specific selected node.
+         */
         EXECUTE_NODE: {
             label: 'EXECUTE_NODE',
             css: '#toolbar button[title^="Execute selected nodes"] '
         },
         /**
-        * @property Resets the workflow.
-        */
+         * @property Resets the workflow.
+         */
         RESET_ALL: {
             label: 'RESET_ALL',
             css: '#toolbar button[title^="Reset executed nodes"] '
         },
         /**
-        * @property Execute a specific selected node.
-        */
+         * @property Execute a specific selected node.
+         */
         RESET_NODE: {
             label: 'RESET_NODE',
             css: '#toolbar button[title^="Reset selected nodes"] '
         },
         /**
-        * @property Deletes a node.
-        */
+         * @property Deletes a node.
+         */
         DELETE: {
             label: 'DELETE',
             css: '#toolbar button[title^="Delete selection"] '
         },
         /**
-        * @property Redo workflow changes.
-        */
+         * @property Redo workflow changes.
+         */
         REDO: {
             label: 'REDO',
             css: '#toolbar button[title^="Redo"]'
         },
         /**
-                 * @property Undo workflow changes.
-                 */
+         * @property Undo workflow changes.
+         */
         UNDO: {
             label: 'UNDO',
             css: '#toolbar button[title^="Undo"]'
@@ -82,154 +82,154 @@ module.exports = {
         }
     },
     /**
-    * @object Node states.
-    */
+     * @object Node states.
+     */
     state: {
         /**
-            * @property Node has been configured correctly, and can be executed.
-            */
+         * @property Node has been configured correctly, and can be executed.
+         */
         CONFIGURED: {
             label: 'CONFIGURED',
             css: '.traffic-light-yellow '
         },
         /**
-            * @property Node is being executed. Shown as a progress bar.
-            */
+         * @property Node is being executed. Shown as a progress bar.
+         */
         EXECUTING: {
             label: 'EXECUTING',
             css: '.progress-bar '
         },
         /**
-            * @property Node is being executed. Shown as a moving circle.
-            */
+         * @property Node is being executed. Shown as a moving circle.
+         */
         EXECUTING_CIRCLE: {
             label: 'EXECUTING_CIRCLE',
             css: '.progress-circle '
         },
         /**
-            * @property Node is waiting for configuration or incoming data.
-            */
+         * @property Node is waiting for configuration or incoming data.
+         */
         IDLE: {
             label: 'IDLE',
             css: '.traffic-light-red '
         },
         /**
-            * @property Node has been successfully executed.
-            */
+         * @property Node has been successfully executed.
+         */
         EXECUTED: {
             label: 'EXECUTED',
             css: '.traffic-light-green '
         },
         /**
-            * @property Loop Node is paused.
-            */
+         * @property Loop Node is paused.
+         */
         PAUSED: {
             label: 'PAUSED',
             css: '.pause '
         },
         /**
-            * @property Loop Node is running.
-            */
+         * @property Loop Node is running.
+         */
         RUNNING: {
             label: 'RUNNING',
             css: '.running '
         }
     },
     /**
-    * @object Node Decorator.
-    */
+     * @object Node Decorator.
+     */
     decorator: {
         /**
-        * @property 'Streamable' Decorator.
-        */
+         * @property 'Streamable' Decorator.
+         */
         STREAMABLE: {
             label: 'STREAMABLE',
             css: '.streamable '
         },
         /**
-        * @property 'Non Streamable' Decorator.
-        */
+         * @property 'Non Streamable' Decorator.
+         */
         NOT_STREAMABLE: {
             label: 'NOT_STREAMABLE',
             css: '.not-streamable '
         }
     },
     /**
-    * @object Misc locators. Could be added to other categories in the future.
-    */
+     * @object Misc locators. Could be added to other categories in the future.
+     */
     misc: {
         /**
-        * @property Node execution has been cancelled. Warning sign.
-        */
+         * @property Node execution has been cancelled. Warning sign.
+         */
         EXECUTION_CANCELLED: {
             label: 'EXECUTION_CANCELLED',
             css: '.warning '
         },
         /**
-        * @property Node exeuction error. Cross Red sign.
-        */
+         * @property Node exeuction error. Cross Red sign.
+         */
         ERROR: {
             label: 'ERROR',
             css: '.error '
         }
     },
     /**
-    * @object Node actions you can do when hovering a node.
-    */
+     * @object Node actions you can do when hovering a node.
+     */
     hover: {
         /**
-        * @property Execute node.
-        */
+         * @property Execute node.
+         */
         EXECUTE: {
             label: 'EXECUTE',
             css: '.action-button.action-execute '
         },
         /**
-        * @property Reset node.
-        */
+         * @property Reset node.
+         */
         RESET: {
             label: 'RESET',
             css: '.action-button.action-reset '
         },
         /**
-        * @property Open window dialog.
-        */
+         * @property Open window dialog.
+         */
         OPEN_DIALOG: {
             label: 'OPEN_DIALOG',
             css: '.action-button.action-openDialog '
         },
         /**
-        * @property Cancel node execution.
-        */
+         * @property Cancel node execution.
+         */
         CANCEL: {
             label: 'CANCEL',
             css: '.action-button.action-cancel '
         },
         /**
-        * @property Advance a Step loop execution.
-        */
+         * @property Advance a Step loop execution.
+         */
         STEP: {
             label: 'STEP',
             css: '.action-button.action-step '
         },
         /**
-        * @property Resume Step loop execution.
-        */
+         * @property Resume Step loop execution.
+         */
         RESUME: {
             label: 'RESUME',
             css: '.action-button.action-resume '
         },
         /**
-        * @property Pause Step loop execution.
-        */
+         * @property Pause Step loop execution.
+         */
         PAUSE: {
             label: 'PAUSE',
             css: '.action-button.action-pause '
         }
     },
     /**
-    * @object Context menu.
-    */
+     * @object Context menu.
+     */
     context: {
         EXECUTE_ALL: {
             label: 'EXECUTE_ALL',
@@ -281,17 +281,16 @@ module.exports = {
         }
     },
     /**
-    * @object Part of a node.
-    */
+     * @object Part of a node.
+     */
     part: {
         /**
-        * @property Inner background.
-        * In a component, changes color depending of type.
-        */
+         * @property Inner background.
+         * In a component, changes color depending of type.
+         */
         TORSO: {
             label: 'TORSO',
             css: 'g.grabbable path:nth-child(2)'
         }
-
     }
 };
