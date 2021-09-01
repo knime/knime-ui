@@ -10,44 +10,9 @@ import { searchNodes, selection, getNodeTemplates } from '~api';
 const nodeSearchPageSize = 21;
 const nodeSearchTagsLimit = 10;
 
-// const compare = (a, b) => {
-//     if (a.type < b.type) {
-//         return -1;
-//     }
-//     if (a.type > b.type) {
-//         return 1;
-//     }
-//     return 0;
-// };
-
-// const groupNodes = (sortedNodes) => {
-//     let categories = [];
-//     sortedNodes.sort(compare);
-//     let categoryNodes = [];
-//     let category = sortedNodes[0].type;
-//     for (let i = 0; i < sortedNodes.length; i++) {
-//         if (category !== sortedNodes[i]?.type) {
-//             // add old node Category to result array
-//             const nodeSet = {
-//                 name: category,
-//                 nodes: categoryNodes
-//             };
-//             categories.push(nodeSet);
-//             // change actual type
-//             category = sortedNodes[i].type;
-//             // reset categoryNodes array with the first node of the new category
-//             categoryNodes = [sortedNodes[i]];
-//         } else if (category === sortedNodes[i].type) {
-//             categoryNodes.push(sortedNodes[i]);
-//         }
-//     }
-//     return categories;
-// };
-
 export const state = () => ({
     nodesPerCategory: [],
     nodes: [],
-    nodeCategories: [],
     nodeTemplates: {},
     totalNumNodes: 0,
     selectedTags: [],
@@ -57,16 +22,13 @@ export const state = () => ({
 });
 
 export const actions = {
-    async getAllNodes({ dispatch, commit, state }) {
+    async getAllNodes({ dispatch, commit }) {
         commit('setNodeSearchPage', 0);
         let res = await selection({
             numNodesPerTag: 6,
             fullTemplateInfo: true
         });
         commit('setNodesPerCategories', res.selections);
-        let tagNodes = [];
-        res.selections.forEach((tag) => { tagNodes = [...tagNodes, ...tag.nodes]; });
-        commit('setNodes', tagNodes);
         return dispatch('updateNodeTemplates');
     },
 
@@ -151,9 +113,9 @@ export const actions = {
      */
     async updateNodeTemplates({ commit, state }) {
         let missingTemplates = [
-            ...state.nodes.map(n => n.id),
-            ...state.nodeCategories.map(s => s.nodes).map(n => n.id)
-        ].filter(id => !state.nodeTemplates[id]);
+            ...state.nodes.map(node => node.id),
+            ...state.nodesPerCategory.flatMap(s => s.nodes).map(n => n.id)
+        ].filter((id) => !state.nodeTemplates[id]);
         let res = await getNodeTemplates(missingTemplates);
         commit('updateNodeTemplates', res);
     }
@@ -170,21 +132,11 @@ export const mutations = {
     },
 
     addNodes(state, nodes) {
-        nodes.filter(node => !state.nodes.includes(node.id)).forEach(node => {
-            state.nodes.push(node.id);
-            if (!state.nodeTemplates[node.id]) {
-                state.nodeTemplates[node.id] = node;
-            }
-        });
+        state.nodes = state.nodes.concat(nodes);
     },
 
     setNodes(state, nodes) {
-        state.nodes = nodes.map(node => {
-            if (!state.nodeTemplates[node.id]) {
-                state.nodeTemplates[node.id] = node;
-            }
-            return node.id;
-        });
+        state.nodes = nodes;
     },
 
     addTag(state, tag) {
@@ -212,7 +164,7 @@ export const mutations = {
     },
 
     updateNodeTemplates(state, nodeTemplates) {
-        Object.keys(nodeTemplates).forEach(node => { state.nodeTemplate = nodeTemplates[node]; });
+        state.nodeTemplates = { ...state.nodeTemplates, ...nodeTemplates };
     },
     setNodesPerCategories(state, groupedNodes) {
         state.nodesPerCategory = groupedNodes;

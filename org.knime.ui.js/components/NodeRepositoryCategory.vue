@@ -55,36 +55,37 @@ export default {
                 }
             }
             return rows;
+        },
+        showMoreMessage() {
+            if (this.category.tag) {
+                return `More "${this.category.tag}" nodes`;
+            }
+            return 'Show more...';
         }
     },
     methods: {
         selectMoreNodes() {
-            this.$store.dispatch('nodeRepo/selectTag', this.category.tag);
+            if (this.category.tag) {
+                this.$store.dispatch('nodeRepo/selectTag', this.category.tag);
+            } else {
+                this.$store.dispatch('nodeRepo/searchNodes', true);
+            }
         }
     }
+
 };
 </script>
 
 <template>
   <div class="category">
-    <span
-      v-if="category.tag"
-      class="category-title"
-    >
+    <span v-if="category.tag" class="category-title">
       {{ category.tag }}
     </span>
     <div class="nodes-container">
-      <div
-        v-for="(row, ind) in nodeRows"
-        :key="ind"
-        class="row"
-      >
-        <span
-          v-for="nodeId in row"
-          :key="nodeId.id"
-          class="node"
-        >
+      <div v-for="(row, ind) in nodeRows" :key="ind" class="row">
+        <span v-for="nodeId in row" :key="nodeId.id" class="node">
           <label
+            v-if="nodeTemplates[nodeId.id]"
             :title="nodeTemplates[nodeId.id].name"
             class="label"
           >
@@ -94,14 +95,9 @@ export default {
         </span>
       </div>
     </div>
-    <template v-if="category.nodes.length === 6">
-      <Button
-        compact
-        with-border
-        class="show-more"
-        @click="selectMoreNodes"
-      >
-        More "{{ category.tag }}" nodes
+    <template>
+      <Button compact with-border class="show-more" @click="selectMoreNodes">
+        {{ showMoreMessage }}
       </Button>
     </template>
   </div>
@@ -172,44 +168,4 @@ export default {
     display: block;
   }
 }
-/* .category-title {
-  border: 1px solid var(--knime-dove-gray);
-  margin-right: 5px;
-  margin-bottom: 13px;
-  margin-top: 13px;
-  padding: 4px 6px;
-  line-height: 17px;
-  display: inline-block;
-  font-weight: 500;
-  font-size: 18px;
-  color: var(--knime-dove-gray);
-}
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  margin-right: -5px;
-  margin-left: -5px;
-}
-.node {
-  height: 70px;
-  margin: 0 5px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-  font-weight: 700;
-  text-align: center;
-  width: 100px;
-}
-
-.label {
-  justify-self: flex-end;
-  word-wrap: break-word;
-}
-
-.preview {
-  height: 60px;
-} */
 </style>

@@ -1,7 +1,6 @@
 <script>
 import { mapState } from 'vuex';
 
-import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import TagList from '~/webapps-common/ui/components/TagList';
 import Button from '~/webapps-common/ui/components/Button';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
@@ -9,7 +8,6 @@ import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
 
 export default {
     components: {
-        NodePreview,
         TagList,
         Button,
         CloseIcon,
@@ -24,24 +22,6 @@ export default {
             'tags',
             'nodesPerCategory'
         ]),
-        nodeRows() {
-            let rows = [];
-            const N_PER_ROW = 3;
-            if (this.nodes.length) {
-                let numRows = this.nodes.length / N_PER_ROW;
-                for (let i = 0; i < numRows; i++) {
-                    let row = [];
-                    for (let n = 0; n < N_PER_ROW; n++) {
-                        let nodeInd = i * N_PER_ROW + n;
-                        if (nodeInd < this.nodes.length) {
-                            row.push(this.nodes[nodeInd]);
-                        }
-                    }
-                    rows.push(row);
-                }
-            }
-            return rows;
-        },
         categoriesDisplayed() {
             if (this.selectedTags.length > 0) {
                 const result = {
@@ -54,7 +34,6 @@ export default {
     },
     mounted() {
         this.$store.dispatch('nodeRepo/getAllNodes');
-        this.$store.dispatch('nodeRepo/searchNodes', true);
     },
     methods: {
         loadMoreNodes() {
@@ -77,14 +56,17 @@ export default {
   <div class="repo">
     <h4>Repository</h4>
     <span class="break" />
-    <div class="tags">
-      <TagList
-        :tags="tags.filter(t => !selectedTags.includes(t))"
-        :clickable="true"
-        @click="selectTag"
-      />
-    </div>
-    <span class="break full" />
+    <template v-if="selectedTags.length">
+      <div class="tags">
+        <TagList
+          :tags="tags.filter((t) => !selectedTags.includes(t))"
+          :clickable="true"
+          @click="selectTag"
+        />
+      </div>
+      <span class="break full" />
+    </template>
+
     <div
       v-if="selectedTags.length"
       class="node-section"
@@ -109,28 +91,9 @@ export default {
           <CloseIcon slot="icon" />
         </TagList>
       </div>
-      <div
-        v-for="(row, ind) in nodeRows"
-        :key="ind"
-        class="row"
-      >
-        <span
-          v-for="nodeId in row"
-          :key="nodeId"
-          class="node"
-        >
-          <label :title="nodeTemplates[nodeId].name">
-            {{ nodeTemplates[nodeId].name }}
-          </label>
-          <NodePreview v-bind="nodeTemplates[nodeId]" />
-        </span>
-      </div>
     </div>
-    <div
-      v-else
-      class="node-section"
-    >
-      <template v-for="(category, ind) in nodesPerCategory">
+    <div class="node-section">
+      <template v-for="(category, ind) in categoriesDisplayed">
         <NodeRepositoryCategory
           :key="`tag-${ind}`"
           :category="category"
@@ -141,16 +104,6 @@ export default {
         />
       </template>
     </div>
-    <template v-if="selectedTags.length && nodes.length < totalNumNodes">
-      <Button
-        compact
-        with-border
-        class="show-more"
-        @click="loadMoreNodes"
-      >
-        Show more…
-      </Button>
-    </template>
   </div>
 </template>
 
