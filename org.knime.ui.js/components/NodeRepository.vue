@@ -14,47 +14,29 @@ export default {
         CloseIcon
     },
     computed: {
-        ...mapState('nodeRepo', [
+        ...mapState('nodeRepository', [
             'nodes',
             'nodeTemplates',
             'totalNumNodes',
             'selectedTags',
             'tags'
-        ]),
-        nodeRows() {
-            let rows = [];
-            const N_PER_ROW = 3;
-            if (this.nodes.length) {
-                let numRows = this.nodes.length / N_PER_ROW;
-                for (let i = 0; i < numRows; i++) {
-                    let row = [];
-                    for (let n = 0; n < N_PER_ROW; n++) {
-                        let nodeInd = i * N_PER_ROW + n;
-                        if (nodeInd < this.nodes.length) {
-                            row.push(this.nodes[nodeInd]);
-                        }
-                    }
-                    rows.push(row);
-                }
-            }
-            return rows;
-        }
+        ])
     },
     mounted() {
-        this.$store.dispatch('nodeRepo/searchNodes', true);
+        this.$store.dispatch('nodeRepository/searchNodes', true);
     },
     methods: {
         loadMoreNodes() {
-            this.$store.dispatch('nodeRepo/searchNodes', true);
+            this.$store.dispatch('nodeRepository/searchNodes', true);
         },
         selectTag(tag) {
-            this.$store.dispatch('nodeRepo/selectTag', tag);
+            this.$store.dispatch('nodeRepository/selectTag', tag);
         },
         deselectTag(tag) {
-            this.$store.dispatch('nodeRepo/deselectTag', tag);
+            this.$store.dispatch('nodeRepository/deselectTag', tag);
         },
         clearSelectedTags() {
-            this.$store.dispatch('nodeRepo/clearSelectedTags');
+            this.$store.dispatch('nodeRepository/clearSelectedTags');
         }
     }
 };
@@ -62,14 +44,12 @@ export default {
 
 <template>
   <div class="repo">
-    <h4>
-      Repository
-    </h4>
+    <h4>Repository</h4>
     <span class="break" />
     <div class="tags">
       <TagList
         :tags="tags.filter(t => !selectedTags.includes(t))"
-        :clickable="true"
+        clickable
         @click="selectTag"
       />
     </div>
@@ -88,23 +68,18 @@ export default {
           Clear
           <CloseIcon />
         </Button>
-        <br>
-        <br>
         <TagList
+          class="tag-list"
           :tags="selectedTags"
-          :clickable="true"
+          clickable
           @click="deselectTag"
         >
           <CloseIcon slot="icon" />
         </TagList>
       </div>
-      <div
-        v-for="(row, ind) in nodeRows"
-        :key="ind"
-        class="row"
-      >
-        <span
-          v-for="nodeId in row"
+      <ul class="nodes">
+        <li
+          v-for="nodeId in nodes"
           :key="nodeId"
           class="node"
         >
@@ -112,19 +87,18 @@ export default {
             {{ nodeTemplates[nodeId].name }}
           </label>
           <NodePreview v-bind="nodeTemplates[nodeId]" />
-        </span>
-      </div>
+        </li>
+      </ul>
     </div>
-    <template v-if="selectedTags.length && nodes.length < totalNumNodes">
-      <Button
-        compact
-        with-border
-        class="show-more"
-        @click="loadMoreNodes"
-      >
-        Show more…
-      </Button>
-    </template>
+    <Button
+      v-if="selectedTags.length && nodes.length < totalNumNodes"
+      compact
+      with-border
+      class="show-more"
+      @click="loadMoreNodes"
+    >
+      Show more…
+    </Button>
   </div>
 </template>
 
@@ -170,9 +144,14 @@ export default {
         float: right;
         padding: 0;
       }
+
+      & .tag-list {
+        margin-top: 8px;
+      }
     }
 
-    & .row {
+    & .nodes {
+      padding: 0;
       display: flex;
       flex-wrap: wrap;
       margin-right: -5px;
@@ -210,7 +189,6 @@ export default {
   }
 
   & .show-more {
-    color: var(--knime-masala);
     font-weight: 400;
     margin: 0 auto 10px;
     display: block;

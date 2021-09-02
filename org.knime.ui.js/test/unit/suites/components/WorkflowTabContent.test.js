@@ -134,7 +134,7 @@ describe('WorkflowTabContent.vue', () => {
     describe('node repository', () => {
         beforeEach(async () => {
             await doShallowMount();
-            wrapper.vm.$store.dispatch('panel/setNodeRepoActive');
+            wrapper.vm.$store.dispatch('panel/setNodeRepositoryActive');
         });
 
         it('shows NodeRepository', () => {

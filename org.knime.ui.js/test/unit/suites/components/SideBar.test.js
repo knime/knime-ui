@@ -33,13 +33,13 @@ describe('Sidebar', () => {
         expect(wrapper.vm.expanded).toBe(false);
         wrapper.find('li').trigger('click');
         expect(wrapper.vm.expanded).toBe(true);
-        expect(wrapper.vm.wfMetaActive).toBe(true);
+        expect(wrapper.vm.workflowMetaActive).toBe(true);
     });
 
     it('expands and activates node repo', () => {
         expect(wrapper.vm.expanded).toBe(false);
         wrapper.findAll('li').at(1).trigger('click');
         expect(wrapper.vm.expanded).toBe(true);
-        expect(wrapper.vm.nodeRepoActive).toBe(true);
+        expect(wrapper.vm.nodeRepositoryActive).toBe(true);
     });
 });

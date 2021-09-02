@@ -10,15 +10,15 @@ export default {
     },
     data() {
         return {
-            activeTab: 'nodeRepo'
+            activeTab: 'nodeRepository'
         };
     },
     computed: {
         ...mapState('panel', ['expanded']),
-        ...mapGetters('panel', ['wfMetaActive', 'nodeRepoActive'])
+        ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive'])
     },
     methods: {
-        ...mapActions('panel', ['setWorkflowMetaActive', 'setNodeRepoActive'])
+        ...mapActions('panel', ['setWorkflowMetaActive', 'setNodeRepositoryActive'])
     }
 };
 </script>
@@ -27,14 +27,16 @@ export default {
   <nav>
     <ul>
       <li
-        :class="{ active: wfMetaActive }"
+        :class="{ active: workflowMetaActive }"
         @click="setWorkflowMetaActive"
+        title="Workflow metadata"
       >
         <InfoIcon />
       </li>
       <li
-        :class="{ active: nodeRepoActive }"
-        @click="setNodeRepoActive"
+        :class="{ active: nodeRepositoryActive }"
+        @click="setNodeRepositoryActive"
+        title="Node repository"
       >
         <PlusIcon />
       </li>

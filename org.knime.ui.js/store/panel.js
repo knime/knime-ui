@@ -13,12 +13,11 @@ export const state = () => ({
 });
 
 export const getters = {
-    wfMetaActive: state => state.activeTab === TABS.WF_META,
-    nodeRepoActive: state => state.activeTab === TABS.NODE_REPO
+    workflowMetaActive: state => state.activeTab === TABS.WF_META,
+    nodeRepositoryActive: state => state.activeTab === TABS.NODE_REPO
 };
 
 export const mutations = {
-
     toggleExpanded(state) {
         state.expanded = !state.expanded;
     },
@@ -29,7 +28,6 @@ export const mutations = {
 };
 
 export const actions = {
-
     toggleExpanded({ commit }) {
         commit('toggleExpanded');
     },
@@ -41,7 +39,7 @@ export const actions = {
         }
     },
 
-    setNodeRepoActive({ commit, state }) {
+    setNodeRepositoryActive({ commit, state }) {
         commit('setActiveTab', TABS.NODE_REPO);
         if (!state.expanded) {
             commit('toggleExpanded');
