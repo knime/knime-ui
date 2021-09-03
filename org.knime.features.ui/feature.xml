@@ -729,7 +729,7 @@ propagated with or for interoperation with KNIME.
 
    <requires>
       <import feature="com.equo.chromium.cef.feature" version="80.0.5.202108190857" match="perfect"/>
-      <import feature="com.equo.chromium.feature" version="80.0.6.202108260514" match="perfect"/>
+      <import feature="com.equo.chromium.feature" version="80.0.7.202109030549" match="perfect"/>
    </requires>
 
    <plugin

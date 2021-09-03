@@ -24,7 +24,7 @@ axios(`${codecept.config.helpers.Puppeteer.url}/json/version`).then((res) => {
     const overrideValueString = JSON.stringify(overrideValue);
     try {
         // eslint-disable-next-line max-len
-        execa.command(`npx codeceptjs run ${testName} --steps -c ${configPath} --override ${overrideValueString} `, {
+        execa.command(`npx codeceptjs run ${testName} --steps --reporter mocha-multi -c ${configPath} --override ${overrideValueString} `, {
             stdio: 'inherit'
         });
     } catch (error) {
