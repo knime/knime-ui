@@ -106,7 +106,6 @@ export default {
 .repo {
   margin: 15px 20px;
   font-family: "Roboto Condensed", sans-serif;
-  user-select: none;
 
   & h4 {
     font-size: 18px;
