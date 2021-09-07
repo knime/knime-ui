@@ -519,7 +519,7 @@ describe('Node', () => {
             expect(ports.at(1).attributes().class).not.toMatch('show');
 
 
-            wrapper.trigger('connector-enter');
+            wrapper.find('.hover-container').trigger('connector-enter');
             await Vue.nextTick();
 
 
@@ -527,7 +527,7 @@ describe('Node', () => {
             expect(ports.at(0).attributes().class).toMatch('show');
             expect(ports.at(1).attributes().class).toMatch('show');
 
-            wrapper.trigger('connector-leave');
+            wrapper.find('.hover-container').trigger('connector-leave');
             await Vue.nextTick();
 
             // flowVariable ports are hidden again

@@ -344,10 +344,7 @@ export default {
 </script>
 
 <template>
-  <g
-    @connector-enter="connectorHover = true"
-    @connector-leave="connectorHover = false"
-  >
+  <g>
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal
       to="node-actions"
@@ -397,6 +394,8 @@ export default {
       @mouseleave="onLeaveHoverArea"
       @mouseenter="hover = true"
       @contextmenu.prevent="onContextMenu"
+      @connector-enter="connectorHover = true"
+      @connector-leave="connectorHover = false"
     >
       <!-- Elements for which a click selects node -->
       <g
