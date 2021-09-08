@@ -75,8 +75,6 @@ export const searchNodes = ({ query, tags, allTagsMatch, nodeOffset, nodeLimit, 
     fullTemplateInfo
 );
 
-export const getNodeTemplates = templateIds => rpc('NodeRepositoryService.getNodeTemplates', templateIds);
-
 /**
  * Add or remove event listeners.
  * @param {String} type The event type Id. Currently only `WorkflowChanged` is supported

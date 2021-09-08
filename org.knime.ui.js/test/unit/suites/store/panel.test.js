@@ -30,7 +30,7 @@ describe('panel store', () => {
         expect(store.state.panel.expanded).toBe(true);
     });
 
-    it('sets wf meta active', () => {
+    it('sets workflow meta active', () => {
         store.state.panel.activeTab = 'somethingElse';
         expect(store.state.panel.expanded).toBe(false);
         expect(store.state.panel.activeTab).not.toBe('workflowMetadata');

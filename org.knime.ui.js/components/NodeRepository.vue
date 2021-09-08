@@ -16,18 +16,17 @@ export default {
     computed: {
         ...mapState('nodeRepository', [
             'nodes',
-            'nodeTemplates',
             'totalNumNodes',
             'selectedTags',
             'tags'
         ])
     },
     mounted() {
-        this.$store.dispatch('nodeRepository/searchNodes', true);
+        this.$store.dispatch('nodeRepository/searchNodes');
     },
     methods: {
         loadMoreNodes() {
-            this.$store.dispatch('nodeRepository/searchNodes', true);
+            this.$store.dispatch('nodeRepository/searchNodesNextPage');
         },
         selectTag(tag) {
             this.$store.dispatch('nodeRepository/selectTag', tag);
@@ -79,14 +78,14 @@ export default {
       </div>
       <ul class="nodes">
         <li
-          v-for="nodeId in nodes"
-          :key="nodeId"
+          v-for="node in nodes"
+          :key="node.id"
           class="node"
         >
-          <label :title="nodeTemplates[nodeId].name">
-            {{ nodeTemplates[nodeId].name }}
+          <label :title="node.name">
+            {{ node.name }}
           </label>
-          <NodePreview v-bind="nodeTemplates[nodeId]" />
+          <NodePreview v-bind="node" />
         </li>
       </ul>
     </div>
