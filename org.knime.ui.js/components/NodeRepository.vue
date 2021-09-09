@@ -14,9 +14,8 @@ export default {
         NodeRepositoryCategory
     },
     computed: {
-        ...mapState('nodeRepo', [
+        ...mapState('nodeRepository', [
             'nodes',
-            'nodeTemplates',
             'totalNumNodes',
             'selectedTags',
             'tags',
@@ -42,23 +41,26 @@ export default {
                 const viewScreen = scroller.getBoundingClientRect().height;
 
                 if (viewHeight - scrollPos - viewScreen <= 0) {
-                    this.$store.dispatch('nodeRepo/getAllNodes', true);
+                    this.$store.dispatch('nodeRepository/getAllNodes', true);
                 }
             }
         });
     },
     mounted() {
-        this.$store.dispatch('nodeRepo/getAllNodes', false);
+        this.$store.dispatch('nodeRepository/getAllNodes', false);
     },
     methods: {
+        loadMoreNodes() {
+            this.$store.dispatch('nodeRepository/searchNodesNextPage');
+        },
         selectTag(tag) {
-            this.$store.dispatch('nodeRepo/selectTag', tag);
+            this.$store.dispatch('nodeRepository/selectTag', tag);
         },
         deselectTag(tag) {
-            this.$store.dispatch('nodeRepo/deselectTag', tag);
+            this.$store.dispatch('nodeRepository/deselectTag', tag);
         },
         clearSelectedTags() {
-            this.$store.dispatch('nodeRepo/clearSelectedTags');
+            this.$store.dispatch('nodeRepository/clearSelectedTags');
         }
     }
 };
@@ -75,7 +77,7 @@ export default {
       <div class="tags">
         <TagList
           :tags="tags.filter((t) => !selectedTags.includes(t))"
-          :clickable="true"
+          clickable
           @click="selectTag"
         />
       </div>
@@ -96,11 +98,10 @@ export default {
           Clear
           <CloseIcon />
         </Button>
-        <br>
-        <br>
         <TagList
+          class="tag-list"
           :tags="selectedTags"
-          :clickable="true"
+          clickable
           @click="deselectTag"
         >
           <CloseIcon slot="icon" />
@@ -126,7 +127,6 @@ export default {
 .repo {
   margin: 15px 20px;
   font-family: "Roboto Condensed", sans-serif;
-  user-select: none;
 
   & h4 {
     font-size: 18px;
@@ -163,6 +163,10 @@ export default {
       & .clear-button {
         float: right;
         padding: 0;
+      }
+
+      & .tag-list {
+        margin-top: 8px;
       }
     }
   }

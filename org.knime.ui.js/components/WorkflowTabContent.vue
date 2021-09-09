@@ -24,7 +24,7 @@ export default {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
         }),
-        ...mapGetters('panel', ['wfMetaActive', 'nodeRepoActive']),
+        ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive']),
         metadata() {
             switch (this.workflow.info.containerType) {
             case 'project':
@@ -53,22 +53,22 @@ export default {
   <main v-if="workflow">
     <div class="collapser-kanvas">
       <LeftCollapsiblePanel
-        id="metadata"
+        id="left-panel"
         width="360px"
-        title="Workflow Metadata"
+        title="Open sidebar"
       >
         <transition name="panel-fade">
           <!-- use v-if & v-show to prevent jumping without delays -->
           <NodeRepository
-            v-if="nodeRepoActive"
-            v-show="nodeRepoActive"
+            v-if="nodeRepositoryActive"
+            v-show="nodeRepositoryActive"
           />
         </transition>
         <transition name="panel-fade">
           <!-- use v-if & v-show to prevent jumping without delays -->
           <WorkflowMetadata
-            v-if="metadata && wfMetaActive"
-            v-show="metadata && wfMetaActive"
+            v-if="metadata && workflowMetaActive"
+            v-show="metadata && workflowMetaActive"
             v-bind="metadata"
           />
         </transition>
@@ -134,7 +134,7 @@ main {
   overflow: hidden;
 }
 
-#metadata {
+#left-panel {
   flex: 0 0 auto;
   border-right: 1px solid var(--knime-silver-sand);
 }

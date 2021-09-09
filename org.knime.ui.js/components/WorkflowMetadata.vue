@@ -136,14 +136,6 @@ export default {
         v-if="tags.length"
         :tags="tags"
       />
-      <!-- <ul v-if="tags.length">
-        <li
-          v-for="tag of tags"
-          :key="tag"
-        >
-          {{ tag }}
-        </li>
-      </ul> -->
       <div
         v-else
         class="placeholder"

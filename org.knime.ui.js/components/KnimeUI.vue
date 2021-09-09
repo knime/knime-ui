@@ -67,7 +67,10 @@ export default {
       v-bind="error"
     />
     <AppHeader id="header" />
-    <WorkflowToolbar v-if="loaded" id="toolbar" />
+    <WorkflowToolbar
+      v-if="loaded"
+      id="toolbar"
+    />
     <Sidebar id="sidebar" />
     <template v-if="loaded">
       <HotKeys />

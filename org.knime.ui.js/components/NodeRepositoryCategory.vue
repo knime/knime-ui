@@ -33,29 +33,9 @@ export default {
         }
     },
     computed: {
-        ...mapState('nodeRepo', [
-            'nodeTemplates',
+        ...mapState('nodeRepository', [
             'selectedTags'
         ]),
-        nodeRows() {
-            let rows = [];
-            const N_PER_ROW = 3;
-            const N_ROWS = this.category.nodes.length / N_PER_ROW;
-            for (let i = 0; i < N_ROWS; i++) {
-                let row = [];
-                let rowInd = i * N_PER_ROW;
-                if (rowInd < this.category.nodes.length) {
-                    for (let n = 0; n < N_PER_ROW; n++) {
-                        let nodeInd = rowInd + n;
-                        if (nodeInd < this.category.nodes.length) {
-                            row.push(this.category.nodes[nodeInd]);
-                        }
-                    }
-                    rows.push(row);
-                }
-            }
-            return rows;
-        },
         showMoreMessage() {
             if (this.category.tag) {
                 return `More "${this.category.tag}" nodes`;
@@ -66,9 +46,9 @@ export default {
     methods: {
         selectMoreNodes() {
             if (this.category.tag) {
-                this.$store.dispatch('nodeRepo/selectTag', this.category.tag);
+                this.$store.dispatch('nodeRepository/selectTag', this.category.tag);
             } else {
-                this.$store.dispatch('nodeRepo/searchNodes', true);
+                this.$store.dispatch('nodeRepository/searchNodes', true);
             }
         }
     }
@@ -86,28 +66,22 @@ export default {
       {{ category.tag }}
     </span>
     <div class="nodes-container">
-      <div
-        v-for="(row, ind) in nodeRows"
-        :key="ind"
-        class="row"
-      >
-        <span
-          v-for="nodeId in row"
-          :key="nodeId.id"
+      <ul class="nodes">
+        <li
+          v-for="node in category.nodes"
+          :key="node.id"
           class="node"
         >
           <label
-            v-if="nodeTemplates[nodeId.id]"
-            :title="nodeTemplates[nodeId.id].name"
+            v-if="node.id"
+            :title="node.name"
             class="label"
           >
-            {{ nodeTemplates[nodeId.id].name | shorterLabel }}
+            {{ node.name | shorterLabel }}
           </label>
-          <NodePreview v-bind="nodeTemplates[nodeId.id]" />
-        </span>
-      </div>
-    </div>
-    <template>
+          <NodePreview v-bind="node" />
+        </li>
+      </ul>
       <Button
         compact
         with-border
@@ -116,7 +90,7 @@ export default {
       >
         {{ showMoreMessage }}
       </Button>
-    </template>
+    </div>
   </div>
 </template>
 
@@ -155,7 +129,8 @@ export default {
   & .nodes-container {
     margin-bottom: 13px;
 
-    & .row {
+    & .nodes {
+      padding: 0;
       display: flex;
       flex-wrap: wrap;
       margin-right: -5px;

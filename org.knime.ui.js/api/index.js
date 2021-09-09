@@ -39,21 +39,6 @@ export const loadWorkflow = ({ projectId, workflowId = 'root', includeInfoOnAllo
     }
 };
 
-const makeToggleEventListener = addOrRemove => (type, args) => {
-    try {
-        consola.debug(addOrRemove, 'event listener', type, args);
-        rpc(`EventService.${addOrRemove}EventListener`, {
-            typeId: `${type}EventType`,
-            ...args
-        });
-        return Promise.resolve();
-    } catch (e) {
-        consola.error(e);
-        let verb = addOrRemove === 'add' ? 'register' : 'unregister';
-        return Promise.reject(new Error(`Couldn't ${verb} event "${type}" with args ${JSON.stringify(args)}`));
-    }
-};
-
 /**
  * Search the node repository via RPC.
  *
@@ -65,15 +50,25 @@ const makeToggleEventListener = addOrRemove => (type, args) => {
  * @param {Boolean} cfg.fullTemplateInfo - if the results should contain all node info (incl. img data).
  * @returns {Object} the node repository search results.
  */
-export const searchNodes = ({ query, tags, allTagsMatch, nodeOffset, nodeLimit, fullTemplateInfo }) => rpc(
-    'NodeRepositoryService.searchNodes',
-    query,
-    tags,
-    allTagsMatch,
-    nodeOffset,
-    nodeLimit,
-    fullTemplateInfo
-);
+export const searchNodes = ({ query, tags, allTagsMatch, nodeOffset, nodeLimit, fullTemplateInfo }) => {
+    try {
+        const nodes = rpc(
+            'NodeRepositoryService.searchNodes',
+            query,
+            tags,
+            allTagsMatch,
+            nodeOffset,
+            nodeLimit,
+            fullTemplateInfo
+        );
+        consola.debug('Loaded nodes', nodes);
+
+        return Promise.resolve(nodes);
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error(`Couldn't search nodes "${query}" with tags "${tags}"`));
+    }
+};
 
 /**
  * Get repository nodes per category via RPC.
@@ -92,7 +87,20 @@ export const selection = ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateI
     fullTemplateInfo
 );
 
-export const getNodeTemplates = templateIds => rpc('NodeRepositoryService.getNodeTemplates', templateIds);
+const makeToggleEventListener = addOrRemove => (type, args) => {
+    try {
+        consola.debug(addOrRemove, 'event listener', type, args);
+        rpc(`EventService.${addOrRemove}EventListener`, {
+            typeId: `${type}EventType`,
+            ...args
+        });
+        return Promise.resolve();
+    } catch (e) {
+        consola.error(e);
+        let verb = addOrRemove === 'add' ? 'register' : 'unregister';
+        return Promise.reject(new Error(`Couldn't ${verb} event "${type}" with args ${JSON.stringify(args)}`));
+    }
+};
 
 /**
  * Add or remove event listeners.
