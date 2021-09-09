@@ -9,6 +9,7 @@ import { searchNodes, selection, getNodeTemplates } from '~api';
 
 const nodeSearchPageSize = 21;
 const nodeSearchTagsLimit = 10;
+const categoryPageSize = 3;
 
 export const state = () => ({
     nodesPerCategory: [],
@@ -18,17 +19,29 @@ export const state = () => ({
     selectedTags: [],
     tags: [],
     query: '',
-    nodeSearchPage: 0
+    nodeSearchPage: 0,
+    categoryPage: 0
 });
 
 export const actions = {
-    async getAllNodes({ dispatch, commit }) {
+    async getAllNodes({ dispatch, commit, state }, append) {
+        if (append) {
+            commit('setCategoryPage', state.categoryPage + 1);
+        } else {
+            commit('setCategoryPage', 0);
+        }
         commit('setNodeSearchPage', 0);
         let res = await selection({
             numNodesPerTag: 6,
+            tagsOffset: state.categoryPage * categoryPageSize,
+            tagsLimit: categoryPageSize,
             fullTemplateInfo: true
         });
-        commit('setNodesPerCategories', res.selections);
+        if (append) {
+            commit('addNodesPerCategories', res.selections);
+        } else {
+            commit('setNodesPerCategories', res.selections);
+        }
         return dispatch('updateNodeTemplates');
     },
 
@@ -103,7 +116,7 @@ export const actions = {
      */
     clearSelectedTags({ dispatch, commit }) {
         commit('setSelectedTags', []);
-        dispatch('getAllNodes');
+        dispatch('getAllNodes', false);
     },
     /**
      * Update the stored (cached) node template data.
@@ -123,6 +136,9 @@ export const actions = {
 
 export const mutations = {
 
+    setCategoryPage(state, pageNumber) {
+        state.categoryPage = pageNumber;
+    },
     setNodeSearchPage(state, pageNumber) {
         state.nodeSearchPage = pageNumber;
     },
@@ -168,5 +184,8 @@ export const mutations = {
     },
     setNodesPerCategories(state, groupedNodes) {
         state.nodesPerCategory = groupedNodes;
+    },
+    addNodesPerCategories(state, groupedNodes) {
+        state.nodesPerCategory = state.nodesPerCategory.concat(groupedNodes);
     }
 };

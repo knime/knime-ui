@@ -1,6 +1,7 @@
 <script>
 import { mapState } from 'vuex';
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
+import { throttle } from 'lodash';
 
 export default {
     components: {
@@ -25,12 +26,18 @@ export default {
         }
     },
     computed: {
-        ...mapState('panel', ['expanded'])
+        ...mapState('panel', ['expanded', 'activeTab'])
     },
     methods: {
         toggleExpanded() {
             this.$store.dispatch('panel/toggleExpanded');
-        }
+        },
+        onScroll: throttle(function () {
+            /* eslint-disable no-invalid-this */
+            if (this.activeTab === 'nodeRepository') {
+                this.$root.$emit('scroll-node-repo');
+            }
+        }, 500)
     }
 };
 </script>
@@ -38,8 +45,10 @@ export default {
 <template>
   <div class="panel">
     <div
+      ref="scroller"
       class="container"
       :style="{ width: expanded ? width : 0 }"
+      @scroll="onScroll"
     >
       <div :style="{ width }">
         <slot />

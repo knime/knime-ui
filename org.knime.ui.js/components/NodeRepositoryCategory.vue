@@ -78,12 +78,24 @@ export default {
 
 <template>
   <div class="category">
-    <span v-if="category.tag" class="category-title">
+    <span
+      v-if="category.tag"
+      class="category-title"
+      @click="selectMoreNodes"
+    >
       {{ category.tag }}
     </span>
     <div class="nodes-container">
-      <div v-for="(row, ind) in nodeRows" :key="ind" class="row">
-        <span v-for="nodeId in row" :key="nodeId.id" class="node">
+      <div
+        v-for="(row, ind) in nodeRows"
+        :key="ind"
+        class="row"
+      >
+        <span
+          v-for="nodeId in row"
+          :key="nodeId.id"
+          class="node"
+        >
           <label
             v-if="nodeTemplates[nodeId.id]"
             :title="nodeTemplates[nodeId.id].name"
@@ -96,7 +108,12 @@ export default {
       </div>
     </div>
     <template>
-      <Button compact with-border class="show-more" @click="selectMoreNodes">
+      <Button
+        compact
+        with-border
+        class="show-more"
+        @click="selectMoreNodes"
+      >
         {{ showMoreMessage }}
       </Button>
     </template>
@@ -120,6 +137,19 @@ export default {
     font-weight: 500;
     font-size: 18px;
     color: var(--knime-dove-gray);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--knime-white);
+      background-color: var(--knime-masala);
+      border-color: var(--knime-masala);
+    }
+
+    &:active {
+      color: var(--knime-white);
+      background-color: var(--knime-black);
+      border-color: var(--knime-black);
+    }
   }
 
   & .nodes-container {

@@ -32,8 +32,23 @@ export default {
             return this.nodesPerCategory;
         }
     },
+    created() {
+        this.$root.$on('scroll-node-repo', () => {
+            const categoriesView = this.$refs.repo;
+            if (categoriesView) {
+                let scroller = this.$parent.$refs.scroller;
+                const scrollPos = scroller.scrollTop;
+                const viewHeight = categoriesView.getBoundingClientRect().height;
+                const viewScreen = scroller.getBoundingClientRect().height;
+
+                if (viewHeight - scrollPos - viewScreen <= 0) {
+                    this.$store.dispatch('nodeRepo/getAllNodes', true);
+                }
+            }
+        });
+    },
     mounted() {
-        this.$store.dispatch('nodeRepo/getAllNodes');
+        this.$store.dispatch('nodeRepo/getAllNodes', false);
     },
     methods: {
         selectTag(tag) {
@@ -50,7 +65,10 @@ export default {
 </script>
 
 <template>
-  <div class="repo">
+  <div
+    ref="repo"
+    class="repo"
+  >
     <h4>Repository</h4>
     <span class="break" />
     <template v-if="selectedTags.length">
