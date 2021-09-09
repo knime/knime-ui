@@ -5,6 +5,8 @@ import Port from '~/components/Port';
 import Connector from '~/components/Connector';
 import { throttle } from 'lodash';
 
+const MOVE_THROTTLE = 50;
+
 export default {
     components: {
         PortWithTooltip,
@@ -154,7 +156,7 @@ export default {
                 this.dragConnector.absolutePoint = this.positionOnCanvas([e.x, e.y]);
             }
             /* eslint-enable no-invalid-this */
-        }, 50),
+        }, MOVE_THROTTLE),
 
         /* ======== Drop Connector ======== */
         onConnectorEnter() {
@@ -171,7 +173,7 @@ export default {
                     sourceNode,
                     sourcePort,
                     destNode: this.nodeId,
-                    destPort: this.port.index,
+                    destPort: this.port.index
                 });
             } else {
                 this.connectNodes({
@@ -189,7 +191,7 @@ export default {
 <template>
   <g
     :transform="`translate(${relativePosition})`"
-    :class="{ 'targeted': targeted}"
+    :class="{ 'targeted': targeted }"
     @pointerdown.stop="onPointerDown"
     @pointerup.stop="onPointerUp"
     @pointermove.stop="onPointerMove"
