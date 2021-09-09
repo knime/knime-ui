@@ -9,27 +9,7 @@ Before(({ I }) => {
     I.seeElement({ nodeId: 6, state: state.CONFIGURED });
 });
 
-Scenario('Streaming decorators', ({ I }) => {
-    __`Node Streaming decorator`;
-    I.seeElement({ nodeId: 6, decorator: decorator.STREAMABLE });
-    
-    __`Global Streaming decorator`;
-    I.doubleClickNodeWithCtrl({ nodeId: 6 });
-    I.seeElement('.type-notification.onlyStreaming');
-});
-
-Scenario('Not streaming supported decorators on nodes', ({ I }) => {
-    I.doubleClickNodeWithCtrl({ nodeId: 6 });
-    I.seeElement({ nodeId: '6:0:1', decorator: decorator.STREAMABLE });
-    I.seeElement({ nodeId: '6:0:2', decorator: decorator.STREAMABLE });
-    I.seeElement({ nodeId: '6:0:3', decorator: decorator.STREAMABLE });
-    I.seeElement({ nodeId: '6:0:6', decorator: decorator.STREAMABLE });
-    I.seeElement({ nodeId: '6:0:7', decorator: decorator.STREAMABLE });
-    I.seeElement({ nodeId: '6:0:8', decorator: decorator.NOT_STREAMABLE });
-    I.dontSeeElement({ nodeId: '6:0:8', decorator: decorator.STREAMABLE });
-});
-
-Scenario('Streaming execution completes with proper count update', async ({ I }) => {
+Scenario('Streaming execution', async ({ I }) => {
     __`Execute Stream`;
     I.click({ action: action.EXECUTE_ALL });
     I.doubleClickNodeWithCtrl({ nodeId: 6 });
