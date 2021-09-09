@@ -1,4 +1,4 @@
-const { part } = require('../../../plugins/locators');
+const { part, metadata } = require('../../../plugins/locators');
 const learnerHSL = 'hsl(70, 78.3%, 54.9%)'; // Lime orange
 const visualizerHSL = 'hsl(193, 60.9%, 43.1%)'; // Dark turquoise
 
@@ -27,8 +27,8 @@ Scenario('Properties of schema:', ({ I }) => {
     I.doubleClickNodeWithCtrl({ nodeId: 4 });
 
     __`Title:`;
-    I.see('TestingName', '.metadata');
+    I.see('TestingName', metadata);
 
     __`Description:`;
-    I.see('testingDescription', '.metadata');
+    I.see('testingDescription', metadata);
 });

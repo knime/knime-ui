@@ -21,7 +21,6 @@ Before(({ I }) => {
 
 // eslint-disable-next-line max-len
 Scenario('move entire workflow without drop should not have direct updating on the nodes - Ghost threshold', async ({ I }) => {
-    I.selectZoom('fit');
     const moveX = 50;
     const moveY = 50;
 

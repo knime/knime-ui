@@ -292,5 +292,6 @@ module.exports = {
             label: 'TORSO',
             css: 'g.grabbable path:nth-child(2)'
         }
-    }
+    },
+    metadata: '.metadata'
 };

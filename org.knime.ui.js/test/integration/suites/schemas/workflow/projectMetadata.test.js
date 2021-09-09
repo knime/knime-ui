@@ -1,4 +1,4 @@
-const { state } = require('../../../plugins/locators');
+const { state, metadata } = require('../../../plugins/locators');
 
 Feature('Project Metadata').tag('@schemas-@workflow-@projectMetadata');
 
@@ -12,13 +12,12 @@ Before(({ I }) => {
 
 Scenario('Properties of schema:', ({ I }) => {
     __`Title:`;
-    I.see('Navigate-through-workflow', '#metadata');
+    I.see('Navigate-through-workflow', metadata);
 
     __`Description`;
 
     I.see(
-        '* navigation into components and metanodes and back and',
-        '#metadata .metadata'
+        '* navigation into components and metanodes and back and', metadata
     );
 
     __`Tags`;
