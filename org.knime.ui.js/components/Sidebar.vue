@@ -28,15 +28,15 @@ export default {
     <ul>
       <li
         :class="{ active: workflowMetaActive }"
-        @click="setWorkflowMetaActive"
         title="Workflow metadata"
+        @click="setWorkflowMetaActive"
       >
         <InfoIcon />
       </li>
       <li
         :class="{ active: nodeRepositoryActive }"
-        @click="setNodeRepositoryActive"
         title="Node repository"
+        @click="setNodeRepositoryActive"
       >
         <PlusIcon />
       </li>

@@ -8,7 +8,6 @@ import { searchNodes } from '~api';
  */
 
 const nodeSearchPageSize = 21;
-const nodeSearchTagsLimit = 10;
 
 export const state = () => ({
     nodes: [],
@@ -58,8 +57,8 @@ export const actions = {
      * @param {*} context - Vuex context.
      * @returns {undefined}
      */
-     searchNodesNextPage({ dispatch }) {
-        dispatch('searchNodes', true);
+    async searchNodesNextPage({ dispatch }) {
+        await dispatch('searchNodes', true);
     },
 
     /**
@@ -99,7 +98,6 @@ export const actions = {
 };
 
 export const mutations = {
-
     setNodeSearchPage(state, pageNumber) {
         state.nodeSearchPage = pageNumber;
     },
@@ -109,9 +107,9 @@ export const mutations = {
     },
 
     addNodes(state, nodes) {
-        nodes.filter(node => !state.nodes.includes(node.id)).forEach(node => {
-            state.nodes.push(node);
-        });
+        let existingNodeIds = state.nodes.map(node => node.id);
+        let newNodes = nodes.filter(node => !existingNodeIds.includes(node.id));
+        state.nodes.push(...newNodes);
     },
 
     setNodes(state, nodes) {
