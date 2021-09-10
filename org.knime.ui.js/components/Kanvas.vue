@@ -289,8 +289,12 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-#kanvas:focus {
-  outline: none;
+#kanvas {
+  height: 100%;
+
+  &:focus {
+    outline: none;
+  }
 }
 
 .debug-css {
