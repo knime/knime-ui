@@ -35,6 +35,26 @@ describe('API', () => {
         });
     });
 
+    describe('searchNodes', () => {
+        it('calls jsonrpc', async () => {
+            await api.searchNodes({
+                query: 'churn',
+                tags: ['myTag'],
+                allTagsMatch: true,
+                nodeOffset: 0,
+                nodeLimit: 2,
+                fullTemplateInfo: true
+            });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'NodeRepositoryService.searchNodes',
+                params: ['churn', ['myTag'], true, 0, 2, true],
+                id: 0
+            }));
+        });
+    });
+
     describe('fetchApplicationState', () => {
         it('calls jsonrpc', async () => {
             await api.fetchApplicationState();
@@ -188,6 +208,24 @@ describe('API', () => {
             } catch (e) {
                 expect(e.message).toContain('foo');
                 expect(e.message).toContain('bar');
+                done();
+            }
+        });
+
+        it('handles errors on searchNodes', async (done) => {
+            try {
+                await api.searchNodes({
+                    query: 'churn',
+                    tags: ['myTag'],
+                    allTagsMatch: true,
+                    nodeOffset: 0,
+                    nodeLimit: 2,
+                    fullTemplateInfo: true
+                });
+                done(new Error('Expected error not thrown'));
+            } catch (e) {
+                expect(e.message).toContain('churn');
+                expect(e.message).toContain('myTag');
                 done();
             }
         });

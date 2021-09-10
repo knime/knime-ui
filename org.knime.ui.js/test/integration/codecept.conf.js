@@ -23,7 +23,21 @@ exports.config = {
         I: './steps_file.js'
     },
     bootstrap: null,
-    mocha: {},
+    mocha: { reporterOptions: {
+        'mocha-junit-reporter': {
+            stdout: './output/console.log',
+            options: {
+                mochaFile: 'test/integration/reports/result.xml',
+                attachments: true // add screenshot for a failed test
+            }
+        },
+        'codeceptjs-cli-reporter': {
+            stdout: '-',
+            options: {
+                steps: true
+            }
+        }
+    } },
     name: 'org.knime.ui.js',
     plugins: {
         pauseOnFail: {},
@@ -35,6 +49,10 @@ exports.config = {
         },
         screenshotOnFail: {
             enabled: true
+        },
+        commentStep: {
+            enabled: true,
+            registerGlobal: true
         },
         // Custom plugins:
         nodeLocator: {

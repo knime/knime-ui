@@ -40,13 +40,7 @@ const config = {
         }
     },
     build: {
-        postcss: {
-            ...postcssConfig,
-            plugins: {
-                'postcss-import': {},
-                'postcss-url': {}
-            }
-        },
+        postcss: postcssConfig,
         splitChunks: {
             layouts: false,
             pages: false,

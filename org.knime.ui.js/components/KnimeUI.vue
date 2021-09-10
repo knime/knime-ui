@@ -2,6 +2,7 @@
 import { mapActions } from 'vuex';
 import AppHeader from '~/components/AppHeader';
 import Sidebar from '~/components/Sidebar';
+import WorkflowToolbar from '~/components/WorkflowToolbar';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import HotKeys from '~/components/HotKeys';
 import TooltipContainer from '~/components/TooltipContainer';
@@ -20,6 +21,7 @@ export default {
         Error,
         AppHeader,
         Sidebar,
+        WorkflowToolbar,
         WorkflowTabContent,
         HotKeys,
         TooltipContainer
@@ -73,6 +75,10 @@ export default {
       @close="onCloseError"
     />
     <AppHeader id="header" />
+    <WorkflowToolbar
+      v-if="loaded"
+      id="toolbar"
+    />
     <Sidebar id="sidebar" />
     <template v-if="loaded">
       <HotKeys />
@@ -109,6 +115,16 @@ export default {
 #sidebar {
   grid-area: sidebar;
   height: 100%;
+}
+
+#toolbar {
+  grid-area: header;
+  height: 50px;
+  flex: 0 0 auto;
+  padding: 10px;
+  margin-top: 80px;
+  background-color: var(--knime-porcelain);
+  border-bottom: 1px solid var(--knime-silver-sand);
 }
 
 #tab-content {

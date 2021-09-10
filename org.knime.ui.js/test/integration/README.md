@@ -25,8 +25,21 @@
 
 # Misc
 
-### steps.d.ts, steps_file.js & jsconfig.json
+### steps.d.ts & jsconfig.json
 - CodecetJS require them for autocompletion
+
+### steps_file.js
+- General methods/assertions frequently used in suites that are not "element" specific.
+
+### About the "comments" messages:
+
+```
+__`Sample step`;
+```
+- This is known as [Tagged Templates](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates).
+A CodeceptJS plugin called [Comment Step](https://codecept.io/plugins/#commentstep) utilizes them so you can add comments. The comments will be shown in the output.
+
+
 
 ### If autocomplete doesn't work after creating a new helper, run
 ```sh

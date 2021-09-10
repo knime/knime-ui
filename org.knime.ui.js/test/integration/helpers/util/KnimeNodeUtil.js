@@ -23,7 +23,8 @@ const _getCenterNode = async (selector, page) => {
     const coordinates = await source.boundingBox();
 
     const x = coordinates.x + coordinates.width / 2;
-    const y = coordinates.y + coordinates.height / 2;
+    // eslint-disable-next-line no-magic-numbers
+    const y = coordinates.y + coordinates.height / 1.5;
 
     return { x, y };
 };

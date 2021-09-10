@@ -23,6 +23,13 @@ module.exports = {
         EXECUTE_NODE: {
             label: 'EXECUTE_NODE',
             css: '#toolbar button[title^="Execute selected nodes"] '
+        },
+        /**
+        * @property Resets the workflow
+        */
+        RESET_ALL: {
+            label: 'RESET_ALL',
+            css: '#toolbar button[title^="Reset executed nodes"] '
         }
     },
     /**
@@ -94,6 +101,13 @@ module.exports = {
         EXECUTION_CANCELLED: {
             label: 'EXECUTION_CANCELLED',
             css: '.warning '
+        },
+        /**
+        * @property Node exeuction error. Cross Red sign.
+        */
+        ERROR: {
+            label: 'ERROR',
+            css: '.error '
         }
     },
     /**

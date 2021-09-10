@@ -110,8 +110,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-@import "webapps-common/ui/css/variables";
-
 .splitter {
   overflow: hidden;
   flex: 1 1 auto;
