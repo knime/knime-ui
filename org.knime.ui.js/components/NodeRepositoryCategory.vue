@@ -32,9 +32,13 @@ export default {
             }
         }
     },
+    data() {
+        return { categoryLimit: 6 };
+    },
     computed: {
         ...mapState('nodeRepository', [
-            'selectedTags'
+            'selectedTags',
+            'totalNumNodes'
         ]),
         showMoreMessage() {
             if (this.category.tag) {
@@ -49,6 +53,13 @@ export default {
                 this.$store.dispatch('nodeRepository/selectTag', this.category.tag);
             } else {
                 this.$store.dispatch('nodeRepository/searchNodes', true);
+            }
+        },
+        hasMoreNodes() {
+            if (this.category.tag) {
+                return this.category.nodes.length === this.categoryLimit;
+            } else {
+                return this.category.nodes.length < this.totalNumNodes;
             }
         }
     }
@@ -83,6 +94,7 @@ export default {
         </li>
       </ul>
       <Button
+        v-if="hasMoreNodes()"
         compact
         with-border
         class="show-more"
