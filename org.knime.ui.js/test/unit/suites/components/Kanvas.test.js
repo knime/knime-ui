@@ -124,7 +124,7 @@ describe('Kanvas', () => {
                 isInsideLinked() {
                     return workflow.parents.some(p => p.linked);
                 },
-                insideLinkedType({ activeWorkflow }) {
+                insideLinkedType() {
                     return workflow.parents.find(p => p.linked).containerType;
                 },
                 isStreaming() {
@@ -204,12 +204,8 @@ describe('Kanvas', () => {
         });
 
         it('renders connectors', () => {
-            // debugger;
             let connectorProps = wrapper.findAllComponents(Connector).wrappers.map(c => c.props());
-            let connections = JSON.parse(JSON.stringify(
-                Object.values(workflow.connections)
-            ));
-
+            let connections = Object.values(workflow.connections);
             expect(connectorProps).toStrictEqual(connections);
         });
 

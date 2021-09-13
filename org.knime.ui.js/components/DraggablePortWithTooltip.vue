@@ -14,6 +14,7 @@ export default {
         Connector
     },
     props: {
+        /** direction of the port and the connector coming out of it: in-coming or out-going */
         direction: {
             type: String,
             required: true,
@@ -133,10 +134,8 @@ export default {
                             cancelable: true
                         })
                     );
+                    consola.trace('leave', 'cancelled:', !leaveEventNotCancelled, this.lastHitTarget);
                 }
-
-                // remember hitTarget
-                this.lastHitTarget = hitTarget;
 
                 /* if leave event hasn't been cancelled:
                  *   send 'connector-enter' to new hitTarget
@@ -149,7 +148,11 @@ export default {
                         })
                     );
                     moveEventNotCancelled = hitTarget.dispatchEvent(moveEvent);
+                    consola.trace('leave', 'cancelled:', !moveEventNotCancelled, hitTarget);
                 }
+
+                // remember hitTarget
+                this.lastHitTarget = hitTarget;
             }
             
             if (moveEventNotCancelled) {
@@ -202,7 +205,7 @@ export default {
   >
     <PortWithTooltip
       :port="port"
-      :position="relativePosition"
+      :tooltip-position="relativePosition"
     />
     <portal
       v-if="dragConnector"
@@ -228,6 +231,5 @@ export default {
 
 .targeted >>> .port > * {
   transform: scale(1.4);
-  pointer-events: none;
 }
 </style>

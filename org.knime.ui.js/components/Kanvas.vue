@@ -11,6 +11,8 @@ import ConnectorLabel from '~/components/ConnectorLabel';
 import ContextMenu from '~/components/ContextMenu';
 import { throttle } from 'lodash';
 
+const PANNING_THROTTLE = 50; // 50ms between consecutive mouse move events
+
 export default {
     components: {
         Node,
@@ -151,7 +153,7 @@ export default {
                 this.$el.scrollTop -= delta[1];
             }
             /* eslint-disable no-invalid-this */
-        }, 50), // eslint-disable-line no-magic-numbers
+        }, PANNING_THROTTLE), // eslint-disable-line no-magic-numbers
         stopPan(e) {
             if (this.panning) {
                 this.panning = null;

@@ -14,7 +14,7 @@ export default {
     inject: ['anchorPoint'],
     props: {
         ...Port.props,
-        position: {
+        tooltipPosition: {
             type: Array,
             required: true,
             validator: position => Array.isArray(position) && position.length === 2
@@ -27,8 +27,8 @@ export default {
             const { portSize } = this.$shapes;
             return {
                 position: {
-                    x: this.position[0],
-                    y: this.position[1] - portSize / 2
+                    x: this.tooltipPosition[0],
+                    y: this.tooltipPosition[1] - portSize / 2
                 },
                 gap,
                 anchorPoint: this.anchorPoint,

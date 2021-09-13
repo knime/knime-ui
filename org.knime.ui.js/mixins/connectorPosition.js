@@ -19,8 +19,10 @@ export const connectorPosition = {
          * Index of the target node's input port that this connector is attached to
          */
         destPort: { type: Number, default: null },
-
-        absolutePoint: { type: Array, default: null },
+        /**
+         * If either destNode or sourceNode is unspecified the connector will be drawn up to this point
+         */
+        absolutePoint: { type: Array, default: null }
     },
     methods: {
         /**
@@ -65,14 +67,16 @@ export const connectorPosition = {
         }),
         /**
          * The start coordinates of this connector
-         * @returns {Object} coordinates containing `x` and `y` properties
+         * If sourceNode is unspecified the absolute point is used
+         * @returns {Array} coordinates containing `x` and `y` properties
          */
         start() {
             return (this.sourceNode && this.getEndPointCoordinates('source')) || this.absolutePoint;
         },
         /**
          * The end coordinates of this connector
-         * @returns {Object} coordinates containing `x` and `y` properties
+         * If destNode is unspecified the absolute point is used
+         * @returns {Array} coordinates containing `x` and `y` properties
          */
         end() {
             return (this.destNode && this.getEndPointCoordinates('dest')) || this.absolutePoint;

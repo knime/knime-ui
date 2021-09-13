@@ -66,7 +66,7 @@ describe('DraggablePortWithTooltip', () => {
         let port = wrapper.findComponent(PortWithTooltip);
         expect(port.exists()).toBe(true);
         expect(port.props('port')).toStrictEqual(propsData.port);
-        expect(port.props('position')).toStrictEqual(propsData.relativePosition);
+        expect(port.props('tooltipPosition')).toStrictEqual(propsData.relativePosition);
 
         expect(wrapper.findComponent(Connector).exists()).toBe(false);
         expect(wrapper.findComponent(Port).exists()).toBe(false);

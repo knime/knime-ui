@@ -1,4 +1,26 @@
-import { portRPC } from './index';
+import rpc, { parseResponse } from './json-rpc-adapter.js';
+
+// The Node service offers JSON-RPC forwarding to the Port instance.
+// This is by design, because third-party vendors can provide a custom port implementation with totally
+// different methods. In case of a data port (table), the available methods are defined in
+// org.knime.gateway.impl.rpc.*.*Service
+// (at the time of writing getTable(long start, int size), getRows(long start, int size), and getFlowVariables())
+// So, to get a table we have to send a JSON-RPC object as a payload to the NodeService, which itself must be called via
+// JSON-RPC. Hence double-wrapping is required.
+// Parameters are described below.
+const portRPC = ({ method, params, projectId, workflowId, nodeId, portIndex }) => {
+    let nestedRpcCall = {
+        jsonrpc: '2.0',
+        id: 0,
+        method,
+        params
+    };
+    let response = rpc(
+        'NodeService.doPortRpc',
+        projectId, workflowId, nodeId, portIndex, JSON.stringify(nestedRpcCall)
+    );
+    return parseResponse({ response, method, params });
+};
 
 /**
  * Get the data table associated with a data port.

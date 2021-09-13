@@ -1,13 +1,12 @@
-jest.mock('~api', () => ({
-    workflowCommand: jest.fn()
-}), { virtual: true });
-
-import { connectNodes, moveObjects, deleteObjects } from '~/api/workflowCommands.js';
-import { workflowCommand } from '~api';
+import { connectNodes, moveObjects, deleteObjects } from '~/api';
 
 describe('workflow commands', () => {
-    afterEach(() => {
-        workflowCommand.mockReset();
+    beforeEach(() => {
+        window.jsonrpc = jest.fn().mockReturnValue(JSON.stringify({
+            jsonrpc: '2.0',
+            result: 'dummy',
+            id: -1
+        }));
     });
 
     test('connectNodes', () => {
@@ -19,17 +18,22 @@ describe('workflow commands', () => {
             destNode: 'dest',
             destPort: 1
         });
-        expect(workflowCommand).toHaveBeenCalledWith({
-            command: 'connect',
-            projectId: 'project',
-            workflowId: 'workflow',
-            args: {
-                sourceNodeId: 'source',
-                sourcePortIdx: 0,
-                destinationNodeId: 'dest',
-                destinationPortIdx: 1
-            }
-        });
+        expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'WorkflowService.executeWorkflowCommand',
+            params: [
+                'project',
+                'workflow',
+                {
+                    kind: 'connect',
+                    sourceNodeId: 'source',
+                    sourcePortIdx: 0,
+                    destinationNodeId: 'dest',
+                    destinationPortIdx: 1
+                }
+            ],
+            id: 0
+        }));
     });
 
     describe('moveObjects', () => {
@@ -41,16 +45,21 @@ describe('workflow commands', () => {
                 annotationIds: ['ann:1', 'ann:2'],
                 translation: [100, 200]
             });
-            expect(workflowCommand).toHaveBeenCalledWith({
-                command: 'translate',
-                projectId: 'project',
-                workflowId: 'workflow',
-                args: {
-                    nodeIds: ['node:1', 'node:2'],
-                    annotationIds: ['ann:1', 'ann:2'],
-                    translation: [100, 200]
-                }
-            });
+            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'WorkflowService.executeWorkflowCommand',
+                params: [
+                    'project',
+                    'workflow',
+                    {
+                        kind: 'translate',
+                        nodeIds: ['node:1', 'node:2'],
+                        annotationIds: ['ann:1', 'ann:2'],
+                        translation: [100, 200]
+                    }
+                ],
+                id: 0
+            }));
         });
 
         test('empty arrays', () => {
@@ -59,16 +68,21 @@ describe('workflow commands', () => {
                 workflowId: 'workflow',
                 translation: [100, 200]
             });
-            expect(workflowCommand).toHaveBeenCalledWith({
-                command: 'translate',
-                projectId: 'project',
-                workflowId: 'workflow',
-                args: {
-                    nodeIds: [],
-                    annotationIds: [],
-                    translation: [100, 200]
-                }
-            });
+            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'WorkflowService.executeWorkflowCommand',
+                params: [
+                    'project',
+                    'workflow',
+                    {
+                        kind: 'translate',
+                        nodeIds: [],
+                        annotationIds: [],
+                        translation: [100, 200]
+                    }
+                ],
+                id: 0
+            }));
         });
     });
 
@@ -81,16 +95,21 @@ describe('workflow commands', () => {
                 annotationIds: ['ann:1', 'ann:2'],
                 connectionIds: ['conn:1', 'conn:2'],
             });
-            expect(workflowCommand).toHaveBeenCalledWith({
-                command: 'delete',
-                projectId: 'project',
-                workflowId: 'workflow',
-                args: {
-                    nodeIds: ['node:1', 'node:2'],
-                    annotationIds: ['ann:1', 'ann:2'],
-                    connectionIds: ['conn:1', 'conn:2'],
-                }
-            });
+            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'WorkflowService.executeWorkflowCommand',
+                params: [
+                    'project',
+                    'workflow',
+                    {
+                        kind: 'delete',
+                        nodeIds: ['node:1', 'node:2'],
+                        annotationIds: ['ann:1', 'ann:2'],
+                        connectionIds: ['conn:1', 'conn:2']
+                    }
+                ],
+                id: 0
+            }));
         });
 
         test('empty arrays', () => {
@@ -98,16 +117,21 @@ describe('workflow commands', () => {
                 projectId: 'project',
                 workflowId: 'workflow',
             });
-            expect(workflowCommand).toHaveBeenCalledWith({
-                command: 'delete',
-                projectId: 'project',
-                workflowId: 'workflow',
-                args: {
-                    nodeIds: [],
-                    annotationIds: [],
-                    connectionIds: [],
-                }
-            });
+            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'WorkflowService.executeWorkflowCommand',
+                params: [
+                    'project',
+                    'workflow',
+                    {
+                        kind: 'delete',
+                        nodeIds: [],
+                        annotationIds: [],
+                        connectionIds: [],
+                    }
+                ],
+                id: 0
+            }));
         });
     });
 });
