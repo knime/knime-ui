@@ -454,7 +454,7 @@ export default {
       <DraggablePortWithTooltip
         v-for="port of inPorts"
         :key="`inport-${port.index}`"
-        :class="['port', { hidden: !showPort(port), show: connectorHover }]"
+        :class="['port', { hidden: !showPort(port), 'force-show': connectorHover }]"
         :relative-position="portPositions.in[port.index]"
         :port="port"
         :node-id="id"
@@ -464,7 +464,7 @@ export default {
       <DraggablePortWithTooltip
         v-for="port of outPorts"
         :key="`outport-${port.index}`"
-        :class="['port', { hidden: !showPort(port), show: connectorHover }]"
+        :class="['port', { hidden: !showPort(port), 'force-show': connectorHover }]"
         :relative-position="portPositions.out[port.index]"
         :port="port"
         :node-id="id"
@@ -499,7 +499,7 @@ export default {
     transition: none;
   }
 
-  &.show {
+  &.force-show {
     opacity: 1;
 
     /* fade-in flowVar ports without delay on connectorHover */
