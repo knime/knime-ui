@@ -37,7 +37,6 @@ export default {
     },
     computed: {
         ...mapState('nodeRepository', [
-            'selectedTags',
             'totalNumNodes'
         ]),
         showMoreMessage() {
@@ -52,14 +51,14 @@ export default {
             if (this.category.tag) {
                 this.$store.dispatch('nodeRepository/selectTag', this.category.tag);
             } else {
-                this.$store.dispatch('nodeRepository/searchNodes', true);
+                this.$store.dispatch('nodeRepository/searchNodesNextPage', true);
             }
         },
         hasMoreNodes() {
             if (this.category.tag) {
-                return this.category.nodes.length === this.categoryLimit;
+                return this.category.nodes?.length === this.categoryLimit;
             } else {
-                return this.category.nodes.length < this.totalNumNodes;
+                return this.category.nodes?.length < this.totalNumNodes;
             }
         }
     }

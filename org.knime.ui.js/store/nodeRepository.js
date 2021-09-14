@@ -40,7 +40,6 @@ export const actions = {
         } else {
             commit('setNodesPerCategories', res.selections);
         }
-        return dispatch('updateNodeTemplates');
     },
 
     /**
@@ -51,7 +50,7 @@ export const actions = {
      *      should be cleared (for a new search).
      * @returns {Promise}
      */
-    async searchNodes({ dispatch, commit, state }, append = false) {
+    async searchNodes({ commit, state }, append = false) {
         if (append) {
             commit('setNodeSearchPage', state.nodeSearchPage + 1);
         } else {
@@ -166,10 +165,6 @@ export const mutations = {
 
     setSelectedTags(state, selectedTags) {
         state.selectedTags = selectedTags;
-    },
-
-    updateNodeTemplates(state, nodeTemplates) {
-        state.nodeTemplates = { ...state.nodeTemplates, ...nodeTemplates };
     },
     setNodesPerCategories(state, groupedNodes) {
         state.nodesPerCategory = groupedNodes;
