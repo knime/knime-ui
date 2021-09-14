@@ -133,7 +133,6 @@ export const mutations = {
     },
 
     addNodes(state, nodes) {
-        // state.nodes = state.nodes.concat(nodes);
         let existingNodeIds = state.nodes.map(node => node.id);
         let newNodes = nodes.filter(node => !existingNodeIds.includes(node.id));
         state.nodes.push(...newNodes);

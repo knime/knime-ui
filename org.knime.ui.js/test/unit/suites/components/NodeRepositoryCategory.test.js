@@ -147,6 +147,13 @@ describe('NodeRepositoryCategory', () => {
             wrapper.find('.show-more').vm.$emit('click');
             expect(selectTagMock).toHaveBeenCalledWith(expect.anything(), 'MyTag1');
         });
+
+        it('load more nodes by clicking specific category title', () => {
+            propsData = { ...nodeCategory };
+            doShallowMount();
+            wrapper.find('span.category-title').trigger('click');
+            expect(selectTagMock).toHaveBeenCalledWith(expect.anything(), 'MyTag1');
+        });
     });
 
     describe('load more button from tag filter section', () => {

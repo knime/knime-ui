@@ -35,6 +35,24 @@ describe('API', () => {
         });
     });
 
+    describe('selection', () => {
+        it('calls jsonrpc', async () => {
+            await api.selection({
+                numNodesPerTag: 6,
+                tagsOffset: 0,
+                tagsLimit: 2,
+                fullTemplateInfo: true
+            });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'NodeRepositoryService.selectNodes',
+                params: [6, 0, 2, true],
+                id: 0
+            }));
+        });
+    });
+
     describe('searchNodes', () => {
         it('calls jsonrpc', async () => {
             await api.searchNodes({
