@@ -370,7 +370,7 @@ describe('Connector.vue', () => {
                 selection: {
                     getters: {
                         isConnectionSelected: () => jest.fn()
-                    },
+                    }
                 }
             };
 

@@ -139,7 +139,12 @@ describe('API', () => {
 
     describe('Node Service', () => {
         it('executes nodes', async () => {
-            await api.changeNodeState({ projectId: '123', workflowId: '12', nodeIds: ['a', 'b'], action: 'node action' });
+            await api.changeNodeState({
+                projectId: '123',
+                workflowId: '12',
+                nodeIds: ['a', 'b'],
+                action: 'node action'
+            });
             expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                 jsonrpc: '2.0',
                 method: 'NodeService.changeNodeStates',
@@ -149,7 +154,12 @@ describe('API', () => {
         });
 
         it('loop action', async () => {
-            await api.changeLoopState({ projectId: '123', workflowId: '12', nodeId: 'loopy node', action: 'loopy action' });
+            await api.changeLoopState({
+                projectId: '123',
+                workflowId: '12',
+                nodeId: 'loopy node',
+                action: 'loopy action'
+            });
             expect(window.jsonrpc).toHaveBeenLastCalledWith(JSON.stringify({
                 jsonrpc: '2.0',
                 method: 'NodeService.changeLoopState',

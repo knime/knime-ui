@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import { connectNodes, moveObjects, deleteObjects } from '~/api';
 
 describe('workflow commands', () => {
@@ -93,7 +94,7 @@ describe('workflow commands', () => {
                 workflowId: 'workflow',
                 nodeIds: ['node:1', 'node:2'],
                 annotationIds: ['ann:1', 'ann:2'],
-                connectionIds: ['conn:1', 'conn:2'],
+                connectionIds: ['conn:1', 'conn:2']
             });
             expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                 jsonrpc: '2.0',
@@ -115,7 +116,7 @@ describe('workflow commands', () => {
         test('empty arrays', () => {
             deleteObjects({
                 projectId: 'project',
-                workflowId: 'workflow',
+                workflowId: 'workflow'
             });
             expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                 jsonrpc: '2.0',
@@ -127,7 +128,7 @@ describe('workflow commands', () => {
                         kind: 'delete',
                         nodeIds: [],
                         annotationIds: [],
-                        connectionIds: [],
+                        connectionIds: []
                     }
                 ],
                 id: 0

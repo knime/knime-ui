@@ -1,3 +1,5 @@
+/* eslint-disable no-magic-numbers */
+
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
@@ -71,7 +73,7 @@ describe('MetaNodePortBar.vue', () => {
         it('renders ports', () => {
             propsData.ports = [{
                 index: 0,
-                type: 'type0',
+                type: 'type0'
             }, {
                 index: 1,
                 type: 'type1'

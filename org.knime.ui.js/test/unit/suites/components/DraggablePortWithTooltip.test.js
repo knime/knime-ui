@@ -1,3 +1,5 @@
+/* eslint-disable no-magic-numbers */
+
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
@@ -218,7 +220,7 @@ describe('DraggablePortWithTooltip', () => {
                         flowVariableConnection: false,
                         absolutePoint: [16, 16],
                         sourceNode: 'node:1',
-                        sourcePort: 0,
+                        sourcePort: 0
                     });
                     expect(wrapper.vm.dragConnector.destNode).toBeFalsy();
                     expect(wrapper.vm.dragConnector.destPort).toBeFalsy();
@@ -234,7 +236,7 @@ describe('DraggablePortWithTooltip', () => {
                         flowVariableConnection: false,
                         absolutePoint: [16, 16],
                         destNode: 'node:1',
-                        destPort: 0,
+                        destPort: 0
                     });
                     expect(wrapper.vm.dragConnector.sourceNode).toBeFalsy();
                     expect(wrapper.vm.dragConnector.sourcePort).toBeFalsy();
