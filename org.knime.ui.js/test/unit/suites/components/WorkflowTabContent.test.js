@@ -2,10 +2,12 @@ import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 
+import * as panelStoreConfig from '~/store/panel';
+
+import NodeRepository from '~/components/NodeRepository';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import Kanvas from '~/components/Kanvas';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
-import WorkflowToolbar from '~/components/WorkflowToolbar';
 import Splitter from '~/components/Splitter';
 
 describe('WorkflowTabContent.vue', () => {
@@ -35,7 +37,8 @@ describe('WorkflowTabContent.vue', () => {
                     state: {
                         activeWorkflow: workflow
                     }
-                }
+                },
+                panel: panelStoreConfig
             });
 
             wrapper = await shallowMountWithAsyncData(
@@ -68,6 +71,7 @@ describe('WorkflowTabContent.vue', () => {
 
             let metadata = wrapper.findComponent(WorkflowMetadata);
             expect(metadata.exists()).toBe(true);
+            expect(wrapper.findComponent(NodeRepository).exists()).toBe(false);
             expect(metadata.props().title).toBe('title');
         });
 
@@ -83,6 +87,7 @@ describe('WorkflowTabContent.vue', () => {
             await doShallowMount();
 
             expect(wrapper.findComponent(WorkflowMetadata).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeRepository).exists()).toBe(false);
         });
 
         it('displays component metadata', async () => {
@@ -126,6 +131,18 @@ describe('WorkflowTabContent.vue', () => {
         });
     });
 
+    describe('node repository', () => {
+        beforeEach(async () => {
+            await doShallowMount();
+            wrapper.vm.$store.dispatch('panel/setNodeRepositoryActive');
+        });
+
+        it('shows NodeRepository', () => {
+            expect(wrapper.findComponent(WorkflowMetadata).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeRepository).exists()).toBe(true);
+        });
+    });
+
     describe('no workflow loaded', () => {
         beforeEach(async () => {
             workflow = null;
@@ -139,21 +156,6 @@ describe('WorkflowTabContent.vue', () => {
 
         it('hides metadata panel', () => {
             expect(wrapper.find('#metadata').exists()).toBe(false);
-        });
-    });
-
-    describe('toolbar', () => {
-        it('shows no toolbar by default', async () => {
-            workflow = null;
-            await doShallowMount();
-
-            expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(false);
-        });
-
-        it('shows breadcrumb when available', async () => {
-            await doShallowMount();
-
-            expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(true);
         });
     });
 });

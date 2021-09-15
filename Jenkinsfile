@@ -78,7 +78,6 @@ timeout(time: 15, unit: 'MINUTES') {
             }
         }
     ]
-
     parallel configs
 
     } catch (ex) {
@@ -87,7 +86,6 @@ timeout(time: 15, unit: 'MINUTES') {
     }
 }
 
-// integration tests
 stage('Integration Tests') {
     node('workflow-tests&&ubuntu20.04&&nodejs') {
         timeout(time: 120, unit: 'MINUTES') {
@@ -109,6 +107,8 @@ stage('Integration Tests') {
                     'knime-weka',
                 ],
                 ius: [
+                    'org.knime.features.ui.feature.group',
+                    'org.knime.features.gateway.feature.group',
                     'com.knime.features.workbench.cef.feature.group'
                 ]
             ]
@@ -155,7 +155,7 @@ stage('Integration Tests') {
                         cd "$DEST"
                         testpid=$(grep  "Dknime.test.ppid=" knime.ini | cut -d '=' -f 2)  # this pid info is written by the prepareInstance method
                         EXECUTOR_PID=$(jps -v | grep $testpid | awk '{ print $1 }' | head -1)
-                        if [[ -n "$EXECUTOR_PID" ]]; then                        
+                        if [[ -n "$EXECUTOR_PID" ]]; then
                             kill $EXECUTOR_PID || true
                         fi
                         # wait up to 90 seconds for executor shutdown

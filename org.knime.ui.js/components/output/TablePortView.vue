@@ -36,12 +36,12 @@ export default {
             const firstRows = 100; // batch size for initial load
             let { projectId, workflowId, nodeId, portIndex } = this;
             let table = await loadTable({ projectId, workflowId, nodeId, portIndex, batchSize: firstRows });
-            
+
             // number of rows unknown. Easier for comparison
             if (table.totalNumRows === -1) { table.totalNumRows = Infinity; }
-           
+
             this.table = table;
-            
+
             // show table
             this.$emit('update', { state: 'ready' });
         } catch (e) {
@@ -53,6 +53,14 @@ export default {
         canLoadMoreRows() {
             const { table } = this;
             return table && table.totalNumRows > table.rows?.length;
+        },
+        numberOfRowsText() {
+            const { table } = this;
+            if (this.canLoadMoreRows) {
+                return `${table.rows?.length} of ${table.totalNumRows}`;
+            } else {
+                return table.rows?.length;
+            }
         },
         /**
          * if the table shows less than lazyLoadSmallLargeThreshold (200) elements,
@@ -66,7 +74,7 @@ export default {
             const lazyLoadTriggerRowSmall = 50; // if the table is 'small', load more rows after reaching 50 rows from the bottom
             const lazyLoadTriggerRowLarge = 150; // if the table is 'large', load more rows after reaching 150 rows from the bottom
             const lazyLoadSmallLargeThreshold = 200; // if the table has strictly less rows than threshold, use small trigger else large trigger
-            
+
             if (this.table.rows?.length < lazyLoadSmallLargeThreshold) {
                 return this.dataRowHeight * lazyLoadTriggerRowSmall;
             } else {
@@ -177,9 +185,8 @@ export default {
       v-if="table"
       class="counts"
     >
-      <span>Rows: {{ table.rows.length }}</span>
-      <span v-if="canLoadMoreRows"> of {{ table.totalNumRows }}</span>
-      <span>Columns: {{ table.spec.totalNumColumns }}</span>
+      <span class="count">Rows: {{ numberOfRowsText }}</span><!--
+      --><span class="count">Columns: {{ table.spec.totalNumColumns }}</span>
     </div>
     <div
       v-if="table"

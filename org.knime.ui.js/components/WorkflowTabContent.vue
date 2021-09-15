@@ -1,9 +1,9 @@
 <script>
-import { mapState } from 'vuex';
-import WorkflowToolbar from '~/components/WorkflowToolbar';
+import { mapState, mapGetters } from 'vuex';
 import Kanvas from '~/components/Kanvas';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
+import NodeRepository from '~/components/NodeRepository';
 import NodeOutput from '~/components/output/NodeOutput';
 import Splitter from '~/components/Splitter';
 
@@ -18,19 +18,21 @@ export default {
         Kanvas,
         LeftCollapsiblePanel,
         WorkflowMetadata,
-        WorkflowToolbar
+        NodeRepository
     },
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
         }),
+        ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive']),
         metadata() {
             switch (this.workflow.info.containerType) {
             case 'project':
                 return this.workflow.projectMetadata || { title: this.workflow.info.name };
             case 'component': {
-                const { componentMetadata:
-                    { inPorts, outPorts, name, type, icon, description, options, views } } = this.workflow;
+                const {
+                    componentMetadata: { inPorts, outPorts, name, type, icon, description, options, views }
+                } = this.workflow;
                 return {
                     title: name,
                     description,
@@ -48,22 +50,28 @@ export default {
 </script>
 
 <template>
-  <main
-    v-if="workflow"
-  >
-    <WorkflowToolbar
-      id="toolbar"
-    />
+  <main v-if="workflow">
     <div class="collapser-kanvas">
       <LeftCollapsiblePanel
-        v-if="metadata"
-        id="metadata"
+        id="left-panel"
         width="360px"
-        title="Workflow Metadata"
+        title="Open sidebar"
       >
-        <WorkflowMetadata
-          v-bind="metadata"
-        />
+        <transition name="panel-fade">
+          <!-- use v-if & v-show to prevent jumping without delays -->
+          <NodeRepository
+            v-if="nodeRepositoryActive"
+            v-show="nodeRepositoryActive"
+          />
+        </transition>
+        <transition name="panel-fade">
+          <!-- use v-if & v-show to prevent jumping without delays -->
+          <WorkflowMetadata
+            v-if="metadata && workflowMetaActive"
+            v-show="metadata && workflowMetaActive"
+            v-bind="metadata"
+          />
+        </transition>
       </LeftCollapsiblePanel>
       <Splitter
         id="kanvasOutputSplitter"
@@ -87,6 +95,21 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+
+.panel-fade-enter-active {
+  transition: all 150ms ease-in;
+}
+
+.panel-fade-leave-active {
+  transition: all 150ms ease-out;
+}
+
+.panel-fade-enter,
+.panel-fade-leave-to {
+  opacity: 0;
+}
+
+
 main {
   display: flex;
   overflow: auto;
@@ -111,15 +134,14 @@ main {
   overflow: hidden;
 }
 
-#metadata {
+#left-panel {
   flex: 0 0 auto;
   border-right: 1px solid var(--knime-silver-sand);
 }
 
 #kanvas {
   overflow: auto;
-  flex: 1 1 100%;
-  height: 100%;
+  flex: 1 0 60%;
 }
 
 .placeholder {

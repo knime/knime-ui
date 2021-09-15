@@ -157,6 +157,10 @@ export default {
             }
         },
         onContextMenu(e) {
+            // ignore click with ctrl and meta keys
+            if (e.ctrlKey || e.metaKey) {
+                return;
+            }
             if (e.target === this.$refs.svg) {
                 this.deselectAllObjects();
             }

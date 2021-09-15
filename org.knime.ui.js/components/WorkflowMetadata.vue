@@ -2,6 +2,7 @@
 import LinkList from '~/webapps-common/ui/components/LinkList';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
+import TagList from '~/webapps-common/ui/components/TagList';
 import { formatDateString } from '~/webapps-common/util/format';
 
 /** Displays metadata attached to a root-level workflow */
@@ -9,7 +10,8 @@ export default {
     components: {
         LinkList,
         NodeFeatureList,
-        NodePreview
+        NodePreview,
+        TagList
     },
     props: {
         /** Single-line description of the workflow */
@@ -130,14 +132,10 @@ export default {
       class="tags"
     >
       <h2>Tags</h2>
-      <ul v-if="tags.length">
-        <li
-          v-for="tag of tags"
-          :key="tag"
-        >
-          {{ tag }}
-        </li>
-      </ul>
+      <TagList
+        v-if="tags.length"
+        :tags="tags"
+      />
       <div
         v-else
         class="placeholder"

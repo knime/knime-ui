@@ -284,25 +284,6 @@ export default {
   contain: strict;
 }
 
-.counts {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  height: 19px;
-  line-height: 19px;
-  top: 75px;
-  font-size: 14px;
-}
-
-.count {
-  padding-left: 8px;
-
-  &:not(:last-child) {
-    padding-right: 8px;
-    border-right: 1px solid var(--knime-silver-sand);
-  }
-}
-
 .port-view {
   flex-shrink: 1;
 }

@@ -39,6 +39,37 @@ export const loadWorkflow = ({ projectId, workflowId = 'root', includeInfoOnAllo
     }
 };
 
+/**
+ * Search the node repository via RPC.
+ *
+ * @param {String} cfg.query - query for specific matches in the returned nodes or empty string.
+ * @param {Array} cfg.tags - tags to filter the results of the search.
+ * @param {Boolean} cfg.allTagsMatch - if the tags are inclusive or exclusive.
+ * @param {Number} cfg.nodeOffset - the numeric offset of the search (for pagination).
+ * @param {Number} cfg.nodeLimit - the number of results which should be returned.
+ * @param {Boolean} cfg.fullTemplateInfo - if the results should contain all node info (incl. img data).
+ * @returns {Object} the node repository search results.
+ */
+export const searchNodes = ({ query, tags, allTagsMatch, nodeOffset, nodeLimit, fullTemplateInfo }) => {
+    try {
+        const nodes = rpc(
+            'NodeRepositoryService.searchNodes',
+            query,
+            tags,
+            allTagsMatch,
+            nodeOffset,
+            nodeLimit,
+            fullTemplateInfo
+        );
+        consola.debug('Loaded nodes', nodes);
+
+        return Promise.resolve(nodes);
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error(`Couldn't search nodes "${query}" with tags "${tags}"`));
+    }
+};
+
 const makeToggleEventListener = addOrRemove => (type, args) => {
     try {
         consola.debug(addOrRemove, 'event listener', type, args);
@@ -214,7 +245,6 @@ export const deleteObjects = ({
     workflowId
 });
 
-
 /**
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
@@ -301,10 +331,12 @@ export const loadTable = ({ projectId, workflowId, nodeId, portIndex, offset = 0
         return Promise.resolve(table);
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(
-            `Couldn't load table data (start: ${offset}, length: ${batchSize}) ` +
-            `from port ${portIndex} of node "${nodeId}" in project ${projectId}`
-        ));
+        return Promise.reject(
+            new Error(
+                `Couldn't load table data (start: ${offset}, length: ${batchSize}) ` +
+                    `from port ${portIndex} of node "${nodeId}" in project ${projectId}`
+            )
+        );
     }
 };
 
@@ -329,8 +361,6 @@ export const loadFlowVariables = ({ projectId, workflowId, nodeId, portIndex }) 
         return Promise.resolve(flowVariables);
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(
-            `Couldn't load flow variables of node "${nodeId}" in project ${projectId}`
-        ));
+        return Promise.reject(new Error(`Couldn't load flow variables of node "${nodeId}" in project ${projectId}`));
     }
 };
