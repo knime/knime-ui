@@ -11,6 +11,13 @@ module.exports = {
             css: '#toolbar button[title^="Cancel workflow execution"] '
         },
         /**
+        * @property Cancel selected node execution.
+        */
+        CANCEL_NODE: {
+            label: 'CANCEL_NODE',
+            css: '#toolbar button[title^="Cancel selected nodes"] '
+        },
+        /**
         * @property Execute all nodes in the workflow.
         */
         EXECUTE_ALL: {
@@ -25,11 +32,53 @@ module.exports = {
             css: '#toolbar button[title^="Execute selected nodes"] '
         },
         /**
-        * @property Resets the workflow
+        * @property Resets the workflow.
         */
         RESET_ALL: {
             label: 'RESET_ALL',
             css: '#toolbar button[title^="Reset executed nodes"] '
+        },
+        /**
+        * @property Execute a specific selected node.
+        */
+        RESET_NODE: {
+            label: 'RESET_NODE',
+            css: '#toolbar button[title^="Reset selected nodes"] '
+        },
+        /**
+        * @property Deletes a node.
+        */
+        DELETE: {
+            label: 'DELETE',
+            css: '#toolbar button[title^="Delete selection"] '
+        },
+        /**
+        * @property Redo workflow changes.
+        */
+        REDO: {
+            label: 'REDO',
+            css: '#toolbar button[title^="Redo"]'
+        },
+        /**
+        * @property Undo workflow changes.
+        */
+        UNDO: {
+            label: 'UNDO',
+            css: '#toolbar button[title^="Undo"]'
+        }
+    },
+    metanodeState: {
+        IDLE: {
+            label: 'IDLE',
+            css: '[data-test-metanodeState="IDLE"] '
+        },
+        EXECUTED: {
+            label: 'EXECUTED',
+            css: '[data-test-metanodeState="EXECUTED"] '
+        },
+        EXECUTING: {
+            label: 'EXECUTING',
+            css: '[data-test-metanodeState="EXECUTING"] '
         }
     },
     /**
@@ -70,6 +119,20 @@ module.exports = {
         EXECUTED: {
             label: 'EXECUTED',
             css: '.traffic-light-green '
+        },
+        /**
+        * @property Loop Node is paused.
+        */
+        PAUSED: {
+            label: 'PAUSED',
+            css: '.pause '
+        },
+        /**
+        * @property Loop Node is running.
+        */
+        RUNNING: {
+            label: 'RUNNING',
+            css: '.running '
         }
     },
     /**
@@ -141,6 +204,94 @@ module.exports = {
         CANCEL: {
             label: 'CANCEL',
             css: '.action-button.action-cancel '
+        },
+        /**
+        * @property Advance a Step loop execution.
+        */
+        STEP: {
+            label: 'STEP',
+            css: '.action-button.action-step '
+        },
+        /**
+        * @property Resume Step loop execution.
+        */
+        RESUME: {
+            label: 'RESUME',
+            css: '.action-button.action-resume '
+        },
+        /**
+        * @property Pause Step loop execution.
+        */
+        PAUSE: {
+            label: 'PAUSE',
+            css: '.action-button.action-pause '
         }
-    }
+    },
+    /**
+    * @object Context menu.
+    */
+    context: {
+        EXECUTE_ALL: {
+            label: 'EXECUTE_ALL',
+            xpath: 'Execute all'
+        },
+        CANCEL_ALL: {
+            label: 'CANCEL_ALL',
+            xpath: 'Cancel all'
+        },
+        RESET_ALL: {
+            label: 'RESET_ALL',
+            xpath: 'Reset all'
+        },
+        DELETE: {
+            label: 'DELETE',
+            xpath: 'Delete'
+        },
+        EXECUTE: {
+            label: 'EXECUTE',
+            xpath: 'Execute'
+        },
+        STEP: {
+            label: 'STEP_LOOP_EXECUTION',
+            xpath: 'Step loop execution'
+        },
+        CANCEL: {
+            label: 'CANCEL',
+            xpath: 'Cancel'
+        },
+        RESET: {
+            label: 'RESET',
+            xpath: 'Reset'
+        },
+        CONFIGURE: {
+            label: 'CONFIGURE',
+            xpath: 'Configure'
+        },
+        OPEN_VIEW: {
+            label: 'OPEN_VIEW',
+            xpath: 'Open view'
+        },
+        RESUME: {
+            label: 'RESUME_LOOP_EXECUTION',
+            xpath: 'Resume loop execution'
+        },
+        PAUSE: {
+            label: 'PAUSE',
+            xpath: 'Pause execution'
+        }
+    },
+    /**
+    * @object Part of a node.
+    */
+    part: {
+        /**
+        * @property Inner background.
+        * In a component, changes color depending of type.
+        */
+        TORSO: {
+            label: 'TORSO',
+            css: 'g.grabbable path:nth-child(2)'
+        }
+    },
+    metadata: '.metadata'
 };

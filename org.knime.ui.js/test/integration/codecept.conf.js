@@ -1,5 +1,5 @@
 exports.config = {
-    tests: './suites/*',
+    tests: './suites/**/*.test.js',
     output: './output',
     helpers: {
         Puppeteer: {
@@ -70,6 +70,14 @@ exports.config = {
         hoverActionLocator: {
             enabled: true,
             require: './plugins/hoverActionsLocator.js'
+        },
+        contextMenuLocator: {
+            enabled: true,
+            require: './plugins/contextMenuLocator.js'
+        },
+        connectorLocator: {
+            enabled: true,
+            require: './plugins/connectorLocator.js'
         }
     }
 };

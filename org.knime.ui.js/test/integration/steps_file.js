@@ -3,10 +3,6 @@
 module.exports = function () {
     // eslint-disable-next-line no-undef
     return actor({
-
-        // Define custom steps here, use 'this' to access default methods of I.
-        // It is recommended to place a general 'login' function here.
-
         /**
         * Assert an element exists and does contain the 'disabled' class
         * @param {String} selector Element selector.
