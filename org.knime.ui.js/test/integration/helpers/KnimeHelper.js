@@ -16,6 +16,19 @@ class KnimeHelper extends Helper {
         const page = await this._getPage();
         await page.mouse.up();
     }
+
+    /**
+    * Scrolls to element matched by locator.
+    * @param {String} selector The element selector to scroll.
+    * @param {Number} value units to scroll (it can be negative).
+    */
+    async scroll(selector, value) {
+        const page = await this._getPage();
+        await page.evaluate((selector, value) => {
+            const scrollableSection = document.querySelector(selector);
+            scrollableSection.scrollTop += value;
+        }, selector, value);
+    }
 }
 
 module.exports = KnimeHelper;
