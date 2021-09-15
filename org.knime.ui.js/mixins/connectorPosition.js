@@ -68,7 +68,7 @@ export const connectorPosition = {
         /**
          * The start coordinates of this connector
          * If sourceNode is unspecified the absolute point is used
-         * @returns {Array} coordinates containing `x` and `y` properties
+         * @returns {Array} [x, y] coordinates
          */
         start() {
             return (this.sourceNode && this.getEndPointCoordinates('source')) || this.absolutePoint;
@@ -76,7 +76,7 @@ export const connectorPosition = {
         /**
          * The end coordinates of this connector
          * If destNode is unspecified the absolute point is used
-         * @returns {Array} coordinates containing `x` and `y` properties
+         * @returns {Array} [x, y] coordinates
          */
         end() {
             return (this.destNode && this.getEndPointCoordinates('dest')) || this.absolutePoint;
