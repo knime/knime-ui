@@ -377,36 +377,36 @@ export const getters = {
 
     getNodeIcon({ activeWorkflow }) {
         return (nodeId) => {
-            let node = activeWorkflow?.nodes[nodeId];
+            let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
-                return activeWorkflow?.nodeTemplates[templateId]?.icon;
+                return activeWorkflow.nodeTemplates[templateId].icon;
             } else {
-                return node?.icon;
+                return node.icon;
             }
         };
     },
 
     getNodeName({ activeWorkflow }) {
         return (nodeId) => {
-            let node = activeWorkflow?.nodes[nodeId];
+            let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
-                return activeWorkflow?.nodeTemplates[templateId]?.name;
+                return activeWorkflow.nodeTemplates[templateId].name;
             } else {
-                return node?.name;
+                return node.name;
             }
         };
     },
 
     getNodeType({ activeWorkflow }) {
         return (nodeId) => {
-            let node = activeWorkflow?.nodes[nodeId];
+            let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
-                return activeWorkflow?.nodeTemplates[templateId]?.type;
+                return activeWorkflow.nodeTemplates[templateId].type;
             } else {
-                return node?.type;
+                return node.type;
             }
         };
     }
