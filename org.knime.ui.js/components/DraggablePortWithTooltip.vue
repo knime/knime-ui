@@ -60,7 +60,9 @@ export default {
 
             let connector = {
                 id: 'drag-connector',
-                canDelete: false,
+                allowedActions: {
+                    canDelete: false
+                },
                 flowVariableConnection: this.port.type === 'flowVariable',
                 absolutePoint: this.positionOnCanvas([e.x, e.y])
             };
@@ -77,7 +79,7 @@ export default {
         },
         onPointerUp(e) {
             e.target.releasePointerCapture(e.pointerId);
-            
+
             let { sourceNode, sourcePort, destNode, destPort } = this.dragConnector;
 
             this.lastHitTarget?.dispatchEvent(
@@ -122,7 +124,7 @@ export default {
                 // different hitTarget than lastHitTarget, possibly null
 
                 let leaveEventNotCancelled = true;
-                
+
                 // send 'connector-leave' to last hitTarget, if it exists
                 if (this.lastHitTarget) {
                     leaveEventNotCancelled = this.lastHitTarget.dispatchEvent(
@@ -154,7 +156,7 @@ export default {
                 // remember hitTarget
                 this.lastHitTarget = hitTarget;
             }
-            
+
             if (moveEventNotCancelled) {
                 this.dragConnector.absolutePoint = this.positionOnCanvas([e.x, e.y]);
             }

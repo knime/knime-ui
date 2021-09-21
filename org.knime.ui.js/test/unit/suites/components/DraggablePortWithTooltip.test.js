@@ -216,7 +216,9 @@ describe('DraggablePortWithTooltip', () => {
 
                     expect(wrapper.vm.dragConnector).toStrictEqual({
                         id: 'drag-connector',
-                        canDelete: false,
+                        allowedActions: {
+                            canDelete: false
+                        },
                         flowVariableConnection: false,
                         absolutePoint: [16, 16],
                         sourceNode: 'node:1',
@@ -232,7 +234,9 @@ describe('DraggablePortWithTooltip', () => {
 
                     expect(wrapper.vm.dragConnector).toStrictEqual({
                         id: 'drag-connector',
-                        canDelete: false,
+                        allowedActions: {
+                            canDelete: false
+                        },
                         flowVariableConnection: false,
                         absolutePoint: [16, 16],
                         destNode: 'node:1',
