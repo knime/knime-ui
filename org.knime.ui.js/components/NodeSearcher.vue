@@ -64,7 +64,7 @@ export default {
     border: 1px solid var(--knime-stone-gray);
     background-color: var(--knime-white);
 
-    &:hover {
+  &:hover {
     background-color: var(--knime-silver-sand-semi);
   }
 
@@ -72,7 +72,8 @@ export default {
     background-color: var(--knime-white);
     border-color: var(--knime-masala);
   }
-    & input {
+
+  & input {
         width: 100%;
         height: 100%;
         padding: 0 10px 0 10px;
@@ -81,9 +82,11 @@ export default {
         background-color: transparent;
         font-size: 17px;
         font-weight: 400;
-    }
-    & input:focus {
+
+      &:focus {
         outline: none;
+      }
     }
+
 }
 </style>
