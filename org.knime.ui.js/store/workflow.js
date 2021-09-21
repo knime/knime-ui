@@ -1,5 +1,5 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
-    moveObjects, openDialog, openView, undo, redo, removeEventListener } from '~api';
+    moveObjects, openDialog, openView, undo, redo, removeEventListener, connectNodes } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -115,19 +115,19 @@ export const actions = {
         const selectedConnections = rootGetters['selection/selectedConnections'];
         const deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
         const nonDeletableNodeIds = selectedNodes.filter(node => !node.allowedActions.canDelete).map(node => node.id);
-        const deleteableConnectionIds = selectedConnections.filter(
+        const deletableConnectionIds = selectedConnections.filter(
             connection => connection.allowedActions.canDelete
         ).map(connection => connection.id);
         const nonDeletableConnectionIds = selectedConnections.filter(
             connection => !connection.allowedActions.canDelete
         ).map(connection => connection.id);
 
-        if (deletableNodeIds.length || deleteableConnectionIds.length) {
+        if (deletableNodeIds.length || deletableConnectionIds.length) {
             deleteObjects({
                 projectId: activeWorkflow.projectId,
                 workflowId: activeWorkflowId,
                 nodeIds: deletableNodeIds.length ? deletableNodeIds : [],
-                connectionIds: deleteableConnectionIds ? deleteableConnectionIds : []
+                connectionIds: deletableConnectionIds ? deletableConnectionIds : []
             });
             dispatch('selection/deselectAllObjects', null, { root: true });
         }
@@ -249,6 +249,16 @@ export const actions = {
         }, (error) => {
             consola.log('The following error occured: ', error);
             commit('resetDragPosition');
+        });
+    },
+    async connectNodes({ state, getters }, { sourceNode, destNode, sourcePort, destPort }) {
+        await connectNodes({
+            projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            sourceNode,
+            sourcePort,
+            destNode,
+            destPort
         });
     }
 };

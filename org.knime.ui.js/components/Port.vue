@@ -5,7 +5,6 @@ export default {
     components: {
         PortIcon
     },
-    inheritAttrs: false,
     props: {
         /**
          * Port configuration object
@@ -14,20 +13,6 @@ export default {
             type: Object,
             required: true,
             validator: port => (typeof port.inactive === 'boolean' || !port.inactive) && typeof port.type === 'string'
-        },
-        /**
-         * x coordinate of the port's center relative to the top left corner of the node
-         */
-        x: {
-            type: Number,
-            default: 0
-        },
-        /**
-         * y coordinate of the port's center relative to the top left corner of the node
-         */
-        y: {
-            type: Number,
-            default: 0
         }
     },
     computed: {
@@ -62,10 +47,7 @@ export default {
 </script>
 
 <template>
-  <g
-    :transform="`translate(${x}, ${y})`"
-    class="port"
-  >
+  <g class="port">
     <PortIcon
       :type="port.type"
       :color="portColor"

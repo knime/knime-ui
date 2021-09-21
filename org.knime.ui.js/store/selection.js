@@ -97,7 +97,7 @@ export const getters = {
     },
 
     // Checks if a given node id is present in the selected object.
-    isNodeSelected: (state) => (nodeId) => Reflect.has(state.selectedNodes, nodeId),
+    isNodeSelected: (state) => (nodeId) => nodeId in state.selectedNodes,
 
     // Returns an array of all selected connection ids.
     selectedConnectionIds: (state) => Object.keys(state.selectedConnections),

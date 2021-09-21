@@ -1,6 +1,6 @@
 <script>
 import { mapActions, mapState, mapGetters } from 'vuex';
-import Port from '~/components/PortWithTooltip';
+import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip.vue';
 import NodeState from '~/components/NodeState';
 import NodeTorso from '~/components/NodeTorso';
 import NodeAnnotation from '~/components/NodeAnnotation';
@@ -23,7 +23,7 @@ import NodeSelectionPlane from '~/components/NodeSelectionPlane.vue';
 export default {
     components: {
         NodeActionBar,
-        Port,
+        DraggablePortWithTooltip,
         NodeAnnotation,
         NodeTorso,
         NodeState,
@@ -161,7 +161,8 @@ export default {
     },
     data() {
         return {
-            hover: false
+            hover: false,
+            connectorHover: false
         };
     },
     computed: {
@@ -169,7 +170,7 @@ export default {
             projectId: 'activeId'
         }),
         ...mapGetters('selection', ['isNodeSelected']),
-        ...mapState('workflow', { isDragging: 'isDragging' }),
+        ...mapState('workflow', ['isDragging']),
         decoratorBackgroundType() {
             if (this.type) {
                 return this.type;
@@ -224,6 +225,20 @@ export default {
                 height,
                 x,
                 y
+            };
+        },
+        /**
+         * @returns {object} the position of all inPorts and outPorts.
+         * The position for each port is an array with two coordinates [x, y].
+         */
+        portPositions() {
+            return {
+                in: this.inPorts.map(
+                    port => portShift(port.index, this.inPorts.length, this.kind === 'metanode')
+                ),
+                out: this.outPorts.map(
+                    port => portShift(port.index, this.outPorts.length, this.kind === 'metanode', true)
+                )
             };
         }
     },
@@ -379,6 +394,8 @@ export default {
       @mouseleave="onLeaveHoverArea"
       @mouseenter="hover = true"
       @contextmenu.prevent="onContextMenu"
+      @connector-enter="connectorHover = true"
+      @connector-leave="connectorHover = false"
     >
       <!-- Elements for which a click selects node -->
       <g
@@ -434,25 +451,25 @@ export default {
         />
       </g>
 
-      <template v-for="port of inPorts">
-        <Port
-          :key="`inport-${port.index}`"
-          :class="['port', { hidden: !showPort(port) }]"
-          :port="port"
-          :x="portShift(port.index, inPorts.length, kind === 'metanode')[0]"
-          :y="portShift(port.index, inPorts.length, kind === 'metanode')[1]"
-        />
-      </template>
-
-      <template v-for="port of outPorts">
-        <Port
-          :key="`outport-${port.index}`"
-          :class="['port', { hidden: !showPort(port) }]"
-          :port="port"
-          :x="portShift(port.index, outPorts.length, kind === 'metanode', true)[0]"
-          :y="portShift(port.index, outPorts.length, kind === 'metanode', true)[1]"
-        />
-      </template>
+      <DraggablePortWithTooltip
+        v-for="port of inPorts"
+        :key="`inport-${port.index}`"
+        :class="['port', { hidden: !showPort(port), 'force-show': connectorHover }]"
+        :relative-position="portPositions.in[port.index]"
+        :port="port"
+        :node-id="id"
+        direction="in"
+      />
+      
+      <DraggablePortWithTooltip
+        v-for="port of outPorts"
+        :key="`outport-${port.index}`"
+        :class="['port', { hidden: !showPort(port), 'force-show': connectorHover }]"
+        :relative-position="portPositions.out[port.index]"
+        :port="port"
+        :node-id="id"
+        direction="out"
+      />
     </g>
   </g>
 </template>
@@ -464,15 +481,29 @@ export default {
 
 .port {
   opacity: 0;
-  transition: opacity 0.5s 0.75s;
+
+  /* no delay when fading-out flowVar ports */
+  transition: opacity 0.5s;
 
   &:not(.hidden) {
     opacity: 1;
+
+    /* 0.5 seconds delay when showing flowVar ports, when node is hovered */
+    transition: opacity 0.5s 0.5s;
   }
 
   &:hover {
     opacity: 1;
+
+    /* immediately show flowVar ports on direct hover */
     transition: none;
+  }
+
+  &.force-show {
+    opacity: 1;
+
+    /* fade-in flowVar ports without delay on connectorHover */
+    transition: opacity 0.25s;
   }
 }
 

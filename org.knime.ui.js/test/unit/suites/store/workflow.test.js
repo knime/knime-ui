@@ -437,7 +437,7 @@ describe('workflow store', () => {
         });
 
         describe('tries to delete objects that cannot be deleted', () => {
-            jest.spyOn(window, 'alert').mockImplementation(() => {});
+            jest.spyOn(window, 'alert').mockImplementation(() => { });
 
             let nodeName = `node-1`;
             let connectorName = `connection-1`;
@@ -489,6 +489,29 @@ describe('workflow store', () => {
                     `The following nodes can’t be deleted: [node-1] \n` +
                     `The following connections can’t be deleted: [connection-1]`
                 );
+            });
+        });
+
+        it('connects nodes', async () => {
+            let connectNodes = jest.fn();
+            let apiMocks = { connectNodes };
+            await loadStore({ apiMocks });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+
+            store.dispatch('workflow/connectNodes', {
+                sourceNode: 'source:1',
+                sourcePort: 0,
+                destNode: 'dest:1',
+                destPort: 1
+            });
+
+            expect(connectNodes).toHaveBeenCalledWith({
+                projectId: 'foo',
+                workflowId: 'root',
+                sourceNode: 'source:1',
+                sourcePort: 0,
+                destNode: 'dest:1',
+                destPort: 1
             });
         });
     });
