@@ -1,17 +1,19 @@
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 
 import TagList from '~/webapps-common/ui/components/TagList';
 import Button from '~/webapps-common/ui/components/Button';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
+import NodeSearcher from '~/components/NodeSearcher';
 
 export default {
     components: {
         TagList,
         Button,
         CloseIcon,
-        NodeRepositoryCategory
+        NodeRepositoryCategory,
+        NodeSearcher
     },
     computed: {
         ...mapState('nodeRepository', [
@@ -19,10 +21,14 @@ export default {
             'totalNumNodes',
             'selectedTags',
             'tags',
-            'nodesPerCategory'
+            'nodesPerCategory',
+            'query'
+        ]),
+        ...mapGetters('nodeRepository', [
+            'nodeSearching'
         ]),
         categoriesDisplayed() {
-            if (this.selectedTags.length > 0) {
+            if (this.nodeSearching) {
                 const result = {
                     nodes: this.nodes
                 };
@@ -38,9 +44,8 @@ export default {
                 let scroller = this.$parent.$refs.scroller;
                 const scrollPos = scroller.scrollTop;
                 const viewHeight = categoriesView.getBoundingClientRect().height;
-                const viewScreen = scroller.getBoundingClientRect().height;
-
-                if (viewHeight - scrollPos - viewScreen <= 0) {
+                const viewScreen = scroller.scrollHeight;
+                if (viewScreen - viewHeight - scrollPos <= 0) {
                     this.$store.dispatch('nodeRepository/getAllNodes', true);
                 }
             }
@@ -61,6 +66,9 @@ export default {
         },
         clearSelectedTags() {
             this.$store.dispatch('nodeRepository/clearSelectedTags');
+        },
+        clearNodeSearching() {
+            this.$store.dispatch('nodeRepository/updateQuery', '');
         }
     }
 };
@@ -71,71 +79,99 @@ export default {
     ref="repo"
     class="repo"
   >
-    <h4>Repository</h4>
-    <span class="break" />
-    <template v-if="selectedTags.length">
-      <div class="tags">
-        <TagList
-          :tags="tags.filter((t) => !selectedTags.includes(t))"
-          clickable
-          @click="selectTag"
-        />
-      </div>
-      <span class="break full" />
-    </template>
-
-    <div
-      v-if="selectedTags.length"
-      class="node-section"
+    <h4
+      @click="clearNodeSearching"
     >
-      <div class="filter-tags">
-        Filter
-        <Button
-          compact
-          class="clear-button"
-          @click="clearSelectedTags"
-        >
-          Clear
-          <CloseIcon />
-        </Button>
-        <TagList
-          class="tag-list"
-          :tags="selectedTags"
-          clickable
-          @click="deselectTag"
-        >
-          <CloseIcon slot="icon" />
-        </TagList>
-      </div>
+      Repository
+    </h4>
+    <span class="break" />
+    <NodeSearcher />
+    <div
+      v-if="nodeSearching && !nodes.length"
+      class="missed-search"
+    >
+      No node or component matching for: {{ query }}
     </div>
-    <div class="node-section">
-      <template v-for="(category, ind) in categoriesDisplayed">
-        <NodeRepositoryCategory
-          :key="`tag-${ind}`"
-          :category="category"
-        />
-        <span
-          :key="ind"
-          class="break full"
-        />
+    <div v-else>
+      <template v-if="nodeSearching">
+        <div class="tags">
+          <TagList
+            :tags="tags.filter((t) => !selectedTags.includes(t))"
+            clickable
+            @click="selectTag"
+          />
+        </div>
+        <span class="break full" />
       </template>
+
+      <div
+        v-if="selectedTags.length"
+        class="node-section"
+      >
+        <div class="filter-tags">
+          Filter
+          <Button
+            compact
+            class="clear-button"
+            @click="clearSelectedTags"
+          >
+            Clear
+            <CloseIcon />
+          </Button>
+          <TagList
+            class="tag-list"
+            :tags="selectedTags"
+            clickable
+            @click="deselectTag"
+          >
+            <CloseIcon slot="icon" />
+          </TagList>
+        </div>
+      </div>
+      <div class="node-section">
+        <template v-for="(category, ind) in categoriesDisplayed">
+          <NodeRepositoryCategory
+            :key="`tag-${ind}`"
+            :category="category"
+          />
+          <span
+            :key="ind"
+            class="break full"
+          />
+        </template>
+      </div>
+      <div />
     </div>
   </div>
 </template>
 
 <style lang="postcss" scoped>
 .repo {
-  margin: 15px 20px;
+  margin: 0px 20px;
   font-family: "Roboto Condensed", sans-serif;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  & .missed-search {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+  }
 
   & h4 {
+    cursor: pointer;
     font-size: 18px;
     font-weight: 400;
-    margin: 14px auto;
+    margin: 16px 0px;
   }
 
   & .break:not(:last-child) {
     height: 1px;
+    margin-bottom: 10px;
+    padding-top: 1px;
     width: 100%;
     display: block;
     background-color: var(--knime-silver-sand);

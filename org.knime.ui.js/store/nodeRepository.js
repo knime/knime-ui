@@ -21,6 +21,10 @@ export const state = () => ({
     categoryPage: 0
 });
 
+export const getters = {
+    nodeSearching: state => state.query || state.selectedTags.length
+};
+
 export const actions = {
     async getAllNodes({ dispatch, commit, state }, append) {
         if (append) {
@@ -71,6 +75,17 @@ export const actions = {
             commit('setNodes', res.nodes);
         }
         commit('setTags', res.tags);
+    },
+    /**
+     * Update the value of the single search node query
+     *
+     * @param {*} context - Vuex context.
+     * @param {String} value - Search query value
+     * @returns {undefined}
+     */
+    async updateQuery({ commit, dispatch }, value) {
+        commit('setQuery', value);
+        await dispatch('searchNodes');
     },
 
     /**
@@ -170,5 +185,8 @@ export const mutations = {
     },
     addNodesPerCategories(state, groupedNodes) {
         state.nodesPerCategory = state.nodesPerCategory.concat(groupedNodes);
+    },
+    setQuery(state, value) {
+        state.query = value;
     }
 };
