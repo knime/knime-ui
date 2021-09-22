@@ -5,6 +5,10 @@ import Vuex from 'vuex';
 import NodeRepository from '~/components/NodeRepository';
 import TagList from '~/webapps-common/ui/components/TagList';
 import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
+import NodeSearcher from '~/components/NodeSearcher';
+
+import { getters } from '~/store/nodeRepository.js';
+
 
 describe('NodeRepository', () => {
     let mocks, doShallowMount, wrapper, $store, searchNodesMock, searchNodesNextPageMock,
@@ -23,7 +27,6 @@ describe('NodeRepository', () => {
         deselectTagMock = jest.fn();
         getAllNodesMock = jest.fn();
         clearSelectedTagsMock = jest.fn();
-
         $store = mockVuexStore({
             nodeRepository: {
                 state: {
@@ -46,7 +49,8 @@ describe('NodeRepository', () => {
                     }],
                     totalNumNodes: 2,
                     selectedTags: ['myTag2'],
-                    tags: ['myTag1', 'myTag2']
+                    tags: ['myTag1', 'myTag2'],
+                    query: ''
                 },
                 actions: {
                     searchNodes: searchNodesMock,
@@ -55,7 +59,8 @@ describe('NodeRepository', () => {
                     deselectTag: deselectTagMock,
                     getAllNodes: getAllNodesMock,
                     clearSelectedTags: clearSelectedTagsMock
-                }
+                },
+                getters
             }
         });
         doShallowMount = () => {
@@ -71,10 +76,11 @@ describe('NodeRepository', () => {
         expect(getAllNodesMock).toHaveBeenCalled();
         expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
         expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(true);
+        expect(wrapper.findComponent(NodeSearcher).exists()).toBe(true);
     });
 
     describe('Tags', () => {
-        it('renders the two TagList when there is at least one selected tag', () => {
+        it('Renders the two TagList when there is at least one selected tag', () => {
             doShallowMount();
             expect(wrapper.findAllComponents(TagList).at(0).props('tags')).toEqual(['myTag1']);
             expect(wrapper.findAllComponents(TagList).at(1).props('tags')).toEqual(['myTag2']);
@@ -84,6 +90,13 @@ describe('NodeRepository', () => {
             $store.state.nodeRepository.selectedTags = [];
             doShallowMount();
             expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
+        });
+
+        it('Renders only Filter TagList (first list) when a single search is in progress', () => {
+            $store.state.nodeRepository.query = 'some node';
+            $store.state.nodeRepository.selectedTags = [];
+            doShallowMount();
+            expect(wrapper.findAllComponents(TagList).length).toBe(1);
         });
 
         it('Select tag on click', () => {
@@ -104,6 +117,22 @@ describe('NodeRepository', () => {
             doShallowMount();
             wrapper.findAllComponents(TagList).at(1).vm.$emit('click', 'myTag3');
             expect(deselectTagMock).toHaveBeenCalledWith(expect.anything(), 'myTag3');
+        });
+    });
+
+    describe('Empty search sub-view', () => {
+        it('an active searching with no nodes as result should to show an No matching message', () => {
+            const singleSearchText = 'some node';
+            $store.state.nodeRepository.query = singleSearchText;
+            $store.state.nodeRepository.selectedTags = [];
+            $store.state.nodeRepository.nodes = [];
+            doShallowMount();
+            expect(wrapper.find('.no-matching-search').exists()).toBe(true);
+            expect(wrapper.find('.no-matching-search').text())
+                .toBe(`No node or component matching for: ${singleSearchText}`);
+            expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeSearcher).exists()).toBe(true);
         });
     });
 });

@@ -87,6 +87,18 @@ describe('nodeRepository store', () => {
         });
     });
 
+    describe('getters', () => {
+        it('nodeSearching', () => {
+            expect(store.getters['nodeRepository/nodeSearching']).toBe(false);
+            store.state.nodeRepository.query = 'value';
+            expect(store.getters['nodeRepository/nodeSearching']).toBe(true);
+            store.state.nodeRepository.selectedTags = ['myTag1'];
+            expect(store.getters['nodeRepository/nodeSearching']).toBe(true);
+            store.state.nodeRepository.query = '';
+            expect(store.getters['nodeRepository/nodeSearching']).toBe(true);
+        });
+    });
+
     describe('mutations', () => {
         it('sets nodeSearchPage', () => {
             store.commit('nodeRepository/setNodeSearchPage', 2);
@@ -171,6 +183,11 @@ describe('nodeRepository store', () => {
 
             expect(store.state.nodeRepository.nodesPerCategory).toStrictEqual(categories);
         });
+
+        it('set query', () => {
+            store.commit('nodeRepository/setQuery', 'some value');
+            expect(store.state.nodeRepository.query).toBe('some value');
+        });
     });
 
     describe('actions', () => {
@@ -222,6 +239,14 @@ describe('nodeRepository store', () => {
                 searchNodesResponse.totalNumNodes, undefined);
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/addNodes', searchNodesResponse.nodes, undefined);
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', searchNodesResponse.tags, undefined);
+        });
+
+        it('update Query', async () => {
+            await store.dispatch('nodeRepository/updateQuery', 'some value');
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setQuery', 'some value', undefined);
+            expect(dispatchSpy).toHaveBeenCalledWith(
+                'nodeRepository/searchNodes', undefined
+            );
         });
 
         it('searches for nodes next page', async () => {

@@ -22,11 +22,11 @@ export const state = () => ({
 });
 
 export const getters = {
-    nodeSearching: state => state.query || state.selectedTags.length
+    nodeSearching: state => state.query !== '' || state.selectedTags.length > 0
 };
 
 export const actions = {
-    async getAllNodes({ dispatch, commit, state }, append) {
+    async getAllNodes({ commit, state }, append) {
         if (append) {
             commit('setCategoryPage', state.categoryPage + 1);
         } else {

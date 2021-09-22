@@ -88,7 +88,7 @@ export default {
     <NodeSearcher />
     <div
       v-if="nodeSearching && !nodes.length"
-      class="missed-search"
+      class="no-matching-search"
     >
       No node or component matching for: {{ query }}
     </div>
@@ -153,7 +153,7 @@ export default {
   display: flex;
   flex-direction: column;
 
-  & .missed-search {
+  & .no-matching-search {
     display: flex;
     align-items: center;
     justify-content: center;
