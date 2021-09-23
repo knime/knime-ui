@@ -88,9 +88,9 @@ describe('Connector.vue', () => {
             expect(portShiftMock).toHaveBeenCalledWith(2, 3, true, false);
         });
 
-        it('draws a path between data ports', () => {
+        it('draws a path between table ports', () => {
             doShallowMount();
-            const expectedPath = 'M40.5,7.5 C70,7.5 -26,40.5 3.5,40.5';
+            const expectedPath = 'M42.5,7.5 C73,7.5 -27,40.5 3.5,40.5';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
 
@@ -245,9 +245,9 @@ describe('Connector.vue', () => {
             expect(portShiftMock).toHaveBeenCalledWith(2, 3, false, false);
         });
 
-        it('draws a path between data ports', () => {
+        it('draws a path between table ports', () => {
             doShallowMount();
-            const expectedPath = 'M34,-4.5 C64.25,-4.5 -26.75,40.5 3.5,40.5';
+            const expectedPath = 'M36,-4.5 C67.25,-4.5 -27.75,40.5 3.5,40.5';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
 
@@ -332,9 +332,9 @@ describe('Connector.vue', () => {
             };
         });
 
-        it('draws a path between data ports', () => {
+        it('draws a path between table ports', () => {
             doShallowMount();
-            const expectedPath = 'M106.5,651 C503,651 297,960 693.5,960';
+            const expectedPath = 'M108.5,651 C504,651 298,960 693.5,960';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
 
@@ -342,6 +342,70 @@ describe('Connector.vue', () => {
             portMock.type = 'foo';
             doShallowMount();
             const expectedPath = 'M108.5,651 C504,651 298,960 693.5,960';
+            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+        });
+    });
+
+    describe('follows pointer', () => {
+        let doShallowMount;
+
+        beforeEach(() => {
+            storeConfig = {
+                workflow: {
+                    ...workflowStoreConfig,
+                    state: {
+                        activeWorkflow: {
+                            nodes: {
+                                'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
+                                'root:2': { position: { x: 32, y: 0 }, inPorts: [portMock, portMock] }
+                            }
+                        }
+                    },
+                    getters: {
+                        isWritable() {
+                            return true;
+                        }
+                    }
+                },
+                selection: {
+                    getters: {
+                        isConnectionSelected: () => jest.fn()
+                    }
+                }
+            };
+
+            doShallowMount = () => {
+                $store = mockVuexStore(storeConfig);
+                mocks = { $shapes, $colors, $store };
+                wrapper = shallowMount(Connector, { propsData, mocks });
+            };
+        });
+
+        it('draw connector forward', () => {
+            propsData = {
+                sourceNode: 'root:1',
+                sourcePort: 1,
+                absolutePoint: [32, 16],
+                canDelete: false,
+                id: 'drag-connector'
+            };
+            doShallowMount();
+
+            const expectedPath = 'M40.5,16 C46.75,16 21.75,16 28,16';
+            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+        });
+
+        it('draw connector backwards', () => {
+            propsData = {
+                destNode: 'root:2',
+                destPort: 1,
+                absolutePoint: [0, 16],
+                canDelete: false,
+                id: 'drag-connector'
+            };
+            doShallowMount();
+
+            const expectedPath = 'M4,16 C13.75,16 13.75,16 23.5,16';
             expect(wrapper.find('path').attributes().d).toBe(expectedPath);
         });
     });

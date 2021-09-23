@@ -28,13 +28,15 @@ export default {
         /**
          * Find the position between two connectors and add some offset to let the label
          * appear above the connector line
-         * @returns {Object} coordinates containing `x` and `y` properties
+         * @returns {Array} coordinates [x, y]
          */
         halfWayPosition() {
             // Calculates the middle point and subtracts half of the length of the text element
-            let halfWay = { x: (this.start[0] + (this.end[0] - this.start[0]) / 2) - this.labelWidth / 2,
-                y: (this.start[1] + (this.end[1] - this.start[1]) / 2 - this.offsetY) - this.labelHeight / 2 };
-            return halfWay;
+            let position = [
+                (this.start[0] + (this.end[0] - this.start[0]) / 2) - this.labelWidth / 2,
+                (this.start[1] + (this.end[1] - this.start[1]) / 2 - this.offsetY) - this.labelHeight / 2
+            ];
+            return position;
         }
     }
 };
@@ -46,7 +48,7 @@ export default {
     class="foreignObject"
     :width="labelWidth"
     :height="labelHeight"
-    :transform="'translate(' + halfWayPosition.x + ',' + halfWayPosition.y + ')'"
+    :transform="`translate(${ halfWayPosition })`"
   >
     <p class="textWrapper">
       <span

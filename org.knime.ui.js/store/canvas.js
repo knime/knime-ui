@@ -211,5 +211,15 @@ export const getters = {
             x: (origX - viewBox.left) * zoomFactor,
             y: (origY - viewBox.top) * zoomFactor
         });
+    },
+
+    /*
+        find point in workflow, based on absolute coordinate on canvas
+    */
+    fromAbsoluteCoordinates({ zoomFactor }, { viewBox }) {
+        return ([origX, origY]) => [
+            origX / zoomFactor + viewBox.left,
+            origY / zoomFactor + viewBox.top
+        ];
     }
 };

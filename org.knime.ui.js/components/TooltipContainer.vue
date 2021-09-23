@@ -21,8 +21,8 @@ export default {
     }),
     computed: {
         ...mapState('workflow', ['tooltip']),
-        ...mapGetters('canvas', ['getAbsoluteCoordinates']),
         ...mapState('canvas', ['zoomFactor']),
+        ...mapGetters('canvas', ['getAbsoluteCoordinates']),
         /*
             The gap has to grow with the zoomFactor.
             Using the square root gives a more appropriate visual impression for larger factors

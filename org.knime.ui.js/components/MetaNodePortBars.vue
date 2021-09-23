@@ -33,6 +33,7 @@ export default {
       :ports="workflow.metaInPorts.ports"
       :x="portBarXPos(workflow.metaInPorts)"
       :y="portBarYPos"
+      :container-id="workflow.info.containerId"
     />
     <MetaNodePortBar
       v-if="hasOutPorts"
@@ -40,6 +41,7 @@ export default {
       :ports="workflow.metaOutPorts.ports"
       :x="portBarXPos(workflow.metaOutPorts, true)"
       :y="portBarYPos"
+      :container-id="workflow.info.containerId"
     />
   </g>
 </template>

@@ -1,12 +1,12 @@
 <script>
-import Port from '~/components/Port';
+import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip.vue';
 import { portBar } from '~/mixins';
 
 /**
  * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
  */
 export default {
-    components: { Port },
+    components: { DraggablePortWithTooltip },
     mixins: [portBar],
     props: {
         /**
@@ -37,20 +37,26 @@ export default {
         type: {
             type: String,
             default: 'in',
-            validator(val = 'in') {
+            validator(val) {
                 return ['in', 'out'].includes(val);
             }
+        },
+        /** Id of the metanode, this PortBar is inside of */
+        containerId: {
+            type: String,
+            required: true
         }
     },
-    methods: {
+    computed: {
         // horizontal center of ports
-        portPositionX(port) {
+        portPositionX() {
             let delta = this.$shapes.portSize / 2;
             return this.type === 'out' ? -delta : delta;
         },
-        // vertical center of ports
-        portPositionY(port) {
-            return this.portBarItemYPos(port.index, this.ports);
+        portPositions() {
+            // x-coordinate is absolute
+            // y-coordinate is relative to PortBar
+            return this.ports.map(port => [this.x + this.portPositionX, this.portBarItemYPos(port.index, this.ports)]);
         }
     }
 };
@@ -58,20 +64,21 @@ export default {
 
 <template>
   <g
-    :transform="`translate(${x}, ${y})`"
+    :transform="`translate(0, ${y})`"
   >
     <rect
       :width="$shapes.metaNodeBarWidth"
       :height="portBarHeight"
-      :x="type === 'out' ? null : -$shapes.metaNodeBarWidth"
+      :x="type === 'out' ? x : x - $shapes.metaNodeBarWidth"
       :fill="$colors.named.Yellow"
     />
-    <Port
-      v-for="(port, index) of ports"
-      :key="`port-${index}`"
-      :x="portPositionX(port)"
-      :y="portPositionY(port)"
+    <DraggablePortWithTooltip
+      v-for="port of ports"
+      :key="port.index"
+      :relative-position="portPositions[port.index]"
       :port="port"
+      :direction="type === 'in' ? 'out' : 'in'"
+      :node-id="containerId"
     />
   </g>
 </template>

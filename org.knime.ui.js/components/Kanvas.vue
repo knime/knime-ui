@@ -9,6 +9,9 @@ import KanvasFilters from '~/components/KanvasFilters';
 import StreamedIcon from '~/components/../webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
 import ConnectorLabel from '~/components/ConnectorLabel';
 import ContextMenu from '~/components/ContextMenu';
+import { throttle } from 'lodash';
+
+const PANNING_THROTTLE = 50; // 50ms between consecutive mouse move events
 
 export default {
     components: {
@@ -141,14 +144,16 @@ export default {
             this.panning = [e.screenX, e.screenY];
             this.$el.setPointerCapture(e.pointerId);
         },
-        movePan(e) {
+        movePan: throttle(function (e) {
+            /* eslint-disable no-invalid-this */
             if (this.panning) {
                 const delta = [e.screenX - this.panning[0], e.screenY - this.panning[1]];
                 this.panning = [e.screenX, e.screenY];
                 this.$el.scrollLeft -= delta[0];
                 this.$el.scrollTop -= delta[1];
             }
-        },
+            /* eslint-disable no-invalid-this */
+        }, PANNING_THROTTLE), // eslint-disable-line no-magic-numbers
         stopPan(e) {
             if (this.panning) {
                 this.panning = null;
@@ -276,13 +281,22 @@ export default {
         :key="`connector-label-${workflow.projectId}-${id}`"
         v-bind="connector"
       />
+
+      <portal-target
+        tag="g"
+        name="drag-connector"
+      />
     </svg>
   </div>
 </template>
 
 <style lang="postcss" scoped>
-#kanvas:focus {
-  outline: none;
+#kanvas {
+  height: 100%;
+
+  &:focus {
+    outline: none;
+  }
 }
 
 .debug-css {
