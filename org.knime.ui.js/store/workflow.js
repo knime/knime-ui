@@ -280,6 +280,14 @@ export const getters = {
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
     */
     workflowBounds({ activeWorkflow }) {
+        if (!activeWorkflow) {
+            return {
+                left: 0,
+                top: 0,
+                right: 0,
+                bottom: 0
+            };
+        }
         const { nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPorts } = activeWorkflow;
         const {
             nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight, portSize,
