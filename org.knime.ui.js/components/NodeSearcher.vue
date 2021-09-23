@@ -48,6 +48,7 @@ export default {
       @keyup.enter="searchNodes"
     >
     <FunctionButton
+      data-test-clear-search
       @click="clearSearch"
     >
       <CloseIcon />

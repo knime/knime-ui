@@ -67,11 +67,21 @@ Scenario('Show more tags selection', ({ I }) => {
 });
 
 Scenario('Lazy loading Categories', ({ I }) => {
-    const scrolledHeight = 20;
+    const scrolledHeight = 200;
     I.seeElement('.panel > .container');
     I.dontSee('Analytics', '.category-title');
     I.dontSee('Statistics');
     I.scroll('.panel > .container', scrolledHeight);
     I.see('Analytics', '.category-title');
     I.see('Statistics');
+});
+
+Scenario('Single search node', ({ I }) => {
+    I.seeElement('#node-search');
+    I.fillField('#node-search > input[type=text]', 'table');
+    I.see('Table Creator');
+    I.see('JSON to Table');
+    I.click('#node-search > button[data-test-clear-search]');
+    I.see('Table Creator');
+    I.dontSee('JSON to Table');
 });
