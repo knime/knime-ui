@@ -1,27 +1,29 @@
 <script>
 import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip.vue';
-import { portBar } from '~/mixins';
+import { portBar, snapConnector } from '~/mixins';
 
 /**
  * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
  */
 export default {
     components: { DraggablePortWithTooltip },
-    mixins: [portBar],
+    mixins: [portBar, snapConnector],
+    provide() {
+        return {
+            // Provide position as anchorPoint for tooltips
+            anchorPoint: this.position
+        };
+    },
     props: {
         /**
-         * The horizontal coordinate of the bar, at the point where the ports are attached.
-        */
-        x: {
-            type: Number,
-            default: 0
-        },
-        /**
-         * The y coordinate of the topmost edge of the bar.
-        */
-        y: {
-            type: Number,
-            default: 0
+         * The position of the node. Contains of an x and a y parameter
+         * The y coordinate is the topmost edge of the bar.
+         * The x coordinate is the horizontal coordinate of the bar, at the point where the ports are attached.
+         */
+        position: {
+            type: Object,
+            required: true,
+            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         },
         /**
          * A list of port configurations, passed-through to `Port`
@@ -48,6 +50,9 @@ export default {
         }
     },
     computed: {
+        portDirection() {
+            return this.type === 'out' ? 'in' : 'out';
+        },
         // horizontal center of ports
         portPositionX() {
             let delta = this.$shapes.portSize / 2;
@@ -56,7 +61,16 @@ export default {
         portPositions() {
             // x-coordinate is absolute
             // y-coordinate is relative to PortBar
-            return this.ports.map(port => [this.x + this.portPositionX, this.portBarItemYPos(port.index, this.ports)]);
+            // format as required by snapConnector mixin
+            return {
+                [this.portDirection]: this.ports.map(port => [
+                    this.portPositionX,
+                    this.portBarItemYPos(port.index, this.ports)
+                ])
+            };
+        },
+        barPosition() {
+            return this.type === 'out' ? 0 : -this.$shapes.metaNodeBarWidth;
         }
     }
 };
@@ -64,27 +78,44 @@ export default {
 
 <template>
   <g
-    :transform="`translate(0, ${y})`"
+    :transform="`translate(${position.x}, ${position.y})`"
+    @connector-enter.stop="onConnectorEnter"
+    @connector-leave.stop="onConnectorLeave"
+    @connector-move.stop="onConnectorMove"
+    @connector-drop.stop="onConnectorDrop"
   >
     <rect
+      class="hover-area"
+      :width="$shapes.metaNodeBarWidth + $shapes.metaNodeBarHorizontalPadding * 2"
+      :height="portBarHeight"
+      :x="barPosition - $shapes.metaNodeBarHorizontalPadding"
+    />
+    <rect
+      class="port-bar"
       :width="$shapes.metaNodeBarWidth"
       :height="portBarHeight"
-      :x="type === 'out' ? x : x - $shapes.metaNodeBarWidth"
+      :x="barPosition"
       :fill="$colors.named.Yellow"
     />
     <DraggablePortWithTooltip
       v-for="port of ports"
       :key="port.index"
-      :relative-position="portPositions[port.index]"
+      :relative-position="portPositions[portDirection][port.index]"
       :port="port"
-      :direction="type === 'in' ? 'out' : 'in'"
+      :direction="portDirection"
       :node-id="containerId"
+      :targeted="targetPort && targetPort.index === port.index"
     />
   </g>
 </template>
 
 <style lang="postcss" scoped>
-rect {
+.port-bar {
   cursor: ew-resize;
+}
+
+.hover-area {
+  fill: none;
+  pointer-events: fill;
 }
 </style>

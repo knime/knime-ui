@@ -32,11 +32,15 @@ export default {
         port: {
             type: Object,
             required: true
+        },
+        // if true, the port will highlight itself
+        targeted: {
+            type: Boolean,
+            default: false
         }
     },
     data: () => ({
-        dragConnector: null,
-        targeted: false
+        dragConnector: null
     }),
     computed: {
         ...mapGetters('canvas', ['fromAbsoluteCoordinates'])
@@ -87,7 +91,8 @@ export default {
                             sourceNode,
                             sourcePort,
                             destNode,
-                            destPort
+                            destPort,
+                            direction: this.direction
                         },
                         bubbles: true
                     }
@@ -107,17 +112,24 @@ export default {
             let hitTarget = document.elementFromPoint(e.x, e.y);
 
             // create move event
-            let moveEventNotCancelled = true;
+            let [absoluteX, absoluteY] = this.positionOnCanvas([e.x, e.y]);
             let moveEvent = new CustomEvent('connector-move', {
-                detail: { x: e.x, y: e.y },
-                bubbles: true,
-                cancelable: true
+                detail: {
+                    x: absoluteX,
+                    y: absoluteY,
+                    targetPortDirection: this.direction === 'out' ? 'in' : 'out',
+                    overwritePosition: ([x, y]) => {
+                        absoluteX = x;
+                        absoluteY = y;
+                    }
+                },
+                bubbles: true
             });
 
 
             if (hitTarget && this.lastHitTarget === hitTarget) {
                 // hitTarget exists and is the same as last time
-                moveEventNotCancelled = hitTarget.dispatchEvent(moveEvent);
+                hitTarget.dispatchEvent(moveEvent);
             } else {
                 // different hitTarget than lastHitTarget, possibly null
 
@@ -147,46 +159,16 @@ export default {
                             bubbles: true
                         })
                     );
-                    moveEventNotCancelled = hitTarget.dispatchEvent(moveEvent);
-                    consola.trace('leave', 'cancelled:', !moveEventNotCancelled, hitTarget);
+                    hitTarget.dispatchEvent(moveEvent);
                 }
 
                 // remember hitTarget
                 this.lastHitTarget = hitTarget;
             }
             
-            if (moveEventNotCancelled) {
-                this.dragConnector.absolutePoint = this.positionOnCanvas([e.x, e.y]);
-            }
+            this.dragConnector.absolutePoint = [absoluteX, absoluteY];
             /* eslint-enable no-invalid-this */
-        }, MOVE_THROTTLE),
-
-        /* ======== Drop Connector ======== */
-        onConnectorEnter() {
-            this.targeted = true;
-        },
-        onConnectorLeave() {
-            this.targeted = false;
-        },
-        onConnectorDrop(e) {
-            let { destNode, destPort, sourceNode, sourcePort } = e.detail;
-
-            if (this.direction === 'in') {
-                this.connectNodes({
-                    sourceNode,
-                    sourcePort,
-                    destNode: this.nodeId,
-                    destPort: this.port.index
-                });
-            } else {
-                this.connectNodes({
-                    sourceNode: this.nodeId,
-                    sourcePort: this.port.index,
-                    destNode,
-                    destPort
-                });
-            }
-        }
+        }, MOVE_THROTTLE)
     }
 };
 </script>
@@ -199,9 +181,6 @@ export default {
     @pointerup.stop="onPointerUp"
     @pointermove.stop="onPointerMove"
     @lostpointercapture.stop="onLostPointerCapture"
-    @connector-enter="onConnectorEnter"
-    @connector-leave="onConnectorLeave"
-    @connector-drop.stop="onConnectorDrop"
   >
     <PortWithTooltip
       :port="port"

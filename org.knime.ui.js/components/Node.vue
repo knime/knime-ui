@@ -10,6 +10,7 @@ import LoopDecorator from '~/components/LoopDecorator';
 import portShift from '~/util/portShift';
 import NodeActionBar from '~/components/NodeActionBar.vue';
 import NodeSelectionPlane from '~/components/NodeSelectionPlane.vue';
+import { snapConnector } from '~/mixins';
 
 /**
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
@@ -32,6 +33,7 @@ export default {
         LoopDecorator,
         NodeSelectionPlane
     },
+    mixins: [snapConnector],
     inheritAttrs: false,
     provide() {
         return {
@@ -161,8 +163,7 @@ export default {
     },
     data() {
         return {
-            hover: false,
-            connectorHover: false
+            hover: false
         };
     },
     computed: {
@@ -338,6 +339,15 @@ export default {
                 this.deselectAllObjects();
                 this.selectNode(this);
             }
+        },
+        isOutsideConnectorHoverRegion(x, y, targetPortDirection) {
+            const upperBound = -20;
+
+            if (y < upperBound) { return true; }
+            if (targetPortDirection === 'in' && x > this.$shapes.nodeSize) { return true; }
+            if (targetPortDirection === 'out' && x < 0) { return true; }
+
+            return false;
         }
     }
 };
@@ -394,8 +404,10 @@ export default {
       @mouseleave="onLeaveHoverArea"
       @mouseenter="hover = true"
       @contextmenu.prevent="onContextMenu"
-      @connector-enter="connectorHover = true"
-      @connector-leave="connectorHover = false"
+      @connector-enter.stop="onConnectorEnter"
+      @connector-leave.stop="onConnectorLeave"
+      @connector-move.stop="onConnectorMove"
+      @connector-drop.stop="onConnectorDrop"
     >
       <!-- Elements for which a click selects node -->
       <g
@@ -458,6 +470,7 @@ export default {
         :relative-position="portPositions.in[port.index]"
         :port="port"
         :node-id="id"
+        :targeted="targetPort && targetPort.side === 'in' && targetPort.index === port.index"
         direction="in"
       />
       
@@ -468,6 +481,7 @@ export default {
         :relative-position="portPositions.out[port.index]"
         :port="port"
         :node-id="id"
+        :targeted="targetPort && targetPort.side === 'out' && targetPort.index === port.index"
         direction="out"
       />
     </g>
