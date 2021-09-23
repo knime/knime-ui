@@ -47,7 +47,10 @@ export default {
       class="breadcrumb"
     />
 
-    <ZoomMenu class="zoommenu" />
+    <ZoomMenu
+      v-if="workflow"
+      class="zoommenu"
+    />
   </div>
 </template>
 
