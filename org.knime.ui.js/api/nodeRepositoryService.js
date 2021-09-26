@@ -9,7 +9,7 @@ import rpc from './json-rpc-adapter.js';
  * @param {Boolean} cfg.fullTemplateInfo - if the results should contain all node info (incl. img data).
  * @returns {Object} the node repository selection results.
  */
- export const selection = ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => rpc(
+export const selection = ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => rpc(
     'NodeRepositoryService.selectNodes',
     numNodesPerTag,
     tagsOffset,

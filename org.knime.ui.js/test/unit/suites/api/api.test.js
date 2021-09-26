@@ -111,8 +111,9 @@ describe('API', () => {
 
         describe('selection', () => {
             it('calls jsonrpc', async () => {
+                const NODES_LIMIT = 6;
                 await api.selection({
-                    numNodesPerTag: 6,
+                    numNodesPerTag: NODES_LIMIT,
                     tagsOffset: 0,
                     tagsLimit: 2,
                     fullTemplateInfo: true
@@ -121,7 +122,7 @@ describe('API', () => {
                 expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                     jsonrpc: '2.0',
                     method: 'NodeRepositoryService.selectNodes',
-                    params: [6, 0, 2, true],
+                    params: [NODES_LIMIT, 0, 2, true],
                     id: 0
                 }));
             });

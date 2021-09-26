@@ -32,7 +32,7 @@ export default {
         }
     },
     created() {
-        this.$root.$on('scroll-node-repo', () => {
+        this.$parent.$on('scroll-node-repo', () => {
             const categoriesView = this.$refs.repo;
             if (categoriesView) {
                 let scroller = this.$parent.$refs.scroller;

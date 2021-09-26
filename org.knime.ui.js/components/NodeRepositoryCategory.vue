@@ -3,6 +3,8 @@ import { mapState } from 'vuex';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import Button from '~/webapps-common/ui/components/Button';
 
+const LABEL_CHARACTER_LIMIT = 26;
+const CATEGORY_LIMIT = 6;
 
 export default {
     components: {
@@ -11,8 +13,8 @@ export default {
     },
     filters: {
         shorterLabel(value) {
-            if (value.length > 26) {
-                return `${value.substring(0, 25)}...`;
+            if (value.length > LABEL_CHARACTER_LIMIT) {
+                return `${value.substring(0, LABEL_CHARACTER_LIMIT - 1)}...`;
             }
             return value;
         }
@@ -20,20 +22,11 @@ export default {
     props: {
         category: {
             type: Object,
+            required: true,
             default() {
                 return {};
-            },
-            required: true
-        },
-        nodeAmount: {
-            type: Number,
-            default() {
-                return 0;
             }
         }
-    },
-    data() {
-        return { categoryLimit: 6 };
     },
     computed: {
         ...mapState('nodeRepository', [
@@ -56,7 +49,7 @@ export default {
         },
         hasMoreNodes() {
             if (this.category.tag) {
-                return this.category.nodes?.length === this.categoryLimit;
+                return this.category.nodes?.length === CATEGORY_LIMIT;
             } else {
                 return this.category.nodes?.length < this.totalNumNodes;
             }
@@ -180,7 +173,7 @@ export default {
   & .show-more {
     color: var(--knime-masala);
     font-weight: 400;
-    margin: 0px auto 10px;
+    margin: 0 auto 10px;
     display: block;
   }
 }

@@ -80,7 +80,7 @@ describe('NodeRepositoryCategory', () => {
         };
     });
 
-
+    
     describe('nodes', () => {
         it('renders nodes with label and Component', () => {
             const nodes = nodeCategory.category.nodes;

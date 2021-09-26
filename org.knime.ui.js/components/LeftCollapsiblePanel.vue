@@ -3,6 +3,8 @@ import { mapState } from 'vuex';
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 import { throttle } from 'lodash';
 
+const SCROLL_HANDLER_THROTTLE = 500;
+
 export default {
     components: {
         SwitchIcon
@@ -35,9 +37,9 @@ export default {
         onScroll: throttle(function () {
             /* eslint-disable no-invalid-this */
             if (this.activeTab === 'nodeRepository') {
-                this.$root.$emit('scroll-node-repo');
+                this.$emit('scroll-node-repo');
             }
-        }, 500)
+        }, SCROLL_HANDLER_THROTTLE)
     }
 };
 </script>

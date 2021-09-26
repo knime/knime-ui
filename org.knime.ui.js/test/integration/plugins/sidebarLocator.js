@@ -5,9 +5,5 @@ module.exports = () => {
         if (validateEnum('sidebarMenu', providedLocator)) {
             locatorObj.value = `li[title="${providedLocator.sidebarMenu.css}"]`;
         }
-
-        if (providedLocator.nodeCategoryTag) {
-            locatorObj.value = `span[data-test-tag="${providedLocator.nodeCategoryTag}"]`;
-        }
     });
 };
