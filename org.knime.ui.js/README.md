@@ -106,10 +106,21 @@ Then, you can run the tests via
 ```
 npm run test:integration
 ```
-To run a single test add the filename without path, e.g.:
+To run a single test add the tag as second argument.
+
+You can find tags on any \*.test.js file as `Feature('Delete command').tag('@endpoints-@workflow-@command-@deleteCommand');`.
+
+```sh
+# Only runs the deleteCommand file.
+npm run test:integration @deleteCommand
 ```
-npm run test:integration navigateThroughWorkflow.test.js
+
+```sh
+# Runs every test inside the workflow directory.
+npm run test:integration @workflow
 ```
+
+You can find tags on any *.test.js file as `Feature('Delete command').tag('@endpoints-@workflow-@command-@deleteCommand');`.
 
 ### Running security audit
 
