@@ -22,10 +22,7 @@ export default {
     props: {
         category: {
             type: Object,
-            required: true,
-            default() {
-                return {};
-            }
+            required: true
         }
     },
     computed: {
