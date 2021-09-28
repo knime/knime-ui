@@ -54,7 +54,8 @@ Scenario('Move multiple nodes', async ({ I }) => {
     I.seeElement({ sourceNode: 2, destNode: 3 });
 });
 
-Scenario('Move single node inside of a component node', async ({ I }) => {
+// FIXME NXT-708
+Scenario.skip('Move single node inside of a component node', async ({ I }) => {
     __`Open component`;
     I.doubleClickNodeWithCtrl({ nodeId: 6 });
     // eslint-disable-next-line no-magic-numbers

@@ -12,7 +12,6 @@ module.exports = function () {
             this.seeElement(selector);
 
             const elementAttribute = await this.grabAttributeFrom(selector, attribute);
-            // console.log(elementAttribute);
             if (attribute === 'class') {
                 this.assertStringIncludes(elementAttribute, 'disabled');
             }
@@ -31,7 +30,6 @@ module.exports = function () {
             this.seeElement(selector);
 
             const elementAttribute = await this.grabAttributeFrom(selector, attribute);
-            // console.log(elementAttribute);
             if (attribute === 'class') {
                 const isDisabled = elementAttribute.includes('disabled');
                 this.assertOk(isDisabled === false, `Asserting if ${JSON.stringify(selector)} is enabled`);

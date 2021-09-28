@@ -4,7 +4,6 @@ const { contextMenu } = require('./ContextMenu');
 const { actionBar } = require('./ActionBar');
 
 module.exports = {
-    // TODO: test Windows/Linux
     Trigger: {
         shortcut, toolbar, contextMenu, actionBar
     }

@@ -32,7 +32,8 @@ Scenario('Navigate back via breadcrumb. 1 Deep', ({ I }) => {
     I.seeElement({ nodeId: 3 });
 });
 
-Scenario('Navigate back via breadcrumb. 2 Deep', ({ I }) => {
+// FIXME NXT-705
+Scenario.skip('Navigate back via breadcrumb. 2 Deep', ({ I }) => {
     __`Open Component and Metanode`;
     openComponentAndMetanode(I);
 

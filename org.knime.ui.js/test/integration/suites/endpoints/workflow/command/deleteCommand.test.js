@@ -45,7 +45,8 @@ Scenario('Single connector - Shortcut', ({ I }) => {
     I.dontSeeElement({ sourceNode: 208, destNode: 3 });
 });
 
-Scenario('Multiple nodes - Shortcut', ({ I }) => {
+// FIXME NXT-710
+Scenario.skip('Multiple nodes - Shortcut', ({ I }) => {
     __`Delete nodes`;
     I.selectMultipleNodes({ nodeId: 208 }, { nodeId: 209 }, { nodeId: 210 });
     Trigger.shortcut.delete();
@@ -84,7 +85,8 @@ Scenario('Multiple selectors - Shortcut', ({ I }) => {
     I.dontSeeElement({ sourceNode: 208, destNode: 3 });
 });
 
-Scenario('Single node - Toolbar', ({ I }) => {
+// FIXME NXT-710
+Scenario.skip('Single node - Toolbar', ({ I }) => {
     __`Delete node`;
     I.click({ nodeId: 209 });
     Trigger.toolbar.delete();
@@ -114,7 +116,8 @@ Scenario('Single connector - Toolbar', ({ I }) => {
     I.dontSeeElement({ sourceNode: 208, destNode: 3 });
 });
 
-Scenario('Multiple nodes - Toolbar', ({ I }) => {
+// FIXME NXT-710
+Scenario.skip('Multiple nodes - Toolbar', ({ I }) => {
     __`Delete nodes`;
     I.selectMultipleNodes({ nodeId: 208 }, { nodeId: 209 }, { nodeId: 210 });
     Trigger.toolbar.delete();
@@ -135,7 +138,8 @@ Scenario('Multiple nodes - Toolbar', ({ I }) => {
     I.dontSeeElement({ nodeId: 210 });
 });
 
-Scenario('Multiple selectors - Toolbar', ({ I }) => {
+// FIXME NXT-710
+Scenario.skip('Multiple selectors - Toolbar', ({ I }) => {
     __`Delete nodes`;
     I.selectMultipleConnectors({ sourceNode: 209, destNode: 208 }, { sourceNode: 208, destNode: 3 });
     Trigger.toolbar.delete();
@@ -159,7 +163,8 @@ Scenario('Single node - Context Menu', ({ I }) => {
     I.dontSeeElement({ nodeId: 209 });
 });
 
-Scenario('Multiple nodes - Context Menu', ({ I }) => {
+// FIXME NXT-710
+Scenario.skip('Multiple nodes - Context Menu', ({ I }) => {
     __`Delete nodes`;
     I.selectMultipleNodes({ nodeId: 208 }, { nodeId: 209 }, { nodeId: 210 });
     Trigger.contextMenu.deleteNode('208');
@@ -168,7 +173,8 @@ Scenario('Multiple nodes - Context Menu', ({ I }) => {
     I.dontSeeElement({ nodeId: 210 });
 });
 
-Scenario('WorkflowId - Shortcut', ({ I }) => {
+// FIXME NXT-710
+Scenario.skip('WorkflowId - Shortcut', ({ I }) => {
     __`Open Component`;
     I.doubleClickNodeWithCtrl({ nodeId: 210 });
     __`Delete node`;
@@ -183,7 +189,8 @@ Scenario('WorkflowId - Shortcut', ({ I }) => {
     I.dontSeeElement({ nodeId: '210:0:206:2' });
 });
 
-Scenario('WorkflowId - Toolbar', ({ I }) => {
+// FIXME NXT-710
+Scenario.skip('WorkflowId - Toolbar', ({ I }) => {
     __`Open Component`;
     I.doubleClickNodeWithCtrl({ nodeId: 210 });
     __`Delete node`;

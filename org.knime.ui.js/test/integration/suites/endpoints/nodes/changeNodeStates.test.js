@@ -95,7 +95,8 @@ Scenario('Single node - ContextMenu', ({ I }) => {
     I.seeElement({ nodeId: 3, state: state.CONFIGURED });
 });
 
-Scenario('Multiple nodes - Shortcut', ({ I }) => {
+// FIXME NXT-709
+Scenario.skip('Multiple nodes - Shortcut', ({ I }) => {
     __`Execute node`;
     Trigger.shortcut.executeMultipleNodes({ nodeId: 3 }, { nodeId: 5 });
     I.seeElement({ nodeId: 3, state: state.EXECUTING_CIRCLE });

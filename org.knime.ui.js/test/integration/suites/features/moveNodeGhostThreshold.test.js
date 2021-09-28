@@ -20,7 +20,8 @@ Before(({ I }) => {
 });
 
 // eslint-disable-next-line max-len
-Scenario('move entire workflow without drop should not have direct updating on the nodes - Ghost threshold', async ({ I }) => {
+// FIXME NXT-714
+Scenario.skip('move entire workflow without drop should not have direct updating on the nodes - Ghost threshold', async ({ I }) => {
     const moveX = 50;
     const moveY = 50;
 
