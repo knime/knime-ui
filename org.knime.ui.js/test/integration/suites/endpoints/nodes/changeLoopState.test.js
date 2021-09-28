@@ -45,7 +45,8 @@ Scenario('Step / Resume / Pause - contextMenu', ({ I }) => {
     I.seeElement({ nodeId: 10, state: state.PAUSED });
 });
 
-Scenario('WorkflowId - Step / Resume / Pause - contextMenu', ({ I }) => {
+// FIXME NXT-576
+Scenario.skip('WorkflowId - Step / Resume / Pause - contextMenu', ({ I }) => {
     __`Open component`;
     I.doubleClickNodeWithCtrl({ nodeId: 210 });
     I.seeElement({ nodeId: '210:0:10', state: state.CONFIGURED });
@@ -64,7 +65,8 @@ Scenario('WorkflowId - Step / Resume / Pause - contextMenu', ({ I }) => {
     I.seeElement({ nodeId: '210:0:10', state: state.PAUSED });
 });
 
-Scenario('WorkflowId - Step / Resume / Pause - actionBar', ({ I }) => {
+// FIXME NXT-576
+Scenario.skip('WorkflowId - Step / Resume / Pause - actionBar', ({ I }) => {
     __`Open component`;
     I.doubleClickNodeWithCtrl({ nodeId: 210 });
     I.seeElement({ nodeId: '210:0:10', state: state.CONFIGURED });

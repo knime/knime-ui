@@ -10,7 +10,8 @@ Before(({ I }) => {
     I.seeElement({ nodeId: 209, state: state.CONFIGURED });
 });
 
-Scenario('Name / Type', ({ I }) => {
+// FIXME NXT-707
+Scenario.skip('Name / Type', ({ I }) => {
     __`Open component`;
     I.doubleClickNodeWithCtrl({ nodeId: 7 });
 
@@ -26,7 +27,8 @@ Scenario('Name / Type', ({ I }) => {
     I.see('Type: Data', '.port-type');
 });
 
-Scenario('Optional @focus', ({ I }) => {
+// FIXME NXT-711
+Scenario.skip('Optional @focus', ({ I }) => {
     __`Optional`;
     I.seeAttributesOnElements('[data-node-id="root:209"] > g > g > g:nth-child(3) > polygon', { fill: 'transparent' });
 });

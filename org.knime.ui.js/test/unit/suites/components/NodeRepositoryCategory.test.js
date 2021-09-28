@@ -46,6 +46,19 @@ const nodesFiltered = {
     }
 };
 
+const nodesWithLongerName = {
+    category: {
+        nodes: [{
+            id: 'node1',
+            name: 'A name so long to be shown in the label'
+        },
+        {
+            id: 'node2',
+            name: 'A name not enough longer'
+        }]
+    }
+};
+
 describe('NodeRepositoryCategory', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, searchNodesNextPageMock,
         selectTagMock;
@@ -80,7 +93,7 @@ describe('NodeRepositoryCategory', () => {
         };
     });
 
-
+    
     describe('nodes', () => {
         it('renders nodes with label and Component', () => {
             const nodes = nodeCategory.category.nodes;
@@ -118,6 +131,16 @@ describe('NodeRepositoryCategory', () => {
             expect(wrapper.find('.category-title').exists()).toBe(false);
             const nodeListItems = wrapper.findAll('li.node');
             expect(nodeListItems.length).toBe(nodesAmount);
+        });
+
+        it('Nodes with longer name should to cut on the node label', () => {
+            const LABEL_LIMIT_WITH_ELLIPSIS = 28;
+            propsData = { ...nodesWithLongerName };
+            doShallowMount();
+            const nodeListItems = wrapper.findAll('li.node > label');
+            expect(nodeListItems.at(0).text().length).toBeLessThan(nodesWithLongerName.category.nodes[0].name.length);
+            expect(nodeListItems.at(0).text().length).toBe(LABEL_LIMIT_WITH_ELLIPSIS);
+            expect(nodeListItems.at(1).text().length).toBe(nodesWithLongerName.category.nodes[1].name.length);
         });
     });
 

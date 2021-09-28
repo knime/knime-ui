@@ -13,6 +13,15 @@ import Connector from '~/components/Connector';
 import WorkflowAnnotation from '~/components/WorkflowAnnotation';
 import MetaNodePortBars from '~/components/MetaNodePortBars';
 
+jest.mock('lodash', () => ({
+    throttle(func) {
+        return function (...args) {
+            // eslint-disable-next-line no-invalid-this
+            return func.apply(this, args);
+        };
+    }
+}));
+
 const mockNode = ({ id, position }) => ({
     name: '',
     id,
@@ -34,7 +43,8 @@ const mockConnector = ({ nr, id }) => ({
     sourcePort: nr,
     destPort: 0,
     flowVariableConnection: false,
-    streaming: false
+    streaming: false,
+    absolutePoint: null
 });
 
 describe('Kanvas', () => {
@@ -114,7 +124,7 @@ describe('Kanvas', () => {
                 isInsideLinked() {
                     return workflow.parents.some(p => p.linked);
                 },
-                insideLinkedType({ activeWorkflow }) {
+                insideLinkedType() {
                     return workflow.parents.find(p => p.linked).containerType;
                 },
                 isStreaming() {
@@ -194,8 +204,9 @@ describe('Kanvas', () => {
         });
 
         it('renders connectors', () => {
-            let props = wrapper.findAllComponents(Connector).wrappers.map(c => c.props());
-            expect(props).toEqual(Object.values(workflow.connections));
+            let connectorProps = wrapper.findAllComponents(Connector).wrappers.map(c => c.props());
+            let connections = Object.values(workflow.connections);
+            expect(connectorProps).toStrictEqual(connections);
         });
 
         it('is not linked', () => {

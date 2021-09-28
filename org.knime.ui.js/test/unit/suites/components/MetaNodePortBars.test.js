@@ -18,7 +18,7 @@ describe('MetaNodePortBars.vue', () => {
     });
 
     beforeEach(() => {
-        activeWorkflow = {};
+        activeWorkflow = { info: { containerId: 'metanode' } };
         wrapper = null;
         propsData = {};
         $store = mockVuexStore({
@@ -73,6 +73,7 @@ describe('MetaNodePortBars.vue', () => {
         expect(bar.props('type')).toBe(type);
         expect(bar.props('y')).toBe(extendedBoundsTop);
         expect(bar.props('ports')).toEqual([dummy]);
+        expect(bar.props('containerId')).toEqual('metanode');
     });
 
     it('renders two bars if workflow has both input and output ports', () => {
@@ -89,9 +90,12 @@ describe('MetaNodePortBars.vue', () => {
         expect(inBar.props('type')).toBe('in');
         expect(inBar.props('y')).toBe(extendedBoundsTop);
         expect(inBar.props('ports')).toEqual([dummy]);
+        expect(inBar.props('containerId')).toEqual('metanode');
+
         let outBar = wrapper.findAllComponents(MetaNodePortBar).at(1);
         expect(outBar.props('type')).toBe('out');
         expect(outBar.props('y')).toBe(extendedBoundsTop);
         expect(outBar.props('ports')).toEqual([dummy, dummy]);
+        expect(outBar.props('containerId')).toEqual('metanode');
     });
 });

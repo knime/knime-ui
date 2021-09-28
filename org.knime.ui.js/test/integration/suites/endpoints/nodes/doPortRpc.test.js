@@ -30,7 +30,8 @@ Scenario('Single node - portExecution', ({ I }) => {
     I.see('Columns: 4', '.counts');
 });
 
-Scenario('WorkflowId - Single node - portExecution', ({ I }) => {
+// FIXME NXT-715
+Scenario.skip('WorkflowId - Single node - portExecution', ({ I }) => {
     __`Open component`;
     I.doubleClickNodeWithCtrl({ nodeId: 212 });
 

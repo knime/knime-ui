@@ -1,3 +1,5 @@
+/* eslint-disable no-magic-numbers */
+
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
@@ -22,8 +24,7 @@ describe('PortWithTooltip.vue', () => {
     beforeEach(() => {
         wrapper = null;
         propsData = {
-            x: 5,
-            y: 10,
+            tooltipPosition: [5, 10],
             port: {
                 optional: false,
                 inactive: false,

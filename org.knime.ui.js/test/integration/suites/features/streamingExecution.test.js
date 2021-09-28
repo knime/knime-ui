@@ -9,7 +9,8 @@ Before(({ I }) => {
     I.seeElement({ nodeId: 6, state: state.CONFIGURED });
 });
 
-Scenario('Streaming execution', async ({ I }) => {
+// FIXME NXT-712
+Scenario.skip('Streaming execution', async ({ I }) => {
     __`Execute Stream`;
     I.click({ action: action.EXECUTE_ALL });
     I.doubleClickNodeWithCtrl({ nodeId: 6 });
@@ -23,7 +24,7 @@ Scenario('Streaming execution', async ({ I }) => {
 
     __`Confirm execution inside component`;
     // eslint-disable-next-line no-magic-numbers
-    I.waitForText('4,000,000', 50, locate('.textWrapper .streamingLabel').at(3));
+    I.waitForText('4,000,000', 120, locate('.textWrapper .streamingLabel').at(3));
     I.waitForElement({ nodeId: '6:0:7', state: state.EXECUTED }, executionTimer);
 
     __`Confirm execution outside component`;
@@ -63,7 +64,8 @@ Scenario('Streaming decorators', ({ I }) => {
     I.dontSeeElement({ nodeId: '6:0:8', decorator: decorator.STREAMABLE });
 });
 
-Scenario('Cancel execution inside component', async ({ I }) => {
+// FIXME NXT-713
+Scenario.skip('Cancel execution inside component', async ({ I }) => {
     executeAndCancelInsideComponent(I);
 
     __`Count does not change`;
@@ -77,7 +79,7 @@ Scenario('Cancel execution inside component', async ({ I }) => {
     I.seeElement({ nodeId: '6:0:8', state: state.CONFIGURED });
 });
 
-// Skipped because it breaks Knime AP.
+// FIXME NXT-650
 Scenario.skip('Cancel inside component and Execute', async ({ I }) => {
     executeAndCancelInsideComponent(I);
 
