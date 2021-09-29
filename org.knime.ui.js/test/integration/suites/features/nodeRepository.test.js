@@ -69,11 +69,11 @@ Scenario('Show more tags selection', ({ I }) => {
 });
 
 Scenario('Lazy loading Categories', ({ I }) => {
-    const scrolledHeight = 200;
+    const scrolledY = 400;
     I.seeElement('.panel > .container');
     I.dontSee('Analytics', '.category-title');
     I.dontSee('Statistics');
-    I.scroll('.panel > .container', scrolledHeight);
+    I.scroll('.panel > .container', scrolledY);
     I.see('Analytics', '.category-title');
     I.see('Statistics');
 });

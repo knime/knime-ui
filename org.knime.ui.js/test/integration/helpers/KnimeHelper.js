@@ -24,10 +24,14 @@ class KnimeHelper extends Helper {
     */
     async scroll(selector, value) {
         const page = await this._getPage();
-        await page.evaluate((selector, value) => {
-            const scrollableSection = document.querySelector(selector);
-            scrollableSection.scrollTop += value;
-        }, selector, value);
+        const elem = await page.$(selector);
+        const boundingBox = await elem.boundingBox();
+        // it centers mouse on the middle of the element
+        await page.mouse.move(
+            boundingBox.x + boundingBox.width / 2,
+            boundingBox.y + boundingBox.height / 2
+        );
+        page.mouse.wheel({ deltaY: value });
     }
 }
 
