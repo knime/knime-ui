@@ -231,6 +231,7 @@ export default {
         /**
          * @returns {object} the position of all inPorts and outPorts.
          * The position for each port is an array with two coordinates [x, y].
+         * Format as required by snapConnector mixin
          */
         portPositions() {
             return {
@@ -340,6 +341,7 @@ export default {
                 this.selectNode(this);
             }
         },
+        // implemented as required by snapConnector mixin
         isOutsideConnectorHoverRegion(x, y, targetPortDirection) {
             const upperBound = -20;
 

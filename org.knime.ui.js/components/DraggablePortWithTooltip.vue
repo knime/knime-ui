@@ -91,8 +91,7 @@ export default {
                             sourceNode,
                             sourcePort,
                             destNode,
-                            destPort,
-                            direction: this.direction
+                            destPort
                         },
                         bubbles: true
                     }

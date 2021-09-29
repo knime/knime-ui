@@ -5,15 +5,23 @@ import { mapActions } from 'vuex';
  *
  * Requires component to implement the following interface:
  *
- * Interface {
+ * Interface snapConnector {
  *   portPositions: {
  *      in?: Array<[x, y]>
  *      out?: Array<[x, y]>
  *   },
  *   position: {x, y},
- *   isOutsideConnectorHoverRegion: (mouseX, mouseY, 'in' | 'out') -> Boolean,
- *   id or containerId: String
+ *   isOutsideConnectorHoverRegion?: (mouseX, mouseY, 'in' | 'out') -> Boolean,
+ *   snapContainerId: String
  * }
+ *
+ * Requires component to listen to register the following event handlers
+ *
+ *   @connector-enter -> onConnectorEnter
+ *   @connector-leave -> onConnectorLeave
+ *   @connector-move  -> onConnectorMove
+ *   @connector-drop  -> onConnectorDrop
+ *
  */
 export const snapConnector = {
     data: () => ({
@@ -27,11 +35,14 @@ export const snapConnector = {
          * @returns {{
          *   in: (Array<Number> | undefined),
          *   out: (Array<Number> | undefined)
-         * }} List of bottom boundaries of partitions
+         * }} List of bottom boundaries of partitions.
+         * List is empty if only one port exists
+         * List is undefined if no port exists
          */
         snapPartitions() {
             let makePartitions = positions => {
-                if (!positions.length) { return null; }
+                // eslint-disable-next-line no-undefined
+                if (!positions.length) { return undefined; }
 
                 let partitions = [];
                 for (let i = 0; i < positions.length - 1; i++) {
@@ -57,10 +68,12 @@ export const snapConnector = {
         ...mapActions('workflow', ['connectNodes']),
         onConnectorEnter() {
             this.connectorHover = true;
+            consola.trace('connector-enter');
         },
         onConnectorLeave() {
             this.connectorHover = false;
             this.targetPort = null;
+            consola.trace('connector-leave');
         },
         onConnectorMove(e) {
             let { y: mouseY, x: mouseX, targetPortDirection } = e.detail;
@@ -114,14 +127,14 @@ export const snapConnector = {
             consola.trace(relativeY, targetPortDirection, snapPortIndex);
         },
         onConnectorDrop(e) {
-            if (!this.targetPort) {
+            if (isNaN(this.targetPort?.index)) {
                 // dropped on component, but no port is targeted
                 return;
             }
 
-            let { direction, destNode, destPort, sourceNode, sourcePort } = e.detail;
+            let { destNode, destPort, sourceNode, sourcePort } = e.detail;
 
-            if (direction === 'out') {
+            if (this.targetPort.side === 'in') {
                 this.connectNodes({
                     sourceNode,
                     sourcePort,
