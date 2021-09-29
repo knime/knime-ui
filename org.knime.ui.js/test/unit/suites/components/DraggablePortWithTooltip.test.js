@@ -82,7 +82,6 @@ describe('DraggablePortWithTooltip', () => {
     });
 
     describe('Drop Connector', () => {
-
         test('highlight drop target on hover', async () => {
             doShallowMount();
 

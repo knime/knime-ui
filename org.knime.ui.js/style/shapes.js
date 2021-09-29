@@ -16,6 +16,7 @@ export const nodeSelectionPadding = [37, 34, 6, 34];
 // Margins including 3 NodeActionButtons. If more that 3 Buttons are present,
 // the hover area is widened by Node.vue
 export const nodeHoverMargin = [47, 19, 8, 19];
+export const nodeHoverPortBottomMargin = 15;
 export const nodeIdMargin = 16;
 export const nodeActionBarButtonSpread = 25;
 

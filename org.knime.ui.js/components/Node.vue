@@ -205,27 +205,37 @@ export default {
          * @return {object} the size and position of the hover area of the node
          */
         hoverSize() {
-            let extraHorizontalSize = 0;
-            if (this.hover) {
-                // buttons are showed as disabled if false, hidden if null
-                if (typeof this.allowedActions.canOpenDialog === 'boolean') {
-                    extraHorizontalSize += this.$shapes.nodeActionBarButtonSpread;
-                }
-                if (typeof this.allowedActions.canOpenView === 'boolean') {
-                    extraHorizontalSize += this.$shapes.nodeActionBarButtonSpread;
-                }
-            }
-            let width = this.$shapes.nodeSize + extraHorizontalSize +
-                this.$shapes.nodeHoverMargin[1] + this.$shapes.nodeHoverMargin[3];
-            let height = this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[0] + this.$shapes.nodeHoverMargin[2];
-            let x = -this.$shapes.nodeHoverMargin[1] - extraHorizontalSize / 2;
-            let y = -this.$shapes.nodeHoverMargin[0];
+            let hoverBounds = {
+                top: -this.$shapes.nodeHoverMargin[0],
+                left: -this.$shapes.nodeHoverMargin[1],
+                bottom: this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[2],
+                right: this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[3]
+            };
 
+            if (this.hover) {
+                // buttons are shown as disabled if false, hidden if null
+
+                let extraHorizontalSpace = 0;
+                if ('canOpenDialog' in this.allowedActions) {
+                    extraHorizontalSpace += this.$shapes.nodeActionBarButtonSpread;
+                }
+                if ('canOpenView' in this.allowedActions) {
+                    extraHorizontalSpace += this.$shapes.nodeActionBarButtonSpread;
+                }
+                hoverBounds.left -= extraHorizontalSpace / 2;
+                hoverBounds.right += extraHorizontalSpace / 2;
+            }
+            if (this.connectorHover || this.hover) {
+                // enlargen hover area to include all ports
+                let newBottom = Math.max(hoverBounds.bottom, this.portBarHeight);
+                hoverBounds.bottom = newBottom;
+            }
+         
             return {
-                width,
-                height,
-                x,
-                y
+                y: hoverBounds.top,
+                x: hoverBounds.left,
+                width: hoverBounds.right - hoverBounds.left,
+                height: hoverBounds.bottom - hoverBounds.top
             };
         },
         /**
@@ -242,6 +252,13 @@ export default {
                     port => portShift(port.index, this.outPorts.length, this.kind === 'metanode', true)
                 )
             };
+        },
+        portBarHeight() {
+            let lastInPortY = this.portPositions.in[this.portPositions.in.length - 1]?.[1] || 0;
+            let lastOutPortY = this.portPositions.out[this.portPositions.out.length - 1]?.[1] || 0;
+          
+            return Math.max(lastInPortY, lastOutPortY) + this.$shapes.portSize / 2 +
+                this.$shapes.nodeHoverPortBottomMargin;
         }
     },
     methods: {
