@@ -34,15 +34,6 @@ export default {
                 return `More "${this.category.tag}" nodes`;
             }
             return 'Show more...';
-        }
-    },
-    methods: {
-        selectMoreNodes() {
-            if (this.category.tag) {
-                this.$store.dispatch('nodeRepository/selectTag', this.category.tag);
-            } else {
-                this.$store.dispatch('nodeRepository/searchNodesNextPage', true);
-            }
         },
         hasMoreNodes() {
             if (this.category.tag) {
@@ -51,8 +42,17 @@ export default {
                 return this.category.nodes?.length < this.totalNumNodes;
             }
         }
-    }
 
+    },
+    methods: {
+        selectMoreNodes() {
+            if (this.category.tag) {
+                this.$store.dispatch('nodeRepository/selectTag', this.category.tag);
+            } else {
+                this.$store.dispatch('nodeRepository/searchNodesNextPage', true);
+            }
+        }
+    }
 };
 </script>
 
@@ -83,7 +83,7 @@ export default {
         </li>
       </ul>
       <Button
-        v-if="hasMoreNodes()"
+        v-if="hasMoreNodes"
         compact
         with-border
         class="show-more"
@@ -103,9 +103,7 @@ export default {
 
   & .category-title {
     border: 1px solid var(--knime-dove-gray);
-    margin-right: 5px;
-    margin-bottom: 13px;
-    margin-top: 13px;
+    margin: 13px 5px 13px 0;
     padding: 4px 6px;
     line-height: 15px;
     display: inline-block;
@@ -167,6 +165,7 @@ export default {
       }
     }
   }
+  
   & .show-more {
     color: var(--knime-masala);
     font-weight: 400;

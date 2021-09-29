@@ -39,6 +39,13 @@ export default {
             if (this.activeTab === 'nodeRepository') {
                 this.$emit('scroll-node-repo');
             }
+        }, SCROLL_HANDLER_THROTTLE),
+        onWheel: throttle(function () {
+            if (this.activeTab === 'nodeRepository') {
+                if (this.$refs.scroller.scrollHeight <= this.$refs.scroller.getBoundingClientRect().height) {
+                    this.$emit('scroll-node-repo');
+                }
+            }
         }, SCROLL_HANDLER_THROTTLE)
     }
 };
@@ -51,6 +58,7 @@ export default {
       class="container"
       :style="{ width: expanded ? width : 0 }"
       @scroll="onScroll"
+      @wheel="onWheel"
     >
       <div :style="{ width }">
         <slot />
