@@ -9,13 +9,23 @@ import rpc from './json-rpc-adapter.js';
  * @param {Boolean} cfg.fullTemplateInfo - if the results should contain all node info (incl. img data).
  * @returns {Object} the node repository selection results.
  */
-export const selection = ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => rpc(
-    'NodeRepositoryService.selectNodes',
-    numNodesPerTag,
-    tagsOffset,
-    tagsLimit,
-    fullTemplateInfo
-);
+export const selection = ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => {
+    try {
+        const categories = rpc(
+            'NodeRepositoryService.selectNodes',
+            numNodesPerTag,
+            tagsOffset,
+            tagsLimit,
+            fullTemplateInfo
+        );
+        consola.debug('Loaded categories', categories);
+
+        return Promise.resolve(categories);
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error(`Couldn't select nodes per categories`));
+    }
+};
 
 /**
  * Search the node repository via RPC.
