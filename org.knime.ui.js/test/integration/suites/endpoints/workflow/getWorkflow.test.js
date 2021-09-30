@@ -6,11 +6,12 @@ Before(({ I }) => {
     __`Before each:`;
     I.loadWorkflow('test-getWorkflow');
 
+    I.selectZoom('fit');
     I.seeElement({ nodeId: 3, state: state.IDLE });
     I.seeElement({ nodeId: 6 });
 });
 
-Scenario('Open a component', ({ I }) => {
+Scenario('Open a component.', ({ I }) => {
     I.doubleClickNodeWithCtrl({ nodeId: 3 });
     I.see('Output ports', `${metadata} .outports`);
     I.see('TestData', `${metadata} .outports`);
@@ -32,8 +33,7 @@ Scenario('Navigate back via breadcrumb. 1 Deep', ({ I }) => {
     I.seeElement({ nodeId: 3 });
 });
 
-// FIXME NXT-705
-Scenario.skip('Navigate back via breadcrumb. 2 Deep', ({ I }) => {
+Scenario('Navigate back via breadcrumb. 2 Deep', ({ I }) => {
     __`Open Component and Metanode`;
     openComponentAndMetanode(I);
 
@@ -71,12 +71,15 @@ Scenario('Navigate back via breadcrumb. 2 to Home to 1', ({ I }) => {
 });
 
 const backToHome = (I) => {
+    I.selectZoom('fit');
     I.click({ breadcrumbChild: 1 });
     I.seeElement(metadata);
     I.seeElement({ nodeId: 3 });
 };
 
 const openComponentAndMetanode = (I) => {
+    I.selectZoom('fit');
     I.doubleClickNodeWithCtrl({ nodeId: 3 });
+    I.selectZoom('fit');
     I.doubleClickNode({ nodeId: '3:0:6' });
 };

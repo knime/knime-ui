@@ -28,7 +28,7 @@ Scenario.skip('Name / Type', ({ I }) => {
 });
 
 // FIXME NXT-711
-Scenario.skip('Optional @focus', ({ I }) => {
+Scenario.skip('Optional', ({ I }) => {
     __`Optional`;
     I.seeAttributesOnElements('[data-node-id="root:209"] > g > g > g:nth-child(3) > polygon', { fill: 'transparent' });
 });
