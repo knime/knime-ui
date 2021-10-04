@@ -138,7 +138,7 @@ export default {
       & .node {
         width: 100px;
         height: 75px;
-        margin: 0 5px;
+        margin: 0 2px;
         padding-bottom: 42px;
         position: relative;
         display: flex;

@@ -1,7 +1,7 @@
 import rpc from './json-rpc-adapter.js';
 
 /**
- * Get repository nodes per category via RPC.
+ * Get repository nodes grouped by tags via RPC.
  *
  * @param {Number} cfg.numNodesPerTag - The number of nodes per tag to be returned.
  * @param {Number} cfg.tagsOffset - The number of tags to be skipped (for pagination).
@@ -9,18 +9,18 @@ import rpc from './json-rpc-adapter.js';
  * @param {Boolean} cfg.fullTemplateInfo - if the results should contain all node info (incl. img data).
  * @returns {Object} the node repository selection results.
  */
-export const selection = ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => {
+export const getNodesGroupedByTags = ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => {
     try {
-        const categories = rpc(
+        const groupedNodes = rpc(
             'NodeRepositoryService.selectNodes',
             numNodesPerTag,
             tagsOffset,
             tagsLimit,
             fullTemplateInfo
         );
-        consola.debug('Loaded categories', categories);
+        consola.debug('Loaded nodes', groupedNodes);
 
-        return Promise.resolve(categories);
+        return Promise.resolve(groupedNodes);
     } catch (e) {
         consola.error(e);
         return Promise.reject(new Error(`Couldn't select nodes per categories`));

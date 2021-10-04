@@ -1,4 +1,4 @@
-import { searchNodes, selection } from '~api';
+import { searchNodes, getNodesGroupedByTags } from '~api';
 
 // TODO: NXT-65 add node category support
 // TODO: NXT-115 add node search support
@@ -9,6 +9,7 @@ import { searchNodes, selection } from '~api';
 
 const nodeSearchPageSize = 21;
 const categoryPageSize = 3;
+const firstLoadOffset = 6;
 
 export const state = () => ({
     nodesPerCategory: [],
@@ -18,21 +19,25 @@ export const state = () => ({
     tags: [],
     query: '',
     nodeSearchPage: 0,
-    categoryPage: 0
+    categoryPage: 0,
+    firstCategoryLoad: 0,
+    scrollPosition: 0
 });
 
 export const actions = {
-    async getAllNodes({ dispatch, commit, state }, append) {
+    async getAllNodes({ commit, state }, append) {
+        let tagsOffset = append ? firstLoadOffset + state.categoryPage * categoryPageSize : 0;
+        let tagsLimit = append ? categoryPageSize : firstLoadOffset;
         if (append) {
             commit('setCategoryPage', state.categoryPage + 1);
         } else {
             commit('setCategoryPage', 0);
         }
         commit('setNodeSearchPage', 0);
-        let res = await selection({
+        let res = await getNodesGroupedByTags({
             numNodesPerTag: 6,
-            tagsOffset: state.categoryPage * categoryPageSize,
-            tagsLimit: categoryPageSize,
+            tagsOffset,
+            tagsLimit,
             fullTemplateInfo: true
         });
         if (append) {
@@ -170,5 +175,11 @@ export const mutations = {
     },
     addNodesPerCategories(state, groupedNodes) {
         state.nodesPerCategory = state.nodesPerCategory.concat(groupedNodes);
+    },
+    setScrollPosition(state, value) {
+        state.scrollPosition = value;
+    },
+    increaseFirstCategoryLoad(state) {
+        state.firstCategoryLoad += 1;
     }
 };

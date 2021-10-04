@@ -5,13 +5,15 @@ import TagList from '~/webapps-common/ui/components/TagList';
 import Button from '~/webapps-common/ui/components/Button';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
+import ScrollViewContainer from '~/components/ScrollViewContainer';
 
 export default {
     components: {
         TagList,
         Button,
         CloseIcon,
-        NodeRepositoryCategory
+        NodeRepositoryCategory,
+        ScrollViewContainer
     },
     computed: {
         ...mapState('nodeRepository', [
@@ -19,7 +21,8 @@ export default {
             'totalNumNodes',
             'selectedTags',
             'tags',
-            'nodesPerCategory'
+            'nodesPerCategory',
+            'scrollPosition'
         ]),
         categoriesDisplayed() {
             if (this.selectedTags.length > 0) {
@@ -31,23 +34,10 @@ export default {
             return this.nodesPerCategory;
         }
     },
-    created() {
-        this.$parent.$on('scroll-node-repo', () => {
-            const categoriesView = this.$refs.repo;
-            if (categoriesView) {
-                let scroller = this.$parent.$refs.scroller;
-                const scrollPos = scroller.scrollTop;
-                const viewHeight = categoriesView.getBoundingClientRect().height;
-                const viewScreen = scroller.getBoundingClientRect().height;
-
-                if (viewHeight - scrollPos - viewScreen <= 0) {
-                    this.$store.dispatch('nodeRepository/getAllNodes', true);
-                }
-            }
-        });
-    },
     mounted() {
-        this.$store.dispatch('nodeRepository/getAllNodes', false);
+        if (!this.nodesPerCategory.length) {
+            this.$store.dispatch('nodeRepository/getAllNodes', false);
+        }
     },
     methods: {
         loadMoreNodes() {
@@ -61,72 +51,81 @@ export default {
         },
         clearSelectedTags() {
             this.$store.dispatch('nodeRepository/clearSelectedTags');
+        },
+        categoriesLazyLoad() {
+            this.$store.dispatch('nodeRepository/getAllNodes', true);
+        },
+        updateScrollPosition(position) {
+            this.$store.commit('nodeRepository/setScrollPosition', position);
         }
     }
 };
 </script>
 
 <template>
-  <div
-    ref="repo"
-    class="repo"
+  <ScrollViewContainer
+    :initial-position="scrollPosition"
+    @scroll-bottom="categoriesLazyLoad"
+    @save-position="updateScrollPosition"
   >
-    <h4>Repository</h4>
-    <span class="break" />
-    <template v-if="selectedTags.length">
-      <div class="tags">
-        <TagList
-          :tags="tags.filter((t) => !selectedTags.includes(t))"
-          clickable
-          @click="selectTag"
-        />
-      </div>
-      <span class="break full" />
-    </template>
-
-    <div
-      v-if="selectedTags.length"
-      class="node-section"
-    >
-      <div class="filter-tags">
-        Filter
-        <Button
-          compact
-          class="clear-button"
-          @click="clearSelectedTags"
-        >
-          Clear
-          <CloseIcon />
-        </Button>
-        <TagList
-          class="tag-list"
-          :tags="selectedTags"
-          clickable
-          @click="deselectTag"
-        >
-          <CloseIcon slot="icon" />
-        </TagList>
-      </div>
-    </div>
-    <div class="node-section">
-      <template v-for="(category, ind) in categoriesDisplayed">
-        <NodeRepositoryCategory
-          :key="`tag-${ind}`"
-          :category="category"
-        />
-        <span
-          :key="ind"
-          class="break full"
-        />
+    <div class="repo">
+      <h4>Repository</h4>
+      <span class="break" />
+      <template v-if="selectedTags.length">
+        <div class="tags">
+          <TagList
+            :tags="tags.filter((t) => !selectedTags.includes(t))"
+            clickable
+            @click="selectTag"
+          />
+        </div>
+        <span class="break full" />
       </template>
+
+      <div
+        v-if="selectedTags.length"
+        class="node-section"
+      >
+        <div class="filter-tags">
+          Filter
+          <Button
+            compact
+            class="clear-button"
+            @click="clearSelectedTags"
+          >
+            Clear
+            <CloseIcon />
+          </Button>
+          <TagList
+            class="tag-list"
+            :tags="selectedTags"
+            clickable
+            @click="deselectTag"
+          >
+            <CloseIcon slot="icon" />
+          </TagList>
+        </div>
+      </div>
+      <div class="node-section">
+        <template v-for="(category, ind) in categoriesDisplayed">
+          <NodeRepositoryCategory
+            :key="`tag-${ind}`"
+            :category="category"
+          />
+          <span
+            :key="ind"
+            class="break full"
+          />
+        </template>
+      </div>
     </div>
-  </div>
+  </ScrollViewContainer>
 </template>
 
 <style lang="postcss" scoped>
 .repo {
-  margin: 15px 20px;
   font-family: "Roboto Condensed", sans-serif;
+  padding: 15px 20px;
 
   & h4 {
     font-size: 18px;
