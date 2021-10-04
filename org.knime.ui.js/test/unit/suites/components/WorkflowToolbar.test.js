@@ -6,6 +6,7 @@ import Vuex from 'vuex';
 import WorkflowToolbar from '~/components/WorkflowToolbar';
 import ToolbarButton from '~/components/ToolbarButton';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
+import ZoomMenu from '~/components/ZoomMenu';
 import * as userActionStoreConfig from '~/store/userActions';
 
 jest.mock('~api', () => { }, { virtual: true });
@@ -198,7 +199,21 @@ describe('WorkflowToolbar.vue', () => {
         });
     });
 
+    describe('zoom', () => {
+        it('hides ZoomMenu if no workflow is open', () => {
+            storeConfig.workflow.state.activeWorkflow = null;
+            doShallowMount();
+            expect(wrapper.findComponent(ZoomMenu).exists()).toBe(false);
+        });
+    });
+
     describe('breadcrumb', () => {
+        it('hides breadcrumb if no workflow is open', () => {
+            storeConfig.workflow.state.activeWorkflow = null;
+            doShallowMount();
+            expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(false);
+        });
+
         it('hides breadcrumb by default', () => {
             doShallowMount();
             expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(false);

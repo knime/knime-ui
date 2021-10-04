@@ -174,7 +174,7 @@ stage('Integration Tests') {
             } finally {
                 notifications.notifyBuild(currentBuild.result);
                 archiveArtifacts allowEmptyArchive: true,
-                    artifacts: '''org.knime.ui.js/test/integration/assets/workflows/.metadata/.log'''
+                    artifacts: '''org.knime.ui.js/test/integration/assets/workflows/.metadata/.log, org.knime.ui.js/test/integration/reports/*.xml, org.knime.ui.js/test/integration/output/*.png'''
             }
         }
     }

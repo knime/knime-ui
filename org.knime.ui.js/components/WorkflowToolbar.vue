@@ -17,7 +17,7 @@ export default {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapGetters('userActions', ['mainMenuActionItems']),
         hasBreadcrumb() {
-            return this.workflow.parents?.length > 0;
+            return this.workflow?.parents?.length > 0;
         },
         visibleActionItems() {
             return this.mainMenuActionItems;
@@ -47,7 +47,10 @@ export default {
       class="breadcrumb"
     />
 
-    <ZoomMenu class="zoommenu" />
+    <ZoomMenu
+      v-if="workflow"
+      class="zoommenu"
+    />
   </div>
 </template>
 

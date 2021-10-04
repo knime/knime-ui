@@ -106,18 +106,48 @@ Then, you can run the tests via
 ```
 npm run test:integration
 ```
-To run a single test add the filename without path, e.g.:
+To run a single test add the tag as second argument.
+
+You can find tags on any \*.test.js file as `Feature('Delete command').tag('@endpoints-@workflow-@command-@deleteCommand');`.
+
+```sh
+# Only runs the deleteCommand file.
+npm run test:integration @deleteCommand
 ```
-npm run test:integration navigateThroughWorkflow.test.js
+
+```sh
+# Runs every test inside the workflow directory.
+npm run test:integration @workflow
 ```
+
+You can find tags on any *.test.js file as `Feature('Delete command').tag('@endpoints-@workflow-@command-@deleteCommand');`.
 
 ### Running security audit
 
-npm provides a check against known security issues of used dependencies. Run it by calling
+npm provides a check against known security issues of used dependencies. In most cases it is sufficient to only check
+dependencies that are used in production. Run it by calling
 
 ```sh
-npm audit
+npm audit --production
 ```
+
+In some cases security issues can not be addressed right away or do not pose a direct threat (e.g. build dependencies
+of nuxt). To deal with these run
+
+```sh
+npx resolve-audit --production
+```
+
+The tool will present you with a few choices regarding every security issue, which you can choose from. Most of the
+time it is sufficient to ignore issues for a certain amount of time (e.g. press `i` to ignore and then `M` for one
+month). This will create a `audit-resolve.json` with the security exceptions that needs to be checked in. To test if
+there is going to be security audit problems on our build system, call
+
+```sh
+npm run audit
+```
+
+which takes the exceptions into account.
 
 ## Build production version
 
