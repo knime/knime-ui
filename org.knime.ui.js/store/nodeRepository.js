@@ -20,7 +20,6 @@ export const state = () => ({
     query: '',
     nodeSearchPage: 0,
     categoryPage: 0,
-    firstCategoryLoad: 0,
     scrollPosition: 0
 });
 
@@ -178,8 +177,5 @@ export const mutations = {
     },
     setScrollPosition(state, value) {
         state.scrollPosition = value;
-    },
-    increaseFirstCategoryLoad(state) {
-        state.firstCategoryLoad += 1;
     }
 };

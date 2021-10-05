@@ -29,7 +29,7 @@ describe('WorkflowMetadata.vue', () => {
 
         // don't show content containers
         expect(wrapper.findComponent(LinkList).exists()).toBe(false);
-        expect(wrapper.find(TagList).exists()).toBe(false);
+        expect(wrapper.findComponent(TagList).exists()).toBe(false);
         expect(wrapper.findComponent(NodeFeatureList).exists()).toBe(false);
         expect(wrapper.findComponent(NodePreview).exists()).toBe(false);
     });

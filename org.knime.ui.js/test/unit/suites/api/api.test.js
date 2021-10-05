@@ -109,10 +109,10 @@ describe('API', () => {
             });
         });
 
-        describe('selection', () => {
+        describe('getNodesGroupedByTags', () => {
             it('calls jsonrpc', async () => {
                 const NODES_LIMIT = 6;
-                await api.selection({
+                await api.getNodesGroupedByTags({
                     numNodesPerTag: NODES_LIMIT,
                     tagsOffset: 0,
                     tagsLimit: 2,

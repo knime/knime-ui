@@ -64,14 +64,27 @@ describe('NodeRepository', () => {
         };
     });
 
-    it('Renders', () => {
-        $store.state.nodeRepository.selectedTags = [];
-        doShallowMount();
-        expect(wrapper.find('h4').text()).toBe('Repository');
-        expect(getAllNodesMock).toHaveBeenCalled();
-        expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
-        expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(true);
+    describe('Renders', () => {
+        it('renders empty Node Repository view and fetch first grouped nodes ', () => {
+            $store.state.nodeRepository.selectedTags = [];
+            $store.state.nodeRepository.nodesPerCategory = [];
+            doShallowMount();
+            expect(wrapper.find('h4').text()).toBe('Repository');
+            expect(getAllNodesMock).toHaveBeenCalled();
+            expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(false);
+        });
+
+        it('renders first grouped nodes ', () => {
+            $store.state.nodeRepository.selectedTags = [];
+            doShallowMount();
+            expect(wrapper.find('h4').text()).toBe('Repository');
+            expect(getAllNodesMock).not.toHaveBeenCalled();
+            expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(true);
+        });
     });
+    
 
     describe('Tags', () => {
         it('renders the two TagList when there is at least one selected tag', () => {
