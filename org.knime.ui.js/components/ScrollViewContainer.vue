@@ -16,9 +16,11 @@ export default {
         };
     },
     mounted() {
-        this.$nextTick(() => {
-            this.$refs.scroller.scrollTop = this.initialPosition;
-        });
+        if (this.$refs.scroller) {
+            this.$nextTick(() => {
+                this.$refs.scroller.scrollTop = this.initialPosition;
+            });
+        }
     },
     beforeDestroy() {
         this.$emit('save-position', this.scrollPosition);

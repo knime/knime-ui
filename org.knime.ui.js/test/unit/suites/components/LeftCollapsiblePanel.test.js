@@ -1,4 +1,4 @@
-import { shallowMount, createLocalVue, createWrapper } from '@vue/test-utils';
+import { shallowMount, createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vue from 'vue';
 import vuex from 'vuex';
@@ -77,15 +77,6 @@ describe('LeftCollapsiblePanel.vue', () => {
             wrapper.find('button').trigger('click');
             await Vue.nextTick();
             expect(wrapper.find('.container').attributes().style).toBe('width: 200px;');
-        });
-    });
-
-    describe('scroll', () => {
-        it('scroll detection', () => {
-            $store.state.panel.activeTab = 'nodeRepository';
-            wrapper.find('.container').trigger('scroll');
-            const rootWrapper = createWrapper(wrapper.vm.$root);
-            expect(rootWrapper.emitted('scroll-node-repo'));
         });
     });
 });

@@ -1,7 +1,5 @@
 import { searchNodes, getNodesGroupedByTags } from '~api';
 
-// TODO: NXT-65 add node category support
-// TODO: NXT-115 add node search support
 
 /**
  * Store that manages node repository state.

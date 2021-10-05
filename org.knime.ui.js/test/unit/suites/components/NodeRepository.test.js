@@ -5,10 +5,11 @@ import Vuex from 'vuex';
 import NodeRepository from '~/components/NodeRepository';
 import TagList from '~/webapps-common/ui/components/TagList';
 import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
+import ScrollViewContainer from '~/components/ScrollViewContainer';
 
 describe('NodeRepository', () => {
     let mocks, doShallowMount, wrapper, $store, searchNodesMock, searchNodesNextPageMock,
-        selectTagMock, deselectTagMock, getAllNodesMock, clearSelectedTagsMock;
+        selectTagMock, deselectTagMock, getAllNodesMock, clearSelectedTagsMock, setScrollPositionMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -23,6 +24,7 @@ describe('NodeRepository', () => {
         deselectTagMock = jest.fn();
         getAllNodesMock = jest.fn();
         clearSelectedTagsMock = jest.fn();
+        setScrollPositionMock = jest.fn();
 
         $store = mockVuexStore({
             nodeRepository: {
@@ -46,7 +48,8 @@ describe('NodeRepository', () => {
                     }],
                     totalNumNodes: 2,
                     selectedTags: ['myTag2'],
-                    tags: ['myTag1', 'myTag2']
+                    tags: ['myTag1', 'myTag2'],
+                    scrollPosition: 100
                 },
                 actions: {
                     searchNodes: searchNodesMock,
@@ -55,6 +58,9 @@ describe('NodeRepository', () => {
                     deselectTag: deselectTagMock,
                     getAllNodes: getAllNodesMock,
                     clearSelectedTags: clearSelectedTagsMock
+                },
+                mutations: {
+                    setScrollPosition: setScrollPositionMock
                 }
             }
         });
@@ -71,6 +77,7 @@ describe('NodeRepository', () => {
             doShallowMount();
             expect(wrapper.find('h4').text()).toBe('Repository');
             expect(getAllNodesMock).toHaveBeenCalled();
+            expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(true);
             expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
             expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(false);
         });
@@ -117,6 +124,23 @@ describe('NodeRepository', () => {
             doShallowMount();
             wrapper.findAllComponents(TagList).at(1).vm.$emit('click', 'myTag3');
             expect(deselectTagMock).toHaveBeenCalledWith(expect.anything(), 'myTag3');
+        });
+    });
+
+    describe('On events calls', () => {
+        test('Save position emit must save scroll position ', () => {
+            const newScrollPosition = 200;
+            doShallowMount();
+            const scroller = wrapper.findComponent(ScrollViewContainer);
+            scroller.vm.$emit('save-position', newScrollPosition);
+            expect(setScrollPositionMock).toHaveBeenCalledWith(expect.anything(), newScrollPosition);
+        });
+
+        test('Scroll bottom emit must load new categories ', () => {
+            doShallowMount();
+            const scroller = wrapper.findComponent(ScrollViewContainer);
+            scroller.vm.$emit('scroll-bottom');
+            expect(getAllNodesMock).toHaveBeenCalledWith(expect.anything(), true);
         });
     });
 });

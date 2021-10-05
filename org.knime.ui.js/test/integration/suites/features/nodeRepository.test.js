@@ -30,7 +30,7 @@ Scenario('Show more nodes of an specific Category using Category title button', 
 });
 
 Scenario('User compound (and) filter', ({ I }) => {
-    const READ_TAG_SELECTOR = '#left-panel > div > div > div > div.tags > div > span:nth-child(4)';
+    const READ_TAG_SELECTOR = '#left-panel > div > div > div > div > div.tags > div > span:nth-child(4)';
     I.see('Table Creator');
     I.click('More "IO" nodes');
     I.see('ARFF Reader');
@@ -50,7 +50,7 @@ Scenario('Clear tag selection using Clear Button', ({ I }) => {
 });
 
 Scenario('Clear tag selection using deselect tag', ({ I }) => {
-    const SELECTED_TAG_SELECTOR = '#left-panel > div > div > div > div:nth-child(5) > div > div > span';
+    const SELECTED_TAG_SELECTOR = '#left-panel > div > div >div > div > div:nth-child(5) > div > div > span';
     I.see('Table Creator');
     I.see('Row Filter');
     I.click('More "IO" nodes');
@@ -69,11 +69,12 @@ Scenario('Show more tags selection', ({ I }) => {
 });
 
 Scenario('Lazy loading Categories', ({ I }) => {
-    const scrolledY = 400;
-    I.seeElement('.panel > .container');
-    I.dontSee('Analytics', '.category-title');
-    I.dontSee('Statistics');
-    I.scroll('.panel > .container', scrolledY);
-    I.see('Analytics', '.category-title');
-    I.see('Statistics');
+    const scrolledY = 1000;
+    const scrollerSelector = '#left-panel > div > div > div ';
+    I.seeElement(scrollerSelector);
+    I.dontSee('Structured Data', '.category-title');
+    I.dontSee('XPath');
+    I.scroll(scrollerSelector, scrolledY);
+    I.see('Structured Data', '.category-title');
+    I.see('XPath');
 });

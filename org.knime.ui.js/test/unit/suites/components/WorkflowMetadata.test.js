@@ -1,6 +1,7 @@
 import { shallowMount, mount } from '@vue/test-utils';
 
 import WorkflowMetadata from '~/components/WorkflowMetadata';
+import ScrollViewContainer from '~/components/ScrollViewContainer';
 import LinkList from '~/webapps-common/ui/components/LinkList';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
@@ -19,6 +20,7 @@ describe('WorkflowMetadata.vue', () => {
         expect(wrapper.find('.last-updated').exists()).toBe(true);
         expect(wrapper.find('.external-resources').exists()).toBe(true);
         expect(wrapper.find('.tags').exists()).toBe(true);
+        expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(true);
 
         // show placeholder tags
         expect(wrapper.text()).toMatch('No title has been set yet');
