@@ -171,6 +171,10 @@ export default {
     font-weight: 400;
     margin: 0 auto 10px;
     display: block;
+
+    &:active {
+      background-color: var(--knime-black)
+    }
   }
 }
 </style>
