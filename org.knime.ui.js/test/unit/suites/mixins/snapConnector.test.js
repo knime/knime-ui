@@ -99,8 +99,8 @@ describe('Snap Connector Mixin', () => {
             doMount();
 
             expect(wrapper.vm.snapPartitions).toStrictEqual({
-                in: undefined,
-                out: undefined
+                in: null,
+                out: null
             });
         });
 

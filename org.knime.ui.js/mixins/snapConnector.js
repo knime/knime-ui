@@ -15,7 +15,7 @@ import { mapActions } from 'vuex';
  *   snapContainerId: String
  * }
  *
- * Requires component to listen to register the following event handlers
+ * Requires component to register the following event handlers
  *
  *   @connector-enter -> onConnectorEnter
  *   @connector-leave -> onConnectorLeave
@@ -41,8 +41,7 @@ export const snapConnector = {
          */
         snapPartitions() {
             let makePartitions = positions => {
-                // eslint-disable-next-line no-undefined
-                if (!positions.length) { return undefined; }
+                if (!positions.length) { return null; }
 
                 let partitions = [];
                 for (let i = 0; i < positions.length - 1; i++) {
