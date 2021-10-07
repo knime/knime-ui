@@ -2,7 +2,7 @@ import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 
-const selectNodesResponse = {
+const getNodesGroupedByTagsResponse = {
     selections: [{
         nodes: [
             {
@@ -50,21 +50,21 @@ const searchNodesResponse = {
 };
 
 describe('nodeRepository store', () => {
-    let store, localVue, searchNodesMock, selectionMock, commitSpy, dispatchSpy;
+    let store, localVue, searchNodesMock, getNodesGroupedByTagsMock, commitSpy, dispatchSpy;
 
     beforeAll(() => {
         localVue = createLocalVue();
         localVue.use(Vuex);
 
         searchNodesMock = jest.fn().mockReturnValue(searchNodesResponse);
-        selectionMock = jest.fn().mockReturnValue(selectNodesResponse);
+        getNodesGroupedByTagsMock = jest.fn().mockReturnValue(getNodesGroupedByTagsResponse);
     });
 
     beforeEach(async () => {
         jest.doMock('~api', () => ({
             __esModule: true,
             searchNodes: searchNodesMock,
-            selection: selectionMock
+            getNodesGroupedByTags: getNodesGroupedByTagsMock
         }), { virtual: true });
 
         store = mockVuexStore({
@@ -83,7 +83,8 @@ describe('nodeRepository store', () => {
             tags: [],
             query: '',
             nodeSearchPage: 0,
-            categoryPage: 0
+            categoryPage: 0,
+            scrollPosition: 0
         });
     });
 
@@ -191,18 +192,33 @@ describe('nodeRepository store', () => {
     });
 
     describe('actions', () => {
-        it('select all nodes', async () => {
+        it('select all nodes without append and with a bigger tagsLimits', async () => {
             await store.dispatch('nodeRepository/getAllNodes', false);
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setCategoryPage', 0, undefined);
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
-            expect(selectionMock).toHaveBeenCalledWith({
+            expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
                 numNodesPerTag: 6,
                 tagsOffset: 0,
+                tagsLimit: 6,
+                fullTemplateInfo: true
+            });
+            expect(commitSpy).toHaveBeenCalledWith(
+                'nodeRepository/setNodesPerCategories', getNodesGroupedByTagsResponse.selections, undefined
+            );
+        });
+
+        it('select all nodes', async () => {
+            await store.dispatch('nodeRepository/getAllNodes', true);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setCategoryPage', 1, undefined);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
+            expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
+                numNodesPerTag: 6,
+                tagsOffset: 6,
                 tagsLimit: 3,
                 fullTemplateInfo: true
             });
             expect(commitSpy).toHaveBeenCalledWith(
-                'nodeRepository/setNodesPerCategories', selectNodesResponse.selections, undefined
+                'nodeRepository/addNodesPerCategories', getNodesGroupedByTagsResponse.selections, undefined
             );
         });
 

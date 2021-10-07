@@ -1,9 +1,7 @@
 <script>
 import { mapState } from 'vuex';
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
-import { throttle } from 'lodash';
 
-const SCROLL_HANDLER_THROTTLE = 500;
 
 export default {
     components: {
@@ -33,20 +31,7 @@ export default {
     methods: {
         toggleExpanded() {
             this.$store.dispatch('panel/toggleExpanded');
-        },
-        onScroll: throttle(function () {
-            /* eslint-disable no-invalid-this */
-            if (this.activeTab === 'nodeRepository') {
-                this.$emit('scroll-node-repo');
-            }
-        }, SCROLL_HANDLER_THROTTLE),
-        onWheel: throttle(function () {
-            if (this.activeTab === 'nodeRepository') {
-                if (this.$refs.scroller.scrollHeight <= this.$refs.scroller.getBoundingClientRect().height) {
-                    this.$emit('scroll-node-repo');
-                }
-            }
-        }, SCROLL_HANDLER_THROTTLE)
+        }
     }
 };
 </script>
@@ -54,16 +39,17 @@ export default {
 <template>
   <div class="panel">
     <div
-      ref="scroller"
       class="container"
       :style="{ width: expanded ? width : 0 }"
-      @scroll="onScroll"
-      @wheel="onWheel"
     >
-      <div :style="{ width }">
+      <div
+        class="hidden-content"
+        :style="{ width }"
+      >
         <slot />
       </div>
     </div>
+
     <button
       :title="expanded ? null : title"
       @click="toggleExpanded"
@@ -77,7 +63,6 @@ export default {
 .panel {
   display: flex;
   height: 100%;
-  overflow-y: auto;
 }
 
 .container {
@@ -85,6 +70,10 @@ export default {
   overflow-x: hidden;
   transition: width 0.3s ease;
   display: flex;
+}
+
+.hidden-content {
+  height: 100%;
 }
 
 button {

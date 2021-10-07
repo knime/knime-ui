@@ -9,8 +9,7 @@ Before(({ I }) => {
     I.seeElement({ nodeId: 6, state: state.CONFIGURED });
 });
 
-// FIXME NXT-712
-Scenario.skip('Streaming execution', async ({ I }) => {
+Scenario('Streaming execution', async ({ I }) => {
     __`Execute Stream`;
     I.click({ action: action.EXECUTE_ALL });
     I.doubleClickNodeWithCtrl({ nodeId: 6 });
@@ -24,7 +23,7 @@ Scenario.skip('Streaming execution', async ({ I }) => {
 
     __`Confirm execution inside component`;
     // eslint-disable-next-line no-magic-numbers
-    I.waitForText('4,000,000', 120, locate('.textWrapper .streamingLabel').at(3));
+    I.waitForText('4.000.000', 120, locate('.textWrapper .streamingLabel').at(3));
     I.waitForElement({ nodeId: '6:0:7', state: state.EXECUTED }, executionTimer);
 
     __`Confirm execution outside component`;

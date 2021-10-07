@@ -138,7 +138,7 @@ export default {
       & .node {
         width: 100px;
         height: 75px;
-        margin: 0 5px;
+        margin: 0 2px;
         padding-bottom: 42px;
         position: relative;
         display: flex;
@@ -165,12 +165,16 @@ export default {
       }
     }
   }
-  
+
   & .show-more {
     color: var(--knime-masala);
     font-weight: 400;
     margin: 0 auto 10px;
     display: block;
+
+    &:active {
+      background-color: var(--knime-black);
+    }
   }
 }
 </style>

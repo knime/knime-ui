@@ -27,8 +27,7 @@ Scenario.skip('Name / Type', ({ I }) => {
     I.see('Type: Data', '.port-type');
 });
 
-// FIXME NXT-711
-Scenario.skip('Optional @focus', ({ I }) => {
+Scenario('Optional port', ({ I }) => {
     __`Optional`;
-    I.seeAttributesOnElements('[data-node-id="root:209"] > g > g > g:nth-child(3) > polygon', { fill: 'transparent' });
+    I.seeAttributesOnElements('[data-node-id="root:209"] > g > g > g:nth-child(3) > g > polygon', { fill: 'transparent' });
 });

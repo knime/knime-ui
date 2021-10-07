@@ -95,19 +95,21 @@ Scenario('Single node - ContextMenu', ({ I }) => {
     I.seeElement({ nodeId: 3, state: state.CONFIGURED });
 });
 
-// FIXME NXT-709
-Scenario.skip('Multiple nodes - Shortcut', ({ I }) => {
+Scenario('Multiple nodes - Shortcut', ({ I }) => {
     __`Execute node`;
+    I.selectZoom('fit');
     Trigger.shortcut.executeMultipleNodes({ nodeId: 3 }, { nodeId: 5 });
     I.seeElement({ nodeId: 3, state: state.EXECUTING_CIRCLE });
     I.seeElement({ nodeId: 5, state: state.EXECUTING_CIRCLE });
 
     __`Cancel node`;
+    I.selectZoom('fit');
     Trigger.shortcut.cancelMultipleNodes({ nodeId: 3 }, { nodeId: 5 });
     I.seeElement({ nodeId: 3, misc: misc.EXECUTION_CANCELLED });
     I.seeElement({ nodeId: 5, misc: misc.EXECUTION_CANCELLED });
 
     __`Complete execution`;
+    I.selectZoom('fit');
     Trigger.shortcut.executeMultipleNodes({ nodeId: 3 }, { nodeId: 5 });
     // eslint-disable-next-line no-magic-numbers
     I.waitForElement({ nodeId: 3, state: state.EXECUTED }, 7);
@@ -115,6 +117,7 @@ Scenario.skip('Multiple nodes - Shortcut', ({ I }) => {
     I.waitForElement({ nodeId: 5, state: state.EXECUTED }, 7);
 
     __`Reset node`;
+    I.selectZoom('fit');
     Trigger.shortcut.resetMultipleNodes({ nodeId: 3 }, { nodeId: 5 });
     I.seeElement({ nodeId: 3, state: state.CONFIGURED });
     I.seeElement({ nodeId: 5, state: state.CONFIGURED });

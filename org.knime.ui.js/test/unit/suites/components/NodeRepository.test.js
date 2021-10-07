@@ -6,13 +6,12 @@ import NodeRepository from '~/components/NodeRepository';
 import TagList from '~/webapps-common/ui/components/TagList';
 import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
 import NodeSearcher from '~/components/NodeSearcher';
-
+import ScrollViewContainer from '~/components/ScrollViewContainer';
 import { getters } from '~/store/nodeRepository.js';
-
 
 describe('NodeRepository', () => {
     let mocks, doShallowMount, wrapper, $store, searchNodesMock, searchNodesNextPageMock,
-        selectTagMock, deselectTagMock, getAllNodesMock, clearSelectedTagsMock;
+        selectTagMock, deselectTagMock, getAllNodesMock, clearSelectedTagsMock, setScrollPositionMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -27,6 +26,8 @@ describe('NodeRepository', () => {
         deselectTagMock = jest.fn();
         getAllNodesMock = jest.fn();
         clearSelectedTagsMock = jest.fn();
+        setScrollPositionMock = jest.fn();
+
         $store = mockVuexStore({
             nodeRepository: {
                 state: {
@@ -50,7 +51,8 @@ describe('NodeRepository', () => {
                     totalNumNodes: 2,
                     selectedTags: ['myTag2'],
                     tags: ['myTag1', 'myTag2'],
-                    query: ''
+                    query: '',
+                    scrollPosition: 100
                 },
                 actions: {
                     searchNodes: searchNodesMock,
@@ -60,7 +62,10 @@ describe('NodeRepository', () => {
                     getAllNodes: getAllNodesMock,
                     clearSelectedTags: clearSelectedTagsMock
                 },
-                getters
+                getters,
+                mutations: {
+                    setScrollPosition: setScrollPositionMock
+                }
             }
         });
         doShallowMount = () => {
@@ -69,15 +74,30 @@ describe('NodeRepository', () => {
         };
     });
 
-    it('Renders', () => {
-        $store.state.nodeRepository.selectedTags = [];
-        doShallowMount();
-        expect(wrapper.find('h4').text()).toBe('Repository');
-        expect(getAllNodesMock).toHaveBeenCalled();
-        expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
-        expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(true);
-        expect(wrapper.findComponent(NodeSearcher).exists()).toBe(true);
+    describe('Renders', () => {
+        it('renders empty Node Repository view and fetch first grouped nodes ', () => {
+            $store.state.nodeRepository.selectedTags = [];
+            $store.state.nodeRepository.nodesPerCategory = [];
+            doShallowMount();
+            expect(wrapper.find('h4').text()).toBe('Repository');
+            expect(getAllNodesMock).toHaveBeenCalled();
+            expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(true);
+            expect(wrapper.findComponent(NodeSearcher).exists()).toBe(true);
+            expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(false);
+        });
+
+        it('renders first grouped nodes ', () => {
+            $store.state.nodeRepository.selectedTags = [];
+            doShallowMount();
+            expect(wrapper.find('h4').text()).toBe('Repository');
+            expect(getAllNodesMock).not.toHaveBeenCalled();
+            expect(wrapper.findComponent(NodeSearcher).exists()).toBe(true);
+            expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(true);
+        });
     });
+    
 
     describe('Tags', () => {
         it('Renders the two TagList when there is at least one selected tag', () => {
@@ -133,6 +153,23 @@ describe('NodeRepository', () => {
             expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
             expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(false);
             expect(wrapper.findComponent(NodeSearcher).exists()).toBe(true);
+        });
+    });
+
+    describe('On events calls', () => {
+        test('Save position emit must save scroll position ', () => {
+            const newScrollPosition = 200;
+            doShallowMount();
+            const scroller = wrapper.findComponent(ScrollViewContainer);
+            scroller.vm.$emit('save-position', newScrollPosition);
+            expect(setScrollPositionMock).toHaveBeenCalledWith(expect.anything(), newScrollPosition);
+        });
+
+        test('Scroll bottom emit must load new categories ', () => {
+            doShallowMount();
+            const scroller = wrapper.findComponent(ScrollViewContainer);
+            scroller.vm.$emit('scroll-bottom');
+            expect(getAllNodesMock).toHaveBeenCalledWith(expect.anything(), true);
         });
     });
 });
