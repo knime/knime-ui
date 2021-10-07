@@ -165,7 +165,7 @@ export default {
       }
     }
   }
-  
+
   & .show-more {
     color: var(--knime-masala);
     font-weight: 400;
@@ -173,7 +173,7 @@ export default {
     display: block;
 
     &:active {
-      background-color: var(--knime-black)
+      background-color: var(--knime-black);
     }
   }
 }
