@@ -61,11 +61,11 @@ Scenario('Clear tag selection using deselect tag', ({ I }) => {
 });
 
 Scenario('Show more tags selection', ({ I }) => {
-    I.dontSee('.tag.clickable');
     I.click('More "IO" nodes');
+    I.dontSee('Connectors', '.tag.clickable');
     I.seeElement('span.more-tags.tag');
     I.click('span.more-tags.tag');
-    I.see('Weka', '.tag.clickable');
+    I.see('Connectors', '.tag.clickable');
 });
 
 Scenario('Lazy loading Categories', ({ I }) => {
