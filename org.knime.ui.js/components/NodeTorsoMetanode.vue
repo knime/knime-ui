@@ -19,6 +19,7 @@ export default {
       height="32"
       rx="2"
       :fill="$colors.nodeBackgroundColors.Metanode"
+      :data-test-metanodeState="executionState"
     />
     <path
       d="M0 2C0 0.895431 0.895431 0 2 0H8V2H2.75C2.33579 2 2 2.33579 2 2.75V8H0V2Z

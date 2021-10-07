@@ -155,7 +155,7 @@ describe('WorkflowTabContent.vue', () => {
         });
 
         it('hides metadata panel', () => {
-            expect(wrapper.find('#metadata').exists()).toBe(false);
+            expect(wrapper.find('.metadata').exists()).toBe(false);
         });
     });
 });

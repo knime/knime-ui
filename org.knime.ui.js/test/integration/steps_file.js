@@ -3,10 +3,6 @@
 module.exports = function () {
     // eslint-disable-next-line no-undef
     return actor({
-
-        // Define custom steps here, use 'this' to access default methods of I.
-        // It is recommended to place a general 'login' function here.
-
         /**
         * Assert an element exists and does contain the 'disabled' class
         * @param {String} selector Element selector.
@@ -16,7 +12,6 @@ module.exports = function () {
             this.seeElement(selector);
 
             const elementAttribute = await this.grabAttributeFrom(selector, attribute);
-            // console.log(elementAttribute);
             if (attribute === 'class') {
                 this.assertStringIncludes(elementAttribute, 'disabled');
             }
@@ -35,7 +30,6 @@ module.exports = function () {
             this.seeElement(selector);
 
             const elementAttribute = await this.grabAttributeFrom(selector, attribute);
-            // console.log(elementAttribute);
             if (attribute === 'class') {
                 const isDisabled = elementAttribute.includes('disabled');
                 this.assertOk(isDisabled === false, `Asserting if ${JSON.stringify(selector)} is enabled`);
