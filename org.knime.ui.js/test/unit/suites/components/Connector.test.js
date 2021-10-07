@@ -388,7 +388,9 @@ describe('Connector.vue', () => {
                 sourceNode: 'root:1',
                 sourcePort: 1,
                 absolutePoint: [32, 16],
-                canDelete: false,
+                allowedActions: {
+                    canDelete: false
+                },
                 id: 'drag-connector'
             };
             doShallowMount();
@@ -402,7 +404,9 @@ describe('Connector.vue', () => {
                 destNode: 'root:2',
                 destPort: 1,
                 absolutePoint: [0, 16],
-                canDelete: false,
+                allowedActions: {
+                    canDelete: false
+                },
                 id: 'drag-connector'
             };
             doShallowMount();
