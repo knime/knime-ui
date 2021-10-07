@@ -107,8 +107,6 @@ export const getters = {
         if (!rootState.workflow.activeWorkflow) {
             return [];
         }
-        // for some unknown reasons the connection object in the activeWorkflow does not contain the id
-        // TODO: remove this if backend provides id
         return Object.keys(state.selectedConnections).map(
             (id) => rootState.workflow.activeWorkflow.connections[id] ||
                 consola.error(`Selected connection '${id}' not found in activeWorkflow`)
