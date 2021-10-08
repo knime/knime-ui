@@ -166,6 +166,7 @@ export default {
                 // remember hitTarget
                 this.lastHitTarget = hitTarget;
             }
+
             this.dragConnector.absolutePoint = [absoluteX, absoluteY];
             /* eslint-enable no-invalid-this */
         }, MOVE_THROTTLE)
