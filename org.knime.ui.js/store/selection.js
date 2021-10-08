@@ -99,18 +99,16 @@ export const getters = {
     // Checks if a given node id is present in the selected object.
     isNodeSelected: (state) => (nodeId) => nodeId in state.selectedNodes,
 
-    // Returns an array of all selected connection ids.
-    selectedConnectionIds: (state) => Object.keys(state.selectedConnections),
-
     // Returns an array of selected connection objects.
-    selectedConnections(state, getters, rootState) {
-        if (!rootState.workflow.activeWorkflow) {
+    selectedConnections(state, getters, { workflow: { activeWorkflow } }) {
+        if (!activeWorkflow) {
             return [];
         }
-        return Object.keys(state.selectedConnections).map(
-            (id) => rootState.workflow.activeWorkflow.connections[id] ||
-                consola.error(`Selected connection '${id}' not found in activeWorkflow`)
-        );
+
+        return Object.keys(state.selectedConnections)
+            .map(id => activeWorkflow.connections[id] ||
+                consola.error(`Selected connection '${id}' not found in activeWorkflow`))
+            .filter(Boolean); // after deleting a selected connection, it will be undefined
     },
 
     // Checks if a given connection id is present in the selected object.
