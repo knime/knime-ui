@@ -137,7 +137,7 @@ stage('Integration Tests') {
                         RUN_CMD="$DEST/knime"
                         RUN_ARGS="-noSplash -consoleLog --launcher.suppressErrors"
 
-                        Xvfb :$$ -pixdepths 24 -screen 0 1280x1024x24 +extension RANDR &
+                        Xvfb :$$ -pixdepths 24 -screen 0 1920x1080x24 +extension RANDR &
                         export DISPLAY=:$$
                         set +e
 
