@@ -74,65 +74,28 @@ describe('DraggablePortWithTooltip', () => {
         expect(wrapper.findComponent(Port).exists()).toBe(false);
     });
 
+    it('indicates being targeted', () => {
+        propsData.targeted = true;
+        doShallowMount();
+
+        expect(wrapper.attributes().class).toMatch('targeted');
+    });
+
     describe('Drop Connector', () => {
         test('highlight drop target on hover', async () => {
             doShallowMount();
 
             expect(wrapper.attributes().class).not.toMatch('targeted');
 
-            wrapper.trigger('connector-enter');
+            wrapper.setProps({ targeted: true });
             await Vue.nextTick();
 
             expect(wrapper.attributes().class).toMatch('targeted');
 
-            wrapper.trigger('connector-leave');
+            wrapper.setProps({ targeted: false });
             await Vue.nextTick();
 
             expect(wrapper.attributes().class).not.toMatch('targeted');
-        });
-
-        test('call api to connect nodes (forward)', () => {
-            propsData.nodeId = 'destNode';
-            propsData.direction = 'in';
-            propsData.port.index = 1;
-
-            doShallowMount();
-
-            wrapper.trigger('connector-drop', {
-                detail: {
-                    sourceNode: 'sourceNode',
-                    sourcePort: 0
-                }
-            });
-
-            expect(storeConfig.workflow.actions.connectNodes).toHaveBeenCalledWith(expect.anything(), {
-                sourceNode: 'sourceNode',
-                sourcePort: 0,
-                destNode: 'destNode',
-                destPort: 1
-            });
-        });
-
-        test('call api to connect nodes (backwards)', () => {
-            propsData.nodeId = 'sourceNode';
-            propsData.direction = 'out';
-            propsData.port.index = 0;
-
-            doShallowMount();
-
-            wrapper.trigger('connector-drop', {
-                detail: {
-                    destNode: 'destNode',
-                    destPort: 1
-                }
-            });
-
-            expect(storeConfig.workflow.actions.connectNodes).toHaveBeenCalledWith(expect.anything(), {
-                sourceNode: 'sourceNode',
-                sourcePort: 0,
-                destNode: 'destNode',
-                destPort: 1
-            });
         });
     });
 
@@ -267,7 +230,10 @@ describe('DraggablePortWithTooltip', () => {
                 expect(hitTarget._connectorEnterEvent).toBeTruthy();
 
                 expect(hitTarget._connectorMoveEvent.detail).toStrictEqual({
-                    x: 0, y: 0
+                    x: 8,
+                    y: 8,
+                    targetPortDirection: 'out',
+                    overwritePosition: expect.any(Function)
                 });
             });
 
@@ -307,6 +273,19 @@ describe('DraggablePortWithTooltip', () => {
                 dragAboveTarget(null, [2, 2]);
 
                 expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([10, 10]);
+            });
+
+            test('overwrite connector position', () => {
+                startDragging([0, 0]);
+
+                let hitTarget = document.createElement('div');
+                hitTarget.addEventListener('connector-move', (e) => {
+                    e.detail.overwritePosition([-1, -1]);
+                });
+
+                dragAboveTarget(hitTarget, [0, 0]);
+
+                expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
             });
         });
 

@@ -3,7 +3,7 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
-
+import Vue from 'vue';
 
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
@@ -25,8 +25,7 @@ describe('MetaNodePortBar.vue', () => {
     beforeEach(() => {
         wrapper = null;
         propsData = {
-            x,
-            y,
+            position: { x, y },
             ports: [],
             containerId: 'metanode:1'
         };
@@ -59,15 +58,33 @@ describe('MetaNodePortBar.vue', () => {
 
         it('renders a bar', () => {
             doShallowMount();
-            let rect = wrapper.find('rect');
-            expect(Number(rect.attributes('width'))).toEqual($shapes.metaNodeBarWidth);
-            expect(Number(rect.attributes('height'))).toEqual(height);
+
+            // global positioning
+            expect(wrapper.find('g').attributes('transform')).toEqual(`translate(${x}, ${y})`);
+
+            // visible port bar
+            let portBar = wrapper.find('.port-bar');
+            expect(Number(portBar.attributes('width'))).toEqual($shapes.metaNodeBarWidth);
+            expect(Number(portBar.attributes('height'))).toEqual(height);
             if (type === 'in') {
-                expect(Number(rect.attributes('x'))).toEqual(222 - $shapes.metaNodeBarWidth);
+                expect(Number(portBar.attributes('x'))).toEqual(-$shapes.metaNodeBarWidth);
             } else {
-                expect(Number(rect.attributes('x'))).toEqual(222);
+                expect(Number(portBar.attributes('x'))).toEqual(0);
             }
-            expect(wrapper.find('g').attributes('transform')).toEqual(`translate(0, ${y})`);
+
+            // invisible hover-area
+            let hoverArea = wrapper.find('.hover-area');
+            expect(Number(hoverArea.attributes('width'))).toEqual(
+                $shapes.metaNodeBarWidth + $shapes.metaNodeBarHorizontalPadding * 2
+            );
+            expect(Number(hoverArea.attributes('height'))).toEqual(height);
+            if (type === 'in') {
+                expect(Number(hoverArea.attributes('x'))).toEqual(
+                    -$shapes.metaNodeBarWidth - $shapes.metaNodeBarHorizontalPadding
+                );
+            } else {
+                expect(Number(hoverArea.attributes('x'))).toEqual(-$shapes.metaNodeBarHorizontalPadding);
+            }
         });
 
         it('renders ports', () => {
@@ -79,19 +96,21 @@ describe('MetaNodePortBar.vue', () => {
                 type: 'type1'
             }];
             doShallowMount();
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
-            expect(ports.length).toBe(2);
 
+            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
             let [port0, port1] = ports.wrappers;
+
+            expect(ports.length).toBe(2);
 
             expect(port0.props()).toStrictEqual({
                 port: propsData.ports[0],
                 direction: type === 'in' ? 'out' : 'in',
                 nodeId: 'metanode:1',
                 relativePosition: [
-                    222 + $shapes.portSize / 2 * (type === 'in' ? 1 : -1),
+                    $shapes.portSize / 2 * (type === 'in' ? 1 : -1),
                     549 / (ports.length + 1)
-                ]
+                ],
+                targeted: null
             });
 
             expect(port1.props()).toStrictEqual({
@@ -99,10 +118,48 @@ describe('MetaNodePortBar.vue', () => {
                 direction: type === 'in' ? 'out' : 'in',
                 nodeId: 'metanode:1',
                 relativePosition: [
-                    222 + $shapes.portSize / 2 * (type === 'in' ? 1 : -1),
+                    $shapes.portSize / 2 * (type === 'in' ? 1 : -1),
                     2 * 549 / (ports.length + 1)
-                ]
+                ],
+                targeted: null
             });
+        });
+
+        it('sets target port', async () => {
+            propsData.ports = [{
+                index: 0,
+                type: 'type0'
+            }, {
+                index: 1,
+                type: 'type1'
+            }];
+            doShallowMount();
+
+            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+            let [port0, port1] = ports.wrappers;
+
+            expect(port0.props('targeted')).toBeFalsy();
+            expect(port1.props('targeted')).toBeFalsy();
+
+            // set target port 0
+            wrapper.setData({
+                targetPort: {
+                    index: 0
+                }
+            });
+            await Vue.nextTick();
+            expect(port0.props('targeted')).toBe(true);
+            expect(port1.props('targeted')).toBeFalsy();
+
+            // set target port 1
+            wrapper.setData({
+                targetPort: {
+                    index: 1
+                }
+            });
+            await Vue.nextTick();
+            expect(port0.props('targeted')).toBeFalsy();
+            expect(port1.props('targeted')).toBe(true);
         });
     });
 });

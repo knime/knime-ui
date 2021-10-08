@@ -515,26 +515,100 @@ describe('Node', () => {
             expect(ports.at(0).attributes().class).toMatch('hidden');
             expect(ports.at(1).attributes().class).toMatch('hidden');
             // ... and not shown
-            expect(ports.at(0).attributes().class).not.toMatch('show');
-            expect(ports.at(1).attributes().class).not.toMatch('show');
+            expect(ports.at(0).attributes().class).not.toMatch('force-show');
+            expect(ports.at(1).attributes().class).not.toMatch('force-show');
 
 
-            wrapper.find('.hover-container').trigger('connector-enter');
+            wrapper.setData({ connectorHover: true });
             await Vue.nextTick();
 
 
             // flowVariable ports fade in
-            expect(ports.at(0).attributes().class).toMatch('show');
-            expect(ports.at(1).attributes().class).toMatch('show');
+            expect(ports.at(0).attributes().class).toMatch('force-show');
+            expect(ports.at(1).attributes().class).toMatch('force-show');
 
-            wrapper.find('.hover-container').trigger('connector-leave');
+            wrapper.setData({ connectorHover: false });
             await Vue.nextTick();
 
             // flowVariable ports are hidden again
             expect(ports.at(0).attributes().class).toMatch('hidden');
             expect(ports.at(1).attributes().class).toMatch('hidden');
-            expect(ports.at(0).attributes().class).not.toMatch('show');
-            expect(ports.at(1).attributes().class).not.toMatch('show');
+            expect(ports.at(0).attributes().class).not.toMatch('force-show');
+            expect(ports.at(1).attributes().class).not.toMatch('force-show');
+        });
+
+        it('sets target port', async () => {
+            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+            const [inPort, outPort] = ports.wrappers;
+
+            expect(inPort.props('targeted')).toBeFalsy();
+            expect(outPort.props('targeted')).toBeFalsy();
+
+            wrapper.setData({
+                targetPort: {
+                    index: 0,
+                    side: 'in'
+                }
+            });
+            await Vue.nextTick();
+            expect(inPort.props('targeted')).toBe(true);
+            expect(outPort.props('targeted')).toBeFalsy();
+
+            wrapper.setData({
+                targetPort: {
+                    index: 1,
+                    side: 'in'
+                }
+            });
+            await Vue.nextTick();
+            expect(inPort.props('targeted')).toBeFalsy();
+            expect(outPort.props('targeted')).toBeFalsy();
+
+            wrapper.setData({
+                targetPort: {
+                    index: 0,
+                    side: 'out'
+                }
+            });
+            await Vue.nextTick();
+            expect(inPort.props('targeted')).toBeFalsy();
+            expect(outPort.props('targeted')).toBe(true);
+
+            wrapper.setData({
+                targetPort: {
+                    index: 1,
+                    side: 'out'
+                }
+            });
+            await Vue.nextTick();
+            expect(inPort.props('targeted')).toBeFalsy();
+            expect(outPort.props('targeted')).toBeFalsy();
+        });
+
+        describe('outside hover region?', () => {
+            test('above upper bound', () => {
+                expect(wrapper.vm.isOutsideConnectorHoverRegion(0, -21)).toBe(true);
+            });
+
+            test('below upper bound', () => {
+                expect(wrapper.vm.isOutsideConnectorHoverRegion(0, -20)).toBe(false);
+            });
+
+            test('targeting inPorts, inside of node torso', () => {
+                expect(wrapper.vm.isOutsideConnectorHoverRegion(32, 0, 'in')).toBe(false);
+            });
+
+            test('targeting inPorts, outside of node torso', () => {
+                expect(wrapper.vm.isOutsideConnectorHoverRegion(33, 0, 'in')).toBe(true);
+            });
+
+            test('targeting outPorts, inside of node torso', () => {
+                expect(wrapper.vm.isOutsideConnectorHoverRegion(0, 0, 'out')).toBe(false);
+            });
+
+            test('targeting inPorts, outside of node torso', () => {
+                expect(wrapper.vm.isOutsideConnectorHoverRegion(-1, 0, 'out')).toBe(true);
+            });
         });
     });
 

@@ -31,16 +31,14 @@ export default {
       v-if="hasInPorts"
       type="in"
       :ports="workflow.metaInPorts.ports"
-      :x="portBarXPos(workflow.metaInPorts)"
-      :y="portBarYPos"
+      :position="{x: portBarXPos(workflow.metaInPorts), y: portBarYPos}"
       :container-id="workflow.info.containerId"
     />
     <MetaNodePortBar
       v-if="hasOutPorts"
       type="out"
       :ports="workflow.metaOutPorts.ports"
-      :x="portBarXPos(workflow.metaOutPorts, true)"
-      :y="portBarYPos"
+      :position="{x: portBarXPos(workflow.metaOutPorts, true), y: portBarYPos}"
       :container-id="workflow.info.containerId"
     />
   </g>

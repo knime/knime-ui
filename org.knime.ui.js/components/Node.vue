@@ -10,6 +10,7 @@ import LoopDecorator from '~/components/LoopDecorator';
 import portShift from '~/util/portShift';
 import NodeActionBar from '~/components/NodeActionBar.vue';
 import NodeSelectionPlane from '~/components/NodeSelectionPlane.vue';
+import { snapConnector } from '~/mixins';
 
 /**
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
@@ -32,6 +33,7 @@ export default {
         LoopDecorator,
         NodeSelectionPlane
     },
+    mixins: [snapConnector],
     inheritAttrs: false,
     provide() {
         return {
@@ -161,8 +163,7 @@ export default {
     },
     data() {
         return {
-            hover: false,
-            connectorHover: false
+            hover: false
         };
     },
     computed: {
@@ -204,32 +205,43 @@ export default {
          * @return {object} the size and position of the hover area of the node
          */
         hoverSize() {
-            let extraHorizontalSize = 0;
-            if (this.hover) {
-                // buttons are showed as disabled if false, hidden if null
-                if (typeof this.allowedActions.canOpenDialog === 'boolean') {
-                    extraHorizontalSize += this.$shapes.nodeActionBarButtonSpread;
-                }
-                if (typeof this.allowedActions.canOpenView === 'boolean') {
-                    extraHorizontalSize += this.$shapes.nodeActionBarButtonSpread;
-                }
-            }
-            let width = this.$shapes.nodeSize + extraHorizontalSize +
-                this.$shapes.nodeHoverMargin[1] + this.$shapes.nodeHoverMargin[3];
-            let height = this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[0] + this.$shapes.nodeHoverMargin[2];
-            let x = -this.$shapes.nodeHoverMargin[1] - extraHorizontalSize / 2;
-            let y = -this.$shapes.nodeHoverMargin[0];
+            let hoverBounds = {
+                top: -this.$shapes.nodeHoverMargin[0],
+                left: -this.$shapes.nodeHoverMargin[1],
+                bottom: this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[2],
+                right: this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[3]
+            };
 
+            if (this.hover) {
+                // buttons are shown as disabled if false, hidden if null
+
+                let extraHorizontalSpace = 0;
+                if ('canOpenDialog' in this.allowedActions) {
+                    extraHorizontalSpace += this.$shapes.nodeActionBarButtonSpread;
+                }
+                if ('canOpenView' in this.allowedActions) {
+                    extraHorizontalSpace += this.$shapes.nodeActionBarButtonSpread;
+                }
+                hoverBounds.left -= extraHorizontalSpace / 2;
+                hoverBounds.right += extraHorizontalSpace / 2;
+            }
+            if (this.connectorHover || this.hover) {
+                // enlargen hover area to include all ports
+                let newBottom = Math.max(hoverBounds.bottom, this.portBarHeight);
+                hoverBounds.bottom = newBottom;
+            }
+         
             return {
-                width,
-                height,
-                x,
-                y
+                y: hoverBounds.top,
+                x: hoverBounds.left,
+                width: hoverBounds.right - hoverBounds.left,
+                height: hoverBounds.bottom - hoverBounds.top
             };
         },
         /**
          * @returns {object} the position of all inPorts and outPorts.
          * The position for each port is an array with two coordinates [x, y].
+         * Format as required by snapConnector mixin
          */
         portPositions() {
             return {
@@ -240,6 +252,13 @@ export default {
                     port => portShift(port.index, this.outPorts.length, this.kind === 'metanode', true)
                 )
             };
+        },
+        portBarHeight() {
+            let lastInPortY = this.portPositions.in[this.portPositions.in.length - 1]?.[1] || 0;
+            let lastOutPortY = this.portPositions.out[this.portPositions.out.length - 1]?.[1] || 0;
+          
+            return Math.max(lastInPortY, lastOutPortY) + this.$shapes.portSize / 2 +
+                this.$shapes.nodeHoverPortBottomMargin;
         }
     },
     methods: {
@@ -338,6 +357,16 @@ export default {
                 this.deselectAllObjects();
                 this.selectNode(this.id);
             }
+        },
+        // implemented as required by snapConnector mixin
+        isOutsideConnectorHoverRegion(x, y, targetPortDirection) {
+            const upperBound = -20;
+
+            if (y < upperBound) { return true; }
+            if (targetPortDirection === 'in' && x > this.$shapes.nodeSize) { return true; }
+            if (targetPortDirection === 'out' && x < 0) { return true; }
+
+            return false;
         }
     }
 };
@@ -394,8 +423,10 @@ export default {
       @mouseleave="onLeaveHoverArea"
       @mouseenter="hover = true"
       @contextmenu.prevent="onContextMenu"
-      @connector-enter="connectorHover = true"
-      @connector-leave="connectorHover = false"
+      @connector-enter.stop="onConnectorEnter"
+      @connector-leave.stop="onConnectorLeave"
+      @connector-move.stop="onConnectorMove"
+      @connector-drop.stop="onConnectorDrop"
     >
       <!-- Elements for which a click selects node -->
       <g
@@ -458,6 +489,7 @@ export default {
         :relative-position="portPositions.in[port.index]"
         :port="port"
         :node-id="id"
+        :targeted="targetPort && targetPort.side === 'in' && targetPort.index === port.index"
         direction="in"
       />
       
@@ -468,6 +500,7 @@ export default {
         :relative-position="portPositions.out[port.index]"
         :port="port"
         :node-id="id"
+        :targeted="targetPort && targetPort.side === 'out' && targetPort.index === port.index"
         direction="out"
       />
     </g>
