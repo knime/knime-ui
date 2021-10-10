@@ -110,7 +110,8 @@ describe('Node', () => {
             },
             selection: {
                 getters: {
-                    isNodeSelected: () => jest.fn()
+                    isNodeSelected: () => jest.fn(),
+                    singleNodeSelected: () => jest.fn()
                 },
                 actions: {
                     deselectAllObjects: jest.fn(),
@@ -379,31 +380,56 @@ describe('Node', () => {
             );
         });
 
-        it('selection instantly shows default flowVariable ports', async () => {
-            propsData = {
-                ...propsData,
-                inPorts: [mockPort({ index: 0 })],
-                outPorts: [mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] })]
-            };
-            storeConfig.selection.getters.isNodeSelected = () => () => true;
+        describe('selection instantly shows default flowVariable ports', () => {
+            beforeEach(() => {
+                propsData = {
+                    ...propsData,
+                    inPorts: [mockPort({ index: 0 })],
+                    outPorts: [mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] })]
+                };
+            });
 
-            doMount();
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+            it('shows mickey mouse ears immediately when single selected', () => {
+                storeConfig.selection.getters.isNodeSelected = () => () => true;
+                storeConfig.selection.getters.singleNodeSelected = () => true;
 
-            // unconnected flowVariable port shown
-            expect(ports.at(0).attributes().class).toBe('port');
-            // connected port visible already
-            expect(ports.at(1).attributes().class).toBe('port');
+                doMount();
+                let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
 
-            storeConfig.selection.getters.isNodeSelected = () => () => false;
-            doMount();
-            await Vue.nextTick();
-            ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+                // unconnected flowVariable port shown
+                expect(ports.at(0).attributes().class).toBe('port');
+                // connected port visible already
+                expect(ports.at(1).attributes().class).toBe('port');
+            });
 
-            // unconnected flowVariable port hidden
-            expect(ports.at(0).attributes().class).toMatch('hidden');
-            // connected port stays visible
-            expect(ports.at(1).attributes().class).not.toMatch('hidden');
+            it('hides mickey mouse ears when not selected', async () => {
+                storeConfig.selection.getters.isNodeSelected = () => () => false;
+                storeConfig.selection.getters.singleNodeSelected = () => true;
+
+                doMount();
+                await Vue.nextTick();
+
+                let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+
+                // unconnected flowVariable port hidden
+                expect(ports.at(0).attributes().class).toMatch('hidden');
+                // connected port stays visible
+                expect(ports.at(1).attributes().class).not.toMatch('hidden');
+            });
+
+            it('hides mickey mouse ears when in multi selection', () => {
+                storeConfig.selection.getters.isNodeSelected = () => () => true;
+                storeConfig.selection.getters.singleNodeSelected = () => false;
+
+                doMount();
+
+                let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+
+                // unconnected flowVariable port hidden
+                expect(ports.at(0).attributes().class).toMatch('hidden');
+                // connected port stays visible
+                expect(ports.at(1).attributes().class).not.toMatch('hidden');
+            });
         });
     });
 

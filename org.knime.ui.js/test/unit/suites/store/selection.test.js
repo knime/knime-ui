@@ -79,7 +79,7 @@ describe('workflow store', () => {
                     }
                 }
             };
-    
+
             $store = mockVuexStore(storeConfig);
         });
 
@@ -144,10 +144,20 @@ describe('workflow store', () => {
             });
         });
 
+        test('single node getter', () => {
+            expect($store.getters['selection/singleNodeSelected']).toBe(false);
+
+            $store.dispatch('selection/deselectNode', { id: 'root:1' });
+            expect($store.getters['selection/singleNodeSelected']).toBe(true);
+
+            $store.dispatch('selection/deselectNode', { id: 'root:2' });
+            expect($store.getters['selection/singleNodeSelected']).toBe(false);
+        });
+
         test('get all selected node ids', () => {
             expect($store.getters['selection/selectedNodeIds']).toStrictEqual(['root:1', 'root:2']);
         });
-        
+
         test('get all selected nodes', () => {
             expect($store.getters['selection/selectedNodes']).toStrictEqual(expect.objectContaining([
                 { id: 'root:1' },

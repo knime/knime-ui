@@ -170,7 +170,7 @@ export default {
         ...mapState('openedProjects', {
             projectId: 'activeId'
         }),
-        ...mapGetters('selection', ['isNodeSelected']),
+        ...mapGetters('selection', ['isNodeSelected', 'singleNodeSelected']),
         ...mapState('workflow', ['isDragging']),
         decoratorBackgroundType() {
             if (this.type) {
@@ -289,7 +289,9 @@ export default {
                 return true;
             }
 
-            return Boolean(port.connectedVia.length) || this.hover || this.isNodeSelected(this.id);
+            return Boolean(port.connectedVia.length) ||
+                this.hover ||
+                (this.isNodeSelected(this.id) && this.singleNodeSelected);
         },
 
         onLeftDoubleClick(e) {
