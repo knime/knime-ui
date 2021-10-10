@@ -54,8 +54,12 @@ export default {
         gap: {
             type: Number,
             default: 0
+        },
+        /** if tooltip is hoverable, it will stay open when the mouse moves onto it */
+        hoverable: {
+            type: Boolean,
+            default: false
         }
-
     },
     computed: {
         expandedGap() {
@@ -68,7 +72,7 @@ export default {
 
 <template>
   <div
-    :class="['tooltip', orientation, type]"
+    :class="['tooltip', orientation, type, { hoverable }]"
     :style="{
       '--arrowSize': `${$shapes.tooltipArrowSize}px`,
       '--gapSize': `${expandedGap}px`,
@@ -103,6 +107,10 @@ export default {
   position: relative;
   display: inline-block;
   transform: translate(-50%, calc(-1 * var(--border-width)));
+
+  &:not(.hoverable) {
+    pointer-events: none;
+  }
 
   &.top {
     transform: translate(-50%, calc(-100% + var(--border-width)));

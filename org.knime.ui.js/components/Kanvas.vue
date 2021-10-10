@@ -35,8 +35,7 @@ export default {
     },
     computed: {
         ...mapState('workflow', {
-            workflow: 'activeWorkflow',
-            tooltip: 'tooltip'
+            workflow: 'activeWorkflow'
         }),
         ...mapGetters('workflow', [
             'isLinked',
