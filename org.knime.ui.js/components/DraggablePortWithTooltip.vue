@@ -203,11 +203,11 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-.non-interactive {
-  pointer-events: none;
+.non-interactive >>> .hover-area {
+  pointer-events: none !important;
 }
 
-.targeted >>> .port > * {
+.targeted >>> .scale {
   transform: scale(1.4);
 }
 </style>
