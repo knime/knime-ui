@@ -102,8 +102,6 @@ export const getters = {
     // Returns an array of all selected connection ids.
     selectedConnectionIds: (state) => Object.keys(state.selectedConnections),
 
-    singleNodeSelected: (state) => Object.keys(state.selectedNodes).length === 1,
-
     // Returns an array of selected connection objects.
     selectedConnections: (state) => {
         let connectionsArray = [];
