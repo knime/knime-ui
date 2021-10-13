@@ -28,9 +28,9 @@ export const actions = {
         if (append) {
             commit('setCategoryPage', state.categoryPage + 1);
         } else {
+            commit('setNodeSearchPage', 0);
             commit('setCategoryPage', 0);
         }
-        commit('setNodeSearchPage', 0);
         let res = await getNodesGroupedByTags({
             numNodesPerTag: 6,
             tagsOffset,

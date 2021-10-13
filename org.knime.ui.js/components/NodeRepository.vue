@@ -53,7 +53,9 @@ export default {
             this.$store.dispatch('nodeRepository/clearSelectedTags');
         },
         lazyLoadCategories() {
-            this.$store.dispatch('nodeRepository/getAllNodes', true);
+            if (this.selectedTags.length === 0) {
+                this.$store.dispatch('nodeRepository/getAllNodes', true);
+            }
         },
         updateScrollPosition(position) {
             this.$store.commit('nodeRepository/setScrollPosition', position);

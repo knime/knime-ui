@@ -137,6 +137,7 @@ describe('NodeRepository', () => {
         });
 
         it('loads new categories on scroll event', () => {
+            $store.state.nodeRepository.selectedTags = [];
             doShallowMount();
             const scroller = wrapper.findComponent(ScrollViewContainer);
             scroller.vm.$emit('scroll-bottom');

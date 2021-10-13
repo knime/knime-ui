@@ -193,7 +193,6 @@ describe('nodeRepository store', () => {
         it('selects all nodes', async () => {
             await store.dispatch('nodeRepository/getAllNodes', true);
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setCategoryPage', 1, undefined);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
             expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
                 numNodesPerTag: 6,
                 tagsOffset: 6,
