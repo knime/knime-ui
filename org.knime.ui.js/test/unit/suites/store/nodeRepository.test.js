@@ -2,6 +2,28 @@ import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 
+const getNodesGroupedByTagsResponse = {
+    selections: [{
+        nodes: [
+            {
+                component: false,
+                icon: 'data:image/png;base64,xxx',
+                name: 'GroupBy Bar Chart (JFreeChart)',
+                id: 'org.knime.ext.jfc.node.groupbarchart.JfcGroupBarChartNodeFactory',
+                type: 'Visualizer'
+            },
+            {
+                component: false,
+                icon: 'data:image/png;base64,xxx',
+                name: 'Decision Tree Learner',
+                id: 'org.knime.base.node.mine.decisiontree2.learner2.DecisionTreeLearnerNodeFactory3',
+                type: 'Learner'
+            }
+        ],
+        tag: 'Analytics'
+    }]
+};
+
 const searchNodesResponse = {
     tags: [
         'Analytics',
@@ -28,19 +50,21 @@ const searchNodesResponse = {
 };
 
 describe('nodeRepository store', () => {
-    let store, localVue, searchNodesMock, commitSpy, dispatchSpy;
+    let store, localVue, searchNodesMock, getNodesGroupedByTagsMock, commitSpy, dispatchSpy;
 
     beforeAll(() => {
         localVue = createLocalVue();
         localVue.use(Vuex);
 
         searchNodesMock = jest.fn().mockReturnValue(searchNodesResponse);
+        getNodesGroupedByTagsMock = jest.fn().mockReturnValue(getNodesGroupedByTagsResponse);
     });
 
     beforeEach(async () => {
         jest.doMock('~api', () => ({
             __esModule: true,
-            searchNodes: searchNodesMock
+            searchNodes: searchNodesMock,
+            getNodesGroupedByTags: getNodesGroupedByTagsMock
         }), { virtual: true });
 
         store = mockVuexStore({
@@ -53,12 +77,14 @@ describe('nodeRepository store', () => {
     it('creates an empty store', () => {
         expect(store.state.nodeRepository).toStrictEqual({
             nodes: [],
-            nodeCategories: [],
+            nodesPerCategory: [],
             totalNumNodes: 0,
             selectedTags: [],
             tags: [],
             query: '',
-            nodeSearchPage: 0
+            nodeSearchPage: 0,
+            categoryPage: 0,
+            scrollPosition: 0
         });
     });
 
@@ -125,9 +151,60 @@ describe('nodeRepository store', () => {
             store.commit('nodeRepository/setSelectedTags', ['myTag', 'myTag2']);
             expect(store.state.nodeRepository.selectedTags).toEqual(['myTag', 'myTag2']);
         });
+
+        it('sets categoryPage', () => {
+            store.commit('nodeRepository/setCategoryPage', 1);
+            expect(store.state.nodeRepository.categoryPage).toBe(1);
+        });
+
+        it('sets nodesPerCategory', () => {
+            const categories = [{ tag: 'MyTag1', nodes: [{ id: 'node1' }] }];
+            store.commit('nodeRepository/setNodesPerCategories', [{ tag: 'MyTag1', nodes: [{ id: 'node1' }] }]);
+            expect(store.state.nodeRepository.nodesPerCategory).toStrictEqual(categories);
+        });
+
+        it('adds nodesPerCategory', () => {
+            store.commit('nodeRepository/setNodesPerCategories', [{ tag: 'MyTag1', nodes: [{ id: 'node1' }] }]);
+            const categories = store.state.nodeRepository.nodesPerCategory;
+            const category = { tag: 'MyTag2', nodes: [{ id: 'node2' }] };
+            store.commit('nodeRepository/addNodesPerCategories', [category]);
+            categories.push(category);
+
+            expect(store.state.nodeRepository.nodesPerCategory).toStrictEqual(categories);
+        });
     });
 
     describe('actions', () => {
+        it('selects all nodes without append and with a bigger tagsLimits', async () => {
+            await store.dispatch('nodeRepository/getAllNodes', false);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setCategoryPage', 0, undefined);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
+            expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
+                numNodesPerTag: 6,
+                tagsOffset: 0,
+                tagsLimit: 6,
+                fullTemplateInfo: true
+            });
+            expect(commitSpy).toHaveBeenCalledWith(
+                'nodeRepository/setNodesPerCategories', getNodesGroupedByTagsResponse.selections, undefined
+            );
+        });
+
+        it('selects all nodes', async () => {
+            await store.dispatch('nodeRepository/getAllNodes', true);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setCategoryPage', 1, undefined);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
+            expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
+                numNodesPerTag: 6,
+                tagsOffset: 6,
+                tagsLimit: 3,
+                fullTemplateInfo: true
+            });
+            expect(commitSpy).toHaveBeenCalledWith(
+                'nodeRepository/addNodesPerCategories', getNodesGroupedByTagsResponse.selections, undefined
+            );
+        });
+
         it('searches for nodes', async () => {
             await store.dispatch('nodeRepository/searchNodes');
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
@@ -183,7 +260,7 @@ describe('nodeRepository store', () => {
         it('clears selected tags', () => {
             store.dispatch('nodeRepository/clearSelectedTags');
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setSelectedTags', [], undefined);
-            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
+            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/getAllNodes', false);
         });
     });
 });
