@@ -3,7 +3,7 @@
 // Now that the KNIME AP build is moved to the new build system:
 // - investigate the role of the maven build vs the nodeJS build and see if they can be combined
 
-def BN = BRANCH_NAME == "master" || BRANCH_NAME.startsWith("releases/") ? BRANCH_NAME : "master"
+def BN = (BRANCH_NAME == 'master' || BRANCH_NAME.startsWith('releases/')) ? BRANCH_NAME : 'releases/2021-12'
 
 library "knime-pipeline@$BN"
 
@@ -137,7 +137,7 @@ stage('Integration Tests') {
                         RUN_CMD="$DEST/knime"
                         RUN_ARGS="-noSplash -consoleLog --launcher.suppressErrors"
 
-                        Xvfb :$$ -pixdepths 24 -screen 0 1280x1024x24 +extension RANDR &
+                        Xvfb :$$ -pixdepths 24 -screen 0 1920x1080x24 +extension RANDR &
                         export DISPLAY=:$$
                         set +e
 
