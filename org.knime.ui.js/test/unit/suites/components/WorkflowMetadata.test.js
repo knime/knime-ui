@@ -66,8 +66,8 @@ describe('WorkflowMetadata.vue', () => {
         let linkList = wrapper.findComponent(LinkList);
         expect(linkList.props().links).toStrictEqual([{ text: 'link1' }]);
 
-        expect(wrapper.find(TagList).exists()).toBe(true);
-        let tags = wrapper.findAll(Tag);
+        expect(wrapper.findComponent(TagList).exists()).toBe(true);
+        let tags = wrapper.findAllComponents(Tag);
         expect(tags.length).toBe(1);
         expect(tags.at(0).text()).toBe('tag1');
 
