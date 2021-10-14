@@ -61,6 +61,8 @@ describe('nodeRepository store', () => {
     });
 
     beforeEach(async () => {
+        jest.clearAllMocks();
+
         jest.doMock('~api', () => ({
             __esModule: true,
             searchNodes: searchNodesMock,
@@ -78,6 +80,7 @@ describe('nodeRepository store', () => {
         expect(store.state.nodeRepository).toStrictEqual({
             nodes: [],
             nodesPerCategory: [],
+            totalNumCategories: null,
             totalNumNodes: 0,
             selectedTags: [],
             tags: [],
@@ -172,36 +175,52 @@ describe('nodeRepository store', () => {
 
             expect(store.state.nodeRepository.nodesPerCategory).toStrictEqual(categories);
         });
+
+        it('sets totalNumCategories', () => {
+            store.commit('nodeRepository/setTotalNumCategories', 2);
+            expect(store.state.nodeRepository.totalNumCategories).toEqual(2);
+        });
     });
 
     describe('actions', () => {
-        it('selects all nodes without append and with a bigger tagsLimits', async () => {
-            await store.dispatch('nodeRepository/getAllNodes', false);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setCategoryPage', 0, undefined);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
-            expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
-                numNodesPerTag: 6,
-                tagsOffset: 0,
-                tagsLimit: 6,
-                fullTemplateInfo: true
+        describe('getAllNodes', () => {
+            it('gets all nodes without append and with a bigger tagsLimits', async () => {
+                await store.dispatch('nodeRepository/getAllNodes', false);
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setCategoryPage', 0, undefined);
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
+                expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
+                    numNodesPerTag: 6,
+                    tagsOffset: 0,
+                    tagsLimit: 6,
+                    fullTemplateInfo: true
+                });
+                expect(commitSpy).toHaveBeenCalledWith(
+                    'nodeRepository/setNodesPerCategories', getNodesGroupedByTagsResponse.selections, undefined
+                );
             });
-            expect(commitSpy).toHaveBeenCalledWith(
-                'nodeRepository/setNodesPerCategories', getNodesGroupedByTagsResponse.selections, undefined
-            );
-        });
+    
+            it('gets all nodes', async () => {
+                await store.dispatch('nodeRepository/getAllNodes', true);
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setCategoryPage', 1, undefined);
+                expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
+                    numNodesPerTag: 6,
+                    tagsOffset: 6,
+                    tagsLimit: 3,
+                    fullTemplateInfo: true
+                });
+                expect(commitSpy).toHaveBeenCalledWith(
+                    'nodeRepository/addNodesPerCategories', getNodesGroupedByTagsResponse.selections, undefined
+                );
+            });
 
-        it('selects all nodes', async () => {
-            await store.dispatch('nodeRepository/getAllNodes', true);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setCategoryPage', 1, undefined);
-            expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
-                numNodesPerTag: 6,
-                tagsOffset: 6,
-                tagsLimit: 3,
-                fullTemplateInfo: true
+            it('skips getting nodes when all categories were loaded', async () => {
+                const categories = [{}, {}, {}];
+                store.commit('nodeRepository/setNodesPerCategories', categories);
+                store.commit('nodeRepository/setTotalNumCategories', categories.length);
+
+                await store.dispatch('nodeRepository/getAllNodes', true);
+                expect(getNodesGroupedByTagsMock).not.toHaveBeenCalled();
             });
-            expect(commitSpy).toHaveBeenCalledWith(
-                'nodeRepository/addNodesPerCategories', getNodesGroupedByTagsResponse.selections, undefined
-            );
         });
 
         it('searches for nodes', async () => {

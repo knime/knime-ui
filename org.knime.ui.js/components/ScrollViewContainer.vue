@@ -28,16 +28,16 @@ export default {
     methods: {
         onScroll: throttle(function () {
             /* eslint-disable no-invalid-this */
-            const scrollPosition = this.$refs.scroller.scrollTop;
-            const scrollHeight = this.$refs.scroller.scrollHeight;
-            const viewHeight = this.$refs.scroller.getBoundingClientRect().height;
-            this.scrollPosition = scrollPosition;
-            if (scrollHeight - scrollPosition - viewHeight <= 0) {
+            const scroller = this.$refs.scroller;
+            const { scrollTop, scrollHeight } = scroller;
+            const viewHeight = scroller.getBoundingClientRect().height;
+            this.scrollPosition = scrollTop;
+            if (scrollHeight - scrollTop - viewHeight <= (viewHeight / 2)) {
                 this.$emit('scroll-bottom');
             }
+            /* eslint-enable no-invalid-this */
         }, SCROLL_HANDLER_THROTTLE)
     }
-    
 };
 </script>
 

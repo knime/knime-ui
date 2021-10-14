@@ -18,7 +18,6 @@ export default {
     computed: {
         ...mapState('nodeRepository', [
             'nodes',
-            'totalNumNodes',
             'selectedTags',
             'tags',
             'nodesPerCategory',
@@ -86,7 +85,7 @@ export default {
 
       <div
         v-if="selectedTags.length"
-        class="node-section"
+        class="filter"
       >
         <div class="filter-tags">
           Filter
@@ -155,7 +154,7 @@ export default {
     padding: 13px 0;
   }
 
-  & .node-section {
+  & .filter {
     margin-bottom: 10px;
 
     & .filter-tags {

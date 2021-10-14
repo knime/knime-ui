@@ -36,7 +36,7 @@ export default {
 
     },
     methods: {
-        selectMoreNodes() {
+        showMoreNodes() {
             if (this.category.tag) {
                 this.$store.dispatch('nodeRepository/selectTag', this.category.tag);
             } else {
@@ -52,7 +52,7 @@ export default {
     <span
       v-if="category.tag"
       class="category-title"
-      @click="selectMoreNodes"
+      @click="showMoreNodes"
     >
       {{ category.tag }}
     </span>
@@ -78,7 +78,7 @@ export default {
         compact
         with-border
         class="show-more"
-        @click="selectMoreNodes"
+        @click="showMoreNodes"
       >
         {{ showMoreMessage }}
       </Button>
