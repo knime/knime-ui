@@ -1,6 +1,7 @@
 import { shallowMount, mount } from '@vue/test-utils';
 
 import WorkflowMetadata from '~/components/WorkflowMetadata';
+import ScrollViewContainer from '~/components/ScrollViewContainer';
 import LinkList from '~/webapps-common/ui/components/LinkList';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
@@ -19,6 +20,7 @@ describe('WorkflowMetadata.vue', () => {
         expect(wrapper.find('.last-updated').exists()).toBe(true);
         expect(wrapper.find('.external-resources').exists()).toBe(true);
         expect(wrapper.find('.tags').exists()).toBe(true);
+        expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(true);
 
         // show placeholder tags
         expect(wrapper.text()).toMatch('No title has been set yet');
@@ -29,7 +31,7 @@ describe('WorkflowMetadata.vue', () => {
 
         // don't show content containers
         expect(wrapper.findComponent(LinkList).exists()).toBe(false);
-        expect(wrapper.find(TagList).exists()).toBe(false);
+        expect(wrapper.findComponent(TagList).exists()).toBe(false);
         expect(wrapper.findComponent(NodeFeatureList).exists()).toBe(false);
         expect(wrapper.findComponent(NodePreview).exists()).toBe(false);
     });
@@ -64,8 +66,8 @@ describe('WorkflowMetadata.vue', () => {
         let linkList = wrapper.findComponent(LinkList);
         expect(linkList.props().links).toStrictEqual([{ text: 'link1' }]);
 
-        expect(wrapper.find(TagList).exists()).toBe(true);
-        let tags = wrapper.findAll(Tag);
+        expect(wrapper.findComponent(TagList).exists()).toBe(true);
+        let tags = wrapper.findAllComponents(Tag);
         expect(tags.length).toBe(1);
         expect(tags.at(0).text()).toBe('tag1');
 

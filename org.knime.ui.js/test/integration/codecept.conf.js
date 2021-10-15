@@ -78,6 +78,10 @@ exports.config = {
         connectorLocator: {
             enabled: true,
             require: './plugins/connectorLocator.js'
+        },
+        sidebarLocator: {
+            enabled: true,
+            require: './plugins/sidebarLocator.js'
         }
     }
 };

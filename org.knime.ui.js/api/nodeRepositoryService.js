@@ -1,6 +1,33 @@
 import rpc from './json-rpc-adapter.js';
 
 /**
+ * Get repository nodes grouped by tags via RPC.
+ *
+ * @param {Number} cfg.numNodesPerTag - The number of nodes per tag to be returned.
+ * @param {Number} cfg.tagsOffset - The number of tags to be skipped (for pagination).
+ * @param {Number} cfg.tagsLimit - The maximum number of tags to be returned (mainly for pagination).
+ * @param {Boolean} cfg.fullTemplateInfo - if the results should contain all node info (incl. img data).
+ * @returns {Object} the grouped nodes results.
+ */
+export const getNodesGroupedByTags = ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => {
+    try {
+        const groupedNodes = rpc(
+            'NodeRepositoryService.selectNodes',
+            numNodesPerTag,
+            tagsOffset,
+            tagsLimit,
+            fullTemplateInfo
+        );
+        consola.debug('Loaded nodes', groupedNodes);
+
+        return Promise.resolve(groupedNodes);
+    } catch (e) {
+        consola.error(e);
+        return Promise.reject(new Error(`Couldn't get nodes grouped by tags`));
+    }
+};
+
+/**
  * Search the node repository via RPC.
  *
  * @param {String} cfg.query - query for specific matches in the returned nodes or empty string.

@@ -7,21 +7,24 @@ import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 
 describe('LeftCollapsiblePanel.vue', () => {
-    let wrapper;
+    let wrapper, $store;
 
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(vuex);
     });
 
+
     beforeEach(() => {
+        $store = mockVuexStore({ panel: panelStoreConfig });
+
         wrapper = shallowMount(LeftCollapsiblePanel, {
             propsData: {
                 title: 'hover-title',
                 width: '200px'
             },
             mocks: {
-                $store: mockVuexStore({ panel: panelStoreConfig })
+                $store
             }
         });
     });

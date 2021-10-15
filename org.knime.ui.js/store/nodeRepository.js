@@ -1,25 +1,54 @@
-import { searchNodes } from '~api';
+import { searchNodes, getNodesGroupedByTags } from '~api';
 
-// TODO: NXT-65 add node category support
-// TODO: NXT-115 add node search support
 
 /**
  * Store that manages node repository state.
  */
 
 const nodeSearchPageSize = 21;
+const categoryPageSize = 3;
+const firstLoadOffset = 6;
 
 export const state = () => ({
+    nodesPerCategory: [],
+    totalNumCategories: null,
     nodes: [],
-    nodeCategories: [],
     totalNumNodes: 0,
     selectedTags: [],
     tags: [],
     query: '',
-    nodeSearchPage: 0
+    nodeSearchPage: 0,
+    categoryPage: 0,
+    scrollPosition: 0
 });
 
 export const actions = {
+    async getAllNodes({ commit, state }, append) {
+        if (state.nodesPerCategory.length === state.totalNumCategories) {
+            return;
+        }
+        let tagsOffset = append ? firstLoadOffset + state.categoryPage * categoryPageSize : 0;
+        let tagsLimit = append ? categoryPageSize : firstLoadOffset;
+        if (append) {
+            commit('setCategoryPage', state.categoryPage + 1);
+        } else {
+            commit('setNodeSearchPage', 0);
+            commit('setCategoryPage', 0);
+        }
+        let res = await getNodesGroupedByTags({
+            numNodesPerTag: 6,
+            tagsOffset,
+            tagsLimit,
+            fullTemplateInfo: true
+        });
+        commit('setTotalNumCategories', res.totalNumSelections);
+        if (append) {
+            commit('addNodesPerCategories', res.selections);
+        } else {
+            commit('setNodesPerCategories', res.selections);
+        }
+    },
+
     /**
      * Fetch nodes. Used for initial data retrieval, but also for searching via query and/or tag filters.
      *
@@ -28,7 +57,7 @@ export const actions = {
      *      should be cleared (for a new search).
      * @returns {Promise}
      */
-    async searchNodes({ dispatch, commit, state }, append = false) {
+    async searchNodes({ commit, state }, append = false) {
         if (append) {
             commit('setNodeSearchPage', state.nodeSearchPage + 1);
         } else {
@@ -93,11 +122,15 @@ export const actions = {
      */
     clearSelectedTags({ dispatch, commit }) {
         commit('setSelectedTags', []);
-        dispatch('searchNodes');
+        dispatch('getAllNodes', false);
     }
 };
 
 export const mutations = {
+
+    setCategoryPage(state, pageNumber) {
+        state.categoryPage = pageNumber;
+    },
     setNodeSearchPage(state, pageNumber) {
         state.nodeSearchPage = pageNumber;
     },
@@ -138,5 +171,17 @@ export const mutations = {
 
     setSelectedTags(state, selectedTags) {
         state.selectedTags = selectedTags;
+    },
+    setNodesPerCategories(state, groupedNodes) {
+        state.nodesPerCategory = groupedNodes;
+    },
+    addNodesPerCategories(state, groupedNodes) {
+        state.nodesPerCategory = state.nodesPerCategory.concat(groupedNodes);
+    },
+    setTotalNumCategories(state, totalNumCategories) {
+        state.totalNumCategories = totalNumCategories;
+    },
+    setScrollPosition(state, value) {
+        state.scrollPosition = value;
     }
 };
