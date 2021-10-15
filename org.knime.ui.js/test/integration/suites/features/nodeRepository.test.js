@@ -15,7 +15,7 @@ Scenario('Show more nodes of an specific Category', ({ I }) => {
     I.click('More "IO" nodes');
     I.see('Create Table Structure');
     I.dontSee('Model Reader');
-    I.click('Show more...');
+    I.click('Show more…');
     I.see('Model Reader');
 });
 
@@ -25,7 +25,7 @@ Scenario('Show more nodes of an specific Category using Category title button', 
     I.click('IO', '.category-title');
     I.see('Create Table Structure');
     I.dontSee('Model Reader');
-    I.click('Show more...');
+    I.click('Show more…');
     I.see('Model Reader');
 });
 
@@ -69,7 +69,7 @@ Scenario('Show more tags selection', ({ I }) => {
 });
 
 Scenario('Lazy loading Categories', ({ I }) => {
-    const scrolledY = 1000;
+    const scrolledY = 1300;
     const scrollerSelector = '#left-panel > div > div > div ';
     I.seeElement(scrollerSelector);
     I.dontSee('Structured Data', '.category-title');

@@ -76,6 +76,10 @@ export default {
   height: 100%;
 }
 
+.hidden-content {
+  height: 100%;
+}
+
 button {
   border: none;
   width: 10px;

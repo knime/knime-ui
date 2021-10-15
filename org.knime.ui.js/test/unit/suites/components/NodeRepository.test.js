@@ -100,13 +100,13 @@ describe('NodeRepository', () => {
     
 
     describe('Tags', () => {
-        it('Renders the two TagList when there is at least one selected tag', () => {
+        it('renders the two TagList when there is at least one selected tag', () => {
             doShallowMount();
             expect(wrapper.findAllComponents(TagList).at(0).props('tags')).toEqual(['myTag1']);
             expect(wrapper.findAllComponents(TagList).at(1).props('tags')).toEqual(['myTag2']);
         });
 
-        it('No renders TagLists when there are no tags selected', () => {
+        it('doesn\'t render TagLists when no tags are selected', () => {
             $store.state.nodeRepository.selectedTags = [];
             doShallowMount();
             expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
@@ -127,13 +127,13 @@ describe('NodeRepository', () => {
     });
 
     describe('Tag de-selection', () => {
-        it('De-select tag using Clear button ', () => {
+        it('de-selects tag using Clear button ', () => {
             doShallowMount();
             wrapper.find('.clear-button').vm.$emit('click', 'Clear');
             expect(clearSelectedTagsMock).toHaveBeenCalled();
         });
 
-        it('De-select tag by clicking an specific tag', () => {
+        it('de-selects tag by clicking an specific tag', () => {
             doShallowMount();
             wrapper.findAllComponents(TagList).at(1).vm.$emit('click', 'myTag3');
             expect(deselectTagMock).toHaveBeenCalledWith(expect.anything(), 'myTag3');
@@ -157,7 +157,7 @@ describe('NodeRepository', () => {
     });
 
     describe('On events calls', () => {
-        test('Save position emit must save scroll position ', () => {
+        test('saves scroll position ', () => {
             const newScrollPosition = 200;
             doShallowMount();
             const scroller = wrapper.findComponent(ScrollViewContainer);
@@ -165,7 +165,8 @@ describe('NodeRepository', () => {
             expect(setScrollPositionMock).toHaveBeenCalledWith(expect.anything(), newScrollPosition);
         });
 
-        test('Scroll bottom emit must load new categories ', () => {
+        it('loads new categories on scroll event', () => {
+            $store.state.nodeRepository.selectedTags = [];
             doShallowMount();
             const scroller = wrapper.findComponent(ScrollViewContainer);
             scroller.vm.$emit('scroll-bottom');

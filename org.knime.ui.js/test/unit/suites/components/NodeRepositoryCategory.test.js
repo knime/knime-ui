@@ -132,16 +132,6 @@ describe('NodeRepositoryCategory', () => {
             const nodeListItems = wrapper.findAll('li.node');
             expect(nodeListItems.length).toBe(nodesAmount);
         });
-
-        it('Nodes with longer name should to cut on the node label', () => {
-            const LABEL_LIMIT_WITH_ELLIPSIS = 28;
-            propsData = { ...nodesWithLongerName };
-            doShallowMount();
-            const nodeListItems = wrapper.findAll('li.node > label');
-            expect(nodeListItems.at(0).text().length).toBeLessThan(nodesWithLongerName.category.nodes[0].name.length);
-            expect(nodeListItems.at(0).text().length).toBe(LABEL_LIMIT_WITH_ELLIPSIS);
-            expect(nodeListItems.at(1).text().length).toBe(nodesWithLongerName.category.nodes[1].name.length);
-        });
     });
 
     describe('load more button from category', () => {
@@ -171,7 +161,7 @@ describe('NodeRepositoryCategory', () => {
             expect(selectTagMock).toHaveBeenCalledWith(expect.anything(), 'MyTag1');
         });
 
-        it('load more nodes by clicking specific category title', () => {
+        it('loads more nodes by clicking specific category title', () => {
             propsData = { ...nodeCategory };
             doShallowMount();
             wrapper.find('span.category-title').trigger('click');
@@ -192,7 +182,7 @@ describe('NodeRepositoryCategory', () => {
             propsData = { ...nodesFiltered };
             doShallowMount();
             expect(wrapper.find('.show-more').exists()).toBe(true);
-            expect(wrapper.find('.show-more').text()).toBe('Show more...');
+            expect(wrapper.find('.show-more').text()).toBe('Show more…');
         });
 
         it('loads more nodes on click', () => {

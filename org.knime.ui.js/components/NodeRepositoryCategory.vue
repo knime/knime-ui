@@ -3,21 +3,12 @@ import { mapState } from 'vuex';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import Button from '~/webapps-common/ui/components/Button';
 
-const LABEL_CHARACTER_LIMIT = 26;
 const CATEGORY_LIMIT = 6;
 
 export default {
     components: {
         NodePreview,
         Button
-    },
-    filters: {
-        shorterLabel(value) {
-            if (value.length > LABEL_CHARACTER_LIMIT) {
-                return `${value.substring(0, LABEL_CHARACTER_LIMIT - 1)}...`;
-            }
-            return value;
-        }
     },
     props: {
         category: {
@@ -33,7 +24,7 @@ export default {
             if (this.category.tag) {
                 return `More "${this.category.tag}" nodes`;
             }
-            return 'Show more...';
+            return 'Show more…';
         },
         hasMoreNodes() {
             if (this.category.tag) {
@@ -45,7 +36,7 @@ export default {
 
     },
     methods: {
-        selectMoreNodes() {
+        showMoreNodes() {
             if (this.category.tag) {
                 this.$store.dispatch('nodeRepository/selectTag', this.category.tag);
             } else {
@@ -61,7 +52,7 @@ export default {
     <span
       v-if="category.tag"
       class="category-title"
-      @click="selectMoreNodes"
+      @click="showMoreNodes"
     >
       {{ category.tag }}
     </span>
@@ -77,7 +68,7 @@ export default {
             :title="node.name"
             class="label"
           >
-            {{ node.name | shorterLabel }}
+            {{ node.name }}
           </label>
           <NodePreview v-bind="node" />
         </li>
@@ -87,7 +78,7 @@ export default {
         compact
         with-border
         class="show-more"
-        @click="selectMoreNodes"
+        @click="showMoreNodes"
       >
         {{ showMoreMessage }}
       </Button>

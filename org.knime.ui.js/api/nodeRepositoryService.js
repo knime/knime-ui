@@ -7,7 +7,7 @@ import rpc from './json-rpc-adapter.js';
  * @param {Number} cfg.tagsOffset - The number of tags to be skipped (for pagination).
  * @param {Number} cfg.tagsLimit - The maximum number of tags to be returned (mainly for pagination).
  * @param {Boolean} cfg.fullTemplateInfo - if the results should contain all node info (incl. img data).
- * @returns {Object} the node repository selection results.
+ * @returns {Object} the grouped nodes results.
  */
 export const getNodesGroupedByTags = ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => {
     try {
@@ -23,7 +23,7 @@ export const getNodesGroupedByTags = ({ numNodesPerTag, tagsOffset, tagsLimit, f
         return Promise.resolve(groupedNodes);
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(`Couldn't select nodes per categories`));
+        return Promise.reject(new Error(`Couldn't get nodes grouped by tags`));
     }
 };
 

@@ -11,6 +11,7 @@ const firstLoadOffset = 6;
 
 export const state = () => ({
     nodesPerCategory: [],
+    totalNumCategories: null,
     nodes: [],
     totalNumNodes: 0,
     selectedTags: [],
@@ -27,20 +28,24 @@ export const getters = {
 
 export const actions = {
     async getAllNodes({ commit, state }, append) {
+        if (state.nodesPerCategory.length === state.totalNumCategories) {
+            return;
+        }
         let tagsOffset = append ? firstLoadOffset + state.categoryPage * categoryPageSize : 0;
         let tagsLimit = append ? categoryPageSize : firstLoadOffset;
         if (append) {
             commit('setCategoryPage', state.categoryPage + 1);
         } else {
+            commit('setNodeSearchPage', 0);
             commit('setCategoryPage', 0);
         }
-        commit('setNodeSearchPage', 0);
         let res = await getNodesGroupedByTags({
             numNodesPerTag: 6,
             tagsOffset,
             tagsLimit,
             fullTemplateInfo: true
         });
+        commit('setTotalNumCategories', res.totalNumSelections);
         if (append) {
             commit('addNodesPerCategories', res.selections);
         } else {
@@ -190,6 +195,9 @@ export const mutations = {
     },
     setQuery(state, value) {
         state.query = value;
+    },
+    setTotalNumCategories(state, totalNumCategories) {
+        state.totalNumCategories = totalNumCategories;
     },
     setScrollPosition(state, value) {
         state.scrollPosition = value;

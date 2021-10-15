@@ -41,7 +41,7 @@ const workflowCommand = ({ projectId, workflowId, command, args }) => {
         return Promise.resolve(result);
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(`Couldn't execute ${command}(${args})`));
+        return Promise.reject(new Error(`Couldn't execute ${command}(${JSON.stringify(args)})`));
     }
 };
 

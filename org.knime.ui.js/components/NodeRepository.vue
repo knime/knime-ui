@@ -20,7 +20,6 @@ export default {
     computed: {
         ...mapState('nodeRepository', [
             'nodes',
-            'totalNumNodes',
             'selectedTags',
             'tags',
             'nodesPerCategory',
@@ -61,8 +60,10 @@ export default {
         clearNodeSearching() {
             this.$store.dispatch('nodeRepository/updateQuery', '');
         },
-        categoriesLazyLoad() {
-            this.$store.dispatch('nodeRepository/getAllNodes', true);
+        lazyLoadCategories() {
+            if (this.selectedTags.length === 0) {
+                this.$store.dispatch('nodeRepository/getAllNodes', true);
+            }
         },
         updateScrollPosition(position) {
             this.$store.commit('nodeRepository/setScrollPosition', position);
@@ -74,7 +75,7 @@ export default {
 <template>
   <ScrollViewContainer
     :initial-position="scrollPosition"
-    @scroll-bottom="categoriesLazyLoad"
+    @scroll-bottom="lazyLoadCategories"
     @save-position="updateScrollPosition"
   >
     <div class="repo">
@@ -105,7 +106,7 @@ export default {
 
         <div
           v-if="selectedTags.length"
-          class="node-section"
+          class="filter"
         >
           <div class="filter-tags">
             Filter
@@ -127,14 +128,14 @@ export default {
             </TagList>
           </div>
         </div>
-        <div class="node-section">
-          <template v-for="(category, ind) in categoriesDisplayed">
+        <div>
+          <template v-for="(category, index) in categoriesDisplayed">
             <NodeRepositoryCategory
-              :key="`tag-${ind}`"
+              :key="`tag-${index}`"
               :category="category"
             />
             <span
-              :key="ind"
+              :key="index"
               class="break full"
             />
           </template>
@@ -190,7 +191,7 @@ export default {
     padding: 13px 0;
   }
 
-  & .node-section {
+  & .filter {
     margin-bottom: 10px;
 
     & .filter-tags {
