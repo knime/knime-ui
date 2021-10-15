@@ -112,6 +112,8 @@ export default {
 .port {
   & .hover-area {
     pointer-events: fill;
+    fill: none;
+    stroke: none;
   }
 
   & .scale {
