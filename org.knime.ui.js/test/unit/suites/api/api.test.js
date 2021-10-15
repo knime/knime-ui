@@ -56,6 +56,7 @@ describe('API', () => {
             }));
         });
 
+
         describe('error handling', () => {
             beforeEach(() => {
                 window.jsonrpc.mockReturnValueOnce(JSON.stringify({
@@ -103,6 +104,25 @@ describe('API', () => {
                     jsonrpc: '2.0',
                     method: 'NodeRepositoryService.searchNodes',
                     params: ['churn', ['myTag'], true, 0, 2, true],
+                    id: 0
+                }));
+            });
+        });
+
+        describe('getNodesGroupedByTags', () => {
+            it('calls jsonrpc', async () => {
+                const NODES_LIMIT = 6;
+                await api.getNodesGroupedByTags({
+                    numNodesPerTag: NODES_LIMIT,
+                    tagsOffset: 0,
+                    tagsLimit: 2,
+                    fullTemplateInfo: true
+                });
+    
+                expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+                    jsonrpc: '2.0',
+                    method: 'NodeRepositoryService.selectNodes',
+                    params: [NODES_LIMIT, 0, 2, true],
                     id: 0
                 }));
             });

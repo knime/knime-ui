@@ -293,5 +293,15 @@ module.exports = {
             css: 'g.grabbable path:nth-child(2)'
         }
     },
-    metadata: '.metadata'
+    metadata: '.metadata',
+    sidebarMenu: {
+        METADATA: {
+            label: 'METADATA',
+            css: 'Workflow metadata'
+        },
+        NODE_REPOSITORY: {
+            label: 'NODE_REPOSITORY',
+            css: 'Node repository'
+        }
+    }
 };

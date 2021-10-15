@@ -25,7 +25,7 @@ export default {
         }
     },
     computed: {
-        ...mapState('panel', ['expanded'])
+        ...mapState('panel', ['expanded', 'activeTab'])
     },
     methods: {
         toggleExpanded() {
@@ -41,10 +41,14 @@ export default {
       class="container"
       :style="{ width: expanded ? width : 0 }"
     >
-      <div :style="{ width }">
+      <div
+        class="hidden-content"
+        :style="{ width }"
+      >
         <slot />
       </div>
     </div>
+
     <button
       :title="expanded ? null : title"
       @click="toggleExpanded"
@@ -58,13 +62,16 @@ export default {
 .panel {
   display: flex;
   height: 100%;
-  overflow-y: auto;
 }
 
 .container {
   background-color: var(--knime-gray-ultra-light);
   overflow-x: hidden;
   transition: width 0.3s ease;
+}
+
+.hidden-content {
+  height: 100%;
 }
 
 button {

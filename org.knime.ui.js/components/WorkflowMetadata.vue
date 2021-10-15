@@ -4,6 +4,7 @@ import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import TagList from '~/webapps-common/ui/components/TagList';
 import { formatDateString } from '~/webapps-common/util/format';
+import ScrollViewContainer from '~/components/ScrollViewContainer';
 
 /** Displays metadata attached to a root-level workflow */
 export default {
@@ -11,7 +12,8 @@ export default {
         LinkList,
         NodeFeatureList,
         NodePreview,
-        TagList
+        TagList,
+        ScrollViewContainer
     },
     props: {
         /** Single-line description of the workflow */
@@ -67,7 +69,7 @@ export default {
 </script>
 
 <template>
-  <div class="metadata">
+  <ScrollViewContainer class="metadata">
     <h2 class="title">
       <div
         v-if="nodePreview"
@@ -143,7 +145,7 @@ export default {
         No tags have been set yet
       </div>
     </div>
-  </div>
+  </ScrollViewContainer>
 </template>
 
 <style lang="postcss" scoped>
