@@ -1,28 +1,42 @@
 <script>
 import { mapState } from 'vuex';
 
-import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import TagList from '~/webapps-common/ui/components/TagList';
 import Button from '~/webapps-common/ui/components/Button';
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
+import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
+import ScrollViewContainer from '~/components/ScrollViewContainer';
 
 export default {
     components: {
-        NodePreview,
         TagList,
         Button,
-        CloseIcon
+        CloseIcon,
+        NodeRepositoryCategory,
+        ScrollViewContainer
     },
     computed: {
         ...mapState('nodeRepository', [
             'nodes',
-            'totalNumNodes',
             'selectedTags',
-            'tags'
-        ])
+            'tags',
+            'nodesPerCategory',
+            'scrollPosition'
+        ]),
+        categoriesDisplayed() {
+            if (this.selectedTags.length > 0) {
+                const result = {
+                    nodes: this.nodes
+                };
+                return [result];
+            }
+            return this.nodesPerCategory;
+        }
     },
     mounted() {
-        this.$store.dispatch('nodeRepository/searchNodes');
+        if (!this.nodesPerCategory.length) {
+            this.$store.dispatch('nodeRepository/getAllNodes', false);
+        }
     },
     methods: {
         loadMoreNodes() {
@@ -36,75 +50,83 @@ export default {
         },
         clearSelectedTags() {
             this.$store.dispatch('nodeRepository/clearSelectedTags');
+        },
+        lazyLoadCategories() {
+            if (this.selectedTags.length === 0) {
+                this.$store.dispatch('nodeRepository/getAllNodes', true);
+            }
+        },
+        updateScrollPosition(position) {
+            this.$store.commit('nodeRepository/setScrollPosition', position);
         }
     }
 };
 </script>
 
 <template>
-  <div class="repo">
-    <h4>Repository</h4>
-    <span class="break" />
-    <div class="tags">
-      <TagList
-        :tags="tags.filter(t => !selectedTags.includes(t))"
-        clickable
-        @click="selectTag"
-      />
-    </div>
-    <span class="break full" />
-    <div
-      v-if="selectedTags.length"
-      class="node-section"
-    >
-      <div class="filter-tags">
-        Filter
-        <Button
-          compact
-          class="clear-button"
-          @click="clearSelectedTags"
-        >
-          Clear
-          <CloseIcon />
-        </Button>
-        <TagList
-          class="tag-list"
-          :tags="selectedTags"
-          clickable
-          @click="deselectTag"
-        >
-          <CloseIcon slot="icon" />
-        </TagList>
+  <ScrollViewContainer
+    :initial-position="scrollPosition"
+    @scroll-bottom="lazyLoadCategories"
+    @save-position="updateScrollPosition"
+  >
+    <div class="repo">
+      <h4>Repository</h4>
+      <span class="break" />
+      <template v-if="selectedTags.length">
+        <div class="tags">
+          <TagList
+            :tags="tags.filter((t) => !selectedTags.includes(t))"
+            clickable
+            @click="selectTag"
+          />
+        </div>
+        <span class="break full" />
+      </template>
+
+      <div
+        v-if="selectedTags.length"
+        class="filter"
+      >
+        <div class="filter-tags">
+          Filter
+          <Button
+            compact
+            class="clear-button"
+            @click="clearSelectedTags"
+          >
+            Clear
+            <CloseIcon />
+          </Button>
+          <TagList
+            class="tag-list"
+            :tags="selectedTags"
+            clickable
+            @click="deselectTag"
+          >
+            <CloseIcon slot="icon" />
+          </TagList>
+        </div>
       </div>
-      <ul class="nodes">
-        <li
-          v-for="node in nodes"
-          :key="node.id"
-          class="node"
-        >
-          <label :title="node.name">
-            {{ node.name }}
-          </label>
-          <NodePreview v-bind="node" />
-        </li>
-      </ul>
+      <div>
+        <template v-for="(category, index) in categoriesDisplayed">
+          <NodeRepositoryCategory
+            :key="`tag-${index}`"
+            :category="category"
+          />
+          <span
+            :key="index"
+            class="break full"
+          />
+        </template>
+      </div>
     </div>
-    <Button
-      v-if="selectedTags.length && nodes.length < totalNumNodes"
-      compact
-      with-border
-      class="show-more"
-      @click="loadMoreNodes"
-    >
-      Show more…
-    </Button>
-  </div>
+  </ScrollViewContainer>
 </template>
 
 <style lang="postcss" scoped>
 .repo {
-  margin: 15px 20px;
   font-family: "Roboto Condensed", sans-serif;
+  padding: 15px 20px;
 
   & h4 {
     font-size: 18px;
@@ -112,7 +134,7 @@ export default {
     margin: 14px auto;
   }
 
-  & .break {
+  & .break:not(:last-child) {
     height: 1px;
     width: 100%;
     display: block;
@@ -132,7 +154,7 @@ export default {
     padding: 13px 0;
   }
 
-  & .node-section {
+  & .filter {
     margin-bottom: 10px;
 
     & .filter-tags {
@@ -147,49 +169,6 @@ export default {
         margin-top: 8px;
       }
     }
-
-    & .nodes {
-      padding: 0;
-      display: flex;
-      flex-wrap: wrap;
-      margin-right: -5px;
-      margin-left: -5px;
-
-      & .node {
-        width: 100px;
-        height: 75px;
-        margin: 0 5px;
-        padding-bottom: 42px;
-        position: relative;
-        display: flex;
-        flex-direction: column-reverse;
-        align-items: center;
-        font-size: 12px;
-        font-weight: 700;
-        text-align: center;
-
-        & label {
-          max-height: 26px;
-          max-width: 100px;
-          display: -webkit-box;
-          -webkit-box-orient: vertical;
-          -webkit-line-clamp: 2;
-          overflow: hidden;
-        }
-
-        & svg {
-          width: 70px;
-          position: absolute;
-          bottom: -15px;
-        }
-      }
-    }
-  }
-
-  & .show-more {
-    font-weight: 400;
-    margin: 0 auto 10px;
-    display: block;
   }
 }
 </style>
