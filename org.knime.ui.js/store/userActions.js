@@ -263,6 +263,12 @@ export const getters = {
                 actionMap.cancelAll,
                 actionMap.resetAll
             );
+            // if no node is selected it might be still a connection that can be deleted
+            if (selectedConnections.length > 0) {
+                actionList.push(
+                    actionMap.deleteSelected
+                );
+            }
         } else if (selectedNodes.length === 1) {
             const selectedNodeAllAllowedActions = {
                 ...selectedNodes[0].allowedActions,
