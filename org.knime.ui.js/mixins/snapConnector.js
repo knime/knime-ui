@@ -26,7 +26,9 @@ import { mapActions } from 'vuex';
 export const snapConnector = {
     data: () => ({
         connectorHover: false, // connector is hovering above component
-        targetPort: null // the port the connector is snapped to, or null
+        targetPort: null, // the port the connector is snapped to, or null
+        connectionForbidden: false,
+        isConnectionSource: false
     }),
     computed: {
         /**
@@ -63,18 +65,42 @@ export const snapConnector = {
             return partitions;
         }
     },
+    mounted() {
+        this.$root.$on('connector-start', this.onConnectorStart);
+        this.$root.$on('connector-end', this.onConnectorEnd);
+    },
     methods: {
         ...mapActions('workflow', ['connectNodes']),
-        onConnectorEnter() {
-            this.connectorHover = true;
+        onConnectorStart({ compatibleNodes, nodeId }) {
+            if (this.containerId) {
+                // metanodes can always be connected to
+                return;
+            }
+
+            this.connectionForbidden = !compatibleNodes.has(this.id);
+            this.isConnectionSource = this.id === nodeId;
+        },
+        onConnectorEnd() {
+            this.connectionForbidden = false;
+            this.isConnectionSource = false;
+        },
+        onConnectorEnter(e) {
             consola.trace('connector-enter');
+            if (this.connectionForbidden) {
+                e.preventDefault();
+                return;
+            }
+
+            this.connectorHover = true;
         },
         onConnectorLeave() {
+            consola.trace('connector-leave');
+
             this.connectorHover = false;
             this.targetPort = null;
-            consola.trace('connector-leave');
         },
         onConnectorMove(e) {
+            consola.trace('connector-move');
             let { y: mouseY, x: mouseX, targetPortDirection } = e.detail;
 
             // find mouse position relative to components position on workflow

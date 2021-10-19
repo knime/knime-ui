@@ -373,7 +373,7 @@ export default {
 </script>
 
 <template>
-  <g>
+  <g :class="[{'connection-forbidden': connectionForbidden && !isConnectionSource}]">
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal
       to="node-actions"
@@ -510,6 +510,14 @@ export default {
 <style lang="postcss" scoped>
 * {
   user-select: none;
+}
+
+.hover-container {
+  transition: filter 0.5s;
+}
+
+.connection-forbidden .hover-container {
+  filter: grayscale(50%) opacity(40%);
 }
 
 .port {

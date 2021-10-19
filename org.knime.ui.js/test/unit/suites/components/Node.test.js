@@ -583,6 +583,24 @@ describe('Node', () => {
                 expect(wrapper.vm.isOutsideConnectorHoverRegion(-1, 0, 'out')).toBe(true);
             });
         });
+
+        describe('marks illegal connector drop target', () => {
+            test('legal', () => {
+                expect(wrapper.classes('connection-forbidden')).toBe(false);
+            });
+
+            test('illegal', async () => {
+                wrapper.setData({ connectionForbidden: true });
+                await Vue.nextTick();
+                expect(wrapper.classes('connection-forbidden')).toBe(true);
+            });
+
+            test('illegal but connection source', async () => {
+                wrapper.setData({ connectionForbidden: true, isConnectionSource: true });
+                await Vue.nextTick();
+                expect(wrapper.classes('connection-forbidden')).toBe(false);
+            });
+        });
     });
 
     describe('port positions', () => {

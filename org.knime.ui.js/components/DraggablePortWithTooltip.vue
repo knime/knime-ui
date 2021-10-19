@@ -4,6 +4,7 @@ import PortWithTooltip from '~/components/PortWithTooltip';
 import Port from '~/components/Port';
 import Connector from '~/components/Connector';
 import { throttle } from 'lodash';
+import { circleDetection } from '~/util/compatibleConnections';
 
 const MOVE_THROTTLE = 50;
 
@@ -76,36 +77,51 @@ export default {
                 connector.destNode = this.nodeId;
                 connector.destPort = this.port.index;
             }
+            
+            let compatibleNodes = circleDetection({
+                direction: this.direction,
+                startNode: this.nodeId,
+                workflow: this.$store.state.workflow.activeWorkflow
+            });
 
             this.dragConnector = connector;
+
+            this.$root.$emit('connector-start', {
+                compatibleNodes,
+                nodeId: this.nodeId
+            });
         },
         onPointerUp(e) {
             e.target.releasePointerCapture(e.pointerId);
             
             let { sourceNode, sourcePort, destNode, destPort } = this.dragConnector;
 
-            this.lastHitTarget?.dispatchEvent(
-                new CustomEvent(
-                    'connector-drop', {
-                        detail: {
-                            sourceNode,
-                            sourcePort,
-                            destNode,
-                            destPort
-                        },
-                        bubbles: true
-                    }
-                )
-            );
+            if (this.lastHitTarget && !this.lastHitTarget.cancelled) {
+                this.lastHitTarget.element.dispatchEvent(
+                    new CustomEvent(
+                        'connector-drop', {
+                            detail: {
+                                sourceNode,
+                                sourcePort,
+                                destNode,
+                                destPort
+                            },
+                            bubbles: true
+                        }
+                    )
+                );
+            }
         },
         onLostPointerCapture(e) {
             this.dragConnector = null;
-            this.lastHitTarget?.dispatchEvent(new CustomEvent('connector-leave', { bubbles: true }));
+            if (this.lastHitTarget && !this.lastHitTarget.cancelled) {
+                this.lastHitTarget.element.dispatchEvent(new CustomEvent('connector-leave', { bubbles: true }));
+            }
+            this.$root.$emit('connector-end');
         },
         onPointerMove: throttle(function (e) {
             /* eslint-disable no-invalid-this */
             if (!this.dragConnector) { return; }
-
 
             // find HTML-Element below cursor
             let hitTarget = document.elementFromPoint(e.x, e.y);
@@ -125,18 +141,20 @@ export default {
                 bubbles: true
             });
 
+            let isSameTarget = hitTarget && this.lastHitTarget?.element === hitTarget;
 
-            if (hitTarget && this.lastHitTarget === hitTarget) {
-                // hitTarget exists and is the same as last time
+            if (isSameTarget && this.lastHitTarget.cancelled) {
+                // same hitTarget as before, but already called preventDefault
+                // Do-Nothing
+            } else if (isSameTarget) {
+                // same hitTarget as before and allows connector snapping
                 hitTarget.dispatchEvent(moveEvent);
             } else {
                 // different hitTarget than lastHitTarget, possibly null
-
-                let leaveEventNotCancelled = true;
                 
-                // send 'connector-leave' to last hitTarget, if it exists
-                if (this.lastHitTarget) {
-                    leaveEventNotCancelled = this.lastHitTarget.dispatchEvent(
+                // send 'connector-leave' to last hitTarget, if it exists and hadn't cancelled connector-enter
+                if (this.lastHitTarget && !this.lastHitTarget.cancelled) {
+                    this.lastHitTarget.element.dispatchEvent(
                         new CustomEvent('connector-leave', {
                             detail: {
                                 relatedTarget: hitTarget
@@ -145,24 +163,27 @@ export default {
                             cancelable: true
                         })
                     );
-                    consola.trace('leave', 'cancelled:', !leaveEventNotCancelled, this.lastHitTarget);
                 }
 
                 /* if leave event hasn't been cancelled:
                  *   send 'connector-enter' to new hitTarget
                  *   send 'connector-move' to new hitTarget
                  */
-                if (hitTarget && leaveEventNotCancelled) {
-                    hitTarget.dispatchEvent(
+                if (hitTarget) {
+                    let connectorEnterNotCancelled = hitTarget.dispatchEvent(
                         new CustomEvent('connector-enter', {
-                            bubbles: true
+                            bubbles: true,
+                            cancelable: true
                         })
                     );
-                    hitTarget.dispatchEvent(moveEvent);
+                    if (connectorEnterNotCancelled) {
+                        hitTarget.dispatchEvent(moveEvent);
+                    }
+                    // remember hitTarget
+                    this.lastHitTarget = { element: hitTarget, cancelled: !connectorEnterNotCancelled };
+                } else {
+                    this.lastHitTarget = null;
                 }
-
-                // remember hitTarget
-                this.lastHitTarget = hitTarget;
             }
             
             this.dragConnector.absolutePoint = [absoluteX, absoluteY];
@@ -203,8 +224,13 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-.non-interactive >>> .hover-area {
-  pointer-events: none !important;
+.non-interactive {
+  pointer-events: none;
+
+  & >>> .hover-area {
+    /* overwrite hover-area of ports */
+    pointer-events: none !important;
+  }
 }
 
 .targeted >>> .scale {
