@@ -118,6 +118,35 @@ export default {
       margin-right: -5px;
       margin-left: -5px;
       list-style-type: none;
+
+      & .node {
+        width: 100px;
+        height: 75px;
+        margin: 0 2px 10px;
+        padding-bottom: 42px;
+        position: relative;
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: center;
+
+        & label {
+          max-height: 26px;
+          max-width: 100px;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          overflow: hidden;
+        }
+
+        & svg {
+          width: 70px;
+          position: absolute;
+          bottom: -15px;
+        }
+      }
     }
   }
 
