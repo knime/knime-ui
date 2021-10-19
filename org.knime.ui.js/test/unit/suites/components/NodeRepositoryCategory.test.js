@@ -46,19 +46,6 @@ const nodesFiltered = {
     }
 };
 
-const nodesWithLongerName = {
-    category: {
-        nodes: [{
-            id: 'node1',
-            name: 'A name so long to be shown in the label'
-        },
-        {
-            id: 'node2',
-            name: 'A name not enough longer'
-        }]
-    }
-};
-
 describe('NodeRepositoryCategory', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, searchNodesNextPageMock,
         selectTagMock;
