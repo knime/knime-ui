@@ -27,14 +27,14 @@ export default {
   <nav>
     <ul>
       <li
-        :class="{ active: workflowMetaActive }"
+        :class="{ active: workflowMetaActive, expanded }"
         title="Workflow metadata"
         @click="setWorkflowMetaActive"
       >
         <InfoIcon />
       </li>
       <li
-        :class="{ active: nodeRepositoryActive }"
+        :class="{ active: nodeRepositoryActive, expanded }"
         title="Node repository"
         @click="setNodeRepositoryActive"
       >
@@ -69,10 +69,14 @@ nav {
 
       &.active {
         background-color: var(--knime-porcelain);
+
+        &.expanded {
+          background-color: var(--knime-gray-ultra-light);
+        }
       }
 
       &:not(.active):hover {
-        background-color: var(--knime-white);
+        background-color: var(--knime-gray-ultra-light);
         cursor: pointer;
 
         & svg {
