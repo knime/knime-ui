@@ -131,7 +131,7 @@ export default {
   & h4 {
     font-size: 18px;
     font-weight: 400;
-    margin: 14px auto;
+    margin: 12px auto;
   }
 
   & .break:not(:last-child) {

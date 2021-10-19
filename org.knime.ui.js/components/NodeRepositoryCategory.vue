@@ -95,11 +95,11 @@ export default {
   & .category-title {
     border: 1px solid var(--knime-dove-gray);
     margin: 13px 5px 13px 0;
-    padding: 4px 6px;
+    padding: 3px 5px;
     line-height: 15px;
     display: inline-block;
     font-weight: 500;
-    font-size: 18px;
+    font-size: 14px;
     color: var(--knime-dove-gray);
     cursor: pointer;
 
@@ -129,7 +129,7 @@ export default {
       & .node {
         width: 100px;
         height: 75px;
-        margin: 0 2px;
+        margin: 0 2px 10px;
         padding-bottom: 42px;
         position: relative;
         display: flex;

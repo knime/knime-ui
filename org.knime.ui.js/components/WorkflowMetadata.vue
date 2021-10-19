@@ -84,6 +84,7 @@ export default {
         class="placeholder"
       >No title has been set yet</span>
     </h2>
+    <span class="break" />
 
     <div
       v-if="!isComponent"
@@ -117,6 +118,7 @@ export default {
       class="external-resources"
     >
       <h2>External resources</h2>
+      <span class="break" />
       <LinkList
         v-if="links.length"
         :links="links"
@@ -134,6 +136,7 @@ export default {
       class="tags"
     >
       <h2>Tags</h2>
+      <span class="break" />
       <TagList
         v-if="tags.length"
         :tags="tags"
@@ -160,8 +163,15 @@ export default {
   & h2 {
     margin: 0;
     font-weight: normal;
-    font-size: 24px;
+    font-size: 18px;
     line-height: 36px;
+  }
+
+  & .break:not(:last-child) {
+    height: 1px;
+    width: 100%;
+    display: block;
+    background-color: var(--knime-silver-sand);
   }
 
   & .placeholder {
@@ -175,7 +185,7 @@ export default {
   & .title {
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 
     & .node-preview {
       height: 80px;
@@ -188,6 +198,7 @@ export default {
 }
 
 .last-updated {
+  margin-top: 6px;
   margin-bottom: 20px;
   font-style: italic;
 }
@@ -272,6 +283,10 @@ export default {
 
 .tags {
   padding-top: 5px;
+
+  & .wrapper {
+    padding: 13px 0;
+  }
 
   & ul {
     display: flex;
