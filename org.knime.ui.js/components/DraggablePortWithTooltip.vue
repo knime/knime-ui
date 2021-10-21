@@ -203,8 +203,13 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-.non-interactive >>> .hover-area {
-  pointer-events: none !important;
+.non-interactive {
+  pointer-events: none;
+
+  & >>> .hover-area {
+    /* overwrite hover-area of ports */
+    pointer-events: none !important;
+  }
 }
 
 .targeted >>> .scale {
