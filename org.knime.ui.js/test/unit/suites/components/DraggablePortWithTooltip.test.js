@@ -166,12 +166,12 @@ describe('DraggablePortWithTooltip', () => {
                 expect(wrapper.vm.kanvasElement).toStrictEqual(KanvasMock);
             });
 
-            it('does circle detection', () => {
-                propsData.direction = 'out';
+            it.each(['out', 'in'])('does circle detection for %s-port', (portDirection) => {
+                propsData.direction = portDirection;
                 startDragging();
 
                 expect(circleDetection).toHaveBeenCalledWith({
-                    direction: 'out',
+                    downstreamConnection: portDirection === 'out',
                     startNode: 'node:1',
                     workflow: 'workflowRef'
                 });

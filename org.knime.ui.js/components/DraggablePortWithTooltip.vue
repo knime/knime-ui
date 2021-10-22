@@ -79,7 +79,7 @@ export default {
             }
             
             let compatibleNodes = circleDetection({
-                direction: this.direction,
+                downstreamConnection: this.direction === 'out',
                 startNode: this.nodeId,
                 workflow: this.$store.state.workflow.activeWorkflow
             });
