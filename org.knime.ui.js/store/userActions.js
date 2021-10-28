@@ -186,6 +186,51 @@ const actionMap = {
     }
 };
 
+const zoomOptions = [
+    {
+        text: 'Fit to screen',
+        hotkey: hotKeys.zoomToFit,
+        storeAction: 'canvas/setZoomToFit',
+        storeActionParams: []
+    },
+    {
+        text: 'Zoom in',
+        hotkey: hotKeys.zoomIn,
+        storeAction: 'canvas/zoomCentered',
+        storeActionParams: [1]
+    },
+    {
+        text: 'Zoom out',
+        hotkey: hotKeys.zoomOut,
+        storeAction: 'canvas/zoomCentered',
+        storeActionParams: [-1]
+    },
+    {
+        text: 'Zoom to 75%',
+        storeAction: 'canvas/zoomTo',
+        // eslint-disable-next-line no-magic-numbers
+        storeActionParams: [0.75]
+    },
+    {
+        text: 'Zoom to 100%',
+        hotkey: hotKeys.resetZoom,
+        storeAction: 'canvas/zoomToDefault',
+        storeActionParams: []
+    },
+    {
+        text: 'Zoom to 125%',
+        storeAction: 'canvas/zoomTo',
+        // eslint-disable-next-line no-magic-numbers
+        storeActionParams: [1.25]
+    },
+    {
+        text: 'Zoom to 150%',
+        storeAction: 'canvas/zoomTo',
+        // eslint-disable-next-line no-magic-numbers
+        storeActionParams: [1.5]
+    }
+];
+
 const testIfIsMac = () => navigator?.userAgent?.toLowerCase()?.includes('mac');
 
 const mapActions = (actionList, selectedNodes, selectedConnections, allowedWorkflowActions) => {
@@ -309,5 +354,9 @@ export const getters = {
 
     hotKeyItems(state, getters, rootState, rootGetters) {
         return hotKeys;
+    },
+
+    zoomActionItems(state, getters, rootState, rootGetters) {
+        return mapActions(zoomOptions, [], [], {});
     }
 };

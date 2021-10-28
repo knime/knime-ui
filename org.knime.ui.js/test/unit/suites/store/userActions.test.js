@@ -268,6 +268,11 @@ describe('userActions store', () => {
             expect(contextMenuActionItems[1].disabled).toBe(true);
             expect(contextMenuActionItems[2].disabled).toBe(true);
         });
+
+        it('check zoomActionItems', () => {
+            loadStore();
+            expect(store.getters['userActions/zoomActionItems']).toBeDefined();
+        });
     });
 
     /*

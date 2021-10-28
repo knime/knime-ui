@@ -227,6 +227,19 @@ describe('canvas store', () => {
             expect(scrollContainer.scrollLeft).toBe(25); /* eslint-disable-line no-magic-numbers */
             expect(scrollContainer.scrollTop).toBe(25); /* eslint-disable-line no-magic-numbers */
         });
+
+        it('zooms to set value', () => {
+            const state = store.state.canvas;
+            const value = 0.75;
+            store.dispatch('canvas/zoomTo', value);
+            expect(state.zoomFactor).toBe(0.75);
+        });
+
+        it('resets zoom to default', () => {
+            const state = store.state.canvas;
+            store.dispatch('canvas/zoomToDefault');
+            expect(state.zoomFactor).toBe(1);
+        });
     });
 
     describe('getters', () => {
