@@ -70,7 +70,7 @@ export default {
 
 <template>
   <ScrollViewContainer class="metadata">
-    <h2 class="title">
+    <h2 :class="{title, 'nodeTitle': nodePreview}">
       <div
         v-if="nodePreview"
         class="node-preview"
@@ -84,7 +84,10 @@ export default {
         class="placeholder"
       >No title has been set yet</span>
     </h2>
-    <span class="break" />
+    <span
+      v-if="!nodePreview"
+      class="break"
+    />
 
     <div
       v-if="!isComponent"
@@ -194,6 +197,10 @@ export default {
       background-color: white;
       flex-shrink: 0;
     }
+  }
+
+  & .nodeTitle {
+    margin-bottom: 20px;
   }
 }
 

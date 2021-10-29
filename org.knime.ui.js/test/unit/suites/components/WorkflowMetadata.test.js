@@ -74,4 +74,21 @@ describe('WorkflowMetadata.vue', () => {
         expect(wrapper.findComponent(NodePreview).props('type')).toBe('nodePreviewData');
         expect(wrapper.findComponent(NodeFeatureList).props('emptyText')).toBe('nodeFeatureData');
     });
+
+    it('adds class if nodePreview exists', () => {
+        let wrapper = mount(WorkflowMetadata, {
+            propsData: {
+                title: 'Title',
+                lastEdit: '2000-01-01T00:00Z',
+                description: 'Description',
+                links: [{ text: 'link1' }],
+                tags: ['tag1'],
+                nodePreview: { type: 'nodePreviewData' },
+                nodeFeatures: { emptyText: 'nodeFeatureData' }
+            }
+        });
+
+        const header = wrapper.find('h2');
+        expect(header.classes('nodeTitle')).toBe(true);
+    });
 });
