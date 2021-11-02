@@ -1,6 +1,6 @@
 <script>
 import { mapActions, mapState, mapGetters } from 'vuex';
-import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip.vue';
+import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip';
 import NodeState from '~/components/NodeState';
 import NodeTorso from '~/components/NodeTorso';
 import NodeAnnotation from '~/components/NodeAnnotation';
@@ -8,8 +8,8 @@ import LinkDecorator from '~/components/LinkDecorator';
 import StreamingDecorator from '~/components/StreamingDecorator';
 import LoopDecorator from '~/components/LoopDecorator';
 import portShift from '~/util/portShift';
-import NodeActionBar from '~/components/NodeActionBar.vue';
-import NodeSelectionPlane from '~/components/NodeSelectionPlane.vue';
+import NodeActionBar from '~/components/NodeActionBar';
+import NodeSelectionPlane from '~/components/NodeSelectionPlane';
 import { snapConnector } from '~/mixins';
 
 /**

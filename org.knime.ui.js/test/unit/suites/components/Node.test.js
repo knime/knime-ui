@@ -13,7 +13,7 @@ import LinkDecorator from '~/components/LinkDecorator';
 import StreamingDecorator from '~/components/StreamingDecorator';
 import LoopDecorator from '~/components/LoopDecorator';
 import NodeActionBar from '~/components/NodeActionBar';
-import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip.vue';
+import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip';
 
 import '~/plugins/directive-move';
 

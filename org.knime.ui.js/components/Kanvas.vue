@@ -10,6 +10,7 @@ import StreamedIcon from '~/components/../webapps-common/ui/assets/img/icons/nod
 import ConnectorLabel from '~/components/ConnectorLabel';
 import ContextMenu from '~/components/ContextMenu';
 import { throttle } from 'lodash';
+import { dropNode } from '~/mixins';
 
 const PANNING_THROTTLE = 50; // 50ms between consecutive mouse move events
 
@@ -25,6 +26,7 @@ export default {
         ConnectorLabel,
         MoveableNodeContainer
     },
+    mixins: [dropNode],
     data() {
         return {
             /*
@@ -187,6 +189,8 @@ export default {
     @pointerup.left="stopPan"
     @pointermove="movePan"
     @contextmenu.prevent="onContextMenu"
+    @drop.stop="onDrop"
+    @dragover.stop="onDragOver"
   >
     <ContextMenu
       ref="contextMenu"
