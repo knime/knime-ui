@@ -58,14 +58,14 @@ describe('Kanvas', () => {
     });
 
     beforeEach(() => {
-        let getBCRMock = jest.fn();
-        getBCRMock.mockReturnValue({
+        let getBoundingClientRectMock = jest.fn();
+        getBoundingClientRectMock.mockReturnValue({
             x: 5,
             y: 10,
             width: 15,
             height: 20
         });
-        HTMLElement.prototype.getBoundingClientRect = getBCRMock;
+        HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
 
         // Mock ResizeObserver Class
         window.ResizeObserver = function (callback) {

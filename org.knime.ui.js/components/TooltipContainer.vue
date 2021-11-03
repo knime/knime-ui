@@ -106,6 +106,7 @@ export default {
         :text="tooltip.text"
         :title="tooltip.title"
         :orientation="tooltip.orientation"
+        :hoverable="tooltip.hoverable"
         :type="tooltip.type"
         @mouseleave.native="onMouseLeave"
         @wheel.ctrl.native.prevent
@@ -122,8 +123,8 @@ export default {
   height: 0;
 
   & .tooltip-enter-active {
-    /* delay entering of tooltip by 0.5 seconds */
-    transition: opacity 150ms 0.5s ease;
+    /* delay entering of tooltip by 0.75 seconds */
+    transition: opacity 150ms 0.75s ease;
   }
 
   & .tooltip-leave-active {

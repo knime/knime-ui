@@ -1,5 +1,5 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
-    moveObjects, openDialog, openView, undo, redo, removeEventListener, connectNodes } from '~api';
+    moveObjects, openDialog, openView, undo, redo, removeEventListener, connectNodes, addNode } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -259,6 +259,19 @@ export const actions = {
             sourcePort,
             destNode,
             destPort
+        });
+    },
+    async addNode({ state, getters }, { position, className }) {
+        await addNode({
+            projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            position: {
+                x: position[0],
+                y: position[1]
+            },
+            nodeFactory: {
+                className
+            }
         });
     }
 };
