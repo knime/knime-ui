@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { connectNodes, moveObjects, deleteObjects } from '~/api';
+import { connectNodes, moveObjects, deleteObjects, addNode } from '~/api';
 
 describe('workflow commands', () => {
     beforeEach(() => {
@@ -134,5 +134,34 @@ describe('workflow commands', () => {
                 id: 0
             }));
         });
+    });
+
+    test('addNode', () => {
+        addNode({
+            projectId: 'project',
+            workflowId: 'workflow',
+            position: {
+                x: 0,
+                y: 1
+            },
+            nodeFactory: { className: 'className' }
+        });
+        expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'WorkflowService.executeWorkflowCommand',
+            params: [
+                'project',
+                'workflow',
+                {
+                    kind: 'add_node',
+                    position: {
+                        x: 0,
+                        y: 1
+                    },
+                    nodeFactory: { className: 'className' }
+                }
+            ],
+            id: 0
+        }));
     });
 });

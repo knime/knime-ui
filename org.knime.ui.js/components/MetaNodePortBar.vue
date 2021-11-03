@@ -1,5 +1,5 @@
 <script>
-import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip.vue';
+import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip';
 import { portBar, snapConnector } from '~/mixins';
 
 /**
