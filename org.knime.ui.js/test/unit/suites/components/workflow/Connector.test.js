@@ -7,9 +7,10 @@ import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 import * as portShift from '~/util/portShift';
 import * as workflowStoreConfig from '~/store/workflow';
+import connectorPath from '~/util/connectorPath';
 
-jest.mock('~api', () => {
-}, { virtual: true });
+jest.mock('~api', () => { }, { virtual: true });
+jest.mock('~/util/connectorPath', () => jest.fn());
 
 describe('Connector.vue', () => {
     let portMock, propsData, mocks, wrapper, portShiftMock, $store, storeConfig;
@@ -91,16 +92,18 @@ describe('Connector.vue', () => {
         });
 
         it('draws a path between table ports', () => {
+            connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
-            const expectedPath = 'M42.5,7.5 C73,7.5 -27,40.5 3.5,40.5';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+            expect(connectorPath).toHaveBeenCalledWith(38.5, 7.5, 7.5, 40.5);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
         it('draws a path between other ports', () => {
+            connectorPath.mockReturnValueOnce('that path');
             portMock.type = 'foo';
             doShallowMount();
-            const expectedPath = 'M42.5,7.5 C73,7.5 -27,40.5 3.5,40.5';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+            expect(connectorPath).toHaveBeenCalledWith(38.5, 7.5, 7.5, 40.5);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
     });
 
@@ -248,16 +251,20 @@ describe('Connector.vue', () => {
         });
 
         it('draws a path between table ports', () => {
+            connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
-            const expectedPath = 'M36,-4.5 C67.25,-4.5 -27.75,40.5 3.5,40.5';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+
+            expect(connectorPath).toHaveBeenCalledWith(32, -4.5, 7.5, 40.5);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
         it('draws a path between other ports', () => {
             portMock.type = 'foo';
+            connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
-            const expectedPath = 'M36,-4.5 C67.25,-4.5 -27.75,40.5 3.5,40.5';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+
+            expect(connectorPath).toHaveBeenCalledWith(32, -4.5, 7.5, 40.5);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
         it('applies styles for flow variable ports', () => {
@@ -335,16 +342,20 @@ describe('Connector.vue', () => {
         });
 
         it('draws a path between table ports', () => {
+            connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
-            const expectedPath = 'M108.5,651 C504,651 298,960 693.5,960';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+
+            expect(connectorPath).toHaveBeenCalledWith(104.5, 651, 697.5, 960);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
         it('draws a path between other ports', () => {
             portMock.type = 'foo';
+            connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
-            const expectedPath = 'M108.5,651 C504,651 298,960 693.5,960';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+
+            expect(connectorPath).toHaveBeenCalledWith(104.5, 651, 697.5, 960);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
     });
 
@@ -393,10 +404,11 @@ describe('Connector.vue', () => {
                 },
                 id: 'drag-connector'
             };
+            connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
 
-            const expectedPath = 'M40.5,16 C46.75,16 21.75,16 28,16';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+            expect(connectorPath).toHaveBeenCalledWith(36.5, 16, 32, 16);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
         it('draw connector backwards', () => {
@@ -409,10 +421,11 @@ describe('Connector.vue', () => {
                 },
                 id: 'drag-connector'
             };
+            connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
 
-            const expectedPath = 'M4,16 C13.75,16 13.75,16 23.5,16';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+            expect(connectorPath).toHaveBeenCalledWith(0, 16, 27.5, 16);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
     });
 });
