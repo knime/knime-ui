@@ -13,7 +13,7 @@ import LinkDecorator from '~/components/LinkDecorator';
 import StreamingDecorator from '~/components/StreamingDecorator';
 import LoopDecorator from '~/components/LoopDecorator';
 import NodeActionBar from '~/components/NodeActionBar';
-import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip.vue';
+import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip';
 
 import '~/plugins/directive-move';
 
@@ -377,33 +377,6 @@ describe('Node', () => {
                 expect.anything(),
                 expect.objectContaining({ id: 'root:1' })
             );
-        });
-
-        it('selection instantly shows default flowVariable ports', async () => {
-            propsData = {
-                ...propsData,
-                inPorts: [mockPort({ index: 0 })],
-                outPorts: [mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] })]
-            };
-            storeConfig.selection.getters.isNodeSelected = () => () => true;
-
-            doMount();
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
-
-            // unconnected flowVariable port shown
-            expect(ports.at(0).attributes().class).toBe('port');
-            // connected port visible already
-            expect(ports.at(1).attributes().class).toBe('port');
-
-            storeConfig.selection.getters.isNodeSelected = () => () => false;
-            doMount();
-            await Vue.nextTick();
-            ports = wrapper.findAllComponents(DraggablePortWithTooltip);
-
-            // unconnected flowVariable port hidden
-            expect(ports.at(0).attributes().class).toMatch('hidden');
-            // connected port stays visible
-            expect(ports.at(1).attributes().class).not.toMatch('hidden');
         });
     });
 

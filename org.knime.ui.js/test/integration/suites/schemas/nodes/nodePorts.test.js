@@ -29,5 +29,8 @@ Scenario.skip('Name / Type', ({ I }) => {
 
 Scenario('Optional port', ({ I }) => {
     __`Optional`;
-    I.seeAttributesOnElements('[data-node-id="root:209"] > g > g > g:nth-child(3) > g > polygon', { fill: 'transparent' });
+    
+    I.seeAttributesOnElements('[data-node-id="root:209"] > g > g > g:nth-child(3) > g > polygon', {
+        fill: 'transparent'
+    });
 });

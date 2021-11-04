@@ -45,6 +45,22 @@ const workflowCommand = ({ projectId, workflowId, command, args }) => {
     }
 };
 
+/**
+ * @param { String } position The X,Y position where node is going to be added
+ * @param { String } nodeFactory The className of the node
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @returns { Promise } Promise
+ */
+export const addNode = ({
+    position, nodeFactory, projectId, workflowId
+}) => workflowCommand({
+    command: 'add_node',
+    args: { position, nodeFactory },
+    projectId,
+    workflowId
+});
+
 
 /**
  * @param { String } cfg.projectId

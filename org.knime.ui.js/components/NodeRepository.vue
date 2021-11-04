@@ -23,11 +23,11 @@ export default {
             'selectedTags',
             'tags',
             'nodesPerCategory',
-            'query'
+            'query',
+            'scrollPosition'
         ]),
         ...mapGetters('nodeRepository', [
-            'nodeSearching',
-            'scrollPosition'
+            'nodeSearching'
         ]),
         categoriesDisplayed() {
             if (this.nodeSearching) {
@@ -153,6 +153,7 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
+  user-select: none;
 
   & .no-matching-search {
     display: flex;
