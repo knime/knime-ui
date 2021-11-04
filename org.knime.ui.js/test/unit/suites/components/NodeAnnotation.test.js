@@ -71,17 +71,17 @@ describe('Node Annotation', () => {
         });
 
         describe('dimension adjustment', () => {
-            let getBCRMock;
+            let getBoundingClientRectMock;
 
             beforeEach(async () => {
-                getBCRMock = jest.fn();
-                getBCRMock.mockReturnValue({
+                getBoundingClientRectMock = jest.fn();
+                getBoundingClientRectMock.mockReturnValue({
                     x: 42,
                     y: 31,
                     width: 231.5,
                     height: 128.2
                 });
-                HTMLElement.prototype.getBoundingClientRect = getBCRMock;
+                HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
                 doShallowMount();
                 await Vue.nextTick();
             });
@@ -89,13 +89,13 @@ describe('Node Annotation', () => {
             it('correctly measures when zoomed', async () => {
                 $store.state.canvas.zoomFactor = 2;
 
-                getBCRMock.mockReturnValue({
+                getBoundingClientRectMock.mockReturnValue({
                     x: 42,
                     y: 31,
                     width: 463,
                     height: 256.4
                 });
-                HTMLElement.prototype.getBoundingClientRect = getBCRMock;
+                HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
 
                 doShallowMount();
                 await Vue.nextTick();
@@ -121,7 +121,7 @@ describe('Node Annotation', () => {
             propFixtures.forEach(([propName, propValue]) => it(
                 `adjusts dimensions when prop ${propName} changes`,
                 async () => {
-                    getBCRMock.mockReturnValueOnce({
+                    getBoundingClientRectMock.mockReturnValueOnce({
                         x: 143,
                         y: 32,
                         width: 232.5,
