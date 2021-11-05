@@ -65,7 +65,9 @@ export default {
 
             let connector = {
                 id: 'drag-connector',
-                canDelete: false,
+                allowedActions: {
+                    canDelete: false
+                },
                 flowVariableConnection: this.port.type === 'flowVariable',
                 absolutePoint: this.positionOnCanvas([e.x, e.y])
             };
@@ -93,7 +95,7 @@ export default {
         },
         onPointerUp(e) {
             e.target.releasePointerCapture(e.pointerId);
-            
+
             let { sourceNode, sourcePort, destNode, destPort } = this.dragConnector;
 
             if (this.lastHitTarget && !this.lastHitTarget.cancelled) {
@@ -152,23 +154,20 @@ export default {
             } else {
                 // different hitTarget than lastHitTarget, possibly null
                 
-                // send 'connector-leave' to last hitTarget, if it exists and hadn't cancelled connector-enter
+                // send 'connector-leave' to last hitTarget, if it exists and hasn't cancelled connector-enter
                 if (this.lastHitTarget && !this.lastHitTarget.cancelled) {
                     this.lastHitTarget.element.dispatchEvent(
                         new CustomEvent('connector-leave', {
                             detail: {
                                 relatedTarget: hitTarget
                             },
-                            bubbles: true,
-                            cancelable: true
+                            bubbles: true
                         })
                     );
                 }
 
-                /* if leave event hasn't been cancelled:
-                 *   send 'connector-enter' to new hitTarget
-                 *   send 'connector-move' to new hitTarget
-                 */
+                //  send 'connector-enter' to new hitTarget
+                //  if not cancelled, send 'connector-move' to new hitTarget
                 if (hitTarget) {
                     let connectorEnterNotCancelled = hitTarget.dispatchEvent(
                         new CustomEvent('connector-enter', {
@@ -185,7 +184,7 @@ export default {
                     this.lastHitTarget = null;
                 }
             }
-            
+
             this.dragConnector.absolutePoint = [absoluteX, absoluteY];
             /* eslint-enable no-invalid-this */
         }, MOVE_THROTTLE)

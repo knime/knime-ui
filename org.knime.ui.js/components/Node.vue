@@ -323,14 +323,14 @@ export default {
             if (e.shiftKey) {
                 // Multi select
                 if (this.isNodeSelected(this.id)) {
-                    this.deselectNode(this);
+                    this.deselectNode(this.id);
                 } else {
-                    this.selectNode(this);
+                    this.selectNode(this.id);
                 }
             } else {
                 // Single select
                 this.deselectAllObjects();
-                this.selectNode(this);
+                this.selectNode(this.id);
             }
         },
         /*
@@ -351,11 +351,11 @@ export default {
             }
             if (e.shiftKey) {
                 // Multi select
-                this.selectNode(this);
+                this.selectNode(this.id);
             } else if (!this.isNodeSelected(this.id)) {
                 // single select
                 this.deselectAllObjects();
-                this.selectNode(this);
+                this.selectNode(this.id);
             }
         },
         // implemented as required by snapConnector mixin

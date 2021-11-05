@@ -101,7 +101,7 @@ export default {
             if (!e.detail.event.shiftKey && !this.isNodeSelected(this.id)) {
                 this.deselectAllObjects();
             }
-            this.selectNode(this.activeWorkflow.nodes[this.id]);
+            this.selectNode(this.id);
             this.startPos = { x: this.position.x, y: this.position.y };
         },
 

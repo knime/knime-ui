@@ -247,7 +247,6 @@ export default {
       <!-- Connectors Layer -->
       <Connector
         v-for="(connector, id) of workflow.connections"
-        :id="id"
         :key="`connector-${workflow.projectId}-${id}`"
         v-bind="connector"
       />
@@ -265,9 +264,9 @@ export default {
         :kind="node.kind"
       >
         <Node
-          :icon="$store.getters['workflow/nodeIcon']({ workflowId: workflow.projectId, nodeId })"
-          :name="$store.getters['workflow/nodeName']({ workflowId: workflow.projectId, nodeId })"
-          :type="$store.getters['workflow/nodeType']({ workflowId: workflow.projectId, nodeId })"
+          :icon="$store.getters['workflow/getNodeIcon'](nodeId)"
+          :name="$store.getters['workflow/getNodeName'](nodeId)"
+          :type="$store.getters['workflow/getNodeType'](nodeId)"
           v-bind="node"
         />
       </MoveableNodeContainer>
