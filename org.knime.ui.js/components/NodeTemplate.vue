@@ -101,7 +101,7 @@ export default {
   }
 
   &:hover {
-    cursor: grabbing;
+    cursor: grab;
 
     & .node-preview {
       filter: url(#node-torso-shadow);
