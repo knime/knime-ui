@@ -39,7 +39,9 @@ const mockConnector = ({ nr, id }) => ({
     sourceNode: '',
     destNode: '',
     id,
-    canDelete: false,
+    allowedActions: {
+        canDelete: false
+    },
     sourcePort: nr,
     destPort: 0,
     flowVariableConnection: false,
@@ -133,14 +135,14 @@ describe('Kanvas', () => {
                 isWritable() {
                     return !(workflow.info.linked || workflow.parents.some(p => p.linked));
                 },
-                nodeIcon() {
-                    return ({ nodeId }) => `data:image/${nodeId}`;
+                getNodeIcon() {
+                    return (nodeId) => `data:image/${nodeId}`;
                 },
-                nodeName() {
-                    return ({ nodeId }) => `name-${nodeId}`;
+                getNodeName() {
+                    return (nodeId) => `name-${nodeId}`;
                 },
-                nodeType() {
-                    return ({ nodeId }) => `type-${nodeId}`;
+                getNodeType() {
+                    return (nodeId) => `type-${nodeId}`;
                 },
                 executionInfo() {
                     return ({ nodeId }) => workflow.nodes[nodeId].executionInfo;

@@ -115,7 +115,7 @@ describe('MoveableNodeContainer', () => {
             expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
-                expect.objectContaining({ id: 'root:1' })
+                expect.stringMatching('root:1')
             );
         });
 
@@ -137,7 +137,7 @@ describe('MoveableNodeContainer', () => {
             expect(storeConfig.selection.actions.deselectAllObjects).not.toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
-                expect.objectContaining({ id: 'root:2' })
+                expect.stringMatching('root:2')
             );
         });
 
