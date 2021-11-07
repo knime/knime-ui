@@ -37,7 +37,7 @@ describe('API', () => {
             it('handles errors on fetchApplicationState', async () => {
                 try {
                     await api.fetchApplicationState();
-                    return Promise.reject(new Error('Error not thrown'));
+                    return new Error('Error not thrown');
                 } catch (e) {
                     expect(e.message).toContain('Could not load application state');
                 }
@@ -69,7 +69,7 @@ describe('API', () => {
             it('handles errors on addEventListener', async () => {
                 try {
                     await api.addEventListener('foo');
-                    return Promise.reject(new Error('Error not thrown'));
+                    return new Error('Error not thrown');
                 } catch (e) {
                     expect(e.message).toContain('Couldn\'t register event "foo"');
                 }
@@ -78,7 +78,7 @@ describe('API', () => {
             it('handles errors on removeEventListener', async () => {
                 try {
                     await api.removeEventListener('foo');
-                    return Promise.reject(new Error('Error not thrown'));
+                    return new Error('Error not thrown');
                 } catch (e) {
                     expect(e.message).toContain('Couldn\'t unregister event "foo"');
                 }
@@ -145,7 +145,7 @@ describe('API', () => {
                         nodeLimit: 2,
                         fullTemplateInfo: true
                     });
-                    return Promise.reject(new Error('Error not thrown'));
+                    return new Error('Error not thrown');
                 } catch (e) {
                     expect(e.message).toContain('churn');
                     expect(e.message).toContain('myTag');
@@ -198,7 +198,7 @@ describe('API', () => {
             it('handles errors for changeNodeState', async () => {
                 try {
                     await api.changeNodeState({ action: 'do action' });
-                    return Promise.reject(new Error('Error not thrown'));
+                    return new Error('Error not thrown');
                 } catch (e) {
                     expect(e.message).toContain('Could not do action nodes');
                 }
@@ -281,7 +281,7 @@ describe('API', () => {
             it('handles errors on loadWorkflow', async () => {
                 try {
                     await api.loadWorkflow({ projectId: 'foo', workflowId: 'bar' });
-                    return Promise.reject(new Error('Expected error not thrown'));
+                    return new Error('Expected error not thrown');
                 } catch (e) {
                     expect(e.message).toContain('foo');
                     expect(e.message).toContain('bar');
@@ -361,7 +361,7 @@ describe('API', () => {
             it('handles errors on loadTable', async () => {
                 try {
                     await api.loadTable({});
-                    return Promise.reject(new Error('Error not thrown'));
+                    return new Error('Error not thrown');
                 } catch (e) {
                     expect(e.message).toContain('Couldn\'t load table');
                 }
@@ -370,7 +370,7 @@ describe('API', () => {
             it('handles errors on loadFlowVariables', async () => {
                 try {
                     await api.loadFlowVariables({});
-                    return Promise.reject(new Error('Error not thrown'));
+                    return new Error('Error not thrown');
                 } catch (e) {
                     expect(e.message).toContain('Couldn\'t load flow variables');
                 }
@@ -391,7 +391,7 @@ describe('API', () => {
                 let nodeId = Math.random();
                 try {
                     await api.loadTable({ projectId, nodeId, portIndex, batchSize: 400 });
-                    return Promise.reject(new Error('Error not thrown'));
+                    return new Error('Error not thrown');
                 } catch (e) {
                     expect(e.message).toBe(
                         `Couldn't load table data (start: 0, length: 400) from port` +

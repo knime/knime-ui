@@ -5,14 +5,14 @@ import rpc from './json-rpc-adapter.js';
  * This is designed to be called on application startup.
  * @return {Promise} A promise containing the application state as defined in the API
  */
-export const fetchApplicationState = () => {
+export const fetchApplicationState = async () => {
     try {
-        const state = rpc('ApplicationService.getState');
+        const state = await rpc('ApplicationService.getState');
         consola.debug('Current app state', state);
 
-        return Promise.resolve(state);
+        return state;
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error('Could not load application state'));
+        return new Error('Could not load application state');
     }
 };

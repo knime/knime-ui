@@ -9,13 +9,13 @@ import rpc from './json-rpc-adapter.js';
  *     If you want to execute an entire workflow, pass nothing.
  * @returns {Promise}
  */
-export const changeNodeState = ({ projectId, workflowId, nodeIds = [], action }) => {
+export const changeNodeState = async ({ projectId, workflowId, nodeIds = [], action }) => {
     try {
-        let result = rpc('NodeService.changeNodeStates', projectId, workflowId, nodeIds, action);
-        return Promise.resolve(result);
+        let result = await rpc('NodeService.changeNodeStates', projectId, workflowId, nodeIds, action);
+        return result;
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(`Could not ${action} nodes ${nodeIds}`));
+        return new Error(`Could not ${action} nodes ${nodeIds}`);
     }
 };
 
@@ -27,12 +27,12 @@ export const changeNodeState = ({ projectId, workflowId, nodeIds = [], action })
  * @param {String} cfg.nodeId The node to act upon.
  * @returns {Promise}
  */
-export const changeLoopState = ({ projectId, workflowId, nodeId, action }) => {
+export const changeLoopState = async ({ projectId, workflowId, nodeId, action }) => {
     try {
-        let result = rpc(`NodeService.changeLoopState`, projectId, workflowId, nodeId, action);
-        return Promise.resolve(result);
+        let result = await rpc(`NodeService.changeLoopState`, projectId, workflowId, nodeId, action);
+        return result;
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(`Could not ${action} node ${nodeId}`));
+        return new Error(`Could not ${action} node ${nodeId}`);
     }
 };

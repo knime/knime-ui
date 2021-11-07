@@ -10,8 +10,8 @@ describe('JSON-RPC adapter', () => {
         }));
     });
 
-    it('calls window.jsonrpc', () => {
-        let result = rpc('a', 'b', 'c');
+    it('calls window.jsonrpc', async () => {
+        let result = await rpc('a', 'b', 'c');
         expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
             jsonrpc: '2.0',
             method: 'a',
@@ -34,7 +34,7 @@ describe('JSON-RPC adapter', () => {
             this: 'is'
         })} invalid`);
 
-        expect(() => rpc('a', 'b', 'c')).toThrow('Could not be parsed as JSON-RPC: {"this":"is"} invalid');
+        expect(() => rpc('a', 'b', 'c')).rejects.toEqual('Could not be parsed as JSON-RPC: {"this":"is"} invalid');
     });
 
     it('handles error response', () => {
@@ -42,7 +42,7 @@ describe('JSON-RPC adapter', () => {
             error: 'This id is not known'
         }));
 
-        expect(() => rpc('a', 'b', 'c')).toThrow(
+        expect(() => rpc('a', 'b', 'c')).rejects.toEqual(
             'Error returned from JSON-RPC API ["a",["b","c"]]: "This id is not known"'
         );
     });
@@ -52,7 +52,7 @@ describe('JSON-RPC adapter', () => {
             id: 0
         }));
 
-        expect(() => rpc('a', 'b', 'c')).toThrow('Invalid JSON-RPC response {"id":0}');
+        expect(() => rpc('a', 'b', 'c')).rejects.toEqual('Invalid JSON-RPC response {"id":0}');
     });
 
     it('handles mixed messages', () => {
@@ -62,7 +62,7 @@ describe('JSON-RPC adapter', () => {
             error: 'nothing is fine'
         }));
 
-        expect(() => rpc('a', 'b', 'c')).toThrow(
+        expect(() => rpc('a', 'b', 'c')).rejects.toEqual(
             'Error returned from JSON-RPC API ["a",["b","c"]]: "nothing is fine"'
         );
     });

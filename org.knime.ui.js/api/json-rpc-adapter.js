@@ -30,28 +30,32 @@ export default (method, ...args) => {
     } catch (e) {
         throw new Error(`Error calling JSON-RPC api "${[method, JSON.stringify(args)].join('", "')}": ${e.message}`);
     }
+    if (!(response instanceof Promise)) {
+        response = Promise.resolve(response);
+    }
 
     return parseResponse({ response, method, args });
 };
 
 /**
  * Helper to parse a JSON-RPC response. Throws an Error if the response is invalid
- * @param {String} response The serialized JSON-RPC response
+ * @param {Promise<String>} response The serialized JSON-RPC response  (as a promise)
  * @param {String} method (only for logging) The method that was called
  * @param {Array} args (only for logging) The arguments that were passed to the method
  * @returns {*} The `result` contained in the JSON-RPC object
  * */
-parseResponse = ({ response, method = '<unknown>', args }) => {
+parseResponse = async ({ response, method = '<unknown>', args }) => {
     let result, error;
+    let resolvedResponse = await response;
     try {
-        ({ result, error } = JSON.parse(response));
+        ({ result, error } = JSON.parse(resolvedResponse));
     } catch (e) {
-        throw new Error(`Could not be parsed as JSON-RPC: ${response}`);
+        throw new Error(`Could not be parsed as JSON-RPC: ${resolvedResponse}`);
     }
 
     if (error) {
         if (result) {
-            consola.error(`Invalid JSON-RPC response ${response}`);
+            consola.error(`Invalid JSON-RPC response ${resolvedResponse}`);
         }
         throw new Error(
             `Error returned from JSON-RPC API ${JSON.stringify([method, args])}: ${JSON.stringify(error)}`
@@ -59,7 +63,7 @@ parseResponse = ({ response, method = '<unknown>', args }) => {
     }
 
     if (typeof result === 'undefined') {
-        throw new Error(`Invalid JSON-RPC response ${response}`);
+        throw new Error(`Invalid JSON-RPC response ${resolvedResponse}`);
     }
 
     consola.trace('Result:', result);

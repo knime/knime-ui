@@ -9,9 +9,9 @@ import rpc from './json-rpc-adapter.js';
  * @param {Boolean} cfg.fullTemplateInfo - if the results should contain all node info (incl. img data).
  * @returns {Object} the grouped nodes results.
  */
-export const getNodesGroupedByTags = ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => {
+export const getNodesGroupedByTags = async ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => {
     try {
-        const groupedNodes = rpc(
+        const groupedNodes = await rpc(
             'NodeRepositoryService.selectNodes',
             numNodesPerTag,
             tagsOffset,
@@ -20,10 +20,10 @@ export const getNodesGroupedByTags = ({ numNodesPerTag, tagsOffset, tagsLimit, f
         );
         consola.debug('Loaded nodes', groupedNodes);
 
-        return Promise.resolve(groupedNodes);
+        return groupedNodes;
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(`Couldn't get nodes grouped by tags`));
+        return new Error(`Couldn't get nodes grouped by tags`);
     }
 };
 
@@ -38,9 +38,9 @@ export const getNodesGroupedByTags = ({ numNodesPerTag, tagsOffset, tagsLimit, f
  * @param {Boolean} cfg.fullTemplateInfo - if the results should contain all node info (incl. img data).
  * @returns {Object} the node repository search results.
  */
-export const searchNodes = ({ query, tags, allTagsMatch, nodeOffset, nodeLimit, fullTemplateInfo }) => {
+export const searchNodes = async ({ query, tags, allTagsMatch, nodeOffset, nodeLimit, fullTemplateInfo }) => {
     try {
-        const nodes = rpc(
+        const nodes = await rpc(
             'NodeRepositoryService.searchNodes',
             query,
             tags,
@@ -51,9 +51,9 @@ export const searchNodes = ({ query, tags, allTagsMatch, nodeOffset, nodeLimit, 
         );
         consola.debug('Loaded nodes', nodes);
 
-        return Promise.resolve(nodes);
+        return nodes;
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(`Couldn't search nodes "${query}" with tags "${tags}"`));
+        return new Error(`Couldn't search nodes "${query}" with tags "${tags}"`);
     }
 };
