@@ -211,7 +211,7 @@ describe('Kanvas', () => {
 
         it('is not linked', () => {
             expect(wrapper.find('.read-only').exists()).toBe(false);
-            expect(wrapper.find('.link-notification').exists()).toBe(false);
+            expect(wrapper.find('.type-notification').exists()).toBe(false);
         });
 
         it('is not streaming', () => {
@@ -219,30 +219,39 @@ describe('Kanvas', () => {
         });
     });
 
-    it('write-protects and shows warning on being linked', () => {
-        workflow.info.linked = true;
-        doShallowMount();
-        expect(wrapper.find('.read-only').exists()).toBe(true);
-        expect(wrapper.find('.type-notification').exists()).toBe(true);
-        const span = wrapper.find('.type-notification').find('span');
-        expect(span.text()).toContain(`This is a linked ${workflow.info.containerType}`);
-        expect(span.text()).not.toContain(`This is a ${workflow.info.containerType} inside a linked`);
-    });
+    describe('Linked and Streaming', () => {
+        it.each(['metanode', 'component'])('write-protects linked %s and shows warning', (containerType) => {
+            workflow.info.linked = true;
+            workflow.info.containerType = containerType;
+            doShallowMount();
 
-    it('write-protects and shows warning on being inside a linked component or metanode', () => {
-        workflow.parents.push({ linked: true, containerType: 'metanode' });
-        doShallowMount();
-        expect(wrapper.find('.read-only').exists()).toBe(true);
-        expect(wrapper.find('.type-notification').exists()).toBe(true);
-        const span = wrapper.find('.type-notification').find('span');
-        expect(span.text()).toContain(`This is a ${workflow.info.containerType} inside a linked`);
-        expect(span.text()).not.toContain(`This is a linked ${workflow.info.containerType}`);
-    });
+            expect(wrapper.find('.read-only').exists()).toBe(true);
 
-    it('shows decorator in streaming component', () => {
-        workflow.info.jobManager = 'test';
-        doShallowMount();
-        expect(wrapper.find('.streaming-decorator').exists()).toBe(true);
+            const notification = wrapper.find('.type-notification').find('span');
+            expect(notification.text()).toBe(`This is a linked ${containerType} and can therefore not be edited.`);
+            expect(notification.text()).not.toContain('inside a linked');
+        });
+
+        it.each([
+            ['metanode', 'component'],
+            ['component', 'metanode']
+        ])('write-protects %s inside a linked %s and shows warning', (containerType, insideLinkedType) => {
+            workflow.parents.push({ linked: true, containerType: insideLinkedType });
+            workflow.info.containerType = containerType;
+            doShallowMount();
+
+            expect(wrapper.find('.read-only').exists()).toBe(true);
+
+            const notification = wrapper.find('.type-notification').find('span');
+            expect(notification.text()).toBe(`This is a ${containerType} inside a linked ${insideLinkedType} and cannot be edited.`);
+            expect(notification.text()).not.toContain(`This is a linked ${containerType}`);
+        });
+
+        it('shows decorator in streaming component', () => {
+            workflow.info.jobManager = 'test';
+            doShallowMount();
+            expect(wrapper.find('.streaming-decorator').exists()).toBe(true);
+        });
     });
 
     it('renders workflow annotations', () => {
