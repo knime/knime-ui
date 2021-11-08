@@ -226,6 +226,7 @@ describe('Kanvas', () => {
         expect(wrapper.find('.type-notification').exists()).toBe(true);
         const span = wrapper.find('.type-notification').find('span');
         expect(span.text()).toContain(`This is a linked ${workflow.info.containerType}`);
+        expect(span.text()).not.toContain(`This is a ${workflow.info.containerType} inside a linked`);
     });
 
     it('write-protects and shows warning on being inside a linked component or metanode', () => {
@@ -235,6 +236,7 @@ describe('Kanvas', () => {
         expect(wrapper.find('.type-notification').exists()).toBe(true);
         const span = wrapper.find('.type-notification').find('span');
         expect(span.text()).toContain(`This is a ${workflow.info.containerType} inside a linked`);
+        expect(span.text()).not.toContain(`This is a linked ${workflow.info.containerType}`);
     });
 
     it('shows decorator in streaming component', () => {

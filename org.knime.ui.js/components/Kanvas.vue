@@ -197,17 +197,17 @@ export default {
       :class="['type-notification', {onlyStreaming: isStreaming && !isLinked}]"
     >
       <span
-        v-if="isLinked && !isInsideLinked"
-      >
-        This is a linked {{ workflow.info.containerType }} and can therefore not be edited.
-      </span>
-      <span
-        v-else-if="isInsideLinked"
+        v-if="isInsideLinked"
       >
         This is a {{ workflow.info.containerType }} inside a linked {{ insideLinkedType }} and cannot be edited.
       </span>
       <span
-        v-else-if="isStreaming"
+        v-else-if="isLinked"
+      >
+        This is a linked {{ workflow.info.containerType }} and can therefore not be edited.
+      </span>
+      <span
+        v-if="isStreaming"
         :class="['streaming-decorator', { isLinked }]"
       >
         <StreamedIcon class="streamingIcon" />
