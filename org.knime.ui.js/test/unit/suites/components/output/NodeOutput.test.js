@@ -262,18 +262,18 @@ describe('NodeOutput.vue', () => {
         });
 
         it('show port view on isReady', async () => {
-            expect(portView.element.style.display).toBe('none');
+            expect(portView.isVisible()).toBe(false);
             portView.vm.$emit('update', { state: 'ready' });
             await Vue.nextTick();
 
-            expect(portView.element.style.display).toBe('');
+            expect(portView.isVisible()).toBe(true);
         });
 
         it('shows loading indicator', async () => {
             portView.vm.$emit('update', { state: 'loading' });
             await Vue.nextTick();
 
-            expect(portView.element.style.display).toBe('none');
+            expect(portView.isVisible()).toBe(false);
             expect(wrapper.find('.placeholder').text()).toBe('Loading data');
             expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
         });
@@ -282,7 +282,7 @@ describe('NodeOutput.vue', () => {
             portView.vm.$emit('update', { state: 'error', message: 'message' });
             await Vue.nextTick();
 
-            expect(portView.element.style.display).toBe('none');
+            expect(portView.isVisible()).toBe(false);
             expect(wrapper.find('.placeholder').text()).toBe('message');
             expect(wrapper.findComponent(ReloadIcon).exists()).toBe(false);
         });
