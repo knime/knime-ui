@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import StreamingDecorator from '~/components/StreamingDecorator.vue';
+import StreamingDecorator from '~/components/StreamingDecorator';
 
 import * as $colors from '~/style/colors';
 

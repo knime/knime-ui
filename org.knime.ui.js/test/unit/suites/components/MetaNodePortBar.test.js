@@ -9,7 +9,7 @@ import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
 import MetaNodePortBar from '~/components/MetaNodePortBar';
-import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip.vue';
+import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip';
 
 describe('MetaNodePortBar.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, $store;
