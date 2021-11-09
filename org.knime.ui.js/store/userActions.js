@@ -138,7 +138,7 @@ const actionMap = {
                 return true;
             }
             const allSelectedDeletable = selectedNodes.every(node => node.allowedActions.canDelete) &&
-                selectedConnections.every(connection => connection.canDelete);
+                selectedConnections.every(connection => connection.allowedActions.canDelete);
             // disable if one of the selected objects are not deletable
             return !allSelectedDeletable;
         }
@@ -308,6 +308,12 @@ export const getters = {
                 actionMap.cancelAll,
                 actionMap.resetAll
             );
+            // if no node is selected it might be still a connection that can be deleted
+            if (selectedConnections.length > 0) {
+                actionList.push(
+                    actionMap.deleteSelected
+                );
+            }
         } else if (selectedNodes.length === 1) {
             const selectedNodeAllAllowedActions = {
                 ...selectedNodes[0].allowedActions,

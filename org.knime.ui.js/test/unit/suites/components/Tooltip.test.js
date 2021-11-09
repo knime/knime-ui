@@ -76,4 +76,19 @@ describe('Tooltip', () => {
         expect(wrapper.attributes('style')).toContain(`max-width: ${$shapes.tooltipMaxWidth}`);
         expect(wrapper.find('.scroller').attributes('style')).toContain(`max-height: ${$shapes.tooltipMaxHeight}`);
     });
+
+    describe('only have pointer events for hoverable', () => {
+        test('hoverable', () => {
+            propsData.hoverable = true;
+            doShallowMount();
+
+            expect(wrapper.classes()).toContain('hoverable');
+        });
+
+        test('not hoverable', () => {
+            doShallowMount();
+
+            expect(wrapper.classes()).not.toContain('hoverable');
+        });
+    });
 });

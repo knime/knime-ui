@@ -332,7 +332,7 @@ describe('workflow store', () => {
             // select every even node
             Object.values(nodesArray).forEach((node, index) => {
                 if (index % 2 === 0) {
-                    store.dispatch('selection/selectNode', node);
+                    store.dispatch('selection/selectNode', node.id);
                 }
             });
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
@@ -360,7 +360,7 @@ describe('workflow store', () => {
             await Vue.nextTick();
             let nodeIds = [];
             Object.values(nodesArray).forEach((node) => {
-                store.dispatch('selection/selectNode', node);
+                store.dispatch('selection/selectNode', node.id);
                 nodeIds.push(node.id);
             });
 
@@ -403,24 +403,24 @@ describe('workflow store', () => {
         ])('deletes %s objects', async (amount) => {
             await loadStore();
             let nodesArray = {};
-            let conenctionsArray = {};
+            let connectionsArray = {};
             let nodeIds = [];
             let connectionIds = [];
             for (let i = 0; i < amount / 2; i++) {
-                let name = `node-${i}`;
-                nodesArray[name] = { id: name, allowedActions: { canDelete: true } };
-                store.dispatch('selection/selectNode', nodesArray[name]);
-                nodeIds.push(name);
+                let id = `node-${i}`;
+                nodesArray[id] = { id, allowedActions: { canDelete: true } };
+                store.dispatch('selection/selectNode', id);
+                nodeIds.push(id);
             }
             for (let i = 0; i < amount / 2; i++) {
-                let name = `connection-${i}`;
-                conenctionsArray[name] = { id: name, canDelete: true };
-                store.dispatch('selection/selectConnection', conenctionsArray[name]);
-                connectionIds.push(name);
+                let id = `connection-${i}`;
+                connectionsArray[id] = { id, allowedActions: { canDelete: true } };
+                store.dispatch('selection/selectConnection', id);
+                connectionIds.push(id);
             }
             store.commit('workflow/setActiveWorkflow', {
                 nodes: nodesArray,
-                connections: conenctionsArray,
+                connections: connectionsArray,
                 projectId: 'foo',
                 info: {
                     containerId: 'test'
@@ -444,7 +444,7 @@ describe('workflow store', () => {
             let nodesArray = {};
             nodesArray[nodeName] = { id: nodeName, allowedActions: { canDelete: false } };
             let connectionsArray = {};
-            connectionsArray[connectorName] = { id: connectorName, canDelete: false };
+            connectionsArray[connectorName] = { id: connectorName, allowedActions: { canDelete: false } };
 
             beforeEach(async () => {
                 await loadStore();
@@ -460,7 +460,7 @@ describe('workflow store', () => {
             });
 
             test('nodes', async () => {
-                store.dispatch('selection/selectNode', nodesArray[nodeName]);
+                store.dispatch('selection/selectNode', nodesArray[nodeName].id);
 
                 await Vue.nextTick();
                 store.dispatch('workflow/deleteSelectedObjects');
@@ -470,7 +470,7 @@ describe('workflow store', () => {
             });
 
             test('connections', async () => {
-                store.dispatch('selection/selectConnection', connectionsArray[connectorName]);
+                store.dispatch('selection/selectConnection', connectionsArray[connectorName].id);
 
                 await Vue.nextTick();
                 store.dispatch('workflow/deleteSelectedObjects');
@@ -480,8 +480,8 @@ describe('workflow store', () => {
             });
 
             test('nodes and connections', async () => {
-                store.dispatch('selection/selectNode', nodesArray[nodeName]);
-                store.dispatch('selection/selectConnection', connectionsArray[connectorName]);
+                store.dispatch('selection/selectNode', nodesArray[nodeName].id);
+                store.dispatch('selection/selectConnection', connectionsArray[connectorName].id);
 
                 await Vue.nextTick();
                 store.dispatch('workflow/deleteSelectedObjects');
@@ -723,18 +723,18 @@ describe('workflow store', () => {
             });
 
             it('gets name', () => {
-                expect(store.getters['workflow/nodeName']({ nodeId: 'foo' })).toBe('exampleName');
-                expect(store.getters['workflow/nodeName']({ nodeId: 'ownData' })).toBe('ownName');
+                expect(store.getters['workflow/getNodeName']('foo')).toBe('exampleName');
+                expect(store.getters['workflow/getNodeName']('ownData')).toBe('ownName');
             });
 
             it('gets icon', () => {
-                expect(store.getters['workflow/nodeIcon']({ nodeId: 'foo' })).toBe('exampleIcon');
-                expect(store.getters['workflow/nodeIcon']({ nodeId: 'ownData' })).toBe('ownIcon');
+                expect(store.getters['workflow/getNodeIcon']('foo')).toBe('exampleIcon');
+                expect(store.getters['workflow/getNodeIcon']('ownData')).toBe('ownIcon');
             });
 
             it('gets type', () => {
-                expect(store.getters['workflow/nodeType']({ nodeId: 'foo' })).toBe('exampleType');
-                expect(store.getters['workflow/nodeType']({ nodeId: 'ownData' })).toBe('ownType');
+                expect(store.getters['workflow/getNodeType']('foo')).toBe('exampleType');
+                expect(store.getters['workflow/getNodeType']('ownData')).toBe('ownType');
             });
         });
     });

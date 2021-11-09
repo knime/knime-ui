@@ -1,14 +1,14 @@
 <script>
 import { mapState } from 'vuex';
-import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import Button from '~/webapps-common/ui/components/Button';
+import NodeTemplate from '~/components/NodeTemplate';
 
 const CATEGORY_LIMIT = 6;
 
 export default {
     components: {
-        NodePreview,
-        Button
+        Button,
+        NodeTemplate
     },
     props: {
         category: {
@@ -61,16 +61,8 @@ export default {
         <li
           v-for="node in category.nodes"
           :key="node.id"
-          class="node"
         >
-          <label
-            v-if="node.id"
-            :title="node.name"
-            class="label"
-          >
-            {{ node.name }}
-          </label>
-          <NodePreview v-bind="node" />
+          <NodeTemplate :node-template="node" />
         </li>
       </ul>
       <Button
@@ -125,35 +117,7 @@ export default {
       flex-wrap: wrap;
       margin-right: -5px;
       margin-left: -5px;
-
-      & .node {
-        width: 100px;
-        height: 75px;
-        margin: 0 2px;
-        padding-bottom: 42px;
-        position: relative;
-        display: flex;
-        flex-direction: column-reverse;
-        align-items: center;
-        font-size: 12px;
-        font-weight: 700;
-        text-align: center;
-
-        & label {
-          max-height: 26px;
-          max-width: 100px;
-          display: -webkit-box;
-          -webkit-box-orient: vertical;
-          -webkit-line-clamp: 2;
-          overflow: hidden;
-        }
-
-        & svg {
-          width: 70px;
-          position: absolute;
-          bottom: -15px;
-        }
-      }
+      list-style-type: none;
     }
   }
 
