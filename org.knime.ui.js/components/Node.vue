@@ -1,6 +1,6 @@
 <script>
 import { mapActions, mapState, mapGetters } from 'vuex';
-import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip.vue';
+import DraggablePortWithTooltip from '~/components/DraggablePortWithTooltip';
 import NodeState from '~/components/NodeState';
 import NodeTorso from '~/components/NodeTorso';
 import NodeAnnotation from '~/components/NodeAnnotation';
@@ -8,8 +8,8 @@ import LinkDecorator from '~/components/LinkDecorator';
 import StreamingDecorator from '~/components/StreamingDecorator';
 import LoopDecorator from '~/components/LoopDecorator';
 import portShift from '~/util/portShift';
-import NodeActionBar from '~/components/NodeActionBar.vue';
-import NodeSelectionPlane from '~/components/NodeSelectionPlane.vue';
+import NodeActionBar from '~/components/NodeActionBar';
+import NodeSelectionPlane from '~/components/NodeSelectionPlane';
 import { snapConnector } from '~/mixins';
 
 /**
@@ -289,7 +289,7 @@ export default {
                 return true;
             }
 
-            return Boolean(port.connectedVia.length) || this.hover || this.isNodeSelected(this.id);
+            return Boolean(port.connectedVia.length) || this.hover;
         },
 
         onLeftDoubleClick(e) {
@@ -323,14 +323,14 @@ export default {
             if (e.shiftKey) {
                 // Multi select
                 if (this.isNodeSelected(this.id)) {
-                    this.deselectNode(this);
+                    this.deselectNode(this.id);
                 } else {
-                    this.selectNode(this);
+                    this.selectNode(this.id);
                 }
             } else {
                 // Single select
                 this.deselectAllObjects();
-                this.selectNode(this);
+                this.selectNode(this.id);
             }
         },
         /*
@@ -351,11 +351,11 @@ export default {
             }
             if (e.shiftKey) {
                 // Multi select
-                this.selectNode(this);
+                this.selectNode(this.id);
             } else if (!this.isNodeSelected(this.id)) {
                 // single select
                 this.deselectAllObjects();
-                this.selectNode(this);
+                this.selectNode(this.id);
             }
         },
         // implemented as required by snapConnector mixin

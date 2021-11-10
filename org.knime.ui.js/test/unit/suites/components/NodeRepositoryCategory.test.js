@@ -2,7 +2,7 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
-import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
+import NodeTemplate from '~/components/NodeTemplate';
 
 import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
 
@@ -86,19 +86,9 @@ describe('NodeRepositoryCategory', () => {
             const nodes = nodeCategory.category.nodes;
             propsData = { ...nodeCategory };
             doShallowMount();
-            const nodeListItems = wrapper.findAll('li.node');
-            expect(nodeListItems.length).toBe(nodes.length);
 
-            const nodePreviews = wrapper.findAllComponents(NodePreview);
-            expect(nodePreviews.length).toBe(nodes.length);
-
-            nodeListItems.wrappers.forEach((item, index) => {
-                const label = item.find('label');
-                expect(label.text()).toEqual(nodes[index].name);
-                expect(label.attributes('title')).toEqual(nodes[index].name);
-
-                expect(nodePreviews.at(index).attributes('id')).toBe(nodes[index].id);
-            });
+            const nodeTemplates = wrapper.findAllComponents(NodeTemplate);
+            expect(nodeTemplates.length).toBe(nodes.length);
         });
 
         it('renders nodes related to a category', () => {
@@ -106,7 +96,7 @@ describe('NodeRepositoryCategory', () => {
             propsData = { ...nodeCategory };
             doShallowMount();
             expect(wrapper.find('.category-title').text()).toBe('MyTag1');
-            const nodeListItems = wrapper.findAll('li.node');
+            const nodeListItems = wrapper.findAllComponents(NodeTemplate);
             expect(nodeListItems.length).toBe(nodesAmount);
         });
 
@@ -116,7 +106,7 @@ describe('NodeRepositoryCategory', () => {
             propsData = { ...nodesFiltered };
             doShallowMount();
             expect(wrapper.find('.category-title').exists()).toBe(false);
-            const nodeListItems = wrapper.findAll('li.node');
+            const nodeListItems = wrapper.findAllComponents(NodeTemplate);
             expect(nodeListItems.length).toBe(nodesAmount);
         });
     });

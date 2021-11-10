@@ -159,7 +159,8 @@ describe('TooltipContainer', () => {
                 text: 'text',
                 title: 'title',
                 orientation: 'top',
-                type: 'default'
+                type: 'default',
+                hoverable: true
             };
             doShallowMount();
             $store.commit('workflow/setTooltip', tooltip);
@@ -169,7 +170,8 @@ describe('TooltipContainer', () => {
                 text: 'text',
                 title: 'title',
                 orientation: 'top',
-                type: 'default'
+                type: 'default',
+                hoverable: true
             });
         });
     });

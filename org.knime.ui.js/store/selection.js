@@ -5,26 +5,27 @@ import Vue from 'vue';
  */
 
 export const state = () => ({
+    /**
+     * Selected nodes object. If key exists it means it is selected.
+     * @type {Object.<string, boolean>}
+     */
     selectedNodes: {},
+    /**
+    * @type {Object.<string, boolean>}
+     */
     selectedConnections: {}
 });
 
 export const mutations = {
 
-    // Add each node of the provided nodes object to the selected nodes object.
-    // This selected node object does keeps the id, the allowed actions, the kind, the outPorts
-    // and the node state of the nodes.
-    addNodesToSelection(state, nodes) {
-        Object.values(nodes).forEach(({ id, allowedActions, loopInfo, kind, outPorts, state: nodeState }) => {
-            Vue.set(state.selectedNodes, id, { id, allowedActions, loopInfo, kind, outPorts, state: nodeState });
-        });
+    // Add nodeIds to selection
+    addNodesToSelection(state, nodeIds) {
+        nodeIds.forEach(id => Vue.set(state.selectedNodes, id, true));
     },
 
-    // Removes each node of the provided nodes object to the selected nodes object.
-    removeNodesFromSelection(state, nodes) {
-        Object.values(nodes).forEach((node) => {
-            Vue.delete(state.selectedNodes, node.id);
-        });
+    // Removes each node of the provided nodeIds array from the selected nodes
+    removeNodesFromSelection(state, nodeIds) {
+        nodeIds.forEach(id => Vue.delete(state.selectedNodes, id));
     },
 
     // Clear the selected nodes and the selected connections at once
@@ -33,18 +34,15 @@ export const mutations = {
         state.selectedConnections = {};
     },
 
-    // Add each connection of the provided connections object to the selected connections object.
-    // This selected connection object does only keep the id and the can delete attribute of the connection.
-    addConnectionsToSelection(state, connections) {
-        Object.values(connections).forEach(({ id, canDelete }) => {
-            Vue.set(state.selectedConnections, id, { id, canDelete });
-        });
+    //  Add connectionIds to selection.
+    addConnectionsToSelection(state, connectionIds) {
+        connectionIds.forEach(id => Vue.set(state.selectedConnections, id, true));
     },
 
     // Removes each connection of the provided connections object to the selected connection object.
-    removeConnectionsFromSelection(state, connections) {
-        Object.values(connections).forEach((connection) => {
-            Vue.delete(state.selectedConnections, connection.id);
+    removeConnectionsFromSelection(state, connectionIds) {
+        connectionIds.forEach(id => {
+            Vue.delete(state.selectedConnections, id);
         });
     }
 };
@@ -58,27 +56,27 @@ export const actions = {
 
     // Selects all nodes that are present in the current workflow store.
     selectAllNodes({ commit, rootState }) {
-        commit('addNodesToSelection', rootState.workflow.activeWorkflow.nodes);
+        commit('addNodesToSelection', Object.keys(rootState.workflow.activeWorkflow.nodes));
     },
 
     // Selects the given node.
-    selectNode({ commit }, node) {
-        commit('addNodesToSelection', { node });
+    selectNode({ commit }, nodeId) {
+        commit('addNodesToSelection', [nodeId]);
     },
 
     // Deselects the given node.
-    deselectNode({ commit }, node) {
-        commit('removeNodesFromSelection', { node });
+    deselectNode({ commit }, nodeId) {
+        commit('removeNodesFromSelection', [nodeId]);
     },
 
     // Selects the given connection.
-    selectConnection({ commit }, connection) {
-        commit('addConnectionsToSelection', { connection });
+    selectConnection({ commit }, connectionId) {
+        commit('addConnectionsToSelection', [connectionId]);
     },
 
     // Deselects the given connection.
-    deselectConnection({ commit }, connection) {
-        commit('removeConnectionsFromSelection', { connection });
+    deselectConnection({ commit }, connectionId) {
+        commit('removeConnectionsFromSelection', [connectionId]);
     }
 };
 
@@ -88,27 +86,29 @@ export const getters = {
     selectedNodeIds: (state) => Object.keys(state.selectedNodes),
 
     // Returns an array of selected node objects.
-    selectedNodes: (state) => {
-        let nodesArray = [];
-        Object.keys(state.selectedNodes).forEach((node) => {
-            nodesArray.push(state.selectedNodes[node]);
-        });
-        return nodesArray;
+    selectedNodes(state, getters, rootState) {
+        if (!rootState.workflow.activeWorkflow) {
+            return [];
+        }
+        return Object.keys(state.selectedNodes).map(
+            (nodeId) => rootState.workflow.activeWorkflow.nodes[nodeId] ||
+                consola.error(`Selected node '${nodeId}' not found in activeWorkflow`)
+        );
     },
 
     // Checks if a given node id is present in the selected object.
     isNodeSelected: (state) => (nodeId) => nodeId in state.selectedNodes,
 
-    // Returns an array of all selected connection ids.
-    selectedConnectionIds: (state) => Object.keys(state.selectedConnections),
-
     // Returns an array of selected connection objects.
-    selectedConnections: (state) => {
-        let connectionsArray = [];
-        Object.keys(state.selectedConnections).forEach((connection) => {
-            connectionsArray.push(state.selectedConnections[connection]);
-        });
-        return connectionsArray;
+    selectedConnections(state, getters, { workflow: { activeWorkflow } }) {
+        if (!activeWorkflow) {
+            return [];
+        }
+
+        return Object.keys(state.selectedConnections)
+            .map(id => activeWorkflow.connections[id] ||
+                consola.error(`Selected connection '${id}' not found in activeWorkflow`))
+            .filter(Boolean); // after deleting a selected connection, it will be undefined
     },
 
     // Checks if a given connection id is present in the selected object.
