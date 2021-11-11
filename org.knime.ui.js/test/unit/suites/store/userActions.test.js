@@ -47,6 +47,19 @@ describe('userActions store', () => {
                     }
                 }
             },
+            connections: {
+                'root:1_0': {
+                    id: 'root:1_0',
+                    allowedActions: {
+                        canDelete: true
+                    },
+                    destNode: 'root:1',
+                    destPort: 0,
+                    flowVariableConnection: true,
+                    sourceNode: 'root:2',
+                    sourcePort: 1
+                }
+            },
             allowedActions: {
                 canExecute: true,
                 canCancel: true,
@@ -100,6 +113,14 @@ describe('userActions store', () => {
     });
 
     describe('context menu', () => {
+        it('provides delete action selected connection if no node is selected', () => {
+            selectedConnections = [workflow.connections['root:1_0']];
+            loadStore();
+            let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
+            expect(contextMenuActionItems).toHaveLength(4);
+            expect(contextMenuActionItems.pop().storeAction).toBe('workflow/deleteSelectedObjects');
+        });
+
         it('provides actions for a single selected node', () => {
             selectedNodes = [workflow.nodes['root:2']];
             selectedNodes[0].allowedActions.canReset = false;

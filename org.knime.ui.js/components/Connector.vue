@@ -28,9 +28,12 @@ export default {
             type: String,
             required: true
         },
-        canDelete: {
-            type: Boolean,
-            required: true
+        allowedActions: {
+            type: Object,
+            required: true,
+            validate(o) {
+                return o.hasOwnProperty('canDelete');
+            }
         }
     },
     computed: {
@@ -87,14 +90,14 @@ export default {
             if (e.shiftKey) {
                 // Multi select
                 if (this.isConnectionSelected(this.id)) {
-                    this.deselectConnection(this);
+                    this.deselectConnection(this.id);
                 } else {
-                    this.selectConnection(this);
+                    this.selectConnection(this.id);
                 }
             } else {
                 // Single select
                 this.deselectAllObjects();
-                this.selectConnection(this);
+                this.selectConnection(this.id);
             }
         }
     }

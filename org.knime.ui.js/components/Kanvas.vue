@@ -10,6 +10,7 @@ import StreamedIcon from '~/components/../webapps-common/ui/assets/img/icons/nod
 import ConnectorLabel from '~/components/ConnectorLabel';
 import ContextMenu from '~/components/ContextMenu';
 import { throttle } from 'lodash';
+import { dropNode } from '~/mixins';
 
 const PANNING_THROTTLE = 50; // 50ms between consecutive mouse move events
 
@@ -25,6 +26,7 @@ export default {
         ConnectorLabel,
         MoveableNodeContainer
     },
+    mixins: [dropNode],
     data() {
         return {
             /*
@@ -35,8 +37,7 @@ export default {
     },
     computed: {
         ...mapState('workflow', {
-            workflow: 'activeWorkflow',
-            tooltip: 'tooltip'
+            workflow: 'activeWorkflow'
         }),
         ...mapGetters('workflow', [
             'isLinked',
@@ -187,6 +188,8 @@ export default {
     @pointerup.left="stopPan"
     @pointermove="movePan"
     @contextmenu.prevent="onContextMenu"
+    @drop.stop="onDrop"
+    @dragover.stop="onDragOver"
   >
     <ContextMenu
       ref="contextMenu"
@@ -244,7 +247,6 @@ export default {
       <!-- Connectors Layer -->
       <Connector
         v-for="(connector, id) of workflow.connections"
-        :id="id"
         :key="`connector-${workflow.projectId}-${id}`"
         v-bind="connector"
       />
@@ -262,9 +264,9 @@ export default {
         :kind="node.kind"
       >
         <Node
-          :icon="$store.getters['workflow/nodeIcon']({ workflowId: workflow.projectId, nodeId })"
-          :name="$store.getters['workflow/nodeName']({ workflowId: workflow.projectId, nodeId })"
-          :type="$store.getters['workflow/nodeType']({ workflowId: workflow.projectId, nodeId })"
+          :icon="$store.getters['workflow/getNodeIcon'](nodeId)"
+          :name="$store.getters['workflow/getNodeName'](nodeId)"
+          :type="$store.getters['workflow/getNodeType'](nodeId)"
           v-bind="node"
         />
       </MoveableNodeContainer>

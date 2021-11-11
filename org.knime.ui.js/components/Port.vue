@@ -48,52 +48,61 @@ export default {
 
 <template>
   <g class="port">
-    <PortIcon
-      :type="port.type"
-      :color="portColor"
-      :filled="shouldFill"
+    <rect
+      :x="-$shapes.portSize / 2"
+      :y="-$shapes.portSize / 2 - 1"
+      :width="$shapes.portSize"
+      :height="$shapes.portSize + 2"
+      class="hover-area"
     />
+    <g class="scale">
+      <PortIcon
+        :type="port.type"
+        :color="portColor"
+        :filled="shouldFill"
+      />
 
-    <!-- X outline -->
-    <path
-      v-if="port.inactive"
-      stroke-width="3"
-      :stroke="$colors.portColors.inactiveOutline"
-      :d="`M-${$shapes.portSize / 2},-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
+      <!-- X outline -->
+      <path
+        v-if="port.inactive"
+        stroke-width="3"
+        :stroke="$colors.portColors.inactiveOutline"
+        :d="`M-${$shapes.portSize / 2},-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
            m-${$shapes.portSize},0 l${$shapes.portSize},-${$shapes.portSize}`"
-    />
-    <!-- X -->
-    <path
-      v-if="port.inactive"
-      stroke-width="1.5"
-      :stroke="$colors.portColors.inactive"
-      :d="`M-${$shapes.portSize / 2},-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
+      />
+      <!-- X -->
+      <path
+        v-if="port.inactive"
+        stroke-width="1.5"
+        :stroke="$colors.portColors.inactive"
+        :d="`M-${$shapes.portSize / 2},-${$shapes.portSize / 2} l${$shapes.portSize},${$shapes.portSize}
            m-${$shapes.portSize},0 l${$shapes.portSize},-${$shapes.portSize}`"
-    />
-    <!-- metanode port traffic light -->
-    <g
-      v-if="trafficLight"
-    >
+      />
+      <!-- metanode port traffic light -->
       <g
-        transform="translate(-5.5, 0)"
-        fill="none"
+        v-if="trafficLight"
       >
-        <circle
-          r="3.75"
-          fill="white"
-        />
-        <circle
-          r="3"
-          :fill="$colors.trafficLight[trafficLight]"
-        />
-        <path
-          :d="`M2.5,0a1,1 0 0 0 -5,0a1,1 0 0 0 5,0${
-            trafficLight === 'yellow' || trafficLight === 'green' ? 'h-5' : ''
-          }`"
+        <g
+          transform="translate(-5.5, 0)"
           fill="none"
-          :stroke="$colors.darkeningMask"
-          :transform="trafficLight === 'yellow' ? 'rotate(90)' : null"
-        />
+        >
+          <circle
+            r="3.75"
+            fill="white"
+          />
+          <circle
+            r="3"
+            :fill="$colors.trafficLight[trafficLight]"
+          />
+          <path
+            :d="`M2.5,0a1,1 0 0 0 -5,0a1,1 0 0 0 5,0${
+              trafficLight === 'yellow' || trafficLight === 'green' ? 'h-5' : ''
+            }`"
+            fill="none"
+            :stroke="$colors.darkeningMask"
+            :transform="trafficLight === 'yellow' ? 'rotate(90)' : null"
+          />
+        </g>
       </g>
     </g>
   </g>
@@ -101,15 +110,21 @@ export default {
 
 <style lang="postcss" scoped>
 .port {
-  pointer-events: bounding-box; /* SVG 2 bounding-box: already works in chromium, defaults to auto in firefox */
+  & .hover-area {
+    pointer-events: fill;
+    fill: none;
+    stroke: none;
+  }
 
-  & > * {
+  & .scale {
+    pointer-events: none;
     transition: transform 0.1s linear;
   }
 
-  &:hover > * {
+  &:hover .scale {
     transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
-    transform: scale(1.15);
+    transform: scale(1.2);
   }
 }
+
 </style>

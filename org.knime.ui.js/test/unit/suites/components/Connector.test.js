@@ -25,7 +25,9 @@ describe('Connector.vue', () => {
             sourceNode: 'root:1',
             destNode: 'root:2',
             id: 'root:2_2',
-            canDelete: true,
+            allowedActions: {
+                canDelete: true
+            },
             sourcePort: 0,
             destPort: 2
         };
@@ -154,7 +156,7 @@ describe('Connector.vue', () => {
             expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectConnection).toHaveBeenCalledWith(
                 expect.anything(),
-                expect.objectContaining({ id: 'root:2_2' })
+                expect.stringMatching('root:2_2')
             );
         });
 
@@ -165,7 +167,7 @@ describe('Connector.vue', () => {
             expect(storeConfig.selection.actions.deselectConnection).not.toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectConnection).toHaveBeenCalledWith(
                 expect.anything(),
-                expect.objectContaining({ id: 'root:2_2' })
+                expect.stringMatching('root:2_2')
             );
         });
 
@@ -386,7 +388,9 @@ describe('Connector.vue', () => {
                 sourceNode: 'root:1',
                 sourcePort: 1,
                 absolutePoint: [32, 16],
-                canDelete: false,
+                allowedActions: {
+                    canDelete: false
+                },
                 id: 'drag-connector'
             };
             doShallowMount();
@@ -400,7 +404,9 @@ describe('Connector.vue', () => {
                 destNode: 'root:2',
                 destPort: 1,
                 absolutePoint: [0, 16],
-                canDelete: false,
+                allowedActions: {
+                    canDelete: false
+                },
                 id: 'drag-connector'
             };
             doShallowMount();

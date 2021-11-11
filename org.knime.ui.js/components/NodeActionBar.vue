@@ -10,7 +10,7 @@ import StepIcon from '../assets/step-execution.svg?inline';
 import OpenViewIcon from '../assets/open-view.svg?inline';
 import OpenDialogIcon from '../assets/configure-node.svg?inline';
 
-import ActionButton from '~/components/ActionButton.vue';
+import ActionButton from '~/components/ActionButton';
 
 /**
  *  Displays a bar of action buttons above nodes
