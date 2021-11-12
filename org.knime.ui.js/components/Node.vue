@@ -513,11 +513,11 @@ export default {
 }
 
 .hover-container {
-  transition: filter 0.5s;
+  transition: filter 0.4s;
 }
 
 .connection-forbidden .hover-container {
-  filter: grayscale(50%) opacity(40%);
+  filter: grayscale(40%) opacity(50%);
 }
 
 .port {
