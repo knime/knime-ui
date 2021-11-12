@@ -180,7 +180,8 @@ export default {
                             cancelable: true
                         })
                     );
-                    // cancelling signals that hit target allows dropping a connector
+                    
+                    // cancelling signals, that hit target allows dropping a connector
                     let allowsDrop = !notCancelled;
 
                     if (allowsDrop) {
