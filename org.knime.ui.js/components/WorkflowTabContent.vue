@@ -27,22 +27,22 @@ export default {
         ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive']),
         metadata() {
             switch (this.workflow.info.containerType) {
-            case 'project':
-                return this.workflow.projectMetadata || { title: this.workflow.info.name };
-            case 'component': {
-                const {
-                    componentMetadata: { inPorts, outPorts, name, type, icon, description, options, views }
-                } = this.workflow;
-                return {
-                    title: name,
-                    description,
-                    nodePreview: { inPorts, outPorts, icon, type, isComponent: true, hasDynPorts: false },
-                    nodeFeatures: { inPorts, outPorts, views, options },
-                    isComponent: true
-                };
-            }
-            default:
-                return null;
+                case 'project':
+                    return this.workflow.projectMetadata || { title: this.workflow.info.name };
+                case 'component': {
+                    const {
+                        componentMetadata: { inPorts, outPorts, name, type, icon, description, options, views }
+                    } = this.workflow;
+                    return {
+                        title: name,
+                        description,
+                        nodePreview: { inPorts, outPorts, icon, type, isComponent: true, hasDynPorts: false },
+                        nodeFeatures: { inPorts, outPorts, views, options },
+                        isComponent: true
+                    };
+                }
+                default:
+                    return null;
             }
         }
     }

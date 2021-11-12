@@ -25,7 +25,7 @@
     <properties>
         <revision>4.4.0</revision>
         <changelist>-SNAPSHOT</changelist>
-		<changelog.skip>true</changelog.skip>
+        <changelog.baseref>analytics-platform/4.2.0</changelog.baseref>
         <feature-branch-extension.branchListProperty>git.branch</feature-branch-extension.branchListProperty>
         <feature-branch-extension.appendArtifactoryProperties>false</feature-branch-extension.appendArtifactoryProperties>
     </properties>

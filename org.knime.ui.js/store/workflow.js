@@ -1,5 +1,5 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
-    moveObjects, openDialog, openView, undo, redo, removeEventListener, connectNodes } from '~api';
+    moveObjects, openDialog, openView, undo, redo, removeEventListener, connectNodes, addNode } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -73,7 +73,7 @@ export const actions = {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    unloadActiveWorkflow({ state, getters: { activeWorkflowId: workflowId } }) {
+    unloadActiveWorkflow({ state, commit, getters: { activeWorkflowId: workflowId }, rootGetters }) {
         if (!state.activeWorkflow) {
             // nothing to do (no tabs open)
             return;
@@ -86,6 +86,7 @@ export const actions = {
         } catch (e) {
             consola.error(e);
         }
+        commit('selection/clearSelection', null, { root: true });
     },
     async setActiveWorkflowSnapshot({ commit, getters }, { workflow, snapshotId, projectId }) {
         commit('setActiveWorkflow', {
@@ -104,23 +105,26 @@ export const actions = {
      * @returns {void} - nothing to return
      */
     deleteSelectedObjects({
-        state: { activeWorkflow: { projectId } },
+        state: { activeWorkflow },
         getters: { activeWorkflowId },
         rootState,
+        rootGetters,
         dispatch
     }) {
-        const selectedNodes = Object.values(rootState.selection.selectedNodes);
-        const selectedConnections = Object.values(rootState.selection.selectedConnections);
-        let deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
-        let nonDeletableNodeIds = selectedNodes.filter(node => !node.allowedActions.canDelete).map(node => node.id);
-        let deletableConnectionIds = selectedConnections.filter(connection => connection.canDelete).
-            map(connection => connection.id);
-        let nonDeletableConnectionIds = selectedConnections.filter(connection => !connection.canDelete).
-            map(connection => connection.id);
+        const selectedNodes = rootGetters['selection/selectedNodes'];
+        const selectedConnections = rootGetters['selection/selectedConnections'];
+        const deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
+        const nonDeletableNodeIds = selectedNodes.filter(node => !node.allowedActions.canDelete).map(node => node.id);
+        const deletableConnectionIds = selectedConnections.filter(
+            connection => connection.allowedActions.canDelete
+        ).map(connection => connection.id);
+        const nonDeletableConnectionIds = selectedConnections.filter(
+            connection => !connection.allowedActions.canDelete
+        ).map(connection => connection.id);
 
         if (deletableNodeIds.length || deletableConnectionIds.length) {
             deleteObjects({
-                projectId,
+                projectId: activeWorkflow.projectId,
                 workflowId: activeWorkflowId,
                 nodeIds: deletableNodeIds.length ? deletableNodeIds : [],
                 connectionIds: deletableConnectionIds ? deletableConnectionIds : []
@@ -256,9 +260,24 @@ export const actions = {
             destNode,
             destPort
         });
+    },
+    async addNode({ state, getters }, { position, className }) {
+        await addNode({
+            projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            position: {
+                x: position[0],
+                y: position[1]
+            },
+            nodeFactory: {
+                className
+            }
+        });
     }
 };
 
+// The name getters can be misleading, its more like Vues computed propeties which may return functions.
+// Please consult: https://vuex.vuejs.org/guide/getters.html
 export const getters = {
     isLinked({ activeWorkflow }) {
         return Boolean(activeWorkflow?.info.linked);
@@ -379,8 +398,8 @@ export const getters = {
         return activeWorkflow?.info?.containerId || 'root';
     },
 
-    nodeIcon({ activeWorkflow }, getters, rootState) {
-        return ({ nodeId }) => {
+    getNodeIcon({ activeWorkflow }) {
+        return (nodeId) => {
             let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
@@ -391,8 +410,8 @@ export const getters = {
         };
     },
 
-    nodeName({ activeWorkflow }, getters, rootState) {
-        return ({ nodeId }) => {
+    getNodeName({ activeWorkflow }) {
+        return (nodeId) => {
             let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
@@ -403,8 +422,8 @@ export const getters = {
         };
     },
 
-    nodeType({ activeWorkflow }, getters, rootState) {
-        return ({ nodeId }) => {
+    getNodeType({ activeWorkflow }) {
+        return (nodeId) => {
             let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {

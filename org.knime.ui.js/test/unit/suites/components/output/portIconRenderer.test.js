@@ -14,11 +14,11 @@ describe('PortIconRenderer', () => {
             mocks: { $colors, $shapes }
         });
         expect(wrapper.element.tagName.toLowerCase()).toBe('svg');
-        expect(wrapper.findAll('g').length).toBe(1);
-        expect(wrapper.findAll('g *').length).toBe(1);
-        expect(wrapper.find('g *').element.tagName.toLowerCase()).toBe('polygon');
+        expect(wrapper.findAll('.scale g').length).toBe(0);
+        expect(wrapper.findAll('.scale g *').length).toBe(0);
+        expect(wrapper.find('.scale *').element.tagName.toLowerCase()).toBe('polygon');
     });
-    
+
     it('renders a flowVar port Icon', () => {
         let PortIcon = portIcon({
             type: 'flowVariable',
@@ -29,8 +29,8 @@ describe('PortIconRenderer', () => {
             mocks: { $colors, $shapes }
         });
         expect(wrapper.element.tagName.toLowerCase()).toBe('svg');
-        expect(wrapper.findAll('g').length).toBe(1);
-        expect(wrapper.findAll('g *').length).toBe(1 + 2); // 1 circle + 2 paths for "X"
-        expect(wrapper.find('g *').element.tagName.toLowerCase()).toBe('circle');
+        expect(wrapper.findAll('.scale g').length).toBe(0);
+        expect(wrapper.findAll('.scale *').length).toBe(1 + 2); // 1 circle + 2 paths for "X"
+        expect(wrapper.find('.scale *').element.tagName.toLowerCase()).toBe('circle');
     });
 });

@@ -2,7 +2,7 @@
 <feature
       id="org.knime.features.ui"
       label="KNIME UI"
-      version="4.4.0.qualifier"
+      version="4.5.0.qualifier"
       provider-name="KNIME AG, Zurich, Switzerland">
 
    <description>
@@ -728,8 +728,8 @@ propagated with or for interoperation with KNIME.
    </license>
 
    <requires>
-      <import feature="com.equo.chromium.cef.feature" version="80.0.6.202110042013" match="perfect"/>
-      <import feature="com.equo.chromium.feature" version="80.0.8.202110042012" match="perfect"/>
+      <import feature="com.equo.chromium.cef.feature" version="80.0.9.202110280423_ns" match="perfect"/>
+      <import feature="com.equo.chromium.feature" version="80.0.11.202110280410_ns" match="perfect"/>
    </requires>
 
    <plugin
