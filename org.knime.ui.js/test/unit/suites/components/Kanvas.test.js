@@ -165,6 +165,13 @@ describe('Kanvas', () => {
                     setZoomToFit: jest.fn(),
                     zoomCentered: jest.fn()
                 }
+            },
+            selection: {
+                getters: {
+                    selectedNodeIds() {
+                        return ['root:1'];
+                    }
+                }
             }
         };
 
@@ -319,6 +326,11 @@ describe('Kanvas', () => {
             expect(storeConfig.canvas.mutations.setContainerSize).toHaveBeenCalledWith(expect.anything(), {
                 width: 100, height: 50
             });
+        });
+
+        it('sorts nodes to show selected ones above all others', () => {
+            doShallowMount();
+            expect(wrapper.vm.sortedNodes.map(x => x.id)).toStrictEqual(['root:0', 'root:2', 'root:1']);
         });
 
         it('stop resize observer', () => {

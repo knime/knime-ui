@@ -47,6 +47,7 @@ export default {
             'isStreaming'
         ]),
         ...mapGetters('canvas', ['contentBounds', 'canvasSize', 'viewBox']),
+        ...mapGetters('selection', ['selectedNodeIds']),
         ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning']),
         viewBoxString() {
             let { viewBox } = this;
@@ -55,15 +56,17 @@ export default {
         },
         // Sort nodes so that selected nodes are rendered in front
         sortedNodes() {
-            return Object.entries(this.workflow.nodes).sort(([, a], [, b]) => {
-                if (a.selected && !b.selected) {
-                    return 1;
-                } else if (!a.selected && b.selected) {
-                    return -1;
+            let selected = [];
+            let unselected = [];
+
+            for (const nodeId of Object.keys(this.workflow.nodes)) {
+                if (this.selectedNodeIds.includes(nodeId)) {
+                    selected.push(this.workflow.nodes[nodeId]);
                 } else {
-                    return 0;
+                    unselected.push(this.workflow.nodes[nodeId]);
                 }
-            });
+            }
+            return [...unselected, ...selected];
         }
     },
     watch: {
@@ -257,16 +260,16 @@ export default {
       />
 
       <MoveableNodeContainer
-        v-for="([nodeId, node]) in sortedNodes"
+        v-for="node of sortedNodes"
         :id="node.id"
-        :key="`node-${workflow.projectId}-${nodeId}`"
+        :key="`node-${workflow.projectId}-${node.id}`"
         :position="node.position"
         :kind="node.kind"
       >
         <Node
-          :icon="$store.getters['workflow/getNodeIcon'](nodeId)"
-          :name="$store.getters['workflow/getNodeName'](nodeId)"
-          :type="$store.getters['workflow/getNodeType'](nodeId)"
+          :icon="$store.getters['workflow/getNodeIcon'](node.id)"
+          :name="$store.getters['workflow/getNodeName'](node.id)"
+          :type="$store.getters['workflow/getNodeType'](node.id)"
           v-bind="node"
         />
       </MoveableNodeContainer>
