@@ -87,11 +87,12 @@ export const snapConnector = {
         onConnectorEnter(e) {
             consola.trace('connector-enter');
             if (this.connectionForbidden) {
-                e.preventDefault();
                 return;
             }
 
             this.connectorHover = true;
+            // enable this element as a drop target
+            e.preventDefault();
         },
         onConnectorLeave() {
             consola.trace('connector-leave');
@@ -149,7 +150,6 @@ export const snapConnector = {
 
             // position connector end
             e.detail.overwritePosition(absolutePortPosition);
-            consola.trace(relativeY, targetPortDirection, snapPortIndex);
         },
         onConnectorDrop(e) {
             if (isNaN(this.targetPort?.index)) {

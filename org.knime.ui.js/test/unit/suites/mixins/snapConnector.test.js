@@ -79,6 +79,7 @@ describe('Snap Connector Mixin', () => {
             expect(wrapper.vm.connectorHover).toBe(false);
 
             wrapper.trigger('connector-enter');
+            expect(Event.prototype.preventDefault).toHaveBeenCalled();
             expect(wrapper.vm.connectorHover).toBe(true);
 
             wrapper.trigger('connector-leave');
@@ -90,8 +91,8 @@ describe('Snap Connector Mixin', () => {
             wrapper.setData({ connectionForbidden: true });
 
             wrapper.trigger('connector-enter');
+            expect(Event.prototype.preventDefault).not.toHaveBeenCalled();
             expect(wrapper.vm.connectorHover).toBe(false);
-            expect(Event.prototype.preventDefault).toHaveBeenCalled();
         });
     });
 

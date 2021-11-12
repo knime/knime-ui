@@ -9,7 +9,6 @@ import PortWithTooltip from '~/components/PortWithTooltip';
 import Port from '~/components/Port';
 import Connector from '~/components/Connector';
 import Vue from 'vue';
-import { afterEach } from '@jest/globals';
 import { circleDetection } from '~/util/compatibleConnections';
 
 jest.mock('lodash', () => ({
@@ -130,13 +129,13 @@ describe('DraggablePortWithTooltip', () => {
                 wrapper.trigger('pointerdown', { pointerId: -1, x, y });
             };
 
-            dragAboveTarget = (targetElement, [x, y] = [0, 0], prevent = false) => {
+            dragAboveTarget = (targetElement, [x, y] = [0, 0], enableDropTarget = true) => {
                 document.elementFromPoint = jest.fn().mockReturnValueOnce(targetElement);
 
                 if (targetElement) {
                     targetElement.addEventListener('connector-enter', e => {
                         targetElement._connectorEnterEvent = e;
-                        if (prevent) {
+                        if (enableDropTarget) {
                             e.preventDefault();
                         }
                     });
@@ -375,16 +374,13 @@ describe('DraggablePortWithTooltip', () => {
             });
         });
 
-        test("connector-enter prevented: doesn't raise move/leave/drop event", () => {
+        test("connector-enter not cancelled: doesn't raise move/leave/drop event", () => {
             startDragging([0, 0]);
 
             let hitTarget = document.createElement('div');
-            hitTarget.addEventListener('connector-enter', (e) => {
-                e.preventDefault();
-            });
+            // no prevent default
 
-
-            dragAboveTarget(hitTarget, [0, 0]);
+            dragAboveTarget(hitTarget, [0, 0], false);
             expect(hitTarget._connectorMoveEvent).toBeFalsy();
 
             dragAboveTarget(hitTarget, [1, 1]);

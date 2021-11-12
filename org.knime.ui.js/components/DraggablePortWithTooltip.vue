@@ -63,6 +63,7 @@ export default {
 
             this.kanvasElement = document.getElementById('kanvas');
 
+            // set up connector
             let connector = {
                 id: 'drag-connector',
                 allowedActions: {
@@ -79,15 +80,17 @@ export default {
                 connector.destNode = this.nodeId;
                 connector.destPort = this.port.index;
             }
-            
+
+            this.dragConnector = connector;
+
+            // find compatible nodes
             let compatibleNodes = circleDetection({
                 downstreamConnection: this.direction === 'out',
                 startNode: this.nodeId,
                 workflow: this.$store.state.workflow.activeWorkflow
             });
 
-            this.dragConnector = connector;
-
+            // signal start of connecting phase
             this.$root.$emit('connector-start', {
                 compatibleNodes,
                 nodeId: this.nodeId
@@ -98,7 +101,7 @@ export default {
 
             let { sourceNode, sourcePort, destNode, destPort } = this.dragConnector;
 
-            if (this.lastHitTarget && !this.lastHitTarget.cancelled) {
+            if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
                 this.lastHitTarget.element.dispatchEvent(
                     new CustomEvent(
                         'connector-drop', {
@@ -116,7 +119,7 @@ export default {
         },
         onLostPointerCapture(e) {
             this.dragConnector = null;
-            if (this.lastHitTarget && !this.lastHitTarget.cancelled) {
+            if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
                 this.lastHitTarget.element.dispatchEvent(new CustomEvent('connector-leave', { bubbles: true }));
             }
             this.$root.$emit('connector-end');
@@ -145,17 +148,17 @@ export default {
 
             let isSameTarget = hitTarget && this.lastHitTarget?.element === hitTarget;
 
-            if (isSameTarget && this.lastHitTarget.cancelled) {
-                // same hitTarget as before, but already called preventDefault
+            if (isSameTarget && !this.lastHitTarget.allowsDrop) {
+                // same hitTarget as before, but doesn't allow drop
                 // Do-Nothing
             } else if (isSameTarget) {
-                // same hitTarget as before and allows connector snapping
+                // same hitTarget as before and allows connector drop
                 hitTarget.dispatchEvent(moveEvent);
             } else {
                 // different hitTarget than lastHitTarget, possibly null
                 
-                // send 'connector-leave' to last hitTarget, if it exists and hasn't cancelled connector-enter
-                if (this.lastHitTarget && !this.lastHitTarget.cancelled) {
+                // send 'connector-leave' to last hitTarget, if it exists and has allowed connector dropping
+                if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
                     this.lastHitTarget.element.dispatchEvent(
                         new CustomEvent('connector-leave', {
                             detail: {
@@ -166,20 +169,27 @@ export default {
                     );
                 }
 
-                //  send 'connector-enter' to new hitTarget
-                //  if not cancelled, send 'connector-move' to new hitTarget
+                /*
+                 * If the new hit target exists send 'connector-enter'
+                 * The hit target can enable connector dropping by cancelling this event
+                 */
                 if (hitTarget) {
-                    let connectorEnterNotCancelled = hitTarget.dispatchEvent(
+                    let notCancelled = hitTarget.dispatchEvent(
                         new CustomEvent('connector-enter', {
                             bubbles: true,
                             cancelable: true
                         })
                     );
-                    if (connectorEnterNotCancelled) {
+                    // cancelling signals that hit target allows dropping a connector
+                    let allowsDrop = !notCancelled;
+
+                    if (allowsDrop) {
+                        // send first move event right away
                         hitTarget.dispatchEvent(moveEvent);
                     }
+
                     // remember hitTarget
-                    this.lastHitTarget = { element: hitTarget, cancelled: !connectorEnterNotCancelled };
+                    this.lastHitTarget = { element: hitTarget, allowsDrop };
                 } else {
                     this.lastHitTarget = null;
                 }
