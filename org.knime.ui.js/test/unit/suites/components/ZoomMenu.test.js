@@ -1,0 +1,123 @@
+/* eslint-disable no-magic-numbers */
+import { createLocalVue, mount } from '@vue/test-utils';
+import Vuex from 'vuex';
+import { mockVuexStore } from '~/test/unit/test-utils';
+
+import ZoomMenu from '~/components/ZoomMenu';
+
+describe('ZoomMenu', () => {
+    let $store;
+
+    beforeAll(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
+    });
+
+    let doMount = (zoomFactor = 50) => {
+        $store = mockVuexStore({
+            canvas: {
+                state: {
+                    zoomFactor
+                },
+                mutations: {
+                    setFactor(state, factor) {
+                        state.zoomFactor = factor;
+                    }
+                },
+                getters: {
+                    fitToScreenZoomFactor() {
+                        return 5;
+                    }
+                },
+                actions: {
+                    zoomCentered: jest.fn()
+                }
+            },
+            userActions: {
+                getters: {
+                    zoomActionItems() {
+                        return [{
+                            text: '100 %',
+                            storeAction: 'testZoomTo100',
+                            storeActionParams: []
+                        }];
+                    }
+                }
+            }
+        });
+        return mount(ZoomMenu, {
+            mocks: {
+                $store
+            }
+        });
+    };
+
+    it('renders', () => {
+        let wrapper = doMount();
+        expect(wrapper.html()).toBeTruthy();
+    });
+
+    it('shows current zoom level', () => {
+        let wrapper = doMount(0.53);
+        expect(wrapper.find('.zoom-input').element.value).toBe('53%');
+    });
+
+    it('parses input with % sign', async () => {
+        let wrapper = doMount(0.53);
+        let input = wrapper.find('.zoom-input');
+        input.element.value = '33%';
+        await input.trigger('keydown', { keyCode: 13 });
+        expect(input.element.value).toBe('33%');
+    });
+
+    it('parses input without % sign', async () => {
+        let wrapper = doMount(0.53);
+        let input = wrapper.find('.zoom-input');
+        input.element.value = '44';
+        await input.trigger('keydown', { keyCode: 13 });
+        expect(input.element.value).toBe('44%');
+    });
+
+    it('ignores invalid input', async () => {
+        let wrapper = doMount(0.63);
+        let input = wrapper.find('.zoom-input');
+        input.element.value = 'asdf';
+        await input.trigger('keydown', { keyCode: 13 });
+        expect(input.element.value).toBe('63%');
+    });
+
+    it('ignores any input on focus out', () => {
+        let wrapper = doMount(0.63);
+        let input = wrapper.find('.zoom-input');
+        input.element.value = '99';
+        input.trigger('focusout');
+        expect(input.element.value).toBe('63%');
+    });
+
+
+    it('selects all text of input on click', () => {
+        let wrapper = doMount(0.63);
+        let input = wrapper.find('.zoom-input');
+        input.element.select = jest.fn();
+        input.trigger('click');
+        expect(input.element.select).toHaveBeenCalled();
+    });
+
+    it('dispatches action on click of item', () => {
+        let wrapper = doMount(0.63);
+        $store.dispatch = jest.fn();
+        let li = wrapper.find('li');
+        li.trigger('click');
+        expect($store.dispatch).toHaveBeenCalledWith('testZoomTo100');
+    });
+
+    it('zooms in and out on mousewheel', async () => {
+        let wrapper = doMount(0.63);
+        $store.dispatch = jest.fn();
+        let input = wrapper.find('.zoom-input');
+        await input.trigger('wheel', { deltaY: 1 });
+        expect($store.dispatch).toHaveBeenCalledWith('canvas/zoomCentered', -1);
+        await input.trigger('wheel', { deltaY: -1 });
+        expect($store.dispatch).toHaveBeenCalledWith('canvas/zoomCentered', 1);
+    });
+});
