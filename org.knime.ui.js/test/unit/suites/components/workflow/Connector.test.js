@@ -2,15 +2,25 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
-import Connector from '~/components/workflow/Connector';
+import Vue from 'vue';
+
+import * as workflowStoreConfig from '~/store/workflow';
+
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
+
 import * as portShift from '~/util/portShift';
-import * as workflowStoreConfig from '~/store/workflow';
 import connectorPath from '~/util/connectorPath';
+
+import Connector from '~/components/workflow/Connector';
+
+import gsap from 'gsap';
 
 jest.mock('~api', () => { }, { virtual: true });
 jest.mock('~/util/connectorPath', () => jest.fn());
+jest.mock('gsap', () => ({
+    to: jest.fn()
+}));
 
 describe('Connector.vue', () => {
     let portMock, propsData, mocks, wrapper, portShiftMock, $store, storeConfig;
@@ -426,6 +436,133 @@ describe('Connector.vue', () => {
 
             expect(connectorPath).toHaveBeenCalledWith(0, 16, 27.5, 16);
             expect(wrapper.find('path').attributes().d).toBe('that path');
+        });
+    });
+
+    describe('indicates being replaced', () => {
+        let doShallowMount;
+
+        beforeEach(() => {
+            gsap.to.mockReset();
+
+            storeConfig = {
+                workflow: {
+                    ...workflowStoreConfig,
+                    state: {
+                        activeWorkflow: {
+                            nodes: {
+                                'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
+                                'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
+                            }
+                        }
+                    },
+                    getters: {
+                        isWritable() {
+                            return true;
+                        }
+                    }
+                },
+                selection: {
+                    getters: {
+                        isConnectionSelected: () => jest.fn()
+                    },
+                    actions: {
+                        selectConnection: jest.fn(),
+                        deselectConnection: jest.fn(),
+                        deselectAllObjects: jest.fn()
+                    }
+                }
+            };
+
+            doShallowMount = () => {
+                $store = mockVuexStore(storeConfig);
+                mocks = { $shapes, $colors, $store };
+                wrapper = shallowMount(Connector, { propsData, mocks });
+            };
+        });
+
+        it('snaps away', async () => {
+            connectorPath.mockReturnValueOnce('original path');
+            doShallowMount();
+
+            expect(wrapper.vm.suggestDelete).toBeFalsy();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: true } });
+            connectorPath.mockReturnValueOnce('shifted path');
+            await Vue.nextTick();
+
+            expect(wrapper.vm.suggestDelete).toBeTruthy();
+
+            // watcher for suggestDelete
+            let path = wrapper.find('path:not(.hover-area)').element;
+
+            expect(gsap.to).toHaveBeenCalledTimes(1);
+            expect(gsap.to).toHaveBeenCalledWith(path, {
+                attr: { d: 'shifted path' },
+                duration: 0.2,
+                ease: 'power2.out'
+            });
+        });
+
+        it('snaps back', async () => {
+            connectorPath.mockReturnValueOnce('original path');
+            doShallowMount();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: true } });
+            connectorPath.mockReturnValueOnce('shifted path');
+            await Vue.nextTick();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: false } });
+            await Vue.nextTick();
+
+            expect(wrapper.vm.suggestDelete).toBeFalsy();
+
+            // watcher for suggestDelete
+            let path = wrapper.find('path:not(.hover-area)').element;
+
+            expect(gsap.to).toHaveBeenCalledTimes(2);
+            expect(gsap.to).toHaveBeenCalledWith(path, {
+                attr: { d: 'original path' },
+                duration: 0.2,
+                ease: 'power2.out'
+            });
+        });
+
+        it("doesn't snap back when deleted", async () => {
+            doShallowMount();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: true } });
+            await Vue.nextTick();
+
+            wrapper.vm.$root.$emit('connector-dropped');
+            await Vue.nextTick();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: false } });
+            await Vue.nextTick();
+
+            expect(wrapper.vm.suggestDelete).toBeTruthy();
+
+            expect(gsap.to).toHaveBeenCalledTimes(1);
+        });
+
+        it("can't lock after snapping back", async () => {
+            doShallowMount();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: true } });
+            await Vue.nextTick();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: false } });
+            await Vue.nextTick();
+
+            wrapper.vm.$root.$emit('connector-dropped');
+            await Vue.nextTick();
+
+            expect(wrapper.vm.suggestDelete).toBeFalsy();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: true } });
+            await Vue.nextTick();
+
+            expect(wrapper.vm.suggestDelete).toBeTruthy();
         });
     });
 });

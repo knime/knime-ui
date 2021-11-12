@@ -2,6 +2,7 @@
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { portBar, connectorPosition } from '~/mixins';
 import connectorPath from '~/util/connectorPath';
+import gsap from 'gsap';
 
 /**
  * A curved line, connecting one node's output with another node's input port.
@@ -37,6 +38,9 @@ export default {
             }
         }
     },
+    data: () => ({
+        suggestDelete: false
+    }),
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow',
@@ -71,6 +75,32 @@ export default {
             return this.$colors.connectorColors.default;
         }
     },
+    watch: {
+        /*
+         * if suggestDelete changes to 'true' the connector will animate away from its target port
+         * if suggestDelete changes back to 'false' the connector will move back
+         */
+        suggestDelete(newValue, oldValue) {
+            if (newValue && !oldValue) {
+                const shiftX = -12;
+                const shiftY = -6;
+                let { start: [x1, y1], end: [x2, y2] } = this;
+                let newPath = connectorPath(x1, y1, x2 + shiftX, y2 + shiftY);
+
+                gsap.to(this.$refs.visiblePath, {
+                    attr: { d: newPath },
+                    duration: 0.2,
+                    ease: 'power2.out'
+                });
+            } else if (!newValue && oldValue) {
+                gsap.to(this.$refs.visiblePath, {
+                    attr: { d: this.path },
+                    duration: 0.2,
+                    ease: 'power2.out'
+                });
+            }
+        }
+    },
     methods: {
         ...mapActions('selection', ['selectConnection', 'deselectConnection', 'deselectAllObjects']),
         onLeftMouseClick(e) {
@@ -86,19 +116,40 @@ export default {
                 this.deselectAllObjects();
                 this.selectConnection(this.id);
             }
+        },
+        onIndicateReplacement({ detail: { state } }) {
+            if (this.suggestDelete !== 'locked') {
+                // update state according to event if not already 'locked'
+                // this is used to make sure the connector doesn't snap back to its port after 'connecting phase' is over
+                this.suggestDelete = state;
+            }
+          
+            if (state) {
+                this.$root.$on('connector-dropped', this.onConnectorDropped);
+            } else {
+                this.$root.$off('connector-dropped', this.onConnectorDropped);
+            }
+        },
+        onConnectorDropped() {
+            // lock this connector in place to prevent it from jumping back before being removed
+            this.suggestDelete = 'locked';
         }
     }
 };
 </script>
 
 <template>
-  <g>
+  <g
+    :data-connector-id="id"
+    @indicate-replacement.stop="onIndicateReplacement"
+  >
     <path
       :d="path"
       class="hover-area"
       @click.left="onLeftMouseClick"
     />
     <path
+      ref="visiblePath"
       :d="path"
       :stroke="strokeColor"
       :stroke-width="$shapes.connectorWidth"

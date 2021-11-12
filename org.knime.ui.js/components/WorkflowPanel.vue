@@ -84,7 +84,7 @@ export default {
       ref="kanvas"
       @empty-pointerdown="onEmptyPointerDown"
     >
-      <Workflow />
+      <Workflow :key="workflow.projectId" />
     </Kanvas>
   </div>
 </template>

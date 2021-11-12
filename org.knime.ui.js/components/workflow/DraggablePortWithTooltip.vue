@@ -44,7 +44,26 @@ export default {
         dragConnector: null
     }),
     computed: {
-        ...mapGetters('canvas', ['fromAbsoluteCoordinates'])
+        ...mapGetters('canvas', ['fromAbsoluteCoordinates']),
+        /*
+         * only in-Ports replace replace their current connector if a new one is connected
+         * only in-Ports that are connected need to indicate connector replacement
+         * indicate, if this port is targeted for connection
+         * indicate, if this port is the starting point of a new connector
+        */
+        indicateConnectorReplacement() {
+            return this.direction === 'in' && this.port.connectedVia.length &&
+            (this.targeted || Boolean(this.dragConnector));
+        }
+    },
+    watch: {
+        indicateConnectorReplacement(indicateReplacement) {
+            let [incomingConnection] = this.port.connectedVia;
+            let incomingConnector = document.querySelector(`[data-connector-id="${incomingConnection}"]`);
+            incomingConnector.dispatchEvent(new CustomEvent('indicate-replacement', { detail: {
+                state: indicateReplacement
+            } }));
+        }
     },
     methods: {
         ...mapActions('workflow', ['connectNodes']),
@@ -115,6 +134,7 @@ export default {
                         }
                     )
                 );
+                this.$root.$emit('connector-dropped');
             }
         },
         onLostPointerCapture(e) {

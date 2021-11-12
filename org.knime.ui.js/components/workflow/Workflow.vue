@@ -73,8 +73,8 @@ export default {
 
     <!-- Connectors Layer -->
     <Connector
-      v-for="(connector, id) of workflow.connections"
-      :key="`connector-${workflow.projectId}-${id}`"
+      v-for="connector of workflow.connections"
+      :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
       v-bind="connector"
     />
 
@@ -86,7 +86,7 @@ export default {
     <MoveableNodeContainer
       v-for="node of sortedNodes"
       :id="node.id"
-      :key="`node-${workflow.projectId}-${node.id}`"
+      :key="`node-${node.id}`"
       :position="node.position"
       :kind="node.kind"
     >
@@ -107,7 +107,7 @@ export default {
 
     <ConnectorLabel
       v-for="(connector, id) of workflow.connections"
-      :key="`connector-label-${workflow.projectId}-${id}`"
+      :key="`connector-label-${id}`"
       v-bind="connector"
     />
 

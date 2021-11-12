@@ -37,6 +37,7 @@ describe('DraggablePortWithTooltip', () => {
             nodeId: 'node:1',
             relativePosition: [16, 32],
             port: {
+                connectedVia: [],
                 type: 'port',
                 inactive: false,
                 index: 0
@@ -80,11 +81,82 @@ describe('DraggablePortWithTooltip', () => {
         expect(wrapper.findComponent(Port).exists()).toBe(false);
     });
 
-    it('indicates being targeted', () => {
-        propsData.targeted = true;
-        doShallowMount();
+    describe('indicate in-coming connector replacement', () => {
+        let incomingConnector;
 
-        expect(wrapper.attributes().class).toMatch('targeted');
+        beforeEach(() => {
+            propsData.direction = 'in';
+            propsData.port.connectedVia = ['incoming-connector'];
+            incomingConnector = document.createElement('div');
+            incomingConnector.setAttribute('data-connector-id', 'incoming-connector');
+            incomingConnector.addEventListener('indicate-replacement', (e) => {
+                incomingConnector._indicateReplacementEvent = e;
+            });
+            document.body.appendChild(incomingConnector);
+        });
+
+        test('targeting port sends events to connector', async () => {
+            doShallowMount();
+
+            wrapper.setProps({ targeted: true });
+            await Vue.nextTick();
+
+            expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
+                state: true
+            });
+
+            // revert
+
+            wrapper.setProps({ targeted: false });
+            await Vue.nextTick();
+
+            expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
+                state: false
+            });
+        });
+
+        test('dragging a connector', async () => {
+            // for simplicity this test directly sets 'dragConnector' instead of using startDragging
+            doShallowMount();
+
+            wrapper.setData({ dragConnector: { content: 'a new in-coming connection' } });
+            await Vue.nextTick();
+
+            expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
+                state: true
+            });
+
+            // revert
+
+            wrapper.setData({ dragConnector: null });
+            await Vue.nextTick();
+
+            expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
+                state: false
+            });
+        });
+
+        test("doesn't do it for out-going ports", async () => {
+            propsData.direction = 'out';
+            doShallowMount();
+
+            wrapper.setProps({ targeted: true });
+            wrapper.setData({ dragConnector: { content: 'a new in-coming connection' } });
+            await Vue.nextTick();
+
+            expect(incomingConnector._indicateReplacementEvent).toBeFalsy();
+        });
+
+        test("doesn't do it for unconnected ports", async () => {
+            propsData.port.connectedVia = [];
+            doShallowMount();
+
+            wrapper.setProps({ targeted: true });
+            wrapper.setData({ dragConnector: { content: 'a new in-coming connection' } });
+            await Vue.nextTick();
+
+            expect(incomingConnector._indicateReplacementEvent).toBeFalsy();
+        });
     });
 
     describe('Drop Connector', () => {
