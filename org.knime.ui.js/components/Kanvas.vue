@@ -1,13 +1,13 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
-import Node from '~/components/Node';
-import MoveableNodeContainer from '~/components/MoveableNodeContainer';
-import Connector from '~/components/Connector';
-import WorkflowAnnotation from '~/components/WorkflowAnnotation';
-import MetaNodePortBars from '~/components/MetaNodePortBars';
-import KanvasFilters from '~/components/KanvasFilters';
-import StreamedIcon from '~/components/../webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
-import ConnectorLabel from '~/components/ConnectorLabel';
+import Node from '~/components/workflow/Node';
+import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer';
+import Connector from '~/components/workflow/Connector';
+import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation';
+import MetaNodePortBars from '~/components/workflow/MetaNodePortBars';
+import KanvasFilters from '~/components/workflow/KanvasFilters';
+import StreamedIcon from '~/webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
+import ConnectorLabel from '~/components/workflow/ConnectorLabel';
 import ContextMenu from '~/components/ContextMenu';
 import { throttle } from 'lodash';
 import { dropNode } from '~/mixins';
@@ -51,8 +51,7 @@ export default {
         ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning']),
         viewBoxString() {
             let { viewBox } = this;
-            return `${viewBox.left} ${viewBox.top} ` +
-                    `${viewBox.width} ${viewBox.height}`;
+            return `${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`;
         },
         // Sort nodes so that selected nodes are rendered in front
         sortedNodes() {

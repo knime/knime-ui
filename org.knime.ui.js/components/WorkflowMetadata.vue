@@ -4,7 +4,7 @@ import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import TagList from '~/webapps-common/ui/components/TagList';
 import { formatDateString } from '~/webapps-common/util/format';
-import ScrollViewContainer from '~/components/ScrollViewContainer';
+import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
 
 /** Displays metadata attached to a root-level workflow */
 export default {

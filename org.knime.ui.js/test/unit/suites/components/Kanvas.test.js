@@ -8,10 +8,10 @@ import * as $shapes from '~/style/shapes';
 import * as canvasStoreConfig from '~/store/canvas';
 
 import Kanvas from '~/components/Kanvas';
-import Node from '~/components/Node';
-import Connector from '~/components/Connector';
-import WorkflowAnnotation from '~/components/WorkflowAnnotation';
-import MetaNodePortBars from '~/components/MetaNodePortBars';
+import Node from '~/components/workflow/Node';
+import Connector from '~/components/workflow/Connector';
+import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation';
+import MetaNodePortBars from '~/components/workflow/MetaNodePortBars';
 
 jest.mock('lodash', () => ({
     throttle(func) {

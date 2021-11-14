@@ -4,7 +4,7 @@ import Vuex from 'vuex';
 
 import * as panelStoreConfig from '~/store/panel';
 
-import NodeRepository from '~/components/NodeRepository';
+import NodeRepository from '~/components/noderepo/NodeRepository';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import Kanvas from '~/components/Kanvas';
 import WorkflowMetadata from '~/components/WorkflowMetadata';

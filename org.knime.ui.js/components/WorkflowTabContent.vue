@@ -3,7 +3,7 @@ import { mapState, mapGetters } from 'vuex';
 import Kanvas from '~/components/Kanvas';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
-import NodeRepository from '~/components/NodeRepository';
+import NodeRepository from '~/components/noderepo/NodeRepository';
 import NodeOutput from '~/components/output/NodeOutput';
 import Splitter from '~/components/Splitter';
 
