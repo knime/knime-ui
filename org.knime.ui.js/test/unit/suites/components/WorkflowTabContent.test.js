@@ -16,9 +16,6 @@ describe('WorkflowTabContent.vue', () => {
     let store, workflow, wrapper, doShallowMount;
 
     beforeEach(() => {
-        // TODO: is this still needed?
-        window.switchToJavaUI = jest.fn();
-
         doShallowMount = async () => {
             store = mockVuexStore({
                 workflow: {

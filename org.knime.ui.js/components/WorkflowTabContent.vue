@@ -63,14 +63,6 @@ main {
   height: 100%;
 }
 
-#toolbar {
-  height: 50px;
-  flex: 0 0 auto;
-  padding: 10px;
-  background-color: var(--knime-porcelain);
-  border-bottom: 1px solid var(--knime-silver-sand);
-}
-
 .collapser-kanvas {
   display: flex;
   flex-grow: 1;

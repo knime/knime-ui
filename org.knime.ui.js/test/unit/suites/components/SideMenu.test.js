@@ -17,9 +17,6 @@ describe('SideMenu.vue', () => {
     let store, workflow, wrapper, doShallowMount;
 
     beforeEach(() => {
-        // TODO: is this still needed?
-        window.switchToJavaUI = jest.fn();
-
         workflow = {
             projectMetadata: {
                 title: 'title'
@@ -126,8 +123,7 @@ describe('SideMenu.vue', () => {
     describe('Node Repository', () => {
         beforeEach(async () => {
             await doShallowMount();
-            // TODO: why? just use the 'store'
-            wrapper.vm.$store.dispatch('panel/setNodeRepositoryActive');
+            store.dispatch('panel/setNodeRepositoryActive');
         });
 
         it('shows NodeRepository', () => {
