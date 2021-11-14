@@ -137,6 +137,7 @@ export default {
         executionInfo: {
             type: Object,
             validator(info) {
+                // TODO: document and improve this validator
                 return !info || Reflect.has(info, 'streamable') || info.jobManager || info.icon;
             },
             default: null
@@ -190,6 +191,7 @@ export default {
          * @return {boolean} if true action bar will be hidden
          */
         insideStreamingComponent() {
+            // TODO: isDragging in this condition doesn't fit the function name. Use Reflect.has or 'in'.
             return typeof this.executionInfo?.streamable !== 'undefined' || this.isDragging;
         },
         allNodeActions() {
@@ -461,6 +463,7 @@ export default {
         <!-- Nodes contained in a component with a Streaming Job Manager get a little arrow or "x" to indicate their
         compatibility. Components with a Streaming Job Manager also get a little arrow.
         In both cases, the backend sets the `executionInfo` attribute. -->
+        <!-- TODO: do we show this in the Showcase workflow? Is there any other example workflow? -->
         <StreamingDecorator
           v-if="executionInfo"
           :background-type="decoratorBackgroundType"

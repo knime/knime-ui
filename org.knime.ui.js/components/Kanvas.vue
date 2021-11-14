@@ -1,14 +1,8 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
-import Node from '~/components/workflow/Node';
-import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer';
-import Connector from '~/components/workflow/Connector';
-import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation';
-import MetaNodePortBars from '~/components/workflow/MetaNodePortBars';
-import KanvasFilters from '~/components/workflow/KanvasFilters';
 import StreamedIcon from '~/webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
-import ConnectorLabel from '~/components/workflow/ConnectorLabel';
 import ContextMenu from '~/components/ContextMenu';
+import Workflow from '~/components/workflow/Workflow';
 import { throttle } from 'lodash';
 import { dropNode } from '~/mixins';
 
@@ -16,15 +10,9 @@ const PANNING_THROTTLE = 50; // 50ms between consecutive mouse move events
 
 export default {
     components: {
-        Node,
-        Connector,
-        WorkflowAnnotation,
-        MetaNodePortBars,
-        KanvasFilters,
         StreamedIcon,
         ContextMenu,
-        ConnectorLabel,
-        MoveableNodeContainer
+        Workflow
     },
     mixins: [dropNode],
     data() {
@@ -47,28 +35,14 @@ export default {
             'isStreaming'
         ]),
         ...mapGetters('canvas', ['contentBounds', 'canvasSize', 'viewBox']),
-        ...mapGetters('selection', ['isNodeSelected']),
         ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning']),
         viewBoxString() {
             let { viewBox } = this;
             return `${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`;
-        },
-        // Sort nodes so that selected nodes are rendered in front
-        sortedNodes() {
-            let selected = [];
-            let unselected = [];
-
-            for (const nodeId of Object.keys(this.workflow.nodes)) {
-                if (this.isNodeSelected(nodeId)) {
-                    selected.push(this.workflow.nodes[nodeId]);
-                } else {
-                    unselected.push(this.workflow.nodes[nodeId]);
-                }
-            }
-            return [...unselected, ...selected];
         }
     },
     watch: {
+        // TODO: is still needed?
         workflow() {
             // Focus workflow on change for keyboard strokes to work
             this.$el.focus();
@@ -224,68 +198,7 @@ export default {
       @mousedown.left="onMouseDown"
       @mouseup.self.left="onSelfMouseUp"
     >
-
-      <!-- Includes shadows for Nodes -->
-      <KanvasFilters />
-
-      <!-- Workflow Annotation Layer. Background -->
-      <WorkflowAnnotation
-        v-for="annotation of workflow.workflowAnnotations"
-        :key="`annotation-${annotation.id}`"
-        v-bind="annotation"
-      />
-
-      <!-- Node Selection Plane Layer -->
-      <portal-target
-        multiple
-        tag="g"
-        name="node-select"
-      />
-
-      <!-- Connectors Layer -->
-      <Connector
-        v-for="(connector, id) of workflow.connections"
-        :key="`connector-${workflow.projectId}-${id}`"
-        v-bind="connector"
-      />
-
-      <!-- Metanode Port Bars (Inside of Metanodes) -->
-      <MetaNodePortBars
-        v-if="workflow.info.containerType === 'metanode'"
-      />
-
-      <MoveableNodeContainer
-        v-for="node of sortedNodes"
-        :id="node.id"
-        :key="`node-${workflow.projectId}-${node.id}`"
-        :position="node.position"
-        :kind="node.kind"
-      >
-        <Node
-          :icon="$store.getters['workflow/getNodeIcon'](node.id)"
-          :name="$store.getters['workflow/getNodeName'](node.id)"
-          :type="$store.getters['workflow/getNodeType'](node.id)"
-          v-bind="node"
-        />
-      </MoveableNodeContainer>
-
-      <!-- Quick Actions Layer: Buttons for Hovered & Selected Nodes and their ids -->
-      <portal-target
-        multiple
-        tag="g"
-        name="node-actions"
-      />
-
-      <ConnectorLabel
-        v-for="(connector, id) of workflow.connections"
-        :key="`connector-label-${workflow.projectId}-${id}`"
-        v-bind="connector"
-      />
-
-      <portal-target
-        tag="g"
-        name="drag-connector"
-      />
+      <Workflow />
     </svg>
   </div>
 </template>
@@ -297,17 +210,6 @@ export default {
   &:focus {
     outline: none;
   }
-}
-
-.debug-css {
-  display: none;
-  stroke: var(--knime-silver-sand);
-  fill: none;
-  pointer-events: none;
-}
-
-line.debug-css {
-  stroke: var(--knime-dove-gray);
 }
 
 svg {
