@@ -69,6 +69,7 @@ export default {
 </script>
 
 <template>
+  <!-- TODO: why use this stateful ScrollViewContainer here? -->
   <ScrollViewContainer class="metadata">
     <h2 :class="['title', { 'with-node-preview': nodePreview }]">
       <div

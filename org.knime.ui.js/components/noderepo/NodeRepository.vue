@@ -56,6 +56,7 @@ export default {
                 this.$store.dispatch('nodeRepository/getAllNodes', true);
             }
         },
+        // TODO: why do we save the scroll position instead of using keep-alive for the repo?
         updateScrollPosition(position) {
             this.$store.commit('nodeRepository/setScrollPosition', position);
         }
