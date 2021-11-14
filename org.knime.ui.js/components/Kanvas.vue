@@ -41,13 +41,6 @@ export default {
             return `${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`;
         }
     },
-    watch: {
-        // TODO: is still needed?
-        workflow() {
-            // Focus workflow on change for keyboard strokes to work
-            this.$el.focus();
-        }
-    },
     mounted() {
         // Start Container Observers
         this.initContainerSize();

@@ -117,17 +117,3 @@ export default {
     />
   </g>
 </template>
-
-<style lang="postcss" scoped>
-/* TODO: still needed? */
-.debug-css {
-  display: none;
-  stroke: var(--knime-silver-sand);
-  fill: none;
-  pointer-events: none;
-}
-
-line.debug-css {
-  stroke: var(--knime-dove-gray);
-}
-</style>
