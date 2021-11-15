@@ -56,7 +56,7 @@ describe('Kanvas', () => {
                 ...canvasStoreConfig,
                 mutations: {
                     ...canvasStoreConfig.mutations,
-                    resetZoom: jest.fn(), // TODO: still needed
+                    resetZoom: jest.fn(), // TODO: NXT-803 still needed
                     zoomWithPointer: jest.fn(),
                     setContainerSize: jest.fn(),
                     setScrollContainerElement: jest.fn()

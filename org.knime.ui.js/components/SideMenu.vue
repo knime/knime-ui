@@ -18,10 +18,10 @@ export default {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
         }),
-        // TODO: why do we need a panel store?
+        // TODO: NXT-803 why do we need a panel store?
         ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive']),
         metadata() {
-            // TODO: this needs to somehow be brought out of this component into WorkflowMetadata
+            // TODO: NXT-803 this needs to somehow be brought out of this component into WorkflowMetadata
             switch (this.workflow.info.containerType) {
                 case 'project':
                     return this.workflow.projectMetadata || { title: this.workflow.info.name };
@@ -50,7 +50,7 @@ export default {
     width="360px"
     title="Open sidebar"
   >
-    <!-- TODO: do proper transition according to https://vuejs.org/v2/guide/transitions.html#Transitioning-Between-Components -->
+    <!-- TODO: NXT-803 do proper transition according to https://vuejs.org/v2/guide/transitions.html#Transitioning-Between-Components -->
     <transition name="panel-fade">
       <!-- use v-if & v-show to prevent jumping without delays -->
       <NodeRepository

@@ -29,8 +29,8 @@ export default {
             type: String,
             default: null
         },
-        // TODO: validator and/or docs needed
-        // TODO: naming state vs status
+        // TODO: NXT-803 validator and/or docs needed
+        // TODO: NXT-803 naming state vs status
         loopStatus: {
             type: String,
             default: null
@@ -84,7 +84,7 @@ export default {
             }
             return null;
         },
-        // TODO: docs why is this needed?
+        // TODO: NXT-803 docs why is this needed?
         clippedProgress() {
             return Math.min(Math.max(this.progress, 0), 1);
         },
@@ -96,7 +96,7 @@ export default {
 </script>
 
 <template>
-  <!-- TODO: move translation out of this component -->
+  <!-- TODO: NXT-803 move translation out of this component -->
   <g
     :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`"
   >

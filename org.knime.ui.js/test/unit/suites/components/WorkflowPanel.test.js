@@ -100,7 +100,7 @@ describe('WorkflowPanel', () => {
         });
     });
 
-    // TODO: add tests for empty-click
+    // TODO: NXT-803 add tests for empty-click
 
-    // TODO: add tests for context menu?
+    // TODO: NXT-803 where are the tests for the context menu?
 });

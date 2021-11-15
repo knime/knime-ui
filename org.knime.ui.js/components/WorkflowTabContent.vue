@@ -26,17 +26,17 @@ export default {
 
 <template>
   <main v-if="workflow">
-    <!-- TODO: why do we need this collapser-kanvas div? -->
+    <!-- TODO: NXT-803 why do we need this collapser-kanvas div? -->
     <div class="collapser-kanvas">
-      <!-- TODO: move sidemenu out of WorkflowTabContent -->
-      <!-- TODO: why are sidebar and sidemenu not combined in one component? -->
-      <!-- TODO: should SideMenu really be only visible if workflow exists? Answer: no -->
+      <!-- TODO: NXT-803 move sidemenu out of WorkflowTabContent -->
+      <!-- TODO: NXT-803 why are sidebar and sidemenu not combined in one component? -->
+      <!-- TODO: NXT-803 should SideMenu really be only visible if workflow exists? Answer: no -->
       <SideMenu id="left-panel" />
       <Splitter
         id="kanvasOutputSplitter"
         direction="column"
       >
-        <!-- TODO: this is a temporary component that can be merged with WorkflowTabContent as soon as WorkflowTabContent has been cleaned up -->
+        <!-- TODO: NXT-803 this is a temporary component that can be merged with WorkflowTabContent as soon as WorkflowTabContent has been cleaned up -->
         <WorkflowPanel id="workflow-panel" />
         <template #secondary>
           <NodeOutput />

@@ -105,7 +105,7 @@ export default {
   background-color: var(--knime-gray-ultra-light);
 }
 
-/* TODO: nest selectors */
+/* TODO: NXT-803 nest selectors */
 .type-notification {
   /* positioning */
   display: flex;

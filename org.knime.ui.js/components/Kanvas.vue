@@ -24,7 +24,7 @@ export default {
     mounted() {
         // Start Container Observers
         this.initContainerSize();
-        // TODO: why do we need the scroll element in the store?
+        // TODO: NXT-803 why do we need the scroll element in the store?
         this.setScrollContainerElement(this.$el);
         this.initResizeObserver();
         this.$el.focus();
@@ -157,6 +157,12 @@ export default {
   &:focus {
     outline: none;
   }
+}
+
+svg {
+  /* TODO: NXT-803 still needed? */
+  position: relative; /* needed for z-index to have effect */
+  display: block;
 }
 
 .panning {
