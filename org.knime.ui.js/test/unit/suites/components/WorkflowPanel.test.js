@@ -66,7 +66,7 @@ describe('WorkflowPanel', () => {
 
             expect(wrapper.find('.read-only').exists()).toBe(true);
 
-            const notification = wrapper.find('.type-notification').find('span');
+            const notification = wrapper.find('.workflow-info').find('span');
             expect(notification.text()).toBe(`This is a linked ${containerType} and can therefore not be edited.`);
             expect(notification.text()).not.toContain('inside a linked');
         });
@@ -81,7 +81,7 @@ describe('WorkflowPanel', () => {
 
             expect(wrapper.find('.read-only').exists()).toBe(true);
 
-            const notification = wrapper.find('.type-notification').find('span');
+            const notification = wrapper.find('.workflow-info').find('span');
             expect(notification.text())
                 .toBe(`This is a ${containerType} inside a linked ${insideLinkedType} and cannot be edited.`);
             expect(notification.text()).not.toContain(`This is a linked ${containerType}`);
@@ -90,13 +90,13 @@ describe('WorkflowPanel', () => {
         it('shows decorator in streaming component', () => {
             workflow.info.jobManager = 'test';
             doShallowMount();
-            expect(wrapper.find('.streaming-decorator').exists()).toBe(true);
+            expect(wrapper.find('.streaming-indicator').exists()).toBe(true);
         });
 
         it('is not linked', () => {
             doShallowMount();
             expect(wrapper.find('.read-only').exists()).toBe(false);
-            expect(wrapper.find('.type-notification').exists()).toBe(false);
+            expect(wrapper.find('.workflow-info').exists()).toBe(false);
         });
     });
 

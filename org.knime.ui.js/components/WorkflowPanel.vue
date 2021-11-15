@@ -1,6 +1,6 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex';
-import StreamedIcon from '~/webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
+import StreamingIcon from '~/webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
 import ContextMenu from '~/components/ContextMenu';
 import Workflow from '~/components/workflow/Workflow';
 import Kanvas from '~/components/Kanvas';
@@ -9,7 +9,7 @@ import { dropNode } from '~/mixins';
 
 export default {
     components: {
-        StreamedIcon,
+        StreamingIcon,
         ContextMenu,
         Workflow,
         Kanvas
@@ -64,7 +64,7 @@ export default {
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
       v-if="isLinked || isStreaming || isInsideLinked"
-      :class="['type-notification', {onlyStreaming: isStreaming && !isLinked}]"
+      :class="['workflow-info', {onlyStreaming: isStreaming && !isLinked}]"
     >
       <span v-if="isInsideLinked">
         This is a {{ workflow.info.containerType }} inside a linked {{ insideLinkedType }} and cannot be edited.
@@ -74,10 +74,10 @@ export default {
       </span>
       <span
         v-if="isStreaming"
-        :class="['streaming-decorator', { isLinked }]"
+        :class="['streaming-indicator', { isLinked }]"
       >
-        <StreamedIcon class="streamingIcon" />
-        <p>Streaming</p>
+        <StreamingIcon />
+        Streaming
       </span>
     </div>
 
@@ -105,8 +105,7 @@ export default {
   background-color: var(--knime-gray-ultra-light);
 }
 
-/* TODO: NXT-803 nest selectors */
-.type-notification {
+.workflow-info {
   /* positioning */
   display: flex;
   margin: 0 10px;
@@ -122,6 +121,12 @@ export default {
   pointer-events: none;
   user-select: none;
 
+  &.onlyStreaming {
+    background-color: unset;
+    justify-content: flex-end;
+    margin-right: 0;
+  }
+
   & span {
     font-size: 16px;
     align-self: center;
@@ -129,42 +134,24 @@ export default {
     width: 100%;
   }
 
-  & p {
-    font-size: 16px;
-    align-self: center;
-    text-align: center;
+  & .streaming-indicator {
+    pointer-events: none;
+    display: flex;
     margin-right: 10px;
+    height: 40px;
+    justify-content: flex-end;
+    flex-basis: 80px;
+    flex-shrink: 0;
+    align-items: center;
+
+    & svg {
+      margin-right: 5px;
+      width: 32px;
+    }
+
+    &.isLinked {
+      margin-right: 10px;
+    }
   }
-}
-
-.streamingIcon {
-  margin-right: 5px;
-  width: 32px;
-}
-
-.streaming-decorator {
-  pointer-events: none;
-  display: flex;
-  margin-right: 10px;
-  height: 40px;
-  justify-content: flex-end;
-  flex-basis: 80px;
-  flex-shrink: 0;
-
-  & p {
-    font-size: 16px;
-    align-self: center;
-    text-align: center;
-  }
-
-  &.isLinked p {
-    margin-right: 10px;
-  }
-}
-
-.onlyStreaming {
-  background-color: unset;
-  justify-content: flex-end;
-  margin-right: 0;
 }
 </style>
