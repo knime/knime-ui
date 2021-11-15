@@ -19,7 +19,7 @@ jest.mock('lodash', () => ({
 }));
 
 describe('Kanvas', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, storeConfig;
+    let propsData, mocks, doShallowMount, wrapper, $store, storeConfig;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -50,44 +50,8 @@ describe('Kanvas', () => {
 
         wrapper = null;
         propsData = {};
-        workflow = {
-            projectId: 'some id',
-            info: {
-                containerType: 'project',
-                name: 'wf1'
-            },
-            executionInfo: {
-                jobManager: 'test'
-            },
-            parents: []
-        };
-        workflowStoreConfig = {
-            state: {
-                // TODO: still needed?
-                activeWorkflow: workflow
-            },
-            mutations: {
-                //TODO: still needed?
-                selectAllNodes: jest.fn()
-            },
-            getters: {
-                workflowBounds() {
-                    return {
-                        left: -10,
-                        top: -10,
-                        right: 40,
-                        bottom: 40
-                    };
-                },
-                // TODO: still needed?
-                executionInfo() {
-                    return ({ nodeId }) => workflow.nodes[nodeId].executionInfo;
-                }
-            }
-        };
 
         storeConfig = {
-            workflow: workflowStoreConfig,
             canvas: {
                 ...canvasStoreConfig,
                 mutations: {
@@ -96,12 +60,18 @@ describe('Kanvas', () => {
                     zoomWithPointer: jest.fn(),
                     setContainerSize: jest.fn(),
                     setScrollContainerElement: jest.fn()
-                },
-                actions: {
-                    // TODO: still needed?
-                    ...canvasStoreConfig.actions,
-                    setZoomToFit: jest.fn(),
-                    zoomCentered: jest.fn()
+                }
+            },
+            workflow: {
+                getters: {
+                    workflowBounds() {
+                        return {
+                            left: -10,
+                            top: -10,
+                            right: 40,
+                            bottom: 40
+                        };
+                    }
                 }
             }
         };

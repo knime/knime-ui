@@ -14,9 +14,8 @@ export default {
         };
     },
     computed: {
-        // TODO: which state is still needed?
-        ...mapGetters('canvas', ['contentBounds', 'canvasSize', 'viewBox']),
-        ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning']),
+        ...mapGetters('canvas', ['canvasSize', 'viewBox']),
+        ...mapState('canvas', ['suggestPanning']),
         viewBoxString() {
             let { viewBox } = this;
             return `${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`;
@@ -56,8 +55,7 @@ export default {
         /*
             Zooming
         */
-        //  TODO: which mutation is still needed?
-        ...mapMutations('canvas', ['resetZoom', 'setScrollContainerElement']),
+        ...mapMutations('canvas', ['setScrollContainerElement']),
         initContainerSize() {
             const { width, height } = this.$el.getBoundingClientRect();
             this.$store.commit('canvas/setContainerSize', { width, height });
@@ -151,12 +149,6 @@ export default {
   &:focus {
     outline: none;
   }
-}
-
-svg {
-  /* TODO: still needed? */
-  position: relative; /* needed for z-index to have effect */
-  display: block;
 }
 
 .panning {

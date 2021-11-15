@@ -77,11 +77,6 @@ main {
   border-right: 1px solid var(--knime-silver-sand);
 }
 
-.workflow-panel {
-  /* TODO: why is this needed? */
-  flex: 1 0 60%;
-}
-
 .placeholder {
   height: 55%;
   display: flex;

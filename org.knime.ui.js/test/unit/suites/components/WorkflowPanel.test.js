@@ -19,24 +19,14 @@ describe('WorkflowPanel', () => {
         wrapper = null;
         propsData = {};
         workflow = {
-            projectId: 'some id',
             info: {
                 containerType: 'project',
-                name: 'wf1'
-            },
-            executionInfo: {
-                jobManager: 'test'
             },
             parents: []
         };
         workflowStoreConfig = {
             state: {
-                // TODO: still needed?
                 activeWorkflow: workflow
-            },
-            mutations: {
-                //TODO: still needed?
-                selectAllNodes: jest.fn()
             },
             getters: {
                 isLinked() {
@@ -53,10 +43,6 @@ describe('WorkflowPanel', () => {
                 },
                 isWritable() {
                     return !(workflow.info.linked || workflow.parents.some(p => p.linked));
-                },
-                // TODO: still needed?
-                executionInfo() {
-                    return ({ nodeId }) => workflow.nodes[nodeId].executionInfo;
                 }
             }
         };
