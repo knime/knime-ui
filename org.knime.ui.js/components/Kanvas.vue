@@ -1,20 +1,10 @@
 <script>
-import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
-import StreamedIcon from '~/webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
-import ContextMenu from '~/components/ContextMenu';
-import Workflow from '~/components/workflow/Workflow';
+import { mapState, mapGetters, mapMutations } from 'vuex';
 import { throttle } from 'lodash';
-import { dropNode } from '~/mixins';
 
 const PANNING_THROTTLE = 50; // 50ms between consecutive mouse move events
 
 export default {
-    components: {
-        StreamedIcon,
-        ContextMenu,
-        Workflow
-    },
-    mixins: [dropNode],
     data() {
         return {
             /*
@@ -24,16 +14,7 @@ export default {
         };
     },
     computed: {
-        ...mapState('workflow', {
-            workflow: 'activeWorkflow'
-        }),
-        ...mapGetters('workflow', [
-            'isLinked',
-            'isInsideLinked',
-            'insideLinkedType',
-            'isWritable',
-            'isStreaming'
-        ]),
+        // TODO: which state is still needed?
         ...mapGetters('canvas', ['contentBounds', 'canvasSize', 'viewBox']),
         ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning']),
         viewBoxString() {
@@ -44,6 +25,7 @@ export default {
     mounted() {
         // Start Container Observers
         this.initContainerSize();
+        // TODO: why do we need the scroll element in the store?
         this.setScrollContainerElement(this.$el);
         this.initResizeObserver();
         this.$el.focus();
@@ -58,7 +40,6 @@ export default {
         /*
           Selection
         */
-        ...mapActions('selection', ['deselectAllObjects']),
         onMouseDown(e) {
             /*  To avoid for [mousedown on node], [moving mouse], [mouseup on kanvas] to deselect nodes,
              *  we track whether a click has been started on the empty Kanvas
@@ -68,13 +49,14 @@ export default {
         onSelfMouseUp(e) {
             // deselect all nodes
             if (this.clickStartedOnEmptyKanvas) {
-                this.deselectAllObjects();
                 this.clickStartedOnEmptyKanvas = null;
+                this.$emit('empty-click');
             }
         },
         /*
             Zooming
         */
+        //  TODO: which mutation is still needed?
         ...mapMutations('canvas', ['resetZoom', 'setScrollContainerElement']),
         initContainerSize() {
             const { width, height } = this.$el.getBoundingClientRect();
@@ -130,16 +112,6 @@ export default {
                 this.$el.releasePointerCapture(e.pointerId);
                 e.stopPropagation();
             }
-        },
-        onContextMenu(e) {
-            // ignore click with ctrl and meta keys
-            if (e.ctrlKey || e.metaKey) {
-                return;
-            }
-            if (e.target === this.$refs.svg) {
-                this.deselectAllObjects();
-            }
-            this.$refs.contextMenu.show(e);
         }
     }
 };
@@ -148,7 +120,7 @@ export default {
 <template>
   <div
     tabindex="0"
-    :class="{ 'read-only': !isWritable, 'panning': panning || suggestPanning }"
+    :class="['scroll-container', { 'panning': panning || suggestPanning }]"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
     @pointerdown.middle="beginPan"
@@ -156,33 +128,7 @@ export default {
     @pointerdown.left.alt="beginPan"
     @pointerup.left="stopPan"
     @pointermove="movePan"
-    @contextmenu.prevent="onContextMenu"
-    @drop.stop="onDrop"
-    @dragover.stop="onDragOver"
   >
-    <ContextMenu
-      ref="contextMenu"
-    />
-    <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
-    <div
-      v-if="isLinked || isStreaming || isInsideLinked"
-      :class="['type-notification', {onlyStreaming: isStreaming && !isLinked}]"
-    >
-      <span v-if="isInsideLinked">
-        This is a {{ workflow.info.containerType }} inside a linked {{ insideLinkedType }} and cannot be edited.
-      </span>
-      <span v-else-if="isLinked">
-        This is a linked {{ workflow.info.containerType }} and can therefore not be edited.
-      </span>
-      <span
-        v-if="isStreaming"
-        :class="['streaming-decorator', { isLinked }]"
-      >
-        <StreamedIcon class="streamingIcon" />
-        <p>Streaming</p>
-      </span>
-    </div>
-
     <svg
       ref="svg"
       :width="canvasSize.width"
@@ -191,14 +137,16 @@ export default {
       @mousedown.left="onMouseDown"
       @mouseup.self.left="onSelfMouseUp"
     >
-      <Workflow />
+      <slot />
     </svg>
   </div>
 </template>
 
 <style lang="postcss" scoped>
-#kanvas {
+.scroll-container {
+  overflow: auto;
   height: 100%;
+  width: 100%;
 
   &:focus {
     outline: none;
@@ -206,7 +154,7 @@ export default {
 }
 
 svg {
-  color: var(--knime-masala);
+  /* TODO: still needed? */
   position: relative; /* needed for z-index to have effect */
   display: block;
 }
@@ -218,71 +166,5 @@ svg {
   & svg >>> * {
     pointer-events: none;
   }
-}
-
-.read-only {
-  background-color: var(--knime-gray-ultra-light);
-}
-
-.type-notification {
-  /* positioning */
-  display: flex;
-  margin: 0 10px;
-  min-height: 40px;
-  margin-bottom: -40px;
-  left: 10px;
-  top: 10px;
-  position: sticky;
-  z-index: 1;
-
-  /* appearance */
-  background-color: var(--notification-background-color);
-  pointer-events: none;
-  user-select: none;
-
-  & span {
-    font-size: 16px;
-    align-self: center;
-    text-align: center;
-    width: 100%;
-  }
-
-  & p {
-    font-size: 16px;
-    align-self: center;
-    text-align: center;
-    margin-right: 10px;
-  }
-}
-
-.streamingIcon {
-  margin-right: 5px;
-  width: 32px;
-}
-
-.streaming-decorator {
-  pointer-events: none;
-  display: flex;
-  margin-right: 10px;
-  height: 40px;
-  justify-content: flex-end;
-  flex-basis: 80px;
-  flex-shrink: 0;
-
-  & p {
-    font-size: 16px;
-    align-self: center;
-    text-align: center;
-  }
-
-  &.isLinked p {
-    margin-right: 10px;
-  }
-}
-
-.onlyStreaming {
-  background-color: unset;
-  justify-content: flex-end;
-  margin-right: 0;
 }
 </style>

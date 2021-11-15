@@ -3,7 +3,7 @@ import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils
 import Vuex from 'vuex';
 
 import WorkflowTabContent from '~/components/WorkflowTabContent';
-import Kanvas from '~/components/Kanvas';
+import WorkflowPanel from '~/components/WorkflowPanel';
 import Splitter from '~/components/Splitter';
 import SideMenu from '~/components/SideMenu';
 
@@ -41,10 +41,10 @@ describe('WorkflowTabContent.vue', () => {
             workflow = {};
         });
 
-        it('displays Workflow', async () => {
+        it('displays Workflow Panel', async () => {
             await doShallowMount();
 
-            expect(wrapper.findComponent(Kanvas).exists()).toBe(true);
+            expect(wrapper.findComponent(WorkflowPanel).exists()).toBe(true);
         });
 
         it('displays node output', async () => {
@@ -69,7 +69,7 @@ describe('WorkflowTabContent.vue', () => {
         });
 
         it('shows placeholder', () => {
-            expect(wrapper.findComponent(Kanvas).exists()).toBe(false);
+            expect(wrapper.findComponent(WorkflowPanel).exists()).toBe(false);
             expect(wrapper.find('.placeholder').text()).toMatch('No workflow opened');
         });
     });

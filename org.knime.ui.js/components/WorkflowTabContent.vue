@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-import Kanvas from '~/components/Kanvas';
+import WorkflowPanel from '~/components/WorkflowPanel';
 import NodeOutput from '~/components/output/NodeOutput';
 import Splitter from '~/components/Splitter';
 import SideMenu from '~/components/SideMenu';
@@ -13,7 +13,7 @@ export default {
     components: {
         Splitter,
         NodeOutput,
-        Kanvas,
+        WorkflowPanel,
         SideMenu
     },
     computed: {
@@ -36,7 +36,8 @@ export default {
         id="kanvasOutputSplitter"
         direction="column"
       >
-        <Kanvas id="kanvas" />
+        <!-- TODO: this is a temporary component that can be merged with WorkflowTabContent as soon as WorkflowTabContent has been cleaned up -->
+        <WorkflowPanel id="workflow-panel" />
         <template #secondary>
           <NodeOutput />
         </template>
@@ -76,8 +77,8 @@ main {
   border-right: 1px solid var(--knime-silver-sand);
 }
 
-#kanvas {
-  overflow: auto;
+.workflow-panel {
+  /* TODO: why is this needed? */
   flex: 1 0 60%;
 }
 
