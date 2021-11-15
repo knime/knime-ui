@@ -164,7 +164,7 @@ export default {
 
   & svg,
   & svg >>> * {
-    pointer-events: none;
+    pointer-events: none !important;
   }
 }
 </style>
