@@ -4,6 +4,7 @@ import PortWithTooltip from '~/components/PortWithTooltip';
 import Port from '~/components/Port';
 import Connector from '~/components/Connector';
 import { throttle } from 'lodash';
+import { circleDetection } from '~/util/compatibleConnections';
 
 const MOVE_THROTTLE = 50;
 
@@ -62,6 +63,7 @@ export default {
 
             this.kanvasElement = document.getElementById('kanvas');
 
+            // set up connector
             let connector = {
                 id: 'drag-connector',
                 allowedActions: {
@@ -80,34 +82,51 @@ export default {
             }
 
             this.dragConnector = connector;
+
+            // find compatible nodes
+            let compatibleNodes = circleDetection({
+                downstreamConnection: this.direction === 'out',
+                startNode: this.nodeId,
+                workflow: this.$store.state.workflow.activeWorkflow
+            });
+
+            // signal start of connecting phase
+            this.$root.$emit('connector-start', {
+                compatibleNodes,
+                nodeId: this.nodeId
+            });
         },
         onPointerUp(e) {
             e.target.releasePointerCapture(e.pointerId);
 
             let { sourceNode, sourcePort, destNode, destPort } = this.dragConnector;
 
-            this.lastHitTarget?.dispatchEvent(
-                new CustomEvent(
-                    'connector-drop', {
-                        detail: {
-                            sourceNode,
-                            sourcePort,
-                            destNode,
-                            destPort
-                        },
-                        bubbles: true
-                    }
-                )
-            );
+            if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
+                this.lastHitTarget.element.dispatchEvent(
+                    new CustomEvent(
+                        'connector-drop', {
+                            detail: {
+                                sourceNode,
+                                sourcePort,
+                                destNode,
+                                destPort
+                            },
+                            bubbles: true
+                        }
+                    )
+                );
+            }
         },
         onLostPointerCapture(e) {
             this.dragConnector = null;
-            this.lastHitTarget?.dispatchEvent(new CustomEvent('connector-leave', { bubbles: true }));
+            if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
+                this.lastHitTarget.element.dispatchEvent(new CustomEvent('connector-leave', { bubbles: true }));
+            }
+            this.$root.$emit('connector-end');
         },
         onPointerMove: throttle(function (e) {
             /* eslint-disable no-invalid-this */
             if (!this.dragConnector) { return; }
-
 
             // find HTML-Element below cursor
             let hitTarget = document.elementFromPoint(e.x, e.y);
@@ -127,44 +146,53 @@ export default {
                 bubbles: true
             });
 
+            let isSameTarget = hitTarget && this.lastHitTarget?.element === hitTarget;
 
-            if (hitTarget && this.lastHitTarget === hitTarget) {
-                // hitTarget exists and is the same as last time
+            if (isSameTarget && !this.lastHitTarget.allowsDrop) {
+                // same hitTarget as before, but doesn't allow drop
+                // Do-Nothing
+            } else if (isSameTarget) {
+                // same hitTarget as before and allows connector drop
                 hitTarget.dispatchEvent(moveEvent);
             } else {
                 // different hitTarget than lastHitTarget, possibly null
-
-                let leaveEventNotCancelled = true;
-
-                // send 'connector-leave' to last hitTarget, if it exists
-                if (this.lastHitTarget) {
-                    leaveEventNotCancelled = this.lastHitTarget.dispatchEvent(
+                
+                // send 'connector-leave' to last hitTarget, if it exists and has allowed connector dropping
+                if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
+                    this.lastHitTarget.element.dispatchEvent(
                         new CustomEvent('connector-leave', {
                             detail: {
                                 relatedTarget: hitTarget
                             },
+                            bubbles: true
+                        })
+                    );
+                }
+
+                /*
+                 * If the new hit target exists send 'connector-enter'
+                 * The hit target can enable connector dropping by cancelling this event
+                 */
+                if (hitTarget) {
+                    let notCancelled = hitTarget.dispatchEvent(
+                        new CustomEvent('connector-enter', {
                             bubbles: true,
                             cancelable: true
                         })
                     );
-                    consola.trace('leave', 'cancelled:', !leaveEventNotCancelled, this.lastHitTarget);
-                }
+                    // cancelling signals that hit target allows dropping a connector
+                    let allowsDrop = !notCancelled;
 
-                /* if leave event hasn't been cancelled:
-                 *   send 'connector-enter' to new hitTarget
-                 *   send 'connector-move' to new hitTarget
-                 */
-                if (hitTarget && leaveEventNotCancelled) {
-                    hitTarget.dispatchEvent(
-                        new CustomEvent('connector-enter', {
-                            bubbles: true
-                        })
-                    );
-                    hitTarget.dispatchEvent(moveEvent);
-                }
+                    if (allowsDrop) {
+                        // send first move event right away
+                        hitTarget.dispatchEvent(moveEvent);
+                    }
 
-                // remember hitTarget
-                this.lastHitTarget = hitTarget;
+                    // remember hitTarget
+                    this.lastHitTarget = { element: hitTarget, allowsDrop };
+                } else {
+                    this.lastHitTarget = null;
+                }
             }
 
             this.dragConnector.absolutePoint = [absoluteX, absoluteY];
