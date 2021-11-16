@@ -79,7 +79,7 @@ export default {
     <div
       ref="zoomInput"
       class="zoom-input"
-      contenteditable="true"
+      contenteditable
       @click.stop="onZoomInputClick"
       @keydown.enter.stop.prevent="onZoomInputEnter"
       @focusout.stop="onZoomInputFocusOut"

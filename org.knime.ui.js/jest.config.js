@@ -39,6 +39,7 @@ module.exports = {
     watchPathIgnorePatterns: [
         '^<rootDir>/(.nuxt|coverage|dist|target|node_modules|bin|webapps-common|.history)/'
     ],
+    testEnvironment: 'jsdom',
     testURL: 'http://test.example/',
     testMatch: [
         '<rootDir>/test/unit/**/*.test.js'

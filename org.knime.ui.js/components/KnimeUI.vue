@@ -4,9 +4,10 @@ import AppHeader from '~/components/AppHeader';
 import Sidebar from '~/components/Sidebar';
 import WorkflowToolbar from '~/components/WorkflowToolbar';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
-import HotKeys from '~/components/HotKeys';
 import TooltipContainer from '~/components/TooltipContainer';
 import Error from '~/components/Error';
+
+import { hotKeys } from '~/mixins';
 
 // These fonts will be pre-loaded at application startup
 const requiredFonts = ['Roboto', 'Roboto Condensed', 'Roboto Mono'];
@@ -23,9 +24,9 @@ export default {
         Sidebar,
         WorkflowToolbar,
         WorkflowTabContent,
-        HotKeys,
         TooltipContainer
     },
+    mixins: [hotKeys],
     data() {
         return {
             loaded: false,
@@ -81,7 +82,6 @@ export default {
     />
     <Sidebar id="sidebar" />
     <template v-if="loaded">
-      <HotKeys />
       <WorkflowTabContent id="tab-content" />
       <TooltipContainer id="tooltip-container" />
     </template>
