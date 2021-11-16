@@ -1,3 +1,5 @@
 {
-    "include": ["test/integration/**/*"]
+  "include": [
+    "test/integration/**/*"
+  ]
 }
