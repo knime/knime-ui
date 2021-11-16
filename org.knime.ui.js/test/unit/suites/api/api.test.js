@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 import * as api from '~/api';
 
 describe('API', () => {
@@ -33,13 +34,12 @@ describe('API', () => {
                 }));
             });
 
-            it('handles errors on fetchApplicationState', async (done) => {
+            it('handles errors on fetchApplicationState', async () => {
                 try {
                     await api.fetchApplicationState();
-                    done(new Error('Error not thrown'));
+                    return Promise.reject(new Error('Error not thrown'));
                 } catch (e) {
-                    expect(e.message).toContain('application state');
-                    done();
+                    expect(e.message).toContain('Could not load application state');
                 }
             });
         });
@@ -66,23 +66,21 @@ describe('API', () => {
                 }));
             });
 
-            it('handles errors on addEventListener', async (done) => {
+            it('handles errors on addEventListener', async () => {
                 try {
                     await api.addEventListener('foo');
-                    done(new Error('Error not thrown'));
+                    return Promise.reject(new Error('Error not thrown'));
                 } catch (e) {
                     expect(e.message).toContain('Couldn\'t register event "foo"');
-                    done();
                 }
             });
 
-            it('handles errors on removeEventListener', async (done) => {
+            it('handles errors on removeEventListener', async () => {
                 try {
                     await api.removeEventListener('foo');
-                    done(new Error('Error not thrown'));
+                    return Promise.reject(new Error('Error not thrown'));
                 } catch (e) {
                     expect(e.message).toContain('Couldn\'t unregister event "foo"');
-                    done();
                 }
             });
         });
@@ -118,7 +116,7 @@ describe('API', () => {
                     tagsLimit: 2,
                     fullTemplateInfo: true
                 });
-    
+
                 expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
                     jsonrpc: '2.0',
                     method: 'NodeRepositoryService.selectNodes',
@@ -137,7 +135,7 @@ describe('API', () => {
                 }));
             });
 
-            it('handles errors on searchNodes', async (done) => {
+            it('handles errors on searchNodes', async () => {
                 try {
                     await api.searchNodes({
                         query: 'churn',
@@ -147,11 +145,10 @@ describe('API', () => {
                         nodeLimit: 2,
                         fullTemplateInfo: true
                     });
-                    done(new Error('Expected error not thrown'));
+                    return Promise.reject(new Error('Error not thrown'));
                 } catch (e) {
                     expect(e.message).toContain('churn');
                     expect(e.message).toContain('myTag');
-                    done();
                 }
             });
         });
@@ -198,13 +195,12 @@ describe('API', () => {
                 }));
             });
 
-            it('handles errors for changeNodeState', async (done) => {
+            it('handles errors for changeNodeState', async () => {
                 try {
                     await api.changeNodeState({ action: 'do action' });
-                    done(new Error('Error not thrown'));
+                    return Promise.reject(new Error('Error not thrown'));
                 } catch (e) {
                     expect(e.message).toContain('Could not do action nodes');
-                    done();
                 }
             });
         });
@@ -282,14 +278,13 @@ describe('API', () => {
                 }));
             });
 
-            it('handles errors on loadWorkflow', async (done) => {
+            it('handles errors on loadWorkflow', async () => {
                 try {
                     await api.loadWorkflow({ projectId: 'foo', workflowId: 'bar' });
-                    done(new Error('Expected error not thrown'));
+                    return Promise.reject(new Error('Expected error not thrown'));
                 } catch (e) {
                     expect(e.message).toContain('foo');
                     expect(e.message).toContain('bar');
-                    done();
                 }
             });
         });
@@ -363,27 +358,25 @@ describe('API', () => {
                 }));
             });
 
-            it('handles errors on loadTable', async (done) => {
+            it('handles errors on loadTable', async () => {
                 try {
                     await api.loadTable({});
-                    done(new Error('Error not thrown'));
+                    return Promise.reject(new Error('Error not thrown'));
                 } catch (e) {
                     expect(e.message).toContain('Couldn\'t load table');
-                    done();
                 }
             });
 
-            it('handles errors on loadFlowVariables', async (done) => {
+            it('handles errors on loadFlowVariables', async () => {
                 try {
                     await api.loadFlowVariables({});
-                    done(new Error('Error not thrown'));
+                    return Promise.reject(new Error('Error not thrown'));
                 } catch (e) {
                     expect(e.message).toContain('Couldn\'t load flow variables');
-                    done();
                 }
             });
 
-            it('handles nested errors on loadTable', async (done) => {
+            it('handles nested errors on loadTable', async () => {
                 window.jsonrpc.mockReset();
                 window.jsonrpc.mockReturnValueOnce(JSON.stringify({
                     jsonrpc: '2.0',
@@ -398,13 +391,12 @@ describe('API', () => {
                 let nodeId = Math.random();
                 try {
                     await api.loadTable({ projectId, nodeId, portIndex, batchSize: 400 });
-                    done(new Error('Error not thrown'));
+                    return Promise.reject(new Error('Error not thrown'));
                 } catch (e) {
                     expect(e.message).toBe(
                         `Couldn't load table data (start: 0, length: 400) from port` +
                         ` ${portIndex} of node "${nodeId}" in project ${projectId}`
                     );
-                    done();
                 }
             });
         });
