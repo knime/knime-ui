@@ -1,15 +1,15 @@
-<script>
 import { mapActions, mapMutations, mapState, mapGetters } from 'vuex';
 import { throttle } from 'lodash';
 
 const throttledZoomThrottle = 30; // throttle keyboard zoom by 30ms
 
+const blacklistTagNames = /^(input|textarea|select)$/i;
 
 /**
  * This Component handles keyboard shortcuts by listening to keydown/up-Events
  * on document and dispatching actions to the corresponding store.
  */
-export default {
+export const hotKeys = {
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
         ...mapState('canvas', ['suggestPanning']),
@@ -109,6 +109,11 @@ export default {
                 return;
             }
 
+            // getAttribute?.() is conditionally called, because the jest-dom doesn't provide this function while testing.
+            if (blacklistTagNames.test(e.target.tagName) || e.target.getAttribute?.('contenteditable') === 'true') {
+                return;
+            }
+
             if (e.key === 'Alt') {
                 if (this.isWorkflowPresent) {
                     this.setSuggestPanning(true);
@@ -131,7 +136,7 @@ export default {
          * @param {KeyboardEvent} e KeyDown event
          * @returns {Boolean} has found and executed function
          * has side effect
-         */
+        */
         findAndExecute(hotKeys, e) {
             for (let shortcut of hotKeys) {
                 let modifiers = [...shortcut];
@@ -152,6 +157,10 @@ export default {
             return false;
         },
         onKeyup(e) {
+            if (blacklistTagNames.test(e.target.tagName)) {
+                return;
+            }
+
             if (e.key === 'Alt') {
                 this.setSuggestPanning(false);
             }
@@ -159,9 +168,5 @@ export default {
         throttledZoom: throttle(function (delta) {
             this.zoomCentered(delta); // eslint-disable-line no-invalid-this
         }, throttledZoomThrottle)
-    },
-    render() {
-        return null;
     }
 };
-</script>

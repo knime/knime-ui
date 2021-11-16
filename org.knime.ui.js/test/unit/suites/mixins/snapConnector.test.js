@@ -18,6 +18,7 @@ describe('Snap Connector Mixin', () => {
     });
 
     beforeEach(() => {
+        Event.prototype.preventDefault = jest.fn();
         snapContainerConfig = {
             position: {
                 x: 5,
@@ -72,15 +73,91 @@ describe('Snap Connector Mixin', () => {
         };
     });
 
-    test('connector hover state', () => {
-        doMount();
-        expect(wrapper.vm.connectorHover).toBe(false);
+    describe('connector enter & leave', () => {
+        test('connector hover state for legal target', () => {
+            doMount();
+            expect(wrapper.vm.connectorHover).toBe(false);
 
-        wrapper.trigger('connector-enter');
-        expect(wrapper.vm.connectorHover).toBe(true);
+            wrapper.trigger('connector-enter');
+            expect(Event.prototype.preventDefault).toHaveBeenCalled();
+            expect(wrapper.vm.connectorHover).toBe(true);
 
-        wrapper.trigger('connector-leave');
-        expect(wrapper.vm.connectorHover).toBe(false);
+            wrapper.trigger('connector-leave');
+            expect(wrapper.vm.connectorHover).toBe(false);
+        });
+
+        test('connector enter for illegal target', () => {
+            doMount();
+            wrapper.setData({ connectionForbidden: true });
+
+            wrapper.trigger('connector-enter');
+            expect(Event.prototype.preventDefault).not.toHaveBeenCalled();
+            expect(wrapper.vm.connectorHover).toBe(false);
+        });
+    });
+
+    describe('Is legal drop target?', () => {
+        test('illegal', () => {
+            doMount();
+
+            wrapper.vm.$root.$emit('connector-start', {
+                compatibleNodes: new Set(),
+                nodeId: 'notThisNode'
+            });
+
+            expect(wrapper.vm.connectionForbidden).toBe(true);
+            expect(wrapper.vm.isConnectionSource).toBe(false);
+        });
+
+        test('illegal and is connection source', () => {
+            snapContainerConfig.id = 'node-id';
+            doMount();
+
+            wrapper.vm.$root.$emit('connector-start', {
+                compatibleNodes: new Set(),
+                nodeId: 'node-id'
+            });
+
+            expect(wrapper.vm.connectionForbidden).toBe(true);
+            expect(wrapper.vm.isConnectionSource).toBe(true);
+        });
+
+        test('legal', () => {
+            snapContainerConfig.id = 'node-id';
+            doMount();
+
+            wrapper.vm.$root.$emit('connector-start', {
+                compatibleNodes: new Set(['node-id']),
+                nodeId: 'node-id'
+            });
+
+            expect(wrapper.vm.connectionForbidden).toBe(false);
+        });
+
+        test('special case for metanodes', () => {
+            snapContainerConfig.containerId = 'root';
+            doMount();
+
+            wrapper.vm.$root.$emit('connector-start', {
+                compatibleNodes: new Set()
+            });
+
+            expect(wrapper.vm.connectionForbidden).toBe(false);
+            expect(wrapper.vm.isConnectionSource).toBe(false);
+        });
+
+        test('connector-end resets state', () => {
+            doMount();
+            wrapper.setData({
+                connectionForbidden: true,
+                isConnectionSource: true
+            });
+
+            wrapper.vm.$root.$emit('connector-end');
+
+            expect(wrapper.vm.connectionForbidden).toBe(false);
+            expect(wrapper.vm.isConnectionSource).toBe(false);
+        });
     });
 
     describe('Make partitions', () => {
