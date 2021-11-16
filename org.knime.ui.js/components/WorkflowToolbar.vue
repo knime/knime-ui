@@ -65,6 +65,7 @@ export default {
   flex-shrink: 0;
   display: flex;
   font-size: 14px;
+  user-select: none;
 
   & .with-text {
     padding-right: 9px;

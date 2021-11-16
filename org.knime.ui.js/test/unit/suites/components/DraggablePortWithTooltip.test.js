@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
 
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { createLocalVue, shallowMount, createWrapper } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
@@ -9,7 +9,7 @@ import PortWithTooltip from '~/components/PortWithTooltip';
 import Port from '~/components/Port';
 import Connector from '~/components/Connector';
 import Vue from 'vue';
-import { afterEach } from '@jest/globals';
+import { circleDetection } from '~/util/compatibleConnections';
 
 jest.mock('lodash', () => ({
     throttle(func) {
@@ -18,6 +18,9 @@ jest.mock('lodash', () => ({
             return func.apply(this, args);
         };
     }
+}));
+jest.mock('~/util/compatibleConnections', () => ({
+    circleDetection: jest.fn().mockReturnValue([])
 }));
 
 describe('DraggablePortWithTooltip', () => {
@@ -43,6 +46,9 @@ describe('DraggablePortWithTooltip', () => {
             workflow: {
                 actions: {
                     connectNodes: jest.fn()
+                },
+                state: {
+                    activeWorkflow: 'workflowRef'
                 }
             },
             canvas: {
@@ -123,12 +129,15 @@ describe('DraggablePortWithTooltip', () => {
                 wrapper.trigger('pointerdown', { pointerId: -1, x, y });
             };
 
-            dragAboveTarget = (targetElement, [x, y] = [0, 0]) => {
+            dragAboveTarget = (targetElement, [x, y] = [0, 0], enableDropTarget = true) => {
                 document.elementFromPoint = jest.fn().mockReturnValueOnce(targetElement);
 
                 if (targetElement) {
                     targetElement.addEventListener('connector-enter', e => {
                         targetElement._connectorEnterEvent = e;
+                        if (enableDropTarget) {
+                            e.preventDefault();
+                        }
                     });
                     targetElement.addEventListener('connector-move', e => {
                         targetElement._connectorMoveEvent = e;
@@ -154,6 +163,25 @@ describe('DraggablePortWithTooltip', () => {
             it('saves KanvasElement', () => {
                 startDragging();
                 expect(wrapper.vm.kanvasElement).toStrictEqual(KanvasMock);
+            });
+
+            it.each(['out', 'in'])('does circle detection for %s-port', (portDirection) => {
+                propsData.direction = portDirection;
+                startDragging();
+
+                expect(circleDetection).toHaveBeenCalledWith({
+                    downstreamConnection: portDirection === 'out',
+                    startNode: 'node:1',
+                    workflow: 'workflowRef'
+                });
+
+                let rootWrapper = createWrapper(wrapper.vm.$root);
+                expect(rootWrapper.emitted('connector-start')).toStrictEqual([
+                    [{
+                        compatibleNodes: [],
+                        nodeId: 'node:1'
+                    }]
+                ]);
             });
 
             describe('Set internal variable dragConnector and position Drag-Connector and -Port', () => {
@@ -340,7 +368,30 @@ describe('DraggablePortWithTooltip', () => {
 
                 expect(hitTarget._connectorLeaveEvent).toBeTruthy();
                 expect(wrapper.vm.dragConnector).toBeFalsy();
+
+                let rootWrapper = createWrapper(wrapper.vm.$root);
+                expect(rootWrapper.emitted('connector-end')).toBeTruthy();
             });
+        });
+
+        test("connector-enter not cancelled: doesn't raise move/leave/drop event", () => {
+            startDragging([0, 0]);
+
+            let hitTarget = document.createElement('div');
+            // no prevent default
+
+            dragAboveTarget(hitTarget, [0, 0], false);
+            expect(hitTarget._connectorMoveEvent).toBeFalsy();
+
+            dragAboveTarget(hitTarget, [1, 1]);
+            expect(hitTarget._connectorMoveEvent).toBeFalsy();
+
+            dragAboveTarget(null);
+            expect(hitTarget._connectorLeaveEvent).toBeFalsy();
+
+            wrapper.trigger('pointerup', { pointerId: -1 });
+
+            expect(hitTarget._connectorDropEvent).toBeFalsy();
         });
     });
 });

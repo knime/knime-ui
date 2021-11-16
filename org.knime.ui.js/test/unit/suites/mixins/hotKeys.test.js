@@ -3,7 +3,8 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
-import HotKeys from '~/components/HotKeys';
+import { hotKeys } from '~/mixins';
+
 import * as userActionStoreConfig from '~/store/userActions';
 
 jest.mock('lodash', () => ({
@@ -91,7 +92,11 @@ describe('HotKeys', () => {
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
-            wrapper = shallowMount(HotKeys, { mocks: { $store } });
+            let testComponent = {
+                template: '<div />',
+                mixins: [hotKeys]
+            };
+            wrapper = shallowMount(testComponent, { mocks: { $store } });
         };
     });
 
