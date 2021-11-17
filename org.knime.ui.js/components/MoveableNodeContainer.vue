@@ -38,7 +38,7 @@ export default {
     }),
     computed: {
         ...mapGetters('workflow', ['isWritable']),
-        ...mapGetters('selection', ['selectedNodeIds', 'isNodeSelected']),
+        ...mapGetters('selection', ['isNodeSelected']),
         ...mapState('openedProjects', {
             projectId: 'activeId'
         }),
