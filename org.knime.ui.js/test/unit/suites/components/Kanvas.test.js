@@ -330,7 +330,15 @@ describe('Kanvas', () => {
 
         it('sorts nodes to show selected ones above all others', () => {
             doShallowMount();
-            expect(wrapper.vm.sortedNodes.map(x => x.id)).toStrictEqual(['root:0', 'root:2', 'root:1']);
+            const expected = ['root:0', 'root:2', 'root:1'];
+
+            // check sortedNodes computed prop
+            expect(wrapper.vm.sortedNodes.map(x => x.id)).toStrictEqual(expected);
+
+            // check order order of Node components
+            wrapper.findAllComponents(Node).wrappers.forEach((n, i) => {
+                expect(n.props('id')).toBe(expected[i]);
+            });
         });
 
         it('stop resize observer', () => {
