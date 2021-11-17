@@ -47,7 +47,7 @@ export default {
             'isStreaming'
         ]),
         ...mapGetters('canvas', ['contentBounds', 'canvasSize', 'viewBox']),
-        ...mapGetters('selection', ['selectedNodeIds']),
+        ...mapGetters('selection', ['isNodeSelected']),
         ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning']),
         viewBoxString() {
             let { viewBox } = this;
@@ -60,7 +60,7 @@ export default {
             let unselected = [];
 
             for (const nodeId of Object.keys(this.workflow.nodes)) {
-                if (this.selectedNodeIds.includes(nodeId)) {
+                if (this.isNodeSelected(nodeId)) {
                     selected.push(this.workflow.nodes[nodeId]);
                 } else {
                     unselected.push(this.workflow.nodes[nodeId]);
