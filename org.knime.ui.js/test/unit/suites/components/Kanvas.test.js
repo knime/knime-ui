@@ -168,9 +168,7 @@ describe('Kanvas', () => {
             },
             selection: {
                 getters: {
-                    selectedNodeIds() {
-                        return ['root:1'];
-                    }
+                    isNodeSelected: () => (nodeId) => nodeId === 'root:1'
                 }
             }
         };
