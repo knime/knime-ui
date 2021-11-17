@@ -50,7 +50,8 @@ const mockConnector = ({ nr, id }) => ({
 });
 
 describe('Kanvas', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, nodeData, storeConfig;
+    let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, nodeData, storeConfig,
+        isNodeSelectedMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -149,6 +150,8 @@ describe('Kanvas', () => {
                 }
             }
         };
+        isNodeSelectedMock = jest.fn().mockReturnValue(false);
+
         storeConfig = {
             workflow: workflowStoreConfig,
             canvas: {
@@ -168,7 +171,7 @@ describe('Kanvas', () => {
             },
             selection: {
                 getters: {
-                    isNodeSelected: () => (nodeId) => nodeId === 'root:1'
+                    isNodeSelected: () => isNodeSelectedMock
                 }
             }
         };
@@ -226,6 +229,24 @@ describe('Kanvas', () => {
         });
     });
 
+    describe('Node order', () => {
+        test('original order without selection', () => {
+            doShallowMount();
+            // check order order of Node components
+            let nodeOrder = wrapper.findAllComponents(Node).wrappers.map(node => node.props('id'));
+            expect(nodeOrder).toStrictEqual(['root:0', 'root:1', 'root:2']);
+        });
+
+        test('selecting node brings it to the front', () => {
+            isNodeSelectedMock.mockImplementation((id) => id === 'root:1');
+            doShallowMount();
+
+            // check order order of Node components
+            let nodeOrder = wrapper.findAllComponents(Node).wrappers.map(node => node.props('id'));
+            expect(nodeOrder).toStrictEqual(['root:0', 'root:2', 'root:1']);
+        });
+    });
+
     describe('Linked and Streaming', () => {
         it.each(['metanode', 'component'])('write-protects linked %s and shows warning', (containerType) => {
             workflow.info.linked = true;
@@ -250,7 +271,8 @@ describe('Kanvas', () => {
             expect(wrapper.find('.read-only').exists()).toBe(true);
 
             const notification = wrapper.find('.type-notification').find('span');
-            expect(notification.text()).toBe(`This is a ${containerType} inside a linked ${insideLinkedType} and cannot be edited.`);
+            expect(notification.text())
+                .toBe(`This is a ${containerType} inside a linked ${insideLinkedType} and cannot be edited.`);
             expect(notification.text()).not.toContain(`This is a linked ${containerType}`);
         });
 
@@ -338,19 +360,6 @@ describe('Kanvas', () => {
             wrapper.vm.resizeObserver.resize({ width: 100, height: 50 });
             expect(storeConfig.canvas.mutations.setContainerSize).toHaveBeenCalledWith(expect.anything(), {
                 width: 100, height: 50
-            });
-        });
-
-        it('sorts nodes to show selected ones above all others', () => {
-            doShallowMount();
-            const expected = ['root:0', 'root:2', 'root:1'];
-
-            // check sortedNodes computed prop
-            expect(wrapper.vm.sortedNodes.map(x => x.id)).toStrictEqual(expected);
-
-            // check order order of Node components
-            wrapper.findAllComponents(Node).wrappers.forEach((n, i) => {
-                expect(n.props('id')).toBe(expected[i]);
             });
         });
 
