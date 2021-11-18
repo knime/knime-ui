@@ -50,7 +50,8 @@ const mockConnector = ({ nr, id }) => ({
 });
 
 describe('Kanvas', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, nodeData, storeConfig;
+    let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, nodeData, storeConfig,
+        isNodeSelectedMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -149,6 +150,8 @@ describe('Kanvas', () => {
                 }
             }
         };
+        isNodeSelectedMock = jest.fn().mockReturnValue(false);
+
         storeConfig = {
             workflow: workflowStoreConfig,
             canvas: {
@@ -164,6 +167,11 @@ describe('Kanvas', () => {
                     ...canvasStoreConfig.actions,
                     setZoomToFit: jest.fn(),
                     zoomCentered: jest.fn()
+                }
+            },
+            selection: {
+                getters: {
+                    isNodeSelected: () => isNodeSelectedMock
                 }
             }
         };
@@ -213,7 +221,7 @@ describe('Kanvas', () => {
 
         it('is not linked', () => {
             expect(wrapper.find('.read-only').exists()).toBe(false);
-            expect(wrapper.find('.link-notification').exists()).toBe(false);
+            expect(wrapper.find('.type-notification').exists()).toBe(false);
         });
 
         it('is not streaming', () => {
@@ -221,24 +229,58 @@ describe('Kanvas', () => {
         });
     });
 
-    it('write-protects and shows warning on being linked', () => {
-        workflow.info.linked = true;
-        doShallowMount();
-        expect(wrapper.find('.read-only').exists()).toBe(true);
-        expect(wrapper.find('.type-notification').exists()).toBe(true);
+    describe('Node order', () => {
+        test('original order without selection', () => {
+            doShallowMount();
+            // check order order of Node components
+            let nodeOrder = wrapper.findAllComponents(Node).wrappers.map(node => node.props('id'));
+            expect(nodeOrder).toStrictEqual(['root:0', 'root:1', 'root:2']);
+        });
+
+        test('selecting node brings it to the front', () => {
+            isNodeSelectedMock.mockImplementation((id) => id === 'root:1');
+            doShallowMount();
+
+            // check order order of Node components
+            let nodeOrder = wrapper.findAllComponents(Node).wrappers.map(node => node.props('id'));
+            expect(nodeOrder).toStrictEqual(['root:0', 'root:2', 'root:1']);
+        });
     });
 
-    it('write-protects and shows warning on being inside a linked component or metanode', () => {
-        workflow.parents.push({ linked: true, containerType: 'metanode' });
-        doShallowMount();
-        expect(wrapper.find('.read-only').exists()).toBe(true);
-        expect(wrapper.find('.type-notification').exists()).toBe(true);
-    });
+    describe('Linked and Streaming', () => {
+        it.each(['metanode', 'component'])('write-protects linked %s and shows warning', (containerType) => {
+            workflow.info.linked = true;
+            workflow.info.containerType = containerType;
+            doShallowMount();
 
-    it('shows decorator in streaming component', () => {
-        workflow.info.jobManager = 'test';
-        doShallowMount();
-        expect(wrapper.find('.streaming-decorator').exists()).toBe(true);
+            expect(wrapper.find('.read-only').exists()).toBe(true);
+
+            const notification = wrapper.find('.type-notification').find('span');
+            expect(notification.text()).toBe(`This is a linked ${containerType} and can therefore not be edited.`);
+            expect(notification.text()).not.toContain('inside a linked');
+        });
+
+        it.each([
+            ['metanode', 'component'],
+            ['component', 'metanode']
+        ])('write-protects %s inside a linked %s and shows warning', (containerType, insideLinkedType) => {
+            workflow.parents.push({ linked: true, containerType: insideLinkedType });
+            workflow.info.containerType = containerType;
+            doShallowMount();
+
+            expect(wrapper.find('.read-only').exists()).toBe(true);
+
+            const notification = wrapper.find('.type-notification').find('span');
+            expect(notification.text())
+                .toBe(`This is a ${containerType} inside a linked ${insideLinkedType} and cannot be edited.`);
+            expect(notification.text()).not.toContain(`This is a linked ${containerType}`);
+        });
+
+        it('shows decorator in streaming component', () => {
+            workflow.info.jobManager = 'test';
+            doShallowMount();
+            expect(wrapper.find('.streaming-decorator').exists()).toBe(true);
+        });
     });
 
     it('renders workflow annotations', () => {
