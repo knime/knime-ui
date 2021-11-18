@@ -3,11 +3,11 @@ import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils
 import Vuex from 'vuex';
 
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
-import Breadcrumb from 'webapps-common/ui/components/Breadcrumb';
 import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg?inline';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/metanode.svg?inline';
 import LinkedComponentIcon from '~/webapps-common/ui/assets/img/icons/linked-component.svg?inline';
 import LinkedMetanodeIcon from '~/webapps-common/ui/assets/img/icons/linked-metanode.svg?inline';
+import BreadcrumbEventBased from '~/components/BreadcrumbEventBased';
 
 describe('WorkflowBreadcrumb.vue', () => {
     beforeAll(() => {
@@ -56,7 +56,7 @@ describe('WorkflowBreadcrumb.vue', () => {
         };
         await doShallowMount();
 
-        expect(wrapper.findComponent(Breadcrumb).props('items')).toStrictEqual([{
+        expect(wrapper.findComponent(BreadcrumbEventBased).props('items')).toStrictEqual([{
             icon: null,
             text: 'this is a dummy workflow'
         }]);
@@ -85,34 +85,34 @@ describe('WorkflowBreadcrumb.vue', () => {
                 containerId: 'root:p3',
                 name: 'Matter Node'
             },
-            {
-                containerType: 'metanode',
-                containerId: 'root:p4',
-                name: 'Latter Node',
-                linked: true
-            }]
+                {
+                    containerType: 'metanode',
+                    containerId: 'root:p4',
+                    name: 'Latter Node',
+                    linked: true
+                }]
         };
         await doShallowMount();
 
-        expect(wrapper.findComponent(Breadcrumb).props('items')).toStrictEqual([
+        expect(wrapper.findComponent(BreadcrumbEventBased).props('items')).toStrictEqual([
             {
-                href: '#root',
+                id: 'root',
                 icon: null,
                 text: 'foo'
             }, {
-                href: '#root%3Ap1',
+                id: 'root:p1',
                 icon: ComponentIcon,
                 text: 'Comp oh Nent'
             }, {
-                href: '#root%3Ap2',
+                id: 'root:p2',
                 icon: LinkedComponentIcon,
                 text: 'L ink Comp oh Nent'
             }, {
-                href: '#root%3Ap3',
+                id: 'root:p3',
                 icon: MetaNodeIcon,
                 text: 'Matter Node'
             }, {
-                href: '#root%3Ap4',
+                id: 'root:p4',
                 icon: LinkedMetanodeIcon,
                 text: 'Latter Node'
             }, {
@@ -137,41 +137,17 @@ describe('WorkflowBreadcrumb.vue', () => {
             await doShallowMount();
         });
 
-        it('handles clicks on nothing', () => {
-            const event = {
-                target: {
-                    tagName: 'DIV'
-                }
-            };
-            wrapper.vm.onClick(event);
-            expect(storeConfig.workflow.actions.loadWorkflow).not.toHaveBeenCalled();
-        });
 
         it('handles clicks on link', () => {
             const event = {
                 target: {
-                    tagName: 'A',
-                    href: '#root:0:123'
-                }
+                    tagName: 'A'
+                },
+                id: 'root:0:123'
             };
             wrapper.vm.onClick(event);
             expect(storeConfig.openedProjects.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
                 workflowId: 'root:0:123',
-                projectId: 'proj'
-            });
-        });
-
-        it('handles clicks on link with weird characters in ID (which should never occur)', () => {
-            let weirdId = 'root#;,/?:@&=+$-_.!~*\'"()123';
-            const event = {
-                target: {
-                    tagName: 'A',
-                    href: `#${encodeURIComponent(weirdId)}`
-                }
-            };
-            wrapper.vm.onClick(event);
-            expect(storeConfig.openedProjects.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
-                workflowId: weirdId,
                 projectId: 'proj'
             });
         });

@@ -36,11 +36,16 @@ export default {
     },
     computed: {
         breadcrumbItems() {
-            return this.items.map(({ text, icon, id }) => ({
-                text,
-                icon,
-                href: id ? `#${encodeURIComponent(id)}` : null
-            }));
+            return this.items.map(({ text, icon, id }) => {
+                let item = {
+                    text,
+                    icon: icon || null
+                };
+                if (id) {
+                    item.href = `#${encodeURIComponent(id)}`;
+                }
+                return item;
+            });
         }
     },
     methods: {
