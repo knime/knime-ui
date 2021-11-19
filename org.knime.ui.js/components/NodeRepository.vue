@@ -1,21 +1,26 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
 
-import TagList from '~/webapps-common/ui/components/TagList';
-import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
 import NodeSearcher from '~/components/NodeSearcher';
 import ScrollViewContainer from '~/components/ScrollViewContainer';
 import BreadcrumbEventBased from '~/components/BreadcrumbEventBased';
+import SelectableTagList from '~/components/SelectableTagList';
+import ClosePopoverIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 
 export default {
     components: {
         BreadcrumbEventBased,
-        TagList,
-        CloseIcon,
+        SelectableTagList,
         NodeRepositoryCategory,
         NodeSearcher,
+        ClosePopoverIcon,
         ScrollViewContainer
+    },
+    data() {
+        return {
+            tagsPoppedOut: false
+        };
     },
     computed: {
         ...mapState('nodeRepository', [
@@ -45,6 +50,9 @@ export default {
                 items.push({ text: 'Results' });
             }
             return items;
+        },
+        unselectedTags() {
+            return this.tags.filter((t) => !this.selectedTags.includes(t));
         }
     },
     mounted() {
@@ -61,6 +69,13 @@ export default {
         },
         deselectTag(tag) {
             this.$store.dispatch('nodeRepository/deselectTag', tag);
+        },
+        toggleTag(tag) {
+            if (tag.selected) {
+                this.deselectTag(tag.text);
+            } else {
+                this.selectTag(tag.text);
+            }
         },
         clearSelectedTags() {
             this.$store.dispatch('nodeRepository/clearSelectedTags');
@@ -94,27 +109,35 @@ export default {
   >
     <div class="repo">
       <div class="header">
-        <BreadcrumbEventBased
-          :items="breadcrumbItems"
-          class="repo-breadcrumb"
-          @click="onBreadcrumbClick"
-        />
-        <NodeSearcher />
-        <div class="tags">
-          <TagList
-            class="selected-tags"
-            :tags="selectedTags"
-            clickable
-            @click="deselectTag"
-          >
-            <CloseIcon slot="icon" />
-          </TagList>
-          <TagList
-            v-if="nodeSearching"
-            :tags="tags.filter((t) => !selectedTags.includes(t))"
-            clickable
-            @click="selectTag"
+        <div class="title-and-search">
+          <BreadcrumbEventBased
+            :items="breadcrumbItems"
+            class="repo-breadcrumb"
+            @click="onBreadcrumbClick"
           />
+          <NodeSearcher />
+        </div>
+        <div
+          v-if="nodeSearching"
+          class="tags"
+        >
+          <div class="popout">
+            <SelectableTagList
+              ref="tagList"
+              :selected-tags="selectedTags"
+              :tags="unselectedTags"
+              clickable
+              hide-more-on-click
+              @click="toggleTag"
+            />
+            <button
+              v-if="$refs.tagList && $refs.tagList.displayAll"
+              class="tags-popout-close"
+              @click="$refs.tagList.hideMore"
+            >
+              <ClosePopoverIcon />
+            </button>
+          </div>
         </div>
         <span class="break full force" />
       </div>
@@ -188,50 +211,76 @@ export default {
   }
 
   & .header {
-    /* This can be removed if `scrollbar-gutter: stable;` is fully supported in all browsers */
-    width: 344px;
     position: sticky;
     background: var(--knime-gray-ultra-light);
     z-index: 2;
     top: 0;
-    padding: 15px 20px 0;
+    padding-top: 15px;
+
+    // padding moved inside of content for popout
+    & .break.full {
+      margin-left: 0;
+    }
+
+  }
+
+  & .title-and-search {
+    padding: 0 20px 13px;
   }
 
   & .content {
     padding: 0 20px 15px;
   }
 
-  & .selected-tags {
-    & >>> .clickable {
-      color: var(--knime-white);
-      background-color: var(--knime-masala);
-      border-color: var(--knime-masala);
-
-      & svg {
-        stroke: var(--knime-white);
-      }
-
-      &:hover {
-        color: var(--knime-dove-gray);
-        background-color: transparent;
-        border-color: var(--knime-dove-gray);
-
-        & svg {
-          stroke: var(--knime-dove-gray);
-        }
-      }
-    }
-  }
-
   & .tags {
     display: flex;
     flex-wrap: wrap;
     justify-content: left;
-    padding: 13px 0;
+    align-items: start;
+
+    & .popout {
+      height: 61px;
+    }
+
+    & .wrapper {
+      padding: 0 20px 13px;
+
+      &.show-all {
+        padding-bottom: 19px;
+        max-height: 50vh;
+        overflow: auto;
+        background: var(--knime-gray-ultra-light);
+        box-shadow: var(--knime-gray-dark) 0 4px 6px;
+      }
+    }
   }
 
-  & .filter {
-    margin-bottom: 10px;
+  & .tags-popout-close {
+    position: relative;
+    z-index: 1;
+    border: none;
+    width: 100%;
+    padding: 0;
+    display: flex;
+    height: 12px;
+    margin-top: -12px;
+    justify-content: center;
+    background-color: var(--knime-porcelain);
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--knime-silver-sand);
+    }
+
+    & svg {
+      width: 10px;
+      height: 10px;
+      stroke: var(--knime-masala);
+      stroke-width: calc(32px / 10);
+      transform: rotate(90deg);
+      transition: transform 0.3s ease;
+    }
   }
+
 }
 </style>
