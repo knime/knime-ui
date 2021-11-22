@@ -42,8 +42,8 @@ export default {
       <LensIcon />
     </FunctionButton>
     <input
-      :value="query"
       ref="searchInput"
+      :value="query"
       placeholder="Search nodes and components"
       type="text"
       @input="updateQuery"
@@ -111,6 +111,5 @@ export default {
   & input:placeholder-shown + button {
     visibility: hidden;
   }
-
 }
 </style>

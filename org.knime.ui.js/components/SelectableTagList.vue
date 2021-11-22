@@ -33,16 +33,16 @@ export default {
             default: () => []
         },
         /**
-         * Hides more on click
+         * Show all tags
          */
-        hideMoreOnClick: {
+        showAll: {
             type: Boolean,
             default: false
         }
     },
     data() {
         return {
-            displayAll: false
+            displayAll: this.showAll
         };
     },
     computed: {
@@ -71,18 +71,18 @@ export default {
             }
         }
     },
+    watch: {
+        showAll(newVal, oldVal) {
+            this.displayAll = newVal;
+        }
+    },
     methods: {
         onClick(tag) {
-            if (this.hideMoreOnClick) {
-                this.hideMore();
-            }
             this.$emit('click', tag);
         },
         onShowMore() {
             this.displayAll = true;
-        },
-        hideMore() {
-            this.displayAll = false;
+            this.$emit('show-more', this.displayAll);
         }
     }
 };
@@ -103,7 +103,7 @@ export default {
       {{ tag.text }}
       <slot name="icon" />
     </Tag><!-- no whitespace
- -->
+    -->
     <Tag
       v-if="hasMoreTags"
       class="more-tags"

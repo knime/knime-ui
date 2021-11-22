@@ -2,7 +2,6 @@
 import { mapState } from 'vuex';
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 
-
 export default {
     components: {
         SwitchIcon
@@ -70,10 +69,6 @@ export default {
   overflow-x: hidden;
   transition: width 0.3s ease;
   display: flex;
-}
-
-.hidden-content {
-  height: 100%;
 }
 
 .hidden-content {

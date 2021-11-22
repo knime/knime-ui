@@ -5,22 +5,15 @@ import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
 import NodeSearcher from '~/components/NodeSearcher';
 import ScrollViewContainer from '~/components/ScrollViewContainer';
 import BreadcrumbEventBased from '~/components/BreadcrumbEventBased';
-import SelectableTagList from '~/components/SelectableTagList';
-import ClosePopoverIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
+import CloseableTagList from '~/components/CloseableTagList';
 
 export default {
     components: {
+        CloseableTagList,
         BreadcrumbEventBased,
-        SelectableTagList,
         NodeRepositoryCategory,
         NodeSearcher,
-        ClosePopoverIcon,
         ScrollViewContainer
-    },
-    data() {
-        return {
-            tagsPoppedOut: false
-        };
     },
     computed: {
         ...mapState('nodeRepository', [
@@ -112,28 +105,12 @@ export default {
         />
         <NodeSearcher />
       </div>
-      <div
+      <CloseableTagList
         v-if="nodeSearching"
-        class="tags"
-      >
-        <div class="popout">
-          <SelectableTagList
-            ref="tagList"
-            :selected-tags="selectedTags"
-            :tags="unselectedTags"
-            clickable
-            hide-more-on-click
-            @click="toggleTag"
-          />
-          <button
-            v-if="$refs.tagList && $refs.tagList.displayAll"
-            class="tags-popout-close"
-            @click="$refs.tagList.hideMore"
-          >
-            <ClosePopoverIcon />
-          </button>
-        </div>
-      </div>
+        :selected-tags="selectedTags"
+        :tags="unselectedTags"
+        @click="toggleTag"
+      />
       <span class="break full force" />
     </div>
     <ScrollViewContainer
@@ -220,7 +197,6 @@ export default {
       margin-left: 0;
       margin-bottom: 0;
     }
-
   }
 
   & .title-and-search {
@@ -230,67 +206,5 @@ export default {
   & .content {
     padding: 0 20px 15px;
   }
-
-  & .tags {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: left;
-    align-items: start;
-
-    & .popout {
-      height: 61px;
-      width: 100%;
-    }
-
-    & .wrapper {
-      padding: 0 20px 13px;
-
-      &.show-all {
-        padding-bottom: 13px;
-        max-height: calc(90vh - 230px);
-        overflow: auto;
-        background: var(--knime-gray-ultra-light);
-      }
-    }
-  }
-
-  & .tags-popout-close {
-    position: relative;
-    z-index: 1;
-    border: none;
-    width: 100%;
-    padding: 0;
-    display: flex;
-    height: 12px;
-    justify-content: center;
-    background-color: var(--knime-porcelain);
-    cursor: pointer;
-    border-bottom: 1px solid var(--knime-silver-sand);
-    box-shadow: var(--knime-gray-dark-semi) 0 5px 6px;
-
-    &:before {
-      position: absolute;
-      content: '';
-      top:0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background-color: var(--knime-porcelain);
-    }
-
-    &:hover:before {
-      background-color: var(--knime-silver-sand-semi);
-    }
-
-    & svg {
-      width: 10px;
-      height: 10px;
-      stroke: var(--knime-masala);
-      stroke-width: calc(32px / 10);
-      transform: rotate(90deg);
-      transition: transform 0.3s ease;
-    }
-  }
-
 }
 </style>
