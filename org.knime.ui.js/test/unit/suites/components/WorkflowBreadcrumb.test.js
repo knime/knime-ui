@@ -85,12 +85,12 @@ describe('WorkflowBreadcrumb.vue', () => {
                 containerId: 'root:p3',
                 name: 'Matter Node'
             },
-                {
-                    containerType: 'metanode',
-                    containerId: 'root:p4',
-                    name: 'Latter Node',
-                    linked: true
-                }]
+            {
+                containerType: 'metanode',
+                containerId: 'root:p4',
+                name: 'Latter Node',
+                linked: true
+            }]
         };
         await doShallowMount();
 
