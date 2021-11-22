@@ -21,12 +21,13 @@ export default {
         },
         clearSearch() {
             this.$store.dispatch('nodeRepository/updateQuery', '');
+            this.$refs.searchInput.focus();
         },
         updateQuery(e) {
             this.$store.dispatch('nodeRepository/updateQuery', e.target.value);
         }
     }
-    
+
 };
 </script>
 
@@ -36,18 +37,20 @@ export default {
     class="node-search"
   >
     <FunctionButton
-      @click="searchNodes"
+      class="lens-icon"
     >
       <LensIcon />
     </FunctionButton>
     <input
       :value="query"
+      ref="searchInput"
       placeholder="Search nodes and components"
       type="text"
       @input="updateQuery"
       @keyup.enter="searchNodes"
     >
     <FunctionButton
+      class="clear-search"
       data-test-clear-search
       @click="clearSearch"
     >
@@ -58,36 +61,56 @@ export default {
 
 <style lang="postcss" scoped>
 .node-search {
-    height: 40px;
-    display: flex;
-    align-items: center;
-    position: relative;
-    border: 1px solid var(--knime-stone-gray);
-    background-color: var(--knime-white);
+  height: 40px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  border: 1px solid var(--knime-stone-gray);
+  background-color: var(--knime-white);
 
   &:hover {
     background-color: var(--knime-silver-sand-semi);
   }
 
-  &:active {
+  &:focus-within {
     background-color: var(--knime-white);
     border-color: var(--knime-masala);
   }
 
-  & input {
-        width: 100%;
-        height: 100%;
-        padding: 0 10px 0 10px;
-        border: 0;
-        color: var(--knime-masala);
-        background-color: transparent;
-        font-size: 17px;
-        font-weight: 400;
+  & .lens-icon {
+    pointer-events: none;
+    margin-left: 3px;
+  }
 
-      &:focus {
-        outline: none;
-      }
+  & .clear-search {
+    margin-right: 6px;
+
+    & >>> svg {
+      width: 12px;
+      height: 12px;
+      stroke-width: calc(32px / 12);
     }
+  }
+
+
+  & input {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    padding-right: 6px;
+    color: var(--knime-masala);
+    background-color: transparent;
+    font-size: 17px;
+    font-weight: 400;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  & input:placeholder-shown + button {
+    visibility: hidden;
+  }
 
 }
 </style>

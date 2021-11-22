@@ -102,45 +102,45 @@ export default {
 </script>
 
 <template>
-  <ScrollViewContainer
-    :initial-position="scrollPosition"
-    @scroll-bottom="lazyLoadCategories"
-    @save-position="updateScrollPosition"
-  >
-    <div class="repo">
-      <div class="header">
-        <div class="title-and-search">
-          <BreadcrumbEventBased
-            :items="breadcrumbItems"
-            class="repo-breadcrumb"
-            @click="onBreadcrumbClick"
-          />
-          <NodeSearcher />
-        </div>
-        <div
-          v-if="nodeSearching"
-          class="tags"
-        >
-          <div class="popout">
-            <SelectableTagList
-              ref="tagList"
-              :selected-tags="selectedTags"
-              :tags="unselectedTags"
-              clickable
-              hide-more-on-click
-              @click="toggleTag"
-            />
-            <button
-              v-if="$refs.tagList && $refs.tagList.displayAll"
-              class="tags-popout-close"
-              @click="$refs.tagList.hideMore"
-            >
-              <ClosePopoverIcon />
-            </button>
-          </div>
-        </div>
-        <span class="break full force" />
+  <div class="repo">
+    <div class="header">
+      <div class="title-and-search">
+        <BreadcrumbEventBased
+          :items="breadcrumbItems"
+          class="repo-breadcrumb"
+          @click="onBreadcrumbClick"
+        />
+        <NodeSearcher />
       </div>
+      <div
+        v-if="nodeSearching"
+        class="tags"
+      >
+        <div class="popout">
+          <SelectableTagList
+            ref="tagList"
+            :selected-tags="selectedTags"
+            :tags="unselectedTags"
+            clickable
+            hide-more-on-click
+            @click="toggleTag"
+          />
+          <button
+            v-if="$refs.tagList && $refs.tagList.displayAll"
+            class="tags-popout-close"
+            @click="$refs.tagList.hideMore"
+          >
+            <ClosePopoverIcon />
+          </button>
+        </div>
+      </div>
+      <span class="break full force" />
+    </div>
+    <ScrollViewContainer
+      :initial-position="scrollPosition"
+      @scroll-bottom="lazyLoadCategories"
+      @save-position="updateScrollPosition"
+    >
       <div
         v-if="nodeSearching && !nodes.length"
         class="no-matching-search repo-content"
@@ -162,8 +162,8 @@ export default {
           />
         </template>
       </div>
-    </div>
-  </ScrollViewContainer>
+    </ScrollViewContainer>
+  </div>
 </template>
 
 <style lang="postcss" scoped>
@@ -215,11 +215,10 @@ export default {
     background: var(--knime-gray-ultra-light);
     z-index: 2;
     top: 0;
-    padding-top: 15px;
 
-    // padding moved inside of content for popout
     & .break.full {
       margin-left: 0;
+      margin-bottom: 0;
     }
 
   }
@@ -240,17 +239,17 @@ export default {
 
     & .popout {
       height: 61px;
+      width: 100%;
     }
 
     & .wrapper {
       padding: 0 20px 13px;
 
       &.show-all {
-        padding-bottom: 19px;
-        max-height: 50vh;
+        padding-bottom: 13px;
+        max-height: calc(90vh - 230px);
         overflow: auto;
         background: var(--knime-gray-ultra-light);
-        box-shadow: var(--knime-gray-dark) 0 4px 6px;
       }
     }
   }
@@ -263,13 +262,24 @@ export default {
     padding: 0;
     display: flex;
     height: 12px;
-    margin-top: -12px;
     justify-content: center;
     background-color: var(--knime-porcelain);
     cursor: pointer;
+    border-bottom: 1px solid var(--knime-silver-sand);
+    box-shadow: var(--knime-gray-dark-semi) 0 5px 6px;
 
-    &:hover {
-      background-color: var(--knime-silver-sand);
+    &:before {
+      position: absolute;
+      content: '';
+      top:0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: var(--knime-porcelain);
+    }
+
+    &:hover:before {
+      background-color: var(--knime-silver-sand-semi);
     }
 
     & svg {

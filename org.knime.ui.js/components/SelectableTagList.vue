@@ -1,13 +1,11 @@
 <script>
 import Tag from '~/webapps-common/ui/components/Tag';
-import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 
 const defaultInitialTagCount = 5;
 
 export default {
     components: {
-        Tag,
-        CloseIcon
+        Tag
     },
     props: {
         /**
@@ -19,7 +17,7 @@ export default {
             default: defaultInitialTagCount
         },
         /**
-         * List of tags (Strings) to display.
+         * List of tags (Strings) to display. Not including selected ones.
          * @type Array<String>
          */
         tags: {
@@ -33,13 +31,6 @@ export default {
         selectedTags: {
             type: Array,
             default: () => []
-        },
-        /**
-         * If the tags should emit events and have hover + cursor styles.
-         */
-        clickable: {
-            type: Boolean,
-            default: false
         },
         /**
          * Hides more on click
@@ -82,12 +73,10 @@ export default {
     },
     methods: {
         onClick(tag) {
-            if (this.clickable) {
-                if (this.hideMoreOnClick) {
-                    this.hideMore();
-                }
-                this.$emit('click', tag);
+            if (this.hideMoreOnClick) {
+                this.hideMore();
             }
+            this.$emit('click', tag);
         },
         onShowMore() {
             this.displayAll = true;
@@ -107,14 +96,12 @@ export default {
     <Tag
       v-for="(tag, index) in tagsToDisplay"
       :key="index"
-      :clickable="clickable"
+      clickable
       :class="{selected: tag.selected}"
       @click.native.prevent="onClick(tag)"
     >
       {{ tag.text }}
-      <slot name="icon">
-        <CloseIcon v-if="tag.selected" />
-      </slot>
+      <slot name="icon" />
     </Tag><!-- no whitespace
  -->
     <Tag
