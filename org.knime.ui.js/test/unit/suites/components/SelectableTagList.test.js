@@ -72,7 +72,6 @@ describe('SelectableTagList.vue', () => {
         // last tag is expander button
         await wrapper.find('.more-tags').trigger('click');
         expect(wrapper.findAllComponents(Tag).length).toEqual(sevenTags.length);
-        expect(wrapper.emitted('show-more')[0][0]).toBe([]);
     });
 
     it('shows number of tags on expand button', () => {
