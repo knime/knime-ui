@@ -3,15 +3,16 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
 import NodeRepository from '~/components/NodeRepository';
-import TagList from '~/webapps-common/ui/components/TagList';
+import CloseableTagList from '~/components/CloseableTagList';
 import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
+import BreadcrumbEventBased from '~/components/BreadcrumbEventBased';
 import NodeSearcher from '~/components/NodeSearcher';
 import ScrollViewContainer from '~/components/ScrollViewContainer';
 import { getters } from '~/store/nodeRepository.js';
 
 describe('NodeRepository', () => {
     let mocks, doShallowMount, wrapper, $store, searchNodesMock, searchNodesNextPageMock,
-        selectTagMock, deselectTagMock, getAllNodesMock, clearSelectedTagsMock, setScrollPositionMock;
+        selectTagMock, deselectTagMock, getAllNodesMock, clearSelectedTagsMock, setScrollPositionMock, updateQueryMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -27,6 +28,7 @@ describe('NodeRepository', () => {
         getAllNodesMock = jest.fn();
         clearSelectedTagsMock = jest.fn();
         setScrollPositionMock = jest.fn();
+        updateQueryMock = jest.fn();
 
         $store = mockVuexStore({
             nodeRepository: {
@@ -60,7 +62,8 @@ describe('NodeRepository', () => {
                     selectTag: selectTagMock,
                     deselectTag: deselectTagMock,
                     getAllNodes: getAllNodesMock,
-                    clearSelectedTags: clearSelectedTagsMock
+                    clearSelectedTags: clearSelectedTagsMock,
+                    updateQuery: updateQueryMock
                 },
                 getters,
                 mutations: {
@@ -79,69 +82,84 @@ describe('NodeRepository', () => {
             $store.state.nodeRepository.selectedTags = [];
             $store.state.nodeRepository.nodesPerCategory = [];
             doShallowMount();
-            expect(wrapper.find('h4').text()).toBe('Repository');
+            expect(wrapper.findComponent(BreadcrumbEventBased).props('items')).toEqual([{ text: 'Repository' }]);
             expect(getAllNodesMock).toHaveBeenCalled();
             expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(true);
             expect(wrapper.findComponent(NodeSearcher).exists()).toBe(true);
-            expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
+            expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
             expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(false);
         });
 
         it('renders first grouped nodes ', () => {
             $store.state.nodeRepository.selectedTags = [];
             doShallowMount();
-            expect(wrapper.find('h4').text()).toBe('Repository');
+            expect(wrapper.findComponent(BreadcrumbEventBased).props('items')).toEqual([{ text: 'Repository' }]);
             expect(getAllNodesMock).not.toHaveBeenCalled();
             expect(wrapper.findComponent(NodeSearcher).exists()).toBe(true);
-            expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
+            expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
             expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(true);
         });
     });
-    
+
 
     describe('Tags', () => {
-        it('renders the two TagList when there is at least one selected tag', () => {
+        it('renders with selected tags', () => {
             doShallowMount();
-            expect(wrapper.findAllComponents(TagList).at(0).props('tags')).toEqual(['myTag1']);
-            expect(wrapper.findAllComponents(TagList).at(1).props('tags')).toEqual(['myTag2']);
+            expect(wrapper.findComponent(CloseableTagList).exists()).toBe(true);
+            expect(wrapper.findComponent(CloseableTagList).props('tags')).toEqual(['myTag1']);
+            expect(wrapper.findComponent(CloseableTagList).props('selectedTags')).toEqual(['myTag2']);
         });
 
-        it('doesn\'t render TagLists when no tags are selected', () => {
+        it('doesn\'t render CloseableTagList when no tags are selected and no search is active', () => {
             $store.state.nodeRepository.selectedTags = [];
             doShallowMount();
-            expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
+            expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
         });
 
-        it('Renders only Filter TagList (first list) when a single search is in progress', () => {
+        it('Renders only Filter CloseableTagList (first list) when a single search is in progress', () => {
             $store.state.nodeRepository.query = 'some node';
             $store.state.nodeRepository.selectedTags = [];
             doShallowMount();
-            expect(wrapper.findAllComponents(TagList).length).toBe(1);
+            expect(wrapper.findComponent(CloseableTagList).exists()).toBe(true);
         });
 
         it('Select tag on click', () => {
+            $store.state.nodeRepository.selectedTags = ['myTag3'];
             doShallowMount();
-            wrapper.findAllComponents(TagList).at(0).vm.$emit('click', 'myTag3');
+            wrapper.findComponent(CloseableTagList).vm.$emit('click', { text: 'myTag3', selected: false });
             expect(selectTagMock).toHaveBeenCalledWith(expect.anything(), 'myTag3');
         });
     });
 
     describe('Tag de-selection', () => {
-        it('de-selects tag using Clear button ', () => {
+        it('de-selects tag and clears search using back to Repository link', () => {
             doShallowMount();
-            wrapper.find('.clear-button').vm.$emit('click', 'Clear');
+            expect(wrapper.findComponent(BreadcrumbEventBased).props('items'))
+                .toEqual([{ id: 'clear', text: 'Repository' }, { text: 'Results' }]);
+            wrapper.findComponent(BreadcrumbEventBased).vm.$emit('click', { id: 'clear' });
             expect(clearSelectedTagsMock).toHaveBeenCalled();
+            expect(updateQueryMock).toHaveBeenCalledWith(expect.anything(), '');
         });
 
         it('de-selects tag by clicking an specific tag', () => {
             doShallowMount();
-            wrapper.findAllComponents(TagList).at(1).vm.$emit('click', 'myTag3');
+            wrapper.findComponent(CloseableTagList).vm.$emit('click', { text: 'myTag3', selected: true });
             expect(deselectTagMock).toHaveBeenCalledWith(expect.anything(), 'myTag3');
         });
     });
 
-    describe('Empty search sub-view', () => {
-        it('an active searching with no nodes as result should to show an No matching message', () => {
+    describe('Search for nodes', () => {
+        it('links back to repository view on search/filter results', () => {
+            const singleSearchText = 'some node';
+            $store.state.nodeRepository.query = singleSearchText;
+            $store.state.nodeRepository.selectedTags = [];
+            $store.state.nodeRepository.nodes = [];
+            doShallowMount();
+            expect(wrapper.findComponent(BreadcrumbEventBased).props('items'))
+                .toEqual([{ id: 'clear', text: 'Repository' }, { text: 'Results' }]);
+        });
+
+        it('shows no matching message if there have been no results', () => {
             const singleSearchText = 'some node';
             $store.state.nodeRepository.query = singleSearchText;
             $store.state.nodeRepository.selectedTags = [];
@@ -150,14 +168,14 @@ describe('NodeRepository', () => {
             expect(wrapper.find('.no-matching-search').exists()).toBe(true);
             expect(wrapper.find('.no-matching-search').text())
                 .toBe(`No node or component matching for: ${singleSearchText}`);
-            expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
+            expect(wrapper.findComponent(CloseableTagList).exists()).toBe(true);
             expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(false);
             expect(wrapper.findComponent(NodeSearcher).exists()).toBe(true);
         });
     });
 
     describe('On events calls', () => {
-        test('saves scroll position ', () => {
+        it('saves scroll position ', () => {
             const newScrollPosition = 200;
             doShallowMount();
             const scroller = wrapper.findComponent(ScrollViewContainer);
