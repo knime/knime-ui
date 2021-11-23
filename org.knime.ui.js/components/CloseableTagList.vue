@@ -1,6 +1,7 @@
 <script>
 import SelectableTagList from '~/components/SelectableTagList';
 import ClosePopoverIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
+import { mixin as clickaway } from 'vue-clickaway2';
 
 const defaultInitialTagCount = 5;
 
@@ -13,6 +14,7 @@ export default {
         SelectableTagList,
         ClosePopoverIcon
     },
+    mixins: [clickaway],
     props: {
         /**
          * Maximum number of tags to display initially.
@@ -55,6 +57,7 @@ export default {
 
 <template>
   <div
+    v-on-clickaway="displayAll = false"
     class="closeable-tags"
   >
     <div class="popout">
