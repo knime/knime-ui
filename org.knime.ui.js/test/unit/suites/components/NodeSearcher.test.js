@@ -9,7 +9,7 @@ import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import NodeSearcher from '~/components/NodeSearcher';
 
 describe('NodeRepositoryCategory', () => {
-    let mocks, doShallowMount, wrapper, $store, searchNodesMock,
+    let mocks, doShallowMount, wrapper, $store,
         updateQueryMock;
 
     beforeAll(() => {
@@ -19,13 +19,11 @@ describe('NodeRepositoryCategory', () => {
 
     beforeEach(() => {
         wrapper = null;
-        searchNodesMock = jest.fn();
         updateQueryMock = jest.fn();
 
         $store = mockVuexStore({
             nodeRepository: {
                 actions: {
-                    searchNodes: searchNodesMock,
                     updateQuery: updateQueryMock
                 }
             }
@@ -46,22 +44,22 @@ describe('NodeRepositoryCategory', () => {
     });
 
     describe('searching event', () => {
-        it('add entry to input', () => {
+        it('searches on input in search box', () => {
             doShallowMount();
             const input = wrapper.find('input');
             input.setValue('some node');
             expect(updateQueryMock).toHaveBeenCalled();
         });
 
-        it('click on Lens Button', () => {
+        it('ignores clicks on lens button', () => {
             doShallowMount();
             const lensButton = wrapper.findAllComponents(FunctionButton).wrappers[0];
             expect(lensButton.findComponent(LensIcon).exists()).toBe(true);
             lensButton.vm.$emit('click');
-            expect(searchNodesMock).toHaveBeenCalled();
+            expect(updateQueryMock).not.toHaveBeenCalled();
         });
 
-        it('click on Clear Button', () => {
+        it('clears on clear button click', () => {
             doShallowMount();
             const closeButton = wrapper.findAllComponents(FunctionButton).wrappers[1];
             expect(closeButton.findComponent(CloseIcon).exists()).toBe(true);
