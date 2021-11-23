@@ -7,7 +7,7 @@ const defaultInitialTagCount = 5;
 
 /**
  * Wraps a SelectableTagList and adds close buttons and click-away to it. The visible area overflows and looks like a
- * popover.
+ * popover. Designed to work in NodeRepository.
  */
 export default {
     components: {
@@ -98,6 +98,7 @@ export default {
 
     &.show-all {
       padding-bottom: 13px;
+      /* The 230px is the fixed part of the apps header that has a fixed size.*/
       max-height: calc(90vh - 230px);
       overflow: auto;
       background: var(--knime-gray-ultra-light);
