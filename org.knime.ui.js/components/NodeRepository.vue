@@ -54,9 +54,6 @@ export default {
         }
     },
     methods: {
-        loadMoreNodes() {
-            this.$store.dispatch('nodeRepository/searchNodesNextPage');
-        },
         selectTag(tag) {
             this.$store.dispatch('nodeRepository/selectTag', tag);
         },

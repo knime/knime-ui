@@ -16,9 +16,6 @@ export default {
         ...mapState('nodeRepository', ['query'])
     },
     methods: {
-        searchNodes() {
-            this.$store.dispatch('nodeRepository/searchNodes', false);
-        },
         clearSearch() {
             this.$store.dispatch('nodeRepository/updateQuery', '');
             this.$refs.searchInput.focus();
@@ -47,7 +44,6 @@ export default {
       placeholder="Search nodes and components"
       type="text"
       @input="updateQuery"
-      @keyup.enter="searchNodes"
     >
     <FunctionButton
       class="clear-search"
@@ -91,7 +87,6 @@ export default {
       stroke-width: calc(32px / 12);
     }
   }
-
 
   & input {
     width: 100%;
