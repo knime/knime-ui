@@ -36,7 +36,7 @@ export default {
             e.dataTransfer.setDragImage(this.dragGhost, dragGhostRect.width / 2, dragGhostRect.height / 2);
 
             e.dataTransfer.setData('text/plain', this.nodeTemplate.id);
-            e.dataTransfer.setData('text/knime-noderepo', this.nodeTemplate.id);
+            e.dataTransfer.setData('text/knime-noderepo', JSON.stringify(this.nodeTemplate.nodeFactory));
         },
         onDragEnd() {
             // remove cloned node preview

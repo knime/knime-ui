@@ -47,7 +47,7 @@ const workflowCommand = ({ projectId, workflowId, command, args }) => {
 
 /**
  * @param { String } position The X,Y position where node is going to be added
- * @param { String } nodeFactory The className of the node
+ * @param { String } nodeFactory The representation of the node's factory
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
  * @returns { Promise } Promise

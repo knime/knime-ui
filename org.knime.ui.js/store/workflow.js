@@ -261,7 +261,7 @@ export const actions = {
             destPort
         });
     },
-    async addNode({ state, getters }, { position, className }) {
+    async addNode({ state, getters }, { position, nodeFactory }) {
         await addNode({
             projectId: state.activeWorkflow.projectId,
             workflowId: getters.activeWorkflowId,
@@ -269,9 +269,7 @@ export const actions = {
                 x: position[0],
                 y: position[1]
             },
-            nodeFactory: {
-                className
-            }
+            nodeFactory
         });
     }
 };

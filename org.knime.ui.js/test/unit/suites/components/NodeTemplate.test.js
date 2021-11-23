@@ -25,6 +25,9 @@ describe('NodeTemplate', () => {
             nodeTemplate: {
                 name: 'node-name',
                 id: 'node-id',
+                nodeFactory: {
+                    className: 'class-name'
+                },
                 icon: 'data:image/node-icon',
                 type: 'node-type',
                 inPorts: ['port'],
@@ -107,7 +110,7 @@ describe('NodeTemplate', () => {
             wrapper.trigger('dragstart', testEvent);
 
             expect(testEvent.dataTransfer.setData).toHaveBeenCalledWith('text/plain', 'node-id');
-            expect(testEvent.dataTransfer.setData).toHaveBeenCalledWith('text/knime-noderepo', 'node-id');
+            expect(testEvent.dataTransfer.setData).toHaveBeenCalledWith('text/knime-noderepo', JSON.stringify({ className: 'class-name' }));
         });
     });
 });

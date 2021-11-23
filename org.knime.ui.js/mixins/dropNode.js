@@ -10,9 +10,9 @@ export const dropNode = {
     methods: {
         ...mapActions('workflow', ['addNode']),
         onDrop(e) {
-            const className = e.dataTransfer.getData(KnimeMIME);
+            const nodeFactory = JSON.parse(e.dataTransfer.getData(KnimeMIME));
             const position = this.getDestinationPosition(e);
-            this.addNode({ position, className });
+            this.addNode({ position, nodeFactory });
 
             // Default action when dropping links is to open them in your browser.
             e.preventDefault();
