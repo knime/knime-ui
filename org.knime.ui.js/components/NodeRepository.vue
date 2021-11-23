@@ -4,7 +4,7 @@ import { mapState, mapGetters } from 'vuex';
 import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
 import NodeSearcher from '~/components/NodeSearcher';
 import ScrollViewContainer from '~/components/ScrollViewContainer';
-import BreadcrumbEventBased from '~/components/BreadcrumbEventBased';
+import BreadcrumbEventBased from '~/components/ActionBreadcrumb';
 import CloseableTagList from '~/components/CloseableTagList';
 
 export default {

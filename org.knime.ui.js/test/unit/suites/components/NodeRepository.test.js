@@ -5,7 +5,7 @@ import Vuex from 'vuex';
 import NodeRepository from '~/components/NodeRepository';
 import CloseableTagList from '~/components/CloseableTagList';
 import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
-import BreadcrumbEventBased from '~/components/BreadcrumbEventBased';
+import BreadcrumbEventBased from '~/components/ActionBreadcrumb';
 import NodeSearcher from '~/components/NodeSearcher';
 import ScrollViewContainer from '~/components/ScrollViewContainer';
 import { getters } from '~/store/nodeRepository.js';

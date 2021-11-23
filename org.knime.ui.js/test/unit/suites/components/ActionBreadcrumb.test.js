@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 
-import BreadcrumbEventBased from '~/components/BreadcrumbEventBased';
+import BreadcrumbEventBased from '~/components/ActionBreadcrumb';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb';
 
 describe('BreadcrumbEventBased.vue', () => {
