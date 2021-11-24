@@ -21,48 +21,49 @@ describe('JSON-RPC adapter', () => {
         expect(result).toBe('dummy');
     });
 
-    it('handles errors during call', () => {
+    it('handles errors during call', async () => {
         window.jsonrpc.mockImplementationOnce(() => {
             throw new Error('internal error');
         });
 
-        expect(() => rpc('a', 'b', 'c')).toThrow('Error calling JSON-RPC api "a", "["b","c"]": internal error');
+        await expect(rpc('a', 'b', 'c')).rejects.toThrow('Error calling JSON-RPC api "a", "["b","c"]": internal error');
     });
 
-    it('handles syntactically invalid response', () => {
+    it('handles syntactically invalid response', async () => {
         window.jsonrpc.mockReturnValueOnce(`${JSON.stringify({
             this: 'is'
         })} invalid`);
 
-        expect(() => rpc('a', 'b', 'c')).rejects.toEqual('Could not be parsed as JSON-RPC: {"this":"is"} invalid');
+        await expect(rpc('a', 'b', 'c'))
+            .rejects.toThrow('Could not be parsed as JSON-RPC: {"this":"is"} invalid');
     });
 
-    it('handles error response', () => {
+    it('handles error response', async () => {
         window.jsonrpc.mockReturnValueOnce(JSON.stringify({
             error: 'This id is not known'
         }));
 
-        expect(() => rpc('a', 'b', 'c')).rejects.toEqual(
+        await expect(rpc('a', 'b', 'c')).rejects.toThrow(
             'Error returned from JSON-RPC API ["a",["b","c"]]: "This id is not known"'
         );
     });
 
-    it('handles missing result', () => {
+    it('handles missing result', async () => {
         window.jsonrpc.mockReturnValueOnce(JSON.stringify({
             id: 0
         }));
 
-        expect(() => rpc('a', 'b', 'c')).rejects.toEqual('Invalid JSON-RPC response {"id":0}');
+        await expect(rpc('a', 'b', 'c')).rejects.toThrow('Invalid JSON-RPC response {"id":0}');
     });
 
-    it('handles mixed messages', () => {
+    it('handles mixed messages', async () => {
         window.jsonrpc.mockReturnValueOnce(JSON.stringify({
             id: 0,
             result: 'everything is fine',
             error: 'nothing is fine'
         }));
 
-        expect(() => rpc('a', 'b', 'c')).rejects.toEqual(
+        await expect(rpc('a', 'b', 'c')).rejects.toThrow(
             'Error returned from JSON-RPC API ["a",["b","c"]]: "nothing is fine"'
         );
     });

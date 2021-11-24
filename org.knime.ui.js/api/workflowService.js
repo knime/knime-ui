@@ -18,7 +18,7 @@ export const loadWorkflow = async ({ projectId, workflowId = 'root', includeInfo
         return workflow;
     } catch (e) {
         consola.error(e);
-        return new Error(`Couldn't load workflow "${workflowId}" from project "${projectId}"`);
+        throw new Error(`Couldn't load workflow "${workflowId}" from project "${projectId}"`);
     }
 };
 
@@ -37,11 +37,10 @@ const workflowCommand = async ({ projectId, workflowId, command, args }) => {
             kind: command,
             ...args
         };
-        let result = await rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
-        return result;
+        return await rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
     } catch (e) {
         consola.error(e);
-        return new Error(`Couldn't execute ${command}(${JSON.stringify(args)})`);
+        throw new Error(`Couldn't execute ${command}(${JSON.stringify(args)})`);
     }
 };
 
@@ -128,11 +127,10 @@ export const connectNodes = ({ projectId, workflowId, sourceNode, sourcePort, de
  */
 export const undo = async ({ projectId, workflowId }) => {
     try {
-        let result = await rpc(`WorkflowService.undoWorkflowCommand`, projectId, workflowId);
-        return result;
+        return await rpc(`WorkflowService.undoWorkflowCommand`, projectId, workflowId);
     } catch (e) {
         consola.error(e);
-        return new Error('Couldn\'t undo');
+        throw new Error('Couldn\'t undo');
     }
 };
 
@@ -145,10 +143,9 @@ export const undo = async ({ projectId, workflowId }) => {
  */
 export const redo = async ({ projectId, workflowId }) => {
     try {
-        let result = await rpc(`WorkflowService.redoWorkflowCommand`, projectId, workflowId);
-        return result;
+        return await rpc(`WorkflowService.redoWorkflowCommand`, projectId, workflowId);
     } catch (e) {
         consola.error(e);
-        return new Error('Couldn\'t redo');
+        throw new Error('Couldn\'t redo');
     }
 };

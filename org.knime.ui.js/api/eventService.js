@@ -10,7 +10,7 @@ const makeToggleEventListener = addOrRemove => async (type, args) => {
     } catch (e) {
         consola.error(e);
         let verb = addOrRemove === 'add' ? 'register' : 'unregister';
-        return new Error(`Couldn't ${verb} event "${type}" with args ${JSON.stringify(args)}`);
+        throw new Error(`Couldn't ${verb} event "${type}" with args ${JSON.stringify(args)}`);
     }
 };
 

@@ -35,7 +35,7 @@ const portRPC = async ({ method, params, projectId, workflowId, nodeId, portInde
  * */
 export const loadTable = async ({ projectId, workflowId, nodeId, portIndex, offset = 0, batchSize }) => {
     try {
-        let table = await portRPC({
+        return await portRPC({
             projectId,
             nodeId,
             workflowId,
@@ -43,10 +43,9 @@ export const loadTable = async ({ projectId, workflowId, nodeId, portIndex, offs
             method: 'getTable',
             params: [offset, batchSize]
         });
-        return table;
     } catch (e) {
         consola.error(e);
-        return new Error(
+        throw new Error(
             `Couldn't load table data (start: ${offset}, length: ${batchSize}) ` +
             `from port ${portIndex} of node "${nodeId}" in project ${projectId}`
         );
@@ -64,17 +63,16 @@ export const loadTable = async ({ projectId, workflowId, nodeId, portIndex, offs
  * */
 export const loadFlowVariables = async ({ projectId, workflowId, nodeId, portIndex }) => {
     try {
-        let flowVariables = await portRPC({
+        return await portRPC({
             projectId,
             workflowId,
             nodeId,
             portIndex,
             method: 'getFlowVariables'
         });
-        return flowVariables;
     } catch (e) {
         consola.error(e);
-        return new Error(
+        throw new Error(
             `Couldn't load flow variables of node "${nodeId}" in project ${projectId}`
         );
     }

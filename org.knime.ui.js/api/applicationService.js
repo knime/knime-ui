@@ -13,6 +13,6 @@ export const fetchApplicationState = async () => {
         return state;
     } catch (e) {
         consola.error(e);
-        return new Error('Could not load application state');
+        throw new Error('Could not load application state');
     }
 };

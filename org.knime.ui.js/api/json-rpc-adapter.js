@@ -22,12 +22,13 @@ export default async (method, ...args) => {
         params: args,
         id: 0
     };
-    consola.trace('JSON-RPC:', req);
+    consola.trace('JSON-RPC Request:', req);
 
     let response;
     try {
         response = window.jsonrpc(JSON.stringify(req));
         if (response instanceof Promise) {
+            consola.trace('using synchronous backend');
             response = await response;
         }
     } catch (e) {
@@ -66,7 +67,7 @@ parseResponse = ({ response, method = '<unknown>', args }) => {
         throw new Error(`Invalid JSON-RPC response ${response}`);
     }
 
-    consola.trace('Result:', result);
+    consola.trace('JSON-RPC Result:', result);
     return result;
 };
 

@@ -18,12 +18,12 @@ export const getNodesGroupedByTags = async ({ numNodesPerTag, tagsOffset, tagsLi
             tagsLimit,
             fullTemplateInfo
         );
-        consola.debug('Loaded nodes', groupedNodes);
+        consola.debug('Loaded nodes grouped by tags', groupedNodes);
 
         return groupedNodes;
     } catch (e) {
         consola.error(e);
-        return new Error(`Couldn't get nodes grouped by tags`);
+        throw new Error(`Couldn't get nodes grouped by tags`);
     }
 };
 
@@ -49,11 +49,11 @@ export const searchNodes = async ({ query, tags, allTagsMatch, nodeOffset, nodeL
             nodeLimit,
             fullTemplateInfo
         );
-        consola.debug('Loaded nodes', nodes);
+        consola.debug('Loaded node search results', nodes);
 
         return nodes;
     } catch (e) {
         consola.error(e);
-        return new Error(`Couldn't search nodes "${query}" with tags "${tags}"`);
+        throw new Error(`Couldn't search nodes "${query}" with tags "${tags}"`);
     }
 };

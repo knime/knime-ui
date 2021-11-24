@@ -11,11 +11,10 @@ import rpc from './json-rpc-adapter.js';
  */
 export const changeNodeState = async ({ projectId, workflowId, nodeIds = [], action }) => {
     try {
-        let result = await rpc('NodeService.changeNodeStates', projectId, workflowId, nodeIds, action);
-        return result;
+        return await rpc('NodeService.changeNodeStates', projectId, workflowId, nodeIds, action);
     } catch (e) {
         consola.error(e);
-        return new Error(`Could not ${action} nodes ${nodeIds}`);
+        throw new Error(`Could not ${action} nodes ${nodeIds}`);
     }
 };
 
@@ -29,10 +28,9 @@ export const changeNodeState = async ({ projectId, workflowId, nodeIds = [], act
  */
 export const changeLoopState = async ({ projectId, workflowId, nodeId, action }) => {
     try {
-        let result = await rpc(`NodeService.changeLoopState`, projectId, workflowId, nodeId, action);
-        return result;
+        return await rpc(`NodeService.changeLoopState`, projectId, workflowId, nodeId, action);
     } catch (e) {
         consola.error(e);
-        return new Error(`Could not ${action} node ${nodeId}`);
+        throw new Error(`Could not ${action} node ${nodeId}`);
     }
 };

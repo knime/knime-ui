@@ -35,12 +35,7 @@ describe('API', () => {
             });
 
             it('handles errors on fetchApplicationState', async () => {
-                try {
-                    await api.fetchApplicationState();
-                    return new Error('Error not thrown');
-                } catch (e) {
-                    expect(e.message).toContain('Could not load application state');
-                }
+                await expect(api.fetchApplicationState()).rejects.toThrow('Could not load application state');
             });
         });
     });
@@ -67,21 +62,13 @@ describe('API', () => {
             });
 
             it('handles errors on addEventListener', async () => {
-                try {
-                    await api.addEventListener('foo');
-                    return new Error('Error not thrown');
-                } catch (e) {
-                    expect(e.message).toContain('Couldn\'t register event "foo"');
-                }
+                await expect(api.addEventListener('foo'))
+                    .rejects.toThrow('Couldn\'t register event "foo" with args undefined');
             });
 
             it('handles errors on removeEventListener', async () => {
-                try {
-                    await api.removeEventListener('foo');
-                    return new Error('Error not thrown');
-                } catch (e) {
-                    expect(e.message).toContain('Couldn\'t unregister event "foo"');
-                }
+                await expect(api.removeEventListener('foo'))
+                    .rejects.toThrow('Couldn\'t unregister event "foo" with args undefined');
             });
         });
     });
@@ -389,6 +376,7 @@ describe('API', () => {
                 let portIndex = 2;
                 let projectId = 'projectId';
                 let nodeId = Math.random();
+
                 try {
                     await api.loadTable({ projectId, nodeId, portIndex, batchSize: 400 });
                     return new Error('Error not thrown');
