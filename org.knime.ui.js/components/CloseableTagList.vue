@@ -48,8 +48,14 @@ export default {
     },
     methods: {
         onClick(tag) {
-            this.displayAll = false;
+            this.hideMore();
             this.$emit('click', tag);
+        },
+        hideMore() {
+            this.displayAll = false;
+        },
+        showMore() {
+            this.displayAll = true;
         }
     }
 };
@@ -57,7 +63,7 @@ export default {
 
 <template>
   <div
-    v-on-clickaway="displayAll = false"
+    v-on-clickaway="hideMore"
     class="closeable-tags"
   >
     <div class="popout">
@@ -67,13 +73,13 @@ export default {
         :selected-tags="selectedTags"
         :tags="tags"
         :show-all="displayAll"
-        @show-more="displayAll = true"
+        @show-more="showMore"
         @click="onClick"
       />
       <button
         v-if="displayAll"
         class="tags-popout-close"
-        @click="displayAll = false"
+        @click="hideMore"
       >
         <ClosePopoverIcon />
       </button>
@@ -98,7 +104,8 @@ export default {
 
     &.show-all {
       padding-bottom: 13px;
-      /* The 230px is the fixed part of the apps header that has a fixed size.*/
+
+      /* The 230px is the fixed part of the apps header that has a fixed size. */
       max-height: calc(90vh - 230px);
       overflow: auto;
       background: var(--knime-gray-ultra-light);
