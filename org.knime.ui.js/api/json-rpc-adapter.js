@@ -15,7 +15,7 @@ let parseResponse;
  *
  * @private
  */
-export default (method, ...args) => {
+export default async (method, ...args) => {
     const req = {
         jsonrpc: '2.0',
         method,
@@ -27,11 +27,11 @@ export default (method, ...args) => {
     let response;
     try {
         response = window.jsonrpc(JSON.stringify(req));
+        if (response instanceof Promise) {
+            response = await response;
+        }
     } catch (e) {
         throw new Error(`Error calling JSON-RPC api "${[method, JSON.stringify(args)].join('", "')}": ${e.message}`);
-    }
-    if (!(response instanceof Promise)) {
-        response = Promise.resolve(response);
     }
 
     return parseResponse({ response, method, args });
@@ -39,23 +39,23 @@ export default (method, ...args) => {
 
 /**
  * Helper to parse a JSON-RPC response. Throws an Error if the response is invalid
- * @param {Promise<String>} response The serialized JSON-RPC response  (as a promise)
+ * @param {String} response The serialized JSON-RPC response
  * @param {String} method (only for logging) The method that was called
  * @param {Array} args (only for logging) The arguments that were passed to the method
  * @returns {*} The `result` contained in the JSON-RPC object
  * */
-parseResponse = async ({ response, method = '<unknown>', args }) => {
+parseResponse = ({ response, method = '<unknown>', args }) => {
     let result, error;
-    let resolvedResponse = await response;
+
     try {
-        ({ result, error } = JSON.parse(resolvedResponse));
+        ({ result, error } = JSON.parse(response));
     } catch (e) {
-        throw new Error(`Could not be parsed as JSON-RPC: ${resolvedResponse}`);
+        throw new Error(`Could not be parsed as JSON-RPC: ${response}`);
     }
 
     if (error) {
         if (result) {
-            consola.error(`Invalid JSON-RPC response ${resolvedResponse}`);
+            consola.error(`Invalid JSON-RPC response ${response}`);
         }
         throw new Error(
             `Error returned from JSON-RPC API ${JSON.stringify([method, args])}: ${JSON.stringify(error)}`
@@ -63,7 +63,7 @@ parseResponse = async ({ response, method = '<unknown>', args }) => {
     }
 
     if (typeof result === 'undefined') {
-        throw new Error(`Invalid JSON-RPC response ${resolvedResponse}`);
+        throw new Error(`Invalid JSON-RPC response ${response}`);
     }
 
     consola.trace('Result:', result);
