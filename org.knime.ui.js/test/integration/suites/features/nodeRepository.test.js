@@ -14,9 +14,9 @@ Scenario('Show more nodes of an specific Category', ({ I }) => {
     I.dontSee('Create Table Structure');
     I.click('More "IO" nodes');
     I.see('Create Table Structure');
-    I.dontSee('Model Reader');
+    I.dontSee('Send Email');
     I.click('Show more…');
-    I.see('Model Reader');
+    I.see('Send Email');
 });
 
 Scenario('Show more nodes of an specific Category using Category title button', ({ I }) => {
@@ -24,33 +24,34 @@ Scenario('Show more nodes of an specific Category using Category title button', 
     I.dontSee('Create Table Structure');
     I.click('IO', '.category-title');
     I.see('Create Table Structure');
-    I.dontSee('Model Reader');
+    I.dontSee('Send Email');
     I.click('Show more…');
-    I.see('Model Reader');
+    I.see('Send Email');
 });
 
 Scenario('User compound (and) filter', ({ I }) => {
-    const READ_TAG_SELECTOR = '#left-panel > div > div > div >  div > div > div.tags > div > span:nth-child(4)';
+    const READ_TAG_SELECTOR = '#left-panel div.header > div.closeable-tags > div > div > span:nth-child(2)';
     I.see('Table Creator');
     I.click('More "IO" nodes');
     I.see('ARFF Reader');
     I.click(READ_TAG_SELECTOR);
-    I.dontSee('Table Creator');
-    I.see('ARFF Reader');
+    I.dontSee('ARFF Reader');
+    I.see('Table Creator');
 });
 
-Scenario('Clear tag selection using Clear Button', ({ I }) => {
+Scenario('Clear tag selection using Repository link', ({ I }) => {
+    const REPO_BREADCRUMB_LINK_SELECTOR = '.repo-breadcrumb a[href="/#clear"]';
     I.see('Table Creator');
     I.see('Row Filter');
     I.click('More "IO" nodes');
     I.see('Table Creator');
     I.dontSee('Row Filter');
-    I.click('Clear', '.clear-button');
+    I.click(REPO_BREADCRUMB_LINK_SELECTOR);
     I.see('Row Filter');
 });
 
 Scenario('Clear tag selection using deselect tag', ({ I }) => {
-    const SELECTED_TAG_SELECTOR = '#left-panel > div > div >div > div > div > div:nth-child(5) > div > div > span';
+    const SELECTED_TAG_SELECTOR = '#left-panel div.header > div.closeable-tags span.tag.clickable.selected';
     I.see('Table Creator');
     I.see('Row Filter');
     I.click('More "IO" nodes');
