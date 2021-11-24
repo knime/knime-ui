@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-import BreadcrumbEventBased from '~/components/ActionBreadcrumb';
+import ActionBreadcrumb from '~/components/ActionBreadcrumb';
 import ComponentIcon from '~/webapps-common/ui/assets/img/icons/node-workflow.svg?inline';
 import MetaNodeIcon from '~/webapps-common/ui/assets/img/icons/metanode.svg?inline';
 import LinkedComponentIcon from '~/webapps-common/ui/assets/img/icons/linked-component.svg?inline';
@@ -11,7 +11,7 @@ import LinkedMetanodeIcon from '~/webapps-common/ui/assets/img/icons/linked-meta
  */
 export default {
     components: {
-        BreadcrumbEventBased
+        ActionBreadcrumb
     },
     computed: {
         ...mapState('workflow', {
@@ -61,7 +61,7 @@ export default {
 </script>
 
 <template>
-  <BreadcrumbEventBased
+  <ActionBreadcrumb
     :items="items"
     @click="onClick"
   />

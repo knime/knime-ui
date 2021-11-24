@@ -4,13 +4,13 @@ import { mapState, mapGetters } from 'vuex';
 import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
 import NodeSearcher from '~/components/NodeSearcher';
 import ScrollViewContainer from '~/components/ScrollViewContainer';
-import BreadcrumbEventBased from '~/components/ActionBreadcrumb';
+import ActionBreadcrumb from '~/components/ActionBreadcrumb';
 import CloseableTagList from '~/components/CloseableTagList';
 
 export default {
     components: {
         CloseableTagList,
-        BreadcrumbEventBased,
+        ActionBreadcrumb,
         NodeRepositoryCategory,
         NodeSearcher,
         ScrollViewContainer
@@ -95,7 +95,7 @@ export default {
   <div class="repo">
     <div class="header">
       <div class="title-and-search">
-        <BreadcrumbEventBased
+        <ActionBreadcrumb
           :items="breadcrumbItems"
           class="repo-breadcrumb"
           @click="onBreadcrumbClick"

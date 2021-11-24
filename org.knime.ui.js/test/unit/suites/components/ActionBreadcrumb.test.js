@@ -1,14 +1,14 @@
 import { shallowMount } from '@vue/test-utils';
 
-import BreadcrumbEventBased from '~/components/ActionBreadcrumb';
+import ActionBreadcrumb from '~/components/ActionBreadcrumb';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb';
 
-describe('BreadcrumbEventBased.vue', () => {
+describe('ActionBreadcrumb.vue', () => {
     let wrapper, doShallowMount, props;
 
     beforeEach(() => {
         doShallowMount = () => {
-            wrapper = shallowMount(BreadcrumbEventBased, {
+            wrapper = shallowMount(ActionBreadcrumb, {
                 propsData: props
             });
         };

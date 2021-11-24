@@ -5,7 +5,7 @@ import Vuex from 'vuex';
 import NodeRepository from '~/components/NodeRepository';
 import CloseableTagList from '~/components/CloseableTagList';
 import NodeRepositoryCategory from '~/components/NodeRepositoryCategory';
-import BreadcrumbEventBased from '~/components/ActionBreadcrumb';
+import ActionBreadcrumb from '~/components/ActionBreadcrumb';
 import NodeSearcher from '~/components/NodeSearcher';
 import ScrollViewContainer from '~/components/ScrollViewContainer';
 import { getters } from '~/store/nodeRepository.js';
@@ -82,7 +82,7 @@ describe('NodeRepository', () => {
             $store.state.nodeRepository.selectedTags = [];
             $store.state.nodeRepository.nodesPerCategory = [];
             doShallowMount();
-            expect(wrapper.findComponent(BreadcrumbEventBased).props('items')).toEqual([{ text: 'Repository' }]);
+            expect(wrapper.findComponent(ActionBreadcrumb).props('items')).toEqual([{ text: 'Repository' }]);
             expect(getAllNodesMock).toHaveBeenCalled();
             expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(true);
             expect(wrapper.findComponent(NodeSearcher).exists()).toBe(true);
@@ -93,7 +93,7 @@ describe('NodeRepository', () => {
         it('renders first grouped nodes ', () => {
             $store.state.nodeRepository.selectedTags = [];
             doShallowMount();
-            expect(wrapper.findComponent(BreadcrumbEventBased).props('items')).toEqual([{ text: 'Repository' }]);
+            expect(wrapper.findComponent(ActionBreadcrumb).props('items')).toEqual([{ text: 'Repository' }]);
             expect(getAllNodesMock).not.toHaveBeenCalled();
             expect(wrapper.findComponent(NodeSearcher).exists()).toBe(true);
             expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
@@ -134,9 +134,9 @@ describe('NodeRepository', () => {
     describe('Tag de-selection', () => {
         it('de-selects tag and clears search using back to Repository link', () => {
             doShallowMount();
-            expect(wrapper.findComponent(BreadcrumbEventBased).props('items'))
+            expect(wrapper.findComponent(ActionBreadcrumb).props('items'))
                 .toEqual([{ id: 'clear', text: 'Repository' }, { text: 'Results' }]);
-            wrapper.findComponent(BreadcrumbEventBased).vm.$emit('click', { id: 'clear' });
+            wrapper.findComponent(ActionBreadcrumb).vm.$emit('click', { id: 'clear' });
             expect(clearSelectedTagsMock).toHaveBeenCalled();
             expect(updateQueryMock).toHaveBeenCalledWith(expect.anything(), '');
         });
@@ -155,7 +155,7 @@ describe('NodeRepository', () => {
             $store.state.nodeRepository.selectedTags = [];
             $store.state.nodeRepository.nodes = [];
             doShallowMount();
-            expect(wrapper.findComponent(BreadcrumbEventBased).props('items'))
+            expect(wrapper.findComponent(ActionBreadcrumb).props('items'))
                 .toEqual([{ id: 'clear', text: 'Repository' }, { text: 'Results' }]);
         });
 

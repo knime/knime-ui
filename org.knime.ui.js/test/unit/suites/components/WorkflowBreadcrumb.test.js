@@ -7,7 +7,7 @@ import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg?
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/metanode.svg?inline';
 import LinkedComponentIcon from '~/webapps-common/ui/assets/img/icons/linked-component.svg?inline';
 import LinkedMetanodeIcon from '~/webapps-common/ui/assets/img/icons/linked-metanode.svg?inline';
-import BreadcrumbEventBased from '~/components/ActionBreadcrumb';
+import ActionBreadcrumb from '~/components/ActionBreadcrumb';
 
 describe('WorkflowBreadcrumb.vue', () => {
     beforeAll(() => {
@@ -56,7 +56,7 @@ describe('WorkflowBreadcrumb.vue', () => {
         };
         await doShallowMount();
 
-        expect(wrapper.findComponent(BreadcrumbEventBased).props('items')).toStrictEqual([{
+        expect(wrapper.findComponent(ActionBreadcrumb).props('items')).toStrictEqual([{
             icon: null,
             text: 'this is a dummy workflow'
         }]);
@@ -94,7 +94,7 @@ describe('WorkflowBreadcrumb.vue', () => {
         };
         await doShallowMount();
 
-        expect(wrapper.findComponent(BreadcrumbEventBased).props('items')).toStrictEqual([
+        expect(wrapper.findComponent(ActionBreadcrumb).props('items')).toStrictEqual([
             {
                 id: 'root',
                 icon: null,
