@@ -69,6 +69,16 @@ Scenario('Show more tags selection', ({ I }) => {
     I.see('Connectors', '.tag.clickable');
 });
 
+Scenario('Close open more tags overlay', ({ I }) => {
+    I.click('More "IO" nodes');
+    I.dontSee('R', '.tag.clickable');
+    I.seeElement('span.more-tags.tag');
+    I.click('span.more-tags.tag');
+    I.see('R', '.tag.clickable');
+    I.click('button.tags-popout-close');
+    I.dontSee('R', '.tag.clickable');
+});
+
 Scenario('Lazy loading Categories', ({ I }) => {
     const scrolledY = 1300;
     const scrollerSelector = '#left-panel > div > div > div ';
