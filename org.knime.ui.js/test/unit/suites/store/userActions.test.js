@@ -263,7 +263,7 @@ describe('userActions store', () => {
             expect(contextMenuActionItems[0].text).toBe('Execute all');
             expect(contextMenuActionItems[0].storeAction).toBe('workflow/executeNodes');
             expect(contextMenuActionItems[0].storeActionParams).toStrictEqual(['all']);
-            expect(contextMenuActionItems[0].hotkeyText).toBe('Shift + F7');
+            expect(contextMenuActionItems[0].hotkeyText).toBe('Shift F7');
             expect(contextMenuActionItems[0].disabled).toBe(false);
 
             expect(contextMenuActionItems[1].text).toBe('Cancel all');

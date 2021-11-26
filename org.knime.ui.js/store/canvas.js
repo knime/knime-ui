@@ -103,10 +103,6 @@ export const actions = {
         commit('setFactor', value);
     },
 
-    zoomToDefault({ commit }) {
-        commit('resetZoom');
-    },
-
     /*
      * Zooms in/out of the workflow while keeping the center fixated
      */

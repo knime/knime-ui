@@ -44,6 +44,7 @@ export default {
             this.formatZoomInput();
         },
         onZoomItemClick(e, item, id) {
+            // TODO NXT-625: This is not how dispatch works. Only one parameter can be used as payload
             this.$store.dispatch(item.storeAction, ...item.storeActionParams);
             this.$refs.zoomInput.blur();
         }
@@ -55,7 +56,6 @@ export default {
   <SubMenu
     class="zoom"
     :items="zoomActionItems"
-    :show-hotkeys="true"
     @item-click="onZoomItemClick"
   >
     <div
