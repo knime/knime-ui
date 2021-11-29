@@ -75,7 +75,7 @@ describe('NodeRepository', () => {
             $store.state.nodeRepository.selectedTags = [];
             $store.state.nodeRepository.nodesPerCategory = [];
             doShallowMount();
-            expect(wrapper.find('h4').text()).toBe('Repository');
+            expect(wrapper.find('h2').text()).toBe('Repository');
             expect(getAllNodesMock).toHaveBeenCalled();
             expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(true);
             expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
@@ -85,13 +85,13 @@ describe('NodeRepository', () => {
         it('renders first grouped nodes ', () => {
             $store.state.nodeRepository.selectedTags = [];
             doShallowMount();
-            expect(wrapper.find('h4').text()).toBe('Repository');
+            expect(wrapper.find('h2').text()).toBe('Repository');
             expect(getAllNodesMock).not.toHaveBeenCalled();
             expect(wrapper.findAllComponents(TagList).exists()).toBe(false);
             expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(true);
         });
     });
-    
+
 
     describe('Tags', () => {
         it('renders the two TagList when there is at least one selected tag', () => {
