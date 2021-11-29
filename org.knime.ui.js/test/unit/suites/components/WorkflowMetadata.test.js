@@ -89,6 +89,6 @@ describe('WorkflowMetadata.vue', () => {
         });
 
         const header = wrapper.find('h2');
-        expect(header.classes('nodeTitle')).toBe(true);
+        expect(header.classes('with-node-preview')).toBe(true);
     });
 });

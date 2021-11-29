@@ -47,4 +47,12 @@ describe('Sidebar', () => {
             expect(item.classes()).toContain('expanded');
         });
     });
+
+    test('click on open tab closes panel', async () => {
+        await wrapper.findAll('li').at(0).trigger('click');
+        expect(wrapper.vm.expanded).toBe(true);
+
+        await wrapper.findAll('li').at(0).trigger('click');
+        expect(wrapper.vm.expanded).toBe(false);
+    });
 });

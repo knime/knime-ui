@@ -18,7 +18,14 @@ export default {
         ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive'])
     },
     methods: {
-        ...mapActions('panel', ['setWorkflowMetaActive', 'setNodeRepositoryActive'])
+        ...mapActions('panel', ['setWorkflowMetaActive', 'setNodeRepositoryActive', 'close']),
+        clickItem(alreadyActive, setActive) {
+            if (alreadyActive && this.expanded) {
+                this.close();
+            } else {
+                setActive();
+            }
+        }
     }
 };
 </script>
@@ -29,14 +36,14 @@ export default {
       <li
         :class="{ active: workflowMetaActive, expanded }"
         title="Workflow metadata"
-        @click="setWorkflowMetaActive"
+        @click="clickItem(workflowMetaActive, setWorkflowMetaActive)"
       >
         <InfoIcon />
       </li>
       <li
         :class="{ active: nodeRepositoryActive, expanded }"
         title="Node repository"
-        @click="setNodeRepositoryActive"
+        @click="clickItem(nodeRepositoryActive, setNodeRepositoryActive)"
       >
         <PlusIcon />
       </li>
@@ -75,7 +82,7 @@ nav {
         }
       }
 
-      &:not(.active):hover {
+      &:hover {
         background-color: var(--knime-gray-ultra-light);
         cursor: pointer;
 

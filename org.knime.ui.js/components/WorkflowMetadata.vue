@@ -70,7 +70,7 @@ export default {
 
 <template>
   <ScrollViewContainer class="metadata">
-    <h2 :class="{title, 'nodeTitle': nodePreview}">
+    <h2 :class="['title', { 'with-node-preview': nodePreview }]">
       <div
         v-if="nodePreview"
         class="node-preview"
@@ -84,10 +84,8 @@ export default {
         class="placeholder"
       >No title has been set yet</span>
     </h2>
-    <span
-      v-if="!nodePreview"
-      class="break"
-    />
+  
+    <hr v-if="!nodePreview">
 
     <div
       v-if="!isComponent"
@@ -121,7 +119,7 @@ export default {
       class="external-resources"
     >
       <h2>External resources</h2>
-      <span class="break" />
+      <hr>
       <LinkList
         v-if="links.length"
         :links="links"
@@ -139,7 +137,7 @@ export default {
       class="tags"
     >
       <h2>Tags</h2>
-      <span class="break" />
+      <hr>
       <TagList
         v-if="tags.length"
         :tags="tags"
@@ -159,7 +157,7 @@ export default {
   box-sizing: border-box;
   padding: 20px 20px;
   font-family: "Roboto Condensed", sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 27px;
   color: var(--knime-masala);
 
@@ -170,15 +168,15 @@ export default {
     line-height: 36px;
   }
 
-  & .break:not(:last-child) {
-    height: 1px;
-    width: 100%;
-    display: block;
-    background-color: var(--knime-silver-sand);
+  & hr {
+    border: none;
+    border-top: 1px solid var(--knime-silver-sand);
+    margin: 0;
   }
 
   & .placeholder {
     font-style: italic;
+    color: var(--knime-dove-gray);
   }
 
   & > *:last-child {
@@ -197,14 +195,15 @@ export default {
       background-color: white;
       flex-shrink: 0;
     }
-  }
 
-  & .nodeTitle {
-    margin-bottom: 20px;
+    &.with-node-preview {
+      margin-bottom: 20px;
+    }
   }
 }
 
 .last-updated {
+  color: var(--knime-dove-gray);
   margin-top: 6px;
   margin-bottom: 20px;
   font-style: italic;
@@ -280,9 +279,10 @@ export default {
   & ul {
     column-count: 1;
     margin-bottom: -6px;
+    --icon-size: 16px;
 
     & >>> li {
-      font-size: 18px;
+      font-size: 16px;
       line-height: 27px;
     }
   }
