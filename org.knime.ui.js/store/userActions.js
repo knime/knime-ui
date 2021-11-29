@@ -28,7 +28,10 @@ const hotKeys = {
     deleteBackspace: ['BACKSPACE'],
     deleteDel: ['DELETE'],
     openView: ['F12'],
-    openDialog: ['F6']
+    openDialog: ['F6'],
+    stepLoopExecution: ['Ctrl', 'Alt', 'F6'],
+    pauseStepLoopExecution: ['Ctrl', 'Alt', 'F7'],
+    resumeStepLoopExecution: ['Ctrl', 'Alt', 'F8']
 };
 
 /**
@@ -42,7 +45,8 @@ const hotKeyDisplayMapForMac = {
     Shift: '⇧',
     BACKSPACE: '⌫',
     DELETE: '⌫',
-    Ctrl: '⌘'
+    Ctrl: '⌘',
+    Alt: '⌥'
 };
 
 /**
@@ -146,24 +150,24 @@ const actionMap = {
     // single node
     resumeLoopExecution: {
         text: 'Resume loop execution',
-        title: '',
-        hotkey: [],
+        title: 'Resume step loop execution',
+        hotkey: hotKeys.resumeStepLoopExecution,
         storeAction: 'workflow/resumeNodeExecution',
         storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
         disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.loopInfo?.allowedActions.canResume)
     },
-    pauseExecution: {
-        text: 'Pause execution',
-        title: '',
-        hotkey: [],
+    pauseLoopExecution: {
+        text: 'Pause loop execution',
+        title: 'Pause step loop execution',
+        hotkey: hotKeys.pauseStepLoopExecution,
         storeAction: 'workflow/pauseNodeExecution',
         storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
         disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.loopInfo?.allowedActions.canPause)
     },
     stepLoopExecution: {
         text: 'Step loop execution',
-        title: '',
-        hotkey: [],
+        title: 'Start step loop execution',
+        hotkey: hotKeys.stepLoopExecution,
         storeAction: 'workflow/stepNodeExecution',
         storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
         disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.loopInfo?.allowedActions.canStep)
@@ -277,7 +281,7 @@ export const getters = {
 
             // different actions for a single node
             if (selectedNodeAllAllowedActions.canPause) {
-                actionList.push(actionMap.pauseExecution);
+                actionList.push(actionMap.pauseLoopExecution);
             } else if (selectedNodeAllAllowedActions.canResume) {
                 actionList.push(actionMap.resumeLoopExecution);
             } else {
