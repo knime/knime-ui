@@ -18,31 +18,30 @@ export const getters = {
 };
 
 export const mutations = {
-    toggleExpanded(state) {
-        state.expanded = !state.expanded;
+    setExpanded(state, value) {
+        state.expanded = value;
     },
-
     setActiveTab(state, active) {
         state.activeTab = active;
     }
 };
 
 export const actions = {
-    toggleExpanded({ commit }) {
-        commit('toggleExpanded');
+    toggleExpanded({ commit, state }) {
+        commit('setExpanded', !state.expanded);
     },
-    
+
     setWorkflowMetaActive({ commit, state }) {
         commit('setActiveTab', TABS.WORKFLOW_METADATA);
-        if (!state.expanded) {
-            commit('toggleExpanded');
-        }
+        commit('setExpanded', true);
     },
 
     setNodeRepositoryActive({ commit, state }) {
         commit('setActiveTab', TABS.NODE_REPOSITORY);
-        if (!state.expanded) {
-            commit('toggleExpanded');
-        }
+        commit('setExpanded', true);
+    },
+
+    close({ commit }) {
+        commit('setExpanded', false);
     }
 };

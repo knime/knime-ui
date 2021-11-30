@@ -70,8 +70,8 @@ export default {
     @save-position="updateScrollPosition"
   >
     <div class="repo">
-      <h4>Repository</h4>
-      <span class="break" />
+      <h2>Repository</h2>
+      <hr>
       <template v-if="selectedTags.length">
         <div class="tags">
           <TagList
@@ -80,7 +80,7 @@ export default {
             @click="selectTag"
           />
         </div>
-        <span class="break full" />
+        <hr class="full">
       </template>
 
       <div
@@ -113,10 +113,10 @@ export default {
             :key="`tag-${index}`"
             :category="category"
           />
-          <span
+          <hr
             :key="index"
-            class="break full"
-          />
+            class="full"
+          >
         </template>
       </div>
     </div>
@@ -129,22 +129,25 @@ export default {
   padding: 15px 20px;
   user-select: none;
 
-  & h4 {
+  & h2 {
     font-size: 18px;
     font-weight: 400;
-    margin: 14px auto;
+    margin: 12px auto;
   }
 
-  & .break:not(:last-child) {
-    height: 1px;
-    width: 100%;
-    display: block;
-    background-color: var(--knime-silver-sand);
+  & hr {
+    border: none;
+    border-top: 1px solid var(--knime-silver-sand);
+    margin: 0;
 
     &.full {
       width: 360px;
       margin-left: -20px;
       margin-bottom: 14px;
+    }
+
+    &:last-child {
+      display: none;
     }
   }
 
