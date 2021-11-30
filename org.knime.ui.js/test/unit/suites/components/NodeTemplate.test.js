@@ -1,6 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import NodeTemplate from '~/components/NodeTemplate';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
+import { KnimeMIME } from '~/mixins/dropNode';
 
 describe('NodeTemplate', () => {
     let propsData, doMount, wrapper, testEvent;
@@ -26,7 +27,8 @@ describe('NodeTemplate', () => {
                 name: 'node-name',
                 id: 'node-id',
                 nodeFactory: {
-                    className: 'class-name'
+                    className: 'class-name',
+                    settings: 'encoded-settings'
                 },
                 icon: 'data:image/node-icon',
                 type: 'node-type',
@@ -100,7 +102,7 @@ describe('NodeTemplate', () => {
             expect(clonedNodePreview.style.top).toBe('0px');
             expect(clonedNodePreview.style.width).toBe('70px');
             expect(clonedNodePreview.style.height).toBe('70px');
-            
+
             // eslint-disable-next-line no-magic-numbers
             expect(testEvent.dataTransfer.setDragImage).toHaveBeenCalledWith(wrapper.vm.dragGhost, 35, 35);
         });
@@ -110,7 +112,8 @@ describe('NodeTemplate', () => {
             wrapper.trigger('dragstart', testEvent);
 
             expect(testEvent.dataTransfer.setData).toHaveBeenCalledWith('text/plain', 'node-id');
-            expect(testEvent.dataTransfer.setData).toHaveBeenCalledWith('text/knime-noderepo', JSON.stringify({ className: 'class-name' }));
+            expect(testEvent.dataTransfer.setData).toHaveBeenCalledWith(KnimeMIME,
+                JSON.stringify({ className: 'class-name', settings: 'encoded-settings' }));
         });
     });
 });

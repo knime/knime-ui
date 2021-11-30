@@ -1,6 +1,6 @@
 import { mapGetters, mapActions } from 'vuex';
 
-const KnimeMIME = 'text/knime-noderepo';
+export const KnimeMIME = 'application/vnd.knime.ap.noderepo+json';
 const isKnimeNode = (e) => e.dataTransfer.types.includes(KnimeMIME);
 
 export const dropNode = {

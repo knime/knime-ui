@@ -5,6 +5,7 @@ import Vuex from 'vuex';
 
 import * as $shapes from '~/style/shapes';
 import { dropNode } from '~/mixins';
+import { KnimeMIME } from '~/mixins/dropNode';
 
 let doMount,
     wrapper,
@@ -80,7 +81,7 @@ describe('Drop Node Mixin', () => {
 
     it('allows drag & drop from node repo', () => {
         doMount();
-        dummyEvent.dataTransfer.types.push('text/knime-noderepo');
+        dummyEvent.dataTransfer.types.push(KnimeMIME);
 
         wrapper.trigger('dragover', dummyEvent);
 
