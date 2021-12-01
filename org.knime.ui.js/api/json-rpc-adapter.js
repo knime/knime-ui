@@ -15,18 +15,22 @@ let parseResponse;
  *
  * @private
  */
-export default (method, ...args) => {
+export default async (method, ...args) => {
     const req = {
         jsonrpc: '2.0',
         method,
         params: args,
         id: 0
     };
-    consola.trace('JSON-RPC:', req);
+    consola.trace('JSON-RPC Request:', req);
 
     let response;
     try {
         response = window.jsonrpc(JSON.stringify(req));
+        if (response instanceof Promise) {
+            consola.trace('using synchronous backend');
+            response = await response;
+        }
     } catch (e) {
         throw new Error(`Error calling JSON-RPC api "${[method, JSON.stringify(args)].join('", "')}": ${e.message}`);
     }
@@ -43,6 +47,7 @@ export default (method, ...args) => {
  * */
 parseResponse = ({ response, method = '<unknown>', args }) => {
     let result, error;
+
     try {
         ({ result, error } = JSON.parse(response));
     } catch (e) {
@@ -62,7 +67,7 @@ parseResponse = ({ response, method = '<unknown>', args }) => {
         throw new Error(`Invalid JSON-RPC response ${response}`);
     }
 
-    consola.trace('Result:', result);
+    consola.trace('JSON-RPC Result:', result);
     return result;
 };
 

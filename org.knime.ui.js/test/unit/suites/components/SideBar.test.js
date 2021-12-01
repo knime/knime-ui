@@ -24,8 +24,10 @@ describe('Sidebar', () => {
     it('renders default', () => {
         expect(wrapper.exists()).toBe(true);
         expect(wrapper.findAll('svg').length).toBe(2);
-        wrapper.findAll('div').wrappers.forEach(wp => {
-            expect(wp.classes('active')).toBe(false);
+        expect(wrapper.find('[title="Workflow metadata"]').classes('active')).toBe(true);
+        expect(wrapper.find('[title="Node repository"]').classes('active')).toBe(false);
+        wrapper.findAll('li').wrappers.forEach(wp => {
+            expect(wp.classes('expanded')).toBe(false);
         });
     });
 
@@ -36,10 +38,21 @@ describe('Sidebar', () => {
         expect(wrapper.vm.workflowMetaActive).toBe(true);
     });
 
-    it('expands and activates node repo', () => {
+    it('expands and activates node repo', async () => {
         expect(wrapper.vm.expanded).toBe(false);
-        wrapper.findAll('li').at(1).trigger('click');
+        await wrapper.findAll('li').at(1).trigger('click');
         expect(wrapper.vm.expanded).toBe(true);
         expect(wrapper.vm.nodeRepositoryActive).toBe(true);
+        wrapper.findAll('li').wrappers.forEach(item => {
+            expect(item.classes()).toContain('expanded');
+        });
+    });
+
+    test('click on open tab closes panel', async () => {
+        await wrapper.findAll('li').at(0).trigger('click');
+        expect(wrapper.vm.expanded).toBe(true);
+
+        await wrapper.findAll('li').at(0).trigger('click');
+        expect(wrapper.vm.expanded).toBe(false);
     });
 });

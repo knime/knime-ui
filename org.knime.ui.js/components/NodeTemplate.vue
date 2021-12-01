@@ -1,5 +1,6 @@
 <script>
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
+import { KnimeMIME } from '~/mixins/dropNode';
 
 export default {
     components: {
@@ -36,7 +37,7 @@ export default {
             e.dataTransfer.setDragImage(this.dragGhost, dragGhostRect.width / 2, dragGhostRect.height / 2);
 
             e.dataTransfer.setData('text/plain', this.nodeTemplate.id);
-            e.dataTransfer.setData('text/knime-noderepo', this.nodeTemplate.id);
+            e.dataTransfer.setData(KnimeMIME, JSON.stringify(this.nodeTemplate.nodeFactory));
         },
         onDragEnd() {
             // remove cloned node preview
