@@ -117,7 +117,6 @@ export default {
       :id="id"
       ref="menuItems"
       class="menu-items"
-      :show-hotkeys="true"
       :items="items"
       aria-label="Context Menu"
       @item-click="onItemClick"

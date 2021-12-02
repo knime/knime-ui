@@ -55,7 +55,6 @@ export default {
   <SubMenu
     class="zoom"
     :items="zoomActionItems"
-    :show-hotkeys="true"
     @item-click="onZoomItemClick"
   >
     <div
