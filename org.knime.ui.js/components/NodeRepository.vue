@@ -100,6 +100,7 @@ export default {
           class="repo-breadcrumb"
           @click="onBreadcrumbClick"
         />
+        <hr>
         <NodeSearcher />
       </div>
       <CloseableTagList
@@ -161,10 +162,16 @@ export default {
     cursor: pointer;
     font-size: 18px;
     font-weight: 400;
-    margin: 0;
+    margin: 8px 0 0;
 
+    & >>> span,
     & >>> a {
-      text-decoration: underline;
+      line-height: 36px;
+      padding: 0;
+    }
+
+    & >>> svg.arrow {
+      margin-top: 6px;
     }
   }
 
@@ -178,9 +185,18 @@ export default {
       margin-left: -20px;
       margin-bottom: 14px;
     }
+  }
 
-    &:not(.force):last-child {
-      display: none;
+  & .closeable-tags {
+    padding-top: 8px;
+  }
+
+  & .title-and-search {
+    padding: 0 20px 5px;
+
+    & > hr {
+      margin-bottom: 13px;
+      margin-top: 5px;
     }
   }
 
@@ -190,14 +206,13 @@ export default {
     z-index: 2;
     top: 0;
 
-    & .break.full {
-      margin-left: 0;
-      margin-bottom: 0;
+    & > hr {
+      margin-top: 8px;
     }
   }
 
-  & .title-and-search {
-    padding: 0 20px 13px;
+  & hr:not(.force):last-child {
+    display: none;
   }
 
   & .content {

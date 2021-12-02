@@ -84,7 +84,7 @@ export default {
         class="placeholder"
       >No title has been set yet</span>
     </h2>
-  
+
     <hr v-if="!nodePreview">
 
     <div
@@ -155,7 +155,7 @@ export default {
 <style lang="postcss" scoped>
 .metadata {
   box-sizing: border-box;
-  padding: 20px 20px;
+  padding: 8px 20px 20px;
   font-family: "Roboto Condensed", sans-serif;
   font-size: 16px;
   line-height: 27px;
