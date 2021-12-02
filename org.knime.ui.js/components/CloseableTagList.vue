@@ -92,7 +92,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   justify-content: left;
-  align-items: start;
+  align-items: flex-start;
 
   & .popout {
     height: 61px;
