@@ -1,17 +1,16 @@
 import rpc from './json-rpc-adapter.js';
 
-const makeToggleEventListener = addOrRemove => (type, args) => {
+const makeToggleEventListener = addOrRemove => async (type, args) => {
     try {
         consola.debug(addOrRemove, 'event listener', type, args);
-        rpc(`EventService.${addOrRemove}EventListener`, {
+        await rpc(`EventService.${addOrRemove}EventListener`, {
             typeId: `${type}EventType`,
             ...args
         });
-        return Promise.resolve();
     } catch (e) {
         consola.error(e);
         let verb = addOrRemove === 'add' ? 'register' : 'unregister';
-        return Promise.reject(new Error(`Couldn't ${verb} event "${type}" with args ${JSON.stringify(args)}`));
+        throw new Error(`Couldn't ${verb} event "${type}" with args ${JSON.stringify(args)}`);
     }
 };
 

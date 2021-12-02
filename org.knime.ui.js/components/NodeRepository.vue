@@ -108,7 +108,7 @@ export default {
         :tags="unselectedTags"
         @click="toggleTag"
       />
-      <span class="break full force" />
+      <hr class="full force">
     </div>
     <ScrollViewContainer
       :initial-position="scrollPosition"
@@ -130,10 +130,10 @@ export default {
             :key="`tag-${index}`"
             :category="category"
           />
-          <span
+          <hr
             :key="index"
-            class="break full"
-          />
+            class="full"
+          >
         </template>
       </div>
     </ScrollViewContainer>
@@ -168,19 +168,19 @@ export default {
     }
   }
 
-  & .break:not(:last-child),
-  & .break.force {
-    height: 1px;
-    margin-bottom: 10px;
-    padding-top: 1px;
-    width: 100%;
-    display: block;
-    background-color: var(--knime-silver-sand);
+  & hr {
+    border: none;
+    border-top: 1px solid var(--knime-silver-sand);
+    margin: 0;
 
     &.full {
       width: 360px;
       margin-left: -20px;
       margin-bottom: 14px;
+    }
+
+    &:not(.force):last-child {
+      display: none;
     }
   }
 

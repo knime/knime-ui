@@ -29,6 +29,7 @@ export default {
 <template>
   <div class="toolbar">
     <div class="buttons">
+      <!-- TODO NXT-625: This is not how dispatch works. Only one parameter can be used as payload -->
       <ToolbarButton
         v-for="(a, index) of visibleActionItems"
         :key="index"

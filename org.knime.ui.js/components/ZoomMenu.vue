@@ -14,26 +14,7 @@ export default {
     computed: {
         ...mapState('canvas', ['zoomFactor']),
         ...mapGetters('canvas', ['fitToScreenZoomFactor']),
-        zoomMenuItems() {
-            return [
-                {
-                    text: 'Fit to screen',
-                    value: this.fitToScreenZoomFactor
-                }, {
-                    text: 'Zoom to 75%',
-                    value: 0.75
-                }, {
-                    text: 'Zoom to 100%',
-                    value: 1
-                }, {
-                    text: 'Zoom to 125%',
-                    value: 1.25
-                }, {
-                    text: 'Zoom to 150%',
-                    value: 1.5
-                }
-            ];
-        }
+        ...mapGetters('userActions', ['zoomActionItems'])
     },
     mounted() {
         this.$watch('zoomFactor', this.formatZoomInput, { immediate: true });
@@ -63,7 +44,8 @@ export default {
             this.formatZoomInput();
         },
         onZoomItemClick(e, item, id) {
-            this.$store.commit('canvas/setFactor', item.value);
+            // TODO NXT-625: This is not how dispatch works. Only one parameter can be used as payload
+            this.$store.dispatch(item.storeAction, ...item.storeActionParams);
             this.$refs.zoomInput.blur();
         }
     }
@@ -73,7 +55,7 @@ export default {
 <template>
   <SubMenu
     class="zoom"
-    :items="zoomMenuItems"
+    :items="zoomActionItems"
     @item-click="onZoomItemClick"
   >
     <div
