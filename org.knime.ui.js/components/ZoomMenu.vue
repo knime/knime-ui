@@ -44,6 +44,7 @@ export default {
             this.formatZoomInput();
         },
         onZoomItemClick(e, item, id) {
+            // TODO NXT-625: This is not how dispatch works. Only one parameter can be used as payload
             this.$store.dispatch(item.storeAction, ...item.storeActionParams);
             this.$refs.zoomInput.blur();
         }
@@ -60,7 +61,7 @@ export default {
     <div
       ref="zoomInput"
       class="zoom-input"
-      contenteditable="true"
+      contenteditable
       @click.stop="onZoomInputClick"
       @keydown.enter.stop.prevent="onZoomInputEnter"
       @focusout.stop="onZoomInputFocusOut"

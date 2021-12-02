@@ -10,15 +10,15 @@ import rpc from './json-rpc-adapter.js';
  Defaults to `true`.
  * @return {Promise} A promise containing the workflow as defined in the API
  */
-export const loadWorkflow = ({ projectId, workflowId = 'root', includeInfoOnAllowedActions = true }) => {
+export const loadWorkflow = async ({ projectId, workflowId = 'root', includeInfoOnAllowedActions = true }) => {
     try {
-        const workflow = rpc('WorkflowService.getWorkflow', projectId, workflowId, includeInfoOnAllowedActions);
+        const workflow = await rpc('WorkflowService.getWorkflow', projectId, workflowId, includeInfoOnAllowedActions);
         consola.debug('Loaded workflow', workflow);
 
-        return Promise.resolve(workflow);
+        return workflow;
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(`Couldn't load workflow "${workflowId}" from project "${projectId}"`));
+        throw new Error(`Couldn't load workflow "${workflowId}" from project "${projectId}"`);
     }
 };
 
@@ -31,23 +31,22 @@ export const loadWorkflow = ({ projectId, workflowId = 'root', includeInfoOnAllo
  * @param {String} cfg.args arguments for the command
  * @returns {Promise}
  */
-const workflowCommand = ({ projectId, workflowId, command, args }) => {
+const workflowCommand = async ({ projectId, workflowId, command, args }) => {
     try {
         let rpcArgs = {
             kind: command,
             ...args
         };
-        let result = rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
-        return Promise.resolve(result);
+        return await rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(`Couldn't execute ${command}(${JSON.stringify(args)})`));
+        throw new Error(`Couldn't execute ${command}(${JSON.stringify(args)})`);
     }
 };
 
 /**
  * @param { String } position The X,Y position where node is going to be added
- * @param { String } nodeFactory The className of the node
+ * @param { String } nodeFactory The representation of the node's factory
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
  * @returns { Promise } Promise
@@ -126,13 +125,12 @@ export const connectNodes = ({ projectId, workflowId, sourceNode, sourcePort, de
  * @param { String } cfg.workflowId
  * @returns {Promise}
  */
-export const undo = ({ projectId, workflowId }) => {
+export const undo = async ({ projectId, workflowId }) => {
     try {
-        let result = rpc(`WorkflowService.undoWorkflowCommand`, projectId, workflowId);
-        return Promise.resolve(result);
+        return await rpc(`WorkflowService.undoWorkflowCommand`, projectId, workflowId);
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error('Couldn\'t undo'));
+        throw new Error('Couldn\'t undo');
     }
 };
 
@@ -143,12 +141,11 @@ export const undo = ({ projectId, workflowId }) => {
  * @param { String } cfg.workflowId
  * @returns {Promise}
  */
-export const redo = ({ projectId, workflowId }) => {
+export const redo = async ({ projectId, workflowId }) => {
     try {
-        let result = rpc(`WorkflowService.redoWorkflowCommand`, projectId, workflowId);
-        return Promise.resolve(result);
+        return await rpc(`WorkflowService.redoWorkflowCommand`, projectId, workflowId);
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error('Couldn\'t redo'));
+        throw new Error('Couldn\'t redo');
     }
 };

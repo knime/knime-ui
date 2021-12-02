@@ -5,6 +5,7 @@ import Vuex from 'vuex';
 
 import * as $shapes from '~/style/shapes';
 import { dropNode } from '~/mixins';
+import { KnimeMIME } from '~/mixins/dropNode';
 
 let doMount,
     wrapper,
@@ -27,7 +28,7 @@ describe('Drop Node Mixin', () => {
             dataTransfer: {
                 dropEffect: '',
                 types: ['text/plain'],
-                getData: jest.fn().mockReturnValue('sampleClassName')
+                getData: jest.fn().mockReturnValue(JSON.stringify({ className: 'sampleClassName' }))
             },
             preventDefault: jest.fn()
         };
@@ -80,7 +81,7 @@ describe('Drop Node Mixin', () => {
 
     it('allows drag & drop from node repo', () => {
         doMount();
-        dummyEvent.dataTransfer.types.push('text/knime-noderepo');
+        dummyEvent.dataTransfer.types.push(KnimeMIME);
 
         wrapper.trigger('dragover', dummyEvent);
 
@@ -96,7 +97,7 @@ describe('Drop Node Mixin', () => {
         wrapper.trigger('drop', dummyEvent);
 
         expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), {
-            className: 'sampleClassName',
+            nodeFactory: { className: 'sampleClassName' },
             position: [
                 -10 + dummyEvent.clientX - $shapes.nodeSize / 2,
                 -10 + dummyEvent.clientY - $shapes.nodeSize / 2

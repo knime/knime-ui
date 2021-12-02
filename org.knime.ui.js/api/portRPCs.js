@@ -8,14 +8,14 @@ import rpc, { parseResponse } from './json-rpc-adapter.js';
 // So, to get a table we have to send a JSON-RPC object as a payload to the NodeService, which itself must be called via
 // JSON-RPC. Hence double-wrapping is required.
 // Parameters are described below.
-const portRPC = ({ method, params, projectId, workflowId, nodeId, portIndex }) => {
+const portRPC = async ({ method, params, projectId, workflowId, nodeId, portIndex }) => {
     let nestedRpcCall = {
         jsonrpc: '2.0',
         id: 0,
         method,
         params
     };
-    let response = rpc(
+    let response = await rpc(
         'NodeService.doPortRpc',
         projectId, workflowId, nodeId, portIndex, JSON.stringify(nestedRpcCall)
     );
@@ -33,9 +33,9 @@ const portRPC = ({ method, params, projectId, workflowId, nodeId, portIndex }) =
  * Remember that port 0 is usually a flow variable port.
  * @return {Promise} A promise containing the table data as defined in the API
  * */
-export const loadTable = ({ projectId, workflowId, nodeId, portIndex, offset = 0, batchSize }) => {
+export const loadTable = async ({ projectId, workflowId, nodeId, portIndex, offset = 0, batchSize }) => {
     try {
-        let table = portRPC({
+        return await portRPC({
             projectId,
             nodeId,
             workflowId,
@@ -43,13 +43,12 @@ export const loadTable = ({ projectId, workflowId, nodeId, portIndex, offset = 0
             method: 'getTable',
             params: [offset, batchSize]
         });
-        return Promise.resolve(table);
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(
+        throw new Error(
             `Couldn't load table data (start: ${offset}, length: ${batchSize}) ` +
             `from port ${portIndex} of node "${nodeId}" in project ${projectId}`
-        ));
+        );
     }
 };
 
@@ -62,20 +61,19 @@ export const loadTable = ({ projectId, workflowId, nodeId, portIndex, offset = 0
  * Remember that port 0 is usually a flow variable port.
  * @return {Promise} A promise containing the flow variable data as defined in the API
  * */
-export const loadFlowVariables = ({ projectId, workflowId, nodeId, portIndex }) => {
+export const loadFlowVariables = async ({ projectId, workflowId, nodeId, portIndex }) => {
     try {
-        let flowVariables = portRPC({
+        return await portRPC({
             projectId,
             workflowId,
             nodeId,
             portIndex,
             method: 'getFlowVariables'
         });
-        return Promise.resolve(flowVariables);
     } catch (e) {
         consola.error(e);
-        return Promise.reject(new Error(
+        throw new Error(
             `Couldn't load flow variables of node "${nodeId}" in project ${projectId}`
-        ));
+        );
     }
 };
