@@ -108,7 +108,7 @@ export default {
         :tags="unselectedTags"
         @click="toggleTag"
       />
-      <hr class="full force">
+      <hr class="force">
     </div>
     <ScrollViewContainer
       :initial-position="scrollPosition"
