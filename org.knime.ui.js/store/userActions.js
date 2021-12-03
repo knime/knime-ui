@@ -30,8 +30,8 @@ const hotKeys = {
     openView: ['F12'],
     openDialog: ['F6'],
     stepLoopExecution: ['Ctrl', 'Alt', 'F6'],
-    pauseStepLoopExecution: ['Ctrl', 'Alt', 'F7'],
-    resumeStepLoopExecution: ['Ctrl', 'Alt', 'F8']
+    pauseLoopExecution: ['Ctrl', 'Alt', 'F7'],
+    resumeLoopExecution: ['Ctrl', 'Alt', 'F8']
 };
 
 /**
@@ -150,25 +150,25 @@ const actionMap = {
     // single node
     resumeLoopExecution: {
         text: 'Resume loop execution',
-        title: 'Resume step loop execution',
-        hotkey: hotKeys.resumeStepLoopExecution,
-        storeAction: 'workflow/resumeNodeExecution',
+        title: 'Resume loop execution',
+        hotkey: hotKeys.resumeLoopExecution,
+        storeAction: 'workflow/resumeLoopExecution',
         storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
         disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.loopInfo?.allowedActions.canResume)
     },
     pauseLoopExecution: {
         text: 'Pause loop execution',
-        title: 'Pause step loop execution',
-        hotkey: hotKeys.pauseStepLoopExecution,
-        storeAction: 'workflow/pauseNodeExecution',
+        title: 'Pause loop execution',
+        hotkey: hotKeys.pauseLoopExecution,
+        storeAction: 'workflow/pauseLoopExecution',
         storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
         disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.loopInfo?.allowedActions.canPause)
     },
     stepLoopExecution: {
         text: 'Step loop execution',
-        title: 'Start step loop execution',
+        title: 'Step loop execution',
         hotkey: hotKeys.stepLoopExecution,
-        storeAction: 'workflow/stepNodeExecution',
+        storeAction: 'workflow/stepLoopExecution',
         storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
         disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.loopInfo?.allowedActions.canStep)
     },

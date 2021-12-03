@@ -175,15 +175,15 @@ export const actions = {
         dispatch('changeNodeState', { action: 'cancel', nodes });
     },
     /* See docs in API */
-    pauseNodeExecution({ state }, nodeId) {
+    pauseLoopExecution({ state }, nodeId) {
         changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'pause' });
     },
     /* See docs in API */
-    resumeNodeExecution({ state }, nodeId) {
+    resumeLoopExecution({ state }, nodeId) {
         changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'resume' });
     },
     /* See docs in API */
-    stepNodeExecution({ state }, nodeId) {
+    stepLoopExecution({ state }, nodeId) {
         changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'step' });
     },
     /* See docs in API */
