@@ -3,7 +3,7 @@ import SelectableTagList from '~/components/SelectableTagList';
 import ClosePopoverIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 import { mixin as clickaway } from 'vue-clickaway2';
 
-const maxLengthOfTagInChars = 36;
+const maxLengthOfTagInChars = 31;
 const maxLinesOfTags = 2;
 const maxNumberOfInitialTags = 10;
 const minNumberOfInitialTags = 2;
