@@ -26,7 +26,9 @@ describe('panel store', () => {
 
     it('toggles expanded', () => {
         expect(store.state.panel.expanded).toBe(false);
+
         store.dispatch('panel/toggleExpanded');
+
         expect(store.state.panel.expanded).toBe(true);
     });
 
@@ -34,7 +36,9 @@ describe('panel store', () => {
         store.state.panel.activeTab = 'somethingElse';
         expect(store.state.panel.expanded).toBe(false);
         expect(store.state.panel.activeTab).not.toBe('workflowMetadata');
+
         store.dispatch('panel/setWorkflowMetaActive');
+
         expect(store.state.panel.expanded).toBe(true);
         expect(store.state.panel.activeTab).toBe('workflowMetadata');
     });
@@ -42,8 +46,17 @@ describe('panel store', () => {
     it('sets node repo active', () => {
         expect(store.state.panel.expanded).toBe(false);
         expect(store.state.panel.activeTab).not.toBe('nodeRepository');
+
         store.dispatch('panel/setNodeRepositoryActive');
+
         expect(store.state.panel.expanded).toBe(true);
         expect(store.state.panel.activeTab).toBe('nodeRepository');
+    });
+
+    it('closes the panel', () => {
+        store.state.panel.expanded = true;
+        store.dispatch('panel/close');
+
+        expect(store.state.panel.expanded).toBe(false);
     });
 });
