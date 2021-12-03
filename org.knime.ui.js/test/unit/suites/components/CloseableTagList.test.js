@@ -79,7 +79,7 @@ describe('CloseableTagList.vue', () => {
                 localVue
             });
             expect(wrapper.findComponent(SelectableTagList).props('numberOfInitialTags'))
-                .toBe(4);
+                .toBe(5);
         });
 
         it('limits the number of initial tags to the maximum even if space is left', () => {
