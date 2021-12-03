@@ -130,15 +130,15 @@ describe('userActions store', () => {
             expect(contextMenuActionItems).toHaveLength(7);
 
             let i = 0;
-            expect(contextMenuActionItems[i].text).toBe('Pause execution');
-            expect(contextMenuActionItems[i].storeAction).toBe('workflow/pauseNodeExecution');
+            expect(contextMenuActionItems[i].text).toBe('Pause loop execution');
+            expect(contextMenuActionItems[i].storeAction).toBe('workflow/pauseLoopExecution');
             expect(contextMenuActionItems[i].storeActionParams).toStrictEqual(['root:2']);
             expect(contextMenuActionItems[i].disabled).toBe(false);
 
             i++;
 
             expect(contextMenuActionItems[i].text).toBe('Step loop execution');
-            expect(contextMenuActionItems[i].storeAction).toBe('workflow/stepNodeExecution');
+            expect(contextMenuActionItems[i].storeAction).toBe('workflow/stepLoopExecution');
             expect(contextMenuActionItems[i].storeActionParams).toStrictEqual(['root:2']);
             expect(contextMenuActionItems[i].disabled).toBe(false);
 
@@ -199,7 +199,7 @@ describe('userActions store', () => {
             expect(contextMenuActionItems).toHaveLength(7);
 
             expect(contextMenuActionItems[0].text).toBe('Resume loop execution');
-            expect(contextMenuActionItems[0].storeAction).toBe('workflow/resumeNodeExecution');
+            expect(contextMenuActionItems[0].storeAction).toBe('workflow/resumeLoopExecution');
             expect(contextMenuActionItems[0].storeActionParams).toStrictEqual(['root:2']);
             expect(contextMenuActionItems[0].disabled).toBe(false);
         });

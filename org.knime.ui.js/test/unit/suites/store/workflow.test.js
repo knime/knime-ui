@@ -230,9 +230,9 @@ describe('workflow store', () => {
             });
 
             it.each([
-                ['pauseNodeExecution', 'pause'],
-                ['resumeNodeExecution', 'resume'],
-                ['stepNodeExecution', 'step']
+                ['pauseLoopExecution', 'pause'],
+                ['resumeLoopExecution', 'resume'],
+                ['stepLoopExecution', 'step']
             ])('passes %s to API', async (fn, action) => {
                 let mock = jest.fn();
                 let apiMocks = { changeLoopState: mock };

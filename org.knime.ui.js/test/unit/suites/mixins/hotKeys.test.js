@@ -56,7 +56,10 @@ describe('HotKeys', () => {
                     undo: jest.fn(),
                     redo: jest.fn(),
                     openView: jest.fn(),
-                    openDialog: jest.fn()
+                    openDialog: jest.fn(),
+                    stepLoopExecution: jest.fn(),
+                    pauseLoopExecution: jest.fn(),
+                    resumeLoopExecution: jest.fn()
                 },
                 getters: {
                     isWritable: jest.fn().mockReturnValue(true)
@@ -196,6 +199,24 @@ describe('HotKeys', () => {
                 selectedNodes = [{}];
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F6' }));
                 expect(storeConfig.workflow.actions.openDialog).toHaveBeenCalled();
+            });
+
+            it('Command + Alt + F6 starts loop execution', () => {
+                selectedNodes = [{}];
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F6', ctrlKey: true, altKey: true }));
+                expect(storeConfig.workflow.actions.stepLoopExecution).toHaveBeenCalled();
+            });
+
+            it('Command + Alt + F7 pauses loop execution', () => {
+                selectedNodes = [{}];
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F7', ctrlKey: true, altKey: true }));
+                expect(storeConfig.workflow.actions.pauseLoopExecution).toHaveBeenCalled();
+            });
+
+            it('Command + Alt + F8 resumes loop execution', () => {
+                selectedNodes = [{}];
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'F8', ctrlKey: true, altKey: true }));
+                expect(storeConfig.workflow.actions.resumeLoopExecution).toHaveBeenCalled();
             });
         });
 
