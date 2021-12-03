@@ -3,11 +3,15 @@ import SelectableTagList from '~/components/SelectableTagList';
 import ClosePopoverIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 import { mixin as clickaway } from 'vue-clickaway2';
 
-const defaultInitialTagCount = 5;
+const maxLengthOfTagInChars = 32;
+const maxLinesOfTags = 2;
+const maxNumberOfInitialTags = 10;
+const minNumberOfInitialTags = 2;
 
 /**
  * Wraps a SelectableTagList and adds close buttons and click-away to it. The visible area overflows and looks like a
- * popover. Designed to work in NodeRepository.
+ * popover. Designed to work in NodeRepository. It has a dynamic number of initially shown tags based on the length
+ * (number of chars) of a tag.
  */
 export default {
     components: {
@@ -16,14 +20,6 @@ export default {
     },
     mixins: [clickaway],
     props: {
-        /**
-         * Maximum number of tags to display initially.
-         * If more tags are present, they will be expandable via a '+' button.
-         */
-        numberOfInitialTags: {
-            type: Number,
-            default: defaultInitialTagCount
-        },
         /**
          * List of tags (Strings) to display. Not including selected ones.
          * @type Array<String>
@@ -45,6 +41,24 @@ export default {
         return {
             displayAll: false
         };
+    },
+    computed: {
+        numberOfInitialTags() {
+            const allTags = [...this.selectedTags, ...this.tags];
+            let availableChars = maxLengthOfTagInChars * maxLinesOfTags;
+            let tagsToShow = 0;
+
+            for (let tag of allTags) {
+                availableChars -= tag.length;
+                if (availableChars > 0) {
+                    tagsToShow++;
+                } else {
+                    break;
+                }
+            }
+            // limit to lower and upper bound
+            return Math.min(Math.max(tagsToShow, minNumberOfInitialTags), maxNumberOfInitialTags);
+        }
     },
     methods: {
         onClick(tag) {
@@ -101,6 +115,14 @@ export default {
 
   & .wrapper {
     padding: 0 20px 13px;
+
+    /* limit tag length to a maximum */
+    & >>> .tag.clickable {
+      max-width: 250px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
     &.show-all {
       padding-bottom: 13px;
