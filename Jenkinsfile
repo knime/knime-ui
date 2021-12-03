@@ -29,17 +29,18 @@ timeout(time: 15, unit: 'MINUTES') {
                         '''
                     }
 
-                    stage('Security Audit') {
-                        env.lastStage = 'Security Audit'
+                    // TODO NXT-838: Enable Security Audit again
+                    // stage('Security Audit') {
+                    //     env.lastStage = 'Security Audit'
 
-                        catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-                            retry(3) { // because npm registry sometimes breaks
-                                sh '''
-                                    npm run audit
-                                '''
-                            }
-                        }
-                    }
+                    //     catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    //         retry(3) { // because npm registry sometimes breaks
+                    //             sh '''
+                    //                 npm run audit
+                    //             '''
+                    //         }
+                    //     }
+                    // }
 
                     stage('Static Code Analysis') {
                         env.lastStage = 'Lint'
