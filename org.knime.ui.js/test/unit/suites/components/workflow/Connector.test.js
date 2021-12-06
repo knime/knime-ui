@@ -173,6 +173,17 @@ describe('Connector.vue', () => {
             );
         });
 
+        it('right click selects the connection', async () => {
+            doShallowMount();
+            await wrapper.find('g path').trigger('click.right');
+
+            expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
+            expect(storeConfig.selection.actions.selectConnection).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.stringMatching('root:2_2')
+            );
+        });
+
         it('shift-click adds to selection', async () => {
             doShallowMount();
             await wrapper.find('g path').trigger('click', { button: 0, shiftKey: true });

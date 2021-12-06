@@ -117,6 +117,10 @@ export default {
                 this.selectConnection(this.id);
             }
         },
+        onRightMouseClick(e) {
+            this.deselectAllObjects();
+            this.selectConnection(this.id);
+        },
         onIndicateReplacement({ detail: { state } }) {
             if (this.suggestDelete !== 'locked') {
                 // update state according to event if not already 'locked'
@@ -147,6 +151,7 @@ export default {
       :d="path"
       class="hover-area"
       @click.left="onLeftMouseClick"
+      @click.right="onRightMouseClick"
     />
     <path
       ref="visiblePath"
