@@ -61,11 +61,18 @@ export default {
             this.$store.commit('canvas/setContainerSize', { width, height });
         },
         initResizeObserver() {
+            // recalculating and setting the container size is throttled.
+            const updateCanvas = throttle((width, height) => {
+                this.$store.commit('canvas/setContainerSize', { width, height });
+            }, 100);
+            // NXT 803: this ResizeObserver can be stuck in a negative update loop:
+            // (Scrollbars needed -> svg gets inner container size, Scrollbar not needed -> svg gets outer container size)
+            // Setting the svg to exactly the size of the container leads to scrollbar for unknown reasons.
             this.resizeObserver = new ResizeObserver(entries => {
                 const containerEl = entries.find(({ target }) => target === this.$el);
                 if (containerEl?.contentRect) {
                     const { width, height } = containerEl.contentRect;
-                    this.$store.commit('canvas/setContainerSize', { width, height });
+                    updateCanvas(width, height);
                 }
             });
             this.resizeObserver.observe(this.$el);
@@ -142,7 +149,8 @@ export default {
 
 <style lang="postcss" scoped>
 .scroll-container {
-  overflow: auto;
+  position: relative;
+  overflow: scroll;
   height: 100%;
   width: 100%;
 
