@@ -5,8 +5,8 @@ import { mixin as clickaway } from 'vue-clickaway2';
 
 const maxLengthOfTagInChars = 31;
 const maxLinesOfTags = 2;
-const maxNumberOfInitialTags = 10;
-const minNumberOfInitialTags = 2;
+export const maxNumberOfInitialTags = 10;
+export const minNumberOfInitialTags = 2;
 
 /**
  * Wraps a SelectableTagList and adds close buttons and click-away to it. The visible area overflows and looks like a

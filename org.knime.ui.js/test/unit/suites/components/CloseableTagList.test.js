@@ -1,6 +1,8 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
+import CloseableTagList, { maxNumberOfInitialTags, minNumberOfInitialTags } from '~/components/CloseableTagList';
+import SelectableTagList from '~/components/SelectableTagList';
 
 jest.mock('vue-clickaway2', () => ({
     mixin: {}
@@ -9,12 +11,6 @@ jest.mock('vue-clickaway2', () => ({
 const localVue = createLocalVue();
 localVue.directive('onClickaway', () => {
 });
-
-import CloseableTagList from '~/components/CloseableTagList';
-import SelectableTagList from '~/components/SelectableTagList';
-
-const maxNumberOfInitialTags = 10;
-const minNumberOfInitialTags = 2;
 
 const sevenTags = ['tag1', 'tag2', 'tagedyTag', 'tagMaster', 'bestTagEver', 'moarTags', 'blub'];
 const threeTags = ['sel1', 'nice', 'car'];
