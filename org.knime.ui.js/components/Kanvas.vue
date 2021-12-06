@@ -37,22 +37,6 @@ export default {
     },
     methods: {
         /*
-          Selection
-        */
-        onMouseDown(e) {
-            /*  To avoid for [mousedown on node], [moving mouse], [mouseup on kanvas] to deselect nodes,
-             *  we track whether a click has been started on the empty Kanvas
-             */
-            this.clickStartedOnEmptyKanvas = e.target === this.$refs.svg;
-        },
-        onSelfMouseUp(e) {
-            // deselect all nodes
-            if (this.clickStartedOnEmptyKanvas) {
-                this.clickStartedOnEmptyKanvas = null;
-                this.$emit('empty-click');
-            }
-        },
-        /*
             Zooming
         */
         ...mapMutations('canvas', ['setScrollContainerElement']),
@@ -65,9 +49,9 @@ export default {
             const updateCanvas = throttle((width, height) => {
                 this.$store.commit('canvas/setContainerSize', { width, height });
             }, 100);
-            // NXT 803: this ResizeObserver can be stuck in a negative update loop:
+            // This ResizeObserver can be stuck in an update loop:
             // (Scrollbars needed -> svg gets inner container size, Scrollbar not needed -> svg gets outer container size)
-            // Setting the svg to exactly the size of the container leads to scrollbar for unknown reasons.
+            // Setting the svg to exactly the size of the container leads to overflow and scrollbars for unknown reasons.
             this.resizeObserver = new ResizeObserver(entries => {
                 const containerEl = entries.find(({ target }) => target === this.$el);
                 if (containerEl?.contentRect) {
@@ -139,8 +123,7 @@ export default {
       :width="canvasSize.width"
       :height="canvasSize.height"
       :viewBox="viewBoxString"
-      @mousedown.left="onMouseDown"
-      @mouseup.self.left="onSelfMouseUp"
+      @pointerdown.self.stop="$emit('empty-pointerdown', $event)"
     >
       <slot />
     </svg>

@@ -2,10 +2,12 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
+import Vue from 'vue';
 
 import * as $shapes from '~/style/shapes';
 
 import WorkflowPanel from '~/components/WorkflowPanel';
+import Kanvas from '~/components/Kanvas';
 
 describe('WorkflowPanel', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, storeConfig;
@@ -20,7 +22,7 @@ describe('WorkflowPanel', () => {
         propsData = {};
         workflow = {
             info: {
-                containerType: 'project',
+                containerType: 'project'
             },
             parents: []
         };
@@ -47,7 +49,12 @@ describe('WorkflowPanel', () => {
             }
         };
         storeConfig = {
-            workflow: workflowStoreConfig
+            workflow: workflowStoreConfig,
+            selection: {
+                actions: {
+                    deselectAllObjects: jest.fn()
+                }
+            }
         };
 
         $store = mockVuexStore(storeConfig);
@@ -100,7 +107,14 @@ describe('WorkflowPanel', () => {
         });
     });
 
-    // TODO: NXT-803 add tests for empty-click
+    it('deselects all objects when clicking the canvas', async () => {
+        doShallowMount();
 
-    // TODO: NXT-803 where are the tests for the context menu?
+        wrapper.findComponent(Kanvas).vm.$emit('empty-pointerdown');
+        await Vue.nextTick();
+
+        expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
+    });
+
+    // TODO: NXT-803 add tests for the context menu?
 });

@@ -32,17 +32,15 @@ export default {
           Selection
         */
         ...mapActions('selection', ['deselectAllObjects']),
-        onEmptyClick(e) {
-            // deselect all nodes
+        onEmptyPointerDown() {
+            // remove selection
             this.deselectAllObjects();
         },
         onContextMenu(e) {
+            // TODO: NXT-803 why prevent right clicks with ctrl?
             // ignore click with ctrl and meta keys
             if (e.ctrlKey || e.metaKey) {
                 return;
-            }
-            if (e.target === this.$refs.kanvas.$refs.svg) {
-                this.deselectAllObjects();
             }
             this.$refs.contextMenu.show(e);
         }
@@ -84,7 +82,7 @@ export default {
     <Kanvas
       id="kanvas"
       ref="kanvas"
-      @empty-click="onEmptyClick"
+      @empty-pointerdown="onEmptyPointerDown"
     >
       <Workflow />
     </Kanvas>
@@ -144,6 +142,7 @@ export default {
     flex-shrink: 0;
     align-items: center;
 
+    /* stylelint-disable-next-line no-descending-specificity */
     & svg {
       margin-right: 5px;
       width: 32px;
