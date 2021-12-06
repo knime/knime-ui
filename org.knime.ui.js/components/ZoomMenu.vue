@@ -69,7 +69,6 @@ export default {
       class="zoom-input"
       @click.stop="onZoomInputClick"
       @keydown.enter.stop.prevent="onZoomInputEnter"
-      @keydown.down="$refs.subMenu.expanded = true"
       @wheel.prevent="onWheel"
       @focusout.stop="onZoomInputFocusOut"
     >
@@ -100,6 +99,10 @@ export default {
     & .zoom-input {
       background: transparent;
       border: none;
+      text-align: right;
+
+      /* TODO: NXT-841 use --theme-button-function-foreground-color */
+      color: var(--knime-masala);
       width: 54px;
       padding: 8px 4px 8px 16px;
       font-size: 14px;
@@ -112,8 +115,14 @@ export default {
     }
 
     &.expanded .zoom-input {
-      color: var(--theme-button-function-foreground-color-active);
+      /* TODO: NXT-841 use --theme-button-function-foreground-active */
+      color: var(--knime-white);
     }
+  }
+
+  /* TODO: NXT-841 add a app specific definition of --theme-button-function-foreground-color */
+  & >>> .function-button:not(.active) svg {
+    stroke: var(--knime-masala);
   }
 }
 </style>

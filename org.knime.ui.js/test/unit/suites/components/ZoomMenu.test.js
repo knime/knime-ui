@@ -6,14 +6,16 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 import ZoomMenu from '~/components/ZoomMenu';
 
 describe('ZoomMenu', () => {
-    let $store;
+    let $store, zoomFactor;
 
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
     });
 
-    let doMount = (zoomFactor = 50) => {
+    zoomFactor = 1;
+
+    let doMount = () => {
         $store = mockVuexStore({
             canvas: {
                 state: {
@@ -58,12 +60,14 @@ describe('ZoomMenu', () => {
     });
 
     it('shows current zoom level', () => {
-        let wrapper = doMount(0.53);
+        zoomFactor = 0.53;
+        let wrapper = doMount();
         expect(wrapper.find('.zoom-input').element.value).toBe('53%');
     });
 
     it('parses input with % sign', async () => {
-        let wrapper = doMount(0.53);
+        zoomFactor = 0.53;
+        let wrapper = doMount();
         let input = wrapper.find('.zoom-input');
         input.element.value = '33%';
         await input.trigger('keydown', { keyCode: 13 });
@@ -71,7 +75,8 @@ describe('ZoomMenu', () => {
     });
 
     it('parses input without % sign', async () => {
-        let wrapper = doMount(0.53);
+        zoomFactor = 0.53;
+        let wrapper = doMount();
         let input = wrapper.find('.zoom-input');
         input.element.value = '44';
         await input.trigger('keydown', { keyCode: 13 });
@@ -79,7 +84,8 @@ describe('ZoomMenu', () => {
     });
 
     it('ignores invalid input', async () => {
-        let wrapper = doMount(0.63);
+        zoomFactor = 0.63;
+        let wrapper = doMount();
         let input = wrapper.find('.zoom-input');
         input.element.value = 'asdf';
         await input.trigger('keydown', { keyCode: 13 });
@@ -87,7 +93,8 @@ describe('ZoomMenu', () => {
     });
 
     it('ignores any input on focus out', () => {
-        let wrapper = doMount(0.63);
+        zoomFactor = 0.63;
+        let wrapper = doMount();
         let input = wrapper.find('.zoom-input');
         input.element.value = '99';
         input.trigger('focusout');
@@ -96,7 +103,8 @@ describe('ZoomMenu', () => {
 
 
     it('selects all text of input on click', () => {
-        let wrapper = doMount(0.63);
+        zoomFactor = 0.63;
+        let wrapper = doMount();
         let input = wrapper.find('.zoom-input');
         input.element.select = jest.fn();
         input.trigger('click');
@@ -104,7 +112,8 @@ describe('ZoomMenu', () => {
     });
 
     it('dispatches action on click of item', () => {
-        let wrapper = doMount(0.63);
+        zoomFactor = 0.63;
+        let wrapper = doMount();
         $store.dispatch = jest.fn();
         let li = wrapper.find('li');
         li.trigger('click');
@@ -112,7 +121,8 @@ describe('ZoomMenu', () => {
     });
 
     it('zooms in and out on mousewheel', async () => {
-        let wrapper = doMount(0.63);
+        zoomFactor = 0.63;
+        let wrapper = doMount();
         $store.dispatch = jest.fn();
         let input = wrapper.find('.zoom-input');
         await input.trigger('wheel', { deltaY: 1 });
