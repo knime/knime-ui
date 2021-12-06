@@ -178,7 +178,7 @@ describe('DraggablePortWithTooltip', () => {
     });
 
     describe('Drag Connector', () => {
-        let startDragging, dragAboveTarget, KanvasMock;
+        let startDragging, dragAboveTarget, KanvasMock, dropOnTarget;
 
         beforeEach(() => {
             // Set up
@@ -223,6 +223,15 @@ describe('DraggablePortWithTooltip', () => {
                 }
 
                 wrapper.trigger('pointermove', { x, y });
+            };
+
+            dropOnTarget = (targetElement, cancels = false) => {
+                if (cancels) {
+                    targetElement.addEventListener('connector-drop', e => {
+                        e.preventDefault();
+                    });
+                }
+                wrapper.trigger('pointerup', { pointerId: -1 });
             };
         });
 
@@ -402,8 +411,7 @@ describe('DraggablePortWithTooltip', () => {
 
                 let hitTarget = document.createElement('div');
                 dragAboveTarget(hitTarget);
-
-                wrapper.trigger('pointerup', { pointerId: -1 });
+                dropOnTarget();
 
                 expect(hitTarget._connectorDropEvent.detail).toStrictEqual({
                     destNode: 'node:1',
@@ -411,6 +419,9 @@ describe('DraggablePortWithTooltip', () => {
                     sourceNode: undefined,
                     sourcePort: undefined
                 });
+
+                let rootWrapper = createWrapper(wrapper.vm.$root);
+                expect(rootWrapper.emitted('connector-dropped')).toBeTruthy();
             });
 
             test('dispatches drop event (direction = out)', () => {
@@ -419,8 +430,7 @@ describe('DraggablePortWithTooltip', () => {
 
                 let hitTarget = document.createElement('div');
                 dragAboveTarget(hitTarget);
-
-                wrapper.trigger('pointerup', { pointerId: -1 });
+                dropOnTarget();
 
                 expect(hitTarget._connectorDropEvent.detail).toStrictEqual({
                     sourceNode: 'node:1',
@@ -428,6 +438,20 @@ describe('DraggablePortWithTooltip', () => {
                     destNode: undefined,
                     destPort: undefined
                 });
+
+                let rootWrapper = createWrapper(wrapper.vm.$root);
+                expect(rootWrapper.emitted('connector-dropped')).toBeTruthy();
+            });
+
+            test('connector-drop can be cancelled', () => {
+                startDragging();
+
+                let hitTarget = document.createElement('div');
+                dragAboveTarget(hitTarget);
+                dropOnTarget(hitTarget, true);
+
+                let rootWrapper = createWrapper(wrapper.vm.$root);
+                expect(rootWrapper.emitted('connector-dropped')).toBeFalsy();
             });
 
             test('lost pointer capture', () => {
@@ -461,8 +485,7 @@ describe('DraggablePortWithTooltip', () => {
             dragAboveTarget(null);
             expect(hitTarget._connectorLeaveEvent).toBeFalsy();
 
-            wrapper.trigger('pointerup', { pointerId: -1 });
-
+            dropOnTarget();
             expect(hitTarget._connectorDropEvent).toBeFalsy();
         });
     });

@@ -121,7 +121,7 @@ export default {
             let { sourceNode, sourcePort, destNode, destPort } = this.dragConnector;
 
             if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
-                this.lastHitTarget.element.dispatchEvent(
+                let dropped = this.lastHitTarget.element.dispatchEvent(
                     new CustomEvent(
                         'connector-drop', {
                             detail: {
@@ -130,11 +130,14 @@ export default {
                                 destNode,
                                 destPort
                             },
-                            bubbles: true
+                            bubbles: true,
+                            cancelable: true
                         }
                     )
                 );
-                this.$root.$emit('connector-dropped');
+                if (dropped) {
+                    this.$root.$emit('connector-dropped');
+                }
             }
         },
         onLostPointerCapture(e) {

@@ -154,25 +154,38 @@ export const snapConnector = {
         onConnectorDrop(e) {
             if (isNaN(this.targetPort?.index)) {
                 // dropped on component, but no port is targeted
+                e.preventDefault();
                 return;
             }
 
             let { destNode, destPort, sourceNode, sourcePort } = e.detail;
 
-            if (this.targetPort.side === 'in') {
-                this.connectNodes({
+            let newConnector = this.targetPort.side === 'in'
+                ? {
                     sourceNode,
                     sourcePort,
                     destNode: this.id || this.containerId, // either node or metanode
                     destPort: this.targetPort.index
-                });
-            } else {
-                this.connectNodes({
+                }
+                : {
                     sourceNode: this.id || this.containerId, // either node or metanode
                     sourcePort: this.targetPort.index,
                     destNode,
                     destPort
-                });
+                };
+
+            // TODO NXT-571: Is this check still needed?
+            let alreadyConnected = Object
+                .values(this.$store.state.workflow.activeWorkflow.connections)
+                .some(connector => newConnector.sourceNode === connector.sourceNode &&
+                    newConnector.sourcePort === connector.sourcePort &&
+                    newConnector.destNode === connector.destNode &&
+                    newConnector.destPort === connector.destPort);
+
+            if (alreadyConnected) {
+                e.preventDefault();
+            } else {
+                this.connectNodes(newConnector);
             }
         }
     }
