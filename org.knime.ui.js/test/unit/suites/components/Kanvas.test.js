@@ -15,6 +15,12 @@ jest.mock('lodash', () => ({
             // eslint-disable-next-line no-invalid-this
             return func.apply(this, args);
         };
+    },
+    debounce(func) {
+        return function (...args) {
+            // eslint-disable-next-line no-invalid-this
+            return func.apply(this, args);
+        };
     }
 }));
 

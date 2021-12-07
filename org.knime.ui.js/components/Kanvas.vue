@@ -1,6 +1,6 @@
 <script>
 import { mapState, mapGetters, mapMutations } from 'vuex';
-import { throttle } from 'lodash';
+import { throttle, debounce } from 'lodash';
 
 const PANNING_THROTTLE = 50; // 50ms between consecutive mouse move events
 
@@ -46,9 +46,9 @@ export default {
         },
         initResizeObserver() {
             // recalculating and setting the container size is throttled.
-            const updateCanvas = throttle((width, height) => {
+            const updateCanvas = debounce((width, height) => {
                 this.$store.commit('canvas/setContainerSize', { width, height });
-            }, 100);
+            }, 100, { leading: true, trailing: true });
             // This ResizeObserver can be stuck in an update loop:
             // (Scrollbars needed -> svg gets inner container size, Scrollbar not needed -> svg gets outer container size)
             // Setting the svg to exactly the size of the container leads to overflow and scrollbars for unknown reasons.
