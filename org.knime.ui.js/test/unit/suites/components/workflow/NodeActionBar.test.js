@@ -24,9 +24,9 @@ describe('NodeActionBar', () => {
                     executeNodes: jest.fn(),
                     cancelNodeExecution: jest.fn(),
                     resetNodes: jest.fn(),
-                    pauseNodeExecution: jest.fn(),
-                    resumeNodeExecution: jest.fn(),
-                    stepNodeExecution: jest.fn(),
+                    pauseLoopExecution: jest.fn(),
+                    resumeLoopExecution: jest.fn(),
+                    stepLoopExecution: jest.fn(),
                     openView: jest.fn(),
                     openDialog: jest.fn()
                 }
@@ -103,24 +103,24 @@ describe('NodeActionBar', () => {
 
         // fires action event
         buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
-        expect(workflowStoreConfig.actions.pauseNodeExecution).toHaveBeenCalled();
-        expect(workflowStoreConfig.actions.stepNodeExecution).toHaveBeenCalled();
+        expect(workflowStoreConfig.actions.pauseLoopExecution).toHaveBeenCalled();
+        expect(workflowStoreConfig.actions.stepLoopExecution).toHaveBeenCalled();
 
         wrapper = doMount({ canStep: true, canPause: false, canResume: true });
 
         buttons = wrapper.findAllComponents(ActionButton);
         buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
-        expect(workflowStoreConfig.actions.resumeNodeExecution).toHaveBeenCalled();
-        expect(workflowStoreConfig.actions.stepNodeExecution).toHaveBeenCalled();
+        expect(workflowStoreConfig.actions.resumeLoopExecution).toHaveBeenCalled();
+        expect(workflowStoreConfig.actions.stepLoopExecution).toHaveBeenCalled();
 
         // ensure only two of the three loop options are rendered at a time
         wrapper = doMount({ canStep: true, canPause: true, canResume: true });
 
         buttons = wrapper.findAllComponents(ActionButton);
         buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
-        expect(workflowStoreConfig.actions.pauseNodeExecution).toHaveBeenCalled();
-        expect(workflowStoreConfig.actions.stepNodeExecution).toHaveBeenCalled();
-        expect(workflowStoreConfig.actions.resumeNodeExecution).not.toHaveBeenCalled();
+        expect(workflowStoreConfig.actions.pauseLoopExecution).toHaveBeenCalled();
+        expect(workflowStoreConfig.actions.stepLoopExecution).toHaveBeenCalled();
+        expect(workflowStoreConfig.actions.resumeLoopExecution).not.toHaveBeenCalled();
     });
 
     it('renders node Id', () => {

@@ -72,15 +72,15 @@ export default {
             }
 
             if (this.canPause) {
-                actions.push(['pause', true, PauseIcon, () => this.pauseNodeExecution(this.nodeId)]);
+                actions.push(['pause', true, PauseIcon, () => this.pauseLoopExecution(this.nodeId)]);
             } else if (this.canResume) {
-                actions.push(['resume', true, ResumeIcon, () => this.resumeNodeExecution(this.nodeId)]);
+                actions.push(['resume', true, ResumeIcon, () => this.resumeLoopExecution(this.nodeId)]);
             } else {
                 actions.push(['execute', this.canExecute, ExecuteIcon, () => this.executeNodes([this.nodeId])]);
             }
 
             if (this.canStep !== null) {
-                actions.push(['step', this.canStep, StepIcon, () => this.stepNodeExecution(this.nodeId)]);
+                actions.push(['step', this.canStep, StepIcon, () => this.stepLoopExecution(this.nodeId)]);
             }
 
             actions.push(
@@ -107,7 +107,7 @@ export default {
 
     methods: {
         ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes',
-            'pauseNodeExecution', 'resumeNodeExecution', 'stepNodeExecution', 'openView', 'openDialog'])
+            'pauseLoopExecution', 'resumeLoopExecution', 'stepLoopExecution', 'openView', 'openDialog'])
     }
 };
 </script>
