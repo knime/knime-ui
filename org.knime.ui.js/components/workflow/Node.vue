@@ -137,7 +137,7 @@ export default {
         executionInfo: {
             type: Object,
             validator(info) {
-                // TODO: NXT-803 document and improve this validator
+                // TODO: NXT-845 document and improve this validator
                 return !info || Reflect.has(info, 'streamable') || info.jobManager || info.icon;
             },
             default: null
@@ -191,7 +191,7 @@ export default {
          * @return {boolean} if true action bar will be hidden
          */
         insideStreamingComponent() {
-            // TODO: NXT-803 isDragging in this condition doesn't fit the function name. Use Reflect.has or 'in'.
+            // TODO: NXT-740 isDragging in this condition doesn't fit the function name.
             return typeof this.executionInfo?.streamable !== 'undefined' || this.isDragging;
         },
         allNodeActions() {
@@ -463,7 +463,7 @@ export default {
         <!-- Nodes contained in a component with a Streaming Job Manager get a little arrow or "x" to indicate their
         compatibility. Components with a Streaming Job Manager also get a little arrow.
         In both cases, the backend sets the `executionInfo` attribute. -->
-        <!-- TODO: NXT-803 do we show this in the Showcase workflow? Is there any other example workflow? -->
+        <!-- TODO: NXT-832 Currently there is no test/example-workflow to test this case in action -->
         <StreamingDecorator
           v-if="executionInfo"
           :background-type="decoratorBackgroundType"

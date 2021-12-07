@@ -24,7 +24,7 @@ export default {
     mounted() {
         // Start Container Observers
         this.initContainerSize();
-        // TODO: NXT-803 why do we need the scroll element in the store?
+        // TODO: NXT-802 do we really need the scroll element in the store?
         this.setScrollContainerElement(this.$el);
         this.initResizeObserver();
         this.$el.focus();

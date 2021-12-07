@@ -37,7 +37,7 @@ export default {
             this.deselectAllObjects();
         },
         onContextMenu(e) {
-            // TODO: NXT-803 why prevent right clicks with ctrl?
+            // TODO: NXT-844 why prevent right clicks with ctrl?
             // ignore click with ctrl and meta keys
             if (e.ctrlKey || e.metaKey) {
                 return;

@@ -69,7 +69,7 @@ export default {
 </script>
 
 <template>
-  <!-- TODO: NXT-803 why use this stateful ScrollViewContainer here? -->
+  <!-- TODO: NXT-844 why use this stateful ScrollViewContainer here? -->
   <ScrollViewContainer class="metadata">
     <h2 :class="['title', { 'with-node-preview': nodePreview }]">
       <div

@@ -29,8 +29,8 @@ export default {
             type: String,
             default: null
         },
-        // TODO: NXT-803 validator and/or docs needed
-        // TODO: NXT-803 naming state vs status
+        // TODO: NXT-845 validator and/or docs needed
+        // TODO: NXT-845 naming state vs status
         loopStatus: {
             type: String,
             default: null
@@ -84,7 +84,7 @@ export default {
             }
             return null;
         },
-        // TODO: NXT-803 docs why is this needed?
+        // TODO: NXT-845 docs why is clipping needed?
         clippedProgress() {
             return Math.min(Math.max(this.progress, 0), 1);
         },

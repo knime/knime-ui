@@ -56,7 +56,8 @@ export default {
                 this.$store.dispatch('nodeRepository/getAllNodes', true);
             }
         },
-        // TODO: NXT-803 why do we save the scroll position instead of using keep-alive for the repo?
+        // TODO: NXT-844 why do we save the scroll position instead of using keep-alive for the repo?
+        // Also currently the NodeRepository isn't destroyed upon closing
         updateScrollPosition(position) {
             this.$store.commit('nodeRepository/setScrollPosition', position);
         }

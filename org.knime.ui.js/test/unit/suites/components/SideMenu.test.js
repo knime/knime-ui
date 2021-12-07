@@ -132,5 +132,5 @@ describe('SideMenu.vue', () => {
         });
     });
 
-    // TODO: NXT-803 test switching tabs properly
+    // TODO: NXT-844 test switching tabs properly
 });

@@ -116,5 +116,5 @@ describe('WorkflowPanel', () => {
         expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
     });
 
-    // TODO: NXT-803 add tests for the context menu?
+    // TODO: NXT-844 add tests for the context menu
 });
