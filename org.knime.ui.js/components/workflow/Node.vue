@@ -482,6 +482,7 @@ export default {
           v-bind="state"
           :filter="(isNodeSelected(id) || hover) && 'url(#node-state-shadow)'"
           :loop-status="loopInfo.status"
+          :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`"
         />
       </g>
 

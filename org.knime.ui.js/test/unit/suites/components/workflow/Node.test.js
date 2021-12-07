@@ -208,6 +208,9 @@ describe('Node', () => {
 
         it('renders node state', () => {
             expect(wrapper.findComponent(NodeState).exists()).toBe(true);
+            expect(wrapper.findComponent(NodeState).attributes('transform')).toBe(
+                `translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`
+            );
         });
 
         it('renders metanode state', () => {

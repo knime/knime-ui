@@ -96,10 +96,7 @@ export default {
 </script>
 
 <template>
-  <!-- TODO: NXT-803 move translation out of this component -->
-  <g
-    :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`"
-  >
+  <g>
     <rect
       :width="$shapes.nodeSize"
       :height="$shapes.nodeStatusHeight"

@@ -143,7 +143,6 @@ export default {
 }
 
 svg {
-  /* TODO: NXT-803 still needed? */
   position: relative; /* needed for z-index to have effect */
   display: block;
 }

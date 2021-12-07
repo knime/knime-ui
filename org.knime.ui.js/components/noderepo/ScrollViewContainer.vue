@@ -42,11 +42,10 @@ export default {
 </script>
 
 <template>
-  <!-- TODO: NXT-803 use passive scroll listener for performance reasons -->
   <div
     ref="scroller"
     class="scroll-container"
-    @scroll="onScroll"
+    @scroll.passive="onScroll"
   >
     <slot />
   </div>
