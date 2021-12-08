@@ -316,7 +316,7 @@ describe('userActions store', () => {
 
         it('actions for workflow, no node selected', () => {
             loadStore();
-            expect(store.getters['userActions/mainMenuActionItems']).toHaveLength(6);
+            expect(store.getters['userActions/mainMenuActionItems']).toHaveLength(5);
         });
     });
 });

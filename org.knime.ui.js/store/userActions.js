@@ -246,10 +246,12 @@ export const getters = {
                 actionMap.resetSelected
             );
         }
-        // show delete button either way; is disabled for no selection states
-        actionList.push(
-            actionMap.deleteSelected
-        );
+        // show delete button if at least one node or connection is selected; is disabled for no selection states
+        if (selectedNodes.length > 0 || selectedConnections.length > 0) {
+            actionList.push(
+                actionMap.deleteSelected
+            );
+        }
 
         return mapActions(actionList, selectedNodes, selectedConnections, allowedWorkflowActions);
     },
