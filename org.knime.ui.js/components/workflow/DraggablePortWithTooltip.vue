@@ -46,7 +46,7 @@ export default {
     computed: {
         ...mapGetters('canvas', ['fromAbsoluteCoordinates']),
         /*
-         * only in-Ports replace replace their current connector if a new one is connected
+         * only in-Ports replace their current connector if a new one is connected
          * only in-Ports that are connected need to indicate connector replacement
          * indicate, if this port is targeted for connection
          * indicate, if this port is the starting point of a new connector

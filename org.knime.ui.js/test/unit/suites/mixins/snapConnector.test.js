@@ -171,10 +171,6 @@ describe('Snap Connector Mixin', () => {
             expect(wrapper.vm.connectionForbidden).toBe(false);
             expect(wrapper.vm.isConnectionSource).toBe(false);
         });
-
-        test('connection exists already', () => {
-
-        });
     });
 
     describe('Make partitions', () => {
@@ -441,7 +437,7 @@ describe('Snap Connector Mixin', () => {
         });
     });
 
-    test("Doesnt reconnect existing connection", () => {
+    test("Doesn't reconnect existing connection", () => {
         snapContainerConfig.id = 'existing:2';
         doMount();
 

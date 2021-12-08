@@ -72,6 +72,7 @@ export default {
     />
 
     <!-- Connectors Layer -->
+    <!-- connector.id is NOT unique. Hence we use a custom key -->
     <Connector
       v-for="connector of workflow.connections"
       :key="`connector-${connector.sourceNode}-${connector.sourcePort}-${connector.destNode}-${connector.destPort}`"
