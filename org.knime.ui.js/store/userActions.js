@@ -233,7 +233,7 @@ export const getters = {
             actionMap.redo
         ];
 
-        if (selectedNodes.length === 0) {
+        if (selectedNodes.length === 0 && selectedConnections.length === 0) {
             actionList.push(
                 actionMap.executeAll,
                 actionMap.cancelAll,
@@ -262,15 +262,16 @@ export const getters = {
         let actionList = [];
 
         if (selectedNodes.length === 0) {
-            actionList.push(
-                actionMap.executeAll,
-                actionMap.cancelAll,
-                actionMap.resetAll
-            );
             // if no node is selected it might be still a connection that can be deleted
             if (selectedConnections.length > 0) {
                 actionList.push(
                     actionMap.deleteSelected
+                );
+            } else {
+                actionList.push(
+                    actionMap.executeAll,
+                    actionMap.cancelAll,
+                    actionMap.resetAll
                 );
             }
         } else if (selectedNodes.length === 1) {

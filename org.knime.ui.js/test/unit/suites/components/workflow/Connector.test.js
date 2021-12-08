@@ -175,7 +175,7 @@ describe('Connector.vue', () => {
 
         it('right click selects the connection', async () => {
             doShallowMount();
-            await wrapper.find('g path').trigger('click.right');
+            await wrapper.find('g path').trigger('contextmenu');
 
             expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectConnection).toHaveBeenCalledWith(

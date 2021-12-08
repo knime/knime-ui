@@ -117,7 +117,7 @@ export default {
                 this.selectConnection(this.id);
             }
         },
-        onRightMouseClick(e) {
+        onContextMenu() {
             this.deselectAllObjects();
             this.selectConnection(this.id);
         },
@@ -151,7 +151,7 @@ export default {
       :d="path"
       class="hover-area"
       @click.left="onLeftMouseClick"
-      @click.right="onRightMouseClick"
+      @contextmenu.prevent="onContextMenu"
     />
     <path
       ref="visiblePath"

@@ -117,7 +117,7 @@ describe('userActions store', () => {
             selectedConnections = [workflow.connections['root:1_0']];
             loadStore();
             let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
-            expect(contextMenuActionItems).toHaveLength(4);
+            expect(contextMenuActionItems).toHaveLength(1);
             expect(contextMenuActionItems.pop().storeAction).toBe('workflow/deleteSelectedObjects');
         });
 
