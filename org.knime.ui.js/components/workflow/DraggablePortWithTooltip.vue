@@ -52,7 +52,7 @@ export default {
          * indicate, if this port is the starting point of a new connector
         */
         indicateConnectorReplacement() {
-            return this.direction === 'in' && this.port.connectedVia.length &&
+            return this.direction === 'in' && Boolean(this.port.connectedVia.length) &&
             (this.targeted || Boolean(this.dragConnector));
         }
     },
