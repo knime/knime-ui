@@ -239,7 +239,7 @@ export const getters = {
                 actionMap.cancelAll,
                 actionMap.resetAll
             );
-        } else {
+        } else if (selectedNodes.length > 0) {
             actionList.push(
                 actionMap.executeSelected,
                 actionMap.cancelSelected,
