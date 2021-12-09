@@ -3,8 +3,6 @@
 This repository contains the web frontend for the KNIME Analytics Platform.
 The frontend is based on the [Nuxt.js] JavaScript framework.
 
-Documentation for this project can be found on the [Confluence] page.
-
 ## Development
 
 ### Prerequisites
@@ -40,7 +38,7 @@ npm run dev
 In order to run and debug the web app with a functioning backend:
 
 - download the AP, e.g. from https://www.knime.com/nightly-build-downloads
-- add VM arguments to the `knime.ini` (Knime nightly folder -> Contents -> Eclipse -> knime.ini)
+- add VM arguments to the `knime.ini` ([Installation guide])
 
 | argument | comment |
 |-|-|
@@ -184,4 +182,4 @@ See `json-rpc-notification.js` for details.
 [jest]: https://jestjs.io/en
 [lcov]: https://github.com/linux-test-project/lcov
 [clover]: http://openclover.org/
-[confluence]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/559579160/KNIME+AP+Next
+[Installation guide]: https://docs.knime.com/latest/analytics_platform_installation_guide/index.html#_configuration_settings_and_knime_ini_file
