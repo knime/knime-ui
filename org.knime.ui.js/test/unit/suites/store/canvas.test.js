@@ -227,6 +227,13 @@ describe('canvas store', () => {
             expect(scrollContainer.scrollLeft).toBe(25); /* eslint-disable-line no-magic-numbers */
             expect(scrollContainer.scrollTop).toBe(25); /* eslint-disable-line no-magic-numbers */
         });
+
+        it('zooms to set value', () => {
+            const state = store.state.canvas;
+            const value = 0.75;
+            store.dispatch('canvas/zoomTo', value);
+            expect(state.zoomFactor).toBe(0.75);
+        });
     });
 
     describe('getters', () => {
@@ -341,17 +348,17 @@ describe('canvas store', () => {
                     height: 100
                 });
                 expect(store.getters['canvas/viewBox']).toStrictEqual({
-                    top: -25,
-                    left: -25,
+                    top: 0,
+                    left: 0,
                     width: 100,
                     height: 100
                 });
                 let origin = { x: 0, y: 0 };
                 expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
-                    x: 25,
-                    y: 25
+                    x: 0,
+                    y: 0
                 });
-                expect(store.getters['canvas/fromAbsoluteCoordinates']([25, 25])).toStrictEqual([0, 0]);
+                expect(store.getters['canvas/fromAbsoluteCoordinates']([25, 25])).toStrictEqual([25, 25]);
             });
 
             test('content smaller than container - (negative, origin not included)', () => {
@@ -373,17 +380,17 @@ describe('canvas store', () => {
                 });
                 // space of 100 to distribute -> expand viewBox by 50 each side
                 expect(store.getters['canvas/viewBox']).toStrictEqual({
-                    top: -150,
-                    left: -150,
+                    top: -100,
+                    left: -100,
                     width: 200,
                     height: 200
                 });
                 let origin = { x: 0, y: 0 };
                 expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
-                    x: 150,
-                    y: 150
+                    x: 100,
+                    y: 100
                 });
-                expect(store.getters['canvas/fromAbsoluteCoordinates']([150, 150])).toStrictEqual([0, 0]);
+                expect(store.getters['canvas/fromAbsoluteCoordinates']([150, 150])).toStrictEqual([50, 50]);
             });
         });
 
@@ -439,22 +446,20 @@ describe('canvas store', () => {
                 });
                 // viewBox width and height have same proportions as canvas
                 // but are half as big (100, 100)
-                // comparing with workflow, we have 50 to distribute around content
-                // so the shift is -25
                 expect(store.getters['canvas/viewBox']).toStrictEqual({
-                    top: -25,
-                    left: -25,
+                    top: 0,
+                    left: 0,
                     width: 100,
                     height: 100
                 });
                 let origin = { x: 0, y: 0 };
-                // origin is shifted by 25 in workflow space.
+                // origin is shifted by 0 in workflow space.
                 // absolute shift is 50.
                 expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
-                    x: 50,
-                    y: 50
+                    x: 0,
+                    y: 0
                 });
-                expect(store.getters['canvas/fromAbsoluteCoordinates']([50, 50])).toStrictEqual([0, 0]);
+                expect(store.getters['canvas/fromAbsoluteCoordinates']([50, 50])).toStrictEqual([25, 25]);
             });
 
             test('content smaller than container - (negative, origin not included)', () => {
@@ -476,17 +481,17 @@ describe('canvas store', () => {
                 });
                 // space of 100 to distribute in worfklow space -> expand viewBox by 50 each side
                 expect(store.getters['canvas/viewBox']).toStrictEqual({
-                    top: -150,
-                    left: -150,
+                    top: -100,
+                    left: -100,
                     width: 200,
                     height: 200
                 });
                 let origin = { x: 0, y: 0 };
                 expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
-                    x: 300,
-                    y: 300
+                    x: 200,
+                    y: 200
                 });
-                expect(store.getters['canvas/fromAbsoluteCoordinates']([300, 300])).toStrictEqual([0, 0]);
+                expect(store.getters['canvas/fromAbsoluteCoordinates']([300, 300])).toStrictEqual([50, 50]);
             });
         });
     });

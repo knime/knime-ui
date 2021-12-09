@@ -1,7 +1,7 @@
 import { shallowMount, mount } from '@vue/test-utils';
 
 import WorkflowMetadata from '~/components/WorkflowMetadata';
-import ScrollViewContainer from '~/components/ScrollViewContainer';
+import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
 import LinkList from '~/webapps-common/ui/components/LinkList';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
@@ -73,5 +73,22 @@ describe('WorkflowMetadata.vue', () => {
 
         expect(wrapper.findComponent(NodePreview).props('type')).toBe('nodePreviewData');
         expect(wrapper.findComponent(NodeFeatureList).props('emptyText')).toBe('nodeFeatureData');
+    });
+
+    it('adds class if nodePreview exists', () => {
+        let wrapper = mount(WorkflowMetadata, {
+            propsData: {
+                title: 'Title',
+                lastEdit: '2000-01-01T00:00Z',
+                description: 'Description',
+                links: [{ text: 'link1' }],
+                tags: ['tag1'],
+                nodePreview: { type: 'nodePreviewData' },
+                nodeFeatures: { emptyText: 'nodeFeatureData' }
+            }
+        });
+
+        const header = wrapper.find('h2');
+        expect(header.classes('with-node-preview')).toBe(true);
     });
 });

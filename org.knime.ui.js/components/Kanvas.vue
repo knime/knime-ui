@@ -1,32 +1,10 @@
 <script>
-import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
-import Node from '~/components/Node';
-import MoveableNodeContainer from '~/components/MoveableNodeContainer';
-import Connector from '~/components/Connector';
-import WorkflowAnnotation from '~/components/WorkflowAnnotation';
-import MetaNodePortBars from '~/components/MetaNodePortBars';
-import KanvasFilters from '~/components/KanvasFilters';
-import StreamedIcon from '~/components/../webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
-import ConnectorLabel from '~/components/ConnectorLabel';
-import ContextMenu from '~/components/ContextMenu';
-import { throttle } from 'lodash';
-import { dropNode } from '~/mixins';
+import { mapState, mapGetters, mapMutations } from 'vuex';
+import { throttle, debounce } from 'lodash';
 
 const PANNING_THROTTLE = 50; // 50ms between consecutive mouse move events
 
 export default {
-    components: {
-        Node,
-        Connector,
-        WorkflowAnnotation,
-        MetaNodePortBars,
-        KanvasFilters,
-        StreamedIcon,
-        ContextMenu,
-        ConnectorLabel,
-        MoveableNodeContainer
-    },
-    mixins: [dropNode],
     data() {
         return {
             /*
@@ -36,48 +14,17 @@ export default {
         };
     },
     computed: {
-        ...mapState('workflow', {
-            workflow: 'activeWorkflow'
-        }),
-        ...mapGetters('workflow', [
-            'isLinked',
-            'isInsideLinked',
-            'insideLinkedType',
-            'isWritable',
-            'isStreaming'
-        ]),
-        ...mapGetters('canvas', ['contentBounds', 'canvasSize', 'viewBox']),
-        ...mapGetters('selection', ['isNodeSelected']),
-        ...mapState('canvas', ['containerSize', 'containerScroll', 'zoomFactor', 'suggestPanning']),
+        ...mapGetters('canvas', ['canvasSize', 'viewBox']),
+        ...mapState('canvas', ['suggestPanning']),
         viewBoxString() {
             let { viewBox } = this;
-            return `${viewBox.left} ${viewBox.top} ` +
-                    `${viewBox.width} ${viewBox.height}`;
-        },
-        // Sort nodes so that selected nodes are rendered in front
-        sortedNodes() {
-            let selected = [];
-            let unselected = [];
-
-            for (const nodeId of Object.keys(this.workflow.nodes)) {
-                if (this.isNodeSelected(nodeId)) {
-                    selected.push(this.workflow.nodes[nodeId]);
-                } else {
-                    unselected.push(this.workflow.nodes[nodeId]);
-                }
-            }
-            return [...unselected, ...selected];
-        }
-    },
-    watch: {
-        workflow() {
-            // Focus workflow on change for keyboard strokes to work
-            this.$el.focus();
+            return `${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`;
         }
     },
     mounted() {
         // Start Container Observers
         this.initContainerSize();
+        // TODO: NXT-802 do we really need the scroll element in the store?
         this.setScrollContainerElement(this.$el);
         this.initResizeObserver();
         this.$el.focus();
@@ -90,36 +37,26 @@ export default {
     },
     methods: {
         /*
-          Selection
-        */
-        ...mapActions('selection', ['deselectAllObjects']),
-        onMouseDown(e) {
-            /*  To avoid for [mousedown on node], [moving mouse], [mouseup on kanvas] to deselect nodes,
-             *  we track whether a click has been started on the empty Kanvas
-             */
-            this.clickStartedOnEmptyKanvas = e.target === this.$refs.svg;
-        },
-        onSelfMouseUp(e) {
-            // deselect all nodes
-            if (this.clickStartedOnEmptyKanvas) {
-                this.deselectAllObjects();
-                this.clickStartedOnEmptyKanvas = null;
-            }
-        },
-        /*
             Zooming
         */
-        ...mapMutations('canvas', ['resetZoom', 'setScrollContainerElement']),
+        ...mapMutations('canvas', ['setScrollContainerElement']),
         initContainerSize() {
             const { width, height } = this.$el.getBoundingClientRect();
             this.$store.commit('canvas/setContainerSize', { width, height });
         },
         initResizeObserver() {
+            // recalculating and setting the container size is throttled.
+            const updateCanvas = debounce((width, height) => {
+                this.$store.commit('canvas/setContainerSize', { width, height });
+            }, 100, { leading: true, trailing: true });
+            // This ResizeObserver can be stuck in an update loop:
+            // (Scrollbars needed -> svg gets inner container size, Scrollbar not needed -> svg gets outer container size)
+            // Setting the svg to exactly the size of the container leads to overflow and scrollbars for unknown reasons.
             this.resizeObserver = new ResizeObserver(entries => {
                 const containerEl = entries.find(({ target }) => target === this.$el);
                 if (containerEl?.contentRect) {
                     const { width, height } = containerEl.contentRect;
-                    this.$store.commit('canvas/setContainerSize', { width, height });
+                    updateCanvas(width, height);
                 }
             });
             this.resizeObserver.observe(this.$el);
@@ -164,16 +101,6 @@ export default {
                 this.$el.releasePointerCapture(e.pointerId);
                 e.stopPropagation();
             }
-        },
-        onContextMenu(e) {
-            // ignore click with ctrl and meta keys
-            if (e.ctrlKey || e.metaKey) {
-                return;
-            }
-            if (e.target === this.$refs.svg) {
-                this.deselectAllObjects();
-            }
-            this.$refs.contextMenu.show(e);
         }
     }
 };
@@ -182,7 +109,7 @@ export default {
 <template>
   <div
     tabindex="0"
-    :class="{ 'read-only': !isWritable, 'panning': panning || suggestPanning }"
+    :class="['scroll-container', { 'panning': panning || suggestPanning }]"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
     @pointerdown.middle="beginPan"
@@ -190,129 +117,32 @@ export default {
     @pointerdown.left.alt="beginPan"
     @pointerup.left="stopPan"
     @pointermove="movePan"
-    @contextmenu.prevent="onContextMenu"
-    @drop.stop="onDrop"
-    @dragover.stop="onDragOver"
   >
-    <ContextMenu
-      ref="contextMenu"
-    />
-    <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
-    <div
-      v-if="isLinked || isStreaming || isInsideLinked"
-      :class="['type-notification', {onlyStreaming: isStreaming && !isLinked}]"
-    >
-      <span v-if="isInsideLinked">
-        This is a {{ workflow.info.containerType }} inside a linked {{ insideLinkedType }} and cannot be edited.
-      </span>
-      <span v-else-if="isLinked">
-        This is a linked {{ workflow.info.containerType }} and can therefore not be edited.
-      </span>
-      <span
-        v-if="isStreaming"
-        :class="['streaming-decorator', { isLinked }]"
-      >
-        <StreamedIcon class="streamingIcon" />
-        <p>Streaming</p>
-      </span>
-    </div>
-
     <svg
       ref="svg"
       :width="canvasSize.width"
       :height="canvasSize.height"
       :viewBox="viewBoxString"
-      @mousedown.left="onMouseDown"
-      @mouseup.self.left="onSelfMouseUp"
+      @pointerdown.self.stop="$emit('empty-pointerdown', $event)"
     >
-
-      <!-- Includes shadows for Nodes -->
-      <KanvasFilters />
-
-      <!-- Workflow Annotation Layer. Background -->
-      <WorkflowAnnotation
-        v-for="annotation of workflow.workflowAnnotations"
-        :key="`annotation-${annotation.id}`"
-        v-bind="annotation"
-      />
-
-      <!-- Node Selection Plane Layer -->
-      <portal-target
-        multiple
-        tag="g"
-        name="node-select"
-      />
-
-      <!-- Connectors Layer -->
-      <Connector
-        v-for="(connector, id) of workflow.connections"
-        :key="`connector-${workflow.projectId}-${id}`"
-        v-bind="connector"
-      />
-
-      <!-- Metanode Port Bars (Inside of Metanodes) -->
-      <MetaNodePortBars
-        v-if="workflow.info.containerType === 'metanode'"
-      />
-
-      <MoveableNodeContainer
-        v-for="node of sortedNodes"
-        :id="node.id"
-        :key="`node-${workflow.projectId}-${node.id}`"
-        :position="node.position"
-        :kind="node.kind"
-      >
-        <Node
-          :icon="$store.getters['workflow/getNodeIcon'](node.id)"
-          :name="$store.getters['workflow/getNodeName'](node.id)"
-          :type="$store.getters['workflow/getNodeType'](node.id)"
-          v-bind="node"
-        />
-      </MoveableNodeContainer>
-
-      <!-- Quick Actions Layer: Buttons for Hovered & Selected Nodes and their ids -->
-      <portal-target
-        multiple
-        tag="g"
-        name="node-actions"
-      />
-
-      <ConnectorLabel
-        v-for="(connector, id) of workflow.connections"
-        :key="`connector-label-${workflow.projectId}-${id}`"
-        v-bind="connector"
-      />
-
-      <portal-target
-        tag="g"
-        name="drag-connector"
-      />
+      <slot />
     </svg>
   </div>
 </template>
 
 <style lang="postcss" scoped>
-#kanvas {
+.scroll-container {
+  position: relative;
+  overflow: scroll;
   height: 100%;
+  width: 100%;
 
   &:focus {
     outline: none;
   }
 }
 
-.debug-css {
-  display: none;
-  stroke: var(--knime-silver-sand);
-  fill: none;
-  pointer-events: none;
-}
-
-line.debug-css {
-  stroke: var(--knime-dove-gray);
-}
-
 svg {
-  color: var(--knime-masala);
   position: relative; /* needed for z-index to have effect */
   display: block;
 }
@@ -322,73 +152,7 @@ svg {
 
   & svg,
   & svg >>> * {
-    pointer-events: none;
+    pointer-events: none !important;
   }
-}
-
-.read-only {
-  background-color: var(--knime-gray-ultra-light);
-}
-
-.type-notification {
-  /* positioning */
-  display: flex;
-  margin: 0 10px;
-  min-height: 40px;
-  margin-bottom: -40px;
-  left: 10px;
-  top: 10px;
-  position: sticky;
-  z-index: 1;
-
-  /* appearance */
-  background-color: var(--notification-background-color);
-  pointer-events: none;
-  user-select: none;
-
-  & span {
-    font-size: 16px;
-    align-self: center;
-    text-align: center;
-    width: 100%;
-  }
-
-  & p {
-    font-size: 16px;
-    align-self: center;
-    text-align: center;
-    margin-right: 10px;
-  }
-}
-
-.streamingIcon {
-  margin-right: 5px;
-  width: 32px;
-}
-
-.streaming-decorator {
-  pointer-events: none;
-  display: flex;
-  margin-right: 10px;
-  height: 40px;
-  justify-content: flex-end;
-  flex-basis: 80px;
-  flex-shrink: 0;
-
-  & p {
-    font-size: 16px;
-    align-self: center;
-    text-align: center;
-  }
-
-  &.isLinked p {
-    margin-right: 10px;
-  }
-}
-
-.onlyStreaming {
-  background-color: unset;
-  justify-content: flex-end;
-  margin-right: 0;
 }
 </style>

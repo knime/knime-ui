@@ -14,37 +14,16 @@ export default {
     computed: {
         ...mapState('canvas', ['zoomFactor']),
         ...mapGetters('canvas', ['fitToScreenZoomFactor']),
-        zoomMenuItems() {
-            return [
-                {
-                    text: 'Fit to screen',
-                    value: this.fitToScreenZoomFactor
-                }, {
-                    text: 'Zoom to 75%',
-                    value: 0.75
-                }, {
-                    text: 'Zoom to 100%',
-                    value: 1
-                }, {
-                    text: 'Zoom to 125%',
-                    value: 1.25
-                }, {
-                    text: 'Zoom to 150%',
-                    value: 1.5
-                }
-            ];
+        ...mapGetters('userActions', ['zoomActionItems']),
+
+        zoomInputValue() {
+            return `${Math.round(this.zoomFactor * 100)}%`;
         }
     },
-    mounted() {
-        this.$watch('zoomFactor', this.formatZoomInput, { immediate: true });
-    },
     methods: {
-        formatZoomInput() {
-            this.$refs.zoomInput.innerText = `${Math.round(this.zoomFactor * 100)}%`;
-        },
         onZoomInputEnter(e) {
             // '100' or '100%' works
-            let newZoomFactor = parseInt(e.target.innerText, 10) / 100;
+            let newZoomFactor = parseInt(e.target.value, 10) / 100;
 
             if (!isNaN(newZoomFactor)) {
                 this.$store.commit('canvas/setFactor', newZoomFactor);
@@ -52,19 +31,25 @@ export default {
 
             // de-focus input. Resets and formats zoom level
             e.target.blur();
+            e.target.value = this.zoomInputValue;
         },
         onZoomInputClick(e) {
             e.target.focus();
-            document.execCommand('selectAll', false, null);
+            e.target.select();
         },
         onZoomInputFocusOut(e) {
             // Deselect text and reset to formatted value
-            window.getSelection().removeAllRanges();
-            this.formatZoomInput();
+            e.target.blur();
+            e.target.value = this.zoomInputValue;
         },
         onZoomItemClick(e, item, id) {
-            this.$store.commit('canvas/setFactor', item.value);
+            // TODO NXT-625: This is not how dispatch works. Only one parameter can be used as payload
+            this.$store.dispatch(item.storeAction, ...item.storeActionParams);
             this.$refs.zoomInput.blur();
+        },
+        onWheel(e) {
+            const delta = e.deltaY < 0 ? 1 : -1;
+            this.$store.dispatch('canvas/zoomCentered', delta);
         }
     }
 };
@@ -72,18 +57,21 @@ export default {
 
 <template>
   <SubMenu
+    ref="subMenu"
     class="zoom"
-    :items="zoomMenuItems"
+    :items="zoomActionItems"
     @item-click="onZoomItemClick"
   >
-    <div
+    <input
       ref="zoomInput"
+      type="text"
+      :value="zoomInputValue"
       class="zoom-input"
-      contenteditable
       @click.stop="onZoomInputClick"
       @keydown.enter.stop.prevent="onZoomInputEnter"
+      @wheel.prevent="onWheel"
       @focusout.stop="onZoomInputFocusOut"
-    />
+    >
     <DropdownIcon />
   </SubMenu>
 </template>
@@ -109,13 +97,32 @@ export default {
     }
 
     & .zoom-input {
-      cursor: text;
+      background: transparent;
+      border: none;
+      text-align: right;
+
+      /* TODO: NXT-841 use --theme-button-function-foreground-color */
+      color: var(--knime-masala);
       width: 54px;
       padding: 8px 4px 8px 16px;
       font-size: 14px;
       font-weight: 400;
       margin-right: 0;
+
+      &:focus {
+        outline: none;
+      }
     }
+
+    &.expanded .zoom-input {
+      /* TODO: NXT-841 use --theme-button-function-foreground-active */
+      color: var(--knime-white);
+    }
+  }
+
+  /* TODO: NXT-841 add a app specific definition of --theme-button-function-foreground-color */
+  & >>> .function-button:not(.active) svg {
+    stroke: var(--knime-masala);
   }
 }
 </style>

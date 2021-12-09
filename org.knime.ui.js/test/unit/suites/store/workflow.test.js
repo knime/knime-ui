@@ -230,9 +230,9 @@ describe('workflow store', () => {
             });
 
             it.each([
-                ['pauseNodeExecution', 'pause'],
-                ['resumeNodeExecution', 'resume'],
-                ['stepNodeExecution', 'step']
+                ['pauseLoopExecution', 'pause'],
+                ['resumeLoopExecution', 'resume'],
+                ['stepLoopExecution', 'step']
             ])('passes %s to API', async (fn, action) => {
                 let mock = jest.fn();
                 let apiMocks = { changeLoopState: mock };
@@ -605,8 +605,8 @@ describe('workflow store', () => {
                 });
 
                 expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                    left: 200,
-                    right: 200 + nodeSize,
+                    left: 150,
+                    right: 250 + nodeSize,
                     top: 200 - nodeNameMargin - nodeNameLineHeight,
                     bottom: 200 + nodeSize + nodeStatusMarginTop + nodeStatusHeight
                 });
@@ -669,8 +669,8 @@ describe('workflow store', () => {
                 });
 
                 expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                    left: 10,
-                    right: 52,
+                    left: -40,
+                    right: 92,
                     top: -16,
                     bottom: 62
                 });
@@ -688,8 +688,8 @@ describe('workflow store', () => {
                 });
 
                 expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                    left: -10,
-                    right: 52,
+                    left: -60,
+                    right: 102,
                     top: -36,
                     bottom: 72
                 });

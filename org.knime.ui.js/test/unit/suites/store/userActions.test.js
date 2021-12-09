@@ -117,7 +117,7 @@ describe('userActions store', () => {
             selectedConnections = [workflow.connections['root:1_0']];
             loadStore();
             let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
-            expect(contextMenuActionItems).toHaveLength(4);
+            expect(contextMenuActionItems).toHaveLength(1);
             expect(contextMenuActionItems.pop().storeAction).toBe('workflow/deleteSelectedObjects');
         });
 
@@ -130,15 +130,15 @@ describe('userActions store', () => {
             expect(contextMenuActionItems).toHaveLength(7);
 
             let i = 0;
-            expect(contextMenuActionItems[i].text).toBe('Pause execution');
-            expect(contextMenuActionItems[i].storeAction).toBe('workflow/pauseNodeExecution');
+            expect(contextMenuActionItems[i].text).toBe('Pause loop execution');
+            expect(contextMenuActionItems[i].storeAction).toBe('workflow/pauseLoopExecution');
             expect(contextMenuActionItems[i].storeActionParams).toStrictEqual(['root:2']);
             expect(contextMenuActionItems[i].disabled).toBe(false);
 
             i++;
 
             expect(contextMenuActionItems[i].text).toBe('Step loop execution');
-            expect(contextMenuActionItems[i].storeAction).toBe('workflow/stepNodeExecution');
+            expect(contextMenuActionItems[i].storeAction).toBe('workflow/stepLoopExecution');
             expect(contextMenuActionItems[i].storeActionParams).toStrictEqual(['root:2']);
             expect(contextMenuActionItems[i].disabled).toBe(false);
 
@@ -199,7 +199,7 @@ describe('userActions store', () => {
             expect(contextMenuActionItems).toHaveLength(7);
 
             expect(contextMenuActionItems[0].text).toBe('Resume loop execution');
-            expect(contextMenuActionItems[0].storeAction).toBe('workflow/resumeNodeExecution');
+            expect(contextMenuActionItems[0].storeAction).toBe('workflow/resumeLoopExecution');
             expect(contextMenuActionItems[0].storeActionParams).toStrictEqual(['root:2']);
             expect(contextMenuActionItems[0].disabled).toBe(false);
         });
@@ -263,7 +263,7 @@ describe('userActions store', () => {
             expect(contextMenuActionItems[0].text).toBe('Execute all');
             expect(contextMenuActionItems[0].storeAction).toBe('workflow/executeNodes');
             expect(contextMenuActionItems[0].storeActionParams).toStrictEqual(['all']);
-            expect(contextMenuActionItems[0].hotkeyText).toBe('Shift + F7');
+            expect(contextMenuActionItems[0].hotkeyText).toBe('Shift F7');
             expect(contextMenuActionItems[0].disabled).toBe(false);
 
             expect(contextMenuActionItems[1].text).toBe('Cancel all');
@@ -289,6 +289,11 @@ describe('userActions store', () => {
             expect(contextMenuActionItems[1].disabled).toBe(true);
             expect(contextMenuActionItems[2].disabled).toBe(true);
         });
+
+        it('check zoomActionItems', () => {
+            loadStore();
+            expect(store.getters['userActions/zoomActionItems']).toBeDefined();
+        });
     });
 
     /*
@@ -311,7 +316,7 @@ describe('userActions store', () => {
 
         it('actions for workflow, no node selected', () => {
             loadStore();
-            expect(store.getters['userActions/mainMenuActionItems']).toHaveLength(6);
+            expect(store.getters['userActions/mainMenuActionItems']).toHaveLength(5);
         });
     });
 });
