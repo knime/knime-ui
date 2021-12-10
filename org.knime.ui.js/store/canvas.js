@@ -135,6 +135,10 @@ export const getters = {
     */
     contentBounds(state, getters, rootState, rootGetters) {
         let { left, top, right, bottom } = rootGetters['workflow/workflowBounds'];
+        // left -= state.containerSize.width / 2;
+        // right += state.containerSize.width / 2;
+        // top -= state.containerSize.height / 2;
+        // bottom += state.containerSize.height / 2;
 
         let width = right - left;
         let height = bottom - top;

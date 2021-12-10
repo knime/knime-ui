@@ -4,6 +4,8 @@ import StreamingIcon from '~/webapps-common/ui/assets/img/icons/nodes-connect.sv
 import ContextMenu from '~/components/ContextMenu';
 import Workflow from '~/components/workflow/Workflow';
 import Kanvas from '~/components/Kanvas';
+import Minimap from '~/components/floating/Minimap';
+import html2canvas from 'html2canvas';
 
 import { dropNode } from '~/mixins';
 
@@ -12,7 +14,8 @@ export default {
         StreamingIcon,
         ContextMenu,
         Workflow,
-        Kanvas
+        Kanvas,
+        Minimap
     },
     mixins: [dropNode],
     computed: {
@@ -89,6 +92,8 @@ export default {
            instead of diffing old and new workflow -->
       <Workflow :key="`${workflow.projectId}-${activeWorkflowId}`" />
     </Kanvas>
+
+    <Minimap class="mini-map" />
   </div>
 </template>
 
@@ -97,9 +102,17 @@ export default {
   color: var(--knime-masala);
 }
 
+.mini-map {
+  position: absolute;
+  bottom: 25px;
+  left: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
 .workflow-panel {
   height: 100%;
   width: 100%;
+  position: relative;
 }
 
 .read-only {
