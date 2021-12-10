@@ -28,20 +28,28 @@ export default {
 
 <template>
   <div class="toolbar">
-    <div class="buttons">
+    <transition-group
+      tag="div"
+      name="button-list"
+    >
       <!-- TODO NXT-625: This is not how dispatch works. Only one parameter can be used as payload -->
-      <ToolbarButton
-        v-for="(a, index) of visibleActionItems"
-        :key="index"
-        :class="a.text ? 'with-text' : ''"
-        :disabled="a.disabled"
-        :title="`${a.title} – ${a.hotkeyText}`"
-        @click.native="$store.dispatch(a.storeAction, ...a.storeActionParams)"
+      <div
+        :key="visibleActionItems.map(action => action.title).join('-')"
+        class="button-list"
       >
-        <Component :is="a.icon" />
-        {{ a.text }}
-      </ToolbarButton>
-    </div>
+        <ToolbarButton
+          v-for="a of visibleActionItems"
+          :key="a.title"
+          :class="{ 'with-text': a.text }"
+          :disabled="a.disabled"
+          :title="`${a.title} – ${a.hotkeyText}`"
+          @click.native="$store.dispatch(a.storeAction, ...a.storeActionParams)"
+        >
+          <Component :is="a.icon" />
+          {{ a.text }}
+        </ToolbarButton>
+      </div>
+    </transition-group>
 
     <WorkflowBreadcrumb
       v-if="hasBreadcrumb"
@@ -62,7 +70,17 @@ export default {
   background: var(--knime-porcelain);
 }
 
-.buttons {
+.button-list-leave-to,
+.button-list-enter {
+  opacity: 0;
+}
+
+.button-list-leave-active {
+  position: absolute;
+}
+
+.button-list {
+  transition: all 200ms ease-out;
   flex-shrink: 0;
   display: flex;
   font-size: 14px;
@@ -71,6 +89,10 @@ export default {
   & .with-text {
     padding-right: 9px;
     padding-left: 2px;
+  }
+
+  & button {
+    transition: all 150ms ease-out;
   }
 }
 
