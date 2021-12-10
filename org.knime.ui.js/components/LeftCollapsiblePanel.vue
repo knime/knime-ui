@@ -68,7 +68,6 @@ export default {
   background-color: var(--knime-gray-ultra-light);
   overflow-x: hidden;
   transition: width 0.3s ease;
-  display: flex;
 }
 
 .hidden-content {
