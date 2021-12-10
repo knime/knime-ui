@@ -3,6 +3,11 @@ import Tag from '~/webapps-common/ui/components/Tag';
 
 const defaultInitialTagCount = 5;
 
+/**
+ * TagList where Tags can be selected. It has two props `tags` and `selectedTags` the parent component needs to do the
+ * handling of which tags are selected an which not. It emits `@click` for tag clicks
+ * with an object of { text: "tagName", selected: <Boolean> }
+ */
 export default {
     components: {
         Tag

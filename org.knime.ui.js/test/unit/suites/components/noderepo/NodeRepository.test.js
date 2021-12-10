@@ -3,10 +3,10 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
 import NodeRepository from '~/components/noderepo/NodeRepository';
-import CloseableTagList from '~/components/CloseableTagList';
+import CloseableTagList from '~/components/noderepo/CloseableTagList';
 import NodeRepositoryCategory from '~/components/noderepo/NodeRepositoryCategory';
-import ActionBreadcrumb from '~/components/ActionBreadcrumb';
-import NodeSearcher from '~/components/NodeSearcher';
+import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
+import NodeSearcher from '~/components/noderepo/NodeSearcher';
 import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
 import { getters } from '~/store/nodeRepository.js';
 

@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-import ActionBreadcrumb from '~/components/ActionBreadcrumb';
+import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
 import ComponentIcon from '~/webapps-common/ui/assets/img/icons/node-workflow.svg?inline';
 import MetaNodeIcon from '~/webapps-common/ui/assets/img/icons/metanode.svg?inline';
 import LinkedComponentIcon from '~/webapps-common/ui/assets/img/icons/linked-component.svg?inline';

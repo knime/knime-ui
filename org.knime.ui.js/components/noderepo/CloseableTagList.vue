@@ -1,5 +1,5 @@
 <script>
-import SelectableTagList from '~/components/SelectableTagList';
+import SelectableTagList from '~/components/common/SelectableTagList';
 import ClosePopoverIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 import { mixin as clickaway } from 'vue-clickaway2';
 
@@ -12,6 +12,9 @@ export const minNumberOfInitialTags = 2;
  * Wraps a SelectableTagList and adds close buttons and click-away to it. The visible area overflows and looks like a
  * popover. Designed to work in NodeRepository. It has a dynamic number of initially shown tags based on the length
  * (number of chars) of a tag.
+ *
+ * This is not a common component as the sizes and most of the styles are carefully chosen
+ * to fit in the sidebar (NodeRepo)
  */
 export default {
     components: {

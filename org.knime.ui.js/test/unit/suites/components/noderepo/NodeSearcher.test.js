@@ -6,7 +6,7 @@ import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 import LensIcon from '~/webapps-common/ui/assets/img/icons/lens.svg?inline';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 
-import NodeSearcher from '~/components/NodeSearcher';
+import NodeSearcher from '~/components/noderepo/NodeSearcher';
 
 describe('NodeRepositoryCategory', () => {
     let mocks, doShallowMount, wrapper, $store,

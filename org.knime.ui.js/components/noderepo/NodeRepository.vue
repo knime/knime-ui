@@ -2,10 +2,10 @@
 import { mapState, mapGetters } from 'vuex';
 
 import NodeRepositoryCategory from '~/components/noderepo/NodeRepositoryCategory';
-import NodeSearcher from '~/components/NodeSearcher';
+import NodeSearcher from '~/components/noderepo/NodeSearcher';
 import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
-import ActionBreadcrumb from '~/components/ActionBreadcrumb';
-import CloseableTagList from '~/components/CloseableTagList';
+import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
+import CloseableTagList from '~/components/noderepo/CloseableTagList';
 
 export default {
     components: {
