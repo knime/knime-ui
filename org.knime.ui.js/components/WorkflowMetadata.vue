@@ -4,7 +4,7 @@ import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import TagList from '~/webapps-common/ui/components/TagList';
 import { formatDateString } from '~/webapps-common/util/format';
-import ScrollViewContainer from '~/components/ScrollViewContainer';
+import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
 
 /** Displays metadata attached to a root-level workflow */
 export default {
@@ -69,6 +69,7 @@ export default {
 </script>
 
 <template>
+  <!-- TODO: NXT-844 why use this stateful ScrollViewContainer here? -->
   <ScrollViewContainer class="metadata">
     <h2 :class="['title', { 'with-node-preview': nodePreview }]">
       <div

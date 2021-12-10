@@ -175,15 +175,15 @@ export const actions = {
         dispatch('changeNodeState', { action: 'cancel', nodes });
     },
     /* See docs in API */
-    pauseNodeExecution({ state }, nodeId) {
+    pauseLoopExecution({ state }, nodeId) {
         changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'pause' });
     },
     /* See docs in API */
-    resumeNodeExecution({ state }, nodeId) {
+    resumeLoopExecution({ state }, nodeId) {
         changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'resume' });
     },
     /* See docs in API */
-    stepNodeExecution({ state }, nodeId) {
+    stepLoopExecution({ state }, nodeId) {
         changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'step' });
     },
     /* See docs in API */
@@ -300,7 +300,7 @@ export const getters = {
         const { nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPorts } = activeWorkflow;
         const {
             nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight, portSize,
-            defaultMetanodeBarPosition, defaultMetaNodeBarHeight, metaNodeBarWidth
+            defaultMetanodeBarPosition, defaultMetaNodeBarHeight, metaNodeBarWidth, horizontalNodePadding
         } = $shapes;
 
         let left = Infinity;
@@ -311,11 +311,13 @@ export const getters = {
         Object.values(nodes).forEach(({ position: { x, y } }) => {
             const nodeTop = y - nodeNameMargin - nodeNameLineHeight;
             const nodeBottom = y + nodeSize + nodeStatusMarginTop + nodeStatusHeight;
+            const nodeLeft = x - horizontalNodePadding;
+            const nodeRight = x + nodeSize + horizontalNodePadding;
 
-            if (x < left) { left = x; }
+            if (nodeLeft < left) { left = nodeLeft; }
             if (nodeTop < top) { top = nodeTop; }
 
-            if (x + nodeSize > right) { right = x + nodeSize; }
+            if (nodeRight > right) { right = nodeRight; }
             if (nodeBottom > bottom) { bottom = nodeBottom; }
         });
         workflowAnnotations.forEach(({ bounds: { x, y, height, width } }) => {

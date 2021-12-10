@@ -8,10 +8,6 @@ import * as $shapes from '~/style/shapes';
 import * as canvasStoreConfig from '~/store/canvas';
 
 import Kanvas from '~/components/Kanvas';
-import Node from '~/components/Node';
-import Connector from '~/components/Connector';
-import WorkflowAnnotation from '~/components/WorkflowAnnotation';
-import MetaNodePortBars from '~/components/MetaNodePortBars';
 
 jest.mock('lodash', () => ({
     throttle(func) {
@@ -19,39 +15,17 @@ jest.mock('lodash', () => ({
             // eslint-disable-next-line no-invalid-this
             return func.apply(this, args);
         };
+    },
+    debounce(func) {
+        return function (...args) {
+            // eslint-disable-next-line no-invalid-this
+            return func.apply(this, args);
+        };
     }
 }));
 
-const mockNode = ({ id, position }) => ({
-    name: '',
-    id,
-    position,
-    inPorts: [],
-    outPorts: [],
-    type: '',
-    annotation: { text: '' },
-    kind: 'node',
-    icon: 'data:image/',
-    state: null
-});
-
-const mockConnector = ({ nr, id }) => ({
-    sourceNode: '',
-    destNode: '',
-    id,
-    allowedActions: {
-        canDelete: false
-    },
-    sourcePort: nr,
-    destPort: 0,
-    flowVariableConnection: false,
-    streaming: false,
-    absolutePoint: null
-});
-
 describe('Kanvas', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, nodeData, storeConfig,
-        isNodeSelectedMock;
+    let propsData, mocks, doShallowMount, wrapper, $store, storeConfig;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -81,97 +55,28 @@ describe('Kanvas', () => {
         };
 
         wrapper = null;
-        nodeData = {
-            'root:0': mockNode({ id: 'root:0', position: { x: -32, y: -32 } }),
-            'root:1': mockNode({ id: 'root:1', position: { x: 50, y: 50 } }),
-            'root:2': mockNode({ id: 'root:2', position: { x: 0, y: 100 } })
-        };
         propsData = {};
-        workflow = {
-            projectId: 'some id',
-            info: {
-                containerType: 'project',
-                name: 'wf1'
-            },
-            executionInfo: {
-                jobManager: 'test'
-            },
-            nodes: nodeData,
-            connections: {
-                inA: mockConnector({ nr: 0, id: 'inA' }),
-                outA: mockConnector({ nr: 1, id: 'outA' }),
-                outB: mockConnector({ nr: 2, id: 'outB' })
-            },
-            workflowAnnotations: [],
-            parents: []
-        };
-        workflowStoreConfig = {
-            state: {
-                activeWorkflow: workflow
-            },
-            mutations: {
-                selectAllNodes: jest.fn()
-            },
-            getters: {
-                workflowBounds() {
-                    return {
-                        left: -10,
-                        top: -10,
-                        right: 40,
-                        bottom: 40
-                    };
-                },
-                isLinked() {
-                    return workflow.info.linked;
-                },
-                isInsideLinked() {
-                    return workflow.parents.some(p => p.linked);
-                },
-                insideLinkedType() {
-                    return workflow.parents.find(p => p.linked).containerType;
-                },
-                isStreaming() {
-                    return workflow.info.jobManager;
-                },
-                isWritable() {
-                    return !(workflow.info.linked || workflow.parents.some(p => p.linked));
-                },
-                getNodeIcon() {
-                    return (nodeId) => `data:image/${nodeId}`;
-                },
-                getNodeName() {
-                    return (nodeId) => `name-${nodeId}`;
-                },
-                getNodeType() {
-                    return (nodeId) => `type-${nodeId}`;
-                },
-                executionInfo() {
-                    return ({ nodeId }) => workflow.nodes[nodeId].executionInfo;
-                }
-            }
-        };
-        isNodeSelectedMock = jest.fn().mockReturnValue(false);
 
         storeConfig = {
-            workflow: workflowStoreConfig,
             canvas: {
                 ...canvasStoreConfig,
                 mutations: {
                     ...canvasStoreConfig.mutations,
-                    resetZoom: jest.fn(),
                     zoomWithPointer: jest.fn(),
                     setContainerSize: jest.fn(),
                     setScrollContainerElement: jest.fn()
-                },
-                actions: {
-                    ...canvasStoreConfig.actions,
-                    setZoomToFit: jest.fn(),
-                    zoomCentered: jest.fn()
                 }
             },
-            selection: {
+            workflow: {
                 getters: {
-                    isNodeSelected: () => isNodeSelectedMock
+                    workflowBounds() {
+                        return {
+                            left: -10,
+                            top: -10,
+                            right: 40,
+                            bottom: 40
+                        };
+                    }
                 }
             }
         };
@@ -184,130 +89,30 @@ describe('Kanvas', () => {
         };
     });
 
-    describe('sample workflow', () => {
-        beforeEach(() => {
-            doShallowMount();
-        });
-
-        it('has portal for selection frames', () => {
-            expect(wrapper.find('portal-target[name="node-select"').exists()).toBe(true);
-        });
-
-        it('renders nodes', () => {
-            wrapper.findAllComponents(Node).wrappers.forEach((n) => {
-                let props = n.props();
-                let nodeId = props.id;
-                let expected = {
-                    ...nodeData[nodeId],
-                    icon: `data:image/${nodeId}`,
-                    name: `name-${nodeId}`,
-                    type: `type-${nodeId}`,
-                    link: null,
-                    allowedActions: {},
-                    executionInfo: null,
-                    loopInfo: {
-                        allowedActions: {}
-                    }
-                };
-                expect(props).toStrictEqual(expected);
-            });
-        });
-
-        it('renders connectors', () => {
-            let connectorProps = wrapper.findAllComponents(Connector).wrappers.map(c => c.props());
-            let connections = Object.values(workflow.connections);
-            expect(connectorProps).toStrictEqual(connections);
-        });
-
-        it('is not linked', () => {
-            expect(wrapper.find('.read-only').exists()).toBe(false);
-            expect(wrapper.find('.type-notification').exists()).toBe(false);
-        });
-
-        it('is not streaming', () => {
-            expect(wrapper.find('.streaming-decorator').exists()).toBe(false);
-        });
-    });
-
-    describe('Node order', () => {
-        test('original order without selection', () => {
-            doShallowMount();
-            // check order order of Node components
-            let nodeOrder = wrapper.findAllComponents(Node).wrappers.map(node => node.props('id'));
-            expect(nodeOrder).toStrictEqual(['root:0', 'root:1', 'root:2']);
-        });
-
-        test('selecting node brings it to the front', () => {
-            isNodeSelectedMock.mockImplementation((id) => id === 'root:1');
+    describe('empty click on canvas', () => {
+        test('clicking on the canvas emits empty-pointerdown', () => {
             doShallowMount();
 
-            // check order order of Node components
-            let nodeOrder = wrapper.findAllComponents(Node).wrappers.map(node => node.props('id'));
-            expect(nodeOrder).toStrictEqual(['root:0', 'root:2', 'root:1']);
-        });
-    });
+            wrapper.find('svg').trigger('pointerdown');
 
-    describe('Linked and Streaming', () => {
-        it.each(['metanode', 'component'])('write-protects linked %s and shows warning', (containerType) => {
-            workflow.info.linked = true;
-            workflow.info.containerType = containerType;
+            // This test doesn't test the 'self' modifier
+            expect(wrapper.emitted('empty-pointerdown')).toBeTruthy();
+        });
+
+        test("clicking on an element in the canvas doesn't emit empty-pointerdown", () => {
             doShallowMount();
+            wrapper.element.setPointerCapture = jest.fn();
 
-            expect(wrapper.find('.read-only').exists()).toBe(true);
+            // Add child element to kanvas
+            let childElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            wrapper.find('svg').element.appendChild(childElement);
 
-            const notification = wrapper.find('.type-notification').find('span');
-            expect(notification.text()).toBe(`This is a linked ${containerType} and can therefore not be edited.`);
-            expect(notification.text()).not.toContain('inside a linked');
+            // Trigger pointerdown event on child
+            wrapper.find('svg rect').trigger('pointerdown');
+
+            // shouldn't trigger empty-pointerdown
+            expect(wrapper.emitted('empty-pointerdown')).toBeFalsy();
         });
-
-        it.each([
-            ['metanode', 'component'],
-            ['component', 'metanode']
-        ])('write-protects %s inside a linked %s and shows warning', (containerType, insideLinkedType) => {
-            workflow.parents.push({ linked: true, containerType: insideLinkedType });
-            workflow.info.containerType = containerType;
-            doShallowMount();
-
-            expect(wrapper.find('.read-only').exists()).toBe(true);
-
-            const notification = wrapper.find('.type-notification').find('span');
-            expect(notification.text())
-                .toBe(`This is a ${containerType} inside a linked ${insideLinkedType} and cannot be edited.`);
-            expect(notification.text()).not.toContain(`This is a linked ${containerType}`);
-        });
-
-        it('shows decorator in streaming component', () => {
-            workflow.info.jobManager = 'test';
-            doShallowMount();
-            expect(wrapper.find('.streaming-decorator').exists()).toBe(true);
-        });
-    });
-
-    it('renders workflow annotations', () => {
-        const common = { bounds: { x: 0, y: 0, width: 42, height: 42 }, backgroundColor: '#fff', borderColor: '#000' };
-        workflow.workflowAnnotations = [
-            { ...common, id: 'back' },
-            { ...common, id: 'middle' },
-            { ...common, id: 'front' }
-        ];
-        doShallowMount();
-
-        let order = wrapper.findAllComponents(WorkflowAnnotation).wrappers.map(c => c.attributes().id);
-        expect(order).toEqual(['back', 'middle', 'front']);
-    });
-
-    it('renders metanode ports inside metanodes', () => {
-        workflow.info.containerType = 'metanode';
-        doShallowMount();
-
-        expect(wrapper.findComponent(MetaNodePortBars).exists()).toBe(true);
-    });
-
-    it('doesn’t render metanode ports by default', () => {
-        workflow.info.containerType = 'component';
-        doShallowMount();
-
-        expect(wrapper.findComponent(MetaNodePortBars).exists()).toBe(false);
     });
 
     describe('Zoom & Pan', () => {
