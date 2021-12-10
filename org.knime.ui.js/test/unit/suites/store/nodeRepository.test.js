@@ -92,7 +92,7 @@ describe('nodeRepository store', () => {
     });
 
     describe('getters', () => {
-        it('nodeSearching', () => {
+        it('returns proper values for nodeSearching', () => {
             expect(store.getters['nodeRepository/nodeSearching']).toBe(false);
             store.state.nodeRepository.query = 'value';
             expect(store.getters['nodeRepository/nodeSearching']).toBe(true);
@@ -188,11 +188,11 @@ describe('nodeRepository store', () => {
             expect(store.state.nodeRepository.nodesPerCategory).toStrictEqual(categories);
         });
 
-        it('set query', () => {
+        it('sets query', () => {
             store.commit('nodeRepository/setQuery', 'some value');
             expect(store.state.nodeRepository.query).toBe('some value');
         });
-        
+
         it('sets totalNumCategories', () => {
             store.commit('nodeRepository/setTotalNumCategories', 2);
             expect(store.state.nodeRepository.totalNumCategories).toEqual(2);
@@ -215,7 +215,7 @@ describe('nodeRepository store', () => {
                     'nodeRepository/setNodesPerCategories', getNodesGroupedByTagsResponse.selections, undefined
                 );
             });
-    
+
             it('gets all nodes', async () => {
                 await store.dispatch('nodeRepository/getAllNodes', true);
                 expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setCategoryPage', 1, undefined);
@@ -275,7 +275,7 @@ describe('nodeRepository store', () => {
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', searchNodesResponse.tags, undefined);
         });
 
-        it('update Query', async () => {
+        it('updates query', async () => {
             await store.dispatch('nodeRepository/updateQuery', 'some value');
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setQuery', 'some value', undefined);
             expect(dispatchSpy).toHaveBeenCalledWith(
