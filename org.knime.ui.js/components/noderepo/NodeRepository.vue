@@ -25,10 +25,10 @@ export default {
             'scrollPosition'
         ]),
         ...mapGetters('nodeRepository', [
-            'nodeSearching'
+            'hasSearchParams'
         ]),
         categoriesDisplayed() {
-            if (this.nodeSearching) {
+            if (this.hasSearchParams) {
                 const result = {
                     nodes: this.nodes
                 };
@@ -38,7 +38,7 @@ export default {
         },
         breadcrumbItems() {
             let items = [{ text: 'Repository' }];
-            if (this.nodeSearching) {
+            if (this.hasSearchParams) {
                 items[0].id = 'clear';
                 items.push({ text: 'Results' });
             }
@@ -99,7 +99,7 @@ export default {
         <NodeSearcher />
       </div>
       <CloseableTagList
-        v-if="nodeSearching"
+        v-if="hasSearchParams"
         :selected-tags="selectedTags"
         :tags="unselectedTags"
         @click="toggleTag"
@@ -112,7 +112,7 @@ export default {
       @save-position="updateScrollPosition"
     >
       <div
-        v-if="nodeSearching && !nodes.length"
+        v-if="hasSearchParams && !nodes.length"
         class="no-matching-search repo-content"
       >
         No node or component matching for: {{ query }}

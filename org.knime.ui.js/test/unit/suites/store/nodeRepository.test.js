@@ -92,14 +92,14 @@ describe('nodeRepository store', () => {
     });
 
     describe('getters', () => {
-        it('returns proper values for nodeSearching', () => {
-            expect(store.getters['nodeRepository/nodeSearching']).toBe(false);
+        it('returns proper values for hasSearchParams', () => {
+            expect(store.getters['nodeRepository/hasSearchParams']).toBe(false);
             store.state.nodeRepository.query = 'value';
-            expect(store.getters['nodeRepository/nodeSearching']).toBe(true);
+            expect(store.getters['nodeRepository/hasSearchParams']).toBe(true);
             store.state.nodeRepository.selectedTags = ['myTag1'];
-            expect(store.getters['nodeRepository/nodeSearching']).toBe(true);
+            expect(store.getters['nodeRepository/hasSearchParams']).toBe(true);
             store.state.nodeRepository.query = '';
-            expect(store.getters['nodeRepository/nodeSearching']).toBe(true);
+            expect(store.getters['nodeRepository/hasSearchParams']).toBe(true);
         });
     });
 

@@ -23,7 +23,7 @@ export const state = () => ({
 });
 
 export const getters = {
-    nodeSearching: state => state.query !== '' || state.selectedTags.length > 0
+    hasSearchParams: state => state.query !== '' || state.selectedTags.length > 0
 };
 
 export const actions = {
@@ -63,7 +63,7 @@ export const actions = {
      */
     async searchNodes({ commit, state, dispatch, getters }, append = false) {
         // only do request if we search for something
-        if (!getters.nodeSearching) {
+        if (!getters.hasSearchParams) {
             // clear old results
             dispatch('clearSearchResults');
             return;
