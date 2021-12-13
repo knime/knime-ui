@@ -67,16 +67,9 @@ export default {
                 this.selectTag(tag.text);
             }
         },
-        clearSelectedTags() {
-            this.$store.dispatch('nodeRepository/clearSelectedTags');
-        },
-        clearNodeSearching() {
-            this.$store.dispatch('nodeRepository/updateQuery', '');
-        },
         onBreadcrumbClick(e) {
             if (e.id === 'clear') {
-                this.clearSelectedTags();
-                this.clearNodeSearching();
+                this.$store.dispatch('nodeRepository/clearSearchParams');
             }
         },
         lazyLoadCategories() {

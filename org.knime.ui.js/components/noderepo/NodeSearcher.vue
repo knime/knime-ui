@@ -5,6 +5,7 @@ import LensIcon from '~/webapps-common/ui/assets/img/icons/lens.svg?inline';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 
 import { mapState } from 'vuex';
+import { debounce } from 'lodash';
 
 export default {
     components: {
@@ -17,11 +18,16 @@ export default {
     },
     methods: {
         clearSearch() {
+            // only clear the search query - tags will be kept
             this.$store.dispatch('nodeRepository/updateQuery', '');
             this.$refs.searchInput.focus();
         },
+        updateQueryDebounce: debounce(($store, value) => {
+            $store.dispatch('nodeRepository/updateQuery', value);
+            // eslint-disable-next-line no-magic-numbers
+        }, 200, { leading: true, trailing: true }),
         updateQuery(e) {
-            this.$store.dispatch('nodeRepository/updateQuery', e.target.value);
+            this.updateQueryDebounce(this.$store, e.target.value);
         }
     }
 

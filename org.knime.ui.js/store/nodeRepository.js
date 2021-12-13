@@ -61,7 +61,13 @@ export const actions = {
      *      should be cleared (for a new search).
      * @returns {Promise}
      */
-    async searchNodes({ commit, state }, append = false) {
+    async searchNodes({ commit, state, dispatch, getters }, append = false) {
+        // only do request if we search for something
+        if (!getters.nodeSearching) {
+            // clear old results
+            dispatch('clearSearchResults');
+            return;
+        }
         if (append) {
             commit('setNodeSearchPage', state.nodeSearchPage + 1);
         } else {
@@ -83,6 +89,7 @@ export const actions = {
         }
         commit('setTags', res.tags);
     },
+
     /**
      * Update the value of the single search node query
      *
@@ -93,6 +100,28 @@ export const actions = {
     async updateQuery({ commit, dispatch }, value) {
         commit('setQuery', value);
         await dispatch('searchNodes');
+    },
+
+    /**
+     * Clear search parameter (query and selectedTags) and results
+     *
+     * @param {*} context - Vuex context.
+     * @returns {undefined}
+     */
+    clearSearchParams({ commit, dispatch }) {
+        commit('setSelectedTags', []);
+        commit('setQuery', '');
+        dispatch('clearSearchResults');
+    },
+
+    /**
+     * Clear search results (nodes and tags)
+     * @param {*} context - Vuex context.
+     * @returns {undefined}
+     */
+    clearSearchResults({ commit }) {
+        commit('setNodes', []);
+        commit('setTags', []);
     },
 
     /**
@@ -127,17 +156,6 @@ export const actions = {
     deselectTag({ dispatch, commit }, tag) {
         commit('removeSelectedTag', tag);
         dispatch('searchNodes');
-    },
-
-    /**
-     * Clear all tag filters.
-     *
-     * @param {*} context - Vuex context.
-     * @returns {undefined}
-     */
-    clearSelectedTags({ dispatch, commit }) {
-        commit('setSelectedTags', []);
-        dispatch('getAllNodes', false);
     }
 };
 
@@ -149,7 +167,7 @@ export const mutations = {
     setNodeSearchPage(state, pageNumber) {
         state.nodeSearchPage = pageNumber;
     },
-    
+
     setTotalNumNodes(state, totalNumNodes) {
         state.totalNumNodes = totalNumNodes;
     },

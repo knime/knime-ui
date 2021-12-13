@@ -240,7 +240,14 @@ describe('nodeRepository store', () => {
             });
         });
 
+        it('clears search results on empty parameters (tags and query)', async () => {
+            await store.dispatch('nodeRepository/searchNodes');
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', [], undefined);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', [], undefined);
+        });
+
         it('searches for nodes', async () => {
+            store.commit('nodeRepository/setQuery', 'lookup');
             await store.dispatch('nodeRepository/searchNodes');
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
             expect(searchNodesMock).toHaveBeenCalledWith({
@@ -248,7 +255,7 @@ describe('nodeRepository store', () => {
                 fullTemplateInfo: true,
                 nodeLimit: 21,
                 nodeOffset: 0,
-                query: '',
+                query: 'lookup',
                 tags: []
             });
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTotalNumNodes',
@@ -259,6 +266,7 @@ describe('nodeRepository store', () => {
         });
 
         it('searches for nodes with append=true', async () => {
+            store.commit('nodeRepository/setQuery', 'lookup');
             await store.dispatch('nodeRepository/searchNodes', true);
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 1, undefined);
             expect(searchNodesMock).toHaveBeenCalledWith({
@@ -266,7 +274,7 @@ describe('nodeRepository store', () => {
                 fullTemplateInfo: true,
                 nodeLimit: 21,
                 nodeOffset: 21,
-                query: '',
+                query: 'lookup',
                 tags: []
             });
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTotalNumNodes',
@@ -300,10 +308,17 @@ describe('nodeRepository store', () => {
             expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
         });
 
-        it('clears selected tags', () => {
-            store.dispatch('nodeRepository/clearSelectedTags');
+        it('clears search params (tags and query)', () => {
+            store.dispatch('nodeRepository/clearSearchParams');
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setSelectedTags', [], undefined);
-            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/getAllNodes', false);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setQuery', '', undefined);
+            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/clearSearchResults', undefined);
+        });
+
+        it('clears search results', () => {
+            store.dispatch('nodeRepository/clearSearchResults');
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', [], undefined);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', [], undefined);
         });
     });
 });

@@ -12,7 +12,7 @@ import { getters } from '~/store/nodeRepository.js';
 
 describe('NodeRepository', () => {
     let mocks, doShallowMount, wrapper, $store, searchNodesMock, searchNodesNextPageMock,
-        selectTagMock, deselectTagMock, getAllNodesMock, clearSelectedTagsMock, setScrollPositionMock, updateQueryMock;
+        selectTagMock, deselectTagMock, getAllNodesMock, clearSearchParamsMock, setScrollPositionMock, updateQueryMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -26,7 +26,7 @@ describe('NodeRepository', () => {
         selectTagMock = jest.fn();
         deselectTagMock = jest.fn();
         getAllNodesMock = jest.fn();
-        clearSelectedTagsMock = jest.fn();
+        clearSearchParamsMock = jest.fn();
         setScrollPositionMock = jest.fn();
         updateQueryMock = jest.fn();
 
@@ -62,7 +62,7 @@ describe('NodeRepository', () => {
                     selectTag: selectTagMock,
                     deselectTag: deselectTagMock,
                     getAllNodes: getAllNodesMock,
-                    clearSelectedTags: clearSelectedTagsMock,
+                    clearSearchParams: clearSearchParamsMock,
                     updateQuery: updateQueryMock
                 },
                 getters,
@@ -137,8 +137,7 @@ describe('NodeRepository', () => {
             expect(wrapper.findComponent(ActionBreadcrumb).props('items'))
                 .toEqual([{ id: 'clear', text: 'Repository' }, { text: 'Results' }]);
             wrapper.findComponent(ActionBreadcrumb).vm.$emit('click', { id: 'clear' });
-            expect(clearSelectedTagsMock).toHaveBeenCalled();
-            expect(updateQueryMock).toHaveBeenCalledWith(expect.anything(), '');
+            expect(clearSearchParamsMock).toHaveBeenCalled();
         });
 
         it('de-selects tag by clicking an specific tag', () => {
