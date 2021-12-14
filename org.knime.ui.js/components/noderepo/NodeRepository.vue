@@ -7,6 +7,9 @@ import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
 import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
 import CloseableTagList from '~/components/noderepo/CloseableTagList';
 
+import { debounce } from 'lodash';
+const SEARCH_THROTTLE = 100; // ms
+
 export default {
     components: {
         CloseableTagList,
@@ -46,7 +49,7 @@ export default {
             return items;
         },
         unselectedTags() {
-            return this.tags.filter((t) => !this.selectedTags.includes(t));
+            return this.tags.filter(tag => !this.selectedTags.includes(tag));
         },
         hasNoSearchResults() {
             return this.showSearchResults && this.nodes.length === 0;
@@ -61,17 +64,15 @@ export default {
         }
     },
     methods: {
-        selectTag(tag) {
-            this.$store.dispatch('nodeRepository/selectTag', tag);
-        },
-        deselectTag(tag) {
-            this.$store.dispatch('nodeRepository/deselectTag', tag);
-        },
-        toggleTag(tag) {
-            if (tag.selected) {
-                this.deselectTag(tag.text);
+        updateSearchQuery: debounce(function (value) {
+            // eslint-disable-next-line no-invalid-this
+            this.$store.dispatch('nodeRepository/updateQuery', value);
+        }, SEARCH_THROTTLE, { trailing: true }),
+        toggleTag({ selected, text }) {
+            if (selected) {
+                this.$store.dispatch('nodeRepository/deselectTag', text);
             } else {
-                this.selectTag(tag.text);
+                this.$store.dispatch('nodeRepository/selectTag', text);
             }
         },
         onBreadcrumbClick(e) {
@@ -103,7 +104,10 @@ export default {
           @click="onBreadcrumbClick"
         />
         <hr>
-        <NodeSearcher />
+        <NodeSearcher
+          :value="query"
+          @input="updateSearchQuery"
+        />
       </div>
       <CloseableTagList
         v-if="showSearchResults"

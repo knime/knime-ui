@@ -4,33 +4,25 @@ import LensIcon from '~/webapps-common/ui/assets/img/icons/lens.svg?inline';
 
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 
-import { mapState } from 'vuex';
-import { debounce } from 'lodash';
-
-const DEBOUNCE_WAIT = 100; // ms
-
+// TODO: description of component
 export default {
     components: {
         FunctionButton,
         CloseIcon,
         LensIcon
     },
-    computed: {
-        ...mapState('nodeRepository', ['query'])
+    props: {
+        value: {
+            type: String,
+            default: ''
+        }
     },
     methods: {
         clearSearch() {
             // only clear the search query - tags will be kept
-            this.$store.dispatch('nodeRepository/updateQuery', '');
+            this.$emit('input', '');
             this.$refs.searchInput.focus();
-        },
-        updateQuery: debounce(function (e) {
-            // eslint-disable-next-line no-invalid-this
-            this.$store.dispatch('nodeRepository/updateQuery', e.target.value);
-        }, DEBOUNCE_WAIT, {
-            leading: true,
-            trailing: true
-        })
+        }
     }
 
 };
@@ -41,6 +33,7 @@ export default {
     id="node-search"
     class="node-search"
   >
+    <!-- TODO: this shouldn't be a deactivated function button, just an icon -->
     <FunctionButton
       class="lens-icon"
     >
@@ -48,10 +41,10 @@ export default {
     </FunctionButton>
     <input
       ref="searchInput"
-      :value="query"
+      :value="value"
       placeholder="Search nodes and components"
       type="text"
-      @input="updateQuery"
+      @input="$emit('input', $event.target.value)"
     >
     <FunctionButton
       class="clear-search"
@@ -95,23 +88,23 @@ export default {
       stroke-width: calc(32px / 12);
     }
   }
+}
 
-  & input {
-    width: 100%;
-    height: 100%;
-    border: 0;
-    padding-right: 6px;
-    color: var(--knime-masala);
-    background-color: transparent;
-    font-size: 17px;
-    font-weight: 400;
+input {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding-right: 6px;
+  color: var(--knime-masala);
+  background-color: transparent;
+  font-size: 17px;
+  font-weight: 400;
 
-    &:focus {
-      outline: none;
-    }
+  &:focus {
+    outline: none;
   }
 
-  & input:placeholder-shown + button {
+  &:placeholder-shown + button {
     visibility: hidden;
   }
 }

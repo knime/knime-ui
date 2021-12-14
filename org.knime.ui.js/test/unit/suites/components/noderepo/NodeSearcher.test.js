@@ -1,6 +1,4 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
-import Vuex from 'vuex';
+import { shallowMount } from '@vue/test-utils';
 
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 import LensIcon from '~/webapps-common/ui/assets/img/icons/lens.svg?inline';
@@ -9,33 +7,19 @@ import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import NodeSearcher from '~/components/noderepo/NodeSearcher';
 
 describe('NodeRepositoryCategory', () => {
-    let mocks, doShallowMount, wrapper, $store,
-        updateQueryMock;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let doShallowMount, wrapper;
 
     beforeEach(() => {
         wrapper = null;
-        updateQueryMock = jest.fn();
 
-        $store = mockVuexStore({
-            nodeRepository: {
-                actions: {
-                    updateQuery: updateQueryMock
-                }
-            }
-        });
         doShallowMount = () => {
-            mocks = { $store };
-            wrapper = shallowMount(NodeSearcher, { mocks });
+            wrapper = shallowMount(NodeSearcher);
         };
     });
 
     it('renders', () => {
         doShallowMount();
+
         const functionButtons = wrapper.findAllComponents(FunctionButton);
         expect(functionButtons.length).toBe(2);
         expect(functionButtons.wrappers[0].findComponent(LensIcon).exists()).toBe(true);
@@ -46,25 +30,31 @@ describe('NodeRepositoryCategory', () => {
     describe('searching event', () => {
         it('searches on input in search box', () => {
             doShallowMount();
+
             const input = wrapper.find('input');
             input.setValue('some node');
-            expect(updateQueryMock).toHaveBeenCalled();
+
+            expect(wrapper.emitted('input')).toStrictEqual([['some node']]);
         });
 
         it('ignores clicks on lens button', () => {
             doShallowMount();
+
             const lensButton = wrapper.findAllComponents(FunctionButton).wrappers[0];
             expect(lensButton.findComponent(LensIcon).exists()).toBe(true);
+
             lensButton.vm.$emit('click');
-            expect(updateQueryMock).not.toHaveBeenCalled();
+            expect(wrapper.emitted('input')).toBeFalsy();
         });
 
         it('clears on clear button click', () => {
             doShallowMount();
+
             const closeButton = wrapper.findAllComponents(FunctionButton).wrappers[1];
             expect(closeButton.findComponent(CloseIcon).exists()).toBe(true);
+
             closeButton.vm.$emit('click');
-            expect(updateQueryMock).toHaveBeenCalled();
+            expect(wrapper.emitted('input')).toStrictEqual([['']]);
         });
     });
 });
