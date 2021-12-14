@@ -7,6 +7,8 @@ import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import { mapState } from 'vuex';
 import { debounce } from 'lodash';
 
+const DEBOUNCE_WAIT = 100; // ms
+
 export default {
     components: {
         FunctionButton,
@@ -22,13 +24,13 @@ export default {
             this.$store.dispatch('nodeRepository/updateQuery', '');
             this.$refs.searchInput.focus();
         },
-        updateQueryDebounce: debounce(($store, value) => {
-            $store.dispatch('nodeRepository/updateQuery', value);
-            // eslint-disable-next-line no-magic-numbers
-        }, 200, { leading: true, trailing: true }),
-        updateQuery(e) {
-            this.updateQueryDebounce(this.$store, e.target.value);
-        }
+        updateQuery: debounce(function (e) {
+            // eslint-disable-next-line no-invalid-this
+            this.$store.dispatch('nodeRepository/updateQuery', e.target.value);
+        }, DEBOUNCE_WAIT, {
+            leading: true,
+            trailing: true
+        })
     }
 
 };
