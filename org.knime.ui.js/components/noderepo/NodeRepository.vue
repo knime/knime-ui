@@ -19,35 +19,13 @@ export default {
         ScrollViewContainer
     },
     computed: {
-        ...mapState('nodeRepository', [
-            'nodes',
-            'selectedTags',
-            'tags',
-            'nodesPerCategory',
-            'query',
-            'scrollPosition',
-            'isLoadingSearchResults'
-        ]),
+        ...mapState('nodeRepository', ['nodes', 'selectedTags', 'tags', 'nodesPerCategory', 'query', 'scrollPosition',
+            'isLoadingSearchResults']),
         ...mapGetters('nodeRepository', [
             'hasSearchParams'
         ]),
-        categoriesDisplayed() {
-            if (this.showSearchResults) {
-                const result = {
-                    nodes: this.nodes
-                };
-                return [result];
-            }
-            return this.nodesPerCategory;
-        },
-        breadcrumbItems() {
-            let items = [{ text: 'Repository' }];
-            if (this.showSearchResults) {
-                items[0].id = 'clear';
-                items.push({ text: 'Results' });
-            }
-            return items;
-        },
+
+        /* Search and Filter */
         unselectedTags() {
             return this.tags.filter(tag => !this.selectedTags.includes(tag));
         },
@@ -56,6 +34,20 @@ export default {
         },
         showSearchResults() {
             return this.hasSearchParams && !this.isLoadingSearchResults;
+        },
+
+        /* Appearance */
+        breadcrumbItems() {
+            // If search results are shown, it's possible to navigate back
+            return this.showSearchResults
+                ? [{ text: 'Repository', id: 'clear' }, { text: 'Results' }]
+                : [{ text: 'Repository' }];
+        },
+        categoriesDisplayed() {
+            // Display either linear search results or nodes grouped by category
+            return this.showSearchResults
+                ? [{ nodes: this.nodes }]
+                : this.nodesPerCategory;
         }
     },
     mounted() {
@@ -64,10 +56,12 @@ export default {
         }
     },
     methods: {
+        /* Search and Filter */
         updateSearchQuery: debounce(function (value) {
             // eslint-disable-next-line no-invalid-this
             this.$store.dispatch('nodeRepository/updateQuery', value);
         }, SEARCH_THROTTLE, { trailing: true }),
+
         toggleTag({ selected, text }) {
             if (selected) {
                 this.$store.dispatch('nodeRepository/deselectTag', text);
@@ -75,16 +69,21 @@ export default {
                 this.$store.dispatch('nodeRepository/selectTag', text);
             }
         },
+        
+        /* Grouped by Category */
+        loadMoreResults() {
+            if (!this.showSearchResults) {
+                this.$store.dispatch('nodeRepository/getAllNodes', true);
+            }
+        },
+
+        /* Navigation */
         onBreadcrumbClick(e) {
             if (e.id === 'clear') {
                 this.$store.dispatch('nodeRepository/clearSearchParams');
             }
         },
-        lazyLoadCategories() {
-            if (this.selectedTags.length === 0) {
-                this.$store.dispatch('nodeRepository/getAllNodes', true);
-            }
-        },
+
         // TODO: NXT-844 why do we save the scroll position instead of using keep-alive for the repo?
         // Also currently the NodeRepository isn't destroyed upon closing
         updateScrollPosition(position) {
@@ -119,7 +118,7 @@ export default {
     </div>
     <ScrollViewContainer
       :initial-position="scrollPosition"
-      @scroll-bottom="lazyLoadCategories"
+      @scroll-bottom="loadMoreResults"
       @save-position="updateScrollPosition"
     >
       <div
