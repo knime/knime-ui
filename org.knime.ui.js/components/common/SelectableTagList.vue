@@ -111,7 +111,7 @@ export default {
     -->
     <Tag
       v-if="hasMoreTags"
-      class="more-tags"
+      class="more-tags clickable"
       @click.native.prevent="onShowMore"
     >
       {{ moreDisplayText }}
@@ -133,14 +133,27 @@ export default {
       stroke: var(--knime-white);
     }
 
-    &.clickable:hover {
-      color: var(--knime-dove-gray);
-      background-color: transparent;
-      text-decoration: line-through;
-      border-color: var(--knime-dove-gray);
+    &.clickable {
+      &:hover {
+        color: var(--knime-dove-gray);
+        background-color: transparent;
+        text-decoration: line-through;
+        border-color: var(--knime-dove-gray);
 
-      & svg {
-        stroke: var(--knime-dove-gray);
+        & svg {
+          stroke: var(--knime-dove-gray);
+        }
+      }
+
+      &:active {
+        color: var(--knime-masala);
+        background-color: transparent;
+        text-decoration: line-through;
+        border-color: var(--knime-masala);
+
+        & svg {
+          stroke: var(--knime-masala);
+        }
       }
     }
   }
