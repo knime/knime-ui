@@ -22,13 +22,14 @@ export default {
             'tags',
             'nodesPerCategory',
             'query',
-            'scrollPosition'
+            'scrollPosition',
+            'isLoadingSearchResults'
         ]),
         ...mapGetters('nodeRepository', [
             'hasSearchParams'
         ]),
         categoriesDisplayed() {
-            if (this.hasSearchParams) {
+            if (this.showSearchResults) {
                 const result = {
                     nodes: this.nodes
                 };
@@ -38,7 +39,7 @@ export default {
         },
         breadcrumbItems() {
             let items = [{ text: 'Repository' }];
-            if (this.hasSearchParams) {
+            if (this.showSearchResults) {
                 items[0].id = 'clear';
                 items.push({ text: 'Results' });
             }
@@ -46,6 +47,12 @@ export default {
         },
         unselectedTags() {
             return this.tags.filter((t) => !this.selectedTags.includes(t));
+        },
+        hasNoSearchResults() {
+            return this.showSearchResults && this.nodes.length === 0;
+        },
+        showSearchResults() {
+            return this.hasSearchParams && !this.isLoadingSearchResults;
         }
     },
     mounted() {
@@ -99,7 +106,7 @@ export default {
         <NodeSearcher />
       </div>
       <CloseableTagList
-        v-if="hasSearchParams"
+        v-if="showSearchResults"
         :selected-tags="selectedTags"
         :tags="unselectedTags"
         @click="toggleTag"
@@ -112,7 +119,7 @@ export default {
       @save-position="updateScrollPosition"
     >
       <div
-        v-if="hasSearchParams && !nodes.length"
+        v-if="hasNoSearchResults"
         class="no-matching-search repo-content"
       >
         No node or component matching for: {{ query }}

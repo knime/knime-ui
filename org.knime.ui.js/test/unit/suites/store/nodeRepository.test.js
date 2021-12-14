@@ -85,6 +85,7 @@ describe('nodeRepository store', () => {
             selectedTags: [],
             tags: [],
             query: '',
+            isLoadingSearchResults: false,
             nodeSearchPage: 0,
             categoryPage: 0,
             scrollPosition: 0
@@ -250,6 +251,7 @@ describe('nodeRepository store', () => {
             store.commit('nodeRepository/setQuery', 'lookup');
             await store.dispatch('nodeRepository/searchNodes');
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setLoadingSearchResults', true, undefined);
             expect(searchNodesMock).toHaveBeenCalledWith({
                 allTagsMatch: true,
                 fullTemplateInfo: true,
@@ -263,6 +265,7 @@ describe('nodeRepository store', () => {
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes',
                 searchNodesResponse.nodes, undefined);
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', searchNodesResponse.tags, undefined);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setLoadingSearchResults', false, undefined);
         });
 
         it('searches for nodes with append=true', async () => {

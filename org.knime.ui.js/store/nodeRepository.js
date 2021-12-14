@@ -19,7 +19,8 @@ export const state = () => ({
     query: '',
     nodeSearchPage: 0,
     categoryPage: 0,
-    scrollPosition: 0
+    scrollPosition: 0,
+    isLoadingSearchResults: false
 });
 
 export const getters = {
@@ -73,6 +74,7 @@ export const actions = {
         } else {
             commit('setNodeSearchPage', 0);
         }
+        commit('setLoadingSearchResults', true);
         let res = await searchNodes({
             query: state.query,
             tags: state.selectedTags,
@@ -88,6 +90,7 @@ export const actions = {
             commit('setNodes', res.nodes);
         }
         commit('setTags', res.tags);
+        commit('setLoadingSearchResults', false);
     },
 
     /**
@@ -180,6 +183,10 @@ export const mutations = {
 
     setNodes(state, nodes) {
         state.nodes = nodes;
+    },
+
+    setLoadingSearchResults(state, isLoading) {
+        state.isLoadingSearchResults = isLoading;
     },
 
     addTag(state, tag) {
