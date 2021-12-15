@@ -10,6 +10,21 @@ import NodeSearcher from '~/components/noderepo/NodeSearcher';
 import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
 import { getters } from '~/store/nodeRepository.js';
 
+jest.mock('lodash', () => ({
+    throttle(func) {
+        return function (...args) {
+            // eslint-disable-next-line no-invalid-this
+            return func.apply(this, args);
+        };
+    },
+    debounce(func) {
+        return function (...args) {
+            // eslint-disable-next-line no-invalid-this
+            return func.apply(this, args);
+        };
+    }
+}));
+
 describe('NodeRepository', () => {
     let mocks, doShallowMount, wrapper, $store, searchNodesMock, searchNodesNextPageMock,
         setSelectedTagsMock, getAllNodesMock, clearSearchParamsMock, setScrollPositionMock, updateQueryMock;
@@ -114,14 +129,14 @@ describe('NodeRepository', () => {
             expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
         });
 
-        it('Renders only Filter CloseableTagList (first list) when a single search is in progress', () => {
+        it('renders only Filter CloseableTagList (first list) when a single search is in progress', () => {
             $store.state.nodeRepository.query = 'some node';
             $store.state.nodeRepository.selectedTags = [];
             doShallowMount();
             expect(wrapper.findComponent(CloseableTagList).exists()).toBe(true);
         });
 
-        it('Select tag on click', () => {
+        it('selects tag on click', () => {
             doShallowMount();
             wrapper.findComponent(CloseableTagList).vm.$emit('input', ['myTag1', 'myTag2']);
             expect(setSelectedTagsMock).toHaveBeenCalledWith(expect.anything(), ['myTag1', 'myTag2']);
@@ -139,6 +154,12 @@ describe('NodeRepository', () => {
     });
 
     describe('Search for nodes', () => {
+        it('updates query on NodeSearcher input', () => {
+            doShallowMount();
+            wrapper.findComponent(NodeSearcher).vm.$emit('input', 'myquery');
+            expect(updateQueryMock).toHaveBeenCalledWith(expect.anything(), 'myquery');
+        });
+
         it('links back to repository view on search/filter results', () => {
             const singleSearchText = 'some node';
             $store.state.nodeRepository.query = singleSearchText;
