@@ -79,11 +79,11 @@ describe('WorkflowToolbar.vue', () => {
     });
 
     describe('buttons', () => {
-        let buttonArray = ['undo', 'redo', 'execute', 'cancel', 'reset', 'delete'];
-
         describe('ALL - no selection', () => {
             it('deactivates buttons by default', () => {
+                let buttonArray = ['undo', 'redo', 'execute', 'cancel', 'reset'];
                 doShallowMount();
+
                 let buttons = wrapper.findAllComponents(ToolbarButton);
                 buttonArray.forEach((button, index) => {
                     expect(buttons.at(index).attributes('disabled')).toBeTruthy();
