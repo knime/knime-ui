@@ -23,15 +23,6 @@ export default {
         items: {
             type: Array,
             default: () => []
-        },
-        /**
-         * focus and hover style can be switched by changing this value:
-         * true - darker background, normal font
-         * false - transparent background, bold font
-         */
-        greyStyle: {
-            type: Boolean,
-            default: false
         }
     },
     computed: {
@@ -64,8 +55,9 @@ export default {
 
 <template>
   <Breadcrumb
+    v-bind="$attrs"
     :items="breadcrumbItems"
-    :grey-style="greyStyle"
+    v-on="$listeners"
     @click.capture.prevent.stop.native="onClick"
   />
 </template>

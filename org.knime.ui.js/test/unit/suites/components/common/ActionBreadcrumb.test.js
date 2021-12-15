@@ -20,6 +20,17 @@ describe('ActionBreadcrumb.vue', () => {
         expect(wrapper.findComponent(Breadcrumb).props('items')).toStrictEqual([]);
     });
 
+    it('forwards attrs/props to Breadcrumb', () => {
+        props = {
+            greyStyle: true,
+            someOtherAttr: 'value'
+        };
+        doShallowMount();
+
+        expect(wrapper.findComponent(Breadcrumb).props('greyStyle')).toStrictEqual(true);
+        expect(wrapper.findComponent(Breadcrumb).vm.$attrs.someOtherAttr).toStrictEqual('value');
+    });
+
     it('renders default', () => {
         props = {
             items: [{
