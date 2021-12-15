@@ -1,11 +1,9 @@
 import { shallowMount, mount } from '@vue/test-utils';
-import SelectableTagList from '~/components/common/SelectableTagList';
+import SelectableTagList, { defaultInitialTagCount } from '~/components/common/SelectableTagList';
 import Tag from '~/webapps-common/ui/components/Tag';
 
 const sevenTags = ['tag1', 'tag2', 'tagedyTag', 'tagMaster', 'bestTagEver', 'moarTags', 'blub'];
 const threeTags = ['sel1', 'nice', 'car'];
-
-const defaultNumInitialTags = 5;
 
 const checkTagTexts = (wrappers, expectedTags, numInitialTags) => {
     if (expectedTags.length > numInitialTags) {
@@ -40,7 +38,7 @@ describe('SelectableTagList.vue', () => {
         });
 
         let tagWrappers = wrapper.findAllComponents(Tag);
-        checkTagTexts(tagWrappers, threeTags, defaultNumInitialTags);
+        checkTagTexts(tagWrappers, threeTags, defaultInitialTagCount);
     });
 
     it('does not render more than max number of tags', () => {
@@ -49,7 +47,7 @@ describe('SelectableTagList.vue', () => {
         });
 
         let tagWrappers = wrapper.findAllComponents(Tag);
-        checkTagTexts(tagWrappers, sevenTags, defaultNumInitialTags);
+        checkTagTexts(tagWrappers, sevenTags, defaultInitialTagCount);
     });
 
     it('honors max number of tags configurable', () => {
@@ -67,7 +65,7 @@ describe('SelectableTagList.vue', () => {
         });
 
         let tagWrappers = wrapper.findAllComponents(Tag);
-        checkTagTexts(tagWrappers, sevenTags, defaultNumInitialTags);
+        checkTagTexts(tagWrappers, sevenTags, defaultInitialTagCount);
 
         // last tag is expander button
         await wrapper.find('.more-tags').trigger('click');
@@ -78,7 +76,7 @@ describe('SelectableTagList.vue', () => {
         const wrapper = shallowMount(SelectableTagList, {
             propsData: {
                 tags: sevenTags,
-                selectedTags: threeTags
+                value: threeTags
             }
         });
 
@@ -89,7 +87,7 @@ describe('SelectableTagList.vue', () => {
         const wrapper = shallowMount(SelectableTagList, {
             propsData: {
                 tags: threeTags,
-                selectedTags: sevenTags
+                value: sevenTags
             }
         });
 
@@ -100,40 +98,40 @@ describe('SelectableTagList.vue', () => {
         const wrapper = shallowMount(SelectableTagList, {
             propsData: {
                 tags: threeTags,
-                selectedTags: sevenTags
+                value: sevenTags
             }
         });
-        expect(wrapper.findAllComponents(Tag).length).toBe(defaultNumInitialTags + 1); // one is + sign
+        expect(wrapper.findAllComponents(Tag).length).toBe(defaultInitialTagCount + 1); // one is + sign
         await wrapper.setProps({ showAll: true });
         // eslint-disable-next-line no-magic-numbers
         expect(wrapper.findAllComponents(Tag).length).toBe(threeTags.length + sevenTags.length);
     });
 
-    describe('click events', () => {
-        it('emits click on selected tag', async () => {
+    describe('selection of tags', () => {
+        it('de-selects selected tag', async () => {
             const wrapper = mount(SelectableTagList, {
                 propsData: {
                     tags: sevenTags,
-                    selectedTags: threeTags
+                    value: threeTags
                 }
             });
             let tagWrappers = wrapper.findAllComponents(Tag);
             // click selected tag
-            await tagWrappers.at(0).trigger('click');
-            expect(wrapper.emitted('click')[0][0]).toStrictEqual({ selected: true, text: 'sel1' });
+            await tagWrappers.at(0).trigger('click'); // tag1
+            expect(wrapper.emitted('input')[0][0]).toStrictEqual(['nice', 'car']);
         });
 
-        it('emits click on un-selected tag', async () => {
+        it('selectes unselected tag on click', async () => {
             const wrapper = mount(SelectableTagList, {
                 propsData: {
                     tags: sevenTags,
-                    selectedTags: ['zero']
+                    value: ['zero']
                 }
             });
             let tagWrappers = wrapper.findAllComponents(Tag);
             // click un-selected tag
             await tagWrappers.at(1).trigger('click');
-            expect(wrapper.emitted('click')[0][0]).toStrictEqual({ selected: false, text: 'tag1' });
+            expect(wrapper.emitted('input')[0][0]).toStrictEqual(['zero', 'tag1']);
         });
 
         it('emits show-all on + button', async () => {
@@ -142,12 +140,12 @@ describe('SelectableTagList.vue', () => {
             });
 
             let tagWrappers = wrapper.findAllComponents(Tag);
-            checkTagTexts(tagWrappers, sevenTags, defaultNumInitialTags);
+            checkTagTexts(tagWrappers, sevenTags, defaultInitialTagCount);
 
             // last tag is expander button
             await wrapper.find('.more-tags').trigger('click');
             expect(wrapper.findAllComponents(Tag).length).toEqual(sevenTags.length);
-            expect(wrapper.emitted('show-more')[0][0]).toBe(true);
+            expect(wrapper.emitted('show-more')[0]).toStrictEqual([]);
         });
     });
 });

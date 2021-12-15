@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
@@ -157,12 +158,6 @@ describe('nodeRepository store', () => {
             expect(store.state.nodeRepository.selectedTags).toEqual(['myTag', 'myTag2']);
         });
 
-        it('removes selectedTag', () => {
-            store.state.nodeRepository.selectedTags = ['myTag'];
-            store.commit('nodeRepository/removeSelectedTag', 'myTag');
-            expect(store.state.nodeRepository.selectedTags).toEqual([]);
-        });
-
         it('sets selectedTags', () => {
             store.commit('nodeRepository/setSelectedTags', ['myTag', 'myTag2']);
             expect(store.state.nodeRepository.selectedTags).toEqual(['myTag', 'myTag2']);
@@ -197,6 +192,11 @@ describe('nodeRepository store', () => {
         it('sets totalNumCategories', () => {
             store.commit('nodeRepository/setTotalNumCategories', 2);
             expect(store.state.nodeRepository.totalNumCategories).toEqual(2);
+        });
+
+        it('sets scrollPosition', () => {
+            store.commit('nodeRepository/setScrollPosition', 22);
+            expect(store.state.nodeRepository.scrollPosition).toEqual(22);
         });
     });
 
@@ -305,9 +305,9 @@ describe('nodeRepository store', () => {
             expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
         });
 
-        it('deselects tag', () => {
-            store.dispatch('nodeRepository/deselectTag', 'myTag');
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/removeSelectedTag', 'myTag', undefined);
+        it('updates selectedTags', () => {
+            store.dispatch('nodeRepository/setSelectedTags', ['myTag', 'myTag2']);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setSelectedTags', ['myTag', 'myTag2'], undefined);
             expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
         });
 

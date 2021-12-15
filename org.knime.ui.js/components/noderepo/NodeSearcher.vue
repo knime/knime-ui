@@ -4,7 +4,10 @@ import LensIcon from '~/webapps-common/ui/assets/img/icons/lens.svg?inline';
 
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 
-// TODO: description of component
+/**
+ * Search input box for searches of nodes in the NodeRepository view of the sidebar.
+ * Implements the v-model pattern.
+ */
 export default {
     components: {
         FunctionButton,

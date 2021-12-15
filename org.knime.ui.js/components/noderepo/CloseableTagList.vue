@@ -25,7 +25,6 @@ export default {
     props: {
         /**
          * List of tags (Strings) to display. Not including selected ones.
-         * @type Array<String>
          */
         tags: {
             type: Array,
@@ -33,9 +32,8 @@ export default {
         },
         /**
          * List of selected tags (Strings) to display.
-         * @type Array<String>
          */
-        selectedTags: {
+        value: {
             type: Array,
             default: () => []
         }
@@ -47,11 +45,10 @@ export default {
     },
     computed: {
         numberOfInitialTags() {
-            const allTags = [...this.selectedTags, ...this.tags];
             let availableChars = maxLengthOfTagInChars * maxLinesOfTags;
             let tagsToShow = 0;
 
-            for (let tag of allTags) {
+            for (let tag of this.tags) {
                 availableChars -= tag.length;
                 if (availableChars > 0) {
                     tagsToShow++;
@@ -64,9 +61,9 @@ export default {
         }
     },
     methods: {
-        onClick(tag) {
+        onInput(value) {
             this.hideMore();
-            this.$emit('click', tag);
+            this.$emit('input', value);
         },
         hideMore() {
             this.displayAll = false;
@@ -87,11 +84,11 @@ export default {
       <SelectableTagList
         ref="tagList"
         :number-of-initial-tags="numberOfInitialTags"
-        :selected-tags="selectedTags"
+        :value="value"
         :tags="tags"
         :show-all="displayAll"
         @show-more="showMore"
-        @click="onClick"
+        @input="onInput"
       />
       <button
         v-if="displayAll"

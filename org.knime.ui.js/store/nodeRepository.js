@@ -150,15 +150,15 @@ export const actions = {
     },
 
     /**
-     * Remove a tag from the current tag filters.
+     * Update all selected tags
      *
      * @param {*} context - Vuex context.
-     * @param {String} tag - tag to remove.
+     * @param {Array<String>} tags - array of tags to set
      * @returns {undefined}
      */
-    deselectTag({ dispatch, commit }, tag) {
-        commit('removeSelectedTag', tag);
-        dispatch('searchNodes');
+    async setSelectedTags({ dispatch, commit }, tags) {
+        commit('setSelectedTags', tags);
+        await dispatch('searchNodes');
     }
 };
 
@@ -203,10 +203,6 @@ export const mutations = {
         if (!state.selectedTags.includes(tag)) {
             state.selectedTags.push(tag);
         }
-    },
-
-    removeSelectedTag(state, tag) {
-        state.selectedTags = state.selectedTags.filter(currentTag => currentTag !== tag);
     },
 
     setSelectedTags(state, selectedTags) {

@@ -16,7 +16,6 @@ localVue.directive('onClickaway', () => {
 const sevenTags = ['tag1', 'tag2', 'tagedyTag', 'tagMaster', 'bestTagEver', 'moarTags', 'blub'];
 const threeTags = ['sel1', 'nice', 'car'];
 
-
 describe('CloseableTagList.vue', () => {
     it('renders with empty tags', () => {
         const wrapper = shallowMount(CloseableTagList, { localVue });
@@ -27,19 +26,19 @@ describe('CloseableTagList.vue', () => {
         const wrapper = shallowMount(CloseableTagList, {
             propsData: {
                 tags: sevenTags,
-                selectedTags: threeTags
+                value: threeTags
             },
             localVue
         });
         expect(wrapper.findComponent(SelectableTagList).props('tags')).toBe(sevenTags);
-        expect(wrapper.findComponent(SelectableTagList).props('selectedTags')).toBe(threeTags);
+        expect(wrapper.findComponent(SelectableTagList).props('value')).toBe(threeTags);
     });
 
     it('@show-more event leads to displayAll update', async () => {
         const wrapper = shallowMount(CloseableTagList, {
             propsData: {
                 tags: sevenTags,
-                selectedTags: threeTags
+                value: threeTags
             },
             localVue
         });
@@ -55,7 +54,7 @@ describe('CloseableTagList.vue', () => {
         const wrapper = shallowMount(CloseableTagList, {
             propsData: {
                 tags: sevenTags,
-                selectedTags: threeTags
+                value: threeTags
             },
             localVue
         });
@@ -71,18 +70,18 @@ describe('CloseableTagList.vue', () => {
             const wrapper = shallowMount(CloseableTagList, {
                 propsData: {
                     tags: ['medium sized', 'tags that are', 'shown until the', 'space is gone', 'but', 'many', 'tags'],
-                    selectedTags: ['some selected ', 'medium sized tags', 'should be shown']
+                    value: ['some selected ', 'medium sized tags', 'should be shown']
                 },
                 localVue
             });
-            expect(wrapper.findComponent(SelectableTagList).props('numberOfInitialTags')).toBe(4);
+            expect(wrapper.findComponent(SelectableTagList).props('numberOfInitialTags')).toBe(6);
         });
 
         it('limits the number of initial tags to the maximum even if space is left', () => {
             const wrapper = shallowMount(CloseableTagList, {
                 propsData: {
                     tags: ['we', 'are', 'really', 'short', 'but', 'many', 'tags', 'bigger', 'then', '10'],
-                    selectedTags: ['some', 'short', 'tags']
+                    value: ['some', 'short', 'tags']
                 },
                 localVue
             });
@@ -97,7 +96,7 @@ describe('CloseableTagList.vue', () => {
                         'the longest tag you would imagine, but way looooooooooooooooooooooooooooooooooooooooooger' +
                         ' and it is even longer then that'
                     ],
-                    selectedTags: []
+                    value: []
                 },
                 localVue
             });
@@ -111,7 +110,7 @@ describe('CloseableTagList.vue', () => {
             const wrapper = shallowMount(CloseableTagList, {
                 propsData: {
                     tags: sevenTags,
-                    selectedTags: threeTags
+                    value: threeTags
                 },
                 localVue
             });
@@ -129,13 +128,13 @@ describe('CloseableTagList.vue', () => {
             const wrapper = shallowMount(CloseableTagList, {
                 propsData: {
                     tags: sevenTags,
-                    selectedTags: threeTags
+                    value: threeTags
                 },
                 localVue
             });
             wrapper.vm.displayAll = true;
             expect(wrapper.vm.displayAll).toBe(true);
-            wrapper.vm.onClick({});
+            wrapper.vm.onInput([]);
             expect(wrapper.vm.displayAll).toBe(false);
         });
     });

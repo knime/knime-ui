@@ -1,12 +1,11 @@
 <script>
 import Tag from '~/webapps-common/ui/components/Tag';
 
-const defaultInitialTagCount = 5;
+export const defaultInitialTagCount = 5;
 
 /**
- * TagList where Tags can be selected. It has two props `tags` and `selectedTags` the parent component needs to do the
- * handling of which tags are selected an which not. It emits `@click` for tag clicks
- * with an object of { text: "tagName", selected: <Boolean> }
+ * TagList where Tags can be selected. It has a `tags` prop with all tags and a `value` which contains the
+ * selected tags. Implements the v-model pattern and thus emits @input with the new value (array of selected tags)
  */
 export default {
     components: {
@@ -22,18 +21,16 @@ export default {
             default: defaultInitialTagCount
         },
         /**
-         * List of tags (Strings) to display. Not including selected ones.
-         * @type Array<String>
+         * List of tags (strings) to display. Including selected ones.
          */
         tags: {
             type: Array,
             default: () => []
         },
         /**
-         * List of selected tags (Strings) to display.
-         * @type Array<String>
+         * List of selected tags as strings.
          */
-        selectedTags: {
+        value: {
             type: Array,
             default: () => []
         },
@@ -51,43 +48,49 @@ export default {
         };
     },
     computed: {
-        allTags() {
-            return this.selectedTags.map(x => ({ text: x, selected: true }))
-                .concat(this.tags.map(x => ({ text: x, selected: false })));
+        tagObjects() {
+            // the tags should keep their "natural" order but the selected ones need to be at the head of the list
+            const allTags = this.value.concat(this.tags.filter(tagText => !this.value.includes(tagText)));
+            // transform to an object based list with text and selected attribute
+            return allTags.map(tagText => ({ text: tagText, selected: this.value.includes(tagText) }));
         },
         tagsToDisplay() {
             if (this.displayAll) {
-                return this.allTags;
+                return this.tagObjects;
             }
-            return this.allTags.slice(0, this.numberOfInitialTags);
+            return this.tagObjects.slice(0, this.numberOfInitialTags);
         },
         hasMoreTags() {
-            return !this.displayAll && this.allTags.length > this.numberOfInitialTags;
+            return !this.displayAll && this.tagObjects.length > this.numberOfInitialTags;
         },
         allVisibleAreSelected() {
-            return !this.displayAll && this.selectedTags.length > this.numberOfInitialTags;
+            return !this.displayAll && this.value.length > this.numberOfInitialTags;
         },
         moreDisplayText() {
             if (this.allVisibleAreSelected) {
-                const selectedInvisibleTags = this.selectedTags.length - this.numberOfInitialTags;
+                const selectedInvisibleTags = this.value.length - this.numberOfInitialTags;
                 return `+${selectedInvisibleTags}/${this.tags.length}`;
             } else {
-                return `+${this.allTags.length - this.numberOfInitialTags}`;
+                return `+${this.tagObjects.length - this.numberOfInitialTags}`;
             }
         }
     },
     watch: {
-        showAll(newVal, oldVal) {
+        showAll(newVal) {
             this.displayAll = newVal;
         }
     },
     methods: {
         onClick(tag) {
-            this.$emit('click', tag);
+            if (tag.selected) {
+                this.$emit('input', this.value.filter(x => x !== tag.text));
+            } else {
+                this.$emit('input', [...this.value, tag.text]);
+            }
         },
         onShowMore() {
             this.displayAll = true;
-            this.$emit('show-more', this.displayAll);
+            this.$emit('show-more');
         }
     }
 };
@@ -95,7 +98,7 @@ export default {
 
 <template>
   <div
-    v-if="allTags.length"
+    v-if="tagObjects.length"
     :class="['wrapper', {'show-all': displayAll }]"
   >
     <Tag
@@ -107,8 +110,7 @@ export default {
     >
       {{ tag.text }}
       <slot name="icon" />
-    </Tag><!-- no whitespace
-    -->
+    </Tag>
     <Tag
       v-if="hasMoreTags"
       class="more-tags clickable"

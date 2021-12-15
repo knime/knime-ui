@@ -19,15 +19,20 @@ export default {
         ScrollViewContainer
     },
     computed: {
-        ...mapState('nodeRepository', ['nodes', 'selectedTags', 'tags', 'nodesPerCategory', 'query', 'scrollPosition',
+        ...mapState('nodeRepository', ['nodes', 'tags', 'nodesPerCategory', 'query', 'scrollPosition',
             'isLoadingSearchResults']),
         ...mapGetters('nodeRepository', [
             'hasSearchParams'
         ]),
 
         /* Search and Filter */
-        unselectedTags() {
-            return this.tags.filter(tag => !this.selectedTags.includes(tag));
+        selectedTags: {
+            get() {
+                return this.$store.state.nodeRepository.selectedTags;
+            },
+            set(value) {
+                this.$store.dispatch('nodeRepository/setSelectedTags', value);
+            }
         },
         hasNoSearchResults() {
             return this.showSearchResults && this.nodes.length === 0;
@@ -62,14 +67,6 @@ export default {
             this.$store.dispatch('nodeRepository/updateQuery', value);
         }, SEARCH_THROTTLE, { trailing: true }),
 
-        toggleTag({ selected, text }) {
-            if (selected) {
-                this.$store.dispatch('nodeRepository/deselectTag', text);
-            } else {
-                this.$store.dispatch('nodeRepository/selectTag', text);
-            }
-        },
-        
         /* Grouped by Category */
         loadMoreResults() {
             if (!this.showSearchResults) {
@@ -110,9 +107,8 @@ export default {
       </div>
       <CloseableTagList
         v-if="showSearchResults"
-        :selected-tags="selectedTags"
-        :tags="unselectedTags"
-        @click="toggleTag"
+        v-model="selectedTags"
+        :tags="tags"
       />
       <hr class="force">
     </div>

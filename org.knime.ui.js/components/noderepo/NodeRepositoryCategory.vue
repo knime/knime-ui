@@ -33,7 +33,6 @@ export default {
                 return this.category.nodes?.length < this.totalNumNodes;
             }
         }
-
     },
     methods: {
         showMoreNodes() {

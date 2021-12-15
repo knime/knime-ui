@@ -12,7 +12,7 @@ import { getters } from '~/store/nodeRepository.js';
 
 describe('NodeRepository', () => {
     let mocks, doShallowMount, wrapper, $store, searchNodesMock, searchNodesNextPageMock,
-        selectTagMock, deselectTagMock, getAllNodesMock, clearSearchParamsMock, setScrollPositionMock, updateQueryMock;
+        setSelectedTagsMock, getAllNodesMock, clearSearchParamsMock, setScrollPositionMock, updateQueryMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -23,8 +23,7 @@ describe('NodeRepository', () => {
         wrapper = null;
         searchNodesMock = jest.fn();
         searchNodesNextPageMock = jest.fn();
-        selectTagMock = jest.fn();
-        deselectTagMock = jest.fn();
+        setSelectedTagsMock = jest.fn();
         getAllNodesMock = jest.fn();
         clearSearchParamsMock = jest.fn();
         setScrollPositionMock = jest.fn();
@@ -59,8 +58,7 @@ describe('NodeRepository', () => {
                 actions: {
                     searchNodes: searchNodesMock,
                     searchNodesNextPage: searchNodesNextPageMock,
-                    selectTag: selectTagMock,
-                    deselectTag: deselectTagMock,
+                    setSelectedTags: setSelectedTagsMock,
                     getAllNodes: getAllNodesMock,
                     clearSearchParams: clearSearchParamsMock,
                     updateQuery: updateQueryMock
@@ -106,8 +104,8 @@ describe('NodeRepository', () => {
         it('renders with selected tags', () => {
             doShallowMount();
             expect(wrapper.findComponent(CloseableTagList).exists()).toBe(true);
-            expect(wrapper.findComponent(CloseableTagList).props('tags')).toEqual(['myTag1']);
-            expect(wrapper.findComponent(CloseableTagList).props('selectedTags')).toEqual(['myTag2']);
+            expect(wrapper.findComponent(CloseableTagList).props('tags')).toEqual(['myTag1', 'myTag2']);
+            expect(wrapper.findComponent(CloseableTagList).props('value')).toEqual(['myTag2']);
         });
 
         it('doesn\'t render CloseableTagList when no tags are selected and no search is active', () => {
@@ -124,10 +122,9 @@ describe('NodeRepository', () => {
         });
 
         it('Select tag on click', () => {
-            $store.state.nodeRepository.selectedTags = ['myTag3'];
             doShallowMount();
-            wrapper.findComponent(CloseableTagList).vm.$emit('click', { text: 'myTag3', selected: false });
-            expect(selectTagMock).toHaveBeenCalledWith(expect.anything(), 'myTag3');
+            wrapper.findComponent(CloseableTagList).vm.$emit('input', ['myTag1', 'myTag2']);
+            expect(setSelectedTagsMock).toHaveBeenCalledWith(expect.anything(), ['myTag1', 'myTag2']);
         });
     });
 
@@ -138,12 +135,6 @@ describe('NodeRepository', () => {
                 .toEqual([{ id: 'clear', text: 'Repository' }, { text: 'Results' }]);
             wrapper.findComponent(ActionBreadcrumb).vm.$emit('click', { id: 'clear' });
             expect(clearSearchParamsMock).toHaveBeenCalled();
-        });
-
-        it('de-selects tag by clicking an specific tag', () => {
-            doShallowMount();
-            wrapper.findComponent(CloseableTagList).vm.$emit('click', { text: 'myTag3', selected: true });
-            expect(deselectTagMock).toHaveBeenCalledWith(expect.anything(), 'myTag3');
         });
     });
 
