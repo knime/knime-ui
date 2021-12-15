@@ -6,7 +6,7 @@ import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 
 import NodeSearcher from '~/components/noderepo/NodeSearcher';
 
-describe('NodeRepositoryCategory', () => {
+describe('NodeSearcher', () => {
     let doShallowMount, wrapper;
 
     beforeEach(() => {
@@ -20,10 +20,8 @@ describe('NodeRepositoryCategory', () => {
     it('renders', () => {
         doShallowMount();
 
-        const functionButtons = wrapper.findAllComponents(FunctionButton);
-        expect(functionButtons.length).toBe(2);
-        expect(functionButtons.wrappers[0].findComponent(LensIcon).exists()).toBe(true);
-        expect(functionButtons.wrappers[1].findComponent(CloseIcon).exists()).toBe(true);
+        expect(wrapper.findComponent(LensIcon).exists()).toBe(true);
+        expect(wrapper.findComponent(FunctionButton).findComponent(CloseIcon).exists()).toBe(true);
         expect(wrapper.find('input').exists()).toBe(true);
     });
 
@@ -37,20 +35,10 @@ describe('NodeRepositoryCategory', () => {
             expect(wrapper.emitted('input')).toStrictEqual([['some node']]);
         });
 
-        it('ignores clicks on lens button', () => {
-            doShallowMount();
-
-            const lensButton = wrapper.findAllComponents(FunctionButton).wrappers[0];
-            expect(lensButton.findComponent(LensIcon).exists()).toBe(true);
-
-            lensButton.vm.$emit('click');
-            expect(wrapper.emitted('input')).toBeFalsy();
-        });
-
         it('clears on clear button click', () => {
             doShallowMount();
 
-            const closeButton = wrapper.findAllComponents(FunctionButton).wrappers[1];
+            const closeButton = wrapper.findComponent(FunctionButton);
             expect(closeButton.findComponent(CloseIcon).exists()).toBe(true);
 
             closeButton.vm.$emit('click');

@@ -36,12 +36,9 @@ export default {
     id="node-search"
     class="node-search"
   >
-    <!-- TODO: this shouldn't be a deactivated function button, just an icon -->
-    <FunctionButton
-      class="lens-icon"
-    >
+    <div class="lens-icon">
       <LensIcon />
-    </FunctionButton>
+    </div>
     <input
       ref="searchInput"
       :value="value"
@@ -78,8 +75,18 @@ export default {
   }
 
   & .lens-icon {
-    pointer-events: none;
+    display: flex;
+    padding: 6px;
     margin-left: 3px;
+    pointer-events: none;
+
+    & svg {
+      vertical-align: top;
+      stroke: var(--theme-button-function-foreground-color);
+      width: 18px;
+      height: 18px;
+      stroke-width: calc(32px / 18);
+    }
   }
 
   & .clear-search {
