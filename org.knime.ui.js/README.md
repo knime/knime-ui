@@ -38,7 +38,7 @@ npm run dev
 In order to run and debug the web app with a functioning backend:
 
 - download the AP, e.g. from https://www.knime.com/nightly-build-downloads
-- add VM arguments to the `knime.ini`
+- add VM arguments to the `knime.ini` ([Installation guide])
 
 | argument | comment |
 |-|-|
@@ -50,7 +50,7 @@ In order to run and debug the web app with a functioning backend:
   - Menu > File > Install KNIME Extensions
   - possibly uncheck 'Group items by category' (in case the KNIME UI-feature is not yet categorized)
 - switch to the new KNIME UI perspective (button on the upper right)
-- open `http://localhost:8888` in your browser and select respective web app
+- open <http://localhost:8888> in your browser and select respective web app
 
 ### Testing
 
@@ -182,3 +182,4 @@ See `json-rpc-notification.js` for details.
 [jest]: https://jestjs.io/en
 [lcov]: https://github.com/linux-test-project/lcov
 [clover]: http://openclover.org/
+[Installation guide]: https://docs.knime.com/latest/analytics_platform_installation_guide/index.html#_configuration_settings_and_knime_ini_file
