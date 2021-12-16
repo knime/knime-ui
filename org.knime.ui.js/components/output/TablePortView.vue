@@ -192,7 +192,7 @@ export default {
       v-if="table"
       ref="scroller"
       class="scroller"
-      @scroll="onScroll"
+      @scroll.passive="onScroll"
     >
       <table ref="table">
         <Header

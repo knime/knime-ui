@@ -1,7 +1,7 @@
 import { shallowMount, mount } from '@vue/test-utils';
 
 import WorkflowMetadata from '~/components/WorkflowMetadata';
-import ScrollViewContainer from '~/components/ScrollViewContainer';
+import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
 import LinkList from '~/webapps-common/ui/components/LinkList';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';

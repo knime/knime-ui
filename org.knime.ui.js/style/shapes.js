@@ -5,6 +5,9 @@ export const portSize = 9;
 export const nodeStatusHeight = 12;
 export const nodeStatusMarginTop = 8;
 
+// horizontal node padding to include the full name on the workflow
+export const horizontalNodePadding = 50;
+
 // NOTE: this width limit does not apply if a line contains very long words
 export const maxNodeAnnotationWidth = 1000;
 export const nodeAnnotationMarginTop = 8;

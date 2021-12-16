@@ -28,7 +28,10 @@ const hotKeys = {
     deleteBackspace: ['BACKSPACE'],
     deleteDel: ['DELETE'],
     openView: ['F12'],
-    openDialog: ['F6']
+    openDialog: ['F6'],
+    stepLoopExecution: ['Ctrl', 'Alt', 'F6'],
+    pauseLoopExecution: ['Ctrl', 'Alt', 'F7'],
+    resumeLoopExecution: ['Ctrl', 'Alt', 'F8']
 };
 
 /**
@@ -42,7 +45,8 @@ const hotKeyDisplayMapForMac = {
     Shift: '⇧',
     BACKSPACE: '⌫',
     DELETE: '⌫',
-    Ctrl: '⌘'
+    Ctrl: '⌘',
+    Alt: '⌥'
 };
 
 /**
@@ -146,25 +150,25 @@ const actionMap = {
     // single node
     resumeLoopExecution: {
         text: 'Resume loop execution',
-        title: '',
-        hotkey: [],
-        storeAction: 'workflow/resumeNodeExecution',
+        title: 'Resume loop execution',
+        hotkey: hotKeys.resumeLoopExecution,
+        storeAction: 'workflow/resumeLoopExecution',
         storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
         disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.loopInfo?.allowedActions.canResume)
     },
-    pauseExecution: {
-        text: 'Pause execution',
-        title: '',
-        hotkey: [],
-        storeAction: 'workflow/pauseNodeExecution',
+    pauseLoopExecution: {
+        text: 'Pause loop execution',
+        title: 'Pause loop execution',
+        hotkey: hotKeys.pauseLoopExecution,
+        storeAction: 'workflow/pauseLoopExecution',
         storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
         disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.loopInfo?.allowedActions.canPause)
     },
     stepLoopExecution: {
         text: 'Step loop execution',
-        title: '',
-        hotkey: [],
-        storeAction: 'workflow/stepNodeExecution',
+        title: 'Step loop execution',
+        hotkey: hotKeys.stepLoopExecution,
+        storeAction: 'workflow/stepLoopExecution',
         storeActionParams: ({ selectedNodes }) => [selectedNodes[0].id],
         disabled: ({ selectedNodes }) => !selectedNodes.every(node => node.loopInfo?.allowedActions.canStep)
     },
@@ -229,23 +233,25 @@ export const getters = {
             actionMap.redo
         ];
 
-        if (selectedNodes.length === 0) {
+        if (selectedNodes.length === 0 && selectedConnections.length === 0) {
             actionList.push(
                 actionMap.executeAll,
                 actionMap.cancelAll,
                 actionMap.resetAll
             );
-        } else {
+        } else if (selectedNodes.length > 0) {
             actionList.push(
                 actionMap.executeSelected,
                 actionMap.cancelSelected,
                 actionMap.resetSelected
             );
         }
-        // show delete button either way; is disabled for no selection states
-        actionList.push(
-            actionMap.deleteSelected
-        );
+        // show delete button if at least one node or connection is selected; is disabled for no selection states
+        if (selectedNodes.length > 0 || selectedConnections.length > 0) {
+            actionList.push(
+                actionMap.deleteSelected
+            );
+        }
 
         return mapActions(actionList, selectedNodes, selectedConnections, allowedWorkflowActions);
     },
@@ -258,15 +264,16 @@ export const getters = {
         let actionList = [];
 
         if (selectedNodes.length === 0) {
-            actionList.push(
-                actionMap.executeAll,
-                actionMap.cancelAll,
-                actionMap.resetAll
-            );
             // if no node is selected it might be still a connection that can be deleted
             if (selectedConnections.length > 0) {
                 actionList.push(
                     actionMap.deleteSelected
+                );
+            } else {
+                actionList.push(
+                    actionMap.executeAll,
+                    actionMap.cancelAll,
+                    actionMap.resetAll
                 );
             }
         } else if (selectedNodes.length === 1) {
@@ -277,7 +284,7 @@ export const getters = {
 
             // different actions for a single node
             if (selectedNodeAllAllowedActions.canPause) {
-                actionList.push(actionMap.pauseExecution);
+                actionList.push(actionMap.pauseLoopExecution);
             } else if (selectedNodeAllAllowedActions.canResume) {
                 actionList.push(actionMap.resumeLoopExecution);
             } else {

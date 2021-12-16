@@ -3,7 +3,7 @@
 // Now that the KNIME AP build is moved to the new build system:
 // - investigate the role of the maven build vs the nodeJS build and see if they can be combined
 
-def BN = (BRANCH_NAME == 'master' || BRANCH_NAME.startsWith('releases/')) ? BRANCH_NAME : 'releases/2021-12'
+def BN = (BRANCH_NAME == 'master' || BRANCH_NAME.startsWith('releases/')) ? BRANCH_NAME : 'releases/2022-06'
 
 library "knime-pipeline@$BN"
 
@@ -29,17 +29,18 @@ timeout(time: 15, unit: 'MINUTES') {
                         '''
                     }
 
-                    stage('Security Audit') {
-                        env.lastStage = 'Security Audit'
+                    // TODO NXT-838: Enable Security Audit again
+                    // stage('Security Audit') {
+                    //     env.lastStage = 'Security Audit'
 
-                        catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-                            retry(3) { // because npm registry sometimes breaks
-                                sh '''
-                                    npm run audit
-                                '''
-                            }
-                        }
-                    }
+                    //     catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    //         retry(3) { // because npm registry sometimes breaks
+                    //             sh '''
+                    //                 npm run audit
+                    //             '''
+                    //         }
+                    //     }
+                    // }
 
                     stage('Static Code Analysis') {
                         env.lastStage = 'Lint'
