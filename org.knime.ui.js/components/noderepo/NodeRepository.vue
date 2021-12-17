@@ -67,6 +67,11 @@ export default {
             // eslint-disable-next-line no-invalid-this
             this.$store.dispatch('nodeRepository/updateQuery', value);
         }, SEARCH_COOLDOWN, { trailing: true }),
+        
+        onClickTag(tag) {
+            // This will show the 'results'-page with one tag selected
+            this.selectedTags = [tag];
+        },
 
         /* Grouped by Category */
         loadMoreResults() {
@@ -132,6 +137,7 @@ export default {
           <NodeRepositoryCategory
             :key="`tag-${index}`"
             :category="category"
+            @click-tag="onClickTag"
           />
           <hr
             :key="index"

@@ -37,8 +37,9 @@ export default {
     methods: {
         showMoreNodes() {
             if (this.category.tag) {
-                this.$store.dispatch('nodeRepository/selectTag', this.category.tag);
+                this.$emit('click-tag', this.category.tag);
             } else {
+                // TODO NXT-616: emit instead of directly dispatch
                 this.$store.dispatch('nodeRepository/searchNodesNextPage', true);
             }
         }

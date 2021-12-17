@@ -138,18 +138,6 @@ export const actions = {
     },
 
     /**
-     * Add a tag to the current tag filters.
-     *
-     * @param {*} context - Vuex context.
-     * @param {String} tag - tag to add.
-     * @returns {undefined}
-     */
-    selectTag({ dispatch, commit }, tag) {
-        commit('addSelectedTag', tag);
-        dispatch('searchNodes');
-    },
-
-    /**
      * Update all selected tags
      *
      * @param {*} context - Vuex context.
@@ -189,20 +177,8 @@ export const mutations = {
         state.isLoadingSearchResults = isLoading;
     },
 
-    addTag(state, tag) {
-        if (!state.tags.includes(tag)) {
-            state.tags.push(tag);
-        }
-    },
-
     setTags(state, tags) {
         state.tags = tags;
-    },
-
-    addSelectedTag(state, tag) {
-        if (!state.selectedTags.includes(tag)) {
-            state.selectedTags.push(tag);
-        }
     },
 
     setSelectedTags(state, selectedTags) {

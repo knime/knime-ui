@@ -50,7 +50,7 @@ const searchNodesResponse = {
     ]
 };
 
-describe('nodeRepository store', () => {
+describe('Node Repository store', () => {
     let store, localVue, searchNodesMock, getNodesGroupedByTagsMock, commitSpy, dispatchSpy;
 
     beforeAll(() => {
@@ -138,24 +138,9 @@ describe('nodeRepository store', () => {
             expect(store.state.nodeRepository.nodes).toEqual(nodes);
         });
 
-        it('adds tag (and skips duplicates)', () => {
-            store.commit('nodeRepository/addTag', 'myTag');
-            expect(store.state.nodeRepository.tags).toEqual(['myTag']);
-            store.commit('nodeRepository/addTag', 'myTag');
-            store.commit('nodeRepository/addTag', 'myTag2');
-            expect(store.state.nodeRepository.tags).toEqual(['myTag', 'myTag2']);
-        });
-
         it('sets tags', () => {
             store.commit('nodeRepository/setTags', ['myTag', 'myTag2']);
             expect(store.state.nodeRepository.tags).toEqual(['myTag', 'myTag2']);
-        });
-
-        it('adds selectedTag (and skips duplicates)', () => {
-            store.commit('nodeRepository/addSelectedTag', 'myTag');
-            store.commit('nodeRepository/addSelectedTag', 'myTag2');
-            store.commit('nodeRepository/addSelectedTag', 'myTag');
-            expect(store.state.nodeRepository.selectedTags).toEqual(['myTag', 'myTag2']);
         });
 
         it('sets selectedTags', () => {
@@ -299,13 +284,7 @@ describe('nodeRepository store', () => {
             expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', true);
         });
 
-        it('selects tag', () => {
-            store.dispatch('nodeRepository/selectTag', 'myTag');
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/addSelectedTag', 'myTag', undefined);
-            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
-        });
-
-        it('updates selectedTags', () => {
+        it('set selected Tags', () => {
             store.dispatch('nodeRepository/setSelectedTags', ['myTag', 'myTag2']);
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setSelectedTags', ['myTag', 'myTag2'], undefined);
             expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
