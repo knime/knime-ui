@@ -1,5 +1,6 @@
 <script>
 import Tag from '~/webapps-common/ui/components/Tag';
+import { difference } from 'lodash';
 
 export const defaultInitialTagCount = 5;
 
@@ -42,42 +43,36 @@ export default {
             default: false
         }
     },
-    data() {
-        return {
-            displayAll: this.showAll
-        };
-    },
     computed: {
-        tagObjects() {
+        sortedTags() {
             // the tags should keep their "natural" order but the selected ones need to be at the head of the list
-            const allTags = this.value.concat(this.tags.filter(tagText => !this.value.includes(tagText)));
             // transform to an object based list with text and selected attribute
-            return allTags.map(tagText => ({ text: tagText, selected: this.value.includes(tagText) }));
+            return [
+                ...this.value
+                    .map(text => ({ text, selected: true })),
+                ...difference(this.tags, this.value)
+                    .map(text => ({ text, selected: false }))
+            ];
         },
-        tagsToDisplay() {
-            if (this.displayAll) {
-                return this.tagObjects;
-            }
-            return this.tagObjects.slice(0, this.numberOfInitialTags);
+        shownTags() {
+            return this.showAll
+                ? this.sortedTags
+                : this.sortedTags.slice(0, this.numberOfInitialTags);
         },
         hasMoreTags() {
-            return !this.displayAll && this.tagObjects.length > this.numberOfInitialTags;
+            return !this.showAll && this.tags.length > this.numberOfInitialTags;
         },
         allVisibleAreSelected() {
-            return !this.displayAll && this.value.length > this.numberOfInitialTags;
+            return !this.showAll && this.value.length > this.numberOfInitialTags;
         },
         moreDisplayText() {
+            let hiddenTags = this.tags.length - this.numberOfInitialTags;
             if (this.allVisibleAreSelected) {
                 const selectedInvisibleTags = this.value.length - this.numberOfInitialTags;
-                return `+${selectedInvisibleTags}/${this.tags.length}`;
+                return `+${selectedInvisibleTags}/${hiddenTags}`;
             } else {
-                return `+${this.tagObjects.length - this.numberOfInitialTags}`;
+                return `+${hiddenTags}`;
             }
-        }
-    },
-    watch: {
-        showAll(newVal) {
-            this.displayAll = newVal;
         }
     },
     methods: {
@@ -89,7 +84,6 @@ export default {
             }
         },
         onShowMore() {
-            this.displayAll = true;
             this.$emit('show-more');
         }
     }
@@ -98,12 +92,12 @@ export default {
 
 <template>
   <div
-    v-if="tagObjects.length"
-    :class="['wrapper', {'show-all': displayAll }]"
+    v-if="shownTags.length"
+    :class="['wrapper', {'show-all': showAll }]"
   >
     <Tag
-      v-for="(tag, index) in tagsToDisplay"
-      :key="index"
+      v-for="tag in shownTags"
+      :key="tag.text"
       clickable
       :class="{selected: tag.selected}"
       @click.native.prevent="onClick(tag)"

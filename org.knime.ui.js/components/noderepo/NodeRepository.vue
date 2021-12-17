@@ -9,7 +9,7 @@ import CloseableTagList from '~/components/noderepo/CloseableTagList';
 
 import { debounce } from 'lodash';
 
-const SEARCH_DEBOUNCE_WAIT = 100; // ms
+const SEARCH_COOLDOWN = 100; // ms
 
 export default {
     components: {
@@ -66,7 +66,7 @@ export default {
         updateSearchQuery: debounce(function (value) {
             // eslint-disable-next-line no-invalid-this
             this.$store.dispatch('nodeRepository/updateQuery', value);
-        }, SEARCH_DEBOUNCE_WAIT, { trailing: true }),
+        }, SEARCH_COOLDOWN, { trailing: true }),
 
         /* Grouped by Category */
         loadMoreResults() {

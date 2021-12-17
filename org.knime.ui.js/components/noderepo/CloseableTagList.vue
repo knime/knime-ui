@@ -12,9 +12,6 @@ export const minNumberOfInitialTags = 2;
  * Wraps a SelectableTagList and adds close buttons and click-away to it. The visible area overflows and looks like a
  * popover. Designed to work in NodeRepository. It has a dynamic number of initially shown tags based on the length
  * (number of chars) of a tag.
- *
- * This is not a common component as the sizes and most of the styles are carefully chosen
- * to fit in the sidebar (NodeRepo)
  */
 export default {
     components: {
@@ -48,6 +45,7 @@ export default {
             let availableChars = maxLengthOfTagInChars * maxLinesOfTags;
             let tagsToShow = 0;
 
+            // Count amount of tags that fit inside the limit of availableChars
             for (let tag of this.tags) {
                 availableChars -= tag.length;
                 if (availableChars > 0) {
@@ -62,14 +60,11 @@ export default {
     },
     methods: {
         onInput(value) {
-            this.hideMore();
+            this.displayAll = false;
             this.$emit('input', value);
         },
-        hideMore() {
+        onClickAway() {
             this.displayAll = false;
-        },
-        showMore() {
-            this.displayAll = true;
         }
     }
 };
@@ -77,7 +72,7 @@ export default {
 
 <template>
   <div
-    v-on-clickaway="hideMore"
+    v-on-clickaway="onClickAway"
     class="closeable-tags"
   >
     <div class="popout">
@@ -87,13 +82,13 @@ export default {
         :value="value"
         :tags="tags"
         :show-all="displayAll"
-        @show-more="showMore"
+        @show-more="displayAll = true"
         @input="onInput"
       />
       <button
         v-if="displayAll"
         class="tags-popout-close"
-        @click="hideMore"
+        @click="displayAll = false"
       >
         <ClosePopoverIcon />
       </button>
