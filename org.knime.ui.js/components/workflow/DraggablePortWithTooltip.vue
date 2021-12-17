@@ -45,6 +45,7 @@ export default {
     }),
     computed: {
         ...mapGetters('canvas', ['fromAbsoluteCoordinates']),
+        ...mapGetters('workflow', ['isWritable']),
         /*
          * only in-Ports replace their current connector if a new one is connected
          * only in-Ports that are connected need to indicate connector replacement
@@ -78,6 +79,10 @@ export default {
             return result;
         },
         onPointerDown(e) {
+            if (!this.isWritable) {
+                return;
+            }
+
             e.target.setPointerCapture(e.pointerId);
 
             this.kanvasElement = document.getElementById('kanvas');
@@ -116,6 +121,10 @@ export default {
             });
         },
         onPointerUp(e) {
+            if (!this.isWritable) {
+                return;
+            }
+            
             e.target.releasePointerCapture(e.pointerId);
 
             let { sourceNode, sourcePort, destNode, destPort } = this.dragConnector;
