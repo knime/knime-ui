@@ -1,5 +1,5 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
-    moveObjects, openDialog, openView, undo, redo, removeEventListener } from '~api';
+    moveObjects, openDialog, openView, undo, redo, removeEventListener, connectNodes, addNode } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -115,19 +115,19 @@ export const actions = {
         const selectedConnections = rootGetters['selection/selectedConnections'];
         const deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
         const nonDeletableNodeIds = selectedNodes.filter(node => !node.allowedActions.canDelete).map(node => node.id);
-        const deleteableConnectionIds = selectedConnections.filter(
+        const deletableConnectionIds = selectedConnections.filter(
             connection => connection.allowedActions.canDelete
         ).map(connection => connection.id);
         const nonDeletableConnectionIds = selectedConnections.filter(
             connection => !connection.allowedActions.canDelete
         ).map(connection => connection.id);
 
-        if (deletableNodeIds.length || deleteableConnectionIds.length) {
+        if (deletableNodeIds.length || deletableConnectionIds.length) {
             deleteObjects({
                 projectId: activeWorkflow.projectId,
                 workflowId: activeWorkflowId,
                 nodeIds: deletableNodeIds.length ? deletableNodeIds : [],
-                connectionIds: deleteableConnectionIds ? deleteableConnectionIds : []
+                connectionIds: deletableConnectionIds ? deletableConnectionIds : []
             });
             dispatch('selection/deselectAllObjects', null, { root: true });
         }
@@ -175,15 +175,15 @@ export const actions = {
         dispatch('changeNodeState', { action: 'cancel', nodes });
     },
     /* See docs in API */
-    pauseNodeExecution({ state }, nodeId) {
+    pauseLoopExecution({ state }, nodeId) {
         changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'pause' });
     },
     /* See docs in API */
-    resumeNodeExecution({ state }, nodeId) {
+    resumeLoopExecution({ state }, nodeId) {
         changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'resume' });
     },
     /* See docs in API */
-    stepNodeExecution({ state }, nodeId) {
+    stepLoopExecution({ state }, nodeId) {
         changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'step' });
     },
     /* See docs in API */
@@ -250,6 +250,27 @@ export const actions = {
             consola.log('The following error occured: ', error);
             commit('resetDragPosition');
         });
+    },
+    async connectNodes({ state, getters }, { sourceNode, destNode, sourcePort, destPort }) {
+        await connectNodes({
+            projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            sourceNode,
+            sourcePort,
+            destNode,
+            destPort
+        });
+    },
+    async addNode({ state, getters }, { position, nodeFactory }) {
+        await addNode({
+            projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            position: {
+                x: position[0],
+                y: position[1]
+            },
+            nodeFactory
+        });
     }
 };
 
@@ -279,7 +300,7 @@ export const getters = {
         const { nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPorts } = activeWorkflow;
         const {
             nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight, portSize,
-            defaultMetanodeBarPosition, defaultMetaNodeBarHeight, metaNodeBarWidth
+            defaultMetanodeBarPosition, defaultMetaNodeBarHeight, metaNodeBarWidth, horizontalNodePadding
         } = $shapes;
 
         let left = Infinity;
@@ -290,11 +311,13 @@ export const getters = {
         Object.values(nodes).forEach(({ position: { x, y } }) => {
             const nodeTop = y - nodeNameMargin - nodeNameLineHeight;
             const nodeBottom = y + nodeSize + nodeStatusMarginTop + nodeStatusHeight;
+            const nodeLeft = x - horizontalNodePadding;
+            const nodeRight = x + nodeSize + horizontalNodePadding;
 
-            if (x < left) { left = x; }
+            if (nodeLeft < left) { left = nodeLeft; }
             if (nodeTop < top) { top = nodeTop; }
 
-            if (x + nodeSize > right) { right = x + nodeSize; }
+            if (nodeRight > right) { right = nodeRight; }
             if (nodeBottom > bottom) { bottom = nodeBottom; }
         });
         workflowAnnotations.forEach(({ bounds: { x, y, height, width } }) => {
@@ -377,36 +400,36 @@ export const getters = {
 
     getNodeIcon({ activeWorkflow }) {
         return (nodeId) => {
-            let node = activeWorkflow?.nodes[nodeId];
+            let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
-                return activeWorkflow?.nodeTemplates[templateId]?.icon;
+                return activeWorkflow.nodeTemplates[templateId].icon;
             } else {
-                return node?.icon;
+                return node.icon;
             }
         };
     },
 
     getNodeName({ activeWorkflow }) {
         return (nodeId) => {
-            let node = activeWorkflow?.nodes[nodeId];
+            let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
-                return activeWorkflow?.nodeTemplates[templateId]?.name;
+                return activeWorkflow.nodeTemplates[templateId].name;
             } else {
-                return node?.name;
+                return node.name;
             }
         };
     },
 
     getNodeType({ activeWorkflow }) {
         return (nodeId) => {
-            let node = activeWorkflow?.nodes[nodeId];
+            let node = activeWorkflow.nodes[nodeId];
             let { templateId } = node;
             if (templateId) {
-                return activeWorkflow?.nodeTemplates[templateId]?.type;
+                return activeWorkflow.nodeTemplates[templateId].type;
             } else {
-                return node?.type;
+                return node.type;
             }
         };
     }

@@ -17,7 +17,7 @@ export default {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapGetters('userActions', ['mainMenuActionItems']),
         hasBreadcrumb() {
-            return this.workflow.parents?.length > 0;
+            return this.workflow?.parents?.length > 0;
         },
         visibleActionItems() {
             return this.mainMenuActionItems;
@@ -28,26 +28,38 @@ export default {
 
 <template>
   <div class="toolbar">
-    <div class="buttons">
-      <ToolbarButton
-        v-for="(a, index) of visibleActionItems"
-        :key="index"
-        :class="a.text ? 'with-text' : ''"
-        :disabled="a.disabled"
-        :title="`${a.title} – ${a.hotkeyText}`"
-        @click.native="$store.dispatch(a.storeAction, ...a.storeActionParams)"
+    <transition-group
+      tag="div"
+      name="button-list"
+    >
+      <!-- TODO NXT-625: This is not how dispatch works. Only one parameter can be used as payload -->
+      <div
+        :key="visibleActionItems.map(action => action.title).join('-')"
+        class="button-list"
       >
-        <Component :is="a.icon" />
-        {{ a.text }}
-      </ToolbarButton>
-    </div>
+        <ToolbarButton
+          v-for="a of visibleActionItems"
+          :key="a.title"
+          :class="{ 'with-text': a.text }"
+          :disabled="a.disabled"
+          :title="`${a.title} – ${a.hotkeyText}`"
+          @click.native="$store.dispatch(a.storeAction, ...a.storeActionParams)"
+        >
+          <Component :is="a.icon" />
+          {{ a.text }}
+        </ToolbarButton>
+      </div>
+    </transition-group>
 
     <WorkflowBreadcrumb
       v-if="hasBreadcrumb"
       class="breadcrumb"
     />
 
-    <ZoomMenu class="zoommenu" />
+    <ZoomMenu
+      v-if="workflow"
+      class="zoommenu"
+    />
   </div>
 </template>
 
@@ -58,14 +70,29 @@ export default {
   background: var(--knime-porcelain);
 }
 
-.buttons {
+.button-list-leave-to,
+.button-list-enter {
+  opacity: 0;
+}
+
+.button-list-leave-active {
+  position: absolute;
+}
+
+.button-list {
+  transition: all 150ms ease-out;
   flex-shrink: 0;
   display: flex;
   font-size: 14px;
+  user-select: none;
 
   & .with-text {
     padding-right: 9px;
     padding-left: 2px;
+  }
+
+  & button {
+    transition: all 150ms ease-out;
   }
 }
 

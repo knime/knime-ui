@@ -1,4 +1,4 @@
-import Port from '~/components/Port';
+import Port from '~/components/workflow/Port';
 
 const size = 21;
 

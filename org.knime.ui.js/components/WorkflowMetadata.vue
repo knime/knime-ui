@@ -2,14 +2,18 @@
 import LinkList from '~/webapps-common/ui/components/LinkList';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
+import TagList from '~/webapps-common/ui/components/TagList';
 import { formatDateString } from '~/webapps-common/util/format';
+import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
 
 /** Displays metadata attached to a root-level workflow */
 export default {
     components: {
         LinkList,
         NodeFeatureList,
-        NodePreview
+        NodePreview,
+        TagList,
+        ScrollViewContainer
     },
     props: {
         /** Single-line description of the workflow */
@@ -65,8 +69,9 @@ export default {
 </script>
 
 <template>
-  <div class="metadata">
-    <h2 class="title">
+  <!-- TODO: NXT-844 why use this stateful ScrollViewContainer here? -->
+  <ScrollViewContainer class="metadata">
+    <h2 :class="['title', { 'with-node-preview': nodePreview }]">
       <div
         v-if="nodePreview"
         class="node-preview"
@@ -80,6 +85,8 @@ export default {
         class="placeholder"
       >No title has been set yet</span>
     </h2>
+  
+    <hr v-if="!nodePreview">
 
     <div
       v-if="!isComponent"
@@ -113,6 +120,7 @@ export default {
       class="external-resources"
     >
       <h2>External resources</h2>
+      <hr>
       <LinkList
         v-if="links.length"
         :links="links"
@@ -130,14 +138,11 @@ export default {
       class="tags"
     >
       <h2>Tags</h2>
-      <ul v-if="tags.length">
-        <li
-          v-for="tag of tags"
-          :key="tag"
-        >
-          {{ tag }}
-        </li>
-      </ul>
+      <hr>
+      <TagList
+        v-if="tags.length"
+        :tags="tags"
+      />
       <div
         v-else
         class="placeholder"
@@ -145,7 +150,7 @@ export default {
         No tags have been set yet
       </div>
     </div>
-  </div>
+  </ScrollViewContainer>
 </template>
 
 <style lang="postcss" scoped>
@@ -153,19 +158,26 @@ export default {
   box-sizing: border-box;
   padding: 20px 20px;
   font-family: "Roboto Condensed", sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 27px;
   color: var(--knime-masala);
 
   & h2 {
     margin: 0;
     font-weight: normal;
-    font-size: 24px;
+    font-size: 18px;
     line-height: 36px;
+  }
+
+  & hr {
+    border: none;
+    border-top: 1px solid var(--knime-silver-sand);
+    margin: 0;
   }
 
   & .placeholder {
     font-style: italic;
+    color: var(--knime-dove-gray);
   }
 
   & > *:last-child {
@@ -175,7 +187,7 @@ export default {
   & .title {
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 
     & .node-preview {
       height: 80px;
@@ -184,10 +196,16 @@ export default {
       background-color: white;
       flex-shrink: 0;
     }
+
+    &.with-node-preview {
+      margin-bottom: 20px;
+    }
   }
 }
 
 .last-updated {
+  color: var(--knime-dove-gray);
+  margin-top: 6px;
   margin-bottom: 20px;
   font-style: italic;
 }
@@ -262,9 +280,10 @@ export default {
   & ul {
     column-count: 1;
     margin-bottom: -6px;
+    --icon-size: 16px;
 
     & >>> li {
-      font-size: 18px;
+      font-size: 16px;
       line-height: 27px;
     }
   }
@@ -272,6 +291,10 @@ export default {
 
 .tags {
   padding-top: 5px;
+
+  & .wrapper {
+    padding: 13px 0;
+  }
 
   & ul {
     display: flex;

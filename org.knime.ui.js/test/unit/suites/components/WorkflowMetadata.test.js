@@ -1,9 +1,12 @@
-import { shallowMount } from '@vue/test-utils';
+import { shallowMount, mount } from '@vue/test-utils';
 
 import WorkflowMetadata from '~/components/WorkflowMetadata';
+import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
 import LinkList from '~/webapps-common/ui/components/LinkList';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
+import TagList from '~/webapps-common/ui/components/TagList';
+import Tag from '~/webapps-common/ui/components/Tag';
 
 describe('WorkflowMetadata.vue', () => {
     it.each([
@@ -17,6 +20,7 @@ describe('WorkflowMetadata.vue', () => {
         expect(wrapper.find('.last-updated').exists()).toBe(true);
         expect(wrapper.find('.external-resources').exists()).toBe(true);
         expect(wrapper.find('.tags').exists()).toBe(true);
+        expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(true);
 
         // show placeholder tags
         expect(wrapper.text()).toMatch('No title has been set yet');
@@ -27,7 +31,7 @@ describe('WorkflowMetadata.vue', () => {
 
         // don't show content containers
         expect(wrapper.findComponent(LinkList).exists()).toBe(false);
-        expect(wrapper.find('.tags ul').exists()).toBe(false);
+        expect(wrapper.findComponent(TagList).exists()).toBe(false);
         expect(wrapper.findComponent(NodeFeatureList).exists()).toBe(false);
         expect(wrapper.findComponent(NodePreview).exists()).toBe(false);
     });
@@ -44,7 +48,7 @@ describe('WorkflowMetadata.vue', () => {
     });
 
     it('renders all metadata', () => {
-        let wrapper = shallowMount(WorkflowMetadata, {
+        let wrapper = mount(WorkflowMetadata, {
             propsData: {
                 title: 'Title',
                 lastEdit: '2000-01-01T00:00Z',
@@ -62,11 +66,29 @@ describe('WorkflowMetadata.vue', () => {
         let linkList = wrapper.findComponent(LinkList);
         expect(linkList.props().links).toStrictEqual([{ text: 'link1' }]);
 
-        let tags = wrapper.findAll('ul li');
+        expect(wrapper.findComponent(TagList).exists()).toBe(true);
+        let tags = wrapper.findAllComponents(Tag);
         expect(tags.length).toBe(1);
         expect(tags.at(0).text()).toBe('tag1');
 
         expect(wrapper.findComponent(NodePreview).props('type')).toBe('nodePreviewData');
         expect(wrapper.findComponent(NodeFeatureList).props('emptyText')).toBe('nodeFeatureData');
+    });
+
+    it('adds class if nodePreview exists', () => {
+        let wrapper = mount(WorkflowMetadata, {
+            propsData: {
+                title: 'Title',
+                lastEdit: '2000-01-01T00:00Z',
+                description: 'Description',
+                links: [{ text: 'link1' }],
+                tags: ['tag1'],
+                nodePreview: { type: 'nodePreviewData' },
+                nodeFeatures: { emptyText: 'nodeFeatureData' }
+            }
+        });
+
+        const header = wrapper.find('h2');
+        expect(header.classes('with-node-preview')).toBe(true);
     });
 });

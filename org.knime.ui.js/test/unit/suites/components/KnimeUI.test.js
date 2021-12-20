@@ -3,11 +3,15 @@ import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils
 import Vuex from 'vuex';
 import Vue from 'vue';
 
+jest.mock('~/mixins/hotKeys.js', () => ({
+    hotKeys: { /* empty mixin */ }
+}));
+
 import KnimeUI from '~/components/KnimeUI';
 import AppHeader from '~/components/AppHeader';
 import Sidebar from '~/components/Sidebar';
+import WorkflowToolbar from '~/components/WorkflowToolbar';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
-import HotKeys from '~/components/HotKeys';
 import TooltipContainer from '~/components/TooltipContainer';
 import Error from '~/components/Error';
 
@@ -47,8 +51,8 @@ describe('KnimeUI.vue', () => {
         await doShallowMountWithAsyncData();
         expect(wrapper.findComponent(AppHeader).exists()).toBe(true);
         expect(wrapper.findComponent(Sidebar).exists()).toBe(true);
-        expect(wrapper.findComponent(HotKeys).exists()).toBe(false);
         expect(wrapper.findComponent(TooltipContainer).exists()).toBe(false);
+        expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(false);
         expect(wrapper.findComponent(WorkflowTabContent).exists()).toBe(false);
     });
 
@@ -81,7 +85,7 @@ describe('KnimeUI.vue', () => {
         let tooltipContainer = wrapper.findComponent(TooltipContainer);
         expect(tooltipContainer.exists()).toBe(true);
         expect(tooltipContainer.attributes('id')).toBe('tooltip-container');
-        expect(wrapper.findComponent(HotKeys).exists()).toBe(true);
+        expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(true);
         expect(wrapper.findComponent(WorkflowTabContent).exists()).toBe(true);
     });
 

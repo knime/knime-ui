@@ -3,10 +3,9 @@ import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils
 import Vuex from 'vuex';
 
 import WorkflowTabContent from '~/components/WorkflowTabContent';
-import Kanvas from '~/components/Kanvas';
-import WorkflowMetadata from '~/components/WorkflowMetadata';
-import WorkflowToolbar from '~/components/WorkflowToolbar';
+import WorkflowPanel from '~/components/WorkflowPanel';
 import Splitter from '~/components/Splitter';
+import SideMenu from '~/components/SideMenu';
 
 describe('WorkflowTabContent.vue', () => {
     beforeAll(() => {
@@ -17,18 +16,6 @@ describe('WorkflowTabContent.vue', () => {
     let store, workflow, wrapper, doShallowMount;
 
     beforeEach(() => {
-        window.switchToJavaUI = jest.fn();
-
-        workflow = {
-            projectMetadata: {
-                title: 'title'
-            },
-            info: {
-                name: 'fileName',
-                containerType: 'project'
-            }
-        };
-
         doShallowMount = async () => {
             store = mockVuexStore({
                 workflow: {
@@ -49,10 +36,15 @@ describe('WorkflowTabContent.vue', () => {
     });
 
     describe('workflow loaded', () => {
-        it('displays Workflow', async () => {
+        beforeEach(() => {
+            // some workflow
+            workflow = {};
+        });
+
+        it('displays Workflow Panel', async () => {
             await doShallowMount();
 
-            expect(wrapper.findComponent(Kanvas).exists()).toBe(true);
+            expect(wrapper.findComponent(WorkflowPanel).exists()).toBe(true);
         });
 
         it('displays node output', async () => {
@@ -63,66 +55,10 @@ describe('WorkflowTabContent.vue', () => {
             expect(splitter.vm.$slots.secondary[0].componentOptions.tag).toBe('NodeOutput');
         });
 
-        it('shows metadata panel with workflow metadata data', async () => {
+        it('displays side menu', async () => {
             await doShallowMount();
 
-            let metadata = wrapper.findComponent(WorkflowMetadata);
-            expect(metadata.exists()).toBe(true);
-            expect(metadata.props().title).toBe('title');
-        });
-
-        it('uses placeholder metadata if none are given', async () => {
-            delete workflow.projectMetadata;
-            await doShallowMount();
-
-            expect(wrapper.findComponent(WorkflowMetadata).props().title).toBe('fileName');
-        });
-
-        it('no metadata for metanodes', async () => {
-            workflow.info.containerType = 'metanode';
-            await doShallowMount();
-
-            expect(wrapper.findComponent(WorkflowMetadata).exists()).toBe(false);
-        });
-
-        it('displays component metadata', async () => {
-            workflow = {
-                info: {
-                    containerType: 'component'
-                },
-                componentMetadata: {
-                    name: 'name',
-                    description: 'description',
-                    inPorts: ['inPorts'],
-                    outPorts: ['outPorts'],
-                    icon: 'icon',
-                    type: 'type',
-                    views: ['views'],
-                    options: ['options']
-                }
-            };
-            await doShallowMount();
-            expect(wrapper.findComponent(WorkflowMetadata).props()).toStrictEqual(
-                expect.objectContaining({
-                    title: 'name',
-                    description: 'description',
-                    isComponent: true,
-                    nodePreview: {
-                        inPorts: ['inPorts'],
-                        outPorts: ['outPorts'],
-                        icon: 'icon',
-                        type: 'type',
-                        isComponent: true,
-                        hasDynPorts: false
-                    },
-                    nodeFeatures: {
-                        inPorts: ['inPorts'],
-                        outPorts: ['outPorts'],
-                        views: ['views'],
-                        options: ['options']
-                    }
-                })
-            );
+            expect(wrapper.findComponent(SideMenu).exists()).toBe(true);
         });
     });
 
@@ -133,27 +69,8 @@ describe('WorkflowTabContent.vue', () => {
         });
 
         it('shows placeholder', () => {
-            expect(wrapper.findComponent(Kanvas).exists()).toBe(false);
+            expect(wrapper.findComponent(WorkflowPanel).exists()).toBe(false);
             expect(wrapper.find('.placeholder').text()).toMatch('No workflow opened');
-        });
-
-        it('hides metadata panel', () => {
-            expect(wrapper.find('#metadata').exists()).toBe(false);
-        });
-    });
-
-    describe('toolbar', () => {
-        it('shows no toolbar by default', async () => {
-            workflow = null;
-            await doShallowMount();
-
-            expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(false);
-        });
-
-        it('shows breadcrumb when available', async () => {
-            await doShallowMount();
-
-            expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(true);
         });
     });
 });

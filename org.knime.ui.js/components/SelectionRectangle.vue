@@ -25,9 +25,9 @@ export default {
         }
     },
     created() {
-        this.$parent.$on('pointerdown', this.startRectSelection);
-        this.$parent.$on('pointerup', this.stopRectSelection);
-        this.$parent.$on('pointermove', this.mouseMove);
+        this.$parent.$on('selection-pointerdown', this.startRectSelection);
+        this.$parent.$on('selection-pointerup', this.stopRectSelection);
+        this.$parent.$on('selection-pointermove', this.mouseMove);
     },
     methods: {
         ...mapMutations('workflow', ['setDragging']),

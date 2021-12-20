@@ -1,7 +1,9 @@
 import path from 'path';
 import postcssConfig from 'webapps-common/webpack/webpack.postcss.config';
-import generateCss from './buildtools/generateCSS';
+import generateCSS from './buildtools/generateCSS';
 import svgConfig from 'webapps-common/webpack/webpack.svg.config';
+
+require('dotenv').config();
 
 const srcDir = path.resolve(__dirname);
 const commonsDir = path.resolve(srcDir, 'webapps-common');
@@ -9,6 +11,9 @@ const commonsDir = path.resolve(srcDir, 'webapps-common');
 const config = {
     alias: {
         'webapps-common': commonsDir
+    },
+    env: {
+        isDev: process.env.NODE_ENV !== 'production'
     },
     ssr: false,
     head: {
@@ -31,17 +36,11 @@ const config = {
     css: ['@/assets/index.css'],
     hooks: {
         build: {
-            before: generateCss
+            before: generateCSS
         }
     },
     build: {
-        postcss: {
-            ...postcssConfig,
-            plugins: {
-                'postcss-import': {},
-                'postcss-url': {}
-            }
-        },
+        postcss: postcssConfig,
         splitChunks: {
             layouts: false,
             pages: false,

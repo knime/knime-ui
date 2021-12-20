@@ -23,6 +23,7 @@ export default {
     },
     methods: {
         onContextMenuItemClick(e, item, id) {
+            // TODO NXT-625: This is not how dispatch works. Only one parameter can be used as payload
             this.$store.dispatch(item.storeAction, ...item.storeActionParams);
         },
         show(e) {

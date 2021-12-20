@@ -3,7 +3,7 @@
 // Now that the KNIME AP build is moved to the new build system:
 // - investigate the role of the maven build vs the nodeJS build and see if they can be combined
 
-def BN = BRANCH_NAME == "master" || BRANCH_NAME.startsWith("releases/") ? BRANCH_NAME : "master"
+def BN = (BRANCH_NAME == 'master' || BRANCH_NAME.startsWith('releases/')) ? BRANCH_NAME : 'releases/2022-06'
 
 library "knime-pipeline@$BN"
 
@@ -29,17 +29,18 @@ timeout(time: 15, unit: 'MINUTES') {
                         '''
                     }
 
-                    stage('Security Audit') {
-                        env.lastStage = 'Security Audit'
+                    // TODO NXT-838: Enable Security Audit again
+                    // stage('Security Audit') {
+                    //     env.lastStage = 'Security Audit'
 
-                        catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
-                            retry(3) { // because npm registry sometimes breaks
-                                sh '''
-                                    npm run audit
-                                '''
-                            }
-                        }
-                    }
+                    //     catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    //         retry(3) { // because npm registry sometimes breaks
+                    //             sh '''
+                    //                 npm run audit
+                    //             '''
+                    //         }
+                    //     }
+                    // }
 
                     stage('Static Code Analysis') {
                         env.lastStage = 'Lint'
@@ -78,7 +79,6 @@ timeout(time: 15, unit: 'MINUTES') {
             }
         }
     ]
-
     parallel configs
 
     } catch (ex) {
@@ -87,7 +87,6 @@ timeout(time: 15, unit: 'MINUTES') {
     }
 }
 
-// integration tests
 stage('Integration Tests') {
     node('workflow-tests&&ubuntu20.04&&nodejs') {
         timeout(time: 120, unit: 'MINUTES') {
@@ -109,6 +108,8 @@ stage('Integration Tests') {
                     'knime-weka',
                 ],
                 ius: [
+                    'org.knime.features.ui.feature.group',
+                    'org.knime.features.gateway.feature.group',
                     'com.knime.features.workbench.cef.feature.group'
                 ]
             ]
@@ -137,7 +138,7 @@ stage('Integration Tests') {
                         RUN_CMD="$DEST/knime"
                         RUN_ARGS="-noSplash -consoleLog --launcher.suppressErrors"
 
-                        Xvfb :$$ -pixdepths 24 -screen 0 1280x1024x24 +extension RANDR &
+                        Xvfb :$$ -pixdepths 24 -screen 0 1920x1080x24 +extension RANDR &
                         export DISPLAY=:$$
                         set +e
 
@@ -155,7 +156,7 @@ stage('Integration Tests') {
                         cd "$DEST"
                         testpid=$(grep  "Dknime.test.ppid=" knime.ini | cut -d '=' -f 2)  # this pid info is written by the prepareInstance method
                         EXECUTOR_PID=$(jps -v | grep $testpid | awk '{ print $1 }' | head -1)
-                        if [[ -n "$EXECUTOR_PID" ]]; then                        
+                        if [[ -n "$EXECUTOR_PID" ]]; then
                             kill $EXECUTOR_PID || true
                         fi
                         # wait up to 90 seconds for executor shutdown
@@ -174,7 +175,7 @@ stage('Integration Tests') {
             } finally {
                 notifications.notifyBuild(currentBuild.result);
                 archiveArtifacts allowEmptyArchive: true,
-                    artifacts: '''org.knime.ui.js/test/integration/assets/workflows/.metadata/.log'''
+                    artifacts: '''org.knime.ui.js/test/integration/assets/workflows/.metadata/.log, org.knime.ui.js/test/integration/reports/*.xml, org.knime.ui.js/test/integration/output/*.png'''
             }
         }
     }

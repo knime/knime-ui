@@ -1,11 +1,9 @@
 <script>
 import { mapState } from 'vuex';
-import WorkflowToolbar from '~/components/WorkflowToolbar';
-import Kanvas from '~/components/Kanvas';
-import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
-import WorkflowMetadata from '~/components/WorkflowMetadata';
+import WorkflowPanel from '~/components/WorkflowPanel';
 import NodeOutput from '~/components/output/NodeOutput';
 import Splitter from '~/components/Splitter';
+import SideMenu from '~/components/SideMenu';
 
 /**
  * A component that shows the tab contents belonging to one workflow,
@@ -15,61 +13,31 @@ export default {
     components: {
         Splitter,
         NodeOutput,
-        Kanvas,
-        LeftCollapsiblePanel,
-        WorkflowMetadata,
-        WorkflowToolbar
+        WorkflowPanel,
+        SideMenu
     },
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
-        }),
-        metadata() {
-            switch (this.workflow.info.containerType) {
-            case 'project':
-                return this.workflow.projectMetadata || { title: this.workflow.info.name };
-            case 'component': {
-                const { componentMetadata:
-                    { inPorts, outPorts, name, type, icon, description, options, views } } = this.workflow;
-                return {
-                    title: name,
-                    description,
-                    nodePreview: { inPorts, outPorts, icon, type, isComponent: true, hasDynPorts: false },
-                    nodeFeatures: { inPorts, outPorts, views, options },
-                    isComponent: true
-                };
-            }
-            default:
-                return null;
-            }
-        }
+        })
     }
 };
 </script>
 
 <template>
-  <main
-    v-if="workflow"
-  >
-    <WorkflowToolbar
-      id="toolbar"
-    />
+  <main v-if="workflow">
+    <!-- TODO: NXT-844 why do we need this collapser-kanvas div? -->
     <div class="collapser-kanvas">
-      <LeftCollapsiblePanel
-        v-if="metadata"
-        id="metadata"
-        width="360px"
-        title="Workflow Metadata"
-      >
-        <WorkflowMetadata
-          v-bind="metadata"
-        />
-      </LeftCollapsiblePanel>
+      <!-- TODO: NXT-844 move sidemenu out of WorkflowTabContent -->
+      <!-- TODO: NXT-844 why are sidebar and sidemenu not combined in one component? -->
+      <!-- TODO: NXT-844 should SideMenu really be only visible if workflow exists? Answer: no -->
+      <SideMenu id="left-panel" />
       <Splitter
         id="kanvasOutputSplitter"
         direction="column"
       >
-        <Kanvas id="kanvas" />
+        <!-- TODO: NXT-844 this is a temporary component that can be merged with WorkflowTabContent as soon as WorkflowTabContent has been cleaned up -->
+        <WorkflowPanel id="workflow-panel" />
         <template #secondary>
           <NodeOutput />
         </template>
@@ -95,14 +63,6 @@ main {
   height: 100%;
 }
 
-#toolbar {
-  height: 50px;
-  flex: 0 0 auto;
-  padding: 10px;
-  background-color: var(--knime-porcelain);
-  border-bottom: 1px solid var(--knime-silver-sand);
-}
-
 .collapser-kanvas {
   display: flex;
   flex-grow: 1;
@@ -111,15 +71,9 @@ main {
   overflow: hidden;
 }
 
-#metadata {
+#left-panel {
   flex: 0 0 auto;
   border-right: 1px solid var(--knime-silver-sand);
-}
-
-#kanvas {
-  overflow: auto;
-  flex: 1 1 100%;
-  height: 100%;
 }
 
 .placeholder {

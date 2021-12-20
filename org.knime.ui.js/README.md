@@ -38,7 +38,7 @@ npm run dev
 In order to run and debug the web app with a functioning backend:
 
 - download the AP, e.g. from https://www.knime.com/nightly-build-downloads
-- add VM arguments to the `knime.ini`
+- add VM arguments to the `knime.ini` ([Installation guide])
 
 | argument | comment |
 |-|-|
@@ -50,7 +50,7 @@ In order to run and debug the web app with a functioning backend:
   - Menu > File > Install KNIME Extensions
   - possibly uncheck 'Group items by category' (in case the KNIME UI-feature is not yet categorized)
 - switch to the new KNIME UI perspective (button on the upper right)
-- open `http://localhost:8888` in your browser and select respective web app
+- open <http://localhost:8888> in your browser and select respective web app
 
 ### Testing
 
@@ -98,8 +98,7 @@ To do so, run KNIME with the following parameters which can be added to the `kni
 If you want to run the tests against a locally running dev server, replace `about:blank` with `http://localhost:3000`.
 
 While the old Java based UI is still around, you must make sure to switch to the new UI before launching the tests.
-This can be achieved by manually clicking the button, or via the parameter
-`-Dperspective=org.knime.ui.java.perspective`.
+This can be achieved by manually clicking the button.
 
 As a workspace, you should select the `test/integration/assets/workflows` folder.
 
@@ -107,16 +106,48 @@ Then, you can run the tests via
 ```
 npm run test:integration
 ```
+To run a single test add the tag as second argument.
 
-Test reports are saved to the `test/integration/reports` folder.
+You can find tags on any \*.test.js file as `Feature('Delete command').tag('@endpoints-@workflow-@command-@deleteCommand');`.
+
+```sh
+# Only runs the deleteCommand file.
+npm run test:integration @deleteCommand
+```
+
+```sh
+# Runs every test inside the workflow directory.
+npm run test:integration @workflow
+```
+
+You can find tags on any *.test.js file as `Feature('Delete command').tag('@endpoints-@workflow-@command-@deleteCommand');`.
 
 ### Running security audit
 
-npm provides a check against known security issues of used dependencies. Run it by calling
+npm provides a check against known security issues of used dependencies. In most cases it is sufficient to only check
+dependencies that are used in production. Run it by calling
 
 ```sh
-npm audit
+npm audit --production
 ```
+
+In some cases security issues can not be addressed right away or do not pose a direct threat (e.g. build dependencies
+of nuxt). To deal with these run
+
+```sh
+npx resolve-audit --production
+```
+
+The tool will present you with a few choices regarding every security issue, which you can choose from. Most of the
+time it is sufficient to ignore issues for a certain amount of time (e.g. press `i` to ignore and then `M` for one
+month). This will create a `audit-resolve.json` with the security exceptions that needs to be checked in. To test if
+there is going to be security audit problems on our build system, call
+
+```sh
+npm run audit
+```
+
+which takes the exceptions into account.
 
 ## Build production version
 
@@ -151,3 +182,4 @@ See `json-rpc-notification.js` for details.
 [jest]: https://jestjs.io/en
 [lcov]: https://github.com/linux-test-project/lcov
 [clover]: http://openclover.org/
+[Installation guide]: https://docs.knime.com/latest/analytics_platform_installation_guide/index.html#_configuration_settings_and_knime_ini_file

@@ -99,6 +99,10 @@ export const actions = {
         commit('setFactor', getters.fitToScreenZoomFactor);
     },
 
+    zoomTo({ commit }, value) {
+        commit('setFactor', value);
+    },
+
     /*
      * Zooms in/out of the workflow while keeping the center fixated
      */
@@ -192,12 +196,9 @@ export const getters = {
             viewBox is shifted, s.t. content appears centered
     */
     viewBox({ containerSize, zoomFactor }, { canvasSize, contentBounds }) {
-        let shiftX = Math.min(0, (contentBounds.width - containerSize.width / zoomFactor) / 2);
-        let shiftY = Math.min(0, (contentBounds.height - containerSize.height / zoomFactor) / 2);
-
         return {
-            left: contentBounds.left + shiftX,
-            top: contentBounds.top + shiftY,
+            left: contentBounds.left,
+            top: contentBounds.top,
             width: canvasSize.width / zoomFactor,
             height: canvasSize.height / zoomFactor
         };
@@ -211,5 +212,15 @@ export const getters = {
             x: (origX - viewBox.left) * zoomFactor,
             y: (origY - viewBox.top) * zoomFactor
         });
+    },
+
+    /*
+        find point in workflow, based on absolute coordinate on canvas
+    */
+    fromAbsoluteCoordinates({ zoomFactor }, { viewBox }) {
+        return ([origX, origY]) => [
+            origX / zoomFactor + viewBox.left,
+            origY / zoomFactor + viewBox.top
+        ];
     }
 };

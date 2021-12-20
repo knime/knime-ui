@@ -2,10 +2,12 @@
 import { mapActions } from 'vuex';
 import AppHeader from '~/components/AppHeader';
 import Sidebar from '~/components/Sidebar';
+import WorkflowToolbar from '~/components/WorkflowToolbar';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
-import HotKeys from '~/components/HotKeys';
 import TooltipContainer from '~/components/TooltipContainer';
 import Error from '~/components/Error';
+
+import { hotKeys } from '~/mixins';
 
 // These fonts will be pre-loaded at application startup
 const requiredFonts = ['Roboto', 'Roboto Condensed', 'Roboto Mono'];
@@ -20,10 +22,11 @@ export default {
         Error,
         AppHeader,
         Sidebar,
+        WorkflowToolbar,
         WorkflowTabContent,
-        HotKeys,
         TooltipContainer
     },
+    mixins: [hotKeys],
     data() {
         return {
             loaded: false,
@@ -41,6 +44,8 @@ export default {
         }
     },
     errorCaptured({ message, stack }, vm, vueInfo) {
+        consola.error(message, vueInfo, stack);
+
         this.error = {
             message,
             stack,
@@ -51,7 +56,12 @@ export default {
         return false;
     },
     methods: {
-        ...mapActions('application', ['initState'])
+        ...mapActions('application', ['initState']),
+        onCloseError() {
+            if (process.env.isDev) { // eslint-disable-line no-process-env
+                this.error = null;
+            }
+        }
     }
 };
 </script>
@@ -63,11 +73,15 @@ export default {
       v-if="error"
       v-once
       v-bind="error"
+      @close="onCloseError"
     />
     <AppHeader id="header" />
+    <WorkflowToolbar
+      v-if="loaded"
+      id="toolbar"
+    />
     <Sidebar id="sidebar" />
     <template v-if="loaded">
-      <HotKeys />
       <WorkflowTabContent id="tab-content" />
       <TooltipContainer id="tooltip-container" />
     </template>
@@ -101,6 +115,16 @@ export default {
 #sidebar {
   grid-area: sidebar;
   height: 100%;
+}
+
+#toolbar {
+  grid-area: header;
+  height: 50px;
+  flex: 0 0 auto;
+  padding: 10px;
+  margin-top: 80px;
+  background-color: var(--knime-porcelain);
+  border-bottom: 1px solid var(--knime-silver-sand);
 }
 
 #tab-content {

@@ -157,10 +157,6 @@ describe('workflow store', () => {
             expect($store.getters['selection/isNodeSelected']('root:3')).toBe(false);
         });
 
-        test('get all selected connection ids', () => {
-            expect($store.getters['selection/selectedConnectionIds']).toStrictEqual(['root:2_1', 'root:2_2']);
-        });
-
         test('get all selected connections', () => {
             expect($store.getters['selection/selectedConnections']).toStrictEqual([
                 { allowedActions: { canDelete: true }, id: 'root:2_1' },

@@ -230,9 +230,9 @@ describe('workflow store', () => {
             });
 
             it.each([
-                ['pauseNodeExecution', 'pause'],
-                ['resumeNodeExecution', 'resume'],
-                ['stepNodeExecution', 'step']
+                ['pauseLoopExecution', 'pause'],
+                ['resumeLoopExecution', 'resume'],
+                ['stepLoopExecution', 'step']
             ])('passes %s to API', async (fn, action) => {
                 let mock = jest.fn();
                 let apiMocks = { changeLoopState: mock };
@@ -437,7 +437,7 @@ describe('workflow store', () => {
         });
 
         describe('tries to delete objects that cannot be deleted', () => {
-            jest.spyOn(window, 'alert').mockImplementation(() => {});
+            jest.spyOn(window, 'alert').mockImplementation(() => { });
 
             let nodeName = `node-1`;
             let connectorName = `connection-1`;
@@ -489,6 +489,29 @@ describe('workflow store', () => {
                     `The following nodes can’t be deleted: [node-1] \n` +
                     `The following connections can’t be deleted: [connection-1]`
                 );
+            });
+        });
+
+        it('connects nodes', async () => {
+            let connectNodes = jest.fn();
+            let apiMocks = { connectNodes };
+            await loadStore({ apiMocks });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+
+            store.dispatch('workflow/connectNodes', {
+                sourceNode: 'source:1',
+                sourcePort: 0,
+                destNode: 'dest:1',
+                destPort: 1
+            });
+
+            expect(connectNodes).toHaveBeenCalledWith({
+                projectId: 'foo',
+                workflowId: 'root',
+                sourceNode: 'source:1',
+                sourcePort: 0,
+                destNode: 'dest:1',
+                destPort: 1
             });
         });
     });
@@ -582,8 +605,8 @@ describe('workflow store', () => {
                 });
 
                 expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                    left: 200,
-                    right: 200 + nodeSize,
+                    left: 150,
+                    right: 250 + nodeSize,
                     top: 200 - nodeNameMargin - nodeNameLineHeight,
                     bottom: 200 + nodeSize + nodeStatusMarginTop + nodeStatusHeight
                 });
@@ -646,8 +669,8 @@ describe('workflow store', () => {
                 });
 
                 expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                    left: 10,
-                    right: 52,
+                    left: -40,
+                    right: 92,
                     top: -16,
                     bottom: 62
                 });
@@ -665,8 +688,8 @@ describe('workflow store', () => {
                 });
 
                 expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                    left: -10,
-                    right: 52,
+                    left: -60,
+                    right: 102,
                     top: -36,
                     bottom: 72
                 });

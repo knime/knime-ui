@@ -5,6 +5,9 @@ export const portSize = 9;
 export const nodeStatusHeight = 12;
 export const nodeStatusMarginTop = 8;
 
+// horizontal node padding to include the full name on the workflow
+export const horizontalNodePadding = 50;
+
 // NOTE: this width limit does not apply if a line contains very long words
 export const maxNodeAnnotationWidth = 1000;
 export const nodeAnnotationMarginTop = 8;
@@ -16,6 +19,7 @@ export const nodeSelectionPadding = [37, 34, 6, 34];
 // Margins including 3 NodeActionButtons. If more that 3 Buttons are present,
 // the hover area is widened by Node.vue
 export const nodeHoverMargin = [47, 19, 8, 19];
+export const nodeHoverPortBottomMargin = 15;
 export const nodeIdMargin = 16;
 export const nodeActionBarButtonSpread = 25;
 
@@ -34,6 +38,7 @@ export const tooltipMaxHeight = 150;
 // horizontal position of the output ports bar if the user hasn't moved it
 export const defaultMetanodeBarPosition = 1000;
 export const metaNodeBarWidth = 10;
+export const metaNodeBarHorizontalPadding = 13;
 export const defaultMetaNodeBarHeight = 500;
 
 export const gridSize = { x: 5, y: 5 };

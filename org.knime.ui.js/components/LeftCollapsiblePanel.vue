@@ -1,4 +1,5 @@
 <script>
+import { mapState } from 'vuex';
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 
 export default {
@@ -23,10 +24,13 @@ export default {
             default: null
         }
     },
-    data() {
-        return {
-            collapsed: false
-        };
+    computed: {
+        ...mapState('panel', ['expanded', 'activeTab'])
+    },
+    methods: {
+        toggleExpanded() {
+            this.$store.dispatch('panel/toggleExpanded');
+        }
     }
 };
 </script>
@@ -35,17 +39,21 @@ export default {
   <div class="panel">
     <div
       class="container"
-      :style="{ width: collapsed ? 0 : width }"
+      :style="{ width: expanded ? width : 0 }"
     >
-      <div :style="{ width }">
+      <div
+        class="hidden-content"
+        :style="{ width }"
+      >
         <slot />
       </div>
     </div>
+
     <button
-      :title="collapsed ? title: null"
-      @click="collapsed = !collapsed"
+      :title="expanded ? null : title"
+      @click="toggleExpanded"
     >
-      <SwitchIcon :style="{ transform: collapsed ? 'scaleX(-1)' : null }" />
+      <SwitchIcon :style="{ transform: expanded ? null : 'scaleX(-1)' }" />
     </button>
   </div>
 </template>
@@ -54,13 +62,16 @@ export default {
 .panel {
   display: flex;
   height: 100%;
-  overflow-y: auto;
 }
 
 .container {
   background-color: var(--knime-gray-ultra-light);
   overflow-x: hidden;
   transition: width 0.3s ease;
+}
+
+.hidden-content {
+  height: 100%;
 }
 
 button {
