@@ -35,10 +35,6 @@ export default {
           Selection
         */
         ...mapActions('selection', ['deselectAllObjects']),
-        onEmptyPointerDown() {
-            // remove selection
-            this.deselectAllObjects();
-        },
         onContextMenu(e) {
             // TODO: NXT-844 why prevent right clicks with ctrl?
             // ignore click with ctrl and meta keys
@@ -85,7 +81,6 @@ export default {
     <Kanvas
       id="kanvas"
       ref="kanvas"
-      @empty-pointerdown="onEmptyPointerDown"
     >
       <!-- Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
            instead of diffing old and new workflow -->

@@ -129,18 +129,17 @@ export default {
     @pointerdown.left.alt="beginPan"
     @pointerup.left="stopPan"
     @pointermove="movePan"
-    @pointerdown.left.shift.exact="beginSelection"
-    @pointerdown.left.exact="beginSelection"
-    @pointerup.left.shift.exact="endSelection"
-    @pointerup.left.exact="endSelection"
-    @pointermove.left.exact="moveSelection"
   >
     <svg
       ref="svg"
       :width="canvasSize.width"
       :height="canvasSize.height"
       :viewBox="viewBoxString"
-      @pointerdown.self.stop="$emit('empty-pointerdown', $event)"
+      @pointerdown.left.shift.exact="beginSelection"
+      @pointerdown.left.exact="beginSelection"
+      @pointerup.left.shift.exact="endSelection"
+      @pointerup.left.exact="endSelection"
+      @pointermove="moveSelection"
     >
       <slot />
     </svg>
