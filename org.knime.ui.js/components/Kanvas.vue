@@ -101,18 +101,6 @@ export default {
                 this.$el.releasePointerCapture(e.pointerId);
                 e.stopPropagation();
             }
-        },
-        /*
-            Selection via rectangle
-         */
-        beginSelection(e) {
-            this.$emit('selection-pointerdown', e);
-        },
-        endSelection(e) {
-            this.$emit('selection-pointerup', e);
-        },
-        moveSelection(e) {
-            this.$emit('selection-pointermove', e);
         }
     }
 };
@@ -135,11 +123,11 @@ export default {
       :width="canvasSize.width"
       :height="canvasSize.height"
       :viewBox="viewBoxString"
-      @pointerdown.left.shift.exact="beginSelection"
-      @pointerdown.left.exact="beginSelection"
-      @pointerup.left.shift.exact="endSelection"
-      @pointerup.left.exact="endSelection"
-      @pointermove="moveSelection"
+      @pointerdown.left.shift.stop.exact="$emit('selection-pointerdown', $event)"
+      @pointerdown.left.stop.exact="$emit('selection-pointerdown', $event)"
+      @pointerup.left.stop.shift.exact="$emit('selection-pointerup', $event)"
+      @pointerup.left.stop.exact="$emit('selection-pointerup', $event)"
+      @pointermove="$emit('selection-pointermove', $event)"
     >
       <slot />
     </svg>
