@@ -90,7 +90,7 @@ describe('SelectionRectangle', () => {
             'root:2': mockNode({ id: 'root:2', position: { x: 0, y: 100 } })
         };
         let wrapper = doShallowMount();
-        wrapper.vm.$parent.$emit('pointerdown', {
+        wrapper.vm.$parent.$emit('selection-pointerdown', {
             pointerId: 1,
             offsetX: 0,
             offsetY: 0,
@@ -100,7 +100,7 @@ describe('SelectionRectangle', () => {
 
         expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
 
-        wrapper.vm.$parent.$emit('pointermove', {
+        wrapper.vm.$parent.$emit('selection-pointermove', {
             pointerId: 1,
             offsetX: 300,
             offsetY: 300
@@ -114,7 +114,7 @@ describe('SelectionRectangle', () => {
         expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledTimes(2);
 
         // stop also changes global dragging state
-        wrapper.vm.$parent.$emit('pointerup', {
+        wrapper.vm.$parent.$emit('selection-pointerup', {
             pointerId: 1
         });
         await delay(moveNodesThrottleWaitDelay);
@@ -124,7 +124,7 @@ describe('SelectionRectangle', () => {
 
     it('selects multiple nodes', async () => {
         let wrapper = doShallowMount();
-        wrapper.vm.$parent.$emit('pointerdown', {
+        wrapper.vm.$parent.$emit('selection-pointerdown', {
             pointerId: 1,
             offsetX: 0,
             offsetY: 0,
@@ -134,7 +134,7 @@ describe('SelectionRectangle', () => {
 
         expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
 
-        wrapper.vm.$parent.$emit('pointermove', {
+        wrapper.vm.$parent.$emit('selection-pointermove', {
             pointerId: 1,
             offsetX: 300,
             offsetY: 300
@@ -152,7 +152,7 @@ describe('SelectionRectangle', () => {
             'root:1': mockNode({ id: 'root:2', position: { x: 100, y: 100 } })
         };
         let wrapper = doShallowMount();
-        wrapper.vm.$parent.$emit('pointerdown', {
+        wrapper.vm.$parent.$emit('selection-pointerdown', {
             pointerId: 1,
             offsetX: 56,
             offsetY: 50 + 32,
@@ -162,7 +162,7 @@ describe('SelectionRectangle', () => {
 
         expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
 
-        wrapper.vm.$parent.$emit('pointermove', {
+        wrapper.vm.$parent.$emit('selection-pointermove', {
             pointerId: 1,
             offsetX: 50 + 32,
             offsetY: 58
@@ -180,7 +180,7 @@ describe('SelectionRectangle', () => {
             'root:1': mockNode({ id: 'root:2', position: { x: 100, y: 100 } })
         };
         let wrapper = doShallowMount();
-        wrapper.vm.$parent.$emit('pointerdown', {
+        wrapper.vm.$parent.$emit('selection-pointerdown', {
             pointerId: 1,
             offsetX: 50 + 32 + 2,
             offsetY: 50 + 32 + 2,
@@ -190,7 +190,7 @@ describe('SelectionRectangle', () => {
 
         expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
 
-        wrapper.vm.$parent.$emit('pointermove', {
+        wrapper.vm.$parent.$emit('selection-pointermove', {
             pointerId: 1,
             offsetX: 52,
             offsetY: 52
@@ -208,7 +208,7 @@ describe('SelectionRectangle', () => {
             'root:1': mockNode({ id: 'root:2', position: { x: 100, y: 100 } })
         };
         let wrapper = doShallowMount();
-        wrapper.vm.$parent.$emit('pointerdown', {
+        wrapper.vm.$parent.$emit('selection-pointerdown', {
             pointerId: 1,
             offsetX: 50 + 32 + 2,
             offsetY: 49,
@@ -218,7 +218,7 @@ describe('SelectionRectangle', () => {
 
         expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
 
-        wrapper.vm.$parent.$emit('pointermove', {
+        wrapper.vm.$parent.$emit('selection-pointermove', {
             pointerId: 1,
             offsetX: 52,
             offsetY: 52
@@ -237,7 +237,7 @@ describe('SelectionRectangle', () => {
         ]);
         let wrapper = doShallowMount();
 
-        wrapper.vm.$parent.$emit('pointerdown', {
+        wrapper.vm.$parent.$emit('selection-pointerdown', {
             pointerId: 1,
             offsetX: 0,
             offsetY: 0,
@@ -247,7 +247,7 @@ describe('SelectionRectangle', () => {
 
         expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalledTimes(0);
 
-        wrapper.vm.$parent.$emit('pointermove', {
+        wrapper.vm.$parent.$emit('selection-pointermove', {
             pointerId: 1,
             offsetX: 300,
             offsetY: 300

@@ -89,30 +89,17 @@ describe('Kanvas', () => {
         };
     });
 
-    describe('empty click on canvas', () => {
-        test('clicking on the canvas emits empty-pointerdown', () => {
+    describe('selection with rect on canvas', () => {
+        test('clicking on the canvas emits select-pointerdown', () => {
             doShallowMount();
 
             wrapper.find('svg').trigger('pointerdown');
 
-            // This test doesn't test the 'self' modifier
-            expect(wrapper.emitted('empty-pointerdown')).toBeTruthy();
+            expect(wrapper.emitted('selection-pointerdown')).toBeTruthy();
         });
 
-        test("clicking on an element in the canvas doesn't emit empty-pointerdown", () => {
-            doShallowMount();
-            wrapper.element.setPointerCapture = jest.fn();
+        // TODO: add other events
 
-            // Add child element to kanvas
-            let childElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            wrapper.find('svg').element.appendChild(childElement);
-
-            // Trigger pointerdown event on child
-            wrapper.find('svg rect').trigger('pointerdown');
-
-            // shouldn't trigger empty-pointerdown
-            expect(wrapper.emitted('empty-pointerdown')).toBeFalsy();
-        });
     });
 
     describe('Zoom & Pan', () => {

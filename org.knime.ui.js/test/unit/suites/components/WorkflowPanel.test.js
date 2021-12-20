@@ -111,14 +111,7 @@ describe('WorkflowPanel', () => {
         });
     });
 
-    it('deselects all objects when clicking the canvas', async () => {
-        doShallowMount();
-
-        wrapper.findComponent(Kanvas).vm.$emit('empty-pointerdown');
-        await Vue.nextTick();
-
-        expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
-    });
+    // TODO: add test for SelectionRect ?
 
     // TODO: NXT-844 add tests for the context menu
 });
