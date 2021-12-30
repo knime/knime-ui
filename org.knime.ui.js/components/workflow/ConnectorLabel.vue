@@ -1,4 +1,5 @@
 <script>
+import { mapState, mapGetters } from 'vuex';
 import { connectorPosition } from '~/mixins';
 
 /**
@@ -25,6 +26,10 @@ export default {
         };
     },
     computed: {
+        ...mapState('workflow', {
+            deltaMovePosition: 'deltaMovePosition'
+        }),
+        ...mapGetters('selection', ['isConnectionSelected', 'isNodeSelected']),
         /**
          * Find the position between two connectors and add some offset to let the label
          * appear above the connector line
@@ -32,10 +37,21 @@ export default {
          */
         halfWayPosition() {
             // Calculates the middle point and subtracts half of the length of the text element
-            let position = [
-                (this.start[0] + (this.end[0] - this.start[0]) / 2) - this.labelWidth / 2,
-                (this.start[1] + (this.end[1] - this.start[1]) / 2 - this.offsetY) - this.labelHeight / 2
-            ];
+            let position = [];
+
+            if (this.isNodeSelected(this.sourceNode) || this.isNodeSelected(this.destNode)) {
+                position = [
+                    (this.start[0] + (this.end[0] - this.start[0] + this.deltaMovePosition.x) / 2) -
+                        this.labelWidth / 2,
+                    (this.start[1] + (this.end[1] - this.start[1] + this.deltaMovePosition.y) / 2 -
+                        this.offsetY) - this.labelHeight / 2
+                ];
+            } else {
+                position = [
+                    (this.start[0] + (this.end[0] - this.start[0]) / 2) - this.labelWidth / 2,
+                    (this.start[1] + (this.end[1] - this.start[1]) / 2 - this.offsetY) - this.labelHeight / 2
+                ];
+            }
             return position;
         }
     }
