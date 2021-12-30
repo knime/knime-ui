@@ -27,9 +27,10 @@ export default {
     },
     computed: {
         ...mapState('workflow', {
-            deltaMovePosition: 'deltaMovePosition'
+            deltaMovePosition: 'deltaMovePosition',
+            isDragging: 'isDragging'
         }),
-        ...mapGetters('selection', ['isConnectionSelected', 'isNodeSelected']),
+        ...mapGetters('selection', ['isNodeSelected']),
         /**
          * Find the position between two connectors and add some offset to let the label
          * appear above the connector line
@@ -39,7 +40,7 @@ export default {
             // Calculates the middle point and subtracts half of the length of the text element
             let position = [];
 
-            if (this.isNodeSelected(this.sourceNode) || this.isNodeSelected(this.destNode)) {
+            if (this.isDragging && (this.isNodeSelected(this.sourceNode) || this.isNodeSelected(this.destNode))) {
                 position = [
                     (this.start[0] + (this.end[0] - this.start[0] + this.deltaMovePosition.x) / 2) -
                         this.labelWidth / 2,
