@@ -6,7 +6,7 @@ import Vuex from 'vuex';
 import * as userActionsStoreConfig from '~/store/userActions';
 
 describe('userActions store', () => {
-    let localVue, storeConfig, workflow, loadStore, store, selectedNodes, selectedConnections;
+    let localVue, storeConfig, workflow, loadStore, store, selectedNodes, selectedConnections, isWritable;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -66,6 +66,7 @@ describe('userActions store', () => {
                 canReset: true
             }
         };
+        isWritable = true;
         loadStore = () => {
             storeConfig = {
                 userActions: userActionsStoreConfig,
@@ -86,6 +87,11 @@ describe('userActions store', () => {
                     },
                     state: {
                         activeWorkflow: workflow
+                    },
+                    getters: {
+                        isWritable() {
+                            return isWritable;
+                        }
                     }
                 }
             };
@@ -294,6 +300,14 @@ describe('userActions store', () => {
             loadStore();
             expect(store.getters['userActions/zoomActionItems']).toBeDefined();
         });
+
+        it('does not allow to delete if node is in write-protected mode', () => {
+            isWritable = false;
+            selectedNodes = [workflow.nodes['root:1']];
+            loadStore();
+            let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
+            expect(contextMenuActionItems).toHaveLength(4);
+        });
     });
 
     /*
@@ -317,6 +331,14 @@ describe('userActions store', () => {
         it('actions for workflow, no node selected', () => {
             loadStore();
             expect(store.getters['userActions/mainMenuActionItems']).toHaveLength(5);
+        });
+
+        it('no delete action for node in write-protected mode', () => {
+            isWritable = false;
+            selectedNodes = [workflow.nodes['root:1']];
+            loadStore();
+            let items = store.getters['userActions/mainMenuActionItems'];
+            expect(items).toHaveLength(5);
         });
     });
 });

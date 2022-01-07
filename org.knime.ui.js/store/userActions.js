@@ -226,6 +226,7 @@ export const getters = {
     mainMenuActionItems(state, getters, rootState, rootGetters) {
         const selectedNodes = rootGetters['selection/selectedNodes'];
         const selectedConnections = rootGetters['selection/selectedConnections'];
+        const isWritable = rootGetters['workflow/isWritable'];
         const allowedWorkflowActions = rootState.workflow.activeWorkflow?.allowedActions || {};
 
         let actionList = [
@@ -247,7 +248,7 @@ export const getters = {
             );
         }
         // show delete button if at least one node or connection is selected; is disabled for no selection states
-        if (selectedNodes.length > 0 || selectedConnections.length > 0) {
+        if (isWritable && (selectedNodes.length > 0 || selectedConnections.length > 0)) {
             actionList.push(
                 actionMap.deleteSelected
             );
@@ -259,6 +260,7 @@ export const getters = {
     contextMenuActionItems(state, getters, rootState, rootGetters) {
         const selectedNodes = rootGetters['selection/selectedNodes'];
         const selectedConnections = rootGetters['selection/selectedConnections'];
+        const isWritable = rootGetters['workflow/isWritable'];
         const allowedWorkflowActions = rootState.workflow.activeWorkflow?.allowedActions || {};
 
         let actionList = [];
@@ -305,9 +307,11 @@ export const getters = {
                 actionList.push(actionMap.openView);
             }
 
-            actionList.push(
-                actionMap.deleteSelected
-            );
+            if (isWritable) {
+                actionList.push(
+                    actionMap.deleteSelected
+                );
+            }
         } else {
             actionList.push(
                 actionMap.executeSelected,
