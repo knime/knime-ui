@@ -195,6 +195,17 @@ describe('Connector.vue', () => {
             );
         });
 
+        it('shift-click and right click add to selection', async () => {
+            doShallowMount();
+            await wrapper.find('g path').trigger('contextmenu', { shiftKey: true });
+
+            expect(storeConfig.selection.actions.deselectConnection).not.toHaveBeenCalled();
+            expect(storeConfig.selection.actions.selectConnection).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.stringMatching('root:2_2')
+            );
+        });
+
         it('shift-click removes from selection', async () => {
             storeConfig.selection.getters.isConnectionSelected = () => jest.fn().mockReturnValue(true);
             doShallowMount();
