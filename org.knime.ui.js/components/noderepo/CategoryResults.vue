@@ -59,6 +59,8 @@ hr {
   width: 360px;
   margin-left: -20px;
   margin-bottom: 14px;
+  border: none;
+  border-top: 1px solid var(--knime-silver-sand);
 
   &:last-child {
     display: none;
