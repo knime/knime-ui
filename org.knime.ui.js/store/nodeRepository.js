@@ -1,6 +1,5 @@
 import { searchNodes, getNodesGroupedByTags } from '~api';
 
-
 /**
  * Store that manages node repository state.
  */
@@ -10,17 +9,21 @@ const categoryPageSize = 3;
 const firstLoadOffset = 6;
 
 export const state = () => ({
+    /* categories */
     nodesPerCategory: [],
     totalNumCategories: null,
-    nodes: [],
+    categoryPage: 0,
+
+    /* search results */
+    nodes: null,
     totalNumNodes: 0,
     selectedTags: [],
     tags: [],
     query: '',
     nodeSearchPage: 0,
-    categoryPage: 0,
-    scrollPosition: 0,
-    isLoadingSearchResults: false
+
+    /* appearance */
+    scrollPosition: 0
 });
 
 export const getters = {
@@ -74,7 +77,7 @@ export const actions = {
         } else {
             commit('setNodeSearchPage', 0);
         }
-        commit('setLoadingSearchResults', true);
+
         let res = await searchNodes({
             query: state.query,
             tags: state.selectedTags,
@@ -90,7 +93,6 @@ export const actions = {
             commit('setNodes', res.nodes);
         }
         commit('setTags', res.tags);
-        commit('setLoadingSearchResults', false);
     },
 
     /**
@@ -123,7 +125,7 @@ export const actions = {
      * @returns {undefined}
      */
     clearSearchResults({ commit }) {
-        commit('setNodes', []);
+        commit('setNodes', null);
         commit('setTags', []);
     },
 
@@ -171,10 +173,6 @@ export const mutations = {
 
     setNodes(state, nodes) {
         state.nodes = nodes;
-    },
-
-    setLoadingSearchResults(state, isLoading) {
-        state.isLoadingSearchResults = isLoading;
     },
 
     setTags(state, tags) {

@@ -1,15 +1,15 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
 
-import SearchBar from '~/components/noderepo/SearchBar';
 import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
+import SearchBar from '~/components/noderepo/SearchBar';
 import CloseableTagList from '~/components/noderepo/CloseableTagList';
+import CategoryResults from '~/components/noderepo/CategoryResults.vue';
+import SearchResults from '~/components/noderepo/SearchResults.vue';
 
 import { debounce } from 'lodash';
-import CategoryResults from './CategoryResults.vue';
-import SearchResults from './SearchResults.vue';
 
-const SEARCH_COOLDOWN = 100; // ms
+const SEARCH_COOLDOWN = 150; // ms
 
 export default {
     components: {
@@ -20,11 +20,7 @@ export default {
         SearchResults
     },
     computed: {
-        ...mapState('nodeRepository', ['nodes', 'tags', 'nodesPerCategory', 'query', 'scrollPosition',
-            'isLoadingSearchResults']),
-        ...mapGetters('nodeRepository', [
-            'hasSearchParams'
-        ]),
+        ...mapState('nodeRepository', ['tags', 'nodes', 'nodesPerCategory']),
         ...mapGetters('nodeRepository', ['hasSearchParams']),
 
         /* Search and Filter */
@@ -43,7 +39,7 @@ export default {
         },
         
         showSearchResults() {
-            return this.hasSearchParams; // && !this.isLoadingSearchResults;
+            return Boolean(this.searchQuery || this.selectedTags.length) && this.nodes !== null;
         },
 
         /* Navigation */
@@ -87,7 +83,7 @@ export default {
         v-model="selectedTags"
         :tags="tags"
       />
-      <hr>
+      <hr v-if="!nodes || nodes.length">
     </div>
     <SearchResults v-if="showSearchResults" />
     <CategoryResults v-else />

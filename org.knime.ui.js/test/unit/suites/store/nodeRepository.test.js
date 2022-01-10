@@ -79,14 +79,13 @@ describe('Node Repository store', () => {
 
     it('creates an empty store', () => {
         expect(store.state.nodeRepository).toStrictEqual({
-            nodes: [],
+            nodes: null,
             nodesPerCategory: [],
             totalNumCategories: null,
             totalNumNodes: 0,
             selectedTags: [],
             tags: [],
             query: '',
-            isLoadingSearchResults: false,
             nodeSearchPage: 0,
             categoryPage: 0,
             scrollPosition: 0
@@ -122,8 +121,7 @@ describe('Node Repository store', () => {
             }, {
                 id: 'node2'
             }];
-            store.commit('nodeRepository/addNodes', nodes);
-            expect(store.state.nodeRepository.nodes).toEqual(nodes);
+            store.commit('nodeRepository/setNodes', nodes);
 
             const moreNodes = [...nodes, {
                 id: 'node3'
@@ -228,7 +226,7 @@ describe('Node Repository store', () => {
 
         it('clears search results on empty parameters (tags and query)', async () => {
             await store.dispatch('nodeRepository/searchNodes');
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', [], undefined);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', null, undefined);
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', [], undefined);
         });
 
@@ -236,7 +234,6 @@ describe('Node Repository store', () => {
             store.commit('nodeRepository/setQuery', 'lookup');
             await store.dispatch('nodeRepository/searchNodes');
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setLoadingSearchResults', true, undefined);
             expect(searchNodesMock).toHaveBeenCalledWith({
                 allTagsMatch: true,
                 fullTemplateInfo: true,
@@ -250,10 +247,10 @@ describe('Node Repository store', () => {
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes',
                 searchNodesResponse.nodes, undefined);
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', searchNodesResponse.tags, undefined);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setLoadingSearchResults', false, undefined);
         });
 
         it('searches for nodes with append=true', async () => {
+            store.commit('nodeRepository/setNodes', []);
             store.commit('nodeRepository/setQuery', 'lookup');
             await store.dispatch('nodeRepository/searchNodes', true);
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 1, undefined);
@@ -300,7 +297,7 @@ describe('Node Repository store', () => {
         it('clears search results', () => {
             store.dispatch('nodeRepository/clearSearchResults');
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', [], undefined);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', [], undefined);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', null, undefined);
         });
     });
 });
