@@ -1,13 +1,13 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
 
-import NodeRepositoryCategory from '~/components/noderepo/NodeRepositoryCategory';
-import NodeSearcher from '~/components/noderepo/NodeSearcher';
-import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
+import SearchBar from '~/components/noderepo/SearchBar';
 import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
 import CloseableTagList from '~/components/noderepo/CloseableTagList';
 
 import { debounce } from 'lodash';
+import CategoryResults from './CategoryResults.vue';
+import SearchResults from './SearchResults.vue';
 
 const SEARCH_COOLDOWN = 100; // ms
 
@@ -15,9 +15,9 @@ export default {
     components: {
         CloseableTagList,
         ActionBreadcrumb,
-        NodeRepositoryCategory,
-        NodeSearcher,
-        ScrollViewContainer
+        SearchBar,
+        CategoryResults,
+        SearchResults
     },
     computed: {
         ...mapState('nodeRepository', ['nodes', 'tags', 'nodesPerCategory', 'query', 'scrollPosition',
@@ -25,35 +25,33 @@ export default {
         ...mapGetters('nodeRepository', [
             'hasSearchParams'
         ]),
+        ...mapGetters('nodeRepository', ['hasSearchParams']),
 
         /* Search and Filter */
         selectedTags: {
-            get() {
-                return this.$store.state.nodeRepository.selectedTags;
-            },
+            get() { return this.$store.state.nodeRepository.selectedTags; },
             set(value) {
                 this.$store.dispatch('nodeRepository/setSelectedTags', value);
             }
         },
-        hasNoSearchResults() {
-            return this.showSearchResults && this.nodes.length === 0;
+        searchQuery: {
+            get() { return this.$store.state.nodeRepository.query; },
+            set: debounce(function (value) {
+                this.$store.dispatch('nodeRepository/updateQuery', value); // eslint-disable-line no-invalid-this
+            },
+            SEARCH_COOLDOWN, { leading: true, trailing: true })
         },
+        
         showSearchResults() {
-            return this.hasSearchParams && !this.isLoadingSearchResults;
+            return this.hasSearchParams; // && !this.isLoadingSearchResults;
         },
 
-        /* Appearance */
+        /* Navigation */
         breadcrumbItems() {
             // If search results are shown, it's possible to navigate back
             return this.showSearchResults
                 ? [{ text: 'Repository', id: 'clear' }, { text: 'Results' }]
                 : [{ text: 'Repository' }];
-        },
-        categoriesDisplayed() {
-            // Display either linear search results or nodes grouped by category
-            return this.showSearchResults
-                ? [{ nodes: this.nodes }]
-                : this.nodesPerCategory;
         }
     },
     mounted() {
@@ -62,42 +60,18 @@ export default {
         }
     },
     methods: {
-        /* Search and Filter */
-        updateSearchQuery: debounce(function (value) {
-            // eslint-disable-next-line no-invalid-this
-            this.$store.dispatch('nodeRepository/updateQuery', value);
-        }, SEARCH_COOLDOWN, { trailing: true }),
-        
-        onClickTag(tag) {
-            // This will show the 'results'-page with one tag selected
-            this.selectedTags = [tag];
-        },
-
-        /* Grouped by Category */
-        loadMoreResults() {
-            if (!this.showSearchResults) {
-                this.$store.dispatch('nodeRepository/getAllNodes', true);
-            }
-        },
-
         /* Navigation */
         onBreadcrumbClick(e) {
             if (e.id === 'clear') {
                 this.$store.dispatch('nodeRepository/clearSearchParams');
             }
-        },
-
-        // TODO: NXT-844 why do we save the scroll position instead of using keep-alive for the repo?
-        // Also currently the NodeRepository isn't destroyed upon closing
-        updateScrollPosition(position) {
-            this.$store.commit('nodeRepository/setScrollPosition', position);
         }
     }
 };
 </script>
 
 <template>
-  <div class="repo">
+  <div class="node-repo">
     <div class="header">
       <div class="title-and-search">
         <ActionBreadcrumb
@@ -106,63 +80,52 @@ export default {
           @click="onBreadcrumbClick"
         />
         <hr>
-        <NodeSearcher
-          :value="query"
-          @input="updateSearchQuery"
-        />
+        <SearchBar v-model="searchQuery" />
       </div>
       <CloseableTagList
         v-if="showSearchResults"
         v-model="selectedTags"
         :tags="tags"
       />
-      <hr class="force">
+      <hr>
     </div>
-    <ScrollViewContainer
-      :initial-position="scrollPosition"
-      @scroll-bottom="loadMoreResults"
-      @save-position="updateScrollPosition"
-    >
-      <div
-        v-if="hasNoSearchResults"
-        class="no-matching-search repo-content"
-      >
-        No node or component matching for: {{ query }}
-      </div>
-      <div
-        v-else
-        class="content"
-      >
-        <template v-for="(category, index) in categoriesDisplayed">
-          <NodeRepositoryCategory
-            :key="`tag-${index}`"
-            :category="category"
-            @click-tag="onClickTag"
-          />
-          <hr
-            :key="index"
-            class="full"
-          >
-        </template>
-      </div>
-    </ScrollViewContainer>
+    <SearchResults v-if="showSearchResults" />
+    <CategoryResults v-else />
   </div>
 </template>
 
 <style lang="postcss" scoped>
-.repo {
+.node-repo {
   font-family: "Roboto Condensed", sans-serif;
   height: 100%;
   display: flex;
   flex-direction: column;
   user-select: none;
 
-  & .no-matching-search {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    height: 100%;
+  & hr {
+    border: none;
+    border-top: 1px solid var(--knime-silver-sand);
+    margin: 0;
+  }
+}
+
+.header {
+  position: sticky;
+  background: var(--knime-gray-ultra-light);
+  z-index: 2;
+  top: 0;
+
+  & > hr {
+    margin-top: 8px;
+  }
+
+  & .title-and-search {
+    padding: 0 20px 5px;
+
+    & > hr {
+      margin-bottom: 13px;
+      margin-top: 5px;
+    }
   }
 
   & .repo-breadcrumb {
@@ -182,49 +145,7 @@ export default {
       margin-top: 6px;
     }
   }
-
-  & hr {
-    border: none;
-    border-top: 1px solid var(--knime-silver-sand);
-    margin: 0;
-
-    &.full {
-      width: 360px;
-      margin-left: -20px;
-      margin-bottom: 14px;
-    }
-  }
-
-  & .closeable-tags {
-    padding-top: 8px;
-  }
-
-  & .title-and-search {
-    padding: 0 20px 5px;
-
-    & > hr {
-      margin-bottom: 13px;
-      margin-top: 5px;
-    }
-  }
-
-  & .header {
-    position: sticky;
-    background: var(--knime-gray-ultra-light);
-    z-index: 2;
-    top: 0;
-
-    & > hr {
-      margin-top: 8px;
-    }
-  }
-
-  & hr:not(.force):last-child {
-    display: none;
-  }
-
-  & .content {
-    padding: 0 20px 15px;
-  }
 }
+
+
 </style>

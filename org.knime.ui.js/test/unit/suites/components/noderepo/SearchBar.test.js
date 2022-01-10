@@ -4,16 +4,16 @@ import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 import LensIcon from '~/webapps-common/ui/assets/img/icons/lens.svg?inline';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 
-import NodeSearcher from '~/components/noderepo/NodeSearcher';
+import SearchBar from '~/components/noderepo/SearchBar';
 
-describe('NodeSearcher', () => {
+describe('SearchBar', () => {
     let doShallowMount, wrapper;
 
     beforeEach(() => {
         wrapper = null;
 
         doShallowMount = () => {
-            wrapper = shallowMount(NodeSearcher);
+            wrapper = shallowMount(SearchBar);
         };
     });
 

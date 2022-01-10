@@ -3,11 +3,13 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
 import NodeRepository from '~/components/noderepo/NodeRepository';
-import CloseableTagList from '~/components/noderepo/CloseableTagList';
-import NodeRepositoryCategory from '~/components/noderepo/NodeRepositoryCategory';
+
+import SearchBar from '~/components/noderepo/SearchBar';
 import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
-import NodeSearcher from '~/components/noderepo/NodeSearcher';
-import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
+import CloseableTagList from '~/components/noderepo/CloseableTagList';
+import CategoryResults from '~/components/noderepo/CategoryResults';
+import SearchResults from '~/components/noderepo/SearchResults';
+
 import { getters } from '~/store/nodeRepository.js';
 
 jest.mock('lodash', () => ({
@@ -95,22 +97,25 @@ describe('NodeRepository', () => {
             $store.state.nodeRepository.selectedTags = [];
             $store.state.nodeRepository.nodesPerCategory = [];
             doShallowMount();
-            expect(wrapper.findComponent(ActionBreadcrumb).props('items')).toEqual([{ text: 'Repository' }]);
+
             expect(getAllNodesMock).toHaveBeenCalled();
-            expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(true);
-            expect(wrapper.findComponent(NodeSearcher).exists()).toBe(true);
+            expect(wrapper.findComponent(ActionBreadcrumb).props('items')).toEqual([{ text: 'Repository' }]);
+            expect(wrapper.findComponent(SearchBar).exists()).toBe(true);
+            expect(wrapper.findComponent(CategoryResults).exists()).toBe(true);
+            expect(wrapper.findComponent(SearchResults).exists()).toBe(false);
             expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
-            expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(false);
         });
 
         it('renders first grouped nodes ', () => {
             $store.state.nodeRepository.selectedTags = [];
             doShallowMount();
-            expect(wrapper.findComponent(ActionBreadcrumb).props('items')).toEqual([{ text: 'Repository' }]);
+
             expect(getAllNodesMock).not.toHaveBeenCalled();
-            expect(wrapper.findComponent(NodeSearcher).exists()).toBe(true);
+            expect(wrapper.findComponent(ActionBreadcrumb).props('items')).toEqual([{ text: 'Repository' }]);
+            expect(wrapper.findComponent(SearchBar).exists()).toBe(true);
             expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
-            expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(true);
+            expect(wrapper.findComponent(CategoryResults).exists()).toBe(true);
+            expect(wrapper.findComponent(SearchResults).exists()).toBe(false);
         });
     });
 
@@ -154,9 +159,9 @@ describe('NodeRepository', () => {
     });
 
     describe('Search for nodes', () => {
-        it('updates query on NodeSearcher input', () => {
+        it('updates query on SearchBar input', () => {
             doShallowMount();
-            wrapper.findComponent(NodeSearcher).vm.$emit('input', 'myquery');
+            wrapper.findComponent(SearchBar).vm.$emit('input', 'myquery');
             expect(updateQueryMock).toHaveBeenCalledWith(expect.anything(), 'myquery');
         });
 
@@ -168,38 +173,6 @@ describe('NodeRepository', () => {
             doShallowMount();
             expect(wrapper.findComponent(ActionBreadcrumb).props('items'))
                 .toEqual([{ id: 'clear', text: 'Repository' }, { text: 'Results' }]);
-        });
-
-        it('shows no matching message if there have been no results', () => {
-            const singleSearchText = 'some node';
-            $store.state.nodeRepository.query = singleSearchText;
-            $store.state.nodeRepository.selectedTags = [];
-            $store.state.nodeRepository.nodes = [];
-            doShallowMount();
-            expect(wrapper.find('.no-matching-search').exists()).toBe(true);
-            expect(wrapper.find('.no-matching-search').text())
-                .toBe(`No node or component matching for: ${singleSearchText}`);
-            expect(wrapper.findComponent(CloseableTagList).exists()).toBe(true);
-            expect(wrapper.findComponent(NodeRepositoryCategory).exists()).toBe(false);
-            expect(wrapper.findComponent(NodeSearcher).exists()).toBe(true);
-        });
-    });
-
-    describe('On events calls', () => {
-        it('saves scroll position ', () => {
-            const newScrollPosition = 200;
-            doShallowMount();
-            const scroller = wrapper.findComponent(ScrollViewContainer);
-            scroller.vm.$emit('save-position', newScrollPosition);
-            expect(setScrollPositionMock).toHaveBeenCalledWith(expect.anything(), newScrollPosition);
-        });
-
-        it('loads new categories on scroll event', () => {
-            $store.state.nodeRepository.selectedTags = [];
-            doShallowMount();
-            const scroller = wrapper.findComponent(ScrollViewContainer);
-            scroller.vm.$emit('scroll-bottom');
-            expect(getAllNodesMock).toHaveBeenCalledWith(expect.anything(), true);
         });
     });
 });
