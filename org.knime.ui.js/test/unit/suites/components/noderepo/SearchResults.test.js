@@ -39,7 +39,7 @@ describe('SearchResults', () => {
                 nodeRepository: {
                     state: storeState,
                     actions: {
-                        searchNodesNextPage: searchNodesNextPageMock,
+                        searchNodesNextPage: searchNodesNextPageMock
                     },
                     mutations: {
                         setScrollPosition: setScrollPositionMock

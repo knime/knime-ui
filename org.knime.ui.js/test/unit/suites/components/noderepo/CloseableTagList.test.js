@@ -65,6 +65,20 @@ describe('CloseableTagList.vue', () => {
         expect(wrapper.findComponent(SelectableTagList).props('showAll')).toBe(true);
     });
 
+    it('hides more on clickaway', async () => {
+        const wrapper = shallowMount(CloseableTagList, {
+            propsData: {
+                tags: sevenTags,
+                value: threeTags
+            },
+            localVue
+        });
+        await wrapper.setData({ displayAll: true });
+        expect(wrapper.vm.displayAll).toBe(true);
+        wrapper.vm.onClickAway();
+        expect(wrapper.vm.displayAll).toBe(false);
+    });
+
     describe('dynamic number of initial tags', () => {
         it('calculates the number of shown tags', () => {
             const wrapper = shallowMount(CloseableTagList, {
