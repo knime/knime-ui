@@ -306,7 +306,9 @@ describe('userActions store', () => {
             selectedNodes = [workflow.nodes['root:1']];
             loadStore();
             let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
-            expect(contextMenuActionItems).toHaveLength(4);
+            expect(contextMenuActionItems[4].text).toBe('Delete');
+            expect(contextMenuActionItems[4].storeAction).toBe('workflow/deleteSelectedObjects');
+            expect(contextMenuActionItems[4].disabled).toBe(true);
         });
     });
 
@@ -337,8 +339,10 @@ describe('userActions store', () => {
             isWritable = false;
             selectedNodes = [workflow.nodes['root:1']];
             loadStore();
-            let items = store.getters['userActions/mainMenuActionItems'];
-            expect(items).toHaveLength(5);
+            let mainMenuActionItems = store.getters['userActions/mainMenuActionItems'];
+            expect(mainMenuActionItems[5].text).toBe('Delete');
+            expect(mainMenuActionItems[5].storeAction).toBe('workflow/deleteSelectedObjects');
+            expect(mainMenuActionItems[5].disabled).toBe(true);
         });
     });
 });

@@ -61,11 +61,6 @@ describe('WorkflowToolbar.vue', () => {
                     deleteSelectedObjects: jest.fn(),
                     undo: jest.fn(),
                     redo: jest.fn()
-                },
-                getters: {
-                    isWritable() {
-                        return true;
-                    }
                 }
             },
             selection: {
