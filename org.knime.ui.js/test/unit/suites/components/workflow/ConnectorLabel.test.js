@@ -26,10 +26,10 @@ describe('ConnectorLabel.vue', () => {
     });
 
     describe('Check label creation', () => {
-        let isDragging, deltaMovePosition;
+        let doMount, wrapper, isNodeSelectedMock;
 
         beforeEach(() => {
-            deltaMovePosition = {};
+            isNodeSelectedMock = jest.fn().mockReturnValue(() => false);
             $store = mockVuexStore({
                 workflow: {
                     state: {
@@ -40,45 +40,51 @@ describe('ConnectorLabel.vue', () => {
                             }
                         },
                         isDragging: false,
-                        deltaMovePosition
+                        deltaMovePosition: { x: 0, y: 0 }
                     },
                     mutations: {
-                        setDragging(state, { isDragging }) {
-                            state.isDragging = isDragging;
+                        setState(state, update = {}) {
+                            Object.entries(update).forEach(([key, value]) => {
+                                state[key] = value;
+                            });
                         }
                     }
                 },
                 selection: {
                     getters: {
-                        // isNodeSelected: () => jest.fn()
-                        isNodeSelected: () => true
+                        isNodeSelected: () => isNodeSelectedMock
                     }
                 }
             });
-            mocks = { $store };
-            wrapper = shallowMount(ConnectorLabel, { propsData, mocks });
+
+            doMount = () => {
+                mocks = { $store };
+                wrapper = shallowMount(ConnectorLabel, { propsData, mocks });
+            };
         });
 
         it('checks that a streaming label is present', () => {
-            expect(wrapper.find('.streamingLabel').exists()).toBe(false);
             propsData.label = '10';
-            wrapper = shallowMount(ConnectorLabel, { propsData, mocks });
+            doMount();
+
             expect(wrapper.find('.streamingLabel').exists()).toBe(true);
         });
 
         it('moving node moves label', async () => {
             propsData.label = '10';
-            $store.commit('setDragging', { isDragging: true });
-            // mocks.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
-            wrapper = shallowMount(ConnectorLabel, { propsData, mocks });
+            doMount();
+
             const initialPosition = wrapper.find('foreignObject').attributes().transform;
-            console.log(initialPosition);
-            // wrapper.setProps({ position: { x: 200, y: 200 } });
-            // await Vue.nextTick();
-            deltaMovePosition = { x: 200, y: 200 };
+
+            isNodeSelectedMock.mockReturnValue(nodeId => ({ 'root:1': true, 'root:2': true }[nodeId]));
+            $store.commit('workflow/setState', {
+                isDragging: true,
+                deltaMovePosition: { x: 200, y: 200 }
+            });
             await Vue.nextTick();
+
             const endPosition = wrapper.find('foreignObject').attributes().transform;
-            console.log(endPosition);
+
             expect(endPosition).not.toBe(initialPosition);
         });
     });
