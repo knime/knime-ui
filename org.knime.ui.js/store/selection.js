@@ -95,6 +95,12 @@ export const getters = {
                 consola.error(`Selected node '${nodeId}' not found in activeWorkflow`)
         );
     },
+    
+    // Returns null if none or multiple nodes are selected, otherwise returns the selected node
+    singleSelectedNode(state, { selectedNodes }) {
+        if (selectedNodes.length !== 1) { return null; }
+        return selectedNodes[0];
+    },
 
     // Checks if a given node id is present in the selected object.
     isNodeSelected: (state) => (nodeId) => nodeId in state.selectedNodes,
