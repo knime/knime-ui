@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-import Breadcrumb from '~/webapps-common/ui/components/Breadcrumb';
+import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
 import ComponentIcon from '~/webapps-common/ui/assets/img/icons/node-workflow.svg?inline';
 import MetaNodeIcon from '~/webapps-common/ui/assets/img/icons/metanode.svg?inline';
 import LinkedComponentIcon from '~/webapps-common/ui/assets/img/icons/linked-component.svg?inline';
@@ -11,7 +11,7 @@ import LinkedMetanodeIcon from '~/webapps-common/ui/assets/img/icons/linked-meta
  */
 export default {
     components: {
-        Breadcrumb
+        ActionBreadcrumb
     },
     computed: {
         ...mapState('workflow', {
@@ -22,7 +22,7 @@ export default {
             let items = parents.map(({ containerType, name, containerId = 'root', linked }) => ({
                 icon: this.getIcon(containerType, linked),
                 text: name,
-                href: `#${encodeURIComponent(containerId)}`
+                id: containerId
             }));
 
             const { containerType, linked } = this.workflow.info;
@@ -47,27 +47,23 @@ export default {
                 return null;
             }
         },
-        onClick({ target }) {
-            if (!target || !target.href) {
-                return;
-            }
-            let { hash } = new URL(target.href, 'file://dummy/');
-            let workflowId = decodeURIComponent(hash.replace(/^#/, ''));
-            
-            this.$store.dispatch('openedProjects/switchWorkflow',
+        onClick({ id }) {
+            this.$store.dispatch(
+                'openedProjects/switchWorkflow',
                 {
                     projectId: this.workflow.projectId,
-                    workflowId
-                });
+                    workflowId: id
+                }
+            );
         }
     }
 };
 </script>
 
 <template>
-  <Breadcrumb
+  <ActionBreadcrumb
     :items="items"
-    @click.capture.prevent.stop.native="onClick"
+    @click="onClick"
   />
 </template>
 
