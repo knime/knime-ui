@@ -301,7 +301,7 @@ describe('userActions store', () => {
             expect(store.getters['userActions/zoomActionItems']).toBeDefined();
         });
 
-        it('does not allow to delete if node is in write-protected mode', () => {
+        it('disabled delete for node in write-protected mode', () => {
             isWritable = false;
             selectedNodes = [workflow.nodes['root:1']];
             loadStore();
@@ -309,6 +309,15 @@ describe('userActions store', () => {
             expect(contextMenuActionItems[4].text).toBe('Delete');
             expect(contextMenuActionItems[4].storeAction).toBe('workflow/deleteSelectedObjects');
             expect(contextMenuActionItems[4].disabled).toBe(true);
+        });
+
+        it('disabled delete action for connection in write-protected mode', () => {
+            isWritable = false;
+            selectedConnections = [workflow.connections['root:1_0']];
+            loadStore();
+            let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
+            expect(contextMenuActionItems[0].text).toBe('Delete');
+            expect(contextMenuActionItems[0].disabled).toBe(true);
         });
     });
 
@@ -335,7 +344,7 @@ describe('userActions store', () => {
             expect(store.getters['userActions/mainMenuActionItems']).toHaveLength(5);
         });
 
-        it('no delete action for node in write-protected mode', () => {
+        it('disabled delete action for node in write-protected mode', () => {
             isWritable = false;
             selectedNodes = [workflow.nodes['root:1']];
             loadStore();
@@ -343,6 +352,16 @@ describe('userActions store', () => {
             expect(mainMenuActionItems[5].text).toBe('Delete');
             expect(mainMenuActionItems[5].storeAction).toBe('workflow/deleteSelectedObjects');
             expect(mainMenuActionItems[5].disabled).toBe(true);
+        });
+
+        it('disabled delete action for connection in write-protected mode', () => {
+            isWritable = false;
+            selectedConnections = [workflow.connections['root:1_0']];
+            loadStore();
+            let mainMenuActionItems = store.getters['userActions/mainMenuActionItems'];
+            expect(mainMenuActionItems[2].text).toBe('Delete');
+            expect(mainMenuActionItems[2].storeAction).toBe('workflow/deleteSelectedObjects');
+            expect(mainMenuActionItems[2].disabled).toBe(true);
         });
     });
 });
