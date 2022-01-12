@@ -9,7 +9,7 @@ jest.mock('~api', () => {
 }, { virtual: true });
 
 describe('ConnectorLabel.vue', () => {
-    let propsData, mocks, wrapper, $store;
+    let propsData, mocks, $store;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -75,6 +75,7 @@ describe('ConnectorLabel.vue', () => {
             doMount();
 
             const initialPosition = wrapper.find('foreignObject').attributes().transform;
+            expect(initialPosition).toBe('translate(-480.25,-33.25)');
 
             isNodeSelectedMock.mockReturnValue(nodeId => ({ 'root:1': true, 'root:2': true }[nodeId]));
             $store.commit('workflow/setState', {
@@ -85,7 +86,28 @@ describe('ConnectorLabel.vue', () => {
 
             const endPosition = wrapper.find('foreignObject').attributes().transform;
 
-            expect(endPosition).not.toBe(initialPosition);
+            expect(endPosition).toContain('translate');
+            expect(endPosition).not.toBe('translate(-480.25,-33.25)');
+        });
+
+        it('dragging not connected node does not move label', async () => {
+            propsData.label = '10';
+            doMount();
+
+            const initialPosition = wrapper.find('foreignObject').attributes().transform;
+            expect(initialPosition).toBe('translate(-480.25,-33.25)');
+
+            isNodeSelectedMock.mockReturnValue(false);
+            $store.commit('workflow/setState', {
+                isDragging: true,
+                deltaMovePosition: { x: 200, y: 200 }
+            });
+            await Vue.nextTick();
+
+            const endPosition = wrapper.find('foreignObject').attributes().transform;
+
+            expect(endPosition).toContain('translate');
+            expect(endPosition).toBe('translate(-480.25,-33.25)');
         });
     });
 });
