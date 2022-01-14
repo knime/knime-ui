@@ -24,6 +24,7 @@ import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.JsonRpcBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeViewBrowserFunction;
+import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 
 import com.equo.chromium.swt.Browser;
@@ -69,6 +70,7 @@ public class KnimeBrowserView {
 		new SwitchToJavaUIBrowserFunction(browser);
 		new OpenNodeViewBrowserFunction(browser);
 		new OpenNodeDialogBrowserFunction(browser);
+		new SaveWorkflowBrowserFunction(browser);
 		if (isRemoteDebuggingPortSet()) {
 			new InitAppForTestingBrowserFunction(browser, this);
 			new ClearAppForTestingBrowserFunction(browser, this);
