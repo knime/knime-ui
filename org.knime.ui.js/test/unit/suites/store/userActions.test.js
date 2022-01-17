@@ -6,7 +6,7 @@ import Vuex from 'vuex';
 import * as userActionsStoreConfig from '~/store/userActions';
 
 describe('userActions store', () => {
-    let localVue, storeConfig, workflow, loadStore, store, selectedNodes, selectedConnections;
+    let localVue, storeConfig, workflow, loadStore, store, selectedNodes, selectedConnections, isWritable;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -66,6 +66,7 @@ describe('userActions store', () => {
                 canReset: true
             }
         };
+        isWritable = true;
         loadStore = () => {
             storeConfig = {
                 userActions: userActionsStoreConfig,
@@ -86,6 +87,11 @@ describe('userActions store', () => {
                     },
                     state: {
                         activeWorkflow: workflow
+                    },
+                    getters: {
+                        isWritable() {
+                            return isWritable;
+                        }
                     }
                 }
             };
@@ -294,6 +300,25 @@ describe('userActions store', () => {
             loadStore();
             expect(store.getters['userActions/zoomActionItems']).toBeDefined();
         });
+
+        it('disabled delete for node in write-protected mode', () => {
+            isWritable = false;
+            selectedNodes = [workflow.nodes['root:1']];
+            loadStore();
+            let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
+            expect(contextMenuActionItems[4].text).toBe('Delete');
+            expect(contextMenuActionItems[4].storeAction).toBe('workflow/deleteSelectedObjects');
+            expect(contextMenuActionItems[4].disabled).toBe(true);
+        });
+
+        it('disabled delete action for connection in write-protected mode', () => {
+            isWritable = false;
+            selectedConnections = [workflow.connections['root:1_0']];
+            loadStore();
+            let contextMenuActionItems = store.getters['userActions/contextMenuActionItems'];
+            expect(contextMenuActionItems[0].text).toBe('Delete');
+            expect(contextMenuActionItems[0].disabled).toBe(true);
+        });
     });
 
     /*
@@ -317,6 +342,26 @@ describe('userActions store', () => {
         it('actions for workflow, no node selected', () => {
             loadStore();
             expect(store.getters['userActions/mainMenuActionItems']).toHaveLength(5);
+        });
+
+        it('disabled delete action for node in write-protected mode', () => {
+            isWritable = false;
+            selectedNodes = [workflow.nodes['root:1']];
+            loadStore();
+            let mainMenuActionItems = store.getters['userActions/mainMenuActionItems'];
+            expect(mainMenuActionItems[5].text).toBe('Delete');
+            expect(mainMenuActionItems[5].storeAction).toBe('workflow/deleteSelectedObjects');
+            expect(mainMenuActionItems[5].disabled).toBe(true);
+        });
+
+        it('disabled delete action for connection in write-protected mode', () => {
+            isWritable = false;
+            selectedConnections = [workflow.connections['root:1_0']];
+            loadStore();
+            let mainMenuActionItems = store.getters['userActions/mainMenuActionItems'];
+            expect(mainMenuActionItems[2].text).toBe('Delete');
+            expect(mainMenuActionItems[2].storeAction).toBe('workflow/deleteSelectedObjects');
+            expect(mainMenuActionItems[2].disabled).toBe(true);
         });
     });
 });
