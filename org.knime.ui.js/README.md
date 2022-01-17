@@ -35,22 +35,22 @@ npm run dev
 
 ### Debugging inside Analytics Platform
 
-In order to run and debug the web app with a functioning backend:
+In order to run, debug and develop the web app with a functioning backend:
 
 - download the AP, e.g. from https://www.knime.com/nightly-build-downloads
-- add VM arguments to the `knime.ini`
+- add VM arguments to the `knime.ini` ([Installation guide])
 
 | argument | comment |
 |-|-|
 | `-Dchromium.remote_debugging_port=8888`| Enables the CEF remote debugging mode available at the provided port |
-| `-Dorg.knime.ui.debug.url=http://localhost:3000` | (Optional) The web app is served from the given URL instead of using the resources bundled with the AP (this parameter only takes effect if the CEF remote debugging mode is enabled!) |
+| `-Dorg.knime.ui.dev.url=http://localhost:3000` | (Optional) The web app is served from the given URL instead of using the resources bundled with the AP |
 | `-Dchromium.debug` | (Optional) More verbose debugging output for the CEF |
 
 - start the AP and make sure the _KNIME UI_-feature is installed
   - Menu > File > Install KNIME Extensions
   - possibly uncheck 'Group items by category' (in case the KNIME UI-feature is not yet categorized)
 - switch to the new KNIME UI perspective (button on the upper right)
-- open `http://localhost:8888` in your browser and select respective web app
+- open <http://localhost:8888> in your browser and select respective web app
 
 ### Testing
 
@@ -92,7 +92,7 @@ To do so, run KNIME with the following parameters which can be added to the `kni
 
 ```
 -Dchromium.remote_debugging_port=8888
--Dorg.knime.ui.debug.url=about:blank
+-Dorg.knime.ui.dev.url=about:blank
 ```
 
 If you want to run the tests against a locally running dev server, replace `about:blank` with `http://localhost:3000`.
@@ -182,3 +182,4 @@ See `json-rpc-notification.js` for details.
 [jest]: https://jestjs.io/en
 [lcov]: https://github.com/linux-test-project/lcov
 [clover]: http://openclover.org/
+[Installation guide]: https://docs.knime.com/latest/analytics_platform_installation_guide/index.html#_configuration_settings_and_knime_ini_file

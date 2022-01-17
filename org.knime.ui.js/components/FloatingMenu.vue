@@ -1,5 +1,5 @@
 <script>
-import { mixin as clickaway } from 'vue-clickaway';
+import { mixin as clickaway } from 'vue-clickaway2';
 import MenuItems from '~/webapps-common/ui/components/MenuItems';
 
 const SCROLLBAR_OFFSET = 4; // px

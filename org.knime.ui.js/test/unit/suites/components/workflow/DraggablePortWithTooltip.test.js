@@ -29,7 +29,7 @@ describe('DraggablePortWithTooltip', () => {
         localVue.use(Vuex);
     });
 
-    let propsData, $store, doShallowMount, storeConfig, wrapper;
+    let propsData, $store, doShallowMount, storeConfig, wrapper, isWritable;
 
     beforeEach(() => {
         propsData = {
@@ -43,6 +43,7 @@ describe('DraggablePortWithTooltip', () => {
                 index: 0
             }
         };
+        isWritable = true;
         storeConfig = {
             workflow: {
                 actions: {
@@ -50,6 +51,11 @@ describe('DraggablePortWithTooltip', () => {
                 },
                 state: {
                     activeWorkflow: 'workflowRef'
+                },
+                getters: {
+                    isWritable() {
+                        return isWritable;
+                    }
                 }
             },
             canvas: {
@@ -241,6 +247,12 @@ describe('DraggablePortWithTooltip', () => {
                 expect(wrapper.element.setPointerCapture).toHaveBeenCalledWith(-1);
             });
 
+            it('does not capture pointer', () => {
+                isWritable = false;
+                startDragging();
+                expect(wrapper.element.setPointerCapture).not.toHaveBeenCalledWith(-1);
+            });
+
             it('saves KanvasElement', () => {
                 startDragging();
                 expect(wrapper.vm.kanvasElement).toStrictEqual(KanvasMock);
@@ -422,6 +434,12 @@ describe('DraggablePortWithTooltip', () => {
 
                 let rootWrapper = createWrapper(wrapper.vm.$root);
                 expect(rootWrapper.emitted('connector-dropped')).toBeTruthy();
+            });
+
+            it('does not release capture pointer', () => {
+                isWritable = false;
+                startDragging();
+                expect(wrapper.element.releasePointerCapture).not.toHaveBeenCalledWith(-1);
             });
 
             test('dispatches drop event (direction = out)', () => {

@@ -27,7 +27,7 @@
     "typeface-roboto": "1.1.13",
     "typeface-roboto-condensed": "1.1.13",
     "typeface-roboto-mono": "1.1.13",
-    "vue-clickaway": "2.2.2",
+    "vue-clickaway2": "2.3.2",
     "webapps-common": "file:webapps-common"
   },
   "devDependencies": {

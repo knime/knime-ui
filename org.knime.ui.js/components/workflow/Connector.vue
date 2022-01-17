@@ -103,7 +103,7 @@ export default {
     },
     methods: {
         ...mapActions('selection', ['selectConnection', 'deselectConnection', 'deselectAllObjects']),
-        onLeftMouseClick(e) {
+        onMouseClick(e) {
             if (e.shiftKey) {
                 // Multi select
                 if (this.isConnectionSelected(this.id)) {
@@ -116,10 +116,6 @@ export default {
                 this.deselectAllObjects();
                 this.selectConnection(this.id);
             }
-        },
-        onContextMenu() {
-            this.deselectAllObjects();
-            this.selectConnection(this.id);
         },
         onIndicateReplacement({ detail: { state } }) {
             if (this.suggestDelete !== 'locked') {
@@ -150,8 +146,8 @@ export default {
     <path
       :d="path"
       class="hover-area"
-      @click.left="onLeftMouseClick"
-      @contextmenu.prevent="onContextMenu"
+      @click.left="onMouseClick"
+      @contextmenu.prevent="onMouseClick"
     />
     <path
       ref="visiblePath"
