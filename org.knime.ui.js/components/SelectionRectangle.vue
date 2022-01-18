@@ -2,7 +2,7 @@
 import { mapGetters, mapState, mapMutations, mapActions } from 'vuex';
 import { throttle } from 'lodash';
 
-const moveNodesThrottle = 10; // 10 ms between new move calculations are performed
+const selectNodesAfterMoveThrottle = 50; // 10 ms between new move calculations are performed
 export default {
     data: () => ({
         startPos: {},
@@ -31,7 +31,7 @@ export default {
     },
     methods: {
         ...mapMutations('workflow', ['setDragging']),
-        ...mapActions('selection', ['selectNode', 'deselectNode', 'deselectAllObjects']),
+        ...mapActions('selection', ['selectNodes', 'deselectNodes', 'deselectAllObjects']),
         startRectSelection(e) {
             this.pointerId = e.pointerId;
             if (!e.target.hasPointerCapture(e.pointerId)) {
@@ -62,7 +62,7 @@ export default {
                 this.pointerId = null;
             });
         },
-        mouseMove: throttle(function (e) {
+        mouseMove(e) {
             /* eslint-disable no-invalid-this */
             if (!this.isActive || this.pointerId !== e.pointerId) {
                 return;
@@ -72,11 +72,13 @@ export default {
                 x: this.viewBox.left + e.offsetX / this.zoomFactor,
                 y: this.viewBox.top + e.offsetY / this.zoomFactor
             };
-            this.$nextTick(() => this.selectAllNodesInRectangle(this.startPos, this.endPos));
+            this.selectAllNodesInRectangle(this.startPos, this.endPos);
 
             /* eslint-enable no-invalid-this */
-        }, moveNodesThrottle),
-        selectAllNodesInRectangle(startPos, endPos) {
+        },
+        selectAllNodesInRectangle: throttle(function (startPos, endPos) {
+            let selectNodes = [];
+            let deselectNodes = [];
             Object.values(this.activeWorkflow.nodes).forEach(node => {
                 const { nodeSize } = this.$shapes;
                 let nodeIsInsideOfRect = false;
@@ -93,25 +95,27 @@ export default {
                     node.position.y + nodeSize > startPos.y && node.position.y < endPos.y) {
                     nodeIsInsideOfRect = true;
                 }
-                this.updateSelection(node.id, nodeIsInsideOfRect);
+                // create lists with node ids
+                if (this.selectedNodeIdsAtStart.includes(node.id)) {
+                    if (nodeIsInsideOfRect) {
+                        deselectNodes.push(node.id);
+                    } else {
+                        selectNodes.push(node.id);
+                    }
+                } else {
+                    // eslint-disable-next-line no-lonely-if
+                    if (nodeIsInsideOfRect) {
+                        selectNodes.push(node.id);
+                    } else {
+                        deselectNodes.push(node.id);
+                    }
+                }
             });
-        },
-        updateSelection(nodeId, nodeIsInsideOfRect) {
-            if (this.selectedNodeIdsAtStart.includes(nodeId)) {
-                if (nodeIsInsideOfRect) {
-                    this.deselectNode(nodeId);
-                } else {
-                    this.selectNode(nodeId);
-                }
-            } else {
-                // eslint-disable-next-line no-lonely-if
-                if (nodeIsInsideOfRect) {
-                    this.selectNode(nodeId);
-                } else {
-                    this.deselectNode(nodeId);
-                }
-            }
-        }
+
+            this.selectNodes(selectNodes);
+            this.deselectNodes(deselectNodes);
+
+        }, selectNodesAfterMoveThrottle)
     }
 };
 </script>

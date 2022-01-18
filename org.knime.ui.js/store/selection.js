@@ -64,9 +64,19 @@ export const actions = {
         commit('addNodesToSelection', [nodeId]);
     },
 
+    // Selects all nodeIds
+    selectNodes({ commit }, nodeIds) {
+        commit('addNodesToSelection', nodeIds);
+    },
+
     // Deselects the given node.
     deselectNode({ commit }, nodeId) {
         commit('removeNodesFromSelection', [nodeId]);
+    },
+
+    // Deselects all nodeIds
+    deselectNodes({ commit }, nodeIds) {
+        commit('removeNodesFromSelection', nodeIds);
     },
 
     // Selects the given connection.
