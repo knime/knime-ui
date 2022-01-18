@@ -42,7 +42,7 @@ export default {
     <input
       ref="searchInput"
       :value="value"
-      placeholder="Search nodes and components"
+      placeholder="Search nodes"
       type="text"
       @input="$emit('input', $event.target.value)"
     >
