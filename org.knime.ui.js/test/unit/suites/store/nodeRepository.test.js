@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
@@ -49,7 +50,7 @@ const searchNodesResponse = {
     ]
 };
 
-describe('nodeRepository store', () => {
+describe('Node Repository store', () => {
     let store, localVue, searchNodesMock, getNodesGroupedByTagsMock, commitSpy, dispatchSpy;
 
     beforeAll(() => {
@@ -78,7 +79,7 @@ describe('nodeRepository store', () => {
 
     it('creates an empty store', () => {
         expect(store.state.nodeRepository).toStrictEqual({
-            nodes: [],
+            nodes: null,
             nodesPerCategory: [],
             totalNumCategories: null,
             totalNumNodes: 0,
@@ -88,6 +89,18 @@ describe('nodeRepository store', () => {
             nodeSearchPage: 0,
             categoryPage: 0,
             scrollPosition: 0
+        });
+    });
+
+    describe('getters', () => {
+        it('returns proper values for hasSearchParams', () => {
+            expect(store.getters['nodeRepository/hasSearchParams']).toBe(false);
+            store.state.nodeRepository.query = 'value';
+            expect(store.getters['nodeRepository/hasSearchParams']).toBe(true);
+            store.state.nodeRepository.selectedTags = ['myTag1'];
+            expect(store.getters['nodeRepository/hasSearchParams']).toBe(true);
+            store.state.nodeRepository.query = '';
+            expect(store.getters['nodeRepository/hasSearchParams']).toBe(true);
         });
     });
 
@@ -108,8 +121,7 @@ describe('nodeRepository store', () => {
             }, {
                 id: 'node2'
             }];
-            store.commit('nodeRepository/addNodes', nodes);
-            expect(store.state.nodeRepository.nodes).toEqual(nodes);
+            store.commit('nodeRepository/setNodes', nodes);
 
             const moreNodes = [...nodes, {
                 id: 'node3'
@@ -124,30 +136,9 @@ describe('nodeRepository store', () => {
             expect(store.state.nodeRepository.nodes).toEqual(nodes);
         });
 
-        it('adds tag (and skips duplicates)', () => {
-            store.commit('nodeRepository/addTag', 'myTag');
-            expect(store.state.nodeRepository.tags).toEqual(['myTag']);
-            store.commit('nodeRepository/addTag', 'myTag');
-            store.commit('nodeRepository/addTag', 'myTag2');
-            expect(store.state.nodeRepository.tags).toEqual(['myTag', 'myTag2']);
-        });
-
         it('sets tags', () => {
             store.commit('nodeRepository/setTags', ['myTag', 'myTag2']);
             expect(store.state.nodeRepository.tags).toEqual(['myTag', 'myTag2']);
-        });
-
-        it('adds selectedTag (and skips duplicates)', () => {
-            store.commit('nodeRepository/addSelectedTag', 'myTag');
-            store.commit('nodeRepository/addSelectedTag', 'myTag2');
-            store.commit('nodeRepository/addSelectedTag', 'myTag');
-            expect(store.state.nodeRepository.selectedTags).toEqual(['myTag', 'myTag2']);
-        });
-
-        it('removes selectedTag', () => {
-            store.state.nodeRepository.selectedTags = ['myTag'];
-            store.commit('nodeRepository/removeSelectedTag', 'myTag');
-            expect(store.state.nodeRepository.selectedTags).toEqual([]);
         });
 
         it('sets selectedTags', () => {
@@ -176,9 +167,19 @@ describe('nodeRepository store', () => {
             expect(store.state.nodeRepository.nodesPerCategory).toStrictEqual(categories);
         });
 
+        it('sets query', () => {
+            store.commit('nodeRepository/setQuery', 'some value');
+            expect(store.state.nodeRepository.query).toBe('some value');
+        });
+
         it('sets totalNumCategories', () => {
             store.commit('nodeRepository/setTotalNumCategories', 2);
             expect(store.state.nodeRepository.totalNumCategories).toEqual(2);
+        });
+
+        it('sets scrollPosition', () => {
+            store.commit('nodeRepository/setScrollPosition', 22);
+            expect(store.state.nodeRepository.scrollPosition).toEqual(22);
         });
     });
 
@@ -198,7 +199,7 @@ describe('nodeRepository store', () => {
                     'nodeRepository/setNodesPerCategories', getNodesGroupedByTagsResponse.selections, undefined
                 );
             });
-    
+
             it('gets all nodes', async () => {
                 await store.dispatch('nodeRepository/getAllNodes', true);
                 expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setCategoryPage', 1, undefined);
@@ -223,7 +224,14 @@ describe('nodeRepository store', () => {
             });
         });
 
+        it('clears search results on empty parameters (tags and query)', async () => {
+            await store.dispatch('nodeRepository/searchNodes');
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', null, undefined);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', [], undefined);
+        });
+
         it('searches for nodes', async () => {
+            store.commit('nodeRepository/setQuery', 'lookup');
             await store.dispatch('nodeRepository/searchNodes');
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
             expect(searchNodesMock).toHaveBeenCalledWith({
@@ -231,7 +239,7 @@ describe('nodeRepository store', () => {
                 fullTemplateInfo: true,
                 nodeLimit: 21,
                 nodeOffset: 0,
-                query: '',
+                query: 'lookup',
                 tags: []
             });
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTotalNumNodes',
@@ -242,6 +250,8 @@ describe('nodeRepository store', () => {
         });
 
         it('searches for nodes with append=true', async () => {
+            store.commit('nodeRepository/setNodes', []);
+            store.commit('nodeRepository/setQuery', 'lookup');
             await store.dispatch('nodeRepository/searchNodes', true);
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 1, undefined);
             expect(searchNodesMock).toHaveBeenCalledWith({
@@ -249,7 +259,7 @@ describe('nodeRepository store', () => {
                 fullTemplateInfo: true,
                 nodeLimit: 21,
                 nodeOffset: 21,
-                query: '',
+                query: 'lookup',
                 tags: []
             });
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTotalNumNodes',
@@ -258,27 +268,36 @@ describe('nodeRepository store', () => {
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', searchNodesResponse.tags, undefined);
         });
 
+        it('updates query', async () => {
+            await store.dispatch('nodeRepository/updateQuery', 'some value');
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setQuery', 'some value', undefined);
+            expect(dispatchSpy).toHaveBeenCalledWith(
+                'nodeRepository/searchNodes', undefined
+            );
+        });
+
         it('searches for nodes next page', async () => {
             await store.dispatch('nodeRepository/searchNodesNextPage');
             expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', true);
         });
 
-        it('selects tag', () => {
-            store.dispatch('nodeRepository/selectTag', 'myTag');
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/addSelectedTag', 'myTag', undefined);
+        it('set selected Tags', () => {
+            store.dispatch('nodeRepository/setSelectedTags', ['myTag', 'myTag2']);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setSelectedTags', ['myTag', 'myTag2'], undefined);
             expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
         });
 
-        it('deselects tag', () => {
-            store.dispatch('nodeRepository/deselectTag', 'myTag');
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/removeSelectedTag', 'myTag', undefined);
-            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
-        });
-
-        it('clears selected tags', () => {
-            store.dispatch('nodeRepository/clearSelectedTags');
+        it('clears search params (tags and query)', () => {
+            store.dispatch('nodeRepository/clearSearchParams');
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setSelectedTags', [], undefined);
-            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/getAllNodes', false);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setQuery', '', undefined);
+            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/clearSearchResults', undefined);
+        });
+
+        it('clears search results', () => {
+            store.dispatch('nodeRepository/clearSearchResults');
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', [], undefined);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', null, undefined);
         });
     });
 });

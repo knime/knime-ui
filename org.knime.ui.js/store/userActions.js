@@ -136,7 +136,11 @@ const actionMap = {
         icon: DeleteIcon,
         storeAction: 'workflow/deleteSelectedObjects',
         storeActionParams: [],
-        disabled({ selectedNodes, selectedConnections }) {
+        disabled({ selectedNodes, selectedConnections, isWritable }) {
+            // disable for write-protected workflow
+            if (!isWritable) {
+                return true;
+            }
             // disable for no selections
             if (selectedNodes.length === 0 && selectedConnections.length === 0) {
                 return true;
@@ -192,7 +196,8 @@ const actionMap = {
 
 const testIfIsMac = () => navigator?.userAgent?.toLowerCase()?.includes('mac');
 
-const mapActions = (actionList, selectedNodes, selectedConnections, allowedWorkflowActions) => {
+// eslint-disable-next-line max-params
+const mapActions = (actionList, selectedNodes, selectedConnections, allowedWorkflowActions, isWritable) => {
     const isMac = testIfIsMac();
     return actionList.map(src => {
         let action = { ...src };
@@ -209,7 +214,7 @@ const mapActions = (actionList, selectedNodes, selectedConnections, allowedWorkf
 
         // call disabled methods and turn them to booleans
         if (typeof src.disabled === 'function') {
-            action.disabled = src.disabled({ selectedNodes, selectedConnections, allowedWorkflowActions });
+            action.disabled = src.disabled({ selectedNodes, selectedConnections, allowedWorkflowActions, isWritable });
         }
 
         // call action params if they are a function
@@ -226,6 +231,7 @@ export const getters = {
     mainMenuActionItems(state, getters, rootState, rootGetters) {
         const selectedNodes = rootGetters['selection/selectedNodes'];
         const selectedConnections = rootGetters['selection/selectedConnections'];
+        const isWritable = rootGetters['workflow/isWritable'];
         const allowedWorkflowActions = rootState.workflow.activeWorkflow?.allowedActions || {};
 
         let actionList = [
@@ -253,12 +259,13 @@ export const getters = {
             );
         }
 
-        return mapActions(actionList, selectedNodes, selectedConnections, allowedWorkflowActions);
+        return mapActions(actionList, selectedNodes, selectedConnections, allowedWorkflowActions, isWritable);
     },
 
     contextMenuActionItems(state, getters, rootState, rootGetters) {
         const selectedNodes = rootGetters['selection/selectedNodes'];
         const selectedConnections = rootGetters['selection/selectedConnections'];
+        const isWritable = rootGetters['workflow/isWritable'];
         const allowedWorkflowActions = rootState.workflow.activeWorkflow?.allowedActions || {};
 
         let actionList = [];
@@ -317,7 +324,7 @@ export const getters = {
             );
         }
 
-        return mapActions(actionList, selectedNodes, selectedConnections, allowedWorkflowActions);
+        return mapActions(actionList, selectedNodes, selectedConnections, allowedWorkflowActions, isWritable);
     },
 
     hotKeyItems(state, getters, rootState, rootGetters) {
