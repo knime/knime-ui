@@ -16,7 +16,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.knime.core.node.NodeLogger;
-import org.knime.gateway.api.webui.entity.EventEnt;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
@@ -61,7 +60,7 @@ public class KnimeBrowserView {
 		m_browser.setMenu(new Menu(m_browser.getShell()));
 		addBrowserFunctions(m_browser);
 		setUrl();
-		BiConsumer<String, EventEnt> eventConsumer = createEventConsumer(m_browser);
+		BiConsumer<String, Object> eventConsumer = createEventConsumer(m_browser);
 		DefaultEventService.getInstance().addEventConsumer(eventConsumer);
 	}
 
@@ -125,13 +124,13 @@ public class KnimeBrowserView {
 		}
 	}
 
-	private static BiConsumer<String, EventEnt> createEventConsumer(final Browser browser) {
+	private static BiConsumer<String, Object> createEventConsumer(final Browser browser) {
 		final ObjectMapper mapper = ObjectMapperUtil.getInstance().getObjectMapper();
 		return (name, event) -> createJsonRpcNotificationAndSendToBrowser(browser, mapper, name, event);
 	}
 
 	private static void createJsonRpcNotificationAndSendToBrowser(final Browser browser, final ObjectMapper mapper,
-			final String name, final EventEnt event) {
+			final String name, final Object event) {
 		// wrap event into a jsonrpc notification (method == event-name) and serialize
 		ObjectNode jsonrpc = mapper.createObjectNode();
 		ArrayNode params = jsonrpc.arrayNode();
