@@ -7,6 +7,7 @@ import ResetSelectedIcon from '~/assets/reset-selected.svg?inline';
 import RedoIcon from '~/assets/redo.svg?inline';
 import UndoIcon from '~/assets/undo.svg?inline';
 import DeleteIcon from '~/assets/delete.svg?inline';
+import SaveIcon from '~/assets/save.svg?inline';
 
 /**
  * All hotkeys should be defined here. Look in HotKeys.vue for the real execution handling.
@@ -20,6 +21,7 @@ const hotKeys = {
     executeAllNodes: ['Shift', 'F7'],
     cancelAllNodes: ['Shift', 'F9'],
     resetAllNodes: ['Shift', 'F8'],
+    save: ['Ctrl', 'S'],
     undo: ['Ctrl', 'Z'],
     redo: ['Ctrl', 'Shift', 'Z'],
     executeSelectedNodes: ['F7'],
@@ -55,6 +57,15 @@ const hotKeyDisplayMapForMac = {
  */
 const actionMap = {
     // global stuff (toolbar)
+    save: {
+        text: null,
+        title: 'Save workflow',
+        hotkey: hotKeys.save,
+        icon: SaveIcon,
+        storeAction: 'workflow/saveWorkflow',
+        storeActionParams: [],
+        disabled: ({ isDirty }) => !isDirty
+    },
     undo: {
         text: null,
         title: 'Undo',
@@ -197,7 +208,7 @@ const actionMap = {
 const testIfIsMac = () => navigator?.userAgent?.toLowerCase()?.includes('mac');
 
 // eslint-disable-next-line max-params
-const mapActions = (actionList, selectedNodes, selectedConnections, allowedWorkflowActions, isWritable) => {
+const mapActions = (actionList, selectedNodes, selectedConnections, allowedWorkflowActions, isWritable, isDirty) => {
     const isMac = testIfIsMac();
     return actionList.map(src => {
         let action = { ...src };
@@ -214,7 +225,11 @@ const mapActions = (actionList, selectedNodes, selectedConnections, allowedWorkf
 
         // call disabled methods and turn them to booleans
         if (typeof src.disabled === 'function') {
-            action.disabled = src.disabled({ selectedNodes, selectedConnections, allowedWorkflowActions, isWritable });
+            action.disabled = src.disabled({ selectedNodes,
+                selectedConnections,
+                allowedWorkflowActions,
+                isWritable,
+                isDirty });
         }
 
         // call action params if they are a function
@@ -232,9 +247,11 @@ export const getters = {
         const selectedNodes = rootGetters['selection/selectedNodes'];
         const selectedConnections = rootGetters['selection/selectedConnections'];
         const isWritable = rootGetters['workflow/isWritable'];
+        const isDirty = rootGetters['workflow/isDirty'];
         const allowedWorkflowActions = rootState.workflow.activeWorkflow?.allowedActions || {};
 
         let actionList = [
+            actionMap.save,
             actionMap.undo,
             actionMap.redo
         ];
@@ -259,7 +276,7 @@ export const getters = {
             );
         }
 
-        return mapActions(actionList, selectedNodes, selectedConnections, allowedWorkflowActions, isWritable);
+        return mapActions(actionList, selectedNodes, selectedConnections, allowedWorkflowActions, isWritable, isDirty);
     },
 
     contextMenuActionItems(state, getters, rootState, rootGetters) {

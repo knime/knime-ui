@@ -59,7 +59,7 @@ export const hotKeys = {
         ...mapActions('selection', ['selectAllNodes']),
         ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes', 'deleteSelectedObjects',
             'undo', 'redo', 'openView', 'openDialog', 'stepLoopExecution', 'resumeLoopExecution',
-            'pauseLoopExecution']),
+            'pauseLoopExecution', 'saveWorkflow']),
         ...mapMutations('canvas', ['setSuggestPanning', 'resetZoom']),
         ...mapActions('canvas', ['setZoomToFit', 'zoomCentered']),
         setupShortcuts() {
@@ -84,7 +84,8 @@ export const hotKeys = {
                         [...this.hotKeyItems.cancelAllNodes, () => this.cancelNodeExecution('all')],
                         [...this.hotKeyItems.resetAllNodes, () => this.resetNodes('all')],
                         [...this.hotKeyItems.undo, () => this.undo()],
-                        [...this.hotKeyItems.redo, () => this.redo()]
+                        [...this.hotKeyItems.redo, () => this.redo()],
+                        [...this.hotKeyItems.save, () => this.saveWorkflow()]
                     ]
                 },
                 singleSelectedNode: {

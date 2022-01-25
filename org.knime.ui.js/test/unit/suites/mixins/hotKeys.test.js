@@ -59,7 +59,8 @@ describe('HotKeys', () => {
                     openDialog: jest.fn(),
                     stepLoopExecution: jest.fn(),
                     pauseLoopExecution: jest.fn(),
-                    resumeLoopExecution: jest.fn()
+                    resumeLoopExecution: jest.fn(),
+                    saveWorkflow: jest.fn()
                 },
                 getters: {
                     isWritable: jest.fn().mockReturnValue(true)
@@ -178,6 +179,11 @@ describe('HotKeys', () => {
             it('Command + Shift + Z: redo last command', () => {
                 document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Z', ctrlKey: true, shiftKey: true }));
                 expect(storeConfig.workflow.actions.redo).toHaveBeenCalled();
+            });
+
+            it('Command + S: save workflow', () => {
+                document.dispatchEvent(new KeyboardEvent('keydown', { key: 'S', ctrlKey: true }));
+                expect(storeConfig.workflow.actions.saveWorkflow).toHaveBeenCalled();
             });
         });
 

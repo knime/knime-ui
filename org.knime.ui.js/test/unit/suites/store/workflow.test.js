@@ -120,6 +120,7 @@ describe('workflow store', () => {
             await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
+                dirty: false,
                 info: {
                     linked: true,
                     jobManager: 'someJobManager'
@@ -144,6 +145,18 @@ describe('workflow store', () => {
 
         it('check isStreaming', () => {
             expect(store.getters['workflow/isStreaming']).toBe(true);
+        });
+
+        it('check isDirty', () => {
+            expect(store.getters['workflow/isDirty']).toBe(false);
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
+                dirty: true,
+                info: {
+                    linked: false
+                }
+            });
+            expect(store.getters['workflow/isDirty']).toBe(true);
         });
     });
 
@@ -514,6 +527,16 @@ describe('workflow store', () => {
                 destPort: 1
             });
         });
+
+        it('passes save workflow to API', async () => {
+            let saveWorkflow = jest.fn();
+            let apiMocks = { saveWorkflow };
+            await loadStore({ apiMocks });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.dispatch('workflow/saveWorkflow');
+
+            expect(saveWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
+        });
     });
 
     describe('getters', () => {
@@ -737,5 +760,13 @@ describe('workflow store', () => {
                 expect(store.getters['workflow/getNodeType']('ownData')).toBe('ownType');
             });
         });
+    });
+
+    test('isDirty', async () => {
+        await loadStore();
+        store.commit('workflow/setActiveWorkflow', {
+            dirty: true
+        });
+        expect(store.getters['workflow/isDirty']).toBe(true);
     });
 });

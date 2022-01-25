@@ -1,5 +1,6 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
-    moveObjects, openDialog, openView, undo, redo, removeEventListener, connectNodes, addNode } from '~api';
+    moveObjects, openDialog, openView, undo, redo, removeEventListener, connectNodes, addNode,
+    saveWorkflow } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -204,6 +205,10 @@ export const actions = {
         let { activeWorkflowId } = getters;
         redo({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
     },
+    saveWorkflow({ state }) {
+        let { activeWorkflow: { projectId } } = state;
+        saveWorkflow({ projectId });
+    },
 
     /**
      * Move either the outline of the nodes or the nodes itself,
@@ -292,6 +297,9 @@ export const getters = {
     insideLinkedType({ activeWorkflow }) {
         const parents = activeWorkflow?.parents || [];
         return parents.find(({ linked }) => linked)?.containerType;
+    },
+    isDirty({ activeWorkflow }) {
+        return Boolean(activeWorkflow?.dirty);
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow

@@ -12,7 +12,8 @@ import * as userActionStoreConfig from '~/store/userActions';
 jest.mock('~api', () => { }, { virtual: true });
 
 describe('WorkflowToolbar.vue', () => {
-    let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper, $store, selectedNodes, selectedConnections;
+    let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper, $store, selectedNodes, selectedConnections,
+        isDirty;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -22,6 +23,7 @@ describe('WorkflowToolbar.vue', () => {
     beforeEach(() => {
         wrapper = null;
         propsData = {};
+        isDirty = false;
 
         selectedNodes = [];
         selectedConnections = [];
@@ -60,7 +62,13 @@ describe('WorkflowToolbar.vue', () => {
                     resetNodes: jest.fn(),
                     deleteSelectedObjects: jest.fn(),
                     undo: jest.fn(),
-                    redo: jest.fn()
+                    redo: jest.fn(),
+                    saveWorkflow: jest.fn()
+                },
+                getters: {
+                    isDirty() {
+                        return isDirty;
+                    }
                 }
             },
             selection: {
@@ -93,9 +101,9 @@ describe('WorkflowToolbar.vue', () => {
             it('shows actions for all by default', () => {
                 doShallowMount();
                 let buttons = wrapper.findAllComponents(ToolbarButton);
-                expect(buttons.at(2).text()).toMatch('all');
                 expect(buttons.at(3).text()).toMatch('all');
                 expect(buttons.at(4).text()).toMatch('all');
+                expect(buttons.at(5).text()).toMatch('all');
             });
 
             it('activates global action buttons when possible', () => {
@@ -106,12 +114,13 @@ describe('WorkflowToolbar.vue', () => {
                 };
                 doShallowMount();
                 let buttons = wrapper.findAllComponents(ToolbarButton);
-                expect(buttons.at(2).attributes('disabled')).toBeFalsy();
                 expect(buttons.at(3).attributes('disabled')).toBeFalsy();
                 expect(buttons.at(4).attributes('disabled')).toBeFalsy();
+                expect(buttons.at(5).attributes('disabled')).toBeFalsy();
             });
 
             it('triggers store actions when a button is clicked', () => {
+                isDirty = true;
                 workflow.allowedActions = {
                     canExecute: true,
                     canCancel: true,
@@ -121,8 +130,10 @@ describe('WorkflowToolbar.vue', () => {
                 };
                 doShallowMount();
                 let buttons = wrapper.findAllComponents(ToolbarButton);
-                let { executeNodes, cancelNodeExecution, resetNodes, undo, redo } = storeConfig.workflow.actions;
+                let { executeNodes, cancelNodeExecution, resetNodes, undo, redo,
+                    saveWorkflow } = storeConfig.workflow.actions;
 
+                expect(saveWorkflow).not.toHaveBeenCalled();
                 expect(executeNodes).not.toHaveBeenCalled();
                 expect(cancelNodeExecution).not.toHaveBeenCalled();
                 expect(resetNodes).not.toHaveBeenCalled();
@@ -131,14 +142,16 @@ describe('WorkflowToolbar.vue', () => {
 
 
                 buttons.at(0).trigger('click');
-                expect(undo).toHaveBeenCalled();
+                expect(saveWorkflow).toHaveBeenCalled();
                 buttons.at(1).trigger('click');
-                expect(redo).toHaveBeenCalled();
+                expect(undo).toHaveBeenCalled();
                 buttons.at(2).trigger('click');
-                expect(executeNodes).toHaveBeenCalledWith(expect.anything(), 'all');
+                expect(redo).toHaveBeenCalled();
                 buttons.at(3).trigger('click');
-                expect(cancelNodeExecution).toHaveBeenCalledWith(expect.anything(), 'all');
+                expect(executeNodes).toHaveBeenCalledWith(expect.anything(), 'all');
                 buttons.at(4).trigger('click');
+                expect(cancelNodeExecution).toHaveBeenCalledWith(expect.anything(), 'all');
+                buttons.at(5).trigger('click');
                 expect(resetNodes).toHaveBeenCalledWith(expect.anything(), 'all');
             });
         });
@@ -148,9 +161,9 @@ describe('WorkflowToolbar.vue', () => {
                 selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:2']];
                 doShallowMount();
                 let buttons = wrapper.findAllComponents(ToolbarButton);
-                expect(buttons.at(2).text()).toMatch('Execute');
-                expect(buttons.at(3).text()).toMatch('Cancel');
-                expect(buttons.at(4).text()).toMatch('Reset');
+                expect(buttons.at(3).text()).toMatch('Execute');
+                expect(buttons.at(4).text()).toMatch('Cancel');
+                expect(buttons.at(5).text()).toMatch('Reset');
             });
 
             it('disable actions for selection (all false)', () => {
@@ -166,9 +179,9 @@ describe('WorkflowToolbar.vue', () => {
                 selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:2']];
                 doShallowMount();
                 let buttons = wrapper.findAllComponents(ToolbarButton);
-                expect(buttons.at(2).attributes('disabled')).toBeFalsy();
                 expect(buttons.at(3).attributes('disabled')).toBeFalsy();
                 expect(buttons.at(4).attributes('disabled')).toBeFalsy();
+                expect(buttons.at(5).attributes('disabled')).toBeFalsy();
             });
 
             it('triggers store actions when a button is clicked', () => {
@@ -187,13 +200,13 @@ describe('WorkflowToolbar.vue', () => {
                 expect(resetNodes).not.toHaveBeenCalled();
                 expect(deleteSelectedObjects).not.toHaveBeenCalled();
 
-                buttons.at(2).trigger('click');
-                expect(executeNodes).toHaveBeenCalledWith(expect.anything(), 'selected');
                 buttons.at(3).trigger('click');
-                expect(cancelNodeExecution).toHaveBeenCalledWith(expect.anything(), 'selected');
+                expect(executeNodes).toHaveBeenCalledWith(expect.anything(), 'selected');
                 buttons.at(4).trigger('click');
-                expect(resetNodes).toHaveBeenCalledWith(expect.anything(), 'selected');
+                expect(cancelNodeExecution).toHaveBeenCalledWith(expect.anything(), 'selected');
                 buttons.at(5).trigger('click');
+                expect(resetNodes).toHaveBeenCalledWith(expect.anything(), 'selected');
+                buttons.at(6).trigger('click');
                 expect(deleteSelectedObjects).toHaveBeenCalled();
             });
         });

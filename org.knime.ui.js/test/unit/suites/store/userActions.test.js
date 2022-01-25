@@ -6,7 +6,7 @@ import Vuex from 'vuex';
 import * as userActionsStoreConfig from '~/store/userActions';
 
 describe('userActions store', () => {
-    let localVue, storeConfig, workflow, loadStore, store, selectedNodes, selectedConnections, isWritable;
+    let localVue, storeConfig, workflow, loadStore, store, selectedNodes, selectedConnections, isWritable, isDirty;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -67,6 +67,7 @@ describe('userActions store', () => {
             }
         };
         isWritable = true;
+        isDirty = false;
         loadStore = () => {
             storeConfig = {
                 userActions: userActionsStoreConfig,
@@ -83,7 +84,8 @@ describe('userActions store', () => {
                         resetNodes: jest.fn(),
                         deleteNodes: jest.fn(),
                         undo: jest.fn(),
-                        redo: jest.fn()
+                        redo: jest.fn(),
+                        saveWorkflow: jest.fn()
                     },
                     state: {
                         activeWorkflow: workflow
@@ -91,6 +93,9 @@ describe('userActions store', () => {
                     getters: {
                         isWritable() {
                             return isWritable;
+                        },
+                        isDirty() {
+                            return isDirty;
                         }
                     }
                 }
@@ -329,19 +334,19 @@ describe('userActions store', () => {
             selectedNodes = [workflow.nodes['root:1']];
             loadStore();
             let items = store.getters['userActions/mainMenuActionItems'];
-            expect(items).toHaveLength(6);
-            expect(items[0].storeAction).toBe('workflow/undo');
+            expect(items).toHaveLength(7);
+            expect(items[0].storeAction).toBe('workflow/saveWorkflow');
         });
 
         it('actions for multiple selected nodes', () => {
             selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:2']];
             loadStore();
-            expect(store.getters['userActions/mainMenuActionItems']).toHaveLength(6);
+            expect(store.getters['userActions/mainMenuActionItems']).toHaveLength(7);
         });
 
         it('actions for workflow, no node selected', () => {
             loadStore();
-            expect(store.getters['userActions/mainMenuActionItems']).toHaveLength(5);
+            expect(store.getters['userActions/mainMenuActionItems']).toHaveLength(6);
         });
 
         it('disabled delete action for node in write-protected mode', () => {
@@ -349,9 +354,9 @@ describe('userActions store', () => {
             selectedNodes = [workflow.nodes['root:1']];
             loadStore();
             let mainMenuActionItems = store.getters['userActions/mainMenuActionItems'];
-            expect(mainMenuActionItems[5].text).toBe('Delete');
-            expect(mainMenuActionItems[5].storeAction).toBe('workflow/deleteSelectedObjects');
-            expect(mainMenuActionItems[5].disabled).toBe(true);
+            expect(mainMenuActionItems[6].text).toBe('Delete');
+            expect(mainMenuActionItems[6].storeAction).toBe('workflow/deleteSelectedObjects');
+            expect(mainMenuActionItems[6].disabled).toBe(true);
         });
 
         it('disabled delete action for connection in write-protected mode', () => {
@@ -359,9 +364,18 @@ describe('userActions store', () => {
             selectedConnections = [workflow.connections['root:1_0']];
             loadStore();
             let mainMenuActionItems = store.getters['userActions/mainMenuActionItems'];
-            expect(mainMenuActionItems[2].text).toBe('Delete');
-            expect(mainMenuActionItems[2].storeAction).toBe('workflow/deleteSelectedObjects');
-            expect(mainMenuActionItems[2].disabled).toBe(true);
+            expect(mainMenuActionItems[3].text).toBe('Delete');
+            expect(mainMenuActionItems[3].storeAction).toBe('workflow/deleteSelectedObjects');
+            expect(mainMenuActionItems[3].disabled).toBe(true);
+        });
+
+        it('enable save workflow action when changes are made', () => {
+            isDirty = true;
+            loadStore();
+            let mainMenuActionItems = store.getters['userActions/mainMenuActionItems'];
+            expect(mainMenuActionItems[0].title).toBe('Save workflow');
+            expect(mainMenuActionItems[0].storeAction).toBe('workflow/saveWorkflow');
+            expect(mainMenuActionItems[0].disabled).toBe(false);
         });
     });
 });
