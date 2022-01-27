@@ -44,7 +44,27 @@ export default {
         dragConnector: null
     }),
     computed: {
-        ...mapGetters('canvas', ['fromAbsoluteCoordinates'])
+        ...mapGetters('canvas', ['fromAbsoluteCoordinates']),
+        ...mapGetters('workflow', ['isWritable']),
+        /*
+         * only in-Ports replace their current connector if a new one is connected
+         * only in-Ports that are connected need to indicate connector replacement
+         * indicate, if this port is targeted for connection
+         * indicate, if this port is the starting point of a new connector
+        */
+        indicateConnectorReplacement() {
+            return this.direction === 'in' && Boolean(this.port.connectedVia.length) &&
+            (this.targeted || Boolean(this.dragConnector));
+        }
+    },
+    watch: {
+        indicateConnectorReplacement(indicateReplacement) {
+            let [incomingConnection] = this.port.connectedVia;
+            let incomingConnector = document.querySelector(`[data-connector-id="${incomingConnection}"]`);
+            incomingConnector.dispatchEvent(new CustomEvent('indicate-replacement', { detail: {
+                state: indicateReplacement
+            } }));
+        }
     },
     methods: {
         ...mapActions('workflow', ['connectNodes']),
@@ -59,6 +79,10 @@ export default {
             return result;
         },
         onPointerDown(e) {
+            if (!this.isWritable) {
+                return;
+            }
+
             e.target.setPointerCapture(e.pointerId);
 
             this.kanvasElement = document.getElementById('kanvas');
@@ -97,12 +121,16 @@ export default {
             });
         },
         onPointerUp(e) {
+            if (!this.isWritable) {
+                return;
+            }
+            
             e.target.releasePointerCapture(e.pointerId);
 
             let { sourceNode, sourcePort, destNode, destPort } = this.dragConnector;
 
             if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
-                this.lastHitTarget.element.dispatchEvent(
+                let dropped = this.lastHitTarget.element.dispatchEvent(
                     new CustomEvent(
                         'connector-drop', {
                             detail: {
@@ -111,10 +139,14 @@ export default {
                                 destNode,
                                 destPort
                             },
-                            bubbles: true
+                            bubbles: true,
+                            cancelable: true
                         }
                     )
                 );
+                if (dropped) {
+                    this.$root.$emit('connector-dropped');
+                }
             }
         },
         onLostPointerCapture(e) {
@@ -180,7 +212,8 @@ export default {
                             cancelable: true
                         })
                     );
-                    // cancelling signals that hit target allows dropping a connector
+                    
+                    // cancelling signals, that hit target allows dropping a connector
                     let allowsDrop = !notCancelled;
 
                     if (allowsDrop) {

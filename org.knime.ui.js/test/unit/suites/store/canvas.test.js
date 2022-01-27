@@ -234,12 +234,6 @@ describe('canvas store', () => {
             store.dispatch('canvas/zoomTo', value);
             expect(state.zoomFactor).toBe(0.75);
         });
-
-        it('resets zoom to default', () => {
-            const state = store.state.canvas;
-            store.dispatch('canvas/zoomToDefault');
-            expect(state.zoomFactor).toBe(1);
-        });
     });
 
     describe('getters', () => {

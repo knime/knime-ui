@@ -1,6 +1,5 @@
 import { searchNodes, getNodesGroupedByTags } from '~api';
 
-
 /**
  * Store that manages node repository state.
  */
@@ -10,17 +9,26 @@ const categoryPageSize = 3;
 const firstLoadOffset = 6;
 
 export const state = () => ({
+    /* categories */
     nodesPerCategory: [],
     totalNumCategories: null,
-    nodes: [],
+    categoryPage: 0,
+
+    /* search results */
+    nodes: null,
     totalNumNodes: 0,
     selectedTags: [],
     tags: [],
     query: '',
     nodeSearchPage: 0,
-    categoryPage: 0,
+
+    /* appearance */
     scrollPosition: 0
 });
+
+export const getters = {
+    hasSearchParams: state => state.query !== '' || state.selectedTags.length > 0
+};
 
 export const actions = {
     async getAllNodes({ commit, state }, append) {
@@ -57,12 +65,19 @@ export const actions = {
      *      should be cleared (for a new search).
      * @returns {Promise}
      */
-    async searchNodes({ commit, state }, append = false) {
+    async searchNodes({ commit, state, dispatch, getters }, append = false) {
+        // only do request if we search for something
+        if (!getters.hasSearchParams) {
+            // clear old results
+            dispatch('clearSearchResults');
+            return;
+        }
         if (append) {
             commit('setNodeSearchPage', state.nodeSearchPage + 1);
         } else {
             commit('setNodeSearchPage', 0);
         }
+
         let res = await searchNodes({
             query: state.query,
             tags: state.selectedTags,
@@ -81,6 +96,40 @@ export const actions = {
     },
 
     /**
+     * Update the value of the single search node query
+     *
+     * @param {*} context - Vuex context.
+     * @param {String} value - Search query value
+     * @returns {undefined}
+     */
+    async updateQuery({ commit, dispatch }, value) {
+        commit('setQuery', value);
+        await dispatch('searchNodes');
+    },
+
+    /**
+     * Clear search parameter (query and selectedTags) and results
+     *
+     * @param {*} context - Vuex context.
+     * @returns {undefined}
+     */
+    clearSearchParams({ commit, dispatch }) {
+        commit('setSelectedTags', []);
+        commit('setQuery', '');
+        dispatch('clearSearchResults');
+    },
+
+    /**
+     * Clear search results (nodes and tags)
+     * @param {*} context - Vuex context.
+     * @returns {undefined}
+     */
+    clearSearchResults({ commit }) {
+        commit('setNodes', null);
+        commit('setTags', []);
+    },
+
+    /**
      * Fetch the next page of node results.
      *
      * @param {*} context - Vuex context.
@@ -91,38 +140,15 @@ export const actions = {
     },
 
     /**
-     * Add a tag to the current tag filters.
+     * Update all selected tags
      *
      * @param {*} context - Vuex context.
-     * @param {String} tag - tag to add.
+     * @param {Array<String>} tags - array of tags to set
      * @returns {undefined}
      */
-    selectTag({ dispatch, commit }, tag) {
-        commit('addSelectedTag', tag);
-        dispatch('searchNodes');
-    },
-
-    /**
-     * Remove a tag from the current tag filters.
-     *
-     * @param {*} context - Vuex context.
-     * @param {String} tag - tag to remove.
-     * @returns {undefined}
-     */
-    deselectTag({ dispatch, commit }, tag) {
-        commit('removeSelectedTag', tag);
-        dispatch('searchNodes');
-    },
-
-    /**
-     * Clear all tag filters.
-     *
-     * @param {*} context - Vuex context.
-     * @returns {undefined}
-     */
-    clearSelectedTags({ dispatch, commit }) {
-        commit('setSelectedTags', []);
-        dispatch('getAllNodes', false);
+    async setSelectedTags({ dispatch, commit }, tags) {
+        commit('setSelectedTags', tags);
+        await dispatch('searchNodes');
     }
 };
 
@@ -134,7 +160,7 @@ export const mutations = {
     setNodeSearchPage(state, pageNumber) {
         state.nodeSearchPage = pageNumber;
     },
-    
+
     setTotalNumNodes(state, totalNumNodes) {
         state.totalNumNodes = totalNumNodes;
     },
@@ -149,24 +175,8 @@ export const mutations = {
         state.nodes = nodes;
     },
 
-    addTag(state, tag) {
-        if (!state.tags.includes(tag)) {
-            state.tags.push(tag);
-        }
-    },
-
     setTags(state, tags) {
         state.tags = tags;
-    },
-
-    addSelectedTag(state, tag) {
-        if (!state.selectedTags.includes(tag)) {
-            state.selectedTags.push(tag);
-        }
-    },
-
-    removeSelectedTag(state, tag) {
-        state.selectedTags = state.selectedTags.filter(currentTag => currentTag !== tag);
     },
 
     setSelectedTags(state, selectedTags) {
@@ -177,6 +187,9 @@ export const mutations = {
     },
     addNodesPerCategories(state, groupedNodes) {
         state.nodesPerCategory = state.nodesPerCategory.concat(groupedNodes);
+    },
+    setQuery(state, value) {
+        state.query = value;
     },
     setTotalNumCategories(state, totalNumCategories) {
         state.totalNumCategories = totalNumCategories;

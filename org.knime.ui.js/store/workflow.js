@@ -166,9 +166,12 @@ export const actions = {
         }
     },
     changeLoopState({ state, getters }, { action, nodeId }) {
+        let { activeWorkflow: { projectId } } = state;
+        let { activeWorkflowId: workflowId } = getters;
+
         changeLoopState({
-            projectId: state.activeWorkflow.projectId,
-            workflowId: getters.activeWorkflowId,
+            projectId,
+            workflowId,
             nodeId,
             action
         });

@@ -66,6 +66,19 @@ describe('Snap Connector Mixin', () => {
                 workflow: {
                     actions: {
                         connectNodes: connectNodesMock
+                    },
+                    state: {
+                        activeWorkflow: {
+                            connections: {
+                                // eslint-disable-next-line quote-props
+                                'existing': {
+                                    sourceNode: 'existing:1',
+                                    destNode: 'existing:2',
+                                    sourcePort: 0,
+                                    destPort: 0
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -422,5 +435,23 @@ describe('Snap Connector Mixin', () => {
                 sourcePort: 1
             });
         });
+    });
+
+    test("Doesn't reconnect existing connection", () => {
+        snapContainerConfig.id = 'existing:2';
+        doMount();
+
+        wrapper.vm.targetPort = {
+            index: 0,
+            side: 'in'
+        };
+
+        wrapper.trigger('connector-drop', {
+            detail: {
+                sourceNode: 'existing:1',
+                sourcePort: 0
+            }
+        });
+        expect(connectNodesMock).not.toHaveBeenCalled();
     });
 });

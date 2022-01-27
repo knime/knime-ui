@@ -16,7 +16,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.knime.core.node.NodeLogger;
-import org.knime.gateway.api.webui.entity.EventEnt;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
@@ -24,6 +23,7 @@ import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.JsonRpcBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeViewBrowserFunction;
+import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 
 import com.equo.chromium.swt.Browser;
@@ -49,7 +49,7 @@ public class KnimeBrowserView {
 
 	private static final String REMOTE_DEBUGGING_PORT_PROP = "chromium.remote_debugging_port";
 
-	private static final String DEBUG_URL_PROP = "org.knime.ui.debug.url";
+	private static final String DEV_URL_PROP = "org.knime.ui.dev.url";
 
 	private Browser m_browser;
 
@@ -60,7 +60,7 @@ public class KnimeBrowserView {
 		m_browser.setMenu(new Menu(m_browser.getShell()));
 		addBrowserFunctions(m_browser);
 		setUrl();
-		BiConsumer<String, EventEnt> eventConsumer = createEventConsumer(m_browser);
+		BiConsumer<String, Object> eventConsumer = createEventConsumer(m_browser);
 		DefaultEventService.getInstance().addEventConsumer(eventConsumer);
 	}
 
@@ -69,6 +69,7 @@ public class KnimeBrowserView {
 		new SwitchToJavaUIBrowserFunction(browser);
 		new OpenNodeViewBrowserFunction(browser);
 		new OpenNodeDialogBrowserFunction(browser);
+		new SaveWorkflowBrowserFunction(browser);
 		if (isRemoteDebuggingPortSet()) {
 			new InitAppForTestingBrowserFunction(browser, this);
 			new ClearAppForTestingBrowserFunction(browser, this);
@@ -84,7 +85,7 @@ public class KnimeBrowserView {
 
 	/**
 	 * Sets the browser's URL to show the web-ui. The URL is either taken from
-	 * the system property org.knime.ui.debug.url or, if not set, the actual
+	 * the system property org.knime.ui.dev.url or, if not set, the actual
 	 * file URL is used.
 	 */
 	public void setUrl() {
@@ -93,17 +94,17 @@ public class KnimeBrowserView {
 
 	/**
 	 * Sets the browser's URL to show the web-ui. The URL is either taken from
-	 * the system property org.knime.ui.debug.url or, if not set, the actual
+	 * the system property org.knime.ui.dev.url or, if not set, the actual
 	 * file URL is used.
 	 *
-	 * @param ignoreEmptyPageAsDebugUrl if <code>true</code> and the debug URL
-	 * (org.knime.ui.debug.url system property) is set to be the empty page (URL
-	 * is about:blank), the debug URL (i.e. empty page) will be ignored and the
+	 * @param ignoreEmptyPageAsDevUrl if <code>true</code> and the dev URL
+	 * (org.knime.ui.dev.url system property) is set to be the empty page (URL
+	 * is about:blank), the dev URL (i.e. empty page) will be ignored and the
 	 * actual file URL is used
 	 */
-	public void setUrl(final boolean ignoreEmptyPageAsDebugUrl) {
+	public void setUrl(final boolean ignoreEmptyPageAsDevUrl) {
 		if (m_browser.getUrl().equals(EMPTY_PAGE)) {
-			if (!setDebugURL(m_browser, ignoreEmptyPageAsDebugUrl)) { // NOSONAR
+			if (!setDevURL(m_browser, ignoreEmptyPageAsDevUrl)) { // NOSONAR
 				setAppUrl();
 			}
 		}
@@ -123,13 +124,13 @@ public class KnimeBrowserView {
 		}
 	}
 
-	private static BiConsumer<String, EventEnt> createEventConsumer(final Browser browser) {
+	private static BiConsumer<String, Object> createEventConsumer(final Browser browser) {
 		final ObjectMapper mapper = ObjectMapperUtil.getInstance().getObjectMapper();
 		return (name, event) -> createJsonRpcNotificationAndSendToBrowser(browser, mapper, name, event);
 	}
 
 	private static void createJsonRpcNotificationAndSendToBrowser(final Browser browser, final ObjectMapper mapper,
-			final String name, final EventEnt event) {
+			final String name, final Object event) {
 		// wrap event into a jsonrpc notification (method == event-name) and serialize
 		ObjectNode jsonrpc = mapper.createObjectNode();
 		ArrayNode params = jsonrpc.arrayNode();
@@ -155,10 +156,9 @@ public class KnimeBrowserView {
 		m_browser.dispose();
 	}
 
-	private static boolean setDebugURL(final Browser browser, final boolean ignoreEmptyPageAsDebugUrl) {
-		String port = System.getProperty(REMOTE_DEBUGGING_PORT_PROP);
-		String initURL = System.getProperty(DEBUG_URL_PROP);
-		if (port != null && initURL != null && (!ignoreEmptyPageAsDebugUrl || !initURL.equals(EMPTY_PAGE))) {
+	private static boolean setDevURL(final Browser browser, final boolean ignoreEmptyPageAsDevUrl) {
+		String initURL = System.getProperty(DEV_URL_PROP);
+		if (initURL != null && (!ignoreEmptyPageAsDevUrl || !initURL.equals(EMPTY_PAGE))) {
 			browser.setUrl(initURL);
 			return true;
 		} else {

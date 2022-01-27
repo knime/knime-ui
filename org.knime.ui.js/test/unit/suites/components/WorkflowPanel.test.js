@@ -22,7 +22,8 @@ describe('WorkflowPanel', () => {
         propsData = {};
         workflow = {
             info: {
-                containerType: 'project'
+                containerType: 'project',
+                containerId: 'root'
             },
             parents: []
         };
@@ -45,6 +46,9 @@ describe('WorkflowPanel', () => {
                 },
                 isWritable() {
                     return !(workflow.info.linked || workflow.parents.some(p => p.linked));
+                },
+                activeWorkflowId() {
+                    return workflow.info.containerId;
                 }
             }
         };

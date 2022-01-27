@@ -1,6 +1,8 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex';
 import { portBar, connectorPosition } from '~/mixins';
+import connectorPath from '~/util/connectorPath';
+import gsap from 'gsap';
 
 /**
  * A curved line, connecting one node's output with another node's input port.
@@ -36,6 +38,9 @@ export default {
             }
         }
     },
+    data: () => ({
+        suggestDelete: false
+    }),
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow',
@@ -61,21 +66,7 @@ export default {
                 }
             }
             
-            // These deltas are carefully chosen so that the connector line is hidden behind the flow variable line,
-            // especially for optional ports, even when hovering the port or the connector line.
-            // (Optional output ports are useless, but are technically possible and do exist out in the wild)
-            /* eslint-disable no-magic-numbers */
-            x1 += this.$shapes.portSize / 2 - 0.5;
-            x2 -= this.$shapes.portSize / 2 - 0.5;
-            const width = Math.abs(x1 - x2);
-            const height = Math.abs(y1 - y2);
-            // TODO: include bendpoints NXT-78 NXT-191
-            // Currently, this is creates just an arbitrary curve that seems to work in most cases
-            return `M${x1},${y1} ` +
-                `C${x1 + width / 2 + height / 3},${y1} ` +
-                `${x2 - width / 2 - height / 3},${y2} ` +
-                `${x2},${y2}`;
-            /* eslint-enable no-magic-numbers */
+            return connectorPath(x1, y1, x2, y2);
         },
         strokeColor() {
             if (this.flowVariableConnection) {
@@ -84,9 +75,35 @@ export default {
             return this.$colors.connectorColors.default;
         }
     },
+    watch: {
+        /*
+         * if suggestDelete changes to 'true' the connector will animate away from its target port
+         * if suggestDelete changes back to 'false' the connector will move back
+         */
+        suggestDelete(newValue, oldValue) {
+            if (newValue && !oldValue) {
+                const shiftX = -12;
+                const shiftY = -6;
+                let { start: [x1, y1], end: [x2, y2] } = this;
+                let newPath = connectorPath(x1, y1, x2 + shiftX, y2 + shiftY);
+
+                gsap.to(this.$refs.visiblePath, {
+                    attr: { d: newPath },
+                    duration: 0.2,
+                    ease: 'power2.out'
+                });
+            } else if (!newValue && oldValue) {
+                gsap.to(this.$refs.visiblePath, {
+                    attr: { d: this.path },
+                    duration: 0.2,
+                    ease: 'power2.out'
+                });
+            }
+        }
+    },
     methods: {
         ...mapActions('selection', ['selectConnection', 'deselectConnection', 'deselectAllObjects']),
-        onLeftMouseClick(e) {
+        onMouseClick(e) {
             if (e.shiftKey) {
                 // Multi select
                 if (this.isConnectionSelected(this.id)) {
@@ -99,23 +116,46 @@ export default {
                 this.deselectAllObjects();
                 this.selectConnection(this.id);
             }
+        },
+        onIndicateReplacement({ detail: { state } }) {
+            if (this.suggestDelete !== 'locked') {
+                // update state according to event if not already 'locked'
+                // this is used to make sure the connector doesn't snap back to its port after 'connecting phase' is over
+                this.suggestDelete = state;
+            }
+          
+            if (state) {
+                this.$root.$on('connector-dropped', this.onConnectorDropped);
+            } else {
+                this.$root.$off('connector-dropped', this.onConnectorDropped);
+            }
+        },
+        onConnectorDropped() {
+            // lock this connector in place to prevent it from jumping back before being removed
+            this.suggestDelete = 'locked';
         }
     }
 };
 </script>
 
 <template>
-  <g>
+  <g
+    :data-connector-id="id"
+    @indicate-replacement.stop="onIndicateReplacement"
+  >
     <path
       :d="path"
-      @click.left="onLeftMouseClick"
+      class="hover-area"
+      @click.left="onMouseClick"
+      @contextmenu.prevent="onMouseClick"
     />
     <path
+      ref="visiblePath"
       :d="path"
       :stroke="strokeColor"
       :stroke-width="$shapes.connectorWidth"
       :class="{
-        variable: flowVariableConnection,
+        'flow-variable': flowVariableConnection,
         'read-only': !isWorkflowWritable,
         dashed: streaming,
         selected: isConnectionSelected(id) && !isDragging
@@ -128,57 +168,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-path {
-  stroke: transparent;
-  stroke-width: 8px;
-  fill: none;
-}
-
-path + path {
-  stroke-width: 1;
-  stroke: var(--knime-stone-gray);
-  transition: stroke-width 0.1s ease-in, stroke 0.1s ease-in;
-  pointer-events: none;
-}
-
-path:not(.read-only) {
-  cursor: grab;
-}
-
-path:hover + path {
-  stroke-width: 3;
-}
-
-path.selected {
-  stroke-width: 3;
-  stroke: var(--knime-cornflower);
-}
-
-path.variable {
-  stroke: var(--knime-coral);
-  transition: stroke-width 0.1s ease-in, stroke 0.1s ease-in;
-}
-
-path.variable:hover {
-  stroke-width: 3;
-}
-
-path.variable.selected {
-  stroke-width: 3;
-  stroke: var(--knime-cornflower);
-}
-
-rect {
-  fill: var(--knime-masala);
-  stroke-linecap: round;
-}
-
-.dashed {
-  stroke-dasharray: 5;
-  stroke-dashoffset: 50;
-  animation: dash 3s linear infinite;
-}
-
 @keyframes dash {
   from {
     stroke-dashoffset: 100;
@@ -186,6 +175,48 @@ rect {
 
   to {
     stroke-dashoffset: 0;
+  }
+}
+
+path:not(.hover-area) {
+  pointer-events: none;
+  stroke-width: 1;
+  stroke: var(--knime-stone-gray);
+  transition:
+    stroke-width 0.1s ease-in,
+    stroke 0.1s ease-in;
+
+  &:not(.read-only) {
+    cursor: grab;
+  }
+
+  &.selected {
+    stroke-width: 3;
+    stroke: var(--knime-cornflower);
+  }
+
+  &.dashed {
+    stroke-dasharray: 5;
+    stroke-dashoffset: 50;
+    animation: dash 3s linear infinite;
+  }
+
+  &.flow-variable {
+    stroke: var(--knime-coral);
+
+    &.selected {
+      stroke: var(--knime-cornflower);
+    }
+  }
+}
+
+.hover-area {
+  stroke: transparent;
+  stroke-width: 8px;
+  fill: none;
+
+  &:hover + path {
+    stroke-width: 3;
   }
 }
 </style>

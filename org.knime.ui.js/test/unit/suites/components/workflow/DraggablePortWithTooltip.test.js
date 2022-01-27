@@ -29,7 +29,7 @@ describe('DraggablePortWithTooltip', () => {
         localVue.use(Vuex);
     });
 
-    let propsData, $store, doShallowMount, storeConfig, wrapper;
+    let propsData, $store, doShallowMount, storeConfig, wrapper, isWritable;
 
     beforeEach(() => {
         propsData = {
@@ -37,11 +37,13 @@ describe('DraggablePortWithTooltip', () => {
             nodeId: 'node:1',
             relativePosition: [16, 32],
             port: {
+                connectedVia: [],
                 type: 'port',
                 inactive: false,
                 index: 0
             }
         };
+        isWritable = true;
         storeConfig = {
             workflow: {
                 actions: {
@@ -49,6 +51,11 @@ describe('DraggablePortWithTooltip', () => {
                 },
                 state: {
                     activeWorkflow: 'workflowRef'
+                },
+                getters: {
+                    isWritable() {
+                        return isWritable;
+                    }
                 }
             },
             canvas: {
@@ -80,11 +87,82 @@ describe('DraggablePortWithTooltip', () => {
         expect(wrapper.findComponent(Port).exists()).toBe(false);
     });
 
-    it('indicates being targeted', () => {
-        propsData.targeted = true;
-        doShallowMount();
+    describe('indicate in-coming connector replacement', () => {
+        let incomingConnector;
 
-        expect(wrapper.attributes().class).toMatch('targeted');
+        beforeEach(() => {
+            propsData.direction = 'in';
+            propsData.port.connectedVia = ['incoming-connector'];
+            incomingConnector = document.createElement('div');
+            incomingConnector.setAttribute('data-connector-id', 'incoming-connector');
+            incomingConnector.addEventListener('indicate-replacement', (e) => {
+                incomingConnector._indicateReplacementEvent = e;
+            });
+            document.body.appendChild(incomingConnector);
+        });
+
+        test('targeting port sends events to connector', async () => {
+            doShallowMount();
+
+            wrapper.setProps({ targeted: true });
+            await Vue.nextTick();
+
+            expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
+                state: true
+            });
+
+            // revert
+
+            wrapper.setProps({ targeted: false });
+            await Vue.nextTick();
+
+            expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
+                state: false
+            });
+        });
+
+        test('dragging a connector', async () => {
+            // for simplicity this test directly sets 'dragConnector' instead of using startDragging
+            doShallowMount();
+
+            wrapper.setData({ dragConnector: { content: 'a new in-coming connection' } });
+            await Vue.nextTick();
+
+            expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
+                state: true
+            });
+
+            // revert
+
+            wrapper.setData({ dragConnector: null });
+            await Vue.nextTick();
+
+            expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
+                state: false
+            });
+        });
+
+        test("doesn't do it for out-going ports", async () => {
+            propsData.direction = 'out';
+            doShallowMount();
+
+            wrapper.setProps({ targeted: true });
+            wrapper.setData({ dragConnector: { content: 'a new in-coming connection' } });
+            await Vue.nextTick();
+
+            expect(incomingConnector._indicateReplacementEvent).toBeFalsy();
+        });
+
+        test("doesn't do it for unconnected ports", async () => {
+            propsData.port.connectedVia = [];
+            doShallowMount();
+
+            wrapper.setProps({ targeted: true });
+            wrapper.setData({ dragConnector: { content: 'a new in-coming connection' } });
+            await Vue.nextTick();
+
+            expect(incomingConnector._indicateReplacementEvent).toBeFalsy();
+        });
     });
 
     describe('Drop Connector', () => {
@@ -106,7 +184,7 @@ describe('DraggablePortWithTooltip', () => {
     });
 
     describe('Drag Connector', () => {
-        let startDragging, dragAboveTarget, KanvasMock;
+        let startDragging, dragAboveTarget, KanvasMock, dropOnTarget;
 
         beforeEach(() => {
             // Set up
@@ -152,12 +230,27 @@ describe('DraggablePortWithTooltip', () => {
 
                 wrapper.trigger('pointermove', { x, y });
             };
+
+            dropOnTarget = (targetElement, cancels = false) => {
+                if (cancels) {
+                    targetElement.addEventListener('connector-drop', e => {
+                        e.preventDefault();
+                    });
+                }
+                wrapper.trigger('pointerup', { pointerId: -1 });
+            };
         });
 
         describe('Start Dragging', () => {
             it('captures pointer', () => {
                 startDragging();
                 expect(wrapper.element.setPointerCapture).toHaveBeenCalledWith(-1);
+            });
+
+            it('does not capture pointer', () => {
+                isWritable = false;
+                startDragging();
+                expect(wrapper.element.setPointerCapture).not.toHaveBeenCalledWith(-1);
             });
 
             it('saves KanvasElement', () => {
@@ -330,8 +423,7 @@ describe('DraggablePortWithTooltip', () => {
 
                 let hitTarget = document.createElement('div');
                 dragAboveTarget(hitTarget);
-
-                wrapper.trigger('pointerup', { pointerId: -1 });
+                dropOnTarget();
 
                 expect(hitTarget._connectorDropEvent.detail).toStrictEqual({
                     destNode: 'node:1',
@@ -339,6 +431,15 @@ describe('DraggablePortWithTooltip', () => {
                     sourceNode: undefined,
                     sourcePort: undefined
                 });
+
+                let rootWrapper = createWrapper(wrapper.vm.$root);
+                expect(rootWrapper.emitted('connector-dropped')).toBeTruthy();
+            });
+
+            it('does not release capture pointer', () => {
+                isWritable = false;
+                startDragging();
+                expect(wrapper.element.releasePointerCapture).not.toHaveBeenCalledWith(-1);
             });
 
             test('dispatches drop event (direction = out)', () => {
@@ -347,8 +448,7 @@ describe('DraggablePortWithTooltip', () => {
 
                 let hitTarget = document.createElement('div');
                 dragAboveTarget(hitTarget);
-
-                wrapper.trigger('pointerup', { pointerId: -1 });
+                dropOnTarget();
 
                 expect(hitTarget._connectorDropEvent.detail).toStrictEqual({
                     sourceNode: 'node:1',
@@ -356,6 +456,20 @@ describe('DraggablePortWithTooltip', () => {
                     destNode: undefined,
                     destPort: undefined
                 });
+
+                let rootWrapper = createWrapper(wrapper.vm.$root);
+                expect(rootWrapper.emitted('connector-dropped')).toBeTruthy();
+            });
+
+            test('connector-drop can be cancelled', () => {
+                startDragging();
+
+                let hitTarget = document.createElement('div');
+                dragAboveTarget(hitTarget);
+                dropOnTarget(hitTarget, true);
+
+                let rootWrapper = createWrapper(wrapper.vm.$root);
+                expect(rootWrapper.emitted('connector-dropped')).toBeFalsy();
             });
 
             test('lost pointer capture', () => {
@@ -389,8 +503,7 @@ describe('DraggablePortWithTooltip', () => {
             dragAboveTarget(null);
             expect(hitTarget._connectorLeaveEvent).toBeFalsy();
 
-            wrapper.trigger('pointerup', { pointerId: -1 });
-
+            dropOnTarget();
             expect(hitTarget._connectorDropEvent).toBeFalsy();
         });
     });

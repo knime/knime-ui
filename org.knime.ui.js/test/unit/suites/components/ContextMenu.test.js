@@ -5,6 +5,7 @@ import Vuex from 'vuex';
 import Vue from 'vue';
 
 import ContextMenu from '~/components/ContextMenu';
+import FloatingMenu from '~/components/FloatingMenu';
 
 describe('ContextMenu.vue', () => {
     let storeConfig, propsData, mocks, doMount, wrapper, $store;
@@ -66,9 +67,9 @@ describe('ContextMenu.vue', () => {
 
     it('shows menu', async () => {
         doMount();
-        expect(wrapper.find('.floatingmenu').classes()).not.toContain('isVisible');
+        expect(wrapper.findComponent(FloatingMenu).classes()).not.toContain('isVisible');
         wrapper.vm.show({ pageX: 0, pageY: 0 });
         await Vue.nextTick();
-        expect(wrapper.find('.floatingmenu').classes()).toContain('isVisible');
+        expect(wrapper.findComponent(FloatingMenu).classes()).toContain('isVisible');
     });
 });

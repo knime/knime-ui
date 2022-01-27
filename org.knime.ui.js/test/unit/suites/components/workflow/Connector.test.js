@@ -2,14 +2,25 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
-import Connector from '~/components/workflow/Connector';
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
-import * as portShift from '~/util/portShift';
+import Vue from 'vue';
+
 import * as workflowStoreConfig from '~/store/workflow';
 
-jest.mock('~api', () => {
-}, { virtual: true });
+import * as $shapes from '~/style/shapes';
+import * as $colors from '~/style/colors';
+
+import * as portShift from '~/util/portShift';
+import connectorPath from '~/util/connectorPath';
+
+import Connector from '~/components/workflow/Connector';
+
+import gsap from 'gsap';
+
+jest.mock('~api', () => { }, { virtual: true });
+jest.mock('~/util/connectorPath', () => jest.fn());
+jest.mock('gsap', () => ({
+    to: jest.fn()
+}));
 
 describe('Connector.vue', () => {
     let portMock, propsData, mocks, wrapper, portShiftMock, $store, storeConfig;
@@ -91,16 +102,18 @@ describe('Connector.vue', () => {
         });
 
         it('draws a path between table ports', () => {
+            connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
-            const expectedPath = 'M42.5,7.5 C73,7.5 -27,40.5 3.5,40.5';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+            expect(connectorPath).toHaveBeenCalledWith(38.5, 7.5, 7.5, 40.5);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
         it('draws a path between other ports', () => {
+            connectorPath.mockReturnValueOnce('that path');
             portMock.type = 'foo';
             doShallowMount();
-            const expectedPath = 'M42.5,7.5 C73,7.5 -27,40.5 3.5,40.5';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+            expect(connectorPath).toHaveBeenCalledWith(38.5, 7.5, 7.5, 40.5);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
     });
 
@@ -160,9 +173,31 @@ describe('Connector.vue', () => {
             );
         });
 
+        it('right click selects the connection', async () => {
+            doShallowMount();
+            await wrapper.find('g path').trigger('contextmenu');
+
+            expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
+            expect(storeConfig.selection.actions.selectConnection).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.stringMatching('root:2_2')
+            );
+        });
+
         it('shift-click adds to selection', async () => {
             doShallowMount();
             await wrapper.find('g path').trigger('click', { button: 0, shiftKey: true });
+
+            expect(storeConfig.selection.actions.deselectConnection).not.toHaveBeenCalled();
+            expect(storeConfig.selection.actions.selectConnection).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.stringMatching('root:2_2')
+            );
+        });
+
+        it('shift-click and right click add to selection', async () => {
+            doShallowMount();
+            await wrapper.find('g path').trigger('contextmenu', { shiftKey: true });
 
             expect(storeConfig.selection.actions.deselectConnection).not.toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectConnection).toHaveBeenCalledWith(
@@ -248,16 +283,20 @@ describe('Connector.vue', () => {
         });
 
         it('draws a path between table ports', () => {
+            connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
-            const expectedPath = 'M36,-4.5 C67.25,-4.5 -27.75,40.5 3.5,40.5';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+
+            expect(connectorPath).toHaveBeenCalledWith(32, -4.5, 7.5, 40.5);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
         it('draws a path between other ports', () => {
             portMock.type = 'foo';
+            connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
-            const expectedPath = 'M36,-4.5 C67.25,-4.5 -27.75,40.5 3.5,40.5';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+
+            expect(connectorPath).toHaveBeenCalledWith(32, -4.5, 7.5, 40.5);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
         it('applies styles for flow variable ports', () => {
@@ -335,16 +374,20 @@ describe('Connector.vue', () => {
         });
 
         it('draws a path between table ports', () => {
+            connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
-            const expectedPath = 'M108.5,651 C504,651 298,960 693.5,960';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+
+            expect(connectorPath).toHaveBeenCalledWith(104.5, 651, 697.5, 960);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
         it('draws a path between other ports', () => {
             portMock.type = 'foo';
+            connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
-            const expectedPath = 'M108.5,651 C504,651 298,960 693.5,960';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+
+            expect(connectorPath).toHaveBeenCalledWith(104.5, 651, 697.5, 960);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
     });
 
@@ -393,10 +436,11 @@ describe('Connector.vue', () => {
                 },
                 id: 'drag-connector'
             };
+            connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
 
-            const expectedPath = 'M40.5,16 C46.75,16 21.75,16 28,16';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+            expect(connectorPath).toHaveBeenCalledWith(36.5, 16, 32, 16);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
         it('draw connector backwards', () => {
@@ -409,10 +453,138 @@ describe('Connector.vue', () => {
                 },
                 id: 'drag-connector'
             };
+            connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
 
-            const expectedPath = 'M4,16 C13.75,16 13.75,16 23.5,16';
-            expect(wrapper.find('path').attributes().d).toBe(expectedPath);
+            expect(connectorPath).toHaveBeenCalledWith(0, 16, 27.5, 16);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
+        });
+    });
+
+    describe('indicates being replaced', () => {
+        let doShallowMount;
+
+        beforeEach(() => {
+            gsap.to.mockReset();
+
+            storeConfig = {
+                workflow: {
+                    ...workflowStoreConfig,
+                    state: {
+                        activeWorkflow: {
+                            nodes: {
+                                'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
+                                'root:2': { position: { x: 12, y: 14 }, inPorts: [portMock, portMock, portMock] }
+                            }
+                        }
+                    },
+                    getters: {
+                        isWritable() {
+                            return true;
+                        }
+                    }
+                },
+                selection: {
+                    getters: {
+                        isConnectionSelected: () => jest.fn()
+                    },
+                    actions: {
+                        selectConnection: jest.fn(),
+                        deselectConnection: jest.fn(),
+                        deselectAllObjects: jest.fn()
+                    }
+                }
+            };
+
+            doShallowMount = () => {
+                $store = mockVuexStore(storeConfig);
+                mocks = { $shapes, $colors, $store };
+                wrapper = shallowMount(Connector, { propsData, mocks });
+            };
+        });
+
+        it('snaps away', async () => {
+            connectorPath.mockReturnValueOnce('original path');
+            doShallowMount();
+
+            expect(wrapper.vm.suggestDelete).toBeFalsy();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: true } });
+            connectorPath.mockReturnValueOnce('shifted path');
+            await Vue.nextTick();
+
+            expect(wrapper.vm.suggestDelete).toBeTruthy();
+
+            // watcher for suggestDelete
+            let path = wrapper.find('path:not(.hover-area)').element;
+
+            expect(gsap.to).toHaveBeenCalledTimes(1);
+            expect(gsap.to).toHaveBeenCalledWith(path, {
+                attr: { d: 'shifted path' },
+                duration: 0.2,
+                ease: 'power2.out'
+            });
+        });
+
+        it('snaps back', async () => {
+            connectorPath.mockReturnValueOnce('original path');
+            doShallowMount();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: true } });
+            connectorPath.mockReturnValueOnce('shifted path');
+            await Vue.nextTick();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: false } });
+            await Vue.nextTick();
+
+            expect(wrapper.vm.suggestDelete).toBeFalsy();
+
+            // watcher for suggestDelete
+            let path = wrapper.find('path:not(.hover-area)').element;
+
+            expect(gsap.to).toHaveBeenCalledTimes(2);
+            expect(gsap.to).toHaveBeenCalledWith(path, {
+                attr: { d: 'original path' },
+                duration: 0.2,
+                ease: 'power2.out'
+            });
+        });
+
+        it("doesn't snap back when deleted", async () => {
+            doShallowMount();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: true } });
+            await Vue.nextTick();
+
+            wrapper.vm.$root.$emit('connector-dropped');
+            await Vue.nextTick();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: false } });
+            await Vue.nextTick();
+
+            expect(wrapper.vm.suggestDelete).toBeTruthy();
+
+            expect(gsap.to).toHaveBeenCalledTimes(1);
+        });
+
+        it("can't lock after snapping back", async () => {
+            doShallowMount();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: true } });
+            await Vue.nextTick();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: false } });
+            await Vue.nextTick();
+
+            wrapper.vm.$root.$emit('connector-dropped');
+            await Vue.nextTick();
+
+            expect(wrapper.vm.suggestDelete).toBeFalsy();
+
+            wrapper.trigger('indicate-replacement', { detail: { state: true } });
+            await Vue.nextTick();
+
+            expect(wrapper.vm.suggestDelete).toBeTruthy();
         });
     });
 });

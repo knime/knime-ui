@@ -24,7 +24,8 @@ export default {
             'isInsideLinked',
             'insideLinkedType',
             'isWritable',
-            'isStreaming'
+            'isStreaming',
+            'activeWorkflowId'
         ])
     },
     methods: {
@@ -84,7 +85,9 @@ export default {
       ref="kanvas"
       @empty-pointerdown="onEmptyPointerDown"
     >
-      <Workflow />
+      <!-- Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
+           instead of diffing old and new workflow -->
+      <Workflow :key="`${workflow.projectId}-${activeWorkflowId}`" />
     </Kanvas>
   </div>
 </template>
