@@ -45,6 +45,9 @@ export default {
                 document.body.removeChild(this.dragGhost);
                 delete this.dragGhost;
             }
+        },
+        onClick() {
+            this.$store.dispatch('panel/openAdditionalPanel');
         }
     }
 };
@@ -56,6 +59,7 @@ export default {
     draggable="true"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
+    @click="onClick"
   >
     <label :title="nodeTemplate.name">{{ nodeTemplate.name }}</label>
     <NodePreview

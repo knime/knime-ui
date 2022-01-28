@@ -25,7 +25,7 @@ export default {
         }
     },
     computed: {
-        ...mapState('panel', ['expanded', 'activeTab'])
+        ...mapState('panel', ['expanded', 'activeTab', 'additionalPanel'])
     },
     methods: {
         toggleExpanded() {
@@ -36,7 +36,10 @@ export default {
 </script>
 
 <template>
-  <div class="panel">
+  <div
+    class="panel"
+    :style="{'border-right': additionalPanel ? '1px var(--knime-silver-sand-semi) solid': null}"
+  >
     <div
       class="container"
       :style="{ width: expanded ? width : 0 }"
@@ -50,6 +53,7 @@ export default {
     </div>
 
     <button
+      v-show="!additionalPanel"
       :title="expanded ? null : title"
       @click="toggleExpanded"
     >
