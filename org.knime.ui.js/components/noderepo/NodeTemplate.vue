@@ -23,6 +23,10 @@ export default {
     },
     methods: {
         onDragStart(e) {
+            // Fix for cursor style for Firefox
+            if (!this.isWritable && (navigator.userAgent.indexOf('Firefox') !== -1)) {
+                e.currentTarget.style.cursor = 'not-allowed';
+            }
             // clone node preview
             this.dragGhost = this.$refs.nodePreview.$el.cloneNode(true);
             
