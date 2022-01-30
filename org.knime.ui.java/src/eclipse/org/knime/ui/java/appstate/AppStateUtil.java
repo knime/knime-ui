@@ -64,6 +64,8 @@ import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.InvalidSettingsException;
@@ -256,6 +258,21 @@ public final class AppStateUtil {
 		} else {
 			return null;
 		}
+	}
+
+	/**
+	 * Determines all opened workflow editors (in the classic KNIME
+	 * perspective). Determines model service and application model
+	 * via the {@link Workbench}.
+	 *
+	 * @return list of all opened workflow editors
+	 */
+	public static List<WorkflowEditor> getOpenWorkflowEditors() {
+		var workbench = (Workbench)PlatformUI.getWorkbench();
+		return getOpenWorkflowEditors(
+				workbench.getService(EModelService.class),
+				workbench.getApplication()
+		);
 	}
 
 	/**

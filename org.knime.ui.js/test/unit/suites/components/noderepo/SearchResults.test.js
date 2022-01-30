@@ -56,7 +56,7 @@ describe('SearchResults', () => {
         storeState.nodes = [];
         doShallowMount();
 
-        expect(wrapper.text()).toMatch('No node or component matching for: xxx');
+        expect(wrapper.text()).toMatch('No node matching for: xxx');
         expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(false);
     });
 

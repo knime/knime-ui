@@ -56,12 +56,12 @@ describe('ContextMenu.vue', () => {
 
     it('shows menu', async () => {
         doMount();
-        expect(wrapper.find('.floatingmenu').classes()).not.toContain('isVisible');
-
+        expect(wrapper.findComponent(FloatingMenu).classes()).not.toContain('isVisible');
+        
         wrapper.vm.show({ pageX: 0, pageY: 0 });
         await Vue.nextTick();
-
-        expect(wrapper.find('.floatingmenu').classes()).toContain('isVisible');
+        
+        expect(wrapper.findComponent(FloatingMenu).classes()).toContain('isVisible');
     });
 
     it('uses right format for menuItems for FloatingMenu', async () => {

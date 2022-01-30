@@ -32,7 +32,7 @@ export default {
     v-if="hasNoSearchResults"
     class="no-matching-search"
   >
-    No node or component matching for: {{ query }}
+    No node matching for: {{ query }}
   </div>
   <ScrollViewContainer
     v-else
