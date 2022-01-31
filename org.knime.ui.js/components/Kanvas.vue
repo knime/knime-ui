@@ -14,6 +14,7 @@ export default {
         };
     },
     computed: {
+        ...mapGetters('workflow', ['workflowBounds']),
         ...mapGetters('canvas', ['canvasSize', 'viewBox']),
         ...mapState('canvas', ['suggestPanning']),
         viewBoxString() {
@@ -36,6 +37,22 @@ export default {
         this.stopResizeObserver();
     },
     methods: {
+        scrollTo(x, y, scrollToCenter = false, smooth = false) {
+            let { x: absX, y: absY } = this.$store.getters['canvas/getAbsoluteCoordinates']({ x, y });
+            let { width, height } = this.$store.state.canvas.containerSize;
+            
+            let [destX, destY] = scrollToCenter
+                ? [width / 2, height / 2]
+                : [0, 0];
+
+            let [deltaX, deltaY] = [absX - destX, absY - destY];
+
+            this.$el.scrollBy({
+                left: deltaX,
+                top: deltaY,
+                behavior: smooth ? 'smooth' : 'instant'
+            });
+        },
         /*
             Zooming
         */
@@ -47,7 +64,13 @@ export default {
         initResizeObserver() {
             // recalculating and setting the container size is throttled.
             const updateCanvas = debounce((width, height) => {
+                let { x, y } = this.$store.getters['canvas/getAbsoluteCoordinates']({ x: 0, y: 0 });
                 this.$store.commit('canvas/setContainerSize', { width, height });
+                let { x: newX, y: newY } = this.$store.getters['canvas/getAbsoluteCoordinates']({ x: 0, y: 0 });
+                let [deltaX, deltaY] = [newX - x, newY - y];
+                console.log(deltaX, deltaY);
+                this.$el.scrollLeft += deltaX;
+                this.$el.scrollTop += deltaY;
             }, 100, { leading: true, trailing: true });
             // This ResizeObserver can be stuck in an update loop:
             // (Scrollbars needed -> svg gets inner container size, Scrollbar not needed -> svg gets outer container size)
@@ -117,6 +140,7 @@ export default {
     @pointerdown.left.alt="beginPan"
     @pointerup.left="stopPan"
     @pointermove="movePan"
+    @scrollTo="scrollTo($event)"
   >
     <svg
       ref="svg"
@@ -125,6 +149,14 @@ export default {
       :viewBox="viewBoxString"
       @pointerdown.self.stop="$emit('empty-pointerdown', $event)"
     >
+      <rect
+        class="workflow-sheet"
+        :x="workflowBounds.left - 20"
+        :y="workflowBounds.top - 20"
+        :width="workflowBounds.right - workflowBounds.left + 40"
+        :height="workflowBounds.bottom - workflowBounds.top + 40"
+        stroke-width="1"
+      />
       <slot />
     </svg>
   </div>
@@ -145,6 +177,12 @@ export default {
 svg {
   position: relative; /* needed for z-index to have effect */
   display: block;
+  background-color: #f7f7f7;
+}
+
+.workflow-sheet {
+  fill: #fdfeff;
+  filter: drop-shadow(4px 4px 18px rgba(0,0,0, 0.4));
 }
 
 .panning {

@@ -136,22 +136,27 @@ export const getters = {
     contentBounds(state, getters, rootState, rootGetters) {
         let { left, top, right, bottom } = rootGetters['workflow/workflowBounds'];
 
+        left -= state.containerSize.width / 2;
+        right += state.containerSize.width / 2;
+        top -= state.containerSize.height / 2;
+        bottom += state.containerSize.height / 2;
+
         let width = right - left;
         let height = bottom - top;
 
         // always draw the origin (0,0) but center content
         if (left > 0) {
-            width += left; // add distance from left to origin to width
+            // width += left; // add distance from left to origin to width
             left = 0; // move rect to the left to include origin
         } else if (right < 0) {
-            width -= right; // add distance from right to origin
+            // width -= right; // add distance from right to origin
             right = 0; // right is at origin
         }
         if (top > 0) {
-            height += top;
+            // height += top;
             top = 0;
         } else if (bottom < 0) {
-            height -= bottom;
+            // height -= bottom;
             bottom = 0;
         }
 

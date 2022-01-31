@@ -28,6 +28,11 @@ export default {
             'activeWorkflowId'
         ])
     },
+    watch: {
+        async workflow() {
+            // this.$refs.kanvas.scrollTo(0, 0);
+        }
+    },
     methods: {
         /*
           Selection
