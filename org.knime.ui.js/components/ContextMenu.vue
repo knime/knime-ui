@@ -30,8 +30,8 @@ export default {
             this.setMenuItems();
             this.$refs.contextMenu.showMenu(e.pageX, e.pageY);
         },
-        onContextMenuItemClick(e, item) {
-            this.$commands.dispatch(item.name);
+        onContextMenuItemClick(e, command) {
+            this.$commands.dispatch(command.name);
         },
         setMenuItems() {
             const selectedNodes = this.$store.getters['selection/selectedNodes'];

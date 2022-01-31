@@ -1,6 +1,7 @@
 import workflowCommands from './workflowCommands';
 import canvasCommands from './canvasCommands';
 
+// chains a group condition before each individual command condition
 export const conditionGroup = (groupCondition, commands) => {
     if (groupCondition) {
         Object.values(commands).forEach(command => {

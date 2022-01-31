@@ -76,13 +76,13 @@ export default (context, inject) => {
     };
 
     // execute a command
-    const dispatch = (commandName, $args) => {
+    const dispatch = (commandName) => {
         let command = commands[commandName];
         if (!command) {
             throw new Error(`Command ${commandName} doesn't exist`);
         }
 
-        command.execute({ $store: context.store, $args });
+        command.execute({ $store: context.store });
     };
 
     // inject $commands into components

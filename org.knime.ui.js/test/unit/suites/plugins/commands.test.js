@@ -87,11 +87,10 @@ describe('Commands Plugin', () => {
 
         test('dispatch name to command', () => {
             let command = $commands.get('crazyHotkey');
-            let $args = {};
 
-            $commands.dispatch('crazyHotkey', $args);
+            $commands.dispatch('crazyHotkey');
 
-            expect(command.execute).toHaveBeenCalledWith({ $store: context.store, $args });
+            expect(command.execute).toHaveBeenCalledWith({ $store: context.store });
         });
 
         describe('hotkeys', () => {

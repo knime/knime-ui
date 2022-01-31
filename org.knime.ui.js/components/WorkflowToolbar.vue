@@ -29,7 +29,7 @@ export default {
 
             const { isEnabled } = this.$commands;
 
-            let allMenuItems = {
+            let visibleItems = {
                 // always visible
                 undo: true,
                 redo: true,
@@ -56,7 +56,7 @@ export default {
             };
 
             return Object
-                .entries(allMenuItems)
+                .entries(visibleItems)
                 .filter(([name, visible]) => visible)
                 .map(([name, visible]) => name);
         }

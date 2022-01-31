@@ -76,7 +76,7 @@ export default {
     // single node
     resumeLoopExecution: {
         text: 'Resume loop',
-        title: 'Resume step loop execution',
+        title: 'Resume loop execution',
         hotkey: ['Ctrl', 'Alt', 'F8'],
         icon: ResumeLoopIcon,
         execute:
@@ -87,7 +87,7 @@ export default {
     },
     pauseLoopExecution: {
         text: 'Pause loop',
-        title: 'Pause step loop execution',
+        title: 'Pause loop execution',
         hotkey: ['Ctrl', 'Alt', 'F7'],
         icon: PauseLoopIcon,
         execute:
@@ -98,7 +98,7 @@ export default {
     },
     stepLoopExecution: {
         text: 'Step loop',
-        title: 'Start step loop execution',
+        title: 'Execute one loop step',
         hotkey: ['Ctrl', 'Alt', 'F6'],
         icon: StepLoopIcon,
         execute:

@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import { throttle } from 'lodash';
 
 const throttledZoomThrottle = 30; // throttle keyboard zoom by 30ms
