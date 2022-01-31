@@ -20,12 +20,20 @@ export const mutations = {
 
     // Add nodeIds to selection
     addNodesToSelection(state, nodeIds) {
-        nodeIds.forEach(id => Vue.set(state.selectedNodes, id, true));
+        // Work on a copy of the state. The vue reactivity-machinery only runs once afterwards
+        let selectedNodes = { ...state.selectedNodes };
+        nodeIds.forEach(id => { selectedNodes[id] = true; });
+
+        state.selectedNodes = selectedNodes;
     },
 
     // Removes each node of the provided nodeIds array from the selected nodes
     removeNodesFromSelection(state, nodeIds) {
-        nodeIds.forEach(id => Vue.delete(state.selectedNodes, id));
+        // Work on a copy of the state. The vue reactivity-machinery only runs once afterwards
+        let selectedNodes = { ...state.selectedNodes };
+        nodeIds.forEach(id => { delete selectedNodes[id]; });
+
+        state.selectedNodes = selectedNodes;
     },
 
     // Clear the selected nodes and the selected connections at once
