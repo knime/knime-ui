@@ -85,12 +85,21 @@ describe('Commands Plugin', () => {
             expect(command.condition).toHaveBeenCalledWith({ $store: context.store });
         });
 
+        test('command without condition is enabled', () => {
+            expect($commands.isEnabled('selectAll')).toBe(true);
+        });
+
         test('dispatch name to command', () => {
             let command = $commands.get('crazyHotkey');
 
             $commands.dispatch('crazyHotkey');
 
             expect(command.execute).toHaveBeenCalledWith({ $store: context.store });
+        });
+
+        test('dispatch and isEnabled throw for unknown command', () => {
+            expect(() => $commands.isEnabled('unknown')).toThrow();
+            expect(() => $commands.dispatch('unknown')).toThrow();
         });
 
         describe('hotkeys', () => {

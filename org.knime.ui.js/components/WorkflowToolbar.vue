@@ -2,7 +2,7 @@
 import { mapState } from 'vuex';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import ZoomMenu from '~/components/ZoomMenu';
-import CommandButton from '~/components/ToolbarCommandButton';
+import ToolbarCommandButton from '~/components/ToolbarCommandButton';
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
@@ -11,7 +11,7 @@ export default {
     components: {
         WorkflowBreadcrumb,
         ZoomMenu,
-        CommandButton
+        ToolbarCommandButton
     },
     computed: {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
@@ -79,7 +79,7 @@ export default {
         :key="toolbarCommands.join()"
         class="button-list"
       >
-        <CommandButton
+        <ToolbarCommandButton
           v-for="command in toolbarCommands"
           :key="command"
           :name="command"
