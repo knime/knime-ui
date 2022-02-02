@@ -16,8 +16,7 @@ export const state = () => ({
 
 export const getters = {
     workflowMetaActive: state => state.activeTab === TABS.WORKFLOW_METADATA,
-    nodeRepositoryActive: state => state.activeTab === TABS.NODE_REPOSITORY,
-    additionalPanelActive: state => state.additionalPanel === true
+    nodeRepositoryActive: state => state.activeTab === TABS.NODE_REPOSITORY
 };
 
 export const mutations = {

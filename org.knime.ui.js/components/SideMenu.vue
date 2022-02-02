@@ -21,7 +21,8 @@ export default {
             workflow: 'activeWorkflow'
         }),
         // TODO: NXT-844 do we really need a panel store?
-        ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive', 'additionalPanelActive']),
+        ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive']),
+        ...mapState('panel', ['additionalPanel']),
         metadata() {
             // TODO: NXT-844 this needs to somehow be brought out of this component into WorkflowMetadata
             switch (this.workflow.info.containerType) {
@@ -71,8 +72,8 @@ export default {
       </transition>
     </LeftCollapsiblePanel>
     <NodeDescription
-      v-if="additionalPanelActive"
-      v-show="additionalPanelActive"
+      v-if="additionalPanel"
+      v-show="additionalPanel"
     />
   </div>
 </template>

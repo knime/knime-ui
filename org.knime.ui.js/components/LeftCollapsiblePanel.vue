@@ -29,17 +29,16 @@ export default {
     },
     methods: {
         toggleExpanded() {
-            this.$store.dispatch('panel/toggleExpanded');
+            if (!this.additionalPanel) {
+                this.$store.dispatch('panel/toggleExpanded');
+            }
         }
     }
 };
 </script>
 
 <template>
-  <div
-    class="panel"
-    :style="{'border-right': additionalPanel ? '1px var(--knime-silver-sand-semi) solid': null}"
-  >
+  <div class="panel">
     <div
       class="container"
       :style="{ width: expanded ? width : 0 }"
@@ -53,7 +52,6 @@ export default {
     </div>
 
     <button
-      v-show="!additionalPanel"
       :title="expanded ? null : title"
       @click="toggleExpanded"
     >

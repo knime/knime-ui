@@ -1,4 +1,5 @@
 <script>
+import { mapActions } from 'vuex';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { KnimeMIME } from '~/mixins/dropNode';
 
@@ -18,6 +19,7 @@ export default {
         };
     },
     methods: {
+        ...mapActions('nodeRepository', ['setSelectedNode']),
         onDragStart(e) {
             // clone node preview
             this.dragGhost = this.$refs.nodePreview.$el.cloneNode(true);
@@ -48,6 +50,7 @@ export default {
         },
         onClick() {
             this.$store.dispatch('panel/openAdditionalPanel');
+            this.setSelectedNode(this.nodeTemplate);
         }
     }
 };
@@ -106,7 +109,7 @@ export default {
   }
 
   &:hover {
-    cursor: grab;
+    cursor: pointer;
 
     & .node-preview {
       filter: url(#node-torso-shadow);

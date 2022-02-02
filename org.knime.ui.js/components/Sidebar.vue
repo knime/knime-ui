@@ -14,13 +14,13 @@ export default {
         };
     },
     computed: {
-        ...mapState('panel', ['expanded']),
+        ...mapState('panel', ['expanded', 'additionalPanel']),
         ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive'])
     },
     methods: {
         ...mapActions('panel', ['setWorkflowMetaActive', 'setNodeRepositoryActive', 'close']),
         clickItem(alreadyActive, setActive) {
-            if (alreadyActive && this.expanded) {
+            if (alreadyActive && this.expanded && !this.additionalPanel) {
                 this.close();
             } else {
                 setActive();

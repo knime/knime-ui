@@ -1,4 +1,4 @@
-import { searchNodes, getNodesGroupedByTags } from '~api';
+import { searchNodes, getNodesGroupedByTags, getNodeDescription } from '~api';
 
 /**
  * Store that manages node repository state.
@@ -23,7 +23,11 @@ export const state = () => ({
     nodeSearchPage: 0,
 
     /* appearance */
-    scrollPosition: 0
+    scrollPosition: 0,
+    
+    /* node description */
+    selectedNode: null,
+    nodeWithDescription: null
 });
 
 export const getters = {
@@ -95,6 +99,15 @@ export const actions = {
         commit('setTags', res.tags);
     },
 
+    async getNodeDescription({ commit, state }) {
+        let results = await getNodeDescription({
+            className: state.selectedNode.nodeFactory.className,
+            settings: state.selectedNode.nodeFactory.settings
+        });
+
+        commit('setDescription', results);
+    },
+
     /**
      * Update the value of the single search node query
      *
@@ -149,6 +162,11 @@ export const actions = {
     async setSelectedTags({ dispatch, commit }, tags) {
         commit('setSelectedTags', tags);
         await dispatch('searchNodes');
+    },
+
+    async setSelectedNode({ commit, dispatch }, node) {
+        commit('setSelectedNode', node);
+        await dispatch('getNodeDescription');
     }
 };
 
@@ -196,5 +214,11 @@ export const mutations = {
     },
     setScrollPosition(state, value) {
         state.scrollPosition = value;
+    },
+    setDescription(state, nodeWithDescription) {
+        state.nodeWithDescription = nodeWithDescription;
+    },
+    setSelectedNode(state, node) {
+        state.selectedNode = node;
     }
 };
