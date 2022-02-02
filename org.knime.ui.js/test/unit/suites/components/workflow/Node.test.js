@@ -14,6 +14,7 @@ import StreamingDecorator from '~/components/workflow/StreamingDecorator';
 import LoopDecorator from '~/components/workflow/LoopDecorator';
 import NodeActionBar from '~/components/workflow/NodeActionBar';
 import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
+import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
 
 import '~/plugins/directive-move';
 
@@ -203,7 +204,7 @@ describe('Node', () => {
         });
 
         it('doesn’t show selection frame', () => {
-            expect(wrapper.find('portal[to="node-select"]').exists()).toBe(false);
+            expect(wrapper.findComponent(NodeSelectionPlane).exists()).toBe(false);
         });
 
         it('renders node state', () => {
@@ -260,11 +261,11 @@ describe('Node', () => {
         it('shows frame if selected', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
             doMount();
-            expect(wrapper.find('portal[to="node-select"]').exists()).toBe(true);
+            expect(wrapper.findComponent(NodeSelectionPlane).exists()).toBe(true);
 
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(false);
             doMount();
-            expect(wrapper.find('portal[to="node-select"]').exists()).toBe(false);
+            expect(wrapper.findComponent(NodeSelectionPlane).exists()).toBe(false);
         });
 
         it('shows hidden flow variable ports', () => {
