@@ -79,10 +79,11 @@ export default {
             return result;
         },
         onPointerDown(e) {
-            if (!this.isWritable) {
+            if (!this.isWritable || e.button !== 0 || e.shiftKey || e.ctrlKey) {
                 return;
             }
 
+            e.stopPropagation();
             e.target.setPointerCapture(e.pointerId);
 
             this.kanvasElement = document.getElementById('kanvas');
@@ -121,10 +122,9 @@ export default {
             });
         },
         onPointerUp(e) {
-            if (!this.isWritable) {
-                return;
-            }
+            if (!this.dragConnector) { return; }
             
+            e.stopPropagation();
             e.target.releasePointerCapture(e.pointerId);
 
             let { sourceNode, sourcePort, destNode, destPort } = this.dragConnector;
@@ -239,8 +239,8 @@ export default {
   <g
     :transform="`translate(${relativePosition})`"
     :class="{ 'targeted': targeted }"
-    @pointerdown.stop="onPointerDown"
-    @pointerup.stop="onPointerUp"
+    @pointerdown="onPointerDown"
+    @pointerup="onPointerUp"
     @pointermove.stop="onPointerMove"
     @lostpointercapture.stop="onLostPointerCapture"
   >
