@@ -4,15 +4,13 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
 import WorkflowToolbar from '~/components/WorkflowToolbar';
-import ToolbarButton from '~/components/ToolbarButton';
+import ToolbarCommandButton from '~/components/ToolbarCommandButton';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import ZoomMenu from '~/components/ZoomMenu';
-import * as userActionStoreConfig from '~/store/userActions';
-
-jest.mock('~api', () => { }, { virtual: true });
 
 describe('WorkflowToolbar.vue', () => {
-    let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper, $store, selectedNodes, selectedConnections;
+    let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper,
+        $store, $commands, selectedNodes, selectedConnections;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -48,19 +46,15 @@ describe('WorkflowToolbar.vue', () => {
                 }
             }
         };
+
+        $commands = {
+            isEnabled: jest.fn().mockReturnValue(true)
+        };
+
         storeConfig = {
-            userActions: userActionStoreConfig,
             workflow: {
                 state: {
                     activeWorkflow: workflow
-                },
-                actions: {
-                    executeNodes: jest.fn(),
-                    cancelNodeExecution: jest.fn(),
-                    resetNodes: jest.fn(),
-                    deleteSelectedObjects: jest.fn(),
-                    undo: jest.fn(),
-                    redo: jest.fn()
                 }
             },
             selection: {
@@ -73,130 +67,16 @@ describe('WorkflowToolbar.vue', () => {
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
-            mocks = { $store };
+            mocks = { $store, $commands };
             wrapper = shallowMount(WorkflowToolbar, { propsData, mocks });
         };
     });
 
-    describe('buttons', () => {
-        describe('ALL - no selection', () => {
-            it('deactivates buttons by default', () => {
-                let buttonArray = ['undo', 'redo', 'execute', 'cancel', 'reset'];
-                doShallowMount();
+    test('Command buttons match computed items', () => {
+        doShallowMount();
 
-                let buttons = wrapper.findAllComponents(ToolbarButton);
-                buttonArray.forEach((button, index) => {
-                    expect(buttons.at(index).attributes('disabled')).toBeTruthy();
-                });
-            });
-
-            it('shows actions for all by default', () => {
-                doShallowMount();
-                let buttons = wrapper.findAllComponents(ToolbarButton);
-                expect(buttons.at(2).text()).toMatch('all');
-                expect(buttons.at(3).text()).toMatch('all');
-                expect(buttons.at(4).text()).toMatch('all');
-            });
-
-            it('activates global action buttons when possible', () => {
-                workflow.allowedActions = {
-                    canExecute: true,
-                    canCancel: true,
-                    canReset: true
-                };
-                doShallowMount();
-                let buttons = wrapper.findAllComponents(ToolbarButton);
-                expect(buttons.at(2).attributes('disabled')).toBeFalsy();
-                expect(buttons.at(3).attributes('disabled')).toBeFalsy();
-                expect(buttons.at(4).attributes('disabled')).toBeFalsy();
-            });
-
-            it('triggers store actions when a button is clicked', () => {
-                workflow.allowedActions = {
-                    canExecute: true,
-                    canCancel: true,
-                    canReset: true,
-                    canUndo: true,
-                    canRedo: true
-                };
-                doShallowMount();
-                let buttons = wrapper.findAllComponents(ToolbarButton);
-                let { executeNodes, cancelNodeExecution, resetNodes, undo, redo } = storeConfig.workflow.actions;
-
-                expect(executeNodes).not.toHaveBeenCalled();
-                expect(cancelNodeExecution).not.toHaveBeenCalled();
-                expect(resetNodes).not.toHaveBeenCalled();
-                expect(undo).not.toHaveBeenCalled();
-                expect(redo).not.toHaveBeenCalled();
-
-
-                buttons.at(0).trigger('click');
-                expect(undo).toHaveBeenCalled();
-                buttons.at(1).trigger('click');
-                expect(redo).toHaveBeenCalled();
-                buttons.at(2).trigger('click');
-                expect(executeNodes).toHaveBeenCalledWith(expect.anything(), 'all');
-                buttons.at(3).trigger('click');
-                expect(cancelNodeExecution).toHaveBeenCalledWith(expect.anything(), 'all');
-                buttons.at(4).trigger('click');
-                expect(resetNodes).toHaveBeenCalledWith(expect.anything(), 'all');
-            });
-        });
-
-        describe('Selection', () => {
-            it('shows actions for selected', () => {
-                selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:2']];
-                doShallowMount();
-                let buttons = wrapper.findAllComponents(ToolbarButton);
-                expect(buttons.at(2).text()).toMatch('Execute');
-                expect(buttons.at(3).text()).toMatch('Cancel');
-                expect(buttons.at(4).text()).toMatch('Reset');
-            });
-
-            it('disable actions for selection (all false)', () => {
-                selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:1']];
-                doShallowMount();
-                let buttons = wrapper.findAllComponents(ToolbarButton);
-                expect(buttons.at(2).attributes('disabled')).toBeTruthy();
-                expect(buttons.at(3).attributes('disabled')).toBeTruthy();
-                expect(buttons.at(4).attributes('disabled')).toBeTruthy();
-            });
-
-            it('enable actions for selection (some true)', () => {
-                selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:2']];
-                doShallowMount();
-                let buttons = wrapper.findAllComponents(ToolbarButton);
-                expect(buttons.at(2).attributes('disabled')).toBeFalsy();
-                expect(buttons.at(3).attributes('disabled')).toBeFalsy();
-                expect(buttons.at(4).attributes('disabled')).toBeFalsy();
-            });
-
-            it('triggers store actions when a button is clicked', () => {
-                selectedNodes = [workflow.nodes['root:1'], workflow.nodes['root:2']];
-                doShallowMount();
-                let buttons = wrapper.findAllComponents(ToolbarButton);
-                let {
-                    executeNodes,
-                    cancelNodeExecution,
-                    resetNodes,
-                    deleteSelectedObjects
-                } = storeConfig.workflow.actions;
-
-                expect(executeNodes).not.toHaveBeenCalled();
-                expect(cancelNodeExecution).not.toHaveBeenCalled();
-                expect(resetNodes).not.toHaveBeenCalled();
-                expect(deleteSelectedObjects).not.toHaveBeenCalled();
-
-                buttons.at(2).trigger('click');
-                expect(executeNodes).toHaveBeenCalledWith(expect.anything(), 'selected');
-                buttons.at(3).trigger('click');
-                expect(cancelNodeExecution).toHaveBeenCalledWith(expect.anything(), 'selected');
-                buttons.at(4).trigger('click');
-                expect(resetNodes).toHaveBeenCalledWith(expect.anything(), 'selected');
-                buttons.at(5).trigger('click');
-                expect(deleteSelectedObjects).toHaveBeenCalled();
-            });
-        });
+        let commandButtons = wrapper.findAllComponents(ToolbarCommandButton).wrappers;
+        expect(commandButtons.map(button => button.props('name'))).toStrictEqual(wrapper.vm.toolbarCommands);
     });
 
     describe('zoom', () => {

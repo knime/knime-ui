@@ -3,22 +3,28 @@ import { mapState } from 'vuex';
 import CloseIcon from '~/assets/cancel-execution.svg?inline';
 import Description from '~/webapps-common/ui/components/Description';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
-import ScrollViewContainer from './ScrollViewContainer.vue';
 
 export default {
     components: {
         CloseIcon,
         Description,
-        NodeFeatureList,
-        ScrollViewContainer
+        NodeFeatureList
     },
     computed: {
-        ...mapState('panel', ['additionalPanel']),
+        ...mapState('panel', ['descriptionPanel']),
         ...mapState('nodeRepository', ['selectedNode', 'nodeWithDescription'])
+    },
+    watch: {
+        selectedNode: {
+            immediate: true,
+            handler() {
+                this.$store.dispatch('nodeRepository/getNodeDescription');
+            }
+        }
     },
     methods: {
         closePanel() {
-            this.$store.dispatch('panel/closeAdditionalPanel');
+            this.$store.dispatch('panel/closeDescriptionPanel');
         }
     }
 };
@@ -29,27 +35,32 @@ export default {
     <div class="header">
       <h2>{{ selectedNode.name }}</h2>
       <button
-        v-show="additionalPanel"
+        v-show="descriptionPanel"
         @click="closePanel"
       >
         <CloseIcon />
       </button>
     </div>
     <hr>
-    <ScrollViewContainer>
+    <div
+      class="scroll-container"
+    >
       <div class="node-info">
         <Description
           v-if="nodeWithDescription"
           :text="nodeWithDescription.description"
           :render-as-html="true"
         />
+        <span v-if="nodeWithDescription && !nodeWithDescription.description">
+          There is no description for this node.
+        </span>
         <NodeFeatureList
           v-if="nodeWithDescription"
           v-bind="nodeWithDescription"
           class="node-feature-list"
         />
       </div>
-    </ScrollViewContainer>
+    </div>
   </div>
 </template>
 
@@ -95,6 +106,13 @@ export default {
     border: none;
     border-top: 1px solid var(--knime-silver-sand);
     margin: 0;
+  }
+
+  & .scroll-container {
+    background-color: var(--knime-gray-ultra-light);
+    overflow-x: hidden;
+    text-align: left;
+    height: 100%;
   }
 
   & .node-info {

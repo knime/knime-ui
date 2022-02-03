@@ -4,14 +4,13 @@
 
 const TABS = {
     WORKFLOW_METADATA: 'workflowMetadata',
-    NODE_REPOSITORY: 'nodeRepository',
-    NODE_DESCRIPTION: 'nodeDescription'
+    NODE_REPOSITORY: 'nodeRepository'
 };
 
 export const state = () => ({
     expanded: false,
     activeTab: TABS.WORKFLOW_METADATA,
-    additionalPanel: false
+    descriptionPanel: false
 });
 
 export const getters = {
@@ -26,8 +25,8 @@ export const mutations = {
     setActiveTab(state, active) {
         state.activeTab = active;
     },
-    setAdditionalPanel(state, value) {
-        state.additionalPanel = value;
+    setDescriptionPanel(state, value) {
+        state.descriptionPanel = value;
     }
 };
 
@@ -50,11 +49,11 @@ export const actions = {
         commit('setExpanded', false);
     },
 
-    openAdditionalPanel({ commit }) {
-        commit('setAdditionalPanel', true);
+    openDescriptionPanel({ commit }) {
+        commit('setDescriptionPanel', true);
     },
 
-    closeAdditionalPanel({ commit }) {
-        commit('setAdditionalPanel', false);
+    closeDescriptionPanel({ commit }) {
+        commit('setDescriptionPanel', false);
     }
 };

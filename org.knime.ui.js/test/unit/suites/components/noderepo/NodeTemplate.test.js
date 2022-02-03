@@ -1,12 +1,20 @@
-import { shallowMount } from '@vue/test-utils';
+import Vuex from 'vuex';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { mockVuexStore } from '~/test/unit/test-utils';
 import NodeTemplate from '~/components/noderepo/NodeTemplate';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { KnimeMIME } from '~/mixins/dropNode';
 
 describe('NodeTemplate', () => {
-    let propsData, doMount, wrapper, testEvent;
+    let propsData, doMount, wrapper, testEvent, isWritable, mocks;
+
+    beforeAll(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
+    });
 
     beforeEach(() => {
+        isWritable = true;
         wrapper = null;
 
         let getBoundingClientRectMock = jest.fn().mockReturnValue({
@@ -38,8 +46,19 @@ describe('NodeTemplate', () => {
             }
         };
 
+        let $store = mockVuexStore({
+            workflow: {
+                getters: {
+                    isWritable() {
+                        return isWritable;
+                    }
+                }
+            }
+        });
+
         doMount = () => {
-            wrapper = shallowMount(NodeTemplate, { propsData });
+            mocks = { $store };
+            wrapper = shallowMount(NodeTemplate, { propsData, mocks });
         };
     });
 
@@ -114,6 +133,30 @@ describe('NodeTemplate', () => {
             expect(testEvent.dataTransfer.setData).toHaveBeenCalledWith('text/plain', 'node-id');
             expect(testEvent.dataTransfer.setData).toHaveBeenCalledWith(KnimeMIME,
                 JSON.stringify({ className: 'class-name', settings: 'encoded-settings' }));
+        });
+
+        it('changes cursor when dragged in write-protected mode', () => {
+            isWritable = false;
+            doMount();
+
+            wrapper.trigger('drag');
+            const node = wrapper.find('.node');
+
+            expect(node.attributes().style).toBe('cursor: not-allowed;');
+        });
+
+        it('removes style from node when dragging ends', () => {
+            isWritable = false;
+            doMount();
+
+            wrapper.trigger('drag');
+            const node = wrapper.find('.node');
+
+            expect(node.attributes().style).toBe('cursor: not-allowed;');
+
+            wrapper.trigger('dragend');
+
+            expect(node.attributes().style).toBe(undefined);
         });
     });
 });

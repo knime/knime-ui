@@ -14,16 +14,21 @@ export default {
         };
     },
     computed: {
-        ...mapState('panel', ['expanded', 'additionalPanel']),
+        ...mapState('panel', ['expanded', 'descriptionPanel']),
         ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive'])
     },
     methods: {
-        ...mapActions('panel', ['setWorkflowMetaActive', 'setNodeRepositoryActive', 'close']),
+        ...mapActions('panel', ['setWorkflowMetaActive', 'setNodeRepositoryActive', 'close',
+            'closeDescriptionPanel']),
         clickItem(alreadyActive, setActive) {
-            if (alreadyActive && this.expanded && !this.additionalPanel) {
+            if (alreadyActive && this.expanded && this.descriptionPanel) {
+                this.close();
+                this.closeDescriptionPanel();
+            } else if (alreadyActive && this.expanded) {
                 this.close();
             } else {
                 setActive();
+                this.closeDescriptionPanel();
             }
         }
     }

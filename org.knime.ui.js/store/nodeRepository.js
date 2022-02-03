@@ -105,7 +105,7 @@ export const actions = {
             settings: state.selectedNode.nodeFactory.settings
         });
 
-        commit('setDescription', results);
+        commit('setNodeDescription', results);
     },
 
     /**
@@ -164,9 +164,8 @@ export const actions = {
         await dispatch('searchNodes');
     },
 
-    async setSelectedNode({ commit, dispatch }, node) {
+    setSelectedNode({ commit }, node) {
         commit('setSelectedNode', node);
-        await dispatch('getNodeDescription');
     }
 };
 
@@ -215,7 +214,7 @@ export const mutations = {
     setScrollPosition(state, value) {
         state.scrollPosition = value;
     },
-    setDescription(state, nodeWithDescription) {
+    setNodeDescription(state, nodeWithDescription) {
         state.nodeWithDescription = nodeWithDescription;
     },
     setSelectedNode(state, node) {

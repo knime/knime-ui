@@ -142,11 +142,19 @@ describe('workflow store', () => {
             expect($store.getters['selection/selectedNodeIds']).toStrictEqual(['root:1', 'root:2']);
         });
 
-        test('get all selected nodes', () => {
+        test('get multiple selected nodes', () => {
             expect($store.getters['selection/selectedNodes']).toStrictEqual(expect.objectContaining([
                 { id: 'root:1' },
                 { id: 'root:2' }
             ]));
+            expect($store.getters['selection/singleSelectedNode']).toBe(null);
+        });
+
+        test('get single selected node', () => {
+            $store.commit('selection/clearSelection');
+            $store.commit('selection/addNodesToSelection', ['root:1']);
+
+            expect($store.getters['selection/singleSelectedNode']).toStrictEqual({ id: 'root:1' });
         });
 
         test('test if node is selected', () => {

@@ -25,13 +25,11 @@ export default {
         }
     },
     computed: {
-        ...mapState('panel', ['expanded', 'activeTab', 'additionalPanel'])
+        ...mapState('panel', ['expanded', 'activeTab', 'descriptionPanel'])
     },
     methods: {
         toggleExpanded() {
-            if (!this.additionalPanel) {
-                this.$store.dispatch('panel/toggleExpanded');
-            }
+            this.$store.dispatch('panel/toggleExpanded');
         }
     }
 };
@@ -53,6 +51,7 @@ export default {
 
     <button
       :title="expanded ? null : title"
+      :disabled="descriptionPanel"
       @click="toggleExpanded"
     >
       <SwitchIcon :style="{ transform: expanded ? null : 'scaleX(-1)' }" />

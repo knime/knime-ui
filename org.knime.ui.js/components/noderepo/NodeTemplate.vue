@@ -1,5 +1,5 @@
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapGetters } from 'vuex';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { KnimeMIME } from '~/mixins/dropNode';
 
@@ -18,9 +18,16 @@ export default {
             dragGhost: null
         };
     },
+    computed: {
+        ...mapGetters('workflow', ['isWritable'])
+    },
     methods: {
         ...mapActions('nodeRepository', ['setSelectedNode']),
         onDragStart(e) {
+            // Fix for cursor style for Firefox
+            if (!this.isWritable && (navigator.userAgent.indexOf('Firefox') !== -1)) {
+                e.currentTarget.style.cursor = 'not-allowed';
+            }
             // clone node preview
             this.dragGhost = this.$refs.nodePreview.$el.cloneNode(true);
             
@@ -41,7 +48,9 @@ export default {
             e.dataTransfer.setData('text/plain', this.nodeTemplate.id);
             e.dataTransfer.setData(KnimeMIME, JSON.stringify(this.nodeTemplate.nodeFactory));
         },
-        onDragEnd() {
+        onDragEnd(e) {
+            e.target.removeAttribute('style');
+
             // remove cloned node preview
             if (this.dragGhost) {
                 document.body.removeChild(this.dragGhost);
@@ -49,8 +58,13 @@ export default {
             }
         },
         onClick() {
-            this.$store.dispatch('panel/openAdditionalPanel');
+            this.$store.dispatch('panel/openDescriptionPanel');
             this.setSelectedNode(this.nodeTemplate);
+        },
+        onDrag(e) {
+            if (!this.isWritable) {
+                e.currentTarget.style.cursor = 'not-allowed';
+            }
         }
     }
 };
@@ -63,6 +77,7 @@ export default {
     @dragstart="onDragStart"
     @dragend="onDragEnd"
     @click="onClick"
+    @drag="onDrag"
   >
     <label :title="nodeTemplate.name">{{ nodeTemplate.name }}</label>
     <NodePreview

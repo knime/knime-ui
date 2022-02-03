@@ -1,5 +1,5 @@
 <script>
-import { mapGetters, mapState } from 'vuex';
+import { mapState } from 'vuex';
 import DropdownIcon from '~/webapps-common/ui/assets/img/icons/arrow-dropdown.svg?inline';
 import SubMenu from '~/webapps-common/ui/components/SubMenu';
 
@@ -13,11 +13,19 @@ export default {
     },
     computed: {
         ...mapState('canvas', ['zoomFactor']),
-        ...mapGetters('canvas', ['fitToScreenZoomFactor']),
-        ...mapGetters('userActions', ['zoomActionItems']),
-
         zoomInputValue() {
             return `${Math.round(this.zoomFactor * 100)}%`;
+        },
+        zoomMenuItems() {
+            return [
+                'fitToScreen',
+                'zoomIn',
+                'zoomOut',
+                'zoomTo75',
+                'zoomTo100',
+                'zoomTo125',
+                'zoomTo150'
+            ].map(action => this.$commands.get(action));
         }
     },
     methods: {
@@ -42,9 +50,8 @@ export default {
             e.target.blur();
             e.target.value = this.zoomInputValue;
         },
-        onZoomItemClick(e, item, id) {
-            // TODO NXT-625: This is not how dispatch works. Only one parameter can be used as payload
-            this.$store.dispatch(item.storeAction, ...item.storeActionParams);
+        onZoomItemClick(e, item) {
+            this.$commands.dispatch(item.name);
             this.$refs.zoomInput.blur();
         },
         onWheel(e) {
@@ -59,7 +66,7 @@ export default {
   <SubMenu
     ref="subMenu"
     class="zoom"
-    :items="zoomActionItems"
+    :items="zoomMenuItems"
     @item-click="onZoomItemClick"
   >
     <input

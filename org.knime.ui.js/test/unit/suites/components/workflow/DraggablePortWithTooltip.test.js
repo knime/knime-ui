@@ -204,7 +204,7 @@ describe('DraggablePortWithTooltip', () => {
                 wrapper.element.releasePointerCapture = jest.fn();
 
                 // Start dragging
-                wrapper.trigger('pointerdown', { pointerId: -1, x, y });
+                wrapper.trigger('pointerdown', { pointerId: -1, x, y, button: 0 });
             };
 
             dragAboveTarget = (targetElement, [x, y] = [0, 0], enableDropTarget = true) => {
