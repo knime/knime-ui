@@ -1,8 +1,8 @@
 <script>
-import { mapGetters, mapState } from 'vuex';
+import { mapState } from 'vuex';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
-import ToolbarButton from '~/components/ToolbarButton';
 import ZoomMenu from '~/components/ZoomMenu';
+import ToolbarCommandButton from '~/components/ToolbarCommandButton';
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
@@ -10,17 +10,55 @@ import ZoomMenu from '~/components/ZoomMenu';
 export default {
     components: {
         WorkflowBreadcrumb,
-        ToolbarButton,
-        ZoomMenu
+        ZoomMenu,
+        ToolbarCommandButton
     },
     computed: {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
-        ...mapGetters('userActions', ['mainMenuActionItems']),
         hasBreadcrumb() {
             return this.workflow?.parents?.length > 0;
         },
-        visibleActionItems() {
-            return this.mainMenuActionItems;
+        toolbarCommands() {
+            const selectedNodes = this.$store.getters['selection/selectedNodes'];
+            const singleSelectedNode = this.$store.getters['selection/singleSelectedNode'];
+            const selectedConnections = this.$store.getters['selection/selectedConnections'];
+            
+            const somethingSelected = selectedNodes.length || selectedConnections.length;
+            const isLoopEnd = singleSelectedNode?.loopInfo?.allowedActions;
+            const isView = singleSelectedNode && 'canOpenView' in singleSelectedNode.allowedActions;
+
+            const { isEnabled } = this.$commands;
+
+            let visibleItems = {
+                // always visible
+                undo: true,
+                redo: true,
+
+                // Workflow
+                executeAll: !somethingSelected,
+                cancelAll: !somethingSelected,
+                resetAll: !somethingSelected,
+
+                // Node Execution
+                executeSelected: selectedNodes.length,
+                resumeLoopExecution: isLoopEnd && isEnabled('resumeLoopExecution'),
+                pauseLoopExecution: isLoopEnd && isEnabled('pauseLoopExecution'),
+                stepLoopExecution: isLoopEnd && isEnabled('stepLoopExecution'),
+                cancelSelected: selectedNodes.length,
+                resetSelected: selectedNodes.length,
+
+                // Something selected
+                deleteSelected: somethingSelected,
+
+                // Exactly one node selected
+                configureNode: singleSelectedNode,
+                openView: isView
+            };
+
+            return Object
+                .entries(visibleItems)
+                .filter(([name, visible]) => visible)
+                .map(([name, visible]) => name);
         }
     }
 };
@@ -32,22 +70,20 @@ export default {
       tag="div"
       name="button-list"
     >
-      <!-- TODO NXT-625: This is not how dispatch works. Only one parameter can be used as payload -->
+      <!--
+        setting :key="the list of all visible commands",
+        re-renders the whole list in a new div whenever commands appear or disappear,
+        such that those two lists can be faded
+      -->
       <div
-        :key="visibleActionItems.map(action => action.title).join('-')"
+        :key="toolbarCommands.join()"
         class="button-list"
       >
-        <ToolbarButton
-          v-for="a of visibleActionItems"
-          :key="a.title"
-          :class="{ 'with-text': a.text }"
-          :disabled="a.disabled"
-          :title="`${a.title} – ${a.hotkeyText}`"
-          @click.native="$store.dispatch(a.storeAction, ...a.storeActionParams)"
-        >
-          <Component :is="a.icon" />
-          {{ a.text }}
-        </ToolbarButton>
+        <ToolbarCommandButton
+          v-for="command in toolbarCommands"
+          :key="command"
+          :name="command"
+        />
       </div>
     </transition-group>
 
@@ -85,15 +121,6 @@ export default {
   display: flex;
   font-size: 14px;
   user-select: none;
-
-  & .with-text {
-    padding-right: 9px;
-    padding-left: 2px;
-  }
-
-  & button {
-    transition: all 150ms ease-out;
-  }
 }
 
 .breadcrumb {

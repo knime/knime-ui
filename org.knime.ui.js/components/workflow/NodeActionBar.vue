@@ -104,7 +104,6 @@ export default {
             return this.actions.map((_, i) => (i + (1 - buttonCount) / 2) * nodeActionBarButtonSpread);
         }
     },
-
     methods: {
         ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes',
             'pauseLoopExecution', 'resumeLoopExecution', 'stepLoopExecution', 'openView', 'openDialog'])

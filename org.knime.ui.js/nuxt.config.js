@@ -2,7 +2,6 @@ import path from 'path';
 import postcssConfig from 'webapps-common/webpack/webpack.postcss.config';
 import generateCSS from './buildtools/generateCSS';
 import svgConfig from 'webapps-common/webpack/webpack.svg.config';
-
 require('dotenv').config();
 
 const srcDir = path.resolve(__dirname);
@@ -30,7 +29,8 @@ const config = {
         '~/plugins/logger.js',
         '~/plugins/constants.js',
         '~/plugins/directive-move.js',
-        '~/plugins/json-rpc-notification.js'
+        '~/plugins/json-rpc-notification.js',
+        '~/plugins/commands.js'
     ],
     modules: ['portal-vue/nuxt'],
     css: ['@/assets/index.css'],
