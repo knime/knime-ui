@@ -164,7 +164,8 @@ export default {
     },
     data() {
         return {
-            hover: false
+            hover: false,
+            showSelectionPreview: null
         };
     },
     computed: {
@@ -261,6 +262,18 @@ export default {
 
             return Math.max(lastInPortY, lastOutPortY) + this.$shapes.portSize / 2 +
                 this.$shapes.nodeHoverPortBottomMargin;
+        },
+        showSelectionPlane() {
+            const isSelected = this.isNodeSelected(this.id);
+            // no preview, honor dragging state
+            if (this.showSelectionPreview === null) {
+                return isSelected && !this.isDragging;
+            }
+            // preview can override selected state (think: deselect with shift)
+            if (isSelected && this.showSelectionPreview === 'hide') {
+                return false;
+            }
+            return this.showSelectionPreview === 'show' || isSelected;
         }
     },
     methods: {
@@ -369,13 +382,22 @@ export default {
             if (targetPortDirection === 'out' && x < 0) { return true; }
 
             return false;
+        },
+        handleSelectionPreview(e, show) {
+            this.showSelectionPreview = show;
         }
     }
 };
 </script>
 
 <template>
-  <g :class="[{'connection-forbidden': connectionForbidden && !isConnectionSource}]">
+  <g
+    :id="`node-${id}`"
+    :class="['the-node', {'connection-forbidden': connectionForbidden && !isConnectionSource}]"
+    @show-selection-preview="handleSelectionPreview($event, 'show')"
+    @hide-selection-preview="handleSelectionPreview($event, 'hide')"
+    @clear-selection-preview="handleSelectionPreview($event, null)"
+  >
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal
       to="node-actions"
@@ -395,7 +417,7 @@ export default {
       to="node-select"
     >
       <NodeSelectionPlane
-        v-if="isNodeSelected(id) && !isDragging"
+        v-show="showSelectionPlane"
         :position="position"
         :kind="kind"
       />

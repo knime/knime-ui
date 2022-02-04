@@ -2,14 +2,24 @@
 import { mapGetters, mapState, mapMutations, mapActions } from 'vuex';
 import { throttle } from 'lodash';
 
-const selectNodesAfterMoveThrottle = 50; // 10 ms between new move calculations are performed
+const selectNodesAfterMoveThrottle = 50; // delay between new move calculations are performed in ms
 export default {
     data: () => ({
-        startPos: {},
-        endPos: {},
+        startPos: {
+            x: 0,
+            y: 0
+        },
+        endPos: {
+            x: 0,
+            y: 0
+        },
         isActive: false,
         selectedNodeIdsAtStart: [],
-        pointerId: null
+        pointerId: null,
+        lastInsideNodeIds: [],
+        selectOnEnd: [],
+        deSelectOnEnd: [],
+        nodeElementMap: {}
     }),
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
@@ -31,7 +41,7 @@ export default {
     },
     methods: {
         ...mapMutations('workflow', ['setDragging']),
-        ...mapActions('selection', ['selectNodes', 'deselectNodes', 'deselectAllObjects']),
+        ...mapActions('selection', ['selectNodes', 'deselectNodes', 'deselectAllObjects', 'setSelectedNodes']),
         startRectSelection(e) {
             this.pointerId = e.pointerId;
             if (!e.target.hasPointerCapture(e.pointerId)) {
@@ -41,12 +51,21 @@ export default {
                 x: this.viewBox.left + e.offsetX / this.zoomFactor,
                 y: this.viewBox.top + e.offsetY / this.zoomFactor
             };
+            this.setDragging(true);
+            // remember all nodes as dom elements
+            document.querySelectorAll('.the-node')?.forEach(n => {
+                this.nodeElementMap[n.getAttribute('id')] = n;
+            });
             // deselect all objects if we do not hold shift key
-            if (!e.shiftKey) {
-                this.deselectAllObjects();
+            if (e.shiftKey) {
+                // remember currently selected nodes, the nodes under the rect will inverse them
+                this.selectedNodeIdsAtStart = [...this.selectedNodeIds];
+            } else {
+                if (this.selectedNodeIds.length > 0) {
+                    this.deselectAllObjects();
+                }
+                this.selectedNodeIdsAtStart = [];
             }
-            // remember currently selected nodes, the nodes under the rect will inverse them
-            this.selectedNodeIdsAtStart = [...this.selectedNodeIds];
             this.endPos = this.startPos;
             this.isActive = true;
         },
@@ -54,31 +73,40 @@ export default {
             if (!this.isActive || this.pointerId !== e.pointerId) {
                 return;
             }
+            // hide rect
             this.isActive = false;
-            this.selectedNodeIdsAtStart = [];
-            // workflows dragging state changes behavior of nodes
+            this.pointerId = null;
+
             this.$nextTick(() => {
-                this.setDragging(false);
-                this.pointerId = null;
+                // do the real selection
+                this.selectNodes(this.selectOnEnd);
+                this.deselectNodes(this.deSelectOnEnd);
+
+                // clear preview state of now selected elements
+                [...this.selectOnEnd, ...this.deSelectOnEnd].forEach(nodeId => this.sendEventToNode('clear', nodeId));
+
+                // clear state
+                this.selectOnEnd = [];
+                this.deSelectOnEnd = [];
+                this.selectedNodeIdsAtStart = [];
+                this.nodeElementMap = {};
             });
+            // workflows dragging state changes behavior of nodes
+            this.setDragging(false);
         },
         mouseMove(e) {
-            /* eslint-disable no-invalid-this */
             if (!this.isActive || this.pointerId !== e.pointerId) {
                 return;
             }
-            this.setDragging(true);
             this.endPos = {
                 x: this.viewBox.left + e.offsetX / this.zoomFactor,
                 y: this.viewBox.top + e.offsetY / this.zoomFactor
             };
-            this.selectAllNodesInRectangle(this.startPos, this.endPos);
-
-            /* eslint-enable no-invalid-this */
+            this.$nextTick(() => this.selectAllNodesInRectangle(this.startPos, this.endPos));
         },
-        selectAllNodesInRectangle: throttle(function (startPos, endPos) {
-            let selectNodes = [];
-            let deselectNodes = [];
+        findNodesToSelect(startPos, endPos) {
+            let inside = [];
+            let outside = [];
             Object.values(this.activeWorkflow.nodes).forEach(node => {
                 const { nodeSize } = this.$shapes;
                 let nodeIsInsideOfRect = false;
@@ -96,25 +124,57 @@ export default {
                     nodeIsInsideOfRect = true;
                 }
                 // create lists with node ids
-                if (this.selectedNodeIdsAtStart.includes(node.id)) {
-                    if (nodeIsInsideOfRect) {
-                        deselectNodes.push(node.id);
-                    } else {
-                        selectNodes.push(node.id);
-                    }
+                if (nodeIsInsideOfRect) {
+                    inside.push(node.id);
                 } else {
-                    // eslint-disable-next-line no-lonely-if
-                    if (nodeIsInsideOfRect) {
-                        selectNodes.push(node.id);
-                    } else {
-                        deselectNodes.push(node.id);
-                    }
+                    outside.push(node.id);
                 }
             });
+            return {
+                inside,
+                outside
+            };
+        },
+        sendEventToNode(type, nodeId) {
+            this.nodeElementMap[`node-${nodeId}`]?.dispatchEvent(
+                new CustomEvent(`${type}-selection-preview`, {
+                    bubbles: false,
+                    cancelable: false
+                })
+            );
+        },
+        selectAllNodesInRectangle: throttle(function (startPos, endPos) {
+            console.time('find-inside-outside');
+            let { inside, outside } = this.findNodesToSelect(startPos, endPos);
+            console.timeEnd('find-inside-outside');
 
-            this.selectNodes(selectNodes);
-            this.deselectNodes(deselectNodes);
+            // remember this for the real selection at the end of the movement (pointerup)
+            let selectNodes = [];
+            let deselectNodes = [];
 
+            // do the preview
+            console.time('preview');
+            inside.forEach(nodeId => {
+                // support for shift (remove selection on selected ones)
+                if (this.selectedNodeIdsAtStart.includes(nodeId)) {
+                    this.sendEventToNode('hide', nodeId);
+                    deselectNodes.push(nodeId);
+                } else {
+                    this.sendEventToNode('show', nodeId);
+                    selectNodes.push(nodeId);
+                }
+            });
+            // clear state if we have changed it in the last run
+            outside.forEach(nodeId => {
+                if (this.lastInsideNodeIds.includes(nodeId)) {
+                    this.sendEventToNode('clear', nodeId);
+                }
+            });
+            // update global state
+            this.lastInsideNodeIds = [...inside];
+            this.selectOnEnd = [...selectNodes];
+            this.deSelectOnEnd = [...deselectNodes];
+            console.timeEnd('preview');
         }, selectNodesAfterMoveThrottle)
     }
 };
@@ -122,7 +182,7 @@ export default {
 
 <template>
   <rect
-    v-if="isActive"
+    v-show="isActive"
     :x="(!changeDirectionX ? startPos.x : endPos.x)"
     :y="!changeDirectionY ? startPos.y : endPos.y"
     :width="Math.abs(!changeDirectionX ? endPos.x - startPos.x : startPos.x - endPos.x)"
@@ -133,8 +193,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-  rect {
-    fill: none;
-    stroke-width: 1;
-  }
+rect {
+  fill: none;
+  stroke-width: 1;
+}
 </style>
