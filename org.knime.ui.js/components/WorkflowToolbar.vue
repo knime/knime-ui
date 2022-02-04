@@ -20,12 +20,9 @@ export default {
         },
         toolbarCommands() {
             const selectedNodes = this.$store.getters['selection/selectedNodes'];
-            const singleSelectedNode = this.$store.getters['selection/singleSelectedNode'];
             const selectedConnections = this.$store.getters['selection/selectedConnections'];
             
             const somethingSelected = selectedNodes.length || selectedConnections.length;
-            const isLoopEnd = singleSelectedNode?.loopInfo?.allowedActions;
-            const isView = singleSelectedNode && 'canOpenView' in singleSelectedNode.allowedActions;
 
             const { isEnabled } = this.$commands;
 
@@ -40,19 +37,10 @@ export default {
                 resetAll: !somethingSelected,
 
                 // Node Execution
-                executeSelected: selectedNodes.length,
-                resumeLoopExecution: isLoopEnd && isEnabled('resumeLoopExecution'),
-                pauseLoopExecution: isLoopEnd && isEnabled('pauseLoopExecution'),
-                stepLoopExecution: isLoopEnd && isEnabled('stepLoopExecution'),
-                cancelSelected: selectedNodes.length,
-                resetSelected: selectedNodes.length,
+                executeSelected: somethingSelected,
+                cancelSelected: somethingSelected,
+                resetSelected: somethingSelected,
 
-                // Something selected
-                deleteSelected: somethingSelected,
-
-                // Exactly one node selected
-                configureNode: singleSelectedNode,
-                openView: isView
             };
 
             return Object
