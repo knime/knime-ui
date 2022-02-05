@@ -2,7 +2,7 @@
 import { mapGetters, mapState, mapMutations, mapActions } from 'vuex';
 import { throttle } from 'lodash';
 
-const selectNodesAfterMoveThrottle = 50; // delay between new move calculations are performed in ms
+const selectNodesAfterMoveThrottle = 30; // delay between new move calculations are performed in ms
 export default {
     data: () => ({
         startPos: {
@@ -74,7 +74,7 @@ export default {
             this.pointerId = null;
 
             // update selection (in store)
-            this.$nextTick(() => {
+            setTimeout(() => {
                 // do the real selection
                 this.selectNodes(this.selectOnEnd);
                 this.deselectNodes(this.deSelectOnEnd);
@@ -87,7 +87,7 @@ export default {
                 this.deSelectOnEnd = [];
                 this.selectedNodeIdsAtStart = [];
                 this.nodeElementMap = {};
-            });
+            }, 1);
             // workflows dragging state changes behavior of nodes
             // TODO: should we add something like setActiveSelection or similar?
             this.setDragging(false);
