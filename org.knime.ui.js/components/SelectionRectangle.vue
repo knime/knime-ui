@@ -14,12 +14,7 @@ export default {
             y: 0
         },
         isActive: false,
-        selectedNodeIdsAtStart: [],
-        pointerId: null,
-        lastInsideNodeIds: [],
-        selectOnEnd: [],
-        deSelectOnEnd: [],
-        nodeElementMap: {}
+        pointerId: null
     }),
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
@@ -41,7 +36,7 @@ export default {
     },
     methods: {
         ...mapMutations('workflow', ['setDragging']),
-        ...mapActions('selection', ['selectNodes', 'deselectNodes', 'deselectAllObjects', 'setSelectedNodes']),
+        ...mapActions('selection', ['selectNodes', 'deselectNodes', 'deselectAllObjects']),
         startRectSelection(e) {
             this.pointerId = e.pointerId;
             if (!e.target.hasPointerCapture(e.pointerId)) {
@@ -53,6 +48,7 @@ export default {
             };
             this.setDragging(true);
             // remember all nodes as dom elements
+            this.nodeElementMap = [];
             document.querySelectorAll('.the-node')?.forEach(n => {
                 this.nodeElementMap[n.getAttribute('id')] = n;
             });
@@ -77,13 +73,14 @@ export default {
             this.isActive = false;
             this.pointerId = null;
 
+            // update selection (in store)
             this.$nextTick(() => {
                 // do the real selection
                 this.selectNodes(this.selectOnEnd);
                 this.deselectNodes(this.deSelectOnEnd);
 
                 // clear preview state of now selected elements
-                [...this.selectOnEnd, ...this.deSelectOnEnd].forEach(nodeId => this.sendEventToNode('clear', nodeId));
+                [...this.selectOnEnd, ...this.deSelectOnEnd].forEach(nId => this.sendEventToNode('clear', nId));
 
                 // clear state
                 this.selectOnEnd = [];
@@ -92,6 +89,7 @@ export default {
                 this.nodeElementMap = {};
             });
             // workflows dragging state changes behavior of nodes
+            // TODO: should we add something like setActiveSelection or similar?
             this.setDragging(false);
         },
         mouseMove(e) {
@@ -104,7 +102,7 @@ export default {
             };
             this.$nextTick(() => this.selectAllNodesInRectangle(this.startPos, this.endPos));
         },
-        findNodesToSelect(startPos, endPos) {
+        findNodesInsideOfRect(startPos, endPos) {
             let inside = [];
             let outside = [];
             Object.values(this.activeWorkflow.nodes).forEach(node => {
@@ -144,19 +142,16 @@ export default {
             );
         },
         selectAllNodesInRectangle: throttle(function (startPos, endPos) {
-            console.time('find-inside-outside');
-            let { inside, outside } = this.findNodesToSelect(startPos, endPos);
-            console.timeEnd('find-inside-outside');
+            let { inside, outside } = this.findNodesInsideOfRect(startPos, endPos);
 
             // remember this for the real selection at the end of the movement (pointerup)
             let selectNodes = [];
             let deselectNodes = [];
 
             // do the preview
-            console.time('preview');
             inside.forEach(nodeId => {
                 // support for shift (remove selection on selected ones)
-                if (this.selectedNodeIdsAtStart.includes(nodeId)) {
+                if (this.selectedNodeIdsAtStart?.includes(nodeId)) {
                     this.sendEventToNode('hide', nodeId);
                     deselectNodes.push(nodeId);
                 } else {
@@ -166,7 +161,7 @@ export default {
             });
             // clear state if we have changed it in the last run
             outside.forEach(nodeId => {
-                if (this.lastInsideNodeIds.includes(nodeId)) {
+                if (this.lastInsideNodeIds?.includes(nodeId)) {
                     this.sendEventToNode('clear', nodeId);
                 }
             });
@@ -174,7 +169,6 @@ export default {
             this.lastInsideNodeIds = [...inside];
             this.selectOnEnd = [...selectNodes];
             this.deSelectOnEnd = [...deselectNodes];
-            console.timeEnd('preview');
         }, selectNodesAfterMoveThrottle)
     }
 };
@@ -188,7 +182,8 @@ export default {
     :width="Math.abs(!changeDirectionX ? endPos.x - startPos.x : startPos.x - endPos.x)"
     :height="Math.abs(!changeDirectionY ? endPos.y - startPos.y : startPos.y - endPos.y)"
     :stroke="$colors.selection.activeBorder"
-    :stroke-dasharray="5 / zoomFactor"
+    stroke-dasharray="5"
+    vector-effect="non-scaling-stroke"
   />
 </template>
 
