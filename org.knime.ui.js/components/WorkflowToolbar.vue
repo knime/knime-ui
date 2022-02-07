@@ -19,10 +19,7 @@ export default {
             return this.workflow?.parents?.length > 0;
         },
         toolbarCommands() {
-            const selectedNodes = this.$store.getters['selection/selectedNodes'];
-            const selectedConnections = this.$store.getters['selection/selectedConnections'];
-            
-            const somethingSelected = selectedNodes.length || selectedConnections.length;
+            const selectedNodes = this.$store.getters['selection/selectedNodes'];          
 
             let visibleItems = {
                 // always visible
@@ -30,9 +27,9 @@ export default {
                 redo: true,
 
                 // Workflow
-                executeAll: !somethingSelected,
-                cancelAll: !somethingSelected,
-                resetAll: !somethingSelected,
+                executeAll: !selectedNodes.length,
+                cancelAll: !selectedNodes.length,
+                resetAll: !selectedNodes.length,
 
                 // Node Execution
                 executeSelected: selectedNodes.length,
