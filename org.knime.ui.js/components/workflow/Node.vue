@@ -392,10 +392,10 @@ export default {
 
     <!-- Node Selection Plane. Portalled to the back -->
     <portal
-      v-if="isNodeSelected(id) && !isDragging"
       to="node-select"
     >
       <NodeSelectionPlane
+        v-if="isNodeSelected(id) && !isDragging"
         :position="position"
         :kind="kind"
       />

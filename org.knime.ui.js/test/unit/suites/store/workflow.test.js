@@ -254,7 +254,7 @@ describe('workflow store', () => {
 
                 store.dispatch(`workflow/${fn}`, 'node x');
 
-                expect(mock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo', action });
+                expect(mock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo', action, workflowId: 'root' });
             });
         });
 

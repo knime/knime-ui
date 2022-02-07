@@ -22,8 +22,8 @@ button {
 
   &.with-text {
     font-size: 13px;
-    padding-right: 13px;
-    padding-left: 4px;
+    padding-right: 9px;
+    padding-left: 2px;
   }
 
   & svg {

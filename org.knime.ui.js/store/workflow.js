@@ -166,6 +166,17 @@ export const actions = {
             throw new TypeError("'nodes' has to be of type 'all' | 'selected' | Array<nodeId>]");
         }
     },
+    changeLoopState({ state, getters }, { action, nodeId }) {
+        let { activeWorkflow: { projectId } } = state;
+        let { activeWorkflowId: workflowId } = getters;
+
+        changeLoopState({
+            projectId,
+            workflowId,
+            nodeId,
+            action
+        });
+    },
     executeNodes({ dispatch }, nodes) {
         dispatch('changeNodeState', { action: 'execute', nodes });
     },
@@ -176,16 +187,16 @@ export const actions = {
         dispatch('changeNodeState', { action: 'cancel', nodes });
     },
     /* See docs in API */
-    pauseLoopExecution({ state }, nodeId) {
-        changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'pause' });
+    pauseLoopExecution({ dispatch }, nodeId) {
+        dispatch('changeLoopState', { action: 'pause', nodeId });
     },
     /* See docs in API */
-    resumeLoopExecution({ state }, nodeId) {
-        changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'resume' });
+    resumeLoopExecution({ dispatch }, nodeId) {
+        dispatch('changeLoopState', { action: 'resume', nodeId });
     },
     /* See docs in API */
-    stepLoopExecution({ state }, nodeId) {
-        changeLoopState({ projectId: state.activeWorkflow.projectId, nodeId, action: 'step' });
+    stepLoopExecution({ dispatch }, nodeId) {
+        dispatch('changeLoopState', { action: 'step', nodeId });
     },
     /* See docs in API */
     openView({ state }, nodeId) {

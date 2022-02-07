@@ -7,19 +7,16 @@ import * as $shapes from '~/style/shapes';
 import { dropNode } from '~/mixins';
 import { KnimeMIME } from '~/mixins/dropNode';
 
-let doMount,
-    wrapper,
-    addNodeMock,
-    dummyEvent,
-    kanvasElement;
-
 describe('Drop Node Mixin', () => {
+    let doMount, wrapper, addNodeMock, dummyEvent, kanvasElement, isWritable;
+
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
     });
 
     beforeEach(() => {
+        isWritable = true;
         Event.prototype.preventDefault = jest.fn();
 
         dummyEvent = {
@@ -33,16 +30,14 @@ describe('Drop Node Mixin', () => {
             preventDefault: jest.fn()
         };
         addNodeMock = jest.fn();
-    });
 
-    kanvasElement = {
-        scrollLeft: 5,
-        scrollTop: 5,
-        offsetLeft: 5,
-        offsetTop: 5
-    };
-
-    doMount = () => {
+        kanvasElement = {
+            scrollLeft: 5,
+            scrollTop: 5,
+            offsetLeft: 5,
+            offsetTop: 5
+        };
+    
         let dropNodeTarget = {
             template: `
                 <div
@@ -56,6 +51,11 @@ describe('Drop Node Mixin', () => {
             workflow: {
                 actions: {
                     addNode: addNodeMock
+                },
+                getters: {
+                    isWritable() {
+                        return isWritable;
+                    }
                 }
             },
             canvas: {
@@ -64,9 +64,13 @@ describe('Drop Node Mixin', () => {
                 }
             }
         });
-        wrapper = shallowMount(dropNodeTarget, { mocks: { $store, $shapes } });
+
         document.getElementById = (id) => id === 'kanvas' ? kanvasElement : null;
-    };
+        
+        doMount = () => {
+            wrapper = shallowMount(dropNodeTarget, { mocks: { $store, $shapes } });
+        };
+    });
 
     it('doesnt allow normal drag & drop', () => {
         doMount();
@@ -104,6 +108,18 @@ describe('Drop Node Mixin', () => {
             ]
         });
 
+        expect(Event.prototype.preventDefault).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not allow drag and drop in write-protected workflow', () => {
+        isWritable = false;
+        doMount();
+
+        wrapper.trigger('dragover', dummyEvent);
+        expect(dummyEvent.dataTransfer.dropEffect).toBe('');
+
+        wrapper.trigger('drop', dummyEvent);
+        expect(addNodeMock).not.toHaveBeenCalled();
         expect(Event.prototype.preventDefault).toHaveBeenCalledTimes(1);
     });
 });
