@@ -1,5 +1,5 @@
 <script>
-import { mapActions, mapGetters } from 'vuex';
+import { mapActions, mapGetters, mapMutations } from 'vuex';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { KnimeMIME } from '~/mixins/dropNode';
 
@@ -22,7 +22,8 @@ export default {
         ...mapGetters('workflow', ['isWritable'])
     },
     methods: {
-        ...mapActions('nodeRepository', ['setSelectedNode']),
+        ...mapActions('panel', ['openDescriptionPanel']),
+        ...mapMutations('nodeRepository', ['setSelectedNode']),
         onDragStart(e) {
             // Fix for cursor style for Firefox
             if (!this.isWritable && (navigator.userAgent.indexOf('Firefox') !== -1)) {
@@ -58,7 +59,7 @@ export default {
             }
         },
         onClick() {
-            this.$store.dispatch('panel/openDescriptionPanel');
+            this.openDescriptionPanel();
             this.setSelectedNode(this.nodeTemplate);
         },
         onDrag(e) {

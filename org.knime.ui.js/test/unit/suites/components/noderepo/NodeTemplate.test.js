@@ -6,7 +6,7 @@ import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { KnimeMIME } from '~/mixins/dropNode';
 
 describe('NodeTemplate', () => {
-    let propsData, doMount, wrapper, testEvent, isWritable, mocks;
+    let propsData, doMount, wrapper, testEvent, isWritable, mocks, openDescriptionPanel, setSelectedNode;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -16,6 +16,8 @@ describe('NodeTemplate', () => {
     beforeEach(() => {
         isWritable = true;
         wrapper = null;
+        openDescriptionPanel = jest.fn();
+        setSelectedNode = jest.fn();
 
         let getBoundingClientRectMock = jest.fn().mockReturnValue({
             width: 70,
@@ -53,6 +55,16 @@ describe('NodeTemplate', () => {
                         return isWritable;
                     }
                 }
+            },
+            panel: {
+                actions: {
+                    openDescriptionPanel
+                }
+            },
+            nodeRepository: {
+                mutations: {
+                    setSelectedNode
+                }
             }
         });
 
@@ -80,6 +92,21 @@ describe('NodeTemplate', () => {
             hasDynPorts: false,
             icon: 'data:image/node-icon'
         });
+    });
+
+    it('opens description panel when clicked', () => {
+        doMount();
+        const nodePreview = wrapper.findComponent(NodePreview);
+        nodePreview.trigger('click');
+        expect(openDescriptionPanel).toHaveBeenCalled();
+    });
+
+    it('selects a node when clicked', () => {
+        doMount();
+        const node = wrapper.find('.node');
+
+        node.trigger('click');
+        expect(setSelectedNode).toHaveBeenCalledWith({}, propsData.nodeTemplate);
     });
 
     describe('drag node', () => {

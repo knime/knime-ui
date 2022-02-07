@@ -162,10 +162,6 @@ export const actions = {
     async setSelectedTags({ dispatch, commit }, tags) {
         commit('setSelectedTags', tags);
         await dispatch('searchNodes');
-    },
-
-    setSelectedNode({ commit }, node) {
-        commit('setSelectedNode', node);
     }
 };
 

@@ -20,7 +20,8 @@ describe('panel store', () => {
     it('creates an empty store', () => {
         expect(store.state.panel).toStrictEqual({
             expanded: false,
-            activeTab: 'workflowMetadata'
+            activeTab: 'workflowMetadata',
+            descriptionPanel: false
         });
     });
 
@@ -58,5 +59,17 @@ describe('panel store', () => {
         store.dispatch('panel/close');
 
         expect(store.state.panel.expanded).toBe(false);
+    });
+
+    it('opens description panel', () => {
+        store.state.panel.descriptionPanel = false;
+        store.dispatch('panel/openDescriptionPanel');
+        expect(store.state.panel.descriptionPanel).toBe(true);
+    });
+
+    it('closes description panel', () => {
+        store.state.panel.descriptionPanel = true;
+        store.dispatch('panel/closeDescriptionPanel');
+        expect(store.state.panel.descriptionPanel).toBe(false);
     });
 });

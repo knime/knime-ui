@@ -50,8 +50,13 @@ const searchNodesResponse = {
     ]
 };
 
+const getNodeDescriptionResponse = {
+    id: 1,
+    description: 'This is a node.'
+};
+
 describe('Node Repository store', () => {
-    let store, localVue, searchNodesMock, getNodesGroupedByTagsMock, commitSpy, dispatchSpy;
+    let store, localVue, searchNodesMock, getNodesGroupedByTagsMock, getNodeDescriptionMock, commitSpy, dispatchSpy;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -59,6 +64,7 @@ describe('Node Repository store', () => {
 
         searchNodesMock = jest.fn().mockReturnValue(searchNodesResponse);
         getNodesGroupedByTagsMock = jest.fn().mockReturnValue(getNodesGroupedByTagsResponse);
+        getNodeDescriptionMock = jest.fn().mockReturnValue(getNodeDescriptionResponse);
     });
 
     beforeEach(async () => {
@@ -67,7 +73,8 @@ describe('Node Repository store', () => {
         jest.doMock('~api', () => ({
             __esModule: true,
             searchNodes: searchNodesMock,
-            getNodesGroupedByTags: getNodesGroupedByTagsMock
+            getNodesGroupedByTags: getNodesGroupedByTagsMock,
+            getNodeDescription: getNodeDescriptionMock
         }), { virtual: true });
 
         store = mockVuexStore({
@@ -88,7 +95,9 @@ describe('Node Repository store', () => {
             query: '',
             nodeSearchPage: 0,
             categoryPage: 0,
-            scrollPosition: 0
+            scrollPosition: 0,
+            selectedNode: null,
+            nodeWithDescription: null
         });
     });
 
@@ -180,6 +189,18 @@ describe('Node Repository store', () => {
         it('sets scrollPosition', () => {
             store.commit('nodeRepository/setScrollPosition', 22);
             expect(store.state.nodeRepository.scrollPosition).toEqual(22);
+        });
+
+        it('sets selected node', () => {
+            const node = { id: 'node1' };
+            store.commit('nodeRepository/setSelectedNode', { id: 'node1' });
+            expect(store.state.nodeRepository.selectedNode).toEqual(node);
+        });
+
+        it('sets node with description', () => {
+            const node = { id: 'node1' };
+            store.commit('nodeRepository/setNodeDescription', { id: 'node1' });
+            expect(store.state.nodeRepository.nodeWithDescription).toEqual(node);
         });
     });
 
@@ -298,6 +319,21 @@ describe('Node Repository store', () => {
             store.dispatch('nodeRepository/clearSearchResults');
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', [], undefined);
             expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', null, undefined);
+        });
+
+        it('fetches node description', async () => {
+            const node = {
+                id: 'node1',
+                nodeFactory: {
+                    className: 'test',
+                    settings: 'test1'
+                }
+            };
+            store.commit('nodeRepository/setSelectedNode', node);
+            await store.dispatch('nodeRepository/getNodeDescription');
+            expect(getNodeDescriptionMock).toHaveBeenCalled();
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeDescription',
+                getNodeDescriptionResponse, undefined);
         });
     });
 });

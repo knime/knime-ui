@@ -1,5 +1,5 @@
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapActions } from 'vuex';
 import CloseIcon from '~/assets/cancel-execution.svg?inline';
 import Description from '~/webapps-common/ui/components/Description';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
@@ -18,13 +18,15 @@ export default {
         selectedNode: {
             immediate: true,
             handler() {
-                this.$store.dispatch('nodeRepository/getNodeDescription');
+                this.getNodeDescription();
             }
         }
     },
     methods: {
+        ...mapActions('panel', ['closeDescriptionPanel']),
+        ...mapActions('nodeRepository', ['getNodeDescription']),
         closePanel() {
-            this.$store.dispatch('panel/closeDescriptionPanel');
+            this.closeDescriptionPanel();
         }
     }
 };
