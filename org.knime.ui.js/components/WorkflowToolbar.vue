@@ -19,8 +19,7 @@ export default {
             return this.workflow?.parents?.length > 0;
         },
         toolbarCommands() {
-            const selectedNodes = this.$store.getters['selection/selectedNodes'];          
-
+            const selectedNodes = this.$store.getters['selection/selectedNodes'];
             let visibleItems = {
                 // always visible
                 undo: true,
@@ -35,7 +34,6 @@ export default {
                 executeSelected: selectedNodes.length,
                 cancelSelected: selectedNodes.length,
                 resetSelected: selectedNodes.length
-
             };
 
             return Object
