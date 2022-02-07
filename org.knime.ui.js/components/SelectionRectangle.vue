@@ -42,10 +42,7 @@ export default {
             if (!e.target.hasPointerCapture(e.pointerId)) {
                 e.target.setPointerCapture(e.pointerId);
             }
-            this.startPos = {
-                x: this.viewBox.left + e.offsetX / this.zoomFactor,
-                y: this.viewBox.top + e.offsetY / this.zoomFactor
-            };
+            this.startPos = this.getCurrentPos(e);
             this.setDragging(true);
             // remember all nodes as dom elements
             this.nodeElementMap = [];
@@ -87,7 +84,7 @@ export default {
                 this.deSelectOnEnd = [];
                 this.selectedNodeIdsAtStart = [];
                 this.nodeElementMap = {};
-            }, 1);
+            }, 0);
             // workflows dragging state changes behavior of nodes
             // TODO: should we add something like setActiveSelection or similar?
             this.setDragging(false);
@@ -96,11 +93,23 @@ export default {
             if (!this.isActive || this.pointerId !== e.pointerId) {
                 return;
             }
-            this.endPos = {
-                x: this.viewBox.left + e.offsetX / this.zoomFactor,
-                y: this.viewBox.top + e.offsetY / this.zoomFactor
-            };
+            this.endPos = this.getCurrentPos(e);
             this.$nextTick(() => this.selectAllNodesInRectangle(this.startPos, this.endPos));
+        },
+        getOffsetOnKanvas(e) {
+            // we need to use the offset relative to the kanvas not the element it occurred (which might be a descendant)
+            let currentTargetRect = e.currentTarget.getBoundingClientRect();
+            return {
+                offsetX: e.pageX - currentTargetRect.left,
+                offsetY: e.pageY - currentTargetRect.top
+            };
+        },
+        getCurrentPos(e) {
+            const { offsetX, offsetY } = this.getOffsetOnKanvas(e);
+            return {
+                x: this.viewBox.left + offsetX / this.zoomFactor,
+                y: this.viewBox.top + offsetY / this.zoomFactor
+            };
         },
         findNodesInsideOfRect(startPos, endPos) {
             let inside = [];
