@@ -1,9 +1,9 @@
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 import StreamingIcon from '~/webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
 import ContextMenu from '~/components/ContextMenu';
-import Workflow from '~/components/workflow/Workflow';
-import Kanvas from '~/components/Kanvas';
+import WorkflowCanvas from '~/components/WorkflowCanvas';
+
 
 import { dropNode } from '~/mixins';
 
@@ -11,8 +11,7 @@ export default {
     components: {
         StreamingIcon,
         ContextMenu,
-        Workflow,
-        Kanvas
+        WorkflowCanvas
     },
     mixins: [dropNode],
     computed: {
@@ -28,15 +27,57 @@ export default {
             'activeWorkflowId'
         ])
     },
+    watch: {
+        
+        // workflow: {
+        //     async handler(workflow) {
+        //         if (!workflow) { return; }
+        //         if (!this.$refs.kanvas) {
+        //             await this.$nextTick();
+        //         }
+                
+        //         let content = this.$store.getters['canvas/contentBounds'];
+        //         let container = this.$store.state.canvas.containerSize;
+        //         let padding = this.$store.getters['canvas/canvasPadding'];
+        //         let workflowBounds = this.$store.getters['workflow/workflowBounds'];
+                
+        //         let zoomFactor = 1;
+        //         // debugger;
+        //         // await this.$nextTick();
+
+        //         if (content.width < container.width && content.height < container.height) { } 
+        //         else {
+        //             let [shorterProp, longerProp] = content.width < content.height
+        //             ? ['width', 'height']
+        //             : ['height', 'width'];
+                    
+        //             zoomFactor = 0.97 * (container[shorterProp] / content[shorterProp]);
+        //         // } else if (content.width >= container.width) {
+        //         //     let zoomFactor = (container.width / content.width) * 0.95;
+        //         //     // workflow is wider than container.
+        //         //     // find fitting zoomFactor to zoom out
+        //         //     // then center horizontally and vertically
+        //         // } else if (content.height >= container.height) {
+        //         //     let zoomFactor = (container.height / content.height) * 0.95;
+        //         }
+        //         this.$store.commit('canvas/setFactor', zoomFactor);
+
+        //         // center short prop
+        //         // let scroll = {
+        //         //     [shorterProp]: container[shorterProp] - content[shorterProp] / 2,
+        //         //     [longerProp]: 
+        //         // }
+        //         let scrollTop = (container.height - content.height) / 2;
+
+        //         this.$refs.kanvas.scrollTo(workflowBounds.left, workflowBounds.top);
+        //         // center workflow horizontally and vertically
+        //         // this.$refs.kanvas.scrollTo(0, 0);
+        //     },
+        //     // immediate: true
+        // },
+
+    },
     methods: {
-        /*
-          Selection
-        */
-        ...mapActions('selection', ['deselectAllObjects']),
-        onEmptyPointerDown() {
-            // remove selection
-            this.deselectAllObjects();
-        },
         onContextMenu(e) {
             // TODO: NXT-844 why prevent right clicks with ctrl?
             // ignore click with ctrl and meta keys
@@ -56,46 +97,33 @@ export default {
     @dragover.stop="onDragOver"
     @contextmenu.prevent="onContextMenu"
   >
-    <ContextMenu
-      ref="contextMenu"
-    />
+    <ContextMenu ref="contextMenu" />
 
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
       v-if="isLinked || isStreaming || isInsideLinked"
-      :class="['workflow-info', {onlyStreaming: isStreaming && !isLinked}]"
+      :class="['workflow-info', { onlyStreaming: isStreaming && !isLinked }]"
     >
       <span v-if="isInsideLinked">
-        This is a {{ workflow.info.containerType }} inside a linked {{ insideLinkedType }} and cannot be edited.
+        This is a {{ workflow.info.containerType }} inside a linked
+        {{ insideLinkedType }} and cannot be edited.
       </span>
       <span v-else-if="isLinked">
-        This is a linked {{ workflow.info.containerType }} and can therefore not be edited.
+        This is a linked {{ workflow.info.containerType }} and can therefore not
+        be edited.
       </span>
-      <span
-        v-if="isStreaming"
-        :class="['streaming-indicator', { isLinked }]"
-      >
+      <span v-if="isStreaming" :class="['streaming-indicator', { isLinked }]">
         <StreamingIcon />
         Streaming
       </span>
     </div>
 
-    <Kanvas
-      id="kanvas"
-      ref="kanvas"
-      @empty-pointerdown="onEmptyPointerDown"
-    >
-      <!-- Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
-           instead of diffing old and new workflow -->
-      <Workflow :key="`${workflow.projectId}-${activeWorkflowId}`" />
-    </Kanvas>
+    <WorkflowCanvas :key="`${workflow.projectId}-${activeWorkflowId}`" />
   </div>
 </template>
 
 <style lang="postcss" scoped>
-#kanvas >>> svg {
-  color: var(--knime-masala);
-}
+
 
 .workflow-panel {
   height: 100%;

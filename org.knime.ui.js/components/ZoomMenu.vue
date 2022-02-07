@@ -56,7 +56,7 @@ export default {
         },
         onWheel(e) {
             const delta = e.deltaY < 0 ? 1 : -1;
-            this.$store.dispatch('canvas/zoomCentered', delta);
+            this.$store.dispatch('canvas/zoomCentered', { delta });
         }
     }
 };

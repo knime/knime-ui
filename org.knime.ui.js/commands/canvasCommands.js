@@ -13,7 +13,7 @@ export default {
         text: 'Zoom in',
         hotkey: ['Ctrl', '+'],
         execute: throttle(
-            ({ $store }) => { $store.dispatch('canvas/zoomCentered', 1); },
+            ({ $store }) => { $store.dispatch('canvas/zoomCentered', { delta: 1 }); },
             throttledZoomThrottle
         )
     },
@@ -21,25 +21,25 @@ export default {
         text: 'Zoom out',
         hotkey: ['Ctrl', '-'],
         execute: throttle(
-            ({ $store }) => { $store.dispatch('canvas/zoomCentered', -1); },
+            ({ $store }) => { $store.dispatch('canvas/zoomCentered', { delta: -1 }); },
             throttledZoomThrottle
         )
     },
     zoomTo75: {
         text: 'Zoom to 75%',
-        execute: ({ $store }) => $store.dispatch('canvas/zoomTo', 0.75)
+        execute: ({ $store }) => $store.dispatch('canvas/zoomCentered', { factor: 0.75 })
     },
     zoomTo100: {
         text: 'Zoom to 100%',
         hotkey: ['Ctrl', '0'],
-        execute: ({ $store }) => $store.dispatch('canvas/zoomTo', 1)
+        execute: ({ $store }) => $store.dispatch('canvas/zoomCentered', { factor: 1 })
     },
     zoomTo125: {
         text: 'Zoom to 125%',
-        execute: ({ $store }) => $store.dispatch('canvas/zoomTo', 1.25)
+        execute: ({ $store }) => $store.dispatch('canvas/zoomCentered', { factor: 1.25 })
     },
     zoomTo150: {
         text: 'Zoom to 150%',
-        execute: ({ $store }) => $store.dispatch('canvas/zoomTo', 1.5)
+        execute: ({ $store }) => $store.dispatch('canvas/zoomCentered', { factor: 1.5 })
     }
 };

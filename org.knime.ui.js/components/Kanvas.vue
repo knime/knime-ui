@@ -14,7 +14,7 @@ export default {
         };
     },
     computed: {
-        ...mapGetters('canvas', ['canvasSize', 'viewBox']),
+        ...mapGetters('canvas', ['canvasSize', 'viewBox', 'canvasPadding']),
         ...mapState('canvas', ['suggestPanning']),
         viewBoxString() {
             let { viewBox } = this;
@@ -41,17 +41,28 @@ export default {
         */
         ...mapMutations('canvas', ['setScrollContainerElement']),
         initContainerSize() {
-            const { width, height } = this.$el.getBoundingClientRect();
+            // const { width, height } = this.$el.getBoundingClientRect();
+            const [width, height] = [this.$el.clientWidth, this.$el.clientHeight];
             this.$store.commit('canvas/setContainerSize', { width, height });
         },
         initResizeObserver() {
             // recalculating and setting the container size is throttled.
             const updateCanvas = debounce((width, height) => {
+                // find origin in screen coordinates
+                let { x, y } = this.$store.getters['canvas/fromWorkflowCoordinates']({ x: 0, y: 0 });
+                
+                // update content depending on new container size
                 this.$store.commit('canvas/setContainerSize', { width, height });
-            }, 100, { leading: true, trailing: true });
-            // This ResizeObserver can be stuck in an update loop:
-            // (Scrollbars needed -> svg gets inner container size, Scrollbar not needed -> svg gets outer container size)
-            // Setting the svg to exactly the size of the container leads to overflow and scrollbars for unknown reasons.
+                
+                // find new origin in screen coordinates
+                let { x: newX, y: newY } = this.$store.getters['canvas/fromWorkflowCoordinates']({ x: 0, y: 0 });
+                
+                // scroll by the difference to prevent content from moving
+                let [deltaX, deltaY] = [newX - x, newY - y];
+                this.$el.scrollLeft += deltaX;
+                this.$el.scrollTop += deltaY;
+            }, 100, { trailing: true });
+            
             this.resizeObserver = new ResizeObserver(entries => {
                 const containerEl = entries.find(({ target }) => target === this.$el);
                 if (containerEl?.contentRect) {
@@ -76,7 +87,7 @@ export default {
             let cursorX = e.clientX - bcr.x;
             let cursorY = e.clientY - bcr.y;
 
-            this.$store.commit('canvas/zoomWithPointer', { delta, cursorX, cursorY });
+            this.$store.dispatch('canvas/zoomAroundPointer', { delta, cursorX, cursorY });
         },
         /*
             Panning
@@ -125,7 +136,9 @@ export default {
       :viewBox="viewBoxString"
       @pointerdown.self.stop="$emit('empty-pointerdown', $event)"
     >
-      <slot />
+      <g :transform="`translate(${canvasPadding.left}, ${canvasPadding.top})`">
+        <slot />
+      </g>
     </svg>
   </div>
 </template>
@@ -145,6 +158,7 @@ export default {
 svg {
   position: relative; /* needed for z-index to have effect */
   display: block;
+  background-color: #f7f7f7;
 }
 
 .panning {
