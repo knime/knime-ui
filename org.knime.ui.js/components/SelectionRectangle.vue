@@ -2,7 +2,13 @@
 import { mapGetters, mapState, mapMutations, mapActions } from 'vuex';
 import { throttle } from 'lodash';
 
-const selectNodesAfterMoveThrottle = 30; // delay between new move calculations are performed in ms
+const selectNodesAfterMoveThrottle = 10; // delay between new move calculations are performed in ms
+/**
+ * The SelectionRectangle component registers to the `selection-pointer{up,down,move} of its parent (the Kanvas).
+ * It also uses the parent for several other things. The DOM access and CustomEvents are used for a fast selection
+ * preview. This is caused by the slowness of the Vuex store. The Node component handles those events and
+ * shows a selection preview.
+ */
 export default {
     data: () => ({
         startPos: {
@@ -34,6 +40,12 @@ export default {
         this.$parent.$on('selection-pointerup', this.stopRectSelection);
         this.$parent.$on('selection-pointermove', this.mouseMove);
     },
+    beforeDestroy() {
+        this.$parent.$off('selection-pointerdown', this.startRectSelection);
+        this.$parent.$off('selection-pointerup', this.stopRectSelection);
+        this.$parent.$off('selection-pointermove', this.mouseMove);
+        this.$parent.$on('lostpointercapture', this.stopRectSelection)
+    },
     methods: {
         ...mapMutations('workflow', ['setDragging']),
         ...mapActions('selection', ['selectNodes', 'deselectNodes', 'deselectAllObjects']),
@@ -42,11 +54,12 @@ export default {
             if (!e.target.hasPointerCapture(e.pointerId)) {
                 e.target.setPointerCapture(e.pointerId);
             }
+            e.target.addEventListener('lostpointercapture', this.stopRectSelection);
             this.startPos = this.getCurrentPos(e);
             this.setDragging(true);
             // remember all nodes as dom elements
             this.nodeElementMap = [];
-            document.querySelectorAll('.the-node')?.forEach(n => {
+            this.$parent.$el.querySelectorAll('.the-node')?.forEach(n => {
                 this.nodeElementMap[n.getAttribute('id')] = n;
             });
             // deselect all objects if we do not hold shift key
@@ -66,6 +79,9 @@ export default {
             if (!this.isActive || this.pointerId !== e.pointerId) {
                 return;
             }
+            e.target.removeEventListener('lostpointercapture', this.stopRectSelection);
+            e.target.releasePointerCapture(this.pointerId);
+
             // hide rect
             this.isActive = false;
             this.pointerId = null;
@@ -83,7 +99,7 @@ export default {
                 this.selectOnEnd = [];
                 this.deSelectOnEnd = [];
                 this.selectedNodeIdsAtStart = [];
-                this.nodeElementMap = {};
+                this.nodeElementMap = [];
             }, 0);
             // workflows dragging state changes behavior of nodes
             // TODO: should we add something like setActiveSelection or similar?

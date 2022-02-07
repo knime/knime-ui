@@ -125,8 +125,7 @@ export default {
       :viewBox="viewBoxString"
       @pointerdown.left.shift.stop.exact="$emit('selection-pointerdown', $event)"
       @pointerdown.left.stop.exact="$emit('selection-pointerdown', $event)"
-      @pointerup.left.stop.shift.exact="$emit('selection-pointerup', $event)"
-      @pointerup.left.stop.exact="$emit('selection-pointerup', $event)"
+      @pointerup.left.stop="$emit('selection-pointerup', $event)"
       @pointermove="$emit('selection-pointermove', $event)"
     >
       <slot />
