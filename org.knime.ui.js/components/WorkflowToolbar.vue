@@ -31,6 +31,7 @@ export default {
 
             let visibleItems = {
                 // always visible
+                save: true,
                 undo: true,
                 redo: true,
 
