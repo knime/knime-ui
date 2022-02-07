@@ -24,8 +24,6 @@ export default {
             
             const somethingSelected = selectedNodes.length || selectedConnections.length;
 
-            const { isEnabled } = this.$commands;
-
             let visibleItems = {
                 // always visible
                 undo: true,
@@ -37,9 +35,9 @@ export default {
                 resetAll: !somethingSelected,
 
                 // Node Execution
-                executeSelected: somethingSelected,
-                cancelSelected: somethingSelected,
-                resetSelected: somethingSelected,
+                executeSelected: selectedNodes.length,
+                cancelSelected: selectedNodes.length,
+                resetSelected: selectedNodes.length
 
             };
 
