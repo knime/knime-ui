@@ -34,6 +34,30 @@ export default {
         this.initContainerSize();
         this.initResizeObserver();
         this.$el.focus();
+
+        // window.zoom = (intervall, delta) => {
+        //     let ticker = setInterval(
+        //         () => {
+        //             this.$store.dispatch('canvas/zoomCentered', { delta });
+        //         },
+        //         intervall
+        //     );
+        //     return () => clearInterval(ticker);
+        // };
+
+        window.smooth = (fn, steps) => {
+            let step = 0;
+            let loop = () => {
+                fn({ steps, step });
+
+                step += 1;
+                if (step < steps) {
+                    requestAnimationFrame(loop);
+                }
+            };
+            
+            loop();
+        };
     },
     beforeDestroy() {
         this.setScrollContainerElement(null);
@@ -83,7 +107,7 @@ export default {
                 this.resizeObserver.disconnect();
             }
         },
-        onMouseWheel(e) {
+        onMouseWheel: throttle(function (e) {
             // delta is -1, 0 or 1 depending on scroll direction.
             let delta = Math.sign(-e.deltaY);
 
@@ -93,10 +117,17 @@ export default {
             let cursorX = e.clientX - bcr.x;
             let cursorY = e.clientY - bcr.y;
 
-            requestAnimationFrame(() => {
-                this.$store.dispatch('canvas/zoomAroundPointer', { delta, cursorX, cursorY });
-            });
-        },
+
+            let steps = 4;
+            console.log('smooth scroll', steps, 'steps');
+            window.smooth(({ steps, step }) => {
+                this.$store.dispatch('canvas/zoomAroundPointer', { delta: delta / steps, cursorX, cursorY });
+            }, steps);
+
+            // requestAnimationFrame(() => {
+            //     this.$store.dispatch('canvas/zoomAroundPointer', { delta, cursorX, cursorY });
+            // });
+        }, 80),
         /*
             Panning
         */
