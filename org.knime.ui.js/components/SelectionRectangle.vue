@@ -57,11 +57,6 @@ export default {
             e.target.addEventListener('lostpointercapture', this.stopRectSelection);
             this.startPos = this.getCurrentPos(e);
             this.setDragging(true);
-            // remember all nodes as dom elements
-            this.nodeElementMap = [];
-            this.$parent.$el.querySelectorAll('.the-node')?.forEach(n => {
-                this.nodeElementMap[n.getAttribute('id')] = n;
-            });
             // deselect all objects if we do not hold shift key
             if (e.shiftKey) {
                 // remember currently selected nodes, the nodes under the rect will inverse them
@@ -99,7 +94,6 @@ export default {
                 this.selectOnEnd = [];
                 this.deSelectOnEnd = [];
                 this.selectedNodeIdsAtStart = [];
-                this.nodeElementMap = [];
             }, 0);
             // workflows dragging state changes behavior of nodes
             // TODO: should we add something like setActiveSelection or similar?
@@ -159,12 +153,7 @@ export default {
             };
         },
         sendEventToNode(type, nodeId) {
-            this.nodeElementMap[`node-${nodeId}`]?.dispatchEvent(
-                new CustomEvent(`${type}-selection-preview`, {
-                    bubbles: false,
-                    cancelable: false
-                })
-            );
+            this.$emit('node-selection-preview', { nodeId, type });
         },
         selectAllNodesInRectangle: throttle(function (startPos, endPos) {
             let { inside, outside } = this.findNodesInsideOfRect(startPos, endPos);

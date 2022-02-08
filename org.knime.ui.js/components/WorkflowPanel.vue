@@ -84,9 +84,14 @@ export default {
     >
       <!-- Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
            instead of diffing old and new workflow -->
-      <Workflow :key="`${workflow.projectId}-${activeWorkflowId}`" />
+      <Workflow
+        ref="workflow"
+        :key="`${workflow.projectId}-${activeWorkflowId}`"
+      />
       <!-- The SelectionRectangle registers to the selection-pointer{up,down,move} events of its parent (the Kanvas). -->
-      <SelectionRectangle />
+      <SelectionRectangle
+        @node-selection-preview="$refs.workflow.showNodeSelectionPreview($event)"
+      />
     </Kanvas>
   </div>
 </template>

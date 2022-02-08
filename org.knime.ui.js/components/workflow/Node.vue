@@ -383,7 +383,8 @@ export default {
 
             return false;
         },
-        handleSelectionPreview(e, show) {
+        // public
+        setSelectionPreview(show) {
             this.showSelectionPreview = show;
         }
     }
@@ -394,9 +395,6 @@ export default {
   <g
     :id="`node-${id}`"
     :class="['the-node', {'connection-forbidden': connectionForbidden && !isConnectionSource}]"
-    @show-selection-preview="handleSelectionPreview($event, 'show')"
-    @hide-selection-preview="handleSelectionPreview($event, 'hide')"
-    @clear-selection-preview="handleSelectionPreview($event, null)"
   >
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal
