@@ -24,7 +24,7 @@ export default {
             'insideLinkedType',
             'isWritable',
             'isStreaming',
-            'activeWorkflowId'
+            'uniqueId'
         ])
     },
     methods: {
@@ -68,7 +68,7 @@ export default {
       </span>
     </div>
 
-    <WorkflowCanvas :key="`${workflow.projectId}-${activeWorkflowId}`" />
+    <WorkflowCanvas :key="uniqueId" />
   </div>
 </template>
 

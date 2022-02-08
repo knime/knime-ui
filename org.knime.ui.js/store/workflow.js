@@ -288,6 +288,9 @@ export const actions = {
 // The name getters can be misleading, its more like Vues computed propeties which may return functions.
 // Please consult: https://vuex.vuejs.org/guide/getters.html
 export const getters = {
+    uniqueId({ activeWorkflow }, { activeWorkflowId }) {
+        return `${activeWorkflow.projectId}-${activeWorkflowId}`;
+    },
     isLinked({ activeWorkflow }) {
         return Boolean(activeWorkflow?.info.linked);
     },
@@ -406,7 +409,7 @@ export const getters = {
         if (!activeWorkflow) {
             return null;
         }
-        return activeWorkflow?.info?.containerId || 'root';
+        return activeWorkflow.info.containerId || 'root';
     },
 
     getNodeIcon({ activeWorkflow }) {

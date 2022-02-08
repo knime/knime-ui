@@ -31,25 +31,6 @@ export const mutations = {
         state.getScrollContainerElement = () => el;
     },
     /*
-        if savedState is undefined, restore defaults
-        else restore zoomFactor, overwrite containerScroll with savedContainerScroll
-
-        no need to restore savedContainerScroll, it will be overwritten when setting containerScroll
-        don't restore containerSize, it might have changed
-    */
-    restoreState(state, savedState) {
-        // state.zoomFactor = savedState?.zoomFactor || defaultZoomFactor;
-
-        let el = state.getScrollContainerElement();
-        let scrollPosition = [
-            savedState?.scrollLeft || 0,
-            savedState?.scrollTop || 0
-        ];
-        Vue.nextTick(() => {
-            // el.scrollTo(...scrollPosition);
-        });
-    },
-    /*
      * suggestPanning is set when the Alt-key is pressed and displays a different cursor
      */
     setSuggestPanning(state, newValue) {
@@ -171,18 +152,6 @@ export const actions = {
 };
 
 export const getters = {
-    /*
-        returns state that should be remembered and restored
-        upon switching workflows
-    */
-    toSave({ zoomFactor, getScrollContainerElement }) {
-        let el = getScrollContainerElement();
-        return {
-            zoomFactor,
-            scrollLeft: el.scrollLeft,
-            scrollTop: el.scrollTop
-        };
-    },
     /*
         extends the workflowBounds such that the origin is always drawn
         space added to top and left, used to include the origin will be appended right and bottom as well,

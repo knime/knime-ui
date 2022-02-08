@@ -13,15 +13,17 @@ export default {
         ...mapState('canvas', ['zoomFactor', 'containerSize']),
         ...mapGetters('canvas', ['contentBounds']),
         ...mapGetters('canvas', ['canvasSize', 'viewBox', 'canvasPadding', 'fitToScreenZoomFactor']),
-        ...mapGetters('workflow', ['workflowBounds'])
+        ...mapGetters('workflow', ['workflowBounds', 'uniqueId'])
     },
     mounted() {
         this.$nextTick(() => {
+            if (!this.restoreState()) {
             this.$store.dispatch('canvas/zoomToFit');
+            }
         });
     },
-    beforeUnmount() {
-        this.saveZoomAndScroll();
+    beforeDestroy() {
+        this.saveState();
         // save scoll position and zoom to store
     },
     methods: {
@@ -33,10 +35,29 @@ export default {
             // remove selection
             this.deselectAllObjects();
         },
-        setZoomAndScroll() {
-            this.$nextTick(() => {
-                this.$store.dispatch('canvas/zoomToFit');
+        saveState() {
+            let { scrollLeft, scrollTop } = this.$refs.kanvas.$el;
+
+            this.$store.commit('openedProjects/saveState', {
+                id: this.uniqueId,
+                state: {
+                    zoomFactor: this.zoomFactor,
+                    scrollLeft,
+                    scrollTop
+                }
             });
+        },
+        restoreState() {
+            let savedState = this.$store.state.openedProjects.savedState[this.uniqueId];
+            if (!savedState) { return false; }
+            
+            let { scrollLeft, scrollTop, zoomFactor } = savedState;
+
+            this.$store.commit('canvas/setFactor', zoomFactor);
+            this.$refs.kanvas.$el.scrollLeft = scrollLeft;
+            this.$refs.kanvas.$el.scrollTop = scrollTop;
+
+            return true;
         }
     }
 };
@@ -45,6 +66,7 @@ export default {
 <template>
   <Kanvas
     id="kanvas"
+    :key="uniqueId"
     ref="kanvas"
     @empty-pointerdown="onEmptyPointerDown"
   >

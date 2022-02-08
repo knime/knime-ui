@@ -7,7 +7,7 @@ export const state = () => ({
     items: [],
     activeId: null,
 
-    /* Map of projectId -> workflowId -> savedState */
+    /* Map of unique workflow id -> savedState */
     savedState: {}
 });
 
@@ -24,8 +24,8 @@ export const mutations = {
             state.savedState[projectId] = {};
         });
     },
-    saveState(state, { projectId, workflowId, savedState }) {
-        state.savedState[projectId][workflowId] = savedState;
+    saveState(state, { id, state: stateToSave }) {
+        state.savedState[id] = stateToSave;
     }
 };
 
@@ -50,34 +50,7 @@ export const actions = {
         dispatch('workflow/setActiveWorkflowSnapshot', activeWorkflowCfg, { root: true });
     },
     async switchWorkflow({ commit, dispatch, rootGetters }, { projectId, workflowId }) {
-        if (rootGetters['workflow/activeWorkflowId']) {
-            await dispatch('saveState');
-        }
-
         commit('setActiveId', projectId);
         await dispatch('workflow/loadWorkflow', { projectId, workflowId }, { root: true });
-
-        await dispatch('restoreState');
-    },
-    saveState({ state, commit, rootState, rootGetters }) {
-        let savedState = {
-            canvas: rootGetters['canvas/toSave']
-        };
-
-        // deep clone without observers
-        savedState = JSON.parse(JSON.stringify(savedState));
-
-        commit('saveState', {
-            projectId: state.activeId,
-            workflowId: rootGetters['workflow/activeWorkflowId'],
-            savedState
-        });
-    },
-    restoreState({ state: { savedState, activeId }, commit, rootGetters }) {
-        const workflowId = rootGetters['workflow/activeWorkflowId'];
-
-        // is undefined if opened for the first time
-        const savedWorkflowState = savedState[activeId][workflowId];
-        commit('canvas/restoreState', savedWorkflowState?.canvas, { root: true });
     }
 };
