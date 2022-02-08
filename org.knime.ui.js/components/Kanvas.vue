@@ -2,7 +2,7 @@
 import { mapState, mapGetters, mapMutations } from 'vuex';
 import { throttle, debounce } from 'lodash';
 
-const PANNING_THROTTLE = 50; // 50ms between consecutive mouse move events
+const PANNING_THROTTLE = 10; // 50ms between consecutive mouse move events
 
 export default {
     data() {
