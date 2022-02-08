@@ -16,7 +16,9 @@ export default {
         ...mapGetters('workflow', ['workflowBounds'])
     },
     mounted() {
-        this.setZoomAndScroll();
+        this.$nextTick(() => {
+            this.$store.dispatch('canvas/zoomToFit');
+        });
     },
     beforeUnmount() {
         this.saveZoomAndScroll();

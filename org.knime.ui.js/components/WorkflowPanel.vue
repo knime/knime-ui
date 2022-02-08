@@ -27,56 +27,6 @@ export default {
             'activeWorkflowId'
         ])
     },
-    watch: {
-        
-        // workflow: {
-        //     async handler(workflow) {
-        //         if (!workflow) { return; }
-        //         if (!this.$refs.kanvas) {
-        //             await this.$nextTick();
-        //         }
-                
-        //         let content = this.$store.getters['canvas/contentBounds'];
-        //         let container = this.$store.state.canvas.containerSize;
-        //         let padding = this.$store.getters['canvas/canvasPadding'];
-        //         let workflowBounds = this.$store.getters['workflow/workflowBounds'];
-                
-        //         let zoomFactor = 1;
-        //         // debugger;
-        //         // await this.$nextTick();
-
-        //         if (content.width < container.width && content.height < container.height) { } 
-        //         else {
-        //             let [shorterProp, longerProp] = content.width < content.height
-        //             ? ['width', 'height']
-        //             : ['height', 'width'];
-                    
-        //             zoomFactor = 0.97 * (container[shorterProp] / content[shorterProp]);
-        //         // } else if (content.width >= container.width) {
-        //         //     let zoomFactor = (container.width / content.width) * 0.95;
-        //         //     // workflow is wider than container.
-        //         //     // find fitting zoomFactor to zoom out
-        //         //     // then center horizontally and vertically
-        //         // } else if (content.height >= container.height) {
-        //         //     let zoomFactor = (container.height / content.height) * 0.95;
-        //         }
-        //         this.$store.commit('canvas/setFactor', zoomFactor);
-
-        //         // center short prop
-        //         // let scroll = {
-        //         //     [shorterProp]: container[shorterProp] - content[shorterProp] / 2,
-        //         //     [longerProp]: 
-        //         // }
-        //         let scrollTop = (container.height - content.height) / 2;
-
-        //         this.$refs.kanvas.scrollTo(workflowBounds.left, workflowBounds.top);
-        //         // center workflow horizontally and vertically
-        //         // this.$refs.kanvas.scrollTo(0, 0);
-        //     },
-        //     // immediate: true
-        // },
-
-    },
     methods: {
         onContextMenu(e) {
             // TODO: NXT-844 why prevent right clicks with ctrl?
