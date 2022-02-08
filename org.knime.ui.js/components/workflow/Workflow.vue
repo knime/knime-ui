@@ -31,23 +31,7 @@ export default {
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
-        }),
-        ...mapGetters('selection', ['isNodeSelected']),
-        // Sort nodes so that selected nodes are rendered in front
-        // TODO: is there a more performant way to do this? Its one of the main reasons selections are slow.
-        sortedNodes() {
-            let selected = [];
-            let unselected = [];
-
-            for (const nodeId of Object.keys(this.workflow.nodes)) {
-                if (this.isNodeSelected(nodeId)) {
-                    selected.push(this.workflow.nodes[nodeId]);
-                } else {
-                    unselected.push(this.workflow.nodes[nodeId]);
-                }
-            }
-            return [...unselected, ...selected];
-        }
+        })
     },
     methods: {
         // public
@@ -91,7 +75,7 @@ export default {
     />
 
     <MoveableNodeContainer
-      v-for="node of sortedNodes"
+      v-for="node of workflow.nodes"
       :id="node.id"
       :key="`node-${node.id}`"
       :position="node.position"
