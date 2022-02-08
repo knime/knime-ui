@@ -472,7 +472,7 @@ export default {
           :kind="kind"
           :icon="icon"
           :execution-state="state && state.executionState"
-          :filter="(isNodeSelected(id) || hover) && 'url(#node-torso-shadow)'"
+          :filter="hover && 'url(#node-torso-shadow)'"
           @dblclick.left.native="onLeftDoubleClick"
         />
 
@@ -502,7 +502,7 @@ export default {
         <NodeState
           v-if="kind !== 'metanode'"
           v-bind="state"
-          :filter="(isNodeSelected(id) || hover) && 'url(#node-state-shadow)'"
+          :filter="hover && 'url(#node-state-shadow)'"
           :loop-status="loopInfo.status"
           :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`"
         />
