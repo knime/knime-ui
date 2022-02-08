@@ -47,12 +47,16 @@ export default {
         },
         initResizeObserver() {
             // recalculating and setting the container size is throttled.
-            const updateCanvas = debounce((width, height) => {
+            
+            const updateContainerSize = debounce(() => {
                 // find origin in screen coordinates
                 let { x, y } = this.$store.getters['canvas/fromWorkflowCoordinates']({ x: 0, y: 0 });
                 
                 // update content depending on new container size
-                this.$store.commit('canvas/setContainerSize', { width, height });
+                this.$store.commit('canvas/setContainerSize', {
+                    width: this.$el.clientWidth,
+                    height: this.$el.clientHeight
+                });
                 
                 // find new origin in screen coordinates
                 let { x: newX, y: newY } = this.$store.getters['canvas/fromWorkflowCoordinates']({ x: 0, y: 0 });
@@ -65,9 +69,8 @@ export default {
             
             this.resizeObserver = new ResizeObserver(entries => {
                 const containerEl = entries.find(({ target }) => target === this.$el);
-                if (containerEl?.contentRect) {
-                    const { width, height } = containerEl.contentRect;
-                    updateCanvas(width, height);
+                if (containerEl) {
+                    updateContainerSize(this.$el.clientWidth, this.$el.clientHeight);
                 }
             });
             this.resizeObserver.observe(this.$el);
