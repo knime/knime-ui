@@ -392,10 +392,7 @@ export default {
 </script>
 
 <template>
-  <g
-    :id="`node-${id}`"
-    :class="['the-node', {'connection-forbidden': connectionForbidden && !isConnectionSource}]"
-  >
+  <g :class="{'connection-forbidden': connectionForbidden && !isConnectionSource}">
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal
       to="node-actions"
