@@ -1,6 +1,6 @@
 import Vue from 'vue';
 
-export const zoomMultiplier = 1.07;
+export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;
 export const minZoomFactor = 0.01; // 1%
 export const maxZoomFactor = 5; // 500%
@@ -15,7 +15,10 @@ const clampZoomFactor = (newFactor) => Math.min(Math.max(minZoomFactor, newFacto
 export const state = () => ({
     zoomFactor: defaultZoomFactor,
     suggestPanning: false,
-    containerSize: { width: 0, height: 0 }
+    containerSize: { width: 0, height: 0 },
+    getScrollContainerElement: () => {
+        throw new Error("dom element hasn't been set yet");
+    }
 });
 
 export const mutations = {
@@ -46,9 +49,6 @@ export const mutations = {
             // el.scrollTo(...scrollPosition);
         });
     },
-    resetZoom(state) {
-        state.zoomFactor = defaultZoomFactor;
-    },
     /*
      * suggestPanning is set when the Alt-key is pressed and displays a different cursor
      */
@@ -71,8 +71,37 @@ export const actions = {
     /*
      * Applies the largest zoom factor with which the whole workflow is still fully visible
      */
-    setZoomToFit({ dispatch, getters }) {
-        dispatch('zoomCentered', { factor: getters.fitToScreenZoomFactor.min * 0.95 });
+    fitToScreen({ dispatch, getters, commit }) {
+        // zoom factor, for that both axis fit on the screen
+        commit('setFactor', getters.fitToScreenZoomFactor.min * 0.98); // eslint-disable-line no-magic-numbers
+        
+        // center workflow
+        dispatch('scrollTo', { x: 'center', y: 'center', centerX: true, centerY: true });
+    },
+
+    zoomToFit({ dispatch, commit, getters, state }) {
+        // zoom factor for that at least one axis fits on the screen, but at most 100%
+        let newZoomFactor = Math.min(getters.fitToScreenZoomFactor.max * 0.95, 1);
+
+        // set zoom
+        commit('setFactor', newZoomFactor);
+
+        // check whether x-axis and/or y-axis fit on the screen
+        let yAxisFits = getters.fitToScreenZoomFactor.y >= newZoomFactor;
+        let xAxisFits = getters.fitToScreenZoomFactor.x >= newZoomFactor;
+
+        // if an axis fits, center it
+        // if an axis doesn't fit, scroll to its beginning (top / left)
+        
+        // include padding of 20px in screen coordinates
+        let padding = 20 / state.zoomFactor; // eslint-disable-line no-magic-numbers
+        
+        dispatch('scrollTo', {
+            x: xAxisFits ? 'center' : getters.contentBounds.left - padding,
+            y: yAxisFits ? 'center' : getters.contentBounds.top - padding,
+            centerX: xAxisFits,
+            centerY: yAxisFits
+        });
     },
 
     /*
@@ -114,24 +143,31 @@ export const actions = {
         kanvas.scrollLeft += scrollDelta[0];
         kanvas.scrollTop += scrollDelta[1];
     },
-    // scrollTo({ getters }, { x = 0, y = 0, centerX = false, centerY = false, smooth = false }) {
-    //     let kanvas = state.getScrollContainerElement();
+    scrollTo({ getters, state }, { x = 0, y = 0, centerX = false, centerY = false, smooth = false }) {
+        if (x === 'center') {
+            x = getters.contentBounds.centerX;
+        }
+        if (y === 'center') {
+            y = getters.contentBounds.centerY;
+        }
 
-    //     let screenCoordinates = getters['canvas/fromWorkflowCoordinates']({ x, y });
+        let screenCoordinates = getters.fromWorkflowCoordinates({ x, y });
+        let kanvas = state.getScrollContainerElement();
 
-    //     if (centerX) {
-    //         screenCoordinates.x -= kanvas.clientWidth / 2;
-    //     }
-    //     if (centerY) {
-    //         screenCoordinates.y -= kanvas.clientHeight / 2;
-    //     }
 
-    //     kanvas.scrollTo({
-    //         left: screenCoordinates.x,
-    //         top: screenCoordinates.y,
-    //         behavior: smooth ? 'smooth' : 'auto'
-    //     });
-    // }
+        if (centerX) {
+            screenCoordinates.x -= kanvas.clientWidth / 2;
+        }
+        if (centerY) {
+            screenCoordinates.y -= kanvas.clientHeight / 2;
+        }
+
+        kanvas.scrollTo({
+            left: screenCoordinates.x,
+            top: screenCoordinates.y,
+            behavior: smooth ? 'smooth' : 'auto'
+        });
+    }
 };
 
 export const getters = {
@@ -165,13 +201,18 @@ export const getters = {
         let width = right - left;
         let height = bottom - top;
 
+        let centerX = left + width / 2;
+        let centerY = top + height / 2;
+
         return {
             left,
             top,
             right,
             bottom,
             width,
-            height
+            height,
+            centerX,
+            centerY
         };
     },
     /*

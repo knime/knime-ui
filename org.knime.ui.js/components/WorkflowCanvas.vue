@@ -15,15 +15,12 @@ export default {
         ...mapGetters('canvas', ['canvasSize', 'viewBox', 'canvasPadding', 'fitToScreenZoomFactor']),
         ...mapGetters('workflow', ['workflowBounds'])
     },
-    watch: {
-        contentBounds(newBounds, oldBounds) {
-            let [deltaX, deltaY] = [newBounds.left - oldBounds.left, newBounds.top - oldBounds.top];
-            this.$refs.kanvas.$el.scrollLeft -= deltaX * this.zoomFactor;
-            this.$refs.kanvas.$el.scrollTop -= deltaY * this.zoomFactor;
-        }
-    },
     mounted() {
-        this.initialZoomAndPosition();
+        this.setZoomAndScroll();
+    },
+    beforeUnmount() {
+        this.saveZoomAndScroll();
+        // save scoll position and zoom to store
     },
     methods: {
         /*
@@ -34,50 +31,9 @@ export default {
             // remove selection
             this.deselectAllObjects();
         },
-        initialZoomAndPosition() {
-            let initialZoomFactor = Math.min(this.fitToScreenZoomFactor.max * 0.95, 1);
-            
-            this.$store.commit('canvas/setFactor', initialZoomFactor);
-
-            let yAxisFits = this.fitToScreenZoomFactor.y >= initialZoomFactor;
-            let xAxisFits = this.fitToScreenZoomFactor.x >= initialZoomFactor;
-            
-            let center = {
-                x: this.contentBounds.left + this.contentBounds.width / 2,
-                y: this.contentBounds.top + this.contentBounds.height / 2
-            };
-
-            // padded by 20px on screen
-            let upperLeftCornerWithPadding = {
-                x: this.contentBounds.left - 20 / this.zoomFactor,
-                y: this.contentBounds.top - 20 / this.zoomFactor
-            };
-
+        setZoomAndScroll() {
             this.$nextTick(() => {
-                this.scrollTo({
-                    x: xAxisFits ? center.x : upperLeftCornerWithPadding.x,
-                    y: yAxisFits ? center.y : upperLeftCornerWithPadding.y,
-                    centerX: xAxisFits,
-                    centerY: yAxisFits
-                });
-            });
-        },
-        scrollTo({ x = 0, y = 0, centerX = false, centerY = false, smooth = false }) {
-            console.log('scrollTo', arguments[0]);
-            let kanvas = this.$refs.kanvas.$el;
-            let screenCoordinates = this.$store.getters['canvas/fromWorkflowCoordinates']({ x, y });
-            
-            if (centerX) {
-                screenCoordinates.x -= kanvas.clientWidth / 2;
-            }
-            if (centerY) {
-                screenCoordinates.y -= kanvas.clientHeight / 2;
-            }
-
-            kanvas.scrollTo({
-                left: screenCoordinates.x,
-                top: screenCoordinates.y,
-                behavior: smooth ? 'smooth' : 'auto'
+                this.$store.dispatch('canvas/zoomToFit');
             });
         }
     }

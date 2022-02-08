@@ -201,7 +201,7 @@ describe('canvas store', () => {
     describe('actions', () => {
         it('zooms so workflow fits container', () => {
             const factor = store.getters['canvas/fitToScreenZoomFactor'];
-            store.dispatch('canvas/setZoomToFit');
+            store.dispatch('canvas/fitToScreen');
             expect(store.state.canvas.zoomFactor).toBe(factor);
         });
 

@@ -14,18 +14,24 @@ export default {
         };
     },
     computed: {
-        ...mapGetters('canvas', ['canvasSize', 'viewBox', 'canvasPadding']),
-        ...mapState('canvas', ['suggestPanning']),
+        ...mapGetters('canvas', ['canvasSize', 'viewBox', 'canvasPadding', 'contentBounds']),
+        ...mapState('canvas', ['suggestPanning', 'zoomFactor']),
         viewBoxString() {
             let { viewBox } = this;
             return `${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`;
         }
     },
+    watch: {
+        contentBounds(newBounds, oldBounds) {
+            let [deltaX, deltaY] = [newBounds.left - oldBounds.left, newBounds.top - oldBounds.top];
+            this.$el.scrollLeft -= deltaX * this.zoomFactor;
+            this.$el.scrollTop -= deltaY * this.zoomFactor;
+        }
+    },
     mounted() {
         // Start Container Observers
-        this.initContainerSize();
-        // TODO: NXT-802 do we really need the scroll element in the store?
         this.setScrollContainerElement(this.$el);
+        this.initContainerSize();
         this.initResizeObserver();
         this.$el.focus();
     },
@@ -36,9 +42,6 @@ export default {
         this.stopResizeObserver();
     },
     methods: {
-        /*
-            Zooming
-        */
         ...mapMutations('canvas', ['setScrollContainerElement']),
         initContainerSize() {
             // const { width, height } = this.$el.getBoundingClientRect();
@@ -90,7 +93,9 @@ export default {
             let cursorX = e.clientX - bcr.x;
             let cursorY = e.clientY - bcr.y;
 
-            this.$store.dispatch('canvas/zoomAroundPointer', { delta, cursorX, cursorY });
+            requestAnimationFrame(() => {
+                this.$store.dispatch('canvas/zoomAroundPointer', { delta, cursorX, cursorY });
+            });
         },
         /*
             Panning
@@ -99,16 +104,19 @@ export default {
             this.panning = [e.screenX, e.screenY];
             this.$el.setPointerCapture(e.pointerId);
         },
-        movePan: throttle(function (e) {
-            /* eslint-disable no-invalid-this */
+        movePan(e) {
             if (this.panning) {
-                const delta = [e.screenX - this.panning[0], e.screenY - this.panning[1]];
-                this.panning = [e.screenX, e.screenY];
-                this.$el.scrollLeft -= delta[0];
-                this.$el.scrollTop -= delta[1];
+                requestAnimationFrame(() => {
+                    /* eslint-disable no-invalid-this */
+                    const delta = [e.screenX - this.panning[0], e.screenY - this.panning[1]];
+                    this.panning = [e.screenX, e.screenY];
+                    this.$el.scrollLeft -= delta[0];
+                    this.$el.scrollTop -= delta[1];
+                });
             }
-            /* eslint-disable no-invalid-this */
-        }, PANNING_THROTTLE), // eslint-disable-line no-magic-numbers
+        },
+        /* eslint-disable no-invalid-this */
+        // }, PANNING_THROTTLE), // eslint-disable-line no-magic-numbers
         stopPan(e) {
             if (this.panning) {
                 this.panning = null;
