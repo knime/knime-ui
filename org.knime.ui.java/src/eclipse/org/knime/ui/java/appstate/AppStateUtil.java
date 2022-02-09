@@ -68,12 +68,18 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.knime.core.node.CanceledExecutionException;
+import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
+import org.knime.core.node.workflow.WorkflowContext;
+import org.knime.core.node.workflow.WorkflowLoadHelper;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.core.node.workflow.WorkflowPersistor.WorkflowLoadResult;
+import org.knime.core.util.LoadVersion;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
+import org.knime.core.util.Version;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.service.ApplicationService;
@@ -315,6 +321,8 @@ public final class AppStateUtil {
 	 * Once a workflow for a certain project-id is requested (e.g. via the
 	 * {@link ApplicationService} or {@link WorkflowService}), the workflow is
 	 * loaded into memory from the workspace location.
+	 *
+	 * @param appState the app state to use
 	 */
 	public static void initAppStateForTesting(final AppState appState) {
 		clearAppState();
@@ -346,9 +354,9 @@ public final class AppStateUtil {
 	}
 
 	private static WorkflowManager loadWorkflowForTesting(final OpenedWorkflow workflow) {
-		File file = new File(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile(), workflow.getProjectId());
+		var file = new File(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile(), workflow.getProjectId());
 		try {
-			WorkflowManager wfm = CoreUtil.loadWorkflow(file);
+			WorkflowManager wfm = loadWorkflow(file);
 			if (loadedWorkflowsForTesting == null) {
 				loadedWorkflowsForTesting = new HashSet<>();
 			}
@@ -360,5 +368,26 @@ public final class AppStateUtil {
 			return null;
 		}
 	}
+
+    private static WorkflowManager loadWorkflow(final File workflowDir) throws IOException, InvalidSettingsException,
+        CanceledExecutionException, UnsupportedWorkflowVersionException, LockFailedException {
+        WorkflowLoadHelper loadHelper = new WorkflowLoadHelper() {
+            @Override
+            public WorkflowContext getWorkflowContext() {
+                var fac = new WorkflowContext.Factory(workflowDir);
+                return fac.createContext();
+            }
+
+            @Override
+            public UnknownKNIMEVersionLoadPolicy getUnknownKNIMEVersionLoadPolicy(
+                final LoadVersion workflowKNIMEVersion, final Version createdByKNIMEVersion,
+                final boolean isNightlyBuild) {
+                return UnknownKNIMEVersionLoadPolicy.Try;
+            }
+        };
+
+        WorkflowLoadResult loadRes = WorkflowManager.loadProject(workflowDir, new ExecutionMonitor(), loadHelper);
+        return loadRes.getWorkflowManager();
+    }
 
 }
