@@ -40,7 +40,7 @@ export default {
         v-show="descriptionPanel"
         @click="closePanel"
       >
-        <CloseIcon />
+        <CloseIcon class="icon" />
       </button>
     </div>
     <hr>
@@ -72,8 +72,7 @@ export default {
   font-family: "Roboto Condensed", sans-serif;
   height: 100%;
   background-color: var(--knime-gray-ultra-light);
-  padding: 10px 0 172px;
-  font-size: 16px;
+  padding: 8px 0 172px;
   position: fixed;
   left: 400px;
   z-index: 2;
@@ -96,10 +95,20 @@ export default {
       width: 40px;
       margin-right: -15px;
       border: none;
-      background-color: var(--knime-gray-ultra-light);
+      display: flex;
+      align-items: center;
+      background-color: transparent;
 
-      &:hover {
-        cursor: pointer;
+      & .icon {
+        border: 0;
+        border-radius: 20px;
+        stroke: var(--knime-dove-gray);
+
+        &:hover {
+          cursor: pointer;
+          background-color: var(--knime-silver-sand-semi);
+          stroke: var(--knime-masala);
+        }
       }
     }
   }
@@ -107,7 +116,7 @@ export default {
   & hr {
     border: none;
     border-top: 1px solid var(--knime-silver-sand);
-    margin: 0;
+    margin: 0 20px;
   }
 
   & .scroll-container {
@@ -119,6 +128,10 @@ export default {
 
   & .node-info {
     padding: 10px 20px 0;
+  }
+
+  & .description {
+    font-size: 16px;
   }
 
   & .node-feature-list {
@@ -142,6 +155,10 @@ export default {
     & >>> .options .panel {
       padding-left: 0;
       margin-left: 52px;
+
+      & ul > * {
+        margin-left: -35px;
+      }
 
       & li > * {
         margin-left: 8px;

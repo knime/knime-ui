@@ -1,5 +1,5 @@
 <script>
-import { mapActions, mapGetters, mapMutations } from 'vuex';
+import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { KnimeMIME } from '~/mixins/dropNode';
 
@@ -19,6 +19,7 @@ export default {
         };
     },
     computed: {
+        ...mapState('nodeRepository', ['selectedNode']),
         ...mapGetters('workflow', ['isWritable'])
     },
     methods: {
@@ -83,7 +84,7 @@ export default {
     <label :title="nodeTemplate.name">{{ nodeTemplate.name }}</label>
     <NodePreview
       ref="nodePreview"
-      class="node-preview"
+      :class="nodeTemplate === selectedNode ? 'node-preview-active' : 'node-preview'"
       :type="nodeTemplate.type"
       :in-ports="nodeTemplate.inPorts"
       :out-ports="nodeTemplate.outPorts"
@@ -122,6 +123,10 @@ export default {
     position: absolute;
     bottom: -15px;
     right: 15px;
+  }
+
+  & .node-preview-active {
+    filter: url(#node-torso-shadow);
   }
 
   &:hover {
