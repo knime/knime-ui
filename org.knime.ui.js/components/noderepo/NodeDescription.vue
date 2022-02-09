@@ -103,6 +103,7 @@ export default {
         border: 0;
         border-radius: 20px;
         stroke: var(--knime-dove-gray);
+        width: 40px;
 
         &:hover {
           cursor: pointer;
