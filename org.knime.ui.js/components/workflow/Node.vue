@@ -392,7 +392,7 @@ export default {
 </script>
 
 <template>
-  <g :class="{'connection-forbidden': connectionForbidden && !isConnectionSource, 'selected': isNodeSelected(id)}">
+  <g :class="{'connection-forbidden': connectionForbidden && !isConnectionSource}">
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal
       to="node-actions"
@@ -535,10 +535,6 @@ export default {
 
 .hover-container {
   transition: filter 0.4s;
-}
-
-.selected {
-  z-index: 1;
 }
 
 .connection-forbidden .hover-container {
