@@ -50,7 +50,6 @@ export default {
         this.$parent.$off('selection-pointermove', this.mouseMove);
     },
     methods: {
-        ...mapMutations('workflow', ['setDragging']),
         ...mapActions('selection', ['selectNodes', 'deselectNodes', 'deselectAllObjects']),
         startRectSelection(e) {
             this.pointerId = e.pointerId;
