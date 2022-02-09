@@ -20,39 +20,20 @@ export default {
         },
         toolbarCommands() {
             const selectedNodes = this.$store.getters['selection/selectedNodes'];
-            const singleSelectedNode = this.$store.getters['selection/singleSelectedNode'];
-            const selectedConnections = this.$store.getters['selection/selectedConnections'];
-            
-            const somethingSelected = selectedNodes.length || selectedConnections.length;
-            const isLoopEnd = singleSelectedNode?.loopInfo?.allowedActions;
-            const isView = singleSelectedNode && 'canOpenView' in singleSelectedNode.allowedActions;
-
-            const { isEnabled } = this.$commands;
-
             let visibleItems = {
                 // always visible
                 undo: true,
                 redo: true,
 
                 // Workflow
-                executeAll: !somethingSelected,
-                cancelAll: !somethingSelected,
-                resetAll: !somethingSelected,
+                executeAll: !selectedNodes.length,
+                cancelAll: !selectedNodes.length,
+                resetAll: !selectedNodes.length,
 
                 // Node Execution
                 executeSelected: selectedNodes.length,
-                resumeLoopExecution: isLoopEnd && isEnabled('resumeLoopExecution'),
-                pauseLoopExecution: isLoopEnd && isEnabled('pauseLoopExecution'),
-                stepLoopExecution: isLoopEnd && isEnabled('stepLoopExecution'),
                 cancelSelected: selectedNodes.length,
-                resetSelected: selectedNodes.length,
-
-                // Something selected
-                deleteSelected: somethingSelected,
-
-                // Exactly one node selected
-                configureNode: singleSelectedNode,
-                openView: isView
+                resetSelected: selectedNodes.length
             };
 
             return Object
