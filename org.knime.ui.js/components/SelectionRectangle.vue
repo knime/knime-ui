@@ -56,7 +56,7 @@ export default {
             }
             e.target.addEventListener('lostpointercapture', this.stopRectSelection);
             this.startPos = this.getCurrentPos(e);
-            this.setDragging(true);
+
             // deselect all objects if we do not hold shift key
             if (e.shiftKey) {
                 // remember currently selected nodes, the nodes under the rect will inverse them
@@ -95,9 +95,6 @@ export default {
                 this.deSelectOnEnd = [];
                 this.selectedNodeIdsAtStart = [];
             }, 0);
-            // workflows dragging state changes behavior of nodes
-            // TODO: should we add something like setActiveSelection or similar?
-            this.setDragging(false);
         },
         mouseMove(e) {
             if (!this.isActive || this.pointerId !== e.pointerId) {
