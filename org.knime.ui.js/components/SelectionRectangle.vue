@@ -2,7 +2,7 @@
 import { mapGetters, mapState, mapMutations, mapActions } from 'vuex';
 import { throttle } from 'lodash';
 
-const selectNodesAfterMoveThrottle = 10; // delay between new move calculations are performed in ms
+const SELECTION_PREVIEW_THROTTLE = 10; // delay between new move calculations/previews are performed in ms
 /**
  * SelectionRectangle - select multiple nodes by drawing a rectangle with by mouse (pointer) movement
  *
@@ -10,7 +10,7 @@ const selectNodesAfterMoveThrottle = 10; // delay between new move calculations 
  * It also uses the parent for several other things. The vue event @node-selection-preview is used for a fast selection
  * preview. This is caused by the slowness of the Vuex store. The WorkflowPanel forwards those events to the Workflow
  * which calls the Node (via $refs) to show a selection preview. We know that this is not very vue-ish and data should
- * define what is rendered, but that's to slow in this case.
+ * define what is rendered, but that's too slow in this case.
  */
 export default {
     // emits: ['node-selection-preview']
@@ -48,7 +48,6 @@ export default {
         this.$parent.$off('selection-pointerdown', this.startRectSelection);
         this.$parent.$off('selection-pointerup', this.stopRectSelection);
         this.$parent.$off('selection-pointermove', this.mouseMove);
-        this.$parent.$on('lostpointercapture', this.stopRectSelection)
     },
     methods: {
         ...mapMutations('workflow', ['setDragging']),
@@ -87,7 +86,7 @@ export default {
 
             // update selection (in store)
             setTimeout(() => {
-                // do the real selection
+                // do the real selection if we are finished as it is quite slow (updates to buttons, tables etc.)
                 this.selectNodes(this.selectOnEnd);
                 this.deselectNodes(this.deSelectOnEnd);
 
@@ -107,7 +106,7 @@ export default {
                 return;
             }
             this.endPos = this.getCurrentPos(e);
-            this.$nextTick(() => this.selectAllNodesInRectangle(this.startPos, this.endPos));
+            this.$nextTick(() => this.previewSelectionForNodesInRectangle(this.startPos, this.endPos));
         },
         getOffsetOnKanvas(e) {
             // we need to use the offset relative to the kanvas not the element it occurred (which might be a descendant)
@@ -158,7 +157,7 @@ export default {
         emitNodeSelectionPreview(type, nodeId) {
             this.$emit('node-selection-preview', { type, nodeId });
         },
-        selectAllNodesInRectangle: throttle(function (startPos, endPos) {
+        previewSelectionForNodesInRectangle: throttle(function (startPos, endPos) {
             let { inside, outside } = this.findNodesInsideOfRect(startPos, endPos);
 
             // remember this for the real selection at the end of the movement (pointerup)
@@ -186,7 +185,7 @@ export default {
             this.lastInsideNodeIds = [...inside];
             this.selectOnEnd = [...selectNodes];
             this.deSelectOnEnd = [...deselectNodes];
-        }, selectNodesAfterMoveThrottle)
+        }, SELECTION_PREVIEW_THROTTLE)
     }
 };
 </script>
