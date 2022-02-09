@@ -110,7 +110,7 @@ stage('Integration Tests') {
                 ius: [
                     'org.knime.features.ui.feature.group',
                     'org.knime.features.gateway.feature.group',
-                    'com.knime.features.workbench.cef.feature.group'
+                    'org.knime.features.browser.cef.feature.group'
                 ]
             ]
 
