@@ -385,7 +385,7 @@ export default {
         },
         // public
         setSelectionPreview(show) {
-            this.showSelectionPreview = show;
+            this.showSelectionPreview = show === 'clear' ? null : show;
         }
     }
 };
