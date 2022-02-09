@@ -4,12 +4,16 @@ import { throttle } from 'lodash';
 
 const selectNodesAfterMoveThrottle = 10; // delay between new move calculations are performed in ms
 /**
- * The SelectionRectangle component registers to the `selection-pointer{up,down,move} of its parent (the Kanvas).
- * It also uses the parent for several other things. The DOM access and CustomEvents are used for a fast selection
- * preview. This is caused by the slowness of the Vuex store. The Node component handles those events and
- * shows a selection preview.
+ * SelectionRectangle - select multiple nodes by drawing a rectangle with by mouse (pointer) movement
+ *
+ * This component registers to the `selection-pointer{up,down,move} of its parent (the Kanvas).
+ * It also uses the parent for several other things. The vue event @node-selection-preview is used for a fast selection
+ * preview. This is caused by the slowness of the Vuex store. The WorkflowPanel forwards those events to the Workflow
+ * which calls the Node (via $refs) to show a selection preview. We know that this is not very vue-ish and data should
+ * define what is rendered, but that's to slow in this case.
  */
 export default {
+    // emits: ['node-selection-preview']
     data: () => ({
         startPos: {
             x: 0,
@@ -88,7 +92,9 @@ export default {
                 this.deselectNodes(this.deSelectOnEnd);
 
                 // clear preview state of now selected elements
-                [...this.selectOnEnd, ...this.deSelectOnEnd].forEach(nId => this.sendEventToNode('clear', nId));
+                [...this.selectOnEnd, ...this.deSelectOnEnd].forEach(
+                    nodeId => this.emitNodeSelectionPreview('clear', nodeId)
+                );
 
                 // clear state
                 this.selectOnEnd = [];
@@ -149,8 +155,8 @@ export default {
                 outside
             };
         },
-        sendEventToNode(type, nodeId) {
-            this.$emit('node-selection-preview', { nodeId, type });
+        emitNodeSelectionPreview(type, nodeId) {
+            this.$emit('node-selection-preview', { type, nodeId });
         },
         selectAllNodesInRectangle: throttle(function (startPos, endPos) {
             let { inside, outside } = this.findNodesInsideOfRect(startPos, endPos);
@@ -163,17 +169,17 @@ export default {
             inside.forEach(nodeId => {
                 // support for shift (remove selection on selected ones)
                 if (this.selectedNodeIdsAtStart?.includes(nodeId)) {
-                    this.sendEventToNode('hide', nodeId);
+                    this.emitNodeSelectionPreview('hide', nodeId);
                     deselectNodes.push(nodeId);
                 } else {
-                    this.sendEventToNode('show', nodeId);
+                    this.emitNodeSelectionPreview('show', nodeId);
                     selectNodes.push(nodeId);
                 }
             });
             // clear state if we have changed it in the last run
             outside.forEach(nodeId => {
                 if (this.lastInsideNodeIds?.includes(nodeId)) {
-                    this.sendEventToNode('clear', nodeId);
+                    this.emitNodeSelectionPreview('clear', nodeId);
                 }
             });
             // update global state
