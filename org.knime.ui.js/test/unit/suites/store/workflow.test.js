@@ -146,18 +146,6 @@ describe('workflow store', () => {
         it('check isStreaming', () => {
             expect(store.getters['workflow/isStreaming']).toBe(true);
         });
-
-        it('check isDirty', () => {
-            expect(store.getters['workflow/isDirty']).toBe(false);
-            store.commit('workflow/setActiveWorkflow', {
-                projectId: 'foo',
-                dirty: true,
-                info: {
-                    linked: false
-                }
-            });
-            expect(store.getters['workflow/isDirty']).toBe(true);
-        });
     });
 
     describe('actions', () => {
@@ -760,13 +748,5 @@ describe('workflow store', () => {
                 expect(store.getters['workflow/getNodeType']('ownData')).toBe('ownType');
             });
         });
-    });
-
-    test('isDirty', async () => {
-        await loadStore();
-        store.commit('workflow/setActiveWorkflow', {
-            dirty: true
-        });
-        expect(store.getters['workflow/isDirty']).toBe(true);
     });
 });

@@ -309,9 +309,6 @@ export const getters = {
         const parents = activeWorkflow?.parents || [];
         return parents.find(({ linked }) => linked)?.containerType;
     },
-    isDirty({ activeWorkflow }) {
-        return Boolean(activeWorkflow?.dirty);
-    },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
     */

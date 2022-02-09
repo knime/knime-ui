@@ -16,9 +16,9 @@ export default {
         hotkey: ['Ctrl', 'S'],
         icon: SaveIcon,
         execute:
-        ({ $store }) => $store.dispatch('workflow/saveWorkflow'),
+            ({ $store }) => $store.dispatch('workflow/saveWorkflow'),
         condition:
-        ({ $store }) => $store.getters['workflow/isDirty']
+            ({ $store }) => $store.state.workflow.activeWorkflow?.dirty
     },
     undo: {
         title: 'Undo',
