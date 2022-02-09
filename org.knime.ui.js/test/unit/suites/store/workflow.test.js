@@ -120,7 +120,6 @@ describe('workflow store', () => {
             await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
-                dirty: false,
                 info: {
                     linked: true,
                     jobManager: 'someJobManager'
