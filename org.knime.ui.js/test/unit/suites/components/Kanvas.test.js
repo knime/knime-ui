@@ -98,8 +98,21 @@ describe('Kanvas', () => {
             expect(wrapper.emitted('selection-pointerdown')).toBeTruthy();
         });
 
-        // TODO: add other events
+        test('clicking on the canvas emits select-pointerdown', () => {
+            doShallowMount();
 
+            wrapper.find('svg').trigger('pointermove');
+
+            expect(wrapper.emitted('selection-pointermove')).toBeTruthy();
+        });
+
+        test('clicking on the canvas emits select-pointerdown', () => {
+            doShallowMount();
+
+            wrapper.find('svg').trigger('pointerup');
+
+            expect(wrapper.emitted('selection-pointerup')).toBeTruthy();
+        });
     });
 
     describe('Zoom & Pan', () => {

@@ -1,5 +1,5 @@
 <script>
-import { mapGetters, mapState, mapMutations, mapActions } from 'vuex';
+import { mapGetters, mapState, mapActions } from 'vuex';
 import { throttle } from 'lodash';
 
 const SELECTION_PREVIEW_THROTTLE = 10; // delay between new move calculations/previews are performed in ms
@@ -64,9 +64,7 @@ export default {
                 // remember currently selected nodes, the nodes under the rect will inverse them
                 this.selectedNodeIdsAtStart = [...this.selectedNodeIds];
             } else {
-                if (this.selectedNodeIds.length > 0) {
-                    this.deselectAllObjects();
-                }
+                this.deselectAllObjects();
                 this.selectedNodeIdsAtStart = [];
             }
             this.endPos = this.startPos;
@@ -156,6 +154,7 @@ export default {
         emitNodeSelectionPreview(type, nodeId) {
             this.$emit('node-selection-preview', { type, nodeId });
         },
+        /* eslint-disable no-invalid-this */
         previewSelectionForNodesInRectangle: throttle(function (startPos, endPos) {
             let { inside, outside } = this.findNodesInsideOfRect(startPos, endPos);
 
@@ -185,6 +184,7 @@ export default {
             this.selectOnEnd = [...selectNodes];
             this.deSelectOnEnd = [...deselectNodes];
         }, SELECTION_PREVIEW_THROTTLE)
+        /* eslint-enable no-invalid-this */
     }
 };
 </script>

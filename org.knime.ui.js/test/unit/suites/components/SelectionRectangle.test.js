@@ -9,11 +9,24 @@ import * as $colors from '~/style/colors';
 
 import SelectionRectangle from '~/components/SelectionRectangle';
 
-const moveNodesThrottleWaitDelay = 11;
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-const parentComponent = { name: 'parentStub', template: '<div></div>' };
+jest.mock('lodash', () => ({
+    throttle(func) {
+        return function (...args) {
+            // eslint-disable-next-line no-invalid-this
+            return func.apply(this, args);
+        };
+    }
+}));
 
-const mockNode = ({ id, position }) => ({
+const parentComponent = {
+    name: 'parentStub',
+    template: '<div></div>'
+};
+
+const mockNode = ({
+    id,
+    position
+}) => ({
     name: '',
     id,
     position,
@@ -27,7 +40,7 @@ const mockNode = ({ id, position }) => ({
 });
 
 describe('SelectionRectangle', () => {
-    let propsData, mocks, doShallowMount, $store, storeConfig;
+    let wrapper, propsData, mocks, doShallowMount, $store, storeConfig, pointerDown, pointerUp, pointerMove;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -41,21 +54,53 @@ describe('SelectionRectangle', () => {
                 state: {
                     activeWorkflow: {
                         nodes: {
-                            'root:0': mockNode({ id: 'root:0', position: { x: 32, y: 32 } }),
-                            'root:1': mockNode({ id: 'root:1', position: { x: 50, y: 50 } }),
-                            'root:2': mockNode({ id: 'root:2', position: { x: 400, y: 10 } }),
-                            'root:3': mockNode({ id: 'root:3', position: { x: 50, y: 400 } }),
-                            'root:4': mockNode({ id: 'root:4', position: { x: 200, y: 200 } })
+                            'root:0': mockNode({
+                                id: 'root:0',
+                                position: {
+                                    x: 32,
+                                    y: 32
+                                }
+                            }),
+                            'root:1': mockNode({
+                                id: 'root:1',
+                                position: {
+                                    x: 50,
+                                    y: 50
+                                }
+                            }),
+                            'root:2': mockNode({
+                                id: 'root:2',
+                                position: {
+                                    x: 400,
+                                    y: 10
+                                }
+                            }),
+                            'root:3': mockNode({
+                                id: 'root:3',
+                                position: {
+                                    x: 50,
+                                    y: 400
+                                }
+                            }),
+                            'root:4': mockNode({
+                                id: 'root:4',
+                                position: {
+                                    x: 200,
+                                    y: 200
+                                }
+                            })
                         }
                     }
-                },
-                mutations: {
-                    setDragging: jest.fn()
                 }
             },
             canvas: {
                 getters: {
-                    viewBox: () => ({ left: 0, top: 0, width: 500, height: 500 })
+                    viewBox: () => ({
+                        left: 0,
+                        top: 0,
+                        width: 500,
+                        height: 500
+                    })
                 },
                 state: {
                     zoomFactor: 1
@@ -66,205 +111,292 @@ describe('SelectionRectangle', () => {
                     selectedNodeIds: jest.fn().mockReturnValue([])
                 },
                 actions: {
-                    selectNode: jest.fn(),
-                    deselectNode: jest.fn(),
+                    selectNodes: jest.fn(),
+                    deselectNodes: jest.fn(),
                     deselectAllObjects: jest.fn()
                 }
             }
         };
 
         doShallowMount = () => {
-            storeConfig.selection.actions.selectNode.mockClear();
-            storeConfig.selection.actions.deselectNode.mockClear();
+            storeConfig.selection.actions.selectNodes.mockClear();
+            storeConfig.selection.actions.deselectNodes.mockClear();
             storeConfig.selection.actions.deselectAllObjects.mockClear();
             $store = mockVuexStore(storeConfig);
-            mocks = { $store, $shapes, $colors };
-            return shallowMount(SelectionRectangle, { propsData, mocks, parentComponent });
+            mocks = {
+                $store,
+                $shapes,
+                $colors
+            };
+            wrapper = shallowMount(
+                SelectionRectangle, {
+                    propsData,
+                    mocks,
+                    parentComponent
+                }
+            );
+        };
+
+        pointerDown = ({ pageX, pageY, shiftKey }) => {
+            wrapper.vm.$parent.$emit('selection-pointerdown', {
+                pointerId: 1,
+                pageX,
+                pageY,
+                shiftKey: shiftKey || false,
+                currentTarget: {
+                    getBoundingClientRect: () => ({
+                        left: 0,
+                        top: 0
+                    })
+                },
+                target: {
+                    hasPointerCapture: (pointerID) => false,
+                    setPointerCapture: (pointerId) => null,
+                    addEventListener: (name) => null
+                }
+            });
+        };
+
+        pointerMove = ({ pageX, pageY }) => {
+            wrapper.vm.$parent.$emit('selection-pointermove', {
+                pointerId: 1,
+                pageX,
+                pageY,
+                currentTarget: {
+                    getBoundingClientRect: () => ({
+                        left: 0,
+                        top: 0
+                    })
+                }
+            });
+        };
+
+        pointerUp = () => {
+            jest.useFakeTimers(); // impl contains setTimout
+
+            // stop also changes global dragging state
+            wrapper.vm.$parent.$emit('selection-pointerup', {
+                pointerId: 1,
+                target: {
+                    removeEventListener: jest.fn(),
+                    releasePointerCapture: jest.fn()
+                }
+            });
+
+            jest.runAllTimers();
         };
     });
 
     it('selects all nodes', async () => {
         storeConfig.workflow.state.activeWorkflow.nodes = {
-            'root:0': mockNode({ id: 'root:0', position: { x: -32, y: -32 } }),
-            'root:1': mockNode({ id: 'root:1', position: { x: 50, y: 50 } }),
-            'root:2': mockNode({ id: 'root:2', position: { x: 0, y: 100 } })
+            'root:0': mockNode({
+                id: 'root:0',
+                position: {
+                    x: -32,
+                    y: -32
+                }
+            }),
+            'root:1': mockNode({
+                id: 'root:1',
+                position: {
+                    x: 50,
+                    y: 50
+                }
+            }),
+            'root:2': mockNode({
+                id: 'root:2',
+                position: {
+                    x: 0,
+                    y: 100
+                }
+            })
         };
-        let wrapper = doShallowMount();
-        wrapper.vm.$parent.$emit('selection-pointerdown', {
-            pointerId: 1,
-            offsetX: 0,
-            offsetY: 0,
-            shiftKey: false,
-            target: { hasPointerCapture: (pointerID) => false, setPointerCapture: (pointerId) => null }
-        });
+        doShallowMount();
 
+        pointerDown({ pageX: 0, pageY: 0 });
+        await Vue.nextTick();
         expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
 
-        wrapper.vm.$parent.$emit('selection-pointermove', {
-            pointerId: 1,
-            offsetX: 300,
-            offsetY: 300
-        });
-
+        pointerMove({ pageX: 300, pageY: 300 });
         await Vue.nextTick();
+        expect(wrapper.emitted('node-selection-preview')).toStrictEqual([[{
+            nodeId: 'root:1',
+            type: 'show'
+        }], [{
+            nodeId: 'root:2',
+            type: 'show'
+        }]]);
 
-        expect(storeConfig.workflow.mutations.setDragging).toHaveBeenCalledWith(expect.anything(), true);
-
+        pointerUp();
         // one is outside of canvas (-32, -32)
-        expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledTimes(2);
-
-        // stop also changes global dragging state
-        wrapper.vm.$parent.$emit('selection-pointerup', {
-            pointerId: 1
-        });
-        await delay(moveNodesThrottleWaitDelay);
-        await Vue.nextTick();
-        expect(storeConfig.workflow.mutations.setDragging).toHaveBeenCalledWith(expect.anything(), false);
-    });
-
-    it('selects multiple nodes', async () => {
-        let wrapper = doShallowMount();
-        wrapper.vm.$parent.$emit('selection-pointerdown', {
-            pointerId: 1,
-            offsetX: 0,
-            offsetY: 0,
-            shiftKey: false,
-            target: { hasPointerCapture: (pointerID) => true }
-        });
-
-        expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
-
-        wrapper.vm.$parent.$emit('selection-pointermove', {
-            pointerId: 1,
-            offsetX: 300,
-            offsetY: 300
-        });
-
-        await delay(moveNodesThrottleWaitDelay);
-        await Vue.nextTick();
-
-        expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledTimes(3);
+        expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(expect.anything(), ['root:1', 'root:2']);
     });
 
     it('selects single node', async () => {
         storeConfig.workflow.state.activeWorkflow.nodes = {
-            'root:0': mockNode({ id: 'root:1', position: { x: 50, y: 50 } }),
-            'root:1': mockNode({ id: 'root:2', position: { x: 100, y: 100 } })
+            'root:1': mockNode({
+                id: 'root:1',
+                position: {
+                    x: 50,
+                    y: 50
+                }
+            }),
+            'root:2': mockNode({
+                id: 'root:2',
+                position: {
+                    x: 100,
+                    y: 100
+                }
+            })
         };
-        let wrapper = doShallowMount();
-        wrapper.vm.$parent.$emit('selection-pointerdown', {
-            pointerId: 1,
-            offsetX: 56,
-            offsetY: 50 + 32,
-            shiftKey: false,
-            target: { hasPointerCapture: (pointerID) => true }
-        });
+        doShallowMount();
+        pointerDown({ pageX: 0, pageY: 0 });
 
-        expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
-
-        wrapper.vm.$parent.$emit('selection-pointermove', {
-            pointerId: 1,
-            offsetX: 50 + 32,
-            offsetY: 58
-        });
-
-        await delay(moveNodesThrottleWaitDelay);
+        pointerMove({ pageX: 50 + 32, pageY: 58 });
         await Vue.nextTick();
+        expect(wrapper.emitted('node-selection-preview')).toStrictEqual([[{
+            nodeId: 'root:1',
+            type: 'show'
+        }]]);
 
-        expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledTimes(1);
+        pointerUp();
+        expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(expect.anything(), ['root:1']);
     });
 
     it('selects single node from bottom right to top left', async () => {
         storeConfig.workflow.state.activeWorkflow.nodes = {
-            'root:0': mockNode({ id: 'root:1', position: { x: 50, y: 50 } }),
-            'root:1': mockNode({ id: 'root:2', position: { x: 100, y: 100 } })
+            'root:1': mockNode({
+                id: 'root:1',
+                position: {
+                    x: 50,
+                    y: 50
+                }
+            }),
+            'root:2': mockNode({
+                id: 'root:2',
+                position: {
+                    x: 100,
+                    y: 100
+                }
+            })
         };
-        let wrapper = doShallowMount();
-        wrapper.vm.$parent.$emit('selection-pointerdown', {
-            pointerId: 1,
-            offsetX: 50 + 32 + 2,
-            offsetY: 50 + 32 + 2,
-            shiftKey: false,
-            target: { hasPointerCapture: (pointerID) => true }
-        });
+        doShallowMount();
+        pointerDown({ pageX: 150, pageY: 150 });
+        expect(wrapper.vm.startPos).toStrictEqual({ x: 150, y: 150 });
 
-        expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
-
-        wrapper.vm.$parent.$emit('selection-pointermove', {
-            pointerId: 1,
-            offsetX: 52,
-            offsetY: 52
-        });
-
-        await delay(moveNodesThrottleWaitDelay);
+        pointerMove({ pageX: 90, pageY: 90 });
         await Vue.nextTick();
+        expect(wrapper.emitted('node-selection-preview')).toStrictEqual([[{
+            nodeId: 'root:2',
+            type: 'show'
+        }]]);
 
-        expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledTimes(1);
+        pointerUp();
+        expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(expect.anything(), ['root:2']);
     });
 
-    it('selects single node partly', async () => {
+    it('selects single node also even if its not fully inside of the rect', async () => {
         storeConfig.workflow.state.activeWorkflow.nodes = {
-            'root:0': mockNode({ id: 'root:1', position: { x: 50, y: 50 } }),
-            'root:1': mockNode({ id: 'root:2', position: { x: 100, y: 100 } })
+            'root:1': mockNode({
+                id: 'root:1',
+                position: {
+                    x: 50,
+                    y: 50
+                }
+            }),
+            'root:2': mockNode({
+                id: 'root:2',
+                position: {
+                    x: 100,
+                    y: 100
+                }
+            })
         };
-        let wrapper = doShallowMount();
-        wrapper.vm.$parent.$emit('selection-pointerdown', {
-            pointerId: 1,
-            offsetX: 50 + 32 + 2,
-            offsetY: 49,
-            shiftKey: false,
-            target: { hasPointerCapture: (pointerID) => true }
-        });
+        doShallowMount();
+        pointerDown({ pageX: 50 + 32 + 2, pageY: 49 });
 
-        expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
-
-        wrapper.vm.$parent.$emit('selection-pointermove', {
-            pointerId: 1,
-            offsetX: 52,
-            offsetY: 52
-        });
-
-        await delay(moveNodesThrottleWaitDelay);
+        pointerMove({ pageX: 52, pageY: 52 });
         await Vue.nextTick();
+        expect(wrapper.emitted('node-selection-preview')).toStrictEqual([[{
+            nodeId: 'root:1',
+            type: 'show'
+        }]]);
 
-        expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledTimes(1);
+        pointerUp();
+        expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(expect.anything(), ['root:1']);
     });
 
-    it('deselects already selected items with shift', async () => {
-        storeConfig.selection.getters.selectedNodeIds = jest.fn().mockReturnValue([
-            'root:0',
-            'root:2'
-        ]);
-        let wrapper = doShallowMount();
+    describe('selection with shift', () => {
+        it('adds to selection with shift', async () => {
+            storeConfig.selection.getters.selectedNodeIds = jest.fn().mockReturnValue([
+                'root:1'
+            ]);
+            doShallowMount();
 
-        wrapper.vm.$parent.$emit('selection-pointerdown', {
-            pointerId: 1,
-            offsetX: 0,
-            offsetY: 0,
-            shiftKey: true,
-            target: { hasPointerCapture: (pointerID) => true }
+            pointerDown({ pageX: 0, pageY: 0, shiftKey: true });
+            // no de-select with shift
+            expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalledTimes(0);
+
+            pointerMove({ pageX: 36, pageY: 36 });
+            await Vue.nextTick();
+            expect(wrapper.emitted('node-selection-preview')).toStrictEqual([
+                [{
+                    nodeId: 'root:0',
+                    type: 'show'
+                }]
+            ]);
+
+            pointerUp();
+            expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(expect.anything(), ['root:0']);
         });
 
-        expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalledTimes(0);
+        it('deselects already selected items with shift', async () => {
+            storeConfig.selection.getters.selectedNodeIds = jest.fn().mockReturnValue([
+                'root:0',
+                'root:2'
+            ]);
+            doShallowMount();
 
-        wrapper.vm.$parent.$emit('selection-pointermove', {
-            pointerId: 1,
-            offsetX: 300,
-            offsetY: 300
+            pointerDown({ pageX: 0, pageY: 0, shiftKey: true });
+            // no de-select with shift
+            expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalledTimes(0);
+
+            pointerMove({ pageX: 300, pageY: 300 });
+            await Vue.nextTick();
+            expect(wrapper.emitted('node-selection-preview')).toStrictEqual([
+                [{
+                    nodeId: 'root:0',
+                    type: 'hide'
+                }],
+                [{
+                    nodeId: 'root:1',
+                    type: 'show'
+                }],
+                [{
+                    nodeId: 'root:4',
+                    type: 'show'
+                }]
+            ]);
+
+
+            pointerUp();
+
+            expect(wrapper.emitted('node-selection-preview').slice(-3)).toStrictEqual([[{
+                nodeId: 'root:1',
+                type: 'clear'
+            }], [{
+                nodeId: 'root:4',
+                type: 'clear'
+            }], [{
+                nodeId: 'root:0',
+                type: 'clear'
+            }]]);
+
+            expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(
+                expect.anything(),
+                ['root:1', 'root:4']
+            );
+            expect(storeConfig.selection.actions.deselectNodes).toHaveBeenCalledWith(expect.anything(), ['root:0']);
         });
-
-        // see moveNodesThrottle
-        await delay(moveNodesThrottleWaitDelay);
-        await Vue.nextTick();
-
-        expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledTimes(3);
-        expect(storeConfig.selection.actions.deselectNode).toHaveBeenCalledTimes(2);
-
-        expect(storeConfig.selection.actions.deselectNode).toHaveBeenCalledWith(expect.anything(), 'root:0');
-        expect(storeConfig.selection.actions.deselectNode).toHaveBeenCalledWith(expect.anything(), 'root:3');
-
-        expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:1');
-        expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:2');
-        expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(expect.anything(), 'root:4');
     });
 });

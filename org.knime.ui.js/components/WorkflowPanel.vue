@@ -88,7 +88,7 @@ export default {
         ref="workflow"
         :key="`${workflow.projectId}-${activeWorkflowId}`"
       />
-      <!-- The SelectionRectangle registers to the selection-pointer{up,down,move} events of its parent (the Kanvas). -->
+      <!-- The SelectionRectangle registers to the selection-pointer{up,down,move} events of its parent (the Kanvas) -->
       <SelectionRectangle
         @node-selection-preview="$refs.workflow.showNodeSelectionPreview($event)"
       />
