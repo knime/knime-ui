@@ -100,6 +100,7 @@ stage('Integration Tests') {
                     'knime-js-base',
                     'knime-json',
                     'knime-chromium',
+                    'knime-cef',
                     'knime-reporting',
                     'knime-stats',
                     'knime-streaming',
@@ -110,7 +111,7 @@ stage('Integration Tests') {
                 ius: [
                     'org.knime.features.ui.feature.group',
                     'org.knime.features.gateway.feature.group',
-                    'com.knime.features.workbench.cef.feature.group'
+                    'org.knime.features.browser.cef.feature.group'
                 ]
             ]
 
@@ -123,14 +124,14 @@ stage('Integration Tests') {
                         source common.inc
                         source workflowTests.inc
 
-						export TEMP="$WORKSPACE/tmp"
-    					mkdir -p "$TEMP"
+                        export TEMP="$WORKSPACE/tmp"
+                        mkdir -p "$TEMP"
 
-						determineRequiredIUs "$(path "$WORKSPACE/org.knime.ui.js/test/integration/assets/workflows")" "$ADDITIONAL_IUS" "$REPOS"
+                        determineRequiredIUs "$(path "$WORKSPACE/org.knime.ui.js/test/integration/assets/workflows")" "$ADDITIONAL_IUS" "$REPOS"
 
-						DEST="$WORKSPACE/knime_test.app"
-						KNIME_INI="$DEST/knime.ini"
-						prepareInstance "$DEST" "$REPOS" "$IUS"
+                        DEST="$WORKSPACE/knime_test.app"
+                        KNIME_INI="$DEST/knime.ini"
+                        prepareInstance "$DEST" "$REPOS" "$IUS"
 
                         export TEMP="$WORKSPACE/tmp"
                         export XDG_RUNTIME_DIR="$TEMP"

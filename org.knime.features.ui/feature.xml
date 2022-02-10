@@ -727,11 +727,6 @@ license terms applicable to such Node, including when such Node is
 propagated with or for interoperation with KNIME.
    </license>
 
-   <requires>
-      <import feature="com.equo.chromium.cef.feature" version="80.0.13.202201270327" match="perfect"/>
-      <import feature="com.equo.chromium.feature" version="80.0.18.202201270351" match="perfect"/>
-   </requires>
-
    <plugin
          id="org.knime.ui.java"
          download-size="0"
