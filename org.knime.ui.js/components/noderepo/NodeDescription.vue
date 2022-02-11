@@ -44,9 +44,7 @@ export default {
       </button>
     </div>
     <hr>
-    <div
-      class="scroll-container"
-    >
+    <div class="scroll-container">
       <div class="node-info">
         <Description
           v-if="nodeWithDescription"
@@ -133,6 +131,7 @@ export default {
 
   & .description {
     font-size: 16px;
+    margin-bottom: 20px;
   }
 
   & .node-feature-list {
@@ -143,30 +142,36 @@ export default {
       display: none;
     }
 
+    /* Style refinement for Feature List; Ports, Options, Views  */
+
+    & >>> h5 {
+      font-size: 16px;
+    }
+
     & >>> h6 {
       font-size: 16px;
       margin-bottom: 0;
     }
 
     & >>> .description {
-      font-size: 16px;
+      font-size: 13px;
     }
 
     /* Style refinement for Options */
+
     & >>> .options .panel {
-      padding-left: 0;
-      margin-left: 52px;
-
-      & ul > * {
-        margin-left: -35px;
+      padding-left: 10px;
+      padding-right: 10px;
+      margin-left: 25px;
+    
+      /* Style refinement list in a collapsible */ 
+      & > .panel {
+        margin-left: 3px;
       }
-
-      & li > * {
-        margin-left: 8px;
-      }
-
-      & .option-field-name {
-        margin-bottom: 5px;
+      
+      /* Style refinement text outside a collapsible */
+      & > div {
+        padding-left: 0px;
       }
     }
 
@@ -196,6 +201,28 @@ export default {
       }
     }
   }
-}
 
+  /* Style refinement for Code */
+  & >>> tt,
+  & >>> pre,
+  & >>> code,
+  & >>> samp {
+      font-size: 13px;
+      font-family: monospace;
+      line-height: 24px;
+    }
+  
+  /* Style refinement for Tables */
+  & >>> table {
+    width: 100%;
+    font-size: 12px;
+    border-spacing: 5px 0;
+    margin-left: 10px;
+
+    & th,
+    & td {
+      padding: 4px 0px;
+    }
+  }
+}
 </style>
