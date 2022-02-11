@@ -4,7 +4,7 @@ import { searchNodes, getNodesGroupedByTags } from '~api';
  * Store that manages node repository state.
  */
 
-const nodeSearchPageSize = 21;
+const nodeSearchPageSize = 50;
 const categoryPageSize = 3;
 const firstLoadOffset = 6;
 
@@ -13,6 +13,7 @@ export const state = () => ({
     nodesPerCategory: [],
     totalNumCategories: null,
     categoryPage: 0,
+    lazyLoading: false,
 
     /* search results */
     nodes: null,
@@ -93,6 +94,7 @@ export const actions = {
             commit('setNodes', res.nodes);
         }
         commit('setTags', res.tags);
+        commit('setLazyLoading', false);
     },
 
     /**
@@ -196,5 +198,8 @@ export const mutations = {
     },
     setScrollPosition(state, value) {
         state.scrollPosition = value;
+    },
+    setLazyLoading(state, value) {
+        state.lazyLoading = value;
     }
 };

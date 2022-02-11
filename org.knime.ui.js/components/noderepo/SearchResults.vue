@@ -1,15 +1,17 @@
 <script>
 import { mapState } from 'vuex';
+import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 import ScrollViewContainer from './ScrollViewContainer.vue';
 import NodeList from './NodeList.vue';
 
 export default {
     components: {
         ScrollViewContainer,
-        NodeList
+        NodeList,
+        ReloadIcon
     },
     computed: {
-        ...mapState('nodeRepository', ['nodes', 'query', 'scrollPosition', 'totalNumNodes']),
+        ...mapState('nodeRepository', ['nodes', 'query', 'scrollPosition', 'totalNumNodes', 'lazyLoading']),
         hasNoSearchResults() {
             return this.nodes.length === 0;
         }
@@ -21,6 +23,7 @@ export default {
             this.$store.commit('nodeRepository/setScrollPosition', position);
         },
         loadMoreSearchResults() {
+            this.$store.commit('nodeRepository/setLazyLoading', true);
             this.$store.dispatch('nodeRepository/searchNodesNextPage', true);
         }
     }
@@ -39,20 +42,27 @@ export default {
     class="results"
     :initial-position="scrollPosition"
     @save-position="updateScrollPosition"
+    @scroll-bottom="loadMoreSearchResults"
   >
     <div class="content">
       <NodeList
         :nodes="nodes"
-        :has-more-nodes="nodes.length < totalNumNodes"
-        @show-more="loadMoreSearchResults"
-      >
-        <template #more-button>Show more…</template>
-      </NodeList>
+      />
     </div>
+    <ReloadIcon
+      v-if="lazyLoading"
+      class="loading"
+    />
   </ScrollViewContainer>
 </template>
 
 <style lang="postcss" scoped>
+@keyframes spin {
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
 .no-matching-search {
   display: flex;
   align-items: center;
@@ -62,8 +72,20 @@ export default {
 }
 
 .results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
   & .content {
     padding: 0 20px 15px;
+  }
+
+  & .loading {
+    animation: spin 2s linear infinite;
+    width: 40px;
+    height: 40px;
+    stroke-width: calc(32px / 24);
+    stroke: var(--knime-masala);
   }
 }
 </style>
