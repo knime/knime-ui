@@ -85,7 +85,9 @@ import org.osgi.service.event.Event;
  */
 public final class PerspectiveSwitchAddon {
 
-	private static final NodeLogger LOGGER = NodeLogger.getLogger(PerspectiveSwitchAddon.class);
+    private static final String PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP = "chromium.external_message_pump";
+
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(PerspectiveSwitchAddon.class);
 
 	@Inject
 	private EModelService m_modelService;
@@ -119,6 +121,9 @@ public final class PerspectiveSwitchAddon {
 		setTrimsAndMenuVisible(false, m_modelService, m_app);
 		callOnKnimeBrowserView(KnimeBrowserView::setUrl);
 		switchToWebUITheme();
+		// fixes a drag'n'drop issue on windows; doesn't have an effect on linux or mac
+		// (see NXTEXT-137)
+		System.setProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP,"false");
 	}
 
 
@@ -133,6 +138,7 @@ public final class PerspectiveSwitchAddon {
 		// (couldn't be solved via css styling because the background color differs if the respective workflow
 		// is write protected)
 		AppStateUtil.getOpenWorkflowEditors(m_modelService, m_app).forEach(WorkflowEditor::updateEditorBackgroundColor);
+		System.clearProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
 	}
 
 	private void callOnKnimeBrowserView(final Consumer<KnimeBrowserView> call) {
