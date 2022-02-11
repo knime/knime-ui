@@ -132,6 +132,7 @@ export default {
   & .description {
     font-size: 16px;
     margin-bottom: 20px;
+    width: 310px;
   }
 
   & .node-feature-list {
@@ -163,15 +164,15 @@ export default {
       padding-left: 10px;
       padding-right: 10px;
       margin-left: 25px;
-    
-      /* Style refinement list in a collapsible */ 
+
+      /* Style refinement list in a collapsible */
       & > .panel {
         margin-left: 3px;
       }
-      
+
       /* Style refinement text outside a collapsible */
       & > div {
-        padding-left: 0px;
+        padding-left: 0;
       }
     }
 
@@ -207,11 +208,11 @@ export default {
   & >>> pre,
   & >>> code,
   & >>> samp {
-      font-size: 13px;
-      font-family: monospace;
-      line-height: 24px;
-    }
-  
+    font-size: 13px;
+    font-family: monospace;
+    line-height: 24px;
+  }
+
   /* Style refinement for Tables */
   & >>> table {
     width: 100%;
@@ -221,7 +222,7 @@ export default {
 
     & th,
     & td {
-      padding: 4px 0px;
+      padding: 4px 0;
     }
   }
 }
