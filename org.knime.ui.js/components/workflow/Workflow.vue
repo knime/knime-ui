@@ -34,7 +34,7 @@ export default {
         }),
         ...mapGetters('selection', ['isNodeSelected']),
         // Sort nodes so that selected nodes are rendered in front
-        // TODO: is there a more performant way to do this? Its one of the main reasons selections are slow.
+        // TODO: NXT-904 Is there a more performant way to do this? Its one of the main reasons selections are slow.
         sortedNodes() {
             let selected = [];
             let unselected = [];
