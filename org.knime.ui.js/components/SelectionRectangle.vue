@@ -13,7 +13,6 @@ const SELECTION_PREVIEW_THROTTLE = 10; // delay between new move calculations/pr
  * define what is rendered, but that's too slow in this case.
  */
 export default {
-    // emits: ['node-selection-preview']
     data: () => ({
         startPos: {
             x: 0,
