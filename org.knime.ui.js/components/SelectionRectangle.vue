@@ -41,12 +41,12 @@ export default {
     created() {
         this.$parent.$on('selection-pointerdown', this.startRectSelection);
         this.$parent.$on('selection-pointerup', this.stopRectSelection);
-        this.$parent.$on('selection-pointermove', this.mouseMove);
+        this.$parent.$on('selection-pointermove', this.updateRectSelection);
     },
     beforeDestroy() {
         this.$parent.$off('selection-pointerdown', this.startRectSelection);
         this.$parent.$off('selection-pointerup', this.stopRectSelection);
-        this.$parent.$off('selection-pointermove', this.mouseMove);
+        this.$parent.$off('selection-pointermove', this.updateRectSelection);
     },
     methods: {
         ...mapActions('selection', ['selectNodes', 'deselectNodes', 'deselectAllObjects']),
@@ -97,12 +97,12 @@ export default {
                 this.selectedNodeIdsAtStart = [];
             }, 0);
         },
-        mouseMove(e) {
+        updateRectSelection(e) {
             if (!this.isActive || this.pointerId !== e.pointerId) {
                 return;
             }
             this.endPos = this.getCurrentPos(e);
-            this.$nextTick(() => this.previewSelectionForNodesInRectangle(this.startPos, this.endPos));
+            this.$nextTick(() => { this.previewSelectionForNodesInRectangle(this.startPos, this.endPos); });
         },
         getOffsetOnKanvas(e) {
             // we need to use the offset relative to the kanvas not the element it occurred (which might be a descendant)

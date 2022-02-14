@@ -40,7 +40,7 @@ const mockNode = ({
 });
 
 describe('SelectionRectangle', () => {
-    let wrapper, propsData, mocks, doShallowMount, $store, storeConfig, pointerDown, pointerUp, pointerMove;
+    let wrapper, propsData, mocks, doShallowMount, $store, storeConfig, pointerDown, pointerUp, pointerMove, pointerId;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -139,7 +139,7 @@ describe('SelectionRectangle', () => {
 
         pointerDown = ({ pageX, pageY, shiftKey }) => {
             wrapper.vm.$parent.$emit('selection-pointerdown', {
-                pointerId: 1,
+                pointerId: pointerId || 1,
                 pageX,
                 pageY,
                 shiftKey: shiftKey || false,
@@ -159,7 +159,7 @@ describe('SelectionRectangle', () => {
 
         pointerMove = ({ pageX, pageY }) => {
             wrapper.vm.$parent.$emit('selection-pointermove', {
-                pointerId: 1,
+                pointerId: pointerId || 1,
                 pageX,
                 pageY,
                 currentTarget: {
@@ -176,7 +176,7 @@ describe('SelectionRectangle', () => {
 
             // stop also changes global dragging state
             wrapper.vm.$parent.$emit('selection-pointerup', {
-                pointerId: 1,
+                pointerId: pointerId || 1,
                 target: {
                     removeEventListener: jest.fn(),
                     releasePointerCapture: jest.fn()
@@ -326,6 +326,34 @@ describe('SelectionRectangle', () => {
         expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(expect.anything(), ['root:1']);
     });
 
+    it('removes selection preview of previously selected nodes', async () => {
+        doShallowMount();
+
+        pointerDown({ pageX: 0, pageY: 0 });
+        // select stuff (tested in other tests)
+        pointerMove({ pageX: 300, pageY: 300 });
+        await Vue.nextTick();
+        // remove selection preview again
+        pointerMove({ pageX: 5, pageY: 5 });
+        await Vue.nextTick();
+
+        expect(wrapper.emitted('node-selection-preview').slice(-3)).toStrictEqual([[{
+            nodeId: 'root:0',
+            type: 'clear'
+        }], [{
+            nodeId: 'root:1',
+            type: 'clear'
+        }], [{
+            nodeId: 'root:4',
+            type: 'clear'
+        }]]);
+
+        pointerUp();
+
+        expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(expect.anything(), []);
+        expect(storeConfig.selection.actions.deselectNodes).toHaveBeenCalledWith(expect.anything(), []);
+    });
+
     describe('selection with shift', () => {
         it('adds to selection with shift', async () => {
             storeConfig.selection.getters.selectedNodeIds = jest.fn().mockReturnValue([
@@ -397,6 +425,37 @@ describe('SelectionRectangle', () => {
                 ['root:1', 'root:4']
             );
             expect(storeConfig.selection.actions.deselectNodes).toHaveBeenCalledWith(expect.anything(), ['root:0']);
+        });
+    });
+
+    describe('non actions', () => {
+        it('unregisters events on beforeDestroy', () => {
+            doShallowMount();
+            wrapper.vm.$parent.$off = jest.fn();
+            wrapper.destroy();
+            expect(wrapper.vm.$parent.$off).toHaveBeenCalledTimes(3);
+        });
+
+        it('does noting if move is called but selection is not active', async () => {
+            doShallowMount();
+            // pointerDown is missing
+            pointerMove({ pageX: 300, pageY: 300 });
+            await Vue.nextTick();
+            pointerUp();
+            expect(wrapper.emitted('node-selection-preview')).toBeFalsy();
+            expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledTimes(0);
+        });
+
+        it('does noting if pointerId is different', async () => {
+            doShallowMount();
+            pointerId = 22;
+            pointerDown({ pageX: 300, pageY: 300 });
+            pointerId = 3;
+            pointerMove({ pageX: 300, pageY: 300 });
+            await Vue.nextTick();
+            pointerUp();
+            expect(wrapper.emitted('node-selection-preview')).toBeFalsy();
+            expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledTimes(0);
         });
     });
 });
