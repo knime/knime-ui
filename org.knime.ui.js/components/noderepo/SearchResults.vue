@@ -1,5 +1,5 @@
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapActions, mapMutations } from 'vuex';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 import ScrollViewContainer from './ScrollViewContainer.vue';
 import NodeList from './NodeList.vue';
@@ -11,20 +11,22 @@ export default {
         ReloadIcon
     },
     computed: {
-        ...mapState('nodeRepository', ['nodes', 'query', 'scrollPosition', 'totalNumNodes', 'lazyLoading']),
+        ...mapState('nodeRepository', ['nodes', 'query', 'scrollPosition', 'totalNumNodes', 'loading']),
         hasNoSearchResults() {
             return this.nodes.length === 0;
         }
     },
     methods: {
+        ...mapActions('nodeRepository', ['searchNodesNextPage']),
+        ...mapMutations('nodeRepository', ['setScrollPosition', 'setLoading']),
         // TODO: NXT-844 why do we save the scroll position instead of using keep-alive for the repo?
         // Also currently the NodeRepository isn't destroyed upon closing
-        updateScrollPosition(position) {
-            this.$store.commit('nodeRepository/setScrollPosition', position);
+        updateScrollPosition() {
+            this.setScrollPosition(0);
         },
         loadMoreSearchResults() {
-            this.$store.commit('nodeRepository/setLazyLoading', true);
-            this.$store.dispatch('nodeRepository/searchNodesNextPage', true);
+            this.setLoading(true);
+            this.searchNodesNextPage(true);
         }
     }
 };
@@ -48,11 +50,11 @@ export default {
       <NodeList
         :nodes="nodes"
       />
+      <ReloadIcon
+        v-if="loading"
+        class="loading"
+      />
     </div>
-    <ReloadIcon
-      v-if="lazyLoading"
-      class="loading"
-    />
   </ScrollViewContainer>
 </template>
 
@@ -72,20 +74,19 @@ export default {
 }
 
 .results {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
   & .content {
     padding: 0 20px 15px;
-  }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 
-  & .loading {
-    animation: spin 2s linear infinite;
-    width: 40px;
-    height: 40px;
-    stroke-width: calc(32px / 24);
-    stroke: var(--knime-masala);
+    & .loading {
+      animation: spin 2s linear infinite;
+      width: 40px;
+      height: 40px;
+      stroke-width: calc(32px / 24);
+      stroke: var(--knime-masala);
+    }
   }
 }
 </style>
