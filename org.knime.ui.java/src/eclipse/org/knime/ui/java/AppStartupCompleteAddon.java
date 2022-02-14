@@ -70,72 +70,72 @@ import org.eclipse.swt.widgets.Display;
 import org.osgi.service.event.Event;
 
 /**
- * Registered as fragment with the application model and called as soon as the
- * startup is completed.
+ * Registered as fragment with the application model and called as soon as the startup is completed.
  *
- * <br/><br/>
+ * <br/>
+ * <br/>
  * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 public final class AppStartupCompleteAddon {
 
-	@Inject
-	private MApplication m_app;
+    @Inject
+    private MApplication m_app;
 
-	@Inject
-	private EModelService m_modelService;
+    @Inject
+    private EModelService m_modelService;
 
-	@Inject
-	@Optional
-	public void applicationStarted(@EventTopic(UIEvents.UILifeCycle.APP_STARTUP_COMPLETE) final Event event) {
+    @Inject
+    @Optional
+    public void applicationStarted(@EventTopic(UIEvents.UILifeCycle.APP_STARTUP_COMPLETE) final Event event) {
 
-		// programmatic manipulations of the application model
-		addSwitchButton();
-		addWebUIPerspective();
-		disableEmptyTopLevelMenus();
-	}
+        // programmatic manipulations of the application model
+        addSwitchButton();
+        addWebUIPerspective();
+        disableEmptyTopLevelMenus();
+    }
 
-	private void addSwitchButton() {
-		// adds the button to switch to the web UI to the upper right corner (if
-		// not already there)
-		MUIElement el = m_modelService.find("org.knime.ui.java.toolbar.0", m_app);
-		if (el == null) {
-			MTrimContribution tc = (MTrimContribution) m_modelService.cloneSnippet(m_app,
-					"org.knime.ui.java.trimcontribution.0", null);
-			MToolBar toolbar = (MToolBar) tc.getChildren().get(0);
-			MTrimBar trimBar = (MTrimBar) m_modelService.find("org.eclipse.ui.main.toolbar", m_app);
-			Display.getDefault().syncExec(() -> m_modelService.move(toolbar, trimBar));
-		}
-	}
+    private void addSwitchButton() {
+        // adds the button to switch to the web UI to the upper right corner (if
+        // not already there)
+        MUIElement el = m_modelService.find("org.knime.ui.java.toolbar.0", m_app);
+        if (el == null) {
+            MTrimContribution tc =
+                (MTrimContribution)m_modelService.cloneSnippet(m_app, "org.knime.ui.java.trimcontribution.0", null);
+            MToolBar toolbar = (MToolBar)tc.getChildren().get(0);
+            MTrimBar trimBar = (MTrimBar)m_modelService.find("org.eclipse.ui.main.toolbar", m_app);
+            Display.getDefault().syncExec(() -> m_modelService.move(toolbar, trimBar));
+        }
+    }
 
-	private void addWebUIPerspective() {
-		MPerspectiveStack perspectiveStack = (MPerspectiveStack) m_modelService
-				.find("org.eclipse.ui.ide.perspectivestack", m_app);
-		if (perspectiveStack.getChildren().stream().noneMatch(p -> p.getElementId().equals(WEB_UI_PERSPECTIVE_ID))) {
-			MPerspective perspective = (MPerspective) m_modelService.cloneSnippet(m_app, WEB_UI_PERSPECTIVE_ID, null);
-			perspectiveStack.getChildren().add(perspective);
-		} else if (perspectiveStack.getSelectedElement().getElementId().equals(WEB_UI_PERSPECTIVE_ID)) {
-			// make sure the web ui perspective is initialized correctly if visible on start-up
-			Display.getDefault().syncExec(() -> setTrimsAndMenuVisible(false, m_modelService, m_app));
-		} else {
-			//
-		}
-	}
+    private void addWebUIPerspective() {
+        MPerspectiveStack perspectiveStack =
+            (MPerspectiveStack)m_modelService.find("org.eclipse.ui.ide.perspectivestack", m_app);
+        if (perspectiveStack.getChildren().stream().noneMatch(p -> p.getElementId().equals(WEB_UI_PERSPECTIVE_ID))) {
+            MPerspective perspective = (MPerspective)m_modelService.cloneSnippet(m_app, WEB_UI_PERSPECTIVE_ID, null);
+            perspectiveStack.getChildren().add(perspective);
+        } else if (perspectiveStack.getSelectedElement().getElementId().equals(WEB_UI_PERSPECTIVE_ID)) {
+            // make sure the web ui perspective is initialized correctly if visible on start-up
+            Display.getDefault().syncExec(() -> setTrimsAndMenuVisible(false, m_modelService, m_app));
+        } else {
+            //
+        }
+    }
 
-	private void disableEmptyTopLevelMenus() {
-		// hack to disable empty top-level menus which would otherwise magically
-		// appear when switching back to the classic perspective
-		m_app.getMenuContributions().forEach(mc -> {
-			List<MMenuElement> children = mc.getChildren();
-			// if there is a menu contribution with exactly one menu which in
-			// turn is empty
-			if (children.size() == 1 && children.get(0) instanceof MMenu
-					&& ((MMenu) children.get(0)).getChildren().isEmpty()) {
-				mc.setVisible(false);
-				mc.setToBeRendered(false);
-			}
-		});
-	}
+    private void disableEmptyTopLevelMenus() {
+        // hack to disable empty top-level menus which would otherwise magically
+        // appear when switching back to the classic perspective
+        m_app.getMenuContributions().forEach(mc -> {
+            List<MMenuElement> children = mc.getChildren();
+            // if there is a menu contribution with exactly one menu which in
+            // turn is empty
+            if (children.size() == 1 && children.get(0) instanceof MMenu
+                && ((MMenu)children.get(0)).getChildren().isEmpty()) {
+                mc.setVisible(false);
+                mc.setToBeRendered(false);
+            }
+        });
+    }
 
 }
