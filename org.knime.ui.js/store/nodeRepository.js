@@ -200,6 +200,6 @@ export const mutations = {
         state.scrollPosition = value;
     },
     setLoading(state, value) {
-        state.lazyLoading = value;
+        state.loading = value;
     }
 };
