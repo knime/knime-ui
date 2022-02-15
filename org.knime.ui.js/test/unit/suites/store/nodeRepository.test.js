@@ -237,7 +237,7 @@ describe('Node Repository store', () => {
             expect(searchNodesMock).toHaveBeenCalledWith({
                 allTagsMatch: true,
                 fullTemplateInfo: true,
-                nodeLimit: 21,
+                nodeLimit: 100,
                 nodeOffset: 0,
                 query: 'lookup',
                 tags: []
@@ -257,8 +257,8 @@ describe('Node Repository store', () => {
             expect(searchNodesMock).toHaveBeenCalledWith({
                 allTagsMatch: true,
                 fullTemplateInfo: true,
-                nodeLimit: 21,
-                nodeOffset: 21,
+                nodeLimit: 100,
+                nodeOffset: 100,
                 query: 'lookup',
                 tags: []
             });

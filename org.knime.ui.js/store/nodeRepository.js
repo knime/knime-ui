@@ -13,7 +13,6 @@ export const state = () => ({
     nodesPerCategory: [],
     totalNumCategories: null,
     categoryPage: 0,
-    loading: false,
 
     /* search results */
     nodes: null,
@@ -94,7 +93,6 @@ export const actions = {
             commit('setNodes', res.nodes);
         }
         commit('setTags', res.tags);
-        commit('setLoading', false);
     },
 
     /**
@@ -198,8 +196,5 @@ export const mutations = {
     },
     setScrollPosition(state, value) {
         state.scrollPosition = value;
-    },
-    setLoading(state, value) {
-        state.loading = value;
     }
 };

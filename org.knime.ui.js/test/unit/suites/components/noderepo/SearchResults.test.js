@@ -5,6 +5,7 @@ import Vuex from 'vuex';
 import SearchResults from '~/components/noderepo/SearchResults';
 import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer.vue';
 import NodeList from '~/components/noderepo/NodeList';
+import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 
 describe('SearchResults', () => {
     let doShallowMount, wrapper, $store, storeState, searchNodesNextPageMock, setScrollPositionMock;
@@ -67,13 +68,13 @@ describe('SearchResults', () => {
         expect(scrollViewContainer.props('initialPosition')).toBe(100);
     });
 
-    it('saves scroll position', () => {
+    it('resets scroll position', () => {
         doShallowMount();
 
         let scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
         scrollViewContainer.vm.$emit('save-position', 100);
 
-        expect(setScrollPositionMock).toHaveBeenCalledWith(expect.anything(), 100);
+        expect(setScrollPositionMock).toHaveBeenCalledWith(expect.anything(), 0);
     });
 
     it('renders nodes', () => {
@@ -81,23 +82,31 @@ describe('SearchResults', () => {
 
         let nodeList = wrapper.findComponent(NodeList);
         expect(nodeList.props('nodes')).toStrictEqual(storeState.nodes);
-        expect(nodeList.props('hasMoreNodes')).toBe(false);
-    });
-
-    it('renders nodes (more available)', () => {
-        storeState.nodes.length = 1;
-        doShallowMount();
-
-        let nodeList = wrapper.findComponent(NodeList);
-        expect(nodeList.props('hasMoreNodes')).toBe(true);
     });
 
     it('loads more', () => {
         doShallowMount();
 
-        let nodeList = wrapper.findComponent(NodeList);
-        nodeList.vm.$emit('show-more');
+        let scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
+        scrollViewContainer.vm.$emit('scroll-bottom');
 
         expect(searchNodesNextPageMock).toHaveBeenCalledWith(expect.anything(), true);
+    });
+
+    it('sets loading to true', () => {
+        doShallowMount();
+
+        let scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
+        scrollViewContainer.vm.$emit('scroll-bottom');
+
+        expect(wrapper.vm.loading).toBe(true);
+    });
+
+    it('displays icon if loading is true', async () => {
+        doShallowMount();
+        await wrapper.setData({ loading: true });
+
+        const loadingIcon = wrapper.findComponent(ReloadIcon);
+        expect(loadingIcon.exists()).toBe(true);
     });
 });

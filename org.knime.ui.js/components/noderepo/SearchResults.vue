@@ -10,23 +10,29 @@ export default {
         NodeList,
         ReloadIcon
     },
+    data() {
+        return {
+            loading: false
+        };
+    },
     computed: {
-        ...mapState('nodeRepository', ['nodes', 'query', 'scrollPosition', 'totalNumNodes', 'loading']),
+        ...mapState('nodeRepository', ['nodes', 'query', 'scrollPosition', 'totalNumNodes']),
         hasNoSearchResults() {
             return this.nodes.length === 0;
         }
     },
     methods: {
         ...mapActions('nodeRepository', ['searchNodesNextPage']),
-        ...mapMutations('nodeRepository', ['setScrollPosition', 'setLoading']),
+        ...mapMutations('nodeRepository', ['setScrollPosition']),
         // TODO: NXT-844 why do we save the scroll position instead of using keep-alive for the repo?
         // Also currently the NodeRepository isn't destroyed upon closing
         updateScrollPosition() {
             this.setScrollPosition(0);
         },
-        loadMoreSearchResults() {
-            this.setLoading(true);
-            this.searchNodesNextPage(true);
+        async loadMoreSearchResults() {
+            this.loading = true;
+            await this.searchNodesNextPage(true);
+            this.loading = false;
         }
     }
 };
@@ -84,7 +90,7 @@ export default {
       animation: spin 2s linear infinite;
       width: 40px;
       height: 40px;
-      stroke-width: calc(32px / 24);
+      stroke-width: calc(32px / 40);
       stroke: var(--knime-masala);
     }
   }
