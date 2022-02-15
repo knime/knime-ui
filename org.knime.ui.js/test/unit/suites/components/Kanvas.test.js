@@ -98,7 +98,7 @@ describe('Kanvas', () => {
             expect(wrapper.emitted('selection-pointerdown')).toBeTruthy();
         });
 
-        test('clicking on the canvas emits select-pointerdown', () => {
+        test('moving on the canvas emits select-pointermove', () => {
             doShallowMount();
 
             wrapper.find('svg').trigger('pointermove');
@@ -106,7 +106,7 @@ describe('Kanvas', () => {
             expect(wrapper.emitted('selection-pointermove')).toBeTruthy();
         });
 
-        test('clicking on the canvas emits select-pointerdown', () => {
+        test('releasing on the canvas emits select-pointerup', () => {
             doShallowMount();
 
             wrapper.find('svg').trigger('pointerup');
@@ -144,7 +144,7 @@ describe('Kanvas', () => {
                 .toHaveBeenCalledWith(expect.anything(), wrapper.element);
         });
 
-        test('mouse wheel zooms', () => {
+        it('zooms on mouse wheel', () => {
             doShallowMount();
 
             wrapper.element.dispatchEvent(new WheelEvent('wheel', {
