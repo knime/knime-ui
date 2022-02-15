@@ -204,7 +204,7 @@ describe('Node', () => {
         });
 
         it('doesn’t show selection frame', () => {
-            expect(wrapper.findComponent(NodeSelectionPlane).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
         });
 
         it('renders node state', () => {
@@ -246,6 +246,57 @@ describe('Node', () => {
         expect(storeConfig.workflow.actions.openDialog).toHaveBeenCalledWith(expect.anything(), 'root:1');
     });
 
+    describe('Node selection preview', () => {
+        beforeEach(() => {
+            propsData =
+                {
+                    ...commonNode,
+                    allowedActions: {
+                        canExecute: true,
+                        canOpenDialog: true,
+                        canOpenView: false
+                    },
+                    state: {
+                        executionState: 'IDLE'
+                    }
+                };
+        });
+
+        it('shows frame if selection preview is active', async () => {
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(false);
+            doMount();
+            expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
+            wrapper.vm.setSelectionPreview('show');
+            await Vue.nextTick();
+            expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
+
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
+            doMount();
+            expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
+        });
+
+        it('hides frame if selection preview is "hide" even if real selection is active', async () => {
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
+            doMount();
+            expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
+            wrapper.vm.setSelectionPreview('hide');
+            await Vue.nextTick();
+            expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
+        });
+
+        it('clears selection preview state', async () => {
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
+            doMount();
+            expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
+            wrapper.vm.setSelectionPreview('hide');
+            await Vue.nextTick();
+            expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
+            wrapper.vm.setSelectionPreview('clear');
+            await Vue.nextTick();
+            expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
+        });
+    });
+
     describe('Node selected', () => {
         beforeEach(() => {
             propsData =
@@ -261,11 +312,11 @@ describe('Node', () => {
         it('shows frame if selected', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
             doMount();
-            expect(wrapper.findComponent(NodeSelectionPlane).exists()).toBe(true);
+            expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(true);
 
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(false);
             doMount();
-            expect(wrapper.findComponent(NodeSelectionPlane).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
         });
 
         it('shows hidden flow variable ports', () => {
@@ -284,11 +335,11 @@ describe('Node', () => {
             ]);
         });
 
-        it('has shadow effect', () => {
+        it('has no shadow effect', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
             doMount();
-            expect(wrapper.findComponent(NodeTorso).attributes().filter).toBe('url(#node-torso-shadow)');
-            expect(wrapper.findComponent(NodeState).attributes().filter).toBe('url(#node-state-shadow)');
+            expect(wrapper.findComponent(NodeTorso).attributes().filter).toBeFalsy();
+            expect(wrapper.findComponent(NodeState).attributes().filter).toBeFalsy();
         });
 
         it('renders NodeActionBar at correct position', async () => {

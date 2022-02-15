@@ -164,7 +164,8 @@ export default {
     },
     data() {
         return {
-            hover: false
+            hover: false,
+            showSelectionPreview: null
         };
     },
     computed: {
@@ -232,7 +233,7 @@ export default {
                 let newBottom = Math.max(hoverBounds.bottom, this.portBarHeight);
                 hoverBounds.bottom = newBottom;
             }
-         
+
             return {
                 y: hoverBounds.top,
                 x: hoverBounds.left,
@@ -258,9 +259,21 @@ export default {
         portBarHeight() {
             let lastInPortY = this.portPositions.in[this.portPositions.in.length - 1]?.[1] || 0;
             let lastOutPortY = this.portPositions.out[this.portPositions.out.length - 1]?.[1] || 0;
-          
+
             return Math.max(lastInPortY, lastOutPortY) + this.$shapes.portSize / 2 +
                 this.$shapes.nodeHoverPortBottomMargin;
+        },
+        showSelectionPlane() {
+            const isSelected = this.isNodeSelected(this.id);
+            // no preview, honor dragging state
+            if (this.showSelectionPreview === null) {
+                return isSelected && !this.isDragging;
+            }
+            // preview can override selected state (think: deselect with shift)
+            if (isSelected && this.showSelectionPreview === 'hide') {
+                return false;
+            }
+            return this.showSelectionPreview === 'show' || isSelected;
         }
     },
     methods: {
@@ -369,13 +382,17 @@ export default {
             if (targetPortDirection === 'out' && x < 0) { return true; }
 
             return false;
+        },
+        // public
+        setSelectionPreview(show) {
+            this.showSelectionPreview = show === 'clear' ? null : show;
         }
     }
 };
 </script>
 
 <template>
-  <g :class="[{'connection-forbidden': connectionForbidden && !isConnectionSource}]">
+  <g :class="{'connection-forbidden': connectionForbidden && !isConnectionSource}">
     <!-- NodeActionBar portalled to the front-most layer -->
     <portal
       to="node-actions"
@@ -395,7 +412,7 @@ export default {
       to="node-select"
     >
       <NodeSelectionPlane
-        v-if="isNodeSelected(id) && !isDragging"
+        v-show="showSelectionPlane"
         :position="position"
         :kind="kind"
       />
@@ -450,7 +467,7 @@ export default {
           :kind="kind"
           :icon="icon"
           :execution-state="state && state.executionState"
-          :filter="(isNodeSelected(id) || hover) && 'url(#node-torso-shadow)'"
+          :filter="hover && 'url(#node-torso-shadow)'"
           @dblclick.left.native="onLeftDoubleClick"
         />
 
@@ -480,7 +497,7 @@ export default {
         <NodeState
           v-if="kind !== 'metanode'"
           v-bind="state"
-          :filter="(isNodeSelected(id) || hover) && 'url(#node-state-shadow)'"
+          :filter="hover && 'url(#node-state-shadow)'"
           :loop-status="loopInfo.status"
           :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`"
         />
@@ -496,7 +513,7 @@ export default {
         :targeted="targetPort && targetPort.side === 'in' && targetPort.index === port.index"
         direction="in"
       />
-      
+
       <DraggablePortWithTooltip
         v-for="port of outPorts"
         :key="`outport-${port.index}`"
