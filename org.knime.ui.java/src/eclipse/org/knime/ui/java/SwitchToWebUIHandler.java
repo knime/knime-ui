@@ -57,44 +57,45 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService;
 /**
  * Handler to switch to the KNIME Web UI.
  *
- * <br/><br/>
+ * <br/>
+ * <br/>
  * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 public final class SwitchToWebUIHandler {
 
-	static final String WEB_UI_PERSPECTIVE_ID = "org.knime.ui.java.perspective";
+    static final String WEB_UI_PERSPECTIVE_ID = "org.knime.ui.java.perspective";
 
-	@Inject
-	private MApplication m_app;
+    @Inject
+    private MApplication m_app;
 
-	@Inject
-	private EPartService m_partService;
+    @Inject
+    private EPartService m_partService;
 
-	@Inject
-	private EModelService m_modelService;
+    @Inject
+    private EModelService m_modelService;
 
-	@Execute
-	public void execute() {
-		MPerspective p = getWebUIPerspective(m_app, m_modelService);
-		if (p != null) {
-			if (!p.isVisible()) {
-				p.setVisible(true);
-			}
-			m_partService.switchPerspective(p);
-		} else {
-			throw new IllegalStateException("No KNIME Web UI perspective registered");
-		}
-	}
+    @Execute
+    public void execute() {
+        MPerspective p = getWebUIPerspective(m_app, m_modelService);
+        if (p != null) {
+            if (!p.isVisible()) {
+                p.setVisible(true);
+            }
+            m_partService.switchPerspective(p);
+        } else {
+            throw new IllegalStateException("No KNIME Web UI perspective registered");
+        }
+    }
 
-	static MPerspective getWebUIPerspective(final MApplication app, final EModelService modelService) {
-		MPerspective p = (MPerspective) modelService.find(WEB_UI_PERSPECTIVE_ID, app);
-		if (p == null) {
-			// the id of the perspective changes once switched (no idea why)
-			// -> try the new id, too
-			p = (MPerspective) modelService.find(WEB_UI_PERSPECTIVE_ID + ".<WebUI>", app);
-		}
-		return p;
-	}
+    static MPerspective getWebUIPerspective(final MApplication app, final EModelService modelService) {
+        MPerspective p = (MPerspective)modelService.find(WEB_UI_PERSPECTIVE_ID, app);
+        if (p == null) {
+            // the id of the perspective changes once switched (no idea why)
+            // -> try the new id, too
+            p = (MPerspective)modelService.find(WEB_UI_PERSPECTIVE_ID + ".<WebUI>", app);
+        }
+        return p;
+    }
 }
