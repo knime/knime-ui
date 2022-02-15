@@ -137,7 +137,11 @@ describe('SelectionRectangle', () => {
             );
         };
 
-        pointerDown = ({ pageX, pageY, shiftKey }) => {
+        pointerDown = ({
+            pageX,
+            pageY,
+            shiftKey
+        }) => {
             wrapper.vm.$parent.$emit('selection-pointerdown', {
                 pointerId: pointerId || 1,
                 pageX,
@@ -157,7 +161,10 @@ describe('SelectionRectangle', () => {
             });
         };
 
-        pointerMove = ({ pageX, pageY }) => {
+        pointerMove = ({
+            pageX,
+            pageY
+        }) => {
             wrapper.vm.$parent.$emit('selection-pointermove', {
                 pointerId: pointerId || 1,
                 pageX,
@@ -213,11 +220,17 @@ describe('SelectionRectangle', () => {
         };
         doShallowMount();
 
-        pointerDown({ pageX: 0, pageY: 0 });
+        pointerDown({
+            pageX: 0,
+            pageY: 0
+        });
         await Vue.nextTick();
         expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
 
-        pointerMove({ pageX: 300, pageY: 300 });
+        pointerMove({
+            pageX: 300,
+            pageY: 300
+        });
         await Vue.nextTick();
         expect(wrapper.emitted('node-selection-preview')).toStrictEqual([[{
             nodeId: 'root:1',
@@ -250,72 +263,15 @@ describe('SelectionRectangle', () => {
             })
         };
         doShallowMount();
-        pointerDown({ pageX: 0, pageY: 0 });
+        pointerDown({
+            pageX: 0,
+            pageY: 0
+        });
 
-        pointerMove({ pageX: 50 + 32, pageY: 58 });
-        await Vue.nextTick();
-        expect(wrapper.emitted('node-selection-preview')).toStrictEqual([[{
-            nodeId: 'root:1',
-            type: 'show'
-        }]]);
-
-        pointerUp();
-        expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(expect.anything(), ['root:1']);
-    });
-
-    it('selects single node from bottom right to top left', async () => {
-        storeConfig.workflow.state.activeWorkflow.nodes = {
-            'root:1': mockNode({
-                id: 'root:1',
-                position: {
-                    x: 50,
-                    y: 50
-                }
-            }),
-            'root:2': mockNode({
-                id: 'root:2',
-                position: {
-                    x: 100,
-                    y: 100
-                }
-            })
-        };
-        doShallowMount();
-        pointerDown({ pageX: 150, pageY: 150 });
-        expect(wrapper.vm.startPos).toStrictEqual({ x: 150, y: 150 });
-
-        pointerMove({ pageX: 90, pageY: 90 });
-        await Vue.nextTick();
-        expect(wrapper.emitted('node-selection-preview')).toStrictEqual([[{
-            nodeId: 'root:2',
-            type: 'show'
-        }]]);
-
-        pointerUp();
-        expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(expect.anything(), ['root:2']);
-    });
-
-    it('selects single node also even if its not fully inside of the rect', async () => {
-        storeConfig.workflow.state.activeWorkflow.nodes = {
-            'root:1': mockNode({
-                id: 'root:1',
-                position: {
-                    x: 50,
-                    y: 50
-                }
-            }),
-            'root:2': mockNode({
-                id: 'root:2',
-                position: {
-                    x: 100,
-                    y: 100
-                }
-            })
-        };
-        doShallowMount();
-        pointerDown({ pageX: 50 + 32 + 2, pageY: 49 });
-
-        pointerMove({ pageX: 52, pageY: 52 });
+        pointerMove({
+            pageX: 50 + $shapes.nodeSize,
+            pageY: 58
+        });
         await Vue.nextTick();
         expect(wrapper.emitted('node-selection-preview')).toStrictEqual([[{
             nodeId: 'root:1',
@@ -352,6 +308,116 @@ describe('SelectionRectangle', () => {
 
         expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(expect.anything(), []);
         expect(storeConfig.selection.actions.deselectNodes).toHaveBeenCalledWith(expect.anything(), []);
+    });
+
+    describe('different selection rects', () => {
+        it('selects single node from bottom right to top left', async () => {
+            storeConfig.workflow.state.activeWorkflow.nodes = {
+                'root:1': mockNode({
+                    id: 'root:1',
+                    position: {
+                        x: 50,
+                        y: 50
+                    }
+                }),
+                'root:2': mockNode({
+                    id: 'root:2',
+                    position: {
+                        x: 100,
+                        y: 100
+                    }
+                })
+            };
+            doShallowMount();
+            pointerDown({
+                pageX: 150,
+                pageY: 150
+            });
+            expect(wrapper.vm.startPos).toStrictEqual({
+                x: 150,
+                y: 150
+            });
+
+            pointerMove({
+                pageX: 90,
+                pageY: 90
+            });
+            await Vue.nextTick();
+            expect(wrapper.emitted('node-selection-preview')).toStrictEqual([[{
+                nodeId: 'root:2',
+                type: 'show'
+            }]]);
+
+            pointerUp();
+            expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(expect.anything(), ['root:2']);
+        });
+
+        it('selects single node, even if it\'s not fully inside of the rect', async () => {
+            storeConfig.workflow.state.activeWorkflow.nodes = {
+                'root:1': mockNode({
+                    id: 'root:1',
+                    position: {
+                        x: 50,
+                        y: 50
+                    }
+                }),
+                'root:2': mockNode({
+                    id: 'root:2',
+                    position: {
+                        x: 100,
+                        y: 100
+                    }
+                })
+            };
+            doShallowMount();
+            pointerDown({
+                pageX: 50 + $shapes.nodeSize + 2,
+                pageY: 49
+            });
+
+            pointerMove({
+                pageX: 52,
+                pageY: 52
+            });
+            await Vue.nextTick();
+            expect(wrapper.emitted('node-selection-preview')).toStrictEqual([[{
+                nodeId: 'root:1',
+                type: 'show'
+            }]]);
+
+            pointerUp();
+            expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(expect.anything(), ['root:1']);
+        });
+
+        it('selects node with rect from bottom left to top right', async () => {
+            storeConfig.workflow.state.activeWorkflow.nodes = {
+                'root:1': mockNode({
+                    id: 'root:1',
+                    position: {
+                        x: 50,
+                        y: 50
+                    }
+                })
+            };
+            doShallowMount();
+            pointerDown({
+                pageX: 10,
+                pageY: 100
+            });
+
+            pointerMove({
+                pageX: 100,
+                pageY: 10
+            });
+            await Vue.nextTick();
+            expect(wrapper.emitted('node-selection-preview')).toStrictEqual([[{
+                nodeId: 'root:1',
+                type: 'show'
+            }]]);
+
+            pointerUp();
+            expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(expect.anything(), ['root:1']);
+        });
     });
 
     describe('selection with shift', () => {
