@@ -1,9 +1,10 @@
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 import StreamingIcon from '~/webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
 import ContextMenu from '~/components/ContextMenu';
 import Workflow from '~/components/workflow/Workflow';
 import Kanvas from '~/components/Kanvas';
+import SelectionRectangle from '~/components/SelectionRectangle';
 
 import { dropNode } from '~/mixins';
 
@@ -11,6 +12,7 @@ export default {
     components: {
         StreamingIcon,
         ContextMenu,
+        SelectionRectangle,
         Workflow,
         Kanvas
     },
@@ -32,11 +34,6 @@ export default {
         /*
           Selection
         */
-        ...mapActions('selection', ['deselectAllObjects']),
-        onEmptyPointerDown() {
-            // remove selection
-            this.deselectAllObjects();
-        },
         onContextMenu(e) {
             // TODO: NXT-844 why prevent right clicks with ctrl?
             // ignore click with ctrl and meta keys
@@ -83,11 +80,17 @@ export default {
     <Kanvas
       id="kanvas"
       ref="kanvas"
-      @empty-pointerdown="onEmptyPointerDown"
     >
       <!-- Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
            instead of diffing old and new workflow -->
-      <Workflow :key="`${workflow.projectId}-${activeWorkflowId}`" />
+      <Workflow
+        ref="workflow"
+        :key="`${workflow.projectId}-${activeWorkflowId}`"
+      />
+      <!-- The SelectionRectangle registers to the selection-pointer{up,down,move} events of its parent (the Kanvas) -->
+      <SelectionRectangle
+        @node-selection-preview="$refs.workflow.showNodeSelectionPreview($event)"
+      />
     </Kanvas>
   </div>
 </template>

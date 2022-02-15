@@ -6,7 +6,7 @@ import Connector from '~/components/workflow/Connector';
 import { throttle } from 'lodash';
 import { circleDetection } from '~/util/compatibleConnections';
 
-const MOVE_THROTTLE = 50;
+const MOVE_THROTTLE = 10;
 
 export default {
     components: {
@@ -123,7 +123,7 @@ export default {
         },
         onPointerUp(e) {
             if (!this.dragConnector) { return; }
-            
+
             e.stopPropagation();
             e.target.releasePointerCapture(e.pointerId);
 
@@ -188,7 +188,7 @@ export default {
                 hitTarget.dispatchEvent(moveEvent);
             } else {
                 // different hitTarget than lastHitTarget, possibly null
-                
+
                 // send 'connector-leave' to last hitTarget, if it exists and has allowed connector dropping
                 if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
                     this.lastHitTarget.element.dispatchEvent(
@@ -212,7 +212,7 @@ export default {
                             cancelable: true
                         })
                     );
-                    
+
                     // cancelling signals, that hit target allows dropping a connector
                     let allowsDrop = !notCancelled;
 
