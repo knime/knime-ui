@@ -95,15 +95,7 @@ describe('SelectionRectangle', () => {
             },
             canvas: {
                 getters: {
-                    viewBox: () => ({
-                        left: 0,
-                        top: 0,
-                        width: 500,
-                        height: 500
-                    })
-                },
-                state: {
-                    zoomFactor: 1
+                    fromAbsoluteCoordinates: state => ([x, y]) => [x, y]
                 }
             },
             selection: {
@@ -154,9 +146,7 @@ describe('SelectionRectangle', () => {
                     })
                 },
                 target: {
-                    hasPointerCapture: (pointerID) => false,
-                    setPointerCapture: (pointerId) => null,
-                    addEventListener: (name) => null
+                    setPointerCapture: (pointerId) => null
                 }
             });
         };
@@ -185,7 +175,6 @@ describe('SelectionRectangle', () => {
             wrapper.vm.$parent.$emit('selection-pointerup', {
                 pointerId: pointerId || 1,
                 target: {
-                    removeEventListener: jest.fn(),
                     releasePointerCapture: jest.fn()
                 }
             });
@@ -220,11 +209,14 @@ describe('SelectionRectangle', () => {
         };
         doShallowMount();
 
+        expect(wrapper.isVisible()).toBe(false);
+
         pointerDown({
             pageX: 0,
             pageY: 0
         });
         await Vue.nextTick();
+        expect(wrapper.isVisible()).toBe(true);
         expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
 
         pointerMove({
@@ -499,7 +491,7 @@ describe('SelectionRectangle', () => {
             doShallowMount();
             wrapper.vm.$parent.$off = jest.fn();
             wrapper.destroy();
-            expect(wrapper.vm.$parent.$off).toHaveBeenCalledTimes(3);
+            expect(wrapper.vm.$parent.$off).toHaveBeenCalledTimes(4);
         });
 
         it('does noting if move is called but selection is not active', async () => {

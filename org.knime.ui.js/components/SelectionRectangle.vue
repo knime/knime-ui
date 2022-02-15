@@ -22,13 +22,11 @@ export default {
             x: 0,
             y: 0
         },
-        isActive: false,
         pointerId: null
     }),
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
-        ...mapGetters('canvas', ['viewBox']),
-        ...mapState('canvas', ['zoomFactor']),
+        ...mapGetters('canvas', ['fromAbsoluteCoordinates']),
         ...mapGetters('selection', ['selectedNodeIds']),
 
         changeDirectionX() {
@@ -42,21 +40,21 @@ export default {
         this.$parent.$on('selection-pointerdown', this.startRectSelection);
         this.$parent.$on('selection-pointerup', this.stopRectSelection);
         this.$parent.$on('selection-pointermove', this.updateRectSelection);
+        this.$parent.$on('selection-lostpointercapture', this.stopRectSelection);
     },
     beforeDestroy() {
         this.$parent.$off('selection-pointerdown', this.startRectSelection);
         this.$parent.$off('selection-pointerup', this.stopRectSelection);
         this.$parent.$off('selection-pointermove', this.updateRectSelection);
+        this.$parent.$off('selection-lostpointercapture', this.stopRectSelection);
     },
     methods: {
         ...mapActions('selection', ['selectNodes', 'deselectNodes', 'deselectAllObjects']),
         startRectSelection(e) {
             this.pointerId = e.pointerId;
-            if (!e.target.hasPointerCapture(e.pointerId)) {
-                e.target.setPointerCapture(e.pointerId);
-            }
-            e.target.addEventListener('lostpointercapture', this.stopRectSelection);
+            e.target.setPointerCapture(e.pointerId);
             this.startPos = this.getCurrentPos(e);
+            this.endPos = this.startPos;
 
             // deselect all objects if we do not hold shift key
             if (e.shiftKey) {
@@ -66,18 +64,14 @@ export default {
                 this.deselectAllObjects();
                 this.selectedNodeIdsAtStart = [];
             }
-            this.endPos = this.startPos;
-            this.isActive = true;
         },
         stopRectSelection(e) {
-            if (!this.isActive || this.pointerId !== e.pointerId) {
+            if (this.pointerId !== e.pointerId) {
                 return;
             }
-            e.target.removeEventListener('lostpointercapture', this.stopRectSelection);
             e.target.releasePointerCapture(this.pointerId);
 
             // hide rect
-            this.isActive = false;
             this.pointerId = null;
 
             // update selection (in store)
@@ -98,27 +92,22 @@ export default {
             }, 0);
         },
         updateRectSelection(e) {
-            if (!this.isActive || this.pointerId !== e.pointerId) {
+            if (this.pointerId !== e.pointerId) {
                 return;
             }
             this.endPos = this.getCurrentPos(e);
             this.$nextTick(() => { this.previewSelectionForNodesInRectangle(this.startPos, this.endPos); });
         },
-        getOffsetOnKanvas(e) {
+        getCurrentPos(e) {
             // we need to use the offset relative to the kanvas not the element it occurred (which might be a descendant)
             let currentTargetRect = e.currentTarget.getBoundingClientRect();
-            return {
-                offsetX: e.pageX - currentTargetRect.left,
-                offsetY: e.pageY - currentTargetRect.top
-            };
+            const offsetX = e.pageX - currentTargetRect.left;
+            const offsetY = e.pageY - currentTargetRect.top;
+            // convert to kanvas coordinates
+            const [x, y] = this.fromAbsoluteCoordinates([offsetX, offsetY]);
+            return { x, y };
         },
-        getCurrentPos(e) {
-            const { offsetX, offsetY } = this.getOffsetOnKanvas(e);
-            return {
-                x: this.viewBox.left + offsetX / this.zoomFactor,
-                y: this.viewBox.top + offsetY / this.zoomFactor
-            };
-        },
+        // find nodes that are fully or partly inside the rect defined by startPos and endPos
         findNodesInsideOfRect(startPos, endPos) {
             let inside = [];
             let outside = [];
@@ -179,9 +168,9 @@ export default {
                 }
             });
             // update global state
-            this.lastInsideNodeIds = [...inside];
-            this.selectOnEnd = [...selectNodes];
-            this.deSelectOnEnd = [...deselectNodes];
+            this.lastInsideNodeIds = inside;
+            this.selectOnEnd = selectNodes;
+            this.deSelectOnEnd = deselectNodes;
         }, SELECTION_PREVIEW_THROTTLE)
         /* eslint-enable no-invalid-this */
     }
@@ -190,8 +179,8 @@ export default {
 
 <template>
   <rect
-    v-show="isActive"
-    :x="(!changeDirectionX ? startPos.x : endPos.x)"
+    v-show="Boolean(pointerId)"
+    :x="!changeDirectionX ? startPos.x : endPos.x"
     :y="!changeDirectionY ? startPos.y : endPos.y"
     :width="Math.abs(!changeDirectionX ? endPos.x - startPos.x : startPos.x - endPos.x)"
     :height="Math.abs(!changeDirectionY ? endPos.y - startPos.y : startPos.y - endPos.y)"

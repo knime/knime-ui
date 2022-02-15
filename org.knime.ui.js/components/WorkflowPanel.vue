@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 import StreamingIcon from '~/webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
 import ContextMenu from '~/components/ContextMenu';
 import Workflow from '~/components/workflow/Workflow';
@@ -34,7 +34,6 @@ export default {
         /*
           Selection
         */
-        ...mapActions('selection', ['deselectAllObjects']),
         onContextMenu(e) {
             // TODO: NXT-844 why prevent right clicks with ctrl?
             // ignore click with ctrl and meta keys
