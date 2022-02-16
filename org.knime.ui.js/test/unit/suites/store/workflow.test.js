@@ -515,11 +515,12 @@ describe('workflow store', () => {
             });
         });
 
-        it('passes save workflow to API', async () => {
+        it('saves the workflow via the API', async () => {
             let saveWorkflow = jest.fn();
             let apiMocks = { saveWorkflow };
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            
             store.dispatch('workflow/saveWorkflow');
 
             expect(saveWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
