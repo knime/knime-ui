@@ -71,111 +71,117 @@ import org.knime.workbench.editor2.WorkflowEditor;
 import org.osgi.service.event.Event;
 
 /**
- * Registered as fragment with the application model. Listens to perspective
- * switch events in order to remove/add stuff (e.g. toolbars, trims etc.).
+ * Registered as fragment with the application model. Listens to perspective switch events in order to remove/add stuff
+ * (e.g. toolbars, trims etc.).
  *
- * Done via listener in order to add/remove that stuff no matter how the
- * perspective is changed (e.g. via toolbar action, perspective switch shortcut,
- * etc.).
+ * Done via listener in order to add/remove that stuff no matter how the perspective is changed (e.g. via toolbar
+ * action, perspective switch shortcut, etc.).
  *
- * <br/><br/>
+ * <br/>
+ * <br/>
  * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 public final class PerspectiveSwitchAddon {
 
-	private static final NodeLogger LOGGER = NodeLogger.getLogger(PerspectiveSwitchAddon.class);
+    private static final String PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP = "chromium.external_message_pump";
 
-	@Inject
-	private EModelService m_modelService;
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(PerspectiveSwitchAddon.class);
 
-	@Inject
-	private MApplication m_app;
+    @Inject
+    private EModelService m_modelService;
 
-	@Inject
-	@Optional
-	public void listen(@EventTopic(UIEvents.ElementContainer.TOPIC_SELECTEDELEMENT) final Event event) {
-		Object newValue = event.getProperty(EventTags.NEW_VALUE);
-		if (!(newValue instanceof MPerspective)) {
-			return;
-		}
+    @Inject
+    private MApplication m_app;
 
-		MPerspective oldPerspective = (MPerspective) event.getProperty(EventTags.OLD_VALUE);
-		MPerspective newPerspective = (MPerspective) newValue;
-		MPerspective webUIPerspective = SwitchToWebUIHandler.getWebUIPerspective(m_app, m_modelService);
+    @Inject
+    @Optional
+    public void listen(@EventTopic(UIEvents.ElementContainer.TOPIC_SELECTEDELEMENT) final Event event) {
+        Object newValue = event.getProperty(EventTags.NEW_VALUE);
+        if (!(newValue instanceof MPerspective)) {
+            return;
+        }
 
-		if (newPerspective == webUIPerspective) {
-			switchToWebUI();
-		} else if (oldPerspective == webUIPerspective) {
-			switchToJavaUI();
-		} else {
-			//
-		}
-	}
+        MPerspective oldPerspective = (MPerspective)event.getProperty(EventTags.OLD_VALUE);
+        MPerspective newPerspective = (MPerspective)newValue;
+        MPerspective webUIPerspective = SwitchToWebUIHandler.getWebUIPerspective(m_app, m_modelService);
 
-	private void switchToWebUI() {
-		AppStateUtil.initAppState(m_modelService, m_app);
-		setTrimsAndMenuVisible(false, m_modelService, m_app);
-		callOnKnimeBrowserView(KnimeBrowserView::setUrl);
-		switchToWebUITheme();
-	}
+        if (newPerspective == webUIPerspective) {
+            switchToWebUI();
+        } else if (oldPerspective == webUIPerspective) {
+            switchToJavaUI();
+        } else {
+            //
+        }
+    }
 
+    private void switchToWebUI() {
+        AppStateUtil.initAppState(m_modelService, m_app);
+        setTrimsAndMenuVisible(false, m_modelService, m_app);
+        callOnKnimeBrowserView(KnimeBrowserView::setUrl);
+        switchToWebUITheme();
+        // fixes a drag'n'drop issue on windows; doesn't have an effect on linux or mac
+        // (see NXTEXT-137)
+        System.setProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP, "false");
+    }
 
-	private void switchToJavaUI() {
-		DefaultEventService.getInstance().removeAllEventListeners();
-		callOnKnimeBrowserView(KnimeBrowserView::clearUrl);
-		AppStateUtil.clearAppState();
-		setTrimsAndMenuVisible(true, m_modelService, m_app);
-		switchToJavaUITheme();
-		// the color of the workflow editor canvas changes when switching back
-		// -> this is a workaround to compensate for it
-		// (couldn't be solved via css styling because the background color differs if the respective workflow
-		// is write protected)
-		AppStateUtil.getOpenWorkflowEditors(m_modelService, m_app).forEach(WorkflowEditor::updateEditorBackgroundColor);
-	}
+    private void switchToJavaUI() {
+        DefaultEventService.getInstance().removeAllEventListeners();
+        callOnKnimeBrowserView(KnimeBrowserView::clearUrl);
+        AppStateUtil.clearAppState();
+        setTrimsAndMenuVisible(true, m_modelService, m_app);
+        switchToJavaUITheme();
+        // the color of the workflow editor canvas changes when switching back
+        // -> this is a workaround to compensate for it
+        // (couldn't be solved via css styling because the background color differs if the respective workflow
+        // is write protected)
+        AppStateUtil.getOpenWorkflowEditors(m_modelService, m_app).forEach(WorkflowEditor::updateEditorBackgroundColor);
+        System.clearProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
+    }
 
-	private void callOnKnimeBrowserView(final Consumer<KnimeBrowserView> call) {
-		List<MPart> views = m_modelService.findElements(m_app, "org.knime.ui.java.browser.view", MPart.class);
-		for (MPart view : views) {
-			if (view.getObject() instanceof KnimeBrowserView) {
-				call.accept((KnimeBrowserView) view.getObject());
-			} else {
-				LOGGER.warn("Element found for 'org.knime.ui.java.browser.view'"
-						+ " which is not the expected KNIME browser view.");
-			}
-		}
-		if (views.size() > 1) {
-			LOGGER.warn(views.size()
-					+ " web-ui views have been found while switching the perspective, but only one is expected!");
+    private void callOnKnimeBrowserView(final Consumer<KnimeBrowserView> call) {
+        List<MPart> views = m_modelService.findElements(m_app, "org.knime.ui.java.browser.view", MPart.class);
+        for (MPart view : views) {
+            if (view.getObject() instanceof KnimeBrowserView) {
+                call.accept((KnimeBrowserView)view.getObject());
+            } else {
+                LOGGER.warn("Element found for 'org.knime.ui.java.browser.view'"
+                    + " which is not the expected KNIME browser view.");
+            }
+        }
+        if (views.size() > 1) {
+            LOGGER.warn(views.size()
+                + " web-ui views have been found while switching the perspective, but only one is expected!");
 
-		}
-	}
+        }
+    }
 
-	private void switchToWebUITheme() {
-		switchTheme("org.knime.ui.java.theme");
-	}
+    private void switchToWebUITheme() {
+        switchTheme("org.knime.ui.java.theme");
+    }
 
-	private void switchToJavaUITheme() {
-		switchTheme("org.knime.product.theme.knime");
-	}
+    private void switchToJavaUITheme() {
+        switchTheme("org.knime.product.theme.knime");
+    }
 
-	private void switchTheme(final String themeId) {
-		IEclipseContext context = m_app.getContext();
-		IThemeEngine engine = context.get(IThemeEngine.class);
-		ITheme webUITheme = engine.getThemes().stream().filter(t -> t.getId().equals(themeId)).findFirst().orElse(null);
-		if (webUITheme == null) {
-			LOGGER.error("The web ui css theme couldn't be found");
-			return;
-		}
-		engine.setTheme(webUITheme, true);
-	}
+    private void switchTheme(final String themeId) {
+        IEclipseContext context = m_app.getContext();
+        IThemeEngine engine = context.get(IThemeEngine.class);
+        ITheme webUITheme = engine.getThemes().stream().filter(t -> t.getId().equals(themeId)).findFirst().orElse(null);
+        if (webUITheme == null) {
+            LOGGER.error("The web ui css theme couldn't be found");
+            return;
+        }
+        engine.setTheme(webUITheme, true);
+    }
 
-	static void setTrimsAndMenuVisible(final boolean visible, final EModelService modelService, final MApplication app) {
-		modelService.find("org.eclipse.ui.trim.status", app).setVisible(visible);
-		modelService.find("org.eclipse.ui.main.toolbar", app).setVisible(visible);
-		MTrimmedWindow window = (MTrimmedWindow) app.getChildren().get(0);
-		window.getMainMenu().setToBeRendered(visible);
-	}
+    static void setTrimsAndMenuVisible(final boolean visible, final EModelService modelService,
+        final MApplication app) {
+        modelService.find("org.eclipse.ui.trim.status", app).setVisible(visible);
+        modelService.find("org.eclipse.ui.main.toolbar", app).setVisible(visible);
+        MTrimmedWindow window = (MTrimmedWindow)app.getChildren().get(0);
+        window.getMainMenu().setToBeRendered(visible);
+    }
 
 }

@@ -2,12 +2,10 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
-import Vue from 'vue';
 
 import * as $shapes from '~/style/shapes';
 
 import WorkflowPanel from '~/components/WorkflowPanel';
-import Kanvas from '~/components/Kanvas';
 
 describe('WorkflowPanel', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, storeConfig;
@@ -109,15 +107,6 @@ describe('WorkflowPanel', () => {
             expect(wrapper.find('.read-only').exists()).toBe(false);
             expect(wrapper.find('.workflow-info').exists()).toBe(false);
         });
-    });
-
-    it('deselects all objects when clicking the canvas', async () => {
-        doShallowMount();
-
-        wrapper.findComponent(Kanvas).vm.$emit('empty-pointerdown');
-        await Vue.nextTick();
-
-        expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
     });
 
     // TODO: NXT-844 add tests for the context menu
