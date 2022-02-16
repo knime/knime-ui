@@ -89,29 +89,29 @@ describe('Kanvas', () => {
         };
     });
 
-    describe('empty click on canvas', () => {
-        test('clicking on the canvas emits empty-pointerdown', () => {
+    describe('selection with rect on canvas', () => {
+        test('clicking on the canvas emits select-pointerdown', () => {
             doShallowMount();
 
             wrapper.find('svg').trigger('pointerdown');
 
-            // This test doesn't test the 'self' modifier
-            expect(wrapper.emitted('empty-pointerdown')).toBeTruthy();
+            expect(wrapper.emitted('selection-pointerdown')).toBeTruthy();
         });
 
-        test("clicking on an element in the canvas doesn't emit empty-pointerdown", () => {
+        test('moving on the canvas emits select-pointermove', () => {
             doShallowMount();
-            wrapper.element.setPointerCapture = jest.fn();
 
-            // Add child element to kanvas
-            let childElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            wrapper.find('svg').element.appendChild(childElement);
+            wrapper.find('svg').trigger('pointermove');
 
-            // Trigger pointerdown event on child
-            wrapper.find('svg rect').trigger('pointerdown');
+            expect(wrapper.emitted('selection-pointermove')).toBeTruthy();
+        });
 
-            // shouldn't trigger empty-pointerdown
-            expect(wrapper.emitted('empty-pointerdown')).toBeFalsy();
+        test('releasing on the canvas emits select-pointerup', () => {
+            doShallowMount();
+
+            wrapper.find('svg').trigger('pointerup');
+
+            expect(wrapper.emitted('selection-pointerup')).toBeTruthy();
         });
     });
 
@@ -144,7 +144,7 @@ describe('Kanvas', () => {
                 .toHaveBeenCalledWith(expect.anything(), wrapper.element);
         });
 
-        test('mouse wheel zooms', () => {
+        it('zooms on mouse wheel', () => {
             doShallowMount();
 
             wrapper.element.dispatchEvent(new WheelEvent('wheel', {
