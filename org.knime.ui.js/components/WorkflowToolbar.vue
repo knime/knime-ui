@@ -22,6 +22,7 @@ export default {
             const selectedNodes = this.$store.getters['selection/selectedNodes'];
             let visibleItems = {
                 // always visible
+                save: true,
                 undo: true,
                 redo: true,
 
