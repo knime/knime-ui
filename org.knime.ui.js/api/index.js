@@ -41,3 +41,20 @@ export const openView = ({ projectId, nodeId }) => {
         consola.error(`Could not open view of node ${nodeId}`, e);
     }
 };
+
+/**
+ * Save a workflow.
+ * @param {String} projectId
+ * @returns {void}
+ */
+export const saveWorkflow = ({ projectId }) => {
+    try {
+        // returns falsy on success
+        let error = window.saveWorkflow(projectId);
+        if (error) {
+            throw new Error(error);
+        }
+    } catch (e) {
+        consola.error(`Could not save workflow`, e);
+    }
+};
