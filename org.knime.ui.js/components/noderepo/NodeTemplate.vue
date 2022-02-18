@@ -20,7 +20,14 @@ export default {
     },
     computed: {
         ...mapState('nodeRepository', ['selectedNode']),
-        ...mapGetters('workflow', ['isWritable'])
+        ...mapState('panel', ['descriptionPanel']),
+        ...mapGetters('workflow', ['isWritable']),
+        isSelected() {
+            if (this.descriptionPanel && (this.nodeTemplate.id === this.selectedNode.id)) {
+                return true;
+            }
+            return false;
+        }
     },
     methods: {
         ...mapActions('panel', ['openDescriptionPanel', 'closeDescriptionPanel']),
@@ -77,6 +84,7 @@ export default {
   <div
     class="node"
     draggable="true"
+    :class="{'node-preview-active': isSelected}"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
     @click="onClick"
@@ -85,7 +93,7 @@ export default {
     <label :title="nodeTemplate.name">{{ nodeTemplate.name }}</label>
     <NodePreview
       ref="nodePreview"
-      :class="nodeTemplate === selectedNode ? 'node-preview-active' : 'node-preview'"
+      class="node-preview"
       :type="nodeTemplate.type"
       :in-ports="nodeTemplate.inPorts"
       :out-ports="nodeTemplate.outPorts"
@@ -126,10 +134,6 @@ export default {
     right: 15px;
   }
 
-  & .node-preview-active {
-    filter: url(#node-torso-shadow);
-  }
-
   &:hover {
     cursor: pointer;
 
@@ -137,5 +141,11 @@ export default {
       filter: url(#node-torso-shadow);
     }
   }
+}
+
+.node-preview-active {
+  box-shadow: 0 0 0 1px var(--knime-cornflower);
+  border-radius: 5px;
+  background-color: rgba(233, 241, 246, 0.9);
 }
 </style>
