@@ -1,5 +1,6 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
-    moveObjects, openDialog, openView, undo, redo, removeEventListener, connectNodes, addNode } from '~api';
+    moveObjects, openDialog, openView, undo, redo, removeEventListener, connectNodes, addNode,
+    saveWorkflow } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -214,6 +215,10 @@ export const actions = {
     redo({ state, getters }) {
         let { activeWorkflowId } = getters;
         redo({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
+    },
+    saveWorkflow({ state }) {
+        let { activeWorkflow: { projectId } } = state;
+        saveWorkflow({ projectId });
     },
 
     /**

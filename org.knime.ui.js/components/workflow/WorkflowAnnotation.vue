@@ -1,6 +1,5 @@
 <script>
 import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
-import { mapActions } from 'vuex';
 /**
  * A workflow annotation, a rectangular box containing text.
  */
@@ -69,12 +68,6 @@ export default {
                 padding: `${this.$shapes.workflowAnnotationPadding}px`
             };
         }
-    },
-    methods: {
-        ...mapActions('selection', ['deselectAllObjects']),
-        onMouseDown() {
-            this.deselectAllObjects();
-        }
     }
 };
 </script>
@@ -85,7 +78,6 @@ export default {
     :y="bounds.y"
     :width="bounds.width"
     :height="bounds.height"
-    @mousedown.left="onMouseDown"
   >
     <LegacyAnnotationText
       :style="style"
