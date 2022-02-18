@@ -1,71 +1,65 @@
 <script>
-import { mapState, mapGetters, mapMutations } from 'vuex';
-import { throttle, debounce } from 'lodash';
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
+import { debounce } from 'lodash';
 
-const PANNING_THROTTLE = 50; // 50ms between consecutive mouse move events
+export const RESIZE_DEBOUNCE = 100;
 
 export default {
     data() {
         return {
-            /*
-              Truthy if currently panning. Stores mouse origin
-            */
-            panning: null
+            /* Truthy if currently panning. Stores mouse origin */
+            isPanning: null
         };
     },
     computed: {
-        ...mapGetters('canvas', ['canvasSize', 'viewBox']),
-        ...mapState('canvas', ['suggestPanning']),
-        viewBoxString() {
-            let { viewBox } = this;
-            return `${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`;
-        }
+        ...mapGetters('canvas', ['canvasSize', 'viewBox', 'contentPadding', 'contentBounds']),
+        ...mapState('canvas', ['suggestPanning', 'zoomFactor'])
+    },
+    watch: {
+        contentBounds(...args) { this.contentBoundsChanged(args); }
     },
     mounted() {
         // Start Container Observers
-        this.initContainerSize();
-        // TODO: NXT-802 do we really need the scroll element in the store?
-        this.setScrollContainerElement(this.$el);
+        this.initScrollContainerElement(this.$el);
         this.initResizeObserver();
         this.$el.focus();
     },
     beforeDestroy() {
-        this.setScrollContainerElement(null);
-
         // Stop Resize Observer
         this.stopResizeObserver();
+
+        // Remove reference to $el
+        this.clearScrollContainerElement();
     },
     methods: {
+        ...mapActions('canvas', ['initScrollContainerElement', 'updateContainerSize', 'zoomAroundPointer',
+            'contentBoundsChanged']),
+        ...mapMutations('canvas', ['clearScrollContainerElement']),
+
+        initResizeObserver() {
+            // updating the container size and recalculating the canvas is debounced.
+            const updateContainerSize = debounce(() => {
+                this.updateContainerSize();
+            }, RESIZE_DEBOUNCE);
+            
+            this.resizeObserver = new ResizeObserver(entries => {
+                const containerEl = entries.find(({ target }) => target === this.$el);
+                if (containerEl) {
+                    updateContainerSize();
+                }
+            });
+
+            this.stopResizeObserver = () => {
+                if (this.resizeObserver) {
+                    this.resizeObserver.disconnect();
+                }
+            };
+
+            this.resizeObserver.observe(this.$el);
+        },
         /*
             Zooming
         */
-        ...mapMutations('canvas', ['setScrollContainerElement']),
-        initContainerSize() {
-            const { width, height } = this.$el.getBoundingClientRect();
-            this.$store.commit('canvas/setContainerSize', { width, height });
-        },
-        initResizeObserver() {
-            // recalculating and setting the container size is throttled.
-            const updateCanvas = debounce((width, height) => {
-                this.$store.commit('canvas/setContainerSize', { width, height });
-            }, 100, { leading: true, trailing: true });
-            // This ResizeObserver can be stuck in an update loop:
-            // (Scrollbars needed -> svg gets inner container size, Scrollbar not needed -> svg gets outer container size)
-            // Setting the svg to exactly the size of the container leads to overflow and scrollbars for unknown reasons.
-            this.resizeObserver = new ResizeObserver(entries => {
-                const containerEl = entries.find(({ target }) => target === this.$el);
-                if (containerEl?.contentRect) {
-                    const { width, height } = containerEl.contentRect;
-                    updateCanvas(width, height);
-                }
-            });
-            this.resizeObserver.observe(this.$el);
-        },
-        stopResizeObserver() {
-            if (this.resizeObserver) {
-                this.resizeObserver.disconnect();
-            }
-        },
         onMouseWheel(e) {
             // delta is -1, 0 or 1 depending on scroll direction.
             let delta = Math.sign(-e.deltaY);
@@ -76,28 +70,32 @@ export default {
             let cursorX = e.clientX - bcr.x;
             let cursorY = e.clientY - bcr.y;
 
-            this.$store.commit('canvas/zoomWithPointer', { delta, cursorX, cursorY });
+            requestAnimationFrame(() => {
+                this.zoomAroundPointer({ delta, cursorX, cursorY });
+            });
         },
         /*
             Panning
         */
         beginPan(e) {
-            this.panning = [e.screenX, e.screenY];
+            this.isPanning = true;
+            this.panningOffset = [e.screenX, e.screenY];
             this.$el.setPointerCapture(e.pointerId);
         },
-        movePan: throttle(function (e) {
-            /* eslint-disable no-invalid-this */
-            if (this.panning) {
-                const delta = [e.screenX - this.panning[0], e.screenY - this.panning[1]];
-                this.panning = [e.screenX, e.screenY];
-                this.$el.scrollLeft -= delta[0];
-                this.$el.scrollTop -= delta[1];
+        movePan(e) {
+            if (this.isPanning) {
+                requestAnimationFrame(() => {
+                    const delta = [e.screenX - this.panningOffset[0], e.screenY - this.panningOffset[1]];
+                    this.panningOffset = [e.screenX, e.screenY];
+                    this.$el.scrollLeft -= delta[0];
+                    this.$el.scrollTop -= delta[1];
+                });
             }
-            /* eslint-disable no-invalid-this */
-        }, PANNING_THROTTLE), // eslint-disable-line no-magic-numbers
+        },
         stopPan(e) {
-            if (this.panning) {
-                this.panning = null;
+            if (this.isPanning) {
+                this.isPanning = false;
+                this.panningOffset = null;
                 this.$el.releasePointerCapture(e.pointerId);
                 e.stopPropagation();
             }
@@ -109,7 +107,7 @@ export default {
 <template>
   <div
     tabindex="0"
-    :class="['scroll-container', { 'panning': panning || suggestPanning }]"
+    :class="['scroll-container', { 'panning': isPanning || suggestPanning }]"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
     @pointerdown.middle="beginPan"
@@ -122,10 +120,12 @@ export default {
       ref="svg"
       :width="canvasSize.width"
       :height="canvasSize.height"
-      :viewBox="viewBoxString"
+      :viewBox="viewBox.string"
       @pointerdown.self.stop="$emit('empty-pointerdown', $event)"
     >
-      <slot />
+      <g :transform="`translate(${contentPadding.left}, ${contentPadding.top})`">
+        <slot />
+      </g>
     </svg>
   </div>
 </template>
@@ -145,6 +145,7 @@ export default {
 svg {
   position: relative; /* needed for z-index to have effect */
   display: block;
+  background-color: #f7f7f7;
 }
 
 .panning {

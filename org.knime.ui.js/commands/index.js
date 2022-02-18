@@ -27,6 +27,13 @@ const selectionCommands = {
     }
 };
 
+const sidePanel = {
+    toggleSidePanel: {
+        hotkey: ['Ctrl', 'P'],
+        execute: ({ $store }) => $store.dispatch('panel/toggleExpanded')
+    }
+};
+
 export default {
     ...conditionGroup(
         // Enabled if workflow is present
@@ -36,6 +43,7 @@ export default {
             ...selectionCommands,
             ...canvasCommands
         }
-    )
+    ),
+    ...sidePanel
 };
 

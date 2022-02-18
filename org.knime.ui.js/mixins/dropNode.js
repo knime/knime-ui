@@ -5,7 +5,7 @@ const isKnimeNode = (e) => e.dataTransfer.types.includes(KnimeMIME);
 
 export const dropNode = {
     computed: {
-        ...mapGetters('canvas', ['fromAbsoluteCoordinates']),
+        ...mapGetters('canvas', ['toCanvasCoordinates']),
         ...mapGetters('workflow', ['isWritable'])
     },
     methods: {
@@ -26,7 +26,7 @@ export const dropNode = {
             const halfNodeSize = this.$shapes.nodeSize / 2;
             const kanvasElement = document.getElementById('kanvas');
             const { offsetLeft, offsetTop, scrollLeft, scrollTop } = kanvasElement;
-            let result = this.fromAbsoluteCoordinates([
+            let result = this.toCanvasCoordinates([
                 e.clientX - offsetLeft + scrollLeft - halfNodeSize,
                 e.clientY - offsetTop + scrollTop - halfNodeSize
             ]);

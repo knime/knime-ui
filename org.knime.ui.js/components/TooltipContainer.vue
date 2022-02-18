@@ -22,7 +22,7 @@ export default {
     computed: {
         ...mapState('workflow', ['tooltip']),
         ...mapState('canvas', ['zoomFactor']),
-        ...mapGetters('canvas', ['getAbsoluteCoordinates']),
+        ...mapGetters('canvas', ['fromCanvasCoordinates']),
         /*
             The gap has to grow with the zoomFactor.
             Using the square root gives a more appropriate visual impression for larger factors
@@ -35,7 +35,7 @@ export default {
             let { anchorPoint = { x: 0, y: 0 }, position } = this.tooltip;
 
             // get coordinates relative to kanvas' bounds
-            let { x, y } = this.getAbsoluteCoordinates({
+            let { x, y } = this.fromCanvasCoordinates({
                 x: anchorPoint.x + position.x,
                 y: anchorPoint.y + position.y
             });

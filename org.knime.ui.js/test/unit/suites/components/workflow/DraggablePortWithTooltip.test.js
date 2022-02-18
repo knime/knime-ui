@@ -60,7 +60,7 @@ describe('DraggablePortWithTooltip', () => {
             },
             canvas: {
                 getters: {
-                    fromAbsoluteCoordinates: () => x => x
+                    toCanvasCoordinates: () => x => x
                 }
             }
         };

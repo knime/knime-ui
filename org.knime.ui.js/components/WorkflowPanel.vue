@@ -1,9 +1,8 @@
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 import StreamingIcon from '~/webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
 import ContextMenu from '~/components/ContextMenu';
-import Workflow from '~/components/workflow/Workflow';
-import Kanvas from '~/components/Kanvas';
+import WorkflowCanvas from '~/components/WorkflowCanvas';
 
 import { dropNode } from '~/mixins';
 
@@ -11,8 +10,7 @@ export default {
     components: {
         StreamingIcon,
         ContextMenu,
-        Workflow,
-        Kanvas
+        WorkflowCanvas
     },
     mixins: [dropNode],
     computed: {
@@ -29,14 +27,6 @@ export default {
         ])
     },
     methods: {
-        /*
-          Selection
-        */
-        ...mapActions('selection', ['deselectAllObjects']),
-        onEmptyPointerDown() {
-            // remove selection
-            this.deselectAllObjects();
-        },
         onContextMenu(e) {
             // TODO: NXT-844 why prevent right clicks with ctrl?
             // ignore click with ctrl and meta keys
@@ -56,14 +46,12 @@ export default {
     @dragover.stop="onDragOver"
     @contextmenu.prevent="onContextMenu"
   >
-    <ContextMenu
-      ref="contextMenu"
-    />
+    <ContextMenu ref="contextMenu" />
 
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
       v-if="isLinked || isStreaming || isInsideLinked"
-      :class="['workflow-info', {onlyStreaming: isStreaming && !isLinked}]"
+      :class="['workflow-info', { onlyStreaming: isStreaming && !isLinked }]"
     >
       <span v-if="isInsideLinked">
         This is a {{ workflow.info.containerType }} inside a linked {{ insideLinkedType }} and cannot be edited.
@@ -80,23 +68,11 @@ export default {
       </span>
     </div>
 
-    <Kanvas
-      id="kanvas"
-      ref="kanvas"
-      @empty-pointerdown="onEmptyPointerDown"
-    >
-      <!-- Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
-           instead of diffing old and new workflow -->
-      <Workflow :key="`${workflow.projectId}-${activeWorkflowId}`" />
-    </Kanvas>
+    <WorkflowCanvas :key="`${workflow.projectId}-${activeWorkflowId}`" />
   </div>
 </template>
 
 <style lang="postcss" scoped>
-#kanvas >>> svg {
-  color: var(--knime-masala);
-}
-
 .workflow-panel {
   height: 100%;
   width: 100%;
@@ -145,7 +121,6 @@ export default {
     flex-shrink: 0;
     align-items: center;
 
-    /* stylelint-disable-next-line no-descending-specificity */
     & svg {
       margin-right: 5px;
       width: 32px;

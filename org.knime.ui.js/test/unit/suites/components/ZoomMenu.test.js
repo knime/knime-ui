@@ -129,10 +129,10 @@ describe('ZoomMenu', () => {
         let input = wrapper.find('.zoom-input');
         await input.trigger('wheel', { deltaY: 1 });
 
-        expect($store.dispatch).toHaveBeenCalledWith('canvas/zoomCentered', -1);
+        expect($store.dispatch).toHaveBeenCalledWith('canvas/zoomCentered', { delta: -1 });
 
         await input.trigger('wheel', { deltaY: -1 });
 
-        expect($store.dispatch).toHaveBeenCalledWith('canvas/zoomCentered', 1);
+        expect($store.dispatch).toHaveBeenCalledWith('canvas/zoomCentered', { delta: 1 });
     });
 });

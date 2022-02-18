@@ -20,14 +20,6 @@ export default {
         MoveableNodeContainer
     },
     mixins: [dropNode],
-    data() {
-        return {
-            /*
-              Truthy if currently panning. Stores mouse origin
-            */
-            panning: null
-        };
-    },
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
