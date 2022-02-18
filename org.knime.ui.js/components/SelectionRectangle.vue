@@ -179,7 +179,7 @@ export default {
 
 <template>
   <rect
-    v-show="Boolean(pointerId)"
+    v-show="pointerId !== null"
     :x="!changeDirectionX ? startPos.x : endPos.x"
     :y="!changeDirectionY ? startPos.y : endPos.y"
     :width="Math.abs(!changeDirectionX ? endPos.x - startPos.x : startPos.x - endPos.x)"
