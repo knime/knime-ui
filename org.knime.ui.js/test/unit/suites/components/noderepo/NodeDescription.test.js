@@ -29,7 +29,14 @@ describe('NodeRepository', () => {
                     nodeWithDescription: {
                         id: 1,
                         description: 'This is a node.'
-                    }
+                    },
+                    nodes: [
+                        {
+                            id: 1,
+                            name: 'Test'
+                        }
+                    ],
+                    query: 'Source'
                 },
                 actions: {
                     getNodeDescription
@@ -94,5 +101,18 @@ describe('NodeRepository', () => {
         };
         await Vue.nextTick();
         expect(getNodeDescription).toHaveBeenCalledTimes(2);
+    });
+
+    it('title and description changes when node is not visible', () => {
+        storeConfig.nodeRepository.state.selectedNode = {
+            id: 2
+        };
+        doMount();
+        const title = wrapper.find('h2');
+        expect(title.text()).toBe('Please select a node');
+        expect(wrapper.findComponent(Description).exists()).toBe(false);
+        expect(wrapper.findComponent(NodeFeatureList).exists()).toBe(false);
+        const description = wrapper.find('span');
+        expect(description.text()).toBe('…');
     });
 });

@@ -6,7 +6,8 @@ import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { KnimeMIME } from '~/mixins/dropNode';
 
 describe('NodeTemplate', () => {
-    let propsData, doMount, wrapper, testEvent, isWritable, mocks, openDescriptionPanel, setSelectedNode;
+    let propsData, doMount, wrapper, testEvent, isWritable, mocks, openDescriptionPanel, closeDescriptionPanel,
+        setSelectedNode, $store, storeConfig;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -17,6 +18,7 @@ describe('NodeTemplate', () => {
         isWritable = true;
         wrapper = null;
         openDescriptionPanel = jest.fn();
+        closeDescriptionPanel = jest.fn();
         setSelectedNode = jest.fn();
 
         let getBoundingClientRectMock = jest.fn().mockReturnValue({
@@ -48,7 +50,7 @@ describe('NodeTemplate', () => {
             }
         };
 
-        let $store = mockVuexStore({
+        storeConfig = {
             workflow: {
                 getters: {
                     isWritable() {
@@ -58,15 +60,24 @@ describe('NodeTemplate', () => {
             },
             panel: {
                 actions: {
-                    openDescriptionPanel
+                    openDescriptionPanel,
+                    closeDescriptionPanel
+                },
+                state: {
+                    descriptionPanel: false
                 }
             },
             nodeRepository: {
                 mutations: {
                     setSelectedNode
+                },
+                state: {
+                    selectedNode: null
                 }
             }
-        });
+        };
+
+        $store = mockVuexStore(storeConfig);
 
         doMount = () => {
             mocks = { $store };
@@ -106,7 +117,18 @@ describe('NodeTemplate', () => {
         const node = wrapper.find('.node');
 
         node.trigger('click');
-        expect(setSelectedNode).toHaveBeenCalledWith({}, propsData.nodeTemplate);
+        expect(setSelectedNode).toHaveBeenCalled();
+    });
+
+    it('adds style if node is selected', () => {
+        storeConfig.panel.state.descriptionPanel = true;
+        storeConfig.nodeRepository.state.selectedNode = {
+            id: 'node-id'
+        };
+        doMount();
+        const node = wrapper.find('.node');
+
+        expect(node.classes()).toContain('node-preview-active');
     });
 
     describe('drag node', () => {
@@ -184,6 +206,13 @@ describe('NodeTemplate', () => {
             wrapper.trigger('dragend');
 
             expect(node.attributes().style).toBe(undefined);
+        });
+
+        it('closes description panel when dragging starts', () => {
+            doMount();
+            wrapper.trigger('dragstart');
+
+            expect(closeDescriptionPanel).toHaveBeenCalled();
         });
     });
 });

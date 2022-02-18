@@ -22,7 +22,7 @@ export default {
             } else if (this.nodes) {
                 for (let i = 0; i < this.nodesPerCategory.length; i++) {
                     if (this.nodesPerCategory[i].nodes.some(node => node.id === this.selectedNode.id) ||
-                    this.nodes.includes(this.selectedNode)) {
+                    this.nodes.some(node => node.id === this.selectedNode.id)) {
                         return true;
                     }
                 }
@@ -74,7 +74,7 @@ export default {
           :text="nodeWithDescription.description"
           :render-as-html="true"
         />
-        <span v-else-if="nodeWithDescription && !nodeWithDescription.description">
+        <span v-if="nodeWithDescription && !nodeWithDescription.description">
           There is no description for this node.
         </span>
         <span v-else>…</span>
