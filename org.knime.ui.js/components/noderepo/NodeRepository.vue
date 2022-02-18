@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapActions } from 'vuex';
 
 import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
 import SearchBar from '~/components/noderepo/SearchBar';
@@ -56,8 +56,10 @@ export default {
         }
     },
     methods: {
+        ...mapActions('panel', ['closeDescriptionPanel']),
         /* Navigation */
         onBreadcrumbClick(e) {
+            this.closeDescriptionPanel();
             if (e.id === 'clear') {
                 this.$store.dispatch('nodeRepository/clearSearchParams');
             }

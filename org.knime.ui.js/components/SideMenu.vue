@@ -3,7 +3,7 @@ import { mapState, mapGetters } from 'vuex';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
 import NodeRepository from '~/components/noderepo/NodeRepository';
-import NodeDescription from '~/components/noderepo/NodeDescription.vue';
+import NodeDescription from '~/components/noderepo/NodeDescription';
 
 /**
  * A component that shows the tab contents belonging to one workflow,
@@ -20,9 +20,9 @@ export default {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
         }),
+        ...mapState('panel', ['descriptionPanel']),
         // TODO: NXT-844 do we really need a panel store?
         ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive']),
-        ...mapState('panel', ['descriptionPanel']),
         metadata() {
             // TODO: NXT-844 this needs to somehow be brought out of this component into WorkflowMetadata
             switch (this.workflow.info.containerType) {
@@ -73,7 +73,6 @@ export default {
     </LeftCollapsiblePanel>
     <NodeDescription
       v-if="descriptionPanel"
-      v-show="descriptionPanel"
     />
   </div>
 </template>

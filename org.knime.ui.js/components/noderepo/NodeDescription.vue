@@ -12,7 +12,29 @@ export default {
     },
     computed: {
         ...mapState('panel', ['descriptionPanel']),
-        ...mapState('nodeRepository', ['selectedNode', 'nodeWithDescription'])
+        ...mapState('nodeRepository', ['selectedNode', 'nodeWithDescription', 'nodes', 'nodesPerCategory',
+            'query', 'tags']),
+        isVisible() {
+            if (this.nodes && (this.query || this.tags)) {
+                if (this.nodes.some(node => node.id === this.selectedNode.id)) {
+                    return true;
+                }
+            } else if (this.nodes) {
+                for (let i = 0; i < this.nodesPerCategory.length; i++) {
+                    if (this.nodesPerCategory[i].nodes.some(node => node.id === this.selectedNode.id) ||
+                    this.nodes.includes(this.selectedNode)) {
+                        return true;
+                    }
+                }
+            } else {
+                for (let i = 0; i < this.nodesPerCategory.length; i++) {
+                    if (this.nodesPerCategory[i].nodes.some(node => node.id === this.selectedNode.id)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
     },
     watch: {
         selectedNode: {
@@ -35,7 +57,8 @@ export default {
 <template>
   <div class="node-description">
     <div class="header">
-      <h2>{{ selectedNode.name }}</h2>
+      <h2 v-if="isVisible">{{ selectedNode.name }}</h2>
+      <h2 v-else>Please select a node</h2>
       <button
         v-show="descriptionPanel"
         @click="closePanel"
@@ -47,15 +70,16 @@ export default {
     <div class="scroll-container">
       <div class="node-info">
         <Description
-          v-if="nodeWithDescription"
+          v-if="nodeWithDescription && isVisible"
           :text="nodeWithDescription.description"
           :render-as-html="true"
         />
-        <span v-if="nodeWithDescription && !nodeWithDescription.description">
+        <span v-else-if="nodeWithDescription && !nodeWithDescription.description">
           There is no description for this node.
         </span>
+        <span v-else>…</span>
         <NodeFeatureList
-          v-if="nodeWithDescription"
+          v-if="nodeWithDescription && isVisible"
           v-bind="nodeWithDescription"
           class="node-feature-list"
         />

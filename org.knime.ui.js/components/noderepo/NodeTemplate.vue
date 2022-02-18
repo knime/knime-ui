@@ -23,9 +23,10 @@ export default {
         ...mapGetters('workflow', ['isWritable'])
     },
     methods: {
-        ...mapActions('panel', ['openDescriptionPanel']),
+        ...mapActions('panel', ['openDescriptionPanel', 'closeDescriptionPanel']),
         ...mapMutations('nodeRepository', ['setSelectedNode']),
         onDragStart(e) {
+            this.closeDescriptionPanel();
             // Fix for cursor style for Firefox
             if (!this.isWritable && (navigator.userAgent.indexOf('Firefox') !== -1)) {
                 e.currentTarget.style.cursor = 'not-allowed';
