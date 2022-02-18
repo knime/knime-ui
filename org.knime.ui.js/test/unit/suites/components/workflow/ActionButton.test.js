@@ -24,7 +24,7 @@ describe('ActionButton', () => {
 
     it('fires event on click', () => {
         let wrapper = shallowMount(ActionButton);
-        wrapper.find('g').trigger('click');
+        wrapper.find('g').trigger('pointerdown');
         expect(wrapper.emitted().click).toBeTruthy();
     });
 
@@ -34,7 +34,7 @@ describe('ActionButton', () => {
                 disabled: true
             }
         });
-        wrapper.find('g').trigger('click');
+        wrapper.find('g').trigger('pointerdown');
         expect(wrapper.emitted().click).toBeFalsy();
     });
 });
