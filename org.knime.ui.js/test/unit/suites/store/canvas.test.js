@@ -159,10 +159,10 @@ describe('canvas store', () => {
 
                 // content bounds inkl. padding + padding based on container
                 let size = 100 + padding * 2 + 150 * 2;
-
+                
                 let expectedViewBox = {
-                    left: -padding,
-                    top: -padding,
+                    left: -padding - 150,
+                    top: -padding - 150,
                     width: size,
                     height: size
                 };

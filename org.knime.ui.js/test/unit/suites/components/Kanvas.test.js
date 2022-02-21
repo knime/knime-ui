@@ -84,13 +84,6 @@ describe('Kanvas', () => {
             .toHaveBeenCalledWith(expect.anything(), wrapper.element);
     });
 
-    it('translates content by contentPadding', () => {
-        doShallowMount();
-
-        let contentWrapper = wrapper.find('svg g');
-        expect(contentWrapper.attributes('transform')).toBe('translate(10, 10)');
-    });
-
     test('if content bounds change, tell store', async () => {
         doShallowMount();
 

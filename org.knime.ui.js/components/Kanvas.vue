@@ -12,7 +12,7 @@ export default {
         };
     },
     computed: {
-        ...mapGetters('canvas', ['canvasSize', 'viewBox', 'contentPadding', 'contentBounds']),
+        ...mapGetters('canvas', ['canvasSize', 'viewBox', 'contentBounds']),
         ...mapState('canvas', ['suggestPanning', 'zoomFactor'])
     },
     watch: {
@@ -127,9 +127,7 @@ export default {
       @pointermove="$emit('selection-pointermove', $event)"
       @lostpointercapture="$emit('selection-lostpointercapture', $event)"
     >
-      <g :transform="`translate(${contentPadding.left}, ${contentPadding.top})`">
-        <slot />
-      </g>
+      <slot />
     </svg>
   </div>
 </template>

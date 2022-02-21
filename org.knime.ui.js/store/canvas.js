@@ -271,37 +271,33 @@ export const getters = {
         return { left, right, top, bottom };
     },
 
-    /*
-        canvasSize is contentSize * zoomFactor,
-        but at least containerSize
-    */
-    canvasSize({ containerSize, zoomFactor }, { contentBounds, contentPadding }) {
-        let width = contentBounds.right + contentPadding.right - contentBounds.left + contentPadding.left;
-        let height = contentBounds.bottom + contentPadding.top - contentBounds.top + contentPadding.bottom;
+    paddedBounds(state, { contentBounds, contentPadding }) {
+        let left = contentBounds.left - contentPadding.left;
+        let top = contentBounds.top - contentPadding.top;
+        let right = contentBounds.right + contentPadding.right;
+        let bottom = contentBounds.bottom + contentPadding.bottom;
 
         return {
-            width: Math.max(containerSize.width, width * zoomFactor),
-            height: Math.max(containerSize.height, height * zoomFactor)
+            left,
+            top,
+            right,
+            bottom,
+            width: right - left,
+            height: bottom - top
         };
     },
-    /*
-        ViewBox of the SVG
 
-        If zoomed content >= container,
-            canvasSize = contentSize * zoomFactor, thus
-            viewBox has the size of the content
+    // canvas size is always larger than container
+    canvasSize({ zoomFactor }, { paddedBounds }) {
+        return {
+            width: paddedBounds.width * zoomFactor,
+            height: paddedBounds.height * zoomFactor
+        };
+    },
 
-        If zoomed content < container,
-            canvasSize = containerSize, thus
-            viewBox has the size of the container / zoomFactor
-    */
-    viewBox({ zoomFactor }, { canvasSize, contentBounds }) {
-        // TODO: this works well but seems to be wrong
-        let left = contentBounds.left;
-        let top = contentBounds.top;
-        let width = canvasSize.width / zoomFactor;
-        let height = canvasSize.height / zoomFactor;
-
+    viewBox(state, { paddedBounds }) {
+        let { left, top, width, height } = paddedBounds;
+        
         return {
             left,
             top,
@@ -314,20 +310,20 @@ export const getters = {
     /*
         returns the true offset from the upper-left corner of the Kanvas for a given point on the workflow
     */
-    fromCanvasCoordinates({ zoomFactor }, { viewBox, contentPadding }) {
+    fromCanvasCoordinates({ zoomFactor }, { viewBox }) {
         return ({ x: origX, y: origY }) => ({
-            x: (origX - viewBox.left + contentPadding.left) * zoomFactor,
-            y: (origY - viewBox.top + contentPadding.top) * zoomFactor
+            x: (origX - viewBox.left) * zoomFactor,
+            y: (origY - viewBox.top) * zoomFactor
         });
     },
 
     /*
         find point in workflow, based on absolute coordinate on canvas
     */
-    toCanvasCoordinates({ zoomFactor }, { viewBox, contentPadding }) {
+    toCanvasCoordinates({ zoomFactor }, { viewBox }) {
         return ([origX, origY]) => [
-            origX / zoomFactor + viewBox.left - contentPadding.left,
-            origY / zoomFactor + viewBox.top - contentPadding.top
+            origX / zoomFactor + viewBox.left,
+            origY / zoomFactor + viewBox.top
         ];
     },
 

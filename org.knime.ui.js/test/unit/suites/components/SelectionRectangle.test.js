@@ -18,6 +18,8 @@ jest.mock('lodash', () => ({
     }
 }));
 
+window.requestAnimationFrame = jest.fn().mockImplementation(fn => { fn(); });
+
 const parentComponent = {
     name: 'parentStub',
     template: '<div></div>'
