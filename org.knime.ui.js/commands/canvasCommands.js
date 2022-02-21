@@ -6,13 +6,13 @@ const throttledZoomThrottle = 30; // throttle keyboard zoom by 30ms
 export default {
     fitToScreen: {
         text: 'Fit to screen',
-        hotkey: ['Ctrl', '2'], // TODO ask peter about hotkeys
+        hotkey: ['Ctrl', '2'],
         execute: ({ $store }) => $store.dispatch('canvas/fitToScreen')
     },
-    zoomToFit: {
-        text: 'Zoom to fit',
+    fillScreen: {
+        text: 'Fill entire screen',
         hotkey: ['Ctrl', '1'],
-        execute: ({ $store }) => $store.dispatch('canvas/zoomToFit')
+        execute: ({ $store }) => $store.dispatch('canvas/fillScreen')
     },
     zoomIn: {
         text: 'Zoom in',

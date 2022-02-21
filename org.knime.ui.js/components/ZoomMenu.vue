@@ -18,7 +18,7 @@ export default {
         },
         zoomMenuItems() {
             return [
-                'zoomToFit',
+                'fillScreen',
                 'fitToScreen',
                 'zoomIn',
                 'zoomOut',

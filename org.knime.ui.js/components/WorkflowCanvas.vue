@@ -14,7 +14,7 @@ export default {
     },
     mounted() {
         this.$nextTick(() => {
-            this.$store.dispatch('canvas/zoomToFit');
+            this.$store.dispatch('canvas/fillScreen');
         });
     },
     methods: {

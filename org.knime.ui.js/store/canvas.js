@@ -97,7 +97,7 @@ export const actions = {
         });
     },
 
-    zoomToFit({ dispatch, commit, getters, state }) {
+    fillScreen({ dispatch, commit, getters, state }) {
         // zoom factor for that at least one axis fits on the screen, but at most 100%
         let newZoomFactor = Math.min(getters.fitToScreenZoomFactor.max * 0.95, 1); // eslint-disable-line no-magic-numbers
 
