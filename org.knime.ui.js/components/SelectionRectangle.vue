@@ -1,6 +1,7 @@
 <script>
 import { mapGetters, mapState, mapActions } from 'vuex';
 import { throttle } from 'lodash';
+import { findNodesInsideOfRectangle } from '~/util/rectangleSelection';
 
 const SELECTION_PREVIEW_THROTTLE = 10; // delay between new move calculations/previews are performed in ms
 /**
@@ -28,44 +29,51 @@ export default {
         ...mapState('workflow', ['activeWorkflow']),
         ...mapGetters('canvas', ['fromAbsoluteCoordinates']),
         ...mapGetters('selection', ['selectedNodeIds']),
+        selectionBounds() {
+            const { endPos, startPos } = this;
 
-        changeDirectionX() {
-            return this.endPos.x - this.startPos.x < 0;
-        },
-        changeDirectionY() {
-            return this.endPos.y - this.startPos.y < 0;
+            return {
+                x: Math.min(startPos.x, endPos.x),
+                y: Math.min(startPos.y, endPos.y),
+
+                width: Math.abs(startPos.x - endPos.x),
+                height: Math.abs(startPos.y - endPos.y)
+            };
         }
     },
     created() {
-        this.$parent.$on('selection-pointerdown', this.startRectSelection);
-        this.$parent.$on('selection-pointerup', this.stopRectSelection);
-        this.$parent.$on('selection-pointermove', this.updateRectSelection);
-        this.$parent.$on('selection-lostpointercapture', this.stopRectSelection);
+        this.$parent.$on('selection-pointerdown', this.startRectangleSelection);
+        this.$parent.$on('selection-pointerup', this.stopRectangleSelection);
+        this.$parent.$on('selection-pointermove', this.updateRectangleSelection);
+        this.$parent.$on('selection-lostpointercapture', this.stopRectangleSelection);
     },
     beforeDestroy() {
-        this.$parent.$off('selection-pointerdown', this.startRectSelection);
-        this.$parent.$off('selection-pointerup', this.stopRectSelection);
-        this.$parent.$off('selection-pointermove', this.updateRectSelection);
-        this.$parent.$off('selection-lostpointercapture', this.stopRectSelection);
+        this.$parent.$off('selection-pointerdown', this.startRectangleSelection);
+        this.$parent.$off('selection-pointerup', this.stopRectangleSelection);
+        this.$parent.$off('selection-pointermove', this.updateRectangleSelection);
+        this.$parent.$off('selection-lostpointercapture', this.stopRectangleSelection);
     },
     methods: {
         ...mapActions('selection', ['selectNodes', 'deselectNodes', 'deselectAllObjects']),
-        startRectSelection(e) {
+
+        startRectangleSelection(e) {
             this.pointerId = e.pointerId;
             e.target.setPointerCapture(e.pointerId);
-            this.startPos = this.getCurrentPos(e);
+            this.startPos = this.positionOnCanvas(e);
             this.endPos = this.startPos;
 
             // deselect all objects if we do not hold shift key
             if (e.shiftKey) {
-                // remember currently selected nodes, the nodes under the rect will inverse them
+                // remember currently selected nodes, the nodes under the rectangle will inverse them
                 this.selectedNodeIdsAtStart = [...this.selectedNodeIds];
             } else {
+                // TODO: could mock that for faster start of rectangle selection
                 this.deselectAllObjects();
                 this.selectedNodeIdsAtStart = [];
             }
         },
-        stopRectSelection(e) {
+
+        stopRectangleSelection(e) {
             if (this.pointerId !== e.pointerId) {
                 return;
             }
@@ -76,14 +84,14 @@ export default {
 
             // update selection (in store)
             setTimeout(() => {
-                // do the real selection if we are finished as it is quite slow (updates to buttons, tables etc.)
+                // do the real selection when we are finished as it is quite slow (updates to buttons, tables etc.)
                 this.selectNodes(this.selectOnEnd);
                 this.deselectNodes(this.deSelectOnEnd);
 
                 // clear preview state of now selected elements
-                [...this.selectOnEnd, ...this.deSelectOnEnd].forEach(
-                    nodeId => this.emitNodeSelectionPreview('clear', nodeId)
-                );
+                [...this.selectOnEnd, ...this.deSelectOnEnd].forEach(nodeId => {
+                    this.$emit('node-selection-preview', { type: 'clear', nodeId });
+                });
 
                 // clear state
                 this.selectOnEnd = [];
@@ -91,60 +99,40 @@ export default {
                 this.selectedNodeIdsAtStart = [];
             }, 0);
         },
-        updateRectSelection(e) {
+
+        updateRectangleSelection: throttle(function (e) {
+            /* eslint-disable no-invalid-this */
             if (this.pointerId !== e.pointerId) {
                 return;
             }
-            this.endPos = this.getCurrentPos(e);
-            this.$nextTick(() => { this.previewSelectionForNodesInRectangle(this.startPos, this.endPos); });
-        },
-        getCurrentPos(e) {
+
+            let pointerOnCanvas = this.positionOnCanvas(e);
+            this.endPos = pointerOnCanvas;
+
+            this.$nextTick(() => {
+                this.previewSelectionForNodesInRectangle(this.startPos, pointerOnCanvas);
+            });
+            /* eslint-enable no-invalid-this */
+        }),
+
+        positionOnCanvas(e) {
             // we need to use the offset relative to the kanvas not the element it occurred (which might be a descendant)
             let currentTargetRect = e.currentTarget.getBoundingClientRect();
             const offsetX = e.pageX - currentTargetRect.left;
             const offsetY = e.pageY - currentTargetRect.top;
+            
             // convert to kanvas coordinates
             const [x, y] = this.fromAbsoluteCoordinates([offsetX, offsetY]);
             return { x, y };
         },
-        // find nodes that are fully or partly inside the rect defined by startPos and endPos
-        findNodesInsideOfRect(startPos, endPos) {
-            let inside = [];
-            let outside = [];
-            Object.values(this.activeWorkflow.nodes).forEach(node => {
-                const { nodeSize } = this.$shapes;
-                let nodeIsInsideOfRect = false;
-                if (node.position.x + nodeSize > startPos.x && node.position.x < endPos.x &&
-                    node.position.y + nodeSize > startPos.y && node.position.y < endPos.y) {
-                    nodeIsInsideOfRect = true;
-                } else if (node.position.x < startPos.x && node.position.x + nodeSize > endPos.x &&
-                    node.position.y < startPos.y && node.position.y + nodeSize > endPos.y) {
-                    nodeIsInsideOfRect = true;
-                } else if (node.position.x + nodeSize > startPos.x && node.position.x < endPos.x &&
-                    node.position.y < startPos.y && node.position.y + nodeSize > endPos.y) {
-                    nodeIsInsideOfRect = true;
-                } else if (node.position.x < startPos.x && node.position.x + nodeSize > endPos.x &&
-                    node.position.y + nodeSize > startPos.y && node.position.y < endPos.y) {
-                    nodeIsInsideOfRect = true;
-                }
-                // create lists with node ids
-                if (nodeIsInsideOfRect) {
-                    inside.push(node.id);
-                } else {
-                    outside.push(node.id);
-                }
-            });
-            return {
-                inside,
-                outside
-            };
-        },
-        emitNodeSelectionPreview(type, nodeId) {
-            this.$emit('node-selection-preview', { type, nodeId });
-        },
+    
         /* eslint-disable no-invalid-this */
         previewSelectionForNodesInRectangle: throttle(function (startPos, endPos) {
-            let { inside, outside } = this.findNodesInsideOfRect(startPos, endPos);
+            let { inside, outside } = findNodesInsideOfRectangle({
+                startPos,
+                endPos,
+                workflow: this.activeWorkflow
+            });
 
             // remember this for the real selection at the end of the movement (pointerup)
             let selectNodes = [];
@@ -154,19 +142,21 @@ export default {
             inside.forEach(nodeId => {
                 // support for shift (remove selection on selected ones)
                 if (this.selectedNodeIdsAtStart?.includes(nodeId)) {
-                    this.emitNodeSelectionPreview('hide', nodeId);
+                    this.$emit('node-selection-preview', { type: 'hide', nodeId });
                     deselectNodes.push(nodeId);
                 } else {
-                    this.emitNodeSelectionPreview('show', nodeId);
+                    this.$emit('node-selection-preview', { type: 'show', nodeId });
                     selectNodes.push(nodeId);
                 }
             });
+
             // clear state if we have changed it in the last run
             outside.forEach(nodeId => {
                 if (this.lastInsideNodeIds?.includes(nodeId)) {
-                    this.emitNodeSelectionPreview('clear', nodeId);
+                    this.$emit('node-selection-preview', { type: 'clear', nodeId });
                 }
             });
+
             // update global state
             this.lastInsideNodeIds = inside;
             this.selectOnEnd = selectNodes;
@@ -180,10 +170,10 @@ export default {
 <template>
   <rect
     v-show="pointerId !== null"
-    :x="!changeDirectionX ? startPos.x : endPos.x"
-    :y="!changeDirectionY ? startPos.y : endPos.y"
-    :width="Math.abs(!changeDirectionX ? endPos.x - startPos.x : startPos.x - endPos.x)"
-    :height="Math.abs(!changeDirectionY ? endPos.y - startPos.y : startPos.y - endPos.y)"
+    :x="selectionBounds.x"
+    :y="selectionBounds.y"
+    :width="selectionBounds.width"
+    :height="selectionBounds.height"
     :stroke="$colors.selection.activeBorder"
     stroke-dasharray="5"
     vector-effect="non-scaling-stroke"
