@@ -118,6 +118,13 @@ describe('Workflow', () => {
             expect(wrapper.find('portal-target[name="node-select"').exists()).toBe(true);
         });
 
+        it('forwards nodeSelectionPreview calls to the correct node', () => {
+            const node = wrapper.findAllComponents(Node).wrappers.filter(n => n.props().id === 'root:1')[0];
+            node.vm.setSelectionPreview = jest.fn();
+            wrapper.vm.applyNodeSelectionPreview({ type: 'show', nodeId: 'root:1' });
+            expect(node.vm.setSelectionPreview).toHaveBeenLastCalledWith('show');
+        });
+
         it('renders nodes', () => {
             wrapper.findAllComponents(Node).wrappers.forEach((n) => {
                 let props = n.props();

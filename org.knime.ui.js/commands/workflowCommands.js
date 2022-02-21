@@ -5,11 +5,21 @@ import UndoIcon from '~/assets/undo.svg?inline';
 import DeleteIcon from '~/assets/delete.svg?inline';
 import OpenViewIcon from '~/assets/open-view.svg?inline';
 import OpenDialogIcon from '~/assets/configure-node.svg?inline';
+import SaveIcon from '~/assets/save.svg?inline';
 
 const isWritable = ({ $store }) => $store.getters['workflow/isWritable'];
 
 export default {
     ...executionCommands,
+    save: {
+        title: 'Save workflow',
+        hotkey: ['Ctrl', 'S'],
+        icon: SaveIcon,
+        execute:
+            ({ $store }) => $store.dispatch('workflow/saveWorkflow'),
+        condition:
+            ({ $store }) => $store.state.workflow.activeWorkflow?.dirty
+    },
     undo: {
         title: 'Undo',
         hotkey: ['Ctrl', 'Z'],

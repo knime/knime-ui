@@ -38,8 +38,12 @@ export const mutations = {
 
     // Clear the selected nodes and the selected connections at once
     clearSelection(state) {
-        state.selectedNodes = {};
-        state.selectedConnections = {};
+        if (Object.keys(state.selectedNodes).length > 0) {
+            state.selectedNodes = {};
+        }
+        if (Object.keys(state.selectedConnections).length > 0) {
+            state.selectedConnections = {};
+        }
     },
 
     //  Add connectionIds to selection.
@@ -72,9 +76,19 @@ export const actions = {
         commit('addNodesToSelection', [nodeId]);
     },
 
+    // Selects all nodeIds
+    selectNodes({ commit }, nodeIds) {
+        commit('addNodesToSelection', nodeIds);
+    },
+
     // Deselects the given node.
     deselectNode({ commit }, nodeId) {
         commit('removeNodesFromSelection', [nodeId]);
+    },
+
+    // Deselects all nodeIds
+    deselectNodes({ commit }, nodeIds) {
+        commit('removeNodesFromSelection', nodeIds);
     },
 
     // Selects the given connection.
@@ -103,7 +117,7 @@ export const getters = {
                 consola.error(`Selected node '${nodeId}' not found in activeWorkflow`)
         );
     },
-    
+
     // Returns null if none or multiple nodes are selected, otherwise returns the selected node
     singleSelectedNode(state, { selectedNodes }) {
         if (selectedNodes.length !== 1) { return null; }

@@ -312,7 +312,7 @@ describe('canvas store', () => {
             });
 
             test('zoom to fit (both axis fit inside container)', () => {
-                store.dispatch('canvas/zoomToFit');
+                store.dispatch('canvas/fillScreen');
 
                 // zoom to 100% and center workflow
                 expect(store.state.canvas.zoomFactor).toBe(1);
@@ -332,7 +332,7 @@ describe('canvas store', () => {
                     bottom: 500
                 };
 
-                store.dispatch('canvas/zoomToFit');
+                store.dispatch('canvas/fillScreen');
 
                 // zoom to 100% and center workflow
                 expect(store.state.canvas.zoomFactor).toBe(1);
@@ -353,7 +353,7 @@ describe('canvas store', () => {
                     bottom: 200
                 };
 
-                store.dispatch('canvas/zoomToFit');
+                store.dispatch('canvas/fillScreen');
 
                 // zoom to 100% and center workflow
                 expect(store.state.canvas.zoomFactor).toBe(1);
@@ -374,7 +374,7 @@ describe('canvas store', () => {
                     bottom: 500
                 };
 
-                store.dispatch('canvas/zoomToFit');
+                store.dispatch('canvas/fillScreen');
 
                 // zoom out to less than 100%
                 expect(store.state.canvas.zoomFactor < 1).toBe(true);

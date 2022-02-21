@@ -514,6 +514,17 @@ describe('workflow store', () => {
                 destPort: 1
             });
         });
+
+        it('saves the workflow via the API', async () => {
+            let saveWorkflow = jest.fn();
+            let apiMocks = { saveWorkflow };
+            await loadStore({ apiMocks });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            
+            store.dispatch('workflow/saveWorkflow');
+
+            expect(saveWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
+        });
     });
 
     describe('getters', () => {

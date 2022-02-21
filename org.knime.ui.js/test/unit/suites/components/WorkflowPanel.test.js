@@ -49,12 +49,7 @@ describe('WorkflowPanel', () => {
             }
         };
         storeConfig = {
-            workflow: workflowStoreConfig,
-            selection: {
-                actions: {
-                    deselectAllObjects: jest.fn()
-                }
-            }
+            workflow: workflowStoreConfig
         };
 
         $store = mockVuexStore(storeConfig);

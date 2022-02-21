@@ -3,12 +3,17 @@ import { mapGetters } from 'vuex';
 
 import Workflow from '~/components/workflow/Workflow';
 import Kanvas from '~/components/Kanvas';
+import SelectionRectangle from '~/components/SelectionRectangle';
+
+import { dropNode } from '~/mixins';
 
 export default {
     components: {
         Workflow,
-        Kanvas
+        Kanvas,
+        SelectionRectangle
     },
+    mixins: [dropNode],
     computed: {
         ...mapGetters('canvas', ['contentBounds'])
     },
@@ -21,6 +26,9 @@ export default {
         // remove selection
         onEmptyPointerDown() {
             this.$store.dispatch('selection/deselectAllObjects');
+        },
+        onNodeSelectionPreview($event) {
+            this.$refs.workflow.applyNodeSelectionPreview($event);
         }
     }
 };
@@ -29,10 +37,11 @@ export default {
 <template>
   <Kanvas
     id="kanvas"
+    ref="kanvas"
     @empty-pointerdown="onEmptyPointerDown"
+    @drop.native.stop="onDrop"
+    @dragover.native.stop="onDragOver"
   >
-    <!-- Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
-        instead of diffing old and new workflow -->
     <rect
       class="workflow-sheet"
       :x="contentBounds.left"
@@ -41,7 +50,13 @@ export default {
       :height="contentBounds.height"
       rx="8"
     />
-    <Workflow />
+
+    <Workflow ref="workflow" />
+
+    <!-- The SelectionRectangle registers to the selection-pointer{up,down,move} events of its parent (the Kanvas) -->
+    <SelectionRectangle
+      @node-selection-preview="onNodeSelectionPreview"
+    />
   </Kanvas>
 </template>
 

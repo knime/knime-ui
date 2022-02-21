@@ -121,7 +121,11 @@ export default {
       :width="canvasSize.width"
       :height="canvasSize.height"
       :viewBox="viewBox.string"
-      @pointerdown.self.stop="$emit('empty-pointerdown', $event)"
+      @pointerdown.left.shift.exact.stop="$emit('selection-pointerdown', $event)"
+      @pointerdown.left.exact.stop="$emit('selection-pointerdown', $event)"
+      @pointerup.left.stop="$emit('selection-pointerup', $event)"
+      @pointermove="$emit('selection-pointermove', $event)"
+      @lostpointercapture="$emit('selection-lostpointercapture', $event)"
     >
       <g :transform="`translate(${contentPadding.left}, ${contentPadding.top})`">
         <slot />

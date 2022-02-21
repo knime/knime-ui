@@ -4,15 +4,12 @@ import StreamingIcon from '~/webapps-common/ui/assets/img/icons/nodes-connect.sv
 import ContextMenu from '~/components/ContextMenu';
 import WorkflowCanvas from '~/components/WorkflowCanvas';
 
-import { dropNode } from '~/mixins';
-
 export default {
     components: {
         StreamingIcon,
         ContextMenu,
         WorkflowCanvas
     },
-    mixins: [dropNode],
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
@@ -42,8 +39,6 @@ export default {
 <template>
   <div
     :class="['workflow-panel', { 'read-only': !isWritable }]"
-    @drop.stop="onDrop"
-    @dragover.stop="onDragOver"
     @contextmenu.prevent="onContextMenu"
   >
     <ContextMenu ref="contextMenu" />
@@ -68,6 +63,11 @@ export default {
       </span>
     </div>
 
+    <!--
+      Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
+      instead of diffing old and new workflow.
+      TODO: Does it also rerender all child elements?
+    -->
     <WorkflowCanvas :key="`${workflow.projectId}-${activeWorkflowId}`" />
   </div>
 </template>

@@ -27,7 +27,7 @@ describe('Kanvas', () => {
                     })
                 },
                 actions: {
-                    zoomToFit: jest.fn()
+                    fillScreen: jest.fn()
                 }
             },
             selection: {
@@ -59,7 +59,7 @@ describe('Kanvas', () => {
         doShallowMount();
         await Vue.nextTick();
 
-        expect(storeConfig.canvas.actions.zoomToFit).toHaveBeenCalled();
+        expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
     });
 
     it('clicking on empty canvas deselects all', () => {

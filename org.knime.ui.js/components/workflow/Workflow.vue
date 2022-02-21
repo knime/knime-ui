@@ -26,7 +26,7 @@ export default {
         }),
         ...mapGetters('selection', ['isNodeSelected']),
         // Sort nodes so that selected nodes are rendered in front
-        // Sort nodes so that selected nodes are rendered in front
+        // TODO: NXT-904 Is there a more performant way to do this? Its one of the main reasons selections are slow.
         sortedNodes() {
             let selected = [];
             let unselected = [];
@@ -39,6 +39,12 @@ export default {
                 }
             }
             return [...unselected, ...selected];
+        }
+    },
+    methods: {
+        // public
+        applyNodeSelectionPreview({ nodeId, type }) {
+            this.$refs[`node-${nodeId}`][0].setSelectionPreview(type);
         }
     }
 };
@@ -84,6 +90,7 @@ export default {
       :kind="node.kind"
     >
       <Node
+        :ref="`node-${node.id}`"
         :icon="$store.getters['workflow/getNodeIcon'](node.id)"
         :name="$store.getters['workflow/getNodeName'](node.id)"
         :type="$store.getters['workflow/getNodeType'](node.id)"

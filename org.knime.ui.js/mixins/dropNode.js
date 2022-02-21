@@ -15,12 +15,10 @@ export const dropNode = {
                 const nodeFactory = JSON.parse(e.dataTransfer.getData(KnimeMIME));
                 const position = this.getDestinationPosition(e);
                 this.addNode({ position, nodeFactory });
-    
-                // Default action when dropping links is to open them in your browser.
-                e.preventDefault();
-            } else {
-                e.preventDefault();
             }
+
+            // Default action when dropping links is to open them in your browser.
+            e.preventDefault();
         },
         getDestinationPosition(e) {
             const halfNodeSize = this.$shapes.nodeSize / 2;
@@ -33,13 +31,11 @@ export const dropNode = {
             return result;
         },
         onDragOver(e) {
-            if (isKnimeNode(e)) {
-                if (this.isWritable) {
-                    e.dataTransfer.dropEffect = 'copy';
-    
-                    // Enables drop target to accept this node
-                    e.preventDefault();
-                }
+            if (this.isWritable && isKnimeNode(e)) {
+                e.dataTransfer.dropEffect = 'copy';
+
+                // Enables drop target to accept this node
+                e.preventDefault();
             }
         }
     }
