@@ -44,73 +44,82 @@
  * ---------------------------------------------------------------------
  *
  */
-package org.knime.ui.java.appstate;
+package org.knime.ui.java;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Supplier;
 
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.knime.core.node.CanceledExecutionException;
+import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeLogger;
+import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowManager;
-import org.knime.gateway.api.util.CoreUtil;
-import org.knime.gateway.api.webui.entity.AppStateEnt;
+import org.knime.core.util.LockFailedException;
+import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider;
-import org.knime.gateway.impl.webui.AppStateProvider.AppState;
-import org.knime.gateway.impl.webui.service.DefaultApplicationService;
-import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.impl.webui.service.ServiceDependencies;
-import org.knime.ui.java.TestingUtil;
+import org.knime.ui.java.appstate.AppStateUtil;
 
 /**
- * Utility methods for handling the representation of the application state.
+ * Utility methods for testing.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  */
-public class AppStateUtil {
+public class TestingUtil {
 
-    private AppStateUtil() {
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(TestingUtil.class);
 
-    }
+    public static Set<String> loadedWorkflowsForTesting;
 
     /**
-     * Makes the application state available in {@link ServiceDependencies}.
-     * @return The newly constructed application state
+     * @see AppStateUtil#initAppStateProvider(Supplier)
      */
-    public static AppStateProvider initAppStateProvider(final Supplier<AppState> supplier) {
-        clearAppState();
-        var appStateProvider = new AppStateProvider(supplier);
+    public static void initAppStateForTesting(final AppStateProvider.AppState appState) {
+        appState.getOpenedWorkflows().forEach(TestingUtil::addToProjectManagerForTesting);
+        AppStateUtil.clearAppState();
+        var appStateProvider = new AppStateProvider(() -> appState);
         ServiceDependencies.add(AppStateProvider.class, appStateProvider);
-        return appStateProvider;
     }
 
-    /**
-     * Remove the application service from the provided service dependencies, remove listeners and clear references to
-     * workflow projects.
-     */
-    public static void clearAppState() {
-        disposeAllLoadedWorkflowProjects();
-        ServiceDependencies.remove(AppStateProvider.class);
-        DefaultEventService.getInstance().removeAllEventListeners();
-    }
+    private static void addToProjectManagerForTesting(final AppStateProvider.AppState.OpenedWorkflow workflow) {
+        WorkflowProjectManager.addWorkflowProject(workflow.getProjectId(), new WorkflowProject() {
 
-    private static void disposeAllLoadedWorkflowProjects() {
-        if (TestingUtil.loadedWorkflowsForTesting != null) {
-            for (String id : TestingUtil.loadedWorkflowsForTesting) {
-                WorkflowManager wfm = WorkflowProjectManager.openAndCacheWorkflow(id).orElse(null);
-                try {
-                    CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
-                } catch (InterruptedException ex) { // NOSONAR should never happen
-                    throw new IllegalStateException(ex);
-                }
+            @Override
+            public WorkflowManager openProject() {
+                return loadWorkflowForTesting(workflow);
             }
-            TestingUtil.loadedWorkflowsForTesting.clear();
-        }
 
-        AppStateEnt previousState = DefaultApplicationService.getInstance().getState();
-        if (previousState != null) {
-            previousState.getOpenedWorkflows().forEach(wfProjEnt -> {
-                WorkflowProjectManager.removeWorkflowProject(wfProjEnt.getProjectId());
-            });
-        }
+            @Override
+            public String getName() {
+                return workflow.getProjectId();
+            }
+
+            @Override
+            public String getID() {
+                return workflow.getProjectId();
+            }
+        });
     }
 
+    private static WorkflowManager loadWorkflowForTesting(final AppStateProvider.AppState.OpenedWorkflow workflow) {
+        var file = new File(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile(), workflow.getProjectId());
+        try {
+            WorkflowManager wfm = EclipseUIStateUtil.loadWorkflow(file);
+            if (loadedWorkflowsForTesting == null) {
+                loadedWorkflowsForTesting = new HashSet<>();
+            }
+            loadedWorkflowsForTesting.add(workflow.getProjectId());
+            return wfm;
+        } catch (IOException | InvalidSettingsException | CanceledExecutionException
+                | UnsupportedWorkflowVersionException | LockFailedException ex) {
+            LOGGER.error("Workflow at '" + file + "' couldn't be loaded", ex);
+            return null;
+        }
+    }
 }

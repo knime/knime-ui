@@ -61,7 +61,7 @@ import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
-import org.knime.ui.java.appstate.AppStateUtil;
+import org.knime.ui.java.EclipseUIStateUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 import com.equo.chromium.swt.Browser;
@@ -126,7 +126,7 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
      *  if no such editor could be unambiguously determined
      */
     private static Optional<WorkflowEditor> getEditorForManager(final WorkflowManager targetWfm) {
-        var matchedEditors = AppStateUtil.getOpenWorkflowEditors().stream()
+        var matchedEditors = EclipseUIStateUtil.getOpenWorkflowEditors().stream()
                 .filter(wfEd -> wfEd.getWorkflowManager()
                         .map(e -> Objects.equals(e, targetWfm))
                         .orElse(false)

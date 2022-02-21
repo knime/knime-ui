@@ -1,21 +1,31 @@
 package org.knime.ui.java.browser;
 
+import static org.knime.ui.java.PerspectiveUtil.BROWSER_VIEW_PART_ID;
+
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.e4.core.contexts.Active;
 import org.eclipse.e4.ui.di.Focus;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.knime.core.node.NodeLogger;
+import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
@@ -23,6 +33,7 @@ import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.JsonRpcBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeViewBrowserFunction;
+import org.knime.ui.java.browser.function.OpenWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 
@@ -58,23 +69,77 @@ public class KnimeBrowserView {
 		m_browser = new Browser(parent, SWT.NONE);
 		m_browser.addLocationListener(new KnimeBrowserLocationListener());
 		m_browser.setMenu(new Menu(m_browser.getShell()));
-		addBrowserFunctions(m_browser);
-		setUrl();
 		BiConsumer<String, Object> eventConsumer = createEventConsumer(m_browser);
 		DefaultEventService.getInstance().addEventConsumer(eventConsumer);
 	}
 
-	private void addBrowserFunctions(final Browser browser) {
-		new JsonRpcBrowserFunction(browser);
-		new SwitchToJavaUIBrowserFunction(browser);
-		new OpenNodeViewBrowserFunction(browser);
-		new OpenNodeDialogBrowserFunction(browser);
-		new SaveWorkflowBrowserFunction(browser);
-		if (isRemoteDebuggingPortSet()) {
-			new InitAppForTestingBrowserFunction(browser, this);
-			new ClearAppForTestingBrowserFunction(browser, this);
-		}
+    @Inject
+    void partActivated(@Active final MPart part) {
+        boolean isBrowserView = part.getElementId().equals(BROWSER_VIEW_PART_ID);
+		// This handler is called multiple times during perspective switch, before and after @PostConstruct.
+		// `isRendered` is heuristically regarded to be the point in the life cycle at which the browser view is
+		// 	ready for interaction.
+        boolean isRendered = part.getObject() instanceof KnimeBrowserView;
+        if (isBrowserView && isRendered) {
+            ActivatedCallbackManager.notify((KnimeBrowserView)part.getObject());
+        }
+    }
+
+    /**
+     * @see ActivatedCallbackManager
+     */
+    public static void addActivatedCallback(final Consumer<KnimeBrowserView> callback) {
+        ActivatedCallbackManager.addCallback(callback);
+    }
+
+	public static void clearActivatedCallbacks() {
+		ActivatedCallbackManager.clear();
 	}
+
+    /**
+     * Notify callbacks exactly once when the browser view is activated *and* rendered.
+	 * After the callbacks have been notified, it is not possible to register any further callbacks.
+     *
+     * @see KnimeBrowserView#partActivated(MPart)
+     */
+    private static class ActivatedCallbackManager {
+
+        private static Set<Consumer<KnimeBrowserView>> CALLBACKS = new HashSet<>();
+
+        private static void addCallback(final Consumer<KnimeBrowserView> callback) {
+            try {
+                CALLBACKS.add(callback);
+            } catch (UnsupportedOperationException e) {
+                throw new UnsupportedOperationException("Can not register callbacks after event has occurred", e);
+            }
+        }
+
+        private static void notify(final KnimeBrowserView view) {
+			if (CALLBACKS.isEmpty()) {
+				// no callbacks registered or already notified
+				return;
+			}
+			CALLBACKS.forEach(c -> c.accept(view));
+			CALLBACKS = Collections.emptySet();  // immutable
+		}
+
+		private static void clear() {
+			CALLBACKS = new HashSet<>();  // modifiable
+		}
+    }
+
+    public void initBrowserFunctions(final AppStateProvider appStateProvider) {
+        new JsonRpcBrowserFunction(m_browser);
+        new SwitchToJavaUIBrowserFunction(m_browser);
+        new OpenNodeViewBrowserFunction(m_browser);
+        new OpenNodeDialogBrowserFunction(m_browser);
+        new SaveWorkflowBrowserFunction(m_browser);
+        new OpenWorkflowBrowserFunction(m_browser, appStateProvider);
+        if (isRemoteDebuggingPortSet()) {
+            new InitAppForTestingBrowserFunction(m_browser, this);
+            new ClearAppForTestingBrowserFunction(m_browser, this);
+        }
+    }
 
 	/**
 	 * Clears the browser's url.
