@@ -23,10 +23,6 @@ export default {
         });
     },
     methods: {
-        // remove selection
-        onEmptyPointerDown() {
-            this.$store.dispatch('selection/deselectAllObjects');
-        },
         onNodeSelectionPreview($event) {
             this.$refs.workflow.applyNodeSelectionPreview($event);
         }
@@ -38,7 +34,6 @@ export default {
   <Kanvas
     id="kanvas"
     ref="kanvas"
-    @empty-pointerdown="onEmptyPointerDown"
     @drop.native.stop="onDrop"
     @dragover.native.stop="onDragOver"
   >

@@ -13,7 +13,7 @@ const round = n => {
 };
 
 describe('canvas store', () => {
-    let localVue, store, workflowBounds, scrollContainer, dispatchSpy;
+    let localVue, store, workflowBounds, scrollContainer, dispatchSpy, toCanvasCoordinatesSpy;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -37,8 +37,18 @@ describe('canvas store', () => {
                 scrollContainer.scrollTop = top;
             })
         };
+
+        // put intermediate jest function into toCanvasCoordinates to be able to count how often it is called
+        toCanvasCoordinatesSpy = jest.fn().mockImplementation(canvasStoreConfig.getters.toCanvasCoordinates);
+      
         store = mockVuexStore({
-            canvas: canvasStoreConfig,
+            canvas: {
+                ...canvasStoreConfig,
+                getters: {
+                    ...canvasStoreConfig.getters,
+                    toCanvasCoordinates: toCanvasCoordinatesSpy
+                }
+            },
             workflow: {
                 getters: {
                     workflowBounds: () => workflowBounds
@@ -159,7 +169,7 @@ describe('canvas store', () => {
 
                 // content bounds inkl. padding + padding based on container
                 let size = 100 + padding * 2 + 150 * 2;
-                
+
                 let expectedViewBox = {
                     left: -padding - 150,
                     top: -padding - 150,
@@ -251,8 +261,8 @@ describe('canvas store', () => {
             test('(0, 0) to upper left corner', () => {
                 store.dispatch('canvas/scroll', { canvasX: 0, canvasY: 0, toScreenX: 0, toScreenY: 0 });
                 expect(scrollContainer.scrollTo).toHaveBeenCalledWith({
-                    top: 300, // includes canvas size + content padding
-                    left: 300, // includes canvas size + content padding
+                    top: 300 + padding, // includes canvas size + content padding
+                    left: 300 + padding, // includes canvas size + content padding
                     behavior: 'auto'
                 });
             });
@@ -260,17 +270,19 @@ describe('canvas store', () => {
             test('(0, 0) to center', () => {
                 store.dispatch('canvas/scroll', { canvasX: 0, canvasY: 0, toScreenX: 'center', toScreenY: 'center' });
                 expect(scrollContainer.scrollTo).toHaveBeenCalledWith({
-                    top: 150, // includes canvas size + content padding
-                    left: 150, // includes canvas size + content padding
+                    top: 150 + padding, // includes canvas size + content padding
+                    left: 150 + padding, // includes canvas size + content padding
                     behavior: 'auto'
                 });
             });
 
             test('center to center', () => {
-                store.dispatch('canvas/scroll', { canvasX: 0, canvasY: 0, toScreenX: 'center', toScreenY: 'center' });
+                store.dispatch('canvas/scroll', {
+                    canvasX: 'center', canvasY: 'center', toScreenX: 'center', toScreenY: 'center'
+                });
                 expect(scrollContainer.scrollTo).toHaveBeenCalledWith({
-                    top: 150, // includes canvas size + content padding
-                    left: 150, // includes canvas size + content padding
+                    top: 200 + padding, // includes canvas size + content padding
+                    left: 200 + padding, // includes canvas size + content padding
                     behavior: 'auto'
                 });
             });
@@ -339,7 +351,7 @@ describe('canvas store', () => {
                 expect(dispatchSpy).toHaveBeenCalledWith('canvas/scroll', {
                     canvasX: 'center',
                     toScreenX: 'center',
-                    
+
                     canvasY: -padding,
                     toScreenY: 20
                 });
@@ -430,13 +442,13 @@ describe('canvas store', () => {
 
             test.each([
                 { x: 0, y: 0 },
-                { x: 200, y: 200 } // TODO: test should fail for that, because it doesn't work live
+                { x: 200, y: 200 }
             ])('scrolls into workflow at point %s', (targetPoint) => {
                 // find target point on screen
                 let { x: cursorX, y: cursorY } = store.getters['canvas/fromCanvasCoordinates'](targetPoint);
 
                 // zoom into target point and scroll accordingly
-                let steps = 100;
+                let steps = 200;
                 for (let i = 0; i < steps; i++) {
                     store.dispatch('canvas/zoomAroundPointer', { delta: 1, cursorX, cursorY });
                 }
@@ -455,6 +467,9 @@ describe('canvas store', () => {
                 // distance between those points needs to match scroll position
                 expect(distance.x).toBe(scrollContainer.scrollLeft);
                 expect(distance.y).toBe(scrollContainer.scrollTop);
+
+                // due to caching this should have been only called once
+                expect(toCanvasCoordinatesSpy).toHaveBeenCalledTimes(1);
             });
 
             it('respects max and min zoom', () => {
