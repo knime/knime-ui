@@ -3,37 +3,48 @@ import fs from 'fs';
 import path from 'path';
 
 import * as colors from '../style/colors';
+import * as shapes from '../style/shapes';
+
+// -- define the names of the variables that will end up in the css file
+// colors.js -> colors.css (postfix color, someVariableName will become `--some-variable-name-color`)
+const colorNames = ['warning', 'error', 'darkeningMask', 'notificationBackground', 'selection.activeBorder',
+    'selection.activeBackground'];
+
+// shapes.js -> shapes.css (postfix shape, someVariableName will become `--some-variable-name-shape`)
+const shapeNames = ['selectedNodeBorderRadius', 'selectedNodeStrokeWidth'];
+// --
 
 const camelToSnake = str => str.replace(/(.?)([A-Z])/g,
     (_, before, letter) => `${before}${before ? '-' : ''}${letter.toLowerCase()}`);
 
 const dotToDash = str => str.replace(/\./g, '-');
 
+// access objects with a json path like syntax 'obj.x.y'
 const getVal = (object, path) => path.split('.').reduce((res, prop) => res[prop], object);
 
-
-const assets = ['warning', 'error', 'darkeningMask', 'notificationBackground', 'selection.activeBorder',
-    'selection.activeBackground'];
-
-
-/**
- * Generate colors.css with the above color names from colors.js
- * @returns {void}
- */
-export default function () {
-    let rules = assets.map(name => `--${camelToSnake(dotToDash(name))}-color: ${getVal(colors, name)};`);
-    let content = `/* This is an auto-generated file.
+const generateCssData = (names, data, postfix, sourceFile) => {
+    let rules = names.map(name => `--${camelToSnake(dotToDash(name))}-${postfix}: ${getVal(data, name)};`);
+    return `/* This is an auto-generated file.
  * Do not change manually.
- * Changes should go to style/colors.js.
+ * Changes should go to ${sourceFile}.
 */
 
 :root {
   ${rules.join('\n  ')}
 }
 `;
+};
 
-    let outPath = path.join(__dirname, '..', 'assets', 'colors.css');
-
+/**
+ * Generate colors.css and shapes.css from the above color names from colors.js
+ * @returns {void}
+ */
+export default function () {
+    let colorsPath = path.join(__dirname, '..', 'assets', 'colors.css');
     console.info('Generating assets/colors.css');
-    fs.writeFileSync(outPath, content);
+    fs.writeFileSync(colorsPath, generateCssData(colorNames, colors, 'color', 'style/colors.js'));
+
+    let shapesPath = path.join(__dirname, '..', 'assets', 'shapes.css');
+    console.info('Generating assets/shapes.css');
+    fs.writeFileSync(shapesPath, generateCssData(shapeNames, shapes, 'shape', 'style/shapes.js'));
 }

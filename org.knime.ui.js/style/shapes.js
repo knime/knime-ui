@@ -42,3 +42,6 @@ export const metaNodeBarHorizontalPadding = 13;
 export const defaultMetaNodeBarHeight = 500;
 
 export const gridSize = { x: 5, y: 5 };
+
+export const selectedNodeBorderRadius = 4;
+export const selectedNodeStrokeWidth = 1;

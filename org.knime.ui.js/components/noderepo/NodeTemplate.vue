@@ -144,8 +144,8 @@ export default {
 }
 
 .node-preview-active {
-  box-shadow: 0 0 0 1px var(--selection-active-border-color);
-  border-radius: 5px;
+  box-shadow: 0 0 0 calc(var(--selected-node-stroke-width-shape) * 1px) var(--selection-active-border-color);
+  border-radius: calc(var(--selected-node-border-radius-shape) * 1px);
   background-color: var(--selection-active-background-color);
 }
 </style>
