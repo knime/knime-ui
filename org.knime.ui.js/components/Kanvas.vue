@@ -1,6 +1,6 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
-import { debounce } from 'lodash';
+import { debounce, throttle } from 'lodash';
 
 export const RESIZE_DEBOUNCE = 100;
 
@@ -60,7 +60,8 @@ export default {
         /*
             Zooming
         */
-        onMouseWheel(e) {
+        onMouseWheel: throttle(function (e) {
+            /* eslint-disable no-invalid-this */
             // delta is -1, 0 or 1 depending on scroll direction.
             let delta = Math.sign(-e.deltaY);
 
@@ -73,7 +74,7 @@ export default {
             requestAnimationFrame(() => {
                 this.zoomAroundPointer({ delta, cursorX, cursorY });
             });
-        },
+        }),
         /*
             Panning
         */
@@ -82,16 +83,16 @@ export default {
             this.panningOffset = [e.screenX, e.screenY];
             this.$el.setPointerCapture(e.pointerId);
         },
-        movePan(e) {
+        movePan: throttle(function (e) {
+            /* eslint-disable no-invalid-this */
             if (this.isPanning) {
-                requestAnimationFrame(() => {
-                    const delta = [e.screenX - this.panningOffset[0], e.screenY - this.panningOffset[1]];
-                    this.panningOffset = [e.screenX, e.screenY];
-                    this.$el.scrollLeft -= delta[0];
-                    this.$el.scrollTop -= delta[1];
-                });
+                const delta = [e.screenX - this.panningOffset[0], e.screenY - this.panningOffset[1]];
+                this.panningOffset = [e.screenX, e.screenY];
+                this.$el.scrollLeft -= delta[0];
+                this.$el.scrollTop -= delta[1];
             }
-        },
+            /* eslint-enable no-invalid-this */
+        }),
         stopPan(e) {
             if (this.isPanning) {
                 this.isPanning = false;

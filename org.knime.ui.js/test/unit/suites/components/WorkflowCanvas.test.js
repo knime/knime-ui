@@ -5,7 +5,8 @@ import Vuex from 'vuex';
 import Vue from 'vue';
 
 import WorkflowCanvas from '~/components/WorkflowCanvas';
-import Kanvas from '~/components/Kanvas';
+import Workflow from '~/components/workflow/Workflow';
+import SelectionRectangle from '~/components/SelectionRectangle';
 
 describe('Kanvas', () => {
     let mocks, doShallowMount, wrapper, $store, storeConfig;
@@ -64,8 +65,12 @@ describe('Kanvas', () => {
 
     it('clicking on empty canvas deselects all', () => {
         doShallowMount();
-        wrapper.findComponent(Kanvas).vm.$emit('empty-pointerdown');
+        
+        let workflowComponent = wrapper.findComponent(Workflow);
+        
+        workflowComponent.vm.applyNodeSelectionPreview = jest.fn();
+        wrapper.findComponent(SelectionRectangle).vm.$emit('node-selection-preview', 'args');
 
-        expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
+        expect(workflowComponent.vm.applyNodeSelectionPreview).toHaveBeenCalledWith('args');
     });
 });

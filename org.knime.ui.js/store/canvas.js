@@ -9,6 +9,7 @@ export const minZoomFactor = 0.01; // 1%
 export const maxZoomFactor = 5; // 500%
 
 export const padding = 20; // 20 canvas units
+export const zoomCacheLifespan = 1000; // 1 second
 
 const clampZoomFactor = (newFactor) => Math.min(Math.max(minZoomFactor, newFactor), maxZoomFactor);
 
@@ -143,8 +144,24 @@ export const actions = {
         let kanvas = state.getScrollContainerElement();
         let { scrollLeft, scrollTop } = kanvas;
 
-        let screenCoordinatesPointer = [cursorX + scrollLeft, cursorY + scrollTop];
-        let canvasCoordinatesPoint = getters.toCanvasCoordinates(screenCoordinatesPointer);
+        // caches the calculation for the canvas coordinate point
+        // to prevent the content from shifting when zooming in and out quickly due to inprecise calculations
+        let canvasCoordinatesPoint;
+        if (
+            Date.now() - state.zoomCache?.timestamp < zoomCacheLifespan &&
+            state.zoomCache?.invariant[0] === cursorX &&
+            state.zoomCache?.invariant[1] === cursorY &&
+            state.zoomCache?.invariant[2] === scrollLeft &&
+            state.zoomCache?.invariant[3] === scrollTop
+        ) {
+            canvasCoordinatesPoint = state.zoomCache.result;
+        } else {
+            let screenCoordinatesPointer = [cursorX + scrollLeft, cursorY + scrollTop];
+
+            // this method naturally produces in-precise results for small zoom factors
+            // because many pixels in canvas coordinates map to the same pixel in screen coordinates
+            canvasCoordinatesPoint = getters.toCanvasCoordinates(screenCoordinatesPointer);
+        }
 
         if (isNaN(factor) === isNaN(delta)) {
             throw new Error('Either delta or factor have to be passed to zoomAroundPointer');
@@ -165,11 +182,18 @@ export const actions = {
 
         kanvas.scrollLeft += scrollDelta[0];
         kanvas.scrollTop += scrollDelta[1];
+
+        // write to cache [current cursor position, current scroll position, current time, computation result]
+        state.zoomCache = {
+            invariant: [cursorX, cursorY, kanvas.scrollLeft, kanvas.scrollTop],
+            timestamp: Date.now(),
+            result: canvasCoordinatesPoint
+        };
     },
 
     scroll({ getters, state }, { canvasX = 0, canvasY = 0, toScreenX = 0, toScreenY = 0, smooth = false }) {
         let kanvas = state.getScrollContainerElement();
-        
+
         if (canvasX === 'center') {
             canvasX = getters.contentBounds.centerX;
         }
@@ -297,7 +321,7 @@ export const getters = {
 
     viewBox(state, { paddedBounds }) {
         let { left, top, width, height } = paddedBounds;
-        
+
         return {
             left,
             top,
