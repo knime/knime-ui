@@ -1,11 +1,12 @@
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 import AppHeader from '~/components/AppHeader';
 import Sidebar from '~/components/Sidebar';
 import WorkflowToolbar from '~/components/WorkflowToolbar';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import TooltipContainer from '~/components/TooltipContainer';
 import Error from '~/components/Error';
+import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
 
 import { hotKeys } from '~/mixins';
 
@@ -24,7 +25,8 @@ export default {
         Sidebar,
         WorkflowToolbar,
         WorkflowTabContent,
-        TooltipContainer
+        TooltipContainer,
+        WorkflowEntryPage
     },
     mixins: [hotKeys],
     data() {
@@ -42,6 +44,11 @@ export default {
             // errors in the fetch hook are not captured by errorCaptured
             this.error = { message, stack };
         }
+    },
+    computed: {
+        ...mapState('workflow', {
+            workflow: 'activeWorkflow'
+        })
     },
     errorCaptured({ message, stack }, vm, vueInfo) {
         consola.error(message, vueInfo, stack);
@@ -67,7 +74,10 @@ export default {
 </script>
 
 <template>
-  <div id="knime-ui">
+  <div
+    v-if="workflow"
+    id="knime-ui"
+  >
     <!-- if subsequent errors occur, stick with the first one -->
     <Error
       v-if="error"
@@ -90,6 +100,7 @@ export default {
       class="loader"
     />
   </div>
+  <WorkflowEntryPage v-else />
 </template>
 
 <style lang="postcss" scoped>
