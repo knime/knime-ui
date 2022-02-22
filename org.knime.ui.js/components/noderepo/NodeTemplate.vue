@@ -40,7 +40,7 @@ export default {
             }
             // clone node preview
             this.dragGhost = this.$refs.nodePreview.$el.cloneNode(true);
-            
+
             // position it outside the view of the user
             this.dragGhost.style.position = 'absolute';
             this.dragGhost.style.left = '-100px';
@@ -144,8 +144,8 @@ export default {
 }
 
 .node-preview-active {
-  box-shadow: 0 0 0 1px var(--knime-cornflower);
+  box-shadow: 0 0 0 1px var(--selection-active-border-color);
   border-radius: 5px;
-  background-color: rgba(233, 241, 246, 0.9);
+  background-color: var(--selection-active-background-color);
 }
 </style>
