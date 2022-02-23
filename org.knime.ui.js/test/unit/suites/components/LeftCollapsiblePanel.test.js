@@ -46,9 +46,9 @@ describe('LeftCollapsiblePanel.vue', () => {
         expect(wrapper.vm.expanded).toBe(true);
     });
 
-    it('disabled if descriptionPanel is active', async () => {
+    it('disables button if description panel is active', async () => {
         wrapper.vm.$store.dispatch('panel/openDescriptionPanel');
-        expect(wrapper.vm.descriptionPanel).toBe(true);
+        expect(wrapper.vm.activeDescriptionPanel).toBe(true);
         const button = wrapper.find('button');
         await Vue.nextTick();
         expect(button.element.disabled).toBe(true);

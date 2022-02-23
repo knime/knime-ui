@@ -20,7 +20,7 @@ export default {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
         }),
-        ...mapState('panel', ['descriptionPanel']),
+        ...mapState('panel', ['activeDescriptionPanel']),
         // TODO: NXT-844 do we really need a panel store?
         ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive']),
         metadata() {
@@ -72,7 +72,7 @@ export default {
       </transition>
     </LeftCollapsiblePanel>
     <NodeDescription
-      v-if="descriptionPanel"
+      v-if="activeDescriptionPanel"
     />
   </div>
 </template>

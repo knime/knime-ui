@@ -97,7 +97,7 @@ describe('Node Repository store', () => {
             categoryPage: 0,
             scrollPosition: 0,
             selectedNode: null,
-            nodeWithDescription: null
+            nodeDescriptionObject: null
         });
     });
 
@@ -110,6 +110,14 @@ describe('Node Repository store', () => {
             expect(store.getters['nodeRepository/hasSearchParams']).toBe(true);
             store.state.nodeRepository.query = '';
             expect(store.getters['nodeRepository/hasSearchParams']).toBe(true);
+        });
+
+        it('returns proper value for searchIsActive', () => {
+            expect(store.getters['nodeRepository/searchIsActive']).toBe(false);
+            store.state.nodeRepository.nodes = [{ id: 1, name: 'Node' }];
+            expect(store.getters['nodeRepository/searchIsActive']).toBe(false);
+            store.state.nodeRepository.query = 'value';
+            expect(store.getters['nodeRepository/searchIsActive']).toBe(true);
         });
     });
 
@@ -197,10 +205,10 @@ describe('Node Repository store', () => {
             expect(store.state.nodeRepository.selectedNode).toEqual(node);
         });
 
-        it('sets node with description', () => {
+        it('sets node description object', () => {
             const node = { id: 'node1' };
             store.commit('nodeRepository/setNodeDescription', { id: 'node1' });
-            expect(store.state.nodeRepository.nodeWithDescription).toEqual(node);
+            expect(store.state.nodeRepository.nodeDescriptionObject).toEqual(node);
         });
     });
 

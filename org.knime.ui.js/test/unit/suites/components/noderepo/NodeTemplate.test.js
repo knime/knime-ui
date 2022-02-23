@@ -64,7 +64,7 @@ describe('NodeTemplate', () => {
                     closeDescriptionPanel
                 },
                 state: {
-                    descriptionPanel: false
+                    activeDescriptionPanel: false
                 }
             },
             nodeRepository: {
@@ -121,7 +121,7 @@ describe('NodeTemplate', () => {
     });
 
     it('adds style if node is selected', () => {
-        storeConfig.panel.state.descriptionPanel = true;
+        storeConfig.panel.state.activeDescriptionPanel = true;
         storeConfig.nodeRepository.state.selectedNode = {
             id: 'node-id'
         };
@@ -210,7 +210,7 @@ describe('NodeTemplate', () => {
 
         it('closes description panel when dragging starts', () => {
             doMount();
-            wrapper.trigger('dragstart');
+            wrapper.trigger('dragstart', testEvent);
 
             expect(closeDescriptionPanel).toHaveBeenCalled();
         });

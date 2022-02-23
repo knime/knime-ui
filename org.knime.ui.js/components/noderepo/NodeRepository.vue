@@ -21,7 +21,9 @@ export default {
     },
     computed: {
         ...mapState('nodeRepository', ['tags', 'nodes', 'nodesPerCategory']),
-        ...mapGetters('nodeRepository', ['hasSearchParams']),
+        ...mapGetters('nodeRepository', {
+            showSearchResults: 'searchIsActive'
+        }),
 
         /* Search and Filter */
         selectedTags: {
@@ -36,10 +38,6 @@ export default {
                 this.$store.dispatch('nodeRepository/updateQuery', value); // eslint-disable-line no-invalid-this
             },
             SEARCH_COOLDOWN, { leading: true, trailing: true })
-        },
-        
-        showSearchResults() {
-            return Boolean(this.searchQuery || this.selectedTags.length) && this.nodes !== null;
         },
 
         /* Navigation */

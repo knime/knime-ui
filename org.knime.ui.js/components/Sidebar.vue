@@ -14,14 +14,14 @@ export default {
         };
     },
     computed: {
-        ...mapState('panel', ['expanded', 'descriptionPanel']),
+        ...mapState('panel', ['expanded', 'activeDescriptionPanel']),
         ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive'])
     },
     methods: {
         ...mapActions('panel', ['setWorkflowMetaActive', 'setNodeRepositoryActive', 'close',
             'closeDescriptionPanel']),
         clickItem(alreadyActive, setActive) {
-            if (alreadyActive && this.expanded && this.descriptionPanel) {
+            if (alreadyActive && this.expanded && this.activeDescriptionPanel) {
                 this.close();
                 this.closeDescriptionPanel();
             } else if (alreadyActive && this.expanded) {

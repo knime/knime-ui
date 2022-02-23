@@ -7,7 +7,7 @@ import Description from '~/webapps-common/ui/components/Description';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 
 describe('NodeRepository', () => {
-    let mocks, doMount, wrapper, storeConfig, $store, closeDescriptionPanel, getNodeDescription;
+    let mocks, doMount, wrapper, storeConfig, $store, closeDescriptionPanel, getNodeDescription, searchIsActive;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -18,6 +18,7 @@ describe('NodeRepository', () => {
         wrapper = null;
         closeDescriptionPanel = jest.fn();
         getNodeDescription = jest.fn();
+        searchIsActive = false;
 
         storeConfig = {
             nodeRepository: {
@@ -26,20 +27,32 @@ describe('NodeRepository', () => {
                         id: 1,
                         name: 'Test'
                     },
-                    nodeWithDescription: {
+                    nodeDescriptionObject: {
                         id: 1,
                         description: 'This is a node.'
                     },
-                    nodes: [
-                        {
-                            id: 1,
-                            name: 'Test'
-                        }
+                    query: 'Source',
+                    nodesPerCategory: [
+                        { tag: 'tag:1',
+                            nodes: [{ id: 1 },
+                                { id: 2 }] },
+                        { tag: 'tag:2',
+                            nodes: [{ id: 3 },
+                                { id: 4 },
+                                { id: 5 }] }
                     ],
-                    query: 'Source'
+                    nodes: [{
+                        id: 6,
+                        name: 'Node'
+                    }]
                 },
                 actions: {
                     getNodeDescription
+                },
+                getters: {
+                    searchIsActive() {
+                        return searchIsActive;
+                    }
                 }
             },
             panel: {
@@ -77,7 +90,7 @@ describe('NodeRepository', () => {
     });
 
     it('renders placeholder text if there is no description', () => {
-        storeConfig.nodeRepository.state.nodeWithDescription = {
+        storeConfig.nodeRepository.state.nodeDescriptionObject = {
             id: 1
         };
         doMount();
@@ -85,7 +98,7 @@ describe('NodeRepository', () => {
         expect(description.text()).toBe('There is no description for this node.');
     });
 
-    it('clicking the icon closes the panel', () => {
+    it('closes the panel when button is clicked', () => {
         doMount();
         const button = wrapper.find('button');
         button.trigger('click');
@@ -103,9 +116,9 @@ describe('NodeRepository', () => {
         expect(getNodeDescription).toHaveBeenCalledTimes(2);
     });
 
-    it('title and description changes when node is not visible', () => {
+    it('changes title and description when node is not visible', () => {
         storeConfig.nodeRepository.state.selectedNode = {
-            id: 2
+            id: 9
         };
         doMount();
         const title = wrapper.find('h2');
@@ -114,5 +127,14 @@ describe('NodeRepository', () => {
         expect(wrapper.findComponent(NodeFeatureList).exists()).toBe(false);
         const description = wrapper.find('span');
         expect(description.text()).toBe('…');
+    });
+
+    it('correctly displays information when search is active', () => {
+        searchIsActive = true;
+        storeConfig.nodeRepository.state.selectedNode = storeConfig.nodeRepository.state.nodes[0];
+        doMount();
+        expect(wrapper.findComponent(Description).exists()).toBe(true);
+        const title = wrapper.find('h2');
+        expect(title.text()).toBe('Node');
     });
 });

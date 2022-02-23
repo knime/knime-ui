@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapActions } from 'vuex';
+import { mapState, mapActions, mapGetters } from 'vuex';
 import CloseIcon from '~/assets/cancel-execution.svg?inline';
 import Description from '~/webapps-common/ui/components/Description';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
@@ -11,29 +11,17 @@ export default {
         NodeFeatureList
     },
     computed: {
-        ...mapState('panel', ['descriptionPanel']),
-        ...mapState('nodeRepository', ['selectedNode', 'nodeWithDescription', 'nodes', 'nodesPerCategory',
-            'query', 'tags']),
+        ...mapState('panel', ['activeDescriptionPanel']),
+        ...mapState('nodeRepository', ['selectedNode', 'nodeDescriptionObject', 'nodes', 'nodesPerCategory']),
+        ...mapGetters('nodeRepository', ['searchIsActive']),
         isVisible() {
-            if (this.nodes && (this.query || this.tags)) {
-                if (this.nodes.some(node => node.id === this.selectedNode.id)) {
-                    return true;
-                }
-            } else if (this.nodes) {
-                for (let i = 0; i < this.nodesPerCategory.length; i++) {
-                    if (this.nodesPerCategory[i].nodes.some(node => node.id === this.selectedNode.id) ||
-                    this.nodes.some(node => node.id === this.selectedNode.id)) {
-                        return true;
-                    }
-                }
+            if (this.searchIsActive) {
+                return this.nodes.some(node => node.id === this.selectedNode.id);
             } else {
-                for (let i = 0; i < this.nodesPerCategory.length; i++) {
-                    if (this.nodesPerCategory[i].nodes.some(node => node.id === this.selectedNode.id)) {
-                        return true;
-                    }
-                }
+                return this.nodesPerCategory.some(category => category.nodes.some(
+                    node => node.id === this.selectedNode.id
+                ));
             }
-            return false;
         }
     },
     watch: {
@@ -46,10 +34,7 @@ export default {
     },
     methods: {
         ...mapActions('panel', ['closeDescriptionPanel']),
-        ...mapActions('nodeRepository', ['getNodeDescription']),
-        closePanel() {
-            this.closeDescriptionPanel();
-        }
+        ...mapActions('nodeRepository', ['getNodeDescription'])
     }
 };
 </script>
@@ -60,8 +45,8 @@ export default {
       <h2 v-if="isVisible">{{ selectedNode.name }}</h2>
       <h2 v-else>Please select a node</h2>
       <button
-        v-show="descriptionPanel"
-        @click="closePanel"
+        v-show="activeDescriptionPanel"
+        @click="closeDescriptionPanel"
       >
         <CloseIcon class="icon" />
       </button>
@@ -70,17 +55,17 @@ export default {
     <div class="scroll-container">
       <div class="node-info">
         <Description
-          v-if="nodeWithDescription && isVisible"
-          :text="nodeWithDescription.description"
+          v-if="nodeDescriptionObject && isVisible"
+          :text="nodeDescriptionObject.description"
           :render-as-html="true"
         />
-        <span v-if="nodeWithDescription && !nodeWithDescription.description">
+        <span v-else>…</span>
+        <span v-if="nodeDescriptionObject && !nodeDescriptionObject.description">
           There is no description for this node.
         </span>
-        <span v-else>…</span>
         <NodeFeatureList
-          v-if="nodeWithDescription && isVisible"
-          v-bind="nodeWithDescription"
+          v-if="nodeDescriptionObject && isVisible"
+          v-bind="nodeDescriptionObject"
           class="node-feature-list"
         />
       </div>

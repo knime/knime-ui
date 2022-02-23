@@ -10,7 +10,7 @@ const TABS = {
 export const state = () => ({
     expanded: false,
     activeTab: TABS.WORKFLOW_METADATA,
-    descriptionPanel: false
+    activeDescriptionPanel: false
 });
 
 export const getters = {
@@ -26,7 +26,7 @@ export const mutations = {
         state.activeTab = active;
     },
     setDescriptionPanel(state, value) {
-        state.descriptionPanel = value;
+        state.activeDescriptionPanel = value;
     }
 };
 

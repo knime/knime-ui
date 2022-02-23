@@ -27,11 +27,12 @@ export const state = () => ({
     
     /* node description */
     selectedNode: null,
-    nodeWithDescription: null
+    nodeDescriptionObject: null
 });
 
 export const getters = {
-    hasSearchParams: state => state.query !== '' || state.selectedTags.length > 0
+    hasSearchParams: state => state.query !== '' || state.selectedTags.length > 0,
+    searchIsActive: state => Boolean(state.query || state.tags.length) && state.nodes !== null
 };
 
 export const actions = {
@@ -210,8 +211,8 @@ export const mutations = {
     setScrollPosition(state, value) {
         state.scrollPosition = value;
     },
-    setNodeDescription(state, nodeWithDescription) {
-        state.nodeWithDescription = nodeWithDescription;
+    setNodeDescription(state, nodeDescriptionObject) {
+        state.nodeDescriptionObject = nodeDescriptionObject;
     },
     setSelectedNode(state, node) {
         state.selectedNode = node;

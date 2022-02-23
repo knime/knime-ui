@@ -60,22 +60,22 @@ describe('Sidebar', () => {
         await wrapper.findAll('li').at(1).trigger('click');
         expect(wrapper.vm.nodeRepositoryActive).toBe(true);
         wrapper.vm.$store.dispatch('panel/openDescriptionPanel');
-        expect(wrapper.vm.descriptionPanel).toBe(true);
+        expect(wrapper.vm.activeDescriptionPanel).toBe(true);
         expect(wrapper.vm.expanded).toBe(true);
         await wrapper.findAll('li').at(1).trigger('click');
         expect(wrapper.vm.expanded).toBe(false);
-        expect(wrapper.vm.descriptionPanel).toBe(false);
+        expect(wrapper.vm.activeDescriptionPanel).toBe(false);
     });
 
     test('click on a different tab when description panel is open, closes only description panel', async () => {
         await wrapper.findAll('li').at(1).trigger('click');
         expect(wrapper.vm.nodeRepositoryActive).toBe(true);
         wrapper.vm.$store.dispatch('panel/openDescriptionPanel');
-        expect(wrapper.vm.descriptionPanel).toBe(true);
+        expect(wrapper.vm.activeDescriptionPanel).toBe(true);
         expect(wrapper.vm.expanded).toBe(true);
         await wrapper.findAll('li').at(0).trigger('click');
         expect(wrapper.vm.nodeRepositoryActive).toBe(false);
-        expect(wrapper.vm.descriptionPanel).toBe(false);
+        expect(wrapper.vm.activeDescriptionPanel).toBe(false);
         expect(wrapper.vm.workflowMetaActive).toBe(true);
     });
 });

@@ -21,7 +21,7 @@ describe('panel store', () => {
         expect(store.state.panel).toStrictEqual({
             expanded: false,
             activeTab: 'workflowMetadata',
-            descriptionPanel: false
+            activeDescriptionPanel: false
         });
     });
 
@@ -62,14 +62,14 @@ describe('panel store', () => {
     });
 
     it('opens description panel', () => {
-        store.state.panel.descriptionPanel = false;
+        store.state.panel.activeDescriptionPanel = false;
         store.dispatch('panel/openDescriptionPanel');
-        expect(store.state.panel.descriptionPanel).toBe(true);
+        expect(store.state.panel.activeDescriptionPanel).toBe(true);
     });
 
     it('closes description panel', () => {
-        store.state.panel.descriptionPanel = true;
+        store.state.panel.activeDescriptionPanel = true;
         store.dispatch('panel/closeDescriptionPanel');
-        expect(store.state.panel.descriptionPanel).toBe(false);
+        expect(store.state.panel.activeDescriptionPanel).toBe(false);
     });
 });
