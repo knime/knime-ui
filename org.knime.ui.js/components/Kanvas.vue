@@ -148,7 +148,6 @@ export default {
 svg {
   position: relative; /* needed for z-index to have effect */
   display: block;
-  background-color: #f7f7f7;
 }
 
 .panning {
