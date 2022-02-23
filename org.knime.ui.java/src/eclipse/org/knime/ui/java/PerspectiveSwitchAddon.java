@@ -72,7 +72,6 @@ import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
-import org.knime.ui.java.appstate.AppStateUtil;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.osgi.service.event.Event;

@@ -44,7 +44,7 @@
  * ---------------------------------------------------------------------
  *
  */
-package org.knime.ui.java.appstate;
+package org.knime.ui.java;
 
 import java.util.function.Supplier;
 
@@ -87,7 +87,7 @@ public final class AppStateUtil {
      * Remove the application service from the provided service dependencies, remove listeners and clear references to
      * workflow projects.
      */
-    public static void clearAppState() {
+    static void clearAppState() {
         removeWorkflowProjects();
         DefaultServices.disposeAllServicesInstances();
     }

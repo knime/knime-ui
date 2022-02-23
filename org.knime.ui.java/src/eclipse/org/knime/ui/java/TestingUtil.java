@@ -67,7 +67,6 @@ import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.impl.webui.service.DefaultServices;
-import org.knime.ui.java.appstate.AppStateUtil;
 
 /**
  * Utility methods for testing.
