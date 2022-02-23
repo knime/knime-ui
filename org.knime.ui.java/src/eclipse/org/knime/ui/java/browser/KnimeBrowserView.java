@@ -3,7 +3,6 @@ package org.knime.ui.java.browser;
 import static org.knime.ui.java.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +25,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.webui.AppStateProvider;
-import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
@@ -38,10 +36,9 @@ import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 
 import com.equo.chromium.swt.Browser;
+import com.equo.chromium.swt.BrowserFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Simple view containing a browser initialized with the knime-ui webapp (or a
@@ -69,8 +66,6 @@ public class KnimeBrowserView {
 		m_browser = new Browser(parent, SWT.NONE);
 		m_browser.addLocationListener(new KnimeBrowserLocationListener());
 		m_browser.setMenu(new Menu(m_browser.getShell()));
-		BiConsumer<String, Object> eventConsumer = createEventConsumer(m_browser);
-		DefaultEventService.getInstance().addEventConsumer(eventConsumer);
 	}
 
     @Inject
@@ -82,19 +77,18 @@ public class KnimeBrowserView {
         boolean isRendered = part.getObject() instanceof KnimeBrowserView;
         if (isBrowserView && isRendered) {
             ActivatedCallbackManager.notify((KnimeBrowserView)part.getObject());
+            ActivatedCallbackManager.clear();
         }
     }
 
     /**
-     * @see ActivatedCallbackManager
+     * Allows one to defer calls on the browser view until it's available.
+     *
+     * @param callback called as soon as this view is completely loaded and activated
      */
     public static void addActivatedCallback(final Consumer<KnimeBrowserView> callback) {
         ActivatedCallbackManager.addCallback(callback);
     }
-
-	public static void clearActivatedCallbacks() {
-		ActivatedCallbackManager.clear();
-	}
 
     /**
      * Notify callbacks exactly once when the browser view is activated *and* rendered.
@@ -104,30 +98,35 @@ public class KnimeBrowserView {
      */
     private static class ActivatedCallbackManager {
 
-        private static Set<Consumer<KnimeBrowserView>> CALLBACKS = new HashSet<>();
+        private static Set<Consumer<KnimeBrowserView>> callbacks = new HashSet<>();
 
         private static void addCallback(final Consumer<KnimeBrowserView> callback) {
             try {
-                CALLBACKS.add(callback);
+                callbacks.add(callback);
             } catch (UnsupportedOperationException e) {
                 throw new UnsupportedOperationException("Can not register callbacks after event has occurred", e);
             }
         }
 
         private static void notify(final KnimeBrowserView view) {
-			if (CALLBACKS.isEmpty()) {
+			if (callbacks.isEmpty()) {
 				// no callbacks registered or already notified
 				return;
 			}
-			CALLBACKS.forEach(c -> c.accept(view));
-			CALLBACKS = Collections.emptySet();  // immutable
+			callbacks.forEach(c -> c.accept(view));
+			callbacks = Collections.emptySet();  // immutable
 		}
 
 		private static void clear() {
-			CALLBACKS = new HashSet<>();  // modifiable
+			callbacks = new HashSet<>();  // modifiable
 		}
     }
 
+    /**
+     * Initializes and registers the {@link BrowserFunction BrowserFunctions} with the browser.
+     *
+     * @param appStateProvider required to initialize the {@link OpenWorkflowBrowserFunction}
+     */
     public void initBrowserFunctions(final AppStateProvider appStateProvider) {
         new JsonRpcBrowserFunction(m_browser);
         new SwitchToJavaUIBrowserFunction(m_browser);
@@ -179,7 +178,7 @@ public class KnimeBrowserView {
 	 * Sets the URL to the actual application page (served from the file system).
 	 */
 	private void setAppUrl() {
-		URL url = Platform.getBundle("org.knime.ui.js").getEntry(APP_PAGE);
+		var url = Platform.getBundle("org.knime.ui.js").getEntry(APP_PAGE);
 		try {
 			String path = FileLocator.toFileURL(url).getPath();
 			m_browser.setUrl("file://" + path);
@@ -189,19 +188,22 @@ public class KnimeBrowserView {
 		}
 	}
 
-	private static BiConsumer<String, Object> createEventConsumer(final Browser browser) {
-		final ObjectMapper mapper = ObjectMapperUtil.getInstance().getObjectMapper();
-		return (name, event) -> createJsonRpcNotificationAndSendToBrowser(browser, mapper, name, event);
-	}
+	/**
+	 * @return a new event consumer instance forwarding events to java-script
+	 */
+    public BiConsumer<String, Object> createEventConsumer() {
+        final var mapper = ObjectMapperUtil.getInstance().getObjectMapper();
+        return (name, event) -> createJsonRpcNotificationAndSendToBrowser(m_browser, mapper, name, event);
+    }
 
 	private static void createJsonRpcNotificationAndSendToBrowser(final Browser browser, final ObjectMapper mapper,
 			final String name, final Object event) {
 		// wrap event into a jsonrpc notification (method == event-name) and serialize
-		ObjectNode jsonrpc = mapper.createObjectNode();
-		ArrayNode params = jsonrpc.arrayNode();
+		var jsonrpc = mapper.createObjectNode();
+		var params = jsonrpc.arrayNode();
 		params.addPOJO(event);
 		try {
-			String message = mapper
+			var message = mapper
 					.writeValueAsString(jsonrpc.put("jsonrpc", "2.0").put("method", name).set("params", params));
 			String jsCode = "jsonrpcNotification(\"" + StringEscapeUtils.escapeJava(message) + "\");";
 			Display.getDefault().syncExec(() -> browser.execute(jsCode));

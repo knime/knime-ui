@@ -52,7 +52,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.graphics.Point;
@@ -87,7 +86,7 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
 
     private final AppStateProvider m_appStateProvider;
 
-
+    @SuppressWarnings("javadoc")
     public OpenWorkflowBrowserFunction(final Browser browser, final AppStateProvider appStateProvider) {
         super(browser, "openWorkflow");
         m_appStateProvider = appStateProvider;

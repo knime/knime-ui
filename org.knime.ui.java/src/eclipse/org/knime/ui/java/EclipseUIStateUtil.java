@@ -106,6 +106,9 @@ public final class EclipseUIStateUtil {
     /**
      * Describe the current application state based on the state of the Eclipse UI.
      *
+     * @param modelService
+     * @param app
+     *
      * @return The state of the Eclipse UI in terms of {@link AppState}.
      */
     public static AppState createAppState(final EModelService modelService, final MApplication app) {
@@ -114,7 +117,7 @@ public final class EclipseUIStateUtil {
 
     private static Pair<WorkflowProject, OpenedWorkflow>
         createOpenedWorkflowAndWorkflowProject(final MPart editorPart) {
-        WorkflowManager wfm = getWorkflowManager(editorPart);
+        var wfm = getWorkflowManager(editorPart);
         WorkflowManager projectWfm = wfm != null ? getProjectManager(wfm) : null;
         if (projectWfm != null) {
             WorkflowProject wp = WorkflowProjectManager.getWorkflowProject(projectWfm.getNameWithID()).orElse(null);
@@ -122,7 +125,7 @@ public final class EclipseUIStateUtil {
                 wp = createWorkflowProject(editorPart, projectWfm);
             }
             if (wp != null) {
-                OpenedWorkflow ow = createOpenedWorkflow(wp.getID(),
+                var ow = createOpenedWorkflow(wp.getID(),
                     new NodeIDEnt(wfm.getID(), projectWfm.getProjectComponent().isPresent()).toString(),
                     isSelectedEditor(editorPart));
                 return Pair.create(wp, ow);
@@ -160,11 +163,11 @@ public final class EclipseUIStateUtil {
             .filter(Objects::nonNull)//
             // ('non-visible' projects are removed first)
             .sorted((p1, p2) -> Boolean.compare(p2.getSecond().isVisible(), p1.getSecond().isVisible()))//
-            .filter(p -> {
-                // keep ids of loaded project and filters duplicates
-                // ('non-visible' projects are removed first)
-                return loadedProjectIds.add(p.getFirst().getID());
-            }).map(p -> {
+            .filter(p ->
+            // keep ids of loaded project and filters duplicates
+            // ('non-visible' projects are removed first)
+            loadedProjectIds.add(p.getFirst().getID())//
+            ).map(p -> {
                 WorkflowProject wp = p.getFirst();
                 WorkflowProjectManager.addWorkflowProject(wp.getID(), wp);
                 return p.getSecond();

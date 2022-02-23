@@ -48,16 +48,12 @@ package org.knime.ui.java.appstate;
 
 import java.util.function.Supplier;
 
-import org.knime.core.node.workflow.WorkflowManager;
-import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.api.webui.entity.AppStateEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.gateway.impl.webui.service.DefaultApplicationService;
-import org.knime.gateway.impl.webui.service.DefaultEventService;
-import org.knime.gateway.impl.webui.service.ServiceDependencies;
-import org.knime.ui.java.TestingUtil;
+import org.knime.gateway.impl.webui.service.DefaultServices;
 
 /**
  * Utility methods for handling the representation of the application state.
@@ -65,21 +61,26 @@ import org.knime.ui.java.TestingUtil;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  */
-public class AppStateUtil {
+public final class AppStateUtil {
 
     private AppStateUtil() {
-
+        //
     }
 
     /**
-     * Makes the application state available in {@link ServiceDependencies}.
-     * @return The newly constructed application state
+     * Makes the application state available for the default service implementations (see {@link DefaultServices}).
+     *
+     * @param supplier
+     * @return The newly constructed application state or {@code null} if the app state has already been initialized
      */
     public static AppStateProvider initAppStateProvider(final Supplier<AppState> supplier) {
-        clearAppState();
-        var appStateProvider = new AppStateProvider(supplier);
-        ServiceDependencies.add(AppStateProvider.class, appStateProvider);
-        return appStateProvider;
+        if (!DefaultServices.areServicesInitialized()) {
+            var appStateProvider = new AppStateProvider(supplier);
+            DefaultServices.setServiceDependency(AppStateProvider.class, appStateProvider);
+            return appStateProvider;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -87,29 +88,17 @@ public class AppStateUtil {
      * workflow projects.
      */
     public static void clearAppState() {
-        disposeAllLoadedWorkflowProjects();
-        ServiceDependencies.remove(AppStateProvider.class);
-        DefaultEventService.getInstance().removeAllEventListeners();
+        removeWorkflowProjects();
+        DefaultServices.disposeAllServicesInstances();
     }
 
-    private static void disposeAllLoadedWorkflowProjects() {
-        if (TestingUtil.loadedWorkflowsForTesting != null) {
-            for (String id : TestingUtil.loadedWorkflowsForTesting) {
-                WorkflowManager wfm = WorkflowProjectManager.openAndCacheWorkflow(id).orElse(null);
-                try {
-                    CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
-                } catch (InterruptedException ex) { // NOSONAR should never happen
-                    throw new IllegalStateException(ex);
-                }
+    private static void removeWorkflowProjects() {
+        if (DefaultServices.areServicesInitialized()) {
+            AppStateEnt previousState = DefaultApplicationService.getInstance().getState();
+            if (previousState != null) {
+                previousState.getOpenedWorkflows()
+                    .forEach(wfProjEnt -> WorkflowProjectManager.removeWorkflowProject(wfProjEnt.getProjectId()));
             }
-            TestingUtil.loadedWorkflowsForTesting.clear();
-        }
-
-        AppStateEnt previousState = DefaultApplicationService.getInstance().getState();
-        if (previousState != null) {
-            previousState.getOpenedWorkflows().forEach(wfProjEnt -> {
-                WorkflowProjectManager.removeWorkflowProject(wfProjEnt.getProjectId());
-            });
         }
     }
 

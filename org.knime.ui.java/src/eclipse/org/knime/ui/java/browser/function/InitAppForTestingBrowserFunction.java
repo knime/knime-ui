@@ -105,13 +105,12 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
 			return null;
 		}
 		JsonNode openedWorkflows = appState.get("openedWorkflows");
-		if (openedWorkflows != null) {
-			TestingUtil.initAppStateForTesting(() ->
-					StreamSupport.stream(openedWorkflows.spliterator(), false)
-						.map(InitAppForTestingBrowserFunction::createOpenedWorkflow)
-						.collect(Collectors.toList())
-			);
-		}
+        if (openedWorkflows != null) {
+            TestingUtil.initAppStateForTesting(
+                () -> StreamSupport.stream(openedWorkflows.spliterator(), false)
+                    .map(InitAppForTestingBrowserFunction::createOpenedWorkflow).collect(Collectors.toList()),
+                m_knimeBrowser.createEventConsumer());
+        }
 		m_knimeBrowser.setUrl(true);
 		return null;
 	}

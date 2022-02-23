@@ -50,6 +50,7 @@ import static org.eclipse.ui.internal.IWorkbenchConstants.PERSPECTIVE_STACK_ID;
 import static org.knime.ui.java.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -142,7 +143,10 @@ public final class PerspectiveSwitchAddon {
         setTrimsAndMenuVisible(false, m_modelService, m_app);
         Supplier<AppStateProvider.AppState> supplier = () -> EclipseUIStateUtil.createAppState(m_modelService, m_app);
         var appStateProvider = AppStateUtil.initAppStateProvider(supplier);
-        // defer calling until browser view is available
+        KnimeBrowserView.addActivatedCallback(v -> {
+            BiConsumer<String, Object> eventConsumer = v.createEventConsumer();
+            DefaultEventService.getInstance().addEventConsumer(eventConsumer);
+        });
         KnimeBrowserView.addActivatedCallback(v -> v.initBrowserFunctions(appStateProvider));
         KnimeBrowserView.addActivatedCallback(KnimeBrowserView::setUrl);
         switchToWebUITheme();
@@ -153,9 +157,7 @@ public final class PerspectiveSwitchAddon {
 
 	private void onSwitchToJavaUI() {
         DefaultEventService.getInstance().removeAllEventListeners();
-        KnimeBrowserView.clearActivatedCallbacks();
         callOnKnimeBrowserView(KnimeBrowserView::clearUrl);
-        AppStateUtil.clearAppState();
         setTrimsAndMenuVisible(true, m_modelService, m_app);
         switchToJavaUITheme();
         // the color of the workflow editor canvas changes when switching back
