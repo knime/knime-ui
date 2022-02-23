@@ -63,7 +63,7 @@ export default {
 
 .workflow-sheet {
   fill: white;
-  filter: drop-shadow(4px 4px 18px rgba(0,0,0, 0.1));
+  filter: drop-shadow(4px 4px 18px rgba(0, 0, 0, 0.1));
   pointer-events: none;
 }
 </style>
