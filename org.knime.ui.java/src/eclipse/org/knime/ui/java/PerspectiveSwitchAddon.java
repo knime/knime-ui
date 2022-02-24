@@ -157,6 +157,7 @@ public final class PerspectiveSwitchAddon {
 	private void onSwitchToJavaUI() {
         DefaultEventService.getInstance().removeAllEventListeners();
         callOnKnimeBrowserView(KnimeBrowserView::clearUrl);
+        AppStateUtil.clearAppState();
         setTrimsAndMenuVisible(true, m_modelService, m_app);
         switchToJavaUITheme();
         // the color of the workflow editor canvas changes when switching back
