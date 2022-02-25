@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -164,9 +165,9 @@ public final class EclipseUIStateUtil {
             // ('non-visible' projects are removed first)
             .sorted((p1, p2) -> Boolean.compare(p2.getSecond().isVisible(), p1.getSecond().isVisible()))//
             .filter(p ->
-            // keep ids of loaded project and filters duplicates
-            // ('non-visible' projects are removed first)
-            loadedProjectIds.add(p.getFirst().getID())//
+                // keep ids of loaded project and filter duplicates
+                // ('non-visible' projects are removed first)
+                loadedProjectIds.add(p.getFirst().getID())//
             ).map(p -> {
                 WorkflowProject wp = p.getFirst();
                 WorkflowProjectManager.addWorkflowProject(wp.getID(), wp);
@@ -248,6 +249,27 @@ public final class EclipseUIStateUtil {
             .collect(Collectors.toList());
     }
 
+    /**
+     * Obtain the {@link WorkflowEditor} for a given {@link WorkflowManager} by looking through
+     * the currently open editors.
+     * @param targetWfm The workflow manager to retrieve the editor for
+     * @return An optional containing the workflow editor for the given target workflow manager, or an empty optional
+     *  if no such editor could be unambiguously determined
+     */
+    public static Optional<WorkflowEditor> getEditorForManager(final WorkflowManager targetWfm) {
+        var matchedEditors = getOpenWorkflowEditors().stream()
+                .filter(wfEd -> wfEd.getWorkflowManager()
+                        .map(e -> Objects.equals(e, targetWfm))
+                        .orElse(false)
+                )
+                .collect(Collectors.toList());
+        if (matchedEditors.size() == 1) {
+            return Optional.of(matchedEditors.get(0));
+        } else {
+            return Optional.empty();
+        }
+    }
+
     private static java.util.Optional<WorkflowEditor> getWorkflowEditor(final CompatibilityPart part) {
         AtomicReference<WorkflowEditor> ref = new AtomicReference<>();
         Display.getDefault().syncExec(() -> {
@@ -279,5 +301,4 @@ public final class EclipseUIStateUtil {
         WorkflowLoadResult loadRes = WorkflowManager.loadProject(workflowDir, new ExecutionMonitor(), loadHelper);
         return loadRes.getWorkflowManager();
     }
-
 }

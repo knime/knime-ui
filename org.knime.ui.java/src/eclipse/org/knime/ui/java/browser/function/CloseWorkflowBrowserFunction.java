@@ -2,7 +2,7 @@
  * ------------------------------------------------------------------------
  *
  *  Copyright by KNIME AG, Zurich, Switzerland
- *  Website: http://www.knime.com; Email: contact@knime.com
+ *  Website: http://www.knime.org; Email: contact@knime.org
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License, Version 3, as
@@ -43,92 +43,62 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
  *
- * History
- *   Jan 5, 2022 (hornm): created
  */
 package org.knime.ui.java.browser.function;
 
-import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.ui.PlatformUI;
-import org.knime.core.node.workflow.SubNodeContainer;
-import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
+import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.ui.java.EclipseUIStateUtil;
-import org.knime.workbench.editor2.WorkflowEditor;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
 
 /**
- * Save the project workflow manager identified by a given project ID.
- *
- * @author Benjamin Moser, KNIME GmbH, Konstanz
+ * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  */
-public class SaveWorkflowBrowserFunction extends BrowserFunction {
+public class CloseWorkflowBrowserFunction extends BrowserFunction {
 
+    private final AppStateProvider m_appStateProvider;
 
     @SuppressWarnings("javadoc")
-    public SaveWorkflowBrowserFunction(final Browser browser) {
-        super(browser, "saveWorkflow");
+    public CloseWorkflowBrowserFunction(final Browser browser, final AppStateProvider appStateProvider) {
+        super(browser, "closeWorkflow");
+        m_appStateProvider = appStateProvider;
     }
 
     /**
-     * Save the project workflow manager identified by a given project ID.
+     * Close the workflow project associated with the given project ID.
+     *
      * @param arguments Assume arguments[0] is a String containing the project ID (e.g. "simple-workflow 0").
      * @return always {@code null}
      */
     @Override
     public Object function(final Object[] arguments) {
 
-        String projectId = (String)arguments[0];  // e.g. "simple-workflow 0"
+        String projectId = (String)arguments[0]; // e.g. "simple-workflow 0"
 
         var projectWfm = DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
-        // For at least as long as new frontend is integrated in "old" knime eclipse workbench,
-        // we want a save action triggered from new frontend to be consistent with one triggered
-        // from the traditional UI. The best thing we can do is trigger the exact same action.
-        WorkflowEditor editor = EclipseUIStateUtil.getEditorForManager(projectWfm).orElseThrow(
-                () -> new NoSuchElementException("No workflow editor for project found.")
-        );
-        editor.doSave(new NullProgressMonitor());
+        var editor = EclipseUIStateUtil.getEditorForManager(projectWfm)
+            .orElseThrow(() -> new NoSuchElementException("No workflow editor for project found."));
 
-        // Workaround to set sub-editors to clean (cf WorkflowEditor#saveTo)
-        // If viewing in new frontend, the existing implementation does not suffice to find sub-editors.
-        var display = PlatformUI.getWorkbench().getDisplay();
-        display.asyncExec(() -> {
-            if (display.isDisposed()) {
-                return;
-            }
-            getChildWfms(projectWfm).stream()
-                    .map(EclipseUIStateUtil::getEditorForManager)
-                    .flatMap(Optional::stream)  // unpack/collapse optionals
-                    .forEach(WorkflowEditor::unmarkDirty);
-        });
+        var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+
+        // Since we are closing the editor of the root workflow manager, this will also close any editors
+        //  of child workflow managers.
+        var wasClosed = page.closeEditor(editor, true);
+
+        if (wasClosed) {
+            WorkflowProjectManager.removeWorkflowProject(projectId);
+            // triggers sending event
+            m_appStateProvider.updateAppState();
+        }
 
         return null;
-    }
-
-    /**
-     * Get the {@link WorkflowManager}s of node containers contained in the given workflow manager (no recursion).
-     * @param parent The workflow manager whose direct children (contained node containers) to consider
-     * @return A list of workflow managers that correspond to node containers appearing in the parent workflow manager.
-     */
-    private static List<WorkflowManager> getChildWfms(final WorkflowManager parent) {
-        return parent.getNodeContainers().stream().map(nodeContainer -> {
-            if (nodeContainer instanceof SubNodeContainer) {
-                return ((SubNodeContainer)nodeContainer).getWorkflowManager();
-            } else if (nodeContainer instanceof WorkflowManager) {
-                return (WorkflowManager)nodeContainer;
-            } else {  // native nodes etc.
-                return null;
-            }
-        }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
 }

@@ -94,9 +94,9 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
 
     /**
      * Display a selection popup for workflows in the LOCAL mountpoint. On selection, opens and loads the selected
-     * workflow and opens an editor part in the Java UI. Having an editor part open for each open workflow is required
-     * for saving the workflow, see NXT-622. If the workflow is already open, this will make the editor part be the
-     * selected element in the shared editor area (i.e. the "tab" in the UI is active).
+     * workflow as a new workflow project and opens an editor part in the Java UI. Having an editor part open for each
+     * open workflow is required for saving the workflow, see NXT-622. If the workflow is already open, this will make
+     * the editor part be the selected element in the shared editor area (i.e. the "tab" in the UI is active).
      *
      * @param arguments No parameters expected, parameter is ignored.
      * @return always {@code null}

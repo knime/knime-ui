@@ -27,6 +27,7 @@ import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
+import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.JsonRpcBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
@@ -134,6 +135,7 @@ public class KnimeBrowserView {
         new OpenNodeDialogBrowserFunction(m_browser);
         new SaveWorkflowBrowserFunction(m_browser);
         new OpenWorkflowBrowserFunction(m_browser, appStateProvider);
+		new CloseWorkflowBrowserFunction(m_browser, appStateProvider);
         if (isRemoteDebuggingPortSet()) {
             new InitAppForTestingBrowserFunction(m_browser, this);
             new ClearAppForTestingBrowserFunction(m_browser, this);
