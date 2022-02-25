@@ -1,3 +1,7 @@
+package org.knime.ui.java;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.BundleContext;
+
 /*
  * ------------------------------------------------------------------------
  *
@@ -44,60 +48,35 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 7, 2021 (hornm): created
+ *   Feb 25, 2022 (hornm): created
  */
-package org.knime.ui.java.browser;
-
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
-import org.eclipse.swt.program.Program;
-import org.knime.core.node.NodeLogger;
-import org.knime.gateway.impl.webui.service.DefaultEventService;
 
 /**
- * Listens for changes of the URL in the KNIME browser and triggers respective
- * actions (e.g. external URLs are opened in the external browser).
+ * The KNIME UI Plugin.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class KnimeBrowserLocationListener implements LocationListener {
+public class UIPlugin extends AbstractUIPlugin {
 
-	@Override
-	public void changing(final LocationEvent event) {
-		// Any change of the location (i.e. URL) will be intercepted and the URL
-		// opened in the external browser.
-		// Except if the new location URL is the actual APP page, the EMPTY page,
-		// or a localhost-URL (for development)
-		if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
-			// let the location change happen without further ado
-		    // except ...
-		    // - remove all event listeners because the webapp is newly loaded and will register
-		    //   required listeners (again) - might be a refresh
-		    DefaultEventService.getInstance().removeAllEventListeners();
-		} else {
-			if (!Program.launch(event.location)) {
-				NodeLogger.getLogger(this.getClass())
-						.error("Failed to open URL in external browser. The URL is: " + event.location);
-			}
-			event.doit = false;
-		}
-	}
+    private static BundleContext context;
 
-	@Override
-	public void changed(final LocationEvent event) {
-		//
-	}
+    @Override
+    public void start(final BundleContext bc) throws Exception {
+        context = bc; // NOSONAR
+    }
 
-	private static boolean isAppPage(final String url) {
-		return url.startsWith(KnimeBrowserView.BASE_URL);
-	}
+    @Override
+    public void stop(final BundleContext bc) throws Exception {
+        //
+    }
 
-	private static boolean isEmptyPage(final String url) {
-		return url.endsWith(KnimeBrowserView.EMPTY_PAGE);
-	}
-
-	private static boolean isDevPage(final String url) {
-		return url.startsWith("http://localhost");
-	}
+    /**
+     * Gives access to the {@link BundleContext} of this plugin.
+     *
+     * @return the bundle context instance
+     */
+    public static BundleContext getContext() {
+        return context;
+    }
 
 }
