@@ -53,6 +53,7 @@ import org.eclipse.ui.PlatformUI;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.workbench.explorer.ExplorerMountTable;
+import org.knime.workbench.explorer.localworkspace.LocalWorkspaceContentProvider;
 import org.knime.workbench.explorer.localworkspace.LocalWorkspaceContentProviderFactory;
 import org.knime.workbench.explorer.view.actions.NewWorkflowWizard;
 
@@ -91,7 +92,10 @@ public class CreateWorkflowBrowserFunction extends BrowserFunction {
         var newWorkflowWizard = new NewWorkflowWizard();
         String defaultLocalMountpointID = new LocalWorkspaceContentProviderFactory().getDefaultMountID();
         var localRootStore = ExplorerMountTable.getMountPoint(defaultLocalMountpointID).getProvider().getRootStore();
-        newWorkflowWizard.init(PlatformUI.getWorkbench(), new StructuredSelection(localRootStore));
+        newWorkflowWizard.init(PlatformUI.getWorkbench(),
+                new StructuredSelection(localRootStore),
+                LocalWorkspaceContentProvider.class::isInstance
+        );
         var wizardDialog = new WizardDialog(SWTUtilities.getActiveShell(), newWorkflowWizard);
         wizardDialog.setHelpAvailable(false);
         wizardDialog.create();
