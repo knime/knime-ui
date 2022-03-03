@@ -43,7 +43,7 @@ export default {
   <div class="node-description">
     <div class="header">
       <h2 v-if="isVisible">{{ selectedNode.name }}</h2>
-      <h2 v-else>Please select a node</h2>
+      <h2 v-else>&nbsp;</h2>
       <button
         v-show="activeDescriptionPanel"
         @click="closeDescriptionPanel"
@@ -59,7 +59,7 @@ export default {
           :text="nodeDescriptionObject.description"
           :render-as-html="true"
         />
-        <span v-else>…</span>
+        <div v-else class="no-selected-node-visible">Please select a node</div>
         <span v-if="nodeDescriptionObject && !nodeDescriptionObject.description">
           There is no description for this node.
         </span>
@@ -136,6 +136,15 @@ export default {
 
   & .node-info {
     padding: 10px 20px 0;
+
+    & .no-selected-node-visible {
+      position: relative;
+      height: calc(100vh - 192px); /* sum of all the heights from AppHeader, WorkflowToolbar, NodeDescription Header and all separators */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 110px; /* vertical alignment to get to the same height as the empty message in the noderepo search results */
+    }
   }
 
   & .description {
