@@ -53,8 +53,8 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.knime.core.node.NodeLogger;
-import org.knime.gateway.impl.webui.AppState.OpenedWorkflow;
-import org.knime.ui.java.appstate.AppStateUtil;
+import org.knime.gateway.impl.webui.AppStateProvider.AppState.OpenedWorkflow;
+import org.knime.ui.java.TestingUtil;
 import org.knime.ui.java.browser.KnimeBrowserView;
 
 import com.equo.chromium.swt.Browser;
@@ -105,10 +105,12 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
 			return null;
 		}
 		JsonNode openedWorkflows = appState.get("openedWorkflows");
-		if (openedWorkflows != null) {
-			AppStateUtil.initAppStateForTesting(() -> StreamSupport.stream(openedWorkflows.spliterator(), false)
-					.map(InitAppForTestingBrowserFunction::createOpenedWorkflow).collect(Collectors.toList()));
-		}
+        if (openedWorkflows != null) {
+            TestingUtil.initAppStateForTesting(
+                () -> StreamSupport.stream(openedWorkflows.spliterator(), false)
+                    .map(InitAppForTestingBrowserFunction::createOpenedWorkflow).collect(Collectors.toList()),
+                m_knimeBrowser.createEventConsumer());
+        }
 		m_knimeBrowser.setUrl(true);
 		return null;
 	}
