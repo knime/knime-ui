@@ -11,10 +11,9 @@ export default {
         NodeFeatureList
     },
     computed: {
-        ...mapState('panel', ['activeDescriptionPanel']),
         ...mapState('nodeRepository', ['selectedNode', 'nodeDescriptionObject', 'nodes', 'nodesPerCategory']),
         ...mapGetters('nodeRepository', ['searchIsActive']),
-        isVisible() {
+        isSelectedNodeVisible() {
             if (this.searchIsActive) {
                 return this.nodes.some(node => node.id === this.selectedNode.id);
             } else {
@@ -42,10 +41,9 @@ export default {
 <template>
   <div class="node-description">
     <div class="header">
-      <h2 v-if="isVisible">{{ selectedNode.name }}</h2>
+      <h2 v-if="isSelectedNodeVisible">{{ selectedNode.name }}</h2>
       <h2 v-else>&nbsp;</h2>
       <button
-        v-show="activeDescriptionPanel"
         @click="closeDescriptionPanel"
       >
         <CloseIcon class="icon" />
@@ -55,16 +53,21 @@ export default {
     <div class="scroll-container">
       <div class="node-info">
         <Description
-          v-if="nodeDescriptionObject && isVisible"
+          v-if="nodeDescriptionObject && isSelectedNodeVisible"
           :text="nodeDescriptionObject.description"
           :render-as-html="true"
         />
-        <div v-else class="no-selected-node-visible">Please select a node</div>
+        <div
+          v-else
+          class="no-selected-node-visible"
+        >
+          Please select a node
+        </div>
         <span v-if="nodeDescriptionObject && !nodeDescriptionObject.description">
           There is no description for this node.
         </span>
         <NodeFeatureList
-          v-if="nodeDescriptionObject && isVisible"
+          v-if="nodeDescriptionObject && isSelectedNodeVisible"
           v-bind="nodeDescriptionObject"
           class="node-feature-list"
         />
