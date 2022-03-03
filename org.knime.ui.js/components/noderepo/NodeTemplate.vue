@@ -103,9 +103,9 @@ export default {
 
 .node {
   width: 100px;
-  height: 75px;
+  height: 78px;
   margin: 0 2px;
-  padding-bottom: 42px;
+  padding-bottom: 47px;
   position: relative;
   display: flex;
   flex-direction: column-reverse;
@@ -116,12 +116,16 @@ export default {
 
   & label {
     max-height: 26px;
-    max-width: 100px;
+    max-width: 90px;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
     pointer-events: none;
+  }
+
+  & .node-preview {
+    padding-bottom: 6px;
   }
 
   & svg {
