@@ -55,6 +55,7 @@ export default {
     },
     cancelSelected: {
         text: 'Cancel',
+        title: 'Cancel selected nodes',
         hotkey: ['F8'],
         icon: CancelSelectedIcon,
         execute:
