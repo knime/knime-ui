@@ -43,7 +43,6 @@ export default {
       :y="contentBounds.top"
       :width="contentBounds.width"
       :height="contentBounds.height"
-      rx="8"
     />
 
     <Workflow ref="workflow" />
@@ -63,7 +62,6 @@ export default {
 
 .workflow-sheet {
   fill: white;
-  filter: drop-shadow(4px 4px 18px rgba(0, 0, 0, 0.1));
   pointer-events: none;
 }
 </style>
