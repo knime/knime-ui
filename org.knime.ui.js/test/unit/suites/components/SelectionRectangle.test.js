@@ -494,6 +494,15 @@ describe('SelectionRectangle', () => {
             expect(wrapper.vm.$parent.$off).toHaveBeenCalledTimes(4);
         });
 
+        it('set initial value to non-reactive data members', () => {
+            doShallowMount();
+            pointerId = 22;
+            pointerDown({ pageX: 300, pageY: 300 });
+            expect(wrapper.vm.selectOnEnd).toStrictEqual([]);
+            expect(wrapper.vm.deSelectOnEnd).toStrictEqual([]);
+            expect(wrapper.vm.selectedNodeIdsAtStart).toStrictEqual([]);
+        });
+
         it('does noting if move is called but selection is not active', async () => {
             doShallowMount();
             // pointerDown is missing
