@@ -28,9 +28,11 @@ describe('ZoomMenu', () => {
                     state: {
                         zoomFactor
                     },
-                    mutations: {
-                        setFactor(state, factor) {
-                            state.zoomFactor = factor;
+                    actions: {
+                        zoomCentered({ state }, { delta, factor }) {
+                            if (factor) {
+                                state.zoomFactor = factor;
+                            }
                         }
                     }
                 }
@@ -117,7 +119,7 @@ describe('ZoomMenu', () => {
         doMount(shallowMount);
 
         wrapper.findComponent(SubMenu).vm.$emit('item-click', null, { name: 'command' });
-        
+
         expect($commands.dispatch).toHaveBeenCalledWith('command');
     });
 
