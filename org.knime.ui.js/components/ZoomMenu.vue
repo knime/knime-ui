@@ -35,7 +35,7 @@ export default {
             let newZoomFactor = parseInt(e.target.value, 10) / 100;
 
             if (!isNaN(newZoomFactor)) {
-                this.$store.commit('canvas/setFactor', newZoomFactor);
+                this.$store.dispatch('canvas/zoomCentered', { factor: newZoomFactor });
             }
 
             // de-focus input. Resets and formats zoom level
