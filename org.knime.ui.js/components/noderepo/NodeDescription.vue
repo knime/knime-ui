@@ -136,14 +136,18 @@ export default {
 
   & .node-info {
     padding: 10px 20px 0;
+    display: flex;
+    min-height: 100%;
+    flex-direction: column;
 
     & .no-selected-node-visible {
-      position: relative;
-      height: calc(100vh - 192px); /* sum of all the heights from AppHeader, WorkflowToolbar, NodeDescription Header and all separators */
       display: flex;
+      flex: 1;
       align-items: center;
       justify-content: center;
-      padding-top: 110px; /* vertical alignment to get to the same height as the empty message in the noderepo search results */
+      width: 100%;
+      font-style: italic;
+      color: var(--knime-dove-gray);
     }
   }
 
