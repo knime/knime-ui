@@ -46,8 +46,9 @@
  */
 package org.knime.ui.java;
 
+import static org.eclipse.ui.internal.IWorkbenchConstants.PERSPECTIVE_STACK_ID;
 import static org.knime.ui.java.PerspectiveSwitchAddon.setTrimsAndMenuVisible;
-import static org.knime.ui.java.SwitchToWebUIHandler.WEB_UI_PERSPECTIVE_ID;
+import static org.knime.ui.java.PerspectiveUtil.WEB_UI_PERSPECTIVE_ID;
 
 import java.util.List;
 
@@ -110,8 +111,8 @@ public final class AppStartupCompleteAddon {
     }
 
     private void addWebUIPerspective() {
-        MPerspectiveStack perspectiveStack =
-            (MPerspectiveStack)m_modelService.find("org.eclipse.ui.ide.perspectivestack", m_app);
+		MPerspectiveStack perspectiveStack = (MPerspectiveStack) m_modelService
+				.find(PERSPECTIVE_STACK_ID, m_app);
         if (perspectiveStack.getChildren().stream().noneMatch(p -> p.getElementId().equals(WEB_UI_PERSPECTIVE_ID))) {
             MPerspective perspective = (MPerspective)m_modelService.cloneSnippet(m_app, WEB_UI_PERSPECTIVE_ID, null);
             perspectiveStack.getChildren().add(perspective);
