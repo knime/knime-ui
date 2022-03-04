@@ -61,6 +61,9 @@ export default {
             e.target.setPointerCapture(e.pointerId);
             this.startPos = this.positionOnCanvas(e);
             this.endPos = this.startPos;
+            // init non-reactive data
+            this.selectOnEnd = [];
+            this.deSelectOnEnd = [];
 
             // deselect all objects if we do not hold shift key
             if (e.shiftKey) {
@@ -85,8 +88,12 @@ export default {
             // update selection (in store)
             setTimeout(() => {
                 // do the real selection when we are finished as it is quite slow (updates to buttons, tables etc.)
-                this.selectNodes(this.selectOnEnd);
-                this.deselectNodes(this.deSelectOnEnd);
+                if (this.selectOnEnd) {
+                    this.selectNodes(this.selectOnEnd);
+                }
+                if (this.deSelectOnEnd) {
+                    this.deselectNodes(this.deSelectOnEnd);
+                }
 
                 // clear preview state of now selected elements
                 [...this.selectOnEnd, ...this.deSelectOnEnd].forEach(nodeId => {
@@ -120,12 +127,12 @@ export default {
             let currentTargetRect = e.currentTarget.getBoundingClientRect();
             const offsetX = e.pageX - currentTargetRect.left;
             const offsetY = e.pageY - currentTargetRect.top;
-            
+
             // convert to kanvas coordinates
             const [x, y] = this.toCanvasCoordinates([offsetX, offsetY]);
             return { x, y };
         },
-    
+
         /* eslint-disable no-invalid-this */
         previewSelectionForNodesInRectangle: throttle(function (startPos, endPos) {
             let { inside, outside } = findNodesInsideOfRectangle({
