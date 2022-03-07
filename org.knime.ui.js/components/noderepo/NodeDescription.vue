@@ -92,6 +92,7 @@ export default {
   & .header {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
     padding: 0 20px 5px;
 
     & h2 {
@@ -103,6 +104,7 @@ export default {
 
     & button {
       width: 40px;
+      margin-top: 2px;
       margin-right: -15px;
       border: none;
       display: flex;
@@ -148,7 +150,6 @@ export default {
       flex: 1;
       align-items: center;
       justify-content: center;
-      width: 100%;
       font-style: italic;
       color: var(--knime-dove-gray);
     }
