@@ -55,7 +55,8 @@ export default {
     },
     cancelSelected: {
         text: 'Cancel',
-        hotkey: ['F8'],
+        title: 'Cancel selected nodes',
+        hotkey: ['F9'],
         icon: CancelSelectedIcon,
         execute:
             ({ $store }) => $store.dispatch('workflow/cancelNodeExecution', 'selected'),
@@ -65,7 +66,7 @@ export default {
     resetSelected: {
         text: 'Reset',
         title: 'Reset selected nodes',
-        hotkey: ['F9'],
+        hotkey: ['F8'],
         icon: ResetSelectedIcon,
         execute:
             ({ $store }) => $store.dispatch('workflow/resetNodes', 'selected'),

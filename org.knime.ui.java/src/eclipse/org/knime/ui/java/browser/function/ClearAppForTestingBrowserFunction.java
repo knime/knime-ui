@@ -48,7 +48,7 @@
  */
 package org.knime.ui.java.browser.function;
 
-import org.knime.ui.java.appstate.AppStateUtil;
+import org.knime.ui.java.TestingUtil;
 import org.knime.ui.java.browser.KnimeBrowserView;
 
 import com.equo.chromium.swt.Browser;
@@ -79,8 +79,8 @@ public class ClearAppForTestingBrowserFunction extends BrowserFunction {
 
 	@Override
 	public Object function(final Object[] args) { // NOSONAR it's ok that this method always returns null
-		AppStateUtil.clearAppState();
 		m_knimeBrowser.clearUrl();
+		TestingUtil.clearAppStateForTesting();
 		return null;
 	}
 

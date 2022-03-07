@@ -89,7 +89,7 @@ public class KnimeBrowserLocationListener implements LocationListener {
 	}
 
 	private static boolean isAppPage(final String url) {
-		return url.endsWith(KnimeBrowserView.APP_PAGE);
+		return url.startsWith(KnimeBrowserView.BASE_URL);
 	}
 
 	private static boolean isEmptyPage(final String url) {

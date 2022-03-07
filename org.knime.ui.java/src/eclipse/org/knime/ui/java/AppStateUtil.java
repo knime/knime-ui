@@ -2,7 +2,7 @@
  * ------------------------------------------------------------------------
  *
  *  Copyright by KNIME AG, Zurich, Switzerland
- *  Website: http://www.knime.com; Email: contact@knime.com
+ *  Website: http://www.knime.org; Email: contact@knime.org
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License, Version 3, as
@@ -46,44 +46,59 @@
  */
 package org.knime.ui.java;
 
-import javax.inject.Inject;
+import java.util.function.Supplier;
 
-import org.eclipse.e4.core.di.annotations.Execute;
-import org.eclipse.e4.ui.model.application.MApplication;
-import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
-import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.knime.gateway.api.webui.entity.AppStateEnt;
+import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.webui.AppStateProvider;
+import org.knime.gateway.impl.webui.AppStateProvider.AppState;
+import org.knime.gateway.impl.webui.service.DefaultApplicationService;
+import org.knime.gateway.impl.webui.service.DefaultServices;
 
 /**
- * Handler to switch to the KNIME Web UI.
- *
- * <br/>
- * <br/>
- * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
+ * Utility methods for handling the representation of the application state.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  */
-public final class SwitchToWebUIHandler {
+public final class AppStateUtil {
 
-    @Inject
-    private MApplication m_app;
+    private AppStateUtil() {
+        //
+    }
 
-    @Inject
-    private EPartService m_partService;
-
-    @Inject
-    private EModelService m_modelService;
-
-    @Execute
-    public void execute() {
-		MPerspective p = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
-        if (p != null) {
-            if (!p.isVisible()) {
-                p.setVisible(true);
-            }
-            m_partService.switchPerspective(p);
+    /**
+     * Makes the application state available for the default service implementations (see {@link DefaultServices}).
+     *
+     * @param supplier
+     * @return The newly constructed application state or {@code null} if the app state has already been initialized
+     */
+    public static AppStateProvider initAppStateProvider(final Supplier<AppState> supplier) {
+        if (!DefaultServices.areServicesInitialized()) {
+            var appStateProvider = new AppStateProvider(supplier);
+            DefaultServices.setServiceDependency(AppStateProvider.class, appStateProvider);
+            return appStateProvider;
         } else {
-            throw new IllegalStateException("No KNIME Web UI perspective registered");
+            return null;
+        }
+    }
+
+    /**
+     * Remove the application service from the provided service dependencies, remove listeners and clear references to
+     * workflow projects.
+     */
+    static void clearAppState() {
+        removeWorkflowProjects();
+        DefaultServices.disposeAllServicesInstances();
+    }
+
+    private static void removeWorkflowProjects() {
+        if (DefaultServices.areServicesInitialized()) {
+            AppStateEnt previousState = DefaultApplicationService.getInstance().getState();
+            if (previousState != null) {
+                previousState.getOpenedWorkflows()
+                    .forEach(wfProjEnt -> WorkflowProjectManager.removeWorkflowProject(wfProjEnt.getProjectId()));
+            }
         }
     }
 

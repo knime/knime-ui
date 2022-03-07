@@ -2,7 +2,7 @@
  * ------------------------------------------------------------------------
  *
  *  Copyright by KNIME AG, Zurich, Switzerland
- *  Website: http://www.knime.com; Email: contact@knime.com
+ *  Website: http://www.knime.org; Email: contact@knime.org
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License, Version 3, as
@@ -44,47 +44,61 @@
  * ---------------------------------------------------------------------
  *
  */
-package org.knime.ui.java;
+package org.knime.ui.java.browser.function;
 
-import javax.inject.Inject;
+import java.util.NoSuchElementException;
 
-import org.eclipse.e4.core.di.annotations.Execute;
-import org.eclipse.e4.ui.model.application.MApplication;
-import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
-import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.ui.PlatformUI;
+import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.service.util.DefaultServiceUtil;
+import org.knime.gateway.impl.webui.AppStateProvider;
+import org.knime.ui.java.EclipseUIStateUtil;
+
+import com.equo.chromium.swt.Browser;
+import com.equo.chromium.swt.BrowserFunction;
 
 /**
- * Handler to switch to the KNIME Web UI.
- *
- * <br/>
- * <br/>
- * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
- *
- * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  */
-public final class SwitchToWebUIHandler {
+public class CloseWorkflowBrowserFunction extends BrowserFunction {
 
-    @Inject
-    private MApplication m_app;
+    private final AppStateProvider m_appStateProvider;
 
-    @Inject
-    private EPartService m_partService;
+    @SuppressWarnings("javadoc")
+    public CloseWorkflowBrowserFunction(final Browser browser, final AppStateProvider appStateProvider) {
+        super(browser, "closeWorkflow");
+        m_appStateProvider = appStateProvider;
+    }
 
-    @Inject
-    private EModelService m_modelService;
+    /**
+     * Close the workflow project associated with the given project ID.
+     *
+     * @param arguments Assume arguments[0] is a String containing the project ID (e.g. "simple-workflow 0").
+     * @return always {@code null}
+     */
+    @Override
+    public Object function(final Object[] arguments) {
 
-    @Execute
-    public void execute() {
-		MPerspective p = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
-        if (p != null) {
-            if (!p.isVisible()) {
-                p.setVisible(true);
-            }
-            m_partService.switchPerspective(p);
-        } else {
-            throw new IllegalStateException("No KNIME Web UI perspective registered");
+        String projectId = (String)arguments[0]; // e.g. "simple-workflow 0"
+
+        var projectWfm = DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
+        var editor = EclipseUIStateUtil.getEditorForManager(projectWfm)
+            .orElseThrow(() -> new NoSuchElementException("No workflow editor for project found."));
+
+        var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+
+        // Since we are closing the editor of the root workflow manager, this will also close any editors
+        //  of child workflow managers.
+        var wasClosed = page.closeEditor(editor, true);
+
+        if (wasClosed) {
+            WorkflowProjectManager.removeWorkflowProject(projectId);
+            // triggers sending event
+            m_appStateProvider.updateAppState();
         }
+
+        return null;
     }
 
 }
