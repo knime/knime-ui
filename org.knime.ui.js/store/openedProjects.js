@@ -46,8 +46,7 @@ export const actions = {
             ...workflow.activeWorkflow,
             projectId: workflow.projectId
         };
-        commit('setActiveId', workflow.projectId);
-        dispatch('workflow/setActiveWorkflowSnapshot', activeWorkflowCfg, { root: true });
+        dispatch('switchWorkflow', activeWorkflowCfg);
     },
     async switchWorkflow({ commit, dispatch, rootGetters }, { projectId, workflowId }) {
         if (rootGetters['workflow/activeWorkflowId']) {

@@ -58,3 +58,36 @@ export const saveWorkflow = ({ projectId }) => {
         consola.error(`Could not save workflow`, e);
     }
 };
+
+/**
+ * Open a workflow.
+ * @returns {void}
+ */
+export const openWorkflow = () => {
+    try {
+        // returns falsy on success
+        let error = window.openWorkflow();
+        if (error) {
+            throw new Error(error);
+        }
+    } catch (e) {
+        consola.error(`Could not open workflow`, e);
+    }
+};
+
+/**
+ * Close a workflow.
+ * @param {String} projectId
+ * @returns {void}
+ */
+export const closeWorkflow = ({ projectId }) => {
+    try {
+        // returns falsy on success
+        let error = window.closeWorkflow(projectId);
+        if (error) {
+            throw new Error(error);
+        }
+    } catch (e) {
+        consola.error(`Could not close workflow`, e);
+    }
+};

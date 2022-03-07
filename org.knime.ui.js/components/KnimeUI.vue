@@ -1,4 +1,5 @@
 <script>
+import { addEventListener, removeEventListener } from '~api';
 import { mapActions, mapState } from 'vuex';
 import AppHeader from '~/components/AppHeader';
 import Sidebar from '~/components/Sidebar';
@@ -37,6 +38,7 @@ export default {
     },
     async fetch() {
         try {
+            await addEventListener('AppStateChanged');
             await this.initState();
             await Promise.all(requiredFonts.map(fontName => document.fonts.load(`1em ${fontName}`)));
             this.loaded = true;
@@ -49,6 +51,9 @@ export default {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
         })
+    },
+    async beforeDestroy() {
+        await removeEventListener('AppStateChanged');
     },
     errorCaptured({ message, stack }, vm, vueInfo) {
         consola.error(message, vueInfo, stack);
@@ -74,10 +79,7 @@ export default {
 </script>
 
 <template>
-  <div
-    v-if="workflow"
-    id="knime-ui"
-  >
+  <div id="knime-ui">
     <!-- if subsequent errors occur, stick with the first one -->
     <Error
       v-if="error"
@@ -90,17 +92,23 @@ export default {
       v-if="loaded"
       id="toolbar"
     />
-    <Sidebar id="sidebar" />
-    <template v-if="loaded">
+    <Sidebar
+      v-if="workflow"
+      id="sidebar"
+    />
+    <template v-if="loaded && workflow">
       <WorkflowTabContent id="tab-content" />
       <TooltipContainer id="tooltip-container" />
     </template>
+    <WorkflowEntryPage
+      v-if="!workflow"
+      id="tab-content"
+    />
     <div
-      v-else
+      v-if="!loaded"
       class="loader"
     />
   </div>
-  <WorkflowEntryPage v-else />
 </template>
 
 <style lang="postcss" scoped>

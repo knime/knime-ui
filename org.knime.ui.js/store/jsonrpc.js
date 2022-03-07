@@ -8,5 +8,11 @@ export const actions = {
             op.path = `/activeWorkflow${op.path}`;
         });
         dispatch('workflow/patch.apply', ops, { root: true });
+    },
+
+    AppStateChangedEvent({ dispatch }, [args]) {
+        const { openedWorkflows } = args.appState;
+
+        dispatch('openedProjects/setProjects', openedWorkflows, { root: true });
     }
 };

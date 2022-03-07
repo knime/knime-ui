@@ -20,22 +20,26 @@ export default {
         },
         toolbarCommands() {
             const selectedNodes = this.$store.getters['selection/selectedNodes'];
-            let visibleItems = {
-                // always visible
-                save: true,
-                undo: true,
-                redo: true,
+            let visibleItems = {};
 
-                // Workflow
-                executeAll: !selectedNodes.length,
-                cancelAll: !selectedNodes.length,
-                resetAll: !selectedNodes.length,
+            if (this.workflow) {
+                visibleItems = {
+                    // always visible
+                    save: true,
+                    undo: true,
+                    redo: true,
 
-                // Node Execution
-                executeSelected: selectedNodes.length,
-                cancelSelected: selectedNodes.length,
-                resetSelected: selectedNodes.length
-            };
+                    // Workflow
+                    executeAll: !selectedNodes.length,
+                    cancelAll: !selectedNodes.length,
+                    resetAll: !selectedNodes.length,
+
+                    // Node Execution
+                    executeSelected: selectedNodes.length,
+                    cancelSelected: selectedNodes.length,
+                    resetSelected: selectedNodes.length
+                };
+            }
 
             return Object
                 .entries(visibleItems)

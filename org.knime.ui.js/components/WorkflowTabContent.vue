@@ -1,4 +1,5 @@
 <script>
+// import { addEventListener, removeEventListener } from '~api';
 import { mapState } from 'vuex';
 import WorkflowPanel from '~/components/WorkflowPanel';
 import NodeOutput from '~/components/output/NodeOutput';
@@ -21,6 +22,12 @@ export default {
             workflow: 'activeWorkflow'
         })
     }
+    // async mounted() {
+    //     await addEventListener('AppStateChanged');
+    // },
+    // async beforeDestroy() {
+    //     await removeEventListener('AppStateChanged');
+    // }
 };
 </script>
 
