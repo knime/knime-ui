@@ -24,7 +24,7 @@ export default {
     cancelAll: {
         text: 'Cancel all',
         title: 'Cancel workflow execution',
-        hotkey: ['Shift', 'F8'],
+        hotkey: ['Shift', 'F9'],
         icon: CancelAllIcon,
         execute:
             ({ $store }) => $store.dispatch('workflow/cancelNodeExecution', 'all'),
@@ -34,7 +34,7 @@ export default {
     resetAll: {
         text: 'Reset all',
         title: 'Reset executed nodes',
-        hotkey: ['Shift', 'F9'],
+        hotkey: ['Shift', 'F8'],
         icon: ResetAllIcon,
         execute:
             ({ $store }) => $store.dispatch('workflow/resetNodes', 'all'),
@@ -56,7 +56,7 @@ export default {
     cancelSelected: {
         text: 'Cancel',
         title: 'Cancel selected nodes',
-        hotkey: ['F8'],
+        hotkey: ['F9'],
         icon: CancelSelectedIcon,
         execute:
             ({ $store }) => $store.dispatch('workflow/cancelNodeExecution', 'selected'),
@@ -66,7 +66,7 @@ export default {
     resetSelected: {
         text: 'Reset',
         title: 'Reset selected nodes',
-        hotkey: ['F9'],
+        hotkey: ['F8'],
         icon: ResetSelectedIcon,
         execute:
             ({ $store }) => $store.dispatch('workflow/resetNodes', 'selected'),
