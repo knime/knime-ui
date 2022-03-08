@@ -2,7 +2,10 @@ package org.knime.ui.java.browser;
 
 import static org.knime.ui.java.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,6 +29,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.json.util.ObjectMapperUtil;
+import org.knime.ui.java.UIPlugin;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.CreateWorkflowBrowserFunction;
@@ -39,6 +43,7 @@ import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
+import com.equo.middleware.api.IMiddlewareService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -53,21 +58,30 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class KnimeBrowserView {
 
-	static final String APP_PAGE = "dist/inlined/index.html";
+    static final String EMPTY_PAGE = "about:blank";
 
-	static final String EMPTY_PAGE = "about:blank";
+    private static final String REMOTE_DEBUGGING_PORT_PROP = "chromium.remote_debugging_port";
 
-	private static final String REMOTE_DEBUGGING_PORT_PROP = "chromium.remote_debugging_port";
+    private static final String DEV_URL_PROP = "org.knime.ui.dev.url";
 
-	private static final String DEV_URL_PROP = "org.knime.ui.dev.url";
+    private static final String DOMAIN_NAME = "org.knime.ui.java";
 
-	private Browser m_browser;
+    private static final String HTTP = "http";
+
+    static final String BASE_URL = HTTP + "://" + DOMAIN_NAME;
+
+    private static final String APP_PAGE = BASE_URL + "/index.html";
+
+    private static final String BASE_PATH = "dist/inlined";
+
+    private Browser m_browser;
 
 	@PostConstruct
 	public void createPartControl(final Composite parent) {
 		m_browser = new Browser(parent, SWT.NONE);
 		m_browser.addLocationListener(new KnimeBrowserLocationListener());
 		m_browser.setMenu(new Menu(m_browser.getShell()));
+		initializeResourceHandler();
 	}
 
     @Inject
@@ -144,6 +158,34 @@ public class KnimeBrowserView {
         }
     }
 
+    private static void initializeResourceHandler() {
+        var context = UIPlugin.getContext();
+        var reference = context.getServiceReference(IMiddlewareService.class);
+        var middlewareService = context.getService(reference);
+        if (middlewareService.getResourceHandlers().containsKey(HTTP + DOMAIN_NAME)) {
+            return;
+        }
+        middlewareService.addResourceHandler(HTTP, DOMAIN_NAME, (request, headers) -> { // NOSONAR
+            var path = stringToURL(request.getUrl()).getPath();
+            var url = Platform.getBundle("org.knime.ui.js").getEntry(BASE_PATH + path);
+            try {
+                return FileLocator.toFileURL(url).openStream();
+            } catch (Exception e) { // NOSONAR
+                var message = "Problem loading UI resources at '" + request.getUrl() + "'. See log for details.";
+                NodeLogger.getLogger(KnimeBrowserView.class).error(message, e);
+                return new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
+            }
+        });
+    }
+
+    private static URL stringToURL(final String url) {
+        try {
+            return new URL(url);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("Not a valid URL");
+        }
+    }
+
 	/**
 	 * Clears the browser's url.
 	 */
@@ -173,22 +215,8 @@ public class KnimeBrowserView {
 	public void setUrl(final boolean ignoreEmptyPageAsDevUrl) {
 		if (m_browser.getUrl().equals(EMPTY_PAGE)) {
 			if (!setDevURL(m_browser, ignoreEmptyPageAsDevUrl)) { // NOSONAR
-				setAppUrl();
+			    m_browser.setUrl(APP_PAGE);
 			}
-		}
-	}
-
-	/**
-	 * Sets the URL to the actual application page (served from the file system).
-	 */
-	private void setAppUrl() {
-		var url = Platform.getBundle("org.knime.ui.js").getEntry(APP_PAGE);
-		try {
-			String path = FileLocator.toFileURL(url).getPath();
-			m_browser.setUrl("file://" + path);
-		} catch (IOException e) {
-			// should never happen
-			throw new IllegalStateException(e);
 		}
 	}
 

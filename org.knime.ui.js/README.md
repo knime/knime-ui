@@ -33,25 +33,6 @@ code changes will be visible in the browser immediately.
 npm run dev
 ```
 
-### Debugging inside Analytics Platform
-
-In order to run, debug and develop the web app with a functioning backend:
-
-- download the AP, e.g. from https://www.knime.com/nightly-build-downloads
-- add VM arguments to the `knime.ini` ([Installation guide])
-
-| argument | comment |
-|-|-|
-| `-Dchromium.remote_debugging_port=8888`| Enables the CEF remote debugging mode available at the provided port |
-| `-Dorg.knime.ui.dev.url=http://localhost:3000` | (Optional) The web app is served from the given URL instead of using the resources bundled with the AP |
-| `-Dchromium.debug` | (Optional) More verbose debugging output for the CEF |
-
-- start the AP and make sure the _KNIME UI_-feature is installed
-  - Menu > File > Install KNIME Extensions
-  - possibly uncheck 'Group items by category' (in case the KNIME UI-feature is not yet categorized)
-- switch to the new KNIME UI perspective (button on the upper right)
-- open <http://localhost:8888> in your browser and select respective web app
-
 ### Testing
 
 #### Running unit tests
