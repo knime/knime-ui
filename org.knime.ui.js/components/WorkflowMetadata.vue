@@ -92,7 +92,7 @@ export default {
       v-if="!isComponent"
       class="last-updated"
     >
-      <span v-if="lastEdit">Last Update: {{ formatDateString(lastEdit) }}</span>
+      <span v-if="lastEdit">Last update: {{ formatDateString(lastEdit) }}</span>
       <span
         v-else
         class="placeholder"
