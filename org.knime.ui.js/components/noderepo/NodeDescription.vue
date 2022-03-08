@@ -41,8 +41,7 @@ export default {
 <template>
   <div class="node-description">
     <div class="header">
-      <h2 v-if="isSelectedNodeVisible">{{ selectedNode.name }}</h2>
-      <h2 v-else>&nbsp;</h2>
+      <h2>{{ isSelectedNodeVisible ? selectedNode.name : '&nbsp;' }}</h2>
       <button
         @click="closeDescriptionPanel"
       >
@@ -52,25 +51,31 @@ export default {
     <hr>
     <div class="scroll-container">
       <div class="node-info">
-        <Description
-          v-if="nodeDescriptionObject && isSelectedNodeVisible"
-          :text="nodeDescriptionObject.description"
-          :render-as-html="true"
-        />
+        <template v-if="isSelectedNodeVisible">
+          <template v-if="nodeDescriptionObject">
+            <Description
+              v-if="nodeDescriptionObject.description"
+              :text="nodeDescriptionObject.description"
+              render-as-html
+            />
+            <span
+              v-else
+              class="placeholder"
+            >
+              There is no description for this node.
+            </span>
+            <NodeFeatureList
+              v-bind="nodeDescriptionObject"
+              class="node-feature-list"
+            />
+          </template>
+        </template>
         <div
           v-else
-          class="no-selected-node-visible"
+          class="placeholder no-node"
         >
           Please select a node
         </div>
-        <span v-if="nodeDescriptionObject && !nodeDescriptionObject.description">
-          There is no description for this node.
-        </span>
-        <NodeFeatureList
-          v-if="nodeDescriptionObject && isSelectedNodeVisible"
-          v-bind="nodeDescriptionObject"
-          class="node-feature-list"
-        />
       </div>
     </div>
   </div>
@@ -144,24 +149,27 @@ export default {
     display: flex;
     min-height: 100%;
     flex-direction: column;
+  }
 
-    & .no-selected-node-visible {
+  & .placeholder {
+    font-style: italic;
+    color: var(--knime-dove-gray);
+
+    &.no-node {
       display: flex;
       flex: 1;
       align-items: center;
       justify-content: center;
-      font-style: italic;
-      color: var(--knime-dove-gray);
     }
   }
 
   & .description {
     font-size: 16px;
-    margin-bottom: 20px;
     width: 310px;
   }
 
   & .node-feature-list {
+    margin-top: 20px;
     margin-bottom: 40px;
 
     & >>> .shadow-wrapper::after,

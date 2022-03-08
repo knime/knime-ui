@@ -122,11 +122,11 @@ describe('NodeRepository', () => {
         };
         doMount();
         const title = wrapper.find('h2');
-        expect(title.text()).toBe('Please select a node');
+        expect(title.text()).toBe('');
         expect(wrapper.findComponent(Description).exists()).toBe(false);
         expect(wrapper.findComponent(NodeFeatureList).exists()).toBe(false);
-        const description = wrapper.find('span');
-        expect(description.text()).toBe('…');
+        const placeholder = wrapper.find('.placeholder');
+        expect(placeholder.text()).toBe('Please select a node');
     });
 
     it('correctly displays information when search is active', () => {
