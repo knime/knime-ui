@@ -172,6 +172,22 @@ describe('API', () => {
             }));
         });
 
+        it('fetches node description', async () => {
+            await api.getNodeDescription({
+                className: 'test',
+                settings: 'settings1'
+            });
+            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'NodeService.getNodeDescription',
+                params: [{
+                    className: 'test',
+                    settings: 'settings1'
+                }],
+                id: 0
+            }));
+        });
+
 
         describe('error handling', () => {
             beforeEach(() => {
