@@ -81,7 +81,7 @@ export default {
             consola.trace('remove kanvas scroll listener for tooltips');
 
             let kanvas = document.getElementById('kanvas');
-            kanvas.removeEventListener('scroll', this.onCanvasScroll);
+            kanvas?.removeEventListener('scroll', this.onCanvasScroll);
         },
         onMouseLeave() {
             // trigger closing tooltip

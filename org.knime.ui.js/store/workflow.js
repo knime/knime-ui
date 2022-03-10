@@ -28,14 +28,10 @@ export const state = () => ({
 
 export const mutations = {
     ...jsonPatchMutations,
-    setActiveWorkflow(state, workflow) {
-        // extract templates
-        let workflowData = {
-            ...workflow
-        };
 
-        state.activeWorkflow = workflowData;
-        state.tooltip = null;
+    // extracts the workflow
+    setActiveWorkflow(state, workflow) {
+        state.activeWorkflow = workflow;
     },
     setActiveSnapshotId(state, id) {
         state.activeSnapshotId = id;
@@ -61,42 +57,40 @@ export const mutations = {
 
 export const actions = {
     ...jsonPatchActions,
-    async loadWorkflow({ commit, dispatch }, { projectId, workflowId = 'root' }) {
-        const workflow = await loadWorkflowFromApi({ projectId, workflowId });
-
-        if (workflow) {
-            dispatch('unloadActiveWorkflow');
-            await dispatch('setActiveWorkflowSnapshot', {
-                ...workflow,
+    async loadWorkflow({ commit, dispatch, getters }, { projectId, workflowId = 'root' }) {
+        const project = await loadWorkflowFromApi({ projectId, workflowId });
+        if (project) {
+            commit('setActiveWorkflow', {
+                ...project.workflow,
                 projectId
             });
+
+            let snapshotId = project.snapshotId;
+            commit('setActiveSnapshotId', snapshotId);
+
+            let workflowId = getters.activeWorkflowId;
+            await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
         } else {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    unloadActiveWorkflow({ state, commit, getters: { activeWorkflowId: workflowId }, rootGetters }) {
+    async unloadActiveWorkflow({ state, commit, getters: { activeWorkflowId: workflowId }, rootGetters }) {
         if (!state.activeWorkflow) {
             // nothing to do (no tabs open)
             return;
         }
-        let { projectId } = state.activeWorkflow;
-        let { activeSnapshotId: snapshotId } = state;
+        // clean up
         try {
+            let { projectId } = state.activeWorkflow;
+            let { activeSnapshotId: snapshotId } = state;
             // this is intentionally not awaiting the response. Unloading can happen in the background.
-            removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+            await removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
         } catch (e) {
             consola.error(e);
         }
         commit('selection/clearSelection', null, { root: true });
-    },
-    async setActiveWorkflowSnapshot({ commit, getters }, { workflow, snapshotId, projectId }) {
-        commit('setActiveWorkflow', {
-            ...workflow,
-            projectId
-        });
-        commit('setActiveSnapshotId', snapshotId);
-        let workflowId = getters.activeWorkflowId;
-        await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+        commit('setTooltip', null);
+        commit('setActiveWorkflow', null);
     },
 
     /**
@@ -220,7 +214,7 @@ export const actions = {
         let { activeWorkflow: { projectId } } = state;
         saveWorkflow({ projectId });
     },
-    closeWorkflow({ state }) {
+    closeWorkflow({ dispatch, state }) {
         let { activeWorkflow: { projectId } } = state;
         closeWorkflow({ projectId });
     },
@@ -317,6 +311,14 @@ export const getters = {
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
     */
     workflowBounds({ activeWorkflow }) {
+        if (!activeWorkflow) {
+            return {
+                left: 0,
+                top: 0,
+                right: 0,
+                bottom: 0
+            };
+        }
         const { nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPorts } = activeWorkflow;
         const {
             nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight, portSize,

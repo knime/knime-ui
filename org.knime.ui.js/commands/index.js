@@ -1,5 +1,6 @@
 import workflowCommands from './workflowCommands';
 import canvasCommands from './canvasCommands';
+import applicationCommands from './applicationCommands';
 
 // chains a group condition before each individual command condition
 export const conditionGroup = (groupCondition, commands) => {
@@ -36,6 +37,7 @@ export default {
             ...selectionCommands,
             ...canvasCommands
         }
-    )
+    ),
+    ...applicationCommands
 };
 

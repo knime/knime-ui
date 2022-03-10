@@ -19,7 +19,6 @@ export const mutations = {
         state.items = projects.map(({ projectId, name }) => ({ projectId, name }));
 
         // add entry to savedState for each project
-        state.savedState = {};
         state.items.forEach(({ projectId }) => {
             state.savedState[projectId] = {};
         });
@@ -32,31 +31,47 @@ export const mutations = {
 export const actions = {
     setProjects({ commit, dispatch }, projects) {
         commit('setProjects', projects);
-        let openedWorkflows = projects.filter(item => item.activeWorkflow);
+        let activeWorkflows = projects.filter(item => item.activeWorkflow);
 
-        if (openedWorkflows.length === 0) {
-            consola.error('No active workflow provided');
-            return;
-        } else if (openedWorkflows.length > 1) {
+        if (activeWorkflows.length === 0) {
+            consola.info('No active workflow provided');
+        } else if (activeWorkflows.length > 1) {
             consola.error('More than one active workflow found. Not supported. Opening only first item.');
         }
 
-        let [workflow] = openedWorkflows;
-        let activeWorkflowCfg = {
-            ...workflow.activeWorkflow,
-            projectId: workflow.projectId
-        };
-        dispatch('switchWorkflow', activeWorkflowCfg);
+        let [activeWorkflow] = activeWorkflows;
+
+        // if the active workflow is not the current, then unload the current workflow
+        if (!activeWorkflow) {
+            dispatch('switchWorkflow', null);
+            return;
+        }
+
+        // if there is a new active workflow, open that workflow
+        dispatch('switchWorkflow', {
+            ...activeWorkflow.activeWorkflow,
+            projectId: activeWorkflow.projectId
+        });
     },
-    async switchWorkflow({ commit, dispatch, rootGetters }, { projectId, workflowId }) {
+    async switchWorkflow({ commit, dispatch, rootGetters }, newWorkflow) {
+        // save scroll and zoom
         if (rootGetters['workflow/activeWorkflowId']) {
             await dispatch('saveState');
         }
+        
+        // unload current workflow
+        dispatch('workflow/unloadActiveWorkflow', null, { root: true });
+        commit('setActiveId', null);
 
-        commit('setActiveId', projectId);
-        await dispatch('workflow/loadWorkflow', { projectId, workflowId }, { root: true });
+        // only continue if the new workflow exists
+        if (newWorkflow) {
+            let { projectId, workflowId } = newWorkflow;
+            commit('setActiveId', projectId);
+            await dispatch('workflow/loadWorkflow', { projectId, workflowId }, { root: true });
 
-        await dispatch('restoreState');
+            // restore scroll and zoom if saved before
+            await dispatch('restoreState');
+        }
     },
     saveState({ state, commit, rootState, rootGetters }) {
         let savedState = {

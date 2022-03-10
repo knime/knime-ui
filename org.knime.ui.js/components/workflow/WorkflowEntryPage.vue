@@ -1,23 +1,11 @@
 <script>
-import { openWorkflow } from '~api';
 import CirclePlus from '~/webapps-common/ui/assets/img/icons/circle-plus.svg?inline';
 import FolderWorkflow from '~/webapps-common/ui/assets/img/icons/folder-workflow.svg?inline';
-// import backgroundImage from '~/assets/Background-Image-Entry-Page.png';
 
 export default {
     components: {
         CirclePlus,
         FolderWorkflow
-    },
-    // data() {
-    //     return {
-    //         backgroundImage
-    //     };
-    // },
-    methods: {
-        onClick() {
-            openWorkflow();
-        }
     }
 };
 </script>
@@ -31,7 +19,7 @@ export default {
           Create workflow
         </div>
       </button>
-      <button @click="onClick">
+      <button @click="$commands.dispatch('openWorkflow')">
         <FolderWorkflow class="icon" />
         <div>
           Open workflow
@@ -48,10 +36,9 @@ main {
   align-items: center;
   font-family: "Roboto Condensed", sans-serif;
   background-color: var(--knime-white);
-
-  /* background-image: url(~@/assets/Background-Image-Entry-Page.png); */
-
-  /* background-image: url("'~/assets/Background-Image-Entry-Page.png'"); */
+  background-image: url('~assets/entry-page-background.png');
+  background-repeat: no-repeat;
+  background-position: bottom right;
 
   & .buttons {
     & button {
