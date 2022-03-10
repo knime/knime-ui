@@ -111,7 +111,12 @@ export default {
 
     <NodeFeatureList
       v-if="nodeFeatures"
-      v-bind="nodeFeatures"
+      :in-ports="nodeFeatures.inPorts"
+      :dyn-in-ports="nodeFeatures.dynInPorts"
+      :out-ports="nodeFeatures.outPorts"
+      :dyn-out-ports="nodeFeatures.dynOutPorts"
+      :views="nodeFeatures.views"
+      :options="nodeFeatures.options"
       class="node-feature-list"
     />
 

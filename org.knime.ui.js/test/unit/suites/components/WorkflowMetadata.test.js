@@ -56,7 +56,7 @@ describe('WorkflowMetadata.vue', () => {
                 links: [{ text: 'link1' }],
                 tags: ['tag1'],
                 nodePreview: { type: 'nodePreviewData' },
-                nodeFeatures: { emptyText: 'nodeFeatureData' }
+                nodeFeatures: { inPorts: [{ name: 'Port 1' }] }
             }
         });
 
@@ -72,7 +72,7 @@ describe('WorkflowMetadata.vue', () => {
         expect(tags.at(0).text()).toBe('tag1');
 
         expect(wrapper.findComponent(NodePreview).props('type')).toBe('nodePreviewData');
-        expect(wrapper.findComponent(NodeFeatureList).props('emptyText')).toBe('nodeFeatureData');
+        expect(wrapper.findComponent(NodeFeatureList).props('inPorts')).toEqual([{ name: 'Port 1' }]);
     });
 
     it('adds class if nodePreview exists', () => {
