@@ -65,7 +65,7 @@ export default {
                     y2 += this.deltaMovePosition.y;
                 }
             }
-            
+
             return connectorPath(x1, y1, x2, y2);
         },
         strokeColor() {
@@ -123,7 +123,7 @@ export default {
                 // this is used to make sure the connector doesn't snap back to its port after 'connecting phase' is over
                 this.suggestDelete = state;
             }
-          
+
             if (state) {
                 this.$root.$on('connector-dropped', this.onConnectorDropped);
             } else {
@@ -132,7 +132,8 @@ export default {
         },
         onConnectorDropped() {
             // lock this connector in place to prevent it from jumping back before being removed
-            this.suggestDelete = 'locked';
+            // TODO: NXT-954 enable locking again if know when the node will be really removed (only backend knows)
+            //this.suggestDelete = 'locked';
         }
     }
 };

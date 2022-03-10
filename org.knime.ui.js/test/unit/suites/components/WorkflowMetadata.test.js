@@ -61,7 +61,7 @@ describe('WorkflowMetadata.vue', () => {
         });
 
         expect(wrapper.text()).toMatch('Title');
-        expect(wrapper.text()).toMatch('Last Update: 1 Jan 2000');
+        expect(wrapper.text()).toMatch('Last update: 1 Jan 2000');
 
         let linkList = wrapper.findComponent(LinkList);
         expect(linkList.props().links).toStrictEqual([{ text: 'link1' }]);

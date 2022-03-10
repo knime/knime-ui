@@ -34,3 +34,20 @@ export const changeLoopState = async ({ projectId, workflowId, nodeId, action })
         throw new Error(`Could not ${action} node ${nodeId}`);
     }
 };
+
+/**
+ * Actions for node description.
+ * @param {String} cfg.className - class name of the selected node
+ * @param {String} cfg.settings - settings of the selected node
+ * @returns {Object} the node description.
+ */
+export const getNodeDescription = async ({ className, settings }) => {
+    try {
+        const node = await rpc('NodeService.getNodeDescription', { className, settings });
+  
+        return node;
+    } catch (e) {
+        consola.error(e);
+        throw new Error('Could not fetch node description');
+    }
+};

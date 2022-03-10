@@ -59,6 +59,9 @@ export default {
   justify-content: center;
   text-align: center;
   height: 100%;
+  font-style: italic;
+  margin-bottom: 110px; /* align text according to NodeDescription empty text when no node is selected */
+  color: var(--knime-dove-gray);
 }
 
 .results {

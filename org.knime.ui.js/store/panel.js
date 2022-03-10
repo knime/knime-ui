@@ -9,7 +9,8 @@ const TABS = {
 
 export const state = () => ({
     expanded: false,
-    activeTab: TABS.WORKFLOW_METADATA
+    activeTab: TABS.WORKFLOW_METADATA,
+    activeDescriptionPanel: false
 });
 
 export const getters = {
@@ -23,6 +24,9 @@ export const mutations = {
     },
     setActiveTab(state, active) {
         state.activeTab = active;
+    },
+    setDescriptionPanel(state, value) {
+        state.activeDescriptionPanel = value;
     }
 };
 
@@ -43,5 +47,13 @@ export const actions = {
 
     close({ commit }) {
         commit('setExpanded', false);
+    },
+
+    openDescriptionPanel({ commit }) {
+        commit('setDescriptionPanel', true);
+    },
+
+    closeDescriptionPanel({ commit }) {
+        commit('setDescriptionPanel', false);
     }
 };

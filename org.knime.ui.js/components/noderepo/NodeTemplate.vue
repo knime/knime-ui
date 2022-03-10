@@ -1,5 +1,5 @@
 <script>
-import { mapGetters } from 'vuex';
+import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { KnimeMIME } from '~/mixins/dropNode';
 
@@ -19,17 +19,25 @@ export default {
         };
     },
     computed: {
-        ...mapGetters('workflow', ['isWritable'])
+        ...mapState('nodeRepository', ['selectedNode']),
+        ...mapState('panel', ['activeDescriptionPanel']),
+        ...mapGetters('workflow', ['isWritable']),
+        isSelected() {
+            return this.activeDescriptionPanel && (this.nodeTemplate.id === this.selectedNode.id);
+        }
     },
     methods: {
+        ...mapActions('panel', ['openDescriptionPanel', 'closeDescriptionPanel']),
+        ...mapMutations('nodeRepository', ['setSelectedNode']),
         onDragStart(e) {
+            this.closeDescriptionPanel();
             // Fix for cursor style for Firefox
             if (!this.isWritable && (navigator.userAgent.indexOf('Firefox') !== -1)) {
                 e.currentTarget.style.cursor = 'not-allowed';
             }
             // clone node preview
             this.dragGhost = this.$refs.nodePreview.$el.cloneNode(true);
-            
+
             // position it outside the view of the user
             this.dragGhost.style.position = 'absolute';
             this.dragGhost.style.left = '-100px';
@@ -56,6 +64,10 @@ export default {
                 delete this.dragGhost;
             }
         },
+        onClick() {
+            this.openDescriptionPanel();
+            this.setSelectedNode(this.nodeTemplate);
+        },
         onDrag(e) {
             if (!this.isWritable) {
                 e.currentTarget.style.cursor = 'not-allowed';
@@ -69,8 +81,10 @@ export default {
   <div
     class="node"
     draggable="true"
+    :class="{'node-preview-active': isSelected}"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
+    @click="onClick"
     @drag="onDrag"
   >
     <label :title="nodeTemplate.name">{{ nodeTemplate.name }}</label>
@@ -89,9 +103,9 @@ export default {
 
 .node {
   width: 100px;
-  height: 75px;
+  height: 78px;
   margin: 0 2px;
-  padding-bottom: 42px;
+  padding-bottom: 47px;
   position: relative;
   display: flex;
   flex-direction: column-reverse;
@@ -102,12 +116,16 @@ export default {
 
   & label {
     max-height: 26px;
-    max-width: 100px;
+    max-width: 90px;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
     pointer-events: none;
+  }
+
+  & .node-preview {
+    padding-bottom: 6px;
   }
 
   & svg {
@@ -118,11 +136,18 @@ export default {
   }
 
   &:hover {
-    cursor: grab;
+    cursor: pointer;
 
     & .node-preview {
       filter: url(#node-torso-shadow);
     }
   }
+}
+
+.node-preview-active {
+  /* outline with border-radius is not working properly in Safari and CEF */
+  box-shadow: 0 0 0 calc(var(--selected-node-stroke-width-shape) * 1px) var(--selection-active-border-color);
+  border-radius: calc(var(--selected-node-border-radius-shape) * 1px);
+  background-color: var(--selection-active-background-color);
 }
 </style>

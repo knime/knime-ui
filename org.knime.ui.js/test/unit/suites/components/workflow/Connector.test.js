@@ -562,9 +562,10 @@ describe('Connector.vue', () => {
             wrapper.trigger('indicate-replacement', { detail: { state: false } });
             await Vue.nextTick();
 
-            expect(wrapper.vm.suggestDelete).toBeTruthy();
+            // TODO: NXT-954 enable locking again if know when the node will be really removed (only backend knows)
+            //expect(wrapper.vm.suggestDelete).toBeTruthy();
 
-            expect(gsap.to).toHaveBeenCalledTimes(1);
+            //expect(gsap.to).toHaveBeenCalledTimes(1);
         });
 
         it("can't lock after snapping back", async () => {
