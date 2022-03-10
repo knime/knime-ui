@@ -103,7 +103,8 @@ header {
     display: flex;
     align-items: center;
     font-family: "Roboto Condensed", sans-serif;
-    font-size: 24px;
+    font-weight: normal;
+    font-size: 20px;
     padding: 0 20px;
 
 
@@ -111,6 +112,7 @@ header {
       border: 0;
       border-radius: 20px;
       stroke: var(--knime-white);
+      stroke-width: calc(32px / 30); /* get 1px stroke width */
       width: 30px;
       margin-left: 10px;
 

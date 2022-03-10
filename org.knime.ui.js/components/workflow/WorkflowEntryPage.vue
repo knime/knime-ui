@@ -12,16 +12,20 @@ export default {
 
 <template>
   <main>
-    <div class="buttons">
+    <div class="button-tiles">
       <button>
-        <CirclePlus class="icon" />
-        <div class="primary">
+        <div class="icon" >
+          <CirclePlus/>
+        </div>
+        <div class="text primary">
           Create workflow
         </div>
       </button>
       <button @click="$commands.dispatch('openWorkflow')">
-        <FolderWorkflow class="icon" />
-        <div>
+        <div class="icon" >
+          <FolderWorkflow />
+        </div>
+        <div class="text">
           Open workflow
         </div>
       </button>
@@ -34,51 +38,77 @@ main {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: "Roboto Condensed", sans-serif;
   background-color: var(--knime-white);
-  background-image: url('~assets/entry-page-background.png');
+  background-image: url('~assets/entry-page-background.webp');
   background-repeat: no-repeat;
   background-position: bottom right;
+  background-size: 100%;
 
-  & .buttons {
+  & .button-tiles {
+    margin-bottom: 30px; /* visually centered */
+    
     & button {
       width: 400px;
-      height: 340px;
-      margin: 0 20px;
       padding: 0;
       background-color: var(--knime-gray-ultra-light);
-      border: none;
-      box-shadow: 0 1px 14px var(--knime-silver-sand);
-      position: relative;
+      border: 0;
+      border-radius: 2px;
+      box-shadow: 0px 0px 4px var(--knime-gray-dark-semi);
+      margin-bottom: 60px;
 
-      & .icon {
-        width: 50px;
-        stroke: var(--knime-masala);
-        padding-bottom: 30px;
+      &:first-of-type {
+        margin-right: 60px;
       }
 
-      & div {
+      &:hover, &:focus {
+        box-shadow: 0 2px 10px 0 var(--knime-gray-dark-semi);
+        transition: box-shadow 0.05s ease-out;
+        cursor: pointer;
+
+        & .icon svg {
+          stroke: var(--knime-masala);
+        }
+
+        & .text {
+          background-color: var(--knime-black);
+        }
+
+        & .text.primary {
+          background-color: var(--knime-masala);
+          color: var(--knime-white);
+        }
+      }
+
+      & .icon {
+        height: 260px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        & svg {
+          width: 50px;
+          stroke: var(--knime-dove-gray);
+        }
+      }
+
+      & .text {
         background-color: var(--knime-masala);
-        color: var(--knime-white);
-        height: 70px;
+        height: 60px;
         width: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 100;
+        font-family: "Roboto Condensed", sans-serif;    
+        font-weight: normal;
         font-size: 20px;
-        position: absolute;
-        bottom: 0;
+        color: var(--knime-white);
+        border-radius: 0 0 2px 2px;
       }
 
       & .primary {
         background-color: var(--knime-yellow);
         color: var(--knime-masala);
       }
-    }
-
-    & :hover {
-      cursor: pointer;
     }
   }
 }
