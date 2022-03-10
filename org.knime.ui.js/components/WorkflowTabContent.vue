@@ -36,7 +36,8 @@ export default {
         id="kanvasOutputSplitter"
         direction="column"
       >
-        <!-- TODO: NXT-844 this is a temporary component that can be merged with WorkflowTabContent as soon as WorkflowTabContent has been cleaned up -->
+        <!-- TODO: NXT-844 this is a temporary component that can be merged with WorkflowTabContent as soon as
+        WorkflowTabContent has been cleaned up -->
         <WorkflowPanel id="workflow-panel" />
         <template #secondary>
           <NodeOutput />

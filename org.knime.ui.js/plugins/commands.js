@@ -50,8 +50,7 @@ export default (context, inject) => {
                 Boolean(shiftKey) === modifiers.includes('Shift') &&
                 Boolean(altKey) === modifiers.includes('Alt') &&
                 (
-                    key.toUpperCase() === character.toUpperCase() ||
-                    character === 'Delete' && key === 'Backspace'
+                    key.toUpperCase() === character.toUpperCase() || (character === 'Delete' && key === 'Backspace')
                 )
             ) {
                 consola.trace('Shortcut', hotkey, commandName);
