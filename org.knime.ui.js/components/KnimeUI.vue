@@ -88,24 +88,20 @@ export default {
       @close="onCloseError"
     />
     <AppHeader id="header" />
-    <WorkflowToolbar
-      v-if="loaded"
-      id="toolbar"
-    />
-    <Sidebar
-      v-if="workflow"
-      id="sidebar"
-    />
-    <template v-if="loaded && workflow">
-      <WorkflowTabContent id="tab-content" />
-      <TooltipContainer id="tooltip-container" />
+    <template v-if="loaded">
+      <WorkflowToolbar id="toolbar" />
+      <template v-if="workflow">
+        <Sidebar id="sidebar" />
+        <WorkflowTabContent id="tab-content" />
+        <TooltipContainer id="tooltip-container" />
+      </template>
+      <WorkflowEntryPage
+        v-else
+        id="tab-content"
+      />
     </template>
-    <WorkflowEntryPage
-      v-if="!workflow"
-      id="tab-content"
-    />
     <div
-      v-if="!loaded"
+      v-else
       class="loader"
     />
   </div>

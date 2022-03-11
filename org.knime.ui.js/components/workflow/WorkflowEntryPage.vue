@@ -14,15 +14,15 @@ export default {
   <main>
     <div class="button-tiles">
       <button>
-        <div class="icon" >
-          <CirclePlus/>
+        <div class="icon">
+          <CirclePlus />
         </div>
         <div class="text primary">
           Create workflow
         </div>
       </button>
       <button @click="$commands.dispatch('openWorkflow')">
-        <div class="icon" >
+        <div class="icon">
           <FolderWorkflow />
         </div>
         <div class="text">
@@ -46,37 +46,18 @@ main {
 
   & .button-tiles {
     margin-bottom: 30px; /* visually centered */
-    
+
     & button {
       width: 400px;
       padding: 0;
       background-color: var(--knime-gray-ultra-light);
       border: 0;
       border-radius: 2px;
-      box-shadow: 0px 0px 4px var(--knime-gray-dark-semi);
+      box-shadow: 0 0 4px var(--knime-gray-dark-semi);
       margin-bottom: 60px;
 
       &:first-of-type {
         margin-right: 60px;
-      }
-
-      &:hover, &:focus {
-        box-shadow: 0 2px 10px 0 var(--knime-gray-dark-semi);
-        transition: box-shadow 0.05s ease-out;
-        cursor: pointer;
-
-        & .icon svg {
-          stroke: var(--knime-masala);
-        }
-
-        & .text {
-          background-color: var(--knime-black);
-        }
-
-        & .text.primary {
-          background-color: var(--knime-masala);
-          color: var(--knime-white);
-        }
       }
 
       & .icon {
@@ -98,11 +79,31 @@ main {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: "Roboto Condensed", sans-serif;    
+        font-family: "Roboto Condensed", sans-serif;
         font-weight: normal;
         font-size: 20px;
         color: var(--knime-white);
         border-radius: 0 0 2px 2px;
+      }
+
+      &:hover,
+      &:focus {
+        box-shadow: 0 2px 10px 0 var(--knime-gray-dark-semi);
+        transition: box-shadow 0.05s ease-out;
+        cursor: pointer;
+
+        & .icon svg {
+          stroke: var(--knime-masala);
+        }
+
+        & .text {
+          background-color: var(--knime-black);
+        }
+
+        & .text.primary {
+          background-color: var(--knime-masala);
+          color: var(--knime-white);
+        }
       }
 
       & .primary {
