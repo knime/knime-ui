@@ -10,7 +10,7 @@ export default {
         ScrollViewContainer
     },
     computed: {
-        ...mapState('nodeRepository', ['scrollPosition', 'nodesPerCategory'])
+        ...mapState('nodeRepository', ['categoryScrollPosition', 'nodesPerCategory'])
     },
     methods: {
         onScrollBottom() {
@@ -18,8 +18,8 @@ export default {
         },
         // TODO: NXT-844 why do we save the scroll position instead of using keep-alive for the repo?
         // Also currently the NodeRepository isn't destroyed upon closing
-        updateScrollPosition(position) {
-            this.$store.commit('nodeRepository/setScrollPosition', position);
+        onSaveScrollPosition(position) {
+            this.$store.commit('nodeRepository/setCategoryScrollPosition', position);
         },
         onSelectTag(tag) {
             this.$store.dispatch('nodeRepository/setSelectedTags', [tag]);
@@ -31,9 +31,9 @@ export default {
 <template>
   <ScrollViewContainer
     class="results"
-    :initial-position="scrollPosition"
+    :initial-position="categoryScrollPosition"
     @scroll-bottom="onScrollBottom"
-    @save-position="updateScrollPosition"
+    @save-position="onSaveScrollPosition"
   >
     <div class="content">
       <template v-for="({tag, nodes}) in nodesPerCategory">

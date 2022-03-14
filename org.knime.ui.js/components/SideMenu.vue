@@ -3,6 +3,7 @@ import { mapState, mapGetters } from 'vuex';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
 import NodeRepository from '~/components/noderepo/NodeRepository';
+import NodeDescription from '~/components/noderepo/NodeDescription';
 
 /**
  * A component that shows the tab contents belonging to one workflow,
@@ -12,12 +13,14 @@ export default {
     components: {
         LeftCollapsiblePanel,
         WorkflowMetadata,
-        NodeRepository
+        NodeRepository,
+        NodeDescription
     },
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
         }),
+        ...mapState('panel', ['activeDescriptionPanel']),
         // TODO: NXT-844 do we really need a panel store?
         ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive']),
         metadata() {
@@ -46,30 +49,39 @@ export default {
 </script>
 
 <template>
-  <LeftCollapsiblePanel
-    width="360px"
-    title="Open sidebar"
-  >
-    <!-- TODO: NXT-844 do proper transition according to https://vuejs.org/v2/guide/transitions.html#Transitioning-Between-Components -->
-    <transition name="panel-fade">
-      <!-- use v-if & v-show to prevent jumping without delays -->
-      <NodeRepository
-        v-if="nodeRepositoryActive"
-        v-show="nodeRepositoryActive"
-      />
-    </transition>
-    <transition name="panel-fade">
-      <!-- use v-if & v-show to prevent jumping without delays -->
-      <WorkflowMetadata
-        v-if="metadata && workflowMetaActive"
-        v-show="metadata && workflowMetaActive"
-        v-bind="metadata"
-      />
-    </transition>
-  </LeftCollapsiblePanel>
+  <div class="sidebar">
+    <LeftCollapsiblePanel
+      width="360px"
+      title="Open sidebar"
+    >
+      <!-- TODO: NXT-844 do proper transition according to https://vuejs.org/v2/guide/transitions.html#Transitioning-Between-Components -->
+      <transition name="panel-fade">
+        <!-- use v-if & v-show to prevent jumping without delays -->
+        <NodeRepository
+          v-if="nodeRepositoryActive"
+          v-show="nodeRepositoryActive"
+        />
+      </transition>
+      <transition name="panel-fade">
+        <!-- use v-if & v-show to prevent jumping without delays -->
+        <WorkflowMetadata
+          v-if="metadata && workflowMetaActive"
+          v-show="metadata && workflowMetaActive"
+          v-bind="metadata"
+        />
+      </transition>
+    </LeftCollapsiblePanel>
+    <NodeDescription
+      v-if="activeDescriptionPanel"
+    />
+  </div>
 </template>
 
 <style lang="postcss" scoped>
+.sidebar {
+  display: flex;
+}
+
 .panel-fade-enter-active {
   transition: all 150ms ease-in;
 }

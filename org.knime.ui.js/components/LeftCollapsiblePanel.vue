@@ -25,7 +25,7 @@ export default {
         }
     },
     computed: {
-        ...mapState('panel', ['expanded', 'activeTab'])
+        ...mapState('panel', ['expanded', 'activeTab', 'activeDescriptionPanel'])
     },
     methods: {
         toggleExpanded() {
@@ -51,6 +51,7 @@ export default {
 
     <button
       :title="expanded ? null : title"
+      :disabled="activeDescriptionPanel"
       @click="toggleExpanded"
     >
       <SwitchIcon :style="{ transform: expanded ? null : 'scaleX(-1)' }" />

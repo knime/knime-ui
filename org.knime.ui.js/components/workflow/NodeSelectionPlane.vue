@@ -53,8 +53,8 @@ export default {
       :height="nodeSelectionMeasures.height"
       :fill="$colors.selection.activeBackground"
       :stroke="$colors.selection.activeBorder"
-      stroke-width="1"
-      rx="4"
+      :stroke-width="$shapes.selectedNodeStrokeWidth"
+      :rx="$shapes.selectedNodeBorderRadius"
     />
   </g>
 </template>

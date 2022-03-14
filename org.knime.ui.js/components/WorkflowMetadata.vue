@@ -92,7 +92,7 @@ export default {
       v-if="!isComponent"
       class="last-updated"
     >
-      <span v-if="lastEdit">Last Update: {{ formatDateString(lastEdit) }}</span>
+      <span v-if="lastEdit">Last update: {{ formatDateString(lastEdit) }}</span>
       <span
         v-else
         class="placeholder"
@@ -111,7 +111,12 @@ export default {
 
     <NodeFeatureList
       v-if="nodeFeatures"
-      v-bind="nodeFeatures"
+      :in-ports="nodeFeatures.inPorts"
+      :dyn-in-ports="nodeFeatures.dynInPorts"
+      :out-ports="nodeFeatures.outPorts"
+      :dyn-out-ports="nodeFeatures.dynOutPorts"
+      :views="nodeFeatures.views"
+      :options="nodeFeatures.options"
       class="node-feature-list"
     />
 

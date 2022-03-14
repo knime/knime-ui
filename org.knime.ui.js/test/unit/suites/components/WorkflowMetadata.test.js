@@ -56,12 +56,12 @@ describe('WorkflowMetadata.vue', () => {
                 links: [{ text: 'link1' }],
                 tags: ['tag1'],
                 nodePreview: { type: 'nodePreviewData' },
-                nodeFeatures: { emptyText: 'nodeFeatureData' }
+                nodeFeatures: { inPorts: [{ name: 'Port 1' }] }
             }
         });
 
         expect(wrapper.text()).toMatch('Title');
-        expect(wrapper.text()).toMatch('Last Update: 1 Jan 2000');
+        expect(wrapper.text()).toMatch('Last update: 1 Jan 2000');
 
         let linkList = wrapper.findComponent(LinkList);
         expect(linkList.props().links).toStrictEqual([{ text: 'link1' }]);
@@ -72,7 +72,7 @@ describe('WorkflowMetadata.vue', () => {
         expect(tags.at(0).text()).toBe('tag1');
 
         expect(wrapper.findComponent(NodePreview).props('type')).toBe('nodePreviewData');
-        expect(wrapper.findComponent(NodeFeatureList).props('emptyText')).toBe('nodeFeatureData');
+        expect(wrapper.findComponent(NodeFeatureList).props('inPorts')).toEqual([{ name: 'Port 1' }]);
     });
 
     it('adds class if nodePreview exists', () => {

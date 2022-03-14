@@ -10,8 +10,6 @@ import CloseableTagList from '~/components/noderepo/CloseableTagList';
 import CategoryResults from '~/components/noderepo/CategoryResults';
 import SearchResults from '~/components/noderepo/SearchResults';
 
-import { getters } from '~/store/nodeRepository.js';
-
 jest.mock('lodash', () => ({
     throttle(func) {
         return function (...args) {
@@ -28,8 +26,8 @@ jest.mock('lodash', () => ({
 }));
 
 describe('NodeRepository', () => {
-    let mocks, doShallowMount, wrapper, $store, searchNodesMock, searchNodesNextPageMock,
-        setSelectedTagsMock, getAllNodesMock, clearSearchParamsMock, setScrollPositionMock, updateQueryMock;
+    let mocks, doShallowMount, wrapper, $store, searchNodesMock, searchNodesNextPageMock, setSelectedTagsMock,
+        getAllNodesMock, clearSearchParamsMock, setScrollPositionMock, updateQueryMock, searchIsActive;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -45,6 +43,7 @@ describe('NodeRepository', () => {
         clearSearchParamsMock = jest.fn();
         setScrollPositionMock = jest.fn();
         updateQueryMock = jest.fn();
+        searchIsActive = true;
 
         $store = mockVuexStore({
             nodeRepository: {
@@ -80,7 +79,11 @@ describe('NodeRepository', () => {
                     clearSearchParams: clearSearchParamsMock,
                     updateQuery: updateQueryMock
                 },
-                getters,
+                getters: {
+                    searchIsActive() {
+                        return searchIsActive;
+                    }
+                },
                 mutations: {
                     setScrollPosition: setScrollPositionMock
                 }
@@ -94,8 +97,8 @@ describe('NodeRepository', () => {
 
     describe('Renders', () => {
         it('renders empty Node Repository view and fetch first grouped nodes ', () => {
-            $store.state.nodeRepository.selectedTags = [];
             $store.state.nodeRepository.nodesPerCategory = [];
+            searchIsActive = false;
             doShallowMount();
 
             expect(getAllNodesMock).toHaveBeenCalled();
@@ -107,7 +110,7 @@ describe('NodeRepository', () => {
         });
 
         it('renders first grouped nodes ', () => {
-            $store.state.nodeRepository.selectedTags = [];
+            searchIsActive = false;
             doShallowMount();
 
             expect(getAllNodesMock).not.toHaveBeenCalled();
@@ -129,7 +132,7 @@ describe('NodeRepository', () => {
         });
 
         it('doesn\'t render CloseableTagList when no tags are selected and no search is active', () => {
-            $store.state.nodeRepository.selectedTags = [];
+            searchIsActive = false;
             doShallowMount();
             expect(wrapper.findComponent(CloseableTagList).exists()).toBe(false);
         });
