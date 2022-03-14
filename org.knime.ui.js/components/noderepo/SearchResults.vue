@@ -12,27 +12,43 @@ export default {
     },
     data() {
         return {
-            loading: false
+            isLoading: false
         };
     },
     computed: {
-        ...mapState('nodeRepository', ['nodes', 'query', 'scrollPosition', 'totalNumNodes']),
+        ...mapState('nodeRepository', ['nodes', 'query', 'selectedTags', 'searchScrollPosition', 'totalNumNodes']),
         hasNoSearchResults() {
             return this.nodes.length === 0;
         }
     },
+    watch: {
+        query() {
+            this.onSearchChanged();
+        },
+        selectedTags() {
+            this.onSearchChanged();
+        }
+    },
     methods: {
         ...mapActions('nodeRepository', ['searchNodesNextPage']),
-        ...mapMutations('nodeRepository', ['setScrollPosition']),
-        // TODO: NXT-844 why do we save the scroll position instead of using keep-alive for the repo?
+        ...mapMutations('nodeRepository', ['setSearchScrollPosition']),
         // Also currently the NodeRepository isn't destroyed upon closing
-        updateScrollPosition() {
-            this.setScrollPosition(0);
+        onSaveScrollPosition(position) {
+            this.setSearchScrollPosition(position);
+        },
+        async onSearchChanged() {
+            let { scroller } = this.$refs;
+          
+            // wait for new content to be displayed, then scroll to top
+            await this.$nextTick();
+            if (scroller) {
+                scroller.$el.scrollTop = 0;
+            }
         },
         async loadMoreSearchResults() {
-            this.loading = true;
+            this.isLoading = true;
             await this.searchNodesNextPage(true);
-            this.loading = false;
+            this.isLoading = false;
         }
     }
 };
@@ -47,9 +63,10 @@ export default {
   </div>
   <ScrollViewContainer
     v-else
+    ref="scroller"
     class="results"
-    :initial-position="scrollPosition"
-    @save-position="updateScrollPosition"
+    :initial-position="searchScrollPosition"
+    @save-position="onSaveScrollPosition"
     @scroll-bottom="loadMoreSearchResults"
   >
     <div class="content">
@@ -57,8 +74,8 @@ export default {
         :nodes="nodes"
       />
       <ReloadIcon
-        v-if="loading"
-        class="loading"
+        v-if="isLoading"
+        class="loading-indicator"
       />
     </div>
   </ScrollViewContainer>
@@ -86,7 +103,7 @@ export default {
     flex-direction: column;
     align-items: center;
 
-    & .loading {
+    & .loading-indicator {
       animation: spin 2s linear infinite;
       width: 40px;
       height: 40px;

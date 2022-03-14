@@ -142,8 +142,11 @@ describe('Node Repository store', () => {
         });
 
         it('sets selectedTags', () => {
+            store.commit('nodeRepository/setSearchScrollPosition', 100);
+
             store.commit('nodeRepository/setSelectedTags', ['myTag', 'myTag2']);
             expect(store.state.nodeRepository.selectedTags).toEqual(['myTag', 'myTag2']);
+            expect(store.state.nodeRepository.searchScrollPosition).toBe(0);
         });
 
         it('sets categoryPage', () => {
@@ -168,8 +171,11 @@ describe('Node Repository store', () => {
         });
 
         it('sets query', () => {
+            store.commit('nodeRepository/setSearchScrollPosition', 100);
+
             store.commit('nodeRepository/setQuery', 'some value');
             expect(store.state.nodeRepository.query).toBe('some value');
+            expect(store.state.nodeRepository.searchScrollPosition).toBe(0);
         });
 
         it('sets totalNumCategories', () => {
@@ -177,9 +183,14 @@ describe('Node Repository store', () => {
             expect(store.state.nodeRepository.totalNumCategories).toEqual(2);
         });
 
-        it('sets scrollPosition', () => {
-            store.commit('nodeRepository/setScrollPosition', 22);
-            expect(store.state.nodeRepository.scrollPosition).toEqual(22);
+        it('sets search scroll position', () => {
+            store.commit('nodeRepository/setSearchScrollPosition', 22);
+            expect(store.state.nodeRepository.searchScrollPosition).toEqual(22);
+        });
+
+        it('sets category scroll position', () => {
+            store.commit('nodeRepository/setCategoryScrollPosition', 22);
+            expect(store.state.nodeRepository.categoryScrollPosition).toEqual(22);
         });
     });
 

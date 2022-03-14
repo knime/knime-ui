@@ -1,6 +1,7 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
+import Vue from 'vue';
 
 import SearchResults from '~/components/noderepo/SearchResults';
 import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer.vue';
@@ -8,7 +9,7 @@ import NodeList from '~/components/noderepo/NodeList';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 
 describe('SearchResults', () => {
-    let doShallowMount, wrapper, $store, storeState, searchNodesNextPageMock, setScrollPositionMock;
+    let doShallowMount, wrapper, $store, storeState, searchNodesNextPageMock, setSearchScrollPositionMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -19,7 +20,7 @@ describe('SearchResults', () => {
         wrapper = null;
 
         searchNodesNextPageMock = jest.fn();
-        setScrollPositionMock = jest.fn();
+        setSearchScrollPositionMock = jest.fn();
 
         storeState = {
             query: '',
@@ -31,9 +32,8 @@ describe('SearchResults', () => {
                 name: 'Node 2'
             }],
             totalNumNodes: 2,
-            scrollPosition: 100
+            searchScrollPosition: 100
         };
-
 
         doShallowMount = () => {
             $store = mockVuexStore({
@@ -43,7 +43,7 @@ describe('SearchResults', () => {
                         searchNodesNextPage: searchNodesNextPageMock
                     },
                     mutations: {
-                        setScrollPosition: setScrollPositionMock
+                        setSearchScrollPosition: setSearchScrollPositionMock
                     }
                 }
             });
@@ -61,20 +61,12 @@ describe('SearchResults', () => {
         expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(false);
     });
 
-    it('remembers scroll position', () => {
+    it('displays icon if loading is true', async () => {
         doShallowMount();
+        await wrapper.setData({ isLoading: true });
 
-        let scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
-        expect(scrollViewContainer.props('initialPosition')).toBe(100);
-    });
-
-    it('resets scroll position', () => {
-        doShallowMount();
-
-        let scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
-        scrollViewContainer.vm.$emit('save-position', 100);
-
-        expect(setScrollPositionMock).toHaveBeenCalledWith(expect.anything(), 0);
+        const loadingIcon = wrapper.findComponent(ReloadIcon);
+        expect(loadingIcon.exists()).toBe(true);
     });
 
     it('renders nodes', () => {
@@ -84,29 +76,42 @@ describe('SearchResults', () => {
         expect(nodeList.props('nodes')).toStrictEqual(storeState.nodes);
     });
 
-    it('loads more', () => {
-        doShallowMount();
+    describe('scroll', () => {
+        it('remembers scroll position', () => {
+            doShallowMount();
 
-        let scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
-        scrollViewContainer.vm.$emit('scroll-bottom');
+            let scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
+            expect(scrollViewContainer.props('initialPosition')).toBe(100);
+        });
 
-        expect(searchNodesNextPageMock).toHaveBeenCalledWith(expect.anything(), true);
-    });
+        it('resets scroll if search query changes', async () => {
+            doShallowMount();
+            wrapper.vm.$refs.scroller.$el.scrollTop = 100;
 
-    it('sets loading to true', () => {
-        doShallowMount();
+            wrapper.vm.$options.watch.query.call(wrapper.vm);
+            await Vue.nextTick();
 
-        let scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
-        scrollViewContainer.vm.$emit('scroll-bottom');
+            expect(wrapper.vm.$refs.scroller.$el.scrollTop).toBe(0);
+        });
 
-        expect(wrapper.vm.loading).toBe(true);
-    });
+        it('resets scroll if selected tags change', async () => {
+            doShallowMount();
+            wrapper.vm.$refs.scroller.$el.scrollTop = 100;
 
-    it('displays icon if loading is true', async () => {
-        doShallowMount();
-        await wrapper.setData({ loading: true });
+            wrapper.vm.$options.watch.selectedTags.call(wrapper.vm);
+            await Vue.nextTick();
 
-        const loadingIcon = wrapper.findComponent(ReloadIcon);
-        expect(loadingIcon.exists()).toBe(true);
+            expect(wrapper.vm.$refs.scroller.$el.scrollTop).toBe(0);
+        });
+
+        it('scrolling to bottom load more results', () => {
+            doShallowMount();
+
+            let scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
+            scrollViewContainer.vm.$emit('scroll-bottom');
+
+            expect(searchNodesNextPageMock).toHaveBeenCalledWith(expect.anything(), true);
+            expect(wrapper.vm.isLoading).toBe(true);
+        });
     });
 });
