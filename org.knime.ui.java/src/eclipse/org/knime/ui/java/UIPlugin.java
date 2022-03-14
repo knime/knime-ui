@@ -1,3 +1,7 @@
+package org.knime.ui.java;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.BundleContext;
+
 /*
  * ------------------------------------------------------------------------
  *
@@ -43,48 +47,36 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
  *
+ * History
+ *   Feb 25, 2022 (hornm): created
  */
-package org.knime.ui.java;
-
-import javax.inject.Inject;
-
-import org.eclipse.e4.core.di.annotations.Execute;
-import org.eclipse.e4.ui.model.application.MApplication;
-import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
-import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService;
 
 /**
- * Handler to switch to the KNIME Web UI.
- *
- * <br/>
- * <br/>
- * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
+ * The KNIME UI Plugin.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public final class SwitchToWebUIHandler {
+public class UIPlugin extends AbstractUIPlugin {
 
-    @Inject
-    private MApplication m_app;
+    private static BundleContext context;
 
-    @Inject
-    private EPartService m_partService;
+    @Override
+    public void start(final BundleContext bc) throws Exception {
+        context = bc; // NOSONAR
+    }
 
-    @Inject
-    private EModelService m_modelService;
+    @Override
+    public void stop(final BundleContext bc) throws Exception {
+        //
+    }
 
-    @Execute
-    public void execute() {
-		MPerspective p = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
-        if (p != null) {
-            if (!p.isVisible()) {
-                p.setVisible(true);
-            }
-            m_partService.switchPerspective(p);
-        } else {
-            throw new IllegalStateException("No KNIME Web UI perspective registered");
-        }
+    /**
+     * Gives access to the {@link BundleContext} of this plugin.
+     *
+     * @return the bundle context instance
+     */
+    public static BundleContext getContext() {
+        return context;
     }
 
 }
