@@ -11,9 +11,7 @@ describe('ScrollViewContainer', () => {
         };
         doShallowMount = () => {
             wrapper = shallowMount(ScrollViewContainer, {
-                propsData,
-                mocks: {
-                }
+                propsData
             });
         };
     });
@@ -45,11 +43,51 @@ describe('ScrollViewContainer', () => {
     });
 
     describe('scroll event', () => {
-        it('scrolls container', () => {
+        beforeEach(() => {
+            // scroll container has content of 400px height
+            // and is 200px high
+            let getBoundingClientRectMock = jest.fn();
+            getBoundingClientRectMock.mockReturnValue({
+                height: 200
+            });
+            HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
+            Object.defineProperty(
+                HTMLElement.prototype,
+                'scrollHeight',
+                { get() { return 400; } } // eslint-disable-line no-magic-numbers
+            );
+        });
+
+        it('scrolls, but is below threshold', async () => {
+            propsData.initialPosition = 99;
+            doShallowMount();
+            await Vue.nextTick();
+
+            wrapper.find('.scroll-container').trigger('scroll');
+            
+            expect(wrapper.emitted('scroll-bottom')).toBe(undefined);
+        });
+
+        it('scrolls, and is above threshold', async () => {
             propsData.initialPosition = 100;
             doShallowMount();
+            await Vue.nextTick();
+
             wrapper.find('.scroll-container').trigger('scroll');
-            expect(wrapper.emitted()['scroll-bottom'].length).toBe(1);
+            
+            expect(wrapper.emitted('scroll-bottom').length).toBe(1);
+        });
+
+        it('emit scroll event only once per update', async () => {
+            propsData.initialPosition = 100;
+            doShallowMount();
+            await Vue.nextTick();
+
+            // scroll twice
+            wrapper.find('.scroll-container').trigger('scroll');
+            wrapper.find('.scroll-container').trigger('scroll');
+            
+            expect(wrapper.emitted('scroll-bottom').length).toBe(1);
         });
     });
 });

@@ -12,7 +12,8 @@ export default {
     },
     data() {
         return {
-            scrollPosition: this.initialPosition
+            scrollPosition: this.initialPosition,
+            lastScrollHeight: 0
         };
     },
     mounted() {
@@ -28,11 +29,24 @@ export default {
     methods: {
         onScroll: throttle(function () {
             /* eslint-disable no-invalid-this */
-            const scroller = this.$refs.scroller;
+            const { scroller } = this.$refs;
             const { scrollTop, scrollHeight } = scroller;
-            const viewHeight = scroller.getBoundingClientRect().height;
+            let containerHeight = scroller.getBoundingClientRect().height;
+            
+            // save scroll position
             this.scrollPosition = scrollTop;
-            if (scrollHeight - scrollTop - viewHeight <= (viewHeight / 2)) {
+            
+            // the scroll distance measured from the bottom
+            let scrollBottom = scrollHeight - scrollTop - containerHeight;
+            
+            // boundary is a 4th of the scrollHeight measured from the bottom
+            let bottomBoundary = scrollHeight / 4; // eslint-disable-line no-magic-numbers
+
+            if (scrollHeight > this.lastScrollHeight && scrollBottom <= bottomBoundary) {
+                // make sure this event is emitted only once
+                this.lastScrollHeight = scrollHeight;
+                
+                consola.debug('ScrollViewContainer: reached bottom boundary');
                 this.$emit('scroll-bottom');
             }
             /* eslint-enable no-invalid-this */
