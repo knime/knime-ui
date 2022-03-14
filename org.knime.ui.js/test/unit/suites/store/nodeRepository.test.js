@@ -95,7 +95,8 @@ describe('Node Repository store', () => {
             query: '',
             nodeSearchPage: 0,
             categoryPage: 0,
-            scrollPosition: 0,
+            searchScrollPosition: 0,
+            categoryScrollPosition: 0,
             selectedNode: null,
             nodeDescriptionObject: null
         });

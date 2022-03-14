@@ -23,9 +23,6 @@ export const state = () => ({
     query: '',
     nodeSearchPage: 0,
     searchScrollPosition: 0,
-
-    /* appearance */
-    scrollPosition: 0,
     
     /* node description */
     selectedNode: null,
