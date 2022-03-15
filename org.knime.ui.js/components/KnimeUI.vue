@@ -38,6 +38,7 @@ export default {
     },
     async fetch() {
         try {
+            // TODO: put this in application store
             await addEventListener('AppStateChanged');
             await this.initState();
             await Promise.all(requiredFonts.map(fontName => document.fonts.load(`1em ${fontName}`)));
@@ -89,15 +90,15 @@ export default {
     />
     <AppHeader id="header" />
     <template v-if="loaded">
+      <TooltipContainer id="tooltip-container" />
       <WorkflowToolbar id="toolbar" />
       <template v-if="workflow">
         <Sidebar id="sidebar" />
-        <WorkflowTabContent id="tab-content" />
-        <TooltipContainer id="tooltip-container" />
+        <WorkflowTabContent class="workflow-area" />
       </template>
       <WorkflowEntryPage
         v-else
-        id="tab-content"
+        class="workflow-area"
       />
     </template>
     <div
@@ -142,7 +143,7 @@ export default {
   border-bottom: 1px solid var(--knime-silver-sand);
 }
 
-#tab-content {
+.workflow-area {
   grid-area: workflow;
 }
 

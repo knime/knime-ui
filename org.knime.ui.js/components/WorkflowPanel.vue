@@ -78,7 +78,6 @@ export default {
     </div>
 
     <Kanvas
-      v-if="workflow"
       id="kanvas"
       ref="kanvas"
     >

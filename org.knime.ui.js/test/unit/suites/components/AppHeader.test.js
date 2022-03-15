@@ -65,7 +65,7 @@ describe('AppHeader.vue', () => {
 
     it('renders name of the workflow', () => {
         doShallowMount();
-        const title = wrapper.find('#workflow-title');
+        const title = wrapper.find('.workflow-title');
 
         expect(title.text()).toBe('Title');
     });

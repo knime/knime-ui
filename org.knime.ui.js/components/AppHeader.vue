@@ -34,7 +34,7 @@ export default {
     </div>
     <div
       v-if="activeWorkflow"
-      id="workflow-title"
+      class="workflow-title"
     >
       {{ activeWorkflow.info.name }}
       <CloseIcon
@@ -54,7 +54,6 @@ export default {
 <style lang="postcss" scoped>
 header {
   display: flex;
-  justify-content: space-between;
   height: 80px;
   background-color: var(--knime-masala);
   border-bottom: 4px solid var(--knime-yellow);
@@ -86,7 +85,7 @@ header {
   & #switch-classic {
     height: 40px;
     width: 40px;
-    margin: 20px;
+    margin: 20px 20px 20px auto;
     border: 1px solid var(--knime-dove-gray);
 
     & svg {
@@ -97,8 +96,7 @@ header {
     }
   }
 
-  & #workflow-title {
-    margin-right: auto;
+  & .workflow-title {
     color: var(--knime-white);
     display: flex;
     align-items: center;
@@ -107,7 +105,6 @@ header {
     font-size: 20px;
     padding: 0 20px;
 
-
     & .icon {
       border: 0;
       border-radius: 20px;
@@ -115,7 +112,6 @@ header {
       stroke-width: calc(32px / 30); /* get 1px stroke width */
       width: 30px;
       margin-left: 10px;
-
 
       &:hover {
         cursor: pointer;

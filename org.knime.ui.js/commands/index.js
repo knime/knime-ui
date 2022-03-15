@@ -29,6 +29,7 @@ const selectionCommands = {
 };
 
 export default {
+    ...applicationCommands,
     ...conditionGroup(
         // Enabled if workflow is present
         ({ $store }) => Boolean($store.state.workflow.activeWorkflow),
@@ -37,7 +38,6 @@ export default {
             ...selectionCommands,
             ...canvasCommands
         }
-    ),
-    ...applicationCommands
+    )
 };
 

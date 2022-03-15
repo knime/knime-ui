@@ -19,27 +19,27 @@ export default {
             return this.workflow?.parents?.length > 0;
         },
         toolbarCommands() {
-            const selectedNodes = this.$store.getters['selection/selectedNodes'];
-            let visibleItems = {};
-
-            if (this.workflow) {
-                visibleItems = {
-                    // always visible
-                    save: true,
-                    undo: true,
-                    redo: true,
-
-                    // Workflow
-                    executeAll: !selectedNodes.length,
-                    cancelAll: !selectedNodes.length,
-                    resetAll: !selectedNodes.length,
-
-                    // Node Execution
-                    executeSelected: selectedNodes.length,
-                    cancelSelected: selectedNodes.length,
-                    resetSelected: selectedNodes.length
-                };
+            if (!this.workflow) {
+                return [];
             }
+
+            const selectedNodes = this.$store.getters['selection/selectedNodes'];
+            let visibleItems = {
+                // always visible
+                save: true,
+                undo: true,
+                redo: true,
+
+                // Workflow
+                executeAll: !selectedNodes.length,
+                cancelAll: !selectedNodes.length,
+                resetAll: !selectedNodes.length,
+
+                // Node Execution
+                executeSelected: selectedNodes.length,
+                cancelSelected: selectedNodes.length,
+                resetSelected: selectedNodes.length
+            };
 
             return Object
                 .entries(visibleItems)

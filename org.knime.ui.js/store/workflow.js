@@ -291,21 +291,25 @@ export const actions = {
 // The name getters can be misleading, its more like Vues computed propeties which may return functions.
 // Please consult: https://vuex.vuejs.org/guide/getters.html
 export const getters = {
+    isStreaming({ activeWorkflow }) {
+        return Boolean(activeWorkflow?.info.jobManager);
+    },
     isLinked({ activeWorkflow }) {
         return Boolean(activeWorkflow?.info.linked);
-    },
-    isWritable(state, getters) {
-        return !(getters.isLinked || getters.isInsideLinked);
     },
     isInsideLinked(state, getters) {
         return Boolean(getters.insideLinkedType);
     },
-    isStreaming({ activeWorkflow }) {
-        return Boolean(activeWorkflow?.info.jobManager);
-    },
     insideLinkedType({ activeWorkflow }) {
-        const parents = activeWorkflow?.parents || [];
-        return parents.find(({ linked }) => linked)?.containerType;
+        if (!activeWorkflow?.parents) {
+            return null;
+        }
+
+        return activeWorkflow.parents.find(({ linked }) => linked)?.containerType;
+    },
+    /* Workflow is writable, if it is not linked or inside a linked workflow */
+    isWritable(state, getters) {
+        return !(getters.isLinked || getters.isInsideLinked);
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
@@ -319,6 +323,7 @@ export const getters = {
                 bottom: 0
             };
         }
+
         const { nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPorts } = activeWorkflow;
         const {
             nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight, portSize,
@@ -413,6 +418,7 @@ export const getters = {
         };
     },
 
+    // NXT-962: make this getter obsolete
     activeWorkflowId({ activeWorkflow }) {
         if (!activeWorkflow) {
             return null;
