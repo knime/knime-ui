@@ -203,12 +203,25 @@ describe('workflow store', () => {
                 }
             });
             await store.dispatch('workflow/loadWorkflow', { projectId: 'wf1', workflowId: 'root:0:12' });
-            await store.dispatch('workflow/loadWorkflow', { projectId: 'wf2', workflowId: 'root:0:23' });
+            await store.dispatch('workflow/unloadActiveWorkflow');
+
             expect(removeEventListenerMock).toHaveBeenCalledWith('WorkflowChanged', {
                 projectId: 'wf1',
                 workflowId: 'root',
                 snapshotId: 'snap'
             });
+        });
+
+        it('does not unload if there is no active workflow', async () => {
+            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true, info: {} }, snapshotId: 'snap' });
+            await loadStore({
+                apiMocks: {
+                    loadWorkflow
+                }
+            });
+            await store.dispatch('workflow/unloadActiveWorkflow');
+
+            expect(removeEventListenerMock).not.toHaveBeenCalled();
         });
 
         // describe used for debugging
@@ -525,6 +538,17 @@ describe('workflow store', () => {
 
             expect(saveWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
         });
+
+        it('closes the workflow via the API', async () => {
+            let closeWorkflow = jest.fn();
+            let apiMocks = { closeWorkflow };
+            await loadStore({ apiMocks });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            
+            store.dispatch('workflow/closeWorkflow');
+
+            expect(closeWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
+        });
     });
 
     describe('getters', () => {
@@ -703,6 +727,17 @@ describe('workflow store', () => {
                     right: 102,
                     top: -36,
                     bottom: 72
+                });
+            });
+
+            it('calculates dimensions of not active workflow', async () => {
+                await loadStore();
+
+                expect(store.getters['workflow/workflowBounds']).toStrictEqual({
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0
                 });
             });
         });

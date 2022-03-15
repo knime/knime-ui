@@ -72,11 +72,19 @@ describe('WorkflowToolbar.vue', () => {
         };
     });
 
-    test('Command buttons match computed items', () => {
-        doShallowMount();
+    describe('Toolbar Command', () => {
+        test('Command buttons match computed items', () => {
+            doShallowMount();
+    
+            let commandButtons = wrapper.findAllComponents(ToolbarCommandButton).wrappers;
+            expect(commandButtons.map(button => button.props('name'))).toStrictEqual(wrapper.vm.toolbarCommands);
+        });
 
-        let commandButtons = wrapper.findAllComponents(ToolbarCommandButton).wrappers;
-        expect(commandButtons.map(button => button.props('name'))).toStrictEqual(wrapper.vm.toolbarCommands);
+        it('hides toolbar command buttons if no workflow is open', () => {
+            storeConfig.workflow.state.activeWorkflow = null;
+            doShallowMount();
+            expect(wrapper.findComponent(ToolbarCommandButton).exists()).toBe(false);
+        });
     });
 
     describe('zoom', () => {

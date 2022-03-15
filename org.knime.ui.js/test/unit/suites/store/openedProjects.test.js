@@ -4,7 +4,7 @@ import Vuex from 'vuex';
 import * as openedProjectsStoreConfig from '~/store/openedProjects';
 
 describe('Opened projects store', () => {
-    let localVue, store, setActiveWorkflowSnapshot, storeConfig;
+    let localVue, store, storeConfig, dispatchSpy, activeWorkflowIdMock;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -12,16 +12,17 @@ describe('Opened projects store', () => {
     });
 
     beforeEach(() => {
-        setActiveWorkflowSnapshot = jest.fn();
         storeConfig = {
             openedProjects: openedProjectsStoreConfig,
             workflow: {
                 actions: {
-                    setActiveWorkflowSnapshot,
-                    loadWorkflow: jest.fn()
+                    loadWorkflow: jest.fn(),
+                    unloadActiveWorkflow: jest.fn()
                 },
                 getters: {
-                    activeWorkflowId: jest.fn().mockReturnValue('root')
+                    activeWorkflowId() {
+                        return activeWorkflowIdMock;
+                    }
                 }
             },
             canvas: {
@@ -36,6 +37,7 @@ describe('Opened projects store', () => {
             }
         };
         store = mockVuexStore(storeConfig);
+        dispatchSpy = jest.spyOn(store, 'dispatch');
     });
 
     it('creates an empty store', () => {
@@ -86,12 +88,20 @@ describe('Opened projects store', () => {
                 { projectId: '1', name: 'p1' },
                 { projectId: '2', name: 'p2' }
             ]);
-            expect(store.state.openedProjects.activeId).toBe('1');
 
-            expect(setActiveWorkflowSnapshot).toHaveBeenCalledWith(expect.anything(), {
-                ...activeWorkflow,
-                projectId: '1'
-            });
+            expect(dispatchSpy).toHaveBeenCalledWith('openedProjects/switchWorkflow', { projectId: '1', dummy: true });
+        });
+
+        it('unloads current workflow if there is no active workflow', () => {
+            consola.info = jest.fn();
+            store.dispatch('openedProjects/setProjects', [
+                { projectId: '0', name: 'p0' },
+                { projectId: '1', name: 'p1' },
+                { projectId: '2', name: 'p2' }
+            ]);
+
+            expect(dispatchSpy).toHaveBeenCalledWith('openedProjects/switchWorkflow', null);
+            expect(consola.info).toHaveBeenCalledWith('No active workflow provided');
         });
 
         describe('error handling', () => {
@@ -113,11 +123,10 @@ describe('Opened projects store', () => {
                     { projectId: '1', name: 'p1', activeWorkflow },
                     { projectId: '2', name: 'p2', activeWorkflow }
                 ]);
-                expect(setActiveWorkflowSnapshot).toHaveBeenCalledTimes(1);
-                expect(setActiveWorkflowSnapshot).toHaveBeenCalledWith(expect.anything(), {
-                    ...activeWorkflow,
-                    projectId: '1'
-                });
+
+                expect(store.state.openedProjects.activeId).toBe('1');
+                expect(dispatchSpy).toHaveBeenCalledWith('openedProjects/switchWorkflow',
+                    { projectId: '1', dummy: true });
                 expect(consola.error).toHaveBeenCalledWith(
                     'More than one active workflow found. Not supported. Opening only first item.'
                 );
@@ -130,27 +139,24 @@ describe('Opened projects store', () => {
                 { projectId: '1', name: 'p1', activeWorkflow: {} },
                 { projectId: '2', name: 'p2', savedState: { canvas: { saveMe: 'canvas' } } }
             ]);
-
-            await store.dispatch('openedProjects/switchWorkflow', { projectId: '2', workflowId: 'root' });
-
-            expect(storeConfig.workflow.actions.loadWorkflow)
-                .toHaveBeenCalledWith(expect.anything(), { projectId: '2', workflowId: 'root' });
+            expect(store.state.openedProjects.activeId).toBe('1');
+            
+            await store.dispatch('openedProjects/switchWorkflow', { projectId: '2', name: 'p2' });
             expect(store.state.openedProjects.activeId).toBe('2');
         });
 
-        it('saves ui state', async () => {
+        it('saves ui state', () => {
             store.dispatch('openedProjects/setProjects', [
-                { projectId: '1', name: 'p1', activeWorkflow: {} }
+                { projectId: '1', name: 'p1', activeWorkflow: { dummy: true } }
             ]);
             expect(store.state.openedProjects.savedState).toStrictEqual({
                 '1': {}
             });
-
-            await store.dispatch('openedProjects/switchWorkflow', { projectId: '1', workflowId: 'root' });
+            store.dispatch('openedProjects/saveState');
 
             expect(store.state.openedProjects.savedState).toStrictEqual({
                 '1': {
-                    root: {
+                    undefined: {
                         canvas: { saveMe: 'canvas' }
                     }
                 }
@@ -163,8 +169,7 @@ describe('Opened projects store', () => {
             ]);
 
             await store.dispatch('openedProjects/switchWorkflow', { projectId: '1', workflowId: 'root' });
-            expect(storeConfig.canvas.mutations.restoreState)
-                .toHaveBeenCalledWith(expect.anything(), { saveMe: 'canvas' });
+            expect(storeConfig.canvas.mutations.restoreState).toHaveBeenCalledTimes(2);
         });
 
         it('resets ui state', async () => {

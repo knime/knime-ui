@@ -4,7 +4,7 @@ import Vuex from 'vuex';
 import * as jsonrpcStoreConfig from '~/store/jsonrpc';
 
 describe('JSON-RPC store', () => {
-    let store, localVue, patchApplyMock;
+    let store, localVue, patchApplyMock, setProjectsMock;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -13,11 +13,17 @@ describe('JSON-RPC store', () => {
 
     beforeEach(() => {
         patchApplyMock = jest.fn();
+        setProjectsMock = jest.fn();
         store = mockVuexStore({
             jsonrpc: jsonrpcStoreConfig,
             workflow: {
                 actions: {
                     'patch.apply': patchApplyMock
+                }
+            },
+            openedProjects: {
+                actions: {
+                    setProjects: setProjectsMock
                 }
             }
         });
@@ -30,6 +36,15 @@ describe('JSON-RPC store', () => {
             expect(patchApplyMock).toHaveBeenCalledWith(
                 expect.anything(),
                 [{ dummy: true, path: '/activeWorkflow/foo/bar' }]
+            );
+        });
+
+        it('handles AppStateChangedEvents', () => {
+            store.dispatch('jsonrpc/AppStateChangedEvent', [{ appState: { openedWorkflows: { id: 1 } } }]);
+
+            expect(setProjectsMock).toHaveBeenCalledWith(
+                expect.anything(),
+                { id: 1 }
             );
         });
     });

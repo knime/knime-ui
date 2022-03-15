@@ -83,7 +83,7 @@ export const actions = {
         try {
             let { projectId } = state.activeWorkflow;
             let { activeSnapshotId: snapshotId } = state;
-            // this is intentionally not awaiting the response. Unloading can happen in the background.
+            
             await removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
         } catch (e) {
             consola.error(e);

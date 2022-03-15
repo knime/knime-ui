@@ -63,12 +63,12 @@ describe('API', () => {
 
             it('handles errors on addEventListener', async () => {
                 await expect(api.addEventListener('foo'))
-                    .rejects.toThrow('Couldn\'t register event "foo" with args undefined');
+                    .rejects.toThrow('Couldn\'t register event "foo" with args {}');
             });
 
             it('handles errors on removeEventListener', async () => {
                 await expect(api.removeEventListener('foo'))
-                    .rejects.toThrow('Couldn\'t unregister event "foo" with args undefined');
+                    .rejects.toThrow('Couldn\'t unregister event "foo" with args {}');
             });
         });
     });
