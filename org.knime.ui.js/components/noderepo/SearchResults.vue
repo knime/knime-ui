@@ -1,27 +1,54 @@
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapActions, mapMutations } from 'vuex';
+import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 import ScrollViewContainer from './ScrollViewContainer.vue';
 import NodeList from './NodeList.vue';
 
 export default {
     components: {
         ScrollViewContainer,
-        NodeList
+        NodeList,
+        ReloadIcon
+    },
+    data() {
+        return {
+            isLoading: false
+        };
     },
     computed: {
-        ...mapState('nodeRepository', ['nodes', 'query', 'scrollPosition', 'totalNumNodes']),
+        ...mapState('nodeRepository', ['nodes', 'query', 'selectedTags', 'searchScrollPosition', 'totalNumNodes']),
         hasNoSearchResults() {
             return this.nodes.length === 0;
         }
     },
-    methods: {
-        // TODO: NXT-844 why do we save the scroll position instead of using keep-alive for the repo?
-        // Also currently the NodeRepository isn't destroyed upon closing
-        updateScrollPosition(position) {
-            this.$store.commit('nodeRepository/setScrollPosition', position);
+    watch: {
+        query() {
+            this.onSearchChanged();
         },
-        loadMoreSearchResults() {
-            this.$store.dispatch('nodeRepository/searchNodesNextPage', true);
+        selectedTags() {
+            this.onSearchChanged();
+        }
+    },
+    methods: {
+        ...mapActions('nodeRepository', ['searchNodesNextPage']),
+        ...mapMutations('nodeRepository', ['setSearchScrollPosition']),
+        // Also currently the NodeRepository isn't destroyed upon closing
+        onSaveScrollPosition(position) {
+            this.setSearchScrollPosition(position);
+        },
+        async onSearchChanged() {
+            let { scroller } = this.$refs;
+          
+            // wait for new content to be displayed, then scroll to top
+            await this.$nextTick();
+            if (scroller) {
+                scroller.$el.scrollTop = 0;
+            }
+        },
+        async loadMoreSearchResults() {
+            this.isLoading = true;
+            await this.searchNodesNextPage(true);
+            this.isLoading = false;
         }
     }
 };
@@ -36,23 +63,31 @@ export default {
   </div>
   <ScrollViewContainer
     v-else
+    ref="scroller"
     class="results"
-    :initial-position="scrollPosition"
-    @save-position="updateScrollPosition"
+    :initial-position="searchScrollPosition"
+    @save-position="onSaveScrollPosition"
+    @scroll-bottom="loadMoreSearchResults"
   >
     <div class="content">
       <NodeList
         :nodes="nodes"
-        :has-more-nodes="nodes.length < totalNumNodes"
-        @show-more="loadMoreSearchResults"
-      >
-        <template #more-button>Show more…</template>
-      </NodeList>
+      />
+      <ReloadIcon
+        v-if="isLoading"
+        class="loading-indicator"
+      />
     </div>
   </ScrollViewContainer>
 </template>
 
 <style lang="postcss" scoped>
+@keyframes spin {
+  100% {
+    transform: rotate(-360deg);
+  }
+}
+
 .no-matching-search {
   display: flex;
   align-items: center;
@@ -67,6 +102,17 @@ export default {
 .results {
   & .content {
     padding: 0 20px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    & .loading-indicator {
+      animation: spin 2s linear infinite;
+      width: 40px;
+      height: 40px;
+      stroke-width: calc(32px / 40);
+      stroke: var(--knime-masala);
+    }
   }
 }
 </style>

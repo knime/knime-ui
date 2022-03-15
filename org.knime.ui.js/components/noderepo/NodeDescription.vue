@@ -65,7 +65,12 @@ export default {
               There is no description for this node.
             </span>
             <NodeFeatureList
-              v-bind="nodeDescriptionObject"
+              :in-ports="nodeDescriptionObject.inPorts"
+              :dyn-in-ports="nodeDescriptionObject.dynInPorts"
+              :out-ports="nodeDescriptionObject.outPorts"
+              :dyn-out-ports="nodeDescriptionObject.dynOutPorts"
+              :views="nodeDescriptionObject.views"
+              :options="nodeDescriptionObject.options"
               class="node-feature-list"
             />
           </template>

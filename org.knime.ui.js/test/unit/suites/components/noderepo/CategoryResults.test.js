@@ -7,7 +7,8 @@ import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer.vue';
 import NodeCategory from '~/components/noderepo/NodeCategory';
 
 describe('CategoryResults', () => {
-    let doShallowMount, wrapper, $store, storeState, getAllNodesMock, setSelectedTagsMock, setScrollPositionMock;
+    let doShallowMount, wrapper, $store, storeState, getAllNodesMock, setSelectedTagsMock,
+        setCategoryScrollPositionMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -19,14 +20,14 @@ describe('CategoryResults', () => {
 
         getAllNodesMock = jest.fn();
         setSelectedTagsMock = jest.fn();
-        setScrollPositionMock = jest.fn();
+        setCategoryScrollPositionMock = jest.fn();
 
         storeState = {
             nodesPerCategory: [
                 { tag: 'tag:1', nodes: ['node:1'] },
                 { tag: 'tag:2', nodes: ['node:1'] }
             ],
-            scrollPosition: 100
+            categoryScrollPosition: 100
         };
 
         doShallowMount = () => {
@@ -38,7 +39,7 @@ describe('CategoryResults', () => {
                         getAllNodes: getAllNodesMock
                     },
                     mutations: {
-                        setScrollPosition: setScrollPositionMock
+                        setCategoryScrollPosition: setCategoryScrollPositionMock
                     }
                 }
             });
@@ -61,7 +62,7 @@ describe('CategoryResults', () => {
             let scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
             scrollViewContainer.vm.$emit('save-position', 100);
 
-            expect(setScrollPositionMock).toHaveBeenCalledWith(expect.anything(), 100);
+            expect(setCategoryScrollPositionMock).toHaveBeenCalledWith(expect.anything(), 100);
         });
 
         it('loads on reaching bottom', () => {

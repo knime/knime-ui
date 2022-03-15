@@ -4,7 +4,7 @@ import { searchNodes, getNodesGroupedByTags, getNodeDescription } from '~api';
  * Store that manages node repository state.
  */
 
-const nodeSearchPageSize = 21;
+const nodeSearchPageSize = 100;
 const categoryPageSize = 3;
 const firstLoadOffset = 6;
 
@@ -13,6 +13,7 @@ export const state = () => ({
     nodesPerCategory: [],
     totalNumCategories: null,
     categoryPage: 0,
+    categoryScrollPosition: 0,
 
     /* search results */
     nodes: null,
@@ -21,9 +22,7 @@ export const state = () => ({
     tags: [],
     query: '',
     nodeSearchPage: 0,
-
-    /* appearance */
-    scrollPosition: 0,
+    searchScrollPosition: 0,
     
     /* node description */
     selectedNode: null,
@@ -195,6 +194,7 @@ export const mutations = {
 
     setSelectedTags(state, selectedTags) {
         state.selectedTags = selectedTags;
+        state.searchScrollPosition = 0;
     },
     setNodesPerCategories(state, groupedNodes) {
         state.nodesPerCategory = groupedNodes;
@@ -204,12 +204,16 @@ export const mutations = {
     },
     setQuery(state, value) {
         state.query = value;
+        state.searchScrollPosition = 0;
     },
     setTotalNumCategories(state, totalNumCategories) {
         state.totalNumCategories = totalNumCategories;
     },
-    setScrollPosition(state, value) {
-        state.scrollPosition = value;
+    setSearchScrollPosition(state, value) {
+        state.searchScrollPosition = value;
+    },
+    setCategoryScrollPosition(state, value) {
+        state.categoryScrollPosition = value;
     },
     setNodeDescription(state, nodeDescriptionObject) {
         state.nodeDescriptionObject = nodeDescriptionObject;
