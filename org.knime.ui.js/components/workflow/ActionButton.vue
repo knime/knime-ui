@@ -15,6 +15,11 @@ export default {
         disabled: {
             type: Boolean,
             default: false
+        },
+        /** title of the button; displays on hover */
+        title: {
+            type: String,
+            default: ''
         }
     },
     methods: {
@@ -37,6 +42,7 @@ export default {
       :cx="x"
       filter="url(#node-action-button-shadow)"
     />
+    <title>{{ title }}</title>
     <NestedSvg
       width="20"
       height="20"
