@@ -102,7 +102,7 @@ export default {
 }
 
 .button-list {
-  transition: all 150ms ease-out;
+  transition: opacity 150ms ease-out;
   flex-shrink: 0;
   display: flex;
   font-size: 14px;

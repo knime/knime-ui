@@ -32,7 +32,7 @@ describe('application store', () => {
     });
 
     it('allows initialization', async () => {
-        await store.dispatch('application/initState');
+        await store.dispatch('application/initializeApplication');
 
         expect(fetchApplicationState).toHaveBeenCalled();
         expect(setProjects).toHaveBeenCalledWith(expect.anything(), [{ projectId: 'foo', name: 'bar' }]);

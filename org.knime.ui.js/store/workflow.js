@@ -69,12 +69,12 @@ export const actions = {
             commit('setActiveSnapshotId', snapshotId);
 
             let workflowId = getters.activeWorkflowId;
-            await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+            addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
         } else {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    async unloadActiveWorkflow({ state, commit, getters: { activeWorkflowId: workflowId }, rootGetters }) {
+    unloadActiveWorkflow({ state, commit, getters: { activeWorkflowId: workflowId }, rootGetters }, { clearWorkflow }) {
         if (!state.activeWorkflow) {
             // nothing to do (no tabs open)
             return;
@@ -83,14 +83,16 @@ export const actions = {
         try {
             let { projectId } = state.activeWorkflow;
             let { activeSnapshotId: snapshotId } = state;
-            
-            await removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+
+            removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
         } catch (e) {
             consola.error(e);
         }
         commit('selection/clearSelection', null, { root: true });
         commit('setTooltip', null);
-        commit('setActiveWorkflow', null);
+        if (clearWorkflow) {
+            commit('setActiveWorkflow', null);
+        }
     },
 
     /**

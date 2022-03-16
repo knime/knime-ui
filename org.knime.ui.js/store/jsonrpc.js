@@ -22,8 +22,6 @@ export const actions = {
      */
     // NXT-962: Unpack arguments from Array
     AppStateChangedEvent({ dispatch }, [args]) {
-        const { openedWorkflows } = args.appState;
-
-        dispatch('application/setProjects', openedWorkflows, { root: true });
+        dispatch('application/replaceApplicationState', args.appState, { root: true });
     }
 };

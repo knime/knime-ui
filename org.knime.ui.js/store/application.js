@@ -1,4 +1,4 @@
-import { fetchApplicationState } from '~api';
+import { fetchApplicationState, addEventListener, removeEventListener } from '~api';
 
 /*
 * This store provides global application logic
@@ -30,54 +30,61 @@ export const mutations = {
 
 
 export const actions = {
-    async initState({ dispatch }) {
-        const { openedWorkflows = [] } = await fetchApplicationState();
+    async initializeApplication({ dispatch }) {
+        await addEventListener('AppStateChanged');
+        const applicationState = await fetchApplicationState();
 
-        dispatch('setProjects', openedWorkflows);
+        dispatch('replaceApplicationState', applicationState);
     },
+    destroyApplication({ dispatch }) {
+        removeEventListener('AppStateChanged');
+        dispatch('workflow/unloadActiveWorkflow', { clearWorkflow: true }, { root: true });
+    },
+    // -------------------------------------------------------------------- //
+    async replaceApplicationState({ commit, dispatch }, applicationState) {
+        // NXT-962: rename openendWorkflows to openProjects
+        const openProjects = applicationState.openedWorkflows || [];
 
-    setProjects({ commit, dispatch }, projects) {
-        commit('setOpenProjects', projects);
-        let activeWorkflows = projects.filter(item => item.activeWorkflow);
-
-        if (activeWorkflows.length === 0) {
-            consola.info('No active workflow provided');
-        } else if (activeWorkflows.length > 1) {
-            consola.error('More than one active workflow found. Not supported. Opening only first item.');
-        }
-
-        let [activeWorkflow] = activeWorkflows;
-
-        // if the active workflow is not the current, then unload the current workflow
-        if (!activeWorkflow) {
+        commit('setOpenProjects', openProjects);
+        await dispatch('setActiveProject', openProjects);
+    },
+    async setActiveProject({ state: { openProjects }, commit, dispatch }) {
+        if (openProjects.length === 0) {
+            consola.info('No workflows opened');
             dispatch('switchWorkflow', null);
             return;
         }
 
-        // if there is a new active workflow, open that workflow
-        dispatch('switchWorkflow', {
-            ...activeWorkflow.activeWorkflow,
+        // either choose the project that has been marked as active, or the first one
+        let activeWorkflow = openProjects.find(item => item.activeWorkflow);
+        if (!activeWorkflow) {
+            consola.info('No active workflow provided');
+            activeWorkflow = openProjects[0];
+        }
+
+        await dispatch('switchWorkflow', {
+            workflowId: 'root',
             projectId: activeWorkflow.projectId
         });
     },
-    async switchWorkflow({ commit, dispatch, rootGetters }, newWorkflow) {
-        // save scroll and zoom
+    switchWorkflow({ commit, dispatch, rootGetters }, newWorkflow) {
+        // save user state like scroll and zoom
         if (rootGetters['workflow/activeWorkflowId']) {
-            await dispatch('saveUserState');
+            dispatch('saveUserState');
+
+            // unload current workflow
+            dispatch('workflow/unloadActiveWorkflow', { clearWorkflow: !newWorkflow }, { root: true });
+            commit('setActiveProjectId', null);
         }
-        
-        // unload current workflow
-        dispatch('workflow/unloadActiveWorkflow', null, { root: true });
-        commit('setActiveProjectId', null);
 
         // only continue if the new workflow exists
         if (newWorkflow) {
             let { projectId, workflowId } = newWorkflow;
             commit('setActiveProjectId', projectId);
-            await dispatch('workflow/loadWorkflow', { projectId, workflowId }, { root: true });
+            dispatch('workflow/loadWorkflow', { projectId, workflowId }, { root: true });
 
             // restore scroll and zoom if saved before
-            await dispatch('restoreUserState');
+            dispatch('restoreUserState');
         }
     },
     saveUserState({ state, commit, rootState, rootGetters }) {

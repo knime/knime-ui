@@ -25,11 +25,11 @@ describe('KnimeUI.vue', () => {
         localVue.use(Vuex);
     });
 
-    let $store, doShallowMountWithAsyncData, initState, wrapper, storeConfig, mocks;
+    let $store, doShallowMountWithAsyncData, initializeApplication, wrapper, storeConfig, mocks;
     // ,addEventListenerMock, removeEventListenerMock;
 
     beforeEach(() => {
-        initState = jest.fn().mockResolvedValue();
+        initializeApplication = jest.fn().mockResolvedValue();
         // addEventListenerMock = jest.fn().mockImplementation((event, fn) => {
         //     fn();
         // });
@@ -48,7 +48,7 @@ describe('KnimeUI.vue', () => {
         storeConfig = {
             application: {
                 actions: {
-                    initState
+                    initializeApplication
                 }
             },
             workflow: {
@@ -119,7 +119,7 @@ describe('KnimeUI.vue', () => {
 
         await doShallowMountWithAsyncData();
 
-        expect(initState).toHaveBeenCalled();
+        expect(initializeApplication).toHaveBeenCalled();
         expect(document.fonts.load).toHaveBeenCalledTimes(numberOfPreloadedFonts);
     });
 });

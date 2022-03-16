@@ -1,5 +1,4 @@
 <script>
-import { addEventListener, removeEventListener } from '~api';
 import { mapActions, mapState } from 'vuex';
 import AppHeader from '~/components/AppHeader';
 import Sidebar from '~/components/Sidebar';
@@ -38,9 +37,7 @@ export default {
     },
     async fetch() {
         try {
-            // TODO: put this in application store
-            await addEventListener('AppStateChanged');
-            await this.initState();
+            await this.initializeApplication();
             await Promise.all(requiredFonts.map(fontName => document.fonts.load(`1em ${fontName}`)));
             this.loaded = true;
         } catch ({ message, stack }) {
@@ -54,7 +51,7 @@ export default {
         })
     },
     async beforeDestroy() {
-        await removeEventListener('AppStateChanged');
+        await this.destroyApplication();
     },
     errorCaptured({ message, stack }, vm, vueInfo) {
         consola.error(message, vueInfo, stack);
@@ -69,7 +66,7 @@ export default {
         return false;
     },
     methods: {
-        ...mapActions('application', ['initState']),
+        ...mapActions('application', ['initializeApplication', 'destroyApplication']),
         onCloseError() {
             if (process.env.isDev) { // eslint-disable-line no-process-env
                 this.error = null;
@@ -89,9 +86,9 @@ export default {
       @close="onCloseError"
     />
     <AppHeader id="header" />
+    <WorkflowToolbar id="toolbar" />
+    <TooltipContainer id="tooltip-container" />
     <template v-if="loaded">
-      <TooltipContainer id="tooltip-container" />
-      <WorkflowToolbar id="toolbar" />
       <template v-if="workflow">
         <Sidebar id="sidebar" />
         <WorkflowTabContent class="workflow-area" />
