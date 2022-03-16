@@ -101,9 +101,9 @@ describe('Node', () => {
                     isWritable: () => true
                 }
             },
-            openedProjects: {
+            application: {
                 state() {
-                    return { activeId: 'projectId' };
+                    return { activeProjectId: 'projectId' };
                 },
                 actions: {
                     switchWorkflow: jest.fn()
@@ -717,7 +717,7 @@ describe('Node', () => {
             doMount();
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
-            expect(storeConfig.openedProjects.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
+            expect(storeConfig.application.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
                 workflowId: 'root:1',
                 projectId: 'projectId'
             });
@@ -730,7 +730,7 @@ describe('Node', () => {
                 ctrlKey: true
             });
 
-            expect(storeConfig.openedProjects.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
+            expect(storeConfig.application.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
                 workflowId: 'root:1',
                 projectId: 'projectId'
             });

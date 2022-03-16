@@ -21,7 +21,7 @@ describe('JSON-RPC store', () => {
                     'patch.apply': patchApplyMock
                 }
             },
-            openedProjects: {
+            application: {
                 actions: {
                     setProjects: setProjectsMock
                 }

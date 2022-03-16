@@ -30,7 +30,7 @@ describe('WorkflowBreadcrumb.vue', () => {
                         loadWorkflow: jest.fn()
                     }
                 },
-                openedProjects: {
+                application: {
                     actions: {
                         switchWorkflow: jest.fn()
                     }
@@ -146,7 +146,7 @@ describe('WorkflowBreadcrumb.vue', () => {
                 id: 'root:0:123'
             };
             wrapper.vm.onClick(event);
-            expect(storeConfig.openedProjects.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
+            expect(storeConfig.application.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
                 workflowId: 'root:0:123',
                 projectId: 'proj'
             });

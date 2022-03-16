@@ -1,7 +1,7 @@
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
-import * as openedProjectsStoreConfig from '~/store/openedProjects';
+import * as openedProjectsStoreConfig from '~/store/application';
 
 describe('Opened projects store', () => {
     let localVue, store, storeConfig, dispatchSpy, activeWorkflowIdMock;
@@ -42,24 +42,24 @@ describe('Opened projects store', () => {
 
     it('creates an empty store', () => {
         expect(store.state.openedProjects).toStrictEqual({
-            items: [],
-            activeId: null,
+            openProjects: [],
+            activeProjectId: null,
             savedState: {}
         });
     });
 
     describe('mutations', () => {
         it('allows setting the active Id', () => {
-            store.commit('openedProjects/setActiveId', 'foo');
-            expect(store.state.openedProjects.activeId).toBe('foo');
+            store.commit('openedProjects/setActiveProjectId', 'foo');
+            expect(store.state.openedProjects.activeProjectId).toBe('foo');
         });
 
         it('allows setting all items', () => {
             store.commit('openedProjects/setProjects', [{ projectId: 'foo', name: 'bar' }]);
-            expect(store.state.openedProjects.items).toStrictEqual([
+            expect(store.state.openedProjects.openProjects).toStrictEqual([
                 { projectId: 'foo', name: 'bar' }
             ]);
-            expect(store.state.openedProjects.activeId).toBe(null);
+            expect(store.state.openedProjects.activeProjectId).toBe(null);
             expect(store.state.openedProjects.savedState).toStrictEqual({
                 foo: {}
             });
@@ -83,7 +83,7 @@ describe('Opened projects store', () => {
                 { projectId: '2', name: 'p2' }
             ]);
 
-            expect(store.state.openedProjects.items).toStrictEqual([
+            expect(store.state.openedProjects.openProjects).toStrictEqual([
                 { projectId: '0', name: 'p0' },
                 { projectId: '1', name: 'p1' },
                 { projectId: '2', name: 'p2' }
@@ -124,7 +124,7 @@ describe('Opened projects store', () => {
                     { projectId: '2', name: 'p2', activeWorkflow }
                 ]);
 
-                expect(store.state.openedProjects.activeId).toBe('1');
+                expect(store.state.openedProjects.activeProjectId).toBe('1');
                 expect(dispatchSpy).toHaveBeenCalledWith('openedProjects/switchWorkflow',
                     { projectId: '1', dummy: true });
                 expect(consola.error).toHaveBeenCalledWith(
@@ -139,10 +139,10 @@ describe('Opened projects store', () => {
                 { projectId: '1', name: 'p1', activeWorkflow: {} },
                 { projectId: '2', name: 'p2', savedState: { canvas: { saveMe: 'canvas' } } }
             ]);
-            expect(store.state.openedProjects.activeId).toBe('1');
+            expect(store.state.openedProjects.activeProjectId).toBe('1');
             
             await store.dispatch('openedProjects/switchWorkflow', { projectId: '2', name: 'p2' });
-            expect(store.state.openedProjects.activeId).toBe('2');
+            expect(store.state.openedProjects.activeProjectId).toBe('2');
         });
 
         it('saves ui state', () => {

@@ -24,6 +24,6 @@ export const actions = {
     AppStateChangedEvent({ dispatch }, [args]) {
         const { openedWorkflows } = args.appState;
 
-        dispatch('openedProjects/setProjects', openedWorkflows, { root: true });
+        dispatch('application/setProjects', openedWorkflows, { root: true });
     }
 };

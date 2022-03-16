@@ -23,7 +23,7 @@ describe('application store', () => {
         setProjects = jest.fn();
         store = mockVuexStore({
             application: await import('~/store/application'),
-            openedProjects: {
+            application: {
                 actions: {
                     setProjects
                 }

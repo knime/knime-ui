@@ -14,7 +14,7 @@ import Button from '~/webapps-common/ui/components/Button';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 
 describe('NodeOutput.vue', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store, dummyNodes, workflow, openedProjects;
+    let propsData, mocks, doShallowMount, wrapper, $store, dummyNodes, workflow, application;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -69,16 +69,16 @@ describe('NodeOutput.vue', () => {
             }
         };
 
-        openedProjects = {
+        application = {
             state: {
-                activeId: 'projectId'
+                activeProjectId: 'projectId'
             }
         };
 
         doShallowMount = () => {
             $store = mockVuexStore({
                 workflow,
-                openedProjects,
+                application,
                 selection
             });
 
