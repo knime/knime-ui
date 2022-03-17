@@ -6,5 +6,11 @@ export default {
         hotkey: ['Ctrl', 'o'],
         execute:
             () => openWorkflow()
+    },
+    closeWorkflow: {
+        text: 'Close workflow',
+        hotkey: ['Ctrl', 'w'],
+        execute:
+            ({ $store }) => $store.dispatch('workflow/closeWorkflow')
     }
 };

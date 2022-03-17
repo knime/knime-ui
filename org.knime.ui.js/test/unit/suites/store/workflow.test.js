@@ -6,8 +6,7 @@ import Vuex from 'vuex';
 import Vue from 'vue';
 
 describe('workflow store', () => {
-    let store, localVue, loadStore, addEventListenerMock,
-        removeEventListenerMock, moveObjectsMock, deleteObjectsMock;
+    let store, localVue, loadStore, addEventListenerMock, removeEventListenerMock, moveObjectsMock, deleteObjectsMock;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -203,13 +202,14 @@ describe('workflow store', () => {
                 }
             });
             await store.dispatch('workflow/loadWorkflow', { projectId: 'wf1', workflowId: 'root:0:12' });
-            await store.dispatch('workflow/unloadActiveWorkflow');
+            await store.dispatch('workflow/unloadActiveWorkflow', { clearWorkflow: true });
 
             expect(removeEventListenerMock).toHaveBeenCalledWith('WorkflowChanged', {
                 projectId: 'wf1',
                 workflowId: 'root',
                 snapshotId: 'snap'
             });
+            expect(store.state.workflow.activeWorkflow).toBe(null);
         });
 
         it('does not unload if there is no active workflow', async () => {
@@ -219,7 +219,7 @@ describe('workflow store', () => {
                     loadWorkflow
                 }
             });
-            await store.dispatch('workflow/unloadActiveWorkflow');
+            await store.dispatch('workflow/unloadActiveWorkflow', { clearWorkflow: false });
 
             expect(removeEventListenerMock).not.toHaveBeenCalled();
         });

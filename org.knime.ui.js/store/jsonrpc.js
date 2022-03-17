@@ -17,7 +17,7 @@ export const actions = {
     },
 
     /*
-     * Is triggered by the backend, whenever the application state chnges
+     * Is triggered by the backend, whenever the application state changes
      * sends the new state
      */
     // NXT-962: Unpack arguments from Array

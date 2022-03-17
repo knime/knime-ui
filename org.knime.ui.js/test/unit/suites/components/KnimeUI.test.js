@@ -25,21 +25,11 @@ describe('KnimeUI.vue', () => {
         localVue.use(Vuex);
     });
 
-    let $store, doShallowMountWithAsyncData, initializeApplication, wrapper, storeConfig, mocks;
-    // ,addEventListenerMock, removeEventListenerMock;
+    let $store, doShallowMountWithAsyncData, initializeApplication, wrapper, storeConfig, mocks, destroyApplication;
 
     beforeEach(() => {
         initializeApplication = jest.fn().mockResolvedValue();
-        // addEventListenerMock = jest.fn().mockImplementation((event, fn) => {
-        //     fn();
-        // });
-        // removeEventListenerMock = jest.fn();
-
-        // jest.doMock('~api', () => ({
-        //     __esModule: true,
-        //     addEventListener: addEventListenerMock,
-        //     removeEventListener: removeEventListenerMock
-        // }), { virtual: true });
+        destroyApplication = jest.fn();
 
         document.fonts = {
             load: jest.fn()
@@ -48,7 +38,8 @@ describe('KnimeUI.vue', () => {
         storeConfig = {
             application: {
                 actions: {
-                    initializeApplication
+                    initializeApplication,
+                    destroyApplication
                 }
             },
             workflow: {
@@ -68,26 +59,29 @@ describe('KnimeUI.vue', () => {
     it('renders before loading', async () => {
         await doShallowMountWithAsyncData();
         expect(wrapper.findComponent(AppHeader).exists()).toBe(true);
+        expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(true);
+        expect(wrapper.findComponent(TooltipContainer).exists()).toBe(true);
         expect(wrapper.findComponent(Sidebar).exists()).toBe(false);
-        expect(wrapper.findComponent(TooltipContainer).exists()).toBe(false);
-        expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(false);
         expect(wrapper.findComponent(WorkflowTabContent).exists()).toBe(false);
         expect(wrapper.findComponent(WorkflowEntryPage).exists()).toBe(false);
     });
 
     it('catches errors in fetch hook', async () => {
+        initializeApplication.mockImplementation(() => {
+            throw new TypeError('error');
+        });
         await doShallowMountWithAsyncData();
         await Vue.nextTick();
 
         let errorComponent = wrapper.findComponent(Error);
         expect(errorComponent.exists()).toBe(true);
         expect(errorComponent.props()).toMatchObject({
-            message: "Couldn't register event \"AppStateChanged\" with args {}",
+            message: 'error',
             stack: expect.anything()
         });
     });
 
-    it('renders after loading', async () => {
+    it('renders after loading with existing workflow', async () => {
         storeConfig.workflow.state.activeWorkflow = {
             info: {
                 containerType: 'project',
@@ -97,29 +91,44 @@ describe('KnimeUI.vue', () => {
         };
         document.fonts.load.mockResolvedValue('dummy');
         await doShallowMountWithAsyncData();
-        wrapper.setData({ loaded: true });
 
-        // // await fetch hook
+        // await fetch hook
         await Vue.nextTick();
-        // await Vue.nextTick();
+        await Vue.nextTick();
 
-        // // await rendering
-        // await Vue.nextTick();
+        // await rendering
+        await Vue.nextTick();
 
-        expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(true);
         expect(wrapper.findComponent(Sidebar).exists()).toBe(true);
         expect(wrapper.findComponent(WorkflowTabContent).exists()).toBe(true);
-        let tooltipContainer = wrapper.findComponent(TooltipContainer);
-        expect(tooltipContainer.exists()).toBe(true);
-        expect(tooltipContainer.attributes('id')).toBe('tooltip-container');
+    });
+
+    it('renders after loading without a workflow', async () => {
+        document.fonts.load.mockResolvedValue('dummy');
+        await doShallowMountWithAsyncData();
+
+        // await fetch hook
+        await Vue.nextTick();
+        await Vue.nextTick();
+
+        // await rendering
+        await Vue.nextTick();
+
+        expect(wrapper.findComponent(WorkflowEntryPage).exists()).toBe(true);
     });
 
     it('initiates', async () => {
         document.fonts.load.mockResolvedValue('dummy');
-
         await doShallowMountWithAsyncData();
 
         expect(initializeApplication).toHaveBeenCalled();
         expect(document.fonts.load).toHaveBeenCalledTimes(numberOfPreloadedFonts);
+    });
+
+    it('destroys application', async () => {
+        await doShallowMountWithAsyncData();
+        await wrapper.destroy();
+
+        expect(destroyApplication).toHaveBeenCalled();
     });
 });

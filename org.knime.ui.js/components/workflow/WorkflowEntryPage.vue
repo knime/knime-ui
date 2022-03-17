@@ -46,7 +46,9 @@ main {
 }
 
 .button-tiles {
-  margin-bottom: 60px; /* visually centered */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 button {
@@ -57,10 +59,7 @@ button {
   border-radius: 2px;
   box-shadow: 0 0 4px var(--knime-gray-dark-semi);
   transition: all 150ms ease-out;
-
-  &:first-of-type {
-    margin-right: 60px;
-  }
+  margin: 30px; /* grid-gap is not supported */
 
   & .icon {
     height: 260px;
@@ -83,7 +82,6 @@ button {
     font-size: 20px;
     border-radius: 0 0 2px 2px;
     transition: all 150ms ease-out;
-    
     height: 60px;
     width: 100%;
     display: flex;
@@ -113,7 +111,7 @@ button {
       color: var(--knime-white);
     }
   }
-  
+
   &:active {
     transform: scale(0.98);
   }

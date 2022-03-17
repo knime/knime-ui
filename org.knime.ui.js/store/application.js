@@ -16,7 +16,9 @@ export const mutations = {
         state.activeProjectId = projectId;
     },
     setOpenProjects(state, projects) {
-        state.openProjects = projects.map(({ projectId, name }) => ({ projectId, name }));
+        state.openProjects = projects.map(({ projectId, name, activeWorkflow }) => activeWorkflow
+            ? { projectId, name, activeWorkflow }
+            : { projectId, name });
 
         // add entry to savedUserState for each project
         state.openProjects.forEach(({ projectId }) => {
