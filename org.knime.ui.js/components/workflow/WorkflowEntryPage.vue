@@ -59,7 +59,7 @@ button {
   border-radius: 2px;
   box-shadow: 0 0 4px var(--knime-gray-dark-semi);
   transition: all 150ms ease-out;
-  margin: 30px; /* grid-gap is not supported */
+  margin: 30px; /* gap is not supported */
 
   & .icon {
     height: 260px;
