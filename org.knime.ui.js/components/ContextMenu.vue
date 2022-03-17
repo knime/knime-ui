@@ -61,7 +61,9 @@ export default {
                 // Workflow
                 executeAll: !somethingSelected,
                 cancelAll: !somethingSelected,
-                resetAll: !somethingSelected
+                resetAll: !somethingSelected,
+
+                createMetanode: selectedNodes.length
             };
 
             // Array of name of commands
