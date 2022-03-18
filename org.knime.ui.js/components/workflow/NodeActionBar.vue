@@ -103,7 +103,6 @@ export default {
         isSelfSelected() {
             return this.$store.getters['selection/singleSelectedNode']?.id === this.nodeId;
         },
-
         /**
          *  returns an array of allowed actions with a handler to the corresponding api call,
          *  a boolean if it is enabled or disabled, an icon and the title (tooltip on hover).
@@ -113,20 +112,9 @@ export default {
          *  @returns {Array<Array>} Array of allowed actions
          */
         actions() {
-            const conditionsMap = {
-                [actionIds.CONFIGURE_NODE]: this.canOpenDialog !== null,
-                [actionIds.PAUSE_NODE]: this.canPause,
-                [actionIds.RESUME_NODE]: !this.canPause && this.canResume,
-                [actionIds.EXECUTE_NODE]: !this.canPause && !this.canResume,
-                [actionIds.STEP]: this.canStep !== null,
-                [actionIds.CANCEL]: true,
-                [actionIds.RESET]: true,
-                [actionIds.OPEN_VIEW]: this.canOpenView !== null
-            };
-
             // For all the actions, the command reference property will only be set if THIS node is selected
             // as the hotkey in the title only makes sense for selected nodes
-            const allActions = [
+            return [
                 createAction({
                     id: actionIds.CONFIGURE_NODE,
                     title: 'Configure',
@@ -192,8 +180,20 @@ export default {
                     commandReference: this.isSelfSelected && 'openView'
                 })
             ];
+        },
+        visibleActions() {
+            const conditionMap = {
+                [actionIds.CONFIGURE_NODE]: this.canOpenDialog !== null,
+                [actionIds.PAUSE_NODE]: this.canPause,
+                [actionIds.RESUME_NODE]: !this.canPause && this.canResume,
+                [actionIds.EXECUTE_NODE]: !this.canPause && !this.canResume,
+                [actionIds.STEP]: this.canStep !== null,
+                [actionIds.CANCEL]: true,
+                [actionIds.RESET]: true,
+                [actionIds.OPEN_VIEW]: this.canOpenView !== null
+            };
 
-            return allActions.filter(({ id }) => conditionsMap[id]);
+            return this.actions.filter(({ id }) => conditionMap[id]);
         },
         /**
          *  returns the x-position of each button depending on the total amount of buttons
@@ -201,7 +201,7 @@ export default {
          */
         positions() {
             const { nodeActionBarButtonSpread } = this.$shapes;
-            let buttonCount = this.actions.length;
+            let buttonCount = this.visibleActions.length;
             // spread buttons evenly around the horizontal center
             return this.actions.map((_, i) => (i + (1 - buttonCount) / 2) * nodeActionBarButtonSpread);
         }
@@ -224,7 +224,7 @@ export default {
 <template>
   <g>
     <ActionButton
-      v-for="({ id, isEnabled, icon, handler, title }, index) in actions"
+      v-for="({ id, isEnabled, icon, handler, title }, index) in visibleActions"
       :key="id"
       :class="`action-${id}`"
       :x="positions[index]"
