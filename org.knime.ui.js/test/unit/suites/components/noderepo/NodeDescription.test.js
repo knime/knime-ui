@@ -6,7 +6,7 @@ import NodeDescription from '~/components/noderepo/NodeDescription';
 import Description from '~/webapps-common/ui/components/Description';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 
-describe('NodeRepository', () => {
+describe('NodeDescription', () => {
     let mocks, doMount, wrapper, storeConfig, $store, closeDescriptionPanel, getNodeDescription, searchIsActive;
 
     beforeAll(() => {
