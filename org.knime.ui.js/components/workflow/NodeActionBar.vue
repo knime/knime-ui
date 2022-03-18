@@ -12,35 +12,6 @@ import OpenDialogIcon from '~/assets/configure-node.svg?inline';
 
 import ActionButton from '~/components/workflow/ActionButton';
 
-import commands from '~/commands';
-
-/**
- * Creates the descriptor object of an action using the provided parameters.
- * It will use the `commandReference` parameter to query through the commands
- * registry and append to the title the associated hotkey binding of said command
- *
- * @param {String} payload.id Unique Id to assign to the action
- * @param {Boolean} payload.isEnabled Determines the enabled/disabled status of the action
- * @param {String} payload.title Value to use as a tooltip when action is hovered
- * @param {SVGComponent} payload.icon Icon component to be used by the action
- * @param {Function} payload.handler Click handler for the action
- * @param {String} payload.commandReference This value will be used to query in the commands registry
- * to find a matching entry to associate the action with
- *
- * @returns {Object} The action descriptor object
- */
-const createAction = ({ id, isEnabled, title, icon, handler, commandReference = '' }) => {
-    const command = commands[commandReference];
-    
-    return {
-        id,
-        title: command ? `${title} - ${command.hotkeyText}` : title,
-        handler,
-        icon,
-        isEnabled
-    };
-};
-
 /**
  *  Displays a bar of action buttons above nodes
  *  Emits Event `action(actionName)`
@@ -66,6 +37,10 @@ export default {
             type: Boolean,
             default: false
         },
+        /*
+         * The props below can either be true, false or unset.
+         * In case they are unset, Vue defaults them to null
+         */
         canStep: {
             type: Boolean,
             default: null
@@ -102,72 +77,64 @@ export default {
         actions() {
             // For all the actions, the command reference property will only be set if THIS node is selected
             // as the hotkey in the title only makes sense for selected nodes
-            return [
-                createAction({
-                    id: 'configureNode',
+            return {
+                configureNode: {
                     title: 'Configure',
                     isEnabled: this.canOpenDialog,
                     icon: OpenDialogIcon,
                     handler: () => this.openDialog(this.nodeId),
-                    commandReference: this.isSelfSelected && 'configureNode'
-                }),
-                createAction({
-                    id: 'pauseLoopExecution',
+                    hotkeyText: this.$commands.get('configureNode').hotkeyText
+                },
+                pauseLoopExecution: {
                     title: 'Pause',
                     isEnabled: true,
                     icon: PauseIcon,
                     handler: () => this.pauseLoopExecution(this.nodeId),
-                    commandReference: this.isSelfSelected && 'pauseLoopExecution'
-                }),
-                createAction({
-                    id: 'resumeLoopExecution',
+                    hotkeyText: this.$commands.get('pauseLoopExecution').hotkeyText
+                },
+                resumeLoopExecution: {
                     title: 'Resume',
                     isEnabled: true,
                     icon: ResumeIcon,
                     handler: () => this.resumeLoopExecution(this.nodeId),
-                    commandReference: this.isSelfSelected && 'resumeLoopExecution'
-                }),
-                createAction({
-                    id: 'execute',
+                    hotkeyText: this.$commands.get('resumeLoopExecution').hotkeyText
+                },
+                execute: {
                     title: 'Execute',
                     isEnabled: this.canExecute,
                     icon: ExecuteIcon,
                     handler: () => this.executeNodes([this.nodeId]),
-                    commandReference: this.isSelfSelected && 'executeSelected'
-                }),
-                createAction({
-                    id: 'stepLoopExecution',
+                    hotkeyText: this.$commands.get('executeSelected').hotkeyText
+                },
+                stepLoopExecution: {
                     title: 'Step',
                     isEnabled: this.canStep,
                     icon: StepIcon,
                     handler: () => this.stepLoopExecution(this.nodeId),
-                    commandReference: this.isSelfSelected && 'stepLoopExecution'
-                }),
-                createAction({
-                    id: 'cancelExecution',
+                    hotkeyText: this.$commands.get('stepLoopExecution').hotkeyText
+                },
+                cancelExecution: {
                     title: 'Cancel',
                     isEnabled: this.canCancel,
                     icon: CancelIcon,
                     handler: () => this.cancelNodeExecution([this.nodeId]),
-                    commandReference: this.isSelfSelected && 'cancelSelected'
-                }),
-                createAction({
-                    id: 'reset',
+                    hotkeyText: this.$commands.get('cancelSelected').hotkeyText
+                },
+                reset: {
                     title: 'Reset',
                     isEnabled: this.canReset,
                     icon: ResetIcon,
                     handler: () => this.resetNodes([this.nodeId]),
-                    commandReference: this.isSelfSelected && 'resetSelected'
-                }),
-                createAction({
-                    id: 'openView',
+                    hotkeyText: this.$commands.get('resetSelected').hotkeyText
+                },
+                openView: {
                     title: 'Open View',
                     isEnabled: this.canOpenView,
                     icon: OpenViewIcon,
                     handler: () => this.openView(this.nodeId),
-                    commandReference: this.isSelfSelected && 'openView'
-                })
-            ];
+                    hotkeyText: this.$commands.get('openView').hotkeyText
+                }
+            };
         },
         visibleActions() {
             const conditionMap = {
@@ -186,7 +153,9 @@ export default {
                 openView: this.canOpenView !== null
             };
 
-            return this.actions.filter(({ id }) => conditionMap[id]);
+            return Object.entries(conditionMap)
+                .filter(([name, visible]) => visible)
+                .map(([name, visible]) => this.actions[name]);
         },
         /**
          *  returns the x-position of each button depending on the total amount of buttons
@@ -195,8 +164,9 @@ export default {
         positions() {
             const { nodeActionBarButtonSpread } = this.$shapes;
             let buttonCount = this.visibleActions.length;
+
             // spread buttons evenly around the horizontal center
-            return this.actions.map((_, i) => (i + (1 - buttonCount) / 2) * nodeActionBarButtonSpread);
+            return this.visibleActions.map((_, i) => (i + (1 - buttonCount) / 2) * nodeActionBarButtonSpread);
         }
     },
     methods: {
@@ -209,7 +179,16 @@ export default {
             'stepLoopExecution',
             'openView',
             'openDialog'
-        ])
+        ]),
+        /*
+         * If this node is selected, hoverTitle appends the hotkey to the title
+         * otherwise the title is returned
+         */
+        hoverTitle(title, hotkeyText) {
+            return this.isSelfSelected && hotkeyText
+                ? `${title} - ${hotkeyText}`
+                : title;
+        }
     }
 };
 </script>
@@ -217,12 +196,11 @@ export default {
 <template>
   <g>
     <ActionButton
-      v-for="({ id, isEnabled, icon, handler, title }, index) in visibleActions"
-      :key="id"
-      :class="`action-${id}`"
+      v-for="({ isEnabled, icon, handler, title, hotkeyText }, index) in visibleActions"
+      :key="title"
       :x="positions[index]"
       :disabled="!isEnabled"
-      :title="title"
+      :title="hoverTitle(title, hotkeyText)"
       @click="handler"
     >
       <Component :is="icon" />
