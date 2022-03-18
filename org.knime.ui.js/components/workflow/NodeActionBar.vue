@@ -1,5 +1,5 @@
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapGetters } from 'vuex';
 
 import ExecuteIcon from '~/assets/execute.svg?inline';
 import ResumeIcon from '~/assets/resume-execution.svg?inline';
@@ -63,9 +63,7 @@ export default {
         }
     },
     computed: {
-        isSelfSelected() {
-            return this.$store.getters['selection/singleSelectedNode']?.id === this.nodeId;
-        },
+        ...mapGetters('selection', ['isNodeSelected']),
         /**
          *  returns an array of allowed actions with a handler to the corresponding api call,
          *  a boolean if it is enabled or disabled, an icon and the title (tooltip on hover).
@@ -185,7 +183,7 @@ export default {
          * otherwise the title is returned
          */
         hoverTitle(title, hotkeyText) {
-            return this.isSelfSelected && hotkeyText
+            return this.isNodeSelected(this.nodeId) && hotkeyText
                 ? `${title} - ${hotkeyText}`
                 : title;
         }
