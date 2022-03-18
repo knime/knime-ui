@@ -67,11 +67,11 @@ describe('application store', () => {
 
         it('allows setting all items', () => {
             store.commit('application/setOpenProjects',
-                [{ projectId: 'foo', name: 'bar' }, { projectId: 'bee', name: 'gee', activeWorkflow: {} }]);
+                [{ projectId: 'foo', name: 'bar' }, { projectId: 'bee', name: 'gee' }]);
 
             expect(store.state.application.openProjects).toStrictEqual(
                 [{ projectId: 'foo', name: 'bar' },
-                    { projectId: 'bee', name: 'gee', activeWorkflow: {} }]
+                    { projectId: 'bee', name: 'gee' }]
             );
         });
 
@@ -111,25 +111,26 @@ describe('application store', () => {
         });
 
         it('sets active project', async () => {
-            store.commit('application/setOpenProjects',
-                [{ projectId: 'foo', name: 'bar' }, { projectId: 'bee', name: 'gee', activeWorkflow: {} }]);
-            await store.dispatch('application/setActiveProject');
+            const state = { openedWorkflows:
+                [{ projectId: 'foo', name: 'bar' }, { projectId: 'bee', name: 'gee', activeWorkflow: {} }] };
+            await store.dispatch('application/replaceApplicationState', state);
 
             expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow',
                 { workflowId: 'root', projectId: 'bee' });
         });
 
         it('sets active project to first workflow if there are no currently active workflows', async () => {
-            store.commit('application/setOpenProjects',
-                [{ projectId: 'foo', name: 'bar' }, { projectId: 'foo2', name: 'gee' }]);
-            await store.dispatch('application/setActiveProject');
+            const state = { openedWorkflows:
+                [{ projectId: 'foo', name: 'bar' }, { projectId: 'bee', name: 'gee' }] };
+            await store.dispatch('application/replaceApplicationState', state);
 
             expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow',
                 { workflowId: 'root', projectId: 'foo' });
         });
 
         it('does not set active project if there are no open workflows', async () => {
-            await store.dispatch('application/setActiveProject');
+            const state = { openedWorkflows: [] };
+            await store.dispatch('application/replaceApplicationState', state);
 
             expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow', null);
         });

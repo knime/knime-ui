@@ -16,9 +16,7 @@ export const mutations = {
         state.activeProjectId = projectId;
     },
     setOpenProjects(state, projects) {
-        state.openProjects = projects.map(({ projectId, name, activeWorkflow }) => activeWorkflow
-            ? { projectId, name, activeWorkflow }
-            : { projectId, name });
+        state.openProjects = projects.map(({ projectId, name }) => ({ projectId, name }));
 
         // add entry to savedUserState for each project
         state.openProjects.forEach(({ projectId }) => {
@@ -50,7 +48,7 @@ export const actions = {
         commit('setOpenProjects', openProjects);
         await dispatch('setActiveProject', openProjects);
     },
-    async setActiveProject({ state: { openProjects }, commit, dispatch }) {
+    async setActiveProject({ commit, dispatch }, openProjects) {
         if (openProjects.length === 0) {
             consola.info('No workflows opened');
             dispatch('switchWorkflow', null);
