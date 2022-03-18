@@ -1,5 +1,5 @@
 /**
- * Store providing actions that can be triggered via the global `jsonrpcNotification` function
+ * Store providing actions that can be triggered, e.g., via the global `jsonrpcNotification` function
  * (which is injected into the global namespace via plugin)
  */
 export const actions = {
