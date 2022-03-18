@@ -9,12 +9,6 @@ import ActionButton from '~/components/workflow/ActionButton';
 
 const nodeId = 'root:1';
 
-jest.mock('~/commands', () => ({
-    resetSelected: {
-        hotkeyText: 'MOCK HOTKEY TEXT'
-    }
-}));
-
 describe('NodeActionBar', () => {
     let mocks, doMount, workflowStoreConfig;
 
@@ -24,9 +18,9 @@ describe('NodeActionBar', () => {
     });
 
     beforeEach(() => {
-        mocks = { $shapes };
+        mocks = { $shapes, $commands: { get: jest.fn(() => ({})) } };
 
-        doMount = (allowedActions = {}, storeConfig = {}) => {
+        doMount = (allowedActions = {}, options = { storeConfig: {}, mocks: {} }) => {
             workflowStoreConfig = {
                 actions: {
                     executeNodes: jest.fn(),
@@ -39,13 +33,23 @@ describe('NodeActionBar', () => {
                     openDialog: jest.fn()
                 }
             };
-            mocks.$store = mockVuexStore({ workflow: workflowStoreConfig, ...storeConfig });
+            mocks.$store = mockVuexStore({
+                workflow: workflowStoreConfig,
+                selection: {
+                    getters: {
+                        isNodeSelected() {
+                            return () => false;
+                        }
+                    }
+                },
+                ...options.storeConfig
+            });
             return shallowMount(NodeActionBar, {
                 propsData: {
                     nodeId,
                     ...allowedActions
                 },
-                mocks
+                mocks: { ...mocks, ...options.mocks }
             });
         };
     });
@@ -133,19 +137,31 @@ describe('NodeActionBar', () => {
 
     it('renders node Id', () => {
         let wrapper = doMount();
-        expect(wrapper.find('text').text()).toBe('root:1');
+        expect(wrapper.find('text').text()).toBe(nodeId);
     });
 
     it('should add the hotkey binding to the action tooltip when node is selected', () => {
+        const expectedTooltip = 'MOCK HOTKEY TEXT';
+
         const getters = {
-            singleSelectedNode() {
-                return { id: nodeId };
+            isNodeSelected() {
+                return () => true;
             }
         };
-        const wrapper = doMount({ canReset: true }, { selection: { getters } });
+        const wrapper = doMount(
+            { canReset: true },
+            {
+                storeConfig: { selection: { getters } },
+                mocks: {
+                    $commands: {
+                        get: jest.fn((name) => ({ hotkeyText: expectedTooltip }))
+                    }
+                }
+            }
+        );
         const buttons = wrapper.findAllComponents(ActionButton);
         const lastButton = buttons.at(buttons.length - 1);
 
-        expect(lastButton.props('title')).toMatch('- MOCK HOTKEY TEXT');
+        expect(lastButton.props('title')).toMatch(`- ${expectedTooltip}`);
     });
 });
