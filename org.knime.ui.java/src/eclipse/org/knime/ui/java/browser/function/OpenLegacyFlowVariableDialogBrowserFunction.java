@@ -44,53 +44,33 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Nov 9, 2020 (hornm): created
+ *   Dec 3, 2020 (hornm): created
  */
 package org.knime.ui.java.browser.function;
 
-import org.knime.core.node.NodeLogger;
-import org.knime.core.node.workflow.NativeNodeContainer;
+import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
+
 import org.knime.core.node.workflow.NodeContainer;
-import org.knime.core.node.workflow.SubNodeContainer;
-import org.knime.core.webui.node.view.NodeViewManager;
-import org.knime.workbench.editor2.actions.OpenInteractiveWebViewAction;
-import org.knime.workbench.editor2.actions.OpenNodeViewAction;
-import org.knime.workbench.editor2.actions.OpenSubnodeWebViewAction;
+import org.knime.workbench.editor2.editparts.NodeContainerEditPart;
 
 import com.equo.chromium.swt.Browser;
 
 /**
- * Opens the node's js-view, if available, in an extra browser window.
+ * Opens the swing dialog or CEF-based dialog of a node.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class OpenNodeViewBrowserFunction extends AbstractNodeBrowserFunction {
+public class OpenLegacyFlowVariableDialogBrowserFunction extends AbstractNodeBrowserFunction {
 
-	private static final String FUNCTION_NAME = "openNodeView";
+	private static final String FUNCTION_NAME = "openLegacyFlowVariableDialog";
 
-	public OpenNodeViewBrowserFunction(final Browser browser) {
+	public OpenLegacyFlowVariableDialogBrowserFunction(final Browser browser) {
 		super(browser, FUNCTION_NAME);
 	}
 
-    @Override
+	@Override
     protected void apply(final NodeContainer nc) {
-        if (nc.getInteractiveWebViews().size() > 0) {
-            if (nc instanceof SubNodeContainer) {
-                OpenSubnodeWebViewAction.openView((SubNodeContainer)nc);
-                return;
-            } else if (nc instanceof NativeNodeContainer) {
-                OpenInteractiveWebViewAction.openView((NativeNodeContainer)nc,
-                    nc.getInteractiveWebViews().get(0).getViewName());
-                return;
-            } else {
-                //
-            }
-        } else if (NodeViewManager.hasNodeView(nc)) {
-            var nnc = ((NativeNodeContainer)nc);
-            var viewName = "Interactive View: " + nnc.getNodeViewName(0);
-            OpenNodeViewAction.openNodeView(nnc, OpenNodeViewAction.createNodeView(nnc, false, true), viewName);
-        }
-        NodeLogger.getLogger(OpenNodeViewBrowserFunction.class).warn(String.format(
-            "Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName()));
+        NodeContainerEditPart.openDialog(wrap(nc), null);
     }
+
 }

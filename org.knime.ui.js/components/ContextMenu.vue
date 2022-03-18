@@ -41,6 +41,8 @@ export default {
             const somethingSelected = selectedNodes.length || selectedConnections.length;
             const isLoopEnd = Boolean(singleSelectedNode?.loopInfo?.allowedActions);
             const isView = singleSelectedNode && 'canOpenView' in singleSelectedNode.allowedActions;
+            const hasLegacyFlowVariableDialog = singleSelectedNode &&
+                'canOpenLegacyFlowVariableDialog' in singleSelectedNode.allowedActions;
 
             let allMenuItems = {
                 // Node Execution
@@ -53,6 +55,7 @@ export default {
 
                 // Exactly one node selected
                 configureNode: singleSelectedNode,
+                configureFlowVariables: hasLegacyFlowVariableDialog,
                 openView: isView,
                 
                 // Something selected
