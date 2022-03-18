@@ -249,11 +249,13 @@ export const actions = {
     saveNodeMoves({ state, getters, commit, rootGetters }, { projectId }) {
         let translation;
         let selectedNodes = rootGetters['selection/selectedNodeIds'];
+        
         // calculate the translation either relative to the position or the outline position
         translation = {
             x: state.deltaMovePosition.x,
             y: state.deltaMovePosition.y
         };
+        
         moveObjects({
             projectId,
             workflowId: getters.activeWorkflowId,

@@ -32,8 +32,8 @@ export const mutations = {
 export const actions = {
     async initializeApplication({ dispatch }) {
         await addEventListener('AppStateChanged');
+        
         const applicationState = await fetchApplicationState();
-
         dispatch('replaceApplicationState', applicationState);
     },
     destroyApplication({ dispatch }) {
@@ -41,11 +41,12 @@ export const actions = {
         dispatch('workflow/unloadActiveWorkflow', { clearWorkflow: true }, { root: true });
     },
     // -------------------------------------------------------------------- //
-    async replaceApplicationState({ commit, dispatch }, applicationState) {
+    async replaceApplicationState({ commit, dispatch, state }, applicationState) {
         // NXT-962: rename openendWorkflows to openProjects
-        const openProjects = applicationState.openedWorkflows || [];
+        const openProjects = applicationState.openedWorkflows;
 
         commit('setOpenProjects', openProjects);
+
         await dispatch('setActiveProject', openProjects);
     },
     async setActiveProject({ commit, dispatch }, openProjects) {
