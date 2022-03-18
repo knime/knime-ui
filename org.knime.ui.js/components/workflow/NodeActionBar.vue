@@ -41,18 +41,6 @@ const createAction = ({ id, isEnabled, title, icon, handler, commandReference = 
     };
 };
 
-/** Unique Ids of all the available actions that can be displayed */
-const actionIds = {
-    CONFIGURE_NODE: 'configureNode',
-    PAUSE_NODE: 'pauseNode',
-    RESUME_NODE: 'resumeNode',
-    EXECUTE_NODE: 'executeNode',
-    STEP: 'step',
-    CANCEL: 'cancel',
-    RESET: 'reset',
-    OPEN_VIEW: 'openView'
-};
-
 /**
  *  Displays a bar of action buttons above nodes
  *  Emits Event `action(actionName)`
@@ -116,7 +104,7 @@ export default {
             // as the hotkey in the title only makes sense for selected nodes
             return [
                 createAction({
-                    id: actionIds.CONFIGURE_NODE,
+                    id: 'configureNode',
                     title: 'Configure',
                     isEnabled: this.canOpenDialog,
                     icon: OpenDialogIcon,
@@ -124,7 +112,7 @@ export default {
                     commandReference: this.isSelfSelected && 'configureNode'
                 }),
                 createAction({
-                    id: actionIds.PAUSE_NODE,
+                    id: 'pauseLoopExecution',
                     title: 'Pause',
                     isEnabled: true,
                     icon: PauseIcon,
@@ -132,7 +120,7 @@ export default {
                     commandReference: this.isSelfSelected && 'pauseLoopExecution'
                 }),
                 createAction({
-                    id: actionIds.RESUME_NODE,
+                    id: 'resumeLoopExecution',
                     title: 'Resume',
                     isEnabled: true,
                     icon: ResumeIcon,
@@ -140,7 +128,7 @@ export default {
                     commandReference: this.isSelfSelected && 'resumeLoopExecution'
                 }),
                 createAction({
-                    id: actionIds.EXECUTE_NODE,
+                    id: 'execute',
                     title: 'Execute',
                     isEnabled: this.canExecute,
                     icon: ExecuteIcon,
@@ -148,7 +136,7 @@ export default {
                     commandReference: this.isSelfSelected && 'executeSelected'
                 }),
                 createAction({
-                    id: actionIds.STEP,
+                    id: 'stepLoopExecution',
                     title: 'Step',
                     isEnabled: this.canStep,
                     icon: StepIcon,
@@ -156,7 +144,7 @@ export default {
                     commandReference: this.isSelfSelected && 'stepLoopExecution'
                 }),
                 createAction({
-                    id: actionIds.CANCEL,
+                    id: 'cancelExecution',
                     title: 'Cancel',
                     isEnabled: this.canCancel,
                     icon: CancelIcon,
@@ -164,7 +152,7 @@ export default {
                     commandReference: this.isSelfSelected && 'cancelSelected'
                 }),
                 createAction({
-                    id: actionIds.RESET,
+                    id: 'reset',
                     title: 'Reset',
                     isEnabled: this.canReset,
                     icon: ResetIcon,
@@ -172,7 +160,7 @@ export default {
                     commandReference: this.isSelfSelected && 'resetSelected'
                 }),
                 createAction({
-                    id: actionIds.OPEN_VIEW,
+                    id: 'openView',
                     title: 'Open View',
                     isEnabled: this.canOpenView,
                     icon: OpenViewIcon,
@@ -183,14 +171,19 @@ export default {
         },
         visibleActions() {
             const conditionMap = {
-                [actionIds.CONFIGURE_NODE]: this.canOpenDialog !== null,
-                [actionIds.PAUSE_NODE]: this.canPause,
-                [actionIds.RESUME_NODE]: !this.canPause && this.canResume,
-                [actionIds.EXECUTE_NODE]: !this.canPause && !this.canResume,
-                [actionIds.STEP]: this.canStep !== null,
-                [actionIds.CANCEL]: true,
-                [actionIds.RESET]: true,
-                [actionIds.OPEN_VIEW]: this.canOpenView !== null
+                // plain execution
+                execute: !this.canPause && !this.canResume,
+                cancelExecution: true,
+                reset: true,
+
+                // loop execution
+                pauseLoopExecution: this.canPause,
+                resumeLoopExecution: !this.canPause && this.canResume,
+                stepLoopExecution: this.canStep !== null,
+
+                // other
+                configureNode: this.canOpenDialog !== null,
+                openView: this.canOpenView !== null
             };
 
             return this.actions.filter(({ id }) => conditionMap[id]);
