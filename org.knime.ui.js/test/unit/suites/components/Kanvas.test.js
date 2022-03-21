@@ -24,6 +24,13 @@ jest.mock('lodash', () => ({
     }
 }));
 
+jest.mock('raf-throttle', () => function (func) {
+    return function (...args) {
+        // eslint-disable-next-line no-invalid-this
+        return func.apply(this, args);
+    };
+});
+
 describe('Kanvas', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, storeConfig;
 

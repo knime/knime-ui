@@ -3,7 +3,7 @@ import { mapGetters, mapActions } from 'vuex';
 import PortWithTooltip from '~/components/workflow/PortWithTooltip';
 import Port from '~/components/workflow/Port';
 import Connector from '~/components/workflow/Connector';
-import { throttle } from 'lodash';
+import throttle from 'raf-throttle';
 import { circleDetection } from '~/util/compatibleConnections';
 
 const MOVE_THROTTLE = 10;

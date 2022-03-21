@@ -11,12 +11,6 @@ import CategoryResults from '~/components/noderepo/CategoryResults';
 import SearchResults from '~/components/noderepo/SearchResults';
 
 jest.mock('lodash', () => ({
-    throttle(func) {
-        return function (...args) {
-            // eslint-disable-next-line no-invalid-this
-            return func.apply(this, args);
-        };
-    },
     debounce(func) {
         return function (...args) {
             // eslint-disable-next-line no-invalid-this
@@ -24,6 +18,13 @@ jest.mock('lodash', () => ({
         };
     }
 }));
+
+jest.mock('raf-throttle', () => function (func) {
+    return function (...args) {
+        // eslint-disable-next-line no-invalid-this
+        return func.apply(this, args);
+    };
+});
 
 describe('NodeRepository', () => {
     let mocks, doShallowMount, wrapper, $store, searchNodesMock, searchNodesNextPageMock, setSelectedTagsMock,

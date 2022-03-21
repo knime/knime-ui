@@ -1,6 +1,7 @@
 <script>
 import { mapState, mapGetters, mapMutations } from 'vuex';
-import { throttle, debounce } from 'lodash';
+import { debounce } from 'lodash';
+import throttle from 'raf-throttle';
 
 const PANNING_THROTTLE = 50; // 50ms between consecutive mouse move events
 

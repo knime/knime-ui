@@ -1,6 +1,6 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex';
-import { throttle } from 'lodash';
+import throttle from 'raf-throttle';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
 
 const moveNodesThrottle = 10; // 10 ms between new move calculations are performed
