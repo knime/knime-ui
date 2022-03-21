@@ -2,31 +2,32 @@ import * as $shapes from '~/style/shapes';
 
 // find nodes that are fully or partly inside the rectangle defined by startPos and endPos
 export const findNodesInsideOfRectangle = ({ startPos, endPos, workflow }) => {
+    // normalize rectangle
+    let rectangle = {
+        x1: Math.min(startPos.x, endPos.x),
+        y1: Math.min(startPos.y, endPos.y),
+        x2: Math.max(startPos.x, endPos.x),
+        y2: Math.max(startPos.y, endPos.y)
+    };
+
+    // divide nodes
     let inside = [];
     let outside = [];
-    Object.values(workflow.nodes).forEach(node => {
+    Object.values(workflow.nodes).forEach(({ position, id }) => {
         const { nodeSize } = $shapes;
-        let nodeIsInsideOfRectangle = false;
-        if (node.position.x + nodeSize > startPos.x && node.position.x < endPos.x &&
-            node.position.y + nodeSize > startPos.y && node.position.y < endPos.y) {
-            nodeIsInsideOfRectangle = true;
-        } else if (node.position.x < startPos.x && node.position.x + nodeSize > endPos.x &&
-            node.position.y < startPos.y && node.position.y + nodeSize > endPos.y) {
-            nodeIsInsideOfRectangle = true;
-        } else if (node.position.x + nodeSize > startPos.x && node.position.x < endPos.x &&
-            node.position.y < startPos.y && node.position.y + nodeSize > endPos.y) {
-            nodeIsInsideOfRectangle = true;
-        } else if (node.position.x < startPos.x && node.position.x + nodeSize > endPos.x &&
-            node.position.y + nodeSize > startPos.y && node.position.y < endPos.y) {
-            nodeIsInsideOfRectangle = true;
-        }
+
+        // [left rectanlge edge] left from [right node edge] && [right rectangle edge] right from [left node edge]
+        let xInside = (rectangle.x1 <= position.x + nodeSize) && (rectangle.x2 >= position.x);
+        let yInside = (rectangle.y1 <= position.y + nodeSize) && (rectangle.y2 >= position.y);
+
         // create lists with node ids
-        if (nodeIsInsideOfRectangle) {
-            inside.push(node.id);
+        if (xInside && yInside) {
+            inside.push(id);
         } else {
-            outside.push(node.id);
+            outside.push(id);
         }
     });
+
     return {
         inside,
         outside
