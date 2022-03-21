@@ -1,6 +1,6 @@
 import rpc from './json-rpc-adapter.js';
 
-const makeToggleEventListener = addOrRemove => async (type, args) => {
+const makeToggleEventListener = addOrRemove => async (type, args = {}) => {
     try {
         consola.debug(addOrRemove, 'event listener', type, args);
         await rpc(`EventService.${addOrRemove}EventListener`, {

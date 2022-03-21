@@ -3,10 +3,11 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vue from 'vue';
 import Vuex from 'vuex';
 import NodeDescription from '~/components/noderepo/NodeDescription';
+import ExternalResourcesList from '~/components/common/ExternalResourcesList';
 import Description from '~/webapps-common/ui/components/Description';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 
-describe('NodeRepository', () => {
+describe('NodeDescription', () => {
     let mocks, doMount, wrapper, storeConfig, $store, closeDescriptionPanel, getNodeDescription, searchIsActive;
 
     beforeAll(() => {
@@ -74,6 +75,7 @@ describe('NodeRepository', () => {
         doMount();
         expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
         expect(wrapper.findComponent(Description).exists()).toBe(true);
+        expect(wrapper.findComponent(ExternalResourcesList).exists()).toBe(true);
         expect(wrapper.findComponent(NodeFeatureList).exists()).toBe(true);
     });
 

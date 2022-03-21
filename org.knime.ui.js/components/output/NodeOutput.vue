@@ -35,7 +35,7 @@ export default {
         ...mapState('workflow', {
             isDragging: 'isDragging'
         }),
-        ...mapState('openedProjects', { projectId: 'activeId' }),
+        ...mapState('application', { projectId: 'activeProjectId' }),
         ...mapGetters('workflow', { workflowId: 'activeWorkflowId' }),
         
         // ========================== Sanity Check ============================

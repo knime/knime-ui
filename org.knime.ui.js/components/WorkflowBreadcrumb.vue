@@ -49,7 +49,7 @@ export default {
         },
         onClick({ id }) {
             this.$store.dispatch(
-                'openedProjects/switchWorkflow',
+                'application/switchWorkflow',
                 {
                     projectId: this.workflow.projectId,
                     workflowId: id

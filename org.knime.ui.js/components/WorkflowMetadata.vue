@@ -1,19 +1,21 @@
 <script>
-import LinkList from '~/webapps-common/ui/components/LinkList';
+import Description from '~/webapps-common/ui/components/Description';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import TagList from '~/webapps-common/ui/components/TagList';
 import { formatDateString } from '~/webapps-common/util/format';
 import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
+import ExternalResourcesList from '~/components/common/ExternalResourcesList';
 
 /** Displays metadata attached to a root-level workflow */
 export default {
     components: {
-        LinkList,
+        Description,
         NodeFeatureList,
         NodePreview,
         TagList,
-        ScrollViewContainer
+        ScrollViewContainer,
+        ExternalResourcesList
     },
     props: {
         /** Single-line description of the workflow */
@@ -93,19 +95,17 @@ export default {
       class="last-updated"
     >
       <span v-if="lastEdit">Last update: {{ formatDateString(lastEdit) }}</span>
-      <span
-        v-else
-        class="placeholder"
-      >Last Update: no update yet</span>
+      <span v-else>Last update: no update yet</span>
     </div>
 
-    <div
-      class="description"
-    >
-      <span v-if="description">{{ description }}</span>
+    <div class="description">
+      <Description
+        v-if="description"
+        :text="description"
+      />
       <span
         v-else
-        class="placeholder"
+        class="placeholder padded"
       >No description has been set yet</span>
     </div>
 
@@ -120,23 +120,10 @@ export default {
       class="node-feature-list"
     />
 
-    <div
+    <ExternalResourcesList
       v-if="!isComponent"
-      class="external-resources"
-    >
-      <h2>External resources</h2>
-      <hr>
-      <LinkList
-        v-if="links.length"
-        :links="links"
-      />
-      <div
-        v-else
-        class="placeholder"
-      >
-        No links have been added yet
-      </div>
-    </div>
+      :links="links"
+    />
 
     <div
       v-if="!isComponent"
@@ -150,7 +137,7 @@ export default {
       />
       <div
         v-else
-        class="placeholder"
+        class="placeholder padded"
       >
         No tags have been set yet
       </div>
@@ -164,7 +151,6 @@ export default {
   padding: 8px 20px 20px;
   font-family: "Roboto Condensed", sans-serif;
   font-size: 16px;
-  line-height: 27px;
   color: var(--knime-masala);
 
   & h2 {
@@ -183,6 +169,10 @@ export default {
   & .placeholder {
     font-style: italic;
     color: var(--knime-dove-gray);
+
+    &.padded {
+      padding-top: 10px;
+    }
   }
 
   & > *:last-child {
@@ -210,15 +200,14 @@ export default {
 
 .last-updated {
   color: var(--knime-dove-gray);
-  margin-top: 6px;
+  margin-top: 10px;
   margin-bottom: 20px;
   font-style: italic;
 }
 
 .description {
   margin-bottom: 20px;
-  white-space: break-spaces;
-  word-wrap: break-word;
+  font-size: 16px;
 }
 
 .node-feature-list {
@@ -275,21 +264,6 @@ export default {
       & .dyn-ports-description {
         margin-top: 10px;
       }
-    }
-  }
-}
-
-.external-resources {
-  margin-bottom: 38px;
-
-  & ul {
-    column-count: 1;
-    margin-bottom: -6px;
-    --icon-size: 16px;
-
-    & >>> li {
-      font-size: 16px;
-      line-height: 27px;
     }
   }
 }

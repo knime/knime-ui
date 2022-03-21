@@ -50,9 +50,9 @@ describe('MoveableNodeContainer', () => {
                     zoomFactor: 1
                 }
             },
-            openedProjects: {
+            application: {
                 state() {
-                    return { activeId: 'projectId' };
+                    return { activeProjectId: 'projectId' };
                 }
             },
             selection: {
