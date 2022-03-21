@@ -101,7 +101,6 @@ header {
     display: flex;
     align-items: center;
     font-family: "Roboto Condensed", sans-serif;
-    font-weight: normal;
     font-size: 20px;
     padding: 0 20px;
 

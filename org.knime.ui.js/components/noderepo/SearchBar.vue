@@ -108,7 +108,6 @@ input {
   color: var(--knime-masala);
   background-color: transparent;
   font-size: 17px;
-  font-weight: 400;
 
   &:focus {
     outline: none;
