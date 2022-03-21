@@ -67,7 +67,6 @@ export default {
       Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
       instead of diffing old and new workflow.
     -->
-    <!-- TODO: Does it also rerender all child elements? -->
     <WorkflowCanvas :key="`${workflow.projectId}-${activeWorkflowId}`" />
   </div>
 </template>

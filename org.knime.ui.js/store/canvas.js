@@ -184,6 +184,7 @@ export const actions = {
         kanvas.scrollTop += scrollDelta[1];
 
         // write to cache [current cursor position, current scroll position, current time, computation result]
+        // this state is not (meant to be) reactive and only used in this function
         state.zoomCache = {
             invariant: [cursorX, cursorY, kanvas.scrollLeft, kanvas.scrollTop],
             timestamp: Date.now(),
