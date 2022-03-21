@@ -26,6 +26,10 @@ button {
     padding-left: 2px;
   }
 
+  & span {
+    margin-top: 3px;
+  }
+
   & svg {
     width: calc(var(--icon-size) * 1px);
     height: calc(var(--icon-size) * 1px);

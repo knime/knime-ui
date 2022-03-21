@@ -37,7 +37,7 @@ export default {
       :is="command.icon"
       v-if="command.icon"
     />
-    {{ command.text }}
+    <span>{{ command.text }}</span>
   </ToolbarButton>
 </template>
 

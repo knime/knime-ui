@@ -1,6 +1,6 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
-    moveObjects, openDialog, openView, undo, redo, removeEventListener, connectNodes, addNode,
-    saveWorkflow, closeWorkflow } from '~api';
+    moveObjects, openDialog, openView, undo, redo, removeEventListener, connectNodes, addNode, saveWorkflow,
+    closeWorkflow, createWorkflowObject } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -288,6 +288,16 @@ export const actions = {
                 y: position[1]
             },
             nodeFactory
+        });
+    },
+    createMetanode({ state, getters, rootState, rootGetters, dispatch }) {
+        const selectedNodes = rootGetters['selection/selectedNodeIds'];
+
+        createWorkflowObject({
+            containerType: 'metanode',
+            projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            nodeIds: selectedNodes
         });
     }
 };

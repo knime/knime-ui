@@ -6,7 +6,7 @@ import DeleteIcon from '~/assets/delete.svg?inline';
 import OpenViewIcon from '~/assets/open-view.svg?inline';
 import OpenDialogIcon from '~/assets/configure-node.svg?inline';
 import SaveIcon from '~/assets/save.svg?inline';
-import CreateMetanode from '~/webapps-common/ui/assets/img/icons/workflow-node-stack.svg?inline';
+import CreateMetanode from '~/assets/create-metanode.svg?inline';
 
 const isWritable = ({ $store }) => $store.getters['workflow/isWritable'];
 
@@ -88,6 +88,8 @@ export default {
         title: 'Create metanode',
         hotkey: ['Ctrl', 'G'],
         icon: CreateMetanode,
+        execute:
+        ({ $store }) => $store.dispatch('workflow/createMetanode'),
         condition:
         ({ $store }) => $store.getters['selection/selectedNodes']
     }
