@@ -62,6 +62,16 @@ describe('workflow store', () => {
             $store.commit('selection/removeConnectionsFromSelection', ['root:1']);
             expect(Object.keys($store.state.selection.selectedConnections).length).toBe(0);
         });
+
+        test('clear selection doesnt override state, if nothing to clear', () => {
+            let selectedNodes = $store.state.selection.selectedNodes;
+            let selectedConnections = $store.state.selection.selectedConnections;
+
+            $store.commit('selection/clearSelection');
+
+            expect($store.state.selection.selectedNodes).toBe(selectedNodes);
+            expect($store.state.selection.selectedConnections).toBe(selectedConnections);
+        });
     });
 
     describe('actions', () => {
