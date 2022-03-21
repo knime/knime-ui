@@ -7,10 +7,8 @@ import * as $shapes from '~/style/shapes';
 import NodeActionBar from '~/components/workflow/NodeActionBar';
 import ActionButton from '~/components/workflow/ActionButton';
 
-const nodeId = 'root:1';
-
 describe('NodeActionBar', () => {
-    let mocks, doMount, workflowStoreConfig;
+    let mocks, doMount, storeConfig, $commands, propsData, wrapper;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -18,10 +16,11 @@ describe('NodeActionBar', () => {
     });
 
     beforeEach(() => {
-        mocks = { $shapes, $commands: { get: jest.fn(() => ({})) } };
-
-        doMount = (allowedActions = {}, options = { storeConfig: {}, mocks: {} }) => {
-            workflowStoreConfig = {
+        propsData = {
+            nodeId: 'root:1'
+        };
+        storeConfig = {
+            workflow: {
                 actions: {
                     executeNodes: jest.fn(),
                     cancelNodeExecution: jest.fn(),
@@ -32,32 +31,35 @@ describe('NodeActionBar', () => {
                     openView: jest.fn(),
                     openDialog: jest.fn()
                 }
-            };
-            mocks.$store = mockVuexStore({
-                workflow: workflowStoreConfig,
-                selection: {
-                    getters: {
-                        isNodeSelected() {
-                            return () => false;
-                        }
-                    }
-                },
-                ...options.storeConfig
-            });
-            return shallowMount(NodeActionBar, {
+            },
+            selection: {
+                getters: {
+                    isNodeSelected: () => () => false
+                }
+            }
+        };
+        $commands = {
+            get: jest.fn(() => ({}))
+        };
+        doMount = (allowedActions = {}) => {
+            let $store = mockVuexStore(storeConfig);
+
+            mocks = { $shapes, $commands, $store };
+
+            wrapper = shallowMount(NodeActionBar, {
                 propsData: {
-                    nodeId,
+                    ...propsData,
                     ...allowedActions
                 },
-                mocks: { ...mocks, ...options.mocks }
+                mocks
             });
         };
     });
 
     it('renders disabled action buttons without openDialog and openView', () => {
-        let wrapper = doMount();
-        let buttons = wrapper.findAllComponents(ActionButton);
+        doMount();
 
+        let buttons = wrapper.findAllComponents(ActionButton);
         /* eslint-disable no-magic-numbers */
         expect(buttons.at(0).props()).toStrictEqual(expect.objectContaining({ x: -25, disabled: true }));
         expect(buttons.at(1).props()).toStrictEqual(expect.objectContaining({ x: 0, disabled: true }));
@@ -66,9 +68,10 @@ describe('NodeActionBar', () => {
     });
 
     it('renders disabled action buttons with openDialog and without openView', () => {
-        let wrapper = doMount({ canOpenDialog: false });
-        let buttons = wrapper.findAllComponents(ActionButton);
+        propsData.canOpenDialog = false;
+        doMount();
 
+        let buttons = wrapper.findAllComponents(ActionButton);
         /* eslint-disable no-magic-numbers */
         expect(buttons.at(0).props()).toStrictEqual(expect.objectContaining({ x: -37.5, disabled: true }));
         expect(buttons.at(1).props()).toStrictEqual(expect.objectContaining({ x: -12.5, disabled: true }));
@@ -78,9 +81,11 @@ describe('NodeActionBar', () => {
     });
 
     it('renders disabled action buttons with openDialog and openView', () => {
-        let wrapper = doMount({ canOpenDialog: false, canOpenView: false });
-        let buttons = wrapper.findAllComponents(ActionButton);
+        propsData.canOpenDialog = false;
+        propsData.canOpenView = false;
+        doMount();
 
+        let buttons = wrapper.findAllComponents(ActionButton);
         /* eslint-disable no-magic-numbers */
         expect(buttons.at(0).props()).toStrictEqual(expect.objectContaining({ x: -50, disabled: true }));
         expect(buttons.at(1).props()).toStrictEqual(expect.objectContaining({ x: -25, disabled: true }));
@@ -91,77 +96,75 @@ describe('NodeActionBar', () => {
     });
 
     it('renders enabled action buttons', () => {
-        let wrapper = doMount({
+        propsData = {
+            ...propsData,
             canOpenDialog: true,
             canExecute: true,
             canCancel: true,
             canReset: true,
             canOpenView: true
-        });
+        };
+        doMount();
+
         let buttons = wrapper.findAllComponents(ActionButton);
 
         // fires action event
         buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
-        expect(workflowStoreConfig.actions.openDialog).toHaveBeenCalled();
-        expect(workflowStoreConfig.actions.executeNodes).toHaveBeenCalled();
-        expect(workflowStoreConfig.actions.cancelNodeExecution).toHaveBeenCalled();
-        expect(workflowStoreConfig.actions.resetNodes).toHaveBeenCalled();
-        expect(workflowStoreConfig.actions.openView).toHaveBeenCalled();
+        expect(storeConfig.workflow.actions.openDialog).toHaveBeenCalled();
+        expect(storeConfig.workflow.actions.executeNodes).toHaveBeenCalled();
+        expect(storeConfig.workflow.actions.cancelNodeExecution).toHaveBeenCalled();
+        expect(storeConfig.workflow.actions.resetNodes).toHaveBeenCalled();
+        expect(storeConfig.workflow.actions.openView).toHaveBeenCalled();
     });
 
-    it('renders loop action buttons', () => {
-        let wrapper = doMount({ canStep: true, canPause: true, canResume: false });
-        let buttons = wrapper.findAllComponents(ActionButton);
+    describe('loop action buttons', () => {
+        test('step and pause', () => {
+            doMount({ canStep: true, canPause: true, canResume: false });
 
-        // fires action event
-        buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
-        expect(workflowStoreConfig.actions.pauseLoopExecution).toHaveBeenCalled();
-        expect(workflowStoreConfig.actions.stepLoopExecution).toHaveBeenCalled();
+            // fires action event
+            let buttons = wrapper.findAllComponents(ActionButton);
+            buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
 
-        wrapper = doMount({ canStep: true, canPause: false, canResume: true });
+            expect(storeConfig.workflow.actions.pauseLoopExecution).toHaveBeenCalled();
+            expect(storeConfig.workflow.actions.stepLoopExecution).toHaveBeenCalled();
+        });
 
-        buttons = wrapper.findAllComponents(ActionButton);
-        buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
-        expect(workflowStoreConfig.actions.resumeLoopExecution).toHaveBeenCalled();
-        expect(workflowStoreConfig.actions.stepLoopExecution).toHaveBeenCalled();
+        test('step and resume', () => {
+            doMount({ canStep: true, canPause: false, canResume: true });
 
-        // ensure only two of the three loop options are rendered at a time
-        wrapper = doMount({ canStep: true, canPause: true, canResume: true });
+            let buttons = wrapper.findAllComponents(ActionButton);
+            buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
+            expect(storeConfig.workflow.actions.resumeLoopExecution).toHaveBeenCalled();
+            expect(storeConfig.workflow.actions.stepLoopExecution).toHaveBeenCalled();
+        });
 
-        buttons = wrapper.findAllComponents(ActionButton);
-        buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
-        expect(workflowStoreConfig.actions.pauseLoopExecution).toHaveBeenCalled();
-        expect(workflowStoreConfig.actions.stepLoopExecution).toHaveBeenCalled();
-        expect(workflowStoreConfig.actions.resumeLoopExecution).not.toHaveBeenCalled();
+        test('step, pause, resume', () => {
+            // ensure only two of the three loop options are rendered at a time
+            doMount({ canStep: true, canPause: true, canResume: true });
+
+            let buttons = wrapper.findAllComponents(ActionButton);
+            buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
+            expect(storeConfig.workflow.actions.pauseLoopExecution).toHaveBeenCalled();
+            expect(storeConfig.workflow.actions.stepLoopExecution).toHaveBeenCalled();
+            expect(storeConfig.workflow.actions.resumeLoopExecution).not.toHaveBeenCalled();
+        });
     });
 
     it('renders node Id', () => {
-        let wrapper = doMount();
-        expect(wrapper.find('text').text()).toBe(nodeId);
+        doMount();
+
+        expect(wrapper.find('text').text()).toBe('root:1');
     });
 
     it('should add the hotkey binding to the action tooltip when node is selected', () => {
-        const expectedTooltip = 'MOCK HOTKEY TEXT';
+        storeConfig.selection.getters.isNodeSelected = () => () => true;
+        $commands.get = jest.fn((name) => ({ hotkeyText: 'MOCK HOTKEY TEXT' }));
 
-        const getters = {
-            isNodeSelected() {
-                return () => true;
-            }
-        };
-        const wrapper = doMount(
-            { canReset: true },
-            {
-                storeConfig: { selection: { getters } },
-                mocks: {
-                    $commands: {
-                        get: jest.fn((name) => ({ hotkeyText: expectedTooltip }))
-                    }
-                }
-            }
-        );
+        doMount({ canReset: true });
+
         const buttons = wrapper.findAllComponents(ActionButton);
         const lastButton = buttons.at(buttons.length - 1);
 
-        expect(lastButton.props('title')).toMatch(`- ${expectedTooltip}`);
+        expect(lastButton.props('title')).toMatch('- MOCK HOTKEY TEXT');
     });
 });
