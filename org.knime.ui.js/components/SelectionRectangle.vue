@@ -1,9 +1,8 @@
 <script>
 import { mapGetters, mapState, mapActions } from 'vuex';
-import { throttle } from 'lodash';
+import throttle from 'raf-throttle';
 import { findNodesInsideOfRectangle } from '~/util/rectangleSelection';
 
-const SELECTION_PREVIEW_THROTTLE = 10; // delay between new move calculations/previews are performed in ms
 /**
  * SelectionRectangle - select multiple nodes by drawing a rectangle with by mouse (pointer) movement
  *
@@ -59,12 +58,15 @@ export default {
         startRectangleSelection(e) {
             this.pointerId = e.pointerId;
             e.target.setPointerCapture(e.pointerId);
+            
+            this.currentTargetRect = e.currentTarget.getBoundingClientRect();
             this.startPos = this.positionOnCanvas(e);
             this.endPos = this.startPos;
+            
             // init non-reactive data
             this.selectOnEnd = [];
             this.deSelectOnEnd = [];
-
+            
             // deselect all objects if we do not hold shift key
             if (e.shiftKey) {
                 // remember currently selected nodes, the nodes under the rectangle will inverse them
@@ -124,9 +126,8 @@ export default {
 
         positionOnCanvas(e) {
             // we need to use the offset relative to the kanvas not the element it occurred (which might be a descendant)
-            let currentTargetRect = e.currentTarget.getBoundingClientRect();
-            const offsetX = e.pageX - currentTargetRect.left;
-            const offsetY = e.pageY - currentTargetRect.top;
+            const offsetX = e.pageX - this.currentTargetRect.left;
+            const offsetY = e.pageY - this.currentTargetRect.top;
 
             // convert to kanvas coordinates
             const [x, y] = this.toCanvasCoordinates([offsetX, offsetY]);
@@ -168,7 +169,7 @@ export default {
             this.lastInsideNodeIds = inside;
             this.selectOnEnd = selectNodes;
             this.deSelectOnEnd = deselectNodes;
-        }, SELECTION_PREVIEW_THROTTLE)
+        })
         /* eslint-enable no-invalid-this */
     }
 };

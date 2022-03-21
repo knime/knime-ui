@@ -4,6 +4,13 @@ import Vue from 'vue';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import * as $shapes from '~/style/shapes';
 
+jest.mock('raf-throttle', () => function (func) {
+    return function (...args) {
+        // eslint-disable-next-line no-invalid-this
+        return func.apply(this, args);
+    };
+});
+
 import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer';
 
 import '~/plugins/directive-move';

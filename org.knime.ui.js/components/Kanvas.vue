@@ -1,6 +1,7 @@
 <script>
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
-import { debounce, throttle } from 'lodash';
+import { debounce } from 'lodash';
+import throttle from 'raf-throttle';
 
 export const RESIZE_DEBOUNCE = 100;
 

@@ -10,14 +10,12 @@ import * as $colors from '~/style/colors';
 import SelectionRectangle from '~/components/SelectionRectangle';
 import { findNodesInsideOfRectangle as findNodesInsideOfRectangleMock } from '~/util/rectangleSelection';
 
-jest.mock('lodash', () => ({
-    throttle(func) {
-        return function (...args) {
-            // eslint-disable-next-line no-invalid-this
-            return func.apply(this, args);
-        };
-    }
-}));
+jest.mock('raf-throttle', () => function (func) {
+    return function (...args) {
+        // eslint-disable-next-line no-invalid-this
+        return func.apply(this, args);
+    };
+});
 
 jest.mock('~/util/rectangleSelection', () => ({
     findNodesInsideOfRectangle: jest.fn()

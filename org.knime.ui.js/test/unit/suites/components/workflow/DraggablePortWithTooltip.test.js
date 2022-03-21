@@ -11,14 +11,12 @@ import Connector from '~/components/workflow/Connector';
 import Vue from 'vue';
 import { circleDetection } from '~/util/compatibleConnections';
 
-jest.mock('lodash', () => ({
-    throttle(func) {
-        return function (...args) {
-            // eslint-disable-next-line no-invalid-this
-            return func.apply(this, args);
-        };
-    }
-}));
+jest.mock('raf-throttle', () => function (func) {
+    return function (...args) {
+        // eslint-disable-next-line no-invalid-this
+        return func.apply(this, args);
+    };
+});
 jest.mock('~/util/compatibleConnections', () => ({
     circleDetection: jest.fn().mockReturnValue([])
 }));

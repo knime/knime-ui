@@ -6,6 +6,13 @@ import Vue from 'vue';
 
 import Kanvas, { RESIZE_DEBOUNCE } from '~/components/Kanvas';
 
+jest.mock('raf-throttle', () => function (func) {
+    return function (...args) {
+        // eslint-disable-next-line no-invalid-this
+        return func.apply(this, args);
+    };
+});
+
 describe('Kanvas', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, storeConfig;
 

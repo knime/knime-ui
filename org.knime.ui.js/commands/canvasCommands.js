@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { throttle } from 'lodash';
+import throttle from 'raf-throttle';
 
 const throttledZoomThrottle = 30; // throttle keyboard zoom by 30ms
 
