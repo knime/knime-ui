@@ -6,9 +6,12 @@ import { mapState } from 'vuex';
  * It offers limits to the size and always centers around the node.
  */
 export default {
-    inheritAttrs: false,
     props: {
         editable: {
+            type: Boolean,
+            default: false
+        },
+        editor: {
             type: Boolean,
             default: false
         },
@@ -16,7 +19,7 @@ export default {
             type: Number,
             default: 1000
         },
-        text: {
+        value: {
             type: String,
             default: ''
         },
@@ -26,10 +29,15 @@ export default {
         yShift: {
             type: Number,
             default: 0
+        },
+        pattern: {
+            default: null,
+            type: RegExp
         }
     },
     data() {
         return {
+            editorText: this.value,
             width: this.maxWidth,
             height: 0,
             x: 0
@@ -42,22 +50,68 @@ export default {
         }
     },
     watch: {
-        text() {
+        value(newValue) {
+            this.editorText = newValue;
             this.adjustDimensions();
         }
     },
     mounted() {
         this.adjustDimensions();
+        this.$nextTick(() => {
+            if (this.editor) {
+                this.$refs.textarea.focus();
+                this.$refs.textarea.select();
+            }
+        });
     },
     methods: {
+        onInput(event) {
+            let value = event.target.value;
+            value = value.replace(/(\r\n|\n|\r)/gm, ''); // remove all new lines
+
+            // remove invalid characters here as well, they could have been sneaked in via paste or drop
+            if (this.pattern && this.pattern.test(value)) {
+                this.$emit('invalidCharacter');
+                value = value.replace(this.pattern, '');
+            }
+
+            this.$refs.textarea.value = value;
+            this.adjustDimensions();
+            this.$emit('input', value);
+        },
+        onKeyDown(event) {
+            // prevent inserting invalid characters
+            if (this.pattern && this.pattern.source.includes(event.key.toLowerCase())) {
+                this.$emit('invalidCharacter');
+                event.preventDefault();
+            }
+        },
+        onEnter(event) {
+            event.preventDefault();
+            this.$emit('save', this.editorText);
+        },
+        onEsc(event) {
+            event.preventDefault();
+            this.$emit('close');
+        },
+        resizeTextarea() {
+            consola.trace('InlineTextarea: resizing');
+            let textarea = this.$refs.textarea;
+            if (!textarea) {
+                return;
+            }
+            textarea.style.height = 'auto';
+            textarea.style.height = `${textarea.scrollHeight}px`;
+        },
         // foreignObject requires `width` and `height` attributes, or the content is cut off.
         // So we need to 1. render, 2. measure, 3. update
         adjustDimensions() {
+            this.resizeTextarea();
             // 1. render with max width
             this.width = this.maxWidth;
             this.$nextTick(() => { // wait for re-render
                 // 2. measure content's actual size
-                let rect = this.$refs.text?.getBoundingClientRect();
+                let rect = this.$refs.wrapper?.getBoundingClientRect();
                 if (!rect) {
                     consola.error('Tried to adjust dimensions of NodeTitle, but element is gone or is not a DOM Node');
                     return;
@@ -85,20 +139,33 @@ export default {
 
 <template>
   <foreignObject
-    :class="['container', {editable}]"
+    :class="['container', {editable, editor}]"
     :width="width"
     :height="height"
     :x="x"
     :y="y"
   >
     <div
-      ref="text"
+      ref="wrapper"
       class="wrapper"
       @click.prevent.stop="$emit('click', $event)"
       @contextmenu.prevent="$emit('contextmenu', $event)"
       @dblclick.left.prevent.stop="editable ? $emit('request-edit') : null"
+      @mouseleave="$emit('mouseleave', $event)"
+      @mouseenter="$emit('mouseenter', $event)"
     >
-      <span class="text" :title="text">{{ text }}</span>
+      <span class="text" :title="editor ? '' : (editable ? 'Double click to edit: ' : '') + value"><textarea
+        v-if="editor"
+        ref="textarea"
+        v-model="editorText"
+        rows="1"
+        class="textarea"
+        @pointerdown.stop
+        @input="onInput"
+        @keydown="onKeyDown"
+        @keydown.enter="onEnter"
+        @keydown.esc="onEsc"
+      /><template v-else>{{ value }}</template></span>
     </div>
   </foreignObject>
 </template>
@@ -110,8 +177,21 @@ export default {
   user-select: none;
 
   &.editable:hover {
-    outline: 1px solid var(--knime-silver-sand);
     cursor: pointer;
+  }
+
+  &.editor {
+    outline: 1px solid var(--knime-silver-sand);
+    background: var(--knime-white);
+
+    &:focus-within {
+      outline: 1px solid var(--knime-masala);
+    }
+
+    /* this fixes the position of the textarea */
+    & .wrapper {
+      display: block;
+    }
   }
 
   & .text {
@@ -121,6 +201,7 @@ export default {
     font-size: calc(var(--node-name-font-size-shape) * 1px);
     margin: 0;
     white-space: pre-wrap;
+    text-align: inherit;
 
     /* multiline overflow ellipsis*/
     text-overflow: ellipsis;
@@ -128,6 +209,27 @@ export default {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: var(--node-name-max-lines-shape);
+  }
+
+  & .textarea {
+    display: block;
+    width: 100%;
+    text-align: inherit;
+
+    border: 0;
+    padding: 0;
+    margin: 0;
+    resize: none;
+    background-color: transparent;
+    font: inherit; /* inherit all font styles from parent element */
+    letter-spacing: inherit;
+    overflow: hidden;
+    color: inherit;
+    outline: none;
+
+    &::placeholder {
+      color: var(--knime-silver-sand);
+    }
   }
 
   & .wrapper {

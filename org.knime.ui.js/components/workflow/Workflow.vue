@@ -106,6 +106,13 @@ export default {
       />
     </MoveableNodeContainer>
 
+    <!-- Editor Layer -->
+    <portal-target
+      multiple
+      tag="g"
+      name="node-title-editor"
+    />
+
     <!-- Quick Actions Layer: Buttons for Hovered & Selected Nodes and their ids -->
     <portal-target
       multiple

@@ -11,6 +11,7 @@ import portShift from '~/util/portShift';
 import NodeActionBar from '~/components/workflow/NodeActionBar';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
 import NodeName from '~/components/workflow/NodeName';
+import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar';
 import { snapConnector } from '~/mixins';
 
 /**
@@ -33,6 +34,7 @@ export default {
         StreamingDecorator,
         LoopDecorator,
         NodeName,
+        NodeNameEditorActionBar,
         NodeSelectionPlane
     },
     mixins: [snapConnector],
@@ -167,6 +169,8 @@ export default {
     data() {
         return {
             hover: false,
+            nameEditorOpen: false,
+            nameEditorModel: this.name,
             nodeSelectionWidth: null,
             nodeTitleHeight: 20,
             showSelectionPreview: null
@@ -541,14 +545,50 @@ export default {
     </g>
 
     <!-- Node name / title -->
+    <portal
+      v-if="nameEditorOpen"
+      to="node-title-editor"
+    >
+      <!-- Block all inputs to the kanvas -->
+      <rect
+        width="100%"
+        height="100%"
+        x="0"
+        y="0"
+        fill="transparent"
+        @pointerdown.stop.prevent
+        @click.stop.prevent
+      />
+      <NodeNameEditorActionBar
+        :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y - 5 })`"
+        @save="nameEditorOpen = false;"
+        @close="nameEditorOpen = false;"
+      />
+      <!-- Node name inline editor -->
+      <NodeName
+        v-model="nameEditorModel"
+        editor
+        :editable="false"
+        :transform="`translate(${position.x}, ${position.y})`"
+        :max-width="$shapes.maxNodeNameWidth"
+        @width="nodeSelectionWidth = $event + ($shapes.nodeNameHorizontalMargin * 2)"
+        @height="nodeTitleHeight = $event"
+        @save="nameEditorOpen = false;"
+        @close="nameEditorOpen = false;"
+      />
+    </portal>
     <NodeName
-      :text="name"
+      v-else
+      :value="name"
       :editable="nameIsEditable"
       :max-width="$shapes.maxNodeNameWidth"
       @click="onLeftMouseClick"
       @contextmenu="onContextMenu"
       @width="nodeSelectionWidth = $event + ($shapes.nodeNameHorizontalMargin * 2)"
       @height="nodeTitleHeight = $event"
+      @request-edit="nameEditorOpen = true; hover = false;"
+      @mouseenter="hover = true"
+      @mouseleave="onLeaveHoverArea"
     />
   </g>
 </template>
