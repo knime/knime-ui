@@ -1,5 +1,5 @@
 <script>
-import throttle from 'raf-throttle';
+import { throttle } from 'lodash';
 
 const SCROLL_HANDLER_THROTTLE = 100;
 

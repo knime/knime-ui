@@ -1,8 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import throttle from 'raf-throttle';
 
-const throttledZoomThrottle = 30; // throttle keyboard zoom by 30ms
-
 export default {
     fitToScreen: {
         text: 'Fit to screen',
@@ -13,16 +11,14 @@ export default {
         text: 'Zoom in',
         hotkey: ['Ctrl', '+'],
         execute: throttle(
-            ({ $store }) => { $store.dispatch('canvas/zoomCentered', 1); },
-            throttledZoomThrottle
+            ({ $store }) => { $store.dispatch('canvas/zoomCentered', 1); }
         )
     },
     zoomOut: {
         text: 'Zoom out',
         hotkey: ['Ctrl', '-'],
         execute: throttle(
-            ({ $store }) => { $store.dispatch('canvas/zoomCentered', -1); },
-            throttledZoomThrottle
+            ({ $store }) => { $store.dispatch('canvas/zoomCentered', -1); }
         )
     },
     zoomTo75: {

@@ -16,15 +16,14 @@ jest.mock('lodash', () => ({
             // eslint-disable-next-line no-invalid-this
             return func.apply(this, args);
         };
+    },
+    throttle(func) {
+        return function (...args) {
+            // eslint-disable-next-line no-invalid-this
+            return func.apply(this, args);
+        };
     }
 }));
-
-jest.mock('raf-throttle', () => function (func) {
-    return function (...args) {
-        // eslint-disable-next-line no-invalid-this
-        return func.apply(this, args);
-    };
-});
 
 describe('NodeRepository', () => {
     let mocks, doShallowMount, wrapper, $store, searchNodesMock, searchNodesNextPageMock, setSelectedTagsMock,

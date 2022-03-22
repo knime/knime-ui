@@ -2,12 +2,14 @@ import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
 
-jest.mock('raf-throttle', () => function (func) {
-    return function (...args) {
-        // eslint-disable-next-line no-invalid-this
-        return func.apply(this, args);
-    };
-});
+jest.mock('lodash', () => ({
+    throttle(func) {
+        return function (...args) {
+            // eslint-disable-next-line no-invalid-this
+            return func.apply(this, args);
+        };
+    }
+}));
 
 describe('ScrollViewContainer', () => {
     let wrapper, doShallowMount, propsData;

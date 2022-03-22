@@ -6,8 +6,6 @@ import Connector from '~/components/workflow/Connector';
 import throttle from 'raf-throttle';
 import { circleDetection } from '~/util/compatibleConnections';
 
-const MOVE_THROTTLE = 10;
-
 export default {
     components: {
         PortWithTooltip,
@@ -230,7 +228,7 @@ export default {
 
             this.dragConnector.absolutePoint = [absoluteX, absoluteY];
             /* eslint-enable no-invalid-this */
-        }, MOVE_THROTTLE)
+        })
     }
 };
 </script>
