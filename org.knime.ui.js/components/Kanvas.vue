@@ -3,8 +3,6 @@ import { mapState, mapGetters, mapMutations } from 'vuex';
 import { debounce } from 'lodash';
 import throttle from 'raf-throttle';
 
-const PANNING_THROTTLE = 50; // 50ms between consecutive mouse move events
-
 export default {
     data() {
         return {
@@ -95,7 +93,7 @@ export default {
                 this.$el.scrollTop -= delta[1];
             }
             /* eslint-disable no-invalid-this */
-        }, PANNING_THROTTLE), // eslint-disable-line no-magic-numbers
+        }),
         stopPan(e) {
             if (this.panning) {
                 this.panning = null;
