@@ -63,12 +63,12 @@ describe('API', () => {
 
             it('handles errors on addEventListener', async () => {
                 await expect(api.addEventListener('foo'))
-                    .rejects.toThrow('Couldn\'t register event "foo" with args undefined');
+                    .rejects.toThrow('Couldn\'t register event "foo" with args {}');
             });
 
             it('handles errors on removeEventListener', async () => {
                 await expect(api.removeEventListener('foo'))
-                    .rejects.toThrow('Couldn\'t unregister event "foo" with args undefined');
+                    .rejects.toThrow('Couldn\'t unregister event "foo" with args {}');
             });
         });
     });
@@ -168,6 +168,22 @@ describe('API', () => {
                 jsonrpc: '2.0',
                 method: 'NodeService.changeLoopState',
                 params: ['123', '12', 'loopy node', 'loopy action'],
+                id: 0
+            }));
+        });
+
+        it('fetches node description', async () => {
+            await api.getNodeDescription({
+                className: 'test',
+                settings: 'settings1'
+            });
+            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'NodeService.getNodeDescription',
+                params: [{
+                    className: 'test',
+                    settings: 'settings1'
+                }],
                 id: 0
             }));
         });

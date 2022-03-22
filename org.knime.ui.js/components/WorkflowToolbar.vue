@@ -19,6 +19,10 @@ export default {
             return this.workflow?.parents?.length > 0;
         },
         toolbarCommands() {
+            if (!this.workflow) {
+                return [];
+            }
+
             const selectedNodes = this.$store.getters['selection/selectedNodes'];
             let visibleItems = {
                 // always visible
@@ -98,7 +102,7 @@ export default {
 }
 
 .button-list {
-  transition: all 150ms ease-out;
+  transition: opacity 150ms ease-out;
   flex-shrink: 0;
   display: flex;
   font-size: 14px;

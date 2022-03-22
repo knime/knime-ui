@@ -69,8 +69,8 @@ const config = {
             }
 
             // limit nuxt default image rule to raster images because we want to handle svg ourselves
-            const svgRule = config.module.rules.find(rule => String(rule.test).includes('svg'));
-            svgRule.test = new RegExp(String(svgRule.test).replace('svg|', '').replace('|svg'));
+            const svgRule = config.module.rules.find(rule => rule.test.source.includes('svg'));
+            svgRule.test = new RegExp(svgRule.test.source.replace('svg|', '').replace('|svg'), 'i');
 
             // custom image rule for SVG
             config.module.rules.push(svgConfig);

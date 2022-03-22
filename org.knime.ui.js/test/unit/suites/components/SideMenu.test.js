@@ -7,6 +7,7 @@ import * as panelStoreConfig from '~/store/panel';
 import SideMenu from '~/components/SideMenu';
 import NodeRepository from '~/components/noderepo/NodeRepository';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
+import NodeDescription from '~/components/noderepo/NodeDescription.vue';
 
 describe('SideMenu.vue', () => {
     beforeAll(() => {
@@ -129,6 +130,17 @@ describe('SideMenu.vue', () => {
         it('shows NodeRepository', () => {
             expect(wrapper.findComponent(WorkflowMetadata).exists()).toBe(false);
             expect(wrapper.findComponent(NodeRepository).exists()).toBe(true);
+        });
+    });
+
+    describe('Node Description', () => {
+        beforeEach(async () => {
+            await doShallowMount();
+            store.dispatch('panel/openDescriptionPanel');
+        });
+
+        it('shows description panel', () => {
+            expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
         });
     });
 

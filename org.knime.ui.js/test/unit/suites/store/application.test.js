@@ -3,15 +3,21 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 
 describe('application store', () => {
-    let store, setProjects, fetchApplicationState, localVue;
+    let store, storeConfig, fetchApplicationState, localVue, addEventListener, removeEventListener, dispatchSpy;
+
+    const applicationState = {
+        openedWorkflows: [{ projectId: 'foo', name: 'bar' }]
+    };
 
     beforeAll(() => {
-        fetchApplicationState = jest.fn().mockReturnValue({
-            openedWorkflows: [{ projectId: 'foo', name: 'bar' }]
-        });
+        fetchApplicationState = jest.fn().mockReturnValue(applicationState);
+        addEventListener = jest.fn();
+        removeEventListener = jest.fn();
 
         jest.doMock('~api', () => ({
             __esModule: true,
+            addEventListener,
+            removeEventListener,
             fetchApplicationState
         }), { virtual: true });
 
@@ -20,21 +26,196 @@ describe('application store', () => {
     });
 
     beforeEach(async () => {
-        setProjects = jest.fn();
-        store = mockVuexStore({
+        storeConfig = {
             application: await import('~/store/application'),
-            openedProjects: {
+            workflow: {
                 actions: {
-                    setProjects
+                    loadWorkflow: jest.fn(),
+                    unloadActiveWorkflow: jest.fn()
+                }
+            },
+            canvas: {
+                mutations: {
+                    restoreState: jest.fn()
+                },
+                getters: {
+                    toSave: () => ({
+                        saveMe: 'canvas'
+                    })
+                }
+            }
+        };
+        store = mockVuexStore(storeConfig);
+        dispatchSpy = jest.spyOn(store, 'dispatch');
+    });
+
+    it('creates an empty store', () => {
+        expect(store.state.application).toStrictEqual({
+            openProjects: [],
+            activeProjectId: null,
+            savedUserState: {}
+        });
+    });
+
+    describe('mutations', () => {
+        it('allows setting the active id', () => {
+            store.commit('application/setActiveProjectId', 'foo');
+            expect(store.state.application.activeProjectId).toBe('foo');
+        });
+
+        it('allows setting all items', () => {
+            store.commit('application/setOpenProjects',
+                [{ projectId: 'foo', name: 'bar' }, { projectId: 'bee', name: 'gee' }]);
+
+            expect(store.state.application.openProjects).toStrictEqual(
+                [{ projectId: 'foo', name: 'bar' },
+                    { projectId: 'bee', name: 'gee' }]
+            );
+        });
+
+        it('allows setting savedState', () => {
+            store.commit('application/setOpenProjects', [{ projectId: 'p1' }]);
+            store.commit('application/saveUserState', { projectId: 'p1', workflowId: 'root', stateToSave: 'SAFE' });
+
+            let savedState = store.state.application.savedUserState;
+
+            expect(savedState.p1.root).toBe('SAFE');
+        });
+    });
+
+    describe('Application Lifecycle', () => {
+        test('initialization', async () => {
+            await store.dispatch('application/initializeApplication');
+
+            expect(addEventListener).toHaveBeenCalled();
+            expect(fetchApplicationState).toHaveBeenCalled();
+            expect(dispatchSpy).toHaveBeenCalledWith('application/replaceApplicationState', applicationState);
+        });
+
+        test('destroy application', () => {
+            store.dispatch('application/destroyApplication');
+
+            expect(removeEventListener).toHaveBeenCalled();
+            expect(dispatchSpy).toHaveBeenCalledWith('workflow/unloadActiveWorkflow', { clearWorkflow: true });
+        });
+    });
+
+    it('replaces application state', async () => {
+        await store.dispatch('application/replaceApplicationState', applicationState);
+
+        expect(store.state.application.openProjects).toStrictEqual([
+            { projectId: 'foo', name: 'bar' }
+        ]);
+        expect(dispatchSpy).toHaveBeenCalledWith('application/setActiveProject', [
+            { projectId: 'foo', name: 'bar' }
+        ]);
+    });
+
+    describe('set active workflow', () => {
+        test('if provided by backend', async () => {
+            const state = {
+                openedWorkflows: [
+                    { projectId: 'foo', name: 'bar' },
+                    { projectId: 'bee', name: 'gee', activeWorkflow: {} }
+                ]
+            };
+            await store.dispatch('application/replaceApplicationState', state);
+
+            expect(dispatchSpy).toHaveBeenCalledWith(
+                'application/switchWorkflow',
+                { workflowId: 'root', projectId: 'bee' }
+            );
+        });
+
+        it('uses first in row if not provided by backend', async () => {
+            const state = {
+                openedWorkflows: [
+                    { projectId: 'foo', name: 'bar' },
+                    { projectId: 'bee', name: 'gee' }
+                ]
+            };
+            await store.dispatch('application/replaceApplicationState', state);
+
+            expect(dispatchSpy).toHaveBeenCalledWith(
+                'application/switchWorkflow',
+                { workflowId: 'root', projectId: 'foo' }
+            );
+        });
+
+        it('does not set active project if there are no open workflows', async () => {
+            const state = { openedWorkflows: [] };
+            await store.dispatch('application/replaceApplicationState', state);
+
+            expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow', null);
+        });
+    });
+
+    describe('switch workflow', () => {
+        beforeEach(async () => {
+            await store.dispatch('application/replaceApplicationState', {
+                openedWorkflows:
+                    [
+                        { projectId: '0', name: 'p0' },
+                        { projectId: '1', name: 'p1' }
+                    ]
+            });
+            expect(store.state.application.activeProjectId).toBe('0');
+            // clean dispatch list for easier testing
+            dispatchSpy.mockClear();
+        });
+
+        test('switch from workflow to nothing', async () => {
+            Object.defineProperty(store.getters, 'workflow/activeWorkflowId', {
+                get: () => 'root'
+            });
+
+            await store.dispatch('application/switchWorkflow', null);
+
+            expect(dispatchSpy).toHaveBeenCalledWith('application/saveUserState', undefined);
+            expect(dispatchSpy).toHaveBeenCalledWith('workflow/unloadActiveWorkflow', { clearWorkflow: true });
+            expect(store.state.application.activeProjectId).toBe(null);
+
+            expect(dispatchSpy).not.toHaveBeenCalledWith('workflow/loadWorkflow', expect.anything(), expect.anything());
+        });
+
+        test('switch from nothing to workflow', async () => {
+            await store.dispatch('application/switchWorkflow',
+                { projectId: '1', workflowId: 'root' });
+
+            expect(dispatchSpy).not.toHaveBeenCalledWith('application/saveUserState', undefined);
+            expect(dispatchSpy).not.toHaveBeenCalledWith('workflow/unloadActiveWorkflow', expect.anything());
+
+            expect(dispatchSpy).toHaveBeenCalledWith('workflow/loadWorkflow', { projectId: '1', workflowId: 'root' });
+            expect(dispatchSpy).toHaveBeenCalledWith('application/restoreUserState', undefined);
+            expect(store.state.application.activeProjectId).toBe('1');
+        });
+    });
+
+    it('saves user state', async () => {
+        await store.dispatch('application/replaceApplicationState', {
+            openedWorkflows: [{ projectId: '1', name: 'p1' }]
+        });
+        expect(store.state.application.savedUserState).toStrictEqual({
+            '1': {}
+        });
+        store.dispatch('application/saveUserState');
+
+        expect(store.state.application.savedUserState).toStrictEqual({
+            '1': {
+                undefined: {
+                    canvas: { saveMe: 'canvas' }
                 }
             }
         });
     });
 
-    it('allows initialization', async () => {
-        await store.dispatch('application/initState');
+    it('restores ui state', async () => {
+        await store.dispatch('application/replaceApplicationState', {
+            openedWorkflows: [{ projectId: '1', name: 'p1' }]
+        });
+        expect(storeConfig.canvas.mutations.restoreState).toHaveBeenCalled();
 
-        expect(fetchApplicationState).toHaveBeenCalled();
-        expect(setProjects).toHaveBeenCalledWith(expect.anything(), [{ projectId: 'foo', name: 'bar' }]);
+        await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root' });
+        expect(storeConfig.canvas.mutations.restoreState).toHaveBeenCalled();
     });
 });

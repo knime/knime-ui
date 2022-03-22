@@ -48,7 +48,6 @@
  */
 package org.knime.ui.java.browser.function;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -61,7 +60,7 @@ import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
-import org.knime.ui.java.appstate.AppStateUtil;
+import org.knime.ui.java.EclipseUIStateUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 import com.equo.chromium.swt.Browser;
@@ -75,10 +74,7 @@ import com.equo.chromium.swt.BrowserFunction;
 public class SaveWorkflowBrowserFunction extends BrowserFunction {
 
 
-    /**
-     * @param browser
-     * @param name
-     */
+    @SuppressWarnings("javadoc")
     public SaveWorkflowBrowserFunction(final Browser browser) {
         super(browser, "saveWorkflow");
     }
@@ -97,7 +93,7 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
         // For at least as long as new frontend is integrated in "old" knime eclipse workbench,
         // we want a save action triggered from new frontend to be consistent with one triggered
         // from the traditional UI. The best thing we can do is trigger the exact same action.
-        WorkflowEditor editor = getEditorForManager(projectWfm).orElseThrow(
+        WorkflowEditor editor = EclipseUIStateUtil.getEditorForManager(projectWfm).orElseThrow(
                 () -> new NoSuchElementException("No workflow editor for project found.")
         );
         editor.doSave(new NullProgressMonitor());
@@ -110,33 +106,12 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
                 return;
             }
             getChildWfms(projectWfm).stream()
-                    .map(SaveWorkflowBrowserFunction::getEditorForManager)
+                    .map(EclipseUIStateUtil::getEditorForManager)
                     .flatMap(Optional::stream)  // unpack/collapse optionals
                     .forEach(WorkflowEditor::unmarkDirty);
         });
 
         return null;
-    }
-
-    /**
-     * Obtain the {@link WorkflowEditor} for a given {@link WorkflowManager} by looking through
-     * the currently open editors.
-     * @param targetWfm The workflow manager to retrieve the editor for
-     * @return An optional containing the workflow editor for the given target workflow manager, or an empty optional
-     *  if no such editor could be unambiguously determined
-     */
-    private static Optional<WorkflowEditor> getEditorForManager(final WorkflowManager targetWfm) {
-        var matchedEditors = AppStateUtil.getOpenWorkflowEditors().stream()
-                .filter(wfEd -> wfEd.getWorkflowManager()
-                        .map(e -> Objects.equals(e, targetWfm))
-                        .orElse(false)
-                )
-                .collect(Collectors.toList());
-        if (matchedEditors.size() == 1) {
-            return Optional.of(matchedEditors.get(0));
-        } else {
-            return Optional.empty();
-        }
     }
 
     /**

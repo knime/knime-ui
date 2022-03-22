@@ -1,5 +1,6 @@
 import workflowCommands from './workflowCommands';
 import canvasCommands from './canvasCommands';
+import applicationCommands from './applicationCommands';
 
 // chains a group condition before each individual command condition
 export const conditionGroup = (groupCondition, commands) => {
@@ -35,6 +36,7 @@ const sidePanel = {
 };
 
 export default {
+    ...applicationCommands,
     ...conditionGroup(
         // Enabled if workflow is present
         ({ $store }) => Boolean($store.state.workflow.activeWorkflow),

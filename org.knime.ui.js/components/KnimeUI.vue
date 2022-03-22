@@ -1,11 +1,12 @@
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 import AppHeader from '~/components/AppHeader';
 import Sidebar from '~/components/Sidebar';
 import WorkflowToolbar from '~/components/WorkflowToolbar';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import TooltipContainer from '~/components/TooltipContainer';
 import Error from '~/components/Error';
+import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
 
 import { hotKeys } from '~/mixins';
 
@@ -24,7 +25,8 @@ export default {
         Sidebar,
         WorkflowToolbar,
         WorkflowTabContent,
-        TooltipContainer
+        TooltipContainer,
+        WorkflowEntryPage
     },
     mixins: [hotKeys],
     data() {
@@ -35,13 +37,21 @@ export default {
     },
     async fetch() {
         try {
-            await this.initState();
+            await this.initializeApplication();
             await Promise.all(requiredFonts.map(fontName => document.fonts.load(`1em ${fontName}`)));
             this.loaded = true;
         } catch ({ message, stack }) {
             // errors in the fetch hook are not captured by errorCaptured
             this.error = { message, stack };
         }
+    },
+    computed: {
+        ...mapState('workflow', {
+            workflow: 'activeWorkflow'
+        })
+    },
+    async beforeDestroy() {
+        await this.destroyApplication();
     },
     errorCaptured({ message, stack }, vm, vueInfo) {
         consola.error(message, vueInfo, stack);
@@ -56,7 +66,7 @@ export default {
         return false;
     },
     methods: {
-        ...mapActions('application', ['initState']),
+        ...mapActions('application', ['initializeApplication', 'destroyApplication']),
         onCloseError() {
             if (process.env.isDev) { // eslint-disable-line no-process-env
                 this.error = null;
@@ -76,14 +86,17 @@ export default {
       @close="onCloseError"
     />
     <AppHeader id="header" />
-    <WorkflowToolbar
-      v-if="loaded"
-      id="toolbar"
-    />
-    <Sidebar id="sidebar" />
+    <WorkflowToolbar id="toolbar" />
+    <TooltipContainer id="tooltip-container" />
     <template v-if="loaded">
-      <WorkflowTabContent id="tab-content" />
-      <TooltipContainer id="tooltip-container" />
+      <template v-if="workflow">
+        <Sidebar id="sidebar" />
+        <WorkflowTabContent class="workflow-area" />
+      </template>
+      <WorkflowEntryPage
+        v-else
+        class="workflow-area"
+      />
     </template>
     <div
       v-else
@@ -127,7 +140,7 @@ export default {
   border-bottom: 1px solid var(--knime-silver-sand);
 }
 
-#tab-content {
+.workflow-area {
   grid-area: workflow;
 }
 
