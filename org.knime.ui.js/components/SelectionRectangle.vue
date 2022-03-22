@@ -70,7 +70,7 @@ export default {
                 // remember currently selected nodes, the nodes under the rectangle will inverse them
                 this.selectedNodeIdsAtStart = [...this.selectedNodeIds];
             } else {
-                // TODO: could mock that for faster start of rectangle selection
+                // TODO: NXT-978 could mock that for faster start of rectangle selection
                 this.deselectAllObjects();
                 this.selectedNodeIdsAtStart = [];
             }
