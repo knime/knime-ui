@@ -74,23 +74,23 @@ public class OpenNodeViewBrowserFunction extends AbstractNodeBrowserFunction {
 
     @Override
     protected void apply(final NodeContainer nc) {
-        if (nc.getInteractiveWebViews().size() > 0) {
-            if (nc instanceof SubNodeContainer) {
-                OpenSubnodeWebViewAction.openView((SubNodeContainer)nc);
-                return;
-            } else if (nc instanceof NativeNodeContainer) {
-                OpenInteractiveWebViewAction.openView((NativeNodeContainer)nc,
-                    nc.getInteractiveWebViews().get(0).getViewName());
-                return;
-            } else {
-                //
-            }
+        if (nc instanceof SubNodeContainer) {
+            // composite view
+            OpenSubnodeWebViewAction.openView((SubNodeContainer)nc);
+            return;
         } else if (NodeViewManager.hasNodeView(nc)) {
+            // 'ui-extension' view
             var nnc = ((NativeNodeContainer)nc);
             var viewName = "Interactive View: " + nnc.getNodeViewName(0);
             OpenNodeViewAction.openNodeView(nnc, OpenNodeViewAction.createNodeView(nnc, false, true), viewName);
+            return;
+        } else if (nc.getInteractiveWebViews().size() > 0 || nc.hasInteractiveView()) {
+            // legacy js-view
+            OpenInteractiveWebViewAction.openView((NativeNodeContainer)nc,
+                nc.getInteractiveWebViews().get(0).getViewName());
+            return;
         }
-        NodeLogger.getLogger(OpenNodeViewBrowserFunction.class).warn(String.format(
-            "Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName()));
+        NodeLogger.getLogger(OpenNodeViewBrowserFunction.class).warnWithFormat(
+            "Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName());
     }
 }
