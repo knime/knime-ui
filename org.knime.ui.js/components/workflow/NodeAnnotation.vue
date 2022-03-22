@@ -98,11 +98,11 @@ export default {
                 // account for zoom
                 let width = Math.ceil(rect.width / this.zoomFactor);
                 let height = Math.ceil(rect.height / this.zoomFactor);
-                
+
                 // 3. set container size to content size
                 this.width = width;
                 this.height = height;
-                
+
                 // center container
                 this.x = (this.$shapes.nodeSize - this.width) / 2;
             });

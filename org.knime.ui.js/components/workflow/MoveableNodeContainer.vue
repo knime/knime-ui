@@ -34,7 +34,9 @@ export default {
     },
     data: () => ({
         // Start position of the dragging
-        startPos: { x: 0, y: 0 }
+        startPos: { x: 0, y: 0 },
+        nodeSelectionWidth: null,
+        nodeSelectionExtraHeight: 20
     }),
     computed: {
         ...mapGetters('workflow', ['isWritable']),
@@ -68,6 +70,14 @@ export default {
                 this.moveNodeGhostThresholdExceeded &&
                 (this.deltaMovePosition.x !== 0 || this.deltaMovePosition.y !== 0);
         }
+    },
+    created() {
+        this.$on('node-selection-plane-width-changed', this.updatePlaneWidth);
+        this.$on('node-selection-plane-extra-height-changed', this.updatePlaneExtraHeight);
+    },
+    beforeDestroy() {
+        this.$off('node-selection-plane-width-changed', this.updatePlaneWidth);
+        this.$off('node-selection-plane-extra-height-changed', this.updatePlaneExtraHeight);
     },
     watch: {
         // If change occurs, position has been updated from the store.
@@ -135,6 +145,12 @@ export default {
                 startPos: this.startPos,
                 nodeId: this.id
             });
+        },
+        updatePlaneWidth(width) {
+            this.nodeSelectionWidth = width;
+        },
+        updatePlaneExtraHeight(extraHeight) {
+            this.nodeSelectionExtraHeight = extraHeight;
         }
     }
 };
@@ -151,6 +167,8 @@ export default {
     <NodeSelectionPlane
       v-if="showGhostOutline"
       :position="deltaMovePosition"
+      :width="nodeSelectionWidth"
+      :extra-height="nodeSelectionExtraHeight"
       :kind="kind"
     />
   </g>

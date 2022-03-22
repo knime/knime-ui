@@ -10,6 +10,7 @@ import LoopDecorator from '~/components/workflow/LoopDecorator';
 import portShift from '~/util/portShift';
 import NodeActionBar from '~/components/workflow/NodeActionBar';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
+import NodeName from '~/components/workflow/NodeName';
 import { snapConnector } from '~/mixins';
 
 /**
@@ -31,6 +32,7 @@ export default {
         LinkDecorator,
         StreamingDecorator,
         LoopDecorator,
+        NodeName,
         NodeSelectionPlane
     },
     mixins: [snapConnector],
@@ -165,6 +167,8 @@ export default {
     data() {
         return {
             hover: false,
+            nodeSelectionWidth: null,
+            nodeTitleHeight: 20,
             showSelectionPreview: null
         };
     },
@@ -274,6 +278,24 @@ export default {
                 return false;
             }
             return this.showSelectionPreview === 'show' || isSelected;
+        },
+        nameIsEditable() {
+            // only metanodes and components have editable names
+            return ['metanode', 'component'].includes(this.kind);
+        },
+        actionBarPosition() {
+            return {
+                x: this.position.x + this.$shapes.nodeSize / 2,
+                y: this.position.y - this.$shapes.nodeSelectionPadding[0] - this.nodeTitleHeight
+            };
+        }
+    },
+    watch: {
+        nodeTitleHeight(newValue) {
+            this.$parent.$emit('node-selection-plane-extra-height-changed', newValue);
+        },
+        nodeSelectionWidth(newValue) {
+            this.$parent.$emit('node-selection-plane-width-changed', newValue);
         }
     },
     methods: {
@@ -401,7 +423,7 @@ export default {
         v-if="!insideStreamingComponent && hover"
         ref="actionbar"
         v-bind="allNodeActions"
-        :transform="`translate(${position.x + $shapes.nodeSize / 2} ${position.y - $shapes.nodeSelectionPadding[0]})`"
+        :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y})`"
         :node-id="id"
         @mouseleave.native="onLeaveHoverArea"
       />
@@ -414,6 +436,8 @@ export default {
       <NodeSelectionPlane
         v-show="showSelectionPlane"
         :position="position"
+        :width="nodeSelectionWidth"
+        :extra-height="nodeTitleHeight"
         :kind="kind"
       />
     </portal>
@@ -424,16 +448,6 @@ export default {
       v-bind="annotation"
       :y-shift="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
     />
-
-    <!-- Node title. No pointer events -->
-    <text
-      class="name"
-      :x="$shapes.nodeSize / 2"
-      :y="-$shapes.nodeNameMargin"
-      text-anchor="middle"
-    >
-      {{ name }}
-    </text>
 
     <!-- Elements for which mouse hover triggers hover state -->
     <g
@@ -525,6 +539,17 @@ export default {
         direction="out"
       />
     </g>
+
+    <!-- Node name / title -->
+    <NodeName
+      :text="name"
+      :editable="nameIsEditable"
+      :max-width="$shapes.maxNodeNameWidth"
+      @click="onLeftMouseClick"
+      @contextmenu="onContextMenu"
+      @width="nodeSelectionWidth = $event + ($shapes.nodeNameHorizontalMargin * 2)"
+      @height="nodeTitleHeight = $event"
+    />
   </g>
 </template>
 
@@ -572,15 +597,6 @@ export default {
 .hover-area {
   fill: none;
   pointer-events: fill;
-}
-
-.name {
-  pointer-events: none;
-  font-family: "Roboto Condensed", sans-serif;
-  font-style: normal;
-  font-weight: bold;
-  font-size: 15px;
-  line-height: 17px;
 }
 
 .annotation {

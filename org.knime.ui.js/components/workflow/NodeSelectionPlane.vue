@@ -16,6 +16,14 @@ export default {
             required: true,
             validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         },
+        extraHeight: {
+            type: Number,
+            default: 20
+        },
+        width: {
+            type: Number,
+            default: null
+        },
         /**
          * Node variation.
          * @values 'node', 'metanode', 'component'
@@ -33,11 +41,16 @@ export default {
                 nodeSelectionPadding: [top, right, bottom, left] } = this.$shapes;
             const hasStatusBar = this.kind !== 'metanode';
 
+            const height = (top + nodeSize + bottom) +
+                (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0) +
+                this.extraHeight;
+            const width = this.width || (left + right + nodeSize);
+
             return {
-                y: -top,
-                x: -left,
-                height: (top + nodeSize + bottom) + (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0),
-                width: left + right + nodeSize
+                y: -(top + this.extraHeight),
+                x: -((width - nodeSize) / 2),
+                height,
+                width
             };
         }
     }
