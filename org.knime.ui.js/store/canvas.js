@@ -2,6 +2,7 @@
  * Canvas Store manages positioning, zooming, scrolling and
  * coordinate transformations for the Kanvas component.
  */
+import Vue from 'vue';
 
 export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;
@@ -219,11 +220,13 @@ export const actions = {
         });
     },
 
-    updateContainerSize({ state, getters, commit }) {
+    async updateContainerSize({ state, getters, commit }) {
         let kanvas = state.getScrollContainerElement();
 
-        // find origin in screen coordinates
+        // find origin in screen coordinates, relative to upper left corner of canvas
         let { x, y } = getters.fromCanvasCoordinates({ x: 0, y: 0 });
+        y -= kanvas.scrollTop;
+        x -= kanvas.scrollLeft;
 
         // update content depending on new container size
         commit('setContainerSize', {
@@ -231,8 +234,13 @@ export const actions = {
             height: kanvas.clientHeight
         });
 
-        // find new origin in screen coordinates
+        // wait for canvas to update padding, size and scroll
+        await Vue.nextTick();
+
+        // find new origin in screen coordinates, relative to upper left corner of canvas
         let { x: newX, y: newY } = getters.fromCanvasCoordinates({ x: 0, y: 0 });
+        newX -= kanvas.scrollLeft;
+        newY -= kanvas.scrollTop;
 
         // scroll by the difference to prevent content from moving
         let [deltaX, deltaY] = [newX - x, newY - y];

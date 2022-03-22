@@ -2,6 +2,7 @@
 
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
+import Vue from 'vue';
 import Vuex from 'vuex';
 import * as canvasStoreConfig from '~/store/canvas';
 
@@ -237,7 +238,7 @@ describe('canvas store', () => {
             expect(scrollContainer.scrollTop).toBe(10);
         });
 
-        test.each([100, 200])('change container size at %i% zoom', (zoomFactor) => {
+        test.each([100, 200])('change container size at %i% zoom', async (zoomFactor) => {
             // demonstrate this works independent of zoom
             store.commit('canvas/setFactor', zoomFactor / 100);
 
@@ -251,6 +252,8 @@ describe('canvas store', () => {
                 width: 200,
                 height: 200
             });
+            
+            await Vue.nextTick();
 
             // new padding is 200 (screen units) => decreasy by 100 => scroll by 100
             expect(scrollContainer.scrollLeft).toBe(-100);
