@@ -170,8 +170,8 @@ export default {
         return {
             hover: false,
             nameEditorOpen: false,
-            nodeSelectionWidth: null,
-            nodeTitleHeight: 20,
+            nameWidth: 0,
+            nameHeight: 20,
             showSelectionPreview: null
         };
     },
@@ -192,6 +192,9 @@ export default {
                 return 'Metanode';
             }
             return null;
+        },
+        selectionWidth() {
+            return this.nameWidth + (this.$shapes.nodeNameHorizontalMargin * 2);
         },
         /**
          * Checks if a streamable execution info has been set. The boolean value of the streamable variable does not
@@ -289,15 +292,15 @@ export default {
         actionBarPosition() {
             return {
                 x: this.position.x + this.$shapes.nodeSize / 2,
-                y: this.position.y - this.$shapes.nodeSelectionPadding[0] - this.nodeTitleHeight
+                y: this.position.y - this.$shapes.nodeSelectionPadding[0] - this.nameHeight
             };
         }
     },
     watch: {
-        nodeTitleHeight(newValue) {
+        nameHeight(newValue) {
             this.$parent.$emit('node-selection-plane-extra-height-changed', newValue);
         },
-        nodeSelectionWidth(newValue) {
+        selectionWidth(newValue) {
             this.$parent.$emit('node-selection-plane-width-changed', newValue);
         }
     },
@@ -443,8 +446,8 @@ export default {
       <NodeSelectionPlane
         v-show="showSelectionPlane"
         :position="position"
-        :width="nodeSelectionWidth"
-        :extra-height="nodeTitleHeight"
+        :width="selectionWidth"
+        :extra-height="nameHeight"
         :kind="kind"
       />
     </portal>
@@ -574,8 +577,8 @@ export default {
         :editable="false"
         :transform="`translate(${position.x}, ${position.y})`"
         :max-width="$shapes.maxNodeNameWidth"
-        @width="nodeSelectionWidth = $event + ($shapes.nodeNameHorizontalMargin * 2)"
-        @height="nodeTitleHeight = $event"
+        @width="nameWidth = $event"
+        @height="nameHeight = $event"
         @save="updateName($event); nameEditorOpen = false;"
         @close="nameEditorOpen = false;"
       />
@@ -587,8 +590,8 @@ export default {
       :max-width="$shapes.maxNodeNameWidth"
       @click="onLeftMouseClick"
       @contextmenu="onContextMenu"
-      @width="nodeSelectionWidth = $event + ($shapes.nodeNameHorizontalMargin * 2)"
-      @height="nodeTitleHeight = $event"
+      @width="nameWidth = $event"
+      @height="nameHeight = $event"
       @request-edit="nameEditorOpen = true; hover = false;"
       @mouseenter="hover = true"
       @mouseleave="onLeaveHoverArea"
