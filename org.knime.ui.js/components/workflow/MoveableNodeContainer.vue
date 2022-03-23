@@ -56,11 +56,9 @@ export default {
         
         // returns the amount the object should be translated. This is either the position of the objec, or the position + the dragged amount
         translationAmount() {
-            return (
-                this.isNodeSelected(this.id) && !this.moveNodeGhostThresholdExceeded
-                    ? this.combinedPosition
-                    : this.position
-            );
+            return this.isNodeSelected(this.id) && !this.moveNodeGhostThresholdExceeded
+                ? this.combinedPosition
+                : this.position;
         },
         
         // If true the outline of the node is shown when dragged.
@@ -93,7 +91,7 @@ export default {
          */
         handleMoveFromStore() {
             this.$store.commit('workflow/resetDragPosition');
-            this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: false });
+            this.$store.commit('workflow/setDragging', { isDragging: false });
         },
 
         positionOnCanvas({ x, y }) {
@@ -114,7 +112,7 @@ export default {
          * @returns {void} nothing to return
          */
         onMoveStart({ detail }) {
-            this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: true });
+            this.$store.commit('workflow/setDragging', { isDragging: true });
             if (!detail.event.shiftKey && !this.isNodeSelected(this.id)) {
                 this.deselectAllObjects();
             }
@@ -130,6 +128,10 @@ export default {
          */
         onMove: throttle(function ({ detail: { clientX, clientY } }) {
             /* eslint-disable no-invalid-this */
+            if (!this.isDragging) {
+                return;
+            }
+            
             const { nodeSize } = this.$shapes;
             const updatedPos = this.positionOnCanvas({ x: clientX, y: clientY });
             
