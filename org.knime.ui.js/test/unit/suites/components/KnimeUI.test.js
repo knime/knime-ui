@@ -14,6 +14,7 @@ import WorkflowToolbar from '~/components/WorkflowToolbar';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import TooltipContainer from '~/components/TooltipContainer';
 import Error from '~/components/Error';
+import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
 
 
 const numberOfPreloadedFonts = 3;
@@ -24,41 +25,50 @@ describe('KnimeUI.vue', () => {
         localVue.use(Vuex);
     });
 
-    let $store, doShallowMountWithAsyncData, initState, wrapper;
+    let $store, doShallowMountWithAsyncData, initializeApplication, wrapper, storeConfig, mocks, destroyApplication;
 
     beforeEach(() => {
-        initState = jest.fn().mockResolvedValue();
+        initializeApplication = jest.fn().mockResolvedValue();
+        destroyApplication = jest.fn();
+
         document.fonts = {
             load: jest.fn()
         };
 
-        doShallowMountWithAsyncData = async () => {
-            $store = mockVuexStore({
-                application: {
-                    actions: {
-                        initState
-                    }
+        storeConfig = {
+            application: {
+                actions: {
+                    initializeApplication,
+                    destroyApplication
                 }
-            });
+            },
+            workflow: {
+                state: {
+                    activeWorkflow: null
+                }
+            }
+        };
 
-            wrapper = await shallowMountWithAsyncData(KnimeUI, {
-                mocks: { $store }
-            });
+        $store = mockVuexStore(storeConfig);
+        mocks = { $store };
+        doShallowMountWithAsyncData = async () => {
+            wrapper = await shallowMountWithAsyncData(KnimeUI, { mocks });
         };
     });
 
     it('renders before loading', async () => {
         await doShallowMountWithAsyncData();
         expect(wrapper.findComponent(AppHeader).exists()).toBe(true);
-        expect(wrapper.findComponent(Sidebar).exists()).toBe(true);
-        expect(wrapper.findComponent(TooltipContainer).exists()).toBe(false);
-        expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(false);
+        expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(true);
+        expect(wrapper.findComponent(TooltipContainer).exists()).toBe(true);
+        expect(wrapper.findComponent(Sidebar).exists()).toBe(false);
         expect(wrapper.findComponent(WorkflowTabContent).exists()).toBe(false);
+        expect(wrapper.findComponent(WorkflowEntryPage).exists()).toBe(false);
     });
 
     it('catches errors in fetch hook', async () => {
-        initState.mockImplementation(() => {
-            throw new TypeError('mhm?');
+        initializeApplication.mockImplementation(() => {
+            throw new TypeError('error');
         });
         await doShallowMountWithAsyncData();
         await Vue.nextTick();
@@ -66,12 +76,19 @@ describe('KnimeUI.vue', () => {
         let errorComponent = wrapper.findComponent(Error);
         expect(errorComponent.exists()).toBe(true);
         expect(errorComponent.props()).toMatchObject({
-            message: 'mhm?',
+            message: 'error',
             stack: expect.anything()
         });
     });
 
-    it('renders after loading', async () => {
+    it('renders after loading with existing workflow', async () => {
+        storeConfig.workflow.state.activeWorkflow = {
+            info: {
+                containerType: 'project',
+                containerId: 'root'
+            },
+            parents: []
+        };
         document.fonts.load.mockResolvedValue('dummy');
         await doShallowMountWithAsyncData();
 
@@ -82,19 +99,36 @@ describe('KnimeUI.vue', () => {
         // await rendering
         await Vue.nextTick();
 
-        let tooltipContainer = wrapper.findComponent(TooltipContainer);
-        expect(tooltipContainer.exists()).toBe(true);
-        expect(tooltipContainer.attributes('id')).toBe('tooltip-container');
-        expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(true);
+        expect(wrapper.findComponent(Sidebar).exists()).toBe(true);
         expect(wrapper.findComponent(WorkflowTabContent).exists()).toBe(true);
+    });
+
+    it('renders after loading without a workflow', async () => {
+        document.fonts.load.mockResolvedValue('dummy');
+        await doShallowMountWithAsyncData();
+
+        // await fetch hook
+        await Vue.nextTick();
+        await Vue.nextTick();
+
+        // await rendering
+        await Vue.nextTick();
+
+        expect(wrapper.findComponent(WorkflowEntryPage).exists()).toBe(true);
     });
 
     it('initiates', async () => {
         document.fonts.load.mockResolvedValue('dummy');
-
         await doShallowMountWithAsyncData();
 
-        expect(initState).toHaveBeenCalled();
+        expect(initializeApplication).toHaveBeenCalled();
         expect(document.fonts.load).toHaveBeenCalledTimes(numberOfPreloadedFonts);
+    });
+
+    it('destroys application', async () => {
+        await doShallowMountWithAsyncData();
+        await wrapper.destroy();
+
+        expect(destroyApplication).toHaveBeenCalled();
     });
 });

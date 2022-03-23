@@ -176,8 +176,8 @@ export default {
         };
     },
     computed: {
-        ...mapState('openedProjects', {
-            projectId: 'activeId'
+        ...mapState('application', {
+            projectId: 'activeProjectId'
         }),
         ...mapGetters('selection', ['isNodeSelected']),
         ...mapState('workflow', ['isDragging']),
@@ -347,7 +347,7 @@ export default {
         },
 
         openNode() {
-            this.$store.dispatch('openedProjects/switchWorkflow', { workflowId: this.id, projectId: this.projectId });
+            this.$store.dispatch('application/switchWorkflow', { workflowId: this.id, projectId: this.projectId });
         },
         /*
          * Left-Click         => Select only this node

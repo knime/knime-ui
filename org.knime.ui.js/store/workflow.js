@@ -1,6 +1,6 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
     moveObjects, openDialog, openView, undo, redo, removeEventListener, connectNodes, addNode,
-    saveWorkflow, updateComponentOrMetanodeName } from '~api';
+    saveWorkflow, closeWorkflow, updateComponentOrMetanodeName } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -28,14 +28,10 @@ export const state = () => ({
 
 export const mutations = {
     ...jsonPatchMutations,
-    setActiveWorkflow(state, workflow) {
-        // extract templates
-        let workflowData = {
-            ...workflow
-        };
 
-        state.activeWorkflow = workflowData;
-        state.tooltip = null;
+    // extracts the workflow
+    setActiveWorkflow(state, workflow) {
+        state.activeWorkflow = workflow;
     },
     setActiveSnapshotId(state, id) {
         state.activeSnapshotId = id;
@@ -61,42 +57,42 @@ export const mutations = {
 
 export const actions = {
     ...jsonPatchActions,
-    async loadWorkflow({ commit, dispatch }, { projectId, workflowId = 'root' }) {
-        const workflow = await loadWorkflowFromApi({ projectId, workflowId });
-
-        if (workflow) {
-            dispatch('unloadActiveWorkflow');
-            await dispatch('setActiveWorkflowSnapshot', {
-                ...workflow,
+    async loadWorkflow({ commit, dispatch, getters }, { projectId, workflowId = 'root' }) {
+        const project = await loadWorkflowFromApi({ projectId, workflowId });
+        if (project) {
+            commit('setActiveWorkflow', {
+                ...project.workflow,
                 projectId
             });
+
+            let snapshotId = project.snapshotId;
+            commit('setActiveSnapshotId', snapshotId);
+
+            let workflowId = getters.activeWorkflowId;
+            addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
         } else {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    unloadActiveWorkflow({ state, commit, getters: { activeWorkflowId: workflowId }, rootGetters }) {
+    unloadActiveWorkflow({ state, commit, getters: { activeWorkflowId: workflowId }, rootGetters }, { clearWorkflow }) {
         if (!state.activeWorkflow) {
             // nothing to do (no tabs open)
             return;
         }
-        let { projectId } = state.activeWorkflow;
-        let { activeSnapshotId: snapshotId } = state;
+        // clean up
         try {
-            // this is intentionally not awaiting the response. Unloading can happen in the background.
+            let { projectId } = state.activeWorkflow;
+            let { activeSnapshotId: snapshotId } = state;
+
             removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
         } catch (e) {
             consola.error(e);
         }
         commit('selection/clearSelection', null, { root: true });
-    },
-    async setActiveWorkflowSnapshot({ commit, getters }, { workflow, snapshotId, projectId }) {
-        commit('setActiveWorkflow', {
-            ...workflow,
-            projectId
-        });
-        commit('setActiveSnapshotId', snapshotId);
-        let workflowId = getters.activeWorkflowId;
-        await addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+        commit('setTooltip', null);
+        if (clearWorkflow) {
+            commit('setActiveWorkflow', null);
+        }
     },
 
     /**
@@ -220,6 +216,10 @@ export const actions = {
         let { activeWorkflow: { projectId } } = state;
         saveWorkflow({ projectId });
     },
+    closeWorkflow({ dispatch, state }) {
+        let { activeWorkflow: { projectId } } = state;
+        closeWorkflow({ projectId });
+    },
 
     /**
      * Move either the outline of the nodes or the nodes itself,
@@ -304,26 +304,39 @@ export const actions = {
 // The name getters can be misleading, its more like Vues computed propeties which may return functions.
 // Please consult: https://vuex.vuejs.org/guide/getters.html
 export const getters = {
+    isStreaming({ activeWorkflow }) {
+        return Boolean(activeWorkflow?.info.jobManager);
+    },
     isLinked({ activeWorkflow }) {
         return Boolean(activeWorkflow?.info.linked);
-    },
-    isWritable(state, getters) {
-        return !(getters.isLinked || getters.isInsideLinked);
     },
     isInsideLinked(state, getters) {
         return Boolean(getters.insideLinkedType);
     },
-    isStreaming({ activeWorkflow }) {
-        return Boolean(activeWorkflow?.info.jobManager);
-    },
     insideLinkedType({ activeWorkflow }) {
-        const parents = activeWorkflow?.parents || [];
-        return parents.find(({ linked }) => linked)?.containerType;
+        if (!activeWorkflow?.parents) {
+            return null;
+        }
+
+        return activeWorkflow.parents.find(({ linked }) => linked)?.containerType;
+    },
+    /* Workflow is writable, if it is not linked or inside a linked workflow */
+    isWritable(state, getters) {
+        return !(getters.isLinked || getters.isInsideLinked);
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
     */
     workflowBounds({ activeWorkflow }) {
+        if (!activeWorkflow) {
+            return {
+                left: 0,
+                top: 0,
+                right: 0,
+                bottom: 0
+            };
+        }
+
         const { nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPorts } = activeWorkflow;
         const {
             nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight, portSize,
@@ -418,6 +431,7 @@ export const getters = {
         };
     },
 
+    // NXT-962: make this getter obsolete
     activeWorkflowId({ activeWorkflow }) {
         if (!activeWorkflow) {
             return null;
