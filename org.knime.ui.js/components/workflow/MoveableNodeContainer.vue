@@ -39,9 +39,8 @@ export default {
     computed: {
         ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('selection', ['isNodeSelected']),
-        ...mapState('application', {
-            projectId: 'activeProjectId'
-        }),
+        ...mapGetters('canvas', ['fromAbsoluteCoordinates']),
+        ...mapState('application', { projectId: 'activeProjectId' }),
         ...mapState('workflow', {
             isDragging: 'isDragging',
             deltaMovePosition: 'deltaMovePosition',
@@ -49,24 +48,30 @@ export default {
             activeWorkflow: 'activeWorkflow'
         }),
         ...mapState('canvas', ['zoomFactor']),
+
         // Combined position of original position + the dragged amount
         combinedPosition() {
             return { x: this.position.x + this.deltaMovePosition.x, y: this.position.y + this.deltaMovePosition.y };
         },
+        
         // returns the amount the object should be translated. This is either the position of the objec, or the position + the dragged amount
         translationAmount() {
-            return this.isNodeSelected(this.id) &&
-                !this.moveNodeGhostThresholdExceeded
-                ? this.combinedPosition
-                : this.position;
+            return (
+                this.isNodeSelected(this.id) && !this.moveNodeGhostThresholdExceeded
+                    ? this.combinedPosition
+                    : this.position
+            );
         },
+        
         // If true the outline of the node is shown when dragged.
         // This is true if the node is selected and more then a predefined amount of nodes are selected
         // and the node has been moved already
         showGhostOutline() {
-            return this.isNodeSelected(this.id) &&
+            return (
+                this.isNodeSelected(this.id) &&
                 this.moveNodeGhostThresholdExceeded &&
-                (this.deltaMovePosition.x !== 0 || this.deltaMovePosition.y !== 0);
+                (this.deltaMovePosition.x !== 0 || this.deltaMovePosition.y !== 0)
+            );
         }
     },
     watch: {
@@ -91,17 +96,30 @@ export default {
             this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: false });
         },
 
+        positionOnCanvas({ x, y }) {
+            const kanvasElement = document.getElementById('kanvas');
+            const { offsetLeft, offsetTop, scrollLeft, scrollTop } = kanvasElement;
+
+            const [absoluteX, absoluteY] = this.fromAbsoluteCoordinates([
+                x - offsetLeft + scrollLeft,
+                y - offsetTop + scrollTop
+            ]);
+
+            return { x: absoluteX, y: absoluteY };
+        },
+
         /**
          * Handles the start of a move event
          * @param {Object} e - details of the mousedown event
          * @returns {void} nothing to return
          */
-        onMoveStart(e) {
+        onMoveStart({ detail }) {
             this.$store.commit('workflow/setDragging', { nodeId: this.id, isDragging: true });
-            if (!e.detail.event.shiftKey && !this.isNodeSelected(this.id)) {
+            if (!detail.event.shiftKey && !this.isNodeSelected(this.id)) {
                 this.deselectAllObjects();
             }
             this.selectNode(this.id);
+            
             this.startPos = { x: this.position.x, y: this.position.y };
         },
 
@@ -110,18 +128,17 @@ export default {
          * throttled to limit recalculation to every @moveNodesThrottle ms
          * @param {Object} detail - containing the total amount moved in x and y direction
          */
-        onMove: throttle(function ({ detail: { totalDeltaX, totalDeltaY } }) {
+        onMove: throttle(function ({ detail: { clientX, clientY } }) {
             /* eslint-disable no-invalid-this */
-            // Move node to the next rounded grid position
-            const { gridSize } = this.$shapes;
-            let deltaX = Math.round((this.startPos.x + totalDeltaX / this.zoomFactor) / gridSize.x) *
-                gridSize.x - this.position.x;
-            let deltaY = Math.round((this.startPos.y + totalDeltaY / this.zoomFactor) / gridSize.y) *
-                gridSize.y - this.position.y;
-            this.$store.dispatch(
-                'workflow/moveNodes',
-                { deltaX, deltaY }
-            );
+            const { nodeSize } = this.$shapes;
+            const updatedPos = this.positionOnCanvas({ x: clientX, y: clientY });
+            
+            // adjust the delta using `nodeSize` to make sure the reference is from the center of the node
+
+            const deltaX = updatedPos.x - this.startPos.x - nodeSize / 2;
+            const deltaY = updatedPos.y - this.startPos.y - nodeSize / 2;
+
+            this.$store.dispatch('workflow/moveNodes', { deltaX, deltaY });
             /* eslint-enable no-invalid-this */
         }, moveNodesThrottle),
 
@@ -142,7 +159,7 @@ export default {
 
 <template>
   <g
-    v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5, isProtected: !isWritable}"
+    v-move="{ onMove, onMoveStart, onMoveEnd, isProtected: !isWritable}"
     :transform="`translate(${ translationAmount.x}, ${ translationAmount.y })`"
     :data-node-id="id"
     :class="[{ dragging: isDragging && isNodeSelected(id) }]"

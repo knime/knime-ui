@@ -32,26 +32,27 @@ const createMousedownHandler = (state, el) => (e) => {
     }
 
     el.onpointermove = state.mousemove;
-    let { screenX, screenY } = e;
+    let { clientX, clientY } = e;
     delete state.prev;
-    state.start = [screenX, screenY];
+    state.start = [clientX, clientY];
 };
 
 const createMouseupHandler = (state, el) => (e) => {
     el.releasePointerCapture(e.pointerId);
     el.onpointermove = null;
     delete state.pointerId;
-    const { screenX, screenY } = e;
+
+    const { clientX, clientY } = e;
     if (state.dragging && state.handlers.onMoveEnd) {
         let [startX, startY] = state.start;
         let event = new CustomEvent('moveend', {
             detail: {
                 startX,
                 startY,
-                totalDeltaX: screenX - startX,
-                totalDeltaY: screenY - startY,
-                endX: screenX,
-                endY: screenY,
+                totalDeltaX: clientX - startX,
+                totalDeltaY: clientY - startY,
+                endX: clientX,
+                endY: clientY,
                 event: e
             }
         });
@@ -65,30 +66,49 @@ const createMousemoveHandler = (state) => (e) => {
     if (!state.start) {
         return;
     }
-    let { screenX, screenY } = e;
-    let [x, y] = [screenX - state.start[0], screenY - state.start[1]];
+
+    const { clientX, clientY } = e;
+    const [x, y] = [clientX - state.start[0], clientY - state.start[1]];
     if (!state.dragging && Math.max(Math.abs(x), Math.abs(y)) < state.threshold) {
         return;
     }
+
     e.stopPropagation();
     e.preventDefault();
+    
     if (!state.dragging && state.handlers.onMoveStart) {
-        let event = new CustomEvent('movestart',
-            { detail: { startX: state.start[0],
+        let event = new CustomEvent('movestart', {
+            detail: {
+                startX: state.start[0],
                 startY: state.start[1],
-                event: e } });
+                event: e,
+                clientX: e.clientX,
+                clientY: e.clientY
+            }
+        });
         state.handlers.onMoveStart(event);
     }
     state.dragging = true;
+    
     let deltaX, deltaY;
     if (state.prev) {
         [deltaX, deltaY] = [x - state.prev[0], y - state.prev[1]];
     } else {
         [deltaX, deltaY] = [x, y];
     }
+    
     state.prev = [x, y];
     if (state.handlers.onMove) {
-        let event = new CustomEvent('moving', { detail: { totalDeltaX: x, totalDeltaY: y, deltaX, deltaY } });
+        const event = new CustomEvent('moving', {
+            detail: {
+                totalDeltaX: x,
+                totalDeltaY: y,
+                deltaX,
+                deltaY,
+                clientX: e.clientX,
+                clientY: e.clientY
+            }
+        });
         state.handlers.onMove(event);
     }
 };
@@ -107,7 +127,7 @@ const inserted = (el, { value }) => {
         dragging: false
     };
     stateMap.set(el, state);
-
+    
     state.mousedown = createMousedownHandler(state, el);
     el.onpointerdown = state.mousedown;
 
@@ -122,10 +142,11 @@ const unbind = (el, { value }) => {
     if (value.isProtected) {
         return;
     }
+    
     el.onpointerdown = null;
     el.onpointermove = null;
     el.onpointerup = null;
-
+    
     stateMap.delete(el);
 };
 
