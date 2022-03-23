@@ -132,15 +132,20 @@ export default {
                 return;
             }
             
-            const { nodeSize } = this.$shapes;
+            const { nodeSize, gridSize } = this.$shapes;
             const updatedPos = this.positionOnCanvas({ x: clientX, y: clientY });
-            
-            // adjust the delta using `nodeSize` to make sure the reference is from the center of the node
 
+            // adjust the delta using `nodeSize` to make sure the reference is from the center of the node
             const deltaX = updatedPos.x - this.startPos.x - nodeSize / 2;
             const deltaY = updatedPos.y - this.startPos.y - nodeSize / 2;
 
-            this.$store.dispatch('workflow/moveNodes', { deltaX, deltaY });
+            const deltaXAdjustedForGridSnapping = Math.round(deltaX / gridSize.x) * gridSize.x;
+            const deltaYAdjustedForGridSnapping = Math.round(deltaY / gridSize.y) * gridSize.y;
+            
+            this.$store.dispatch('workflow/moveNodes', {
+                deltaX: deltaXAdjustedForGridSnapping,
+                deltaY: deltaYAdjustedForGridSnapping
+            });
             /* eslint-enable no-invalid-this */
         }, moveNodesThrottle),
 

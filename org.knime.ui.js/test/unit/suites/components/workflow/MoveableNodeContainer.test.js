@@ -185,9 +185,14 @@ describe('MoveableNodeContainer', () => {
             });
             wrapper.vm.onMove(moveMovingEvent);
 
+            const initialDelta = {
+                x: positionAfterMove.x - initialNodePosition.x - $shapes.nodeSize / 2,
+                y: positionAfterMove.y - initialNodePosition.y - $shapes.nodeSize / 2
+            };
+
             const expectedDelta = {
-                deltaX: positionAfterMove.x - initialNodePosition.x - $shapes.nodeSize / 2,
-                deltaY: positionAfterMove.y - initialNodePosition.y - $shapes.nodeSize / 2
+                deltaX: Math.round(initialDelta.x / $shapes.gridSize.x) * $shapes.gridSize.x,
+                deltaY: Math.round(initialDelta.y / $shapes.gridSize.y) * $shapes.gridSize.y
             };
 
             expect(storeConfig.workflow.actions.moveNodes).toHaveBeenCalledWith(
