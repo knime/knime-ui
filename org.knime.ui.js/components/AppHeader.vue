@@ -3,7 +3,7 @@ import { mapState, mapActions } from 'vuex';
 import KnimeIcon from '~/webapps-common/ui/assets/img/KNIME_Triangle.svg?inline';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/perspective-switch.svg?inline';
-import CloseIcon from '~/assets/cancel-execution.svg?inline';
+import CloseIcon from '~/assets/cancel.svg?inline';
 
 /**
  * Header Bar containing Logo, workflow title and Switch to Java UI Button
