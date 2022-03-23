@@ -170,7 +170,6 @@ export default {
         return {
             hover: false,
             nameEditorOpen: false,
-            nameEditorModel: this.name,
             nodeSelectionWidth: null,
             nodeTitleHeight: 20,
             showSelectionPreview: null
@@ -303,7 +302,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('workflow', ['openDialog']),
+        ...mapActions('workflow', ['openDialog', 'updateComponentOrMetanodeName']),
         ...mapActions('selection', ['selectNode', 'deselectAllObjects', 'deselectNode']),
         portShift,
         onLeaveHoverArea(e) {
@@ -316,6 +315,10 @@ export default {
 
             // disable hover state if the mouse leaves the hover area of the node
             this.hover = false;
+        },
+
+        updateName(name) {
+            this.updateComponentOrMetanodeName({ nodeId: this.id, name });
         },
 
         // default flow variable ports (Mickey Mouse ears) are only shown if connected, selected, or on hover
@@ -566,14 +569,14 @@ export default {
       />
       <!-- Node name inline editor -->
       <NodeName
-        v-model="nameEditorModel"
+        :value="name"
         editor
         :editable="false"
         :transform="`translate(${position.x}, ${position.y})`"
         :max-width="$shapes.maxNodeNameWidth"
         @width="nodeSelectionWidth = $event + ($shapes.nodeNameHorizontalMargin * 2)"
         @height="nodeTitleHeight = $event"
-        @save="nameEditorOpen = false;"
+        @save="updateName($event); nameEditorOpen = false;"
         @close="nameEditorOpen = false;"
       />
     </portal>

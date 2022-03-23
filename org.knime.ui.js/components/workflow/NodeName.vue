@@ -202,13 +202,17 @@ export default {
     margin: 0;
     white-space: pre-wrap;
     text-align: inherit;
+  }
 
-    /* multiline overflow ellipsis*/
+  &:not(.editor) .text {
+    /* multiline overflow ellipsis -
+       also supported in Firefox (yes with -webkit prefix) https://caniuse.com/css-line-clamp */
     text-overflow: ellipsis;
     max-height: 100%;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: var(--node-name-max-lines-shape);
+    overflow: hidden;
   }
 
   & .textarea {

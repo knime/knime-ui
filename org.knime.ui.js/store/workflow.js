@@ -1,6 +1,6 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
     moveObjects, openDialog, openView, undo, redo, removeEventListener, connectNodes, addNode,
-    saveWorkflow } from '~api';
+    saveWorkflow, updateComponentOrMetanodeName } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -235,6 +235,17 @@ export const actions = {
         let selectedNodes = rootGetters['selection/selectedNodes'];
         let thresholdExceeded = selectedNodes.length > moveNodeGhostThreshold;
         commit('shiftPosition', { deltaX, deltaY, thresholdExceeded });
+    },
+
+    updateComponentOrMetanodeName({ state, getters }, { nodeId, name }) {
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflowId } = getters;
+        updateComponentOrMetanodeName({
+            nodeId,
+            name,
+            projectId,
+            activeWorkflowId
+        });
     },
 
     /**
