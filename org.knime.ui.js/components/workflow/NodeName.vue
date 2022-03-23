@@ -1,6 +1,8 @@
 <script>
 import { mapState } from 'vuex';
 
+const IGNORE_SIZE_CHANGE_SMALLER_THEN = 1; // pixel
+
 /**
  * A rectangular box containing text. It uses <foreignObject> and automatically updates the size based on the contents.
  * It offers limits to the size and always centers around the node.
@@ -121,9 +123,16 @@ export default {
                 let height = Math.ceil(rect.height / this.zoomFactor);
 
                 // 3. set container size to content size
-                this.width = width;
-                this.height = height;
+                // avoid width jitter
+                if (Math.abs(this.width - width) > IGNORE_SIZE_CHANGE_SMALLER_THEN) {
+                    this.width = width;
+                }
+                // avoid height jitter
+                if (Math.abs(this.height - height) > IGNORE_SIZE_CHANGE_SMALLER_THEN) {
+                    this.height = height;
+                }
 
+                // update related stuff and emit size
                 // center container
                 this.x = (this.$shapes.nodeSize - this.width) / 2;
                 // report width to parent if bigger then default
@@ -154,7 +163,11 @@ export default {
       @mouseleave="$emit('mouseleave', $event)"
       @mouseenter="$emit('mouseenter', $event)"
     >
-      <span class="text" :title="editor ? '' : (editable ? 'Double click to edit: ' : '') + value"><textarea
+      <span
+        :style="{'max-width': `${maxWidth}px`}"
+        :title="editor ? '' : (editable ? 'Double click to edit: ' : '') + value"
+        class="text"
+      ><textarea
         v-if="editor"
         ref="textarea"
         v-model="editorText"
@@ -207,8 +220,8 @@ export default {
   &:not(.editor) .text {
     /* multiline overflow ellipsis -
        also supported in Firefox (yes with -webkit prefix) https://caniuse.com/css-line-clamp */
+    word-wrap: break-word;
     text-overflow: ellipsis;
-    max-height: 100%;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: var(--node-name-max-lines-shape);

@@ -15,7 +15,7 @@ export const nodeNameMargin = 7;
 export const nodeNameLineHeight = 14;
 export const nodeNameFontSize = 12;
 export const nodeNamePadding = 3;
-export const nodeNameHorizontalMargin = 3;
+export const nodeNameHorizontalMargin = 4;
 
 export const nodeNameMaxLines = 2;
 
