@@ -35,7 +35,7 @@ export default {
     data: () => ({
         // Start position of the dragging
         startPos: { x: 0, y: 0 },
-        nodeSelectionWidth: null,
+        nodeSelectionWidth: 0,
         nodeSelectionExtraHeight: 20
     }),
     computed: {

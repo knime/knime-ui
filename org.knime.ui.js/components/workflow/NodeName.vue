@@ -135,10 +135,7 @@ export default {
                 // update related stuff and emit size
                 // center container
                 this.x = (this.$shapes.nodeSize - this.width) / 2;
-                // report width to parent if bigger then default
-                if (this.width > this.$shapes.nodeSelectionDefaultWidth) {
-                    this.$emit('width', this.width);
-                }
+                this.$emit('width', this.width);
                 this.$emit('height', this.height);
             });
         }

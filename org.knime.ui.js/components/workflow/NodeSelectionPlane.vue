@@ -22,7 +22,7 @@ export default {
         },
         width: {
             type: Number,
-            default: null
+            default: 0
         },
         /**
          * Node variation.
@@ -44,7 +44,9 @@ export default {
             const height = (top + nodeSize + bottom) +
                 (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0) +
                 this.extraHeight;
-            const width = this.width || (left + right + nodeSize);
+
+            const defaultWidth = left + right + nodeSize;
+            const width = this.width > defaultWidth ? this.width : defaultWidth;
 
             return {
                 y: -(top + this.extraHeight),

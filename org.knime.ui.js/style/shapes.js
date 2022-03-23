@@ -20,11 +20,13 @@ export const nodeNameHorizontalMargin = 4;
 export const nodeNameMaxLines = 2;
 
 export const nodeSelectionPaddingTop = 37 - (nodeNameLineHeight + nodeNamePadding * 2);
-export const nodeSelectionPadding = [nodeSelectionPaddingTop, 34, 6, 34];
+export const nodeSelectionPaddingLeft = 34;
+export const nodeSelectionPaddingRight = 34;
+export const nodeSelectionPaddingBottom = 6;
+export const nodeSelectionPadding = [nodeSelectionPaddingTop, nodeSelectionPaddingLeft,
+    nodeSelectionPaddingBottom, nodeSelectionPaddingRight];
 
-export const nodeSelectionDefaultWidth = nodeSelectionPadding[1] + nodeSelectionPadding[3] + nodeSize;
-
-export const maxNodeNameWidth = nodeSelectionDefaultWidth * 1.5;
+export const maxNodeNameWidth = (nodeSelectionPaddingLeft + nodeSize + nodeSelectionPaddingRight) * 1.5; // 150px
 
 // Margins including 3 NodeActionButtons. If more that 3 Buttons are present,
 // the hover area is widened by Node.vue
