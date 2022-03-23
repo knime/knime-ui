@@ -1,13 +1,12 @@
 <script>
-import { mapState } from 'vuex';
-
-const IGNORE_SIZE_CHANGE_SMALLER_THEN = 1; // pixel
+import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
 
 /**
  * A rectangular box containing text. It uses <foreignObject> and automatically updates the size based on the contents.
  * It offers limits to the size and always centers around the node.
  */
 export default {
+    components: { AutoSizeForeignObject },
     props: {
         editable: {
             type: Boolean,
@@ -17,20 +16,9 @@ export default {
             type: Boolean,
             default: false
         },
-        maxWidth: {
-            type: Number,
-            default: 1000
-        },
         value: {
             type: String,
             default: ''
-        },
-        /**
-         * Optional y-offset relative to the default position.
-         */
-        yShift: {
-            type: Number,
-            default: 0
         },
         pattern: {
             default: null,
@@ -39,16 +27,12 @@ export default {
     },
     data() {
         return {
-            editorText: this.value,
-            width: this.maxWidth,
-            height: 0,
-            x: 0
+            editorText: this.value
         };
     },
     computed: {
-        ...mapState('canvas', ['zoomFactor']),
-        y() {
-            return -(this.height + this.$shapes.nodeNameMargin) + this.yShift;
+        maxWidth() {
+            return this.$shapes.maxNodeNameWidth;
         }
     },
     watch: {
@@ -105,55 +89,27 @@ export default {
             textarea.style.height = 'auto';
             textarea.style.height = `${textarea.scrollHeight}px`;
         },
-        // foreignObject requires `width` and `height` attributes, or the content is cut off.
-        // So we need to 1. render, 2. measure, 3. update
         adjustDimensions() {
-            this.resizeTextarea();
-            // 1. render with max width
-            this.width = this.maxWidth;
-            this.$nextTick(() => { // wait for re-render
-                // 2. measure content's actual size
-                let rect = this.$refs.wrapper?.getBoundingClientRect();
-                if (!rect) {
-                    consola.error('Tried to adjust dimensions of NodeTitle, but element is gone or is not a DOM Node');
-                    return;
-                }
-                // account for zoom
-                let width = Math.ceil(rect.width / this.zoomFactor);
-                let height = Math.ceil(rect.height / this.zoomFactor);
-
-                // 3. set container size to content size
-                // avoid width jitter
-                if (Math.abs(this.width - width) > IGNORE_SIZE_CHANGE_SMALLER_THEN) {
-                    this.width = width;
-                }
-                // avoid height jitter
-                if (Math.abs(this.height - height) > IGNORE_SIZE_CHANGE_SMALLER_THEN) {
-                    this.height = height;
-                }
-
-                // update related stuff and emit size
-                // center container
-                this.x = (this.$shapes.nodeSize - this.width) / 2;
-                this.$emit('width', this.width);
-                this.$emit('height', this.height);
-            });
+            this.$refs.container?.adjustDimensions();
         }
     }
 };
 </script>
 
 <template>
-  <foreignObject
+  <AutoSizeForeignObject
+    ref="container"
     :class="['container', {editable, editor}]"
-    :width="width"
-    :height="height"
-    :x="x"
-    :y="y"
+    :max-width="maxWidth"
+    :y-shift="-$shapes.nodeNameMargin"
+    :parent-width="$shapes.nodeSize"
+    :adjust-dimension-before-hook="resizeTextarea"
+    shift-by-height
+    @width="$emit('width', $event)"
+    @height="$emit('height', $event)"
   >
     <div
-      ref="wrapper"
-      class="wrapper"
+      class="nodeName"
       @click.prevent.stop="$emit('click', $event)"
       @contextmenu.prevent="$emit('contextmenu', $event)"
       @dblclick.left.prevent.stop="editable ? $emit('request-edit') : null"
@@ -177,7 +133,7 @@ export default {
         @keydown.esc="onEsc"
       /><template v-else>{{ value }}</template></span>
     </div>
-  </foreignObject>
+  </AutoSizeForeignObject>
 </template>
 
 <style lang="postcss" scoped>
@@ -199,7 +155,7 @@ export default {
     }
 
     /* this fixes the position of the textarea */
-    & .wrapper {
+    & >>> .wrapper {
       display: block;
     }
   }
@@ -246,8 +202,7 @@ export default {
     }
   }
 
-  & .wrapper {
-    display: inline-block;
+  & .nodeName {
     text-align: center;
 
     padding: calc(var(--node-name-padding-shape) * 1px);

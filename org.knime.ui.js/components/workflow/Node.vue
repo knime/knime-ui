@@ -576,7 +576,6 @@ export default {
         editor
         :editable="false"
         :transform="`translate(${position.x}, ${position.y})`"
-        :max-width="$shapes.maxNodeNameWidth"
         @width="nameWidth = $event"
         @height="nameHeight = $event"
         @save="updateName($event); nameEditorOpen = false;"
@@ -587,7 +586,6 @@ export default {
       v-else
       :value="name"
       :editable="nameIsEditable"
-      :max-width="$shapes.maxNodeNameWidth"
       @click="onLeftMouseClick"
       @contextmenu="onContextMenu"
       @width="nameWidth = $event"
