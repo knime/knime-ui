@@ -15,8 +15,8 @@ export default {
     computed: {
         actions() {
             return [
-                ['save', SaveIcon, this.saveChange],
-                ['cancel', CancelIcon, this.closeEditor]
+                ['save', SaveIcon, this.saveChange, true],
+                ['cancel', CancelIcon, this.closeEditor, false]
             ];
         },
         /**
@@ -44,10 +44,11 @@ export default {
 <template>
   <g>
     <ActionButton
-      v-for="([action, icon, method], index) in actions"
+      v-for="([action, icon, method, primary], index) in actions"
       :key="action"
       :class="`action-${action}`"
       :x="positions[index]"
+      :primary="primary"
       @click="method"
     >
       <Component :is="icon" />
