@@ -35,7 +35,7 @@ export default async (method, ...args) => {
         throw new Error(`Error calling JSON-RPC api "${[method, JSON.stringify(args)].join('", "')}": ${e.message}`);
     }
 
-    return parseResponse({ response, method, args });
+    return response.result;
 };
 
 /**

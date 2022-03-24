@@ -16,7 +16,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
-import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.contexts.Active;
@@ -24,17 +23,17 @@ import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.knime.core.node.NodeLogger;
+import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
 import org.knime.gateway.impl.webui.AppStateProvider;
+import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.ui.java.UIPlugin;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.CreateWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
-import org.knime.ui.java.browser.function.JsonRpcBrowserFunction;
 import org.knime.ui.java.browser.function.OpenLegacyFlowVariableDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeViewBrowserFunction;
@@ -44,13 +43,14 @@ import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
+import com.equo.comm.api.CommServiceProvider;
 import com.equo.middleware.api.IMiddlewareService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Simple view containing a browser initialized with the knime-ui webapp (or a
- * debug message if in debug mode) and the {@link JsonRpcBrowserFunction}.
+ * debug message if in debug mode) and the communication backend injected.
  *
  * <br/><br/>
  * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
@@ -76,6 +76,10 @@ public class KnimeBrowserView {
     private static final String BASE_PATH = "dist/inlined";
 
     private Browser m_browser;
+
+    private static final String JSON_RPC_ACTION_ID = "org.knime.ui.java.jsonrpc";
+
+    private static final String JSON_RPC_NOTIFICATION_ACTION_ID = "org.knime.ui.java.jsonrpcNotification";
 
 	@PostConstruct
 	public void createPartControl(final Composite parent) {
@@ -145,7 +149,6 @@ public class KnimeBrowserView {
      * @param appStateProvider required to initialize the {@link OpenWorkflowBrowserFunction}
      */
     public void initBrowserFunctions(final AppStateProvider appStateProvider) {
-        new JsonRpcBrowserFunction(m_browser);
         new SwitchToJavaUIBrowserFunction(m_browser);
         new OpenNodeViewBrowserFunction(m_browser);
         new OpenNodeDialogBrowserFunction(m_browser);
@@ -178,6 +181,40 @@ public class KnimeBrowserView {
                 return new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
             }
         });
+    }
+
+    private static BiConsumer<String, Object> initializeJavaBrowserCommunication(final String jsonRpcActionId,
+        final String jsonRpcNotificationActionId) {
+        var commService = CommServiceProvider.getCommService().orElse(null);
+        if (commService == null) {
+            throw new IllegalStateException("No CEF communication service available!");
+        }
+        JsonRpcRequestHandler jsonRpcHandler = new DefaultJsonRpcRequestHandler();
+
+        commService.on(jsonRpcActionId, message -> { // NOSONAR
+            return new String(jsonRpcHandler.handle(message.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
+        });
+
+        final var mapper = ObjectMapperUtil.getInstance().getObjectMapper();
+        return (name, event) -> {
+            var message = createJsonRpcNotification(mapper, name, event);
+            commService.send(jsonRpcNotificationActionId, message);
+        };
+    }
+
+    private static String createJsonRpcNotification(final ObjectMapper mapper, final String name, final Object event) {
+        // wrap event into a jsonrpc notification (method == event-name) and serialize
+        var jsonrpc = mapper.createObjectNode();
+        var params = jsonrpc.arrayNode();
+        params.addPOJO(event);
+        try {
+            var resultString =
+                mapper.writeValueAsString(jsonrpc.put("jsonrpc", "2.0").put("method", name).set("params", params));
+            var escapedResultString = mapper.writeValueAsString(resultString);
+            return escapedResultString.substring(1, escapedResultString.length() - 1);
+        } catch (JsonProcessingException ex) {
+            throw new IllegalStateException("Problem creating a json-rpc notification in order to send an event", ex);
+        }
     }
 
     private static URL stringToURL(final String url) {
@@ -226,26 +263,8 @@ public class KnimeBrowserView {
 	 * @return a new event consumer instance forwarding events to java-script
 	 */
     public BiConsumer<String, Object> createEventConsumer() {
-        final var mapper = ObjectMapperUtil.getInstance().getObjectMapper();
-        return (name, event) -> createJsonRpcNotificationAndSendToBrowser(m_browser, mapper, name, event);
+        return initializeJavaBrowserCommunication(JSON_RPC_ACTION_ID, JSON_RPC_NOTIFICATION_ACTION_ID);
     }
-
-	private static void createJsonRpcNotificationAndSendToBrowser(final Browser browser, final ObjectMapper mapper,
-			final String name, final Object event) {
-		// wrap event into a jsonrpc notification (method == event-name) and serialize
-		var jsonrpc = mapper.createObjectNode();
-		var params = jsonrpc.arrayNode();
-		params.addPOJO(event);
-		try {
-			var message = mapper
-					.writeValueAsString(jsonrpc.put("jsonrpc", "2.0").put("method", name).set("params", params));
-			String jsCode = "jsonrpcNotification(\"" + StringEscapeUtils.escapeJava(message) + "\");";
-			Display.getDefault().syncExec(() -> browser.execute(jsCode));
-		} catch (JsonProcessingException ex) {
-			NodeLogger.getLogger(KnimeBrowserView.class)
-					.error("Problem creating a json-rpc notification in order to send an event", ex);
-		}
-	}
 
 	@Focus
 	public void setFocus() {
