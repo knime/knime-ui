@@ -25,7 +25,7 @@ jest.mock('lodash', () => ({
 }));
 
 describe('Kanvas', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store, storeConfig;
+    let propsData, mocks, doShallowMount, wrapper, $store, storeConfig, isWorkflowEmpty, isDraggingNode;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -56,6 +56,8 @@ describe('Kanvas', () => {
 
         wrapper = null;
         propsData = {};
+        isWorkflowEmpty = true;
+        isDraggingNode = false;
 
         storeConfig = {
             canvas: {
@@ -76,7 +78,15 @@ describe('Kanvas', () => {
                             right: 40,
                             bottom: 40
                         };
+                    },
+                    isWorkflowEmpty() {
+                        return isWorkflowEmpty;
                     }
+                }
+            },
+            nodeRepository: {
+                state: {
+                    isDraggingNode
                 }
             }
         };

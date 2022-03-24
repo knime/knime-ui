@@ -7,7 +7,7 @@ import { KnimeMIME } from '~/mixins/dropNode';
 
 describe('NodeTemplate', () => {
     let propsData, doMount, wrapper, testEvent, isWritable, mocks, openDescriptionPanel, closeDescriptionPanel,
-        setSelectedNode, $store, storeConfig;
+        setSelectedNode, $store, storeConfig, setDraggingNode;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -20,6 +20,7 @@ describe('NodeTemplate', () => {
         openDescriptionPanel = jest.fn();
         closeDescriptionPanel = jest.fn();
         setSelectedNode = jest.fn();
+        setDraggingNode = jest.fn();
 
         let getBoundingClientRectMock = jest.fn().mockReturnValue({
             width: 70,
@@ -69,7 +70,8 @@ describe('NodeTemplate', () => {
             },
             nodeRepository: {
                 mutations: {
-                    setSelectedNode
+                    setSelectedNode,
+                    setDraggingNode
                 },
                 state: {
                     selectedNode: null
@@ -213,6 +215,20 @@ describe('NodeTemplate', () => {
             wrapper.trigger('dragstart', testEvent);
 
             expect(closeDescriptionPanel).toHaveBeenCalled();
+        });
+
+        it('sets isDraggingNode as true when dragging starts', () => {
+            doMount();
+            wrapper.trigger('dragstart', testEvent);
+
+            expect(setDraggingNode).toHaveBeenCalledWith(expect.anything(), true);
+        });
+
+        it('sets isDraggingNode as false when dragging ends', () => {
+            doMount();
+            wrapper.trigger('dragend');
+
+            expect(setDraggingNode).toHaveBeenCalledWith(expect.anything(), false);
         });
     });
 });

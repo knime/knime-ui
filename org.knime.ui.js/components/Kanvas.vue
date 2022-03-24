@@ -15,7 +15,10 @@ export default {
     },
     computed: {
         ...mapGetters('canvas', ['canvasSize', 'viewBox']),
+        ...mapGetters('workflow', ['isWorkflowEmpty']),
         ...mapState('canvas', ['suggestPanning']),
+        ...mapState('nodeRepository', ['isDraggingNode']),
+
         viewBoxString() {
             let { viewBox } = this;
             return `${viewBox.left} ${viewBox.top} ${viewBox.width} ${viewBox.height}`;
@@ -110,6 +113,8 @@ export default {
   <div
     tabindex="0"
     :class="['scroll-container', { 'panning': panning || suggestPanning }]"
+    :style="{ backgroundColor:
+      (isDraggingNode && isWorkflowEmpty) ? 'var(--selection-active-background-color)' : null }"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
     @pointerdown.middle="beginPan"
