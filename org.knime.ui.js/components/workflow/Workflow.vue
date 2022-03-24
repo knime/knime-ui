@@ -7,6 +7,7 @@ import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation';
 import MetaNodePortBars from '~/components/workflow/MetaNodePortBars';
 import KanvasFilters from '~/components/workflow/KanvasFilters';
 import ConnectorLabel from '~/components/workflow/ConnectorLabel';
+import WorkflowEmpty from '~/components/workflow/WorkflowEmpty';
 import { dropNode } from '~/mixins';
 
 export default {
@@ -17,7 +18,8 @@ export default {
         MetaNodePortBars,
         KanvasFilters,
         ConnectorLabel,
-        MoveableNodeContainer
+        MoveableNodeContainer,
+        WorkflowEmpty
     },
     mixins: [dropNode],
     data() {
@@ -33,6 +35,7 @@ export default {
             workflow: 'activeWorkflow'
         }),
         ...mapGetters('selection', ['isNodeSelected']),
+        ...mapGetters('workflow', ['isWorkflowEmpty']),
         // Sort nodes so that selected nodes are rendered in front
         // TODO: NXT-904 Is there a more performant way to do this? Its one of the main reasons selections are slow.
         sortedNodes() {
@@ -62,6 +65,8 @@ export default {
   <g>
     <!-- Includes shadows for Nodes -->
     <KanvasFilters />
+
+    <WorkflowEmpty v-if="isWorkflowEmpty" />
 
     <!-- Workflow Annotation Layer. Background -->
     <WorkflowAnnotation

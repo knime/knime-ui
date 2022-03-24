@@ -65,6 +65,10 @@ export const actions = {
                 projectId
             });
 
+            if (getters.isWorkflowEmpty) {
+                dispatch('panel/setNodeRepositoryActive', null, { root: true });
+            }
+
             let snapshotId = project.snapshotId;
             commit('setActiveSnapshotId', snapshotId);
 
@@ -74,7 +78,8 @@ export const actions = {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    unloadActiveWorkflow({ state, commit, getters: { activeWorkflowId: workflowId }, rootGetters }, { clearWorkflow }) {
+    unloadActiveWorkflow({ state, commit, dispatch, getters: { activeWorkflowId: workflowId }, rootGetters },
+        { clearWorkflow }) {
         if (!state.activeWorkflow) {
             // nothing to do (no tabs open)
             return;
@@ -88,8 +93,11 @@ export const actions = {
         } catch (e) {
             consola.error(e);
         }
+
+        dispatch('panel/close', null, { root: true });
         commit('selection/clearSelection', null, { root: true });
         commit('setTooltip', null);
+        
         if (clearWorkflow) {
             commit('setActiveWorkflow', null);
         }
@@ -314,6 +322,10 @@ export const getters = {
     /* Workflow is writable, if it is not linked or inside a linked workflow */
     isWritable(state, getters) {
         return !(getters.isLinked || getters.isInsideLinked);
+    },
+    /* Workflow is empty if it doesn't contain nodes */
+    isWorkflowEmpty({ activeWorkflow }) {
+        return Boolean(!Object.keys(activeWorkflow?.nodes).length);
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
