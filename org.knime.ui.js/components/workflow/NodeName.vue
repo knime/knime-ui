@@ -12,23 +12,21 @@ export default {
             type: Boolean,
             default: false
         },
-        editor: {
-            type: Boolean,
-            default: false
-        },
         value: {
             type: String,
             default: ''
         },
-        pattern: {
-            default: null,
-            type: RegExp
+        showOverflow: {
+            type: Boolean,
+            value: false
+        },
+        /**
+         * Optional hook that is called before the dimension is adjusted.
+         */
+        adjustDimensionBeforeHook: {
+            type: Function,
+            default: () => null
         }
-    },
-    data() {
-        return {
-            editorText: this.value
-        };
     },
     computed: {
         maxWidth() {
@@ -37,58 +35,13 @@ export default {
     },
     watch: {
         value(newValue) {
-            this.editorText = newValue;
             this.adjustDimensions();
         }
     },
     mounted() {
         this.adjustDimensions();
-        this.$nextTick(() => {
-            if (this.editor) {
-                this.$refs.textarea.focus();
-                this.$refs.textarea.select();
-            }
-        });
     },
     methods: {
-        onInput(event) {
-            let value = event.target.value;
-            value = value.replace(/(\r\n|\n|\r)/gm, ''); // remove all new lines
-
-            // remove invalid characters here as well, they could have been sneaked in via paste or drop
-            if (this.pattern && this.pattern.test(value)) {
-                this.$emit('invalidCharacter');
-                value = value.replace(this.pattern, '');
-            }
-
-            this.$refs.textarea.value = value;
-            this.adjustDimensions();
-            this.$emit('input', value);
-        },
-        onKeyDown(event) {
-            // prevent inserting invalid characters
-            if (this.pattern && this.pattern.source.includes(event.key.toLowerCase())) {
-                this.$emit('invalidCharacter');
-                event.preventDefault();
-            }
-        },
-        onEnter(event) {
-            event.preventDefault();
-            this.$emit('save', this.editorText);
-        },
-        onEsc(event) {
-            event.preventDefault();
-            this.$emit('close');
-        },
-        resizeTextarea() {
-            consola.trace('InlineTextarea: resizing');
-            let textarea = this.$refs.textarea;
-            if (!textarea) {
-                return;
-            }
-            textarea.style.height = 'auto';
-            textarea.style.height = `${textarea.scrollHeight}px`;
-        },
         adjustDimensions() {
             this.$refs.container?.adjustDimensions();
         }
@@ -99,17 +52,17 @@ export default {
 <template>
   <AutoSizeForeignObject
     ref="container"
-    :class="['container', {editable, editor}]"
+    :class="['container', {editable, 'text-ellipsis': !showOverflow }]"
     :max-width="maxWidth"
     :y-shift="-$shapes.nodeNameMargin"
     :parent-width="$shapes.nodeSize"
-    :adjust-dimension-before-hook="resizeTextarea"
+    :adjust-dimension-before-hook="adjustDimensionBeforeHook"
     shift-by-height
     @width="$emit('width', $event)"
     @height="$emit('height', $event)"
   >
     <div
-      class="nodeName"
+      class="node-name"
       @click.prevent.stop="$emit('click', $event)"
       @contextmenu.prevent="$emit('contextmenu', $event)"
       @dblclick.left.prevent.stop="editable ? $emit('request-edit') : null"
@@ -118,20 +71,9 @@ export default {
     >
       <span
         :style="{'max-width': `${maxWidth}px`}"
-        :title="editor ? '' : (editable ? 'Double click to edit: ' : '') + value"
+        :title="showOverflow ? '' : (editable ? 'Double click to edit: ' : '') + value"
         class="text"
-      ><textarea
-        v-if="editor"
-        ref="textarea"
-        v-model="editorText"
-        rows="1"
-        class="textarea"
-        @pointerdown.stop
-        @input="onInput"
-        @keydown="onKeyDown"
-        @keydown.enter="onEnter"
-        @keydown.esc="onEsc"
-      /><template v-else>{{ value }}</template></span>
+      ><slot>{{ value }}</slot></span>
     </div>
   </AutoSizeForeignObject>
 </template>
@@ -146,20 +88,6 @@ export default {
     cursor: pointer;
   }
 
-  &.editor {
-    outline: 1px solid var(--knime-silver-sand);
-    background: var(--knime-white);
-
-    &:focus-within {
-      outline: 1px solid var(--knime-masala);
-    }
-
-    /* this fixes the position of the textarea */
-    & >>> .wrapper {
-      display: block;
-    }
-  }
-
   & .text {
     font-family: "Roboto Condensed", sans-serif;
     font-style: normal;
@@ -170,7 +98,7 @@ export default {
     text-align: inherit;
   }
 
-  &:not(.editor) .text {
+  &.text-ellipsis .text {
     /* multiline overflow ellipsis -
        also supported in Firefox (yes with -webkit prefix) https://caniuse.com/css-line-clamp */
     word-wrap: break-word;
@@ -202,7 +130,7 @@ export default {
     }
   }
 
-  & .nodeName {
+  & .node-name {
     text-align: center;
 
     padding: calc(var(--node-name-padding-shape) * 1px);

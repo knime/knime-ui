@@ -13,6 +13,7 @@ import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
 import NodeName from '~/components/workflow/NodeName';
 import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar';
 import { snapConnector } from '~/mixins';
+import NodeNameEditor from './NodeNameEditor';
 
 /**
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
@@ -25,6 +26,7 @@ import { snapConnector } from '~/mixins';
  * */
 export default {
     components: {
+        NodeNameEditor,
         NodeActionBar,
         DraggablePortWithTooltip,
         NodeAnnotation,
@@ -172,6 +174,7 @@ export default {
             nameEditorOpen: false,
             nameWidth: 0,
             nameHeight: 20,
+            currentName: this.name,
             showSelectionPreview: null
         };
     },
@@ -297,6 +300,9 @@ export default {
         }
     },
     watch: {
+        name(newValue) {
+            this.currentName = newValue;
+        },
         nameHeight(newValue) {
             this.$parent.$emit('node-selection-plane-extra-height-changed', newValue);
         },
@@ -320,8 +326,14 @@ export default {
             this.hover = false;
         },
 
-        updateName(name) {
-            this.updateComponentOrMetanodeName({ nodeId: this.id, name });
+        saveNameEdit() {
+            this.updateComponentOrMetanodeName({ nodeId: this.id, name: this.currentName });
+            this.nameEditorOpen = false;
+        },
+
+        cancelNameEdit() {
+            this.currentName = this.name;
+            this.nameEditorOpen = false;
         },
 
         // default flow variable ports (Mickey Mouse ears) are only shown if connected, selected, or on hover
@@ -567,19 +579,17 @@ export default {
       />
       <NodeNameEditorActionBar
         :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y - 5 })`"
-        @save="nameEditorOpen = false;"
-        @close="nameEditorOpen = false;"
+        @save="saveNameEdit"
+        @close="cancelNameEdit"
       />
       <!-- Node name inline editor -->
-      <NodeName
-        :value="name"
-        editor
-        :editable="false"
+      <NodeNameEditor
+        v-model="currentName"
         :transform="`translate(${position.x}, ${position.y})`"
         @width="nameWidth = $event"
         @height="nameHeight = $event"
-        @save="updateName($event); nameEditorOpen = false;"
-        @close="nameEditorOpen = false;"
+        @save="saveNameEdit"
+        @close="cancelNameEdit"
       />
     </portal>
     <NodeName
