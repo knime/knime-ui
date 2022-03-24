@@ -17,6 +17,24 @@ export const openDialog = ({ projectId, nodeId }) => {
 };
 
 /**
+ * Open the native (Java) legacy flow variable configuration dialog of a node.
+ * @param {String} projectId
+ * @param {String} nodeId The node for which to open the dialog.
+ * @returns {void}
+ */
+export const openLegacyFlowVariableDialog = ({ projectId, nodeId }) => {
+    try {
+        // returns falsy on success
+        let error = window.openLegacyFlowVariableDialog(projectId, nodeId);
+        if (error) {
+            throw new Error(error);
+        }
+    } catch (e) {
+        consola.error(`Could not open legacy flow variable dialog of node ${nodeId}`, e);
+    }
+};
+
+/**
  * Open the native (Java) view window of a node.
  * @param {String} projectId
  * @param {String} nodeId The node for which to open the view.

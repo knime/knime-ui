@@ -1,6 +1,6 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
-    moveObjects, openDialog, openView, undo, redo, removeEventListener, connectNodes, addNode,
-    saveWorkflow, closeWorkflow } from '~api';
+    moveObjects, openDialog, openLegacyFlowVariableDialog, openView, undo, redo, removeEventListener, connectNodes,
+    addNode, saveWorkflow, closeWorkflow } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -209,6 +209,10 @@ export const actions = {
     /* See docs in API */
     openDialog({ state }, nodeId) {
         openDialog({ projectId: state.activeWorkflow.projectId, nodeId });
+    },
+    /* See docs in API */
+    openLegacyFlowVariableDialog({ state }, nodeId) {
+        openLegacyFlowVariableDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
     /* See docs in API */
     undo({ state, getters }) {

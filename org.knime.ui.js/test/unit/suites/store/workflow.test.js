@@ -294,7 +294,7 @@ describe('workflow store', () => {
             expect(mock).toHaveBeenLastCalledWith({ nodeIds: ['root:2'], projectId: 'foo', workflowId: 'root' });
         });
 
-        it.each(['openView', 'openDialog'])('passes %s to API', async (action) => {
+        it.each(['openView', 'openDialog', 'openLegacyFlowVariableDialog'])('passes %s to API', async (action) => {
             let mock = jest.fn();
             let apiMocks = { [action]: mock };
             await loadStore({ apiMocks });

@@ -131,7 +131,7 @@ export default {
     line-height: 19px;
 
     & .title {
-      font-weight: bold;
+      font-weight: 700;
       line-height: 19px;
     }
 
