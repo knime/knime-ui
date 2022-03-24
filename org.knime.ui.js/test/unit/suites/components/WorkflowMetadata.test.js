@@ -2,9 +2,11 @@ import { shallowMount, mount } from '@vue/test-utils';
 
 import WorkflowMetadata from '~/components/WorkflowMetadata';
 import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
+import ExternalResourcesList from '~/components/common/ExternalResourcesList';
 import LinkList from '~/webapps-common/ui/components/LinkList';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
+import Description from '~/webapps-common/ui/components/Description';
 import TagList from '~/webapps-common/ui/components/TagList';
 import Tag from '~/webapps-common/ui/components/Tag';
 
@@ -18,16 +20,15 @@ describe('WorkflowMetadata.vue', () => {
 
         // show placeholder parents
         expect(wrapper.find('.last-updated').exists()).toBe(true);
-        expect(wrapper.find('.external-resources').exists()).toBe(true);
         expect(wrapper.find('.tags').exists()).toBe(true);
         expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(true);
+        expect(wrapper.findComponent(ExternalResourcesList).exists()).toBe(true);
 
         // show placeholder tags
         expect(wrapper.text()).toMatch('No title has been set yet');
-        expect(wrapper.text()).toMatch('Last Update: no update yet');
+        expect(wrapper.text()).toMatch('Last update: no update yet');
         expect(wrapper.text()).toMatch('No description has been set yet');
         expect(wrapper.text()).toMatch('No tags have been set yet');
-        expect(wrapper.text()).toMatch('No links have been added yet');
 
         // don't show content containers
         expect(wrapper.findComponent(LinkList).exists()).toBe(false);
@@ -62,6 +63,9 @@ describe('WorkflowMetadata.vue', () => {
 
         expect(wrapper.text()).toMatch('Title');
         expect(wrapper.text()).toMatch('Last update: 1 Jan 2000');
+
+        let description = wrapper.findComponent(Description);
+        expect(description.props().text).toMatch('Description');
 
         let linkList = wrapper.findComponent(LinkList);
         expect(linkList.props().links).toStrictEqual([{ text: 'link1' }]);

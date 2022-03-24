@@ -4,11 +4,14 @@ import CloseIcon from '~/assets/cancel-execution.svg?inline';
 import Description from '~/webapps-common/ui/components/Description';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 
+import ExternalResourcesList from '~/components/common/ExternalResourcesList';
+
 export default {
     components: {
         CloseIcon,
         Description,
-        NodeFeatureList
+        NodeFeatureList,
+        ExternalResourcesList
     },
     computed: {
         ...mapState('nodeRepository', ['selectedNode', 'nodeDescriptionObject', 'nodes', 'nodesPerCategory']),
@@ -64,6 +67,9 @@ export default {
             >
               There is no description for this node.
             </span>
+
+            <ExternalResourcesList :links="nodeDescriptionObject.links" />
+
             <NodeFeatureList
               :in-ports="nodeDescriptionObject.inPorts"
               :dyn-in-ports="nodeDescriptionObject.dynInPorts"
@@ -174,7 +180,7 @@ export default {
   }
 
   & .node-feature-list {
-    margin-top: 20px;
+    margin-top: 6px;
     margin-bottom: 40px;
 
     & >>> .shadow-wrapper::after,
