@@ -578,7 +578,7 @@ export default {
   pointer-events: none;
   font-family: "Roboto Condensed", sans-serif;
   font-style: normal;
-  font-weight: bold;
+  font-weight: 700;
   font-size: 15px;
   line-height: 17px;
 }
