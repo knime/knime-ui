@@ -38,7 +38,8 @@ describe('workflow store', () => {
 
             store = mockVuexStore({
                 workflow: await import('~/store/workflow'),
-                selection: await import('~/store/selection')
+                selection: await import('~/store/selection'),
+                panel: await import('~/store/panel')
             });
         };
     });
@@ -148,22 +149,27 @@ describe('workflow store', () => {
 
     describe('actions', () => {
         it('loads root workflow successfully', async () => {
-            let loadWorkflow = jest.fn().mockResolvedValue({ dummy: true, workflow: { info: {} }, snapshotId: 'snap' });
+            let loadWorkflow =
+            jest.fn().mockResolvedValue({ dummy: true, workflow: { info: {}, nodes: [] }, snapshotId: 'snap' });
+
             await loadStore({
                 apiMocks: {
                     loadWorkflow
                 }
             });
             const commit = jest.spyOn(store, 'commit');
+            const dispatch = jest.spyOn(store, 'dispatch');
 
             await store.dispatch('workflow/loadWorkflow', { projectId: 'wf1' });
 
             expect(loadWorkflow).toHaveBeenCalledWith({ workflowId: 'root', projectId: 'wf1' });
             expect(commit).toHaveBeenNthCalledWith(1, 'workflow/setActiveWorkflow', {
                 info: {},
+                nodes: [],
                 projectId: 'wf1'
             }, undefined);
-            expect(commit).toHaveBeenNthCalledWith(2, 'workflow/setActiveSnapshotId', 'snap', undefined);
+            expect(dispatch).toHaveBeenCalledWith('panel/setNodeRepositoryActive', null);
+            expect(commit).toHaveBeenNthCalledWith(4, 'workflow/setActiveSnapshotId', 'snap', undefined);
             expect(addEventListenerMock).toHaveBeenCalledWith('WorkflowChanged', {
                 projectId: 'wf1',
                 workflowId: 'root',
@@ -172,7 +178,8 @@ describe('workflow store', () => {
         });
 
         it('loads inner workflow successfully', async () => {
-            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true, info: {} } });
+            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true, info: {}, nodes: [] } });
+            
             await loadStore({
                 apiMocks: {
                     loadWorkflow
@@ -186,6 +193,7 @@ describe('workflow store', () => {
             expect(commit).toHaveBeenNthCalledWith(1, 'workflow/setActiveWorkflow', {
                 dummy: true,
                 info: {},
+                nodes: [],
                 projectId: 'wf2'
             }, undefined);
             expect(addEventListenerMock).toHaveBeenCalledWith('WorkflowChanged', {
@@ -195,7 +203,9 @@ describe('workflow store', () => {
         });
 
         it('unloads workflow when another one is loaded', async () => {
-            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true, info: {} }, snapshotId: 'snap' });
+            let loadWorkflow =
+            jest.fn().mockResolvedValue({ workflow: { dummy: true, info: {}, nodes: [] }, snapshotId: 'snap' });
+            
             await loadStore({
                 apiMocks: {
                     loadWorkflow
@@ -603,6 +613,21 @@ describe('workflow store', () => {
                 }]
             });
             expect(store.getters['workflow/insideLinkedType']).toBe('metanode');
+        });
+
+        test('isWorkflowEmpty', async () => {
+            await loadStore();
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
+                nodes: []
+            });
+            expect(store.getters['workflow/isWorkflowEmpty']).toBe(true);
+
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
+                nodes: [{ node: { id: 1 } }]
+            });
+            expect(store.getters['workflow/isWorkflowEmpty']).toBe(false);
         });
 
         describe('workflowBounds', () => {
