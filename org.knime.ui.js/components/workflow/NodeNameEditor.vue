@@ -1,6 +1,6 @@
 <script>
 
-import NodeName from './NodeName';
+import NodeName from '~/components/workflow/NodeName';
 
 /**
  * Inline editor for the node name
