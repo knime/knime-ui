@@ -289,8 +289,8 @@ export default {
             return this.showSelectionPreview === 'show' || isSelected;
         },
         nameIsEditable() {
-            // only metanodes and components have editable names
-            return ['metanode', 'component'].includes(this.kind);
+            // only not linked metanodes and components have editable names
+            return ['metanode', 'component'].includes(this.kind) && this.link === null;
         },
         actionBarPosition() {
             return {
@@ -578,7 +578,7 @@ export default {
         @click.stop.prevent
       />
       <NodeNameEditorActionBar
-        :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y - 5 })`"
+        :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y })`"
         @save="saveNameEdit"
         @close="cancelNameEdit"
       />
