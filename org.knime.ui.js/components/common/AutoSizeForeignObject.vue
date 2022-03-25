@@ -37,7 +37,7 @@ export default {
          */
         adjustDimensionBeforeHook: {
             type: Function,
-            default: () => null
+            default: null
         }
     },
     data() {
@@ -62,7 +62,7 @@ export default {
     methods: {
         // foreignObject requires `width` and `height` attributes, or the content is cut off.
         // So we need to 1. render, 2. measure, 3. update
-        adjustDimensions({ startWidth, startHeight } = {}) {
+        async adjustDimensions({ startWidth, startHeight } = {}) {
             // start values (useful if this component replaces another one with the given size to avoid jumping)
             if (startWidth) {
                 this.width = startWidth;
@@ -70,7 +70,12 @@ export default {
             if (startHeight) {
                 this.height = startHeight;
             }
-            this.adjustDimensionBeforeHook();
+            if (this.adjustDimensionBeforeHook) {
+                // this is required for FF
+                await this.$nextTick(() => {
+                    this.adjustDimensionBeforeHook();
+                });
+            }
             const lastWidth = this.width;
             // 1. render with max width or given startWidth
             this.width = this.maxWidth;
