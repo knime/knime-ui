@@ -56,7 +56,7 @@ import org.knime.workbench.editor2.editparts.NodeContainerEditPart;
 import com.equo.chromium.swt.Browser;
 
 /**
- * Opens the swing dialog of a node.
+ * Opens the swing dialog or CEF-based dialog of a node.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
@@ -68,9 +68,9 @@ public class OpenNodeDialogBrowserFunction extends AbstractNodeBrowserFunction {
 		super(browser, FUNCTION_NAME);
 	}
 
-	@Override
-	protected void apply(final NodeContainer nc) {
-		NodeContainerEditPart.openDialog(wrap(nc), null);
-	}
+    @Override
+    protected void apply(final NodeContainer nc) {
+        NodeContainerEditPart.openNodeDialog(wrap(nc));
+    }
 
 }

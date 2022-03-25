@@ -50,7 +50,6 @@ export default {
   padding: 3px 5px;
   line-height: 15px;
   display: inline-block;
-  font-weight: 500;
   font-size: 14px;
   color: var(--knime-dove-gray);
   cursor: pointer;

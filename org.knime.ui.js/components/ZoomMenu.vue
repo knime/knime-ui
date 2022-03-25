@@ -114,7 +114,6 @@ export default {
       width: 54px;
       padding: 8px 4px 8px 16px;
       font-size: 14px;
-      font-weight: 400;
       margin-right: 0;
 
       &:focus {
