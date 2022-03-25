@@ -106,9 +106,8 @@ export default {
       />
     </MoveableNodeContainer>
 
-    <!-- Editor Layer -->
+    <!-- Editor Layer; only one editor is open at a time -->
     <portal-target
-      multiple
       tag="g"
       name="node-title-editor"
     />
