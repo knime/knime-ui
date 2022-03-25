@@ -571,7 +571,7 @@ export default {
     <!-- Node name / title -->
     <portal
       v-if="nameEditorOpen"
-      to="node-title-editor"
+      to="node-name-editor"
     >
       <!-- Block all inputs to the kanvas -->
       <rect

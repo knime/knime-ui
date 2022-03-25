@@ -109,7 +109,7 @@ export default {
     <!-- Editor Layer; only one editor is open at a time -->
     <portal-target
       tag="g"
-      name="node-title-editor"
+      name="node-name-editor"
     />
 
     <!-- Quick Actions Layer: Buttons for Hovered & Selected Nodes and their ids -->
