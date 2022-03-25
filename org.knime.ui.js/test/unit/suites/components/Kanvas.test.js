@@ -43,8 +43,6 @@ describe('Kanvas', () => {
             this.disconnect = jest.fn();
         };
 
-        window.requestAnimationFrame = jest.fn().mockImplementation(fn => { fn(); });
-
         wrapper = null;
         propsData = {};
 

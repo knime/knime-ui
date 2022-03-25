@@ -4,16 +4,15 @@ import Vue from 'vue';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import * as $shapes from '~/style/shapes';
 
+import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer';
+import '~/plugins/directive-move';
+
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {
         // eslint-disable-next-line no-invalid-this
         return func.apply(this, args);
     };
 });
-
-import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer';
-
-import '~/plugins/directive-move';
 
 const commonNode = {
     id: 'root:1',
@@ -55,7 +54,8 @@ describe('MoveableNodeContainer', () => {
             canvas: {
                 state: {
                     zoomFactor: 1
-                }
+                },
+                getters: { }
             },
             application: {
                 state() {
@@ -170,9 +170,8 @@ describe('MoveableNodeContainer', () => {
             };
 
             storeConfig.workflow.state.isDragging = true;
-            storeConfig.canvas.getters = {
-                fromAbsoluteCoordinates: () => jest.fn(() => [positionAfterMove.x, positionAfterMove.y])
-            };
+            storeConfig.canvas.getters.toCanvasCoordinates =
+                () => jest.fn(() => [positionAfterMove.x, positionAfterMove.y]);
 
             doMount();
             

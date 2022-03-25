@@ -72,9 +72,7 @@ export default {
             let cursorX = e.clientX - bcr.x;
             let cursorY = e.clientY - bcr.y;
 
-            requestAnimationFrame(() => {
-                this.zoomAroundPointer({ delta, cursorX, cursorY });
-            });
+            this.zoomAroundPointer({ delta, cursorX, cursorY });
         }),
         /*
             Panning

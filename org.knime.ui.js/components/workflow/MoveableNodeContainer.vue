@@ -38,14 +38,11 @@ export default {
     computed: {
         ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('selection', ['isNodeSelected']),
-        ...mapGetters('canvas', ['fromAbsoluteCoordinates']),
-        ...mapState('application', { projectId: 'activeProjectId' }),
-        ...mapState('workflow', {
-            isDragging: 'isDragging',
-            deltaMovePosition: 'deltaMovePosition',
-            moveNodeGhostThresholdExceeded: 'moveNodeGhostThresholdExceeded',
-            activeWorkflow: 'activeWorkflow'
-        }),
+        ...mapGetters('canvas', ['toCanvasCoordinates']),
+        ...mapState('application', ['activeProjectId']),
+        ...mapState('workflow', [
+            'isDragging', 'deltaMovePosition', 'moveNodeGhostThresholdExceeded', 'activeWorkflow'
+        ]),
         ...mapState('canvas', ['zoomFactor']),
 
         // Combined position of original position + the dragged amount
@@ -97,7 +94,8 @@ export default {
             const kanvasElement = document.getElementById('kanvas');
             const { offsetLeft, offsetTop, scrollLeft, scrollTop } = kanvasElement;
 
-            const [absoluteX, absoluteY] = this.fromAbsoluteCoordinates([
+            debugger;
+            const [absoluteX, absoluteY] = this.toCanvasCoordinates([
                 x - offsetLeft + scrollLeft,
                 y - offsetTop + scrollTop
             ]);
@@ -154,7 +152,7 @@ export default {
          */
         onMoveEnd() {
             this.$store.dispatch('workflow/saveNodeMoves', {
-                projectId: this.projectId,
+                projectId: this.activeProjectId,
                 startPos: this.startPos,
                 nodeId: this.id
             });

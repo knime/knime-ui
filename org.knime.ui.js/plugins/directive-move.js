@@ -24,6 +24,7 @@ const defaultThreshold = 5;
 const createMousedownHandler = (state, el) => (e) => {
     e.stopPropagation();
     e.preventDefault();
+    
     let { pointerId } = e;
     state.pointerId = pointerId;
     // This is needed, as otherwise the pointerCapture might not get set if the component does not change
