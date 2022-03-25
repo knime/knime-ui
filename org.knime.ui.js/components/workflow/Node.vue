@@ -327,7 +327,13 @@ export default {
         },
 
         saveNameEdit() {
+            // reset to old value on empty edits
+            if (this.currentName === '') {
+                this.currentName = this.name;
+            }
+            // call api via store
             this.updateComponentOrMetanodeName({ nodeId: this.id, name: this.currentName });
+            // close editor
             this.nameEditorOpen = false;
         },
 
