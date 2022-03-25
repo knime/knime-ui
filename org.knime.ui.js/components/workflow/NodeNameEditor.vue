@@ -3,7 +3,8 @@
 import NodeName from '~/components/workflow/NodeName';
 
 /**
- * Inline editor for the node name
+ * Inline editor for the node name. Emits 'save' and 'close' events. Implements v-model pattern. On input it might
+ * emit 'invalidCharacter' if the input matches given 'pattern' prop.
  */
 export default {
     components: { NodeName },
@@ -27,14 +28,8 @@ export default {
             default: null
         }
     },
-    watch: {
-        value(newValue) {
-            this.$refs.ghost.innerText = newValue;
-        }
-    },
     mounted() {
         this.$nextTick(() => {
-            this.$refs.ghost.innerText = this.value;
             this.adjustDimensions({ startWidth: this.startWidth, startHeight: this.startHeight });
             if (this.$refs.textarea) {
                 this.$refs.textarea.focus();
@@ -74,7 +69,6 @@ export default {
             this.$emit('close');
         },
         resizeTextarea() {
-            consola.trace('InlineTextarea: resizing');
             let textarea = this.$refs.textarea;
             if (!textarea) {
                 return;
@@ -108,7 +102,8 @@ export default {
     --><span
       ref="ghost"
       class="ghost"
-    /><!--
+      aria-hidden="true"
+    >{{ value }}</span><!--
     --><textarea
       ref="textarea"
       rows="1"
@@ -127,7 +122,7 @@ export default {
 .ghost {
   visibility: hidden;
   position: absolute;
-  top: -1000px;
+  top: -10000px;
   left: -10000px;
   text-align: inherit;
   border: 0;
