@@ -62,8 +62,8 @@ describe('WorkflowEmpty', () => {
         const height = border.attributes().height;
         const width = border.attributes().width;
 
-        expect(height).toBe('60');
-        expect(width).toBe('60');
+        expect(height).toBe('52');
+        expect(width).toBe('52');
     });
 
     it('changes width and height if canvas changes', () => {
@@ -77,7 +77,7 @@ describe('WorkflowEmpty', () => {
         const height = border.attributes().height;
         const width = border.attributes().width;
 
-        expect(height).toBe('960');
+        expect(height).toBe('952');
         expect(width).toBe('460');
     });
 });
