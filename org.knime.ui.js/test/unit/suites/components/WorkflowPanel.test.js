@@ -3,8 +3,6 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
-import * as $shapes from '~/style/shapes';
-
 import WorkflowPanel from '~/components/WorkflowPanel';
 
 describe('WorkflowPanel', () => {
@@ -56,7 +54,7 @@ describe('WorkflowPanel', () => {
 
         $store = mockVuexStore(storeConfig);
 
-        mocks = { $store, $shapes };
+        mocks = { $store };
         doShallowMount = () => {
             wrapper = shallowMount(WorkflowPanel, { propsData, mocks });
         };

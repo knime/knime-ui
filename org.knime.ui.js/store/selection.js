@@ -38,8 +38,14 @@ export const mutations = {
 
     // Clear the selected nodes and the selected connections at once
     clearSelection(state) {
-        state.selectedNodes = {};
-        state.selectedConnections = {};
+        // dont override selectedNodes/Connections-object, in case there is nothing selected
+        // prevents unnecessary slowdown.
+        if (Object.keys(state.selectedNodes).length > 0) {
+            state.selectedNodes = {};
+        }
+        if (Object.keys(state.selectedConnections).length > 0) {
+            state.selectedConnections = {};
+        }
     },
 
     //  Add connectionIds to selection.

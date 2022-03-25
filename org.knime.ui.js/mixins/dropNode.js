@@ -5,7 +5,7 @@ const isKnimeNode = (e) => e.dataTransfer.types.includes(KnimeMIME);
 
 export const dropNode = {
     computed: {
-        ...mapGetters('canvas', ['fromAbsoluteCoordinates']),
+        ...mapGetters('canvas', ['toCanvasCoordinates']),
         ...mapGetters('workflow', ['isWritable'])
     },
     methods: {
@@ -15,31 +15,27 @@ export const dropNode = {
                 const nodeFactory = JSON.parse(e.dataTransfer.getData(KnimeMIME));
                 const position = this.getDestinationPosition(e);
                 this.addNode({ position, nodeFactory });
-    
-                // Default action when dropping links is to open them in your browser.
-                e.preventDefault();
-            } else {
-                e.preventDefault();
             }
+
+            // Default action when dropping links is to open them in your browser.
+            e.preventDefault();
         },
         getDestinationPosition(e) {
             const halfNodeSize = this.$shapes.nodeSize / 2;
             const kanvasElement = document.getElementById('kanvas');
             const { offsetLeft, offsetTop, scrollLeft, scrollTop } = kanvasElement;
-            let result = this.fromAbsoluteCoordinates([
+            let result = this.toCanvasCoordinates([
                 e.clientX - offsetLeft + scrollLeft - halfNodeSize,
                 e.clientY - offsetTop + scrollTop - halfNodeSize
             ]);
             return result;
         },
         onDragOver(e) {
-            if (isKnimeNode(e)) {
-                if (this.isWritable) {
-                    e.dataTransfer.dropEffect = 'copy';
-    
-                    // Enables drop target to accept this node
-                    e.preventDefault();
-                }
+            if (this.isWritable && isKnimeNode(e)) {
+                e.dataTransfer.dropEffect = 'copy';
+
+                // Enables drop target to accept this node
+                e.preventDefault();
             }
         }
     }

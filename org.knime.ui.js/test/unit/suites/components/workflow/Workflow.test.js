@@ -121,7 +121,7 @@ describe('Workflow', () => {
         it('forwards nodeSelectionPreview calls to the correct node', () => {
             const node = wrapper.findAllComponents(Node).wrappers.filter(n => n.props().id === 'root:1')[0];
             node.vm.setSelectionPreview = jest.fn();
-            wrapper.vm.showNodeSelectionPreview({ type: 'show', nodeId: 'root:1' });
+            wrapper.vm.applyNodeSelectionPreview({ type: 'show', nodeId: 'root:1' });
             expect(node.vm.setSelectionPreview).toHaveBeenLastCalledWith('show');
         });
 

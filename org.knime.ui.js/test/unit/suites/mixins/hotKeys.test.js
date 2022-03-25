@@ -5,14 +5,12 @@ import Vuex from 'vuex';
 import Vue from 'vue';
 import { hotKeys } from '~/mixins';
 
-jest.mock('lodash', () => ({
-    throttle(func) {
-        return function (...args) {
-            // eslint-disable-next-line no-invalid-this
-            return func.apply(this, args);
-        };
-    }
-}));
+jest.mock('raf-throttle', () => function (func) {
+    return function (...args) {
+        // eslint-disable-next-line no-invalid-this
+        return func.apply(this, args);
+    };
+});
 
 const expectEventHandled = () => {
     expect(KeyboardEvent.prototype.preventDefault).toHaveBeenCalled();

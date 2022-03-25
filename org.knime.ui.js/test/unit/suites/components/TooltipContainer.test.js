@@ -21,7 +21,7 @@ describe('TooltipContainer', () => {
         storeConfig = {
             canvas: {
                 getters: {
-                    getAbsoluteCoordinates: () => ({ x, y }) => ({ x: x * 2, y: y * 2 })
+                    fromCanvasCoordinates: () => ({ x, y }) => ({ x: x * 2, y: y * 2 })
                 },
                 state: {
                     zoomFactor: 1
