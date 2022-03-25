@@ -114,7 +114,7 @@ export default {
     tabindex="0"
     :class="['scroll-container', { 'panning': panning || suggestPanning }]"
     :style="{ backgroundColor:
-      (isDraggingNode && isWorkflowEmpty) ? 'var(--selection-active-background-color)' : null }"
+      (isDraggingNode && isWorkflowEmpty) ? 'var(--knime-gray-ultra-light)' : null }"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
     @pointerdown.middle="beginPan"

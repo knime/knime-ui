@@ -1,10 +1,10 @@
 <script>
 import { mapGetters } from 'vuex';
-import ArrowDownload from '~/webapps-common/ui/assets/img/icons/arrow-download.svg?inline';
+import ArrowDown from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
 
 export default {
     components: {
-        ArrowDownload
+        ArrowDown
     },
     computed: {
         ...mapGetters('canvas', ['canvasSize'])
@@ -15,22 +15,22 @@ export default {
 <template>
   <g>
     <rect
-      x="20"
-      y="20"
+      x="24"
+      y="24"
       fill="none"
-      stroke-width="5"
+      stroke-width="3"
       stroke="var(--knime-gray-dark-semi)"
       stroke-linecap="square"
-      stroke-dasharray="50,20"
-      :width="canvasSize.width - 40"
-      :height="canvasSize.height - 40"
+      stroke-dasharray="9,19"
+      :width="canvasSize.width - 48"
+      :height="canvasSize.height - 48"
     />
-    <ArrowDownload
-      height="100px"
-      width="100px"
+    <ArrowDown
+      height="64px"
+      width="64px"
       stroke="var(--knime-masala)"
-      :x="(canvasSize.width * 0.5) - 50"
-      :y="canvasSize.height * 0.3"
+      :x="(canvasSize.width * 0.5) - 32"
+      :y="canvasSize.height * 0.38"
     />
     <g
       class="text"
@@ -39,12 +39,12 @@ export default {
     >
       <text
         :x="canvasSize.width * 0.5"
-        :y="(canvasSize.height * 0.4) + 100"
+        :y="(canvasSize.height * 0.4) + 90"
       >
         Start building your workflow by
         <tspan
           :x="canvasSize.width * 0.5"
-          :y="(canvasSize.height * 0.4) + 150"
+          :y="(canvasSize.height * 0.4) + 126"
         >
           dropping your nodes here.
         </tspan>
@@ -58,6 +58,6 @@ export default {
   fill: var(--knime-masala);
   font-family: "Roboto Condensed", sans-serif;
   font-weight: normal;
-  font-size: 36px;
+  font-size: 24px;
 }
 </style>

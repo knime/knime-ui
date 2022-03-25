@@ -2,7 +2,7 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
-import ArrowDownload from '~/webapps-common/ui/assets/img/icons/arrow-download.svg?inline';
+import ArrowDown from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
 import WorkflowEmpty from '~/components/workflow/WorkflowEmpty';
 
 
@@ -44,7 +44,7 @@ describe('WorkflowEmpty', () => {
         doShallowMount();
 
         expect(wrapper.find('rect').exists()).toBe(true);
-        expect(wrapper.findComponent(ArrowDownload).exists()).toBe(true);
+        expect(wrapper.findComponent(ArrowDown).exists()).toBe(true);
         expect(wrapper.find('.text').exists()).toBe(true);
     });
 
