@@ -54,7 +54,7 @@ describe('SelectionRectangle', () => {
             },
             canvas: {
                 getters: {
-                    fromAbsoluteCoordinates: state => ([x, y]) => [x, y]
+                    toCanvasCoordinates: state => ([x, y]) => [x, y]
                 }
             },
             selection: {

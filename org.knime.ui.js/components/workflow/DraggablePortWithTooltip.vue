@@ -42,7 +42,7 @@ export default {
         dragConnector: null
     }),
     computed: {
-        ...mapGetters('canvas', ['fromAbsoluteCoordinates']),
+        ...mapGetters('canvas', ['toCanvasCoordinates']),
         ...mapGetters('workflow', ['isWritable']),
         /*
          * only in-Ports replace their current connector if a new one is connected
@@ -70,7 +70,7 @@ export default {
         /* ======== Drag Connector ======== */
         positionOnCanvas([x, y]) {
             const { offsetLeft, offsetTop, scrollLeft, scrollTop } = this.kanvasElement;
-            let result = this.fromAbsoluteCoordinates([
+            let result = this.toCanvasCoordinates([
                 x - offsetLeft + scrollLeft,
                 y - offsetTop + scrollTop
             ]);

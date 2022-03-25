@@ -19,15 +19,15 @@
     "sendcoverage": "cross-var sonar-scanner -Dsonar.login=\"$SONAR_LOGIN\" -Dsonar.password=\"$SONAR_PASSWORD\""
   },
   "dependencies": {
+    "@fontsource/roboto": "4.5.3",
+    "@fontsource/roboto-condensed": "4.5.4",
+    "@fontsource/roboto-mono": "4.5.3",
     "consola": "2.15.3",
     "gsap": "3.8.0",
     "lodash": "4.17.21",
     "nuxt": "2.15.8",
     "portal-vue": "2.1.7",
     "raf-throttle": "^2.0.5",
-    "typeface-roboto": "1.1.13",
-    "typeface-roboto-condensed": "1.1.13",
-    "typeface-roboto-mono": "1.1.13",
     "vue-clickaway2": "2.3.2",
     "webapps-common": "file:webapps-common"
   },

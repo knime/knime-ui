@@ -26,7 +26,7 @@ export default {
     }),
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
-        ...mapGetters('canvas', ['fromAbsoluteCoordinates']),
+        ...mapGetters('canvas', ['toCanvasCoordinates']),
         ...mapGetters('selection', ['selectedNodeIds']),
         selectionBounds() {
             const { endPos, startPos } = this;
@@ -130,7 +130,7 @@ export default {
             const offsetY = e.pageY - this.currentTargetRect.top;
 
             // convert to kanvas coordinates
-            const [x, y] = this.fromAbsoluteCoordinates([offsetX, offsetY]);
+            const [x, y] = this.toCanvasCoordinates([offsetX, offsetY]);
             return { x, y };
         },
 

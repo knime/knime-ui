@@ -4,25 +4,7 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import * as $shapes from '~/style/shapes';
-import * as canvasStoreConfig from '~/store/canvas';
-
-import Kanvas from '~/components/Kanvas';
-
-jest.mock('lodash', () => ({
-    throttle(func) {
-        return function (...args) {
-            // eslint-disable-next-line no-invalid-this
-            return func.apply(this, args);
-        };
-    },
-    debounce(func) {
-        return function (...args) {
-            // eslint-disable-next-line no-invalid-this
-            return func.apply(this, args);
-        };
-    }
-}));
+import Kanvas, { RESIZE_DEBOUNCE } from '~/components/Kanvas';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {
@@ -55,48 +37,75 @@ describe('Kanvas', () => {
             this.observe = function (element) {
                 this.element = element;
             };
-            this.resize = function ({ width, height }) {
-                this.callback([{ target: this.element, contentRect: { width, height } }]);
+            this.resize = function () {
+                this.callback([{ target: this.element }]);
             };
             this.disconnect = jest.fn();
         };
+
+        window.requestAnimationFrame = jest.fn().mockImplementation(fn => { fn(); });
 
         wrapper = null;
         propsData = {};
 
         storeConfig = {
             canvas: {
-                ...canvasStoreConfig,
-                mutations: {
-                    ...canvasStoreConfig.mutations,
-                    zoomWithPointer: jest.fn(),
-                    setContainerSize: jest.fn(),
-                    setScrollContainerElement: jest.fn()
-                }
-            },
-            workflow: {
+                state: {
+                    getScrollContainerElement: null,
+                    zoomFactor: 1,
+                    suggestPanning: false,
+                    // mock implementation of contentBounds for testing watcher
+                    __contentBounds: { left: 0, top: 0 }
+                },
                 getters: {
-                    workflowBounds() {
-                        return {
-                            left: -10,
-                            top: -10,
-                            right: 40,
-                            bottom: 40
-                        };
-                    }
+                    viewBox: () => ({ string: 'viewbox-string' }),
+                    contentBounds: () => ({ state }) => state.__contentBounds,
+                    contentPadding: () => ({ left: 10, top: 10 }),
+                    canvasSize: () => ({ width: 30, height: 300 })
+                },
+                actions: {
+                    zoomAroundPointer: jest.fn(),
+                    updateContainerSize: jest.fn(),
+                    contentBoundsChanged: jest.fn(),
+                    initScrollContainerElement: jest.fn().mockImplementation(
+                        ({ state }, el) => { state.getScrollContainerElement = () => el; }
+                    )
+                },
+                mutations: {
+                    clearScrollContainerElement: jest.fn()
                 }
             }
         };
 
         $store = mockVuexStore(storeConfig);
 
-        mocks = { $store, $shapes };
+        mocks = { $store };
         doShallowMount = () => {
             wrapper = shallowMount(Kanvas, { propsData, mocks });
         };
     });
 
-    describe('selection with rect on canvas', () => {
+    it('makes scrollContainer accessible to store', () => {
+        doShallowMount();
+        expect(storeConfig.canvas.actions.initScrollContainerElement)
+            .toHaveBeenCalledWith(expect.anything(), wrapper.element);
+    });
+
+    test('if content bounds change, tell store', async () => {
+        doShallowMount();
+
+        expect(storeConfig.canvas.actions.contentBoundsChanged).not.toHaveBeenCalled();
+
+        // TODO test this via store update
+        wrapper.vm.$options.watch.contentBounds.call(wrapper.vm,
+            { left: 0, top: 0 }, { left: 10, top: 10 });
+        await Vue.nextTick();
+
+        expect(storeConfig.canvas.actions.contentBoundsChanged).toHaveBeenCalledWith(expect.anything(),
+            [{ left: 0, top: 0 }, { left: 10, top: 10 }]);
+    });
+
+    describe('selection on canvas', () => {
         test('clicking on the canvas emits select-pointerdown', () => {
             doShallowMount();
 
@@ -122,64 +131,17 @@ describe('Kanvas', () => {
         });
     });
 
-    describe('Zoom & Pan', () => {
+    describe('Panning', () => {
         it('Suggests Panning', async () => {
             doShallowMount();
 
-            $store.commit('canvas/setSuggestPanning', true);
+            $store.state.canvas.suggestPanning = true;
             await Vue.nextTick();
             expect(wrapper.element.className).toMatch('panning');
 
-            $store.commit('canvas/setSuggestPanning', false);
+            $store.state.canvas.suggestPanning = false;
             await Vue.nextTick();
             expect(wrapper.element.className).not.toMatch('panning');
-        });
-
-        it('uses canvasSize and viewBox from store', async () => {
-            doShallowMount();
-            await Vue.nextTick();
-            const { width, height, viewBox } = wrapper.find('svg').attributes();
-
-            expect(Number(width)).toBe(50);
-            expect(Number(height)).toBe(50);
-            expect(viewBox).toBe('-10 -10 50 50');
-        });
-
-        it('makes scrollContainer accessible to store', () => {
-            doShallowMount();
-            expect(storeConfig.canvas.mutations.setScrollContainerElement)
-                .toHaveBeenCalledWith(expect.anything(), wrapper.element);
-        });
-
-        it('zooms on mouse wheel', () => {
-            doShallowMount();
-
-            wrapper.element.dispatchEvent(new WheelEvent('wheel', {
-                deltaY: -5,
-                ctrlKey: true,
-                clientX: 10,
-                clientY: 10
-            }));
-            expect(storeConfig.canvas.mutations.zoomWithPointer).toHaveBeenCalledWith(expect.anything(), {
-                delta: 1,
-                cursorX: 5,
-                cursorY: 0
-            });
-        });
-
-        it('observes container resize', () => {
-            doShallowMount();
-            wrapper.vm.resizeObserver.resize({ width: 100, height: 50 });
-            expect(storeConfig.canvas.mutations.setContainerSize).toHaveBeenCalledWith(expect.anything(), {
-                width: 100, height: 50
-            });
-        });
-
-        it('stop resize observer', () => {
-            doShallowMount();
-            let resizeObserver = wrapper.vm.resizeObserver;
-            wrapper.destroy();
-            expect(resizeObserver.disconnect).toHaveBeenCalled();
         });
 
         it('pans', async () => {
@@ -209,6 +171,63 @@ describe('Kanvas', () => {
                 pointerId: -1
             });
             expect(wrapper.element.releasePointerCapture).toHaveBeenCalledWith(-1);
+        });
+    });
+
+    describe('Container Resize', () => {
+        it('observes container resize', async () => {
+            doShallowMount();
+
+            wrapper.vm.resizeObserver.resize();
+            wrapper.vm.resizeObserver.resize();
+
+            await new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve();
+                }, RESIZE_DEBOUNCE);
+            });
+
+            expect(storeConfig.canvas.actions.updateContainerSize).toHaveBeenCalledTimes(1);
+        });
+
+        it('stop resize observer', () => {
+            doShallowMount();
+            let resizeObserver = wrapper.vm.resizeObserver;
+            wrapper.destroy();
+            expect(resizeObserver.disconnect).toHaveBeenCalled();
+        });
+    });
+
+    describe('Zooming', () => {
+        it('uses canvasSize and viewBox from store', async () => {
+            doShallowMount();
+            await Vue.nextTick();
+
+            let svg = wrapper.find('svg');
+
+            const canvasSize = $store.getters['canvas/canvasSize'];
+            expect(Number(svg.attributes('width'))).toBe(canvasSize.width);
+            expect(Number(svg.attributes('height'))).toBe(canvasSize.height);
+
+            let viewBoxString = $store.getters['canvas/viewBox'].string;
+
+            expect(svg.attributes('viewBox')).toBe(viewBoxString);
+        });
+
+        test('mouse wheel zooms', () => {
+            doShallowMount();
+
+            wrapper.element.dispatchEvent(new WheelEvent('wheel', {
+                deltaY: -5,
+                ctrlKey: true,
+                clientX: 10,
+                clientY: 10
+            }));
+            expect(storeConfig.canvas.actions.zoomAroundPointer).toHaveBeenCalledWith(expect.anything(), {
+                delta: 1,
+                cursorX: 5,
+                cursorY: 0
+            });
         });
     });
 });
