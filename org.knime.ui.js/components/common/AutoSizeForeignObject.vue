@@ -1,5 +1,4 @@
 <script>
-/* eslint-disable vue/multiline-html-element-content-newline */
 import { mapState } from 'vuex';
 const IGNORE_SIZE_CHANGE_SMALLER_THEN = 1; // pixel
 
@@ -113,17 +112,19 @@ export default {
     <div
       ref="wrapper"
       class="wrapper"
-    ><!--
-      --><slot /><!--
-    --></div>
+    >
+      <slot />
+    </div>
   </foreignObject>
 </template>
 
 <style lang="postcss" scoped>
 .container {
   & .wrapper {
-    display: inline-block;
-    width: auto;
+    display: block;
+    /* solves many problems with inline-blocks such as whitespace; https://caniuse.com/intrinsic-width */
+    width: -moz-fit-content;
+    width: fit-content;
     padding: 0;
     margin: 0;
     border: 0;

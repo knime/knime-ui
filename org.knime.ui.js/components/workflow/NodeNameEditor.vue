@@ -1,5 +1,5 @@
 <script>
-
+/* eslint-disable vue/multiline-html-element-content-newline */
 import NodeName from '~/components/workflow/NodeName';
 
 /**
@@ -17,8 +17,14 @@ export default {
             type: RegExp
         }
     },
+    watch: {
+        value(newValue) {
+            this.$refs.ghost.innerText = newValue;
+        }
+    },
     mounted() {
         this.$nextTick(() => {
+            this.$refs.ghost.innerText = this.value;
             this.adjustDimensions();
             if (this.$refs.textarea) {
                 this.$refs.textarea.focus();
@@ -38,6 +44,7 @@ export default {
             }
 
             this.$refs.textarea.value = value;
+            this.$refs.ghost.innerText = value;
             this.adjustDimensions();
             this.$emit('input', value);
         },
@@ -62,6 +69,13 @@ export default {
             if (!textarea) {
                 return;
             }
+            // width
+            let width = Math.min(
+                Math.max(this.$refs.ghost.scrollWidth + 2, this.$shapes.nodeNameEditorMinWidth),
+                this.$shapes.maxNodeNameWidth
+            );
+            textarea.style.width = `${width}px`;
+            // height
             textarea.style.height = 'auto';
             textarea.style.height = `${textarea.scrollHeight}px`;
         },
@@ -80,8 +94,12 @@ export default {
     :adjust-dimension-before-hook="resizeTextarea"
     @width="$emit('width', $event)"
     @height="$emit('height', $event)"
-  >
-    <textarea
+  ><!--
+    --><span
+      ref="ghost"
+      class="ghost"
+    /><!--
+    --><textarea
       ref="textarea"
       rows="1"
       class="name-textarea"
@@ -91,14 +109,31 @@ export default {
       @keydown="onKeyDown"
       @keydown.enter="onEnter"
       @keydown.esc="onEsc"
-    />
-  </NodeName>
+    /><!--
+  --></NodeName>
 </template>
 
 <style lang="postcss" scoped>
+.ghost {
+  visibility: hidden;
+  position: absolute;
+  top: -1000px;
+  left: -10000px;
+  text-align: inherit;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit; /* inherit all font styles from parent element */
+  letter-spacing: inherit;
+  overflow: hidden;
+  color: inherit;
+  outline: none;
+}
+
 .name-textarea {
   display: block;
-  width: 100%;
+  width: 1px;
+
   text-align: inherit;
 
   border: 0;
@@ -120,15 +155,14 @@ export default {
 /* change some styles of NodeName in edit mode */
 .editor {
   outline: 1px solid var(--knime-silver-sand);
-  background: var(--knime-white);
+
+  /* FF does not support background of <foreignObject> */
+  & >>> .wrapper {
+    background-color: var(--knime-white);
+  }
 
   &:focus-within {
     outline: 1px solid var(--knime-masala);
-  }
-
-  /* this fixes the position of the textarea */
-  & >>> .wrapper {
-    display: block;
   }
 }
 </style>

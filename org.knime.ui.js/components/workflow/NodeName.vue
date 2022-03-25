@@ -109,30 +109,8 @@ export default {
     overflow: hidden;
   }
 
-  & .textarea {
-    display: block;
-    width: 100%;
-    text-align: inherit;
-
-    border: 0;
-    padding: 0;
-    margin: 0;
-    resize: none;
-    background-color: transparent;
-    font: inherit; /* inherit all font styles from parent element */
-    letter-spacing: inherit;
-    overflow: hidden;
-    color: inherit;
-    outline: none;
-
-    &::placeholder {
-      color: var(--knime-silver-sand);
-    }
-  }
-
   & .node-name {
     text-align: center;
-
     padding: calc(var(--node-name-padding-shape) * 1px);
     overflow: hidden;
     line-height: calc(var(--node-name-line-height-shape) * 1px);
