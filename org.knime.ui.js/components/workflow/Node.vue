@@ -586,6 +586,8 @@ export default {
       <NodeNameEditor
         v-model="currentName"
         :transform="`translate(${position.x}, ${position.y})`"
+        :start-width="nameWidth"
+        :start-height="nameHeight"
         @width="nameWidth = $event"
         @height="nameHeight = $event"
         @save="saveNameEdit"

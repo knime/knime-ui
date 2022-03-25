@@ -62,9 +62,17 @@ export default {
     methods: {
         // foreignObject requires `width` and `height` attributes, or the content is cut off.
         // So we need to 1. render, 2. measure, 3. update
-        adjustDimensions() {
+        adjustDimensions({ startWidth, startHeight } = {}) {
+            // start values (useful if this component replaces another one with the given size to avoid jumping)
+            if (startWidth) {
+                this.width = startWidth;
+            }
+            if (startHeight) {
+                this.height = startHeight;
+            }
             this.adjustDimensionBeforeHook();
-            // 1. render with max width
+            const lastWidth = this.width;
+            // 1. render with max width or given startWidth
             this.width = this.maxWidth;
             this.$nextTick(() => { // wait for re-render
                 // 2. measure content's actual size
@@ -79,8 +87,10 @@ export default {
 
                 // 3. set container size to content size
                 // avoid width jitter
-                if (Math.abs(this.width - width) > IGNORE_SIZE_CHANGE_SMALLER_THEN) {
+                if (Math.abs(lastWidth - width) > IGNORE_SIZE_CHANGE_SMALLER_THEN) {
                     this.width = width;
+                } else {
+                    this.width = lastWidth;
                 }
                 // avoid height jitter
                 if (Math.abs(this.height - height) > IGNORE_SIZE_CHANGE_SMALLER_THEN) {

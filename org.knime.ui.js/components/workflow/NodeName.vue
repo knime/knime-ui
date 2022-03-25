@@ -42,8 +42,8 @@ export default {
         this.adjustDimensions();
     },
     methods: {
-        adjustDimensions() {
-            this.$refs.container?.adjustDimensions();
+        adjustDimensions(cfg) {
+            this.$refs.container?.adjustDimensions(cfg);
         }
     }
 };

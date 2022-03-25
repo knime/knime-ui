@@ -15,6 +15,16 @@ export default {
         pattern: {
             default: null,
             type: RegExp
+        },
+        /* start width to avoid jumping on replace of <NodeName> */
+        startWidth: {
+            type: Number,
+            default: null
+        },
+        /* start height to avoid jumping on replace of <NodeName> */
+        startHeight: {
+            type: Number,
+            default: null
         }
     },
     watch: {
@@ -25,7 +35,7 @@ export default {
     mounted() {
         this.$nextTick(() => {
             this.$refs.ghost.innerText = this.value;
-            this.adjustDimensions();
+            this.adjustDimensions({ startWidth: this.startWidth, startHeight: this.startHeight });
             if (this.$refs.textarea) {
                 this.$refs.textarea.focus();
                 this.$refs.textarea.select();
@@ -79,8 +89,8 @@ export default {
             textarea.style.height = 'auto';
             textarea.style.height = `${textarea.scrollHeight}px`;
         },
-        adjustDimensions() {
-            this.$refs.nodeName?.adjustDimensions();
+        adjustDimensions(cfg) {
+            this.$refs.nodeName?.adjustDimensions(cfg);
         }
     }
 };
@@ -133,9 +143,7 @@ export default {
 .name-textarea {
   display: block;
   width: 1px;
-
   text-align: inherit;
-
   border: 0;
   padding: 0;
   margin: 0;
