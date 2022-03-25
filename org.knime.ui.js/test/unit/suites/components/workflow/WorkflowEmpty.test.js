@@ -78,6 +78,6 @@ describe('WorkflowEmpty', () => {
         const width = border.attributes().width;
 
         expect(height).toBe('952');
-        expect(width).toBe('460');
+        expect(width).toBe('452');
     });
 });
