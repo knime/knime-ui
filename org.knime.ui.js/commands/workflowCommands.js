@@ -58,7 +58,7 @@ export default {
 
     },
     editName: {
-        text: 'Edit Name',
+        text: 'Rename',
         hotkey: ['F2'],
         execute:
             ({ $store }) => $store.dispatch('workflow/openNameEditor',
