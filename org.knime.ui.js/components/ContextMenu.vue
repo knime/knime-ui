@@ -41,8 +41,7 @@ export default {
             const somethingSelected = selectedNodes.length || selectedConnections.length;
             const isLoopEnd = Boolean(singleSelectedNode?.loopInfo?.allowedActions);
             const isView = singleSelectedNode && 'canOpenView' in singleSelectedNode.allowedActions;
-            const nameIsEditable = singleSelectedNode && ['metanode', 'component'].includes(singleSelectedNode.kind) &&
-                !singleSelectedNode.link;
+            const isMetanodeOrComponent = ['metanode', 'component'].includes(singleSelectedNode?.kind);
 
             let allMenuItems = {
                 // Node Execution
@@ -56,7 +55,7 @@ export default {
                 // Exactly one node selected
                 configureNode: singleSelectedNode,
                 openView: isView,
-                editName: nameIsEditable,
+                editName: isMetanodeOrComponent,
 
                 // Something selected
                 deleteSelected: somethingSelected,
