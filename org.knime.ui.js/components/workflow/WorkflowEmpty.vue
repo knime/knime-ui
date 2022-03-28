@@ -7,7 +7,25 @@ export default {
         ArrowDown
     },
     computed: {
-        ...mapGetters('canvas', ['canvasSize'])
+        ...mapGetters('canvas', ['canvasSize']),
+        style() {
+            const { height, width } = this.canvasSize;
+            /* eslint-disable no-magic-numbers */
+            // for styling purposes only
+            const centerX = width * 0.5;
+            const centerY = height * 0.4;
+
+            return {
+                rectWidth: width - 48,
+                rectHeight: height - 48,
+                iconPosX: centerX - 32,
+                iconPosY: height * 0.38,
+                textPosX: centerX,
+                textPosY: centerY + 90,
+                spanPosY: centerY + 126
+            };
+            /* eslint-enable no-magic-numbers */
+        }
     }
 };
 </script>
@@ -22,15 +40,15 @@ export default {
       stroke="var(--knime-gray-dark-semi)"
       stroke-linecap="square"
       stroke-dasharray="9,19"
-      :width="canvasSize.width - 48"
-      :height="canvasSize.height - 48"
+      :width="style.rectWidth"
+      :height="style.rectHeight"
     />
     <ArrowDown
       height="64px"
       width="64px"
       stroke="var(--knime-masala)"
-      :x="(canvasSize.width * 0.5) - 32"
-      :y="canvasSize.height * 0.38"
+      :x="style.iconPosX"
+      :y="style.iconPosY"
     />
     <g
       class="text"
@@ -38,13 +56,13 @@ export default {
       text-anchor="middle"
     >
       <text
-        :x="canvasSize.width * 0.5"
-        :y="(canvasSize.height * 0.4) + 90"
+        :x="style.textPosX"
+        :y="style.textPosY"
       >
         Start building your workflow by
         <tspan
-          :x="canvasSize.width * 0.5"
-          :y="(canvasSize.height * 0.4) + 126"
+          :x="style.textPosX"
+          :y="style.spanPosY"
         >
           dropping your nodes here.
         </tspan>
