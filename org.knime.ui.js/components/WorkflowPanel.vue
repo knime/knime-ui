@@ -2,21 +2,14 @@
 import { mapState, mapGetters } from 'vuex';
 import StreamingIcon from '~/webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
 import ContextMenu from '~/components/ContextMenu';
-import Workflow from '~/components/workflow/Workflow';
-import Kanvas from '~/components/Kanvas';
-import SelectionRectangle from '~/components/SelectionRectangle';
-
-import { dropNode } from '~/mixins';
+import WorkflowCanvas from '~/components/WorkflowCanvas';
 
 export default {
     components: {
         StreamingIcon,
         ContextMenu,
-        SelectionRectangle,
-        Workflow,
-        Kanvas
+        WorkflowCanvas
     },
-    mixins: [dropNode],
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
@@ -31,9 +24,6 @@ export default {
         ])
     },
     methods: {
-        /*
-          Selection
-        */
         onContextMenu(e) {
             // TODO: NXT-844 why prevent right clicks with ctrl?
             // ignore click with ctrl and meta keys
@@ -49,18 +39,14 @@ export default {
 <template>
   <div
     :class="['workflow-panel', { 'read-only': !isWritable }]"
-    @drop.stop="onDrop"
-    @dragover.stop="onDragOver"
     @contextmenu.prevent="onContextMenu"
   >
-    <ContextMenu
-      ref="contextMenu"
-    />
+    <ContextMenu ref="contextMenu" />
 
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
       v-if="isLinked || isStreaming || isInsideLinked"
-      :class="['workflow-info', {onlyStreaming: isStreaming && !isLinked}]"
+      :class="['workflow-info', { onlyStreaming: isStreaming && !isLinked }]"
     >
       <span v-if="isInsideLinked">
         This is a {{ workflow.info.containerType }} inside a linked {{ insideLinkedType }} and cannot be edited.
@@ -77,29 +63,15 @@ export default {
       </span>
     </div>
 
-    <Kanvas
-      id="kanvas"
-      ref="kanvas"
-    >
-      <!-- Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
-           instead of diffing old and new workflow -->
-      <Workflow
-        ref="workflow"
-        :key="`${workflow.projectId}-${activeWorkflowId}`"
-      />
-      <!-- The SelectionRectangle registers to the selection-pointer{up,down,move} events of its parent (the Kanvas) -->
-      <SelectionRectangle
-        @node-selection-preview="$refs.workflow.showNodeSelectionPreview($event)"
-      />
-    </Kanvas>
+    <!--
+      Setting key to match exactly one workflow, causes knime-ui to re-render the whole component,
+      instead of diffing old and new workflow.
+    -->
+    <WorkflowCanvas :key="`${workflow.projectId}-${activeWorkflowId}`" />
   </div>
 </template>
 
 <style lang="postcss" scoped>
-#kanvas >>> svg {
-  color: var(--knime-masala);
-}
-
 .workflow-panel {
   height: 100%;
   width: 100%;
@@ -148,7 +120,6 @@ export default {
     flex-shrink: 0;
     align-items: center;
 
-    /* stylelint-disable-next-line no-descending-specificity */
     & svg {
       margin-right: 5px;
       width: 32px;

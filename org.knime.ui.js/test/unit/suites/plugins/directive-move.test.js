@@ -30,8 +30,8 @@ describe('directive-move', () => {
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
         wrapper.vm.$vnode.elm.onpointerdown({
-            screenX: 100,
-            screenY: 100,
+            clientX: 100,
+            clientY: 100,
             stopPropagation: jest.fn(),
             preventDefault: jest.fn(),
             target: dummyTarget
@@ -46,15 +46,15 @@ describe('directive-move', () => {
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
         wrapper.vm.$vnode.elm.onpointerdown({
-            screenX: 50,
-            screenY: 50,
+            clientX: 50,
+            clientY: 50,
             stopPropagation: jest.fn(),
             preventDefault: jest.fn(),
             target: dummyTarget
         });
         wrapper.vm.$vnode.elm.onpointermove({
-            screenX: 53,
-            screenY: 50,
+            clientX: 53,
+            clientY: 50,
             stopPropagation: jest.fn(),
             preventDefault: jest.fn(),
             target: dummyTarget
@@ -69,15 +69,15 @@ describe('directive-move', () => {
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
         });
         wrapper.vm.$vnode.elm.onpointerdown({
-            screenX: 50,
-            screenY: 50,
+            clientX: 50,
+            clientY: 50,
             stopPropagation: jest.fn(),
             preventDefault: jest.fn(),
             target: dummyTarget
         });
         wrapper.vm.$vnode.elm.onpointermove({
-            screenX: 100,
-            screenY: 100,
+            clientX: 100,
+            clientY: 100,
             stopPropagation: jest.fn(),
             preventDefault: jest.fn(),
             target: dummyTarget
@@ -91,8 +91,8 @@ describe('directive-move', () => {
             totalDeltaY: 50
         }));
         wrapper.vm.$vnode.elm.onpointermove({
-            screenX: 150,
-            screenY: 150,
+            clientX: 150,
+            clientY: 150,
             stopPropagation: jest.fn(),
             preventDefault: jest.fn(),
             target: dummyTarget
@@ -113,22 +113,22 @@ describe('directive-move', () => {
         });
         wrapper.vm.$vnode.elm.releasePointerCapture = jest.fn();
         wrapper.vm.$vnode.elm.onpointerdown({
-            screenX: 50,
-            screenY: 50,
+            clientX: 50,
+            clientY: 50,
             stopPropagation: jest.fn(),
             preventDefault: jest.fn(),
             target: dummyTarget
         });
         wrapper.vm.$vnode.elm.onpointermove({
-            screenX: 100,
-            screenY: 100,
+            clientX: 100,
+            clientY: 100,
             stopPropagation: jest.fn(),
             preventDefault: jest.fn(),
             target: dummyTarget
         });
         wrapper.vm.$vnode.elm.onpointerup({
-            screenX: 100,
-            screenY: 100,
+            clientX: 100,
+            clientY: 100,
             stopPropagation: jest.fn(),
             preventDefault: jest.fn(),
             target: dummyTarget

@@ -18,6 +18,7 @@ export default {
         },
         zoomMenuItems() {
             return [
+                'fillScreen',
                 'fitToScreen',
                 'zoomIn',
                 'zoomOut',
@@ -34,7 +35,7 @@ export default {
             let newZoomFactor = parseInt(e.target.value, 10) / 100;
 
             if (!isNaN(newZoomFactor)) {
-                this.$store.commit('canvas/setFactor', newZoomFactor);
+                this.$store.dispatch('canvas/zoomCentered', { factor: newZoomFactor });
             }
 
             // de-focus input. Resets and formats zoom level
@@ -56,7 +57,7 @@ export default {
         },
         onWheel(e) {
             const delta = e.deltaY < 0 ? 1 : -1;
-            this.$store.dispatch('canvas/zoomCentered', delta);
+            this.$store.dispatch('canvas/zoomCentered', { delta });
         }
     }
 };

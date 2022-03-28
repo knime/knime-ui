@@ -3,10 +3,8 @@ import { mapGetters, mapActions } from 'vuex';
 import PortWithTooltip from '~/components/workflow/PortWithTooltip';
 import Port from '~/components/workflow/Port';
 import Connector from '~/components/workflow/Connector';
-import { throttle } from 'lodash';
+import throttle from 'raf-throttle';
 import { circleDetection } from '~/util/compatibleConnections';
-
-const MOVE_THROTTLE = 10;
 
 export default {
     components: {
@@ -44,7 +42,7 @@ export default {
         dragConnector: null
     }),
     computed: {
-        ...mapGetters('canvas', ['fromAbsoluteCoordinates']),
+        ...mapGetters('canvas', ['toCanvasCoordinates']),
         ...mapGetters('workflow', ['isWritable']),
         /*
          * only in-Ports replace their current connector if a new one is connected
@@ -72,7 +70,7 @@ export default {
         /* ======== Drag Connector ======== */
         positionOnCanvas([x, y]) {
             const { offsetLeft, offsetTop, scrollLeft, scrollTop } = this.kanvasElement;
-            let result = this.fromAbsoluteCoordinates([
+            let result = this.toCanvasCoordinates([
                 x - offsetLeft + scrollLeft,
                 y - offsetTop + scrollTop
             ]);
@@ -230,7 +228,7 @@ export default {
 
             this.dragConnector.absolutePoint = [absoluteX, absoluteY];
             /* eslint-enable no-invalid-this */
-        }, MOVE_THROTTLE)
+        })
     }
 };
 </script>

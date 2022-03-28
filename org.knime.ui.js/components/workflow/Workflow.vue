@@ -22,14 +22,6 @@ export default {
         WorkflowEmpty
     },
     mixins: [dropNode],
-    data() {
-        return {
-            /*
-              Truthy if currently panning. Stores mouse origin
-            */
-            panning: null
-        };
-    },
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
@@ -54,7 +46,7 @@ export default {
     },
     methods: {
         // public
-        showNodeSelectionPreview({ nodeId, type }) {
+        applyNodeSelectionPreview({ nodeId, type }) {
             this.$refs[`node-${nodeId}`][0].setSelectionPreview(type);
         }
     }
