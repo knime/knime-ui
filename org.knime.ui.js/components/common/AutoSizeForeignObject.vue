@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-const IGNORE_SIZE_CHANGE_SMALLER_THEN = 1; // pixel
+const MINIMUM_SIZE_CHANGE = 1; // pixel
 
 /**
  * A <foreignObject> that can be used in SVG to render HTML. It automatically updates the size based on the contents.
@@ -70,6 +70,11 @@ export default {
             if (startHeight) {
                 this.height = startHeight;
             }
+
+            if (startWidth && startHeight) {
+                return; // end here
+            }
+
             if (this.adjustDimensionBeforeHook) {
                 // this is required for FF
                 await this.$nextTick(() => {
@@ -92,13 +97,13 @@ export default {
 
                 // 3. set container size to content size
                 // avoid width jitter
-                if (Math.abs(lastWidth - width) > IGNORE_SIZE_CHANGE_SMALLER_THEN) {
+                if (Math.abs(lastWidth - width) > MINIMUM_SIZE_CHANGE) {
                     this.width = width;
                 } else {
                     this.width = lastWidth;
                 }
                 // avoid height jitter
-                if (Math.abs(this.height - height) > IGNORE_SIZE_CHANGE_SMALLER_THEN) {
+                if (Math.abs(this.height - height) > MINIMUM_SIZE_CHANGE) {
                     this.height = height;
                 }
 
