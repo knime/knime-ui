@@ -11,9 +11,8 @@ import portShift from '~/util/portShift';
 import NodeActionBar from '~/components/workflow/NodeActionBar';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
 import NodeName from '~/components/workflow/NodeName';
-import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar';
+import NodeNameEditor from '~/components/workflow/NodeNameEditor';
 import { snapConnector } from '~/mixins';
-import NodeNameEditor from './NodeNameEditor';
 
 /**
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
@@ -26,7 +25,6 @@ import NodeNameEditor from './NodeNameEditor';
  * */
 export default {
     components: {
-        NodeNameEditor,
         NodeActionBar,
         DraggablePortWithTooltip,
         NodeAnnotation,
@@ -36,7 +34,7 @@ export default {
         StreamingDecorator,
         LoopDecorator,
         NodeName,
-        NodeNameEditorActionBar,
+        NodeNameEditor,
         NodeSelectionPlane
     },
     mixins: [snapConnector],
@@ -171,10 +169,8 @@ export default {
     data() {
         return {
             hover: false,
-            nameEditorOpen: false,
             nameWidth: 0,
             nameHeight: 20,
-            currentName: this.name,
             showSelectionPreview: null
         };
     },
@@ -183,7 +179,10 @@ export default {
             projectId: 'activeProjectId'
         }),
         ...mapGetters('selection', ['isNodeSelected']),
-        ...mapState('workflow', ['isDragging']),
+        ...mapState('workflow', ['isDragging', 'nameEditorNodeId']),
+        nameEditorIsOpen() {
+            return this.nameEditorNodeId === this.id;
+        },
         decoratorBackgroundType() {
             if (this.type) {
                 return this.type;
@@ -300,9 +299,6 @@ export default {
         }
     },
     watch: {
-        name(newValue) {
-            this.currentName = newValue;
-        },
         nameHeight(newValue) {
             this.$parent.$emit('node-selection-plane-extra-height-changed', newValue);
         },
@@ -311,7 +307,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('workflow', ['openDialog', 'updateComponentOrMetanodeName']),
+        ...mapActions('workflow', ['openDialog', 'openNameEditor']),
         ...mapActions('selection', ['selectNode', 'deselectAllObjects', 'deselectNode']),
         portShift,
         onLeaveHoverArea(e) {
@@ -324,22 +320,6 @@ export default {
 
             // disable hover state if the mouse leaves the hover area of the node
             this.hover = false;
-        },
-
-        saveNameEdit() {
-            // reset to old value on empty edits
-            if (this.currentName === '') {
-                this.currentName = this.name;
-            }
-            // call api via store
-            this.updateComponentOrMetanodeName({ nodeId: this.id, name: this.currentName });
-            // close editor
-            this.nameEditorOpen = false;
-        },
-
-        cancelNameEdit() {
-            this.currentName = this.name;
-            this.nameEditorOpen = false;
         },
 
         // default flow variable ports (Mickey Mouse ears) are only shown if connected, selected, or on hover
@@ -570,34 +550,18 @@ export default {
 
     <!-- Node name / title -->
     <portal
-      v-if="nameEditorOpen"
+      v-if="nameEditorIsOpen"
       to="node-name-editor"
     >
-      <!-- Block all inputs to the kanvas -->
-      <rect
-        width="100%"
-        height="100%"
-        x="0"
-        y="0"
-        fill="transparent"
-        @pointerdown.stop.prevent
-        @click.stop.prevent
-      />
-      <NodeNameEditorActionBar
-        :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y })`"
-        @save="saveNameEdit"
-        @close="cancelNameEdit"
-      />
-      <!-- Node name inline editor -->
       <NodeNameEditor
-        v-model="currentName"
-        :transform="`translate(${position.x}, ${position.y})`"
+        :node-id="id"
+        :value="name"
         :start-width="nameWidth"
         :start-height="nameHeight"
+        :action-bar-position="actionBarPosition"
+        :position="position"
         @width="nameWidth = $event"
         @height="nameHeight = $event"
-        @save="saveNameEdit"
-        @close="cancelNameEdit"
       />
     </portal>
     <NodeName
@@ -608,7 +572,7 @@ export default {
       @contextmenu="onContextMenu"
       @width="nameWidth = $event"
       @height="nameHeight = $event"
-      @request-edit="nameEditorOpen = true; hover = false;"
+      @request-edit="openNameEditor(id); hover = false;"
       @mouseenter="hover = true"
       @mouseleave="onLeaveHoverArea"
     />

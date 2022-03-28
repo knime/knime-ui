@@ -23,7 +23,8 @@ export const state = () => ({
     tooltip: null,
     isDragging: false,
     deltaMovePosition: { x: 0, y: 0 },
-    moveNodeGhostThresholdExceeded: false
+    moveNodeGhostThresholdExceeded: false,
+    nameEditorNodeId: null
 });
 
 export const mutations = {
@@ -35,6 +36,9 @@ export const mutations = {
     },
     setActiveSnapshotId(state, id) {
         state.activeSnapshotId = id;
+    },
+    setNameEditorNodeId(state, nodeId) {
+        state.nameEditorNodeId = nodeId;
     },
     setTooltip(state, tooltip) {
         Vue.set(state, 'tooltip', tooltip);
@@ -235,6 +239,14 @@ export const actions = {
         let selectedNodes = rootGetters['selection/selectedNodes'];
         let thresholdExceeded = selectedNodes.length > moveNodeGhostThreshold;
         commit('shiftPosition', { deltaX, deltaY, thresholdExceeded });
+    },
+
+    openNameEditor({ commit }, nodeId) {
+        commit('setNameEditorNodeId', nodeId);
+    },
+
+    closeNameEditor({ commit }) {
+        commit('setNameEditorNodeId', null);
     },
 
     updateComponentOrMetanodeName({ state, getters }, { nodeId, name }) {

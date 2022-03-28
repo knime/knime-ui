@@ -1,13 +1,18 @@
 <script>
 /* eslint-disable vue/multiline-html-element-content-newline */
-import NodeName from '~/components/workflow/NodeName';
+import NodeNameTextarea from '~/components/workflow/NodeNameTextarea';
+import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar';
+import { mapActions } from 'vuex';
 
 /**
  * Inline editor for the node name. Emits 'save' and 'close' events. Implements v-model pattern. On input it might
  * emit 'invalidCharacter' if the input matches given 'pattern' prop.
  */
 export default {
-    components: { NodeName },
+    components: {
+        NodeNameEditorActionBar,
+        NodeNameTextarea
+    },
     props: {
         value: {
             type: String,
@@ -16,6 +21,20 @@ export default {
         pattern: {
             default: null,
             type: RegExp
+        },
+        nodeId: {
+            type: String,
+            required: true
+        },
+        actionBarPosition: {
+            type: Object,
+            required: true,
+            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
+        },
+        position: {
+            type: Object,
+            required: true,
+            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         },
         /* start width to avoid jumping on replace of <NodeName> */
         startWidth: {
@@ -28,144 +47,68 @@ export default {
             default: null
         }
     },
-    mounted() {
-        this.$nextTick(() => {
-            this.adjustDimensions({ startWidth: this.startWidth, startHeight: this.startHeight });
-            if (this.$refs.textarea) {
-                this.$refs.textarea.focus();
-                this.$refs.textarea.select();
-            }
-        });
+    data() {
+        return {
+            currentName: this.value
+        };
+    },
+    watch: {
+        value(newValue) {
+            this.currentName = newValue;
+        }
     },
     methods: {
-        onInput(event) {
-            let value = event.target.value;
-            value = value.replace(/(\r\n|\n|\r)/gm, ''); // remove all new lines
-
-            // remove invalid characters here as well, they could have been sneaked in via paste or drop
-            if (this.pattern && this.pattern.test(value)) {
-                this.$emit('invalidCharacter');
-                value = value.replace(this.pattern, '');
+        ...mapActions('workflow', ['updateComponentOrMetanodeName', 'closeNameEditor']),
+        saveNameEdit() {
+            // reset to old value on empty edits
+            if (this.currentName === '') {
+                this.currentName = this.value;
             }
-
-            this.$refs.textarea.value = value;
-            this.$refs.ghost.innerText = value;
-            this.adjustDimensions();
-            this.$emit('input', value);
+            // call api via store
+            this.updateComponentOrMetanodeName({ nodeId: this.nodeId, name: this.currentName });
+            // close editor
+            this.closeNameEditor();
         },
-        onKeyDown(event) {
-            // prevent inserting invalid characters
-            if (this.pattern && this.pattern.source.includes(event.key.toLowerCase())) {
-                this.$emit('invalidCharacter');
-                event.preventDefault();
-            }
-        },
-        onEnter(event) {
-            event.preventDefault();
-            this.$emit('save');
-        },
-        onEsc(event) {
-            event.preventDefault();
-            this.$emit('close');
-        },
-        resizeTextarea() {
-            let textarea = this.$refs.textarea;
-            if (!textarea) {
-                return;
-            }
-            // width
-            let width = Math.min(
-                Math.max(this.$refs.ghost.scrollWidth + 2, this.$shapes.nodeNameEditorMinWidth),
-                this.$shapes.maxNodeNameWidth
-            );
-            textarea.style.width = `${width}px`;
-            // height
-            textarea.style.height = 'auto';
-            textarea.style.height = `${textarea.scrollHeight}px`;
-        },
-        adjustDimensions(cfg) {
-            this.$refs.nodeName?.adjustDimensions(cfg);
+        cancelNameEdit() {
+            this.currentName = this.value;
+            // close editor
+            this.closeNameEditor();
         }
     }
 };
 </script>
 
 <template>
-  <NodeName
-    ref="nodeName"
-    class="editor"
-    show-overflow
-    :adjust-dimension-before-hook="resizeTextarea"
-    @width="$emit('width', $event)"
-    @height="$emit('height', $event)"
-  ><!--
-    --><span
-      ref="ghost"
-      class="ghost"
-      aria-hidden="true"
-    >{{ value }}</span><!--
-    --><textarea
-      ref="textarea"
-      rows="1"
-      class="name-textarea"
-      :value="value"
-      @pointerdown.stop
-      @input="onInput"
-      @keydown="onKeyDown"
-      @keydown.enter="onEnter"
-      @keydown.esc="onEsc"
-    /><!--
-  --></NodeName>
+  <g>
+    <!-- Block all inputs to the kanvas -->
+    <rect
+      width="100%"
+      height="100%"
+      x="0"
+      y="0"
+      fill="transparent"
+      @pointerdown.stop.prevent
+      @click.stop.prevent
+    />
+    <NodeNameEditorActionBar
+      :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y })`"
+      @save="saveNameEdit"
+      @close="cancelNameEdit"
+    />
+    <!-- Node name inline editor -->
+    <NodeNameTextarea
+      v-model="currentName"
+      :transform="`translate(${position.x}, ${position.y})`"
+      :start-width="startWidth"
+      :start-height="startHeight"
+      @width="$emit('width', $event)"
+      @height="$emit('height', $event)"
+      @save="saveNameEdit"
+      @close="cancelNameEdit"
+    />
+  </g>
 </template>
 
 <style lang="postcss" scoped>
-.ghost {
-  visibility: hidden;
-  position: absolute;
-  top: -10000px;
-  left: -10000px;
-  text-align: inherit;
-  border: 0;
-  padding: 0;
-  margin: 0;
-  font: inherit; /* inherit all font styles from parent element */
-  letter-spacing: inherit;
-  overflow: hidden;
-  color: inherit;
-  outline: none;
-}
 
-.name-textarea {
-  display: block;
-  width: 1px;
-  text-align: inherit;
-  border: 0;
-  padding: 0;
-  margin: 0;
-  resize: none;
-  background-color: transparent;
-  font: inherit; /* inherit all font styles from parent element */
-  letter-spacing: inherit;
-  overflow: hidden;
-  color: inherit;
-  outline: none;
-
-  &::placeholder {
-    color: var(--knime-silver-sand);
-  }
-}
-
-/* change some styles of NodeName in edit mode */
-.editor {
-  outline: 1px solid var(--knime-silver-sand);
-
-  /* FF does not support background of <foreignObject> */
-  & >>> .wrapper {
-    background-color: var(--knime-white);
-  }
-
-  &:focus-within {
-    outline: 1px solid var(--knime-masala);
-  }
-}
 </style>
