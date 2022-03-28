@@ -37,10 +37,12 @@ export default {
             const selectedNodes = this.$store.getters['selection/selectedNodes'];
             const singleSelectedNode = this.$store.getters['selection/singleSelectedNode'];
             const selectedConnections = this.$store.getters['selection/selectedConnections'];
-            
+
             const somethingSelected = selectedNodes.length || selectedConnections.length;
             const isLoopEnd = Boolean(singleSelectedNode?.loopInfo?.allowedActions);
             const isView = singleSelectedNode && 'canOpenView' in singleSelectedNode.allowedActions;
+            const nameIsEditable = singleSelectedNode && ['metanode', 'component'].includes(singleSelectedNode.kind) &&
+                !singleSelectedNode.link;
 
             let allMenuItems = {
                 // Node Execution
@@ -54,7 +56,8 @@ export default {
                 // Exactly one node selected
                 configureNode: singleSelectedNode,
                 openView: isView,
-                
+                editName: nameIsEditable,
+
                 // Something selected
                 deleteSelected: somethingSelected,
 

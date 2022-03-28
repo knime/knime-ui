@@ -57,6 +57,16 @@ export default {
             ({ $store }) => $store.getters['selection/singleSelectedNode']?.allowedActions.canOpenView
 
     },
+    editName: {
+        text: 'Edit Name',
+        hotkey: ['F2'],
+        execute:
+            ({ $store }) => $store.dispatch('workflow/openNameEditor',
+                $store.getters['selection/singleSelectedNode'].id),
+        condition:
+            ({ $store }) => ['metanode', 'component'].includes($store.getters['selection/singleSelectedNode']?.kind) &&
+                !$store.getters['selection/singleSelectedNode']?.link
+    },
     deleteSelected: {
         text: 'Delete',
         title: 'Delete selection',
