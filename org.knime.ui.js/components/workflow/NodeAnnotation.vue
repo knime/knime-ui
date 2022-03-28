@@ -1,5 +1,5 @@
 <script>
-import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';;
+import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
 import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
 /**
  * A node annotation, a rectangular box containing text.

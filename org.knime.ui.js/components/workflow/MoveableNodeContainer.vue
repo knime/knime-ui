@@ -71,14 +71,6 @@ export default {
                 (this.deltaMovePosition.x !== 0 || this.deltaMovePosition.y !== 0);
         }
     },
-    created() {
-        this.$on('node-selection-plane-width-changed', this.updatePlaneWidth);
-        this.$on('node-selection-plane-extra-height-changed', this.updatePlaneExtraHeight);
-    },
-    beforeDestroy() {
-        this.$off('node-selection-plane-width-changed', this.updatePlaneWidth);
-        this.$off('node-selection-plane-extra-height-changed', this.updatePlaneExtraHeight);
-    },
     watch: {
         // If change occurs, position has been updated from the store.
         // Note that the position is not updated while the node is being dragged, only after it's dropped.
@@ -88,6 +80,14 @@ export default {
                 this.handleMoveFromStore();
             }
         }
+    },
+    created() {
+        this.$on('node-selection-plane-width-changed', this.updatePlaneWidth);
+        this.$on('node-selection-plane-extra-height-changed', this.updatePlaneExtraHeight);
+    },
+    beforeDestroy() {
+        this.$off('node-selection-plane-width-changed', this.updatePlaneWidth);
+        this.$off('node-selection-plane-extra-height-changed', this.updatePlaneExtraHeight);
     },
     methods: {
         ...mapActions('selection', ['selectNode', 'deselectNode', 'deselectAllObjects']),

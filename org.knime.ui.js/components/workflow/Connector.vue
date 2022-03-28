@@ -133,7 +133,7 @@ export default {
         onConnectorDropped() {
             // lock this connector in place to prevent it from jumping back before being removed
             // TODO: NXT-954 enable locking again if know when the node will be really removed (only backend knows)
-            //this.suggestDelete = 'locked';
+            // this.suggestDelete = 'locked';
         }
     }
 };
