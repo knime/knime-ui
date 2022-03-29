@@ -113,7 +113,7 @@ export default {
 
     & h2 {
       margin: 0;
-      font-weight: normal;
+      font-weight: 400;
       font-size: 18px;
       line-height: 36px;
     }
@@ -254,7 +254,6 @@ export default {
   & >>> code,
   & >>> samp {
     font-size: 13px;
-    font-family: monospace;
     line-height: 24px;
   }
 

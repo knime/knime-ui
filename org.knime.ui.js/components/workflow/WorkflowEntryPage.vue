@@ -78,7 +78,6 @@ button {
     background-color: var(--knime-masala);
     color: var(--knime-white);
     font-family: "Roboto Condensed", sans-serif;
-    font-weight: normal;
     font-size: 20px;
     border-radius: 0 0 2px 2px;
     transition: all 150ms ease-out;

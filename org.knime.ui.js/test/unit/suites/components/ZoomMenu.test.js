@@ -28,9 +28,11 @@ describe('ZoomMenu', () => {
                     state: {
                         zoomFactor
                     },
-                    mutations: {
-                        setFactor(state, factor) {
-                            state.zoomFactor = factor;
+                    actions: {
+                        zoomCentered({ state }, { delta, factor }) {
+                            if (factor) {
+                                state.zoomFactor = factor;
+                            }
                         }
                     }
                 }
@@ -117,7 +119,7 @@ describe('ZoomMenu', () => {
         doMount(shallowMount);
 
         wrapper.findComponent(SubMenu).vm.$emit('item-click', null, { name: 'command' });
-        
+
         expect($commands.dispatch).toHaveBeenCalledWith('command');
     });
 
@@ -129,10 +131,10 @@ describe('ZoomMenu', () => {
         let input = wrapper.find('.zoom-input');
         await input.trigger('wheel', { deltaY: 1 });
 
-        expect($store.dispatch).toHaveBeenCalledWith('canvas/zoomCentered', -1);
+        expect($store.dispatch).toHaveBeenCalledWith('canvas/zoomCentered', { delta: -1 });
 
         await input.trigger('wheel', { deltaY: -1 });
 
-        expect($store.dispatch).toHaveBeenCalledWith('canvas/zoomCentered', 1);
+        expect($store.dispatch).toHaveBeenCalledWith('canvas/zoomCentered', { delta: 1 });
     });
 });

@@ -28,6 +28,13 @@ const selectionCommands = {
     }
 };
 
+const sidePanel = {
+    toggleSidePanel: {
+        hotkey: ['Ctrl', 'P'],
+        execute: ({ $store }) => $store.dispatch('panel/toggleExpanded')
+    }
+};
+
 export default {
     ...applicationCommands,
     ...conditionGroup(
@@ -38,6 +45,7 @@ export default {
             ...selectionCommands,
             ...canvasCommands
         }
-    )
+    ),
+    ...sidePanel
 };
 

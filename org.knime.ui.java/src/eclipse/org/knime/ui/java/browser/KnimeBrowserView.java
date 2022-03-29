@@ -35,6 +35,7 @@ import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.CreateWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.JsonRpcBrowserFunction;
+import org.knime.ui.java.browser.function.OpenLegacyFlowVariableDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeViewBrowserFunction;
 import org.knime.ui.java.browser.function.OpenWorkflowBrowserFunction;
@@ -148,6 +149,7 @@ public class KnimeBrowserView {
         new SwitchToJavaUIBrowserFunction(m_browser);
         new OpenNodeViewBrowserFunction(m_browser);
         new OpenNodeDialogBrowserFunction(m_browser);
+        new OpenLegacyFlowVariableDialogBrowserFunction(m_browser);
         new SaveWorkflowBrowserFunction(m_browser);
         new OpenWorkflowBrowserFunction(m_browser, appStateProvider);
 		new CloseWorkflowBrowserFunction(m_browser, appStateProvider);
