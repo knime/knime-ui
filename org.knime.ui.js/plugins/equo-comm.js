@@ -1,3 +1,6 @@
+// TODO this file will be removed with NXT-987
+/* istanbul ignore file */
+/* eslint-disable */
 let EquoCommService;
 (() => {
     'use strict';

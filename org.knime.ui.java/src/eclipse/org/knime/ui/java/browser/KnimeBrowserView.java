@@ -185,12 +185,10 @@ public class KnimeBrowserView {
 
     private static BiConsumer<String, Object> initializeJavaBrowserCommunication(final String jsonRpcActionId,
         final String jsonRpcNotificationActionId) {
-        var commService = CommServiceProvider.getCommService().orElse(null);
-        if (commService == null) {
-            throw new IllegalStateException("No CEF communication service available!");
-        }
-        JsonRpcRequestHandler jsonRpcHandler = new DefaultJsonRpcRequestHandler();
+        var commService = CommServiceProvider.getCommService()
+            .orElseThrow(() -> new IllegalStateException("No CEF communication service available!"));
 
+        JsonRpcRequestHandler jsonRpcHandler = new DefaultJsonRpcRequestHandler();
         commService.on(jsonRpcActionId, message -> { // NOSONAR
             return new String(jsonRpcHandler.handle(message.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8);
         });
