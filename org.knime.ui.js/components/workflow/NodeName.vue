@@ -71,7 +71,7 @@ export default {
     >
       <span
         :style="{'max-width': `${maxWidth}px`}"
-        :title="showOverflow ? '' : (editable ? 'Double click to edit: ' : '') + value"
+        :title="showOverflow ? '' : value"
         class="text"
       ><slot>{{ value }}</slot></span>
     </div>
