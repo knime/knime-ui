@@ -213,6 +213,6 @@ export default () => {
     // eslint-disable-next-line no-console
     EquoCommService.on('org.knime.ui.java.jsonrpcNotification', window.jsonrpcNotification, e => console.error(e));
     if (!window.jsonrpc) {
-        window.jsonrpc = request => EquoCommService.send('org.knime.ui.java.jsonrpc', request);
+        window.jsonrpc = request => EquoCommService.send('org.knime.ui.java.jsonrpc', JSON.stringify(request));
     }
 };

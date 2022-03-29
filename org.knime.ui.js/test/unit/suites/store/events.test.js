@@ -40,7 +40,7 @@ describe('Events store', () => {
         });
 
         it('handles AppStateChangedEvents', () => {
-            store.dispatch('jsonrpc/AppStateChangedEvent', [{ appState: { openedWorkflows: { id: 1 } } }]);
+            store.dispatch('events/AppStateChangedEvent', [{ appState: { openedWorkflows: { id: 1 } } }]);
 
             expect(replaceApplicationStateMock).toHaveBeenCalledWith(
                 expect.anything(), { openedWorkflows: { id: 1 } }

@@ -1,5 +1,3 @@
-let parseResponse;
-
 /**
  * Call the JSON-RPC API as defined
  * in knime-com-shared/src/master/com.knime.gateway.codegen/src-gen/api/web-ui/gateway.yaml
@@ -26,7 +24,7 @@ export default async (method, ...args) => {
 
     let response;
     try {
-        response = window.jsonrpc(JSON.stringify(req));
+        response = window.jsonrpc(req);
         if (response instanceof Promise) {
             consola.trace('using synchronous backend');
             response = await response;
@@ -35,7 +33,7 @@ export default async (method, ...args) => {
         throw new Error(`Error calling JSON-RPC api "${[method, JSON.stringify(args)].join('", "')}": ${e.message}`);
     }
 
-    return response.result;
+    return handleResponse(response, method, args);
 };
 
 /**
@@ -45,18 +43,21 @@ export default async (method, ...args) => {
  * @param {Array} args (only for logging) The arguments that were passed to the method
  * @returns {*} The `result` contained in the JSON-RPC object
  * */
-parseResponse = ({ response, method = '<unknown>', args }) => {
-    let result, error;
-
+const parseResponse = ({ response, method = '<unknown>', args }) => {
+    let parsedResponse;
     try {
-        ({ result, error } = JSON.parse(response));
+        parsedResponse = JSON.parse(response);
     } catch (e) {
         throw new Error(`Could not be parsed as JSON-RPC: ${response}`);
     }
+    return handleResponse(parsedResponse, method, args);
+};
 
+const handleResponse = (response, method = '<unknown>', args) => {
+    let { result, error } = response;
     if (error) {
         if (result) {
-            consola.error(`Invalid JSON-RPC response ${response}`);
+            consola.error(`Invalid JSON-RPC response ${JSON.stringify(response)}`);
         }
         throw new Error(
             `Error returned from JSON-RPC API ${JSON.stringify([method, args])}: ${JSON.stringify(error)}`
@@ -64,7 +65,7 @@ parseResponse = ({ response, method = '<unknown>', args }) => {
     }
 
     if (typeof result === 'undefined') {
-        throw new Error(`Invalid JSON-RPC response ${response}`);
+        throw new Error(`Invalid JSON-RPC response ${JSON.stringify(response)}`);
     }
 
     consola.trace('JSON-RPC Result:', result);
