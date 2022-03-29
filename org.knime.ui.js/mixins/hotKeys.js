@@ -64,6 +64,11 @@ export const hotKeys = {
                 return;
             }
 
+            // Used in the NodeDescriptionPanel. If further use cases arise, think about a more general solution
+            if (e.key === 'Escape') {
+                this.$root.$emit('escape-pressed');
+            }
+
             // This currently only looks for the first command that matches the hotkey
             let command = this.$commands.findByHotkey(e);
             if (command && this.$commands.isEnabled(command)) {

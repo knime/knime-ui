@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { createLocalVue, shallowMount, createWrapper } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
@@ -127,6 +127,14 @@ describe('HotKeys', () => {
             expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
             expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledTimes(2);
         });
+    });
+
+    test('Escape triggers event', () => {
+        doShallowMount();
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+            
+        let rootWrapper = createWrapper(wrapper.vm.$root);
+        expect(rootWrapper.emitted('escape-pressed')).toBeTruthy();
     });
 
     test('command found and is enabled', () => {

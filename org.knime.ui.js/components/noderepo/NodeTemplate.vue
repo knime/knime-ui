@@ -15,13 +15,15 @@ export default {
     },
     data() {
         return {
-            dragGhost: null
+            dragGhost: null,
+            selectAfterDrag: false
         };
     },
     computed: {
         ...mapState('nodeRepository', ['selectedNode']),
         ...mapState('panel', ['activeDescriptionPanel']),
         ...mapGetters('workflow', ['isWritable']),
+        // NXT: 844 the naming of this property doesnt fit its condition. Being selected is independend of the activeDescriptionPanel
         isSelected() {
             return this.activeDescriptionPanel && (this.nodeTemplate.id === this.selectedNode.id);
         }
@@ -30,7 +32,12 @@ export default {
         ...mapActions('panel', ['openDescriptionPanel', 'closeDescriptionPanel']),
         ...mapMutations('nodeRepository', ['setSelectedNode']),
         onDragStart(e) {
+            // remember if this node was selected
+            this.selectAfterDrag = this.isSelected;
+            
+            // close description panel and deselect node
             this.closeDescriptionPanel();
+
             // Fix for cursor style for Firefox
             if (!this.isWritable && (navigator.userAgent.indexOf('Firefox') !== -1)) {
                 e.currentTarget.style.cursor = 'not-allowed';
@@ -63,10 +70,22 @@ export default {
                 document.body.removeChild(this.dragGhost);
                 delete this.dragGhost;
             }
+
+            // if drag is aborted and node was selected before, select it again
+            if (e.dataTransfer.dropEffect === 'none' && this.selectAfterDrag) {
+                this.setSelectedNode(this.nodeTemplate);
+                this.openDescriptionPanel();
+            }
         },
         onClick() {
-            this.openDescriptionPanel();
-            this.setSelectedNode(this.nodeTemplate);
+            if (this.isSelected) {
+                // TODO: NXT-844 panel seems to be open, iff node is selected. We could make one trigger the other
+                this.setSelectedNode(null);
+                this.closeDescriptionPanel();
+            } else {
+                this.openDescriptionPanel();
+                this.setSelectedNode(this.nodeTemplate);
+            }
         },
         onDrag(e) {
             if (!this.isWritable) {
