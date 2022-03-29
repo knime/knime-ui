@@ -152,7 +152,7 @@ export default {
     width: -moz-fit-content;
     width: fit-content;
     padding: 0;
-    margin: 0;
+    margin: auto;
     border: 0;
   }
 }
