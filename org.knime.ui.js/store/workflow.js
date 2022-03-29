@@ -256,7 +256,7 @@ export const actions = {
             nodeId,
             name,
             projectId,
-            activeWorkflowId
+            workflowId: activeWorkflowId
         });
     },
 
