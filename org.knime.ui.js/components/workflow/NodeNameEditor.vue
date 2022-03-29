@@ -1,12 +1,11 @@
 <script>
-/* eslint-disable vue/multiline-html-element-content-newline */
 import NodeNameTextarea from '~/components/workflow/NodeNameTextarea';
 import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar';
 import { mapActions } from 'vuex';
 
 /**
- * Inline editor for the node name. Emits 'save' and 'close' events. Implements v-model pattern. On input it might
- * emit 'invalidCharacter' if the input matches given 'pattern' prop.
+ * Node Name Editor. Component wraps inline textarea and editor action bar (cancle, save). It overlays the whole
+ * canvas (via the portal) with a rect that avoids changes to the canvas. Updates of the store are handled here also.
  */
 export default {
     components: {
@@ -90,6 +89,7 @@ export default {
       @pointerdown.stop.prevent
       @click.stop.prevent
     />
+    <!-- Save/Cancel actions -->
     <NodeNameEditorActionBar
       :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y })`"
       @save="saveNameEdit"
@@ -108,7 +108,3 @@ export default {
     />
   </g>
 </template>
-
-<style lang="postcss" scoped>
-
-</style>
