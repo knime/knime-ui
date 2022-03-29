@@ -1,19 +1,13 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { shallowMount } from '@vue/test-utils';
 import * as $shapes from '~/style/shapes';
 import Vue from 'vue';
-import Vuex from 'vuex';
 
 import NodeAnnotation from '~/components/workflow/NodeAnnotation';
 import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
+import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
 
 describe('Node Annotation', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let propsData, mocks, doShallowMount, wrapper;
 
     beforeEach(() => {
         wrapper = null;
@@ -21,17 +15,11 @@ describe('Node Annotation', () => {
             textAlign: 'right',
             text: 'hallo',
             backgroundColor: 'rgb(255, 216, 0)',
-            styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
+            styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
+            yShift: 33
         };
-        $store = mockVuexStore({
-            canvas: {
-                state: {
-                    zoomFactor: 1
-                }
-            }
-        });
         doShallowMount = () => {
-            mocks = { $store, $shapes };
+            mocks = { $shapes, adjustDimensions: jest.fn() };
             wrapper = shallowMount(NodeAnnotation, { propsData, mocks });
         };
     });
@@ -50,16 +38,10 @@ describe('Node Annotation', () => {
             );
         });
 
-        it('respects yShift', () => {
-            expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
-                y: '40'
-            }));
-
-            propsData.yShift = 12;
-            doShallowMount();
-            expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
-                y: '52'
-            }));
+        it('passes yShift to AutoSizeForeignObject', () => {
+            expect(wrapper.findComponent(AutoSizeForeignObject).props('yShift')).toBe(
+                $shapes.nodeSize + $shapes.nodeAnnotationMarginTop + propsData.yShift
+            );
         });
 
         it('passes props to LegacyAnnotationText', () => {
@@ -71,44 +53,10 @@ describe('Node Annotation', () => {
         });
 
         describe('dimension adjustment', () => {
-            let getBoundingClientRectMock;
 
-            beforeEach(async () => {
-                getBoundingClientRectMock = jest.fn();
-                getBoundingClientRectMock.mockReturnValue({
-                    x: 42,
-                    y: 31,
-                    width: 231.5,
-                    height: 128.2
-                });
-                HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
-                doShallowMount();
-                await Vue.nextTick();
-            });
-
-            it('correctly measures when zoomed', async () => {
-                $store.state.canvas.zoomFactor = 2;
-
-                getBoundingClientRectMock.mockReturnValue({
-                    x: 42,
-                    y: 31,
-                    width: 463,
-                    height: 256.4
-                });
-                HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
-
-                doShallowMount();
-                await Vue.nextTick();
-
-                expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
-                    height: '129', width: '232', x: '-100'
-                }));
-            });
 
             it('adjusts dimensions on mount', () => {
-                expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
-                    height: '129', width: '232', x: '-100'
-                }));
+                expect(mocks.adjustDimensions).toHaveBeenCalledTimes(1);
             });
 
 
@@ -121,21 +69,14 @@ describe('Node Annotation', () => {
             propFixtures.forEach(([propName, propValue]) => it(
                 `adjusts dimensions when prop ${propName} changes`,
                 async () => {
-                    getBoundingClientRectMock.mockReturnValueOnce({
-                        x: 143,
-                        y: 32,
-                        width: 232.5,
-                        height: 129.2
-                    });
                     wrapper.setProps({
                         [propName]: propValue
                     });
                     await Vue.nextTick();
                     await Vue.nextTick();
 
-                    expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
-                        height: '130', width: '233', x: '-100.5'
-                    }));
+                    // once on mount and once on the chance
+                    expect(mocks.adjustDimensions).toHaveBeenCalledTimes(2);
                 }
             ));
         });

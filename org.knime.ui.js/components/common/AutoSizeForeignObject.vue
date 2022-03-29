@@ -4,12 +4,15 @@ const MINIMUM_SIZE_CHANGE = 1; // pixel
 
 /**
  * A <foreignObject> that can be used in SVG to render HTML. It automatically updates the size based on the contents.
- * Updates to the contents can be provided via the value prop. It the value changes size is updated.
+ * Updates to the contents can be done via `adjustDimensions` method.
  * It offers limits to the size and always centers around a given parentWidth. It issues 'width' and 'height' events
  * when the size is adjusted so other drawings can update.
  */
 export default {
     props: {
+        /**
+         * Max width of the element.
+         */
         maxWidth: {
             type: Number,
             default: 1000
@@ -21,12 +24,15 @@ export default {
             type: Number,
             default: 0
         },
+        /**
+         * Optional The element is moved on y-axis by the mesaured height (in addition to yShift).
+         */
         shiftByHeight: {
             type: Boolean,
             default: false
         },
         /**
-         * Optional the width of the (visual) parent to center around
+         * Optional the width of the (visual) parent to center around.
          */
         parentWidth: {
             type: Number,
@@ -60,18 +66,20 @@ export default {
         this.adjustDimensions();
     },
     methods: {
+        centerAroundParentWidth() {
+            if (this.parentWidth !== null) {
+                this.x = (this.parentWidth - this.width) / 2;
+            }
+        },
         // foreignObject requires `width` and `height` attributes, or the content is cut off.
         // So we need to 1. render, 2. measure, 3. update
+        // public
         async adjustDimensions({ startWidth, startHeight } = {}) {
             // start values (useful if this component replaces another one with the given size to avoid jumping)
-            if (startWidth) {
-                this.width = startWidth;
-            }
-            if (startHeight) {
-                this.height = startHeight;
-            }
-
             if (startWidth && startHeight) {
+                this.width = startWidth;
+                this.height = startHeight;
+                this.centerAroundParentWidth();
                 return; // end here
             }
 
@@ -109,9 +117,7 @@ export default {
 
                 // update related stuff and emit size
                 // center container
-                if (this.parentWidth !== null) {
-                    this.x = (this.parentWidth - this.width) / 2;
-                }
+                this.centerAroundParentWidth();
                 this.$emit('width', this.width);
                 this.$emit('height', this.height);
             });
