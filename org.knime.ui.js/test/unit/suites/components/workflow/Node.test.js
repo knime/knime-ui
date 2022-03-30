@@ -20,6 +20,7 @@ import '~/plugins/directive-move';
 
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
+import NodeName from '~/components/workflow/NodeName';
 
 const mockPort = ({ index, connectedVia = [] }) => ({
     inactive: false,
@@ -150,8 +151,8 @@ describe('Node', () => {
             doMount();
         });
 
-        it('displays name (plaintext)', () => {
-            expect(wrapper.find('.name').text()).toBe('My Name');
+        it('passes name to NodeName component', () => {
+            expect(wrapper.findComponent(NodeName).props('value')).toBe('My Name');
         });
 
         it('shows/hides LinkDecorator', () => {
@@ -357,7 +358,7 @@ describe('Node', () => {
                 canOpenDialog: true,
                 canOpenView: false
             });
-            expect(wrapper.findComponent(NodeActionBar).attributes().transform).toBe('translate(516 163)');
+            expect(wrapper.findComponent(NodeActionBar).attributes().transform).toBe('translate(516, 161)');
         });
 
         it('click to select', async () => {

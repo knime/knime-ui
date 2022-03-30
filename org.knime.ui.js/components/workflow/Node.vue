@@ -302,6 +302,7 @@ export default {
         nameHeight(newValue) {
             this.$parent.$emit('node-selection-plane-extra-height-changed', newValue);
         },
+        // nameWidth + some margin
         selectionWidth(newValue) {
             this.$parent.$emit('node-selection-plane-width-changed', newValue);
         }
