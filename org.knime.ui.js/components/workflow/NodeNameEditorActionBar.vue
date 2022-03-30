@@ -35,7 +35,7 @@ export default {
             this.$emit('close');
         },
         saveChange(e) {
-            this.$emit('save', this.editorText);
+            this.$emit('save');
         }
     }
 };

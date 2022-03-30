@@ -40,6 +40,10 @@ export default {
     },
     mounted() {
         this.adjustDimensions();
+        // call it again after fonts have been loaded
+        document.fonts.ready.then(() => {
+            this.adjustDimensions();
+        });
     },
     methods: {
         adjustDimensions(cfg) {
