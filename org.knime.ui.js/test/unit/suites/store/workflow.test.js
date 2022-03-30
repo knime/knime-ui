@@ -533,7 +533,7 @@ describe('workflow store', () => {
             let apiMocks = { saveWorkflow };
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
-            
+
             store.dispatch('workflow/saveWorkflow');
 
             expect(saveWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
@@ -544,7 +544,7 @@ describe('workflow store', () => {
             let apiMocks = { closeWorkflow };
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
-            
+
             store.dispatch('workflow/closeWorkflow');
 
             expect(closeWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
@@ -706,7 +706,7 @@ describe('workflow store', () => {
                 expect(store.getters['workflow/workflowBounds']).toStrictEqual({
                     left: -40,
                     right: 92,
-                    top: -16,
+                    top: -11,
                     bottom: 62
                 });
             });
@@ -725,7 +725,7 @@ describe('workflow store', () => {
                 expect(store.getters['workflow/workflowBounds']).toStrictEqual({
                     left: -60,
                     right: 102,
-                    top: -36,
+                    top: -31,
                     bottom: 72
                 });
             });
