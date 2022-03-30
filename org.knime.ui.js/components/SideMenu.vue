@@ -88,9 +88,11 @@ export default {
 .extension-panel-enter-active {
   transition: all 50ms ease-in;
 }
+
 .extension-panel-leave-active {
   transition: all 50ms ease-out;
 }
+
 .extension-panel-enter,
 .extension-panel-leave-to {
   opacity: 0;
@@ -99,9 +101,11 @@ export default {
 .tab-transition-enter-active {
   transition: all 150ms ease-in;
 }
+
 .tab-transition-leave-active {
   transition: all 150ms ease-out;
 }
+
 .tab-transition-enter,
 .tab-transition-leave-to {
   opacity: 0;
