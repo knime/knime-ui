@@ -4,8 +4,8 @@ import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionB
 import { mapActions } from 'vuex';
 
 /**
- * Node Name Editor. Component wraps inline textarea and editor action bar (cancle, save). It overlays the whole
- * canvas (via the portal) with a rect that avoids changes to the canvas. Updates of the store are handled here also.
+ * Node Name Editor. Component wraps inline textarea and editor action bar (cancel, save). It overlays the whole
+ * canvas (via the portal) with a rect that avoids changes to the canvas. Updates of the store are handled here.
  */
 export default {
     components: {
@@ -62,6 +62,8 @@ export default {
             // reset to old value on empty edits
             if (this.currentName === '') {
                 this.currentName = this.value;
+                this.closeNameEditor();
+                return;
             }
             // call api via store
             this.updateComponentOrMetanodeName({ nodeId: this.nodeId, name: this.currentName });
@@ -69,6 +71,7 @@ export default {
             this.closeNameEditor();
         },
         cancelNameEdit() {
+            // reset internal value
             this.currentName = this.value;
             // close editor
             this.closeNameEditor();
@@ -101,6 +104,7 @@ export default {
       :transform="`translate(${position.x}, ${position.y})`"
       :start-width="startWidth"
       :start-height="startHeight"
+      :pattern="pattern"
       @width="$emit('width', $event)"
       @height="$emit('height', $event)"
       @save="saveNameEdit"

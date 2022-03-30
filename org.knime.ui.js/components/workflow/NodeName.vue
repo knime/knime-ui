@@ -2,8 +2,8 @@
 import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
 
 /**
- * A rectangular box containing text. It uses <foreignObject> and automatically updates the size based on the contents.
- * It offers limits to the size and always centers around the node.
+ * Node name. Uses AutoSizeForeignObject to render HTML which offers stuff like `text-overflow: ellipsis`. Editable
+ * names emit @request-edit on double click. It offers a <slot> for the NodeNameTextarea to plug the inline editor in.
  */
 export default {
     components: { AutoSizeForeignObject },
