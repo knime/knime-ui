@@ -148,12 +148,13 @@ export default {
 .container {
   & .wrapper {
     display: block;
-    /* solves many problems with inline-blocks such as whitespace; https://caniuse.com/intrinsic-width */
-    width: -moz-fit-content;
-    width: fit-content;
     padding: 0;
     margin: auto;
     border: 0;
+
+    /* solves many problems with inline-blocks such as whitespace; https://caniuse.com/intrinsic-width */
+    width: -moz-fit-content;
+    width: fit-content;
   }
 }
 </style>

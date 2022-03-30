@@ -1,6 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
 import * as $shapes from '~/style/shapes';
-import Vue from 'vue';
 
 import NodeNameTextarea from '~/components/workflow/NodeNameTextarea';
 

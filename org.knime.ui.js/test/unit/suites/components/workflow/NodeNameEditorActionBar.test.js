@@ -38,7 +38,7 @@ describe('NodeNameEditorActionBar', () => {
     it('emits @close event', () => {
         let buttons = wrapper.findAllComponents(ActionButton);
 
-        expect(wrapper.emitted().close).toBeUndefined()
+        expect(wrapper.emitted().close).toBeUndefined();
         buttons.at(1).vm.$emit('click');
         expect(wrapper.emitted().close[0]).toStrictEqual([]);
     });

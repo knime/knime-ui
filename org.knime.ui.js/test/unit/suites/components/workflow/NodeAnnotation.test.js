@@ -53,8 +53,6 @@ describe('Node Annotation', () => {
         });
 
         describe('dimension adjustment', () => {
-
-
             it('adjusts dimensions on mount', () => {
                 expect(mocks.adjustDimensions).toHaveBeenCalledTimes(1);
             });
