@@ -147,7 +147,7 @@ describe('NodeTemplate', () => {
         doMount();
 
         const node = wrapper.find('.node');
-        expect(node.classes()).toContain('node-preview-active');
+        expect(node.classes()).toContain('selected');
     });
 
     describe('drag node', () => {

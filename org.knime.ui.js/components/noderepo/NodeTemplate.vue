@@ -16,14 +16,15 @@ export default {
     data() {
         return {
             dragGhost: null,
-            selectAfterDrag: false
+            shouldSelectOnAbort: false
         };
     },
     computed: {
         ...mapState('nodeRepository', ['selectedNode']),
         ...mapState('panel', ['activeDescriptionPanel']),
         ...mapGetters('workflow', ['isWritable']),
-        // NXT: 844 the naming of this property doesnt fit its condition. Being selected is independend of the activeDescriptionPanel
+        
+        // NXT: 844 the naming of this property doesn't fit its condition. Being selected is independent of the activeDescriptionPanel
         isSelected() {
             return this.activeDescriptionPanel && (this.nodeTemplate.id === this.selectedNode.id);
         }
@@ -33,7 +34,7 @@ export default {
         ...mapMutations('nodeRepository', ['setSelectedNode']),
         onDragStart(e) {
             // remember if this node was selected
-            this.selectAfterDrag = this.isSelected;
+            this.shouldSelectOnAbort = this.isSelected;
             
             // close description panel and deselect node
             this.closeDescriptionPanel();
@@ -71,15 +72,19 @@ export default {
                 delete this.dragGhost;
             }
 
+            // ending with dropEffect none indicates that dragging has been aborted
+            if (e.dataTransfer.dropEffect === 'none') { this.onDragAbort(); }
+        },
+        onDragAbort() {
             // if drag is aborted and node was selected before, select it again
-            if (e.dataTransfer.dropEffect === 'none' && this.selectAfterDrag) {
+            if (this.shouldSelectOnAbort) {
                 this.setSelectedNode(this.nodeTemplate);
                 this.openDescriptionPanel();
             }
         },
         onClick() {
             if (this.isSelected) {
-                // TODO: NXT-844 panel seems to be open, iff node is selected. We could make one trigger the other
+                // TODO: NXT-844 panel seems to be open, if and only if node is selected. We could make one trigger the other
                 this.setSelectedNode(null);
                 this.closeDescriptionPanel();
             } else {
@@ -100,7 +105,7 @@ export default {
   <div
     class="node"
     draggable="true"
-    :class="{'node-preview-active': isSelected}"
+    :class="{ 'selected': isSelected }"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
     @click="onClick"
@@ -163,7 +168,7 @@ export default {
   }
 }
 
-.node-preview-active {
+.selected {
   /* outline with border-radius is not working properly in Safari and CEF */
   box-shadow: 0 0 0 calc(var(--selected-node-stroke-width-shape) * 1px) var(--selection-active-border-color);
   border-radius: calc(var(--selected-node-border-radius-shape) * 1px);

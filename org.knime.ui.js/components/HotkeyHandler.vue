@@ -1,13 +1,13 @@
+<script>
 import { mapMutations, mapState } from 'vuex';
-
 
 const blacklistTagNames = /^(input|textarea|select)$/i;
 
 /**
  * This Component handles keyboard shortcuts by listening to keydown/up-Events
- * on document and dispatching actions to the corresponding store.
+ * on document and dispatching commands and store actions.
  */
-export const hotKeys = {
+export default {
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
         ...mapState('canvas', ['suggestPanning']),
@@ -71,8 +71,13 @@ export const hotKeys = {
 
             // This currently only looks for the first command that matches the hotkey
             let command = this.$commands.findByHotkey(e);
-            if (command && this.$commands.isEnabled(command)) {
-                this.$commands.dispatch(command);
+            
+            if (command) {
+                if (this.$commands.isEnabled(command)) {
+                    this.$commands.dispatch(command);
+                }
+            
+                // prevent default actions for shortcuts of enabled and disabled commands
                 e.stopPropagation();
                 e.preventDefault();
             }
@@ -86,5 +91,7 @@ export const hotKeys = {
                 this.setSuggestPanning(false);
             }
         }
-    }
+    },
+    render() { return null; }
 };
+</script>
