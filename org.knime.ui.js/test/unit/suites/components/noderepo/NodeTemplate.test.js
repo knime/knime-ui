@@ -170,7 +170,7 @@ describe('NodeTemplate', () => {
             expect(wrapper.vm.dragGhost).toBeTruthy();
 
             // remove node preview clone
-            wrapper.trigger('dragend');
+            wrapper.trigger('dragend', { dataTransfer: { dropEffect: '' } });
 
             expect(document.body.childNodes.length).toBe(0);
             expect(wrapper.vm.dragGhost).toBeFalsy();
@@ -222,7 +222,7 @@ describe('NodeTemplate', () => {
 
             expect(node.attributes().style).toBe('cursor: not-allowed;');
 
-            wrapper.trigger('dragend');
+            wrapper.trigger('dragend', { dataTransfer: { dropEffect: '' } });
 
             expect(node.attributes().style).toBe(undefined);
         });
