@@ -7,16 +7,16 @@ import WorkflowEmpty from '~/components/workflow/WorkflowEmpty';
 
 
 describe('WorkflowEmpty', () => {
-    let mocks, doShallowMount, wrapper, $store, storeConfig, canvasSizeMock;
+    let mocks, doShallowMount, wrapper, $store, storeConfig, viewBoxMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
     });
 
-    canvasSizeMock = {
-        width: 100,
-        height: 100
+    viewBoxMock = {
+        width: 1000,
+        height: 1000
     };
 
     beforeEach(() => {
@@ -25,8 +25,8 @@ describe('WorkflowEmpty', () => {
         storeConfig = {
             canvas: {
                 getters: {
-                    canvasSize() {
-                        return canvasSizeMock;
+                    viewBox() {
+                        return viewBoxMock;
                     }
                 }
             }
@@ -55,21 +55,21 @@ describe('WorkflowEmpty', () => {
         expect(wrapper.find('tspan').text()).toContain('dropping your nodes here.');
     });
 
-    it('calculates width and height of rect based on size of the canvas', () => {
+    it('calculates width and height of rect based on size of the viewBox', () => {
         doShallowMount();
 
         const border = wrapper.find('rect');
         const height = border.attributes().height;
         const width = border.attributes().width;
 
-        expect(height).toBe('52');
-        expect(width).toBe('52');
+        expect(height).toBe('452');
+        expect(width).toBe('450');
     });
 
-    it('changes width and height if canvas changes', () => {
-        canvasSizeMock = {
+    it('changes width and height if viewBox changes', () => {
+        viewBoxMock = {
             width: 500,
-            height: 1000
+            height: 900
         };
         doShallowMount();
 
@@ -77,7 +77,7 @@ describe('WorkflowEmpty', () => {
         const height = border.attributes().height;
         const width = border.attributes().width;
 
-        expect(height).toBe('952');
-        expect(width).toBe('452');
+        expect(height).toBe('402');
+        expect(width).toBe('200');
     });
 });

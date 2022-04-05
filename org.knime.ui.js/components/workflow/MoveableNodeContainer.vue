@@ -94,7 +94,6 @@ export default {
             const kanvasElement = document.getElementById('kanvas');
             const { offsetLeft, offsetTop, scrollLeft, scrollTop } = kanvasElement;
 
-            debugger;
             const [absoluteX, absoluteY] = this.toCanvasCoordinates([
                 x - offsetLeft + scrollLeft,
                 y - offsetTop + scrollTop

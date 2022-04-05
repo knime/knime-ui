@@ -1,9 +1,10 @@
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters, mapMutations, mapActions, mapState } from 'vuex';
 
 import Workflow from '~/components/workflow/Workflow';
 import Kanvas from '~/components/Kanvas';
 import SelectionRectangle from '~/components/SelectionRectangle';
+import WorkflowEmpty from '~/components/workflow/WorkflowEmpty';
 
 import { dropNode } from '~/mixins';
 
@@ -11,11 +12,22 @@ export default {
     components: {
         Workflow,
         Kanvas,
-        SelectionRectangle
+        SelectionRectangle,
+        WorkflowEmpty
     },
     mixins: [dropNode],
     computed: {
-        ...mapGetters('canvas', ['contentBounds'])
+        ...mapGetters('canvas', ['contentBounds']),
+        ...mapGetters('workflow', ['isWorkflowEmpty']),
+        ...mapState('nodeRepository', ['isDraggingNode'])
+    },
+    watch: {
+        isWorkflowEmpty: {
+            immediate: true,
+            handler(isWorkflowEmpty) {
+                this.setInteractionsEnabled(!isWorkflowEmpty);
+            }
+        }
     },
     mounted() {
         this.$nextTick(() => {
@@ -23,8 +35,17 @@ export default {
         });
     },
     methods: {
+        ...mapMutations('canvas', ['setInteractionsEnabled']),
+        ...mapActions('canvas', ['fillScreen']),
         onNodeSelectionPreview($event) {
             this.$refs.workflow.applyNodeSelectionPreview($event);
+        },
+        async onContainerSizeUpdated() {
+            if (this.isWorkflowEmpty) {
+                await this.$nextTick();
+                await this.$nextTick();
+                this.fillScreen();
+            }
         }
     }
 };
@@ -34,18 +55,26 @@ export default {
   <Kanvas
     id="kanvas"
     ref="kanvas"
+    :class="{ 'kanvas-background': isDraggingNode && isWorkflowEmpty }"
     @drop.native.stop="onDrop"
     @dragover.native.stop="onDragOver"
+    @container-size-updated="onContainerSizeUpdated"
   >
-    <rect
-      class="workflow-sheet"
-      :x="contentBounds.left"
-      :y="contentBounds.top"
-      :width="contentBounds.width"
-      :height="contentBounds.height"
-    />
+    <WorkflowEmpty v-if="isWorkflowEmpty" />
 
-    <Workflow ref="workflow" />
+    <template v-else>
+      <rect
+        class="workflow-sheet"
+        :x="contentBounds.left"
+        :y="contentBounds.top"
+        :width="contentBounds.width"
+        :height="contentBounds.height"
+      />
+
+      <Workflow
+        ref="workflow"
+      />
+    </template>
 
     <!-- The SelectionRectangle registers to the selection-pointer{up,down,move} events of its parent (the Kanvas) -->
     <SelectionRectangle

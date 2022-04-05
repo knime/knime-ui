@@ -43,7 +43,11 @@ export default {
         {
             ...workflowCommands,
             ...selectionCommands,
-            ...canvasCommands
+            ...conditionGroup(
+                ({ $store }) => Boolean($store.state.canvas.interactionsEnabled),
+                canvasCommands
+                
+            )
         }
     ),
     ...sidePanel

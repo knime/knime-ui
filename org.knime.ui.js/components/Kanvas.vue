@@ -14,9 +14,7 @@ export default {
     },
     computed: {
         ...mapGetters('canvas', ['canvasSize', 'viewBox', 'contentBounds']),
-        ...mapState('canvas', ['suggestPanning', 'zoomFactor']),
-        ...mapGetters('workflow', ['isWorkflowEmpty']),
-        ...mapState('nodeRepository', ['isDraggingNode'])
+        ...mapState('canvas', ['suggestPanning', 'zoomFactor', 'interactionsEnabled'])
     },
     watch: {
         contentBounds(...args) { this.contentBoundsChanged(args); }
@@ -43,6 +41,7 @@ export default {
             // updating the container size and recalculating the canvas is debounced.
             const updateContainerSize = debounce(() => {
                 this.updateContainerSize();
+                this.$emit('container-size-updated');
             }, RESIZE_DEBOUNCE);
             
             this.resizeObserver = new ResizeObserver(entries => {
@@ -65,6 +64,8 @@ export default {
         */
         onMouseWheel: throttle(function (e) {
             /* eslint-disable no-invalid-this */
+            if (!this.interactionsEnabled) { return; }
+
             // delta is -1, 0 or 1 depending on scroll direction.
             let delta = Math.sign(-e.deltaY);
 
@@ -75,11 +76,14 @@ export default {
             let cursorY = e.clientY - bcr.y;
 
             this.zoomAroundPointer({ delta, cursorX, cursorY });
+            /* eslint-enable no-invalid-this */
         }),
         /*
             Panning
         */
         beginPan(e) {
+            if (!this.interactionsEnabled) { return; }
+
             this.isPanning = true;
             this.panningOffset = [e.screenX, e.screenY];
             this.$el.setPointerCapture(e.pointerId);
@@ -110,8 +114,8 @@ export default {
   <div
     tabindex="0"
     :class="['scroll-container', { 'panning': isPanning || suggestPanning }]"
-    :style="{ backgroundColor:
-      (isDraggingNode && isWorkflowEmpty) ? 'var(--knime-gray-ultra-light)' : null }"
+    :style="{ overflow:
+      (interactionsEnabled) ? 'scroll' : 'hidden' }"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
     @pointerdown.middle="beginPan"
@@ -160,5 +164,9 @@ svg {
   & svg >>> * {
     pointer-events: none !important;
   }
+}
+
+.kanvas-background svg >>> {
+  background-color: var(--knime-gray-ultra-light) !important;
 }
 </style>

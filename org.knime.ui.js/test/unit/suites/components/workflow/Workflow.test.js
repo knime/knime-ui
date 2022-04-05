@@ -10,7 +10,6 @@ import Node from '~/components/workflow/Node';
 import Connector from '~/components/workflow/Connector';
 import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation';
 import MetaNodePortBars from '~/components/workflow/MetaNodePortBars';
-import WorkflowEmpty from '~/components/workflow/WorkflowEmpty';
 
 const mockNode = ({ id, position }) => ({
     name: '',
@@ -40,8 +39,7 @@ const mockConnector = ({ nr, id }) => ({
 });
 
 describe('Workflow', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store, workflow, storeConfig, isNodeSelectedMock, nodeData,
-        isWorkflowEmpty;
+    let propsData, mocks, doShallowMount, wrapper, $store, workflow, storeConfig, isNodeSelectedMock, nodeData;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -77,8 +75,6 @@ describe('Workflow', () => {
         };
 
         isNodeSelectedMock = jest.fn().mockReturnValue(false);
-        isWorkflowEmpty = true;
-
 
         storeConfig = {
             workflow: {
@@ -94,9 +90,6 @@ describe('Workflow', () => {
                     },
                     getNodeType() {
                         return (nodeId) => `type-${nodeId}`;
-                    },
-                    isWorkflowEmpty() {
-                        return isWorkflowEmpty;
                     }
                 }
             },
@@ -160,18 +153,6 @@ describe('Workflow', () => {
         it('is not streaming', () => {
             expect(wrapper.find('.streaming-decorator').exists()).toBe(false);
         });
-    });
-    
-    it('renders WorkflowEmpty', () => {
-        doShallowMount();
-        expect(wrapper.findComponent(WorkflowEmpty).exists()).toBe(true);
-    });
-
-    it('does not render WorkflowEmpty', () => {
-        isWorkflowEmpty = false;
-        doShallowMount();
-
-        expect(wrapper.findComponent(WorkflowEmpty).exists()).toBe(false);
     });
 
     it('renders workflow annotations', () => {

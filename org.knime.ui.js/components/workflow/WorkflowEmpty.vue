@@ -7,22 +7,24 @@ export default {
         ArrowDown
     },
     computed: {
-        ...mapGetters('canvas', ['canvasSize']),
+        ...mapGetters('canvas', ['viewBox']),
         style() {
-            const { height, width } = this.canvasSize;
             /* eslint-disable no-magic-numbers */
             // for styling purposes only
-            const centerX = width * 0.5;
-            const centerY = height * 0.4;
+            const { height, width } = this.viewBox;
+            const centerX = width * 0.25;
+            const centerY = height * 0.2;
 
             return {
-                rectWidth: width - 48,
-                rectHeight: height - 48,
+                rectWidth: (width * 0.5) - 50,
+                rectHeight: (height * 0.5) - 48,
                 iconPosX: centerX - 32,
-                iconPosY: height * 0.38,
+                iconPosY: centerY - 30,
                 textPosX: centerX,
                 textPosY: centerY + 90,
-                spanPosY: centerY + 126
+                spanPosY: centerY + 126,
+                topPos: height * -0.25,
+                leftPos: width * -0.25
             };
             /* eslint-enable no-magic-numbers */
         }
@@ -31,7 +33,7 @@ export default {
 </script>
 
 <template>
-  <g>
+  <g :transform="`translate(${style.leftPos}, ${style.topPos})`">
     <rect
       x="24"
       y="24"
@@ -77,5 +79,6 @@ export default {
   font-family: "Roboto Condensed", sans-serif;
   font-weight: normal;
   font-size: 24px;
+  user-select: none;
 }
 </style>
