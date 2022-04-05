@@ -123,7 +123,13 @@ describe('DraggablePortWithTooltip', () => {
             // for simplicity this test directly sets 'dragConnector' instead of using startDragging
             doShallowMount();
 
-            wrapper.setData({ dragConnector: { content: 'a new in-coming connection' } });
+            wrapper.setData({
+                dragConnector: {
+                    id: 'mock-connector',
+                    allowedActions: {},
+                    content: 'a new in-coming connection'
+                }
+            });
             await Vue.nextTick();
 
             expect(incomingConnector._indicateReplacementEvent.detail).toStrictEqual({
@@ -145,7 +151,13 @@ describe('DraggablePortWithTooltip', () => {
             doShallowMount();
 
             wrapper.setProps({ targeted: true });
-            wrapper.setData({ dragConnector: { content: 'a new in-coming connection' } });
+            wrapper.setData({
+                dragConnector: {
+                    id: 'mock-connector',
+                    allowedActions: {},
+                    content: 'a new in-coming connection'
+                }
+            });
             await Vue.nextTick();
 
             expect(incomingConnector._indicateReplacementEvent).toBeFalsy();
@@ -156,7 +168,13 @@ describe('DraggablePortWithTooltip', () => {
             doShallowMount();
 
             wrapper.setProps({ targeted: true });
-            wrapper.setData({ dragConnector: { content: 'a new in-coming connection' } });
+            wrapper.setData({
+                dragConnector: {
+                    id: 'mock-connector',
+                    allowedActions: {},
+                    content: 'a new in-coming connection'
+                }
+            });
             await Vue.nextTick();
 
             expect(incomingConnector._indicateReplacementEvent).toBeFalsy();

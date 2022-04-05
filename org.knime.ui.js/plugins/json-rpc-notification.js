@@ -1,4 +1,4 @@
-import { actions } from '~/store/jsonrpc';
+import { actions } from '~/store/events';
 
 const genericErrorMsg = 'Argument must be a JSON serialized JSON-RPC object';
 const errorCodes = { // https://www.jsonrpc.org/specification#error_object
@@ -74,7 +74,7 @@ export default (context) => {
         }
 
         try {
-            context.store.dispatch(`jsonrpc/${method}`, params);
+            context.store.dispatch(`events/${method}`, params);
             return JSON.stringify({
                 jsonrpc: '2.0',
                 id,

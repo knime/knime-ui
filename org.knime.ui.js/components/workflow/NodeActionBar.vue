@@ -136,6 +136,8 @@ export default {
         },
         visibleActions() {
             const conditionMap = {
+                configureNode: this.canOpenDialog !== null,
+
                 // plain execution
                 execute: !this.canPause && !this.canResume,
                 cancelExecution: true,
@@ -147,7 +149,6 @@ export default {
                 stepLoopExecution: this.canStep !== null,
 
                 // other
-                configureNode: this.canOpenDialog !== null,
                 openView: this.canOpenView !== null
             };
 

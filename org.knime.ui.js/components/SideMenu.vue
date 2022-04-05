@@ -21,7 +21,7 @@ export default {
             workflow: 'activeWorkflow'
         }),
         ...mapState('panel', ['activeDescriptionPanel']),
-        // TODO: NXT-844 do we really need a panel store?
+        // TODO: NXT-844 do we really need a panel store? Store and Component should at least match in name
         ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive']),
         metadata() {
             // TODO: NXT-844 this needs to somehow be brought out of this component into WorkflowMetadata
@@ -55,14 +55,14 @@ export default {
       title="Open sidebar"
     >
       <!-- TODO: NXT-844 do proper transition according to https://vuejs.org/v2/guide/transitions.html#Transitioning-Between-Components -->
-      <transition name="panel-fade">
+      <transition name="tab-transition">
         <!-- use v-if & v-show to prevent jumping without delays -->
         <NodeRepository
           v-if="nodeRepositoryActive"
           v-show="nodeRepositoryActive"
         />
       </transition>
-      <transition name="panel-fade">
+      <transition name="tab-transition">
         <!-- use v-if & v-show to prevent jumping without delays -->
         <WorkflowMetadata
           v-if="metadata && workflowMetaActive"
@@ -71,9 +71,12 @@ export default {
         />
       </transition>
     </LeftCollapsiblePanel>
-    <NodeDescription
-      v-if="activeDescriptionPanel"
-    />
+
+    <!-- TODO: NXT-844 Node Description is part of the Node Repository.
+         Maybe move it there? -->
+    <transition name="extension-panel">
+      <NodeDescription v-if="activeDescriptionPanel" />
+    </transition>
   </div>
 </template>
 
@@ -82,16 +85,29 @@ export default {
   display: flex;
 }
 
-.panel-fade-enter-active {
+.extension-panel-enter-active {
+  transition: all 50ms ease-in;
+}
+
+.extension-panel-leave-active {
+  transition: all 50ms ease-out;
+}
+
+.extension-panel-enter,
+.extension-panel-leave-to {
+  opacity: 0;
+}
+
+.tab-transition-enter-active {
   transition: all 150ms ease-in;
 }
 
-.panel-fade-leave-active {
+.tab-transition-leave-active {
   transition: all 150ms ease-out;
 }
 
-.panel-fade-enter,
-.panel-fade-leave-to {
+.tab-transition-enter,
+.tab-transition-leave-to {
   opacity: 0;
 }
 </style>

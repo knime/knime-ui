@@ -3,10 +3,6 @@ import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-jest.mock('~/mixins/hotKeys.js', () => ({
-    hotKeys: { /* empty mixin */ }
-}));
-
 import KnimeUI from '~/components/KnimeUI';
 import AppHeader from '~/components/AppHeader';
 import Sidebar from '~/components/Sidebar';
@@ -15,7 +11,7 @@ import WorkflowTabContent from '~/components/WorkflowTabContent';
 import TooltipContainer from '~/components/TooltipContainer';
 import Error from '~/components/Error';
 import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
-
+import HotkeyHandler from '~/components/HotkeyHandler';
 
 const numberOfPreloadedFonts = 3;
 
@@ -64,6 +60,7 @@ describe('KnimeUI.vue', () => {
         expect(wrapper.findComponent(Sidebar).exists()).toBe(false);
         expect(wrapper.findComponent(WorkflowTabContent).exists()).toBe(false);
         expect(wrapper.findComponent(WorkflowEntryPage).exists()).toBe(false);
+        expect(wrapper.findComponent(HotkeyHandler).exists()).toBe(false);
     });
 
     it('catches errors in fetch hook', async () => {
@@ -94,7 +91,6 @@ describe('KnimeUI.vue', () => {
 
         // await fetch hook
         await Vue.nextTick();
-        await Vue.nextTick();
 
         // await rendering
         await Vue.nextTick();
@@ -109,12 +105,12 @@ describe('KnimeUI.vue', () => {
 
         // await fetch hook
         await Vue.nextTick();
-        await Vue.nextTick();
 
         // await rendering
         await Vue.nextTick();
 
         expect(wrapper.findComponent(WorkflowEntryPage).exists()).toBe(true);
+        expect(wrapper.findComponent(HotkeyHandler).exists()).toBe(true);
     });
 
     it('initiates', async () => {

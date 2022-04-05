@@ -2,7 +2,7 @@ import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 
-jest.mock('~/store/jsonrpc', () => ({
+jest.mock('~/store/events', () => ({
     actions: {
         myAction: () => {},
         erroneousAction: () => {}
@@ -22,7 +22,7 @@ describe('jsonrpcNotification handler', () => {
     beforeEach(() => {
         actionMock = jest.fn();
         store = mockVuexStore({
-            jsonrpc: {
+            events: {
                 actions: {
                     myAction: actionMock,
                     erroneousAction: () => { throw new Error('boo!'); }

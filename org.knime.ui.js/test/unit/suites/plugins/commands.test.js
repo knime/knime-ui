@@ -60,6 +60,15 @@ describe('Commands Plugin', () => {
                     })
                 ).toBe('selectAll');
             });
+
+            test('Delete equals Backspace', () => {
+                expect($commands.findByHotkey({
+                    metaKey: true,
+                    shiftKey: true,
+                    altKey: true,
+                    key: 'Backspace'
+                })).toBe('crazyHotkey');
+            });
         });
     });
 
@@ -109,15 +118,6 @@ describe('Commands Plugin', () => {
                     shiftKey: true,
                     altKey: true,
                     key: 'Delete'
-                })).toBe('crazyHotkey');
-            });
-
-            test('Delete equals Backspace', () => {
-                expect($commands.findByHotkey({
-                    ctrlKey: true,
-                    shiftKey: true,
-                    altKey: true,
-                    key: 'Backspace'
                 })).toBe('crazyHotkey');
             });
 

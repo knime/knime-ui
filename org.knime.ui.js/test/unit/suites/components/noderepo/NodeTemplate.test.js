@@ -6,8 +6,8 @@ import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { KnimeMIME } from '~/mixins/dropNode';
 
 describe('NodeTemplate', () => {
-    let propsData, doMount, wrapper, testEvent, isWritable, mocks, openDescriptionPanel, closeDescriptionPanel,
-        setSelectedNode, $store, storeConfig;
+    let propsData, doMount, wrapper, testEvent, isWritable, mocks, openDescriptionPanelMock, closeDescriptionPanelMock,
+        setSelectedNodeMock, $store, storeConfig;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -17,9 +17,9 @@ describe('NodeTemplate', () => {
     beforeEach(() => {
         isWritable = true;
         wrapper = null;
-        openDescriptionPanel = jest.fn();
-        closeDescriptionPanel = jest.fn();
-        setSelectedNode = jest.fn();
+        openDescriptionPanelMock = jest.fn();
+        closeDescriptionPanelMock = jest.fn();
+        setSelectedNodeMock = jest.fn();
 
         let getBoundingClientRectMock = jest.fn().mockReturnValue({
             width: 70,
@@ -60,8 +60,8 @@ describe('NodeTemplate', () => {
             },
             panel: {
                 actions: {
-                    openDescriptionPanel,
-                    closeDescriptionPanel
+                    openDescriptionPanel: openDescriptionPanelMock,
+                    closeDescriptionPanel: closeDescriptionPanelMock
                 },
                 state: {
                     activeDescriptionPanel: false
@@ -69,7 +69,7 @@ describe('NodeTemplate', () => {
             },
             nodeRepository: {
                 mutations: {
-                    setSelectedNode
+                    setSelectedNode: setSelectedNodeMock
                 },
                 state: {
                     selectedNode: null
@@ -87,13 +87,14 @@ describe('NodeTemplate', () => {
 
     it('shows node name in label', () => {
         doMount();
+        
         expect(wrapper.find('label').text()).toBe('node-name');
     });
 
     it('renders a node preview', () => {
         doMount();
-        let nodePreview = wrapper.findComponent(NodePreview);
 
+        let nodePreview = wrapper.findComponent(NodePreview);
         expect(nodePreview.element.className).toMatch('node-preview');
         expect(nodePreview.props()).toStrictEqual({
             type: 'node-type',
@@ -107,17 +108,35 @@ describe('NodeTemplate', () => {
 
     it('opens description panel when clicked', () => {
         doMount();
+        
         const nodePreview = wrapper.findComponent(NodePreview);
         nodePreview.trigger('click');
-        expect(openDescriptionPanel).toHaveBeenCalled();
+        
+        expect(openDescriptionPanelMock).toHaveBeenCalled();
     });
 
     it('selects a node when clicked', () => {
         doMount();
-        const node = wrapper.find('.node');
 
+        const node = wrapper.find('.node');
         node.trigger('click');
-        expect(setSelectedNode).toHaveBeenCalled();
+        
+        // TODO: NXT-844 to have been called with what?
+        expect(setSelectedNodeMock).toHaveBeenCalled();
+    });
+
+    it('deselects a selected node and closes description panel', () => {
+        storeConfig.nodeRepository.state.selectedNode = {
+            id: 'node-id'
+        };
+        storeConfig.panel.state.activeDescriptionPanel = true;
+        doMount();
+
+        const node = wrapper.find('.node');
+        node.trigger('click');
+
+        expect(setSelectedNodeMock).toHaveBeenCalledWith(expect.anything(), null);
+        expect(closeDescriptionPanelMock).toHaveBeenCalled();
     });
 
     it('adds style if node is selected', () => {
@@ -126,9 +145,9 @@ describe('NodeTemplate', () => {
             id: 'node-id'
         };
         doMount();
-        const node = wrapper.find('.node');
 
-        expect(node.classes()).toContain('node-preview-active');
+        const node = wrapper.find('.node');
+        expect(node.classes()).toContain('selected');
     });
 
     describe('drag node', () => {
@@ -151,7 +170,7 @@ describe('NodeTemplate', () => {
             expect(wrapper.vm.dragGhost).toBeTruthy();
 
             // remove node preview clone
-            wrapper.trigger('dragend');
+            wrapper.trigger('dragend', { dataTransfer: { dropEffect: '' } });
 
             expect(document.body.childNodes.length).toBe(0);
             expect(wrapper.vm.dragGhost).toBeFalsy();
@@ -203,7 +222,7 @@ describe('NodeTemplate', () => {
 
             expect(node.attributes().style).toBe('cursor: not-allowed;');
 
-            wrapper.trigger('dragend');
+            wrapper.trigger('dragend', { dataTransfer: { dropEffect: '' } });
 
             expect(node.attributes().style).toBe(undefined);
         });
@@ -212,7 +231,57 @@ describe('NodeTemplate', () => {
             doMount();
             wrapper.trigger('dragstart', testEvent);
 
-            expect(closeDescriptionPanel).toHaveBeenCalled();
+            expect(closeDescriptionPanelMock).toHaveBeenCalled();
+        });
+
+        it('re-opens description panel, when dragging is aborted', () => {
+            storeConfig.panel.state.activeDescriptionPanel = true;
+            storeConfig.nodeRepository.state.selectedNode = {
+                id: 'node-id'
+            };
+            doMount();
+
+            // start dragging while node is selected
+            wrapper.trigger('dragstart', testEvent);
+            
+            // clear mock records
+            setSelectedNodeMock.mockClear();
+            openDescriptionPanelMock.mockClear();
+            
+            // abort dragging
+            wrapper.trigger('dragend', {
+                dataTransfer: {
+                    dropEffect: 'none' // this means abort
+                }
+            });
+
+            expect(setSelectedNodeMock).toHaveBeenCalledWith(expect.anything(), propsData.nodeTemplate);
+            expect(openDescriptionPanelMock).toHaveBeenCalled();
+        });
+
+        it('description panel stays closed, when dragging is completed succesfully', () => {
+            storeConfig.panel.state.activeDescriptionPanel = true;
+            storeConfig.nodeRepository.state.selectedNode = {
+                id: 'node-id'
+            };
+            doMount();
+
+            // start dragging while node is selected
+            wrapper.trigger('dragstart', testEvent);
+            
+            // clear mock records
+            setSelectedNodeMock.mockClear();
+            openDescriptionPanelMock.mockClear();
+            
+            // abort dragging
+            wrapper.trigger('dragend', {
+                dataTransfer: {
+                    dropEffect: 'copy' // this means success
+                }
+            });
+
+            expect(setSelectedNodeMock).not.toHaveBeenCalled();
+            expect(openDescriptionPanelMock).not.toHaveBeenCalled();
         });
     });
 });
