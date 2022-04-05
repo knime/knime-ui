@@ -46,58 +46,63 @@
  */
 package org.knime.ui.java;
 
-import java.util.function.Supplier;
-
 import org.knime.gateway.api.webui.entity.AppStateEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
-import org.knime.gateway.impl.webui.AppStateProvider.AppState;
+import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.DefaultApplicationService;
-import org.knime.gateway.impl.webui.service.DefaultServices;
+import org.knime.gateway.impl.webui.service.ServiceDependencies;
+import org.knime.gateway.impl.webui.service.ServiceInstances;
 
 /**
- * Utility methods for handling the representation of the application state.
+ * Utility methods to manage Gateway services
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH
  */
-public final class AppStateUtil {
+public final class DefaultServicesUtil {
 
-    private AppStateUtil() {
-        //
+    private DefaultServicesUtil() {
+        // Utility class
     }
 
     /**
-     * Makes the application state available for the default service implementations (see {@link DefaultServices}).
+     * ...
      *
-     * @param supplier
-     * @return The newly constructed application state or {@code null} if the app state has already been initialized
+     * @param appStateProvider The application state provider
+     * @param eventConsumer The event consumer
      */
-    public static AppStateProvider initAppStateProvider(final Supplier<AppState> supplier) {
-        if (!DefaultServices.areServicesInitialized()) {
-            var appStateProvider = new AppStateProvider(supplier);
-            DefaultServices.setServiceDependency(AppStateProvider.class, appStateProvider);
-            return appStateProvider;
+    public static void setDefaultServiceDependencies(final AppStateProvider appStateProvider,
+        final EventConsumer eventConsumer) {
+        if (!ServiceInstances.areServicesInitialized()) {
+            ServiceDependencies.setServiceDependency(AppStateProvider.class, appStateProvider);
+            ServiceDependencies.setServiceDependency(EventConsumer.class, eventConsumer);
+            ServiceDependencies.setServiceDependency(WorkflowMiddleware.class, WorkflowMiddleware.getInstance());
+            ServiceDependencies.setServiceDependency(WorkflowProjectManager.class, WorkflowProjectManager.getInstance());
         } else {
-            return null;
+            throw new IllegalStateException(
+                "Some services are already initialized. Service dependencies can't be set anymore.");
         }
     }
+
 
     /**
      * Remove the application service from the provided service dependencies, remove listeners and clear references to
      * workflow projects.
      */
-    static void clearAppState() {
+    static void disposeDefaultServices() {
         removeWorkflowProjects();
-        DefaultServices.disposeAllServicesInstances();
+        ServiceInstances.disposeAllServicesInstances();
     }
 
     private static void removeWorkflowProjects() {
-        if (DefaultServices.areServicesInitialized()) {
+        if (ServiceInstances.areServicesInitialized()) {
             AppStateEnt previousState = DefaultApplicationService.getInstance().getState();
             if (previousState != null) {
-                previousState.getOpenedWorkflows()
-                    .forEach(wfProjEnt -> WorkflowProjectManager.removeWorkflowProject(wfProjEnt.getProjectId()));
+                previousState.getOpenedWorkflows().forEach(
+                    wfProjEnt -> WorkflowProjectManager.getInstance().removeWorkflowProject(wfProjEnt.getProjectId()));
             }
         }
     }

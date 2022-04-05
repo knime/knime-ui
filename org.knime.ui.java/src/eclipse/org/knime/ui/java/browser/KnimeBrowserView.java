@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import javax.annotation.PostConstruct;
@@ -26,6 +25,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
+import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.json.util.ObjectMapperUtil;
@@ -183,7 +183,7 @@ public class KnimeBrowserView {
         });
     }
 
-    private static BiConsumer<String, Object> initializeJavaBrowserCommunication(final String jsonRpcActionId,
+    private static EventConsumer initializeJavaBrowserCommunication(final String jsonRpcActionId,
         final String jsonRpcNotificationActionId) {
         var commService = CommServiceProvider.getCommService()
             .orElseThrow(() -> new IllegalStateException("No CEF communication service available!"));
@@ -260,7 +260,7 @@ public class KnimeBrowserView {
 	/**
 	 * @return a new event consumer instance forwarding events to java-script
 	 */
-    public BiConsumer<String, Object> createEventConsumer() {
+    public EventConsumer createEventConsumer() {
         return initializeJavaBrowserCommunication(JSON_RPC_ACTION_ID, JSON_RPC_NOTIFICATION_ACTION_ID);
     }
 
