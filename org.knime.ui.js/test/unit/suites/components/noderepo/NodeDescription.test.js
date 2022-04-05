@@ -3,11 +3,12 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vue from 'vue';
 import Vuex from 'vuex';
 import NodeDescription from '~/components/noderepo/NodeDescription';
+import ExternalResourcesList from '~/components/common/ExternalResourcesList';
 import Description from '~/webapps-common/ui/components/Description';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 
 describe('NodeDescription', () => {
-    let mocks, doMount, wrapper, storeConfig, $store, closeDescriptionPanel, getNodeDescription, searchIsActive;
+    let mocks, doMount, wrapper, storeConfig, $store, closeDescriptionPanelMock, getNodeDescriptionMock, searchIsActive;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -16,8 +17,8 @@ describe('NodeDescription', () => {
 
     beforeEach(() => {
         wrapper = null;
-        closeDescriptionPanel = jest.fn();
-        getNodeDescription = jest.fn();
+        closeDescriptionPanelMock = jest.fn();
+        getNodeDescriptionMock = jest.fn();
         searchIsActive = false;
 
         storeConfig = {
@@ -33,13 +34,14 @@ describe('NodeDescription', () => {
                     },
                     query: 'Source',
                     nodesPerCategory: [
-                        { tag: 'tag:1',
-                            nodes: [{ id: 1 },
-                                { id: 2 }] },
-                        { tag: 'tag:2',
-                            nodes: [{ id: 3 },
-                                { id: 4 },
-                                { id: 5 }] }
+                        {
+                            tag: 'tag:1',
+                            nodes: [{ id: 1 }, { id: 2 }]
+                        },
+                        {
+                            tag: 'tag:2',
+                            nodes: [{ id: 3 }, { id: 4 }, { id: 5 }]
+                        }
                     ],
                     nodes: [{
                         id: 6,
@@ -47,7 +49,7 @@ describe('NodeDescription', () => {
                     }]
                 },
                 actions: {
-                    getNodeDescription
+                    getNodeDescription: getNodeDescriptionMock
                 },
                 getters: {
                     searchIsActive() {
@@ -57,7 +59,7 @@ describe('NodeDescription', () => {
             },
             panel: {
                 actions: {
-                    closeDescriptionPanel
+                    closeDescriptionPanel: closeDescriptionPanelMock
                 }
             }
         };
@@ -74,6 +76,7 @@ describe('NodeDescription', () => {
         doMount();
         expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
         expect(wrapper.findComponent(Description).exists()).toBe(true);
+        expect(wrapper.findComponent(ExternalResourcesList).exists()).toBe(true);
         expect(wrapper.findComponent(NodeFeatureList).exists()).toBe(true);
     });
 
@@ -102,18 +105,30 @@ describe('NodeDescription', () => {
         doMount();
         const button = wrapper.find('button');
         button.trigger('click');
-        expect(closeDescriptionPanel).toHaveBeenCalled();
+        expect(closeDescriptionPanelMock).toHaveBeenCalled();
     });
 
-    it('calls getNodeDescription when selected node changes', async () => {
+    it('closes on escape', () => {
+        // adds event handler on mount
         doMount();
-        expect(getNodeDescription).toHaveBeenCalled();
+        wrapper.vm.$root.$emit('escape-pressed');
+        
+        // removes event handler before destroying
+        wrapper.destroy();
+        wrapper.vm.$root.$emit('escape-pressed');
+        
+        expect(closeDescriptionPanelMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('calls getNodeDescriptionMock when selected node changes', async () => {
+        doMount();
+        expect(getNodeDescriptionMock).toHaveBeenCalled();
         storeConfig.nodeRepository.state.selectedNode = {
             id: 2,
             name: 'Node'
         };
         await Vue.nextTick();
-        expect(getNodeDescription).toHaveBeenCalledTimes(2);
+        expect(getNodeDescriptionMock).toHaveBeenCalledTimes(2);
     });
 
     it('changes title and description when node is not visible', () => {

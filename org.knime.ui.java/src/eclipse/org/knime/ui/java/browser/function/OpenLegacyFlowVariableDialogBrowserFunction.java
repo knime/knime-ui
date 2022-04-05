@@ -44,41 +44,33 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   May 30, 2020 (hornm): created
+ *   Dec 3, 2020 (hornm): created
  */
 package org.knime.ui.java.browser.function;
 
-import java.nio.charset.StandardCharsets;
+import static org.knime.core.ui.wrapper.NodeContainerWrapper.wrap;
 
-import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
-import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
-import org.knime.gateway.impl.webui.service.DefaultWorkflowService;
+import org.knime.core.node.workflow.NodeContainer;
+import org.knime.workbench.editor2.editparts.NodeContainerEditPart;
 
 import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
 
 /**
- * Browser function for json-rpc calls which are forwarded to the respective
- * gateway service implementations, e.g. {@link DefaultWorkflowService}, and
- * others.
+ * Opens the swing dialog or CEF-based dialog of a node.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class JsonRpcBrowserFunction extends BrowserFunction {
+public class OpenLegacyFlowVariableDialogBrowserFunction extends AbstractNodeBrowserFunction {
 
-	private static final String FUNCTION_NAME = "jsonrpc";
+	private static final String FUNCTION_NAME = "openLegacyFlowVariableDialog";
 
-	private final JsonRpcRequestHandler m_jsonRpcHandler;
-
-	public JsonRpcBrowserFunction(final Browser browser) {
+	public OpenLegacyFlowVariableDialogBrowserFunction(final Browser browser) {
 		super(browser, FUNCTION_NAME);
-		m_jsonRpcHandler = new DefaultJsonRpcRequestHandler();
 	}
 
 	@Override
-	public Object function(final Object[] args) {
-		return new String(m_jsonRpcHandler.handle(((String) args[0]).getBytes(StandardCharsets.UTF_8)),
-				StandardCharsets.UTF_8);
-	}
+    protected void apply(final NodeContainer nc) {
+        NodeContainerEditPart.openDialog(wrap(nc), null);
+    }
 
 }

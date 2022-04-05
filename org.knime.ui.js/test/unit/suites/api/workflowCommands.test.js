@@ -3,11 +3,11 @@ import { connectNodes, moveObjects, deleteObjects, addNode } from '~/api';
 
 describe('workflow commands', () => {
     beforeEach(() => {
-        window.jsonrpc = jest.fn().mockReturnValue(JSON.stringify({
+        window.jsonrpc = jest.fn().mockReturnValue({
             jsonrpc: '2.0',
             result: 'dummy',
             id: -1
-        }));
+        });
     });
 
     test('connectNodes', () => {
@@ -19,7 +19,7 @@ describe('workflow commands', () => {
             destNode: 'dest',
             destPort: 1
         });
-        expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+        expect(window.jsonrpc).toHaveBeenCalledWith({
             jsonrpc: '2.0',
             method: 'WorkflowService.executeWorkflowCommand',
             params: [
@@ -34,7 +34,7 @@ describe('workflow commands', () => {
                 }
             ],
             id: 0
-        }));
+        });
     });
 
     describe('moveObjects', () => {
@@ -46,7 +46,7 @@ describe('workflow commands', () => {
                 annotationIds: ['ann:1', 'ann:2'],
                 translation: [100, 200]
             });
-            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+            expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
                 method: 'WorkflowService.executeWorkflowCommand',
                 params: [
@@ -60,7 +60,7 @@ describe('workflow commands', () => {
                     }
                 ],
                 id: 0
-            }));
+            });
         });
 
         test('empty arrays', () => {
@@ -69,7 +69,7 @@ describe('workflow commands', () => {
                 workflowId: 'workflow',
                 translation: [100, 200]
             });
-            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+            expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
                 method: 'WorkflowService.executeWorkflowCommand',
                 params: [
@@ -83,7 +83,7 @@ describe('workflow commands', () => {
                     }
                 ],
                 id: 0
-            }));
+            });
         });
     });
 
@@ -96,7 +96,7 @@ describe('workflow commands', () => {
                 annotationIds: ['ann:1', 'ann:2'],
                 connectionIds: ['conn:1', 'conn:2']
             });
-            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+            expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
                 method: 'WorkflowService.executeWorkflowCommand',
                 params: [
@@ -110,7 +110,7 @@ describe('workflow commands', () => {
                     }
                 ],
                 id: 0
-            }));
+            });
         });
 
         test('empty arrays', () => {
@@ -118,7 +118,7 @@ describe('workflow commands', () => {
                 projectId: 'project',
                 workflowId: 'workflow'
             });
-            expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+            expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
                 method: 'WorkflowService.executeWorkflowCommand',
                 params: [
@@ -132,7 +132,7 @@ describe('workflow commands', () => {
                     }
                 ],
                 id: 0
-            }));
+            });
         });
     });
 
@@ -146,7 +146,7 @@ describe('workflow commands', () => {
             },
             nodeFactory: { className: 'className' }
         });
-        expect(window.jsonrpc).toHaveBeenCalledWith(JSON.stringify({
+        expect(window.jsonrpc).toHaveBeenCalledWith({
             jsonrpc: '2.0',
             method: 'WorkflowService.executeWorkflowCommand',
             params: [
@@ -162,6 +162,6 @@ describe('workflow commands', () => {
                 }
             ],
             id: 0
-        }));
+        });
     });
 });

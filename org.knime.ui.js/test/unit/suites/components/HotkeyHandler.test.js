@@ -1,18 +1,9 @@
 /* eslint-disable no-magic-numbers */
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { createLocalVue, shallowMount, createWrapper } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
-import { hotKeys } from '~/mixins';
-
-jest.mock('lodash', () => ({
-    throttle(func) {
-        return function (...args) {
-            // eslint-disable-next-line no-invalid-this
-            return func.apply(this, args);
-        };
-    }
-}));
+import HotkeyHandler from '~/components/HotkeyHandler';
 
 const expectEventHandled = () => {
     expect(KeyboardEvent.prototype.preventDefault).toHaveBeenCalled();
@@ -25,7 +16,6 @@ const expectEventNotHandled = () => {
 
 describe('HotKeys', () => {
     let doShallowMount, wrapper, $store, storeConfig, $commands;
-
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -70,11 +60,7 @@ describe('HotKeys', () => {
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
-            let testComponent = {
-                template: '<div />',
-                mixins: [hotKeys]
-            };
-            wrapper = shallowMount(testComponent, { mocks: { $store, $commands } });
+            wrapper = shallowMount(HotkeyHandler, { mocks: { $store, $commands } });
         };
     });
 
@@ -131,6 +117,14 @@ describe('HotKeys', () => {
         });
     });
 
+    test('Escape triggers event', () => {
+        doShallowMount();
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+            
+        let rootWrapper = createWrapper(wrapper.vm.$root);
+        expect(rootWrapper.emitted('escape-pressed')).toBeTruthy();
+    });
+
     test('command found and is enabled', () => {
         $commands.findByHotkey.mockReturnValue('command');
         $commands.isEnabled.mockReturnValue(true);
@@ -172,6 +166,6 @@ describe('HotKeys', () => {
 
         expect($commands.isEnabled).toHaveBeenCalledWith('command');
         expect($commands.dispatch).not.toHaveBeenCalledWith('command');
-        expectEventNotHandled();
+        expectEventHandled();
     });
 });

@@ -49,6 +49,8 @@ export const actions = {
         commit('setExpanded', false);
     },
 
+    // TODO: NXT-844 this description panel is part of and only used for the node repository
+    // should be moved to node repository store or used as generic expansion panel
     openDescriptionPanel({ commit }) {
         commit('setDescriptionPanel', true);
     },

@@ -52,7 +52,9 @@ import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NativeNodeContainer;
 import org.knime.core.node.workflow.NodeContainer;
 import org.knime.core.node.workflow.SubNodeContainer;
+import org.knime.core.webui.node.view.NodeViewManager;
 import org.knime.workbench.editor2.actions.OpenInteractiveWebViewAction;
+import org.knime.workbench.editor2.actions.OpenNodeViewAction;
 import org.knime.workbench.editor2.actions.OpenSubnodeWebViewAction;
 
 import com.equo.chromium.swt.Browser;
@@ -70,21 +72,25 @@ public class OpenNodeViewBrowserFunction extends AbstractNodeBrowserFunction {
 		super(browser, FUNCTION_NAME);
 	}
 
-	@Override
-	protected void apply(final NodeContainer nc) {
-		if (nc.getInteractiveWebViews().size() > 0) {
-			if (nc instanceof SubNodeContainer) {
-				OpenSubnodeWebViewAction.openView((SubNodeContainer) nc);
-				return;
-			} else if (nc instanceof NativeNodeContainer) {
-				OpenInteractiveWebViewAction.openView((NativeNodeContainer) nc,
-						nc.getInteractiveWebViews().get(0).getViewName());
-				return;
-			} else {
-				//
-			}
-		}
-		NodeLogger.getLogger(OpenNodeViewBrowserFunction.class).warn(String.format(
-				"Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName()));
-	}
+    @Override
+    protected void apply(final NodeContainer nc) {
+        if (nc instanceof SubNodeContainer) {
+            // composite view
+            OpenSubnodeWebViewAction.openView((SubNodeContainer)nc);
+            return;
+        } else if (NodeViewManager.hasNodeView(nc)) {
+            // 'ui-extension' view
+            var nnc = ((NativeNodeContainer)nc);
+            var viewName = "Interactive View: " + nnc.getNodeViewName(0);
+            OpenNodeViewAction.openNodeView(nnc, OpenNodeViewAction.createNodeView(nnc, false, true), viewName);
+            return;
+        } else if (nc.getInteractiveWebViews().size() > 0 || nc.hasInteractiveView()) {
+            // legacy js-view
+            OpenInteractiveWebViewAction.openView((NativeNodeContainer)nc,
+                nc.getInteractiveWebViews().get(0).getViewName());
+            return;
+        }
+        NodeLogger.getLogger(OpenNodeViewBrowserFunction.class).warnWithFormat(
+            "Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName());
+    }
 }

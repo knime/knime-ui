@@ -5,16 +5,16 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 import Vue from 'vue';
 import Vuex from 'vuex';
 import * as canvasStoreConfig from '~/store/canvas';
-const { defaultZoomFactor, minZoomFactor, maxZoomFactor, zoomMultiplier } = canvasStoreConfig;
+
+const { defaultZoomFactor, minZoomFactor, maxZoomFactor, zoomMultiplier, padding } = canvasStoreConfig;
 
 const round = n => {
     const precision = 10;
     return Number(n.toFixed(precision));
 };
-const findDelta = factor => Math.log(factor) / Math.log(zoomMultiplier);
 
 describe('canvas store', () => {
-    let localVue, store, workflowBounds, scrollContainer;
+    let localVue, store, workflowBounds, scrollContainer, dispatchSpy, toCanvasCoordinatesSpy;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -31,467 +31,478 @@ describe('canvas store', () => {
         scrollContainer = {
             scrollLeft: 0,
             scrollTop: 0,
-            scrollTo: jest.fn().mockImplementation((left, top) => {
+            clientWidth: 300,
+            clientHeight: 300,
+            scrollTo: jest.fn().mockImplementation(({ top, left, behavior }) => {
                 scrollContainer.scrollLeft = left;
                 scrollContainer.scrollTop = top;
             })
         };
+
+        // put intermediate jest function into toCanvasCoordinates to be able to count how often it is called
+        toCanvasCoordinatesSpy = jest.fn().mockImplementation(canvasStoreConfig.getters.toCanvasCoordinates);
+      
         store = mockVuexStore({
             canvas: {
                 ...canvasStoreConfig,
-                state: {
-                    ...canvasStoreConfig.state(),
-                    containerSize: { width: 200, height: 200 },
-                    getScrollContainerElement: () => scrollContainer
+                getters: {
+                    ...canvasStoreConfig.getters,
+                    toCanvasCoordinates: toCanvasCoordinatesSpy
                 }
             },
             workflow: {
                 getters: {
-                    workflowBounds() {
-                        return workflowBounds;
-                    }
+                    workflowBounds: () => workflowBounds
                 }
             }
         });
+        dispatchSpy = jest.spyOn(store, 'dispatch');
     });
 
-    describe('mutations', () => {
+    test('setFactor', () => {
+        store.commit('canvas/setFactor', maxZoomFactor + 1);
+        expect(store.state.canvas.zoomFactor).toBe(maxZoomFactor);
+
+        store.commit('canvas/setFactor', minZoomFactor - 1);
+        expect(store.state.canvas.zoomFactor).toBe(minZoomFactor);
+
+        store.commit('canvas/setFactor', defaultZoomFactor);
+        expect(store.state.canvas.zoomFactor).toBe(defaultZoomFactor);
+    });
+
+    test('suggest panning', () => {
+        store.commit('canvas/setSuggestPanning', true);
+        expect(store.state.canvas.suggestPanning).toBe(true);
+
+        store.commit('canvas/setSuggestPanning', false);
+        expect(store.state.canvas.suggestPanning).toBe(false);
+    });
+
+    describe('scroll container element', () => {
         test('set & get ScrollContainerElement', () => {
-            store.commit('canvas/setScrollContainerElement', 2);
-            expect(store.state.canvas.getScrollContainerElement()).toBe(2);
+            store.dispatch('canvas/initScrollContainerElement', scrollContainer);
+            expect(store.state.canvas.getScrollContainerElement()).toBe(scrollContainer);
         });
 
-        test('restoreState - no saved state', () => {
-            store.commit('canvas/restoreState', null);
-            expect(store.state.canvas.zoomFactor).toBe(defaultZoomFactor);
-            expect(scrollContainer.scrollLeft).toBe(0);
-            expect(scrollContainer.scrollTop).toBe(0);
+        test('accessing unset scroll container throws error', () => {
+            expect(() => store.state.canvas.getScrollContainerElement()).toThrow();
         });
 
-        test('restoreState - saved state', async () => {
-            store.commit('canvas/restoreState', {
-                zoomFactor: 2,
-                scrollLeft: 2,
-                scrollTop: 1
-            });
-            expect(store.state.canvas.zoomFactor).toBe(2);
-
-            await Vue.nextTick();
-            expect(scrollContainer.scrollLeft).toBe(2);
-            expect(scrollContainer.scrollTop).toBe(1);
+        test('clear scroll container element', () => {
+            store.commit('canvas/clearScrollContainerElement');
+            expect(() => store.state.canvas.getScrollContainerElement()).toThrow();
         });
 
-        test('resetZoom', () => {
-            store.commit('canvas/setFactor', defaultZoomFactor + 1);
-            store.commit('canvas/resetZoom');
-            expect(store.state.canvas.zoomFactor).toBe(defaultZoomFactor);
-        });
-
-        test('setFactor', () => {
-            store.commit('canvas/setFactor', maxZoomFactor + 1);
-            expect(store.state.canvas.zoomFactor).toBe(maxZoomFactor);
-
-            store.commit('canvas/setFactor', minZoomFactor - 1);
-            expect(store.state.canvas.zoomFactor).toBe(minZoomFactor);
-
-            store.commit('canvas/setFactor', defaultZoomFactor);
-            expect(store.state.canvas.zoomFactor).toBe(defaultZoomFactor);
-        });
-
-        test('setSuggestPanning', () => {
-            store.commit('canvas/setSuggestPanning', true);
-            expect(store.state.canvas.suggestPanning).toBe(true);
-
-            store.commit('canvas/setSuggestPanning', false);
-            expect(store.state.canvas.suggestPanning).toBe(false);
-        });
-
-        test('setContainerSize', () => {
-            store.commit('canvas/setContainerSize', { width: 5, height: 5 });
+        test('sets initial container size', () => {
+            store.dispatch('canvas/initScrollContainerElement', scrollContainer);
             expect(store.state.canvas.containerSize).toStrictEqual({
-                width: 5,
-                height: 5
+                width: 300,
+                height: 300
+            });
+        });
+    });
+
+    describe('with scroll container element', () => {
+        beforeEach(() => {
+            store.dispatch('canvas/initScrollContainerElement', scrollContainer);
+        });
+
+        describe('calculations for rendering', () => {
+            test('content bounds', () => {
+                expect(store.getters['canvas/contentBounds']).toStrictEqual({
+                    left: -padding,
+                    top: -padding,
+                    right: 100 + padding,
+                    bottom: 100 + padding,
+                    width: 100 + 2 * padding,
+                    height: 100 + 2 * padding,
+                    centerX: 50,
+                    centerY: 50
+                });
+            });
+
+            test('content padding', () => {
+                store.commit('canvas/setFactor', 2);
+
+                expect(store.getters['canvas/contentPadding']).toStrictEqual({
+                    left: 150,
+                    top: 150,
+                    right: 150,
+                    bottom: 150
+                });
+            });
+
+            test('canvas size - content larger than container', () => {
+                workflowBounds = {
+                    left: -200,
+                    top: -200,
+                    right: 200,
+                    bottom: 200
+                };
+
+                // workflow size + padding + container sized padding
+                let size = 400 + 2 * padding + 300 * 2;
+
+                expect(store.getters['canvas/canvasSize']).toStrictEqual({
+                    width: size,
+                    height: size
+                });
+            });
+
+            test('canvas size - content smaller than container', () => {
+                workflowBounds = {
+                    left: 0,
+                    top: 0,
+                    right: 0,
+                    bottom: 0
+                };
+                store.commit('canvas/setFactor', 0.01);
+
+
+                // matches container sized padding * 2 + small scaled down padding
+                let canvasSize = store.getters['canvas/canvasSize'];
+                expect(Math.round(canvasSize.width)).toBe(600);
+                expect(Math.round(canvasSize.height)).toBe(600);
+            });
+
+            test('view box', () => {
+                store.commit('canvas/setFactor', 2);
+
+                // content bounds inkl. padding + padding based on container
+                let size = 100 + padding * 2 + 150 * 2;
+
+                let expectedViewBox = {
+                    left: -padding - 150,
+                    top: -padding - 150,
+                    width: size,
+                    height: size
+                };
+
+                expect(store.getters['canvas/viewBox']).toStrictEqual({
+                    ...expectedViewBox,
+                    string:
+                        `${expectedViewBox.left} ${expectedViewBox.top} ` +
+                        `${expectedViewBox.width} ${expectedViewBox.height}`
+                });
             });
         });
 
-        describe('zoomWithPointer', () => {
-            let state;
+        describe('restore state', () => {
+            it('restores saved state', () => {
+                store.commit('canvas/restoreState', {
+                    zoomFactor: 2,
+                    scrollLeft: 200,
+                    scrollTop: 100
+                });
+                expect(store.state.canvas.zoomFactor).toBe(2);
 
-            beforeEach(() => {
-                state = store.state.canvas;
+                expect(scrollContainer.scrollLeft).toBe(200);
+                expect(scrollContainer.scrollTop).toBe(100);
             });
 
-            it('exponential zoom', () => {
-                expect(state.zoomFactor).toBe(1);
+            it('returns state to save', () => {
+                scrollContainer.scrollLeft = 50;
+                scrollContainer.scrollTop = 100;
+                store.state.canvas.zoomFactor = 2;
+                expect(store.getters['canvas/toSave']).toStrictEqual({
+                    zoomFactor: 2,
+                    scrollLeft: 50,
+                    scrollTop: 100
+                });
+            });
 
-                store.commit('canvas/zoomWithPointer', { delta: 1 });
-                expect(state.zoomFactor).toBe(zoomMultiplier);
+            it('has no saved state', () => {
+                store.commit('canvas/restoreState', null);
+                expect(store.state.canvas.zoomFactor).toBe(defaultZoomFactor);
+                expect(scrollContainer.scrollLeft).toBe(0);
+                expect(scrollContainer.scrollTop).toBe(0);
+            });
+        });
 
-                store.commit('canvas/zoomWithPointer', { delta: 1 });
-                expect(state.zoomFactor).toBe(zoomMultiplier * zoomMultiplier);
+        test('content bounds change', () => {
+            let oldBounds = { ...workflowBounds };
+            let newBounds = { ...oldBounds };
 
-                store.commit('canvas/zoomWithPointer', { delta: -2 });
-                expect(round(state.zoomFactor)).toBe(1);
+            // extend upper left corner up and left
+            newBounds.left -= 5;
+            newBounds.top -= 5;
 
-                store.commit('canvas/zoomWithPointer', { delta: -1 });
-                expect(round(state.zoomFactor)).toBe(round(1 / zoomMultiplier));
+            // set zoom factor of 2
+            store.commit('canvas/setFactor', 2);
 
-                store.commit('canvas/zoomWithPointer', { delta: -1 });
-                expect(round(state.zoomFactor)).toBe(round(1 / zoomMultiplier / zoomMultiplier));
+            // update content bounds
+            store.dispatch('canvas/contentBoundsChanged', [newBounds, oldBounds]);
+
+            // expect scroll container to scroll such that it appears like nothing has moved
+            expect(scrollContainer.scrollLeft).toBe(10);
+            expect(scrollContainer.scrollTop).toBe(10);
+        });
+
+        test.each([100, 200])('change container size at %i% zoom', async (zoomFactor) => {
+            // demonstrate this works independent of zoom
+            store.commit('canvas/setFactor', zoomFactor / 100);
+
+            // container size is 300 => workflow padding is 300 (screen units) on each side
+            // set container size to 200
+            scrollContainer.clientWidth = 200;
+            scrollContainer.clientHeight = 200;
+            store.dispatch('canvas/updateContainerSize');
+
+            expect(store.state.canvas.containerSize).toStrictEqual({
+                width: 200,
+                height: 200
+            });
+            
+            await Vue.nextTick();
+
+            // new padding is 200 (screen units) => decreasy by 100 => scroll by 100
+            expect(scrollContainer.scrollLeft).toBe(-100);
+            expect(scrollContainer.scrollTop).toBe(-100);
+        });
+
+        describe('scroll to', () => {
+            test('(0, 0) to upper left corner', () => {
+                store.dispatch('canvas/scroll', { canvasX: 0, canvasY: 0, toScreenX: 0, toScreenY: 0 });
+                expect(scrollContainer.scrollTo).toHaveBeenCalledWith({
+                    top: 300 + padding, // includes canvas size + content padding
+                    left: 300 + padding, // includes canvas size + content padding
+                    behavior: 'auto'
+                });
+            });
+
+            test('(0, 0) to center', () => {
+                store.dispatch('canvas/scroll', { canvasX: 0, canvasY: 0, toScreenX: 'center', toScreenY: 'center' });
+                expect(scrollContainer.scrollTo).toHaveBeenCalledWith({
+                    top: 150 + padding, // includes canvas size + content padding
+                    left: 150 + padding, // includes canvas size + content padding
+                    behavior: 'auto'
+                });
+            });
+
+            test('center to center', () => {
+                store.dispatch('canvas/scroll', {
+                    canvasX: 'center', canvasY: 'center', toScreenX: 'center', toScreenY: 'center'
+                });
+                expect(scrollContainer.scrollTo).toHaveBeenCalledWith({
+                    top: 200 + padding, // includes canvas size + content padding
+                    left: 200 + padding, // includes canvas size + content padding
+                    behavior: 'auto'
+                });
+            });
+        });
+
+        describe('zoom presets', () => {
+            beforeEach(() => {
+                // assuming a padding of 20 for simple numbers
+                workflowBounds = {
+                    left: 0,
+                    top: 0,
+                    right: 10,
+                    bottom: 60
+                };
+            });
+
+            test('fitToScreen zoom factor', () => {
+                let fitToZoom = store.getters['canvas/fitToScreenZoomFactor'];
+
+                // x axis fits 6 times
+                expect(fitToZoom.x).toBe(6);
+                // y axis fits 3 times
+                expect(fitToZoom.y).toBe(3);
+
+                expect(fitToZoom.min).toBe(3);
+                expect(fitToZoom.max).toBe(6);
+            });
+
+            test('fit to screen', () => {
+                store.dispatch('canvas/fitToScreen');
+
+                expect(store.state.canvas.zoomFactor).toBe(3 * 0.98);
+                expect(dispatchSpy).toHaveBeenCalledWith('canvas/scroll', {
+                    canvasX: 'center',
+                    toScreenX: 'center',
+                    canvasY: 'center',
+                    toScreenY: 'center'
+                });
+            });
+
+            test('zoom to fit (both axis fit inside container)', () => {
+                store.dispatch('canvas/fillScreen');
+
+                // zoom to 100% and center workflow
+                expect(store.state.canvas.zoomFactor).toBe(1);
+                expect(dispatchSpy).toHaveBeenCalledWith('canvas/scroll', {
+                    canvasX: 'center',
+                    toScreenX: 'center',
+                    canvasY: 'center',
+                    toScreenY: 'center'
+                });
+            });
+
+            test('zoom to fit (y axis overlaps)', () => {
+                workflowBounds = {
+                    left: 0,
+                    top: 0,
+                    right: 200,
+                    bottom: 500
+                };
+
+                store.dispatch('canvas/fillScreen');
+
+                // zoom to 100% and center workflow
+                expect(store.state.canvas.zoomFactor).toBe(1);
+                expect(dispatchSpy).toHaveBeenCalledWith('canvas/scroll', {
+                    canvasX: 'center',
+                    toScreenX: 'center',
+
+                    canvasY: -padding,
+                    toScreenY: 20
+                });
+            });
+
+            test('zoom to fit (x axis overlaps)', () => {
+                workflowBounds = {
+                    left: 0,
+                    top: 0,
+                    right: 500,
+                    bottom: 200
+                };
+
+                store.dispatch('canvas/fillScreen');
+
+                // zoom to 100% and center workflow
+                expect(store.state.canvas.zoomFactor).toBe(1);
+                expect(dispatchSpy).toHaveBeenCalledWith('canvas/scroll', {
+                    canvasX: -padding, // includes content padding and additional 20px padding;
+                    toScreenX: 20,
+
+                    canvasY: 'center',
+                    toScreenY: 'center'
+                });
+            });
+
+            test('zoom to fit (zooms out)', () => {
+                workflowBounds = {
+                    left: 0,
+                    top: 0,
+                    right: 500,
+                    bottom: 500
+                };
+
+                store.dispatch('canvas/fillScreen');
+
+                // zoom out to less than 100%
+                expect(store.state.canvas.zoomFactor < 1).toBe(true);
+            });
+        });
+
+        describe('zoom around point', () => {
+            test('zoom around center by delta', () => {
+                // pass both delta and factor for this test
+                store.dispatch('canvas/zoomCentered', { delta: 1 });
+
+                expect(dispatchSpy).toHaveBeenCalledWith('canvas/zoomAroundPointer', {
+                    delta: 1,
+                    cursorX: 150,
+                    cursorY: 150
+                });
+            });
+
+            test('zoom around center to factor', () => {
+                // pass both delta and factor for this test
+                store.dispatch('canvas/zoomCentered', { factor: 2 });
+
+                expect(dispatchSpy).toHaveBeenCalledWith('canvas/zoomAroundPointer', {
+                    factor: 2,
+                    cursorX: 150,
+                    cursorY: 150
+                });
+            });
+
+            test('zoom by delta', () => {
+                expect(store.state.canvas.zoomFactor).toBe(1);
+
+                store.dispatch('canvas/zoomAroundPointer', { delta: 2 });
+                expect(store.state.canvas.zoomFactor).toBe(zoomMultiplier * zoomMultiplier);
+            });
+
+            test('zoom to factor', () => {
+                expect(store.state.canvas.zoomFactor).toBe(1);
+
+                store.dispatch('canvas/zoomAroundPointer', { factor: 2 });
+                expect(store.state.canvas.zoomFactor).toBe(2);
+            });
+
+            test('throws for incorrect arguments', () => {
+                expect(() => {
+                    store.dispatch('canvas/zoomAroundPointer');
+                }).toThrow();
+
+                expect(() => {
+                    store.dispatch('canvas/zoomAroundPointer', { delta: 1, factor: 3 });
+                }).toThrow();
+            });
+
+            test.each([
+                { x: 0, y: 0 },
+                { x: 200, y: 200 }
+            ])('scrolls into workflow at point %s', (targetPoint) => {
+                // find target point on screen
+                let { x: cursorX, y: cursorY } = store.getters['canvas/fromCanvasCoordinates'](targetPoint);
+
+                // zoom into target point and scroll accordingly
+                let steps = 200;
+                for (let i = 0; i < steps; i++) {
+                    store.dispatch('canvas/zoomAroundPointer', { delta: 1, cursorX, cursorY });
+                }
+                for (let i = 0; i < steps; i++) {
+                    store.dispatch('canvas/zoomAroundPointer', { delta: -1, cursorX, cursorY });
+                }
+
+                // find target point after zoom and scroll
+                let { x: screenX, y: screenY } = store.getters['canvas/fromCanvasCoordinates'](targetPoint);
+
+                const distance = {
+                    x: screenX - cursorX,
+                    y: screenY - cursorY
+                };
+
+                // distance between those points needs to match scroll position
+                expect(distance.x).toBe(scrollContainer.scrollLeft);
+                expect(distance.y).toBe(scrollContainer.scrollTop);
+
+                // due to caching this should have been only called once
+                expect(toCanvasCoordinatesSpy).toHaveBeenCalledTimes(1);
             });
 
             it('respects max and min zoom', () => {
                 const tooManyZoomSteps = 10000;
-                expect(state.zoomFactor).toBe(1);
+                expect(store.state.canvas.zoomFactor).toBe(1);
 
-                store.commit('canvas/zoomWithPointer', { delta: -tooManyZoomSteps });
-                expect(state.zoomFactor).toBe(minZoomFactor);
+                store.dispatch('canvas/zoomAroundPointer', { delta: -tooManyZoomSteps });
+                expect(store.state.canvas.zoomFactor).toBe(minZoomFactor);
 
-                store.commit('canvas/zoomWithPointer', { delta: tooManyZoomSteps });
-                expect(state.zoomFactor).toBe(maxZoomFactor);
+                store.dispatch('canvas/zoomAroundPointer', { delta: tooManyZoomSteps });
+                expect(store.state.canvas.zoomFactor).toBe(maxZoomFactor);
             });
 
-            test('content bigger than container - pointer in upper-left corner', () => {
-                store.commit('canvas/setFactor', 1);
-                store.commit('canvas/setContainerSize', {
-                    width: 50,
-                    height: 50
-                });
-                workflowBounds = {
-                    left: 0,
-                    top: 0,
-                    right: 50,
-                    bottom: 50
-                };
+            it('exponential zoom', () => {
+                expect(store.state.canvas.zoomFactor).toBe(1);
 
-                let delta = findDelta(2); // zoom to 200%
-                store.commit('canvas/zoomWithPointer', { delta, cursorX: 0, cursorY: 0, scrollX: 0, scrollY: 0 });
-                expect(state.zoomFactor).toBe(2);
+                store.dispatch('canvas/zoomAroundPointer', { delta: 1 });
+                expect(store.state.canvas.zoomFactor).toBe(zoomMultiplier);
 
-                let scrollContainer = state.getScrollContainerElement();
-                expect(scrollContainer.scrollLeft).toBe(0);
-                expect(scrollContainer.scrollTop).toBe(0);
-            });
+                store.dispatch('canvas/zoomAroundPointer', { delta: 1 });
+                expect(store.state.canvas.zoomFactor).toBe(zoomMultiplier * zoomMultiplier);
 
-            test('content bigger than container - pointer in bottom-right corner', () => {
-                store.commit('canvas/setFactor', 1);
-                store.commit('canvas/setContainerSize', {
-                    width: 50,
-                    height: 50
-                });
-                workflowBounds = {
-                    left: 0,
-                    top: 0,
-                    right: 50,
-                    bottom: 50
-                };
+                store.dispatch('canvas/zoomAroundPointer', { delta: -2 });
+                expect(round(store.state.canvas.zoomFactor)).toBe(1);
 
-                let delta = findDelta(2); // zoom to 200%
-                // pointer is in bottom right corner of workflow before zoom
-                store.commit('canvas/zoomWithPointer', { delta, cursorX: 50, cursorY: 50, scrollX: 0, scrollY: 0 });
-                expect(state.zoomFactor).toBe(2);
+                store.dispatch('canvas/zoomAroundPointer', { delta: -1 });
+                expect(round(store.state.canvas.zoomFactor)).toBe(round(1 / zoomMultiplier));
 
-                let scrollContainer = state.getScrollContainerElement();
-                expect(scrollContainer.scrollLeft).toBe(50); /* eslint-disable-line no-magic-numbers */
-                expect(scrollContainer.scrollTop).toBe(50); /* eslint-disable-line no-magic-numbers */
-            });
-        });
-    });
-
-    describe('actions', () => {
-        it('zooms so workflow fits container', () => {
-            const factor = store.getters['canvas/fitToScreenZoomFactor'];
-            store.dispatch('canvas/setZoomToFit');
-            expect(store.state.canvas.zoomFactor).toBe(factor);
-        });
-
-        it('zooms in by keyboard', async () => {
-            const state = store.state.canvas;
-
-            store.commit('canvas/setFactor', 1);
-            store.commit('canvas/setContainerSize', {
-                width: 50,
-                height: 50
-            });
-            workflowBounds = {
-                left: 0,
-                top: 0,
-                right: 50,
-                bottom: 50
-            };
-
-            let delta = findDelta(2); // zoom to 200%
-            await store.dispatch('canvas/zoomCentered', delta);
-            expect(state.zoomFactor).toBe(2);
-
-            expect(scrollContainer.scrollLeft).toBe(25); /* eslint-disable-line no-magic-numbers */
-            expect(scrollContainer.scrollTop).toBe(25); /* eslint-disable-line no-magic-numbers */
-        });
-
-        it('zooms to set value', () => {
-            const state = store.state.canvas;
-            const value = 0.75;
-            store.dispatch('canvas/zoomTo', value);
-            expect(state.zoomFactor).toBe(0.75);
-        });
-    });
-
-    describe('getters', () => {
-        test('fitToScreen zoom factor', () => {
-            expect(store.getters['canvas/fitToScreenZoomFactor']).toBe(2);
-        });
-
-        test('saveState', () => {
-            scrollContainer.scrollLeft = 50;
-            scrollContainer.scrollTop = 100;
-            store.state.canvas.zoomFactor = 2;
-            expect(store.getters['canvas/toSave']).toStrictEqual({
-                zoomFactor: 2,
-                scrollLeft: 50,
-                scrollTop: 100
-            });
-        });
-
-        describe('contentBounds', () => {
-            it('positive coordinates', () => {
-                workflowBounds = {
-                    left: 10,
-                    top: 10,
-                    right: 100,
-                    bottom: 100
-                };
-
-                expect(store.getters['canvas/contentBounds']).toStrictEqual({
-                    left: 0,
-                    top: 0,
-                    width: 100,
-                    height: 100
-                });
-            });
-
-            it('origin inside of workflow', () => {
-                workflowBounds = {
-                    left: -10,
-                    top: -10,
-                    right: 100,
-                    bottom: 100
-                };
-
-                expect(store.getters['canvas/contentBounds']).toStrictEqual({
-                    left: -10,
-                    top: -10,
-                    width: 110,
-                    height: 110
-                });
-            });
-
-            it('negative coordinates', () => {
-                workflowBounds = {
-                    left: -100,
-                    top: -100,
-                    right: -10,
-                    bottom: -10
-                };
-
-                expect(store.getters['canvas/contentBounds']).toStrictEqual({
-                    left: -100,
-                    top: -100,
-                    width: 100,
-                    height: 100
-                });
-            });
-        });
-
-        describe('canvas, viewBox, absoluteCoordinates at 100%', () => {
-            test('content larger than container', () => {
-                store.commit('canvas/setContainerSize', {
-                    width: 50,
-                    height: 50
-                });
-                workflowBounds = {
-                    left: 0,
-                    top: 0,
-                    right: 100,
-                    bottom: 100
-                };
-                expect(store.getters['canvas/canvasSize']).toStrictEqual({
-                    width: 100,
-                    height: 100
-                });
-                expect(store.getters['canvas/viewBox']).toStrictEqual({
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100
-                });
-                let origin = { x: 0, y: 0 };
-                expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
-                    x: 0,
-                    y: 0
-                });
-                expect(store.getters['canvas/fromAbsoluteCoordinates']([0, 0])).toStrictEqual([0, 0]);
-            });
-
-            test('content smaller than container (origin included)', () => {
-                store.commit('canvas/setContainerSize', {
-                    width: 100,
-                    height: 100
-                });
-                workflowBounds = {
-                    left: 0,
-                    top: 0,
-                    right: 50,
-                    bottom: 50
-                };
-                expect(store.getters['canvas/canvasSize']).toStrictEqual({
-                    width: 100,
-                    height: 100
-                });
-                expect(store.getters['canvas/viewBox']).toStrictEqual({
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100
-                });
-                let origin = { x: 0, y: 0 };
-                expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
-                    x: 0,
-                    y: 0
-                });
-                expect(store.getters['canvas/fromAbsoluteCoordinates']([25, 25])).toStrictEqual([25, 25]);
-            });
-
-            test('content smaller than container - (negative, origin not included)', () => {
-                store.commit('canvas/setContainerSize', {
-                    width: 200,
-                    height: 200
-                });
-                workflowBounds = {
-                    left: -100,
-                    top: -100,
-                    right: -50,
-                    bottom: -50
-                };
-                // bounds are expanded to include origin
-                // {-100, -100, 0, 0}
-                expect(store.getters['canvas/canvasSize']).toStrictEqual({
-                    width: 200,
-                    height: 200
-                });
-                // space of 100 to distribute -> expand viewBox by 50 each side
-                expect(store.getters['canvas/viewBox']).toStrictEqual({
-                    top: -100,
-                    left: -100,
-                    width: 200,
-                    height: 200
-                });
-                let origin = { x: 0, y: 0 };
-                expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
-                    x: 100,
-                    y: 100
-                });
-                expect(store.getters['canvas/fromAbsoluteCoordinates']([150, 150])).toStrictEqual([50, 50]);
-            });
-        });
-
-        describe('canvas, viewBox, absoluteCoordinates at 100%', () => {
-            beforeEach(() => {
-                store.commit('canvas/setFactor', 2);
-            });
-
-            test('content larger than container', () => {
-                store.commit('canvas/setContainerSize', {
-                    width: 50,
-                    height: 50
-                });
-                workflowBounds = {
-                    left: 0,
-                    top: 0,
-                    right: 50,
-                    bottom: 50
-                };
-                expect(store.getters['canvas/canvasSize']).toStrictEqual({
-                    width: 100,
-                    height: 100
-                });
-                expect(store.getters['canvas/viewBox']).toStrictEqual({
-                    top: 0,
-                    left: 0,
-                    width: 50,
-                    height: 50
-                });
-                let origin = { x: 0, y: 0 };
-                expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
-                    x: 0,
-                    y: 0
-                });
-                expect(store.getters['canvas/fromAbsoluteCoordinates']([0, 0])).toStrictEqual([0, 0]);
-            });
-
-            test('content smaller than container (origin included)', () => {
-                store.commit('canvas/setContainerSize', {
-                    width: 200,
-                    height: 200
-                });
-                workflowBounds = {
-                    left: 0,
-                    top: 0,
-                    right: 50,
-                    bottom: 50
-                };
-                // canvas same size as container
-                expect(store.getters['canvas/canvasSize']).toStrictEqual({
-                    width: 200,
-                    height: 200
-                });
-                // viewBox width and height have same proportions as canvas
-                // but are half as big (100, 100)
-                expect(store.getters['canvas/viewBox']).toStrictEqual({
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100
-                });
-                let origin = { x: 0, y: 0 };
-                // origin is shifted by 0 in workflow space.
-                // absolute shift is 50.
-                expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
-                    x: 0,
-                    y: 0
-                });
-                expect(store.getters['canvas/fromAbsoluteCoordinates']([50, 50])).toStrictEqual([25, 25]);
-            });
-
-            test('content smaller than container - (negative, origin not included)', () => {
-                store.commit('canvas/setContainerSize', {
-                    width: 400,
-                    height: 400
-                });
-                workflowBounds = {
-                    left: -100,
-                    top: -100,
-                    right: -50,
-                    bottom: -50
-                };
-                // bounds are expanded to include origin
-                // {-100, -100, 0, 0}
-                expect(store.getters['canvas/canvasSize']).toStrictEqual({
-                    width: 400,
-                    height: 400
-                });
-                // space of 100 to distribute in worfklow space -> expand viewBox by 50 each side
-                expect(store.getters['canvas/viewBox']).toStrictEqual({
-                    top: -100,
-                    left: -100,
-                    width: 200,
-                    height: 200
-                });
-                let origin = { x: 0, y: 0 };
-                expect(store.getters['canvas/getAbsoluteCoordinates'](origin)).toStrictEqual({
-                    x: 200,
-                    y: 200
-                });
-                expect(store.getters['canvas/fromAbsoluteCoordinates']([300, 300])).toStrictEqual([50, 50]);
+                store.dispatch('canvas/zoomAroundPointer', { delta: -1 });
+                expect(round(store.state.canvas.zoomFactor)).toBe(round(1 / zoomMultiplier / zoomMultiplier));
             });
         });
     });

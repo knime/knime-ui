@@ -45,14 +45,17 @@ export default (context, inject) => {
             let modifiers = [...hotkey];
             let character = modifiers.pop();
 
-            if (
-                ((isMac && Boolean(metaKey)) || (!isMac && Boolean(ctrlKey))) === modifiers.includes('Ctrl') &&
-                Boolean(shiftKey) === modifiers.includes('Shift') &&
-                Boolean(altKey) === modifiers.includes('Alt') &&
-                (
-                    key.toUpperCase() === character.toUpperCase() || (character === 'Delete' && key === 'Backspace')
-                )
-            ) {
+            // Ctrl-modifier has to match "Command ⌘" (metaKey) on Mac, and Ctrl-Key on other systems
+            let ctrlMatches = modifiers.includes('Ctrl') === (isMac ? metaKey : ctrlKey);
+            let shiftMatches = Boolean(shiftKey) === modifiers.includes('Shift');
+            let altMatches = Boolean(altKey) === modifiers.includes('Alt');
+            
+            // keys are matched case insensitively
+            let keysMatch = key.toUpperCase() === character.toUpperCase() ||
+                // on mac 'backspace' can be used instead of delete
+                (isMac && character === 'Delete' && key === 'Backspace');
+
+            if (ctrlMatches && shiftMatches && altMatches && keysMatch) {
                 consola.trace('Shortcut', hotkey, commandName);
                 return commandName;
             }

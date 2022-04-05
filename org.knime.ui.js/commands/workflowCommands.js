@@ -48,6 +48,15 @@ export default {
         condition:
             ({ $store }) => $store.getters['selection/singleSelectedNode']?.allowedActions.canOpenDialog
     },
+    configureFlowVariables: {
+        text: 'Configure flow variables',
+        execute:
+            ({ $store }) => $store.dispatch('workflow/openLegacyFlowVariableDialog',
+                $store.getters['selection/singleSelectedNode'].id),
+        condition:
+            ({ $store }) => $store.getters['selection/singleSelectedNode']?.allowedActions
+                .canOpenLegacyFlowVariableDialog
+    },
     openView: {
         text: 'Open view',
         hotkey: ['F12'],

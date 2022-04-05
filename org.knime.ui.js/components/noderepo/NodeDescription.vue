@@ -4,15 +4,19 @@ import CloseIcon from '~/assets/cancel-execution.svg?inline';
 import Description from '~/webapps-common/ui/components/Description';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 
+import ExternalResourcesList from '~/components/common/ExternalResourcesList';
+
 export default {
     components: {
         CloseIcon,
         Description,
-        NodeFeatureList
+        NodeFeatureList,
+        ExternalResourcesList
     },
     computed: {
         ...mapState('nodeRepository', ['selectedNode', 'nodeDescriptionObject', 'nodes', 'nodesPerCategory']),
         ...mapGetters('nodeRepository', ['searchIsActive']),
+        // TODO: NXT-844 this component shouldn't know about search or categories
         isSelectedNodeVisible() {
             if (this.searchIsActive) {
                 return this.nodes.some(node => node.id === this.selectedNode.id);
@@ -31,9 +35,18 @@ export default {
             }
         }
     },
+    mounted() {
+        this.$root.$on('escape-pressed', this.onEscape);
+    },
+    beforeDestroy() {
+        this.$root.$off('escape-pressed', this.onEscape);
+    },
     methods: {
         ...mapActions('panel', ['closeDescriptionPanel']),
-        ...mapActions('nodeRepository', ['getNodeDescription'])
+        ...mapActions('nodeRepository', ['getNodeDescription']),
+        onEscape() {
+            this.closeDescriptionPanel();
+        }
     }
 };
 </script>
@@ -48,9 +61,12 @@ export default {
         <CloseIcon class="icon" />
       </button>
     </div>
+
     <hr>
+
     <div class="scroll-container">
       <div class="node-info">
+        <!-- TODO: NXT-844 add comments explaining this double template construct, or find more readable solution -->
         <template v-if="isSelectedNodeVisible">
           <template v-if="nodeDescriptionObject">
             <Description
@@ -58,12 +74,16 @@ export default {
               :text="nodeDescriptionObject.description"
               render-as-html
             />
+          
             <span
               v-else
               class="placeholder"
             >
               There is no description for this node.
             </span>
+
+            <ExternalResourcesList :links="nodeDescriptionObject.links" />
+
             <NodeFeatureList
               :in-ports="nodeDescriptionObject.inPorts"
               :dyn-in-ports="nodeDescriptionObject.dynInPorts"
@@ -75,6 +95,7 @@ export default {
             />
           </template>
         </template>
+        
         <div
           v-else
           class="placeholder no-node"
@@ -107,7 +128,7 @@ export default {
 
     & h2 {
       margin: 0;
-      font-weight: normal;
+      font-weight: 400;
       font-size: 18px;
       line-height: 36px;
     }
@@ -174,7 +195,7 @@ export default {
   }
 
   & .node-feature-list {
-    margin-top: 20px;
+    margin-top: 6px;
     margin-bottom: 40px;
 
     & >>> .shadow-wrapper::after,
@@ -248,7 +269,6 @@ export default {
   & >>> code,
   & >>> samp {
     font-size: 13px;
-    font-family: monospace;
     line-height: 24px;
   }
 

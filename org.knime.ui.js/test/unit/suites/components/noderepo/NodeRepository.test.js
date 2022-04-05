@@ -11,13 +11,13 @@ import CategoryResults from '~/components/noderepo/CategoryResults';
 import SearchResults from '~/components/noderepo/SearchResults';
 
 jest.mock('lodash', () => ({
-    throttle(func) {
+    debounce(func) {
         return function (...args) {
             // eslint-disable-next-line no-invalid-this
             return func.apply(this, args);
         };
     },
-    debounce(func) {
+    throttle(func) {
         return function (...args) {
             // eslint-disable-next-line no-invalid-this
             return func.apply(this, args);

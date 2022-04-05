@@ -1,3 +1,4 @@
+// TODO: NXT-844 bring this store into normal order
 import { searchNodes, getNodesGroupedByTags, getNodeDescription } from '~api';
 
 /**

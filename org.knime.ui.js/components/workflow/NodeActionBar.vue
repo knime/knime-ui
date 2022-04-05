@@ -1,5 +1,5 @@
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapGetters } from 'vuex';
 
 import ExecuteIcon from '~/assets/execute.svg?inline';
 import ResumeIcon from '~/assets/resume-execution.svg?inline';
@@ -37,6 +37,10 @@ export default {
             type: Boolean,
             default: false
         },
+        /*
+         * The props below can either be true, false or unset.
+         * In case they are unset, Vue defaults them to null
+         */
         canStep: {
             type: Boolean,
             default: null
@@ -59,39 +63,98 @@ export default {
         }
     },
     computed: {
+        ...mapGetters('selection', ['isNodeSelected']),
         /**
-         *  returns an array of allowed actions with the corresponding api call,
-         *  a boolean if it is enabled or disabled and an icon. openDialog and openView are only added when the prop is available
+         *  returns an array of allowed actions with a handler to the corresponding api call,
+         *  a boolean if it is enabled or disabled, an icon and the title (tooltip on hover).
+         *
+         *  `openDialog` and `openView` are only added when the prop is available
+         *
          *  @returns {Array<Array>} Array of allowed actions
          */
         actions() {
-            let actions = [];
+            // For all the actions, the command reference property will only be set if THIS node is selected
+            // as the hotkey in the title only makes sense for selected nodes
+            return {
+                configureNode: {
+                    title: 'Configure',
+                    isEnabled: this.canOpenDialog,
+                    icon: OpenDialogIcon,
+                    handler: () => this.openDialog(this.nodeId),
+                    hotkeyText: this.$commands.get('configureNode').hotkeyText
+                },
+                pauseLoopExecution: {
+                    title: 'Pause',
+                    isEnabled: true,
+                    icon: PauseIcon,
+                    handler: () => this.pauseLoopExecution(this.nodeId),
+                    hotkeyText: this.$commands.get('pauseLoopExecution').hotkeyText
+                },
+                resumeLoopExecution: {
+                    title: 'Resume',
+                    isEnabled: true,
+                    icon: ResumeIcon,
+                    handler: () => this.resumeLoopExecution(this.nodeId),
+                    hotkeyText: this.$commands.get('resumeLoopExecution').hotkeyText
+                },
+                execute: {
+                    title: 'Execute',
+                    isEnabled: this.canExecute,
+                    icon: ExecuteIcon,
+                    handler: () => this.executeNodes([this.nodeId]),
+                    hotkeyText: this.$commands.get('executeSelected').hotkeyText
+                },
+                stepLoopExecution: {
+                    title: 'Step',
+                    isEnabled: this.canStep,
+                    icon: StepIcon,
+                    handler: () => this.stepLoopExecution(this.nodeId),
+                    hotkeyText: this.$commands.get('stepLoopExecution').hotkeyText
+                },
+                cancelExecution: {
+                    title: 'Cancel',
+                    isEnabled: this.canCancel,
+                    icon: CancelIcon,
+                    handler: () => this.cancelNodeExecution([this.nodeId]),
+                    hotkeyText: this.$commands.get('cancelSelected').hotkeyText
+                },
+                reset: {
+                    title: 'Reset',
+                    isEnabled: this.canReset,
+                    icon: ResetIcon,
+                    handler: () => this.resetNodes([this.nodeId]),
+                    hotkeyText: this.$commands.get('resetSelected').hotkeyText
+                },
+                openView: {
+                    title: 'Open View',
+                    isEnabled: this.canOpenView,
+                    icon: OpenViewIcon,
+                    handler: () => this.openView(this.nodeId),
+                    hotkeyText: this.$commands.get('openView').hotkeyText
+                }
+            };
+        },
+        visibleActions() {
+            const conditionMap = {
+                configureNode: this.canOpenDialog !== null,
 
-            if (this.canOpenDialog !== null) {
-                actions.push(['openDialog', this.canOpenDialog, OpenDialogIcon, () => this.openDialog(this.nodeId)]);
-            }
+                // plain execution
+                execute: !this.canPause && !this.canResume,
+                cancelExecution: true,
+                reset: true,
 
-            if (this.canPause) {
-                actions.push(['pause', true, PauseIcon, () => this.pauseLoopExecution(this.nodeId)]);
-            } else if (this.canResume) {
-                actions.push(['resume', true, ResumeIcon, () => this.resumeLoopExecution(this.nodeId)]);
-            } else {
-                actions.push(['execute', this.canExecute, ExecuteIcon, () => this.executeNodes([this.nodeId])]);
-            }
+                // loop execution
+                pauseLoopExecution: this.canPause,
+                resumeLoopExecution: !this.canPause && this.canResume,
+                stepLoopExecution: this.canStep !== null,
 
-            if (this.canStep !== null) {
-                actions.push(['step', this.canStep, StepIcon, () => this.stepLoopExecution(this.nodeId)]);
-            }
+                // other
+                openView: this.canOpenView !== null
+            };
 
-            actions.push(
-                ['cancel', this.canCancel, CancelIcon, () => this.cancelNodeExecution([this.nodeId])],
-                ['reset', this.canReset, ResetIcon, () => this.resetNodes([this.nodeId])]
-            );
-
-            if (this.canOpenView !== null) {
-                actions.push(['openView', this.canOpenView, OpenViewIcon, () => this.openView(this.nodeId)]);
-            }
-            return actions;
+            return Object.entries(conditionMap)
+                .filter(([name, visible]) => visible)
+                .map(([name, visible]) => this.actions[name]);
         },
         /**
          *  returns the x-position of each button depending on the total amount of buttons
@@ -99,14 +162,32 @@ export default {
          */
         positions() {
             const { nodeActionBarButtonSpread } = this.$shapes;
-            let buttonCount = this.actions.length;
+            let buttonCount = this.visibleActions.length;
+
             // spread buttons evenly around the horizontal center
-            return this.actions.map((_, i) => (i + (1 - buttonCount) / 2) * nodeActionBarButtonSpread);
+            return this.visibleActions.map((_, i) => (i + (1 - buttonCount) / 2) * nodeActionBarButtonSpread);
         }
     },
     methods: {
-        ...mapActions('workflow', ['executeNodes', 'cancelNodeExecution', 'resetNodes',
-            'pauseLoopExecution', 'resumeLoopExecution', 'stepLoopExecution', 'openView', 'openDialog'])
+        ...mapActions('workflow', [
+            'executeNodes',
+            'cancelNodeExecution',
+            'resetNodes',
+            'pauseLoopExecution',
+            'resumeLoopExecution',
+            'stepLoopExecution',
+            'openView',
+            'openDialog'
+        ]),
+        /*
+         * If this node is selected, hoverTitle appends the hotkey to the title
+         * otherwise the title is returned
+         */
+        hoverTitle(title, hotkeyText) {
+            return this.isNodeSelected(this.nodeId) && hotkeyText
+                ? `${title} - ${hotkeyText}`
+                : title;
+        }
     }
 };
 </script>
@@ -114,12 +195,12 @@ export default {
 <template>
   <g>
     <ActionButton
-      v-for="([action, enabled, icon, method], index) in actions"
-      :key="action"
-      :class="`action-${action}`"
+      v-for="({ isEnabled, icon, handler, title, hotkeyText }, index) in visibleActions"
+      :key="title"
       :x="positions[index]"
-      :disabled="!enabled"
-      @click="method"
+      :disabled="!isEnabled"
+      :title="hoverTitle(title, hotkeyText)"
+      @click="handler"
     >
       <Component :is="icon" />
     </ActionButton>
