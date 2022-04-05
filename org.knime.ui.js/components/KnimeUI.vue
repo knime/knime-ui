@@ -7,28 +7,27 @@ import WorkflowTabContent from '~/components/WorkflowTabContent';
 import TooltipContainer from '~/components/TooltipContainer';
 import Error from '~/components/Error';
 import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
-
-import { hotKeys } from '~/mixins';
+import HotkeyHandler from '~/components/HotkeyHandler';
 
 // These fonts will be pre-loaded at application startup
 const requiredFonts = ['Roboto', 'Roboto Condensed', 'Roboto Mono'];
 
 /**
- * Main page and entry point of Knime Next
+ * Main page and entry point of KNIME Next
  * Initiates application state
  * Defines the layout of the application
  */
 export default {
     components: {
-        Error,
         AppHeader,
+        Error,
+        HotkeyHandler,
         Sidebar,
+        TooltipContainer,
         WorkflowToolbar,
         WorkflowTabContent,
-        TooltipContainer,
         WorkflowEntryPage
     },
-    mixins: [hotKeys],
     data() {
         return {
             loaded: false,
@@ -37,8 +36,10 @@ export default {
     },
     async fetch() {
         try {
-            await this.initializeApplication();
-            await Promise.all(requiredFonts.map(fontName => document.fonts.load(`1em ${fontName}`)));
+            await Promise.all([
+                this.initializeApplication(),
+                ...requiredFonts.map(fontName => document.fonts.load(`1em ${fontName}`))
+            ]);
             this.loaded = true;
         } catch ({ message, stack }) {
             // errors in the fetch hook are not captured by errorCaptured
@@ -85,19 +86,25 @@ export default {
       v-bind="error"
       @close="onCloseError"
     />
+    
     <AppHeader id="header" />
     <WorkflowToolbar id="toolbar" />
     <TooltipContainer id="tooltip-container" />
+    
     <template v-if="loaded">
+      <HotkeyHandler />
+
       <template v-if="workflow">
         <Sidebar id="sidebar" />
         <WorkflowTabContent class="workflow-area" />
       </template>
+      
       <WorkflowEntryPage
         v-else
         class="workflow-area"
       />
     </template>
+    
     <div
       v-else
       class="loader"

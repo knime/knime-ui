@@ -144,11 +144,12 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
                 return (acp instanceof LocalWorkspaceContentProvider);
             }).map(Map.Entry::getKey).toArray(String[]::new);
 
+            var size = new Point(625, 625);
             var dialog = new SpaceResourceSelectionDialog(
                     Display.getDefault().getActiveShell(),
                     mountIds,
                     null,
-                    new Point(625, 900));
+                    size, size, true);
             dialog.setInitTreeLevel(2);
             dialog.setResultPanelEnabled(false);
             dialog.setTitle("Open KNIME Workflow");
