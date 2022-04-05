@@ -53,6 +53,11 @@ describe('Kanvas', () => {
                 state: {
                     isDraggingNode: false
                 }
+            },
+            panel: {
+                actions: {
+                    setNodeRepositoryActive: jest.fn()
+                }
             }
         };
 
@@ -64,14 +69,95 @@ describe('Kanvas', () => {
         };
     });
 
-    it('draws workflow boundary', () => {
-        doShallowMount();
+    describe('with Workflow', () => {
+        it('renders workflow, if it is not empty', () => {
+            doShallowMount();
+    
+            expect(wrapper.findComponent(WorkflowEmpty).exists()).toBe(false);
+            expect(wrapper.findComponent(Workflow).exists()).toBe(true);
+        });
+    
+        it('draws workflow boundary', () => {
+            doShallowMount();
+    
+            let workflowSheet = wrapper.find('.workflow-sheet');
+            expect(Number(workflowSheet.attributes('x'))).toBe(5);
+            expect(Number(workflowSheet.attributes('y'))).toBe(10);
+            expect(Number(workflowSheet.attributes('width'))).toBe(20);
+            expect(Number(workflowSheet.attributes('height'))).toBe(30);
+        });
 
-        let workflowSheet = wrapper.find('.workflow-sheet');
-        expect(Number(workflowSheet.attributes('x'))).toBe(5);
-        expect(Number(workflowSheet.attributes('y'))).toBe(10);
-        expect(Number(workflowSheet.attributes('width'))).toBe(20);
-        expect(Number(workflowSheet.attributes('height'))).toBe(30);
+        it('clicking on empty canvas deselects all', () => {
+            doShallowMount();
+            
+            let workflowComponent = wrapper.findComponent(Workflow);
+            
+            workflowComponent.vm.applyNodeSelectionPreview = jest.fn();
+            wrapper.findComponent(SelectionRectangle).vm.$emit('node-selection-preview', 'args');
+    
+            expect(workflowComponent.vm.applyNodeSelectionPreview).toHaveBeenCalledWith('args');
+        });
+
+        it('does not fill the screen if workflow is not empty', async () => {
+            doShallowMount();
+            await Vue.nextTick();
+            expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
+            const kanvas = wrapper.findComponent(Kanvas);
+            kanvas.vm.$emit('container-size-changed');
+    
+            await Vue.nextTick();
+            await Vue.nextTick();
+            expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalledTimes(1);
+        });
+
+        test('switch from empty workflow', async () => {
+            doShallowMount();
+            await Vue.nextTick();
+            storeConfig.canvas.actions.fillScreen.mockReset();
+
+            // workaround, instead of triggering the canvas getter to reevaluate
+            wrapper.vm.$options.watch.isWorkflowEmpty.handler.call(wrapper.vm, false);
+            await Vue.nextTick();
+
+            expect(storeConfig.canvas.mutations.setInteractionsEnabled).toHaveBeenCalledWith(expect.anything(), true);
+            expect(storeConfig.canvas.actions.fillScreen).not.toHaveBeenCalled();
+            expect(storeConfig.panel.actions.setNodeRepositoryActive).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('with empty workflow', () => {
+        beforeEach(async () => {
+            isWorkflowEmpty = true;
+            doShallowMount();
+            await Vue.nextTick();
+        });
+
+        it('renders workflow placeholder, if workflow is empty', () => {
+            expect(wrapper.findComponent(WorkflowEmpty).exists()).toBe(true);
+            expect(wrapper.findComponent(Workflow).exists()).toBe(false);
+        });
+
+        it('container size update fills the screen', async () => {
+            storeConfig.canvas.actions.fillScreen.mockReset();
+            
+            const kanvas = wrapper.findComponent(Kanvas);
+            kanvas.vm.$emit('container-size-changed');
+    
+            await Vue.nextTick();
+            expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalledTimes(1);
+        });
+
+        test('switch to empty workflow', async () => {
+            storeConfig.canvas.actions.fillScreen.mockReset();
+
+            // workaround, instead of triggering the canvas getter to reevaluate
+            wrapper.vm.$options.watch.isWorkflowEmpty.handler.call(wrapper.vm, true);
+            await Vue.nextTick();
+
+            expect(storeConfig.canvas.mutations.setInteractionsEnabled).toHaveBeenCalledWith(expect.anything(), false);
+            expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
+            expect(storeConfig.panel.actions.setNodeRepositoryActive).toHaveBeenCalled();
+        });
     });
 
     it('zooms to fit after mounting', async () => {
@@ -79,62 +165,5 @@ describe('Kanvas', () => {
         await Vue.nextTick();
 
         expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
-    });
-
-    it('clicking on empty canvas deselects all', () => {
-        doShallowMount();
-        
-        let workflowComponent = wrapper.findComponent(Workflow);
-        
-        workflowComponent.vm.applyNodeSelectionPreview = jest.fn();
-        wrapper.findComponent(SelectionRectangle).vm.$emit('node-selection-preview', 'args');
-
-        expect(workflowComponent.vm.applyNodeSelectionPreview).toHaveBeenCalledWith('args');
-    });
-
-    it('correctly renders when isWorkflowEmpty is true', () => {
-        isWorkflowEmpty = true;
-        doShallowMount();
-
-        expect(wrapper.findComponent(WorkflowEmpty).exists()).toBe(true);
-        expect(wrapper.findComponent(Workflow).exists()).toBe(false);
-    });
-
-    it('correctly renders when isWorkflowEmpty is false', () => {
-        doShallowMount();
-
-        expect(wrapper.findComponent(WorkflowEmpty).exists()).toBe(false);
-        expect(wrapper.findComponent(Workflow).exists()).toBe(true);
-    });
-
-    it('calls setInteractionsEnabled', () => {
-        doShallowMount();
-
-        expect(storeConfig.canvas.mutations.setInteractionsEnabled).toHaveBeenCalledWith(expect.anything(), true);
-    });
-
-    it('fills the screen', async () => {
-        isWorkflowEmpty = true;
-        doShallowMount();
-        await Vue.nextTick();
-        expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
-        const kanvas = wrapper.findComponent(Kanvas);
-        kanvas.vm.$emit('container-size-updated');
-
-        await Vue.nextTick();
-        await Vue.nextTick();
-        expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalledTimes(2);
-    });
-
-    it('does not fill the screen if workflow is not empty', async () => {
-        doShallowMount();
-        await Vue.nextTick();
-        expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
-        const kanvas = wrapper.findComponent(Kanvas);
-        kanvas.vm.$emit('container-size-updated');
-
-        await Vue.nextTick();
-        await Vue.nextTick();
-        expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalledTimes(1);
     });
 });

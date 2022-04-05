@@ -5,7 +5,6 @@ import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer';
 import Connector from '~/components/workflow/Connector';
 import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation';
 import MetaNodePortBars from '~/components/workflow/MetaNodePortBars';
-import KanvasFilters from '~/components/workflow/KanvasFilters';
 import ConnectorLabel from '~/components/workflow/ConnectorLabel';
 import { dropNode } from '~/mixins';
 
@@ -15,7 +14,6 @@ export default {
         Connector,
         WorkflowAnnotation,
         MetaNodePortBars,
-        KanvasFilters,
         ConnectorLabel,
         MoveableNodeContainer
     },
@@ -52,9 +50,6 @@ export default {
 
 <template>
   <g>
-    <!-- Includes shadows for Nodes -->
-    <KanvasFilters />
-
     <!-- Workflow Annotation Layer. Background -->
     <WorkflowAnnotation
       v-for="annotation of workflow.workflowAnnotations"

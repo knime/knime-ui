@@ -55,6 +55,9 @@ describe('WorkflowToolbar.vue', () => {
             workflow: {
                 state: {
                     activeWorkflow: workflow
+                },
+                getters: {
+                    isWorkflowEmpty: jest.fn()
                 }
             },
             selection: {
@@ -83,15 +86,30 @@ describe('WorkflowToolbar.vue', () => {
         it('hides toolbar command buttons if no workflow is open', () => {
             storeConfig.workflow.state.activeWorkflow = null;
             doShallowMount();
+            
             expect(wrapper.findComponent(ToolbarCommandButton).exists()).toBe(false);
         });
     });
 
     describe('zoom', () => {
+        it('renders zoomMenu', () => {
+            doShallowMount();
+            expect(wrapper.findComponent(ZoomMenu).exists()).toBe(true);
+            expect(wrapper.findComponent(ZoomMenu).props('disabled')).toBe(false);
+        });
+
         it('hides ZoomMenu if no workflow is open', () => {
             storeConfig.workflow.state.activeWorkflow = null;
             doShallowMount();
+
             expect(wrapper.findComponent(ZoomMenu).exists()).toBe(false);
+        });
+
+        it('disables ZoomMenu if workflow is empty', () => {
+            storeConfig.workflow.getters.isWorkflowEmpty.mockReturnValue(true);
+            doShallowMount();
+
+            expect(wrapper.findComponent(ZoomMenu).props('disabled')).toBe(true);
         });
     });
 
@@ -99,6 +117,7 @@ describe('WorkflowToolbar.vue', () => {
         it('hides breadcrumb if no workflow is open', () => {
             storeConfig.workflow.state.activeWorkflow = null;
             doShallowMount();
+
             expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(false);
         });
 
@@ -110,6 +129,7 @@ describe('WorkflowToolbar.vue', () => {
         it('shows breadcrumb if required', () => {
             workflow.parents = [{ dummy: true }];
             doShallowMount();
+
             expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(true);
         });
     });

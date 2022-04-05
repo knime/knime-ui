@@ -1,5 +1,5 @@
 <script>
-import { mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import ArrowDown from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
 
 export default {
@@ -7,74 +7,67 @@ export default {
         ArrowDown
     },
     computed: {
-        ...mapGetters('canvas', ['viewBox']),
-        style() {
-            /* eslint-disable no-magic-numbers */
-            // for styling purposes only
-            const { height, width } = this.viewBox;
-            const centerX = width * 0.25;
-            const centerY = height * 0.2;
+        ...mapState('canvas', ['containerSize']),
+        bounds() {
+            const { height, width } = this.containerSize;
 
+            // When showing this empty workflow, the origin (0,0) is exactly in the center of the canvas
             return {
-                rectWidth: (width * 0.5) - 50,
-                rectHeight: (height * 0.5) - 48,
-                iconPosX: centerX - 32,
-                iconPosY: centerY - 30,
-                textPosX: centerX,
-                textPosY: centerY + 90,
-                spanPosY: centerY + 126,
-                topPos: height * -0.25,
-                leftPos: width * -0.25
+                left: -width / 2,
+                top: -height / 2,
+                width,
+                height
             };
-            /* eslint-enable no-magic-numbers */
+        },
+        rectangleBounds() {
+            const padding = 25;
+            
+            return {
+                left: this.bounds.left + padding,
+                top: this.bounds.top + padding,
+                height: this.bounds.height - 2 * padding,
+                width: this.bounds.width - 2 * padding
+            };
         }
     }
 };
 </script>
 
 <template>
-  <g :transform="`translate(${style.leftPos}, ${style.topPos})`">
+  <g>
     <rect
-      x="24"
-      y="24"
-      fill="none"
-      stroke-width="3"
-      stroke="var(--knime-gray-dark-semi)"
-      stroke-linecap="square"
-      stroke-dasharray="9,19"
-      :width="style.rectWidth"
-      :height="style.rectHeight"
+      :x="rectangleBounds.left"
+      :y="rectangleBounds.top"
+      :width="rectangleBounds.width"
+      :height="rectangleBounds.height"
     />
     <ArrowDown
-      height="64px"
-      width="64px"
-      stroke="var(--knime-masala)"
-      :x="style.iconPosX"
-      :y="style.iconPosY"
+      height="64"
+      width="64"
+      x="-32"
+      y="-99"
     />
-    <g
-      class="text"
-      dominant-baseline="middle"
-      text-anchor="middle"
-    >
-      <text
-        :x="style.textPosX"
-        :y="style.textPosY"
-      >
-        Start building your workflow by
-        <tspan
-          :x="style.textPosX"
-          :y="style.spanPosY"
-        >
-          dropping your nodes here.
-        </tspan>
-      </text>
-    </g>
+    <text y="-9">Start building your workflow by</text>
+    <text y="27">dropping your nodes here.</text>
   </g>
 </template>
 
 <style lang="postcss" scoped>
-.text {
+rect {
+  fill: none;
+  stroke-width: 3;
+  stroke: var(--knime-gray-dark-semi);
+  stroke-linecap: square;
+  stroke-dasharray: 9 19;
+}
+
+svg {
+  stroke: var(--knime-masala);
+}
+
+text {
+  dominant-baseline: middle;
+  text-anchor: middle;
   fill: var(--knime-masala);
   font-family: "Roboto Condensed", sans-serif;
   font-weight: normal;

@@ -220,7 +220,7 @@ describe('Kanvas', () => {
                 }, RESIZE_DEBOUNCE);
             });
 
-            expect(wrapper.emitted('container-size-updated')).toBeTruthy();
+            expect(wrapper.emitted('container-size-changed')).toBeTruthy();
             expect(storeConfig.canvas.actions.updateContainerSize).toHaveBeenCalledTimes(1);
         });
 

@@ -295,7 +295,7 @@ describe('NodeTemplate', () => {
 
         it('sets isDraggingNode as false when dragging ends', () => {
             doMount();
-            wrapper.trigger('dragend');
+            wrapper.trigger('dragend', { dataTransfer: { dropEffect: '' } });
 
             expect(setDraggingNodeMock).toHaveBeenCalledWith(expect.anything(), false);
         });

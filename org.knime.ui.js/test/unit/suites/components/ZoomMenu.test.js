@@ -7,7 +7,7 @@ import ZoomMenu from '~/components/ZoomMenu';
 import SubMenu from '~/webapps-common/ui/components/SubMenu';
 
 describe('ZoomMenu', () => {
-    let doMount, $store, $commands, zoomFactor, wrapper, storeConfig;
+    let propsData, doMount, $store, $commands, zoomFactor, wrapper, storeConfig;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -16,6 +16,7 @@ describe('ZoomMenu', () => {
 
     beforeEach(() => {
         zoomFactor = 1;
+        propsData = { };
 
         $commands = {
             get: jest.fn().mockImplementation(command => ({ name: command })),
@@ -39,7 +40,7 @@ describe('ZoomMenu', () => {
             };
 
             $store = mockVuexStore(storeConfig);
-            wrapper = mountMethod(ZoomMenu, { mocks: { $store, $commands } });
+            wrapper = mountMethod(ZoomMenu, { propsData, mocks: { $store, $commands } });
         };
     });
 
@@ -47,7 +48,15 @@ describe('ZoomMenu', () => {
     it('renders', () => {
         doMount(deepMount);
         expect(wrapper.findComponent(SubMenu).exists()).toBe(true);
+        expect(wrapper.findComponent(SubMenu).props('disabled')).toBe(false);
         expect(wrapper.find('input').exists()).toBe(true);
+    });
+
+    it('can be disabled', () => {
+        propsData.disabled = true;
+        doMount(shallowMount);
+
+        expect(wrapper.findComponent(SubMenu).props('disabled')).toBe(true);
     });
 
     describe('zoom value input', () => {

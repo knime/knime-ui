@@ -38,8 +38,7 @@ describe('workflow store', () => {
 
             store = mockVuexStore({
                 workflow: await import('~/store/workflow'),
-                selection: await import('~/store/selection'),
-                panel: await import('~/store/panel')
+                selection: await import('~/store/selection')
             });
         };
     });
@@ -158,8 +157,7 @@ describe('workflow store', () => {
                 }
             });
             const commit = jest.spyOn(store, 'commit');
-            const dispatch = jest.spyOn(store, 'dispatch');
-
+        
             await store.dispatch('workflow/loadWorkflow', { projectId: 'wf1' });
 
             expect(loadWorkflow).toHaveBeenCalledWith({ workflowId: 'root', projectId: 'wf1' });
@@ -168,8 +166,7 @@ describe('workflow store', () => {
                 nodes: [],
                 projectId: 'wf1'
             }, undefined);
-            expect(dispatch).toHaveBeenCalledWith('panel/setNodeRepositoryActive', null);
-            expect(commit).toHaveBeenNthCalledWith(4, 'workflow/setActiveSnapshotId', 'snap', undefined);
+            expect(commit).toHaveBeenNthCalledWith(2, 'workflow/setActiveSnapshotId', 'snap', undefined);
             expect(addEventListenerMock).toHaveBeenCalledWith('WorkflowChanged', {
                 projectId: 'wf1',
                 workflowId: 'root',
@@ -619,13 +616,21 @@ describe('workflow store', () => {
             await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
-                nodes: []
+                nodes: [],
+                workflowAnnotations: []
             });
             expect(store.getters['workflow/isWorkflowEmpty']).toBe(true);
 
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
-                nodes: [{ node: { id: 1 } }]
+                nodes: [{ node: { id: 1 } }],
+                workflowAnnotations: []
+            });
+
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
+                nodes: [],
+                workflowAnnotations: ['something']
             });
             expect(store.getters['workflow/isWorkflowEmpty']).toBe(false);
         });

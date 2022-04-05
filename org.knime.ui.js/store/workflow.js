@@ -65,10 +65,6 @@ export const actions = {
                 projectId
             });
 
-            if (getters.isWorkflowEmpty) {
-                dispatch('panel/setNodeRepositoryActive', null, { root: true });
-            }
-
             let snapshotId = project.snapshotId;
             commit('setActiveSnapshotId', snapshotId);
 
@@ -78,8 +74,7 @@ export const actions = {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    unloadActiveWorkflow({ state, commit, dispatch, getters: { activeWorkflowId: workflowId }, rootGetters },
-        { clearWorkflow }) {
+    unloadActiveWorkflow({ state, commit, dispatch, getters: { activeWorkflowId }, rootGetters }, { clearWorkflow }) {
         if (!state.activeWorkflow) {
             // nothing to do (no tabs open)
             return;
@@ -89,12 +84,11 @@ export const actions = {
             let { projectId } = state.activeWorkflow;
             let { activeSnapshotId: snapshotId } = state;
 
-            removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+            removeEventListener('WorkflowChanged', { projectId, workflowId: activeWorkflowId, snapshotId });
         } catch (e) {
             consola.error(e);
         }
 
-        dispatch('panel/close', null, { root: true });
         commit('selection/clearSelection', null, { root: true });
         commit('setTooltip', null);
         
@@ -329,7 +323,10 @@ export const getters = {
     },
     /* Workflow is empty if it doesn't contain nodes */
     isWorkflowEmpty({ activeWorkflow }) {
-        return Boolean(!Object.keys(activeWorkflow?.nodes).length);
+        let hasNodes = Boolean(Object.keys(activeWorkflow?.nodes).length);
+        let hasAnnotations = Boolean(activeWorkflow?.workflowAnnotations.length);
+
+        return !hasNodes && !hasAnnotations;
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow

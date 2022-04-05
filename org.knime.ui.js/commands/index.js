@@ -46,7 +46,6 @@ export default {
             ...conditionGroup(
                 ({ $store }) => Boolean($store.state.canvas.interactionsEnabled),
                 canvasCommands
-                
             )
         }
     ),

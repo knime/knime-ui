@@ -41,7 +41,9 @@ export default {
             // updating the container size and recalculating the canvas is debounced.
             const updateContainerSize = debounce(() => {
                 this.updateContainerSize();
-                this.$emit('container-size-updated');
+                this.$nextTick(() => {
+                    this.$emit('container-size-changed');
+                });
             }, RESIZE_DEBOUNCE);
             
             this.resizeObserver = new ResizeObserver(entries => {
@@ -113,9 +115,10 @@ export default {
 <template>
   <div
     tabindex="0"
-    :class="['scroll-container', { 'panning': isPanning || suggestPanning }]"
-    :style="{ overflow:
-      (interactionsEnabled) ? 'scroll' : 'hidden' }"
+    :class="['scroll-container', {
+      'panning': isPanning || suggestPanning,
+      'disabled': !interactionsEnabled
+    }]"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
     @pointerdown.middle="beginPan"
@@ -150,6 +153,10 @@ export default {
   &:focus {
     outline: none;
   }
+
+  &.disabled {
+    overflow: hidden; /* disables scrolling */
+  }
 }
 
 svg {
@@ -164,9 +171,5 @@ svg {
   & svg >>> * {
     pointer-events: none !important;
   }
-}
-
-.kanvas-background svg >>> {
-  background-color: var(--knime-gray-ultra-light) !important;
 }
 </style>

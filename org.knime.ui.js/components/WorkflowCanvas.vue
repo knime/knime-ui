@@ -5,6 +5,7 @@ import Workflow from '~/components/workflow/Workflow';
 import Kanvas from '~/components/Kanvas';
 import SelectionRectangle from '~/components/SelectionRectangle';
 import WorkflowEmpty from '~/components/workflow/WorkflowEmpty';
+import KanvasFilters from '~/components/workflow/KanvasFilters';
 
 import { dropNode } from '~/mixins';
 
@@ -13,37 +14,52 @@ export default {
         Workflow,
         Kanvas,
         SelectionRectangle,
-        WorkflowEmpty
+        WorkflowEmpty,
+        KanvasFilters
     },
     mixins: [dropNode],
     computed: {
         ...mapGetters('canvas', ['contentBounds']),
         ...mapGetters('workflow', ['isWorkflowEmpty']),
-        ...mapState('nodeRepository', ['isDraggingNode'])
+        ...mapState('nodeRepository', { isDraggingNodeFromRepository: 'isDraggingNode' })
     },
     watch: {
         isWorkflowEmpty: {
             immediate: true,
-            handler(isWorkflowEmpty) {
+            async handler(isWorkflowEmpty) {
+                // disable zoom & pan if workflow is empty
                 this.setInteractionsEnabled(!isWorkflowEmpty);
+                
+                if (isWorkflowEmpty) {
+                    // call to action: move nodes onto workflow
+                    this.setNodeRepositoryActive();
+                    
+                    // for an empty workflow "fillScreen" zooms to 100% and moves the origin (0,0) to the center
+                    await this.$nextTick();
+                    this.fillScreen();
+                }
             }
         }
     },
     mounted() {
         this.$nextTick(() => {
-            this.$store.dispatch('canvas/fillScreen');
+            // put canvas into fillScreen view after loading the workflow
+            // TODO: To be changed in NXT-929
+            this.fillScreen();
         });
     },
     methods: {
         ...mapMutations('canvas', ['setInteractionsEnabled']),
         ...mapActions('canvas', ['fillScreen']),
+        ...mapActions('panel', ['setNodeRepositoryActive']),
         onNodeSelectionPreview($event) {
             this.$refs.workflow.applyNodeSelectionPreview($event);
         },
         async onContainerSizeUpdated() {
             if (this.isWorkflowEmpty) {
                 await this.$nextTick();
-                await this.$nextTick();
+                
+                // scroll to center
                 this.fillScreen();
             }
         }
@@ -55,13 +71,15 @@ export default {
   <Kanvas
     id="kanvas"
     ref="kanvas"
-    :class="{ 'kanvas-background': isDraggingNode && isWorkflowEmpty }"
+    :class="{ 'indicate-node-drag': isWorkflowEmpty && isDraggingNodeFromRepository }"
     @drop.native.stop="onDrop"
     @dragover.native.stop="onDragOver"
-    @container-size-updated="onContainerSizeUpdated"
+    @container-size-changed="onContainerSizeUpdated"
   >
-    <WorkflowEmpty v-if="isWorkflowEmpty" />
+    <!-- Includes shadows for Nodes -->
+    <KanvasFilters />
 
+    <WorkflowEmpty v-if="isWorkflowEmpty" />
     <template v-else>
       <rect
         class="workflow-sheet"
@@ -87,6 +105,11 @@ export default {
 #kanvas >>> svg {
   color: var(--knime-masala);
   background-color: white;
+  transition: background-color 150ms;
+}
+
+#kanvas.indicate-node-drag >>> svg {
+  background-color: var(--knime-gray-ultra-light);
 }
 
 .workflow-sheet {
