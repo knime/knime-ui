@@ -64,14 +64,6 @@ export default {
             }
         }
     },
-    created() {
-        this.$on('node-selection-plane-width-changed', this.updatePlaneWidth);
-        this.$on('node-selection-plane-extra-height-changed', this.updatePlaneExtraHeight);
-    },
-    beforeDestroy() {
-        this.$off('node-selection-plane-width-changed', this.updatePlaneWidth);
-        this.$off('node-selection-plane-extra-height-changed', this.updatePlaneExtraHeight);
-    },
     methods: {
         ...mapActions('selection', ['selectNode', 'deselectNode', 'deselectAllObjects']),
         /**
@@ -164,13 +156,7 @@ export default {
                 nodeId: this.id
             });
             /* eslint-enable no-invalid-this */
-        }),
-        updatePlaneWidth(width) {
-            this.nodeSelectionWidth = width;
-        },
-        updatePlaneExtraHeight(extraHeight) {
-            this.nodeSelectionExtraHeight = extraHeight;
-        }
+        })
     }
 };
 </script>

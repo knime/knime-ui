@@ -1,13 +1,28 @@
 <script>
-import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
+import { mapActions, mapState } from 'vuex';
+
+import NodeNameEditor from '~/components/workflow/NodeNameEditor';
+import NodeNameText from '~/components/workflow/NodeNameText';
 
 /**
- * Node name. Uses AutoSizeForeignObject to render HTML which offers stuff like `text-overflow: ellipsis`. Editable
- * names emit @request-edit on double click. It offers a <slot> for the NodeNameTextarea to plug the inline editor in.
+ * Node name coordinates everything related to the name editing behavior. Determines whether to display
+ * the editor or the label itself, as well as handles updates to the store when name changes are made
  */
 export default {
-    components: { AutoSizeForeignObject },
+    components: { NodeNameEditor, NodeNameText },
     props: {
+        nodeId: {
+            type: String,
+            required: true
+        },
+        actionBarPosition: {
+            type: Object,
+            required: true
+        },
+        nodePosition: {
+            type: Object,
+            required: true
+        },
         editable: {
             type: Boolean,
             default: false
@@ -15,109 +30,76 @@ export default {
         value: {
             type: String,
             default: ''
-        },
-        showOverflow: {
-            type: Boolean,
-            value: false
-        },
-        /**
-         * Optional hook that is called before the dimension is adjusted.
-         */
-        adjustDimensionBeforeHook: {
-            type: Function,
-            default: () => null
         }
+    },
+    data() {
+        return {
+            editorInitialDimensions: {
+                width: null,
+                height: null
+            }
+        };
     },
     computed: {
-        maxWidth() {
-            return this.$shapes.maxNodeNameWidth;
+        ...mapState('workflow', ['nameEditorNodeId']),
+        isEditorOpen() {
+            return this.nameEditorNodeId === this.nodeId;
         }
-    },
-    watch: {
-        value(newValue) {
-            this.adjustDimensions();
-        }
-    },
-    mounted() {
-        this.adjustDimensions();
-        // call it again after fonts have been loaded
-        document.fonts.ready.then(() => {
-            this.adjustDimensions();
-        });
     },
     methods: {
-        adjustDimensions(cfg) {
-            this.$refs.container?.adjustDimensions(cfg);
+        ...mapActions('workflow', ['openNameEditor', 'updateComponentOrMetanodeName', 'closeNameEditor']),
+        handleEditRequest() {
+            this.openNameEditor(this.nodeId);
+            this.$emit('name-change-request');
+        },
+        handleNameSave({ dimensionsOnClose, newName }) {
+            this.updateComponentOrMetanodeName({ nodeId: this.nodeId, name: newName });
+            this.editorInitialDimensions = dimensionsOnClose;
+
+            // Schedule closing editor on next the event loop run
+            // to allow styles to apply properly when editor is destroyed
+            setTimeout(() => {
+                this.closeNameEditor();
+            }, 0);
         }
     }
 };
 </script>
 
 <template>
-  <AutoSizeForeignObject
-    ref="container"
-    :class="['container', {editable, 'text-ellipsis': !showOverflow }]"
-    :max-width="maxWidth"
-    :y-shift="-$shapes.nodeNameMargin"
-    :parent-width="$shapes.nodeSize"
-    :adjust-dimension-before-hook="adjustDimensionBeforeHook"
-    shift-by-height
-    @width="$emit('width', $event)"
-    @height="$emit('height', $event)"
-  >
-    <div
-      class="node-name"
-      @click.prevent.stop="$emit('click', $event)"
-      @contextmenu.prevent="$emit('contextmenu', $event)"
-      @dblclick.left.prevent.stop="editable ? $emit('request-edit') : null"
-      @mouseleave="$emit('mouseleave', $event)"
-      @mouseenter="$emit('mouseenter', $event)"
-    >
-      <span
-        :style="{'max-width': `${maxWidth}px`}"
-        :title="showOverflow ? null : value"
-        class="text"
-      ><slot>{{ value }}</slot></span>
-    </div>
-  </AutoSizeForeignObject>
+  <g>
+    <template v-if="isEditorOpen">
+      <portal
+        v-if="isEditorOpen"
+        to="node-name-editor"
+      >
+        <NodeNameEditor
+          :node-id="nodeId"
+          :value="value"
+
+          :start-width="editorInitialDimensions.width"
+          :start-height="editorInitialDimensions.height"
+          :action-bar-position="actionBarPosition"
+          :position="nodePosition"
+          @width-change="$emit('width-change', $event)"
+          @height-change="$emit('height-change', $event)"
+          @save="handleNameSave"
+          @close="closeNameEditor"
+        />
+      </portal>
+    </template>
+
+    <template v-else>
+      <NodeNameText
+        :editable="editable"
+        :value="value"
+        @width-change="$emit('width-change', $event)"
+        @height-change="$emit('height-change', $event)"
+        @request-edit="handleEditRequest"
+        @mouseleave="$emit('mouseleave', $event)"
+        @mouseenter="$emit('mouseenter', $event)"
+      />
+    </template>
+  </g>
 </template>
 
-<style lang="postcss" scoped>
-.container {
-  font-family: "Roboto Condensed", sans-serif;
-  cursor: default;
-  user-select: none;
-
-  &.editable:hover {
-    cursor: pointer;
-  }
-
-  & .text {
-    font-family: "Roboto Condensed", sans-serif;
-    font-style: normal;
-    font-weight: bold;
-    font-size: calc(var(--node-name-font-size-shape) * 1px);
-    margin: 0;
-    white-space: pre-wrap;
-    text-align: inherit;
-  }
-
-  &.text-ellipsis .text {
-    /* multiline overflow ellipsis -
-       also supported in Firefox (yes with -webkit prefix) https://caniuse.com/css-line-clamp */
-    word-wrap: break-word;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: var(--node-name-max-lines-shape);
-    overflow: hidden;
-  }
-
-  & .node-name {
-    text-align: center;
-    padding: calc(var(--node-name-padding-shape) * 1px);
-    overflow: hidden;
-    line-height: calc(var(--node-name-line-height-shape) * 1px);
-  }
-}
-</style>

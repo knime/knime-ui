@@ -80,7 +80,7 @@ export default {
   <AutoSizeForeignObject
     ref="container"
     class="container"
-    :y-shift="$shapes.nodeSize + $shapes.nodeAnnotationMarginTop + yShift"
+    :y-offset="$shapes.nodeSize + $shapes.nodeAnnotationMarginTop + yShift"
     :parent-width="$shapes.nodeSize"
     :max-width="$shapes.maxNodeAnnotationWidth"
   >

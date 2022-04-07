@@ -1,11 +1,10 @@
 <script>
 import NodeNameTextarea from '~/components/workflow/NodeNameTextarea';
 import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar';
-import { mapActions } from 'vuex';
 
 /**
  * Node Name Editor. Component wraps inline textarea and editor action bar (cancel, save). It overlays the whole
- * canvas (via the portal) with a rect that avoids changes to the canvas. Updates of the store are handled here.
+ * canvas (via the portal) with a rect that avoids changes to the canvas.
  */
 export default {
     components: {
@@ -35,12 +34,12 @@ export default {
             required: true,
             validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         },
-        /* start width to avoid jumping on replace of <NodeName> */
+        /* start width to initialize the editor with */
         startWidth: {
             type: Number,
             default: null
         },
-        /* start height to avoid jumping on replace of <NodeName> */
+        /* start height to initialize the editor with */
         startHeight: {
             type: Number,
             default: null
@@ -48,7 +47,11 @@ export default {
     },
     data() {
         return {
-            currentName: this.value
+            currentName: this.value,
+            latestDimensions: {
+                width: null,
+                height: null
+            }
         };
     },
     watch: {
@@ -57,24 +60,29 @@ export default {
         }
     },
     methods: {
-        ...mapActions('workflow', ['updateComponentOrMetanodeName', 'closeNameEditor']),
+        handleDimensionChange(dimensionName, dimensionValue) {
+            // keep a reference of the dimensions so that we can emit the most recent
+            // value upon saving. These values can be later provided so that the editor
+            // can be reinitialized using them as a starting point
+            this.latestDimensions = { ...this.latestDimensions, [dimensionName]: dimensionValue };
+
+            this.$emit(`${dimensionName}-change`, dimensionValue);
+        },
         saveNameEdit() {
             // reset to old value on empty edits
-            if (this.currentName === '') {
+            if (this.currentName.trim() === '') {
                 this.currentName = this.value;
-                this.closeNameEditor();
+                this.$emit('close');
                 return;
             }
-            // call api via store
-            this.updateComponentOrMetanodeName({ nodeId: this.nodeId, name: this.currentName });
-            // close editor
-            this.closeNameEditor();
+
+            this.$emit('save', { dimensionsOnClose: this.latestDimensions, newName: this.currentName });
         },
         cancelNameEdit() {
             // reset internal value
             this.currentName = this.value;
-            // close editor
-            this.closeNameEditor();
+            
+            this.$emit('close');
         }
     }
 };
@@ -92,12 +100,14 @@ export default {
       @pointerdown.stop.prevent
       @click.stop.prevent
     />
+    
     <!-- Save/Cancel actions -->
     <NodeNameEditorActionBar
       :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y })`"
       @save="saveNameEdit"
       @close="cancelNameEdit"
     />
+
     <!-- Node name inline editor -->
     <NodeNameTextarea
       v-model="currentName"
@@ -105,8 +115,8 @@ export default {
       :start-width="startWidth"
       :start-height="startHeight"
       :pattern="pattern"
-      @width="$emit('width', $event)"
-      @height="$emit('height', $event)"
+      @width-change="handleDimensionChange('width', $event)"
+      @height-change="handleDimensionChange('height', $event)"
       @save="saveNameEdit"
       @close="cancelNameEdit"
     />

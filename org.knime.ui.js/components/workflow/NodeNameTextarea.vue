@@ -1,13 +1,12 @@
 <script>
-/* eslint-disable vue/multiline-html-element-content-newline */
-import NodeName from '~/components/workflow/NodeName';
+import NodeNameText from '~/components/workflow/NodeNameText';
 
 /**
  * Inline editor for the node name. Emits 'save' and 'close' events. Implements v-model pattern. On input it might
  * emit 'invalidCharacter' if the input matches given 'pattern' prop.
  */
 export default {
-    components: { NodeName },
+    components: { NodeNameText },
     props: {
         value: {
             type: String,
@@ -30,7 +29,8 @@ export default {
     },
     mounted() {
         this.$nextTick(() => {
-            this.adjustDimensions({ startWidth: this.startWidth, startHeight: this.startHeight });
+            this.resizeTextarea();
+
             if (this.$refs.textarea) {
                 this.$refs.textarea.focus();
                 this.$refs.textarea.select();
@@ -38,7 +38,7 @@ export default {
         });
     },
     methods: {
-        onInput(event) {
+        onInput(event, sizeChangeCallback) {
             let value = event.target.value;
             value = value.replace(/(\r\n|\n|\r)/gm, ''); // remove all new lines
 
@@ -50,7 +50,13 @@ export default {
 
             this.$refs.textarea.value = value;
             this.$refs.ghost.innerText = value;
-            this.adjustDimensions();
+            
+            // trigger callback to update size on the autosize wrapper
+            sizeChangeCallback();
+
+            // apply the styles that resize the textarea according to the content
+            this.resizeTextarea();
+
             this.$emit('input', value);
         },
         onKeyDown(event) {
@@ -64,58 +70,60 @@ export default {
             event.preventDefault();
             this.$emit('save');
         },
-        onEsc(event) {
+        onEscape(event) {
             event.preventDefault();
             this.$emit('close');
         },
         resizeTextarea() {
-            let textarea = this.$refs.textarea;
+            const textarea = this.$refs.textarea;
             if (!textarea) {
                 return;
             }
             // width
-            let width = Math.min(
+            const width = Math.min(
                 Math.max(this.$refs.ghost.scrollWidth + 2, this.$shapes.nodeNameEditorMinWidth),
                 this.$shapes.maxNodeNameWidth
             );
             textarea.style.width = `${width}px`;
+            
             // height
             textarea.style.height = 'auto';
             textarea.style.height = `${textarea.scrollHeight}px`;
-        },
-        adjustDimensions(cfg) {
-            this.$refs.nodeName?.adjustDimensions(cfg);
         }
     }
 };
 </script>
 
 <template>
-  <NodeName
-    ref="nodeName"
-    class="editor"
+  <NodeNameText
     show-overflow
-    :adjust-dimension-before-hook="resizeTextarea"
-    @width="$emit('width', $event)"
-    @height="$emit('height', $event)"
-  ><!--
-    --><span
-      ref="ghost"
-      class="ghost"
-      aria-hidden="true"
-    >{{ value }}</span><!--
-    --><textarea
-      ref="textarea"
-      rows="1"
-      class="name-textarea"
-      :value="value"
-      @pointerdown.stop
-      @input="onInput"
-      @keydown="onKeyDown"
-      @keydown.enter="onEnter"
-      @keydown.esc="onEsc"
-    /><!--
-  --></NodeName>
+    class="editor"
+    :start-width="startWidth"
+    :start-height="startHeight"
+    @width-change="$emit('width-change', $event)"
+    @height-change="$emit('height-change', $event)"
+  >
+    <template #default="{ on: { sizeChange } }">
+      <span
+        ref="ghost"
+        class="ghost"
+        aria-hidden="true"
+      >
+        {{ value }}
+      </span>
+      <textarea
+        ref="textarea"
+        rows="1"
+        class="name-textarea"
+        :value="value"
+        @pointerdown.stop
+        @input="onInput($event, sizeChange)"
+        @keydown="onKeyDown"
+        @keydown.enter="onEnter"
+        @keydown.esc="onEscape"
+      />
+    </template>
+  </NodeNameText>
 </template>
 
 <style lang="postcss" scoped>
@@ -137,7 +145,6 @@ export default {
 
 .name-textarea {
   display: block;
-  width: 1px;
   text-align: inherit;
   border: 0;
   padding: 0;

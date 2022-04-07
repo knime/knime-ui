@@ -169,9 +169,11 @@ export default {
     data() {
         return {
             hover: false,
-            nameWidth: 0,
-            nameHeight: 20,
-            showSelectionPreview: null
+            showSelectionPreview: null,
+            nameDimensions: {
+                width: 0,
+                height: 20
+            }
         };
     },
     computed: {
@@ -196,7 +198,7 @@ export default {
             return null;
         },
         selectionWidth() {
-            return this.nameWidth + (this.$shapes.nodeNameHorizontalMargin * 2);
+            return this.nameDimensions.width + (this.$shapes.nodeNameHorizontalMargin * 2);
         },
         /**
          * Checks if a streamable execution info has been set. The boolean value of the streamable variable does not
@@ -289,24 +291,15 @@ export default {
 
             return this.showSelectionPreview === 'show' || isSelected;
         },
-        nameIsEditable() {
+        isNameEditable() {
             // only not linked metanodes and components have editable names
             return ['metanode', 'component'].includes(this.kind) && this.link === null;
         },
         actionBarPosition() {
             return {
                 x: this.position.x + this.$shapes.nodeSize / 2,
-                y: this.position.y - this.$shapes.nodeSelectionPadding[0] - this.nameHeight
+                y: this.position.y - this.$shapes.nodeSelectionPadding[0] - this.nameDimensions.height
             };
-        }
-    },
-    watch: {
-        nameHeight(newValue) {
-            this.$parent.$emit('node-selection-plane-extra-height-changed', newValue);
-        },
-        // nameWidth + some margin
-        selectionWidth(newValue) {
-            this.$parent.$emit('node-selection-plane-width-changed', newValue);
         }
     },
     methods: {
@@ -419,6 +412,12 @@ export default {
         // public
         setSelectionPreview(show) {
             this.showSelectionPreview = show === 'clear' ? null : show;
+        },
+
+        onNameEditRequest() {
+            // this.openNameEditor(this.id);
+            this.hover = false;
+            console.log('this.hover', this.hover);
         }
     }
 };
@@ -448,7 +447,7 @@ export default {
         v-show="showSelectionPlane"
         :position="position"
         :width="selectionWidth"
-        :extra-height="nameHeight"
+        :extra-height="nameDimensions.height"
         :kind="kind"
       />
     </portal>
@@ -552,30 +551,17 @@ export default {
     </g>
 
     <!-- Node name / title -->
-    <portal
-      v-if="nameEditorIsOpen"
-      to="node-name-editor"
-    >
-      <NodeNameEditor
-        :node-id="id"
-        :value="name"
-        :start-width="nameWidth"
-        :start-height="nameHeight"
-        :action-bar-position="actionBarPosition"
-        :position="position"
-        @width="nameWidth = $event"
-        @height="nameHeight = $event"
-      />
-    </portal>
     <NodeName
-      v-else
+      :node-id="id"
+      :node-position="position"
+      :action-bar-position="actionBarPosition"
       :value="name"
-      :editable="nameIsEditable"
+      :editable="isNameEditable"
       @click="onLeftMouseClick"
       @contextmenu="onContextMenu"
-      @width="nameWidth = $event"
-      @height="nameHeight = $event"
-      @request-edit="openNameEditor(id); hover = false;"
+      @width-change="nameDimensions.width = $event"
+      @height-change="nameDimensions.height = $event"
+      @name-change-request="hover = false"
       @mouseenter="hover = true"
       @mouseleave="onLeaveHoverArea"
     />

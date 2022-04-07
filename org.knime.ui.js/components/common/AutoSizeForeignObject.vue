@@ -20,14 +20,14 @@ export default {
         /**
          * Optional y-offset relative to the default position.
          */
-        yShift: {
+        yOffset: {
             type: Number,
             default: 0
         },
         /**
-         * Optional The element is moved on y-axis by the mesaured height (in addition to yShift).
+         * Optional The element is moved on y-axis by the mesaured height (in addition to yOffset).
          */
-        shiftByHeight: {
+        offsetByHeight: {
             type: Boolean,
             default: false
         },
@@ -38,11 +38,14 @@ export default {
             type: Number,
             default: null
         },
-        /**
-         * Optional hook that is called before the dimension is adjusted.
-         */
-        adjustDimensionBeforeHook: {
-            type: Function,
+        /* start width to use instead of performing calculation on mount */
+        startWidth: {
+            type: Number,
+            default: null
+        },
+        /* start height to use instead of performing calculation on mount */
+        startHeight: {
+            type: Number,
             default: null
         }
     },
@@ -56,14 +59,23 @@ export default {
     computed: {
         ...mapState('canvas', ['zoomFactor']),
         y() {
-            if (this.shiftByHeight) {
-                return -this.height + this.yShift;
+            if (this.offsetByHeight) {
+                return -this.height + this.yOffset;
             }
-            return this.yShift;
+            return this.yOffset;
         }
     },
     mounted() {
-        this.adjustDimensions();
+        // if initial dimensions are provided use those instead
+        // of performing the calculation
+        if (this.startWidth && this.startHeight) {
+            this.width = this.startWidth;
+            this.height = this.startHeight;
+            this.centerAroundParentWidth();
+            this.emitDimensions();
+        } else {
+            this.adjustDimensions();
+        }
     },
     methods: {
         centerAroundParentWidth() {
@@ -71,56 +83,45 @@ export default {
                 this.x = (this.parentWidth - this.width) / 2;
             }
         },
+        
         // foreignObject requires `width` and `height` attributes, or the content is cut off.
         // So we need to 1. render, 2. measure, 3. update
-        // public
-        async adjustDimensions({ startWidth, startHeight } = {}) {
-            // start values (useful if this component replaces another one with the given size to avoid jumping)
-            if (startWidth && startHeight) {
-                this.width = startWidth;
-                this.height = startHeight;
-                this.centerAroundParentWidth();
-                return; // end here
-            }
-
-            if (this.adjustDimensionBeforeHook) {
-                // this is required for FF
-                await this.$nextTick(() => {
-                    this.adjustDimensionBeforeHook();
-                });
-            }
+        async adjustDimensions() {
             const lastWidth = this.width;
             // 1. render with max width or given startWidth
             this.width = this.maxWidth;
-            this.$nextTick(() => { // wait for re-render
-                // 2. measure content's actual size
-                let rect = this.$refs.wrapper?.getBoundingClientRect();
-                if (!rect) {
-                    consola.error('Tried to adjust dimensions of NodeTitle, but element is gone or is not a DOM Node');
-                    return;
-                }
-                // account for zoom
-                let width = Math.ceil(rect.width / this.zoomFactor);
-                let height = Math.ceil(rect.height / this.zoomFactor);
+            
+            // wait for re-render
+            await this.$nextTick();
 
-                // 3. set container size to content size
-                // avoid width jitter
-                if (Math.abs(lastWidth - width) > MINIMUM_SIZE_CHANGE) {
-                    this.width = width;
-                } else {
-                    this.width = lastWidth;
-                }
-                // avoid height jitter
-                if (Math.abs(this.height - height) > MINIMUM_SIZE_CHANGE) {
-                    this.height = height;
-                }
+            // 2. measure content's actual size
+            const rect = this.$refs.wrapper?.getBoundingClientRect();
+            if (!rect) {
+                consola.error('Tried to adjust dimensions of NodeTitle, but element is gone or is not a DOM Node');
+                return;
+            }
+            
+            // account for zoom
+            const width = Math.ceil(rect.width / this.zoomFactor);
+            const height = Math.ceil(rect.height / this.zoomFactor);
+    
+            // 3. set container size to content size
+            // avoid width jitter
+            this.width = Math.abs(lastWidth - width) > MINIMUM_SIZE_CHANGE ? width : lastWidth;
+            
+            // avoid height jitter
+            if (Math.abs(this.height - height) > MINIMUM_SIZE_CHANGE) {
+                this.height = height;
+            }
+    
+            this.centerAroundParentWidth();
+    
+            this.emitDimensions();
+        },
 
-                // update related stuff and emit size
-                // center container
-                this.centerAroundParentWidth();
-                this.$emit('width', this.width);
-                this.$emit('height', this.height);
-            });
+        emitDimensions() {
+            this.$emit('width-change', this.width);
+            this.$emit('height-change', this.height);
         }
     }
 };
@@ -128,7 +129,7 @@ export default {
 
 <template>
   <foreignObject
-    class="container"
+    class="autosize-container"
     :width="width"
     :height="height"
     :x="x"
@@ -139,13 +140,13 @@ export default {
       ref="wrapper"
       class="wrapper"
     >
-      <slot />
+      <slot :on="{ sizeChange: adjustDimensions }" />
     </div>
   </foreignObject>
 </template>
 
 <style lang="postcss" scoped>
-.container {
+.autosize-container {
   & .wrapper {
     display: block;
     padding: 0;
