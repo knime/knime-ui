@@ -22,7 +22,11 @@ export default {
             x: 0,
             y: 0
         },
-        pointerId: null
+        pointerId: null,
+        nodeIdsToSelectOnEnd: [],
+        nodeIdsToDeselectOnEnd: [],
+        selectedNodeIdsAtStart: [],
+        nodeIdsInsidePreviousSelection: []
     }),
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
@@ -59,13 +63,11 @@ export default {
             this.pointerId = e.pointerId;
             e.target.setPointerCapture(e.pointerId);
             
-            this.currentTargetRect = e.currentTarget.getBoundingClientRect();
             this.startPos = this.positionOnCanvas(e);
             this.endPos = this.startPos;
             
-            // init non-reactive data
-            this.selectOnEnd = [];
-            this.deSelectOnEnd = [];
+            this.nodeIdsToSelectOnEnd = [];
+            this.nodeIdsToDeselectOnEnd = [];
             
             // deselect all objects if we do not hold shift key
             if (e.shiftKey) {
@@ -78,7 +80,10 @@ export default {
             }
         },
 
-        stopRectangleSelection(e) {
+        // Because the selection update/move function is throttled we also need to
+        // throttle the stop function to guarantee order of event handling
+        stopRectangleSelection: throttle(function (e) {
+            /* eslint-disable no-invalid-this */
             if (this.pointerId !== e.pointerId) {
                 return;
             }
@@ -90,52 +95,52 @@ export default {
             // update selection (in store)
             setTimeout(() => {
                 // do the real selection when we are finished as it is quite slow (updates to buttons, tables etc.)
-                if (this.selectOnEnd) {
-                    this.selectNodes(this.selectOnEnd);
-                }
-                if (this.deSelectOnEnd) {
-                    this.deselectNodes(this.deSelectOnEnd);
+                if (this.nodeIdsToSelectOnEnd.length > 0) {
+                    this.selectNodes(this.nodeIdsToSelectOnEnd);
                 }
 
-                // clear preview state of now selected elements
-                [...this.selectOnEnd, ...this.deSelectOnEnd].forEach(nodeId => {
+                if (this.nodeIdsToDeselectOnEnd.length > 0) {
+                    this.deselectNodes(this.nodeIdsToDeselectOnEnd);
+                }
+
+                // clear "preview state" of now selected elements
+                [...this.nodeIdsToSelectOnEnd, ...this.nodeIdsToDeselectOnEnd].forEach(nodeId => {
                     this.$emit('node-selection-preview', { type: 'clear', nodeId });
                 });
 
-                // clear state
-                this.selectOnEnd = [];
-                this.deSelectOnEnd = [];
+                this.nodeIdsToSelectOnEnd = [];
+                this.nodeIdsToDeselectOnEnd = [];
                 this.selectedNodeIdsAtStart = [];
             }, 0);
-        },
+            /* eslint-enable no-invalid-this */
+        }),
 
         updateRectangleSelection: throttle(function (e) {
             /* eslint-disable no-invalid-this */
             if (this.pointerId !== e.pointerId) {
                 return;
             }
-
+            
             let pointerOnCanvas = this.positionOnCanvas(e);
             this.endPos = pointerOnCanvas;
 
-            this.$nextTick(() => {
-                this.previewSelectionForNodesInRectangle(this.startPos, pointerOnCanvas);
-            });
+            this.previewSelectionForNodesInRectangle(this.startPos, pointerOnCanvas);
             /* eslint-enable no-invalid-this */
         }),
 
-        positionOnCanvas(e) {
-            // we need to use the offset relative to the kanvas not the element it occurred (which might be a descendant)
-            const offsetX = e.pageX - this.currentTargetRect.left;
-            const offsetY = e.pageY - this.currentTargetRect.top;
+        positionOnCanvas({ clientX, clientY }) {
+            const kanvasElement = document.getElementById('kanvas');
+            const { offsetLeft, offsetTop, scrollLeft, scrollTop } = kanvasElement;
+
+            const offsetX = clientX - offsetLeft + scrollLeft;
+            const offsetY = clientY - offsetTop + scrollTop;
 
             // convert to kanvas coordinates
             const [x, y] = this.toCanvasCoordinates([offsetX, offsetY]);
             return { x, y };
         },
 
-        /* eslint-disable no-invalid-this */
-        previewSelectionForNodesInRectangle: throttle(function (startPos, endPos) {
+        previewSelectionForNodesInRectangle(startPos, endPos) {
             let { inside, outside } = findNodesInsideOfRectangle({
                 startPos,
                 endPos,
@@ -158,19 +163,19 @@ export default {
                 }
             });
 
-            // clear state if we have changed it in the last run
+            // As we update the selection, we need to tell every node that is NOW outside
+            // the selection AND that it used to be inside the previous selection
+            // to clear its selected state
             outside.forEach(nodeId => {
-                if (this.lastInsideNodeIds?.includes(nodeId)) {
+                if (this.nodeIdsInsidePreviousSelection?.includes(nodeId)) {
                     this.$emit('node-selection-preview', { type: 'clear', nodeId });
                 }
             });
 
-            // update global state
-            this.lastInsideNodeIds = inside;
-            this.selectOnEnd = selectNodes;
-            this.deSelectOnEnd = deselectNodes;
-        })
-        /* eslint-enable no-invalid-this */
+            this.nodeIdsInsidePreviousSelection = inside;
+            this.nodeIdsToSelectOnEnd = selectNodes;
+            this.nodeIdsToDeselectOnEnd = deselectNodes;
+        }
     }
 };
 </script>

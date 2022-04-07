@@ -1,10 +1,10 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import Vuex from 'vuex';
-import Vue from 'vue';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import * as $shapes from '~/style/shapes';
 
 import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer';
+
 import '~/plugins/directive-move';
 
 jest.mock('raf-throttle', () => function (func) {
@@ -146,16 +146,6 @@ describe('MoveableNodeContainer', () => {
                 expect.anything(),
                 expect.stringMatching('root:2')
             );
-        });
-
-        it('makes sure outline is not moved when moving a single node and correctly reset after movement', async () => {
-            doMount();
-            wrapper.setProps({ position: { x: 200, y: 200 } });
-            await Vue.nextTick();
-            wrapper.setProps({ dragGhostPosition: { x: 250, y: 250 } });
-            wrapper.setProps({ position: { x: 250, y: 250 } });
-            await Vue.nextTick();
-            expect(storeConfig.workflow.mutations.resetDragPosition).toHaveBeenCalledTimes(2);
         });
 
         it('moves a single node', () => {
