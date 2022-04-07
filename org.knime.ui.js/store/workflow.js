@@ -6,10 +6,6 @@ import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
 
 
-// Defines the number of nodes above which only the node-outline (drag ghost) is shown when dragging a node.
-// This is a performance optimization.
-const moveNodeGhostThreshold = 10;
-
 /**
  * Store that holds a workflow graph and the associated tooltips.
  * A workflow can either be contained in a component / metanode, or it can be the top level workflow.
@@ -23,7 +19,6 @@ export const state = () => ({
     tooltip: null,
     isDragging: false,
     deltaMovePosition: { x: 0, y: 0 },
-    moveNodeGhostThresholdExceeded: false,
     nameEditorNodeId: null
 });
 
@@ -44,10 +39,9 @@ export const mutations = {
         Vue.set(state, 'tooltip', tooltip);
     },
     // Shifts the position of the node for the provided amount
-    shiftPosition(state, { deltaX, deltaY, thresholdExceeded }) {
+    shiftPosition(state, { deltaX, deltaY }) {
         state.deltaMovePosition.x = deltaX;
         state.deltaMovePosition.y = deltaY;
-        state.moveNodeGhostThresholdExceeded = thresholdExceeded;
     },
     // Reset the position of the outline
     resetDragPosition(state) {
@@ -240,9 +234,7 @@ export const actions = {
      * @returns {void} - nothing to return
      */
     moveNodes({ commit, rootGetters }, { deltaX, deltaY }) {
-        let selectedNodes = rootGetters['selection/selectedNodes'];
-        let thresholdExceeded = selectedNodes.length > moveNodeGhostThreshold;
-        commit('shiftPosition', { deltaX, deltaY, thresholdExceeded });
+        commit('shiftPosition', { deltaX, deltaY });
     },
 
     openNameEditor({ commit }, nodeId) {

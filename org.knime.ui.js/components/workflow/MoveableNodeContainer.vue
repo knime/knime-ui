@@ -1,12 +1,8 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex';
 import throttle from 'raf-throttle';
-import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
 
 export default {
-    components: {
-        NodeSelectionPlane
-    },
     props: {
         /**
          * Node id, unique to the containing workflow
@@ -42,32 +38,20 @@ export default {
         ...mapGetters('selection', ['isNodeSelected']),
         ...mapGetters('canvas', ['toCanvasCoordinates']),
         ...mapState('application', ['activeProjectId']),
-        ...mapState('workflow', [
-            'isDragging', 'deltaMovePosition', 'moveNodeGhostThresholdExceeded', 'activeWorkflow'
-        ]),
+        ...mapState('workflow', ['isDragging', 'deltaMovePosition', 'activeWorkflow']),
         ...mapState('canvas', ['zoomFactor']),
 
         // Combined position of original position + the dragged amount
         combinedPosition() {
-            return { x: this.position.x + this.deltaMovePosition.x, y: this.position.y + this.deltaMovePosition.y };
+            return {
+                x: this.position.x + this.deltaMovePosition.x,
+                y: this.position.y + this.deltaMovePosition.y
+            };
         },
         
         // returns the amount the object should be translated. This is either the position of the objec, or the position + the dragged amount
         translationAmount() {
-            return this.isNodeSelected(this.id) && !this.moveNodeGhostThresholdExceeded
-                ? this.combinedPosition
-                : this.position;
-        },
-        
-        // If true the outline of the node is shown when dragged.
-        // This is true if the node is selected and more then a predefined amount of nodes are selected
-        // and the node has been moved already
-        showGhostOutline() {
-            return (
-                this.isNodeSelected(this.id) &&
-                this.moveNodeGhostThresholdExceeded &&
-                (this.deltaMovePosition.x !== 0 || this.deltaMovePosition.y !== 0)
-            );
+            return this.isNodeSelected(this.id) ? this.combinedPosition : this.position;
         }
     },
     watch: {
@@ -96,19 +80,21 @@ export default {
          * @returns {void} nothing to return
          */
         handleMoveFromStore() {
-            this.$store.commit('workflow/resetDragPosition');
-            this.$store.commit('workflow/setDragging', { isDragging: false });
+            if (this.isDragging) {
+                this.$store.commit('workflow/setDragging', { isDragging: false });
+                this.$store.commit('workflow/resetDragPosition');
+            }
         },
 
         positionOnCanvas({ x, y }) {
             const kanvasElement = document.getElementById('kanvas');
             const { offsetLeft, offsetTop, scrollLeft, scrollTop } = kanvasElement;
 
-            const [absoluteX, absoluteY] = this.toCanvasCoordinates([
-                x - offsetLeft + scrollLeft,
-                y - offsetTop + scrollTop
-            ]);
+            const offsetX = x - offsetLeft + scrollLeft;
+            const offsetY = y - offsetTop + scrollTop;
 
+            // convert to kanvas coordinates
+            const [absoluteX, absoluteY] = this.toCanvasCoordinates([offsetX, offsetY]);
             return { x: absoluteX, y: absoluteY };
         },
 
@@ -129,7 +115,7 @@ export default {
 
         /**
          * Handles move events of the node
-         * throttled to limit recalculation to every @moveNodesThrottle ms
+         * throttled to limit recalculation
          * @param {Object} detail - containing the total amount moved in x and y direction
          */
         onMove: throttle(function ({ detail: { clientX, clientY } }) {
@@ -137,7 +123,7 @@ export default {
             if (!this.isDragging) {
                 return;
             }
-            
+
             const { nodeSize, gridSize } = this.$shapes;
             const updatedPos = this.positionOnCanvas({ x: clientX, y: clientY });
 
@@ -148,6 +134,14 @@ export default {
             const deltaXAdjustedForGridSnapping = Math.round(deltaX / gridSize.x) * gridSize.x;
             const deltaYAdjustedForGridSnapping = Math.round(deltaY / gridSize.y) * gridSize.y;
             
+            // prevent unneeded dispatches if the position hasn't changed
+            if (
+                this.deltaMovePosition.x === deltaXAdjustedForGridSnapping &&
+                this.deltaMovePosition.y === deltaYAdjustedForGridSnapping
+            ) {
+                return;
+            }
+
             this.$store.dispatch('workflow/moveNodes', {
                 deltaX: deltaXAdjustedForGridSnapping,
                 deltaY: deltaYAdjustedForGridSnapping
@@ -157,15 +151,20 @@ export default {
 
         /**
          * Handles the end of a move event
-         * @returns {void} nothing to return
+         *
+         * Because the onMove function is throttled we also need to throttle the onMoveEnd
+         * function to guarantee order of event handling
+         *
          */
-        onMoveEnd() {
+        onMoveEnd: throttle(function () {
+            /* eslint-disable no-invalid-this */
             this.$store.dispatch('workflow/saveNodeMoves', {
                 projectId: this.activeProjectId,
                 startPos: this.startPos,
                 nodeId: this.id
             });
-        },
+            /* eslint-enable no-invalid-this */
+        }),
         updatePlaneWidth(width) {
             this.nodeSelectionWidth = width;
         },
@@ -183,14 +182,7 @@ export default {
     :data-node-id="id"
     :class="[{ dragging: isDragging && isNodeSelected(id) }]"
   >
-    <slot />
-    <NodeSelectionPlane
-      v-if="showGhostOutline"
-      :position="deltaMovePosition"
-      :width="nodeSelectionWidth"
-      :extra-height="nodeSelectionExtraHeight"
-      :kind="kind"
-    />
+    <slot :position="translationAmount" />
   </g>
 </template>
 

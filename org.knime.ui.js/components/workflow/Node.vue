@@ -281,10 +281,12 @@ export default {
             if (this.showSelectionPreview === null) {
                 return isSelected && !this.isDragging;
             }
+            
             // preview can override selected state (think: deselect with shift)
             if (isSelected && this.showSelectionPreview === 'hide') {
                 return false;
             }
+
             return this.showSelectionPreview === 'show' || isSelected;
         },
         nameIsEditable() {

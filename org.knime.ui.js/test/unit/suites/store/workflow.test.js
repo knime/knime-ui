@@ -308,7 +308,6 @@ describe('workflow store', () => {
 
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
-            expect(store.state.workflow.moveNodeGhostThresholdExceeded).toBe(false);
         });
 
         it('moves nodes outline', async () => {
@@ -327,7 +326,6 @@ describe('workflow store', () => {
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
 
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
-            expect(store.state.workflow.moveNodeGhostThresholdExceeded).toBe(true);
         });
 
         it('moves subset of node outlines', async () => {
@@ -351,7 +349,6 @@ describe('workflow store', () => {
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
 
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
-            expect(store.state.workflow.moveNodeGhostThresholdExceeded).toBe(true);
         });
 
         it.each([
