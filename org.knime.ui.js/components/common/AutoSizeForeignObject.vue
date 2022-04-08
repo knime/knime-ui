@@ -52,7 +52,9 @@ export default {
     data() {
         return {
             width: this.maxWidth,
-            height: 0,
+            // A height of at least 1px is required for Firefox
+            // so that the wrapper's bounding rect is calculated correctly
+            height: 1,
             x: 0
         };
     },
