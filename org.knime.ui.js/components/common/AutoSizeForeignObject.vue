@@ -102,15 +102,16 @@ export default {
                 consola.error('Tried to adjust dimensions of NodeTitle, but element is gone or is not a DOM Node');
                 return;
             }
-            
+
+
             // account for zoom
             const width = Math.ceil(rect.width / this.zoomFactor);
             const height = Math.ceil(rect.height / this.zoomFactor);
-    
+            
             // 3. set container size to content size
             // avoid width jitter
             this.width = Math.abs(lastWidth - width) > MINIMUM_SIZE_CHANGE ? width : lastWidth;
-            
+
             // avoid height jitter
             if (Math.abs(this.height - height) > MINIMUM_SIZE_CHANGE) {
                 this.height = height;

@@ -1,15 +1,31 @@
-/* eslint-disable no-magic-numbers */
-
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import * as $shapes from '~/style/shapes';
-import Vue from 'vue';
 import Vuex from 'vuex';
 
 import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
 
-describe('AutoSizeForeignObject', () => {
+const mockBoundingRect = ({ x, y, width, height }) => {
+    const mockFn = jest.fn(() => ({ x, y, width, height }));
+    HTMLElement.prototype.getBoundingClientRect = mockFn;
+};
+
+describe('AutoSizeForeignObject.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, $store;
+
+    const mockRectWidth = 232;
+    const mockRectHeight = 129;
+    const mockRectX = 42;
+    const mockRectY = 31;
+
+    // Wait for task queue to run until after next task in order to let
+    // the component render the template otherwise we'd have to call $nextTick twice
+    // for this component, which is not very clean
+    const flushTaskQueue = () => new Promise(resolve => {
+        setTimeout(() => {
+            resolve();
+        }, 0);
+    });
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -21,6 +37,7 @@ describe('AutoSizeForeignObject', () => {
         propsData = {
             parentWidth: $shapes.nodeSize
         };
+
         $store = mockVuexStore({
             canvas: {
                 state: {
@@ -28,137 +45,165 @@ describe('AutoSizeForeignObject', () => {
                 }
             }
         });
-        doShallowMount = () => {
+
+        mockBoundingRect({
+            x: mockRectX,
+            y: mockRectY,
+            width: mockRectWidth,
+            height: mockRectHeight
+        });
+
+        doShallowMount = (customProps = {}) => {
             mocks = { $store, $shapes };
-            wrapper = shallowMount(AutoSizeForeignObject, { propsData, mocks });
+            wrapper = shallowMount(AutoSizeForeignObject, {
+                propsData: {
+                    ...propsData,
+                    ...customProps
+                },
+                mocks
+            });
         };
     });
 
-    describe('render default', () => {
-        beforeEach(() => {
-            doShallowMount();
+    it('should respect yOffset', () => {
+        doShallowMount();
+
+        expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+            y: '0'
+        }));
+
+        doShallowMount({ yOffset: 12 });
+        expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+            y: '12'
+        }));
+    });
+
+    it('shows error on console if wrapper DOM element is missing', async () => {
+        const errorMock = jest.spyOn(global.consola, 'error').mockImplementation(() => {});
+
+        HTMLElement.prototype.getBoundingClientRect = () => null;
+        
+        doShallowMount();
+        await wrapper.vm.$nextTick();
+
+        expect(errorMock).toBeCalled();
+        expect(wrapper.find('foreignObject').attributes()).toEqual(
+            expect.objectContaining({ height: '1' })
+        );
+        errorMock.mockRestore();
+    });
+
+    it('should emit the proper width and height', async () => {
+        doShallowMount();
+
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.emitted('width-change')[0][0]).toBe(mockRectWidth);
+        expect(wrapper.emitted('height-change')[0][0]).toBe(mockRectHeight);
+    });
+
+    it('should correctly measure when zoomed', async () => {
+        const mockZoomFactor = 2;
+        const mockRectWidth = 463;
+        const mockRectHeight = 256.4;
+        const mockRectX = 42;
+        const mockRectY = 31;
+
+        const expectedWidth = Math.ceil(mockRectWidth / mockZoomFactor);
+        const expectedHeight = Math.ceil(mockRectHeight / mockZoomFactor);
+
+        const expectedX = (propsData.parentWidth - expectedWidth) / 2;
+        $store.state.canvas.zoomFactor = mockZoomFactor;
+
+        mockBoundingRect({
+            x: mockRectX,
+            y: mockRectY,
+            width: mockRectWidth,
+            height: mockRectHeight
+        });
+        doShallowMount();
+            
+        // Schedule callback to run after next task in order to let the component render the template
+        // otherwise we'd have to call $nextTick twice for this case, which is not very clean
+        await flushTaskQueue();
+        expect(wrapper.find('foreignObject').attributes()).toEqual(
+            expect.objectContaining({
+                height: expectedHeight.toString(),
+                width: expectedWidth.toString(),
+                x: expectedX.toString()
+            })
+        );
+    });
+
+    it('should adjust dimensions on mount', async () => {
+        doShallowMount();
+        await flushTaskQueue();
+        expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+            height: mockRectHeight.toString(),
+            width: mockRectWidth.toString(),
+            x: ((propsData.parentWidth - mockRectWidth) / 2).toString()
+        }));
+    });
+
+    it('should ignore very small changes', async () => {
+        // render and wait
+        const localWrapper = shallowMount(AutoSizeForeignObject, {
+            propsData,
+            mocks: { $store, $shapes },
+            scopedSlots: {
+                default: '<span @mock-event="props.on.sizeChange" class="slot-content"></span>'
+            }
+        });
+        await flushTaskQueue();
+
+        // mock values that represent very small change
+        mockBoundingRect({
+            x: mockRectX,
+            y: mockRectY,
+            // eslint-disable-next-line no-magic-numbers
+            width: mockRectWidth - 0.5,
+            // eslint-disable-next-line no-magic-numbers
+            height: mockRectHeight + 0.1
         });
 
-        it('respects yShift', () => {
-            expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
-                y: '0'
-            }));
+        // trigger resize behavior via slot using a mock event dispatched from slot content
+        localWrapper.find('.slot-content').element.dispatchEvent(new CustomEvent('mock-event'));
 
-            propsData.yShift = 12;
-            doShallowMount();
-            expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
-                y: '12'
-            }));
-        });
+        // wait for render again
+        await flushTaskQueue();
 
-        it('calls adjustDimensionBeforeHook', async () => {
-            propsData.adjustDimensionBeforeHook = jest.fn();
-            doShallowMount();
-            await Vue.nextTick();
-            expect(propsData.adjustDimensionBeforeHook).toHaveBeenCalledTimes(1);
-        });
+        // width and height values should be the same
+        expect(localWrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+            height: mockRectHeight.toString(),
+            width: mockRectWidth.toString()
+        }));
+    });
 
-        it('shows error on console if wrapper DOM element is missing', async () => {
-            const errorMock = jest.spyOn(global.consola, 'error').mockImplementation(() => {});
-            HTMLElement.prototype.getBoundingClientRect = () => null;
+    it('adjustDimensions respects initial width and height', async () => {
+        const startWidth = 700;
+        const startHeight = 120;
+        doShallowMount({ startWidth, startHeight });
 
-            wrapper.vm.adjustDimensions();
-            await Vue.nextTick();
+        await wrapper.vm.$nextTick();
 
-            expect(errorMock).toBeCalled();
-            expect(wrapper.vm.height).toBe(0);
-            errorMock.mockRestore();
-        });
+        expect(wrapper.find('foreignObject').attributes()).toEqual(
+            expect.objectContaining({
+                height: startHeight.toString(),
+                width: startWidth.toString()
+            })
+        );
+    });
 
-        describe('dimension adjustment', () => {
-            let getBoundingClientRectMock;
+    it('should respect offsetByHeight', async () => {
+        const yOffset = 10;
+        const expectedY = -mockRectHeight + yOffset;
 
-            beforeEach(async () => {
-                getBoundingClientRectMock = jest.fn();
-                getBoundingClientRectMock.mockReturnValue({
-                    x: 42,
-                    y: 31,
-                    width: 231.5,
-                    height: 128.2
-                });
-                HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
-                doShallowMount();
-                await Vue.nextTick();
-            });
+        doShallowMount({ yOffset, offsetByHeight: true });
 
-            it('correctly measures when zoomed', async () => {
-                $store.state.canvas.zoomFactor = 2;
+        await flushTaskQueue();
 
-                getBoundingClientRectMock.mockReturnValue({
-                    x: 42,
-                    y: 31,
-                    width: 463,
-                    height: 256.4
-                });
-                HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
-
-                doShallowMount();
-                await Vue.nextTick();
-
-                expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
-                    height: '129', width: '232', x: '-100'
-                }));
-            });
-
-            it('adjusts dimensions on mount', () => {
-                expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
-                    height: '129', width: '232', x: '-100'
-                }));
-            });
-
-            it('ignore very small changes', async () => {
-                expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
-                    height: '129',
-                    width: '232',
-                    x: '-100'
-                }));
-
-                getBoundingClientRectMock.mockReturnValue({
-                    x: 42,
-                    y: 31,
-                    width: 230.7,
-                    height: 129.1
-                });
-                HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
-
-                wrapper.vm.adjustDimensions();
-                await Vue.nextTick();
-                await Vue.nextTick();
-
-                expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
-                    height: '129',
-                    width: '232',
-                    x: '-100'
-                }));
-            });
-
-            it('adjustDimensions respects fixed width and height', async () => {
-                wrapper.vm.adjustDimensions({ startWidth: 700, startHeight: 120 });
-                await Vue.nextTick();
-                expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
-                    height: '120', width: '700'
-                }));
-            });
-
-            it('emits height and width events', () => {
-                expect(wrapper.emitted().width[0]).toEqual([232]);
-                expect(wrapper.emitted().height[0]).toEqual([129]);
-            });
-
-            it('respects shiftByHeight', async () => {
-                propsData.shiftByHeight = true;
-                propsData.yShift = 10;
-                doShallowMount();
-                await Vue.nextTick();
-                expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
-                    y: '-119'
-                }));
-            });
-        });
+        expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+            y: expectedY.toString()
+        }));
     });
 });
