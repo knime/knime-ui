@@ -76,7 +76,7 @@ export default {
                 return;
             }
 
-            this.$emit('save', { dimensionsOnClose: this.latestDimensions, newName: this.currentName });
+            this.$emit('save', { dimensionsOnClose: this.latestDimensions, newName: this.currentName.trim() });
         },
         cancelNameEdit() {
             // reset internal value

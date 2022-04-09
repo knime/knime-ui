@@ -76,7 +76,6 @@ export default {
         <NodeNameEditor
           :node-id="nodeId"
           :value="value"
-
           :start-width="editorInitialDimensions.width"
           :start-height="editorInitialDimensions.height"
           :action-bar-position="actionBarPosition"

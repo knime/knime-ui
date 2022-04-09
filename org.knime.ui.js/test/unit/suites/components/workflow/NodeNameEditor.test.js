@@ -1,128 +1,145 @@
-/* eslint-disable no-magic-numbers */
+import { shallowMount } from '@vue/test-utils';
 import * as $shapes from '~/style/shapes';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
-import Vuex from 'vuex';
-import Vue from 'vue';
-import { mockVuexStore } from '~/test/unit/test-utils';
 
 import NodeNameEditor from '~/components/workflow/NodeNameEditor';
 import NodeNameTextarea from '~/components/workflow/NodeNameTextarea';
 import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar';
 
 describe('NodeNameEditor', () => {
-    let propsData, mocks, storeConfig, doShallowMount, wrapper;
+    const defaultProps = {
+        value: 'test',
+        actionBarPosition: { x: 5, y: 3 },
+        position: { x: 15, y: 13 },
+        nodeId: 'root:1'
+    };
 
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
+    const doShallowMount = (propsData = defaultProps) => {
+        const wrapper = shallowMount(NodeNameEditor, {
+            propsData,
+            mocks: { $shapes }
+        });
+
+        return wrapper;
+    };
+
+    it('should render the ActionBar and the Textarea', () => {
+        const wrapper = doShallowMount();
+
+        expect(wrapper.findComponent(NodeNameTextarea).exists()).toBe(true);
+        expect(wrapper.findComponent(NodeNameEditorActionBar).exists()).toBe(true);
+    });
+    
+
+    it('should block click events', () => {
+        const mockStopPropagation = jest.fn();
+        const mockPreventDefault = jest.fn();
+
+        MouseEvent.prototype.stopPropagation = mockStopPropagation;
+        MouseEvent.prototype.preventDefault = mockPreventDefault;
+
+        const wrapper = doShallowMount();
+        const rect = wrapper.find('rect');
+            
+        rect.trigger('click');
+            
+        expect(mockStopPropagation).toHaveBeenCalled();
+        expect(mockPreventDefault).toHaveBeenCalled();
+    });
+    
+    describe('Action bar', () => {
+        it('should be positioned based on the relevant prop', () => {
+            const wrapper = doShallowMount();
+    
+            const actionBar = wrapper.findComponent(NodeNameEditorActionBar);
+    
+            const { actionBarPosition: { x, y } } = defaultProps;
+            const expectedPosition = `translate(${x}, ${y})`;
+    
+            expect(actionBar.attributes('transform')).toBe(expectedPosition);
+        });
+    
+        it('should emit save when clicking the save button', () => {
+            const wrapper = doShallowMount();
+    
+            wrapper.findComponent(NodeNameEditorActionBar).vm.$emit('save');
+    
+            expect(wrapper.emitted('save')).toBeDefined();
+        });
+    
+        it('should emit a close event when clicking the close button', () => {
+            const wrapper = doShallowMount();
+    
+            wrapper.findComponent(NodeNameEditorActionBar).vm.$emit('close');
+    
+            expect(wrapper.emitted('close')).toBeDefined();
+        });
     });
 
-    beforeEach(() => {
-        wrapper = null;
-        propsData = {
-            value: 'test',
-            actionBarPosition: { x: 5, y: 3 },
-            position: { x: 15, y: 13 },
-            nodeId: 'root:1'
-        };
-        storeConfig = {
-            workflow: {
-                actions: {
-                    updateComponentOrMetanodeName: jest.fn(),
-                    closeNameEditor: jest.fn()
-                }
-            }
-        };
-        doShallowMount = () => {
-            let $store = mockVuexStore(storeConfig);
-            mocks = { $shapes, $store };
-            wrapper = shallowMount(NodeNameEditor, { propsData, mocks });
-        };
+    describe('Handle textarea events', () => {
+        it.each([
+            'width-change',
+            'height-change'
+        ])('should forward a (%s) event', (eventName) => {
+            const wrapper = doShallowMount();
+    
+            const emittedValue = 200;
+            wrapper.findComponent(NodeNameTextarea).vm.$emit(eventName, emittedValue);
+            expect(wrapper.emitted(eventName)[0][0]).toBe(emittedValue);
+        });
+    
+        it('should emit a save event', () => {
+            const wrapper = doShallowMount();
+    
+            wrapper.findComponent(NodeNameTextarea).vm.$emit('save');
+    
+            expect(wrapper.emitted('save')).toBeDefined();
+        });
+    
+        it('should emit a close event', () => {
+            const wrapper = doShallowMount();
+    
+            wrapper.findComponent(NodeNameTextarea).vm.$emit('close');
+            expect(wrapper.emitted('close')).toBeDefined();
+        });
     });
 
-    it('renders', () => {
-        doShallowMount();
-        expect(wrapper.findComponent(NodeNameTextarea)).toBeTruthy();
+    it('should trim content before saving', () => {
+        const emittedValue = '   this is the content    ';
+
+        const wrapper = doShallowMount();
+
+        wrapper.findComponent(NodeNameTextarea).vm.$emit('input', emittedValue);
+        wrapper.findComponent(NodeNameTextarea).vm.$emit('save');
+        
+        expect(wrapper.emitted('save')[0][0]).toEqual(expect.objectContaining({
+            newName: emittedValue.trim()
+        }));
     });
 
-    it('updates textarea value on value prop change', async () => {
-        doShallowMount();
-        const textarea = wrapper.findComponent(NodeNameTextarea);
-        expect(textarea.props('value')).toBe('test');
-        wrapper.setProps({ value: 'newVal' });
-        await Vue.nextTick();
-        expect(textarea.props('value')).toBe('newVal');
+    it('should not save empty values', () => {
+        const emittedValue = '    ';
+
+        const wrapper = doShallowMount();
+
+        wrapper.findComponent(NodeNameTextarea).vm.$emit('input', emittedValue);
+        wrapper.findComponent(NodeNameTextarea).vm.$emit('save');
+
+        expect(wrapper.emitted('save')).toBeUndefined();
+        expect(wrapper.emitted('close')).toBeDefined();
     });
 
-    it('pass props to NodeNameTextarea', () => {
-        const passedProps = {
-            pattern: /0-9/g,
-            startWidth: 343,
-            startHeight: 113
-        };
-        propsData = { ...propsData, ...passedProps };
-        doShallowMount();
-        const textarea = wrapper.findComponent(NodeNameTextarea);
-        expect(textarea.props()).toStrictEqual(expect.objectContaining(passedProps));
-    });
+    it('should emit the lastest dimensions of the editor when saving', () => {
+        const wrapper = doShallowMount();
 
-    it('passes @width and @height from textarea to parent', async () => {
-        doShallowMount();
-        const textarea = wrapper.findComponent(NodeNameTextarea);
+        const emittedWidth = 200;
+        const emittedHeight = 100;
+        wrapper.findComponent(NodeNameTextarea).vm.$emit('width-change', emittedWidth);
+        wrapper.findComponent(NodeNameTextarea).vm.$emit('height-change', emittedHeight);
 
-        expect(wrapper.emitted().width).toBeUndefined();
-        expect(wrapper.emitted().height).toBeUndefined();
+        wrapper.findComponent(NodeNameTextarea).vm.$emit('save');
 
-        textarea.vm.$emit('width', 11);
-        textarea.vm.$emit('height', 12);
-
-        await Vue.nextTick();
-
-        expect(wrapper.emitted().width[0][0]).toBe(11);
-        expect(wrapper.emitted().height[0][0]).toBe(12);
-    });
-
-    it('saves on textarea @save event', () => {
-        doShallowMount();
-        const textarea = wrapper.findComponent(NodeNameTextarea);
-        textarea.vm.$emit('save');
-        expect(storeConfig.workflow.actions.updateComponentOrMetanodeName).toHaveBeenCalled();
-        expect(storeConfig.workflow.actions.closeNameEditor).toHaveBeenCalled();
-    });
-
-    it('prevents empty names on save', () => {
-        doShallowMount();
-        const textarea = wrapper.findComponent(NodeNameTextarea);
-        wrapper.vm.currentName = '';
-
-        textarea.vm.$emit('save');
-
-        expect(storeConfig.workflow.actions.updateComponentOrMetanodeName).toHaveBeenCalledTimes(0);
-        expect(storeConfig.workflow.actions.closeNameEditor).toHaveBeenCalled();
-        expect(wrapper.vm.currentName).toBe(propsData.value);
-    });
-
-    it('saves on action bar save event', () => {
-        doShallowMount();
-        const actionBar = wrapper.findComponent(NodeNameEditorActionBar);
-        actionBar.vm.$emit('save');
-        expect(storeConfig.workflow.actions.updateComponentOrMetanodeName).toHaveBeenCalled();
-        expect(storeConfig.workflow.actions.closeNameEditor).toHaveBeenCalled();
-    });
-
-    it('closes on textarea @close event (e.g. ESC key) and resets internal value', () => {
-        doShallowMount();
-        const textarea = wrapper.findComponent(NodeNameTextarea);
-        wrapper.vm.currentName = 'xxx';
-        textarea.vm.$emit('close');
-        expect(storeConfig.workflow.actions.closeNameEditor).toHaveBeenCalled();
-        expect(wrapper.vm.currentName).toBe(propsData.value);
-    });
-
-    it('saves on action bar close event', () => {
-        doShallowMount();
-        const actionBar = wrapper.findComponent(NodeNameEditorActionBar);
-        actionBar.vm.$emit('close');
-        expect(storeConfig.workflow.actions.closeNameEditor).toHaveBeenCalled();
+        expect(wrapper.emitted('save')[0][0]).toEqual(expect.objectContaining({
+            dimensionsOnClose: { width: emittedWidth, height: emittedHeight }
+        }));
     });
 });
