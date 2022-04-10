@@ -84,13 +84,16 @@ export default {
       :position="node.position"
       :kind="node.kind"
     >
-      <Node
-        :ref="`node-${node.id}`"
-        :icon="$store.getters['workflow/getNodeIcon'](node.id)"
-        :name="$store.getters['workflow/getNodeName'](node.id)"
-        :type="$store.getters['workflow/getNodeType'](node.id)"
-        v-bind="node"
-      />
+      <template #default="{ position }">
+        <Node
+          :ref="`node-${node.id}`"
+          v-bind="node"
+          :icon="$store.getters['workflow/getNodeIcon'](node.id)"
+          :name="$store.getters['workflow/getNodeName'](node.id)"
+          :type="$store.getters['workflow/getNodeType'](node.id)"
+          :position="position"
+        />
+      </template>
     </MoveableNodeContainer>
 
     <!-- Quick Actions Layer: Buttons for Hovered & Selected Nodes and their ids -->
