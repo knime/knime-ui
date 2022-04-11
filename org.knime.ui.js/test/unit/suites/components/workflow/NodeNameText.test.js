@@ -24,17 +24,20 @@ describe('NodeNameText.vue', () => {
         localVue.use(Vuex);
     });
 
-    it('should emit a request edit event when component is editable', async () => {
+    it('should emit a request edit event when component is editable', () => {
+        const wrapper = doShallowMount({ editable: true });
+
+        wrapper.find('.node-name').trigger('dblclick');
+
+        expect(wrapper.emitted('request-edit')).toBeDefined();
+    });
+
+    it('should ignore double click if name is not editable', () => {
         const wrapper = doShallowMount();
 
         wrapper.find('.node-name').trigger('dblclick');
 
         expect(wrapper.emitted('request-edit')).toBeUndefined();
-
-        await wrapper.setProps({ editable: true });
-        wrapper.find('.node-name').trigger('dblclick');
-
-        expect(wrapper.emitted('request-edit')).toBeDefined();
     });
 
     it.each([
