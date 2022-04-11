@@ -82,7 +82,8 @@ describe('NodeName', () => {
             ['width-change', 100],
             ['height-change', 100],
             ['mouseenter', { mock: 'mock' }],
-            ['mouseleave', { mock: 'mock' }]
+            ['mouseleave', { mock: 'mock' }],
+            ['contextmenu', { mock: 'mock' }]
         ])('should emit a (%s) event', (eventName, payload) => {
             wrapper.findComponent(NodeNameText).vm.$emit(eventName, payload);
 

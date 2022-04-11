@@ -11,7 +11,6 @@ import portShift from '~/util/portShift';
 import NodeActionBar from '~/components/workflow/NodeActionBar';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
 import NodeName from '~/components/workflow/NodeName';
-import NodeNameEditor from '~/components/workflow/NodeNameEditor';
 import { snapConnector } from '~/mixins';
 
 /**
@@ -34,7 +33,6 @@ export default {
         StreamingDecorator,
         LoopDecorator,
         NodeName,
-        NodeNameEditor,
         NodeSelectionPlane
     },
     mixins: [snapConnector],
@@ -412,12 +410,6 @@ export default {
         // public
         setSelectionPreview(show) {
             this.showSelectionPreview = show === 'clear' ? null : show;
-        },
-
-        onNameEditRequest() {
-            // this.openNameEditor(this.id);
-            this.hover = false;
-            console.log('this.hover', this.hover);
         }
     }
 };

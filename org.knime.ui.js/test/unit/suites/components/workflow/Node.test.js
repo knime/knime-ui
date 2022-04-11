@@ -151,10 +151,6 @@ describe('Node', () => {
             doMount();
         });
 
-        it('passes name to NodeName component', () => {
-            expect(wrapper.findComponent(NodeName).props('value')).toBe('My Name');
-        });
-
         it('shows/hides LinkDecorator', () => {
             expect(wrapper.findComponent(LinkDecorator).exists()).toBe(false);
             propsData.link = 'linkylinky';
@@ -753,6 +749,90 @@ describe('Node', () => {
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
             expect(storeConfig.workflow.actions.loadWorkflow).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('Node name', () => {
+        beforeEach(() => {
+            propsData = { ...commonNode };
+            doMount();
+        });
+        
+        it('should forward to NodeName component', () => {
+            expect(wrapper.findComponent(NodeName).props()).toEqual(
+                expect.objectContaining({
+                    nodeId: commonNode.id,
+                    nodePosition: commonNode.position,
+                    actionBarPosition: {
+                        x: expect.any(Number),
+                        y: expect.any(Number)
+                    },
+                    value: commonNode.name,
+                    editable: expect.any(Boolean)
+                })
+            );
+        });
+
+        it.each([
+            ['metanode', true],
+            ['component', true],
+            ['node', false]
+        ])('should set the editable prop for "%s" as "%s"', async (kind, expectedValue) => {
+            await wrapper.setProps({ kind });
+
+            expect(wrapper.findComponent(NodeName).props('editable')).toBe(expectedValue);
+        });
+
+        it('should display/hide node actions on mouseenter/mouseleave', async () => {
+            expect(wrapper.findComponent(NodeActionBar).exists()).toBe(false);
+            
+            wrapper.findComponent(NodeName).vm.$emit('mouseenter');
+            
+            await wrapper.vm.$nextTick();
+            expect(wrapper.findComponent(NodeActionBar).exists()).toBe(true);
+
+            const dummyNode = document.createElement('div');
+            wrapper.findComponent(NodeName).vm.$emit('mouseleave', { relatedTarget: dummyNode });
+            
+            await wrapper.vm.$nextTick();
+            expect(wrapper.findComponent(NodeActionBar).exists()).toBe(false);
+        });
+
+        it('should handle contextmenu events', async () => {
+            wrapper.findComponent(NodeName).vm.$emit('contextmenu', {});
+            await wrapper.vm.$nextTick();
+            expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.stringMatching('root:1')
+            );
+        });
+
+        it('should handle click events', async () => {
+            wrapper.findComponent(NodeName).vm.$emit('click', {});
+            await wrapper.vm.$nextTick();
+            expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.stringMatching('root:1')
+            );
+        });
+
+        it('should handle width dimension changes and update the selection outline', async () => {
+            const mockWidth = 200;
+            const expectedSelectionWidth = mockWidth + $shapes.nodeNameHorizontalMargin * 2;
+            wrapper.findComponent(NodeName).vm.$emit('width-change', mockWidth);
+
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.findComponent(NodeSelectionPlane).props('width')).toBe(expectedSelectionWidth);
+        });
+
+        it('should handle height dimension changes and update the selection outline', async () => {
+            const mockHeight = 200;
+            wrapper.findComponent(NodeName).vm.$emit('height-change', mockHeight);
+
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.findComponent(NodeSelectionPlane).props('extraHeight')).toBe(mockHeight);
         });
     });
 });

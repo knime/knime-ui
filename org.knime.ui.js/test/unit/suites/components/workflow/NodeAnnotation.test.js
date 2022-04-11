@@ -38,8 +38,8 @@ describe('Node Annotation', () => {
             );
         });
 
-        it('passes yShift to AutoSizeForeignObject', () => {
-            expect(wrapper.findComponent(AutoSizeForeignObject).props('yShift')).toBe(
+        it('passes yOffset to AutoSizeForeignObject', () => {
+            expect(wrapper.findComponent(AutoSizeForeignObject).props('yOffset')).toBe(
                 $shapes.nodeSize + $shapes.nodeAnnotationMarginTop + propsData.yShift
             );
         });
