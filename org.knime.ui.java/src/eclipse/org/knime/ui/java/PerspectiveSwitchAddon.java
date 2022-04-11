@@ -58,6 +58,7 @@ import javax.inject.Inject;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
+import org.eclipse.e4.ui.css.swt.theme.ITheme;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
@@ -109,12 +110,12 @@ public final class PerspectiveSwitchAddon {
 
         MPerspective oldPerspective = (MPerspective)event.getProperty(EventTags.OLD_VALUE);
         MPerspective newPerspective = (MPerspective)newValue;
-        MPerspective webUIPerspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
+            MPerspective webUIPerspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
 
         if (newPerspective == webUIPerspective) {
-            onSwitchToWebUI();
+                  onSwitchToWebUI();
         } else if (oldPerspective == webUIPerspective) {
-            onSwitchToJavaUI();
+                  onSwitchToJavaUI();
         }
     }
 
@@ -194,7 +195,7 @@ public final class PerspectiveSwitchAddon {
     private void switchTheme(final String themeId) {
         IEclipseContext context = m_app.getContext();
         IThemeEngine engine = context.get(IThemeEngine.class);
-        var webUITheme = engine.getThemes().stream().filter(t -> t.getId().equals(themeId)).findFirst().orElse(null);
+        ITheme webUITheme = engine.getThemes().stream().filter(t -> t.getId().equals(themeId)).findFirst().orElse(null);
         if (webUITheme == null) {
             LOGGER.error("The web ui css theme couldn't be found");
             return;

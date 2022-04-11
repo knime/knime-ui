@@ -69,7 +69,7 @@ public final class DefaultServicesUtil {
     }
 
     /**
-     * ...
+     * Set all dependencies required by the default service implementations
      *
      * @param appStateProvider The application state provider
      * @param eventConsumer The event consumer
@@ -80,13 +80,14 @@ public final class DefaultServicesUtil {
             ServiceDependencies.setServiceDependency(AppStateProvider.class, appStateProvider);
             ServiceDependencies.setServiceDependency(EventConsumer.class, eventConsumer);
             ServiceDependencies.setServiceDependency(WorkflowMiddleware.class, WorkflowMiddleware.getInstance());
-            ServiceDependencies.setServiceDependency(WorkflowProjectManager.class, WorkflowProjectManager.getInstance());
+            ServiceDependencies.setServiceDependency(WorkflowProjectManager.class,
+                WorkflowProjectManager.getInstance());
         } else {
             throw new IllegalStateException(
-                "Some services are already initialized. Service dependencies can't be set anymore.");
+                "Some services are already initialized. Service dependencies can't be set anymore. "
+                    + "Maybe you already started a Web UI within the AP and have now tried to launch another instance in a browser, or vice versa?");
         }
     }
-
 
     /**
      * Remove the application service from the provided service dependencies, remove listeners and clear references to
@@ -94,7 +95,7 @@ public final class DefaultServicesUtil {
      */
     static void disposeDefaultServices() {
         removeWorkflowProjects();
-        ServiceInstances.disposeAllServicesInstances();
+        ServiceInstances.disposeAllServicesInstancesAndDependencies();
     }
 
     private static void removeWorkflowProjects() {
