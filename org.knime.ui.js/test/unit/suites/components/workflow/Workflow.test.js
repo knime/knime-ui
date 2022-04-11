@@ -7,6 +7,7 @@ import * as $shapes from '~/style/shapes';
 
 import Workflow from '~/components/workflow/Workflow';
 import Node from '~/components/workflow/Node';
+import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer';
 import Connector from '~/components/workflow/Connector';
 import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation';
 import MetaNodePortBars from '~/components/workflow/MetaNodePortBars';
@@ -76,7 +77,6 @@ describe('Workflow', () => {
 
         isNodeSelectedMock = jest.fn().mockReturnValue(false);
 
-
         storeConfig = {
             workflow: {
                 state: {
@@ -119,9 +119,21 @@ describe('Workflow', () => {
         });
 
         it('forwards nodeSelectionPreview calls to the correct node', () => {
-            const node = wrapper.findAllComponents(Node).wrappers.filter(n => n.props().id === 'root:1')[0];
+            const localWrapper = shallowMount(Workflow, {
+                propsData,
+                mocks,
+                stubs: {
+                    MoveableNodeContainer: {
+                        template: '<g><slot :position="{ x: 0, y: 0 }"></slot></g>'
+                    }
+                }
+            });
+
+            const node = localWrapper.findAllComponents(Node).wrappers.find(n => n.props('id') === 'root:1');
+
             node.vm.setSelectionPreview = jest.fn();
-            wrapper.vm.applyNodeSelectionPreview({ type: 'show', nodeId: 'root:1' });
+            localWrapper.vm.applyNodeSelectionPreview({ type: 'show', nodeId: 'root:1' });
+
             expect(node.vm.setSelectionPreview).toHaveBeenLastCalledWith('show');
         });
 
@@ -172,8 +184,8 @@ describe('Workflow', () => {
     describe('Node order', () => {
         test('original order without selection', () => {
             doShallowMount();
-            // check order order of Node components
-            let nodeOrder = wrapper.findAllComponents(Node).wrappers.map(node => node.props('id'));
+
+            const nodeOrder = wrapper.findAllComponents(MoveableNodeContainer).wrappers.map(node => node.props('id'));
             expect(nodeOrder).toStrictEqual(['root:0', 'root:1', 'root:2']);
         });
 
@@ -182,7 +194,7 @@ describe('Workflow', () => {
             doShallowMount();
 
             // check order order of Node components
-            let nodeOrder = wrapper.findAllComponents(Node).wrappers.map(node => node.props('id'));
+            let nodeOrder = wrapper.findAllComponents(MoveableNodeContainer).wrappers.map(node => node.props('id'));
             expect(nodeOrder).toStrictEqual(['root:0', 'root:2', 'root:1']);
         });
     });

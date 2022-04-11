@@ -31,14 +31,15 @@ export default {
     },
     methods: {
         ...mapActions('panel', ['openDescriptionPanel', 'closeDescriptionPanel']),
-        ...mapMutations('nodeRepository', ['setSelectedNode']),
+        ...mapMutations('nodeRepository', ['setSelectedNode', 'setDraggingNode']),
         onDragStart(e) {
             // remember if this node was selected
             this.shouldSelectOnAbort = this.isSelected;
             
             // close description panel and deselect node
             this.closeDescriptionPanel();
-
+            this.setDraggingNode(true);
+            
             // Fix for cursor style for Firefox
             if (!this.isWritable && (navigator.userAgent.indexOf('Firefox') !== -1)) {
                 e.currentTarget.style.cursor = 'not-allowed';
@@ -65,6 +66,7 @@ export default {
         },
         onDragEnd(e) {
             e.target.removeAttribute('style');
+            this.setDraggingNode(false);
 
             // remove cloned node preview
             if (this.dragGhost) {

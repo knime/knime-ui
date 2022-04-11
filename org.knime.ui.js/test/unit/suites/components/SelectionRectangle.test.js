@@ -83,17 +83,21 @@ describe('SelectionRectangle', () => {
                     parentComponent
                 }
             );
+
+            const kanvasMock = document.createElement('div');
+            kanvasMock.id = 'kanvas';
+            document.body.appendChild(kanvasMock);
         };
 
         pointerDown = ({
-            pageX,
-            pageY,
+            clientX,
+            clientY,
             shiftKey
         }) => {
             wrapper.vm.$parent.$emit('selection-pointerdown', {
                 pointerId: pointerId || 1,
-                pageX,
-                pageY,
+                clientX,
+                clientY,
                 shiftKey: shiftKey || false,
                 currentTarget: {
                     getBoundingClientRect: () => ({
@@ -108,13 +112,13 @@ describe('SelectionRectangle', () => {
         };
 
         pointerMove = ({
-            pageX,
-            pageY
+            clientX,
+            clientY
         }) => {
             wrapper.vm.$parent.$emit('selection-pointermove', {
                 pointerId: pointerId || 1,
-                pageX,
-                pageY,
+                clientX,
+                clientY,
                 currentTarget: {
                     getBoundingClientRect: () => ({
                         left: 0,
@@ -125,7 +129,7 @@ describe('SelectionRectangle', () => {
         };
 
         pointerUp = () => {
-            jest.useFakeTimers(); // impl contains setTimout
+            jest.useFakeTimers(); // implementation contains setTimout
 
             // stop also changes global dragging state
             wrapper.vm.$parent.$emit('selection-pointerup', {
@@ -148,7 +152,7 @@ describe('SelectionRectangle', () => {
     test('all object are deselected on start', async () => {
         doShallowMount();
 
-        pointerDown({ pageX: 0, pageY: 0 });
+        pointerDown({ clientX: 0, clientY: 0 });
         await Vue.nextTick();
 
         expect(storeConfig.selection.actions.deselectAllObjects).toBeCalled();
@@ -158,7 +162,7 @@ describe('SelectionRectangle', () => {
         doShallowMount();
         expect(wrapper.isVisible()).toBe(false);
 
-        pointerDown({ pageX: 0, pageY: 0 });
+        pointerDown({ clientX: 0, clientY: 0 });
         await Vue.nextTick();
 
         expect(wrapper.isVisible()).toBe(true);
@@ -173,8 +177,8 @@ describe('SelectionRectangle', () => {
         beforeEach(async () => {
             doShallowMount();
 
-            pointerDown({ pageX: 10, pageY: 10 });
-            pointerMove({ pageX: 300, pageY: 300 });
+            pointerDown({ clientX: 10, clientY: 10 });
+            pointerMove({ clientX: 300, clientY: 300 });
             await Vue.nextTick();
         });
 
@@ -202,7 +206,7 @@ describe('SelectionRectangle', () => {
                 inside: [],
                 outside: ['inside-1', 'inside-2']
             });
-            pointerMove({ pageX: 0, pageY: 0 });
+            pointerMove({ clientX: 0, clientY: 0 });
             await Vue.nextTick();
 
             let selectionPreviewCommands = wrapper.emitted('node-selection-preview');
@@ -236,8 +240,8 @@ describe('SelectionRectangle', () => {
             ]);
             doShallowMount();
 
-            pointerDown({ pageX: 0, pageY: 0, shiftKey: true });
-            pointerMove({ pageX: 0, pageY: 0 });
+            pointerDown({ clientX: 0, clientY: 0, shiftKey: true });
+            pointerMove({ clientX: 0, clientY: 0 });
             await Vue.nextTick();
         });
 
@@ -275,7 +279,7 @@ describe('SelectionRectangle', () => {
         it('pointerup deselects nodes', () => {
             pointerUp();
 
-            expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledWith(expect.anything(), []);
+            expect(storeConfig.selection.actions.selectNodes).not.toHaveBeenCalled();
             expect(storeConfig.selection.actions.deselectNodes).toHaveBeenCalledWith(
                 expect.anything(), ['inside-1', 'inside-2']
             );
@@ -289,8 +293,8 @@ describe('SelectionRectangle', () => {
             ]);
             doShallowMount();
 
-            pointerDown({ pageX: 0, pageY: 0, shiftKey: true });
-            pointerMove({ pageX: 36, pageY: 36 });
+            pointerDown({ clientX: 0, clientY: 0, shiftKey: true });
+            pointerMove({ clientX: 36, clientY: 36 });
             await Vue.nextTick();
 
             expect(wrapper.emitted('node-selection-preview')).toStrictEqual([
@@ -319,19 +323,10 @@ describe('SelectionRectangle', () => {
             expect(wrapper.vm.$parent.$off).toHaveBeenCalledTimes(4);
         });
 
-        it('set initial value to non-reactive data members', () => {
-            doShallowMount();
-            pointerId = 22;
-            pointerDown({ pageX: 300, pageY: 300 });
-            expect(wrapper.vm.selectOnEnd).toStrictEqual([]);
-            expect(wrapper.vm.deSelectOnEnd).toStrictEqual([]);
-            expect(wrapper.vm.selectedNodeIdsAtStart).toStrictEqual([]);
-        });
-
         it('does nothing if move is called but selection is not active', async () => {
             doShallowMount();
             // pointerDown is missing
-            pointerMove({ pageX: 300, pageY: 300 });
+            pointerMove({ clientX: 300, clientY: 300 });
             await Vue.nextTick();
             pointerUp();
             expect(wrapper.emitted('node-selection-preview')).toBeFalsy();
@@ -341,9 +336,9 @@ describe('SelectionRectangle', () => {
         it('does nothing if pointerId is different', async () => {
             doShallowMount();
             pointerId = 22;
-            pointerDown({ pageX: 300, pageY: 300 });
+            pointerDown({ clientX: 300, clientY: 300 });
             pointerId = 3;
-            pointerMove({ pageX: 300, pageY: 300 });
+            pointerMove({ clientX: 300, clientY: 300 });
             await Vue.nextTick();
             pointerUp();
             expect(wrapper.emitted('node-selection-preview')).toBeFalsy();

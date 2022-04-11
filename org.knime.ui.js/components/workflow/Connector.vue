@@ -45,8 +45,7 @@ export default {
         ...mapState('workflow', {
             workflow: 'activeWorkflow',
             isDragging: 'isDragging',
-            deltaMovePosition: 'deltaMovePosition',
-            moveNodeGhostThresholdExceeded: 'moveNodeGhostThresholdExceeded'
+            deltaMovePosition: 'deltaMovePosition'
         }),
         ...mapGetters('workflow', {
             isWorkflowWritable: 'isWritable'
@@ -55,7 +54,7 @@ export default {
         path() {
             let { start: [x1, y1], end: [x2, y2] } = this;
             // Update position of source or destination node is being moved
-            if (this.isDragging && !this.moveNodeGhostThresholdExceeded) {
+            if (this.isDragging) {
                 if (this.isNodeSelected(this.sourceNode)) {
                     x1 += this.deltaMovePosition.x;
                     y1 += this.deltaMovePosition.y;
@@ -133,7 +132,7 @@ export default {
         onConnectorDropped() {
             // lock this connector in place to prevent it from jumping back before being removed
             // TODO: NXT-954 enable locking again if know when the node will be really removed (only backend knows)
-            //this.suggestDelete = 'locked';
+            // this.suggestDelete = 'locked';
         }
     }
 };

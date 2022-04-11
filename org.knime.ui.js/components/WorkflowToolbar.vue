@@ -1,5 +1,5 @@
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import ZoomMenu from '~/components/ZoomMenu';
 import ToolbarCommandButton from '~/components/ToolbarCommandButton';
@@ -15,6 +15,7 @@ export default {
     },
     computed: {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
+        ...mapGetters('workflow', ['isWorkflowEmpty']),
         hasBreadcrumb() {
             return this.workflow?.parents?.length > 0;
         },
@@ -88,6 +89,7 @@ export default {
 
     <ZoomMenu
       v-if="workflow"
+      :disabled="isWorkflowEmpty"
       class="zoommenu"
     />
   </div>

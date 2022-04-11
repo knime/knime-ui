@@ -98,7 +98,8 @@ describe('Node Repository store', () => {
             searchScrollPosition: 0,
             categoryScrollPosition: 0,
             selectedNode: null,
-            nodeDescriptionObject: null
+            nodeDescriptionObject: null,
+            isDraggingNode: false
         });
     });
 
@@ -221,6 +222,12 @@ describe('Node Repository store', () => {
             const node = { id: 'node1' };
             store.commit('nodeRepository/setNodeDescription', { id: 'node1' });
             expect(store.state.nodeRepository.nodeDescriptionObject).toEqual(node);
+        });
+
+        it('sets isDraggingNode', () => {
+            expect(store.state.nodeRepository.isDraggingNode).toBe(false);
+            store.commit('nodeRepository/setDraggingNode', true);
+            expect(store.state.nodeRepository.isDraggingNode).toBe(true);
         });
     });
 

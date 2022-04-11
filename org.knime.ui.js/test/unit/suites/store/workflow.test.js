@@ -148,19 +148,22 @@ describe('workflow store', () => {
 
     describe('actions', () => {
         it('loads root workflow successfully', async () => {
-            let loadWorkflow = jest.fn().mockResolvedValue({ dummy: true, workflow: { info: {} }, snapshotId: 'snap' });
+            let loadWorkflow =
+            jest.fn().mockResolvedValue({ dummy: true, workflow: { info: {}, nodes: [] }, snapshotId: 'snap' });
+
             await loadStore({
                 apiMocks: {
                     loadWorkflow
                 }
             });
             const commit = jest.spyOn(store, 'commit');
-
+        
             await store.dispatch('workflow/loadWorkflow', { projectId: 'wf1' });
 
             expect(loadWorkflow).toHaveBeenCalledWith({ workflowId: 'root', projectId: 'wf1' });
             expect(commit).toHaveBeenNthCalledWith(1, 'workflow/setActiveWorkflow', {
                 info: {},
+                nodes: [],
                 projectId: 'wf1'
             }, undefined);
             expect(commit).toHaveBeenNthCalledWith(2, 'workflow/setActiveSnapshotId', 'snap', undefined);
@@ -172,7 +175,8 @@ describe('workflow store', () => {
         });
 
         it('loads inner workflow successfully', async () => {
-            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true, info: {} } });
+            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true, info: {}, nodes: [] } });
+            
             await loadStore({
                 apiMocks: {
                     loadWorkflow
@@ -186,6 +190,7 @@ describe('workflow store', () => {
             expect(commit).toHaveBeenNthCalledWith(1, 'workflow/setActiveWorkflow', {
                 dummy: true,
                 info: {},
+                nodes: [],
                 projectId: 'wf2'
             }, undefined);
             expect(addEventListenerMock).toHaveBeenCalledWith('WorkflowChanged', {
@@ -195,7 +200,9 @@ describe('workflow store', () => {
         });
 
         it('unloads workflow when another one is loaded', async () => {
-            let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true, info: {} }, snapshotId: 'snap' });
+            let loadWorkflow =
+            jest.fn().mockResolvedValue({ workflow: { dummy: true, info: {}, nodes: [] }, snapshotId: 'snap' });
+            
             await loadStore({
                 apiMocks: {
                     loadWorkflow
@@ -308,7 +315,6 @@ describe('workflow store', () => {
 
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
-            expect(store.state.workflow.moveNodeGhostThresholdExceeded).toBe(false);
         });
 
         it('moves nodes outline', async () => {
@@ -327,7 +333,6 @@ describe('workflow store', () => {
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
 
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
-            expect(store.state.workflow.moveNodeGhostThresholdExceeded).toBe(true);
         });
 
         it('moves subset of node outlines', async () => {
@@ -351,7 +356,6 @@ describe('workflow store', () => {
             store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
 
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
-            expect(store.state.workflow.moveNodeGhostThresholdExceeded).toBe(true);
         });
 
         it.each([
@@ -603,6 +607,29 @@ describe('workflow store', () => {
                 }]
             });
             expect(store.getters['workflow/insideLinkedType']).toBe('metanode');
+        });
+
+        test('isWorkflowEmpty', async () => {
+            await loadStore();
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
+                nodes: [],
+                workflowAnnotations: []
+            });
+            expect(store.getters['workflow/isWorkflowEmpty']).toBe(true);
+
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
+                nodes: [{ node: { id: 1 } }],
+                workflowAnnotations: []
+            });
+
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'foo',
+                nodes: [],
+                workflowAnnotations: ['something']
+            });
+            expect(store.getters['workflow/isWorkflowEmpty']).toBe(false);
         });
 
         describe('workflowBounds', () => {

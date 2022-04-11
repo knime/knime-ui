@@ -6,10 +6,6 @@ import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
 
 
-// Defines the number of nodes above which only the node-outline (drag ghost) is shown when dragging a node.
-// This is a performance optimization.
-const moveNodeGhostThreshold = 10;
-
 /**
  * Store that holds a workflow graph and the associated tooltips.
  * A workflow can either be contained in a component / metanode, or it can be the top level workflow.
@@ -22,8 +18,7 @@ export const state = () => ({
     activeSnapshotId: null,
     tooltip: null,
     isDragging: false,
-    deltaMovePosition: { x: 0, y: 0 },
-    moveNodeGhostThresholdExceeded: false
+    deltaMovePosition: { x: 0, y: 0 }
 });
 
 export const mutations = {
@@ -40,10 +35,9 @@ export const mutations = {
         Vue.set(state, 'tooltip', tooltip);
     },
     // Shifts the position of the node for the provided amount
-    shiftPosition(state, { deltaX, deltaY, thresholdExceeded }) {
+    shiftPosition(state, { deltaX, deltaY }) {
         state.deltaMovePosition.x = deltaX;
         state.deltaMovePosition.y = deltaY;
-        state.moveNodeGhostThresholdExceeded = thresholdExceeded;
     },
     // Reset the position of the outline
     resetDragPosition(state) {
@@ -74,7 +68,7 @@ export const actions = {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    unloadActiveWorkflow({ state, commit, getters: { activeWorkflowId: workflowId }, rootGetters }, { clearWorkflow }) {
+    unloadActiveWorkflow({ state, commit, dispatch, getters: { activeWorkflowId }, rootGetters }, { clearWorkflow }) {
         if (!state.activeWorkflow) {
             // nothing to do (no tabs open)
             return;
@@ -84,12 +78,14 @@ export const actions = {
             let { projectId } = state.activeWorkflow;
             let { activeSnapshotId: snapshotId } = state;
 
-            removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+            removeEventListener('WorkflowChanged', { projectId, workflowId: activeWorkflowId, snapshotId });
         } catch (e) {
             consola.error(e);
         }
+
         commit('selection/clearSelection', null, { root: true });
         commit('setTooltip', null);
+        
         if (clearWorkflow) {
             commit('setActiveWorkflow', null);
         }
@@ -236,9 +232,7 @@ export const actions = {
      * @returns {void} - nothing to return
      */
     moveNodes({ commit, rootGetters }, { deltaX, deltaY }) {
-        let selectedNodes = rootGetters['selection/selectedNodes'];
-        let thresholdExceeded = selectedNodes.length > moveNodeGhostThreshold;
-        commit('shiftPosition', { deltaX, deltaY, thresholdExceeded });
+        commit('shiftPosition', { deltaX, deltaY });
     },
 
     /**
@@ -328,6 +322,13 @@ export const getters = {
     /* Workflow is writable, if it is not linked or inside a linked workflow */
     isWritable(state, getters) {
         return !(getters.isLinked || getters.isInsideLinked);
+    },
+    /* Workflow is empty if it doesn't contain nodes */
+    isWorkflowEmpty({ activeWorkflow }) {
+        let hasNodes = Boolean(Object.keys(activeWorkflow?.nodes).length);
+        let hasAnnotations = Boolean(activeWorkflow?.workflowAnnotations.length);
+
+        return !hasNodes && !hasAnnotations;
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow

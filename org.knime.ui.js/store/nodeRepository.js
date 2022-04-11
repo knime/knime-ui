@@ -27,7 +27,9 @@ export const state = () => ({
     
     /* node description */
     selectedNode: null,
-    nodeDescriptionObject: null
+    nodeDescriptionObject: null,
+
+    isDraggingNode: false
 });
 
 export const getters = {
@@ -221,5 +223,8 @@ export const mutations = {
     },
     setSelectedNode(state, node) {
         state.selectedNode = node;
+    },
+    setDraggingNode(state, value) {
+        state.isDraggingNode = value;
     }
 };

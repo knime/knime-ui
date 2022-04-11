@@ -13,7 +13,7 @@ export default {
 <template>
   <main>
     <div class="button-tiles">
-      <button>
+      <button @click="$commands.dispatch('createWorkflow')">
         <div class="icon">
           <CirclePlusIcon />
         </div>
