@@ -1,5 +1,4 @@
 import { shallowMount } from '@vue/test-utils';
-import Vue from 'vue';
 import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
 
 jest.mock('lodash', () => ({
@@ -31,7 +30,7 @@ describe('ScrollViewContainer', () => {
         expect(wrapper.vm.initialPosition).toBe(0);
     });
 
-    it('renders with initial position', async () => {
+    it('renders with initial position', () => {
         propsData.initialPosition = 100;
         doShallowMount();
         
@@ -39,17 +38,13 @@ describe('ScrollViewContainer', () => {
         expect(wrapper.vm.initialPosition).toBe(100);
         
         // wait to set correctly the initial scroll position
-        await Vue.nextTick();
-        
         expect(wrapper.vm.$refs.scroller.scrollTop).toBe(100);
     });
 
-    it('emits position before destroy', async () => {
+    it('emits position before destroy', () => {
         propsData.initialPosition = 100;
         doShallowMount();
         
-        // wait to set correctly the initial scroll position
-        await Vue.nextTick();
         wrapper.destroy();
         
         expect(wrapper.emitted()['save-position'].length).toBe(1);
@@ -75,34 +70,31 @@ describe('ScrollViewContainer', () => {
             );
         });
 
-        // afterEach(() => {
-        //     delete HTMLElement.scrollHeight;
-        // });
+        afterEach(() => {
+            delete HTMLElement.scrollHeight;
+        });
 
-        it('scrolls, but is below threshold', async () => {
+        it('scrolls, but is below threshold', () => {
             propsData.initialPosition = 99;
             doShallowMount();
-            await Vue.nextTick();
 
             wrapper.find('.scroll-container').trigger('scroll');
             
             expect(wrapper.emitted('scroll-bottom')).toBe(undefined);
         });
 
-        it('scrolls, and is above threshold', async () => {
+        it('scrolls, and is above threshold', () => {
             propsData.initialPosition = 100;
             doShallowMount();
-            await Vue.nextTick();
 
             wrapper.find('.scroll-container').trigger('scroll');
             
             expect(wrapper.emitted('scroll-bottom').length).toBe(1);
         });
 
-        it('emit scroll event only once per update', async () => {
+        it('emit scroll event only once per update', () => {
             propsData.initialPosition = 100;
             doShallowMount();
-            await Vue.nextTick();
 
             // scroll twice
             wrapper.find('.scroll-container').trigger('scroll');
