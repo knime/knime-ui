@@ -290,6 +290,7 @@ export const actions = {
     },
     createMetanode({ state, getters, rootState, rootGetters, dispatch }) {
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
+        dispatch('selection/deselectAllObjects', null, { root: true });
 
         createWorkflowObject({
             containerType: 'metanode',
