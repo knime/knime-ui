@@ -35,7 +35,8 @@ describe('AutoSizeForeignObject.vue', () => {
     beforeEach(() => {
         wrapper = null;
         propsData = {
-            parentWidth: $shapes.nodeSize
+            parentWidth: $shapes.nodeSize,
+            resizeKey: ''
         };
 
         $store = mockVuexStore({
@@ -142,6 +143,36 @@ describe('AutoSizeForeignObject.vue', () => {
             height: mockRectHeight.toString(),
             width: mockRectWidth.toString(),
             x: ((propsData.parentWidth - mockRectWidth) / 2).toString()
+        }));
+    });
+
+    it('should adjust dimensions when the "resizeKey" prop changes', async () => {
+        doShallowMount();
+        
+        await flushTaskQueue();
+
+        expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+            height: mockRectHeight.toString(),
+            width: mockRectWidth.toString(),
+            x: ((propsData.parentWidth - mockRectWidth) / 2).toString()
+        }));
+
+        const newWidth = 100;
+        const newHeight = 100;
+        mockBoundingRect({
+            x: mockRectX,
+            y: mockRectY,
+            width: newWidth,
+            height: newHeight
+        });
+
+        wrapper.setProps({ resizeKey: 'new-val' });
+
+        await flushTaskQueue();
+
+        expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+            height: newWidth.toString(),
+            width: newHeight.toString()
         }));
     });
 

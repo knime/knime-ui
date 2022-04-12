@@ -179,7 +179,7 @@ describe('Node', () => {
                 styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
                 text: 'ThatsMyNode',
                 textAlign: 'center',
-                yShift: 20
+                yOffset: 20
             });
         });
 
@@ -192,7 +192,7 @@ describe('Node', () => {
                 styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
                 text: 'ThatsMyNode',
                 textAlign: 'center',
-                yShift: 0
+                yOffset: 0
             });
         });
 

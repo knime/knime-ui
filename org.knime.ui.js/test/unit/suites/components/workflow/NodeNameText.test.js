@@ -22,6 +22,10 @@ describe('NodeNameText.vue', () => {
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
+
+        Object.defineProperty(document, 'fonts', {
+            value: { ready: Promise.resolve() }
+        });
     });
 
     it('should emit a request edit event when component is editable', () => {
@@ -90,5 +94,27 @@ describe('NodeNameText.vue', () => {
         const emittedValue = 200;
         wrapper.findComponent(AutoSizeForeignObject).vm.$emit(eventName, emittedValue);
         expect(wrapper.emitted(eventName)[0][0]).toBe(emittedValue);
+    });
+
+    it('should update the resizeKey when the fonts are loaded', async () => {
+        jest.useFakeTimers();
+
+        const mockFontLoadTime = 100;
+        const fontsReady = new Promise(resolve => {
+            setTimeout(resolve, mockFontLoadTime);
+        });
+
+        document.fonts.ready = fontsReady;
+
+        const wrapper = doShallowMount();
+
+        const initialResizeKey = wrapper.findComponent(AutoSizeForeignObject).props('resizeKey');
+
+        jest.advanceTimersByTime(mockFontLoadTime);
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.findComponent(AutoSizeForeignObject).props('resizeKey')).not.toBe(initialResizeKey);
+
+        jest.clearAllTimers();
     });
 });

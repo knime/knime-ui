@@ -1,4 +1,6 @@
 <script>
+import { v4 as uuid } from 'uuid';
+
 import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
 
 export default {
@@ -25,13 +27,23 @@ export default {
             type: Number,
             default: null
         }
+    },
+    data() {
+        return {
+            resizeKey: uuid()
+        };
+    },
+    mounted() {
+        document.fonts.ready.then(() => {
+            this.resizeKey = uuid();
+        });
     }
 };
 </script>
 
 <template>
   <AutoSizeForeignObject
-    ref="container"
+    :resize-key="resizeKey"
     :start-width="startWidth"
     :start-height="startHeight"
     :class="['node-name-text-container', { editable, 'text-ellipsis': !showOverflow }]"

@@ -1,6 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
 import * as $shapes from '~/style/shapes';
-import Vue from 'vue';
 
 import NodeAnnotation from '~/components/workflow/NodeAnnotation';
 import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
@@ -16,7 +15,7 @@ describe('Node Annotation', () => {
             text: 'hallo',
             backgroundColor: 'rgb(255, 216, 0)',
             styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
-            yShift: 33
+            yOffset: 33
         };
         doShallowMount = () => {
             mocks = { $shapes, adjustDimensions: jest.fn() };
@@ -40,7 +39,7 @@ describe('Node Annotation', () => {
 
         it('passes yOffset to AutoSizeForeignObject', () => {
             expect(wrapper.findComponent(AutoSizeForeignObject).props('yOffset')).toBe(
-                $shapes.nodeSize + $shapes.nodeAnnotationMarginTop + propsData.yShift
+                $shapes.nodeSize + $shapes.nodeAnnotationMarginTop + propsData.yOffset
             );
         });
 
@@ -52,31 +51,19 @@ describe('Node Annotation', () => {
             );
         });
 
-        describe('dimension adjustment', () => {
-            it('adjusts dimensions on mount', () => {
-                expect(mocks.adjustDimensions).toHaveBeenCalledTimes(1);
-            });
-
-
-            let propFixtures = [
+        describe('Resize key', () => {
+            it.each([
                 ['text', 'foo'],
                 ['textAlign', 'left'],
                 ['defaultFontSize', 1],
                 ['styleRanges', []]
-            ];
-            propFixtures.forEach(([propName, propValue]) => it(
-                `adjusts dimensions when prop ${propName} changes`,
-                async () => {
-                    wrapper.setProps({
-                        [propName]: propValue
-                    });
-                    await Vue.nextTick();
-                    await Vue.nextTick();
+            ])('updates the resizeKey when the "%s" prop changes', async (propName, propValue) => {
+                const initialValue = wrapper.findComponent(AutoSizeForeignObject).props('resizeKey');
 
-                    // once on mount and once on the chance
-                    expect(mocks.adjustDimensions).toHaveBeenCalledTimes(2);
-                }
-            ));
+                await wrapper.setProps({ [propName]: propValue });
+
+                expect(wrapper.findComponent(AutoSizeForeignObject).props('resizeKey')).not.toBe(initialValue);
+            });
         });
     });
 });

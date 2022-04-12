@@ -448,7 +448,7 @@ export default {
     <NodeAnnotation
       v-if="annotation"
       v-bind="annotation"
-      :y-shift="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
+      :y-offset="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
     />
 
     <!-- Elements for which mouse hover triggers hover state -->

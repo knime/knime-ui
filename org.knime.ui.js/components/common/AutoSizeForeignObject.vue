@@ -11,6 +11,19 @@ const MINIMUM_SIZE_CHANGE = 1; // pixel
 export default {
     props: {
         /**
+         * Similar to Vue's native key attribute we can
+         * use this prop's changes to signal this component
+         * that it should re-run its sizing calculations
+         *
+         * Note that we can't use Vue's native key attribute
+         * as we want to have more control of when we want to
+         * trigger this behavior
+         */
+        resizeKey: {
+            type: String,
+            required: true
+        },
+        /**
          * Max width of the element.
          */
         maxWidth: {
@@ -65,6 +78,13 @@ export default {
                 return -this.height + this.yOffset;
             }
             return this.yOffset;
+        }
+    },
+    watch: {
+        resizeKey(newVal, prevVal) {
+            if (newVal !== prevVal) {
+                this.adjustDimensions();
+            }
         }
     },
     mounted() {

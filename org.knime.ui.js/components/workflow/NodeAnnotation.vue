@@ -1,4 +1,6 @@
 <script>
+import { v4 as uuid } from 'uuid';
+
 import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
 import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
 /**
@@ -44,10 +46,15 @@ export default {
         /**
          * Optional y-offset relative to the default position.
          */
-        yShift: {
+        yOffset: {
             type: Number,
             default: 0
         }
+    },
+    data() {
+        return {
+            resizeKey: uuid()
+        };
     },
     computed: {
         textStyle() {
@@ -60,17 +67,14 @@ export default {
         }
     },
     watch: {
-        textAlign() { this.adjustDimensions(); },
-        defaultFontSize() { this.adjustDimensions(); },
-        text() { this.adjustDimensions(); },
-        styleRanges() { this.adjustDimensions(); }
-    },
-    mounted() {
-        this.adjustDimensions();
+        textAlign() { this.updateResizeKey(); },
+        defaultFontSize() { this.updateResizeKey(); },
+        text() { this.updateResizeKey(); },
+        styleRanges() { this.updateResizeKey(); }
     },
     methods: {
-        adjustDimensions() {
-            this.$refs.container?.adjustDimensions();
+        updateResizeKey() {
+            this.resizeKey = uuid();
         }
     }
 };
@@ -80,7 +84,8 @@ export default {
   <AutoSizeForeignObject
     ref="container"
     class="container"
-    :y-offset="$shapes.nodeSize + $shapes.nodeAnnotationMarginTop + yShift"
+    :resize-key="resizeKey"
+    :y-offset="$shapes.nodeSize + $shapes.nodeAnnotationMarginTop + yOffset"
     :parent-width="$shapes.nodeSize"
     :max-width="$shapes.maxNodeAnnotationWidth"
   >
