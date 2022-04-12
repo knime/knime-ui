@@ -22,7 +22,8 @@ export const state = () => ({
     zoomFactor: defaultZoomFactor,
     suggestPanning: false,
     containerSize: { width: 0, height: 0 },
-    getScrollContainerElement: unsetScrollContainer
+    getScrollContainerElement: unsetScrollContainer,
+    interactionsEnabled: true
 });
 
 export const mutations = {
@@ -65,6 +66,9 @@ export const mutations = {
     setContainerSize(state, { width, height }) {
         state.containerSize.width = width;
         state.containerSize.height = height;
+    },
+    setInteractionsEnabled(state, value) {
+        state.interactionsEnabled = value;
     }
 };
 
@@ -122,7 +126,6 @@ export const actions = {
         let scrollY = yAxisFits
             ? { canvasY: 'center', toScreenY: 'center' }
             : { canvasY: getters.contentBounds.top, toScreenY: screenPadding };
-
 
         dispatch('scroll', { ...scrollX, ...scrollY });
     },

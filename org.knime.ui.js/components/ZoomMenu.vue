@@ -11,6 +11,12 @@ export default {
         DropdownIcon,
         SubMenu
     },
+    props: {
+        disabled: {
+            type: Boolean,
+            default: false
+        }
+    },
     computed: {
         ...mapState('canvas', ['zoomFactor']),
         zoomInputValue() {
@@ -68,6 +74,7 @@ export default {
     ref="subMenu"
     class="zoom"
     :items="zoomMenuItems"
+    :disabled="disabled"
     @item-click="onZoomItemClick"
   >
     <input

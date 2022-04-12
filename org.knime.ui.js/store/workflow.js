@@ -72,7 +72,7 @@ export const actions = {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    unloadActiveWorkflow({ state, commit, getters: { activeWorkflowId: workflowId }, rootGetters }, { clearWorkflow }) {
+    unloadActiveWorkflow({ state, commit, dispatch, getters: { activeWorkflowId }, rootGetters }, { clearWorkflow }) {
         if (!state.activeWorkflow) {
             // nothing to do (no tabs open)
             return;
@@ -82,12 +82,14 @@ export const actions = {
             let { projectId } = state.activeWorkflow;
             let { activeSnapshotId: snapshotId } = state;
 
-            removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+            removeEventListener('WorkflowChanged', { projectId, workflowId: activeWorkflowId, snapshotId });
         } catch (e) {
             consola.error(e);
         }
+
         commit('selection/clearSelection', null, { root: true });
         commit('setTooltip', null);
+        
         if (clearWorkflow) {
             commit('setActiveWorkflow', null);
         }
@@ -331,6 +333,13 @@ export const getters = {
     /* Workflow is writable, if it is not linked or inside a linked workflow */
     isWritable(state, getters) {
         return !(getters.isLinked || getters.isInsideLinked);
+    },
+    /* Workflow is empty if it doesn't contain nodes */
+    isWorkflowEmpty({ activeWorkflow }) {
+        let hasNodes = Boolean(Object.keys(activeWorkflow?.nodes).length);
+        let hasAnnotations = Boolean(activeWorkflow?.workflowAnnotations.length);
+
+        return !hasNodes && !hasAnnotations;
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
