@@ -17,11 +17,7 @@ export default {
         };
     },
     mounted() {
-        if (this.$refs.scroller) {
-            this.$nextTick(() => {
-                this.$refs.scroller.scrollTop = this.initialPosition;
-            });
-        }
+        this.$refs.scroller.scrollTop = this.initialPosition;
     },
     beforeDestroy() {
         this.$emit('save-position', this.scrollPosition);

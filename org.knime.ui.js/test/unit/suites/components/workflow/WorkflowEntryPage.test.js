@@ -31,11 +31,19 @@ describe('WorkflowEntryPage', () => {
         expect(buttons.length).toBe(2);
     });
 
-    it('dispatches command', () => {
+    it('dispatches command openWorkflow', () => {
         doShallowMount();
 
         const buttons = wrapper.findAll('button');
         buttons.at(1).trigger('click');
         expect($commands.dispatch).toHaveBeenCalledWith('openWorkflow');
+    });
+
+    it('dispatches command createWorkflow', () => {
+        doShallowMount();
+
+        const buttons = wrapper.findAll('button');
+        buttons.at(0).trigger('click');
+        expect($commands.dispatch).toHaveBeenCalledWith('createWorkflow');
     });
 });

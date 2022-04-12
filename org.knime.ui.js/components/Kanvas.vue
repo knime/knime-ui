@@ -14,7 +14,7 @@ export default {
     },
     computed: {
         ...mapGetters('canvas', ['canvasSize', 'viewBox', 'contentBounds']),
-        ...mapState('canvas', ['suggestPanning', 'zoomFactor'])
+        ...mapState('canvas', ['suggestPanning', 'zoomFactor', 'interactionsEnabled'])
     },
     watch: {
         contentBounds(...args) { this.contentBoundsChanged(args); }
@@ -41,6 +41,9 @@ export default {
             // updating the container size and recalculating the canvas is debounced.
             const updateContainerSize = debounce(() => {
                 this.updateContainerSize();
+                this.$nextTick(() => {
+                    this.$emit('container-size-changed');
+                });
             }, RESIZE_DEBOUNCE);
             
             this.resizeObserver = new ResizeObserver(entries => {
@@ -63,6 +66,8 @@ export default {
         */
         onMouseWheel: throttle(function (e) {
             /* eslint-disable no-invalid-this */
+            if (!this.interactionsEnabled) { return; }
+
             // delta is -1, 0 or 1 depending on scroll direction.
             let delta = Math.sign(-e.deltaY);
 
@@ -73,11 +78,14 @@ export default {
             let cursorY = e.clientY - bcr.y;
 
             this.zoomAroundPointer({ delta, cursorX, cursorY });
+            /* eslint-enable no-invalid-this */
         }),
         /*
             Panning
         */
         beginPan(e) {
+            if (!this.interactionsEnabled) { return; }
+
             this.isPanning = true;
             this.panningOffset = [e.screenX, e.screenY];
             this.$el.setPointerCapture(e.pointerId);
@@ -107,7 +115,10 @@ export default {
 <template>
   <div
     tabindex="0"
-    :class="['scroll-container', { 'panning': isPanning || suggestPanning }]"
+    :class="['scroll-container', {
+      'panning': isPanning || suggestPanning,
+      'disabled': !interactionsEnabled
+    }]"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
     @pointerdown.middle="beginPan"
@@ -141,6 +152,10 @@ export default {
 
   &:focus {
     outline: none;
+  }
+
+  &.disabled {
+    overflow: hidden; /* disables scrolling */
   }
 }
 

@@ -78,6 +78,13 @@ describe('canvas store', () => {
         expect(store.state.canvas.suggestPanning).toBe(false);
     });
 
+    test('setInteractionsEnabled', () => {
+        expect(store.state.canvas.interactionsEnabled).toBe(true);
+
+        store.commit('canvas/setInteractionsEnabled', false);
+        expect(store.state.canvas.interactionsEnabled).toBe(false);
+    });
+
     describe('scroll container element', () => {
         test('set & get ScrollContainerElement', () => {
             store.dispatch('canvas/initScrollContainerElement', scrollContainer);

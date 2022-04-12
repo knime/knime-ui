@@ -77,7 +77,6 @@ describe('Workflow', () => {
 
         isNodeSelectedMock = jest.fn().mockReturnValue(false);
 
-
         storeConfig = {
             workflow: {
                 state: {
