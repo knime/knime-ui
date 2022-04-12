@@ -79,7 +79,8 @@ public final class DefaultServicesUtil {
         if (!ServiceInstances.areServicesInitialized()) {
             ServiceDependencies.setServiceDependency(AppStateProvider.class, appStateProvider);
             ServiceDependencies.setServiceDependency(EventConsumer.class, eventConsumer);
-            ServiceDependencies.setServiceDependency(WorkflowMiddleware.class, WorkflowMiddleware.getInstance());
+            ServiceDependencies.setServiceDependency(WorkflowMiddleware.class,
+                new WorkflowMiddleware(WorkflowProjectManager.getInstance()));
             ServiceDependencies.setServiceDependency(WorkflowProjectManager.class,
                 WorkflowProjectManager.getInstance());
         } else {
