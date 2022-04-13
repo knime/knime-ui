@@ -94,7 +94,7 @@ public final class DefaultServicesUtil {
      * Remove the application service from the provided service dependencies, remove listeners and clear references to
      * workflow projects.
      */
-    static void disposeDefaultServices() {
+    public static void disposeDefaultServices() {
         removeWorkflowProjects();
         ServiceInstances.disposeAllServiceInstancesAndDependencies();
     }
