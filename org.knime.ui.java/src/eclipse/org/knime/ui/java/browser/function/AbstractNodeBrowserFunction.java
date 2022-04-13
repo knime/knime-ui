@@ -91,16 +91,16 @@ public abstract class AbstractNodeBrowserFunction extends BrowserFunction {
 			NodeLogger.getLogger(AbstractNodeBrowserFunction.class).error(message);
 			return message;
 		} else {
-			apply(nc);
+		    return apply(nc);
 		}
-		return null;
 	}
 
 	/**
 	 * Executes the function on the given node container.
 	 *
-	 * @param nc the node container, never <code>null</code>
+	 * @param nc The node container, never <code>null</code>
+	 * @return Error message or <code>null</code>
 	 */
-	protected abstract void apply(NodeContainer nc);
+	protected abstract String apply(NodeContainer nc);
 
 }

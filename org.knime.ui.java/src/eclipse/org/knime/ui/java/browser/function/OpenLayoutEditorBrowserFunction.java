@@ -44,54 +44,47 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Nov 9, 2020 (hornm): created
+ *   Apr 7, 2022 (kai): created
  */
 package org.knime.ui.java.browser.function;
 
 import org.knime.core.node.NodeLogger;
-import org.knime.core.node.workflow.NativeNodeContainer;
 import org.knime.core.node.workflow.NodeContainer;
 import org.knime.core.node.workflow.SubNodeContainer;
-import org.knime.core.webui.node.view.NodeViewManager;
-import org.knime.workbench.editor2.actions.OpenInteractiveWebViewAction;
-import org.knime.workbench.editor2.actions.OpenNodeViewAction;
-import org.knime.workbench.editor2.actions.OpenSubnodeWebViewAction;
+import org.knime.workbench.editor2.actions.SubnodeLayoutAction;
 
 import com.equo.chromium.swt.Browser;
 
 /**
- * Opens the node's js-view, if available, in an extra browser window.
+ * Opens the layout editor of a component
  *
- * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH
  */
-public class OpenNodeViewBrowserFunction extends AbstractNodeBrowserFunction {
+public class OpenLayoutEditorBrowserFunction extends AbstractNodeBrowserFunction {
 
-	private static final String FUNCTION_NAME = "openNodeView";
+    private static final String FUNCTION_NAME = "openLayoutEditor";
 
-	public OpenNodeViewBrowserFunction(final Browser browser) {
-		super(browser, FUNCTION_NAME);
-	}
+    /**
+     * @param browser
+     */
+    public OpenLayoutEditorBrowserFunction(final Browser browser) {
+        super(browser, FUNCTION_NAME);
+    }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected String apply(final NodeContainer nc) {
         if (nc instanceof SubNodeContainer) {
-            // composite view
-            OpenSubnodeWebViewAction.openView((SubNodeContainer)nc);
+            var subnode = (SubNodeContainer)nc;
+            SubnodeLayoutAction.openLayoutEditor(subnode);
             return null;
-        } else if (NodeViewManager.hasNodeView(nc)) {
-            // 'ui-extension' view
-            var nnc = ((NativeNodeContainer)nc);
-            var viewName = "Interactive View: " + nnc.getNodeViewName(0);
-            OpenNodeViewAction.openNodeView(nnc, OpenNodeViewAction.createNodeView(nnc, false, true), viewName);
-            return null;
-        } else if (nc.getInteractiveWebViews().size() > 0 || nc.hasInteractiveView()) {
-            // legacy js-view
-            OpenInteractiveWebViewAction.openView((NativeNodeContainer)nc,
-                nc.getInteractiveWebViews().get(0).getViewName());
-            return null;
+        } else {
+            var message = String.format("There is no layout editor for node '%s'", nc);
+            NodeLogger.getLogger(OpenLayoutEditorBrowserFunction.class).error(message);
+            return message;
         }
-        NodeLogger.getLogger(OpenNodeViewBrowserFunction.class).warnWithFormat(
-            "Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName());
-        return null;
     }
+
 }
