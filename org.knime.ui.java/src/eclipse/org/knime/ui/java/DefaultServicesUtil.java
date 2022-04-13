@@ -96,7 +96,7 @@ public final class DefaultServicesUtil {
      */
     static void disposeDefaultServices() {
         removeWorkflowProjects();
-        ServiceInstances.disposeAllServicesInstancesAndDependencies();
+        ServiceInstances.disposeAllServiceInstancesAndDependencies();
     }
 
     private static void removeWorkflowProjects() {
