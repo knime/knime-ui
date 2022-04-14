@@ -93,7 +93,7 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
         var wasClosed = page.closeEditor(editor, true);
 
         if (wasClosed) {
-            WorkflowProjectManager.removeWorkflowProject(projectId);
+            WorkflowProjectManager.getInstance().removeWorkflowProject(projectId);
             // triggers sending event
             m_appStateProvider.updateAppState();
         }

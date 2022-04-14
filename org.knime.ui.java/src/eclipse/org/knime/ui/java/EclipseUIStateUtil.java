@@ -121,7 +121,8 @@ public final class EclipseUIStateUtil {
         var wfm = getWorkflowManager(editorPart);
         WorkflowManager projectWfm = wfm != null ? getProjectManager(wfm) : null;
         if (projectWfm != null) {
-            WorkflowProject wp = WorkflowProjectManager.getWorkflowProject(projectWfm.getNameWithID()).orElse(null);
+            WorkflowProject wp =
+                WorkflowProjectManager.getInstance().getWorkflowProject(projectWfm.getNameWithID()).orElse(null);
             if (wp == null) {
                 wp = createWorkflowProject(editorPart, projectWfm);
             }
@@ -170,7 +171,7 @@ public final class EclipseUIStateUtil {
                 loadedProjectIds.add(p.getFirst().getID())//
             ).map(p -> {
                 WorkflowProject wp = p.getFirst();
-                WorkflowProjectManager.addWorkflowProject(wp.getID(), wp);
+                WorkflowProjectManager.getInstance().addWorkflowProject(wp.getID(), wp);
                 return p.getSecond();
             })//
             .collect(Collectors.toList());
