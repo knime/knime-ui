@@ -42,6 +42,12 @@ export default {
         }
     },
     mounted() {
+        if (this.isWorkflowEmpty) {
+            this.setNodeRepositoryActive();
+        } else {
+            this.setWorkflowMetaActive();
+        }
+
         this.$nextTick(() => {
             // put canvas into fillScreen view after loading the workflow
             // TODO: To be changed in NXT-929
@@ -51,7 +57,7 @@ export default {
     methods: {
         ...mapMutations('canvas', ['setInteractionsEnabled']),
         ...mapActions('canvas', ['fillScreen']),
-        ...mapActions('panel', ['setNodeRepositoryActive']),
+        ...mapActions('panel', ['setNodeRepositoryActive', 'setWorkflowMetaActive']),
         onNodeSelectionPreview($event) {
             this.$refs.workflow.applyNodeSelectionPreview($event);
         },

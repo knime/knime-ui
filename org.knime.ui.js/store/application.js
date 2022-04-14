@@ -45,7 +45,6 @@ export const actions = {
         // NXT-962: rename openendWorkflows to openProjects
         const openProjects = applicationState.openedWorkflows;
 
-        dispatch('panel/setWorkflowMetaActive', null, { root: true });
         commit('setOpenProjects', openProjects);
 
         await dispatch('setActiveProject', openProjects);

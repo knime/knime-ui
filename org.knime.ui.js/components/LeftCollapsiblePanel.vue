@@ -24,8 +24,18 @@ export default {
             default: null
         }
     },
+    data: () => ({
+        mounted: false
+    }),
     computed: {
         ...mapState('panel', ['expanded', 'activeTab', 'activeDescriptionPanel'])
+    },
+    mounted() {
+        this.mounted = true;
+
+        this.$nextTick(() => {
+            this.mounted = false;
+        });
     },
     methods: {
         toggleExpanded() {
@@ -38,7 +48,7 @@ export default {
 <template>
   <div class="panel">
     <div
-      class="container"
+      :class="['container',{ 'no-transition': mounted}]"
       :style="{ width: expanded ? width : 0 }"
     >
       <div
@@ -63,6 +73,10 @@ export default {
 .panel {
   display: flex;
   height: 100%;
+}
+
+.no-transition {
+  transition: none !important;
 }
 
 .container {

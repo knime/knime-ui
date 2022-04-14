@@ -43,11 +43,6 @@ describe('application store', () => {
                         saveMe: 'canvas'
                     })
                 }
-            },
-            panel: {
-                actions: {
-                    setWorkflowMetaActive: jest.fn()
-                }
             }
         };
         store = mockVuexStore(storeConfig);
@@ -108,7 +103,6 @@ describe('application store', () => {
     it('replaces application state', async () => {
         await store.dispatch('application/replaceApplicationState', applicationState);
 
-        expect(storeConfig.panel.actions.setWorkflowMetaActive).toHaveBeenCalled();
         expect(store.state.application.openProjects).toStrictEqual([
             { projectId: 'foo', name: 'bar' }
         ]);
