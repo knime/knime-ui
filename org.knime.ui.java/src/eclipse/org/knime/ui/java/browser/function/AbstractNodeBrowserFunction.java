@@ -82,13 +82,13 @@ public abstract class AbstractNodeBrowserFunction extends BrowserFunction {
 		if (args == null || args.length != 2 || !(args[0] instanceof String) || !(args[1] instanceof String)) {
 			var message = "Wrong argument for browser function '" + getName() + "'. The arguments are: "
 					+ Arrays.toString(args);
-			NodeLogger.getLogger(AbstractNodeBrowserFunction.class).error(message);
+			NodeLogger.getLogger(AbstractNodeBrowserFunction.class).warn(message);
 			return message;
 		}
 		var nc = DefaultServiceUtil.getNodeContainer((String) args[0], new NodeIDEnt((String) args[1]));
 		if (nc == null) {
 			var message = String.format("Node with id '%s' not found in workflow with id '%s'", args[0], args[1]);
-			NodeLogger.getLogger(AbstractNodeBrowserFunction.class).error(message);
+			NodeLogger.getLogger(AbstractNodeBrowserFunction.class).warn(message);
 			return message;
 		} else {
 		    return apply(nc);

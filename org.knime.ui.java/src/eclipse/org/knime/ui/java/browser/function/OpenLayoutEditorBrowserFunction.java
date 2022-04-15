@@ -82,7 +82,7 @@ public class OpenLayoutEditorBrowserFunction extends AbstractNodeBrowserFunction
             return null;
         } else {
             var message = String.format("There is no layout editor for node '%s'", nc);
-            NodeLogger.getLogger(OpenLayoutEditorBrowserFunction.class).error(message);
+            NodeLogger.getLogger(OpenLayoutEditorBrowserFunction.class).warn(message);
             return message;
         }
     }
