@@ -2,7 +2,7 @@
  * ------------------------------------------------------------------------
  *
  *  Copyright by KNIME AG, Zurich, Switzerland
- *  Website: http://www.knime.org; Email: contact@knime.org
+ *  Website: http://www.knime.com; Email: contact@knime.com
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License, Version 3, as
@@ -43,62 +43,47 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
  *
+ * History
+ *   Apr 7, 2022 (kai): created
  */
-package org.knime.ui.java;
+package org.knime.ui.java.browser.function;
 
-import java.util.function.Supplier;
+import org.knime.core.node.NodeLogger;
+import org.knime.core.node.workflow.NodeContainer;
+import org.knime.core.node.workflow.SubNodeContainer;
+import org.knime.workbench.editor2.actions.SubnodeLayoutAction;
 
-import org.knime.gateway.api.webui.entity.AppStateEnt;
-import org.knime.gateway.impl.project.WorkflowProjectManager;
-import org.knime.gateway.impl.webui.AppStateProvider;
-import org.knime.gateway.impl.webui.AppStateProvider.AppState;
-import org.knime.gateway.impl.webui.service.DefaultApplicationService;
-import org.knime.gateway.impl.webui.service.DefaultServices;
+import com.equo.chromium.swt.Browser;
 
 /**
- * Utility methods for handling the representation of the application state.
+ * Opens the layout editor of a component
  *
- * @author Martin Horn, KNIME GmbH, Konstanz, Germany
- * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH
  */
-public final class AppStateUtil {
+public class OpenLayoutEditorBrowserFunction extends AbstractNodeBrowserFunction {
 
-    private AppStateUtil() {
-        //
+    private static final String FUNCTION_NAME = "openLayoutEditor";
+
+    /**
+     * @param browser
+     */
+    public OpenLayoutEditorBrowserFunction(final Browser browser) {
+        super(browser, FUNCTION_NAME);
     }
 
     /**
-     * Makes the application state available for the default service implementations (see {@link DefaultServices}).
-     *
-     * @param supplier
-     * @return The newly constructed application state or {@code null} if the app state has already been initialized
+     * {@inheritDoc}
      */
-    public static AppStateProvider initAppStateProvider(final Supplier<AppState> supplier) {
-        if (!DefaultServices.areServicesInitialized()) {
-            var appStateProvider = new AppStateProvider(supplier);
-            DefaultServices.setServiceDependency(AppStateProvider.class, appStateProvider);
-            return appStateProvider;
-        } else {
+    @Override
+    protected String apply(final NodeContainer nc) {
+        if (nc instanceof SubNodeContainer) {
+            var subnode = (SubNodeContainer)nc;
+            SubnodeLayoutAction.openLayoutEditor(subnode);
             return null;
-        }
-    }
-
-    /**
-     * Remove the application service from the provided service dependencies, remove listeners and clear references to
-     * workflow projects.
-     */
-    static void clearAppState() {
-        removeWorkflowProjects();
-        DefaultServices.disposeAllServicesInstances();
-    }
-
-    private static void removeWorkflowProjects() {
-        if (DefaultServices.areServicesInitialized()) {
-            AppStateEnt previousState = DefaultApplicationService.getInstance().getState();
-            if (previousState != null) {
-                previousState.getOpenedWorkflows()
-                    .forEach(wfProjEnt -> WorkflowProjectManager.removeWorkflowProject(wfProjEnt.getProjectId()));
-            }
+        } else {
+            var message = String.format("There is no layout editor for node '%s'", nc);
+            NodeLogger.getLogger(OpenLayoutEditorBrowserFunction.class).warn(message);
+            return message;
         }
     }
 

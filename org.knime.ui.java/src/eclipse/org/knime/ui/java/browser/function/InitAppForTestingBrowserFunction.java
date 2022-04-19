@@ -101,7 +101,7 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
 		try {
 			appState = MAPPER.readValue((String) args[0], JsonNode.class);
 		} catch (JsonProcessingException ex) {
-			NodeLogger.getLogger(this.getClass()).error("Argument couldn't be parsed to JSON", ex);
+			NodeLogger.getLogger(this.getClass()).warn("Argument couldn't be parsed to JSON", ex);
 			return null;
 		}
 		JsonNode openedWorkflows = appState.get("openedWorkflows");

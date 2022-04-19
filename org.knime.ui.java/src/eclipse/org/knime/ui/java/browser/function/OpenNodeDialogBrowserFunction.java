@@ -69,8 +69,9 @@ public class OpenNodeDialogBrowserFunction extends AbstractNodeBrowserFunction {
 	}
 
     @Override
-    protected void apply(final NodeContainer nc) {
+    protected String apply(final NodeContainer nc) {
         NodeContainerEditPart.openNodeDialog(wrap(nc));
+        return null;
     }
 
 }

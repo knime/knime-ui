@@ -69,8 +69,9 @@ public class OpenLegacyFlowVariableDialogBrowserFunction extends AbstractNodeBro
 	}
 
 	@Override
-    protected void apply(final NodeContainer nc) {
+    protected String apply(final NodeContainer nc) {
         NodeContainerEditPart.openDialog(wrap(nc), null);
+        return null;
     }
 
 }

@@ -73,24 +73,25 @@ public class OpenNodeViewBrowserFunction extends AbstractNodeBrowserFunction {
 	}
 
     @Override
-    protected void apply(final NodeContainer nc) {
+    protected String apply(final NodeContainer nc) {
         if (nc instanceof SubNodeContainer) {
             // composite view
             OpenSubnodeWebViewAction.openView((SubNodeContainer)nc);
-            return;
+            return null;
         } else if (NodeViewManager.hasNodeView(nc)) {
             // 'ui-extension' view
             var nnc = ((NativeNodeContainer)nc);
             var viewName = "Interactive View: " + nnc.getNodeViewName(0);
             OpenNodeViewAction.openNodeView(nnc, OpenNodeViewAction.createNodeView(nnc, false, true), viewName);
-            return;
+            return null;
         } else if (nc.getInteractiveWebViews().size() > 0 || nc.hasInteractiveView()) {
             // legacy js-view
             OpenInteractiveWebViewAction.openView((NativeNodeContainer)nc,
                 nc.getInteractiveWebViews().get(0).getViewName());
-            return;
+            return null;
         }
         NodeLogger.getLogger(OpenNodeViewBrowserFunction.class).warnWithFormat(
             "Node with id '%s' in workflow '%s' does not have a node view", nc.getID(), nc.getParent().getName());
+        return null;
     }
 }
