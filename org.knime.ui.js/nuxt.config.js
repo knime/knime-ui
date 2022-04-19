@@ -29,7 +29,7 @@ const config = {
         '~/plugins/logger.js',
         '~/plugins/constants.js',
         '~/plugins/directive-move.js',
-        '~/plugins/json-rpc-notification.js',
+        '~/plugins/events.js',
         '~/plugins/equo-comm.js',
         '~/plugins/commands.js'
     ],
