@@ -80,27 +80,27 @@ public abstract class AbstractNodeBrowserFunction extends BrowserFunction {
 	@Override
 	public Object function(final Object[] args) {
 		if (args == null || args.length != 2 || !(args[0] instanceof String) || !(args[1] instanceof String)) {
-			String message = "Wrong argument for browser function '" + getName() + "'. The arguments are: "
+			var message = "Wrong argument for browser function '" + getName() + "'. The arguments are: "
 					+ Arrays.toString(args);
-			NodeLogger.getLogger(AbstractNodeBrowserFunction.class).error(message);
+			NodeLogger.getLogger(AbstractNodeBrowserFunction.class).warn(message);
 			return message;
 		}
-		NodeContainer nc = DefaultServiceUtil.getNodeContainer((String) args[0], new NodeIDEnt((String) args[1]));
+		var nc = DefaultServiceUtil.getNodeContainer((String) args[0], new NodeIDEnt((String) args[1]));
 		if (nc == null) {
-			String message = String.format("Node with id '%s' not found in workflow with id '%s'", args[0], args[1]);
-			NodeLogger.getLogger(AbstractNodeBrowserFunction.class).error(message);
+			var message = String.format("Node with id '%s' not found in workflow with id '%s'", args[0], args[1]);
+			NodeLogger.getLogger(AbstractNodeBrowserFunction.class).warn(message);
 			return message;
 		} else {
-			apply(nc);
+		    return apply(nc);
 		}
-		return null;
 	}
 
 	/**
 	 * Executes the function on the given node container.
 	 *
-	 * @param nc the node container, never <code>null</code>
+	 * @param nc The node container, never <code>null</code>
+	 * @return Error message or <code>null</code>
 	 */
-	protected abstract void apply(NodeContainer nc);
+	protected abstract String apply(NodeContainer nc);
 
 }
