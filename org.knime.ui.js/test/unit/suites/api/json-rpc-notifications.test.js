@@ -1,53 +1,30 @@
-import { createLocalVue } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
-import Vuex from 'vuex';
+import { registerEventHandlers } from '~/api/json-rpc-notifications';
 
-jest.mock('~/store/events', () => ({
-    actions: {
-        myAction: () => {},
-        erroneousAction: () => {}
-    }
-}), { virtual: true });
-
-import loadPlugin from '~/plugins/json-rpc-notification';
-
-describe('jsonrpcNotification handler', () => {
-    let localVue, actionMock, store;
-
-    beforeAll(() => {
-        localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+describe('JsonRpcNotifications', () => {
+    let eventHandlers;
 
     beforeEach(() => {
-        actionMock = jest.fn();
-        store = mockVuexStore({
-            events: {
-                actions: {
-                    myAction: actionMock,
-                    erroneousAction: () => { throw new Error('boo!'); }
-                }
-            }
-        });
+        eventHandlers = {
+            WorkingEvent: jest.fn(),
+            ErrorEvent: jest.fn().mockImplementation(() => {
+                throw new Error('boo!');
+            }),
+            NotFunction: null
+        };
+        registerEventHandlers(eventHandlers);
     });
 
     it('defines a global function', () => {
-        loadPlugin();
         expect(window.jsonrpcNotification).toBeInstanceOf(Function);
     });
 
-    it('passes calls to store', () => {
-        loadPlugin({ store });
-        let result = window.jsonrpcNotification('{"jsonrpc":"2.0","method":"myAction","params":["foo"]}');
-        expect(actionMock).toHaveBeenCalledWith(expect.anything(), ['foo']);
+    it('calls event handler successfully', () => {
+        let result = window.jsonrpcNotification('{"jsonrpc":"2.0","method":"WorkingEvent","params":["foo"]}');
+        expect(eventHandlers.WorkingEvent).toHaveBeenCalledWith('foo');
         expect(result).toBe('{"jsonrpc":"2.0","result":"ok"}');
     });
 
     describe('error handling', () => {
-        beforeEach(() => {
-            loadPlugin({ store });
-        });
-
         it('throws an error for invalid arguments', () => {
             let call1 = () => window.jsonrpcNotification(1);
             expect(call1).toThrow(expect.any(TypeError));
@@ -83,18 +60,23 @@ describe('jsonrpcNotification handler', () => {
         });
 
         it('returns an error for non-existing methods', () => {
-            loadPlugin({ store });
             let result = window.jsonrpcNotification('{"jsonrpc":"2.0","method":"invalidAction","params":["foo"]}');
-            expect(actionMock).not.toHaveBeenCalled();
             expect(result).toBe(JSON.stringify({
                 jsonrpc: '2.0',
                 error: { code: -32601, message: 'Method "invalidAction" not found' }
             }));
         });
 
+        it('returns an error for non-function handlers', () => {
+            let result = window.jsonrpcNotification('{"jsonrpc":"2.0","method":"NotFunction","params":["foo"]}');
+            expect(result).toBe(JSON.stringify({
+                jsonrpc: '2.0',
+                error: { code: -32601, message: 'Method "NotFunction" not found' }
+            }));
+        });
+
         it('forwards internal errors', () => {
-            loadPlugin({ store });
-            let result = window.jsonrpcNotification('{"jsonrpc":"2.0","method":"erroneousAction","params":[]}');
+            let result = window.jsonrpcNotification('{"jsonrpc":"2.0","method":"ErrorEvent","params":[]}');
             expect(JSON.parse(result)).toStrictEqual({
                 jsonrpc: '2.0',
                 error: {
