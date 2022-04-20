@@ -136,7 +136,7 @@ describe('WorkflowToolbar.vue', () => {
 
     describe('visibility of toolbar items', () => {
         it('shows nothing if no workflow is active', () => {
-            workflow = null;
+            storeConfig.workflow.state.activeWorkflow = null;
             doShallowMount();
             expect(wrapper.vm.toolbarCommands).toStrictEqual([]);
         });
