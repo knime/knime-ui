@@ -70,15 +70,22 @@ describe('WorkflowToolbar.vue', () => {
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
-            mocks = { $store, $commands };
-            wrapper = shallowMount(WorkflowToolbar, { propsData, mocks });
+            mocks = {
+                $store,
+                $commands
+            };
+            wrapper = shallowMount(
+                WorkflowToolbar, {
+                    propsData,
+                    mocks
+                });
         };
     });
 
     describe('Toolbar Command', () => {
         test('Command buttons match computed items', () => {
             doShallowMount();
-    
+
             let commandButtons = wrapper.findAllComponents(ToolbarCommandButton).wrappers;
             expect(commandButtons.map(button => button.props('name'))).toStrictEqual(wrapper.vm.toolbarCommands);
         });
@@ -86,7 +93,7 @@ describe('WorkflowToolbar.vue', () => {
         it('hides toolbar command buttons if no workflow is open', () => {
             storeConfig.workflow.state.activeWorkflow = null;
             doShallowMount();
-            
+
             expect(wrapper.findComponent(ToolbarCommandButton).exists()).toBe(false);
         });
     });
@@ -131,6 +138,60 @@ describe('WorkflowToolbar.vue', () => {
             doShallowMount();
 
             expect(wrapper.findComponent(WorkflowBreadcrumb).exists()).toBe(true);
+        });
+    });
+
+    describe('visibility of toolbar items', () => {
+        it('shows nothing if no workflow is active', () => {
+            workflow = null;
+            doShallowMount();
+            expect(wrapper.vm.toolbarCommands).toStrictEqual([]);
+        });
+
+        it('shows menu items if no node is selected', () => {
+            doShallowMount();
+            expect(wrapper.vm.toolbarCommands).toStrictEqual([
+                'save',
+                'undo',
+                'redo',
+                'executeAll',
+                'cancelAll',
+                'resetAll'
+            ]);
+        });
+
+        it('shows correct menu items if one node is selected', () => {
+            let node = {
+                id: 'root:0',
+                allowedActions: {}
+            };
+            storeConfig.selection.getters.selectedNodes = () => [node];
+            doShallowMount();
+            expect(wrapper.vm.toolbarCommands).toStrictEqual([
+                'save',
+                'undo',
+                'redo',
+                'executeSelected',
+                'cancelSelected',
+                'resetSelected'
+            ]);
+        });
+
+        it('shows correct menu items if multiple nodes are selected', () => {
+            let node = {
+                id: 'root:0',
+                allowedActions: {}
+            };
+            storeConfig.selection.getters.selectedNodes = () => [node, { ...node, id: 'root:1' }];
+            doShallowMount();
+            expect(wrapper.vm.toolbarCommands).toStrictEqual([
+                'save',
+                'undo',
+                'redo',
+                'executeSelected',
+                'cancelSelected',
+                'resetSelected'
+            ]);
         });
     });
 });
