@@ -34,9 +34,11 @@ export default {
         };
     },
     mounted() {
-        document.fonts.ready.then(() => {
-            this.resizeKey = uuid();
-        });
+        // document.fonts.ready.then((param) => {
+        //     // this.resizeKey = uuid();
+        //     console.log('param', param);
+        //     console.log('on fonts.ready');
+        // });
     }
 };
 </script>
@@ -88,7 +90,7 @@ export default {
   & .text {
     font-family: "Roboto Condensed", sans-serif;
     font-style: normal;
-    font-weight: bold;
+    font-weight: 700;
     font-size: calc(var(--node-name-font-size-shape) * 1px);
     margin: 0;
     text-align: inherit;

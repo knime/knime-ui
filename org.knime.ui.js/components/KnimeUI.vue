@@ -10,7 +10,8 @@ import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
 import HotkeyHandler from '~/components/HotkeyHandler';
 
 // These fonts will be pre-loaded at application startup
-const requiredFonts = ['Roboto', 'Roboto Condensed', 'Roboto Mono'];
+const defaultFontWeight = 400;
+const requiredFonts = [['Roboto'], ['Roboto Condensed', 700], ['Roboto Mono']];
 
 /**
  * Main page and entry point of KNIME Next
@@ -38,7 +39,9 @@ export default {
         try {
             await Promise.all([
                 this.initializeApplication(),
-                ...requiredFonts.map(fontName => document.fonts.load(`1em ${fontName}`))
+                ...requiredFonts.map(
+                    ([fontName, weight = defaultFontWeight]) => document.fonts.load(`${weight} 1em ${fontName}`)
+                )
             ]);
             this.loaded = true;
         } catch ({ message, stack }) {
