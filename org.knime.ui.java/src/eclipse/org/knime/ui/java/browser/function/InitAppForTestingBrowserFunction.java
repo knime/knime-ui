@@ -49,10 +49,17 @@
 package org.knime.ui.java.browser.function;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.port.PortType;
+import org.knime.gateway.api.util.CoreUtil;
+import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState.OpenedWorkflow;
 import org.knime.ui.java.TestingUtil;
 import org.knime.ui.java.browser.KnimeBrowserView;
@@ -62,6 +69,7 @@ import com.equo.chromium.swt.BrowserFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * Browser function that allows one to programmatically initialise (and
@@ -97,19 +105,49 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
 					+ "'. The arguments are: " + Arrays.toString(args));
 		}
 
-		JsonNode appState;
+		JsonNode appStateNode;
 		try {
-			appState = MAPPER.readValue((String) args[0], JsonNode.class);
+			appStateNode = MAPPER.readValue((String) args[0], JsonNode.class);
 		} catch (JsonProcessingException ex) {
 			NodeLogger.getLogger(this.getClass()).warn("Argument couldn't be parsed to JSON", ex);
 			return null;
 		}
-		JsonNode openedWorkflows = appState.get("openedWorkflows");
+		JsonNode openedWorkflows = appStateNode.get("openedWorkflows");
+		ArrayNode availablePortTypes = (ArrayNode)appStateNode.get("availablePortTypes");
+		ArrayNode recommendedPortTypeIds = (ArrayNode)appStateNode.get("recommendedPortTypeIds");
         if (openedWorkflows != null) {
-            TestingUtil.initAppStateForTesting(
-                () -> StreamSupport.stream(openedWorkflows.spliterator(), false)
-                    .map(InitAppForTestingBrowserFunction::createOpenedWorkflow).collect(Collectors.toList()),
-                m_knimeBrowser.createEventConsumer());
+			var appState = new AppStateProvider.AppState() {
+				@Override
+				public List<OpenedWorkflow> getOpenedWorkflows() {
+					return StreamSupport.stream(openedWorkflows.spliterator(), false)
+							.map(InitAppForTestingBrowserFunction::createOpenedWorkflow).collect(Collectors.toList());
+				}
+
+				@Override
+				public Set<PortType> getAvailableOtherPortTypes() {
+					if (availablePortTypes == null) {
+						return Collections.emptySet();
+					}
+					return StreamSupport.stream(availablePortTypes.spliterator(), false)
+							.map(el -> CoreUtil.getPortType(el.asText()))
+							.filter(Optional::isPresent)
+							.map(Optional::get)
+							.collect(Collectors.toSet());
+				}
+
+				@Override
+				public List<PortType> getRecommendedPortTypes() {
+					if (recommendedPortTypeIds == null) {
+						return Collections.emptyList();
+					}
+					return StreamSupport.stream(recommendedPortTypeIds.spliterator(), false)
+							.map(el -> CoreUtil.getPortType(el.asText()))
+							.filter(Optional::isPresent)
+							.map(Optional::get)
+							.collect(Collectors.toList());
+				}
+			};
+            TestingUtil.initAppStateForTesting(appState, m_knimeBrowser.createEventConsumer());
         }
 		m_knimeBrowser.setUrl(true);
 		return null;

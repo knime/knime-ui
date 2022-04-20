@@ -70,6 +70,8 @@ import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.port.PortType;
+import org.knime.core.node.port.PortTypeRegistry;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowContext;
@@ -81,6 +83,7 @@ import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.core.util.Version;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
@@ -113,7 +116,25 @@ public final class EclipseUIStateUtil {
      * @return The state of the Eclipse UI in terms of {@link AppState}.
      */
     public static AppState createAppState(final EModelService modelService, final MApplication app) {
-        return () -> collectOpenedWorkflows(modelService, app);
+        return new AppState() {
+            @Override
+            public List<OpenedWorkflow> getOpenedWorkflows() {
+                return collectOpenedWorkflows(modelService, app);
+            }
+
+            @Override
+            public Set<PortType> getAvailableOtherPortTypes() {
+                return PortTypeRegistry.getInstance().availablePortTypes().stream()
+                        .filter(pt -> CoreUtil.getPortTypeKind(pt).equals(CoreUtil.PortTypeKind.OTHER))
+                        .filter(pt -> !pt.isHidden())
+                        .collect(Collectors.toSet());
+            }
+
+            @Override
+            public List<PortType> getRecommendedPortTypes() {
+                return CoreUtil.RECOMMENDED_PORT_TYPES;
+            }
+        };
     }
 
     private static Pair<WorkflowProject, OpenedWorkflow>
