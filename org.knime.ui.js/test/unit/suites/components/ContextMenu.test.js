@@ -31,14 +31,6 @@ describe('ContextMenu.vue', () => {
                     selectedNodes: () => [],
                     singleSelectedNode: () => null,
                     selectedConnections: () => []
-                },
-                actions: {
-                    deselectAllObjects: jest.fn()
-                }
-            },
-            canvas: {
-                getters: {
-                    toCanvasCoordinates: state => ([x, y]) => [x, y]
                 }
             }
         };
@@ -53,8 +45,8 @@ describe('ContextMenu.vue', () => {
             isEnabled: jest.fn().mockReturnValue(false)
         };
 
-        doMount = (customStoreConfig = {}) => {
-            $store = mockVuexStore({ ...storeConfig, ...customStoreConfig });
+        doMount = () => {
+            $store = mockVuexStore(storeConfig);
             mocks = { $store, $commands, $shapes };
             wrapper = mount(ContextMenu, { propsData, mocks });
         };
@@ -63,9 +55,9 @@ describe('ContextMenu.vue', () => {
 
     it('renders empty', () => {
         doMount();
-        let flaotingMenu = wrapper.findComponent(FloatingMenu);
-        expect(flaotingMenu.exists()).toBe(true);
-        expect(flaotingMenu.props('items')).toStrictEqual([]);
+        let floatingMenu = wrapper.findComponent(FloatingMenu);
+        expect(floatingMenu.exists()).toBe(true);
+        expect(floatingMenu.props('items')).toStrictEqual([]);
     });
 
     it('shows menu', async () => {
@@ -118,16 +110,10 @@ describe('ContextMenu.vue', () => {
         });
 
         it('should contain actions for selected node(s)', async () => {
-            doMount({
-                selection: {
-                    ...storeConfig.selection,
-                    getters: {
-                        ...storeConfig.selection.getters,
-                        selectedNodes: () => [dummyNodeWithPosition],
-                        singleSelectedNode: () => ({ allowedActions: {} })
-                    }
-                }
-            });
+            storeConfig.selection.getters.selectedNodes = () => [dummyNodeWithPosition];
+            storeConfig.selection.getters.singleSelectedNode = () => ({ allowedActions: {} });
+
+            doMount();
             wrapper.vm.show({ clientX: 0, clientY: 0 });
 
             await wrapper.vm.$nextTick();
@@ -146,19 +132,13 @@ describe('ContextMenu.vue', () => {
         });
 
         it('should contain actions for loop execution', async () => {
-            doMount({
-                selection: {
-                    ...storeConfig.selection,
-                    getters: {
-                        ...storeConfig.selection.getters,
-                        selectedNodes: () => [dummyNodeWithPosition],
-                        singleSelectedNode: () => ({
-                            allowedActions: {},
-                            loopInfo: { allowedActions: {} }
-                        })
-                    }
-                }
+            storeConfig.selection.getters.selectedNodes = () => [dummyNodeWithPosition];
+            storeConfig.selection.getters.singleSelectedNode = () => ({
+                allowedActions: {},
+                loopInfo: { allowedActions: {} }
             });
+
+            doMount();
             wrapper.vm.show({ clientX: 0, clientY: 0 });
 
             await wrapper.vm.$nextTick();
@@ -169,27 +149,5 @@ describe('ContextMenu.vue', () => {
                 expect.arrayContaining(expectedActions)
             );
         });
-    });
-
-    it('should deselect objects if click happens outside any of the selected nodes', () => {
-        const dummyNodeWithPosition = { position: { x: 100, y: 100 } };
-        doMount({
-            selection: {
-                ...storeConfig.selection,
-                getters: {
-                    ...storeConfig.selection.getters,
-                    selectedNodes: () => [dummyNodeWithPosition]
-                }
-            }
-        });
-
-        wrapper.vm.show({
-            clientX: dummyNodeWithPosition.position.x,
-            clientY: dummyNodeWithPosition.position.y
-        });
-        expect(storeConfig.selection.actions.deselectAllObjects).not.toHaveBeenCalled();
-        
-        wrapper.vm.show({ clientX: 0, clientY: 0 });
-        expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
     });
 });
