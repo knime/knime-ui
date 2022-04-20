@@ -70,15 +70,8 @@ describe('WorkflowToolbar.vue', () => {
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
-            mocks = {
-                $store,
-                $commands
-            };
-            wrapper = shallowMount(
-                WorkflowToolbar, {
-                    propsData,
-                    mocks
-                });
+            mocks = { $store, $commands };
+            wrapper = shallowMount(WorkflowToolbar, { propsData, mocks });
         };
     });
 

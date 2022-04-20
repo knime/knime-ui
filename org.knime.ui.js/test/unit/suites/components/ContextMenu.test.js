@@ -41,15 +41,8 @@ describe('ContextMenu.vue', () => {
 
         doMount = () => {
             $store = mockVuexStore(storeConfig);
-            mocks = {
-                $store,
-                $commands
-            };
-            wrapper = mount(
-                ContextMenu, {
-                    propsData,
-                    mocks
-                });
+            mocks = { $store, $commands };
+            wrapper = mount(ContextMenu, { propsData, mocks });
         };
     });
 
