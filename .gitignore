@@ -103,6 +103,3 @@ node/
 # Maven
 **/.flattened-pom.xml
 **/CHANGELOG.md
-
-# Integration test reports
-org.knime.ui.js/test/integration/reports/
