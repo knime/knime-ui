@@ -97,9 +97,31 @@ export default {
         title: 'Create metanode',
         hotkey: ['Ctrl', 'G'],
         icon: CreateMetanode,
-        execute:
-        ({ $store }) => $store.dispatch('workflow/createMetanode'),
-        condition:
-        ({ $store }) => $store.getters['selection/selectedNodes']
+        // execute:
+        // ({ $store }) => $store.dispatch('workflow/createMetanode'),
+        execute({ $store }) {
+            if ($store.getters['selection/selectedNodes']
+                .some(node => node.allowedActions.canCollapse === 'resetRequired')) {
+                if (window.confirm('Are you sure to create the metanode, because executed nodes will be reset?')) {
+                    $store.dispatch('workflow/createMetanode');
+                }
+            } else {
+                $store.dispatch('workflow/createMetanode');
+            }
+        },
+        condition({ $store }) {
+            // if ($store.getters['selection/selectedNodes'].some(node => node.allowedActions.canCollapse === 'true' ||
+            // node.allowedActions.canCollapse === 'resetRequired')) {
+            //     return true;
+            // } else if ($store.getters['selection/selectedNodes'].some(node => node.allowedActions.canCollapse === 'false')) {
+            //     return false;
+            // }
+
+            if ($store.getters['selection/selectedNodes'].some(node => node.allowedActions.canCollapse === 'false')) {
+                return false;
+            } else {
+                return true;
+            }
+        }
     }
 };
