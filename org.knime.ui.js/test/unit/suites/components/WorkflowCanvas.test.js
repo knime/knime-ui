@@ -166,4 +166,20 @@ describe('Kanvas', () => {
 
         expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
     });
+
+    describe('clearing selected objects', () => {
+        it('should deselect when right-clicking on canvas', () => {
+            doShallowMount();
+            wrapper.findComponent(Kanvas).vm.$emit('contextmenu', {});
+    
+            expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
+        });
+
+        it('should not deselect when event was already prevented', () => {
+            doShallowMount();
+            wrapper.findComponent(Kanvas).vm.$emit('contextmenu', { defaultPrevented: true });
+    
+            expect(storeConfig.selection.actions.deselectAllObjects).not.toHaveBeenCalled();
+        });
+    });
 });

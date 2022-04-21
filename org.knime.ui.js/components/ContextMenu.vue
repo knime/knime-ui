@@ -1,4 +1,5 @@
 <script>
+import { mapGetters } from 'vuex';
 import FloatingMenu from '~/components/FloatingMenu';
 
 /**
@@ -12,6 +13,7 @@ export default {
         visibleCommands: []
     }),
     computed: {
+        ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode', 'selectedConnections']),
         // map visible command names to menu items
         menuItems() {
             return this.visibleCommands
@@ -28,33 +30,30 @@ export default {
         show(e) {
             // Choose and fix menu items that are to be shown. Once the menu is open its items don't change
             this.setMenuItems();
-            this.$refs.contextMenu.showMenu(e.pageX, e.pageY);
+            this.$refs.contextMenu.showMenu(e.clientX, e.clientY);
         },
         onContextMenuItemClick(e, command) {
             this.$commands.dispatch(command.name);
         },
         setMenuItems() {
-            const selectedNodes = this.$store.getters['selection/selectedNodes'];
-            const singleSelectedNode = this.$store.getters['selection/singleSelectedNode'];
-            const selectedConnections = this.$store.getters['selection/selectedConnections'];
-            
-            const somethingSelected = selectedNodes.length || selectedConnections.length;
-            const isLoopEnd = Boolean(singleSelectedNode?.loopInfo?.allowedActions);
-            const isView = singleSelectedNode && 'canOpenView' in singleSelectedNode.allowedActions;
-            const hasLegacyFlowVariableDialog = singleSelectedNode &&
-                'canOpenLegacyFlowVariableDialog' in singleSelectedNode.allowedActions;
+            const somethingSelected = this.selectedNodes.length || this.selectedConnections.length;
+            const isLoopEnd = Boolean(this.singleSelectedNode?.loopInfo?.allowedActions);
+            const isView = this.singleSelectedNode && 'canOpenView' in this.singleSelectedNode.allowedActions;
+            const hasLegacyFlowVariableDialog = this.singleSelectedNode &&
+                'canOpenLegacyFlowVariableDialog' in this.singleSelectedNode.allowedActions;
 
             let allMenuItems = {
+                // Exactly one node selected
+                configureNode: this.singleSelectedNode,
+
                 // Node Execution
-                executeSelected: selectedNodes.length,
+                executeSelected: this.selectedNodes.length,
                 resumeLoopExecution: isLoopEnd,
                 pauseLoopExecution: isLoopEnd,
                 stepLoopExecution: isLoopEnd,
-                cancelSelected: selectedNodes.length,
-                resetSelected: selectedNodes.length,
+                cancelSelected: this.selectedNodes.length,
+                resetSelected: this.selectedNodes.length,
 
-                // Exactly one node selected
-                configureNode: singleSelectedNode,
                 configureFlowVariables: hasLegacyFlowVariableDialog,
                 openView: isView,
                 

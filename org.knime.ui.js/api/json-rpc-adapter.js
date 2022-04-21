@@ -1,40 +1,36 @@
-const handleResponse = (response, method = '<unknown>', args) => {
+/**
+ * Helper to parse and verify a JSON-RPC response. Throws an Error if the response is invalid
+ * @param {String | Object} response The JSON-RPC response, serialized or as object
+ * @param {String} method (only for logging) The method that was called
+ * @param {Array} args (only for logging) The arguments that were passed to the method
+ * @returns {*} The `result` contained in the JSON-RPC object
+ * */
+export const handleResponse = ({ response, method = '<unknown>', args }) => {
+    // parse response, if it is serialized
+    if (typeof response === 'string') {
+        try {
+            response = JSON.parse(response);
+        } catch (e) {
+            throw new Error(`Could not be parsed as JSON-RPC: ${response}`);
+        }
+    }
+
+    // check validity of JSON-RPC response
     let { result, error } = response;
     if (error) {
         if (result) {
-            consola.error(`Invalid JSON-RPC response ${JSON.stringify(response)}`);
+            consola.error(`Invalid JSON-RPC response: Both error and result exist.\n${JSON.stringify(response)}`);
         }
         throw new Error(
             `Error returned from JSON-RPC API ${JSON.stringify([method, args])}: ${JSON.stringify(error)}`
         );
-    }
-
-    if (typeof result === 'undefined') {
-        throw new Error(`Invalid JSON-RPC response ${JSON.stringify(response)}`);
+    } else if (typeof result === 'undefined') {
+        throw new Error(`Invalid JSON-RPC response: Neither error nor result exist.\n${JSON.stringify(response)}`);
     }
 
     consola.trace('JSON-RPC Result:', result);
     return result;
 };
-
-/**
- * Helper to parse a JSON-RPC response. Throws an Error if the response is invalid
- * @param {String} response The serialized JSON-RPC response
- * @param {String} method (only for logging) The method that was called
- * @param {Array} args (only for logging) The arguments that were passed to the method
- * @returns {*} The `result` contained in the JSON-RPC object
- * */
-const parseResponse = ({ response, method = '<unknown>', args }) => {
-    let parsedResponse;
-    try {
-        parsedResponse = JSON.parse(response);
-    } catch (e) {
-        throw new Error(`Could not be parsed as JSON-RPC: ${response}`);
-    }
-    return handleResponse(parsedResponse, method, args);
-};
-
-export { parseResponse };
 
 /**
  * Call the JSON-RPC API as defined
@@ -71,5 +67,5 @@ export default async (method, ...args) => {
         throw new Error(`Error calling JSON-RPC api "${[method, JSON.stringify(args)].join('", "')}": ${e.message}`);
     }
 
-    return handleResponse(response, method, args);
+    return handleResponse({ response, method, args });
 };
