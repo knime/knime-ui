@@ -138,12 +138,14 @@ describe('WorkflowToolbar.vue', () => {
         it('shows nothing if no workflow is active', () => {
             storeConfig.workflow.state.activeWorkflow = null;
             doShallowMount();
-            expect(wrapper.vm.toolbarCommands).toStrictEqual([]);
+            let toolbarCommands = wrapper.findAllComponents(ToolbarCommandButton).wrappers.map(tb => tb.props('name'));
+            expect(toolbarCommands).toStrictEqual([]);
         });
 
         it('shows menu items if no node is selected', () => {
             doShallowMount();
-            expect(wrapper.vm.toolbarCommands).toStrictEqual([
+            let toolbarCommands = wrapper.findAllComponents(ToolbarCommandButton).wrappers.map(tb => tb.props('name'));
+            expect(toolbarCommands).toStrictEqual([
                 'save',
                 'undo',
                 'redo',
@@ -160,7 +162,8 @@ describe('WorkflowToolbar.vue', () => {
             };
             storeConfig.selection.getters.selectedNodes = () => [node];
             doShallowMount();
-            expect(wrapper.vm.toolbarCommands).toStrictEqual([
+            let toolbarCommands = wrapper.findAllComponents(ToolbarCommandButton).wrappers.map(tb => tb.props('name'));
+            expect(toolbarCommands).toStrictEqual([
                 'save',
                 'undo',
                 'redo',
@@ -177,7 +180,8 @@ describe('WorkflowToolbar.vue', () => {
             };
             storeConfig.selection.getters.selectedNodes = () => [node, { ...node, id: 'root:1' }];
             doShallowMount();
-            expect(wrapper.vm.toolbarCommands).toStrictEqual([
+            let toolbarCommands = wrapper.findAllComponents(ToolbarCommandButton).wrappers.map(tb => tb.props('name'));
+            expect(toolbarCommands).toStrictEqual([
                 'save',
                 'undo',
                 'redo',
