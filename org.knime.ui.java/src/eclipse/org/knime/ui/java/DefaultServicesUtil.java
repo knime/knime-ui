@@ -44,61 +44,69 @@
  * ---------------------------------------------------------------------
  *
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java;
 
-import java.util.NoSuchElementException;
-
-import org.eclipse.ui.PlatformUI;
-import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.webui.entity.AppStateEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
-import org.knime.gateway.impl.service.util.DefaultServiceUtil;
+import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
-import org.knime.ui.java.EclipseUIStateUtil;
-
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
+import org.knime.gateway.impl.webui.WorkflowMiddleware;
+import org.knime.gateway.impl.webui.service.DefaultApplicationService;
+import org.knime.gateway.impl.webui.service.ServiceDependencies;
+import org.knime.gateway.impl.webui.service.ServiceInstances;
 
 /**
+ * Utility methods to manage Gateway services
+ *
+ * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH
  */
-public class CloseWorkflowBrowserFunction extends BrowserFunction {
+public final class DefaultServicesUtil {
 
-    private final AppStateProvider m_appStateProvider;
-
-    @SuppressWarnings("javadoc")
-    public CloseWorkflowBrowserFunction(final Browser browser, final AppStateProvider appStateProvider) {
-        super(browser, "closeWorkflow");
-        m_appStateProvider = appStateProvider;
+    private DefaultServicesUtil() {
+        // Utility class
     }
 
     /**
-     * Close the workflow project associated with the given project ID.
+     * Set all dependencies required by the default service implementations
      *
-     * @param arguments Assume arguments[0] is a String containing the project ID (e.g. "simple-workflow 0").
-     * @return always {@code null}
+     * @param appStateProvider The application state provider
+     * @param eventConsumer The event consumer
      */
-    @Override
-    public Object function(final Object[] arguments) {
-
-        String projectId = (String)arguments[0]; // e.g. "simple-workflow 0"
-
-        var projectWfm = DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
-        var editor = EclipseUIStateUtil.getEditorForManager(projectWfm)
-            .orElseThrow(() -> new NoSuchElementException("No workflow editor for project found."));
-
-        var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-
-        // Since we are closing the editor of the root workflow manager, this will also close any editors
-        //  of child workflow managers.
-        var wasClosed = page.closeEditor(editor, true);
-
-        if (wasClosed) {
-            WorkflowProjectManager.getInstance().removeWorkflowProject(projectId);
-            // triggers sending event
-            m_appStateProvider.updateAppState();
+    public static void setDefaultServiceDependencies(final AppStateProvider appStateProvider,
+        final EventConsumer eventConsumer) {
+        if (!ServiceInstances.areServicesInitialized()) {
+            ServiceDependencies.setServiceDependency(AppStateProvider.class, appStateProvider);
+            ServiceDependencies.setServiceDependency(EventConsumer.class, eventConsumer);
+            ServiceDependencies.setServiceDependency(WorkflowMiddleware.class,
+                new WorkflowMiddleware(WorkflowProjectManager.getInstance()));
+            ServiceDependencies.setServiceDependency(WorkflowProjectManager.class,
+                WorkflowProjectManager.getInstance());
+        } else {
+            throw new IllegalStateException(
+                "Some services are already initialized. Service dependencies can't be set anymore. "
+                    + "Maybe you already started a Web UI within the AP and have now tried to launch another instance in a browser, or vice versa?");
         }
+    }
 
-        return null;
+    /**
+     * Remove the application service from the provided service dependencies, remove listeners and clear references to
+     * workflow projects.
+     */
+    public static void disposeDefaultServices() {
+        removeWorkflowProjects();
+        ServiceInstances.disposeAllServiceInstancesAndDependencies();
+    }
+
+    private static void removeWorkflowProjects() {
+        if (ServiceInstances.areServicesInitialized()) {
+            AppStateEnt previousState = DefaultApplicationService.getInstance().getState();
+            if (previousState != null) {
+                previousState.getOpenedWorkflows().forEach(
+                    wfProjEnt -> WorkflowProjectManager.getInstance().removeWorkflowProject(wfProjEnt.getProjectId()));
+            }
+        }
     }
 
 }

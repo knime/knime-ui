@@ -1,5 +1,3 @@
-import { actions } from '~/store/events';
-
 const genericErrorMsg = 'Argument must be a JSON serialized JSON-RPC object';
 const errorCodes = { // https://www.jsonrpc.org/specification#error_object
     parseError: -32700,
@@ -8,7 +6,7 @@ const errorCodes = { // https://www.jsonrpc.org/specification#error_object
     internalError: -32603
 };
 
-export default (context) => {
+export const registerEventHandlers = (eventHandlers) => {
     /**
      * Global function that can be called by the Analytics Platform (Java) to pass messages (or call methods) to/in JS
      * @param {String} json A Serialized JSON-RPC request object
@@ -59,7 +57,7 @@ export default (context) => {
             return JSON.stringify(errorDescriptor);
         }
 
-        if (!actions.hasOwnProperty(method)) {
+        if (!eventHandlers.hasOwnProperty(method) || typeof eventHandlers[method] !== 'function') {
             // TODO: NXT-275 / NXT-337 handle error in frontend
             let errorDescriptor = {
                 jsonrpc: '2.0',
@@ -74,7 +72,8 @@ export default (context) => {
         }
 
         try {
-            context.store.dispatch(`events/${method}`, params);
+            eventHandlers[method].call(null, ...params);
+            
             return JSON.stringify({
                 jsonrpc: '2.0',
                 id,
