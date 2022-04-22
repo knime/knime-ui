@@ -4,8 +4,6 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import * as $shapes from '~/style/shapes';
-
 import ContextMenu from '~/components/ContextMenu';
 import FloatingMenu from '~/components/FloatingMenu';
 
@@ -15,10 +13,6 @@ describe('ContextMenu.vue', () => {
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
-
-        const kanvasMock = document.createElement('div');
-        kanvasMock.id = 'kanvas';
-        document.body.appendChild(kanvasMock);
     });
 
     beforeEach(() => {
@@ -47,7 +41,7 @@ describe('ContextMenu.vue', () => {
 
         doMount = () => {
             $store = mockVuexStore(storeConfig);
-            mocks = { $store, $commands, $shapes };
+            mocks = { $store, $commands };
             wrapper = mount(ContextMenu, { propsData, mocks });
         };
     });
