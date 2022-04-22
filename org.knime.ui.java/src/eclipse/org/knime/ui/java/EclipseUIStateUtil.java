@@ -123,9 +123,8 @@ public final class EclipseUIStateUtil {
             }
 
             @Override
-            public Set<PortType> getAvailableOtherPortTypes() {
+            public Set<PortType> getAvailablePortTypes() {
                 return PortTypeRegistry.getInstance().availablePortTypes().stream()
-                        .filter(pt -> CoreUtil.getPortTypeKind(pt).equals(CoreUtil.PortTypeKind.OTHER))
                         .filter(pt -> !pt.isHidden())
                         .collect(Collectors.toSet());
             }

@@ -124,7 +124,7 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
 				}
 
 				@Override
-				public Set<PortType> getAvailableOtherPortTypes() {
+				public Set<PortType> getAvailablePortTypes() {
 					if (availablePortTypes == null) {
 						return Collections.emptySet();
 					}
