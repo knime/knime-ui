@@ -179,10 +179,7 @@ export default {
             projectId: 'activeProjectId'
         }),
         ...mapGetters('selection', ['isNodeSelected']),
-        ...mapState('workflow', ['isDragging', 'nameEditorNodeId']),
-        nameEditorIsOpen() {
-            return this.nameEditorNodeId === this.id;
-        },
+        ...mapState('workflow', ['isDragging']),
         decoratorBackgroundType() {
             if (this.type) {
                 return this.type;
@@ -301,7 +298,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('workflow', ['openDialog', 'openNameEditor']),
+        ...mapActions('workflow', ['openDialog']),
         ...mapActions('selection', ['selectNode', 'deselectAllObjects', 'deselectNode']),
         portShift,
         onLeaveHoverArea(e) {
