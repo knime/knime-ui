@@ -147,7 +147,7 @@ describe('Node', () => {
 
     describe('features', () => {
         beforeEach(() => {
-            propsData = { ...commonNode };
+            propsData = JSON.parse(JSON.stringify(commonNode));
             doMount();
         });
 
@@ -170,6 +170,20 @@ describe('Node', () => {
             propsData.type = 'LoopEnd';
             doMount();
             expect(wrapper.findComponent(LoopDecorator).exists()).toBe(true);
+        });
+
+        it("doesn't render non-existent node annotation", () => {
+            delete propsData.annotation;
+            doMount();
+
+            expect(wrapper.findComponent(NodeAnnotation).exists()).toBe(false);
+        });
+
+        it("doesn't render empty node annotation", () => {
+            propsData.annotation.text = '';
+            doMount();
+
+            expect(wrapper.findComponent(NodeAnnotation).exists()).toBe(false);
         });
 
         it('displays annotation', () => {

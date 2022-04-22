@@ -446,7 +446,7 @@ export default {
 
     <!-- Annotation needs to be behind ports -->
     <NodeAnnotation
-      v-if="annotation"
+      v-if="annotation && annotation.text"
       v-bind="annotation"
       :y-offset="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
     />
