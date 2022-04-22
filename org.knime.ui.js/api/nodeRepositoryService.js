@@ -12,7 +12,7 @@ import rpc from './json-rpc-adapter.js';
 export const getNodesGroupedByTags = async ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => {
     try {
         const groupedNodes = await rpc(
-            'NodeRepositoryService.selectNodes',
+            'NodeRepositoryService.getNodesGroupedByTags',
             numNodesPerTag,
             tagsOffset,
             tagsLimit,

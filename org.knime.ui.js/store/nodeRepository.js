@@ -56,11 +56,11 @@ export const actions = {
             tagsLimit,
             fullTemplateInfo: true
         });
-        commit('setTotalNumCategories', res.totalNumSelections);
+        commit('setTotalNumCategories', res.totalNumGroups);
         if (append) {
-            commit('addNodesPerCategories', res.selections);
+            commit('addNodesPerCategories', res.groups);
         } else {
-            commit('setNodesPerCategories', res.selections);
+            commit('setNodesPerCategories', res.groups);
         }
     },
 
