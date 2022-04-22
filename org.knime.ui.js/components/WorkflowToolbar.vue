@@ -25,8 +25,6 @@ export default {
             }
 
             const selectedNodes = this.$store.getters['selection/selectedNodes'];
-            const selectedConnections = this.$store.getters['selection/selectedConnections'];
-            const somethingSelected = selectedNodes.length || selectedConnections.length;
             
             let visibleItems = {
                 // always visible
@@ -43,8 +41,6 @@ export default {
                 executeSelected: selectedNodes.length,
                 cancelSelected: selectedNodes.length,
                 resetSelected: selectedNodes.length,
-                // Something selected
-                deleteSelected: somethingSelected,
 
                 createMetanode: selectedNodes.length
 

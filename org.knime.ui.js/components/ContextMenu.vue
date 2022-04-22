@@ -65,7 +65,7 @@ export default {
                 cancelAll: !somethingSelected,
                 resetAll: !somethingSelected,
 
-                createMetanode: selectedNodes.length
+                createMetanode: this.selectedNodes.length
             };
 
             // Array of name of commands

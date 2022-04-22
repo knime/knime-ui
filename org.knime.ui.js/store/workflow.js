@@ -1,6 +1,6 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
     moveObjects, openDialog, openLegacyFlowVariableDialog, openView, undo, redo, removeEventListener, connectNodes,
-    addNode, saveWorkflow, closeWorkflow, createWorkflowObject } from '~api';
+    addNode, saveWorkflow, closeWorkflow, collapseToContainer } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -288,16 +288,26 @@ export const actions = {
             nodeFactory
         });
     },
-    createMetanode({ state, getters, rootState, rootGetters, dispatch }) {
+    async collapseToContainer({ state, getters, rootState, rootGetters, dispatch }, { containerType }) {
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
-        dispatch('selection/deselectAllObjects', null, { root: true });
+        let canCollapse = false;
 
-        createWorkflowObject({
-            containerType: 'metanode',
-            projectId: state.activeWorkflow.projectId,
-            workflowId: getters.activeWorkflowId,
-            nodeIds: selectedNodes
-        });
+        if (rootGetters['selection/selectedNodes'].some(node => node.allowedActions.canCollapse === 'resetRequired')) {
+            canCollapse = window.confirm('Creating this metanode will reset the executed nodes.');
+        } else {
+            canCollapse = true;
+        }
+
+        if (canCollapse) {
+            dispatch('selection/deselectAllObjects', null, { root: true });
+
+            await collapseToContainer({
+                containerType,
+                projectId: state.activeWorkflow.projectId,
+                workflowId: getters.activeWorkflowId,
+                nodeIds: selectedNodes
+            });
+        }
     }
 };
 

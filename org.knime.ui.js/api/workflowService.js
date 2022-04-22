@@ -159,7 +159,7 @@ export const redo = async ({ projectId, workflowId }) => {
  * @param { Array } cfg.annotationIds
  * @returns {Promise}
  */
-export const createWorkflowObject = ({
+export const collapseToContainer = ({
     projectId, workflowId, containerType, nodeIds = [], annotationIds = []
 }) => workflowCommand({
     command: 'collapse',
