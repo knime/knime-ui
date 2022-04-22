@@ -25,16 +25,16 @@ export default {
         }
     },
     data: () => ({
-        mounted: false
+        showContainerTransition: false
     }),
     computed: {
         ...mapState('panel', ['expanded', 'activeTab', 'activeDescriptionPanel'])
     },
     mounted() {
-        this.mounted = true;
+        this.showContainerTransition = true;
 
         this.$nextTick(() => {
-            this.mounted = false;
+            this.showContainerTransition = false;
         });
     },
     methods: {
@@ -48,7 +48,7 @@ export default {
 <template>
   <div class="panel">
     <div
-      :class="['container',{ 'no-transition': mounted}]"
+      :class="['container',{ 'no-transition': showContainerTransition}]"
       :style="{ width: expanded ? width : 0 }"
     >
       <div
