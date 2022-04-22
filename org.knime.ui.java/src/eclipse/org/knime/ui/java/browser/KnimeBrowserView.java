@@ -34,6 +34,7 @@ import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.CreateWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
+import org.knime.ui.java.browser.function.OpenLayoutEditorBrowserFunction;
 import org.knime.ui.java.browser.function.OpenLegacyFlowVariableDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeViewBrowserFunction;
@@ -157,6 +158,7 @@ public class KnimeBrowserView {
         new OpenWorkflowBrowserFunction(m_browser, appStateProvider);
 		new CloseWorkflowBrowserFunction(m_browser, appStateProvider);
 		new CreateWorkflowBrowserFunction(m_browser, appStateProvider);
+		new OpenLayoutEditorBrowserFunction(m_browser);
         if (isRemoteDebuggingPortSet()) {
             new InitAppForTestingBrowserFunction(m_browser, this);
             new ClearAppForTestingBrowserFunction(m_browser, this);

@@ -58,6 +58,7 @@ export default {
         ...mapMutations('canvas', ['setInteractionsEnabled']),
         ...mapActions('canvas', ['fillScreen']),
         ...mapActions('panel', ['setNodeRepositoryActive', 'setWorkflowMetaActive']),
+        ...mapActions('selection', ['deselectAllObjects']),
         onNodeSelectionPreview($event) {
             this.$refs.workflow.applyNodeSelectionPreview($event);
         },
@@ -67,6 +68,13 @@ export default {
                 
                 // scroll to center
                 this.fillScreen();
+            }
+        },
+        onContextMenu(e) {
+            // if event's default was prevented it means the behavior was already handled from the Node
+            // otherwise we deselect all objects because it is a click on the canvas itself
+            if (!e.defaultPrevented) {
+                this.deselectAllObjects();
             }
         }
     }
@@ -81,6 +89,7 @@ export default {
     @drop.native.stop="onDrop"
     @dragover.native.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
+    @contextmenu="onContextMenu"
   >
     <!-- Includes shadows for Nodes -->
     <KanvasFilters />

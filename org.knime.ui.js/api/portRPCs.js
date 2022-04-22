@@ -1,4 +1,4 @@
-import rpc, { parseResponse } from './json-rpc-adapter.js';
+import rpc, { handleResponse } from './json-rpc-adapter.js';
 
 // The Node service offers JSON-RPC forwarding to the Port instance.
 // This is by design, because third-party vendors can provide a custom port implementation with totally
@@ -15,11 +15,13 @@ const portRPC = async ({ method, params, projectId, workflowId, nodeId, portInde
         method,
         params
     };
-    let response = await rpc(
-        'NodeService.doPortRpc',
-        projectId, workflowId, nodeId, portIndex, JSON.stringify(nestedRpcCall)
-    );
-    return parseResponse({ response, method, params });
+    let response = await rpc('NodeService.doPortRpc',
+        projectId,
+        workflowId,
+        nodeId,
+        portIndex,
+        JSON.stringify(nestedRpcCall));
+    return handleResponse({ response, method, params });
 };
 
 /**
