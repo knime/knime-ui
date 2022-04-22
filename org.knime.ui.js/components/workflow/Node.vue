@@ -223,6 +223,9 @@ export default {
                 bottom: this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[2],
                 right: this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[3]
             };
+            
+            // adjust upper hover bounds to node name
+            hoverBounds.top -= this.nameDimensions.height;
 
             if (this.hover) {
                 // buttons are shown as disabled if false, hidden if null
@@ -238,7 +241,7 @@ export default {
                 hoverBounds.right += extraHorizontalSpace / 2;
             }
             if (this.connectorHover || this.hover) {
-                // enlargen hover area to include all ports
+                // enlarge hover area to include all ports
                 let newBottom = Math.max(hoverBounds.bottom, this.portBarHeight);
                 hoverBounds.bottom = newBottom;
             }

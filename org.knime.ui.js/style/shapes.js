@@ -32,7 +32,7 @@ export const nodeNameEditorMinWidth = 10;
 
 // Margins including 3 NodeActionButtons. If more that 3 Buttons are present,
 // the hover area is widened by Node.vue
-export const nodeHoverMargin = [47, 19, 8, 19];
+export const nodeHoverMargin = [29, 19, 8, 19];
 export const nodeHoverPortBottomMargin = 15;
 export const nodeIdMargin = 16;
 export const nodeActionBarButtonSpread = 25;

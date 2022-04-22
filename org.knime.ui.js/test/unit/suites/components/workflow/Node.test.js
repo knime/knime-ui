@@ -477,6 +477,18 @@ describe('Node', () => {
             expect(largeHoverWidth > smallHoverWidth).toBe(true);
         });
 
+        it('fits the hover-area to the node name', async () => {
+            let { y: oldY, height: oldHeight } = wrapper.find('.hover-area').attributes();
+            
+            // increase from 20 to 40 (by 20)
+            wrapper.findComponent(NodeName).vm.$emit('height-change', 40);
+            await Vue.nextTick();
+            
+            let { y, height } = wrapper.find('.hover-area').attributes();
+            expect(oldY - y).toBe(20);
+            expect(height - oldHeight).toBe(20);
+        });
+
         it('shows selection plane and action buttons', () => {
             let actionBar = wrapper.findComponent(NodeActionBar);
             expect(actionBar.exists()).toBe(true);
