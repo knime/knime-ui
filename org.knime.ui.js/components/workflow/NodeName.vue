@@ -52,8 +52,8 @@ export default {
             this.openNameEditor(this.nodeId);
             this.$emit('name-change-request');
         },
-        handleNameSave({ dimensionsOnClose, newName }) {
-            this.updateComponentOrMetanodeName({ nodeId: this.nodeId, name: newName });
+        onSave({ dimensionsOnClose, newName }) {
+            this.renameContainer({ nodeId: this.nodeId, name: newName });
             this.editorInitialDimensions = dimensionsOnClose;
 
             // Schedule closing editor on next the event loop run

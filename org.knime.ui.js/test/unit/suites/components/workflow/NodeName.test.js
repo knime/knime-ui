@@ -22,7 +22,7 @@ describe('NodeName', () => {
         };
 
         const actions = {
-            updateComponentOrMetanodeName: jest.fn(),
+            renameContainer: jest.fn(),
             openNameEditor: jest.fn(),
             closeNameEditor: jest.fn()
         };
@@ -150,7 +150,7 @@ describe('NodeName', () => {
             };
             
             wrapper.findComponent(NodeNameEditor).vm.$emit('save', saveEventPayload);
-            expect(actions.updateComponentOrMetanodeName).toHaveBeenCalledWith(
+            expect(actions.renameContainer).toHaveBeenCalledWith(
                 expect.any(Object),
                 expect.objectContaining({ nodeId: defaultProps.nodeId, name: saveEventPayload.newName })
             );

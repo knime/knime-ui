@@ -73,7 +73,7 @@ export const addNode = ({
  * @param { String } cfg.workflowId
  * @returns { Promise } Promise
  */
-export const updateComponentOrMetanodeName = ({
+export const renameContainer = ({
     nodeId,
     name,
     projectId,

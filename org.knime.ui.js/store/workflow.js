@@ -1,6 +1,6 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
     moveObjects, openDialog, openLegacyFlowVariableDialog, openView, undo, redo, removeEventListener, connectNodes,
-    addNode, saveWorkflow, closeWorkflow, updateComponentOrMetanodeName } from '~api';
+    addNode, saveWorkflow, closeWorkflow, renameContainer } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -246,11 +246,17 @@ export const actions = {
     closeNameEditor({ commit }) {
         commit('setNameEditorNodeId', null);
     },
-
-    updateComponentOrMetanodeName({ state, getters }, { nodeId, name }) {
+    /**
+     * Renames a container (metanode or component).
+     * @param {Object} context - store context
+     * @param {string} params.nodeId - container node id
+     * @param {string} params.name - new new
+     * @returns {void} - nothing to return
+     */
+    renameContainer({ state, getters }, { nodeId, name }) {
         const { activeWorkflow: { projectId } } = state;
         const { activeWorkflowId } = getters;
-        updateComponentOrMetanodeName({
+        renameContainer({
             nodeId,
             name,
             projectId,

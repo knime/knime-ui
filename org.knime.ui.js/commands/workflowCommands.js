@@ -50,7 +50,7 @@ export default {
     configureFlowVariables: {
         text: 'Configure flow variables',
         execute:
-            ({ $store }) => $store.dispatch('workflow/openLegacyFlowVariableDialog',
+            ({ $store }) => $store.dispatch('workflow/configureFlowVariables',
                 $store.getters['selection/singleSelectedNode'].id),
         condition:
             ({ $store }) => $store.getters['selection/singleSelectedNode']?.allowedActions
