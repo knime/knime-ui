@@ -32,14 +32,14 @@ describe('NodeNameEditorActionBar', () => {
 
         expect(wrapper.emitted().save).toBeUndefined();
         buttons.at(0).vm.$emit('click');
-        expect(wrapper.emitted().save[0]).toStrictEqual([]);
+        expect(wrapper.emitted().save).toBeTruthy();
     });
 
-    it('emits @close event', () => {
+    it('emits @cancel event', () => {
         let buttons = wrapper.findAllComponents(ActionButton);
 
         expect(wrapper.emitted().close).toBeUndefined();
         buttons.at(1).vm.$emit('click');
-        expect(wrapper.emitted().close[0]).toStrictEqual([]);
+        expect(wrapper.emitted().cancel).toBeTruthy();
     });
 });

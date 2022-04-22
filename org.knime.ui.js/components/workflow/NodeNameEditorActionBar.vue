@@ -4,7 +4,9 @@ import CancelIcon from '~/assets/cancel.svg?inline';
 import ActionButton from '~/components/workflow/ActionButton';
 
 /**
- * Editor Action Bar
+ * ActionBar that is displayed when the NodeNameEditor is in edit state.
+ * Shows a save and a cancel button
+ * Emits 'save' and 'cancel' events
  */
 export default {
     components: {
@@ -15,8 +17,9 @@ export default {
     computed: {
         actions() {
             return [
-                ['save', SaveIcon, this.saveChange, true],
-                ['cancel', CancelIcon, this.closeEditor, false]
+                // event, icon, primaryStyle
+                ['save', SaveIcon, true],
+                ['cancel', CancelIcon, false]
             ];
         },
         /**
@@ -29,14 +32,6 @@ export default {
             // spread buttons evenly around the horizontal center
             return this.actions.map((_, i) => (i + (1 - buttonCount) / 2) * nodeActionBarButtonSpread);
         }
-    },
-    methods: {
-        closeEditor(e) {
-            this.$emit('close');
-        },
-        saveChange(e) {
-            this.$emit('save');
-        }
     }
 };
 </script>
@@ -44,18 +39,13 @@ export default {
 <template>
   <g>
     <ActionButton
-      v-for="([action, icon, method, primary], index) in actions"
-      :key="action"
-      :class="`action-${action}`"
+      v-for="([event, icon, primary], index) in actions"
+      :key="event"
       :x="positions[index]"
       :primary="primary"
-      @click="method"
+      @click="$emit(event)"
     >
       <Component :is="icon" />
     </ActionButton>
   </g>
 </template>
-
-<style scoped>
-
-</style>
