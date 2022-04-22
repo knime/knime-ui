@@ -33,7 +33,7 @@ export default {
     mounted() {
         this.showContainerTransition = true;
 
-        this.$nextTick(() => {
+        requestAnimationFrame(() => {
             this.showContainerTransition = false;
         });
     },

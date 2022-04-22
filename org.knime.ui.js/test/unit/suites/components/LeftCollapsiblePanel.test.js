@@ -61,10 +61,12 @@ describe('LeftCollapsiblePanel.vue', () => {
     });
 
     it('correctly sets data at mount', async () => {
+        const waitRAF = () => new Promise(resolve => requestAnimationFrame(resolve));
         doShallowMount();
-        expect(wrapper.vm.mounted).toBe(true);
         await Vue.nextTick();
-        expect(wrapper.vm.mounted).toBe(false);
+        expect(wrapper.find('.container').classes()).toContain('no-transition');
+        await waitRAF();
+        expect(wrapper.find('.container').classes()).not.toContain('no-transition');
     });
 
     describe('open panel', () => {
