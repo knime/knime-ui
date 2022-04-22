@@ -131,13 +131,14 @@ export default {
 
                 // plain execution
                 execute: !this.canPause && !this.canResume,
-                cancelExecution: true,
-                reset: true,
-
+                
                 // loop execution
                 pauseLoopExecution: this.canPause,
                 resumeLoopExecution: !this.canPause && this.canResume,
                 stepLoopExecution: this.canStep !== null,
+
+                cancelExecution: true,
+                reset: true,
 
                 // other
                 openView: this.canOpenView !== null

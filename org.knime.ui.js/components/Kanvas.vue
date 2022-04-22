@@ -137,6 +137,7 @@ export default {
       @pointerup.left.stop="$emit('selection-pointerup', $event)"
       @pointermove="$emit('selection-pointermove', $event)"
       @lostpointercapture="$emit('selection-lostpointercapture', $event)"
+      @contextmenu="$emit('contextmenu', $event)"
     >
       <slot />
     </svg>
