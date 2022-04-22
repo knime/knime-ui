@@ -6,8 +6,10 @@ const SCROLLBAR_OFFSET = 4; // px
 
 /*
  * The FloatingMenu component is a menu similar to the SubMenu but with position logic to always be
- * visible at window borders and absolute top, left coordinates. The menu is hidden
- * if not activated with `showMenu(x, y)`.
+ * visible at window borders and absolute top, left coordinates.
+ * The menu is hidden unless the isVisible prop is true. If the menu will be closed it emits @menu-close event. The
+ * parent component needs to make sure the isVisible prop gets updated. Menu will be closed on `esc` key press,
+ * click away or if an item has been selected.
  *
  * Example:
  * |--------------------|
@@ -39,18 +41,43 @@ export default {
         ariaLabel: {
             type: String,
             default: 'menu'
+        },
+        isVisible: {
+            type: Boolean,
+            default: false
+        },
+        position: {
+            type: Object,
+            required: true,
+            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         }
     },
     data() {
         return {
-            isVisible: false,
-            top: 0,
-            left: 0
+            absolutePosition: {
+                top: 0,
+                left: 0
+            }
         };
     },
     computed: {
         positionStyle() {
-            return this.isVisible ? { left: `${this.left}px`, top: `${this.top}px` } : null;
+            return this.isVisible
+                ? { left: `${this.absolutePosition.left}px`, top: `${this.absolutePosition.top}px` }
+                : null;
+        }
+    },
+    watch: {
+        position() {
+            this.updatePosition();
+        },
+        isVisible: {
+            immediate: true,
+            handler(newValue) {
+                if (newValue === true) {
+                    this.updatePosition();
+                }
+            }
         }
     },
     methods: {
@@ -60,7 +87,13 @@ export default {
             this.closeMenu();
         },
         closeMenu() {
-            this.isVisible = false;
+            this.$emit('menu-close');
+        },
+        updatePosition() {
+            this.absolutePosition = this.calculateMenuPosition(this.$el, this.position.x, this.position.y);
+            // set focus to menu for keyboard nav to work
+            // also required to prevent menu from closing due to change of menu items change (see onFocusOut)
+            this.$nextTick(() => this.$refs.menuItems.$el.focus());
         },
         calculateMenuPosition(el, clickX, clickY, win = window) {
             const menuWidth = el.offsetWidth + SCROLLBAR_OFFSET;
@@ -83,14 +116,6 @@ export default {
                 top = clickY;
             }
             return { left, top };
-        },
-        showMenu(x, y) {
-            const { left, top } = this.calculateMenuPosition(this.$el, x, y);
-            this.left = left;
-            this.top = top;
-            this.isVisible = true;
-            // set focus to menu for keyboard nav to work
-            this.$nextTick(() => this.$refs.menuItems.$el.focus());
         },
         onFocusOut(e) {
             setTimeout(() => {

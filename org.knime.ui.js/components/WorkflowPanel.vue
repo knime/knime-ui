@@ -10,6 +10,15 @@ export default {
         ContextMenu,
         WorkflowCanvas
     },
+    data() {
+        return {
+            contextMenuVisible: false,
+            contextMenuPosition: {
+                x: 0,
+                y: 0
+            }
+        };
+    },
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
@@ -30,7 +39,11 @@ export default {
             if (e.ctrlKey || e.metaKey) {
                 return;
             }
-            this.$refs.contextMenu.show(e);
+            this.contextMenuPosition = {
+                x: e.clientX,
+                y: e.clientY
+            };
+            this.contextMenuVisible = true;
         }
     }
 };
@@ -41,7 +54,11 @@ export default {
     :class="['workflow-panel', { 'read-only': !isWritable }]"
     @contextmenu.prevent="onContextMenu"
   >
-    <ContextMenu ref="contextMenu" />
+    <ContextMenu
+      :is-visible="contextMenuVisible"
+      :position="contextMenuPosition"
+      @menu-close="contextMenuVisible = false"
+    />
 
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div

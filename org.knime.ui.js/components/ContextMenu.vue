@@ -9,6 +9,17 @@ export default {
     components: {
         FloatingMenu
     },
+    props: {
+        isVisible: {
+            type: Boolean,
+            default: false
+        },
+        position: {
+            type: Object,
+            required: true,
+            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
+        }
+    },
     data: () => ({
         visibleCommands: []
     }),
@@ -26,12 +37,20 @@ export default {
                 }));
         }
     },
-    methods: {
-        show(e) {
-            // Choose and fix menu items that are to be shown. Once the menu is open its items don't change
+    watch: {
+        position() {
             this.setMenuItems();
-            this.$refs.contextMenu.showMenu(e.clientX, e.clientY);
         },
+        isVisible: {
+            immediate: true,
+            handler(newValue) {
+                if (newValue === true) {
+                    this.setMenuItems();
+                }
+            }
+        }
+    },
+    methods: {
         onContextMenuItemClick(e, command) {
             this.$commands.dispatch(command.name);
         },
@@ -56,7 +75,7 @@ export default {
 
                 configureFlowVariables: hasLegacyFlowVariableDialog,
                 openView: isView,
-                
+
                 // Something selected
                 deleteSelected: somethingSelected,
 
@@ -81,8 +100,11 @@ export default {
     ref="contextMenu"
     class="context-menu"
     :items="menuItems"
+    :position="position"
+    :is-visible="isVisible"
     aria-label="Context Menu"
     @item-click="onContextMenuItemClick"
+    @menu-close="$emit('menu-close')"
   />
 </template>
 
