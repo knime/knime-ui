@@ -64,17 +64,8 @@ export default {
     },
     computed: {
         ...mapGetters('selection', ['isNodeSelected']),
-        /**
-         *  returns an array of allowed actions with a handler to the corresponding api call,
-         *  a boolean if it is enabled or disabled, an icon and the title (tooltip on hover).
-         *
-         *  `openDialog` and `openView` are only added when the prop is available
-         *
-         *  @returns {Array<Array>} Array of allowed actions
-         */
+        // all possible actions
         actions() {
-            // For all the actions, the command reference property will only be set if THIS node is selected
-            // as the hotkey in the title only makes sense for selected nodes
             return {
                 configureNode: {
                     title: 'Configure',
