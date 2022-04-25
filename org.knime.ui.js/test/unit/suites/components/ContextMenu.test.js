@@ -17,7 +17,13 @@ describe('ContextMenu.vue', () => {
 
     beforeEach(() => {
         wrapper = null;
-        propsData = {};
+        propsData = {
+            isVisible: false,
+            position: {
+                x: 0,
+                y: 0
+            }
+        };
 
         storeConfig = {
             selection: {
@@ -52,21 +58,39 @@ describe('ContextMenu.vue', () => {
         let floatingMenu = wrapper.findComponent(FloatingMenu);
         expect(floatingMenu.exists()).toBe(true);
         expect(floatingMenu.props('items')).toStrictEqual([]);
+        expect(floatingMenu.props('position')).toStrictEqual({ x: 0, y: 0 });
     });
 
     it('shows menu', async () => {
         doMount();
-        expect(wrapper.findComponent(FloatingMenu).classes()).not.toContain('isVisible');
-        wrapper.vm.show({ clientX: 0, clientY: 0 });
+        expect(wrapper.findComponent(FloatingMenu).props().isVisible).toBe(false);
 
+        wrapper.setProps({ isVisible: true, position: { x: 100, y: 250 } });
         await Vue.nextTick();
 
-        expect(wrapper.findComponent(FloatingMenu).classes()).toContain('isVisible');
+        expect(wrapper.findComponent(FloatingMenu).props().isVisible).toBe(true);
+        expect(wrapper.findComponent(FloatingMenu).props().position).toStrictEqual({ x: 100, y: 250 });
+    });
+
+    it('sets items on isVisible change', async () => {
+        doMount();
+        expect(wrapper.findComponent(FloatingMenu).props('items')).toStrictEqual([]);
+        wrapper.setProps({ isVisible: true });
+        await Vue.nextTick();
+        expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(3);
+    });
+
+    it('sets items on position change', async () => {
+        doMount();
+        expect(wrapper.findComponent(FloatingMenu).props('items')).toStrictEqual([]);
+        wrapper.setProps({ position: { x: 2, y: 3 } });
+        await Vue.nextTick();
+        expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(3);
     });
 
     it('uses right format for menuItems for FloatingMenu', async () => {
         doMount();
-        wrapper.vm.show({ clientX: 0, clientY: 0 });
+        wrapper.setProps({ isVisible: true });
 
         await Vue.nextTick();
 
@@ -89,7 +113,7 @@ describe('ContextMenu.vue', () => {
     describe('Visibility of menu items', () => {
         it('shows correct menu items if nothing is selected', async () => {
             doMount();
-            wrapper.vm.show({ clientX: 0, clientY: 0 });
+            wrapper.setProps({ isVisible: true });
             await Vue.nextTick();
             expect(wrapper.findComponent(FloatingMenu).props('items').map(i => i.name)).toEqual(
                 expect.arrayContaining(['executeAll', 'cancelAll', 'resetAll'])
@@ -104,7 +128,7 @@ describe('ContextMenu.vue', () => {
             storeConfig.selection.getters.selectedNodes = () => [node];
             storeConfig.selection.getters.singleSelectedNode = () => node;
             doMount();
-            wrapper.vm.show({ clientX: 0, clientY: 0 });
+            wrapper.setProps({ isVisible: true });
 
             await Vue.nextTick();
 
@@ -128,7 +152,7 @@ describe('ContextMenu.vue', () => {
             storeConfig.selection.getters.selectedNodes = () => [node];
             storeConfig.selection.getters.singleSelectedNode = () => node;
             doMount();
-            wrapper.vm.show({ clientX: 0, clientY: 0 });
+            wrapper.setProps({ isVisible: true });
 
             await Vue.nextTick();
 
@@ -157,7 +181,7 @@ describe('ContextMenu.vue', () => {
             storeConfig.selection.getters.selectedNodes = () => [node];
             storeConfig.selection.getters.singleSelectedNode = () => node;
             doMount();
-            wrapper.vm.show({ clientX: 0, clientY: 0 });
+            wrapper.setProps({ isVisible: true });
 
             await Vue.nextTick();
 
@@ -194,7 +218,7 @@ describe('ContextMenu.vue', () => {
             storeConfig.selection.getters.selectedNodes = () => [node, node2];
             storeConfig.selection.getters.singleSelectedNode = () => null;
             doMount();
-            wrapper.vm.show({ clientX: 0, clientY: 0 });
+            wrapper.setProps({ isVisible: true });
 
             await Vue.nextTick();
 
@@ -217,7 +241,7 @@ describe('ContextMenu.vue', () => {
             };
             storeConfig.selection.getters.selectedConnections = () => [conn, conn2];
             doMount();
-            wrapper.vm.show({ clientX: 0, clientY: 0 });
+            wrapper.setProps({ isVisible: true });
 
             await Vue.nextTick();
 
@@ -234,7 +258,7 @@ describe('ContextMenu.vue', () => {
             };
             storeConfig.selection.getters.selectedConnections = () => [conn];
             doMount();
-            wrapper.vm.show({ clientX: 0, clientY: 0 });
+            wrapper.setProps({ isVisible: true });
 
             await Vue.nextTick();
 

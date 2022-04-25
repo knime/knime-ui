@@ -4,6 +4,7 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
 import WorkflowPanel from '~/components/WorkflowPanel';
+import ContextMenu from '~/components/ContextMenu';
 
 describe('WorkflowPanel', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, storeConfig;
@@ -102,5 +103,39 @@ describe('WorkflowPanel', () => {
         });
     });
 
-    // TODO: NXT-844 add tests for the context menu
+    describe('Context menu', () => {
+        it('renders context menu', () => {
+            doShallowMount();
+            expect(wrapper.findComponent(ContextMenu).exists()).toBe(true);
+        });
+
+        it('passes position to context menu', async () => {
+            doShallowMount();
+            wrapper.trigger('contextmenu', { clientX: 242, clientY: 122 });
+            await wrapper.vm.$nextTick();
+            expect(wrapper.findComponent(ContextMenu).props('isVisible')).toBe(true);
+            expect(wrapper.findComponent(ContextMenu).props('position')).toStrictEqual({ x: 242, y: 122 });
+        });
+
+        it('handles @menu-close event from ContextMenu properly', async () => {
+            doShallowMount();
+            wrapper.trigger('contextmenu', { clientX: 100, clientY: 200 });
+            await wrapper.vm.$nextTick();
+            expect(wrapper.findComponent(ContextMenu).props('isVisible')).toBe(true);
+            wrapper.findComponent(ContextMenu).vm.$emit('menu-close');
+            await wrapper.vm.$nextTick();
+            expect(wrapper.findComponent(ContextMenu).props('isVisible')).toBe(false);
+        });
+
+        it('ignores right click if ctrl or meta is pressed', async () => {
+            doShallowMount();
+            wrapper.trigger('contextmenu', { clientX: 242, clientY: 122, ctrlKey: true });
+            await wrapper.vm.$nextTick();
+            expect(wrapper.findComponent(ContextMenu).props('isVisible')).toBe(false);
+
+            wrapper.trigger('contextmenu', { clientX: 242, clientY: 122, metaKey: true });
+            await wrapper.vm.$nextTick();
+            expect(wrapper.findComponent(ContextMenu).props('isVisible')).toBe(false);
+        });
+    });
 });

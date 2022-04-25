@@ -12,7 +12,7 @@ export default {
     props: {
         isVisible: {
             type: Boolean,
-            default: false
+            required: true
         },
         position: {
             type: Object,
@@ -97,7 +97,6 @@ export default {
 
 <template>
   <FloatingMenu
-    ref="contextMenu"
     class="context-menu"
     :items="menuItems"
     :position="position"

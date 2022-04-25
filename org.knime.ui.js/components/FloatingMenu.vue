@@ -44,7 +44,7 @@ export default {
         },
         isVisible: {
             type: Boolean,
-            default: false
+            required: true
         },
         position: {
             type: Object,
@@ -90,17 +90,18 @@ export default {
             this.$emit('menu-close');
         },
         updatePosition() {
-            this.absolutePosition = this.calculateMenuPosition(this.$el, this.position.x, this.position.y);
+            const element = this.$el ? this.$el : { offsetWidth: 0, offsetHeight: 0 };
+            this.absolutePosition = this.calculateMenuPosition(element, this.position.x, this.position.y);
             // set focus to menu for keyboard nav to work
             // also required to prevent menu from closing due to change of menu items change (see onFocusOut)
             this.$nextTick(() => this.$refs.menuItems.$el.focus());
         },
-        calculateMenuPosition(el, clickX, clickY, win = window) {
-            const menuWidth = el.offsetWidth + SCROLLBAR_OFFSET;
-            const menuHeight = el.offsetHeight + SCROLLBAR_OFFSET;
+        calculateMenuPosition(element, clickX, clickY) {
+            const menuWidth = element.offsetWidth + SCROLLBAR_OFFSET;
+            const menuHeight = element.offsetHeight + SCROLLBAR_OFFSET;
 
-            const windowWidth = win.innerWidth;
-            const windowHeight = win.innerHeight;
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
 
             let left, top;
 
@@ -130,7 +131,6 @@ export default {
 
 <template>
   <div
-    ref="floatingmenu"
     v-on-clickaway="closeMenu"
     :class="['floating-menu', { isVisible }]"
     :style="positionStyle"
