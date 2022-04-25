@@ -556,6 +556,8 @@ export default {
       @name-change-request="hover = false"
       @mouseenter="hover = true"
       @mouseleave="onLeaveHoverArea"
+      @connector-enter.native.stop="onConnectorEnter"
+      @connector-leave.native.stop="onConnectorLeave"
     />
   </g>
 </template>
