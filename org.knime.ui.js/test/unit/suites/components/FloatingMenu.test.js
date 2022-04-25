@@ -49,7 +49,7 @@ describe('FloatingMenu.vue', () => {
     it('renders with items', () => {
         doMount();
         expect(wrapper.html()).toBeTruthy();
-        expect(wrapper.findAll('li').length).toBe(propsData.items.length);
+        expect(wrapper.findComponent(MenuItems).props('items').length).toBe(propsData.items.length);
     });
 
     describe('close menu', () => {
@@ -64,14 +64,10 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.emitted('menu-close')).toStrictEqual([[]]);
         });
 
-        it('closes menu on click', async () => {
+        it('closes menu if item is clicked', () => {
             doMount();
-            wrapper.setProps({ isVisible: true });
-            await Vue.nextTick();
-            expect(wrapper.classes()).toContain('isVisible');
-            wrapper.findAll('li').at(1).trigger('click');
-            await Vue.nextTick();
-            expect(wrapper.emitted('menu-close')).toStrictEqual([[]]);
+            wrapper.findComponent(MenuItems).vm.$emit('item-click', propsData.items[0]);
+            expect(wrapper.emitted('menu-close')).toBeDefined();
         });
 
         it('closes menu when focus leaves the component', async () => {
@@ -92,26 +88,16 @@ describe('FloatingMenu.vue', () => {
         });
     });
 
-    describe('item click', () => {
-        it('fires item-click event on click', () => {
-            doMount();
-            // emulate click on MenuItems item
-            // TODO: Up for discussion: vm.$emit ?! Better solutions?
-            wrapper.findComponent(MenuItems).vm.$emit('item-click', propsData.items[1]);
-            expect(wrapper.emitted()['item-click']).toBeTruthy();
-            expect(wrapper.emitted()['item-click'][0][0].userData).toStrictEqual(
-                { storeAction: 'workflow/executeNode' }
-            );
-        });
-
-        it('ignores click on disabled items', () => {
-            propsData.items[0].disabled = true;
-            doMount();
-            // TODO: Up for discussion: This violates the "unit" as it checks for HTML elements of a sub-component
-            wrapper.findAll('li').at(0).trigger('click');
-            expect(wrapper.emitted()['item-click']).toBeFalsy();
-        });
+    it('fires item-click event on click', () => {
+        doMount();
+        // emulate click on MenuItems item
+        wrapper.findComponent(MenuItems).vm.$emit('item-click', propsData.items[1]);
+        expect(wrapper.emitted()['item-click']).toBeTruthy();
+        expect(wrapper.emitted()['item-click'][0][0].userData).toStrictEqual(
+            { storeAction: 'workflow/executeNode' }
+        );
     });
+
 
     it('positions menu to be always visible', async () => {
         // mock window
@@ -135,14 +121,12 @@ describe('FloatingMenu.vue', () => {
         };
 
         // trigger update via position change
-        wrapper.setProps({
+        await wrapper.setProps({
             position: {
                 x: 1200,
                 y: 800
             }
         });
-
-        await Vue.nextTick();
 
         expect(wrapper.attributes('style')).toBe('left: 996px; top: 396px;');
 
