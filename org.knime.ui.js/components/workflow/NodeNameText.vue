@@ -59,7 +59,7 @@ export default {
     <template #default="{ on }">
       <div
         class="node-name"
-        @click.prevent.stop="$emit('click', $event)"
+        @click.prevent="$emit('click', $event)"
         @contextmenu.prevent="$emit('contextmenu', $event)"
         @dblclick.left.prevent.stop="editable ? $emit('request-edit') : null"
         @mouseleave="$emit('mouseleave', $event)"
