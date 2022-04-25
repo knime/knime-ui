@@ -119,7 +119,7 @@ export default {
         @pointerdown.stop
         @input="onInput($event, sizeChange)"
         @keydown="onKeyDown"
-        @keydown.enter="onEnter"
+        @keydown.enter.exact="onEnter"
         @keydown.esc="onEscape"
       />
     </template>
