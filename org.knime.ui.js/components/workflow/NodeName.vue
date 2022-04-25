@@ -43,12 +43,12 @@ export default {
         }
     },
     methods: {
-        ...mapActions('workflow', ['openNameEditor', 'updateComponentOrMetanodeName', 'closeNameEditor']),
+        ...mapActions('workflow', ['openNameEditor', 'renameContainer', 'closeNameEditor']),
         handleEditRequest() {
             this.openNameEditor(this.nodeId);
             this.$emit('name-change-request');
         },
-        onSave({ dimensionsOnClose, newName }) {
+        handleNameSave({ dimensionsOnClose, newName }) {
             this.renameContainer({ nodeId: this.nodeId, name: newName });
             this.editorInitialDimensions = dimensionsOnClose;
 
