@@ -18,8 +18,7 @@ export const state = () => ({
     activeSnapshotId: null,
     tooltip: null,
     isDragging: false,
-    deltaMovePosition: { x: 0, y: 0 },
-    nameEditorNodeId: null
+    deltaMovePosition: { x: 0, y: 0 }
 });
 
 export const mutations = {
@@ -31,9 +30,6 @@ export const mutations = {
     },
     setActiveSnapshotId(state, id) {
         state.activeSnapshotId = id;
-    },
-    setNameEditorNodeId(state, nodeId) {
-        state.nameEditorNodeId = nodeId;
     },
     setTooltip(state, tooltip) {
         Vue.set(state, 'tooltip', tooltip);
@@ -239,13 +235,6 @@ export const actions = {
         commit('shiftPosition', { deltaX, deltaY });
     },
 
-    openNameEditor({ commit }, nodeId) {
-        commit('setNameEditorNodeId', nodeId);
-    },
-
-    closeNameEditor({ commit }) {
-        commit('setNameEditorNodeId', null);
-    },
     /**
      * Renames a container (metanode or component).
      * @param {Object} context - store context

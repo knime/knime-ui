@@ -9,22 +9,19 @@ import NodeNameEditor from '~/components/workflow/NodeNameEditor';
 describe('NodeName', () => {
     const defaultProps = {
         nodeId: 'root:1',
-        actionBarPosition: { x: 5, y: 3 },
         nodePosition: { x: 15, y: 13 },
         editable: true,
         value: 'Test Name'
     };
 
+    // TODO: please use common unit test pattern
     const createStore = (customState) => {
         const state = {
-            nameEditorNodeId: null,
             ...customState
         };
 
         const actions = {
-            renameContainer: jest.fn(),
-            openNameEditor: jest.fn(),
-            closeNameEditor: jest.fn()
+            renameContainer: jest.fn()
         };
     
         const mockStore = mockVuexStore({
@@ -92,10 +89,7 @@ describe('NodeName', () => {
     
         it('should handle a name change request', () => {
             wrapper.findComponent(NodeNameText).vm.$emit('request-edit');
-
-            expect(actions.openNameEditor).toHaveBeenCalledWith(expect.any(Object), defaultProps.nodeId);
-
-            expect(wrapper.emitted('name-change-request')).toBeDefined();
+            expect(wrapper.emitted('edit-start')).toBeDefined();
         });
     });
     
@@ -104,10 +98,11 @@ describe('NodeName', () => {
         let $store, actions, wrapper;
 
         beforeEach(() => {
-            const mockStore = createStore({ nameEditorNodeId: defaultProps.nodeId });
+            const mockStore = createStore();
             $store = mockStore.$store;
             actions = mockStore.actions;
             wrapper = doShallowMount({ $store });
+            wrapper.setData({ isEditing: true });
         });
 
         it('should render properly', () => {

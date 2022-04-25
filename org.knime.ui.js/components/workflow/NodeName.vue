@@ -1,5 +1,5 @@
 <script>
-import { mapActions, mapState } from 'vuex';
+import { mapActions } from 'vuex';
 
 import NodeNameEditor from '~/components/workflow/NodeNameEditor';
 import NodeNameText from '~/components/workflow/NodeNameText';
@@ -33,20 +33,15 @@ export default {
             editorInitialDimensions: {
                 width: null,
                 height: null
-            }
+            },
+            isEditing: false
         };
     },
-    computed: {
-        ...mapState('workflow', ['nameEditorNodeId']),
-        isEditorOpen() {
-            return this.nameEditorNodeId === this.nodeId;
-        }
-    },
     methods: {
-        ...mapActions('workflow', ['openNameEditor', 'renameContainer', 'closeNameEditor']),
-        handleEditRequest() {
-            this.openNameEditor(this.nodeId);
-            this.$emit('name-change-request');
+        ...mapActions('workflow', ['renameContainer']),
+        onRequestEdit() {
+            this.isEditing = true;
+            this.$emit('edit-start');
         },
         handleNameSave({ dimensionsOnClose, newName }) {
             this.renameContainer({ nodeId: this.nodeId, name: newName });
@@ -55,8 +50,11 @@ export default {
             // Schedule closing editor on next the event loop run
             // to allow styles to apply properly when editor is destroyed
             setTimeout(() => {
-                this.closeNameEditor();
+                this.isEditing = false;
             }, 100);
+        },
+        closeNameEditor() {
+            this.isEditing = false;
         }
     }
 };
@@ -64,11 +62,8 @@ export default {
 
 <template>
   <g>
-    <template v-if="isEditorOpen">
-      <portal
-        v-if="isEditorOpen"
-        to="node-name-editor"
-      >
+    <template v-if="isEditing">
+      <portal to="node-name-editor">
         <NodeNameEditor
           :node-id="nodeId"
           :node-position="nodePosition"
@@ -89,7 +84,7 @@ export default {
         :value="value"
         @width-change="$emit('width-change', $event)"
         @height-change="$emit('height-change', $event)"
-        @request-edit="handleEditRequest"
+        @request-edit="onRequestEdit"
         @mouseleave="$emit('mouseleave', $event)"
         @mouseenter="$emit('mouseenter', $event)"
         @contextmenu="$emit('contextmenu', $event)"

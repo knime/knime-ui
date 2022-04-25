@@ -552,7 +552,7 @@ export default {
       @contextmenu="onContextMenu"
       @width-change="nameDimensions.width = $event"
       @height-change="nameDimensions.height = $event"
-      @name-change-request="hover = false"
+      @edit-start="hover = false"
       @mouseenter="hover = true"
       @mouseleave="onLeaveHoverArea"
       @connector-enter.native.stop="onConnectorEnter"
