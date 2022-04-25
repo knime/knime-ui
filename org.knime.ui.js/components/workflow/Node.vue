@@ -549,7 +549,7 @@ export default {
       :action-bar-position="actionBarPosition"
       :value="name"
       :editable="isNameEditable"
-      @click="onLeftMouseClick"
+      @click.native.left="onLeftMouseClick"
       @contextmenu="onContextMenu"
       @width-change="nameDimensions.width = $event"
       @height-change="nameDimensions.height = $event"

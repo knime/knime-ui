@@ -814,19 +814,19 @@ describe('Node', () => {
             
             wrapper.findComponent(NodeName).vm.$emit('mouseenter');
             
-            await wrapper.vm.$nextTick();
+            await Vue.nextTick();
             expect(wrapper.findComponent(NodeActionBar).exists()).toBe(true);
 
             const dummyNode = document.createElement('div');
             wrapper.findComponent(NodeName).vm.$emit('mouseleave', { relatedTarget: dummyNode });
             
-            await wrapper.vm.$nextTick();
+            await Vue.nextTick();
             expect(wrapper.findComponent(NodeActionBar).exists()).toBe(false);
         });
 
         it('should handle contextmenu events', async () => {
             wrapper.findComponent(NodeName).vm.$emit('contextmenu', {});
-            await wrapper.vm.$nextTick();
+            await Vue.nextTick();
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
                 expect.stringMatching('root:1')
@@ -834,8 +834,8 @@ describe('Node', () => {
         });
 
         it('should handle click events', async () => {
-            wrapper.findComponent(NodeName).vm.$emit('click', {});
-            await wrapper.vm.$nextTick();
+            wrapper.findComponent(NodeName).trigger('click', { button: 0 });
+            await Vue.nextTick();
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
                 expect.stringMatching('root:1')
@@ -847,7 +847,7 @@ describe('Node', () => {
             const expectedSelectionWidth = mockWidth + $shapes.nodeNameHorizontalMargin * 2;
             wrapper.findComponent(NodeName).vm.$emit('width-change', mockWidth);
 
-            await wrapper.vm.$nextTick();
+            await Vue.nextTick();
 
             expect(wrapper.findComponent(NodeSelectionPlane).props('width')).toBe(expectedSelectionWidth);
         });
@@ -856,7 +856,7 @@ describe('Node', () => {
             const mockHeight = 200;
             wrapper.findComponent(NodeName).vm.$emit('height-change', mockHeight);
 
-            await wrapper.vm.$nextTick();
+            await Vue.nextTick();
 
             expect(wrapper.findComponent(NodeSelectionPlane).props('extraHeight')).toBe(mockHeight);
         });
