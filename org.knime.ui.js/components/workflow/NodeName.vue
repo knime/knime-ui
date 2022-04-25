@@ -43,7 +43,7 @@ export default {
             this.isEditing = true;
             this.$emit('edit-start');
         },
-        handleNameSave({ dimensionsOnClose, newName }) {
+        onSave({ dimensionsOnClose, newName }) {
             this.renameContainer({ nodeId: this.nodeId, name: newName });
             this.editorInitialDimensions = dimensionsOnClose;
 
@@ -53,7 +53,7 @@ export default {
                 this.isEditing = false;
             }, 100);
         },
-        closeNameEditor() {
+        onCancel() {
             this.isEditing = false;
         }
     }
@@ -72,8 +72,8 @@ export default {
           :start-height="editorInitialDimensions.height"
           @width-change="$emit('width-change', $event)"
           @height-change="$emit('height-change', $event)"
-          @save="handleNameSave"
-          @close="closeNameEditor"
+          @save="onSave"
+          @cancel="onCancel"
         />
       </portal>
     </template>

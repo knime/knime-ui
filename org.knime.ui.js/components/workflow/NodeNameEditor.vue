@@ -71,21 +71,24 @@ export default {
 
             this.$emit(`${dimensionName}-change`, dimensionValue);
         },
-        saveNameEdit() {
+        onSave() {
+            // TODO: do sanitization in NodeNameTextarea
+
             // reset to old value on empty edits
             if (this.currentName.trim() === '') {
                 this.currentName = this.value;
-                this.$emit('close');
+                this.$emit('cancel');
                 return;
             }
 
+            // TODO: will the name be changed if it is the same as before?
+            // Emit cancel and save?
             this.$emit('save', { dimensionsOnClose: this.latestDimensions, newName: this.currentName.trim() });
         },
-        cancelNameEdit() {
+        onCancel() {
             // reset internal value
             this.currentName = this.value;
-            
-            this.$emit('close');
+            this.$emit('cancel');
         }
     }
 };
@@ -107,8 +110,8 @@ export default {
     <!-- Save/Cancel actions -->
     <NodeNameEditorActionBar
       :transform="`translate(${actionBarPosition})`"
-      @save="saveNameEdit"
-      @close="cancelNameEdit"
+      @save="onSave"
+      @cancel="onCancel"
     />
 
     <!-- Node name inline editor -->
@@ -120,8 +123,8 @@ export default {
       :pattern="pattern"
       @width-change="handleDimensionChange('width', $event)"
       @height-change="handleDimensionChange('height', $event)"
-      @save="saveNameEdit"
-      @close="cancelNameEdit"
+      @save="onSave"
+      @cancel="onCancel"
     />
   </g>
 </template>

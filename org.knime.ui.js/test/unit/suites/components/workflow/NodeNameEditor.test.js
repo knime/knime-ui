@@ -6,10 +6,10 @@ import NodeNameTextarea from '~/components/workflow/NodeNameTextarea';
 import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar';
 
 describe('NodeNameEditor', () => {
+    // TODO: please put this into beforeEach and use common test pattern
     const defaultProps = {
         value: 'test',
-        actionBarPosition: { x: 5, y: 3 },
-        position: { x: 15, y: 13 },
+        nodePosition: { x: 15, y: 13 },
         nodeId: 'root:1'
     };
 
@@ -51,9 +51,7 @@ describe('NodeNameEditor', () => {
             const wrapper = doShallowMount();
     
             const actionBar = wrapper.findComponent(NodeNameEditorActionBar);
-    
-            const { actionBarPosition: { x, y } } = defaultProps;
-            const expectedPosition = `translate(${x}, ${y})`;
+            const expectedPosition = 'translate(31,-6)';
     
             expect(actionBar.attributes('transform')).toBe(expectedPosition);
         });
@@ -66,12 +64,12 @@ describe('NodeNameEditor', () => {
             expect(wrapper.emitted('save')).toBeDefined();
         });
     
-        it('should emit a close event when clicking the close button', () => {
+        it('should emit a cancel event when clicking the cancel button', () => {
             const wrapper = doShallowMount();
     
-            wrapper.findComponent(NodeNameEditorActionBar).vm.$emit('close');
+            wrapper.findComponent(NodeNameEditorActionBar).vm.$emit('cancel');
     
-            expect(wrapper.emitted('close')).toBeDefined();
+            expect(wrapper.emitted('cancel')).toBeDefined();
         });
     });
 
@@ -95,11 +93,11 @@ describe('NodeNameEditor', () => {
             expect(wrapper.emitted('save')).toBeDefined();
         });
     
-        it('should emit a close event', () => {
+        it('should emit a cancel event', () => {
             const wrapper = doShallowMount();
     
-            wrapper.findComponent(NodeNameTextarea).vm.$emit('close');
-            expect(wrapper.emitted('close')).toBeDefined();
+            wrapper.findComponent(NodeNameTextarea).vm.$emit('cancel');
+            expect(wrapper.emitted('cancel')).toBeDefined();
         });
     });
 
@@ -125,7 +123,7 @@ describe('NodeNameEditor', () => {
         wrapper.findComponent(NodeNameTextarea).vm.$emit('save');
 
         expect(wrapper.emitted('save')).toBeUndefined();
-        expect(wrapper.emitted('close')).toBeDefined();
+        expect(wrapper.emitted('cancel')).toBeDefined();
     });
 
     it('should emit the lastest dimensions of the editor when saving', () => {

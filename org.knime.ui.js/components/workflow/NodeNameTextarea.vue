@@ -2,7 +2,7 @@
 import NodeNameText from '~/components/workflow/NodeNameText';
 
 /**
- * Inline editor for the node name. Emits 'save' and 'close' events. Implements v-model pattern. On input it might
+ * Inline editor for the node name. Emits 'save' and 'cancel' events. Implements v-model pattern. On input it might
  * emit 'invalidCharacter' if the input matches given 'pattern' prop.
  */
 export default {
@@ -72,7 +72,7 @@ export default {
         },
         onEscape(event) {
             event.preventDefault();
-            this.$emit('close');
+            this.$emit('cancel');
         },
         resizeTextarea() {
             const textarea = this.$refs.textarea;

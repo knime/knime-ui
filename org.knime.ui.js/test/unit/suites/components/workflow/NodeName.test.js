@@ -1,5 +1,6 @@
 import { shallowMount, createLocalVue } from '@vue/test-utils';
 import Vuex from 'vuex';
+import Vue from 'vue';
 import { mockVuexStore } from '~/test/unit/test-utils';
 
 import NodeName from '~/components/workflow/NodeName';
@@ -133,7 +134,7 @@ describe('NodeName', () => {
             expect(wrapper.emitted(eventName)[0][0]).toEqual(payload);
         });
 
-        it('should handle saving the name', () => {
+        it('should handle saving the name', async () => {
             jest.useFakeTimers();
             const saveEventPayload = {
                 newName: 'This is new',
@@ -150,13 +151,17 @@ describe('NodeName', () => {
             );
             
             jest.runAllTimers();
-            expect(actions.closeNameEditor).toHaveBeenCalled();
+            await Vue.nextTick();
+            expect(wrapper.findComponent(NodeNameEditor).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeNameText).exists()).toBe(true);
         });
 
-        it('should handle closing the editor', () => {
-            wrapper.findComponent(NodeNameEditor).vm.$emit('close');
+        it('should handle closing the editor', async () => {
+            wrapper.findComponent(NodeNameEditor).vm.$emit('cancel');
+            await Vue.nextTick();
 
-            expect(actions.closeNameEditor).toHaveBeenCalled();
+            expect(wrapper.findComponent(NodeNameEditor).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeNameText).exists()).toBe(true);
         });
 
         it('should pass the initial dimensions to an editor that is opened a second time', async () => {

@@ -45,12 +45,12 @@ describe('NodeNameTextarea', () => {
         expect(wrapper.emitted('save')).toBeDefined();
     });
 
-    it('should emit "close" on escape', () => {
+    it('should emit "cancel" on escape', () => {
         const wrapper = doShallowMount();
 
         wrapper.find('textarea').trigger('keydown.esc');
 
-        expect(wrapper.emitted('close')).toBeDefined();
+        expect(wrapper.emitted('cancel')).toBeDefined();
     });
 
     it.each([
