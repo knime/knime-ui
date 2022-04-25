@@ -546,7 +546,6 @@ export default {
     <NodeName
       :node-id="id"
       :node-position="position"
-      :action-bar-position="actionBarPosition"
       :value="name"
       :editable="isNameEditable"
       @click.native.left="onLeftMouseClick"

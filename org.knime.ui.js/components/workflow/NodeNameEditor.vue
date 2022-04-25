@@ -24,12 +24,7 @@ export default {
             type: String,
             required: true
         },
-        actionBarPosition: {
-            type: Object,
-            required: true,
-            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
-        },
-        position: {
+        nodePosition: {
             type: Object,
             required: true,
             validator: position => typeof position.x === 'number' && typeof position.y === 'number'
@@ -53,6 +48,14 @@ export default {
                 height: null
             }
         };
+    },
+    computed: {
+        actionBarPosition() {
+            return [
+                this.nodePosition.x + this.$shapes.nodeSize / 2,
+                this.nodePosition.y - this.$shapes.nodeSelectionPadding[0] - this.latestDimensions.height
+            ];
+        }
     },
     watch: {
         value(newValue) {
@@ -103,7 +106,7 @@ export default {
     
     <!-- Save/Cancel actions -->
     <NodeNameEditorActionBar
-      :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y })`"
+      :transform="`translate(${actionBarPosition})`"
       @save="saveNameEdit"
       @close="cancelNameEdit"
     />
@@ -111,7 +114,7 @@ export default {
     <!-- Node name inline editor -->
     <NodeNameTextarea
       v-model="currentName"
-      :transform="`translate(${position.x}, ${position.y})`"
+      :transform="`translate(${nodePosition.x}, ${nodePosition.y})`"
       :start-width="startWidth"
       :start-height="startHeight"
       :pattern="pattern"

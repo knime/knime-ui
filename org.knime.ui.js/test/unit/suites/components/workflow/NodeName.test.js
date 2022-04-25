@@ -124,8 +124,7 @@ describe('NodeName', () => {
                 expect.objectContaining({
                     nodeId: defaultProps.nodeId,
                     value: defaultProps.value,
-                    actionBarPosition: defaultProps.actionBarPosition,
-                    position: defaultProps.nodePosition
+                    nodePosition: defaultProps.nodePosition
                 })
             );
         });

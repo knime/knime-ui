@@ -15,10 +15,6 @@ export default {
             type: String,
             required: true
         },
-        actionBarPosition: {
-            type: Object,
-            required: true
-        },
         nodePosition: {
             type: Object,
             required: true
@@ -75,11 +71,10 @@ export default {
       >
         <NodeNameEditor
           :node-id="nodeId"
+          :node-position="nodePosition"
           :value="value"
           :start-width="editorInitialDimensions.width"
           :start-height="editorInitialDimensions.height"
-          :action-bar-position="actionBarPosition"
-          :position="nodePosition"
           @width-change="$emit('width-change', $event)"
           @height-change="$emit('height-change', $event)"
           @save="handleNameSave"

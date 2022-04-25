@@ -785,18 +785,12 @@ describe('Node', () => {
         });
         
         it('should forward to NodeName component', () => {
-            expect(wrapper.findComponent(NodeName).props()).toEqual(
-                expect.objectContaining({
-                    nodeId: commonNode.id,
-                    nodePosition: commonNode.position,
-                    actionBarPosition: {
-                        x: expect.any(Number),
-                        y: expect.any(Number)
-                    },
-                    value: commonNode.name,
-                    editable: expect.any(Boolean)
-                })
-            );
+            expect(wrapper.findComponent(NodeName).props()).toStrictEqual({
+                nodeId: commonNode.id,
+                nodePosition: commonNode.position,
+                value: commonNode.name,
+                editable: expect.any(Boolean)
+            });
         });
 
         it.each([
