@@ -56,7 +56,8 @@ describe('Kanvas', () => {
             },
             panel: {
                 actions: {
-                    setNodeRepositoryActive: jest.fn()
+                    setNodeRepositoryActive: jest.fn(),
+                    setWorkflowMetaActive: jest.fn()
                 }
             }
         };
@@ -123,6 +124,12 @@ describe('Kanvas', () => {
             expect(storeConfig.canvas.actions.fillScreen).not.toHaveBeenCalled();
             expect(storeConfig.panel.actions.setNodeRepositoryActive).not.toHaveBeenCalled();
         });
+
+        it('sets workflow meta information as active', () => {
+            doShallowMount();
+
+            expect(storeConfig.panel.actions.setWorkflowMetaActive).toHaveBeenCalled();
+        });
     });
 
     describe('with empty workflow', () => {
@@ -156,6 +163,12 @@ describe('Kanvas', () => {
 
             expect(storeConfig.canvas.mutations.setInteractionsEnabled).toHaveBeenCalledWith(expect.anything(), false);
             expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
+            expect(storeConfig.panel.actions.setNodeRepositoryActive).toHaveBeenCalled();
+        });
+
+        it('sets node repository as active', () => {
+            doShallowMount();
+
             expect(storeConfig.panel.actions.setNodeRepositoryActive).toHaveBeenCalled();
         });
     });
