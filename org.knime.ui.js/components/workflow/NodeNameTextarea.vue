@@ -115,7 +115,7 @@ export default {
       <textarea
         ref="textarea"
         rows="1"
-        class="name-textarea"
+        class="name-textarea native-context-menu"
         :value="value"
         @pointerdown.stop
         @input="onInput($event, sizeChange)"
