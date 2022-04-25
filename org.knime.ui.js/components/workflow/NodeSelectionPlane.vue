@@ -4,18 +4,16 @@
  * Colored rect that is used as selection plane for nodes
  */
 export default {
-    components: {
-
-    },
     props: {
         /**
-         * The position of the node. Contains of an x and a y parameter
+         * The position of the node. Contains an x- and y-parameter
          */
         position: {
             type: Object,
             required: true,
             validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         },
+        // TODO: write comment
         extraHeight: {
             type: Number,
             default: 20
@@ -35,8 +33,9 @@ export default {
         }
     },
     computed: {
-        // Getting the node selection measures and calculate if some additional space is neede for the status bar
+        // Getting the node selection measures and calculate if some additional space is needed for the status bar
         nodeSelectionMeasures() {
+            // TODO: please improve readability and add commments
             const { nodeStatusHeight, nodeStatusMarginTop, nodeSize,
                 nodeSelectionPadding: [top, right, bottom, left] } = this.$shapes;
             const hasStatusBar = this.kind !== 'metanode';
@@ -73,7 +72,3 @@ export default {
     />
   </g>
 </template>
-
-<style lang="postcss" scoped>
-
-</style>

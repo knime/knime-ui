@@ -3,9 +3,9 @@ import { v4 as uuid } from 'uuid';
 
 import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
 
+// TODO add description of component and of props
 export default {
     components: { AutoSizeForeignObject },
-
     props: {
         editable: {
             type: Boolean,
@@ -30,6 +30,7 @@ export default {
     },
     data() {
         return {
+            // TODO: instead of importing a new package, we could just use an integer or an alternating boolean
             resizeKey: uuid()
         };
     },
@@ -57,6 +58,7 @@ export default {
     @height-change="$emit('height-change', $event)"
   >
     <template #default="{ on }">
+      <!-- TODO: After merging master contextmenu.prevent might not be needed -->
       <div
         class="node-name"
         @click.prevent="$emit('click', $event)"

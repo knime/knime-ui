@@ -123,7 +123,6 @@ export default {
                 return;
             }
 
-
             // account for zoom
             const width = Math.ceil(rect.width / this.zoomFactor);
             const height = Math.ceil(rect.height / this.zoomFactor);

@@ -192,6 +192,7 @@ export default {
             }
             return null;
         },
+        // TODO: add comment
         selectionWidth() {
             return this.nameDimensions.width + (this.$shapes.nodeNameHorizontalMargin * 2);
         },
@@ -290,7 +291,8 @@ export default {
             return this.showSelectionPreview === 'show' || isSelected;
         },
         isNameEditable() {
-            // only not linked metanodes and components have editable names
+            // only non-linked metanodes and components have editable names
+            // TODO: Check if the workflow is writable
             return ['metanode', 'component'].includes(this.kind) && this.link === null;
         },
         actionBarPosition() {
@@ -543,6 +545,7 @@ export default {
     </g>
 
     <!-- Node name / title -->
+    <!-- TODO: context menu of textarea shouldn't be captured -->
     <NodeName
       :node-id="id"
       :node-position="position"

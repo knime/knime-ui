@@ -40,7 +40,8 @@ export default {
     methods: {
         onInput(event, sizeChangeCallback) {
             let value = event.target.value;
-            value = value.replace(/(\r\n|\n|\r)/gm, ''); // remove all new lines
+            value = value.replace(/(\r\n|\n|\r|\t)/gm, ''); // remove all new lines
+            // TODO: check for tabs?
 
             // remove invalid characters here as well, they could have been sneaked in via paste or drop
             if (this.pattern && this.pattern.test(value)) {

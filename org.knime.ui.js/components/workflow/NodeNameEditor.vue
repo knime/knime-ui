@@ -16,6 +16,7 @@ export default {
             type: String,
             default: ''
         },
+        // TODO: is this pattern being used?
         pattern: {
             default: null,
             type: RegExp
@@ -58,6 +59,7 @@ export default {
         }
     },
     watch: {
+        // TODO: why indirect?
         value(newValue) {
             this.currentName = newValue;
         }
@@ -96,12 +98,12 @@ export default {
 
 <template>
   <g>
-    <!-- Block all inputs to the kanvas -->
+    <!-- Block all inputs to the kanvas
+        TODO: this is not sufficient just scroll a bit to see that
+    -->
     <rect
       width="100%"
       height="100%"
-      x="0"
-      y="0"
       fill="transparent"
       @pointerdown.stop.prevent
       @click.stop.prevent
