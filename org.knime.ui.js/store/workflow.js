@@ -293,7 +293,7 @@ export const actions = {
         let canCollapse = false;
 
         if (rootGetters['selection/selectedNodes'].some(node => node.allowedActions.canCollapse === 'resetRequired')) {
-            canCollapse = window.confirm('Creating this metanode will reset the executed nodes.');
+            canCollapse = window.confirm(`Creating this ${containerType} will reset the executed nodes.`);
         } else {
             canCollapse = true;
         }
