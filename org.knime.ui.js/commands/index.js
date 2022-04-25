@@ -1,6 +1,7 @@
 import workflowCommands from './workflowCommands';
 import canvasCommands from './canvasCommands';
 import applicationCommands from './applicationCommands';
+import { selectionCommands, sidePanelCommands } from './variousCommands';
 
 // chains a group condition before each individual command condition
 export const conditionGroup = (groupCondition, commands) => {
@@ -17,24 +18,6 @@ export const conditionGroup = (groupCondition, commands) => {
     return commands;
 };
 
-const selectionCommands = {
-    selectAllNodes: {
-        hotkey: ['Ctrl', 'A'],
-        execute: ({ $store }) => $store.dispatch('selection/selectAllNodes')
-    },
-    deselectAll: {
-        hotkey: ['Ctrl', 'Shift', 'A'],
-        execute: ({ $store }) => $store.dispatch('selection/deselectAllObjects')
-    }
-};
-
-const sidePanel = {
-    toggleSidePanel: {
-        hotkey: ['Ctrl', 'P'],
-        execute: ({ $store }) => $store.dispatch('panel/toggleExpanded')
-    }
-};
-
 export default {
     ...applicationCommands,
     ...conditionGroup(
@@ -49,6 +32,6 @@ export default {
             )
         }
     ),
-    ...sidePanel
+    ...sidePanelCommands
 };
 
