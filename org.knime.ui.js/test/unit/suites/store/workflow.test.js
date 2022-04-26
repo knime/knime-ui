@@ -7,7 +7,8 @@ import Vuex from 'vuex';
 import Vue from 'vue';
 
 describe('workflow store', () => {
-    let store, localVue, loadStore, addEventListenerMock, removeEventListenerMock, moveObjectsMock, deleteObjectsMock;
+    let store, localVue, loadStore, addEventListenerMock, removeEventListenerMock, moveObjectsMock, deleteObjectsMock,
+        openLegacyFlowVariableDialogMock;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -20,6 +21,7 @@ describe('workflow store', () => {
         store = null;
         moveObjectsMock = jest.fn().mockReturnValue(Promise.resolve());
         deleteObjectsMock = jest.fn().mockReturnValue(Promise.resolve());
+        openLegacyFlowVariableDialogMock = jest.fn();
 
         loadStore = async ({ apiMocks = {} } = {}) => {
             /**
@@ -33,6 +35,7 @@ describe('workflow store', () => {
                 addEventListener: addEventListenerMock,
                 removeEventListener: removeEventListenerMock,
                 ...apiMocks,
+                openLegacyFlowVariableDialog: openLegacyFlowVariableDialogMock,
                 moveObjects: moveObjectsMock,
                 deleteObjects: deleteObjectsMock
             }), { virtual: true });
@@ -292,7 +295,7 @@ describe('workflow store', () => {
             expect(mock).toHaveBeenLastCalledWith({ nodeIds: ['root:2'], projectId: 'foo', workflowId: 'root' });
         });
 
-        it.each(['openView', 'openDialog', 'openLegacyFlowVariableDialog'])('passes %s to API', async (action) => {
+        it.each(['openView', 'openDialog'])('passes %s to API', async (action) => {
             let mock = jest.fn();
             let apiMocks = { [action]: mock };
             await loadStore({ apiMocks });
@@ -300,6 +303,15 @@ describe('workflow store', () => {
             store.dispatch(`workflow/${action}`, 'node x');
 
             expect(mock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo' });
+        });
+
+        // TODO: NXT-1007 improve tests by making an easier API mock import
+        it('calls configureFlowVariables from API', async () => {
+            await loadStore();
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.dispatch('workflow/configureFlowVariables', 'node x');
+
+            expect(openLegacyFlowVariableDialogMock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo' });
         });
 
         it('moves actual nodes', async () => {

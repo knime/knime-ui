@@ -1,6 +1,4 @@
 <script>
-import { v4 as uuid } from 'uuid';
-
 import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
 import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
 /**
@@ -53,7 +51,7 @@ export default {
     },
     data() {
         return {
-            resizeKey: uuid()
+            resizeKey: '0'
         };
     },
     computed: {
@@ -74,7 +72,7 @@ export default {
     },
     methods: {
         updateResizeKey() {
-            this.resizeKey = uuid();
+            this.resizeKey = `${Number(this.resizeKey) + 1}`;
         }
     }
 };

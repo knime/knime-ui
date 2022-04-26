@@ -1,4 +1,8 @@
-import { shallowMount } from '@vue/test-utils';
+import { shallowMount, createLocalVue } from '@vue/test-utils';
+import Vuex from 'vuex';
+
+import { mockVuexStore } from '~/test/unit/test-utils';
+
 import * as $shapes from '~/style/shapes';
 
 import NodeNameEditor from '~/components/workflow/NodeNameEditor';
@@ -12,16 +16,29 @@ describe('NodeNameEditor', () => {
         nodeId: 'root:1'
     };
 
-    let wrapper;
+    let wrapper, storeConfig;
 
     const doShallowMount = () => {
+        storeConfig = {
+            canvas: {
+                getters: {
+                    viewBox: () => ({ left: 0, top: 0 })
+                }
+            }
+        };
+        const $store = mockVuexStore(storeConfig);
         const wrapper = shallowMount(NodeNameEditor, {
             propsData,
-            mocks: { $shapes }
+            mocks: { $shapes, $store }
         });
 
         return wrapper;
     };
+
+    beforeAll(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
+    });
 
     beforeEach(() => {
         wrapper = doShallowMount();

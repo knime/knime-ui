@@ -1,5 +1,6 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
-    moveObjects, openDialog, openLegacyFlowVariableDialog, openView, undo, redo, removeEventListener, connectNodes,
+    moveObjects, openDialog, openLegacyFlowVariableDialog as configureFlowVariables,
+    openView, undo, redo, removeEventListener, connectNodes,
     addNode, saveWorkflow, closeWorkflow, renameContainer } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
@@ -199,8 +200,8 @@ export const actions = {
         openDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
     /* See docs in API */
-    openLegacyFlowVariableDialog({ state }, nodeId) {
-        openLegacyFlowVariableDialog({ projectId: state.activeWorkflow.projectId, nodeId });
+    configureFlowVariables({ state }, nodeId) {
+        configureFlowVariables({ projectId: state.activeWorkflow.projectId, nodeId });
     },
     /* See docs in API */
     undo({ state, getters }) {
