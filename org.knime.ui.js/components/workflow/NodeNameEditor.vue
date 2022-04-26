@@ -108,9 +108,7 @@ export default {
 
 <template>
   <g>
-    <!-- Block all inputs to the kanvas
-        TODO: this is not sufficient just scroll a bit to see that
-    -->
+    <!-- Block all inputs to the kanvas -->
     <rect
       v-bind="overlayStyles"
       fill="transparent"

@@ -62,7 +62,6 @@ export default {
     @height-change="$emit('height-change', $event)"
   >
     <template #default="{ on }">
-      <!-- TODO: After merging master contextmenu.prevent might not be needed -->
       <div
         class="node-name"
         @click.prevent="$emit('click', $event)"

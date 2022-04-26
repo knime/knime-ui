@@ -106,7 +106,7 @@ describe('API', () => {
 
                 expect(window.jsonrpc).toHaveBeenCalledWith({
                     jsonrpc: '2.0',
-                    method: 'NodeRepositoryService.selectNodes',
+                    method: 'NodeRepositoryService.getNodesGroupedByTags',
                     params: [NODES_LIMIT, 0, 2, true],
                     id: 0
                 });
@@ -299,11 +299,11 @@ describe('API', () => {
                 window.jsonrpc.mockReturnValueOnce({
                     jsonrpc: '2.0',
                     id: -1,
-                    result: JSON.stringify({
+                    result: {
                         jsonrpc: '2.0',
-                        result: 'dummy',
+                        result: 'nested result',
                         id: -2
-                    })
+                    }
                 });
                 let table = await api.loadTable({
                     projectId: 'foo',
@@ -320,7 +320,7 @@ describe('API', () => {
                     params: ['foo', 'root', 'root:123', 2, expectedNestedRPC],
                     id: 0
                 });
-                expect(table).toBe('dummy');
+                expect(table).toBe('nested result');
             });
         });
 

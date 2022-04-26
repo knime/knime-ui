@@ -1,4 +1,5 @@
 /* eslint-disable no-magic-numbers */
+/* eslint-disable max-lines */
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import * as $shapes from '~/style/shapes';
@@ -157,7 +158,7 @@ describe('workflow store', () => {
                 }
             });
             const commit = jest.spyOn(store, 'commit');
-        
+
             await store.dispatch('workflow/loadWorkflow', { projectId: 'wf1' });
 
             expect(loadWorkflow).toHaveBeenCalledWith({ workflowId: 'root', projectId: 'wf1' });
@@ -176,7 +177,7 @@ describe('workflow store', () => {
 
         it('loads inner workflow successfully', async () => {
             let loadWorkflow = jest.fn().mockResolvedValue({ workflow: { dummy: true, info: {}, nodes: [] } });
-            
+
             await loadStore({
                 apiMocks: {
                     loadWorkflow
@@ -202,7 +203,7 @@ describe('workflow store', () => {
         it('unloads workflow when another one is loaded', async () => {
             let loadWorkflow =
             jest.fn().mockResolvedValue({ workflow: { dummy: true, info: {}, nodes: [] }, snapshotId: 'snap' });
-            
+
             await loadStore({
                 apiMocks: {
                     loadWorkflow

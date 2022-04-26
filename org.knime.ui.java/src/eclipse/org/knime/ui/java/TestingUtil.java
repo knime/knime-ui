@@ -50,7 +50,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -63,10 +62,10 @@ import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
-import org.knime.gateway.impl.webui.service.DefaultEventService;
-import org.knime.gateway.impl.webui.service.DefaultServices;
+import org.knime.gateway.impl.webui.service.ServiceDependencies;
 
 /**
  * Utility methods for testing.
@@ -83,15 +82,15 @@ public final class TestingUtil {
     /**
      * @param newAppState
      * @param eventConsumer
-     * @see AppStateUtil#initAppStateProvider(Supplier)
+     * @see DefaultServicesUtil#setDefaultServiceDependencies(Supplier, EventConsumer)
      */
     public static void initAppStateForTesting(final AppState newAppState,
-        final BiConsumer<String, Object> eventConsumer) {
+        final EventConsumer eventConsumer) {
         clearAppStateForTesting();
         newAppState.getOpenedWorkflows().forEach(TestingUtil::addToProjectManagerForTesting);
         var appStateProvider = new AppStateProvider(() -> newAppState);
-        DefaultServices.setServiceDependency(AppStateProvider.class, appStateProvider);
-        DefaultEventService.getInstance().addEventConsumer(eventConsumer);
+        ServiceDependencies.setServiceDependency(AppStateProvider.class, appStateProvider);
+        ServiceDependencies.setServiceDependency(EventConsumer.class, eventConsumer);
     }
 
     /**
@@ -99,11 +98,11 @@ public final class TestingUtil {
      */
     public static void clearAppStateForTesting() {
         disposeLoadedWorkflowsForTesting();
-        AppStateUtil.clearAppState();
+        DefaultServicesUtil.disposeDefaultServices();
     }
 
     private static void addToProjectManagerForTesting(final AppState.OpenedWorkflow workflow) {
-        WorkflowProjectManager.addWorkflowProject(workflow.getProjectId(), new WorkflowProject() {
+        WorkflowProjectManager.getInstance().addWorkflowProject(workflow.getProjectId(), new WorkflowProject() {
 
             @Override
             public WorkflowManager openProject() {
@@ -141,7 +140,7 @@ public final class TestingUtil {
     private static void disposeLoadedWorkflowsForTesting() {
         if (loadedWorkflowsForTesting != null) {
             for (String id : loadedWorkflowsForTesting) {
-                WorkflowManager wfm = WorkflowProjectManager.openAndCacheWorkflow(id).orElse(null);
+                WorkflowManager wfm = WorkflowProjectManager.getInstance().openAndCacheWorkflow(id).orElse(null);
                 try {
                     CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
                 } catch (InterruptedException ex) { // NOSONAR should never happen

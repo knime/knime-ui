@@ -547,7 +547,6 @@ export default {
     </g>
 
     <!-- Node name / title -->
-    <!-- TODO: context menu of textarea shouldn't be captured -->
     <NodeName
       :node-id="id"
       :node-position="position"

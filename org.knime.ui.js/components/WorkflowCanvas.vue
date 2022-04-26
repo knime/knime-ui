@@ -42,6 +42,12 @@ export default {
         }
     },
     mounted() {
+        if (this.isWorkflowEmpty) {
+            this.setNodeRepositoryActive();
+        } else {
+            this.setWorkflowMetaActive();
+        }
+
         this.$nextTick(() => {
             // put canvas into fillScreen view after loading the workflow
             // TODO: To be changed in NXT-929
@@ -51,7 +57,8 @@ export default {
     methods: {
         ...mapMutations('canvas', ['setInteractionsEnabled']),
         ...mapActions('canvas', ['fillScreen']),
-        ...mapActions('panel', ['setNodeRepositoryActive']),
+        ...mapActions('panel', ['setNodeRepositoryActive', 'setWorkflowMetaActive']),
+        ...mapActions('selection', ['deselectAllObjects']),
         onNodeSelectionPreview($event) {
             this.$refs.workflow.applyNodeSelectionPreview($event);
         },
@@ -61,6 +68,13 @@ export default {
                 
                 // scroll to center
                 this.fillScreen();
+            }
+        },
+        onContextMenu(e) {
+            // if event's default was prevented it means the behavior was already handled from the Node
+            // otherwise we deselect all objects because it is a click on the canvas itself
+            if (!e.defaultPrevented) {
+                this.deselectAllObjects();
             }
         }
     }
@@ -75,6 +89,7 @@ export default {
     @drop.native.stop="onDrop"
     @dragover.native.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
+    @contextmenu="onContextMenu"
   >
     <!-- Includes shadows for Nodes -->
     <KanvasFilters />

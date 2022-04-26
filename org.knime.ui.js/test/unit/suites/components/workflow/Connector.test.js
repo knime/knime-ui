@@ -1,4 +1,5 @@
 /* eslint-disable no-magic-numbers */
+/* eslint-disable max-lines */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';

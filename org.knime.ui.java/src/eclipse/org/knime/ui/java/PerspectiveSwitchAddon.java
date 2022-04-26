@@ -50,7 +50,6 @@ import static org.eclipse.ui.internal.IWorkbenchConstants.PERSPECTIVE_STACK_ID;
 import static org.knime.ui.java.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -71,7 +70,6 @@ import org.eclipse.e4.ui.workbench.UIEvents.EventTags;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.webui.AppStateProvider;
-import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.osgi.service.event.Event;
@@ -112,41 +110,42 @@ public final class PerspectiveSwitchAddon {
 
         MPerspective oldPerspective = (MPerspective)event.getProperty(EventTags.OLD_VALUE);
         MPerspective newPerspective = (MPerspective)newValue;
-		MPerspective webUIPerspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
+            MPerspective webUIPerspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
 
         if (newPerspective == webUIPerspective) {
-			onSwitchToWebUI();
+                  onSwitchToWebUI();
         } else if (oldPerspective == webUIPerspective) {
-			onSwitchToJavaUI();
+                  onSwitchToJavaUI();
         }
     }
 
-	/**
-	 * On reset of the Web UI perspective, re-add dynamically added elements.
-	 * @see PerspectiveSwitchAddon#addSharedEditorAreaToWebUIPerspective()
-	 * @param event ignored
-	 */
-	@Inject
-	@org.eclipse.e4.core.di.annotations.Optional
-	public void listenResetPerspective(@EventTopic(UIEvents.UILifeCycle.PERSPECTIVE_RESET) final Event event) {
-		MPerspectiveStack perspectiveStack = (MPerspectiveStack)m_modelService.find(PERSPECTIVE_STACK_ID, m_app);
-		var activePerspective = perspectiveStack.getSelectedElement();
-		var webUIPerspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
-		if (activePerspective == webUIPerspective) {
-			PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
-		}
-	}
+    /**
+     * On reset of the Web UI perspective, re-add dynamically added elements.
+     *
+     * @see PerspectiveSwitchAddon#addSharedEditorAreaToWebUIPerspective()
+     * @param event ignored
+     */
+    @Inject
+    @org.eclipse.e4.core.di.annotations.Optional
+    public void listenResetPerspective(@EventTopic(UIEvents.UILifeCycle.PERSPECTIVE_RESET) final Event event) {
+        MPerspectiveStack perspectiveStack = (MPerspectiveStack)m_modelService.find(PERSPECTIVE_STACK_ID, m_app);
+        var activePerspective = perspectiveStack.getSelectedElement();
+        var webUIPerspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
+        if (activePerspective == webUIPerspective) {
+            PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
+        }
+    }
 
-	private void onSwitchToWebUI() {
-		PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
+    private void onSwitchToWebUI() {
+        PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
         setTrimsAndMenuVisible(false, m_modelService, m_app);
         Supplier<AppStateProvider.AppState> supplier = () -> EclipseUIStateUtil.createAppState(m_modelService, m_app);
-        var appStateProvider = AppStateUtil.initAppStateProvider(supplier);
         KnimeBrowserView.addActivatedCallback(v -> {
-            BiConsumer<String, Object> eventConsumer = v.createEventConsumer();
-            DefaultEventService.getInstance().addEventConsumer(eventConsumer);
+            var eventConsumer = v.createEventConsumer();
+            var appStateProvider = new AppStateProvider(supplier);
+            DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer);
+            v.initBrowserFunctions(appStateProvider);
         });
-        KnimeBrowserView.addActivatedCallback(v -> v.initBrowserFunctions(appStateProvider));
         KnimeBrowserView.addActivatedCallback(KnimeBrowserView::setUrl);
         switchToWebUITheme();
         // fixes a drag'n'drop issue on windows; doesn't have an effect on linux or mac
@@ -154,26 +153,27 @@ public final class PerspectiveSwitchAddon {
         System.setProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP, "false");
     }
 
-	private void onSwitchToJavaUI() {
+    private void onSwitchToJavaUI() {
         callOnKnimeBrowserView(KnimeBrowserView::clearUrl);
-        AppStateUtil.clearAppState();
+        DefaultServicesUtil.disposeDefaultServices();
         setTrimsAndMenuVisible(true, m_modelService, m_app);
         switchToJavaUITheme();
         // the color of the workflow editor canvas changes when switching back
         // -> this is a workaround to compensate for it
         // (couldn't be solved via css styling because the background color differs if the respective workflow
         // is write protected)
-        EclipseUIStateUtil.getOpenWorkflowEditors(m_modelService, m_app).forEach(WorkflowEditor::updateEditorBackgroundColor);
+        EclipseUIStateUtil.getOpenWorkflowEditors(m_modelService, m_app)
+            .forEach(WorkflowEditor::updateEditorBackgroundColor);
         System.clearProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
     }
 
     private void callOnKnimeBrowserView(final Consumer<KnimeBrowserView> call) {
-		List<MPart> views = m_modelService.findElements(m_app, BROWSER_VIEW_PART_ID, MPart.class);
+        List<MPart> views = m_modelService.findElements(m_app, BROWSER_VIEW_PART_ID, MPart.class);
         for (MPart view : views) {
             if (view.getObject() instanceof KnimeBrowserView) {
                 call.accept((KnimeBrowserView)view.getObject());
             } else {
-				LOGGER.warn("Element found for '" + BROWSER_VIEW_PART_ID + "'"
+                LOGGER.warn("Element found for '" + BROWSER_VIEW_PART_ID + "'"
                     + " which is not the expected KNIME browser view.");
             }
         }
