@@ -10,10 +10,6 @@ export default {
         FloatingMenu
     },
     props: {
-        isVisible: {
-            type: Boolean,
-            required: true
-        },
         position: {
             type: Object,
             required: true,
@@ -38,15 +34,10 @@ export default {
         }
     },
     watch: {
-        position() {
-            this.setMenuItems();
-        },
-        isVisible: {
+        position: {
             immediate: true,
-            handler(newValue) {
-                if (newValue === true) {
-                    this.setMenuItems();
-                }
+            handler() {
+                this.setMenuItems();
             }
         }
     },
@@ -97,7 +88,6 @@ export default {
 
 <template>
   <FloatingMenu
-    v-if="isVisible"
     class="context-menu"
     :items="menuItems"
     :position="position"

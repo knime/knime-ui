@@ -12,11 +12,7 @@ export default {
     },
     data() {
         return {
-            contextMenuVisible: false,
-            contextMenuPosition: {
-                x: 0,
-                y: 0
-            }
+            contextMenuPosition: null
         };
     },
     computed: {
@@ -43,7 +39,6 @@ export default {
                 x: e.clientX,
                 y: e.clientY
             };
-            this.contextMenuVisible = true;
         }
     }
 };
@@ -55,9 +50,9 @@ export default {
     @contextmenu.prevent="onContextMenu"
   >
     <ContextMenu
-      :is-visible="contextMenuVisible"
+      v-if="Boolean(contextMenuPosition)"
       :position="contextMenuPosition"
-      @menu-close="contextMenuVisible = false"
+      @menu-close="contextMenuPosition = null"
     />
 
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
