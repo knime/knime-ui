@@ -13,7 +13,9 @@ export default {
             required: true,
             validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         },
-        // TODO: write comment
+        /**
+         * Makes the selection plane larger vertically based on this value
+         */
         extraHeight: {
             type: Number,
             default: 20
@@ -35,11 +37,19 @@ export default {
     computed: {
         // Getting the node selection measures and calculate if some additional space is needed for the status bar
         nodeSelectionMeasures() {
-            // TODO: please improve readability and add commments
-            const { nodeStatusHeight, nodeStatusMarginTop, nodeSize,
-                nodeSelectionPadding: [top, right, bottom, left] } = this.$shapes;
+            const {
+                nodeStatusHeight,
+                nodeStatusMarginTop,
+                nodeSize,
+                nodeSelectionPadding: [top, right, bottom, left]
+            } = this.$shapes;
+
             const hasStatusBar = this.kind !== 'metanode';
 
+            // the selection plane's height has to account for
+            // (1) node's size plus the selection padding for top and bottom
+            // (2) the height and margin of the node status bar if it's present
+            // (3) the provided `extraHeight` prop on the component
             const height = (top + nodeSize + bottom) +
                 (hasStatusBar ? nodeStatusHeight + nodeStatusMarginTop : 0) +
                 this.extraHeight;

@@ -21,7 +21,8 @@ export default {
          */
         resizeKey: {
             type: String,
-            required: true
+            required: false,
+            default: ''
         },
         /**
          * Max width of the element.

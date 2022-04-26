@@ -1,52 +1,56 @@
 <script>
-import { v4 as uuid } from 'uuid';
-
 import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
 
-// TODO add description of component and of props
+/**
+ * Renders the node name and takes care of styling and clipping it when the contents are too large.
+ * It wraps around AutoSizeForeignObject to render custom elements inside svg and forwards its events
+ * and slot props
+ */
 export default {
     components: { AutoSizeForeignObject },
     props: {
+        /**
+         * Determines whether the name is editable. It will not emit the request-edit
+         * event if it's not editable
+         */
         editable: {
             type: Boolean,
             default: false
         },
+        /**
+         * The node's name text itself
+         */
         value: {
             type: String,
             default: ''
         },
+        /**
+         * Whether to show the whole text when it overflows the calculated clipping point
+         */
         showOverflow: {
             type: Boolean,
             default: false
         },
+        /**
+         * Forwarded to the AutoSizeForeignObject component
+         */
         startWidth: {
             type: Number,
             default: null
         },
+        /**
+         * Forwarded to the AutoSizeForeignObject component
+         */
         startHeight: {
             type: Number,
             default: null
         }
-    },
-    data() {
-        return {
-            // TODO: instead of importing a new package, we could just use an integer or an alternating boolean
-            resizeKey: uuid()
-        };
-    },
-    mounted() {
-        // document.fonts.ready.then((param) => {
-        //     // this.resizeKey = uuid();
-        //     console.log('param', param);
-        //     console.log('on fonts.ready');
-        // });
     }
 };
 </script>
 
 <template>
   <AutoSizeForeignObject
-    :resize-key="resizeKey"
     :start-width="startWidth"
     :start-height="startHeight"
     :class="['node-name-text-container', { editable, 'text-ellipsis': !showOverflow }]"

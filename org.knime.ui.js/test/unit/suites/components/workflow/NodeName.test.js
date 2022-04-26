@@ -15,26 +15,6 @@ describe('NodeName', () => {
         value: 'Test Name'
     };
 
-    // TODO: please use common unit test pattern
-    const createStore = (customState) => {
-        const state = {
-            ...customState
-        };
-
-        const actions = {
-            renameContainer: jest.fn()
-        };
-    
-        const mockStore = mockVuexStore({
-            workflow: {
-                state,
-                actions
-            }
-        });
-
-        return { $store: mockStore, actions, state };
-    };
-
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
@@ -52,12 +32,18 @@ describe('NodeName', () => {
     };
 
     describe('Handles text', () => {
-        let $store, actions, wrapper;
+        let storeConfig, wrapper;
 
         beforeEach(() => {
-            const mockStore = createStore();
-            $store = mockStore.$store;
-            actions = mockStore.actions;
+            storeConfig = {
+                workflow: {
+                    actions: {
+                        renameContainer: jest.fn()
+                    }
+                }
+            };
+
+            const $store = mockVuexStore(storeConfig);
             
             wrapper = doShallowMount({ $store });
         });
@@ -96,12 +82,19 @@ describe('NodeName', () => {
     
 
     describe('Handles editor', () => {
-        let $store, actions, wrapper;
+        let storeConfig, wrapper;
 
         beforeEach(() => {
-            const mockStore = createStore();
-            $store = mockStore.$store;
-            actions = mockStore.actions;
+            storeConfig = {
+                workflow: {
+                    actions: {
+                        renameContainer: jest.fn()
+                    }
+                }
+            };
+
+            const $store = mockVuexStore(storeConfig);
+            
             wrapper = doShallowMount({ $store });
             wrapper.setData({ isEditing: true });
         });
@@ -145,7 +138,7 @@ describe('NodeName', () => {
             };
             
             wrapper.findComponent(NodeNameEditor).vm.$emit('save', saveEventPayload);
-            expect(actions.renameContainer).toHaveBeenCalledWith(
+            expect(storeConfig.workflow.actions.renameContainer).toHaveBeenCalledWith(
                 expect.any(Object),
                 expect.objectContaining({ nodeId: defaultProps.nodeId, name: saveEventPayload.newName })
             );
@@ -179,9 +172,6 @@ describe('NodeName', () => {
             wrapper.findComponent(NodeNameEditor).vm.$emit('save', saveEventPayload);
 
             // emulate close and re-open editor
-            $store.state.workflow.nameEditorNodeId = null;
-            await wrapper.vm.$nextTick();
-            $store.state.workflow.nameEditorNodeId = defaultProps.nodeId;
             await wrapper.vm.$nextTick();
 
             expect(wrapper.findComponent(NodeNameEditor).props('startWidth')).toBe(

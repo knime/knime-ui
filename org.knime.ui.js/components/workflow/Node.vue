@@ -175,11 +175,10 @@ export default {
         };
     },
     computed: {
-        ...mapState('application', {
-            projectId: 'activeProjectId'
-        }),
-        ...mapGetters('selection', ['isNodeSelected']),
+        ...mapState('application', { projectId: 'activeProjectId' }),
         ...mapState('workflow', ['isDragging']),
+        ...mapGetters('selection', ['isNodeSelected']),
+        ...mapGetters('workflow', ['isWritable']),
         decoratorBackgroundType() {
             if (this.type) {
                 return this.type;
@@ -192,7 +191,11 @@ export default {
             }
             return null;
         },
-        // TODO: add comment
+        /**
+         * Width of the node selection plane. It accounts not only for the node margins
+         * but also for the width of the name as it changes
+         * @return {boolean}
+         */
         selectionWidth() {
             return this.nameDimensions.width + (this.$shapes.nodeNameHorizontalMargin * 2);
         },
@@ -292,8 +295,7 @@ export default {
         },
         isNameEditable() {
             // only non-linked metanodes and components have editable names
-            // TODO: Check if the workflow is writable
-            return ['metanode', 'component'].includes(this.kind) && this.link === null;
+            return this.isWritable && ['metanode', 'component'].includes(this.kind) && this.link === null;
         },
         actionBarPosition() {
             return {

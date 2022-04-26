@@ -1,4 +1,6 @@
 <script>
+import { mapGetters } from 'vuex';
+
 import NodeNameTextarea from '~/components/workflow/NodeNameTextarea';
 import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar';
 
@@ -16,7 +18,6 @@ export default {
             type: String,
             default: ''
         },
-        // TODO: is this pattern being used?
         pattern: {
             default: null,
             type: RegExp
@@ -51,6 +52,16 @@ export default {
         };
     },
     computed: {
+        ...mapGetters('canvas', ['viewBox']),
+        overlayStyles() {
+            const { left, top } = this.viewBox;
+            return {
+                width: '100%',
+                height: '100%',
+                x: left,
+                y: top
+            };
+        },
         actionBarPosition() {
             return [
                 this.nodePosition.x + this.$shapes.nodeSize / 2,
@@ -59,7 +70,6 @@ export default {
         }
     },
     watch: {
-        // TODO: why indirect?
         value(newValue) {
             this.currentName = newValue;
         }
@@ -74,8 +84,6 @@ export default {
             this.$emit(`${dimensionName}-change`, dimensionValue);
         },
         onSave() {
-            // TODO: do sanitization in NodeNameTextarea
-
             // reset to old value on empty edits
             if (this.currentName.trim() === '') {
                 this.currentName = this.value;
@@ -83,9 +91,11 @@ export default {
                 return;
             }
 
-            // TODO: will the name be changed if it is the same as before?
-            // Emit cancel and save?
-            this.$emit('save', { dimensionsOnClose: this.latestDimensions, newName: this.currentName.trim() });
+            if (this.currentName === this.value) {
+                this.onCancel();
+            } else {
+                this.$emit('save', { dimensionsOnClose: this.latestDimensions, newName: this.currentName.trim() });
+            }
         },
         onCancel() {
             // reset internal value
@@ -102,8 +112,7 @@ export default {
         TODO: this is not sufficient just scroll a bit to see that
     -->
     <rect
-      width="100%"
-      height="100%"
+      v-bind="overlayStyles"
       fill="transparent"
       @pointerdown.stop.prevent
       @click.stop.prevent
