@@ -4,7 +4,7 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 
 const getNodesGroupedByTagsResponse = {
-    selections: [{
+    groups: [{
         nodes: [
             {
                 component: false,
@@ -244,7 +244,7 @@ describe('Node Repository store', () => {
                     fullTemplateInfo: true
                 });
                 expect(commitSpy).toHaveBeenCalledWith(
-                    'nodeRepository/setNodesPerCategories', getNodesGroupedByTagsResponse.selections, undefined
+                    'nodeRepository/setNodesPerCategories', getNodesGroupedByTagsResponse.groups, undefined
                 );
             });
 
@@ -258,7 +258,7 @@ describe('Node Repository store', () => {
                     fullTemplateInfo: true
                 });
                 expect(commitSpy).toHaveBeenCalledWith(
-                    'nodeRepository/addNodesPerCategories', getNodesGroupedByTagsResponse.selections, undefined
+                    'nodeRepository/addNodesPerCategories', getNodesGroupedByTagsResponse.groups, undefined
                 );
             });
 
