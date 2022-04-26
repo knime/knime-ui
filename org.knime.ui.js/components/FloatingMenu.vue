@@ -38,46 +38,44 @@ export default {
             default: '',
             type: String
         },
-        ariaLabel: {
-            type: String,
-            default: 'menu'
-        },
-        isVisible: {
-            type: Boolean,
-            required: true
-        },
+        /**
+         * TODO: what is this position relative to?
+         */
         position: {
             type: Object,
             required: true,
             validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         }
     },
-    data() {
-        return {
-            absolutePosition: {
-                top: 0,
-                left: 0
-            }
-        };
-    },
     computed: {
-        positionStyle() {
-            return this.isVisible
-                ? { left: `${this.absolutePosition.left}px`, top: `${this.absolutePosition.top}px` }
-                : null;
+        absolutePosition() {
+            consola.trace('recalculating context menu position');
+            
+            const menuWidth = (this.$el?.offsetWidth || 0) + SCROLLBAR_OFFSET;
+            const menuHeight = (this.$el?.offsetHeight || 0) + SCROLLBAR_OFFSET;
+
+            let left, top;
+
+            // TODO: please add a comment about the purpose of the code below
+            if ((window.innerWidth - this.position.x) < menuWidth) {
+                left = window.innerWidth - menuWidth;
+            } else {
+                left = this.position.x;
+            }
+
+            if ((window.innerHeight - this.position.y) < menuHeight) {
+                top = window.innerHeight - menuHeight;
+            } else {
+                top = this.position.y;
+            }
+            return { left, top };
         }
     },
     watch: {
-        position() {
-            this.updatePosition();
-        },
-        isVisible: {
-            immediate: true,
-            handler(newValue) {
-                if (newValue === true) {
-                    this.updatePosition();
-                }
-            }
+        absolutePosition() {
+            // set focus to menu for keyboard nav to work
+            // also required to prevent menu from closing due to change of menu items change (see onFocusOut)
+            this.$nextTick(() => this.$refs.menuItems.$el.focus());
         }
     },
     methods: {
@@ -88,35 +86,6 @@ export default {
         },
         closeMenu() {
             this.$emit('menu-close');
-        },
-        updatePosition() {
-            const element = this.$el ? this.$el : { offsetWidth: 0, offsetHeight: 0 };
-            this.absolutePosition = this.calculateMenuPosition(element, this.position.x, this.position.y);
-            // set focus to menu for keyboard nav to work
-            // also required to prevent menu from closing due to change of menu items change (see onFocusOut)
-            this.$nextTick(() => this.$refs.menuItems.$el.focus());
-        },
-        calculateMenuPosition(element, clickX, clickY) {
-            const menuWidth = element.offsetWidth + SCROLLBAR_OFFSET;
-            const menuHeight = element.offsetHeight + SCROLLBAR_OFFSET;
-
-            const windowWidth = window.innerWidth;
-            const windowHeight = window.innerHeight;
-
-            let left, top;
-
-            if ((windowWidth - clickX) < menuWidth) {
-                left = windowWidth - menuWidth;
-            } else {
-                left = clickX;
-            }
-
-            if ((windowHeight - clickY) < menuHeight) {
-                top = windowHeight - menuHeight;
-            } else {
-                top = clickY;
-            }
-            return { left, top };
         },
         onFocusOut(e) {
             setTimeout(() => {
@@ -132,12 +101,16 @@ export default {
 <template>
   <div
     v-on-clickaway="closeMenu"
-    :class="['floating-menu', { isVisible }]"
-    :style="positionStyle"
+    class="floating-menu"
+    :style="{
+      left: `${absolutePosition.left}px`,
+      top: `${absolutePosition.top}px`
+    }"
     @focusout.stop="onFocusOut"
     @keydown.esc.stop.prevent="closeMenu"
     @keydown.tab.stop.prevent
   >
+    <!-- TODO: why do we need the id? -->
     <MenuItems
       :id="id"
       ref="menuItems"
@@ -155,16 +128,7 @@ export default {
   display: block;
   min-width: 200px;
   max-width: 320px;
-
-  /* use visibility top/left negative and z-index to have a proper size which we need for position calculation */
-  top: -1000px;
-  left: -1000px;
-  visibility: hidden;
-
-  &.isVisible {
-    visibility: visible;
-  }
-
+  
   &:focus {
     outline: none;
   }

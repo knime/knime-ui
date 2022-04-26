@@ -97,10 +97,10 @@ export default {
 
 <template>
   <FloatingMenu
+    v-if="isVisible"
     class="context-menu"
     :items="menuItems"
     :position="position"
-    :is-visible="isVisible"
     aria-label="Context Menu"
     @item-click="onContextMenuItemClick"
     @menu-close="$emit('menu-close')"
