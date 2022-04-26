@@ -39,7 +39,9 @@ export default {
                 // Node Execution
                 executeSelected: selectedNodes.length,
                 cancelSelected: selectedNodes.length,
-                resetSelected: selectedNodes.length
+                resetSelected: selectedNodes.length,
+
+                createComponent: selectedNodes.length
             };
 
             return Object
