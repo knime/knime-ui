@@ -21,6 +21,7 @@ export default {
     }),
     computed: {
         ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode', 'selectedConnections']),
+        
         // map visible command names to menu items
         menuItems() {
             return this.visibleCommands
@@ -34,6 +35,8 @@ export default {
         }
     },
     watch: {
+        // set menu items on mounted,
+        // update menu items when another target has been clicked, which is indicated by a change in position
         position: {
             immediate: true,
             handler() {

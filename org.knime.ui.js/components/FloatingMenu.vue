@@ -32,14 +32,7 @@ export default {
             type: Array
         },
         /**
-         * Identifier for click handler
-         */
-        id: {
-            default: '',
-            type: String
-        },
-        /**
-         * TODO: what is this position relative to?
+         * TODO: please comment what this position is relative to
          */
         position: {
             type: Object,
@@ -81,7 +74,7 @@ export default {
     methods: {
         onItemClick(event, item) {
             // forward event and close menu
-            this.$emit('item-click', event, item, this.id);
+            this.$emit('item-click', event, item);
             this.closeMenu();
         },
         closeMenu() {
@@ -110,9 +103,7 @@ export default {
     @keydown.esc.stop.prevent="closeMenu"
     @keydown.tab.stop.prevent
   >
-    <!-- TODO: why do we need the id? -->
     <MenuItems
-      :id="id"
       ref="menuItems"
       class="menu-items"
       :items="items"
@@ -128,7 +119,7 @@ export default {
   display: block;
   min-width: 200px;
   max-width: 320px;
-  
+
   &:focus {
     outline: none;
   }
