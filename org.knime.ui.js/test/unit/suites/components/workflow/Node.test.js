@@ -246,6 +246,42 @@ describe('Node', () => {
         expect(storeConfig.workflow.actions.openDialog).toHaveBeenCalledWith(expect.anything(), 'root:1');
     });
 
+    describe('Mickey-Mouse ports', () => {
+        test.each([
+            ['native node', nativeNode],
+            ['component', componentNode]
+        ])('only first ports of %s are mickey mouse ports', (_, node) => {
+            propsData = { ...node };
+            doMount();
+
+            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+            expect(ports.at(0).attributes().class).toMatch('mickey-mouse');
+            expect(ports.at(1).attributes().class).not.toMatch('mickey-mouse');
+            expect(ports.at(2).attributes().class).toMatch('mickey-mouse');
+            expect(ports.at(3).attributes().class).not.toMatch('mickey-mouse');
+            expect(ports.at(4).attributes().class).not.toMatch('mickey-mouse');
+        });
+
+        test('metanodes have no mickey-mouse ports', () => {
+            propsData = { ...metaNode };
+            doMount();
+
+            let ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
+            ports.forEach(port => {
+                expect(port.attributes().class).not.toMatch('mickey-mouse');
+            });
+        });
+
+        test('connected ports are displayed', () => {
+            propsData = { ...nativeNode };
+            doMount();
+
+            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+            expect(ports.at(0).attributes().class).toMatch('connected');
+            expect(ports.at(1).attributes().class).not.toMatch('connected');
+        });
+    });
+
     describe('Node selection preview', () => {
         beforeEach(() => {
             propsData =
@@ -487,22 +523,19 @@ describe('Node', () => {
             expect(wrapper.findComponent(NodeTorso).attributes().filter).toBe('url(#node-torso-shadow)');
         });
 
-        it('fades-in/out ports', async () => {
+        it('fades-in/out mickey-mouse ports', async () => {
             let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
 
-            // unconnected flowVariable port fades in
-            expect(ports.at(0).attributes().class).toBe('port');
-            // connected port visible already
-            expect(ports.at(1).attributes().class).toBe('port');
-
-
+            // flowVariable ports fades in
+            expect(ports.at(0).attributes().class).toMatch('node-hover');
+            expect(ports.at(1).attributes().class).toMatch('node-hover');
+            
             wrapper.vm.hover = false;
             await Vue.nextTick();
 
-            // unconnected flowVariable port fades out
-            expect(ports.at(0).attributes().class).toMatch('hidden');
-            // connected port stays visible
-            expect(ports.at(1).attributes().class).not.toMatch('hidden');
+            // flowVariable ports fades out
+            expect(ports.at(0).attributes().class).not.toMatch('node-hover');
+            expect(ports.at(1).attributes().class).not.toMatch('node-hover');
         });
 
         it('leaving hover container unsets hover', () => {
@@ -519,7 +552,7 @@ describe('Node', () => {
         });
     });
 
-    describe('Connector Drag & Drop', () => {
+    describe('Connector drag & drop', () => {
         beforeEach(() => {
             propsData = {
                 ...commonNode,
@@ -536,33 +569,22 @@ describe('Node', () => {
             doMount();
         });
 
-        it('hovering with a connector shows hidden ports', async () => {
+        it('hovering with a connector shows mickey-mouse ports', async () => {
             let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
-
-            // unconnected flowVariable ports are hidden
-            expect(ports.at(0).attributes().class).toMatch('hidden');
-            expect(ports.at(1).attributes().class).toMatch('hidden');
-            // ... and not shown
-            expect(ports.at(0).attributes().class).not.toMatch('force-show');
-            expect(ports.at(1).attributes().class).not.toMatch('force-show');
-
 
             wrapper.setData({ connectorHover: true });
             await Vue.nextTick();
 
-
             // flowVariable ports fade in
-            expect(ports.at(0).attributes().class).toMatch('force-show');
-            expect(ports.at(1).attributes().class).toMatch('force-show');
+            expect(ports.at(0).attributes().class).toMatch('connector-hover');
+            expect(ports.at(1).attributes().class).toMatch('connector-hover');
 
             wrapper.setData({ connectorHover: false });
             await Vue.nextTick();
 
-            // flowVariable ports are hidden again
-            expect(ports.at(0).attributes().class).toMatch('hidden');
-            expect(ports.at(1).attributes().class).toMatch('hidden');
-            expect(ports.at(0).attributes().class).not.toMatch('force-show');
-            expect(ports.at(1).attributes().class).not.toMatch('force-show');
+            // unconnected flowVariable ports are hidden
+            expect(ports.at(0).attributes().class).not.toMatch('connector-hover');
+            expect(ports.at(1).attributes().class).not.toMatch('connector-hover');
         });
 
         it('sets target port', async () => {
@@ -658,7 +680,7 @@ describe('Node', () => {
         });
     });
 
-    describe('port positions', () => {
+    describe('Port positions', () => {
         it('for meta node', () => {
             propsData = { ...metaNode };
             doMount();
@@ -711,7 +733,7 @@ describe('Node', () => {
         });
     });
 
-    describe('opening', () => {
+    describe('Opening containers', () => {
         it('opens metanode on double click', async () => {
             propsData = { ...metaNode };
             doMount();

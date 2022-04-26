@@ -177,14 +177,10 @@ export default {
         decoratorBackgroundType() {
             if (this.type) {
                 return this.type;
+            } else {
+                // uppercase first letter of kind (metanode or component)
+                return this.kind[0].toUpperCase() + this.kind.substring(1);
             }
-            if (this.kind === 'component') {
-                return 'Component';
-            }
-            if (this.kind === 'metanode') {
-                return 'Metanode';
-            }
-            return null;
         },
         /**
          * Checks if a streamable execution info has been set. The boolean value of the streamable variable does not
@@ -217,14 +213,15 @@ export default {
 
             if (this.hover) {
                 // buttons are shown as disabled if false, hidden if null
-
                 let extraHorizontalSpace = 0;
+
                 if ('canOpenDialog' in this.allowedActions) {
                     extraHorizontalSpace += this.$shapes.nodeActionBarButtonSpread;
                 }
                 if ('canOpenView' in this.allowedActions) {
                     extraHorizontalSpace += this.$shapes.nodeActionBarButtonSpread;
                 }
+
                 hoverBounds.left -= extraHorizontalSpace / 2;
                 hoverBounds.right += extraHorizontalSpace / 2;
             }
@@ -295,20 +292,19 @@ export default {
         },
 
         // default flow variable ports (Mickey Mouse ears) are only shown if connected, selected, or on hover
-        showPort(port) {
-            if (this.kind === 'metanode') {
-                // Metanodes don't have Mickey Mouse ears, so port #0 is the first "real" port
-                return true;
-            }
+        portAnimationClasses(port) {
+            let isMickeyMousePort = this.kind !== 'metanode' && port.index === 0;
 
-            if (port.index !== 0) {
-                // The port is not a Mickey Mouse ear
-                return true;
-            }
-
-            return Boolean(port.connectedVia.length) || this.hover;
+            if (!isMickeyMousePort) { return {}; }
+            
+            return {
+                'mickey-mouse': true,
+                'connector-hover': this.connectorHover,
+                'connected': port.connectedVia.length, // eslint-disable-line quote-props
+                'node-hover': this.hover
+            };
         },
-
+        
         onLeftDoubleClick(e) {
             // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
             if (this.kind === 'metanode' || (this.kind === 'component' && (e.ctrlKey || e.metaKey))) {
@@ -358,14 +354,14 @@ export default {
          * We use the contextmenu event as click with button = 2 was not reliable.
          */
         onContextMenu(e) {
-            if (this.isDragging) {
-                return;
-            }
+            if (this.isDragging) { return; }
+            
             if (e.ctrlKey || e.metaKey) {
                 // user tries to open component or metanode
                 e.stopPropagation();
                 return;
             }
+
             if (e.shiftKey) {
                 // Multi select
                 this.selectNode(this.id);
@@ -386,8 +382,8 @@ export default {
             return false;
         },
         // public
-        setSelectionPreview(show) {
-            this.showSelectionPreview = show === 'clear' ? null : show;
+        setSelectionPreview(preview) {
+            this.showSelectionPreview = preview === 'clear' ? null : preview;
         }
     }
 };
@@ -508,7 +504,7 @@ export default {
       <DraggablePortWithTooltip
         v-for="port of inPorts"
         :key="`inport-${port.index}`"
-        :class="['port', { hidden: !showPort(port), 'force-show': connectorHover }]"
+        :class="['port', { ...portAnimationClasses(port) }]"
         :relative-position="portPositions.in[port.index]"
         :port="port"
         :node-id="id"
@@ -519,7 +515,7 @@ export default {
       <DraggablePortWithTooltip
         v-for="port of outPorts"
         :key="`outport-${port.index}`"
-        :class="['port', { hidden: !showPort(port), 'force-show': connectorHover }]"
+        :class="['port', { ...portAnimationClasses(port) }]"
         :relative-position="portPositions.out[port.index]"
         :port="port"
         :node-id="id"
@@ -544,30 +540,35 @@ export default {
 }
 
 .port {
-  opacity: 0;
+  &.mickey-mouse {
+    /* TODO: why is this transition no applied when the .connected class is removed? */
+    opacity: 0;
+    transition: opacity 2000ms 0.25s;
+    
+    &.node-hover {
+      /* fade-in port with delay when node is hovered */
+      transition: opacity 0.5s 0.5s;
+      opacity: 1;
+    }
 
-  /* no delay when fading-out flowVar ports */
-  transition: opacity 0.5s;
+    &:hover {
+      /* immediately show port on direct hover */
+      /* TODO: why is "transition opacity 0;" not working? */
+      transition: none;
+      opacity: 1;
+    }
 
-  &:not(.hidden) {
-    opacity: 1;
+    &.connector-hover {
+      /* fade-in port without delay on connectorHover */
+      transition: opacity 0.25s;
+      opacity: 1;
+    }
 
-    /* 0.5 seconds delay when showing flowVar ports, when node is hovered */
-    transition: opacity 0.5s 0.5s;
-  }
-
-  &:hover {
-    opacity: 1;
-
-    /* immediately show flowVar ports on direct hover */
-    transition: none;
-  }
-
-  &.force-show {
-    opacity: 1;
-
-    /* fade-in flowVar ports without delay on connectorHover */
-    transition: opacity 0.25s;
+    &.connected {
+      /* fade in port when a connection has been created */
+      transition: opacity 0.25s;
+      opacity: 1;
+    }
   }
 }
 
