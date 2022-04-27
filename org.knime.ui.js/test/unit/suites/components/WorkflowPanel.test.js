@@ -104,38 +104,27 @@ describe('WorkflowPanel', () => {
     });
 
     describe('Context menu', () => {
-        it('renders context menu', () => {
+        it('renders context menu', async () => {
             doShallowMount();
-            expect(wrapper.findComponent(ContextMenu).exists()).toBe(true);
-        });
-
-        it('passes position to context menu', async () => {
-            doShallowMount();
+            
+            expect(wrapper.findComponent(ContextMenu).exists()).toBe(false);
+            
             wrapper.trigger('contextmenu', { clientX: 242, clientY: 122 });
             await wrapper.vm.$nextTick();
-            expect(wrapper.findComponent(ContextMenu).props('isVisible')).toBe(true);
+            
             expect(wrapper.findComponent(ContextMenu).props('position')).toStrictEqual({ x: 242, y: 122 });
         });
 
         it('handles @menu-close event from ContextMenu properly', async () => {
             doShallowMount();
+            
             wrapper.trigger('contextmenu', { clientX: 100, clientY: 200 });
             await wrapper.vm.$nextTick();
-            expect(wrapper.findComponent(ContextMenu).props('isVisible')).toBe(true);
+            
             wrapper.findComponent(ContextMenu).vm.$emit('menu-close');
+            
             await wrapper.vm.$nextTick();
-            expect(wrapper.findComponent(ContextMenu).props('isVisible')).toBe(false);
-        });
-
-        it('ignores right click if ctrl or meta is pressed', async () => {
-            doShallowMount();
-            wrapper.trigger('contextmenu', { clientX: 242, clientY: 122, ctrlKey: true });
-            await wrapper.vm.$nextTick();
-            expect(wrapper.findComponent(ContextMenu).props('isVisible')).toBe(false);
-
-            wrapper.trigger('contextmenu', { clientX: 242, clientY: 122, metaKey: true });
-            await wrapper.vm.$nextTick();
-            expect(wrapper.findComponent(ContextMenu).props('isVisible')).toBe(false);
+            expect(wrapper.findComponent(ContextMenu).exists()).toBe(false);
         });
     });
 });

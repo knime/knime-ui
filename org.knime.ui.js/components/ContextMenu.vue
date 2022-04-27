@@ -10,6 +10,9 @@ export default {
         FloatingMenu
     },
     props: {
+        /**
+         * TODO: please comment what this position is relative to
+         */
         position: {
             type: Object,
             required: true,

@@ -1,6 +1,5 @@
 /* eslint-disable no-magic-numbers */
 import { mount, shallowMount } from '@vue/test-utils';
-import Vue from 'vue';
 
 import FloatingMenu from '~/components/FloatingMenu';
 import MenuItems from '~/webapps-common/ui/components/MenuItems';
@@ -28,8 +27,7 @@ describe('FloatingMenu.vue', () => {
             position: {
                 x: 0,
                 y: 0
-            },
-            isVisible: false
+            }
         };
         doMount = () => {
             wrapper = mount(FloatingMenu, {
@@ -53,15 +51,11 @@ describe('FloatingMenu.vue', () => {
     });
 
     describe('close menu', () => {
-        it('closes menu on escape key', async () => {
+        it('closes menu on escape key', () => {
             doMount();
-            expect(wrapper.classes()).not.toContain('isVisible');
-            wrapper.setProps({ isVisible: true });
-            await Vue.nextTick();
-            expect(wrapper.classes()).toContain('isVisible');
+            
             wrapper.trigger('keydown.esc');
-            await Vue.nextTick();
-            expect(wrapper.emitted('menu-close')).toStrictEqual([[]]);
+            expect(wrapper.emitted('menu-close')).toBeDefined();
         });
 
         it('closes menu if item is clicked', () => {
@@ -70,21 +64,15 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.emitted('menu-close')).toBeDefined();
         });
 
-        it('closes menu when focus leaves the component', async () => {
+        it('closes menu when focus leaves the component', () => {
             jest.useFakeTimers();
 
             doMount();
-
-            expect(wrapper.classes()).not.toContain('isVisible');
-            wrapper.setProps({ isVisible: true });
-            await Vue.nextTick();
-            expect(wrapper.classes()).toContain('isVisible');
-
             wrapper.trigger('focusout');
 
             jest.runAllTimers();
 
-            expect(wrapper.emitted('menu-close')).toStrictEqual([[]]);
+            expect(wrapper.emitted('menu-close')).toBeDefined();
         });
     });
 
@@ -96,41 +84,5 @@ describe('FloatingMenu.vue', () => {
         expect(wrapper.emitted()['item-click'][0][0].userData).toStrictEqual(
             { storeAction: 'workflow/executeNode' }
         );
-    });
-
-
-    it('positions menu to be always visible', async () => {
-        // mock window
-        const originalWindow = { ...window };
-        const windowSpy = jest.spyOn(global, 'window', 'get');
-        windowSpy.mockImplementation(() => ({
-            ...originalWindow,
-            innerWidth: 1200,
-            innerHeight: 800
-        }));
-
-        // mount visible menu
-        propsData.isVisible = true;
-        doMount();
-
-        // "mock" element values
-        wrapper.vm.$el = {
-            ...wrapper.vm.$el,
-            offsetWidth: 200,
-            offsetHeight: 400
-        };
-
-        // trigger update via position change
-        await wrapper.setProps({
-            position: {
-                x: 1200,
-                y: 800
-            }
-        });
-
-        expect(wrapper.attributes('style')).toBe('left: 996px; top: 396px;');
-
-        // cleanup
-        windowSpy.mockRestore();
     });
 });

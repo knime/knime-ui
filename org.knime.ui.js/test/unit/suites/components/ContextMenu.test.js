@@ -18,7 +18,6 @@ describe('ContextMenu.vue', () => {
     beforeEach(() => {
         wrapper = null;
         propsData = {
-            isVisible: false,
             position: {
                 x: 0,
                 y: 0
@@ -27,8 +26,11 @@ describe('ContextMenu.vue', () => {
 
         storeConfig = {
             selection: {
+                state: () => ({
+                    _selectedNodes: []
+                }),
                 getters: {
-                    selectedNodes: () => [],
+                    selectedNodes: (state) => state._selectedNodes,
                     singleSelectedNode: () => null,
                     selectedConnections: () => []
                 }
@@ -52,40 +54,32 @@ describe('ContextMenu.vue', () => {
         };
     });
 
-
-    it('renders empty', () => {
+    it('sets items on mounted', () => {
         doMount();
-        let floatingMenu = wrapper.findComponent(FloatingMenu);
-        expect(floatingMenu.exists()).toBe(true);
-        expect(floatingMenu.props('items')).toStrictEqual([]);
-        expect(floatingMenu.props('position')).toStrictEqual({ x: 0, y: 0 });
+        
+        expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(3);
     });
 
-    it('shows menu', async () => {
+    it('items are not set reactively', async () => {
         doMount();
-        expect(wrapper.findComponent(FloatingMenu).props().isVisible).toBe(false);
 
-        wrapper.setProps({ isVisible: true, position: { x: 100, y: 250 } });
+        $store.state.selection._selectedNodes = ['a node'];
+        expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
         await Vue.nextTick();
-
-        expect(wrapper.findComponent(FloatingMenu).props().isVisible).toBe(true);
-        expect(wrapper.findComponent(FloatingMenu).props().position).toStrictEqual({ x: 100, y: 250 });
-    });
-
-    it('sets items on isVisible change', async () => {
-        doMount();
-        expect(wrapper.findComponent(FloatingMenu).props('items')).toStrictEqual([]);
-        wrapper.setProps({ isVisible: true });
-        await Vue.nextTick();
+        
         expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(3);
     });
 
     it('sets items on position change', async () => {
         doMount();
-        expect(wrapper.findComponent(FloatingMenu).props('items')).toStrictEqual([]);
+        
+        $store.state.selection._selectedNodes = ['a node'];
+        expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
+        
         wrapper.setProps({ position: { x: 2, y: 3 } });
         await Vue.nextTick();
-        expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(3);
+
+        expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(4);
     });
 
     it('uses right format for menuItems for FloatingMenu', async () => {

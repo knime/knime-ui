@@ -5,11 +5,9 @@ import MenuItems from '~/webapps-common/ui/components/MenuItems';
 const SCROLLBAR_OFFSET = 4; // px
 
 /*
- * The FloatingMenu component is a menu similar to the SubMenu but with position logic to always be
- * visible at window borders and absolute top, left coordinates.
- * The menu is hidden unless the isVisible prop is true. If the menu will be closed it emits @menu-close event. The
- * parent component needs to make sure the isVisible prop gets updated. Menu will be closed on `esc` key press,
- * click away or if an item has been selected.
+ * The FloatingMenu component is a menu similar to the SubMenu.
+ * If the menu wants to be closed it emits @menu-close event.
+ * The menu will be closed on `esc` key press, click away or if an item has been selected.
  *
  * Example:
  * |--------------------|
@@ -77,15 +75,15 @@ export default {
             this.$emit('item-click', event, item);
             this.closeMenu();
         },
-        closeMenu() {
-            this.$emit('menu-close');
-        },
         onFocusOut(e) {
             setTimeout(() => {
                 if (!this.$el.contains(document.activeElement)) {
                     this.closeMenu();
                 }
             }, 1);
+        },
+        closeMenu() {
+            this.$emit('menu-close');
         }
     }
 };
