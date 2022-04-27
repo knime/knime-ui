@@ -12,21 +12,28 @@ export default {
         port: {
             type: Object,
             required: true,
-            validator: port => (typeof port.inactive === 'boolean' || !port.inactive) && typeof port.type === 'string'
+            validator: port => (typeof port.inactive === 'boolean' || !port.inactive) && typeof port.typeId === 'string'
+        },
+        portColor: {
+            type: String,
+            required: false, // Needed to prevent an exception within `Carousel.vue`
+            default: '', // Needed to prevent an exception within `Carousel.vue`
+            validator: portColor => typeof portColor === 'string'
+        },
+        portKind: {
+            type: String,
+            required: false, // Needed to prevent an exception within `Carousel.vue`
+            default: '', // Needed to prevent an exception within `Carousel.vue`
+            validator: portKind => typeof ['table', 'flowVariable', 'generic', 'other'].includes(portKind)
         }
     },
     computed: {
         shouldFill() {
-            if (this.port.type === 'flowVariable' && this.port.index === 0) {
+            if (this.portKind === 'flowVariable' && this.port.index === 0) {
                 // Mickey Mouse ears are always rendered filled, even though they may technically be optional
                 return true;
             }
             return !this.port.optional;
-        },
-        portColor() {
-            // Flow Variable Ports and Data Table Ports have constant colors
-            // Other port types serve their own color
-            return this.$colors.portColors[this.port.type] || this.port.color;
         },
         /**
          * the traffic light of a metanode port displays the state of the inner node that it is connected to
@@ -57,7 +64,7 @@ export default {
     />
     <g class="scale">
       <PortIcon
-        :type="port.type"
+        :type="portKind"
         :color="portColor"
         :filled="shouldFill"
       />

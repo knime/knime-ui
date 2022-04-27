@@ -7,8 +7,6 @@ import Button from '~/webapps-common/ui/components/Button';
 import PlayIcon from '~/assets/execute.svg?inline';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 
-export const supportsPort = port => port.type === 'table' || port.type === 'flowVariable';
-
 const needsExecutionMessage = 'To show the output table, please execute the selected node.';
 const outputAvailableAfterExecutionMessage = 'Output is available after execution.';
 
@@ -37,6 +35,9 @@ export default {
         }),
         ...mapState('application', { projectId: 'activeProjectId' }),
         ...mapGetters('workflow', { workflowId: 'activeWorkflowId' }),
+        ...mapState('workflow', {
+            portTypes: (state) => state.activeWorkflow.portTypes
+        }),
         
         // ========================== Sanity Check ============================
         // The following properties execute from top to bottom
@@ -45,7 +46,7 @@ export default {
         selectedNodes() {
             return this.$store.getters['selection/selectedNodes'];
         },
-        
+
         // Step 1: make sure only one node is selected
         selectionHasProblem() {
             if (this.selectedNodes.length === 0) {
@@ -76,7 +77,7 @@ export default {
             }
 
             // check if node has at least one supported port
-            if (!node.outPorts.some(port => supportsPort(port))) {
+            if (!node.outPorts.some(port => this.supportsPort(port))) {
                 return 'The selected node has no supported output port.';
             }
             
@@ -98,7 +99,7 @@ export default {
             let port = this.selectedPort;
             if (!port) { return 'No port selected'; }
                             
-            if (!supportsPort(port)) {
+            if (!this.supportsPort(port)) {
                 return 'The data at the output port is not supported by any viewer.';
             }
 
@@ -213,6 +214,11 @@ export default {
         onViewerUpdate(state) {
             consola.trace('port viewer state changed', state);
             this.portViewerState = state;
+        },
+        // Check if port is supported
+        supportsPort(port) {
+            const portKind = this.portTypes[port.typeId].kind;
+            return portKind === 'table' || portKind === 'flowVariable';
         }
     }
 };
