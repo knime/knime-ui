@@ -1,4 +1,5 @@
 <script>
+import { mapState } from 'vuex';
 import PortIcon from '~/webapps-common/ui/components/node/PortIcon';
 
 export default {
@@ -13,21 +14,23 @@ export default {
             type: Object,
             required: true,
             validator: port => (typeof port.inactive === 'boolean' || !port.inactive) && typeof port.typeId === 'string'
-        },
-        portColor: {
-            type: String,
-            required: false, // Needed to prevent an exception within `Carousel.vue`
-            default: '', // Needed to prevent an exception within `Carousel.vue`
-            validator: portColor => typeof portColor === 'string'
-        },
-        portKind: {
-            type: String,
-            required: false, // Needed to prevent an exception within `Carousel.vue`
-            default: '', // Needed to prevent an exception within `Carousel.vue`
-            validator: portKind => typeof ['table', 'flowVariable', 'generic', 'other'].includes(portKind)
         }
     },
     computed: {
+        ...mapState('workflow', {
+            portTypes: (state) => state.activeWorkflow.portTypes
+        }),
+        portKind() {
+            // port kind has to be fetched from port type map
+            return this.portTypes[this.port.typeId].kind;
+        },
+        portColor() {
+            return this.portKind === 'other'
+                // 'other' port types bring their own color
+                ? this.portTypes[this.port.typeId].color
+                // built-in port types have constant colors
+                : this.$colors.portColors[this.portKind];
+        },
         shouldFill() {
             if (this.portKind === 'flowVariable' && this.port.index === 0) {
                 // Mickey Mouse ears are always rendered filled, even though they may technically be optional

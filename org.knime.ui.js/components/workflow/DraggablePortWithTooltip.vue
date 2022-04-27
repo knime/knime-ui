@@ -1,5 +1,5 @@
 <script>
-import { mapGetters, mapActions, mapState } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 import PortWithTooltip from '~/components/workflow/PortWithTooltip';
 import Port from '~/components/workflow/Port';
 import Connector from '~/components/workflow/Connector';
@@ -44,9 +44,6 @@ export default {
     computed: {
         ...mapGetters('canvas', ['toCanvasCoordinates']),
         ...mapGetters('workflow', ['isWritable']),
-        ...mapState('workflow', {
-            portTypes: (state) => state.activeWorkflow.portTypes
-        }),
         /*
          * only in-Ports replace their current connector if a new one is connected
          * only in-Ports that are connected need to indicate connector replacement
@@ -56,17 +53,6 @@ export default {
         indicateConnectorReplacement() {
             return this.direction === 'in' && Boolean(this.port.connectedVia.length) &&
             (this.targeted || Boolean(this.dragConnector));
-        },
-        portKind() {
-            // port kind has to be fetched from port type map
-            return this.portTypes[this.port.typeId].kind;
-        },
-        portColor() {
-            return this.portKind === 'other'
-                // 'other' port types bring their own color
-                ? this.portTypes[this.port.typeId].color
-                // built-in port types have constant colors
-                : this.$colors.portColors[this.portKind];
         }
     },
     watch: {
@@ -258,8 +244,6 @@ export default {
   >
     <PortWithTooltip
       :port="port"
-      :port-kind="portKind"
-      :port-color="portColor"
       :tooltip-position="relativePosition"
     />
     <portal
@@ -273,8 +257,6 @@ export default {
       <Port
         class="non-interactive"
         :port="port"
-        :port-kind="portKind"
-        :port-color="portColor"
         :transform="`translate(${dragConnector.absolutePoint})`"
       />
     </portal>
