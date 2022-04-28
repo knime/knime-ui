@@ -12,10 +12,7 @@ export default {
     },
     data() {
         return {
-            /*
-            * null (or falsy) means context menu is invisible, otherwise should be an Object with x, y as Numbers
-            * @type {?{x: Number, y: Number}}
-            */
+            // null (or falsy) means context menu is invisible, otherwise should be an Object with x, y as Numbers
             contextMenuPosition: null
         };
     },
