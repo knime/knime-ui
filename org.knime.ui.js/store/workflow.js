@@ -19,7 +19,8 @@ export const state = () => ({
     activeSnapshotId: null,
     tooltip: null,
     isDragging: false,
-    deltaMovePosition: { x: 0, y: 0 }
+    deltaMovePosition: { x: 0, y: 0 },
+    nameEditorNodeId: null
 });
 
 export const mutations = {
@@ -47,6 +48,9 @@ export const mutations = {
     // change the isDragging property to the provided Value
     setDragging(state, { isDragging }) {
         state.isDragging = isDragging;
+    },
+    setNameEditorNodeId(state, nodeId) {
+        state.nameEditorNodeId = nodeId;
     }
 };
 
@@ -221,7 +225,12 @@ export const actions = {
         let { activeWorkflow: { projectId } } = state;
         closeWorkflow({ projectId });
     },
-
+    openNameEditor({ commit }, nodeId) {
+        commit('setNameEditorNodeId', nodeId);
+    },
+    closeNameEditor({ commit }) {
+        commit('setNameEditorNodeId', null);
+    },
     /**
      * Move either the outline of the nodes or the nodes itself,
      * depending on the amount of selected nodes. Delta is hereby the amount

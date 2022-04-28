@@ -244,5 +244,33 @@ describe('ContextMenu.vue', () => {
                 ])
             );
         });
+
+        it.each([
+            ['metanode', 'visible'],
+            ['component', 'visible'],
+            ['node', 'not visible']
+        ])('edit name option for "%s" is: "%s"', async (kind, visibility) => {
+            const node = {
+                id: 'root:0',
+                kind,
+                allowedActions: {}
+            };
+            storeConfig.selection.getters.selectedNodes = () => [node];
+            storeConfig.selection.getters.singleSelectedNode = () => node;
+            const isVisible = visibility === 'visible';
+
+            doMount();
+            wrapper.vm.show({ clientX: 0, clientY: 0 });
+
+            await Vue.nextTick();
+
+            const menuItemNames = wrapper.findComponent(FloatingMenu).props('items').map(i => i.name);
+
+            if (isVisible) {
+                expect(menuItemNames).toContain('editName');
+            } else {
+                expect(menuItemNames).not.toContain('editName');
+            }
+        });
     });
 });

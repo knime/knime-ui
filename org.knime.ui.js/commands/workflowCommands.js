@@ -73,8 +73,10 @@ export default {
             ({ $store }) => $store.dispatch('workflow/openNameEditor',
                 $store.getters['selection/singleSelectedNode'].id),
         condition:
-            ({ $store }) => ['metanode', 'component'].includes($store.getters['selection/singleSelectedNode']?.kind) &&
-                !$store.getters['selection/singleSelectedNode']?.link
+            ({ $store }) => ['metanode', 'component']
+                .includes($store.getters['selection/singleSelectedNode']?.kind) &&
+                !$store.getters['selection/singleSelectedNode']?.link &&
+                $store.getters['workflow/isWritable']
     },
     deleteSelected: {
         text: 'Delete',

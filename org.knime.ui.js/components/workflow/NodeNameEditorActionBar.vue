@@ -37,7 +37,7 @@ export default {
 </script>
 
 <template>
-  <g>
+  <g @contextmenu.stop.prevent>
     <ActionButton
       v-for="([event, icon, primary], index) in actions"
       :key="event"
