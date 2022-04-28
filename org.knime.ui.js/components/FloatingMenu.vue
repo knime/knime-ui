@@ -40,8 +40,6 @@ export default {
     },
     computed: {
         absolutePosition() {
-            consola.trace('recalculating context menu position');
-
             const menuWidth = (this.$el?.offsetWidth || 0) + SCROLLBAR_OFFSET;
             const menuHeight = (this.$el?.offsetHeight || 0) + SCROLLBAR_OFFSET;
 
