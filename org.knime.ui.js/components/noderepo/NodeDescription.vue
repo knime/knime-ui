@@ -1,6 +1,6 @@
 <script>
 import { mapState, mapActions, mapGetters } from 'vuex';
-import CloseIcon from '~/assets/cancel-execution.svg?inline';
+import CloseIcon from '~/assets/cancel.svg?inline';
 import Description from '~/webapps-common/ui/components/Description';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 

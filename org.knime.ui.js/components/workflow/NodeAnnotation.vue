@@ -1,11 +1,12 @@
 <script>
 import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
-import { mapState } from 'vuex';
+import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
 /**
  * A node annotation, a rectangular box containing text.
  */
 export default {
     components: {
+        AutoSizeForeignObject,
         LegacyAnnotationText
     },
     inheritAttrs: false,
@@ -43,20 +44,17 @@ export default {
         /**
          * Optional y-offset relative to the default position.
          */
-        yShift: {
+        yOffset: {
             type: Number,
             default: 0
         }
     },
     data() {
         return {
-            width: this.$shapes.maxNodeAnnotationWidth,
-            height: 0,
-            x: 0
+            resizeKey: '0'
         };
     },
     computed: {
-        ...mapState('canvas', ['zoomFactor']),
         textStyle() {
             return {
                 textAlign: this.textAlign,
@@ -64,60 +62,30 @@ export default {
                 padding: `${this.$shapes.nodeAnnotationPadding}px`,
                 fontSize: `${this.defaultFontSize}px`
             };
-        },
-        y() {
-            let result = this.$shapes.nodeSize + this.$shapes.nodeAnnotationMarginTop;
-            if (this.yShift) {
-                result += this.yShift;
-            }
-            return result;
         }
     },
     watch: {
-        textAlign() { this.adjustDimensions(); },
-        defaultFontSize() { this.adjustDimensions(); },
-        text() { this.adjustDimensions(); },
-        styleRanges() { this.adjustDimensions(); }
-    },
-    mounted() {
-        this.adjustDimensions();
+        textAlign() { this.updateResizeKey(); },
+        defaultFontSize() { this.updateResizeKey(); },
+        text() { this.updateResizeKey(); },
+        styleRanges() { this.updateResizeKey(); }
     },
     methods: {
-        // foreignObject requires `width` and `height` attributes, or the content is cut off.
-        // So we need to 1. render, 2. measure, 3. update
-        adjustDimensions() {
-            // 1. render with max width
-            this.width = this.$shapes.maxNodeAnnotationWidth;
-            this.$nextTick(() => { // wait for re-render
-                // 2. measure content's actual size
-                let rect = this.$refs.text?.$el.getBoundingClientRect();
-                if (!rect) {
-                    consola.error('Tried to adjust dimensions of NodeAnnotation, but DOM element is gone');
-                    return;
-                }
-                // account for zoom
-                let width = Math.ceil(rect.width / this.zoomFactor);
-                let height = Math.ceil(rect.height / this.zoomFactor);
-                
-                // 3. set container size to content size
-                this.width = width;
-                this.height = height;
-                
-                // center container
-                this.x = (this.$shapes.nodeSize - this.width) / 2;
-            });
+        updateResizeKey() {
+            this.resizeKey = `${Number(this.resizeKey) + 1}`;
         }
     }
 };
 </script>
 
 <template>
-  <foreignObject
+  <AutoSizeForeignObject
+    ref="container"
     class="container"
-    :width="width"
-    :height="height"
-    :x="x"
-    :y="y"
+    :resize-key="resizeKey"
+    :y-offset="$shapes.nodeSize + $shapes.nodeAnnotationMarginTop + yOffset"
+    :parent-width="$shapes.nodeSize"
+    :max-width="$shapes.maxNodeAnnotationWidth"
   >
     <LegacyAnnotationText
       ref="text"
@@ -126,7 +94,7 @@ export default {
       :text="text"
       :style-ranges="styleRanges"
     />
-  </foreignObject>
+  </AutoSizeForeignObject>
 </template>
 
 <style lang="postcss" scoped>
@@ -140,7 +108,6 @@ export default {
   }
 
   & .text {
-    display: inline-block;
     text-align: center;
   }
 }

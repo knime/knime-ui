@@ -20,6 +20,7 @@ import '~/plugins/directive-move';
 
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
+import NodeName from '~/components/workflow/NodeName';
 
 const mockPort = ({ index, connectedVia = [] }) => ({
     inactive: false,
@@ -146,12 +147,8 @@ describe('Node', () => {
 
     describe('features', () => {
         beforeEach(() => {
-            propsData = { ...commonNode };
+            propsData = JSON.parse(JSON.stringify(commonNode));
             doMount();
-        });
-
-        it('displays name (plaintext)', () => {
-            expect(wrapper.find('.name').text()).toBe('My Name');
         });
 
         it('shows/hides LinkDecorator', () => {
@@ -175,6 +172,20 @@ describe('Node', () => {
             expect(wrapper.findComponent(LoopDecorator).exists()).toBe(true);
         });
 
+        it("doesn't render non-existent node annotation", () => {
+            delete propsData.annotation;
+            doMount();
+
+            expect(wrapper.findComponent(NodeAnnotation).exists()).toBe(false);
+        });
+
+        it("doesn't render empty node annotation", () => {
+            propsData.annotation.text = '';
+            doMount();
+
+            expect(wrapper.findComponent(NodeAnnotation).exists()).toBe(false);
+        });
+
         it('displays annotation', () => {
             expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
                 backgroundColor: 'rgb(255, 216, 0)',
@@ -182,7 +193,7 @@ describe('Node', () => {
                 styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
                 text: 'ThatsMyNode',
                 textAlign: 'center',
-                yShift: 20
+                yOffset: 20
             });
         });
 
@@ -195,7 +206,7 @@ describe('Node', () => {
                 styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
                 text: 'ThatsMyNode',
                 textAlign: 'center',
-                yShift: 0
+                yOffset: 0
             });
         });
 
@@ -357,7 +368,7 @@ describe('Node', () => {
                 canOpenDialog: true,
                 canOpenView: false
             });
-            expect(wrapper.findComponent(NodeActionBar).attributes().transform).toBe('translate(516 163)');
+            expect(wrapper.findComponent(NodeActionBar).attributes().transform).toBe('translate(516, 161)');
         });
 
         it('click to select', async () => {
@@ -464,6 +475,18 @@ describe('Node', () => {
             wrapper.vm.hover = true;
             let largeHoverWidth = wrapper.vm.hoverSize.width;
             expect(largeHoverWidth > smallHoverWidth).toBe(true);
+        });
+
+        it('fits the hover-area to the node name', async () => {
+            let { y: oldY, height: oldHeight } = wrapper.find('.hover-area').attributes();
+            
+            // increase from 20 to 40 (by 20)
+            wrapper.findComponent(NodeName).vm.$emit('height-change', 40);
+            await Vue.nextTick();
+            
+            let { y, height } = wrapper.find('.hover-area').attributes();
+            expect(oldY - y).toBe(20);
+            expect(height - oldHeight).toBe(20);
         });
 
         it('shows selection plane and action buttons', () => {
@@ -752,6 +775,84 @@ describe('Node', () => {
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
             expect(storeConfig.workflow.actions.loadWorkflow).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('Node name', () => {
+        beforeEach(() => {
+            propsData = { ...commonNode };
+            doMount();
+        });
+        
+        it('should forward to NodeName component', () => {
+            expect(wrapper.findComponent(NodeName).props()).toStrictEqual({
+                nodeId: commonNode.id,
+                nodePosition: commonNode.position,
+                value: commonNode.name,
+                editable: expect.any(Boolean)
+            });
+        });
+
+        it.each([
+            ['metanode', true],
+            ['component', true],
+            ['node', false]
+        ])('should set the editable prop for "%s" as "%s"', async (kind, expectedValue) => {
+            await wrapper.setProps({ kind });
+
+            expect(wrapper.findComponent(NodeName).props('editable')).toBe(expectedValue);
+        });
+
+        it('should display/hide node actions on mouseenter/mouseleave', async () => {
+            expect(wrapper.findComponent(NodeActionBar).exists()).toBe(false);
+            
+            wrapper.findComponent(NodeName).vm.$emit('mouseenter');
+            
+            await Vue.nextTick();
+            expect(wrapper.findComponent(NodeActionBar).exists()).toBe(true);
+
+            const dummyNode = document.createElement('div');
+            wrapper.findComponent(NodeName).vm.$emit('mouseleave', { relatedTarget: dummyNode });
+            
+            await Vue.nextTick();
+            expect(wrapper.findComponent(NodeActionBar).exists()).toBe(false);
+        });
+
+        it('should handle contextmenu events', async () => {
+            wrapper.findComponent(NodeName).vm.$emit('contextmenu', {});
+            await Vue.nextTick();
+            expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.stringMatching('root:1')
+            );
+        });
+
+        it('should handle click events', async () => {
+            wrapper.findComponent(NodeName).trigger('click', { button: 0 });
+            await Vue.nextTick();
+            expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.stringMatching('root:1')
+            );
+        });
+
+        it('should handle width dimension changes and update the selection outline', async () => {
+            const mockWidth = 200;
+            const expectedSelectionWidth = mockWidth + $shapes.nodeNameHorizontalMargin * 2;
+            wrapper.findComponent(NodeName).vm.$emit('width-change', mockWidth);
+
+            await Vue.nextTick();
+
+            expect(wrapper.findComponent(NodeSelectionPlane).props('width')).toBe(expectedSelectionWidth);
+        });
+
+        it('should handle height dimension changes and update the selection outline', async () => {
+            const mockHeight = 200;
+            wrapper.findComponent(NodeName).vm.$emit('height-change', mockHeight);
+
+            await Vue.nextTick();
+
+            expect(wrapper.findComponent(NodeSelectionPlane).props('extraHeight')).toBe(mockHeight);
         });
     });
 });

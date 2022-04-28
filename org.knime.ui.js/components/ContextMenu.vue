@@ -41,6 +41,7 @@ export default {
             const isView = this.singleSelectedNode && 'canOpenView' in this.singleSelectedNode.allowedActions;
             const hasLegacyFlowVariableDialog = this.singleSelectedNode &&
                 'canOpenLegacyFlowVariableDialog' in this.singleSelectedNode.allowedActions;
+            const isMetanodeOrComponent = ['metanode', 'component'].includes(this.visibleCommands?.kind);
 
             let allMenuItems = {
                 // Exactly one node selected
@@ -56,7 +57,8 @@ export default {
 
                 configureFlowVariables: hasLegacyFlowVariableDialog,
                 openView: isView,
-                
+                editName: isMetanodeOrComponent,
+
                 // Something selected
                 deleteSelected: somethingSelected,
 
