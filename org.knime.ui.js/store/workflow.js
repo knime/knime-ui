@@ -1,6 +1,7 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
-    moveObjects, openDialog, openLegacyFlowVariableDialog, openView, undo, redo, removeEventListener, connectNodes,
-    addNode, saveWorkflow, closeWorkflow } from '~api';
+    moveObjects, openDialog, openLegacyFlowVariableDialog as configureFlowVariables,
+    openView, undo, redo, removeEventListener, connectNodes,
+    addNode, saveWorkflow, closeWorkflow, renameContainer } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -199,8 +200,8 @@ export const actions = {
         openDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
     /* See docs in API */
-    openLegacyFlowVariableDialog({ state }, nodeId) {
-        openLegacyFlowVariableDialog({ projectId: state.activeWorkflow.projectId, nodeId });
+    configureFlowVariables({ state }, nodeId) {
+        configureFlowVariables({ projectId: state.activeWorkflow.projectId, nodeId });
     },
     /* See docs in API */
     undo({ state, getters }) {
@@ -236,6 +237,24 @@ export const actions = {
     },
 
     /**
+     * Renames a container (metanode or component).
+     * @param {Object} context - store context
+     * @param {string} params.nodeId - container node id
+     * @param {string} params.name - new new
+     * @returns {void} - nothing to return
+     */
+    renameContainer({ state, getters }, { nodeId, name }) {
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflowId } = getters;
+        renameContainer({
+            nodeId,
+            name,
+            projectId,
+            workflowId: activeWorkflowId
+        });
+    },
+
+    /**
      * Calls the API to save the position of the nodes after the move is over
      * @param {Object} context - store context
      * @param {Object} params
@@ -247,13 +266,11 @@ export const actions = {
     saveNodeMoves({ state, getters, commit, rootGetters }, { projectId }) {
         let translation;
         let selectedNodes = rootGetters['selection/selectedNodeIds'];
-        
         // calculate the translation either relative to the position or the outline position
         translation = {
             x: state.deltaMovePosition.x,
             y: state.deltaMovePosition.y
         };
-        
         moveObjects({
             projectId,
             workflowId: getters.activeWorkflowId,

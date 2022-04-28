@@ -47,7 +47,7 @@ describe('workflowCommands', () => {
 
         test('configureFlowVariables', () => {
             workflowCommands.configureFlowVariables.execute({ $store });
-            expect(mockDispatch).toHaveBeenCalledWith('workflow/openLegacyFlowVariableDialog', 'root:0');
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/configureFlowVariables', 'root:0');
         });
 
         test('openView', () => {

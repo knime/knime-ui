@@ -10,6 +10,7 @@ import LoopDecorator from '~/components/workflow/LoopDecorator';
 import portShift from '~/util/portShift';
 import NodeActionBar from '~/components/workflow/NodeActionBar';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
+import NodeName from '~/components/workflow/NodeName';
 import { snapConnector } from '~/mixins';
 
 /**
@@ -31,6 +32,7 @@ export default {
         LinkDecorator,
         StreamingDecorator,
         LoopDecorator,
+        NodeName,
         NodeSelectionPlane
     },
     mixins: [snapConnector],
@@ -165,15 +167,18 @@ export default {
     data() {
         return {
             hover: false,
-            showSelectionPreview: null
+            showSelectionPreview: null,
+            nameDimensions: {
+                width: 0,
+                height: 20
+            }
         };
     },
     computed: {
-        ...mapState('application', {
-            projectId: 'activeProjectId'
-        }),
-        ...mapGetters('selection', ['isNodeSelected']),
+        ...mapState('application', { projectId: 'activeProjectId' }),
         ...mapState('workflow', ['isDragging']),
+        ...mapGetters('selection', ['isNodeSelected']),
+        ...mapGetters('workflow', ['isWritable']),
         decoratorBackgroundType() {
             if (this.type) {
                 return this.type;
@@ -185,6 +190,14 @@ export default {
                 return 'Metanode';
             }
             return null;
+        },
+        /**
+         * Width of the node selection plane. It accounts not only for the node margins
+         * but also for the width of the name as it changes
+         * @return {boolean}
+         */
+        selectionWidth() {
+            return this.nameDimensions.width + (this.$shapes.nodeNameHorizontalMargin * 2);
         },
         /**
          * Checks if a streamable execution info has been set. The boolean value of the streamable variable does not
@@ -214,6 +227,9 @@ export default {
                 bottom: this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[2],
                 right: this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[3]
             };
+            
+            // adjust upper hover bounds to node name
+            hoverBounds.top -= this.nameDimensions.height;
 
             if (this.hover) {
                 // buttons are shown as disabled if false, hidden if null
@@ -229,7 +245,7 @@ export default {
                 hoverBounds.right += extraHorizontalSpace / 2;
             }
             if (this.connectorHover || this.hover) {
-                // enlargen hover area to include all ports
+                // enlarge hover area to include all ports
                 let newBottom = Math.max(hoverBounds.bottom, this.portBarHeight);
                 hoverBounds.bottom = newBottom;
             }
@@ -276,6 +292,16 @@ export default {
             }
 
             return this.showSelectionPreview === 'show' || isSelected;
+        },
+        isNameEditable() {
+            // only non-linked metanodes and components have editable names
+            return this.isWritable && ['metanode', 'component'].includes(this.kind) && this.link === null;
+        },
+        actionBarPosition() {
+            return {
+                x: this.position.x + this.$shapes.nodeSize / 2,
+                y: this.position.y - this.$shapes.nodeSelectionPadding[0] - this.nameDimensions.height
+            };
         }
     },
     methods: {
@@ -312,14 +338,14 @@ export default {
         onLeftDoubleClick(e) {
             // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
             if (this.kind === 'metanode' || (this.kind === 'component' && (e.ctrlKey || e.metaKey))) {
-                this.openNode();
+                this.openContainer();
             } else if (this.allowedActions?.canOpenDialog) {
                 // open node dialog if one is present
                 this.openDialog(this.id);
             }
         },
 
-        openNode() {
+        openContainer() {
             this.$store.dispatch('application/switchWorkflow', { workflowId: this.id, projectId: this.projectId });
         },
         /*
@@ -403,7 +429,7 @@ export default {
         v-if="!insideStreamingComponent && hover"
         ref="actionbar"
         v-bind="allNodeActions"
-        :transform="`translate(${position.x + $shapes.nodeSize / 2} ${position.y - $shapes.nodeSelectionPadding[0]})`"
+        :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y})`"
         :node-id="id"
         @mouseleave.native="onLeaveHoverArea"
       />
@@ -416,26 +442,18 @@ export default {
       <NodeSelectionPlane
         v-show="showSelectionPlane"
         :position="position"
+        :width="selectionWidth"
+        :extra-height="nameDimensions.height"
         :kind="kind"
       />
     </portal>
 
     <!-- Annotation needs to be behind ports -->
     <NodeAnnotation
-      v-if="annotation"
+      v-if="annotation && annotation.text"
       v-bind="annotation"
-      :y-shift="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
+      :y-offset="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
     />
-
-    <!-- Node title. No pointer events -->
-    <text
-      class="name"
-      :x="$shapes.nodeSize / 2"
-      :y="-$shapes.nodeNameMargin"
-      text-anchor="middle"
-    >
-      {{ name }}
-    </text>
 
     <!-- Elements for which mouse hover triggers hover state -->
     <g
@@ -527,6 +545,23 @@ export default {
         direction="out"
       />
     </g>
+
+    <!-- Node name / title -->
+    <NodeName
+      :node-id="id"
+      :node-position="position"
+      :value="name"
+      :editable="isNameEditable"
+      @click.native.left="onLeftMouseClick"
+      @contextmenu="onContextMenu"
+      @width-change="nameDimensions.width = $event"
+      @height-change="nameDimensions.height = $event"
+      @edit-start="hover = false"
+      @mouseenter="hover = true"
+      @mouseleave="onLeaveHoverArea"
+      @connector-enter.native.stop="onConnectorEnter"
+      @connector-leave.native.stop="onConnectorLeave"
+    />
   </g>
 </template>
 
@@ -574,15 +609,6 @@ export default {
 .hover-area {
   fill: none;
   pointer-events: fill;
-}
-
-.name {
-  pointer-events: none;
-  font-family: "Roboto Condensed", sans-serif;
-  font-style: normal;
-  font-weight: 700;
-  font-size: 15px;
-  line-height: 17px;
 }
 
 .annotation {

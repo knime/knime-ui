@@ -50,7 +50,7 @@ export default {
     configureFlowVariables: {
         text: 'Configure flow variables',
         execute:
-            ({ $store }) => $store.dispatch('workflow/openLegacyFlowVariableDialog',
+            ({ $store }) => $store.dispatch('workflow/configureFlowVariables',
                 $store.getters['selection/singleSelectedNode'].id),
         condition:
             ({ $store }) => $store.getters['selection/singleSelectedNode']?.allowedActions
@@ -65,6 +65,16 @@ export default {
         condition:
             ({ $store }) => $store.getters['selection/singleSelectedNode']?.allowedActions.canOpenView
 
+    },
+    editName: {
+        text: 'Rename',
+        hotkey: ['F2'],
+        execute:
+            ({ $store }) => $store.dispatch('workflow/openNameEditor',
+                $store.getters['selection/singleSelectedNode'].id),
+        condition:
+            ({ $store }) => ['metanode', 'component'].includes($store.getters['selection/singleSelectedNode']?.kind) &&
+                !$store.getters['selection/singleSelectedNode']?.link
     },
     deleteSelected: {
         text: 'Delete',

@@ -1,5 +1,5 @@
 import ExecuteAllIcon from '~/assets/execute-all.svg?inline';
-import CancelAllIcon from '~/assets/cancel-execution.svg?inline';
+import CancelAllIcon from '~/assets/cancel.svg?inline';
 import ResetAllIcon from '~/assets/reset-all.svg?inline';
 
 import ExecuteSelectedIcon from '~/assets/execute-selected.svg?inline';

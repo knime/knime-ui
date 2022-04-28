@@ -12,6 +12,10 @@ export default {
     },
     data() {
         return {
+            /*
+            * null (or falsy) means context menu is invisible, otherwise should be an Object with x, y as Numbers
+            * @type {?{x: Number, y: Number}}
+            */
             contextMenuPosition: null
         };
     },
@@ -30,6 +34,14 @@ export default {
     },
     methods: {
         onContextMenu(e) {
+            // do nothing (also not preventing!) if source element has the following class set
+            if (e.srcElement.classList.contains('native-context-menu')) {
+                return;
+            }
+            // this is not done via modifier as we need to let the native context menu appear if the class is set
+            e.preventDefault();
+
+            // update position to current mouse coordinates
             this.contextMenuPosition = {
                 x: e.clientX,
                 y: e.clientY
@@ -42,7 +54,7 @@ export default {
 <template>
   <div
     :class="['workflow-panel', { 'read-only': !isWritable }]"
-    @contextmenu.prevent="onContextMenu"
+    @contextmenu="onContextMenu"
   >
     <ContextMenu
       v-if="Boolean(contextMenuPosition)"
