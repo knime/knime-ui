@@ -11,7 +11,7 @@ export default {
     },
     props: {
         /**
-         * TODO: please comment what this position is relative to
+         * Absolute position of the menu. It's relative to the next absolute/relative positioned parent.
          */
         position: {
             type: Object,
@@ -24,7 +24,7 @@ export default {
     }),
     computed: {
         ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode', 'selectedConnections']),
-        
+
         // map visible command names to menu items
         menuItems() {
             return this.visibleCommands

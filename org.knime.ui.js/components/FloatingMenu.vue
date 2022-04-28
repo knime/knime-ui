@@ -30,7 +30,7 @@ export default {
             type: Array
         },
         /**
-         * TODO: please comment what this position is relative to
+         * Absolute position of the Menu.
          */
         position: {
             type: Object,
@@ -41,19 +41,20 @@ export default {
     computed: {
         absolutePosition() {
             consola.trace('recalculating context menu position');
-            
+
             const menuWidth = (this.$el?.offsetWidth || 0) + SCROLLBAR_OFFSET;
             const menuHeight = (this.$el?.offsetHeight || 0) + SCROLLBAR_OFFSET;
 
             let left, top;
 
-            // TODO: please add a comment about the purpose of the code below
+            // ensure the menu is always visible within the window
             if ((window.innerWidth - this.position.x) < menuWidth) {
                 left = window.innerWidth - menuWidth;
             } else {
                 left = this.position.x;
             }
 
+            // ensure the menu is always visible within the window
             if ((window.innerHeight - this.position.y) < menuHeight) {
                 top = window.innerHeight - menuHeight;
             } else {
