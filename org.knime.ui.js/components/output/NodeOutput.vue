@@ -33,11 +33,11 @@ export default {
         ...mapState('workflow', {
             isDragging: 'isDragging'
         }),
-        ...mapState('application', { projectId: 'activeProjectId' }),
-        ...mapGetters('workflow', { workflowId: 'activeWorkflowId' }),
         ...mapState('workflow', {
             portTypes: (state) => state.activeWorkflow.portTypes
         }),
+        ...mapState('application', { projectId: 'activeProjectId' }),
+        ...mapGetters('workflow', { workflowId: 'activeWorkflowId' }),
         
         // ========================== Sanity Check ============================
         // The following properties execute from top to bottom
@@ -89,9 +89,15 @@ export default {
             return false;
         },
 
-        // If Step 2 is successful, return selected port
+        // If Step 2 is successful, return selected port kind
         selectedPort() {
             return this.nodeHasProblem ? null : this.selectedNode.outPorts[this.selectedPortIndex];
+        },
+
+        // Return port kind only if a port was selected, otherwise return 'null'
+        selectedPortKind() {
+            const port = this.selectedPort;
+            return port ? this.getPortType(port).kind : null;
         },
 
         // Step 3: check whether the selected port can be displayed
@@ -108,7 +114,7 @@ export default {
             }
 
             // only flow-variables can be shown if node hasn't yet executed
-            if (port.type !== 'flowVariable') {
+            if (this.selectedPortKind !== 'flowVariable') {
                 if (this.selectedNode.allowedActions.canExecute) {
                     return needsExecutionMessage;
                 }
@@ -139,7 +145,7 @@ export default {
         },
 
         // ========================== UI ===========================
-        // A port view can be in one  of the following states ['loading', 'error' & message, 'ready']
+        // A port view can be in one of the following states ['loading', 'error' & message, 'ready']
         isViewerReady() {
             return this.portViewerState?.state === 'ready';
         },
@@ -215,10 +221,18 @@ export default {
             consola.trace('port viewer state changed', state);
             this.portViewerState = state;
         },
+        // Get port type from port
+        getPortType(port) {
+            return this.portTypes[port.typeId];
+        },
         // Check if port is supported
         supportsPort(port) {
-            const portKind = this.portTypes[port.typeId].kind;
-            return portKind === 'table' || portKind === 'flowVariable';
+            try {
+                const portKind = this.getPortType(port).kind;
+                return portKind === 'table' || portKind === 'flowVariable';
+            } catch {
+                return false;
+            }
         }
     }
 };
@@ -258,7 +272,7 @@ export default {
     </div>
     <!-- Port Viewer -->
     <component
-      :is="selectedPort.type === 'flowVariable' ? 'FlowVariablePortView' : 'TablePortView'"
+      :is="selectedPortKind === 'flowVariable' ? 'FlowVariablePortView' : 'TablePortView'"
       v-if="!portHasProblem"
       v-show="isViewerReady"
       v-bind="portIdentifier"

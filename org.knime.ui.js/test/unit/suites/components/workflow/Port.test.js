@@ -1,4 +1,6 @@
-import { shallowMount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import Vuex from 'vuex';
 
 import Port from '~/components/workflow/Port';
 import PortIcon from '~/webapps-common/ui/components/node/PortIcon';
@@ -7,13 +9,18 @@ import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
 describe('Port', () => {
-    let propsData, mocks, doShallowMount, wrapper;
+    beforeAll(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
+    });
+
+    let wrapper, propsData, storeConfig, doShallowMount, $store;
 
     describe.each([
-        ['flowVariable', $colors.portColors.flowVariable],
-        ['table', $colors.portColors.table],
-        ['other', '#123442']
-    ])('Port (%s)', (portDataType, portColor) => {
+        ['FV', 'flowVariable', $colors.portColors.flowVariable],
+        ['TA', 'table', $colors.portColors.table],
+        ['OT', 'other', '#123442']
+    ])('Port (%s)', (typeId, portKind, portColor) => {
         beforeEach(() => {
             wrapper = null;
             propsData = {
@@ -21,12 +28,35 @@ describe('Port', () => {
                     optional: false,
                     inactive: false,
                     index: 0,
-                    type: portDataType,
-                    color: '#123442'
+                    typeId
                 }
             };
-            mocks = { $shapes, $colors };
+            storeConfig = {
+                workflow: {
+                    state: {
+                        activeWorkflow: {
+                            portTypes: {
+                                TA: {
+                                    kind: 'table',
+                                    name: 'Data'
+                                },
+                                FV: {
+                                    kind: 'flowVariable',
+                                    name: 'Flow Variable'
+                                },
+                                OT: {
+                                    kind: 'other',
+                                    color: '#123442',
+                                    name: 'Something'
+                                }
+                            }
+                        }
+                    }
+                }
+            };
             doShallowMount = () => {
+                $store = mockVuexStore(storeConfig);
+                let mocks = { $shapes, $colors, $store };
                 wrapper = shallowMount(Port, { propsData, mocks });
             };
         });
@@ -38,7 +68,7 @@ describe('Port', () => {
 
             it('renders correct port', () => {
                 const { color, type } = wrapper.findComponent(PortIcon).props();
-                expect(type).toBe(portDataType);
+                expect(type).toBe(portKind);
                 expect(color).toBe(portColor);
             });
 
@@ -67,7 +97,7 @@ describe('Port', () => {
             expect(filled).toBe(false);
         });
 
-        if (portDataType === 'flowVariable') {
+        if (portKind === 'flowVariable') {
             it('always renders filled Mickey Mouse ears', () => {
                 propsData.port.optional = true;
                 propsData.port.index = 0;
