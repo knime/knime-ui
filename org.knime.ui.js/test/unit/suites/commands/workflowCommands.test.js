@@ -59,6 +59,11 @@ describe('workflowCommands', () => {
             workflowCommands.deleteSelected.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/deleteSelectedObjects');
         });
+
+        test('create metanode', () => {
+            workflowCommands.createMetanode.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/collapseToContainer', { containerType: 'metanode' });
+        });
     });
 
     describe('condition', () => {
@@ -148,6 +153,12 @@ describe('workflowCommands', () => {
                 $store.getters['selection/selectedConnections'] = [];
                 expect(workflowCommands.deleteSelected.condition({ $store })).toBe(true);
             });
+        });
+
+        test('createMetanode', () => {
+            expect(workflowCommands.createMetanode.condition({ $store })).toBe(true);
+            $store.getters['selection/selectedNodes'] = [{ allowedActions: { canCollapse: 'false' } }];
+            expect(workflowCommands.createMetanode.condition({ $store })).toBe(false);
         });
     });
 });
