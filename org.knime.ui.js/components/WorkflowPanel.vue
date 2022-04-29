@@ -54,8 +54,8 @@ export default {
     @contextmenu="onContextMenu"
   >
     <ContextMenu
-      v-if="Boolean(contextMenuPosition)"
-      :position="contextMenuPosition"
+      v-show="Boolean(contextMenuPosition)"
+      :position="contextMenuPosition || {x: 0, y: 0}"
       @menu-close="contextMenuPosition = null"
     />
 

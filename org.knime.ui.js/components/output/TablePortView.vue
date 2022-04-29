@@ -86,38 +86,43 @@ export default {
     watch: {
         table(newTable, oldTable) {
             if (!oldTable && newTable) {
-                setTimeout(() => {
-                    // [table-layout: auto] is used on the first data
-                    // for performance reasons this initial layout is fixed and not reevaluated for further rows
-                    this.fixLayout();
-
-                    // if the initial data fits inside the table without scrolling
-                    // more data is loaded once
-                    let canScroll = this.$refs.table.scrollHeight !== 0;
-                    if (this.canLoadMoreRows && !canScroll) {
-                        this.loadMoreRows();
-                    }
-                }, tableVisibleDelay);
+                this.newTableLoaded(newTable);
             }
         }
     },
     methods: {
+        newTableLoaded(newTable, counter = 0) {
+            // wait for table to be ready
+            if (!this.$refs.table) {
+                // retry after delay
+                if (counter <= tableVisibleRetryMax) {
+                    setTimeout(() => {
+                        this.newTableLoaded(newTable, counter++);
+                    }, tableVisibleDelay);
+                }
+                return;
+            }
+
+            consola.trace('new table loaded and ready');
+
+            // [table-layout: auto] is used on the first data
+            // for performance reasons this initial layout is fixed and not reevaluated for further rows
+            this.fixLayout();
+  
+            // if the initial data fits inside the table without scrolling
+            // more data is loaded once
+            let canScroll = this.$refs.table.scrollHeight !== 0;
+            if (this.canLoadMoreRows && !canScroll) {
+                this.loadMoreRows();
+            }
+        },
         /*
          * Measures the width of the header cells that have been set by the browser's layouting algorithm.
          * Sets the layout permanently and disables the browser's layouting algorithm
          */
-        fixLayout(counter = 0) {
+        fixLayout() {
             // measure
             let table = this.$refs.table;
-            if (!table) {
-                if (counter > tableVisibleRetryMax) {
-                    return;
-                }
-                setTimeout(() => {
-                    this.fixLayout(counter++);
-                }, tableVisibleDelay);
-                return;
-            }
             let tableWidth = table.getBoundingClientRect().width;
 
             let firstCells = [...table.querySelectorAll('thead tr th')];
