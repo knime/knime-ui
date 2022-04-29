@@ -7,6 +7,7 @@ import { loadTable } from '~api';
 
 const scrollHandlerThrottle = 500; // 500 ms between checking scroll positions
 const tableVisibleDelay = 500; // table should be layouted and rendered after 500ms
+const tableVisibleRetryMax = 5; // max retrys to fixLayout
 /**
  * Data table container that contains a Header, a Body and a footer
  */
@@ -105,9 +106,18 @@ export default {
          * Measures the width of the header cells that have been set by the browser's layouting algorithm.
          * Sets the layout permanently and disables the browser's layouting algorithm
          */
-        fixLayout() {
+        fixLayout(counter = 0) {
             // measure
             let table = this.$refs.table;
+            if (!table) {
+                if (counter > tableVisibleRetryMax) {
+                    return;
+                }
+                setTimeout(() => {
+                    this.fixLayout(counter++);
+                }, tableVisibleDelay);
+                return;
+            }
             let tableWidth = table.getBoundingClientRect().width;
 
             let firstCells = [...table.querySelectorAll('thead tr th')];
