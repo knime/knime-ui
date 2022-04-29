@@ -5,9 +5,9 @@ import MenuItems from '~/webapps-common/ui/components/MenuItems';
 const SCROLLBAR_OFFSET = 4; // px
 
 /*
- * The FloatingMenu component is a menu similar to the SubMenu but with position logic to always be
- * visible at window borders and absolute top, left coordinates. The menu is hidden
- * if not activated with `showMenu(x, y)`.
+ * The FloatingMenu component is a menu similar to the SubMenu.
+ * If the menu wants to be closed it emits @menu-close event.
+ * The menu will be closed on `esc` key press, click away or if an item has been selected.
  *
  * Example:
  * |--------------------|
@@ -30,67 +30,49 @@ export default {
             type: Array
         },
         /**
-         * Identifier for click handler
+         * Absolute position of the Menu.
          */
-        id: {
-            default: '',
-            type: String
-        },
-        ariaLabel: {
-            type: String,
-            default: 'menu'
+        position: {
+            type: Object,
+            required: true,
+            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         }
     },
-    data() {
-        return {
-            isVisible: false,
-            top: 0,
-            left: 0
-        };
-    },
     computed: {
-        positionStyle() {
-            return this.isVisible ? { left: `${this.left}px`, top: `${this.top}px` } : null;
+        absolutePosition() {
+            const menuWidth = (this.$el?.offsetWidth || 0) + SCROLLBAR_OFFSET;
+            const menuHeight = (this.$el?.offsetHeight || 0) + SCROLLBAR_OFFSET;
+
+            let left, top;
+
+            // ensure the menu is always visible within the window
+            if ((window.innerWidth - this.position.x) < menuWidth) {
+                left = window.innerWidth - menuWidth;
+            } else {
+                left = this.position.x;
+            }
+
+            // ensure the menu is always visible within the window
+            if ((window.innerHeight - this.position.y) < menuHeight) {
+                top = window.innerHeight - menuHeight;
+            } else {
+                top = this.position.y;
+            }
+            return { left, top };
+        }
+    },
+    watch: {
+        absolutePosition() {
+            // set focus to menu for keyboard nav to work
+            // also required to prevent menu from closing due to change of menu items change (see onFocusOut)
+            this.$nextTick(() => this.$refs.menuItems.$el.focus());
         }
     },
     methods: {
         onItemClick(event, item) {
             // forward event and close menu
-            this.$emit('item-click', event, item, this.id);
+            this.$emit('item-click', event, item);
             this.closeMenu();
-        },
-        closeMenu() {
-            this.isVisible = false;
-        },
-        calculateMenuPosition(el, clickX, clickY, win = window) {
-            const menuWidth = el.offsetWidth + SCROLLBAR_OFFSET;
-            const menuHeight = el.offsetHeight + SCROLLBAR_OFFSET;
-
-            const windowWidth = win.innerWidth;
-            const windowHeight = win.innerHeight;
-
-            let left, top;
-
-            if ((windowWidth - clickX) < menuWidth) {
-                left = windowWidth - menuWidth;
-            } else {
-                left = clickX;
-            }
-
-            if ((windowHeight - clickY) < menuHeight) {
-                top = windowHeight - menuHeight;
-            } else {
-                top = clickY;
-            }
-            return { left, top };
-        },
-        showMenu(x, y) {
-            const { left, top } = this.calculateMenuPosition(this.$el, x, y);
-            this.left = left;
-            this.top = top;
-            this.isVisible = true;
-            // set focus to menu for keyboard nav to work
-            this.$nextTick(() => this.$refs.menuItems.$el.focus());
         },
         onFocusOut(e) {
             setTimeout(() => {
@@ -98,6 +80,9 @@ export default {
                     this.closeMenu();
                 }
             }, 1);
+        },
+        closeMenu() {
+            this.$emit('menu-close');
         }
     }
 };
@@ -105,16 +90,17 @@ export default {
 
 <template>
   <div
-    ref="floatingmenu"
     v-on-clickaway="closeMenu"
-    :class="['floating-menu', { isVisible }]"
-    :style="positionStyle"
+    class="floating-menu"
+    :style="{
+      left: `${absolutePosition.left}px`,
+      top: `${absolutePosition.top}px`
+    }"
     @focusout.stop="onFocusOut"
     @keydown.esc.stop.prevent="closeMenu"
     @keydown.tab.stop.prevent
   >
     <MenuItems
-      :id="id"
       ref="menuItems"
       class="menu-items"
       :items="items"
@@ -130,15 +116,6 @@ export default {
   display: block;
   min-width: 200px;
   max-width: 320px;
-
-  /* use visibility top/left negative and z-index to have a proper size which we need for position calculation */
-  top: -1000px;
-  left: -1000px;
-  visibility: hidden;
-
-  &.isVisible {
-    visibility: visible;
-  }
 
   &:focus {
     outline: none;
