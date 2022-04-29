@@ -819,8 +819,10 @@ describe('Node', () => {
         });
 
         it('should handle contextmenu events', async () => {
-            wrapper.findComponent(NodeName).vm.$emit('contextmenu', {});
+            const preventDefault = jest.fn();
+            wrapper.findComponent(NodeName).vm.$emit('contextmenu', { preventDefault });
             await Vue.nextTick();
+            expect(preventDefault).toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
                 expect.stringMatching('root:1')

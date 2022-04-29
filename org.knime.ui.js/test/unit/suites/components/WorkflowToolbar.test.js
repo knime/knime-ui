@@ -169,7 +169,8 @@ describe('WorkflowToolbar.vue', () => {
                 'redo',
                 'executeSelected',
                 'cancelSelected',
-                'resetSelected'
+                'resetSelected',
+                'createMetanode'
             ]);
         });
 
@@ -187,7 +188,8 @@ describe('WorkflowToolbar.vue', () => {
                 'redo',
                 'executeSelected',
                 'cancelSelected',
-                'resetSelected'
+                'resetSelected',
+                'createMetanode'
             ]);
         });
     });

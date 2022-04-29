@@ -50,19 +50,36 @@ describe('NodeNameEditor', () => {
     });
     
 
-    it('should block click events', () => {
+    describe('blocks events to canvas', () => {
         const mockStopPropagation = jest.fn();
         const mockPreventDefault = jest.fn();
 
-        MouseEvent.prototype.stopPropagation = mockStopPropagation;
-        MouseEvent.prototype.preventDefault = mockPreventDefault;
+        beforeAll(() => {
+            MouseEvent.prototype.stopPropagation = mockStopPropagation;
+            MouseEvent.prototype.preventDefault = mockPreventDefault;
+        });
 
-        const rect = wrapper.find('rect');
-            
-        rect.trigger('click');
-            
-        expect(mockStopPropagation).toHaveBeenCalled();
-        expect(mockPreventDefault).toHaveBeenCalled();
+        afterEach(() => {
+            jest.clearAllMocks();
+        });
+
+        it('should block click events', () => {
+            const rect = wrapper.find('rect');
+                
+            rect.trigger('click');
+                
+            expect(mockStopPropagation).toHaveBeenCalled();
+            expect(mockPreventDefault).toHaveBeenCalled();
+        });
+    
+        it('should block contextmenu events', () => {
+            const rect = wrapper.find('rect');
+                
+            rect.trigger('contextmenu');
+                
+            expect(mockStopPropagation).toHaveBeenCalled();
+            expect(mockPreventDefault).toHaveBeenCalled();
+        });
     });
     
     describe('Action bar', () => {

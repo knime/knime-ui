@@ -38,6 +38,8 @@ describe('NodeName', () => {
             storeConfig = {
                 workflow: {
                     actions: {
+                        openNameEditor: jest.fn(),
+                        closeNameEditor: jest.fn(),
                         renameContainer: jest.fn()
                     }
                 }
@@ -82,21 +84,25 @@ describe('NodeName', () => {
     
 
     describe('Handles editor', () => {
-        let storeConfig, wrapper;
+        let storeConfig, wrapper, $store;
 
         beforeEach(() => {
             storeConfig = {
                 workflow: {
+                    state: {
+                        nameEditorNodeId: defaultProps.nodeId
+                    },
                     actions: {
+                        openNameEditor: jest.fn(),
+                        closeNameEditor: jest.fn(),
                         renameContainer: jest.fn()
                     }
                 }
             };
 
-            const $store = mockVuexStore(storeConfig);
+            $store = mockVuexStore(storeConfig);
             
             wrapper = doShallowMount({ $store });
-            wrapper.setData({ isEditing: true });
         });
 
         it('should render properly', () => {
@@ -144,6 +150,11 @@ describe('NodeName', () => {
             );
             
             jest.runAllTimers();
+            expect(storeConfig.workflow.actions.closeNameEditor).toHaveBeenCalled();
+            
+            // emulate editor being closed from store
+            $store.state.workflow.nameEditorNodeId = null;
+            
             await Vue.nextTick();
             expect(wrapper.findComponent(NodeNameEditor).exists()).toBe(false);
             expect(wrapper.findComponent(NodeNameText).exists()).toBe(true);
@@ -151,8 +162,13 @@ describe('NodeName', () => {
 
         it('should handle closing the editor', async () => {
             wrapper.findComponent(NodeNameEditor).vm.$emit('cancel');
+            
+            expect(storeConfig.workflow.actions.closeNameEditor).toHaveBeenCalled();
+            
+            // emulate editor being closed from store
+            $store.state.workflow.nameEditorNodeId = null;
+            
             await Vue.nextTick();
-
             expect(wrapper.findComponent(NodeNameEditor).exists()).toBe(false);
             expect(wrapper.findComponent(NodeNameText).exists()).toBe(true);
         });

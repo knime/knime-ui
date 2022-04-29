@@ -1,14 +1,14 @@
 /* eslint-disable no-magic-numbers */
 import { mount, shallowMount } from '@vue/test-utils';
-import Vue from 'vue';
 
 import FloatingMenu from '~/components/FloatingMenu';
+import MenuItems from '~/webapps-common/ui/components/MenuItems';
 
 describe('FloatingMenu.vue', () => {
-    let items;
+    let propsData, doMount, wrapper;
 
     beforeEach(() => {
-        items = [{
+        let items = [{
             text: 'Apples',
             disabled: false,
             hotkeyText: 'CTRL + A'
@@ -21,120 +21,103 @@ describe('FloatingMenu.vue', () => {
             text: 'Ananas',
             hotkeyText: 'F9'
         }];
+
+        propsData = {
+            items,
+            position: {
+                x: 0,
+                y: 0
+            }
+        };
+        doMount = () => {
+            wrapper = mount(FloatingMenu, {
+                propsData
+            });
+        };
     });
 
     it('renders', () => {
-        const wrapper = mount(FloatingMenu, {
-            propsData: {
-                items: []
-            }
+        wrapper = shallowMount(FloatingMenu, {
+            propsData: { ...propsData, items: [] }
         });
+        expect(wrapper.classes()).not.toContain('isVisible');
         expect(wrapper.html()).toBeTruthy();
     });
 
     it('renders with items', () => {
-        const wrapper = mount(FloatingMenu, {
-            propsData: {
-                items
-            }
-        });
+        doMount();
         expect(wrapper.html()).toBeTruthy();
-        expect(wrapper.findAll('li').length).toBe(items.length);
+        expect(wrapper.findComponent(MenuItems).props('items').length).toBe(propsData.items.length);
     });
 
     describe('close menu', () => {
-        it('closes menu on escape key', async () => {
-            const wrapper = shallowMount(FloatingMenu, {
-                propsData: {
-                    items
-                }
-            });
-            wrapper.vm.showMenu(0, 0);
-            await Vue.nextTick();
-            expect(wrapper.vm.$el.classList).toContain('isVisible');
+        it('closes menu on escape key', () => {
+            doMount();
+
             wrapper.trigger('keydown.esc');
-            await Vue.nextTick();
-            expect(wrapper.vm.$el.classList).not.toContain('isVisible');
+            expect(wrapper.emitted('menu-close')).toBeDefined();
         });
 
-        it('closes menu on click', async () => {
-            const wrapper = mount(FloatingMenu, {
-                propsData: {
-                    items
-                }
-            });
-            wrapper.vm.showMenu(0, 0);
-            await Vue.nextTick();
-            expect(wrapper.vm.$el.classList).toContain('isVisible');
-            wrapper.findAll('li').at(1).trigger('click');
-            await Vue.nextTick();
-            expect(wrapper.vm.$el.classList).not.toContain('isVisible');
+        it('closes menu if item is clicked', () => {
+            doMount();
+            wrapper.findComponent(MenuItems).vm.$emit('item-click', propsData.items[0]);
+            expect(wrapper.emitted('menu-close')).toBeDefined();
         });
 
         it('closes menu when focus leaves the component', () => {
             jest.useFakeTimers();
 
-            const wrapper = mount(FloatingMenu, {
-                propsData: {
-                    items
-                }
-            });
-
-            let onFocusOutMock = jest.spyOn(wrapper.vm, 'onFocusOut');
-            let closeMenuMock = jest.spyOn(wrapper.vm, 'closeMenu');
-            expect(wrapper.vm.isVisible).toBe(false);
-            wrapper.setData({ isVisible: true });
-            expect(wrapper.vm.isVisible).toBe(true);
-
+            doMount();
             wrapper.trigger('focusout');
 
             jest.runAllTimers();
 
-            expect(onFocusOutMock).toHaveBeenCalled();
-            expect(closeMenuMock).toHaveBeenCalled();
-            expect(wrapper.vm.isVisible).toBe(false);
+            expect(wrapper.emitted('menu-close')).toBeDefined();
         });
     });
 
-    describe('item click', () => {
-        it('fires item-click event on click', () => {
-            const wrapper = shallowMount(FloatingMenu, {
-                propsData: {
-                    items
-                }
-            });
-            wrapper.vm.onItemClick({}, items[1]);
-            expect(wrapper.emitted()['item-click']).toBeTruthy();
-            expect(wrapper.emitted()['item-click'][0][1].userData)
-                .toStrictEqual({ storeAction: 'workflow/executeNode' });
-        });
-
-        it('ignores click on disabled items', () => {
-            items[0].disabled = true;
-            const wrapper = mount(FloatingMenu, {
-                propsData: {
-                    items
-                }
-            });
-            wrapper.findAll('li').at(0).trigger('click');
-            expect(wrapper.emitted()['item-click']).toBeFalsy();
-        });
+    it('fires item-click event on click', () => {
+        doMount();
+        // emulate click on MenuItems item
+        wrapper.findComponent(MenuItems).vm.$emit('item-click', propsData.items[1]);
+        expect(wrapper.emitted()['item-click']).toBeTruthy();
+        expect(wrapper.emitted()['item-click'][0][0].userData).toStrictEqual(
+            { storeAction: 'workflow/executeNode' }
+        );
     });
 
-    it('positions menu to be always visible', () => {
-        const wrapper = shallowMount(FloatingMenu, {
-            propsData: {
-                items
-            }
-        });
-        let { top, left } = wrapper.vm.calculateMenuPosition({
-            offsetWidth: 200,
-            offsetHeight: 400
-        }, 1200, 800, {
+    it('positions menu to be always visible', async () => {
+        // mock window
+        const originalWindow = { ...window };
+        const windowSpy = jest.spyOn(global, 'window', 'get');
+        windowSpy.mockImplementation(() => ({
+            ...originalWindow,
             innerWidth: 1200,
             innerHeight: 800
+        }));
+
+        // mount visible menu
+        propsData.isVisible = true;
+        doMount();
+
+        // "mock" element values
+        wrapper.vm.$el = {
+            ...wrapper.vm.$el,
+            offsetWidth: 200,
+            offsetHeight: 400
+        };
+
+        // trigger update via position change
+        await wrapper.setProps({
+            position: {
+                x: 1200,
+                y: 800
+            }
         });
-        expect(top).toBe(396);
-        expect(left).toBe(996);
+
+        expect(wrapper.attributes('style')).toBe('left: 996px; top: 396px;');
+
+        // cleanup
+        windowSpy.mockRestore();
     });
 });

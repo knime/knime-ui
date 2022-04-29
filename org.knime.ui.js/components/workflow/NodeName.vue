@@ -1,5 +1,5 @@
 <script>
-import { mapActions } from 'vuex';
+import { mapState, mapActions } from 'vuex';
 
 import NodeNameEditor from '~/components/workflow/NodeNameEditor';
 import NodeNameText from '~/components/workflow/NodeNameText';
@@ -33,14 +33,19 @@ export default {
             editorInitialDimensions: {
                 width: null,
                 height: null
-            },
-            isEditing: false
+            }
         };
     },
+    computed: {
+        ...mapState('workflow', ['nameEditorNodeId']),
+        isEditing() {
+            return this.nodeId === this.nameEditorNodeId;
+        }
+    },
     methods: {
-        ...mapActions('workflow', ['renameContainer']),
+        ...mapActions('workflow', ['renameContainer', 'openNameEditor', 'closeNameEditor']),
         onRequestEdit() {
-            this.isEditing = true;
+            this.openNameEditor(this.nodeId);
             this.$emit('edit-start');
         },
         onSave({ dimensionsOnClose, newName }) {
@@ -50,11 +55,11 @@ export default {
             // Schedule closing editor on next the event loop run
             // to allow styles to apply properly when editor is destroyed
             setTimeout(() => {
-                this.isEditing = false;
+                this.closeNameEditor();
             }, 100);
         },
         onCancel() {
-            this.isEditing = false;
+            this.closeNameEditor();
         }
     }
 };
