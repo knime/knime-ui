@@ -53,7 +53,7 @@ describe('FloatingMenu.vue', () => {
     describe('close menu', () => {
         it('closes menu on escape key', () => {
             doMount();
-            
+
             wrapper.trigger('keydown.esc');
             expect(wrapper.emitted('menu-close')).toBeDefined();
         });
@@ -84,5 +84,40 @@ describe('FloatingMenu.vue', () => {
         expect(wrapper.emitted()['item-click'][0][0].userData).toStrictEqual(
             { storeAction: 'workflow/executeNode' }
         );
+    });
+
+    it('positions menu to be always visible', async () => {
+        // mock window
+        const originalWindow = { ...window };
+        const windowSpy = jest.spyOn(global, 'window', 'get');
+        windowSpy.mockImplementation(() => ({
+            ...originalWindow,
+            innerWidth: 1200,
+            innerHeight: 800
+        }));
+
+        // mount visible menu
+        propsData.isVisible = true;
+        doMount();
+
+        // "mock" element values
+        wrapper.vm.$el = {
+            ...wrapper.vm.$el,
+            offsetWidth: 200,
+            offsetHeight: 400
+        };
+
+        // trigger update via position change
+        await wrapper.setProps({
+            position: {
+                x: 1200,
+                y: 800
+            }
+        });
+
+        expect(wrapper.attributes('style')).toBe('left: 996px; top: 396px;');
+
+        // cleanup
+        windowSpy.mockRestore();
     });
 });
