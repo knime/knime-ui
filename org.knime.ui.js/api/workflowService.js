@@ -182,3 +182,21 @@ export const redo = async ({ projectId, workflowId }) => {
         throw new Error('Couldn\'t redo');
     }
 };
+
+/**
+ * Creates a metanode or component
+ * @param { String } cfg.projectId
+ * @param {String} cfg.workflowId
+ * @param { String } cfg.containerType metanode or component
+ * @param { Array } cfg.nodeIds
+ * @param { Array } cfg.annotationIds
+ * @returns {Promise}
+ */
+export const collapseToContainer = ({
+    projectId, workflowId, containerType, nodeIds = [], annotationIds = []
+}) => workflowCommand({
+    command: 'collapse',
+    args: { containerType, nodeIds, annotationIds },
+    projectId,
+    workflowId
+});

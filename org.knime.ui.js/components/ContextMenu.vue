@@ -57,7 +57,7 @@ export default {
             const isView = this.singleSelectedNode && 'canOpenView' in this.singleSelectedNode.allowedActions;
             const hasLegacyFlowVariableDialog = this.singleSelectedNode &&
                 'canOpenLegacyFlowVariableDialog' in this.singleSelectedNode.allowedActions;
-            const isMetanodeOrComponent = ['metanode', 'component'].includes(this.visibleCommands?.kind);
+            const isMetanodeOrComponent = ['metanode', 'component'].includes(this.singleSelectedNode?.kind);
 
             let allMenuItems = {
                 // Exactly one node selected
@@ -80,7 +80,9 @@ export default {
                 // Workflow
                 executeAll: !somethingSelected,
                 cancelAll: !somethingSelected,
-                resetAll: !somethingSelected
+                resetAll: !somethingSelected,
+
+                createMetanode: this.selectedNodes.length
             };
 
             // Array of name of commands

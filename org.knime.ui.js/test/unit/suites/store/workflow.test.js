@@ -566,6 +566,49 @@ describe('workflow store', () => {
 
             expect(closeWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
         });
+
+        it('collapse to a container', async () => {
+            let collapseToContainer = jest.fn();
+            let apiMocks = { collapseToContainer };
+            await loadStore({ apiMocks });
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'bar',
+                nodes: {
+                    foo: {
+                        allowedActions: {
+                            canCancel: false,
+                            canCollapse: 'true',
+                            canDelete: true,
+                            canExecute: true,
+                            canOpenDialog: true,
+                            canReset: false
+                        }
+                    },
+                    bar: {
+                        allowedActions: {
+                            canCancel: false,
+                            canCollapse: 'true',
+                            canDelete: true,
+                            canExecute: true,
+                            canOpenDialog: true,
+                            canReset: false
+                        }
+                    }
+                }
+            });
+            store.dispatch('selection/selectAllNodes');
+
+            store.dispatch('workflow/collapseToContainer', {
+                containerType: 'metanode'
+            });
+
+            expect(collapseToContainer).toHaveBeenCalledWith({
+                projectId: 'bar',
+                workflowId: 'root',
+                nodeIds: ['foo', 'bar'],
+                containerType: 'metanode'
+            });
+        });
     });
 
     describe('getters', () => {

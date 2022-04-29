@@ -55,9 +55,19 @@ describe('workflowCommands', () => {
             expect(mockDispatch).toHaveBeenCalledWith('workflow/openView', 'root:0');
         });
 
+        test('editName', () => {
+            workflowCommands.editName.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/openNameEditor', 'root:0');
+        });
+
         test('deleteSelected', () => {
             workflowCommands.deleteSelected.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/deleteSelectedObjects');
+        });
+
+        test('create metanode', () => {
+            workflowCommands.createMetanode.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/collapseToContainer', { containerType: 'metanode' });
         });
     });
 
@@ -102,6 +112,33 @@ describe('workflowCommands', () => {
             expect(workflowCommands.openView.condition({ $store })).toBe(true);
         });
 
+        describe('editName', () => {
+            test('cannot rename when workflow is not writable', () => {
+                $store.getters['selection/singleSelectedNode'].kind = 'component';
+                $store.getters['workflow/isWritable'] = false;
+
+                expect(workflowCommands.editName.condition({ $store })).toBe(false);
+            });
+
+            test.each([
+                ['component', true],
+                ['metanode', true],
+                ['node', false]
+            ])('for nodes of kind: "%s" the condition should be "%s"', (kind, conditionValue) => {
+                $store.getters['workflow/isWritable'] = true;
+                $store.getters['selection/singleSelectedNode'].kind = kind;
+
+                expect(workflowCommands.editName.condition({ $store })).toBe(conditionValue);
+            });
+
+            test('cannot rename if the selected node is linked', () => {
+                $store.getters['workflow/isWritable'] = true;
+                $store.getters['selection/singleSelectedNode'].kind = 'component';
+                $store.getters['selection/singleSelectedNode'].link = true;
+
+                expect(workflowCommands.editName.condition({ $store })).toBe(false);
+            });
+        });
 
         describe('deleteSelected', () => {
             beforeEach(() => {
@@ -148,6 +185,12 @@ describe('workflowCommands', () => {
                 $store.getters['selection/selectedConnections'] = [];
                 expect(workflowCommands.deleteSelected.condition({ $store })).toBe(true);
             });
+        });
+
+        test('createMetanode', () => {
+            expect(workflowCommands.createMetanode.condition({ $store })).toBe(true);
+            $store.getters['selection/selectedNodes'] = [{ allowedActions: { canCollapse: 'false' } }];
+            expect(workflowCommands.createMetanode.condition({ $store })).toBe(false);
         });
     });
 });

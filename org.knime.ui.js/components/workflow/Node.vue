@@ -553,7 +553,7 @@ export default {
       :value="name"
       :editable="isNameEditable"
       @click.native.left="onLeftMouseClick"
-      @contextmenu="onContextMenu"
+      @contextmenu.prevent="onContextMenu"
       @width-change="nameDimensions.width = $event"
       @height-change="nameDimensions.height = $event"
       @edit-start="hover = false"
