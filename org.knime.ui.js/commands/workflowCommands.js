@@ -122,6 +122,9 @@ export default {
         hotkey: ['Ctrl', 'K'],
         icon: CreateComponent,
         execute:
-        ({ $store }) => $store.dispatch('workflow/collapseToContainer', { containerType: 'component' })
+        ({ $store }) => $store.dispatch('workflow/collapseToContainer', { containerType: 'component' }),
+        condition:
+        ({ $store }) => !$store.getters['selection/selectedNodes']
+            .some(node => node.allowedActions.canCollapse === 'false')
     }
 };
