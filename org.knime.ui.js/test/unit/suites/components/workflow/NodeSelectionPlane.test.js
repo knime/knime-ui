@@ -10,6 +10,8 @@ describe('NodeSlectionPlane.vue', () => {
     let propsData, commonPlane;
 
     commonPlane = {
+        width: 0,
+        extraHeight: 20,
         position: {
             x: 50,
             y: 50
@@ -37,6 +39,8 @@ describe('NodeSlectionPlane.vue', () => {
     it('sets position of the selection plane', () => {
         let wrapper = doShallowMount(propsData);
         expect(wrapper.findComponent(NodeSelectionPlane).props()).toStrictEqual({
+            width: 0,
+            extraHeight: 20,
             kind: 'node',
             position: {
                 x: 50,
@@ -52,12 +56,24 @@ describe('NodeSlectionPlane.vue', () => {
 
     it('checks node measures with status bar', () => {
         let wrapper = doShallowMount(propsData);
-        expect(wrapper.vm.nodeSelectionMeasures).toStrictEqual({ height: 95, width: 100, x: -34, y: -37 });
+        expect(wrapper.vm.nodeSelectionMeasures).toStrictEqual({ height: 97, width: 100, x: -34, y: -39 });
+    });
+
+    it('honors width setting if its bigger then the default width', () => {
+        propsData.width = 120;
+        let wrapper = doShallowMount(propsData);
+        expect(wrapper.vm.nodeSelectionMeasures).toStrictEqual({ height: 97, width: 120, x: -44, y: -39 });
+    });
+
+    it('honors extraHeight', () => {
+        propsData.extraHeight = 44;
+        let wrapper = doShallowMount(propsData);
+        expect(wrapper.vm.nodeSelectionMeasures).toStrictEqual({ height: 121, width: 100, x: -34, y: -63 });
     });
 
     it('checks node measures without status bar', () => {
         propsData.kind = 'metanode';
         let wrapper = doShallowMount(propsData);
-        expect(wrapper.vm.nodeSelectionMeasures).toStrictEqual({ height: 75, width: 100, x: -34, y: -37 });
+        expect(wrapper.vm.nodeSelectionMeasures).toStrictEqual({ height: 77, width: 100, x: -34, y: -39 });
     });
 });

@@ -25,6 +25,7 @@ export default {
             }
 
             const selectedNodes = this.$store.getters['selection/selectedNodes'];
+            
             let visibleItems = {
                 // always visible
                 save: true,
@@ -41,7 +42,9 @@ export default {
                 cancelSelected: selectedNodes.length,
                 resetSelected: selectedNodes.length,
 
+                createMetanode: selectedNodes.length,
                 createComponent: selectedNodes.length
+
             };
 
             return Object

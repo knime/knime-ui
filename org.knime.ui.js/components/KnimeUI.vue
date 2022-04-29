@@ -9,9 +9,6 @@ import Error from '~/components/Error';
 import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
 import HotkeyHandler from '~/components/HotkeyHandler';
 
-// These fonts will be pre-loaded at application startup
-const requiredFonts = ['Roboto', 'Roboto Condensed', 'Roboto Mono'];
-
 /**
  * Main page and entry point of KNIME Next
  * Initiates application state
@@ -38,8 +35,16 @@ export default {
         try {
             await Promise.all([
                 this.initializeApplication(),
-                ...requiredFonts.map(fontName => document.fonts.load(`1em ${fontName}`))
+
+                // These fonts will be pre-loaded at application startup with the given font-weights,
+                // to prevent text-jumping
+                document.fonts.load('400 1em Roboto'),
+                document.fonts.load('400 1em Roboto Mono'),
+                document.fonts.load('400 1em Roboto Condensed'),
+                document.fonts.load('700 1em Roboto Condensed')
             ]);
+
+            // render the application
             this.loaded = true;
         } catch ({ message, stack }) {
             // errors in the fetch hook are not captured by errorCaptured

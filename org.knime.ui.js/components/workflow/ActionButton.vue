@@ -20,6 +20,10 @@ export default {
         title: {
             type: String,
             default: null
+        },
+        primary: {
+            type: Boolean,
+            default: false
         }
     },
     methods: {
@@ -41,6 +45,7 @@ export default {
       r="9.5"
       :cx="x"
       filter="url(#node-action-button-shadow)"
+      :class="{ primary }"
     />
     <title v-if="title">{{ title }}</title>
     <NestedSvg
@@ -59,6 +64,11 @@ export default {
   & circle {
     fill: white;
     stroke: var(--knime-silver-sand);
+
+    &.primary {
+      fill: var(--knime-yellow);
+      stroke: var(--knime-yellow);
+    }
   }
 
   & >>> svg {

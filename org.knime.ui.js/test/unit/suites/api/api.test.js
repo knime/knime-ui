@@ -106,7 +106,7 @@ describe('API', () => {
 
                 expect(window.jsonrpc).toHaveBeenCalledWith({
                     jsonrpc: '2.0',
-                    method: 'NodeRepositoryService.selectNodes',
+                    method: 'NodeRepositoryService.getNodesGroupedByTags',
                     params: [NODES_LIMIT, 0, 2, true],
                     id: 0
                 });

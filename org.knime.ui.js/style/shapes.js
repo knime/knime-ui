@@ -11,14 +11,28 @@ export const horizontalNodePadding = 50;
 // NOTE: this width limit does not apply if a line contains very long words
 export const maxNodeAnnotationWidth = 1000;
 export const nodeAnnotationMarginTop = 8;
-export const nodeNameMargin = 12;
+export const nodeNameMargin = 7;
 export const nodeNameLineHeight = 14;
+export const nodeNameFontSize = 12;
+export const nodeNamePadding = 2;
+export const nodeNameHorizontalMargin = 4;
 
-export const nodeSelectionPadding = [37, 34, 6, 34];
+export const nodeNameMaxLines = 2;
+
+export const nodeSelectionPaddingTop = 37 - (nodeNameLineHeight + nodeNamePadding * 2);
+export const nodeSelectionPaddingLeft = 34;
+export const nodeSelectionPaddingRight = 34;
+export const nodeSelectionPaddingBottom = 6;
+export const nodeSelectionPadding = [nodeSelectionPaddingTop, nodeSelectionPaddingLeft,
+    nodeSelectionPaddingBottom, nodeSelectionPaddingRight];
+
+export const maxNodeNameWidth = (nodeSelectionPaddingLeft + nodeSize + nodeSelectionPaddingRight) * 1.7; // 170px
+
+export const nodeNameEditorMinWidth = 10;
 
 // Margins including 3 NodeActionButtons. If more that 3 Buttons are present,
 // the hover area is widened by Node.vue
-export const nodeHoverMargin = [47, 19, 8, 19];
+export const nodeHoverMargin = [29, 19, 8, 19];
 export const nodeHoverPortBottomMargin = 15;
 export const nodeIdMargin = 16;
 export const nodeActionBarButtonSpread = 25;

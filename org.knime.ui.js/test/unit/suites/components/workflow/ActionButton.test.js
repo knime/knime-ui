@@ -8,6 +8,7 @@ describe('ActionButton', () => {
             slots: { default: [{ template: '<svg />' }] }
         });
         expect(wrapper.find('g').classes().includes('disabled')).toBe(false);
+        expect(wrapper.find('circle').classes().includes('primary')).toBe(false);
         expect(wrapper.find('svg').exists()).toBe(true);
     });
 
@@ -20,6 +21,15 @@ describe('ActionButton', () => {
         });
         expect(wrapper.find('g').classes().includes('disabled')).toBe(true);
         expect(wrapper.find('circle').attributes().cx).toBe('50');
+    });
+
+    it('renders primary button', () => {
+        let wrapper = shallowMount(ActionButton, {
+            propsData: {
+                primary: true
+            }
+        });
+        expect(wrapper.find('circle').classes().includes('primary')).toBe(true);
     });
 
     it('fires event on click', () => {

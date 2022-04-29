@@ -6,6 +6,7 @@ import DeleteIcon from '~/assets/delete.svg?inline';
 import OpenViewIcon from '~/assets/open-view.svg?inline';
 import OpenDialogIcon from '~/assets/configure-node.svg?inline';
 import SaveIcon from '~/assets/save.svg?inline';
+import CreateMetanode from '~/assets/create-metanode.svg?inline';
 import CreateComponent from '~/assets/create-component.svg?inline';
 
 const isWritable = ({ $store }) => $store.getters['workflow/isWritable'];
@@ -51,7 +52,7 @@ export default {
     configureFlowVariables: {
         text: 'Configure flow variables',
         execute:
-            ({ $store }) => $store.dispatch('workflow/openLegacyFlowVariableDialog',
+            ({ $store }) => $store.dispatch('workflow/configureFlowVariables',
                 $store.getters['selection/singleSelectedNode'].id),
         condition:
             ({ $store }) => $store.getters['selection/singleSelectedNode']?.allowedActions
@@ -66,6 +67,18 @@ export default {
         condition:
             ({ $store }) => $store.getters['selection/singleSelectedNode']?.allowedActions.canOpenView
 
+    },
+    editName: {
+        text: 'Rename',
+        hotkey: ['F2'],
+        execute:
+            ({ $store }) => $store.dispatch('workflow/openNameEditor',
+                $store.getters['selection/singleSelectedNode'].id),
+        condition:
+            ({ $store }) => ['metanode', 'component']
+                .includes($store.getters['selection/singleSelectedNode']?.kind) &&
+                !$store.getters['selection/singleSelectedNode']?.link &&
+                $store.getters['workflow/isWritable']
     },
     deleteSelected: {
         text: 'Delete',
@@ -92,15 +105,23 @@ export default {
             return allSelectedDeletable;
         }
     },
+    createMetanode: {
+        text: 'Create Metanode',
+        title: 'Create metanode',
+        hotkey: ['Ctrl', 'G'],
+        icon: CreateMetanode,
+        execute:
+        ({ $store }) => $store.dispatch('workflow/collapseToContainer', { containerType: 'metanode' }),
+        condition:
+        ({ $store }) => !$store.getters['selection/selectedNodes']
+            .some(node => node.allowedActions.canCollapse === 'false')
+    },
     createComponent: {
         text: 'Create Component',
         title: 'Create component',
         hotkey: ['Ctrl', 'K'],
         icon: CreateComponent,
         execute:
-        ({ $store }) => $store.dispatch('workflow/collapseToContainer', { containerType: 'component' }),
-        condition:
-        ({ $store }) => !$store.getters['selection/selectedNodes']
-            .some(node => node.allowedActions.canCollapse === 'false')
+        ({ $store }) => $store.dispatch('workflow/collapseToContainer', { containerType: 'component' })
     }
 };

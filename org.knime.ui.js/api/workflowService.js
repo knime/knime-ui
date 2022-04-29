@@ -2,10 +2,11 @@ import rpc from './json-rpc-adapter.js';
 
 /**
  * Load a specific workflow.
- * @param {String} projectId The ID of the project to load
- * @param {String} workflowId The ID of the component / metanode that contains the workflow, or "root" for the
+ * @param {Object} cfg The configuration object
+ * @param {String} cfg.projectId The ID of the project to load
+ * @param {String} cfg.workflowId The ID of the component / metanode that contains the workflow, or "root" for the
  *   top-level workflow. Defaults to `'root'`.
- * @param {String} includeInfoOnAllowedActions Whether to enclose information on the actions
+ * @param {Boolean} cfg.includeInfoOnAllowedActions Whether to enclose information on the actions
  *   (such as reset, execute, cancel) allowed on the contained nodes and the entire workflow itself.
  Defaults to `true`.
  * @return {Promise} A promise containing the workflow as defined in the API
@@ -25,6 +26,7 @@ export const loadWorkflow = async ({ projectId, workflowId = 'root', includeInfo
 
 /**
  * Generates workflow commands that are part of the undo/redo stack
+ * @param {Object} cfg The configuration object
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
  * @param {String} cfg.command name of the command to be executed
@@ -44,9 +46,11 @@ const workflowCommand = async ({ projectId, workflowId, command, args }) => {
     }
 };
 
+
 /**
- * @param { String } position The X,Y position where node is going to be added
- * @param { String } nodeFactory The representation of the node's factory
+ * @param {Object} cfg The configuration object
+ * @param { String } cfg.position The X,Y position where node is going to be added
+ * @param { String } cfg.nodeFactory The representation of the node's factory
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
  * @returns { Promise } Promise
@@ -62,6 +66,31 @@ export const addNode = ({
 
 
 /**
+ * @param {Object} cfg The configuration object
+ * @param { String } cfg.name The new name of the component or metanode
+ * @param { String } cfg.nodeId Id of the node that will be updated
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @returns { Promise } Promise
+ */
+export const renameContainer = ({
+    nodeId,
+    name,
+    projectId,
+    workflowId
+}) => workflowCommand({
+    command: 'update_component_or_metanode_name',
+    args: {
+        nodeId,
+        name
+    },
+    projectId,
+    workflowId
+});
+
+
+/**
+ * @param {Object} cfg The configuration object
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
  * @param { Array } cfg.nodeIds The nodes to be deleted
@@ -80,6 +109,7 @@ export const deleteObjects = ({
 
 
 /**
+ * @param {Object} cfg The configuration object
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
  * @param { Array } cfg.nodeIds The nodes to be moved
@@ -98,6 +128,7 @@ export const moveObjects = ({
 
 
 /**
+ * @param {Object} cfg The configuration object
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
  * @param { String } cfg.sourceNode node with outPort
@@ -121,6 +152,7 @@ export const connectNodes = ({ projectId, workflowId, sourceNode, sourcePort, de
 
 /**
  * Performs an undo command
+ * @param {Object} cfg The configuration object
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
  * @returns {Promise}
@@ -137,6 +169,7 @@ export const undo = async ({ projectId, workflowId }) => {
 
 /**
  * Performs a redo command
+ * @param {Object} cfg The configuration object
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
  * @returns {Promise}
@@ -149,3 +182,21 @@ export const redo = async ({ projectId, workflowId }) => {
         throw new Error('Couldn\'t redo');
     }
 };
+
+/**
+ * Creates a metanode or component
+ * @param { String } cfg.projectId
+ * @param {String} cfg.workflowId
+ * @param { String } cfg.containerType metanode or component
+ * @param { Array } cfg.nodeIds
+ * @param { Array } cfg.annotationIds
+ * @returns {Promise}
+ */
+export const collapseToContainer = ({
+    projectId, workflowId, containerType, nodeIds = [], annotationIds = []
+}) => workflowCommand({
+    command: 'collapse',
+    args: { containerType, nodeIds, annotationIds },
+    projectId,
+    workflowId
+});

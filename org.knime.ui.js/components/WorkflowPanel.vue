@@ -25,6 +25,12 @@ export default {
     },
     methods: {
         onContextMenu(e) {
+            if (e.srcElement.classList.contains('native-context-menu')) {
+                return;
+            }
+
+            e.preventDefault();
+
             // TODO: NXT-844 why prevent right clicks with ctrl?
             // ignore click with ctrl and meta keys
             if (e.ctrlKey || e.metaKey) {
@@ -39,7 +45,7 @@ export default {
 <template>
   <div
     :class="['workflow-panel', { 'read-only': !isWritable }]"
-    @contextmenu.prevent="onContextMenu"
+    @contextmenu="onContextMenu"
   >
     <ContextMenu ref="contextMenu" />
 

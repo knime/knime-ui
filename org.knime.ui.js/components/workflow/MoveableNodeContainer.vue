@@ -29,7 +29,9 @@ export default {
     },
     data: () => ({
         // Start position of the dragging
-        startPos: { x: 0, y: 0 }
+        startPos: { x: 0, y: 0 },
+        nodeSelectionWidth: 0,
+        nodeSelectionExtraHeight: 20
     }),
     computed: {
         ...mapGetters('workflow', ['isWritable']),
