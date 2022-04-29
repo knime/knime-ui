@@ -79,7 +79,7 @@ describe('ContextMenu.vue', () => {
         wrapper.setProps({ position: { x: 2, y: 3 } });
         await Vue.nextTick();
 
-        expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(4);
+        expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(5);
     });
 
     it('uses right format for menuItems for FloatingMenu', async () => {
@@ -267,7 +267,7 @@ describe('ContextMenu.vue', () => {
             ['metanode', 'visible'],
             ['component', 'visible'],
             ['node', 'not visible']
-        ])('edit name option for "%s" is: "%s"', async (kind, visibility) => {
+        ])('edit name option for "%s" is: "%s"', (kind, visibility) => {
             const node = {
                 id: 'root:0',
                 kind,
@@ -278,9 +278,6 @@ describe('ContextMenu.vue', () => {
             const isVisible = visibility === 'visible';
 
             doMount();
-            wrapper.vm.show({ clientX: 0, clientY: 0 });
-
-            await Vue.nextTick();
 
             const menuItemNames = wrapper.findComponent(FloatingMenu).props('items').map(i => i.name);
 
