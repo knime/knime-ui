@@ -79,7 +79,7 @@ describe('ContextMenu.vue', () => {
         wrapper.setProps({ position: { x: 2, y: 3 } });
         await Vue.nextTick();
 
-        expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(5);
+        expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(6);
     });
 
     it('uses right format for menuItems for FloatingMenu', async () => {

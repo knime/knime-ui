@@ -69,6 +69,11 @@ describe('workflowCommands', () => {
             workflowCommands.createMetanode.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/collapseToContainer', { containerType: 'metanode' });
         });
+
+        test('create component', () => {
+            workflowCommands.createComponent.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/collapseToContainer', { containerType: 'component' });
+        });
     });
 
     describe('condition', () => {
@@ -191,6 +196,12 @@ describe('workflowCommands', () => {
             expect(workflowCommands.createMetanode.condition({ $store })).toBe(true);
             $store.getters['selection/selectedNodes'] = [{ allowedActions: { canCollapse: 'false' } }];
             expect(workflowCommands.createMetanode.condition({ $store })).toBe(false);
+        });
+
+        test('createComponent', () => {
+            expect(workflowCommands.createComponent.condition({ $store })).toBe(true);
+            $store.getters['selection/selectedNodes'] = [{ allowedActions: { canCollapse: 'false' } }];
+            expect(workflowCommands.createComponent.condition({ $store })).toBe(false);
         });
     });
 });

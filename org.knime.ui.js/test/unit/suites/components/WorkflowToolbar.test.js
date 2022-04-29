@@ -170,7 +170,8 @@ describe('WorkflowToolbar.vue', () => {
                 'executeSelected',
                 'cancelSelected',
                 'resetSelected',
-                'createMetanode'
+                'createMetanode',
+                'createComponent'
             ]);
         });
 
@@ -189,7 +190,8 @@ describe('WorkflowToolbar.vue', () => {
                 'executeSelected',
                 'cancelSelected',
                 'resetSelected',
-                'createMetanode'
+                'createMetanode',
+                'createComponent'
             ]);
         });
     });
