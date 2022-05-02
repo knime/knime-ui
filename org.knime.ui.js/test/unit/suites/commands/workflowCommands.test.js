@@ -192,16 +192,33 @@ describe('workflowCommands', () => {
             });
         });
 
-        test('createMetanode', () => {
-            expect(workflowCommands.createMetanode.condition({ $store })).toBe(true);
-            $store.getters['selection/selectedNodes'] = [{ allowedActions: { canCollapse: 'false' } }];
-            expect(workflowCommands.createMetanode.condition({ $store })).toBe(false);
+        describe('createMetanode', () => {
+            test('it can not create metanode when canCollapse is false', () => {
+                $store.getters['workflow/isWritable'] = true;
+                expect(workflowCommands.createMetanode.condition({ $store })).toBe(true);
+                $store.getters['selection/selectedNodes'] = [{ allowedActions: { canCollapse: 'false' } }];
+                expect(workflowCommands.createMetanode.condition({ $store })).toBe(false);
+            });
+
+            test('it can not create metanode when workflow is not writable', () => {
+                $store.getters['workflow/isWritable'] = false;
+                expect(workflowCommands.createMetanode.condition({ $store })).toBe(false);
+            });
         });
 
-        test('createComponent', () => {
-            expect(workflowCommands.createComponent.condition({ $store })).toBe(true);
-            $store.getters['selection/selectedNodes'] = [{ allowedActions: { canCollapse: 'false' } }];
-            expect(workflowCommands.createComponent.condition({ $store })).toBe(false);
+
+        describe('createComponent', () => {
+            test('it can not create component when canCollapse is false', () => {
+                $store.getters['workflow/isWritable'] = true;
+                expect(workflowCommands.createComponent.condition({ $store })).toBe(true);
+                $store.getters['selection/selectedNodes'] = [{ allowedActions: { canCollapse: 'false' } }];
+                expect(workflowCommands.createComponent.condition({ $store })).toBe(false);
+            });
+
+            test('it can not create component when workflow is not writable', () => {
+                $store.getters['workflow/isWritable'] = false;
+                expect(workflowCommands.createComponent.condition({ $store })).toBe(false);
+            });
         });
     });
 });
