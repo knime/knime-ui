@@ -85,7 +85,7 @@ describe('AutoSizeForeignObject.vue', () => {
         HTMLElement.prototype.getBoundingClientRect = () => null;
         
         doShallowMount();
-        await wrapper.vm.$nextTick();
+        await flushTaskQueue();
 
         expect(errorMock).toBeCalled();
         expect(wrapper.find('foreignObject').attributes()).toEqual(
@@ -97,7 +97,7 @@ describe('AutoSizeForeignObject.vue', () => {
     it('should emit the proper width and height', async () => {
         doShallowMount();
 
-        await wrapper.vm.$nextTick();
+        await flushTaskQueue();
 
         expect(wrapper.emitted('width-change')[0][0]).toBe(mockRectWidth);
         expect(wrapper.emitted('height-change')[0][0]).toBe(mockRectHeight);

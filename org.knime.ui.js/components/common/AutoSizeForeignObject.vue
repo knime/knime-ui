@@ -116,6 +116,7 @@ export default {
             
             // wait for re-render
             await this.$nextTick();
+            await this.$nextTick();
 
             // 2. measure content's actual size
             const rect = this.$refs.wrapper?.getBoundingClientRect();
