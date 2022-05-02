@@ -544,7 +544,7 @@ export default {
     /* TODO: why is this transition no applied when the .connected class is removed? */
     opacity: 0;
     transition: opacity 2000ms 0.25s;
-    
+
     &.node-hover {
       /* fade-in port with delay when node is hovered */
       transition: opacity 0.5s 0.5s;
@@ -553,6 +553,7 @@ export default {
 
     &:hover {
       /* immediately show port on direct hover */
+
       /* TODO: why is "transition opacity 0;" not working? */
       transition: none;
       opacity: 1;
