@@ -9,11 +9,22 @@ export default {
     components: {
         FloatingMenu
     },
+    props: {
+        /**
+         * Absolute position of the menu. It's relative to the next absolute/relative positioned parent.
+         */
+        position: {
+            type: Object,
+            required: true,
+            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
+        }
+    },
     data: () => ({
         visibleCommands: []
     }),
     computed: {
         ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode', 'selectedConnections']),
+
         // map visible command names to menu items
         menuItems() {
             return this.visibleCommands
@@ -26,12 +37,17 @@ export default {
                 }));
         }
     },
+    watch: {
+        // set menu items on mounted,
+        // update menu items when another target has been clicked, which is indicated by a change in position
+        position: {
+            immediate: true,
+            handler() {
+                this.setMenuItems();
+            }
+        }
+    },
     methods: {
-        show(e) {
-            // Choose and fix menu items that are to be shown. Once the menu is open its items don't change
-            this.setMenuItems();
-            this.$refs.contextMenu.showMenu(e.clientX, e.clientY);
-        },
         onContextMenuItemClick(e, command) {
             this.$commands.dispatch(command.name);
         },
@@ -41,6 +57,7 @@ export default {
             const isView = this.singleSelectedNode && 'canOpenView' in this.singleSelectedNode.allowedActions;
             const hasLegacyFlowVariableDialog = this.singleSelectedNode &&
                 'canOpenLegacyFlowVariableDialog' in this.singleSelectedNode.allowedActions;
+            const isMetanodeOrComponent = ['metanode', 'component'].includes(this.singleSelectedNode?.kind);
 
             let allMenuItems = {
                 // Exactly one node selected
@@ -56,14 +73,16 @@ export default {
 
                 configureFlowVariables: hasLegacyFlowVariableDialog,
                 openView: isView,
-                
+                editName: isMetanodeOrComponent,
                 // Something selected
                 deleteSelected: somethingSelected,
 
                 // Workflow
                 executeAll: !somethingSelected,
                 cancelAll: !somethingSelected,
-                resetAll: !somethingSelected
+                resetAll: !somethingSelected,
+
+                createMetanode: this.selectedNodes.length
             };
 
             // Array of name of commands
@@ -78,11 +97,12 @@ export default {
 
 <template>
   <FloatingMenu
-    ref="contextMenu"
     class="context-menu"
     :items="menuItems"
+    :position="position"
     aria-label="Context Menu"
     @item-click="onContextMenuItemClick"
+    @menu-close="$emit('menu-close')"
   />
 </template>
 

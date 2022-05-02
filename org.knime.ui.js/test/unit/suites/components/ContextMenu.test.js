@@ -17,12 +17,20 @@ describe('ContextMenu.vue', () => {
 
     beforeEach(() => {
         wrapper = null;
-        propsData = {};
+        propsData = {
+            position: {
+                x: 0,
+                y: 0
+            }
+        };
 
         storeConfig = {
             selection: {
+                state: () => ({
+                    _selectedNodes: []
+                }),
                 getters: {
-                    selectedNodes: () => [],
+                    selectedNodes: (state) => state._selectedNodes,
                     singleSelectedNode: () => null,
                     selectedConnections: () => []
                 }
@@ -46,27 +54,37 @@ describe('ContextMenu.vue', () => {
         };
     });
 
-
-    it('renders empty', () => {
+    it('sets items on mounted', () => {
         doMount();
-        let floatingMenu = wrapper.findComponent(FloatingMenu);
-        expect(floatingMenu.exists()).toBe(true);
-        expect(floatingMenu.props('items')).toStrictEqual([]);
+        
+        expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(3);
     });
 
-    it('shows menu', async () => {
+    it('items are not set reactively', async () => {
         doMount();
-        expect(wrapper.findComponent(FloatingMenu).classes()).not.toContain('isVisible');
-        wrapper.vm.show({ clientX: 0, clientY: 0 });
 
+        $store.state.selection._selectedNodes = ['a node'];
+        expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
+        await Vue.nextTick();
+        
+        expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(3);
+    });
+
+    it('sets items on position change', async () => {
+        doMount();
+        
+        $store.state.selection._selectedNodes = ['a node'];
+        expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
+        
+        wrapper.setProps({ position: { x: 2, y: 3 } });
         await Vue.nextTick();
 
-        expect(wrapper.findComponent(FloatingMenu).classes()).toContain('isVisible');
+        expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(5);
     });
 
     it('uses right format for menuItems for FloatingMenu', async () => {
         doMount();
-        wrapper.vm.show({ clientX: 0, clientY: 0 });
+        wrapper.setProps({ isVisible: true });
 
         await Vue.nextTick();
 
@@ -89,7 +107,7 @@ describe('ContextMenu.vue', () => {
     describe('Visibility of menu items', () => {
         it('shows correct menu items if nothing is selected', async () => {
             doMount();
-            wrapper.vm.show({ clientX: 0, clientY: 0 });
+            wrapper.setProps({ isVisible: true });
             await Vue.nextTick();
             expect(wrapper.findComponent(FloatingMenu).props('items').map(i => i.name)).toEqual(
                 expect.arrayContaining(['executeAll', 'cancelAll', 'resetAll'])
@@ -104,7 +122,7 @@ describe('ContextMenu.vue', () => {
             storeConfig.selection.getters.selectedNodes = () => [node];
             storeConfig.selection.getters.singleSelectedNode = () => node;
             doMount();
-            wrapper.vm.show({ clientX: 0, clientY: 0 });
+            wrapper.setProps({ isVisible: true });
 
             await Vue.nextTick();
 
@@ -128,7 +146,7 @@ describe('ContextMenu.vue', () => {
             storeConfig.selection.getters.selectedNodes = () => [node];
             storeConfig.selection.getters.singleSelectedNode = () => node;
             doMount();
-            wrapper.vm.show({ clientX: 0, clientY: 0 });
+            wrapper.setProps({ isVisible: true });
 
             await Vue.nextTick();
 
@@ -157,7 +175,7 @@ describe('ContextMenu.vue', () => {
             storeConfig.selection.getters.selectedNodes = () => [node];
             storeConfig.selection.getters.singleSelectedNode = () => node;
             doMount();
-            wrapper.vm.show({ clientX: 0, clientY: 0 });
+            wrapper.setProps({ isVisible: true });
 
             await Vue.nextTick();
 
@@ -194,7 +212,7 @@ describe('ContextMenu.vue', () => {
             storeConfig.selection.getters.selectedNodes = () => [node, node2];
             storeConfig.selection.getters.singleSelectedNode = () => null;
             doMount();
-            wrapper.vm.show({ clientX: 0, clientY: 0 });
+            wrapper.setProps({ isVisible: true });
 
             await Vue.nextTick();
 
@@ -217,7 +235,7 @@ describe('ContextMenu.vue', () => {
             };
             storeConfig.selection.getters.selectedConnections = () => [conn, conn2];
             doMount();
-            wrapper.vm.show({ clientX: 0, clientY: 0 });
+            wrapper.setProps({ isVisible: true });
 
             await Vue.nextTick();
 
@@ -234,7 +252,7 @@ describe('ContextMenu.vue', () => {
             };
             storeConfig.selection.getters.selectedConnections = () => [conn];
             doMount();
-            wrapper.vm.show({ clientX: 0, clientY: 0 });
+            wrapper.setProps({ isVisible: true });
 
             await Vue.nextTick();
 
@@ -243,6 +261,31 @@ describe('ContextMenu.vue', () => {
                     'deleteSelected'
                 ])
             );
+        });
+
+        it.each([
+            ['metanode', 'visible'],
+            ['component', 'visible'],
+            ['node', 'not visible']
+        ])('edit name option for "%s" is: "%s"', (kind, visibility) => {
+            const node = {
+                id: 'root:0',
+                kind,
+                allowedActions: {}
+            };
+            storeConfig.selection.getters.selectedNodes = () => [node];
+            storeConfig.selection.getters.singleSelectedNode = () => node;
+            const isVisible = visibility === 'visible';
+
+            doMount();
+
+            const menuItemNames = wrapper.findComponent(FloatingMenu).props('items').map(i => i.name);
+
+            if (isVisible) {
+                expect(menuItemNames).toContain('editName');
+            } else {
+                expect(menuItemNames).not.toContain('editName');
+            }
         });
     });
 });

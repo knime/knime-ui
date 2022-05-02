@@ -7,6 +7,7 @@ import { loadTable } from '~api';
 
 const scrollHandlerThrottle = 500; // 500 ms between checking scroll positions
 const tableVisibleDelay = 500; // table should be layouted and rendered after 500ms
+const tableVisibleRetryMax = 5; // max retrys to fixLayout
 /**
  * Data table container that contains a Header, a Body and a footer
  */
@@ -85,22 +86,36 @@ export default {
     watch: {
         table(newTable, oldTable) {
             if (!oldTable && newTable) {
-                setTimeout(() => {
-                    // [table-layout: auto] is used on the first data
-                    // for performance reasons this initial layout is fixed and not reevaluated for further rows
-                    this.fixLayout();
-
-                    // if the initial data fits inside the table without scrolling
-                    // more data is loaded once
-                    let canScroll = this.$refs.table.scrollHeight !== 0;
-                    if (this.canLoadMoreRows && !canScroll) {
-                        this.loadMoreRows();
-                    }
-                }, tableVisibleDelay);
+                this.newTableLoaded(newTable);
             }
         }
     },
     methods: {
+        newTableLoaded(newTable, counter = 0) {
+            // wait for table to be ready
+            if (!this.$refs.table) {
+                // retry after delay
+                if (counter <= tableVisibleRetryMax) {
+                    setTimeout(() => {
+                        this.newTableLoaded(newTable, counter++);
+                    }, tableVisibleDelay);
+                }
+                return;
+            }
+
+            consola.trace('new table loaded and ready');
+
+            // [table-layout: auto] is used on the first data
+            // for performance reasons this initial layout is fixed and not reevaluated for further rows
+            this.fixLayout();
+  
+            // if the initial data fits inside the table without scrolling
+            // more data is loaded once
+            let canScroll = this.$refs.table.scrollHeight !== 0;
+            if (this.canLoadMoreRows && !canScroll) {
+                this.loadMoreRows();
+            }
+        },
         /*
          * Measures the width of the header cells that have been set by the browser's layouting algorithm.
          * Sets the layout permanently and disables the browser's layouting algorithm

@@ -1,6 +1,7 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
-    moveObjects, openDialog, openLegacyFlowVariableDialog, openView, undo, redo, removeEventListener, connectNodes,
-    addNode, saveWorkflow, closeWorkflow } from '~api';
+    moveObjects, openDialog, openLegacyFlowVariableDialog as configureFlowVariables,
+    openView, undo, redo, removeEventListener, connectNodes,
+    addNode, saveWorkflow, closeWorkflow, renameContainer, collapseToContainer } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -18,7 +19,8 @@ export const state = () => ({
     activeSnapshotId: null,
     tooltip: null,
     isDragging: false,
-    deltaMovePosition: { x: 0, y: 0 }
+    deltaMovePosition: { x: 0, y: 0 },
+    nameEditorNodeId: null
 });
 
 export const mutations = {
@@ -46,6 +48,9 @@ export const mutations = {
     // change the isDragging property to the provided Value
     setDragging(state, { isDragging }) {
         state.isDragging = isDragging;
+    },
+    setNameEditorNodeId(state, nodeId) {
+        state.nameEditorNodeId = nodeId;
     }
 };
 
@@ -199,8 +204,8 @@ export const actions = {
         openDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
     /* See docs in API */
-    openLegacyFlowVariableDialog({ state }, nodeId) {
-        openLegacyFlowVariableDialog({ projectId: state.activeWorkflow.projectId, nodeId });
+    configureFlowVariables({ state }, nodeId) {
+        configureFlowVariables({ projectId: state.activeWorkflow.projectId, nodeId });
     },
     /* See docs in API */
     undo({ state, getters }) {
@@ -220,7 +225,12 @@ export const actions = {
         let { activeWorkflow: { projectId } } = state;
         closeWorkflow({ projectId });
     },
-
+    openNameEditor({ commit }, nodeId) {
+        commit('setNameEditorNodeId', nodeId);
+    },
+    closeNameEditor({ commit }) {
+        commit('setNameEditorNodeId', null);
+    },
     /**
      * Move either the outline of the nodes or the nodes itself,
      * depending on the amount of selected nodes. Delta is hereby the amount
@@ -236,6 +246,24 @@ export const actions = {
     },
 
     /**
+     * Renames a container (metanode or component).
+     * @param {Object} context - store context
+     * @param {string} params.nodeId - container node id
+     * @param {string} params.name - new new
+     * @returns {void} - nothing to return
+     */
+    renameContainer({ state, getters }, { nodeId, name }) {
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflowId } = getters;
+        renameContainer({
+            nodeId,
+            name,
+            projectId,
+            workflowId: activeWorkflowId
+        });
+    },
+
+    /**
      * Calls the API to save the position of the nodes after the move is over
      * @param {Object} context - store context
      * @param {Object} params
@@ -247,13 +275,11 @@ export const actions = {
     saveNodeMoves({ state, getters, commit, rootGetters }, { projectId }) {
         let translation;
         let selectedNodes = rootGetters['selection/selectedNodeIds'];
-        
         // calculate the translation either relative to the position or the outline position
         translation = {
             x: state.deltaMovePosition.x,
             y: state.deltaMovePosition.y
         };
-        
         moveObjects({
             projectId,
             workflowId: getters.activeWorkflowId,
@@ -287,6 +313,27 @@ export const actions = {
             },
             nodeFactory
         });
+    },
+    async collapseToContainer({ state, getters, rootState, rootGetters, dispatch }, { containerType }) {
+        const selectedNodes = rootGetters['selection/selectedNodeIds'];
+        let canCollapse = false;
+
+        if (rootGetters['selection/selectedNodes'].some(node => node.allowedActions.canCollapse === 'resetRequired')) {
+            canCollapse = window.confirm(`Creating this ${containerType} will reset the executed nodes.`);
+        } else {
+            canCollapse = true;
+        }
+
+        if (canCollapse) {
+            dispatch('selection/deselectAllObjects', null, { root: true });
+
+            await collapseToContainer({
+                containerType,
+                projectId: state.activeWorkflow.projectId,
+                workflowId: getters.activeWorkflowId,
+                nodeIds: selectedNodes
+            });
+        }
     }
 };
 

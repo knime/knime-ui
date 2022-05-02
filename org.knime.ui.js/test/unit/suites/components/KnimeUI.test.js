@@ -13,8 +13,6 @@ import Error from '~/components/Error';
 import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
 import HotkeyHandler from '~/components/HotkeyHandler';
 
-const numberOfPreloadedFonts = 3;
-
 describe('KnimeUI.vue', () => {
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -118,7 +116,10 @@ describe('KnimeUI.vue', () => {
         await doShallowMountWithAsyncData();
 
         expect(initializeApplication).toHaveBeenCalled();
-        expect(document.fonts.load).toHaveBeenCalledTimes(numberOfPreloadedFonts);
+        expect(document.fonts.load).toHaveBeenCalledWith('400 1em Roboto');
+        expect(document.fonts.load).toHaveBeenCalledWith('400 1em Roboto Condensed');
+        expect(document.fonts.load).toHaveBeenCalledWith('700 1em Roboto Condensed');
+        expect(document.fonts.load).toHaveBeenCalledWith('400 1em Roboto Mono');
     });
 
     it('destroys application', async () => {

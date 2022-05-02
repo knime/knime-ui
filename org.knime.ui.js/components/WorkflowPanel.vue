@@ -10,6 +10,12 @@ export default {
         ContextMenu,
         WorkflowCanvas
     },
+    data() {
+        return {
+            // null (or falsy) means context menu is invisible, otherwise should be an Object with x, y as Numbers
+            contextMenuPosition: null
+        };
+    },
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
@@ -25,12 +31,18 @@ export default {
     },
     methods: {
         onContextMenu(e) {
-            // TODO: NXT-844 why prevent right clicks with ctrl?
-            // ignore click with ctrl and meta keys
-            if (e.ctrlKey || e.metaKey) {
+            // do nothing (also not preventing!) if source element has the following class set
+            if (e.srcElement.classList.contains('native-context-menu')) {
                 return;
             }
-            this.$refs.contextMenu.show(e);
+            // this is not done via modifier as we need to let the native context menu appear if the class is set
+            e.preventDefault();
+
+            // update position to current mouse coordinates
+            this.contextMenuPosition = {
+                x: e.clientX,
+                y: e.clientY
+            };
         }
     }
 };
@@ -39,9 +51,13 @@ export default {
 <template>
   <div
     :class="['workflow-panel', { 'read-only': !isWritable }]"
-    @contextmenu.prevent="onContextMenu"
+    @contextmenu="onContextMenu"
   >
-    <ContextMenu ref="contextMenu" />
+    <ContextMenu
+      v-show="Boolean(contextMenuPosition)"
+      :position="contextMenuPosition || {x: 0, y: 0}"
+      @menu-close="contextMenuPosition = null"
+    />
 
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div

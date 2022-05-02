@@ -4,6 +4,7 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
 import WorkflowPanel from '~/components/WorkflowPanel';
+import ContextMenu from '~/components/ContextMenu';
 
 describe('WorkflowPanel', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, storeConfig;
@@ -102,5 +103,28 @@ describe('WorkflowPanel', () => {
         });
     });
 
-    // TODO: NXT-844 add tests for the context menu
+    describe('Context menu', () => {
+        it('renders context menu', async () => {
+            doShallowMount();
+            
+            expect(wrapper.findComponent(ContextMenu).isVisible()).toBe(false);
+            
+            wrapper.trigger('contextmenu', { clientX: 242, clientY: 122 });
+            await wrapper.vm.$nextTick();
+            
+            expect(wrapper.findComponent(ContextMenu).props('position')).toStrictEqual({ x: 242, y: 122 });
+        });
+
+        it('handles @menu-close event from ContextMenu properly', async () => {
+            doShallowMount();
+            
+            wrapper.trigger('contextmenu', { clientX: 100, clientY: 200 });
+            await wrapper.vm.$nextTick();
+            
+            wrapper.findComponent(ContextMenu).vm.$emit('menu-close');
+            
+            await wrapper.vm.$nextTick();
+            expect(wrapper.findComponent(ContextMenu).isVisible()).toBe(false);
+        });
+    });
 });

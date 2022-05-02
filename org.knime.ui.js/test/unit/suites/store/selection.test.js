@@ -122,8 +122,23 @@ describe('workflow store', () => {
             expect(Object.keys($store.state.selection.selectedConnections).length).toBe(0);
         });
 
+        test('selects multiple nodes', () => {
+            $store.dispatch('selection/deselectAllObjects');
+            $store.dispatch('selection/selectNodes', ['root:1', 'root:2']);
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(2);
+            expect(Object.keys($store.state.selection.selectedConnections).length).toBe(0);
+        });
+
         test('deselects a specific node', () => {
             $store.dispatch('selection/deselectNode', 'root:1');
+            expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
+            expect(Object.keys($store.state.selection.selectedConnections).length).toBe(1);
+        });
+
+        test('deselects multiple nodes', () => {
+            storeConfig.selection.state.selectedNodes['root:2'] = true;
+            $store = mockVuexStore(storeConfig);
+            $store.dispatch('selection/deselectNodes', ['root:1', 'root:2']);
             expect(Object.keys($store.state.selection.selectedNodes).length).toBe(0);
             expect(Object.keys($store.state.selection.selectedConnections).length).toBe(1);
         });
@@ -175,11 +190,50 @@ describe('workflow store', () => {
             expect($store.getters['selection/isNodeSelected']('root:3')).toBe(false);
         });
 
+        test('get multiple selected nodes without a active workflow', () => {
+            storeConfig.workflow.state.activeWorkflow = null;
+            $store = mockVuexStore(storeConfig);
+            expect($store.getters['selection/selectedNodes']).toStrictEqual([]);
+        });
+
+        test('error for selected nodes which are not part of the workflow', () => {
+            let consolaError = jest.spyOn(global.consola, 'error').mockImplementation();
+            $store.commit('selection/addNodesToSelection', ['non-existent']);
+
+            expect($store.getters['selection/selectedNodes']).toStrictEqual(expect.objectContaining([
+                { id: 'root:1' },
+                { id: 'root:2' },
+                undefined
+            ]));
+            expect(consolaError).toHaveBeenCalledTimes(1);
+
+            consolaError.mockRestore();
+        });
+
         test('get all selected connections', () => {
             expect($store.getters['selection/selectedConnections']).toStrictEqual([
                 { allowedActions: { canDelete: true }, id: 'root:2_1' },
                 { allowedActions: { canDelete: true }, id: 'root:2_2' }
             ]);
+        });
+
+        test('get all selected connections without a active workflow', () => {
+            storeConfig.workflow.state.activeWorkflow = null;
+            $store = mockVuexStore(storeConfig);
+            expect($store.getters['selection/selectedConnections']).toStrictEqual([]);
+        });
+
+        test('error for selected connections which are not part of the workflow', () => {
+            let consolaError = jest.spyOn(global.consola, 'error').mockImplementation();
+            $store.commit('selection/addConnectionsToSelection', ['non-existent']);
+
+            expect($store.getters['selection/selectedConnections']).toStrictEqual(expect.objectContaining([
+                { allowedActions: { canDelete: true }, id: 'root:2_1' },
+                { allowedActions: { canDelete: true }, id: 'root:2_2' }
+            ]));
+            expect(consolaError).toHaveBeenCalledTimes(1);
+
+            consolaError.mockRestore();
         });
 
         test('test if connection is selected', () => {
