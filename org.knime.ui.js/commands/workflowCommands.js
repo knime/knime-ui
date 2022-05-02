@@ -114,7 +114,7 @@ export default {
         ({ $store }) => $store.dispatch('workflow/collapseToContainer', { containerType: 'metanode' }),
         condition:
         ({ $store }) => !$store.getters['selection/selectedNodes']
-            .some(node => node.allowedActions.canCollapse === 'false')
+            .some(node => node.allowedActions.canCollapse === 'false') && $store.getters['workflow/isWritable']
     },
     createComponent: {
         text: 'Create Component',
@@ -125,6 +125,6 @@ export default {
         ({ $store }) => $store.dispatch('workflow/collapseToContainer', { containerType: 'component' }),
         condition:
         ({ $store }) => !$store.getters['selection/selectedNodes']
-            .some(node => node.allowedActions.canCollapse === 'false')
+            .some(node => node.allowedActions.canCollapse === 'false') && $store.getters['workflow/isWritable']
     }
 };
