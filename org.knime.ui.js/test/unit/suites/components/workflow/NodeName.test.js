@@ -40,7 +40,7 @@ describe('NodeName', () => {
                     actions: {
                         openNameEditor: jest.fn(),
                         closeNameEditor: jest.fn(),
-                        renameContainer: jest.fn()
+                        renameContainerNode: jest.fn()
                     }
                 }
             };
@@ -95,7 +95,7 @@ describe('NodeName', () => {
                     actions: {
                         openNameEditor: jest.fn(),
                         closeNameEditor: jest.fn(),
-                        renameContainer: jest.fn()
+                        renameContainerNode: jest.fn()
                     }
                 }
             };
@@ -144,7 +144,7 @@ describe('NodeName', () => {
             };
             
             wrapper.findComponent(NodeNameEditor).vm.$emit('save', saveEventPayload);
-            expect(storeConfig.workflow.actions.renameContainer).toHaveBeenCalledWith(
+            expect(storeConfig.workflow.actions.renameContainerNode).toHaveBeenCalledWith(
                 expect.any(Object),
                 expect.objectContaining({ nodeId: defaultProps.nodeId, name: saveEventPayload.newName })
             );

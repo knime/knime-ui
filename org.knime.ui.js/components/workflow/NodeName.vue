@@ -43,13 +43,13 @@ export default {
         }
     },
     methods: {
-        ...mapActions('workflow', ['renameContainer', 'openNameEditor', 'closeNameEditor']),
+        ...mapActions('workflow', ['renameContainerNode', 'openNameEditor', 'closeNameEditor']),
         onRequestEdit() {
             this.openNameEditor(this.nodeId);
             this.$emit('edit-start');
         },
         onSave({ dimensionsOnClose, newName }) {
-            this.renameContainer({ nodeId: this.nodeId, name: newName });
+            this.renameContainerNode({ nodeId: this.nodeId, name: newName });
             this.editorInitialDimensions = dimensionsOnClose;
 
             // Schedule closing editor on next the event loop run

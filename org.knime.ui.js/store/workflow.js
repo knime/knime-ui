@@ -1,7 +1,7 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
     moveObjects, openDialog, openLegacyFlowVariableDialog as configureFlowVariables,
     openView, undo, redo, removeEventListener, connectNodes,
-    addNode, saveWorkflow, closeWorkflow, renameContainer, collapseToContainer } from '~api';
+    addNode, saveWorkflow, closeWorkflow, renameContainerNode, collapseToContainer } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -252,10 +252,10 @@ export const actions = {
      * @param {string} params.name - new new
      * @returns {void} - nothing to return
      */
-    renameContainer({ state, getters }, { nodeId, name }) {
+    renameContainerNode({ state, getters }, { nodeId, name }) {
         const { activeWorkflow: { projectId } } = state;
         const { activeWorkflowId } = getters;
-        renameContainer({
+        renameContainerNode({
             nodeId,
             name,
             projectId,
