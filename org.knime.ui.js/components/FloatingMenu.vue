@@ -1,6 +1,5 @@
 <script>
 import { mixin as clickaway } from 'vue-clickaway2';
-import MenuItems from '~/webapps-common/ui/components/MenuItems';
 
 const SCROLLBAR_OFFSET = 4; // px
 
@@ -17,18 +16,8 @@ const SCROLLBAR_OFFSET = 4; // px
  */
 
 export default {
-    components: {
-        MenuItems
-    },
     mixins: [clickaway],
     props: {
-        /**
-         * Items Array. See MenuItems.vue for more details.
-         */
-        items: {
-            required: true,
-            type: Array
-        },
         /**
          * Absolute position of the Menu.
          */
@@ -61,28 +50,13 @@ export default {
             return { left, top };
         }
     },
-    watch: {
-        absolutePosition() {
-            // set focus to menu for keyboard nav to work
-            // also required to prevent menu from closing due to change of menu items change (see onFocusOut)
-            this.$nextTick(() => this.$refs.menuItems.$el.focus());
-        }
-    },
     methods: {
-        onItemClick(event, item) {
-            // forward event and close menu
-            this.$emit('item-click', event, item);
-            this.closeMenu();
-        },
         onFocusOut(e) {
             setTimeout(() => {
                 if (!this.$el.contains(document.activeElement)) {
-                    this.closeMenu();
+                    this.$emit('menu-close');
                 }
             }, 1);
-        },
-        closeMenu() {
-            this.$emit('menu-close');
         }
     }
 };
@@ -90,23 +64,17 @@ export default {
 
 <template>
   <div
-    v-on-clickaway="closeMenu"
+    v-on-clickaway="() => $emit('menu-close')"
     class="floating-menu"
     :style="{
       left: `${absolutePosition.left}px`,
       top: `${absolutePosition.top}px`
     }"
     @focusout.stop="onFocusOut"
-    @keydown.esc.stop.prevent="closeMenu"
+    @keydown.esc.stop.prevent="$emit('menu-close')"
     @keydown.tab.stop.prevent
   >
-    <MenuItems
-      ref="menuItems"
-      class="menu-items"
-      :items="items"
-      aria-label="Context Menu"
-      @item-click="onItemClick"
-    />
+    <slot />
   </div>
 </template>
 
@@ -114,8 +82,7 @@ export default {
 .floating-menu {
   position: absolute;
   display: block;
-  min-width: 200px;
-  max-width: 320px;
+  z-index: 5;
 
   &:focus {
     outline: none;

@@ -6,6 +6,7 @@ import Vue from 'vue';
 
 import ContextMenu from '~/components/ContextMenu';
 import FloatingMenu from '~/components/FloatingMenu';
+import MenuItems from '~/webapps-common/ui/components/MenuItems';
 
 describe('ContextMenu.vue', () => {
     let storeConfig, propsData, mocks, doMount, wrapper, $store, $commands;
@@ -19,8 +20,8 @@ describe('ContextMenu.vue', () => {
         wrapper = null;
         propsData = {
             position: {
-                x: 0,
-                y: 0
+                x: 10,
+                y: 10
             }
         };
 
@@ -54,20 +55,38 @@ describe('ContextMenu.vue', () => {
         };
     });
 
+    describe('Menu', () => {
+        it('sets position', () => {
+            doMount();
+            expect(wrapper.findComponent(FloatingMenu).props('position')).toStrictEqual({ x: 10, y: 10 });
+        });
+        
+        it('re-emits menu-close', () => {
+            doMount();
+            wrapper.findComponent(FloatingMenu).vm.$emit('menu-close');
+            expect(wrapper.emitted('menu-close')).toBeTruthy();
+        });
+
+        it('focuses menu items on position change', async () => {
+            doMount();
+            
+            $store.state.selection._selectedNodes = ['a node'];
+            expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
+            
+            const focusMock = jest.fn();
+    
+            wrapper.findComponent(MenuItems).vm.$el.focus = focusMock;
+            wrapper.setProps({ position: { x: 2, y: 3 } });
+            await Vue.nextTick();
+    
+            expect(focusMock).toHaveBeenCalled();
+        });
+    });
+
     it('sets items on mounted', () => {
         doMount();
         
-        expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(3);
-    });
-
-    it('items are not set reactively', async () => {
-        doMount();
-
-        $store.state.selection._selectedNodes = ['a node'];
-        expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
-        await Vue.nextTick();
-        
-        expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(3);
+        expect(wrapper.findComponent(MenuItems).props('items').length).toBe(3);
     });
 
     it('sets items on position change', async () => {
@@ -79,16 +98,26 @@ describe('ContextMenu.vue', () => {
         wrapper.setProps({ position: { x: 2, y: 3 } });
         await Vue.nextTick();
 
-        expect(wrapper.findComponent(FloatingMenu).props('items').length).toBe(6);
+        expect(wrapper.findComponent(MenuItems).props('items').length).toBe(6);
     });
 
-    it('uses right format for menuItems for FloatingMenu', async () => {
+    it('items are not set reactively', async () => {
+        doMount();
+
+        $store.state.selection._selectedNodes = ['a node'];
+        expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
+        await Vue.nextTick();
+        
+        expect(wrapper.findComponent(MenuItems).props('items').length).toBe(3);
+    });
+
+    it('uses right format for MenuItems', async () => {
         doMount();
         wrapper.setProps({ isVisible: true });
 
         await Vue.nextTick();
 
-        let menuItems = wrapper.getComponent(FloatingMenu).props('items');
+        let menuItems = wrapper.getComponent(MenuItems).props('items');
         expect($commands.isEnabled).toHaveBeenCalledWith('executeAll');
         expect(menuItems).toEqual(expect.arrayContaining([{
             text: 'text',
@@ -100,7 +129,7 @@ describe('ContextMenu.vue', () => {
 
     it('fires correct action based on store data', () => {
         doMount();
-        wrapper.findComponent(FloatingMenu).vm.$emit('item-click', null, { name: 'command' });
+        wrapper.findComponent(MenuItems).vm.$emit('item-click', null, { name: 'command' });
         expect($commands.dispatch).toHaveBeenCalledWith('command');
     });
 
@@ -109,7 +138,7 @@ describe('ContextMenu.vue', () => {
             doMount();
             wrapper.setProps({ isVisible: true });
             await Vue.nextTick();
-            expect(wrapper.findComponent(FloatingMenu).props('items').map(i => i.name)).toEqual(
+            expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
                 expect.arrayContaining(['executeAll', 'cancelAll', 'resetAll'])
             );
         });
@@ -126,7 +155,7 @@ describe('ContextMenu.vue', () => {
 
             await Vue.nextTick();
 
-            expect(wrapper.findComponent(FloatingMenu).props('items').map(i => i.name)).toEqual(
+            expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
                 expect.arrayContaining([
                     'executeSelected',
                     'cancelSelected',
@@ -150,7 +179,7 @@ describe('ContextMenu.vue', () => {
 
             await Vue.nextTick();
 
-            expect(wrapper.findComponent(FloatingMenu).props('items').map(i => i.name)).toEqual(
+            expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
                 expect.arrayContaining([
                     'executeSelected',
                     'resumeLoopExecution',
@@ -179,7 +208,7 @@ describe('ContextMenu.vue', () => {
 
             await Vue.nextTick();
 
-            expect(wrapper.findComponent(FloatingMenu).props('items').map(i => i.name)).toEqual(
+            expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
                 expect.arrayContaining([
                     'executeSelected',
                     'cancelSelected',
@@ -216,7 +245,7 @@ describe('ContextMenu.vue', () => {
 
             await Vue.nextTick();
 
-            expect(wrapper.findComponent(FloatingMenu).props('items').map(i => i.name)).toEqual(
+            expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
                 expect.arrayContaining([
                     'executeSelected',
                     'cancelSelected',
@@ -239,7 +268,7 @@ describe('ContextMenu.vue', () => {
 
             await Vue.nextTick();
 
-            expect(wrapper.findComponent(FloatingMenu).props('items').map(i => i.name)).toEqual(
+            expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
                 expect.arrayContaining([
                     'deleteSelected'
                 ])
@@ -256,7 +285,7 @@ describe('ContextMenu.vue', () => {
 
             await Vue.nextTick();
 
-            expect(wrapper.findComponent(FloatingMenu).props('items').map(i => i.name)).toEqual(
+            expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
                 expect.arrayContaining([
                     'deleteSelected'
                 ])
@@ -279,7 +308,7 @@ describe('ContextMenu.vue', () => {
 
             doMount();
 
-            const menuItemNames = wrapper.findComponent(FloatingMenu).props('items').map(i => i.name);
+            const menuItemNames = wrapper.findComponent(MenuItems).props('items').map(i => i.name);
 
             if (isVisible) {
                 expect(menuItemNames).toContain('editName');

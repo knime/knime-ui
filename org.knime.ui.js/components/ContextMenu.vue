@@ -1,13 +1,15 @@
 <script>
 import { mapGetters } from 'vuex';
 import FloatingMenu from '~/components/FloatingMenu';
+import MenuItems from '~/webapps-common/ui/components/MenuItems';
 
 /**
  * ContextMenu offers actions for the Kanvas based on the selected nodes.
  */
 export default {
     components: {
-        FloatingMenu
+        FloatingMenu,
+        MenuItems
     },
     props: {
         /**
@@ -44,11 +46,14 @@ export default {
             immediate: true,
             handler() {
                 this.setMenuItems();
+                this.$nextTick(() => {
+                    this.$refs.menuItems.$el.focus();
+                });
             }
         }
     },
     methods: {
-        onContextMenuItemClick(e, command) {
+        onItemClick(e, command) {
             this.$commands.dispatch(command.name);
         },
         setMenuItems() {
@@ -99,16 +104,27 @@ export default {
 <template>
   <FloatingMenu
     class="context-menu"
-    :items="menuItems"
     :position="position"
     aria-label="Context Menu"
-    @item-click="onContextMenuItemClick"
     @menu-close="$emit('menu-close')"
-  />
+  >
+    <MenuItems
+      ref="menuItems"
+      class="menu-items"
+      :items="menuItems"
+      aria-label="Context Menu"
+      @item-click="onItemClick"
+    />
+  </FloatingMenu>
 </template>
 
 <style lang="postcss" scoped>
 .context-menu {
-  z-index: 5;
+  min-width: 200px;
+  max-width: 320px;
+}
+
+.menu-items {
+  box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
 }
 </style>
