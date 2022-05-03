@@ -7,6 +7,8 @@ import TabBar from '~/webapps-common/ui/components/TabBar';
  * Tab Bar that displays output ports of a given node.
  * Can be used like a form element, since it emits an `input` event
  * */
+export const portIconSize = 12;
+
 export default {
     components: {
         TabBar
@@ -53,7 +55,7 @@ export default {
                 ...outPorts.map(
                     port => ({
                         value: String(port.index),
-                        icon: portIcon(port),
+                        icon: portIcon(port, portIconSize),
                         label: `${port.index}: ${port.name}`
                     })
                 )
