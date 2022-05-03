@@ -74,7 +74,11 @@ export default {
           @click="onBreadcrumbClick"
         />
         <hr>
-        <SearchBar v-model="searchQuery" />
+        <SearchBar
+          v-model="searchQuery"
+          placeholder="Search Nodes"
+          class="search-bar"
+        />
       </div>
       <CloseableTagList
         v-if="showSearchResults"
@@ -138,6 +142,20 @@ export default {
     & >>> svg.arrow {
       margin-top: 6px;
     }
+  }
+}
+
+.search-bar {
+  height: 40px;
+  font-size: 17px;
+
+  &:hover {
+    background-color: var(--knime-silver-sand-semi);
+  }
+
+  &:focus-within {
+    background-color: var(--knime-white);
+    border-color: var(--knime-masala);
   }
 }
 
