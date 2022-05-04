@@ -14,6 +14,8 @@ describe('PortIconRenderer', () => {
     });
 
     let $store, doMount, storeConfig, wrapper;
+    const FLOW_VARIABLE = 'FV';
+    const TABLE = 'TA';
 
     beforeEach(() => {
         wrapper = null;
@@ -22,11 +24,11 @@ describe('PortIconRenderer', () => {
                 state: {
                     activeWorkflow: {
                         portTypes: {
-                            TA: {
+                            [TABLE]: {
                                 kind: 'table',
                                 name: 'Data'
                             },
-                            FV: {
+                            [FLOW_VARIABLE]: {
                                 kind: 'flowVariable',
                                 name: 'Flow Variable'
                             }
@@ -44,7 +46,7 @@ describe('PortIconRenderer', () => {
 
     it('renders a table portIcon', () => {
         let PortIcon = portIcon({
-            typeId: 'TA',
+            typeId: TABLE,
             state: 'EXECUTED'
         });
         doMount(PortIcon);
@@ -56,7 +58,7 @@ describe('PortIconRenderer', () => {
 
     it('renders a flowVar port Icon', () => {
         let PortIcon = portIcon({
-            typeId: 'FV',
+            typeId: FLOW_VARIABLE,
             inactive: true,
             state: 'EXECUTED'
 

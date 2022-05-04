@@ -89,7 +89,7 @@ export default {
             return false;
         },
 
-        // If Step 2 is successful, return selected port kind
+        // If Step 2 is successful, return selected port
         selectedPort() {
             return this.nodeHasProblem ? null : this.selectedNode.outPorts[this.selectedPortIndex];
         },

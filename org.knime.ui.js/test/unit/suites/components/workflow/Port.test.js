@@ -15,6 +15,9 @@ describe('Port', () => {
     });
 
     let wrapper, propsData, storeConfig, doShallowMount, $store;
+    const FLOW_VARIABLE = 'FV';
+    const TABLE = 'TA';
+    const OTHER = 'OT';
 
     describe.each([
         ['FV', 'flowVariable', $colors.portColors.flowVariable],
@@ -36,15 +39,15 @@ describe('Port', () => {
                     state: {
                         activeWorkflow: {
                             portTypes: {
-                                TA: {
+                                [TABLE]: {
                                     kind: 'table',
                                     name: 'Data'
                                 },
-                                FV: {
+                                [FLOW_VARIABLE]: {
                                     kind: 'flowVariable',
                                     name: 'Flow Variable'
                                 },
-                                OT: {
+                                [OTHER]: {
                                     kind: 'other',
                                     color: '#123442',
                                     name: 'Something'
