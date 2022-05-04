@@ -34,8 +34,14 @@ describe('ActionButton', () => {
 
     it('fires event on click', () => {
         let wrapper = shallowMount(ActionButton);
-        wrapper.find('g').trigger('pointerdown');
+        wrapper.find('g').trigger('click');
         expect(wrapper.emitted().click).toBeTruthy();
+    });
+
+    it('blocks pointer down', () => {
+        let wrapper = shallowMount(ActionButton);
+        wrapper.find('g').trigger('pointerdown');
+        expect(wrapper.emitted().click).toBeFalsy();
     });
 
     it('doesnt fire event when disabled', () => {
