@@ -124,8 +124,7 @@ export default {
   height: 0;
 
   & .tooltip-enter-active {
-    /* delay entering of tooltip by 0.75 seconds */
-    transition: opacity 150ms 0.75s ease;
+    transition: opacity 150ms ease;
   }
 
   & .tooltip-leave-active {
