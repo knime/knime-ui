@@ -148,7 +148,10 @@ describe('MoveableNodeContainer', () => {
             );
         });
 
-        it('moves a single node', () => {
+        it.each([
+            ['without grid', { x: 1, y: 1 }, true],
+            ['with grid', $shapes.gridSize, false]
+        ])('moves a single node %s', (_, gridSize, altKey) => {
             const kanvasMock = document.createElement('div');
             kanvasMock.id = 'kanvas';
             document.body.appendChild(kanvasMock);
@@ -176,6 +179,7 @@ describe('MoveableNodeContainer', () => {
                 detail: {
                     clientX: 250,
                     clientY: 250,
+                    altKey,
                     e: { detail: { event: { shiftKey: false } } }
                 }
             });
@@ -187,8 +191,8 @@ describe('MoveableNodeContainer', () => {
             };
 
             const expectedDelta = {
-                deltaX: Math.round(initialDelta.x / $shapes.gridSize.x) * $shapes.gridSize.x,
-                deltaY: Math.round(initialDelta.y / $shapes.gridSize.y) * $shapes.gridSize.y
+                deltaX: Math.round(initialDelta.x / gridSize.x) * gridSize.x,
+                deltaY: Math.round(initialDelta.y / gridSize.y) * gridSize.y
             };
 
             expect(storeConfig.workflow.actions.moveNodes).toHaveBeenCalledWith(

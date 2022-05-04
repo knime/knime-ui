@@ -110,33 +110,36 @@ export default {
          * throttled to limit recalculation
          * @param {Object} detail - containing the total amount moved in x and y direction
          */
-        onMove: throttle(function ({ detail: { clientX, clientY } }) {
+        onMove: throttle(function ({ detail: { clientX, clientY, altKey } }) {
             /* eslint-disable no-invalid-this */
             if (!this.isDragging) {
                 return;
             }
 
-            const { nodeSize, gridSize } = this.$shapes;
+            const { nodeSize } = this.$shapes;
             const updatedPos = this.positionOnCanvas({ x: clientX, y: clientY });
 
             // adjust the delta using `nodeSize` to make sure the reference is from the center of the node
-            const deltaX = updatedPos.x - this.startPos.x - nodeSize / 2;
-            const deltaY = updatedPos.y - this.startPos.y - nodeSize / 2;
+            let deltaX = updatedPos.x - this.startPos.x - nodeSize / 2;
+            let deltaY = updatedPos.y - this.startPos.y - nodeSize / 2;
+            
+            let gridSize = altKey ? { x: 1, y: 1 } : this.$shapes.gridSize;
 
-            const deltaXAdjustedForGridSnapping = Math.round(deltaX / gridSize.x) * gridSize.x;
-            const deltaYAdjustedForGridSnapping = Math.round(deltaY / gridSize.y) * gridSize.y;
+            // Adjusted For Grid Snapping
+            deltaX = Math.round(deltaX / gridSize.x) * gridSize.x;
+            deltaY = Math.round(deltaY / gridSize.y) * gridSize.y;
             
             // prevent unneeded dispatches if the position hasn't changed
             if (
-                this.deltaMovePosition.x === deltaXAdjustedForGridSnapping &&
-                this.deltaMovePosition.y === deltaYAdjustedForGridSnapping
+                this.deltaMovePosition.x === deltaX &&
+                this.deltaMovePosition.y === deltaY
             ) {
                 return;
             }
 
             this.$store.dispatch('workflow/moveNodes', {
-                deltaX: deltaXAdjustedForGridSnapping,
-                deltaY: deltaYAdjustedForGridSnapping
+                deltaX,
+                deltaY
             });
             /* eslint-enable no-invalid-this */
         }),
