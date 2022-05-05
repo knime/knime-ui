@@ -104,7 +104,7 @@ export default {
     padding: 0 20px 15px;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
 
     & .loading-indicator {
       animation: spin 2s linear infinite;
