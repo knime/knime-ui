@@ -83,7 +83,6 @@ import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
 import org.knime.core.util.Version;
 import org.knime.gateway.api.entity.NodeIDEnt;
-import org.knime.gateway.api.util.CoreUtil;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
@@ -130,8 +129,8 @@ public final class EclipseUIStateUtil {
             }
 
             @Override
-            public List<PortType> getRecommendedPortTypes() {
-                return CoreUtil.RECOMMENDED_PORT_TYPES;
+            public List<PortType> getSuggestedPortTypes() {
+                return AppState.SUGGESTED_PORT_TYPES;
             }
         };
     }

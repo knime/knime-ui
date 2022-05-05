@@ -114,7 +114,7 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
 		}
 		JsonNode openedWorkflows = appStateNode.get("openedWorkflows");
 		ArrayNode availablePortTypes = (ArrayNode)appStateNode.get("availablePortTypes");
-		ArrayNode recommendedPortTypeIds = (ArrayNode)appStateNode.get("recommendedPortTypeIds");
+		ArrayNode suggestedPortTypeIds = (ArrayNode)appStateNode.get("suggestedPortTypeIds");
         if (openedWorkflows != null) {
 			var appState = new AppStateProvider.AppState() {
 				@Override
@@ -136,11 +136,11 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
 				}
 
 				@Override
-				public List<PortType> getRecommendedPortTypes() {
-					if (recommendedPortTypeIds == null) {
+				public List<PortType> getSuggestedPortTypes() {
+					if (suggestedPortTypeIds == null) {
 						return Collections.emptyList();
 					}
-					return StreamSupport.stream(recommendedPortTypeIds.spliterator(), false)
+					return StreamSupport.stream(suggestedPortTypeIds.spliterator(), false)
 							.map(el -> CoreUtil.getPortType(el.asText()))
 							.filter(Optional::isPresent)
 							.map(Optional::get)
