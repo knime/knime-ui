@@ -7,7 +7,7 @@ import NodeAnnotation from '~/components/workflow/NodeAnnotation';
 import LinkDecorator from '~/components/workflow/LinkDecorator';
 import StreamingDecorator from '~/components/workflow/StreamingDecorator';
 import LoopDecorator from '~/components/workflow/LoopDecorator';
-import portShift from '~/util/portShift';
+import portShift, { placeholderPosition, portPositions } from '~/util/portShift';
 import NodeActionBar from '~/components/workflow/NodeActionBar';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
 import NodeName from '~/components/workflow/NodeName';
@@ -261,11 +261,11 @@ export default {
          */
         portPositions() {
             return {
-                in: this.inPorts.map(
-                    port => portShift(port.index, this.inPorts.length, this.kind === 'metanode')
+                in: portPositions(
+                    { portCount: this.inPorts.length, isMetanode: this.kind === 'metanode' }
                 ),
-                out: this.outPorts.map(
-                    port => portShift(port.index, this.outPorts.length, this.kind === 'metanode', true)
+                out: portPositions(
+                    { portCount: this.outPorts.length, isMetanode: this.kind === 'metanode', isOutports: true }
                 )
             };
         },

@@ -41,4 +41,22 @@ const portShift = (portIndex, portCount, isMetanode, isOutPort) => {
     return [x, dy];
 };
 
+export const placeholderPosition = ({ portCount, isOutport = false, isMetanode = false }) => {
+    isMetanode = Number(isMetanode); // cast to 1 or 0
+    switch (portCount) {
+        case 1 - isMetanode:
+            return portShift(portCount, portCount + 1, isMetanode, isOutport);
+        default:
+            return portShift(
+                Math.max(4 - isMetanode, portCount),
+                Math.max(4 - isMetanode, portCount) + 1,
+                isMetanode,
+                isOutport
+            );
+    }
+};
+
+export const portPositions = ({ portCount, isMetanode = false, isOutports = false }) => [...Array(portCount).keys()]
+    .map(index => portShift(index, portCount, isMetanode, isOutports));
+
 export default portShift;
