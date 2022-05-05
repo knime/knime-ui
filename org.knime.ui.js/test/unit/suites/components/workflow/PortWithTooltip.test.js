@@ -49,12 +49,16 @@ describe('PortWithTooltip.vue', () => {
         doShallowMount = () => {
             wrapper = shallowMount(PortWithTooltip, { propsData, mocks, provide, stubs });
         };
+        jest.useFakeTimers();
     });
 
     it('shows tooltips on table ports', async () => {
         doShallowMount();
+
         wrapper.findComponent(Port).trigger('mouseenter');
         await Vue.nextTick();
+        jest.runAllTimers();
+
         expect(currentTooltip).toStrictEqual({
             anchorPoint: { x: 123, y: 456 },
             text: 'portInfo',
@@ -78,7 +82,9 @@ describe('PortWithTooltip.vue', () => {
 
         doShallowMount();
         wrapper.findComponent(Port).trigger('mouseenter');
+        jest.runAllTimers();
         await Vue.nextTick();
+
         expect(currentTooltip).toStrictEqual({
             anchorPoint: { x: 123, y: 456 },
             text: 'portInfo',

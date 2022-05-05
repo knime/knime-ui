@@ -174,6 +174,7 @@ describe('NodeState.vue', () => {
                 }
             });
             mocks.$store = $store;
+            jest.useFakeTimers();
         });
 
         it('shows no tooltips by default', async () => {
@@ -186,8 +187,11 @@ describe('NodeState.vue', () => {
         it('shows tooltips on error', async () => {
             propsData.error = 'this is an error';
             doShallowMount();
+            
             wrapper.find('g').trigger('mouseenter');
+            jest.runAllTimers();
             await Vue.nextTick();
+
             expect(currentTooltip).toStrictEqual({
                 anchorPoint: { x: 123, y: 456 },
                 text: 'this is an error',
@@ -208,6 +212,7 @@ describe('NodeState.vue', () => {
         it('updates tooltips on data change', async () => {
             propsData.progressMessage = 'Progress';
             doShallowMount();
+            
             wrapper.find('g').trigger('mouseenter');
             await Vue.nextTick();
 
@@ -215,6 +220,8 @@ describe('NodeState.vue', () => {
                 progressMessage: 'mo Progress'
             });
             await Vue.nextTick();
+
+            jest.runAllTimers();
 
             expect(currentTooltip).toStrictEqual({
                 anchorPoint: { x: 123, y: 456 },
