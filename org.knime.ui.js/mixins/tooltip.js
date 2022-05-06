@@ -7,6 +7,9 @@
  * 1. [hoverable = false] when the mouse leaves the target component the tooltip will be closed
  * 2. [hoverable = true] when the mouse leaves the target but enters the tooltip it will not be closed
  */
+
+export const entryDelay = 750;
+
 export const tooltip = {
     mounted() {
         this.$el.addEventListener('mouseenter', this.onTooltipMouseEnter);
@@ -27,16 +30,25 @@ export const tooltip = {
                 return;
             }
 
-            // add watcher to component's "tooltip" property
-            this.removeTooltipWatcher = this.$watch(
-                'tooltip',
-                (value) => this.$store.commit('workflow/setTooltip', value),
-                { immediate: true }
-            );
+            // wait for entryDelay to set tooltip
+            this.tooltipTimeout = setTimeout(() => {
+                // add watcher to component's "tooltip" property
+                this.removeTooltipWatcher = this.$watch(
+                    'tooltip',
+                    (value) => this.$store.commit('workflow/setTooltip', value),
+                    { immediate: true }
+                );
+            }, entryDelay);
         },
         onTooltipMouseLeave({ relatedTarget }) {
             consola.trace('mouse left to:', relatedTarget?.tagName, relatedTarget?.id,
                 relatedTarget?.classList);
+
+            // if the tooltip hasn't been opened yet, cancel timer and return
+            if (!this.removeTooltipWatcher) {
+                clearTimeout(this.tooltipTimeout);
+                return;
+            }
 
             if (this.tooltip?.hoverable) {
                 let tooltipContainer = document.getElementById('tooltip-container');
