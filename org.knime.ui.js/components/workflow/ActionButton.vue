@@ -39,7 +39,7 @@ export default {
 <template>
   <g
     :class="['action-button', { disabled }]"
-    @click.stop="onClick"
+    @click.left.stop="onClick"
     @pointerdown.stop
   >
     <circle
