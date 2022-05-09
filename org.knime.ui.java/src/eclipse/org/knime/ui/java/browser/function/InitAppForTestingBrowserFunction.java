@@ -49,17 +49,15 @@
 package org.knime.ui.java.browser.function;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.port.PortType;
-import org.knime.gateway.api.util.CoreUtil;
-import org.knime.gateway.impl.webui.AppStateProvider;
+import org.knime.core.node.port.PortTypeRegistry;
+import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState.OpenedWorkflow;
 import org.knime.ui.java.TestingUtil;
 import org.knime.ui.java.browser.KnimeBrowserView;
@@ -69,7 +67,6 @@ import com.equo.chromium.swt.BrowserFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * Browser function that allows one to programmatically initialise (and
@@ -113,45 +110,31 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
 			return null;
 		}
 		JsonNode openedWorkflows = appStateNode.get("openedWorkflows");
-		ArrayNode availablePortTypes = (ArrayNode)appStateNode.get("availablePortTypes");
-		ArrayNode suggestedPortTypeIds = (ArrayNode)appStateNode.get("suggestedPortTypeIds");
         if (openedWorkflows != null) {
-			var appState = new AppStateProvider.AppState() {
+			var appState = new AppState() {
 				@Override
 				public List<OpenedWorkflow> getOpenedWorkflows() {
 					return StreamSupport.stream(openedWorkflows.spliterator(), false)
 							.map(InitAppForTestingBrowserFunction::createOpenedWorkflow).collect(Collectors.toList());
 				}
 
-				@Override
-				public Set<PortType> getAvailablePortTypes() {
-					if (availablePortTypes == null) {
-						return Collections.emptySet();
-					}
-					return StreamSupport.stream(availablePortTypes.spliterator(), false)
-							.map(el -> CoreUtil.getPortType(el.asText()))
-							.filter(Optional::isPresent)
-							.map(Optional::get)
-							.collect(Collectors.toSet());
-				}
+                @Override
+                public Set<PortType> getAvailablePortTypes() {
+                    return PortTypeRegistry.getInstance().availablePortTypes().stream() //
+                        .filter(pt -> !pt.isHidden()) //
+                        .collect(Collectors.toSet());
+                }
 
-				@Override
-				public List<PortType> getSuggestedPortTypes() {
-					if (suggestedPortTypeIds == null) {
-						return Collections.emptyList();
-					}
-					return StreamSupport.stream(suggestedPortTypeIds.spliterator(), false)
-							.map(el -> CoreUtil.getPortType(el.asText()))
-							.filter(Optional::isPresent)
-							.map(Optional::get)
-							.collect(Collectors.toList());
-				}
-			};
+                @Override
+                public List<PortType> getSuggestedPortTypes() {
+                    return AppState.SUGGESTED_PORT_TYPES;
+                }
+            };
             TestingUtil.initAppStateForTesting(appState, m_knimeBrowser.createEventConsumer());
         }
-		m_knimeBrowser.setUrl(true);
-		return null;
-	}
+        m_knimeBrowser.setUrl(true);
+        return null;
+    }
 
 	private static OpenedWorkflow createOpenedWorkflow(final JsonNode json) {
 		return new OpenedWorkflow() {
