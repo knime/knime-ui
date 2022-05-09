@@ -16,7 +16,10 @@ describe('Tooltip Mixin', () => {
     });
 
     beforeEach(() => {
-        setTimeoutMock = jest.fn().mockImplementation(fn => { fn(); return 0; });
+        setTimeoutMock = jest.fn().mockImplementation(fn => {
+            fn();
+            return 0;
+        });
         window.setTimeout = setTimeoutMock;
 
         let Component = {
@@ -27,9 +30,14 @@ describe('Tooltip Mixin', () => {
             })
         };
 
-        setTooltipMock = jest.fn();
+        setTooltipMock = jest.fn().mockImplementation((state, tooltip) => {
+            state.tooltip = tooltip;
+        });
         let storeConfig = {
             workflow: {
+                state: {
+                    tooltip: null
+                },
                 mutations: {
                     setTooltip: setTooltipMock
                 }
