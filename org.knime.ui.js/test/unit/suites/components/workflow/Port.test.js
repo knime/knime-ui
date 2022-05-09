@@ -35,23 +35,21 @@ describe('Port', () => {
                 }
             };
             storeConfig = {
-                workflow: {
+                application: {
                     state: {
-                        activeWorkflow: {
-                            portTypes: {
-                                [TABLE]: {
-                                    kind: 'table',
-                                    name: 'Data'
-                                },
-                                [FLOW_VARIABLE]: {
-                                    kind: 'flowVariable',
-                                    name: 'Flow Variable'
-                                },
-                                [OTHER]: {
-                                    kind: 'other',
-                                    color: '#123442',
-                                    name: 'Something'
-                                }
+                        availablePortTypes: {
+                            [TABLE]: {
+                                kind: 'table',
+                                name: 'Data'
+                            },
+                            [FLOW_VARIABLE]: {
+                                kind: 'flowVariable',
+                                name: 'Flow Variable'
+                            },
+                            [OTHER]: {
+                                kind: 'other',
+                                color: '#123442',
+                                name: 'Something'
                             }
                         }
                     }

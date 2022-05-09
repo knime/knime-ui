@@ -8,7 +8,10 @@ export const state = () => ({
     activeProjectId: null,
 
     /* Map of projectId -> workflowId -> savedState */
-    savedUserState: {}
+    savedUserState: {},
+
+    /* Map of port type id to port type */
+    availablePortTypes: {}
 });
 
 export const mutations = {
@@ -25,6 +28,9 @@ export const mutations = {
     },
     saveUserState(state, { projectId, workflowId, stateToSave }) {
         state.savedUserState[projectId][workflowId] = stateToSave;
+    },
+    setAvailablePortTypes(state, availablePortTypes) {
+        state.availablePortTypes = availablePortTypes;
     }
 };
 
@@ -46,6 +52,7 @@ export const actions = {
         const openProjects = applicationState.openedWorkflows;
 
         commit('setOpenProjects', openProjects);
+        commit('setAvailablePortTypes', applicationState.availablePortTypes);
 
         await dispatch('setActiveProject', openProjects);
     },

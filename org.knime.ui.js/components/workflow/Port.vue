@@ -17,8 +17,8 @@ export default {
         }
     },
     computed: {
-        ...mapState('workflow', {
-            portTypes: (state) => state.activeWorkflow.portTypes
+        ...mapState('application', {
+            portTypes: 'availablePortTypes'
         }),
         portKind() {
             // port kind has to be fetched from port type map

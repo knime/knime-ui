@@ -20,18 +20,16 @@ describe('PortIconRenderer', () => {
     beforeEach(() => {
         wrapper = null;
         storeConfig = {
-            workflow: {
+            application: {
                 state: {
-                    activeWorkflow: {
-                        portTypes: {
-                            [TABLE]: {
-                                kind: 'table',
-                                name: 'Data'
-                            },
-                            [FLOW_VARIABLE]: {
-                                kind: 'flowVariable',
-                                name: 'Flow Variable'
-                            }
+                    availablePortTypes: {
+                        [TABLE]: {
+                            kind: 'table',
+                            name: 'Data'
+                        },
+                        [FLOW_VARIABLE]: {
+                            kind: 'flowVariable',
+                            name: 'Flow Variable'
                         }
                     }
                 }
