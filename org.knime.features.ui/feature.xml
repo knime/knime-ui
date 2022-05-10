@@ -2,18 +2,18 @@
 <feature
       id="org.knime.features.ui"
       label="KNIME UI"
-      version="4.5.0.qualifier"
+      version="4.6.0.qualifier"
       provider-name="KNIME AG, Zurich, Switzerland">
 
-  <description>
+   <description>
       Feature containing the KNIME Analytics Platform UI.
    </description>
 
-  <copyright>
+   <copyright>
       Copyright by KNIME AG, Zurich, Switzerland
    </copyright>
 
-  <license url="">
+   <license url="">
       GNU GENERAL PUBLIC LICENSE with Additional Permissions according to Sec. 7
 *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** 
 Please see below the General Public License (GPL), Version 3, 
