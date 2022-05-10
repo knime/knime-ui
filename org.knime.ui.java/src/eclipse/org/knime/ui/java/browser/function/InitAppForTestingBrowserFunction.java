@@ -121,7 +121,6 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
                 @Override
                 public Set<PortType> getAvailablePortTypes() {
                     return PortTypeRegistry.getInstance().availablePortTypes().stream() //
-                        .filter(pt -> !pt.isHidden()) //
                         .collect(Collectors.toSet());
                 }
 
