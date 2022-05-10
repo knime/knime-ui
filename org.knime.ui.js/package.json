@@ -8,14 +8,14 @@
     "build": "nuxt build && node buildtools/inline-html.mjs",
     "start": "nuxt start",
     "lint": "npm run lint:js && npm run lint:css && npm run lint:json",
+    "lint:ci": "eslint --ext .js,.ts,.json . -f json -o target/eslint.json || true; stylelint '**/*.css' -f json -o target/stylelint.json || true",
     "lint:js": "eslint --ext .js,.mjs,.vue .",
     "lint:json": "eslint --ext .json --no-error-on-unmatched-pattern .",
     "lint:css": "stylelint '**/*.{css,vue}'",
-    "audit": "check-audit --production",
+    "audit": "check-audit --production --json > target/audit.json || true",
     "test:unit": "jest",
     "coverage": "jest --coverage",
-    "coverage:watch": "npm run test:unit -- --coverage --watch",
-    "sendcoverage": "cross-var sonar-scanner -Dsonar.login=\"$SONAR_LOGIN\" -Dsonar.password=\"$SONAR_PASSWORD\""
+    "coverage:watch": "npm run test:unit -- --coverage --watch"
   },
   "dependencies": {
     "@fontsource/roboto": "4.5.3",
