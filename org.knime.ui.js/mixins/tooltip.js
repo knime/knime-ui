@@ -19,6 +19,15 @@ export const tooltip = {
         this.$el.removeEventListener('mouseenter', this.onTooltipMouseEnter);
         this.$el.removeEventListener('mouseleave', this.onTooltipMouseLeave);
     },
+    watch: {
+        // takes care of removing the tooltip watcher even if the tooltip got closed from any other component (set null)
+        '$store.state.workflow.tooltip'(value) {
+            if (value === null && this.removeTooltipWatcher) {
+                this.removeTooltipWatcher();
+                this.removeTooltipWatcher = null;
+            }
+        }
+    },
     methods: {
         onTooltipMouseEnter(e) {
             if (this.removeTooltipWatcher) {
@@ -60,10 +69,7 @@ export const tooltip = {
 
             // remove tooltip
             this.$store.commit('workflow/setTooltip', null);
-
-            // remove watcher
-            this.removeTooltipWatcher();
-            this.removeTooltipWatcher = null;
+            // NOTE: watcher will be removed by watch of $store.state.workflow.tooltip
         }
     }
 };

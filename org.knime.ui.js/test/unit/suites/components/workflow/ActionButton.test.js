@@ -34,8 +34,23 @@ describe('ActionButton', () => {
 
     it('fires event on click', () => {
         let wrapper = shallowMount(ActionButton);
-        wrapper.find('g').trigger('pointerdown');
+        wrapper.find('g').trigger('click');
         expect(wrapper.emitted().click).toBeTruthy();
+    });
+
+    it('ignores non left-clicks', () => {
+        let wrapper = shallowMount(ActionButton);
+        // eslint-disable-next-line no-magic-numbers
+        for (let i = 1; i < 5; i++) {
+            wrapper.find('g').trigger('click', { button: i });
+            expect(wrapper.emitted().click).toBeFalsy();
+        }
+    });
+
+    it('blocks pointer down', () => {
+        let wrapper = shallowMount(ActionButton);
+        wrapper.find('g').trigger('pointerdown');
+        expect(wrapper.emitted().click).toBeFalsy();
     });
 
     it('doesnt fire event when disabled', () => {
