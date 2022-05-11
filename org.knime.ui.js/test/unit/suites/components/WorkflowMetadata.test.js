@@ -124,7 +124,6 @@ describe('WorkflowMetadata.vue', () => {
                 links: [{ text: 'link1' }],
                 tags: ['tag1'],
                 nodePreview: { type: 'nodePreviewData' },
-                isComponent: true,
                 nodeFeatures: {
                     emptyText: 'nodeFeatureData',
                     options: nodeOptions

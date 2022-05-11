@@ -117,7 +117,7 @@ export default {
       :dyn-out-ports="nodeFeatures.dynOutPorts"
       :views="nodeFeatures.views"
       :options="nodeFeatures.options"
-      :sanitize-content="isComponent"
+      sanitize-content
       class="node-feature-list"
     />
 
