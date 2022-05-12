@@ -18,7 +18,7 @@ export default {
             validator: val => ['left', 'center', 'right'].includes(val)
         },
         /**
-         * Font size that should be applied to unstyled text
+         * Font size (in knime points) that should be applied to unstyled text
          */
         defaultFontSize: {
             type: Number,
@@ -59,7 +59,7 @@ export default {
             const { height, width } = this.bounds;
 
             return {
-                fontSize: `${this.defaultFontSize}px`,
+                fontSize: `${this.defaultFontSize * this.$shapes.annotationsFontSizePointToPixelFactor}px`,
                 border: `${this.borderWidth}px solid ${this.borderColor}`,
                 background: this.backgroundColor,
                 width: `${width}px`,
