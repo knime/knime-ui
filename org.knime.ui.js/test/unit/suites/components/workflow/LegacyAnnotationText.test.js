@@ -1,6 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import { shallowMount } from '@vue/test-utils';
 import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
+import * as $shapes from '~/style/shapes';
 
 describe('LegacyAnnotationText.vue', () => {
     it('renders empty text', () => {
@@ -8,7 +9,7 @@ describe('LegacyAnnotationText.vue', () => {
             text: '',
             styleRanges: []
         };
-        let wrapper = shallowMount(LegacyAnnotationText, { propsData });
+        let wrapper = shallowMount(LegacyAnnotationText, { propsData, mocks: { $shapes } });
         expect(wrapper.findAll('span').length).toBe(0);
     });
 
@@ -21,7 +22,7 @@ describe('LegacyAnnotationText.vue', () => {
                 { start: 10, length: 1, italic: true, bold: true, fontSize: 13 }
             ]
         };
-        let wrapper = shallowMount(LegacyAnnotationText, { propsData });
+        let wrapper = shallowMount(LegacyAnnotationText, { propsData, mocks: { $shapes } });
         let spans = wrapper.findAll('span');
         expect(spans.length).toBe(7);
 
