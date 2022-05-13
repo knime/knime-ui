@@ -77,9 +77,10 @@ describe('AppHeader.vue', () => {
 
     describe('truncates the workflow name', () => {
         const longName = `
-            KNIME_project2 KNIME_project2 KNIME_project2 v KNIME_project2 KNIME_project2 KNIME_project2 
-            KNIME_project2 KNIME_project2 KNIME_project2 KNIME_project2 KNIME_project2KNIME_project2 alkjsdf ölaksjd 
-            fölkj aklsdjfhkajsdhf
+        03_Transform_Using_Rule_Engine_and_String_Manipulation_Node 03_Transform_Using_Rule_Engine_and_String_Manipulat
+        ion_Node 03_Transform_Using_Rule_Engine_and_String_Manipulation_Node 03_Transform_Using_Rule_Engine_and_String_
+        Manipulation_Node 03_Transform_Using_Rule_Engine_and_String_Manipulation_Node 03_Transform_Using_Rule_Engine_
+        and_String_Manipulation
         `.trim();
         
         
@@ -88,15 +89,18 @@ describe('AppHeader.vue', () => {
             [400, 10],
             [700, 20],
             [1000, 50],
-            [1366, 100]
+            [1366, 100],
+            [1800, 150],
+            [2200, 200],
+            [3000, 256]
         ])('truncates the name for a %spx width to a max of %s characters long', (width, maxChars) => {
             window.innerWidth = width;
             storeConfig.workflow.state.activeWorkflow.info.name = longName;
             doShallowMount();
             const nameElement = wrapper.find('.workflow-title .text');
             
-            // +3 to account for the "..."
-            expect(nameElement.text().length).toBe(maxChars + 3);
+            // +2 to account for the " … "
+            expect(nameElement.text().length).toBe(maxChars + 2);
         });
     });
 });

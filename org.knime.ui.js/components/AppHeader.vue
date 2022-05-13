@@ -31,14 +31,17 @@ export default {
                 (width) => width < 600 ? 10 : false,
                 (width) => width >= 600 && width < 900 ? 20 : false,
                 (width) => width >= 900 && width < 1280 ? 50 : false,
-                (width) => width >= 1200 ? 100 : false
+                (width) => width >= 1200 && width < 1680 ? 100 : false,
+                (width) => width >= 1680 && width < 2180 ? 150 : false,
+                (width) => width >= 2180 && width < 2800 ? 200 : false,
+                (width) => width >= 2800 ? 256 : false
             ];
             const defaultSizeFn = () => 20;
             
             const sizeFn = sizeFunctionsMap.find(sizeFn => sizeFn(this.windowWidth)) || defaultSizeFn;
             const maxChars = sizeFn(this.windowWidth);
 
-            return name.length > maxChars ? `${name.slice(0, maxChars)}...` : name;
+            return name.length > maxChars ? `${name.slice(0, maxChars)} …` : name;
             /* eslint-enable no-magic-numbers */
         }
     },
@@ -127,6 +130,7 @@ header {
     width: var(--side-bar-width);
     background-color: var(--knime-black);
     text-align: center;
+    min-width: 40px;
 
     & svg {
       width: 26px;
