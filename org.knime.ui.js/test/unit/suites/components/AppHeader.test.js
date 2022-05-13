@@ -77,10 +77,10 @@ describe('AppHeader.vue', () => {
 
     describe('truncates the workflow name', () => {
         const longName = `
-        03_Transform_Using_Rule_Engine_and_String_Manipulation_Node 03_Transform_Using_Rule_Engine_and_String_Manipulat
-        ion_Node 03_Transform_Using_Rule_Engine_and_String_Manipulation_Node 03_Transform_Using_Rule_Engine_and_String_
-        Manipulation_Node 03_Transform_Using_Rule_Engine_and_String_Manipulation_Node 03_Transform_Using_Rule_Engine_
-        and_String_Manipulation
+            03_Transform_Using_Rule_Engine_and_String_Manipulation_Node 03_Transform_Using_Rule_Engine_and_String_
+            Manipulation_Node 03_Transform_Using_Rule_Engine_and_String_Manipulation_Node 03_Transform_Using_Rule_Engin
+            e_and_String_Manipulation_Node 03_Transform_Using_Rule_Engine_and_String_Manipulation_Node 03_Transform_Usi
+            ng_Rule_Engine_and_String_Manipulation
         `.trim();
         
         
@@ -99,7 +99,7 @@ describe('AppHeader.vue', () => {
             doShallowMount();
             const nameElement = wrapper.find('.workflow-title .text');
             
-            // +2 to account for the " … "
+            // +2 to account for the " …"
             expect(nameElement.text().length).toBe(maxChars + 2);
         });
     });
