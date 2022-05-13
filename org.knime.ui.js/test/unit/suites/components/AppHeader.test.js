@@ -52,14 +52,18 @@ describe('AppHeader.vue', () => {
     it('allows switching to old UI', () => {
         window.switchToJavaUI = jest.fn();
         doShallowMount();
-        wrapper.findComponent(FunctionButton).vm.$emit('click');
+        wrapper.find('.switch-classic').vm.$emit('click');
         expect(window.switchToJavaUI).toHaveBeenCalled();
+    });
+
+    it('check if feedback URL is correct', () => {
+        doShallowMount();
+        expect(wrapper.find('.feedback').attributes('href')).toBe('https://knime.com/modern-ui-feedback');
     });
 
     it('allows to close workflow', () => {
         doShallowMount();
-        wrapper.findComponent(CloseIcon).vm.$emit('click');
-
+        wrapper.findComponent(FunctionButton).vm.$emit('click');
         expect(storeConfig.workflow.actions.closeWorkflow).toHaveBeenCalled();
     });
 
