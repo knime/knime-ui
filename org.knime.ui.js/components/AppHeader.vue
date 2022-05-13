@@ -111,8 +111,8 @@ header {
   background-color: var(--knime-masala);
   border-bottom: 4px solid var(--knime-yellow);
   position: relative;
-  
-/* Smalish dark spacer */
+
+  /* Smalish dark spacer */
 
   &::after {
     content: '';
@@ -123,21 +123,6 @@ header {
     background: var(--darkening-mask-color);
   }
 
-  & #knime-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--side-bar-width);
-    background-color: var(--knime-black);
-    text-align: center;
-    min-width: 40px;
-
-    & svg {
-      width: 26px;
-      height: 26px;
-    }
-  }
-
   & .toolbar {
     display: flex;
     align-items: center;
@@ -145,7 +130,8 @@ header {
     justify-content: space-between;
 
     /* Application name or workflow name */
-    & .workflow-title, & .app-title {
+    & .workflow-title,
+    & .app-title {
       padding: 0 20px;
       display: flex;
       min-width: 0;
@@ -164,7 +150,7 @@ header {
         min-width: 0;
       }
 
-/* Close workflow button */
+      /* Close workflow button */
 
       & .icon {
         border: 0;
@@ -175,7 +161,7 @@ header {
         height: 32px;
         align-self: center;
         align-items: center;
-        
+
         & svg {
           height: 20px;
           width: 20px;
@@ -183,7 +169,8 @@ header {
           stroke-width: calc(32px / 30); /* get 1px stroke width */
         }
 
-        &:hover, &:focus {
+        &:hover,
+        &:focus {
           cursor: pointer;
           background-color: var(--knime-silver-sand-semi);
           stroke: var(--knime-white);
@@ -191,7 +178,7 @@ header {
       }
     }
 
-/* Feedback and Switch to classic ui buttons */
+    /* Feedback and Switch to classic ui buttons */
 
     & .buttons {
       display: flex;
@@ -211,7 +198,8 @@ header {
         font-weight: 500;
         height: 40px;
 
-        &:hover, &:focus {
+        &:hover,
+        &:focus {
           outline: none;
           background-color: var(--knime-dove-gray);
         }
@@ -229,6 +217,20 @@ header {
           stroke-width: calc(32px / 26); /* get 1px stroke width */
         }
       }
+    }
+  }
+
+  & #knime-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--side-bar-width);
+    background-color: var(--knime-black);
+    text-align: center;
+
+    & svg {
+      width: 26px;
+      height: 26px;
     }
   }
 }
