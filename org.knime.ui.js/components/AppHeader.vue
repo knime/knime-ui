@@ -15,11 +15,42 @@ export default {
         SwitchIcon,
         CloseIcon
     },
+    data() {
+        return {
+            windowWidth: 0
+        };
+    },
     computed: {
-        ...mapState('workflow', ['activeWorkflow'])
+        ...mapState('workflow', ['activeWorkflow']),
+
+        truncatedWorkflowName() {
+            /* eslint-disable no-magic-numbers */
+            const name = this.activeWorkflow.info.name;
+
+            const sizeFunctionsMap = [
+                (width) => width < 600 ? 10 : false,
+                (width) => width >= 600 && width < 900 ? 20 : false,
+                (width) => width >= 900 && width < 1280 ? 50 : false,
+                (width) => width >= 1200 ? 100 : false
+            ];
+            const defaultSizeFn = () => 20;
+            
+            const sizeFn = sizeFunctionsMap.find(sizeFn => sizeFn(this.windowWidth)) || defaultSizeFn;
+            const maxChars = sizeFn(this.windowWidth);
+
+            return name.length > maxChars ? `${name.slice(0, maxChars)}...` : name;
+            /* eslint-enable no-magic-numbers */
+        }
+    },
+    created() {
+        window.addEventListener('resize', this.onWindowResize);
+        this.onWindowResize();
     },
     methods: {
         ...mapActions('workflow', ['closeWorkflow']),
+        onWindowResize() {
+            this.windowWidth = window.innerWidth;
+        },
         switchToJavaUI() {
             window.switchToJavaUI();
         }
@@ -37,7 +68,7 @@ export default {
         v-if="activeWorkflow"
         class="workflow-title"
       >
-        <span class="text text-ellipsis">{{ activeWorkflow.info.name }}</span>
+        <span class="text">{{ truncatedWorkflowName }}</span>
         <FunctionButton
           class="icon"
           @click="closeWorkflow"
@@ -109,8 +140,7 @@ header {
     width: 100%;
     justify-content: space-between;
 
-/* Application name or workflow name */
-
+    /* Application name or workflow name */
     & .workflow-title, & .app-title {
       padding: 0 20px;
       display: flex;
@@ -118,17 +148,6 @@ header {
       text-overflow: ellipsis;
       white-space: nowrap;
       overflow: hidden;
-
-    & .text-ellipsis {
-    /* multiline overflow ellipsis -
-      also supported in Firefox (yes with -webkit prefix) https://caniuse.com/css-line-clamp */
-      word-wrap: break-word;
-      text-overflow: ellipsis;
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      overflow: hidden;
-  }
 
       & .text {
         color: var(--knime-white);

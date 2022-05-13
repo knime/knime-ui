@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import { shallowMount, createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
@@ -72,5 +73,30 @@ describe('AppHeader.vue', () => {
         const title = wrapper.find('.workflow-title');
 
         expect(title.text()).toBe('Title');
+    });
+
+    describe('truncates the workflow name', () => {
+        const longName = `
+            KNIME_project2 KNIME_project2 KNIME_project2 v KNIME_project2 KNIME_project2 KNIME_project2 
+            KNIME_project2 KNIME_project2 KNIME_project2 KNIME_project2 KNIME_project2KNIME_project2 alkjsdf ölaksjd 
+            fölkj aklsdjfhkajsdhf
+        `.trim();
+        
+        
+        it.each([
+            // [viewport size, max characters]
+            [400, 10],
+            [700, 20],
+            [1000, 50],
+            [1366, 100]
+        ])('truncates the name for a %spx width to a max of %s characters long', (width, maxChars) => {
+            window.innerWidth = width;
+            storeConfig.workflow.state.activeWorkflow.info.name = longName;
+            doShallowMount();
+            const nameElement = wrapper.find('.workflow-title .text');
+            
+            // +3 to account for the "..."
+            expect(nameElement.text().length).toBe(maxChars + 3);
+        });
     });
 });
