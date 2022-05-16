@@ -51,17 +51,7 @@ describe('NodeOutput.vue', () => {
             state: {
                 activeWorkflow: {
                     nodes: dummyNodes,
-                    state: {},
-                    portTypes: {
-                        [TABLE]: {
-                            kind: 'table',
-                            name: 'Data'
-                        },
-                        [FLOW_VARIABLE]: {
-                            kind: 'flowVariable',
-                            name: 'Flow Variable'
-                        }
-                    }
+                    state: {}
                 },
                 isDragging: false
             },
@@ -83,7 +73,17 @@ describe('NodeOutput.vue', () => {
 
         application = {
             state: {
-                activeProjectId: 'projectId'
+                activeProjectId: 'projectId',
+                availablePortTypes: {
+                    [TABLE]: {
+                        kind: 'table',
+                        name: 'Data'
+                    },
+                    [FLOW_VARIABLE]: {
+                        kind: 'flowVariable',
+                        name: 'Flow Variable'
+                    }
+                }
             }
         };
 

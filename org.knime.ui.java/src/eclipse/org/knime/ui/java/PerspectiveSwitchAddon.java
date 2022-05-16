@@ -69,6 +69,7 @@ import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.UIEvents.EventTags;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.workflow.NodeTimer;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.workbench.editor2.WorkflowEditor;
@@ -137,6 +138,7 @@ public final class PerspectiveSwitchAddon {
     }
 
     private void onSwitchToWebUI() {
+        NodeTimer.GLOBAL_TIMER.incWebUIPerspectiveSwitch();
         PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
         setTrimsAndMenuVisible(false, m_modelService, m_app);
         Supplier<AppStateProvider.AppState> supplier = () -> EclipseUIStateUtil.createAppState(m_modelService, m_app);

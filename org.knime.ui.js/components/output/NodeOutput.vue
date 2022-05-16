@@ -33,10 +33,7 @@ export default {
         ...mapState('workflow', {
             isDragging: 'isDragging'
         }),
-        ...mapState('workflow', {
-            portTypes: (state) => state.activeWorkflow.portTypes
-        }),
-        ...mapState('application', { projectId: 'activeProjectId' }),
+        ...mapState('application', { projectId: 'activeProjectId', portTypes: 'availablePortTypes' }),
         ...mapGetters('workflow', { workflowId: 'activeWorkflowId' }),
         
         // ========================== Sanity Check ============================
