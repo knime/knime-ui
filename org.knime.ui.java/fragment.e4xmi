@@ -4,7 +4,7 @@
     <elements xsi:type="commands:Handler" xmi:id="_RzFlYOH4Eeqv_LafONhFZw" elementId="org.knime.ui.java.handler.switch" contributionURI="bundleclass://org.knime.ui.java/org.knime.ui.java.SwitchToWebUIHandler" command="_XgFkcOH4Eeqv_LafONhFZw"/>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_Vz69kOH4Eeqv_LafONhFZw" featurename="commands" parentElementId="org.eclipse.e4.legacy.ide.application">
-    <elements xsi:type="commands:Command" xmi:id="_XgFkcOH4Eeqv_LafONhFZw" elementId="org.knime.ui.java.command.switch" commandName="Switch to Web UI"/>
+    <elements xsi:type="commands:Command" xmi:id="_XgFkcOH4Eeqv_LafONhFZw" elementId="org.knime.ui.java.command.switch" commandName="Switch to KNIME Modern UI Preview"/>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_N5ZaYOIhEeqv_LafONhFZw" featurename="addons" parentElementId="org.eclipse.e4.legacy.ide.application">
     <elements xsi:type="application:Addon" xmi:id="_PIzMwOIhEeqv_LafONhFZw" elementId="org.knime.ui.java.addon.0" contributionURI="bundleclass://org.knime.ui.java/org.knime.ui.java.PerspectiveSwitchAddon"/>
@@ -13,12 +13,12 @@
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_SUt_0OLJEeqdIqprVKVB4Q" featurename="snippets" parentElementId="org.eclipse.e4.legacy.ide.application">
     <elements xsi:type="menu:TrimContribution" xmi:id="_-b2TwOLPEeqdIqprVKVB4Q" elementId="org.knime.ui.java.trimcontribution.0" parentId="org.eclipse.ui.main.toolbar">
       <children xsi:type="menu:ToolBar" xmi:id="__DZb8OLPEeqdIqprVKVB4Q" elementId="org.knime.ui.java.toolbar.0">
-        <children xsi:type="menu:HandledToolItem" xmi:id="_YL7NIOKwEeqdIqprVKVB4Q" elementId="org.knime.ui.java.handledtoolitem.openknimenext" label="Open KNIME.next" iconURI="platform:/plugin/org.knime.ui.java/icons/switch.png" tooltip="Open the KNIME Web UI" command="_XgFkcOH4Eeqv_LafONhFZw">
+        <children xsi:type="menu:HandledToolItem" xmi:id="_YL7NIOKwEeqdIqprVKVB4Q" elementId="org.knime.ui.java.handledtoolitem.openknimenext" label="Open KNIME Modern UI Preview" iconURI="platform:/plugin/org.knime.ui.java/icons/switch.png" tooltip="Open KNIME Modern UI Preview" command="_XgFkcOH4Eeqv_LafONhFZw">
           <tags>FORCE_TEXT</tags>
         </children>
       </children>
     </elements>
-    <elements xsi:type="advanced:Perspective" xmi:id="_zsE9QOHxEeqv_LafONhFZw" elementId="org.knime.ui.java.perspective" visible="false" selectedElement="_lJevIOH0Eeqv_LafONhFZw" label="WebUI" iconURI="platform:/plugin/org.knime.ui.java/icons/knime.png">
+    <elements xsi:type="advanced:Perspective" xmi:id="_zsE9QOHxEeqv_LafONhFZw" elementId="org.knime.ui.java.perspective" visible="false" selectedElement="_lJevIOH0Eeqv_LafONhFZw" label="KNIME Modern UI Preview" iconURI="platform:/plugin/org.knime.ui.java/icons/knime.png">
       <children xsi:type="basic:Part" xmi:id="_lJevIOH0Eeqv_LafONhFZw" elementId="org.knime.ui.java.browser.view" contributionURI="bundleclass://org.knime.ui.java/org.knime.ui.java.browser.KnimeBrowserView" iconURI="platform:/plugin/org.knime.ui.java/icons/knime.png"/>
     </elements>
   </fragments>
