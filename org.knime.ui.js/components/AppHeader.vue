@@ -5,6 +5,18 @@ import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/perspective-switch.svg?inline';
 import CloseIcon from '~/assets/cancel.svg?inline';
 
+/* eslint-disable no-magic-numbers */
+const maxCharSwitch = [
+    (width) => width < 600 ? 10 : false,
+    (width) => width < 900 ? 20 : false,
+    (width) => width < 1280 ? 50 : false,
+    (width) => width < 1680 ? 100 : false,
+    (width) => width < 2180 ? 150 : false,
+    (width) => width < 2800 ? 200 : false,
+    (width) => width >= 2800 ? 256 : false
+];
+/* eslint-enable no-magic-numbers */
+
 /**
  * Header Bar containing Logo, workflow title and Switch to Java UI Button
  */
@@ -22,27 +34,12 @@ export default {
     },
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
-
         truncatedWorkflowName() {
-            /* eslint-disable no-magic-numbers */
-            const name = this.activeWorkflow.info.name;
-
-            const sizeFunctionsMap = [
-                (width) => width < 600 ? 10 : false,
-                (width) => width >= 600 && width < 900 ? 20 : false,
-                (width) => width >= 900 && width < 1280 ? 50 : false,
-                (width) => width >= 1200 && width < 1680 ? 100 : false,
-                (width) => width >= 1680 && width < 2180 ? 150 : false,
-                (width) => width >= 2180 && width < 2800 ? 200 : false,
-                (width) => width >= 2800 ? 256 : false
-            ];
-            const defaultSizeFn = () => 20;
+            const maxCharFunction = maxCharSwitch.find(fn => fn(this.windowWidth));
+            const maxChars = maxCharFunction(this.windowWidth);
             
-            const sizeFn = sizeFunctionsMap.find(sizeFn => sizeFn(this.windowWidth)) || defaultSizeFn;
-            const maxChars = sizeFn(this.windowWidth);
-
+            const { name } = this.activeWorkflow.info;
             return name.length > maxChars ? `${name.slice(0, maxChars)} …` : name;
-            /* eslint-enable no-magic-numbers */
         }
     },
     created() {
@@ -67,6 +64,7 @@ export default {
       <KnimeIcon />
     </div>
     <div class="toolbar">
+      <!-- Closeable Workflow Title -->
       <div
         v-if="activeWorkflow"
         class="workflow-title"
@@ -79,15 +77,18 @@ export default {
           <CloseIcon />
         </FunctionButton>
       </div>
+
+      <!-- Or App Title -->
       <div
         v-else
-        class="app-title"
+        class="application-title"
       >
         <span class="text">KNIME Modern UI Preview</span>
       </div>
+
       <div class="buttons">
         <a
-          href="https://knime.com/modern-ui-feedback"
+          href="https://knime.com/modern-ui-feedback?src=knimeapp?utm_source=knimeapp"
           class="feedback"
         >
           Provide feedback via the forum
@@ -104,7 +105,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 header {
   display: flex;
   height: 80px;
@@ -112,7 +112,7 @@ header {
   border-bottom: 4px solid var(--knime-yellow);
   position: relative;
 
-  /* Smalish dark spacer */
+  /* smalish dark spacer */
 
   &::after {
     content: '';
@@ -131,7 +131,7 @@ header {
 
     /* Application name or workflow name */
     & .workflow-title,
-    & .app-title {
+    & .application-title {
       padding: 0 20px;
       display: flex;
       min-width: 0;
