@@ -66,4 +66,14 @@ describe('Node Annotation', () => {
             });
         });
     });
+
+    it('honors annotationsFontSizePointToPixelFactor', () => {
+        let shapes = { ...$shapes, annotationsFontSizePointToPixelFactor: 2.5 };
+        propsData.defaultFontSize = 18;
+        mocks = { $shapes: shapes, adjustDimensions: jest.fn() };
+        wrapper = shallowMount(NodeAnnotation, { propsData, mocks });
+        expect(wrapper.findComponent(LegacyAnnotationText).attributes('style')).toContain(
+            'font-size: 45px;'
+        );
+    });
 });

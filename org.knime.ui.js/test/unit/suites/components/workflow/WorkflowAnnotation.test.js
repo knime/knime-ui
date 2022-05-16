@@ -57,4 +57,13 @@ describe('Workflow Annotation', () => {
             );
         });
     });
+
+    it('honors annotationsFontSizePointToPixelFactor', () => {
+        let shapes = { ...$shapes, annotationsFontSizePointToPixelFactor: 2 };
+        propsData.defaultFontSize = 18;
+        wrapper = shallowMount(WorkflowAnnotation, { propsData, mocks: { $shapes: shapes } });
+        expect(wrapper.findComponent(LegacyAnnotationText).attributes('style')).toContain(
+            'font-size: 36px;'
+        );
+    });
 });
