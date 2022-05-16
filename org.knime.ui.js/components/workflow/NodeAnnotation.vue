@@ -19,13 +19,6 @@ export default {
             default: 'center',
             validator: val => ['left', 'center', 'right'].includes(val)
         },
-        /**
-         * Font size (in knime points) that should be applied to unstyled text
-         */
-        defaultFontSize: {
-            type: Number,
-            default: 11
-        },
         backgroundColor: {
             type: String,
             default: null
@@ -60,7 +53,7 @@ export default {
                 textAlign: this.textAlign,
                 backgroundColor: this.backgroundColor === '#FFFFFF' ? 'transparent' : this.backgroundColor,
                 padding: `${this.$shapes.nodeAnnotationPadding}px`,
-                fontSize: `${this.defaultFontSize * this.$shapes.annotationsFontSizePointToPixelFactor}px`
+                fontSize: `${this.$shapes.annotationsDefaultFontSize}px`
             };
         }
     },

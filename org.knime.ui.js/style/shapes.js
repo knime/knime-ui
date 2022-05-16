@@ -62,3 +62,4 @@ export const selectedNodeStrokeWidth = 1;
 
 // annotations use a virtual "point" size that needs to be converted to pixels by this factor
 export const annotationsFontSizePointToPixelFactor = 1.0; // used to be: 4/3
+export const annotationsDefaultFontSize = 12; // px

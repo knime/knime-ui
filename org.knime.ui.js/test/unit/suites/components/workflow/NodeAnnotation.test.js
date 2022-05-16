@@ -33,7 +33,7 @@ describe('Node Annotation', () => {
                 'text-align: right; ' +
                 'background-color: rgb(255, 216, 0); ' +
                 'padding: 2px; ' +
-                'font-size: 11px;'
+                'font-size: 12px;'
             );
         });
 
@@ -55,7 +55,6 @@ describe('Node Annotation', () => {
             it.each([
                 ['text', 'foo'],
                 ['textAlign', 'left'],
-                ['defaultFontSize', 1],
                 ['styleRanges', []]
             ])('updates the resizeKey when the "%s" prop changes', async (propName, propValue) => {
                 const initialValue = wrapper.findComponent(AutoSizeForeignObject).props('resizeKey');
@@ -65,15 +64,5 @@ describe('Node Annotation', () => {
                 expect(wrapper.findComponent(AutoSizeForeignObject).props('resizeKey')).not.toBe(initialValue);
             });
         });
-    });
-
-    it('honors annotationsFontSizePointToPixelFactor', () => {
-        let shapes = { ...$shapes, annotationsFontSizePointToPixelFactor: 2.5 };
-        propsData.defaultFontSize = 18;
-        mocks = { $shapes: shapes, adjustDimensions: jest.fn() };
-        wrapper = shallowMount(NodeAnnotation, { propsData, mocks });
-        expect(wrapper.findComponent(LegacyAnnotationText).attributes('style')).toContain(
-            'font-size: 45px;'
-        );
     });
 });
