@@ -2,13 +2,9 @@
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { KnimeMIME } from '~/mixins/dropNode';
-import PlusIcon from '~/webapps-common/ui/assets/img/icons/plus.svg?inline';
-import ActionButton from '~/components/workflow/ActionButton';
 
 export default {
     components: {
-        PlusIcon,
-        ActionButton,
         NodePreview
     },
     props: {
@@ -21,7 +17,7 @@ export default {
         return {
             isHover: false,
             dragGhost: null,
-            restoreDescriptionPanel: false
+            shouldSelectOnAbort: false
         };
     },
     computed: {
@@ -48,7 +44,7 @@ export default {
         ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
         onDragStart(e) {
             // close description panel
-            this.restoreDescriptionPanel = this.activeDescriptionPanel;
+            this.shouldSelectOnAbort = this.isSelected && this.activeDescriptionPanel;
             this.closeDescriptionPanel();
             this.setDraggingNode(true);
 
@@ -86,7 +82,13 @@ export default {
                 delete this.dragGhost;
             }
 
-            if (this.restoreDescriptionPanel) {
+            // ending with dropEffect none indicates that dragging has been aborted
+            if (e.dataTransfer.dropEffect === 'none') { this.onDragAbort(); }
+        },
+        onDragAbort() {
+            // if drag is aborted and node was selected before, select it again
+            if (this.shouldSelectOnAbort) {
+                this.setSelectedNode(this.nodeTemplate);
                 this.openDescriptionPanel();
             }
         },
