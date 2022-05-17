@@ -1,7 +1,7 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
     moveObjects, openDialog, openLegacyFlowVariableDialog as configureFlowVariables,
     openView, undo, redo, removeEventListener, connectNodes,
-    addNode, saveWorkflow, closeWorkflow, renameContainer, collapseToContainer } from '~api';
+    addNode, saveWorkflow, closeWorkflow, renameContainer, collapseToContainer, openLayoutEditor } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -217,6 +217,10 @@ export const actions = {
         let { activeWorkflowId } = getters;
         redo({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
     },
+    /* See docs in API */
+    openLayoutEditor({ state }, workflowId) {
+        openLayoutEditor({ projectId: state.activeWorkflow.projectId, workflowId });
+    },
     saveWorkflow({ state }) {
         let { activeWorkflow: { projectId } } = state;
         saveWorkflow({ projectId });
@@ -366,6 +370,10 @@ export const getters = {
         let hasAnnotations = Boolean(activeWorkflow?.workflowAnnotations.length);
 
         return !hasNodes && !hasAnnotations;
+    },
+    /* Check if a workflow is a component */
+    isComponent({ activeWorkflow }) {
+        return Boolean(activeWorkflow?.componentMetadata);
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow

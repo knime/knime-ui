@@ -8,6 +8,7 @@ import OpenDialogIcon from '~/assets/configure-node.svg?inline';
 import SaveIcon from '~/assets/save.svg?inline';
 import CreateMetanode from '~/assets/create-metanode.svg?inline';
 import CreateComponent from '~/assets/create-component.svg?inline';
+import LayoutIcon from '~/assets/layout.svg?inline';
 
 const isWritable = ({ $store }) => $store.getters['workflow/isWritable'];
 
@@ -126,5 +127,15 @@ export default {
         condition:
         ({ $store }) => !$store.getters['selection/selectedNodes']
             .some(node => node.allowedActions.canCollapse === 'false') && $store.getters['workflow/isWritable']
+    },
+    openLayoutEditor: {
+        text: 'Layout Editor',
+        title: 'Layout editor',
+        hotkey: ['Ctrl', 'L'], // TODO: This interferes with a default Firefox shortcut
+        icon: LayoutIcon,
+        execute:
+        ({ $store }) => $store.dispatch('workflow/openLayoutEditor', $store.getters['workflow/activeWorkflowId']),
+        condition:
+        ({ $store }) => $store.getters['workflow/isComponent'] && !$store.getters['workflow/isLinked']
     }
 };

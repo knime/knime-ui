@@ -19,7 +19,10 @@ describe('workflowCommands', () => {
                 'selection/selectedNodes': [],
                 'selection/selectedConnections': [],
                 'selection/singleSelectedNode': { id: 'root:0', allowedActions: {} },
-                'workflow/isWritable': false
+                'workflow/isWritable': false,
+                'workflow/isComponent': false,
+                'workflow/isLinked': false,
+                'workflow/activeWorkflowId': 'my workflow name 0'
             }
         };
     });
@@ -73,6 +76,11 @@ describe('workflowCommands', () => {
         test('create component', () => {
             workflowCommands.createComponent.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/collapseToContainer', { containerType: 'component' });
+        });
+
+        test('open layout editor', () => {
+            workflowCommands.openLayoutEditor.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/openLayoutEditor', 'my workflow name 0');
         });
     });
 
@@ -218,6 +226,22 @@ describe('workflowCommands', () => {
             test('it can not create component when workflow is not writable', () => {
                 $store.getters['workflow/isWritable'] = false;
                 expect(workflowCommands.createComponent.condition({ $store })).toBe(false);
+            });
+        });
+
+        describe('openLayoutEditor', () => {
+            test('it is not a component, button disabled', () => {
+                expect(workflowCommands.openLayoutEditor.condition({ $store })).toBeFalsy();
+            });
+
+            test('it is a linked component, button disabled', () => {
+                $store.getters['workflow/isLinked'] = true;
+                expect(workflowCommands.openLayoutEditor.condition({ $store })).toBeFalsy();
+            });
+
+            test('it is a component, button enabled', () => {
+                $store.getters['workflow/isComponent'] = true;
+                expect(workflowCommands.openLayoutEditor.condition({ $store })).toBe(true);
             });
         });
     });
