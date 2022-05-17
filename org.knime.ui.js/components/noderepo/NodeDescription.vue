@@ -19,10 +19,10 @@ export default {
         // TODO: NXT-844 this component shouldn't know about search or categories
         isSelectedNodeVisible() {
             if (this.searchIsActive) {
-                return this.nodes.some(node => node.id === this.selectedNode.id);
+                return this.nodes.some(node => node.id === this.selectedNode?.id);
             } else {
                 return this.nodesPerCategory.some(category => category.nodes.some(
-                    node => node.id === this.selectedNode.id
+                    node => node.id === this.selectedNode?.id
                 ));
             }
         }
@@ -31,7 +31,9 @@ export default {
         selectedNode: {
             immediate: true,
             handler() {
-                this.getNodeDescription();
+                if (this.selectedNode !== null) {
+                    this.getNodeDescription();
+                }
             }
         }
     },
@@ -74,7 +76,7 @@ export default {
               :text="nodeDescriptionObject.description"
               render-as-html
             />
-          
+
             <span
               v-else
               class="placeholder"
@@ -95,7 +97,7 @@ export default {
             />
           </template>
         </template>
-        
+
         <div
           v-else
           class="placeholder no-node"

@@ -2,9 +2,13 @@
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { KnimeMIME } from '~/mixins/dropNode';
+import PlusIcon from '~/webapps-common/ui/assets/img/icons/plus.svg?inline';
+import ActionButton from '~/components/workflow/ActionButton';
 
 export default {
     components: {
+        PlusIcon,
+        ActionButton,
         NodePreview
     },
     props: {
@@ -15,31 +19,32 @@ export default {
     },
     data() {
         return {
+            isHover: false,
             dragGhost: null,
-            shouldSelectOnAbort: false
+            restoreDescriptionPanel: false
         };
     },
     computed: {
         ...mapState('nodeRepository', ['selectedNode']),
         ...mapState('panel', ['activeDescriptionPanel']),
+        ...mapState('canvas', { canvasSize: 'containerSize' }),
         ...mapGetters('workflow', ['isWritable']),
-        
-        // NXT: 844 the naming of this property doesn't fit its condition. Being selected is independent of the activeDescriptionPanel
+        ...mapGetters('canvas', ['toCanvasCoordinates']),
+
         isSelected() {
-            return this.activeDescriptionPanel && (this.nodeTemplate.id === this.selectedNode.id);
+            return this.selectedNode && this.nodeTemplate.id === this.selectedNode.id;
         }
     },
     methods: {
         ...mapActions('panel', ['openDescriptionPanel', 'closeDescriptionPanel']),
         ...mapMutations('nodeRepository', ['setSelectedNode', 'setDraggingNode']),
+        ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
         onDragStart(e) {
-            // remember if this node was selected
-            this.shouldSelectOnAbort = this.isSelected;
-            
-            // close description panel and deselect node
+            // close description panel
+            this.restoreDescriptionPanel = this.activeDescriptionPanel;
             this.closeDescriptionPanel();
             this.setDraggingNode(true);
-            
+
             // Fix for cursor style for Firefox
             if (!this.isWritable && (navigator.userAgent.indexOf('Firefox') !== -1)) {
                 e.currentTarget.style.cursor = 'not-allowed';
@@ -74,24 +79,31 @@ export default {
                 delete this.dragGhost;
             }
 
-            // ending with dropEffect none indicates that dragging has been aborted
-            if (e.dataTransfer.dropEffect === 'none') { this.onDragAbort(); }
-        },
-        onDragAbort() {
-            // if drag is aborted and node was selected before, select it again
-            if (this.shouldSelectOnAbort) {
-                this.setSelectedNode(this.nodeTemplate);
+            if (this.restoreDescriptionPanel) {
                 this.openDescriptionPanel();
             }
         },
-        onClick() {
+        onClick(e) {
+            if (e.detail > 1) {
+                return;
+            }
             if (this.isSelected) {
-                // TODO: NXT-844 panel seems to be open, if and only if node is selected. We could make one trigger the other
                 this.setSelectedNode(null);
-                this.closeDescriptionPanel();
             } else {
-                this.openDescriptionPanel();
                 this.setSelectedNode(this.nodeTemplate);
+            }
+        },
+        addNodeToCenterOfWorkflow() {
+            if (this.isWritable) {
+                const nodeFactory = this.nodeTemplate.nodeFactory;
+                const halfNodeSize = this.$shapes.nodeSize / 2;
+                const { clientWidth, clientHeight, scrollLeft, scrollTop } = document.getElementById('kanvas');
+                // position at center of canvas
+                const position = this.toCanvasCoordinates([
+                    clientWidth / 2 + scrollLeft - halfNodeSize,
+                    clientHeight / 2 + scrollTop - halfNodeSize
+                ]);
+                this.addNodeToWorkflow({ position, nodeFactory });
             }
         },
         onDrag(e) {
@@ -111,8 +123,20 @@ export default {
     @dragstart="onDragStart"
     @dragend="onDragEnd"
     @click="onClick"
+    @mouseenter="isHover = true"
+    @mouseleave="isHover = false"
     @drag="onDrag"
   >
+    <svg
+      v-if="isHover"
+      class="add-action-button"
+    >
+      <ActionButton
+        @click="addNodeToCenterOfWorkflow"
+      >
+        <PlusIcon />
+      </ActionButton>
+    </svg>
     <label :title="nodeTemplate.name">{{ nodeTemplate.name }}</label>
     <NodePreview
       ref="nodePreview"
@@ -159,6 +183,16 @@ export default {
     position: absolute;
     bottom: -15px;
     right: 15px;
+  }
+
+  & .add-action-button {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50px;
+    right: 0;
+    overflow: visible;
+    width: auto;
   }
 
   &:hover {
