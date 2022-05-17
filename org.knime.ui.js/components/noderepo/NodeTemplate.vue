@@ -87,6 +87,9 @@ export default {
             if (!this.isSelected) {
                 this.setSelectedNode(this.nodeTemplate);
             }
+            if (!this.activeDescriptionPanel) {
+                this.openDescriptionPanel();
+            }
         },
         addNodeToCenterOfWorkflow() {
             if (this.isWritable) {

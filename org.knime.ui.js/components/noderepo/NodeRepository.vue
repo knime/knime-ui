@@ -1,14 +1,11 @@
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 
 import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
 import SearchBar from '~/components/noderepo/SearchBar';
 import CloseableTagList from '~/components/noderepo/CloseableTagList';
 import CategoryResults from '~/components/noderepo/CategoryResults.vue';
 import SearchResults from '~/components/noderepo/SearchResults.vue';
-
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
-import InfoIcon from '~/webapps-common/ui/assets/img/icons/circle-info.svg?inline';
 
 import { debounce } from 'lodash';
 
@@ -20,12 +17,9 @@ export default {
         ActionBreadcrumb,
         SearchBar,
         CategoryResults,
-        FunctionButton,
-        InfoIcon,
         SearchResults
     },
     computed: {
-        ...mapState('panel', ['activeDescriptionPanel']),
         ...mapState('nodeRepository', ['tags', 'nodes', 'nodesPerCategory']),
         ...mapGetters('nodeRepository', {
             showSearchResults: 'searchIsActive'
@@ -60,18 +54,10 @@ export default {
         }
     },
     methods: {
-        ...mapActions('panel', ['openDescriptionPanel', 'closeDescriptionPanel']),
         /* Navigation */
         onBreadcrumbClick(e) {
             if (e.id === 'clear') {
                 this.$store.dispatch('nodeRepository/clearSearchParams');
-            }
-        },
-        toggleDescriptionPanel() {
-            if (this.activeDescriptionPanel) {
-                this.closeDescriptionPanel();
-            } else {
-                this.openDescriptionPanel();
             }
         }
     }
@@ -82,20 +68,11 @@ export default {
   <div class="node-repo">
     <div class="header">
       <div class="title-and-search">
-        <div class="breadcrumb-and-info">
-          <ActionBreadcrumb
-            :items="breadcrumbItems"
-            class="repo-breadcrumb"
-            @click="onBreadcrumbClick"
-          />
-          <FunctionButton
-            class="toggle-info"
-            :active="activeDescriptionPanel"
-            @click="toggleDescriptionPanel"
-          >
-            <InfoIcon />
-          </FunctionButton>
-        </div>
+        <ActionBreadcrumb
+          :items="breadcrumbItems"
+          class="repo-breadcrumb"
+          @click="onBreadcrumbClick"
+        />
         <hr>
         <SearchBar v-model="searchQuery" />
       </div>
@@ -136,18 +113,6 @@ export default {
     margin-top: 8px;
   }
 
-  & .breadcrumb-and-info {
-    display: grid;
-    grid-template-columns: auto 30px;
-    grid-template-rows: auto;
-    align-content: center;
-    margin: 8px 0 0;
-
-    & .toggle-info {
-      aspect-ratio: 1;
-    }
-  }
-
   & .title-and-search {
     padding: 0 20px 5px;
 
@@ -162,6 +127,7 @@ export default {
     cursor: pointer;
     font-size: 18px;
     font-weight: 400;
+    margin: 8px 0 0;
 
     & >>> span,
     & >>> a {
