@@ -84,12 +84,7 @@ export default {
             }
         },
         onClick(e) {
-            if (e.detail > 1) {
-                return;
-            }
-            if (this.isSelected) {
-                this.setSelectedNode(null);
-            } else {
+            if (!this.isSelected) {
                 this.setSelectedNode(this.nodeTemplate);
             }
         },
@@ -123,20 +118,9 @@ export default {
     @dragstart="onDragStart"
     @dragend="onDragEnd"
     @click="onClick"
-    @mouseenter="isHover = true"
-    @mouseleave="isHover = false"
+    @dblclick="addNodeToCenterOfWorkflow"
     @drag="onDrag"
   >
-    <svg
-      v-if="isHover"
-      class="add-action-button"
-    >
-      <ActionButton
-        @click="addNodeToCenterOfWorkflow"
-      >
-        <PlusIcon />
-      </ActionButton>
-    </svg>
     <label :title="nodeTemplate.name">{{ nodeTemplate.name }}</label>
     <NodePreview
       ref="nodePreview"
