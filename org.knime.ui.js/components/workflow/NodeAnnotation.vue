@@ -59,7 +59,6 @@ export default {
     },
     watch: {
         textAlign() { this.updateResizeKey(); },
-        defaultFontSize() { this.updateResizeKey(); },
         text() { this.updateResizeKey(); },
         styleRanges() { this.updateResizeKey(); }
     },

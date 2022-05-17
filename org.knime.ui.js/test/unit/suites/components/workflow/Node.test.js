@@ -189,7 +189,6 @@ describe('Node', () => {
         it('displays annotation', () => {
             expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
                 backgroundColor: 'rgb(255, 216, 0)',
-                defaultFontSize: 11,
                 styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
                 text: 'ThatsMyNode',
                 textAlign: 'center',
@@ -202,7 +201,6 @@ describe('Node', () => {
             doMount();
             expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
                 backgroundColor: 'rgb(255, 216, 0)',
-                defaultFontSize: 11,
                 styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
                 text: 'ThatsMyNode',
                 textAlign: 'center',
@@ -515,11 +513,11 @@ describe('Node', () => {
 
         it('fits the hover-area to the node name', async () => {
             let { y: oldY, height: oldHeight } = wrapper.find('.hover-area').attributes();
-            
+
             // increase from 20 to 40 (by 20)
             wrapper.findComponent(NodeName).vm.$emit('height-change', 40);
             await Vue.nextTick();
-            
+
             let { y, height } = wrapper.find('.hover-area').attributes();
             expect(oldY - y).toBe(20);
             expect(height - oldHeight).toBe(20);
@@ -552,7 +550,7 @@ describe('Node', () => {
             // flowVariable ports fades in
             expect(ports.at(0).attributes().class).toMatch('node-hover');
             expect(ports.at(1).attributes().class).toMatch('node-hover');
-            
+
             wrapper.vm.hover = false;
             await Vue.nextTick();
 
@@ -805,7 +803,7 @@ describe('Node', () => {
             propsData = { ...commonNode };
             doMount();
         });
-        
+
         it('should forward to NodeName component', () => {
             expect(wrapper.findComponent(NodeName).props()).toStrictEqual({
                 nodeId: commonNode.id,
@@ -827,15 +825,15 @@ describe('Node', () => {
 
         it('should display/hide node actions on mouseenter/mouseleave', async () => {
             expect(wrapper.findComponent(NodeActionBar).exists()).toBe(false);
-            
+
             wrapper.findComponent(NodeName).vm.$emit('mouseenter');
-            
+
             await Vue.nextTick();
             expect(wrapper.findComponent(NodeActionBar).exists()).toBe(true);
 
             const dummyNode = document.createElement('div');
             wrapper.findComponent(NodeName).vm.$emit('mouseleave', { relatedTarget: dummyNode });
-            
+
             await Vue.nextTick();
             expect(wrapper.findComponent(NodeActionBar).exists()).toBe(false);
         });
