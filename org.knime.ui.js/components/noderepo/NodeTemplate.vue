@@ -23,7 +23,6 @@ export default {
     computed: {
         ...mapState('nodeRepository', ['selectedNode']),
         ...mapState('panel', ['activeDescriptionPanel']),
-        ...mapState('canvas', { canvasSize: 'containerSize' }),
         ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('canvas', ['toCanvasCoordinates']),
 
@@ -32,6 +31,7 @@ export default {
         }
     },
     watch: {
+        // deselect node on panel close
         activeDescriptionPanel(val) {
             if (val === false) {
                 this.setSelectedNode(null);
@@ -92,7 +92,7 @@ export default {
                 this.openDescriptionPanel();
             }
         },
-        onClick(e) {
+        onClick() {
             if (!this.isSelected) {
                 this.setSelectedNode(this.nodeTemplate);
             }

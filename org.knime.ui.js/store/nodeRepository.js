@@ -24,7 +24,7 @@ export const state = () => ({
     query: '',
     nodeSearchPage: 0,
     searchScrollPosition: 0,
-    
+
     /* node description */
     selectedNode: null,
     nodeDescriptionObject: null,
@@ -34,7 +34,16 @@ export const state = () => ({
 
 export const getters = {
     hasSearchParams: state => state.query !== '' || state.selectedTags.length > 0,
-    searchIsActive: state => Boolean(state.query || state.tags.length) && state.nodes !== null
+    searchIsActive: state => Boolean(state.query || state.tags.length) && state.nodes !== null,
+    searchResultsContainSelectedNode: (state) => state.nodes?.some(node => node.id === state.selectedNode?.id),
+    nodesPerCategoryContainSelectedNode(state) {
+        return state.nodesPerCategory.some(category => category.nodes.some(
+            node => node.id === state.selectedNode?.id
+        ));
+    },
+    selectedNodeIsVisible: (state, getters) => getters.searchIsActive
+        ? getters.searchResultsContainSelectedNode
+        : getters.nodesPerCategoryContainSelectedNode
 };
 
 export const actions = {
