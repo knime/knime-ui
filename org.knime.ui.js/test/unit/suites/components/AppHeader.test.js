@@ -8,7 +8,7 @@ import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import CloseIcon from '~/assets/cancel.svg?inline';
 
 describe('AppHeader.vue', () => {
-    let propsData, mocks, doShallowMount, wrapper, storeConfig, $store, workflow, application;
+    let propsData, mocks, doShallowMount, wrapper, storeConfig, $store, application;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -17,18 +17,10 @@ describe('AppHeader.vue', () => {
 
     beforeEach(() => {
         wrapper = null;
-        workflow = {
-            info: {
-                containerType: 'project',
-                containerId: 'root',
-                name: 'Workflow Title'
-            },
-            parents: []
-        };
         application = {
             getters: {
                 activeProjectName() {
-                    return workflow?.info?.name || null;
+                    return 'Project Name';
                 }
             }
         };
@@ -36,9 +28,6 @@ describe('AppHeader.vue', () => {
             storeConfig = {
                 application,
                 workflow: {
-                    state: {
-                        activeWorkflow: workflow
-                    },
                     actions:
                     {
                         closeWorkflow: jest.fn()
@@ -59,18 +48,18 @@ describe('AppHeader.vue', () => {
             expect(storeConfig.workflow.actions.closeWorkflow).toHaveBeenCalled();
         });
 
-        it('renders name of the workflow', () => {
+        it('renders name of the project', () => {
             doShallowMount();
 
-            const title = wrapper.find('.workflow-title');
-            expect(title.text()).toBe('Workflow Title');
+            const title = wrapper.find('.project-name');
+            expect(title.text()).toBe('Project Name');
         });
 
-        it('render application title, if no workflow exists', () => {
-            workflow = {};
+        it('render application title, if no active project name exists', () => {
+            application.getters.activeProjectName = () => null;
             doShallowMount();
 
-            const title = wrapper.find('.application-title');
+            const title = wrapper.find('.application-name');
             expect(title.text()).toBe('KNIME Modern UI Preview');
         });
 
@@ -93,10 +82,10 @@ describe('AppHeader.vue', () => {
                 [3000, 256]
             ])('truncates the name for a %spx width to a max of %s characters long', (width, maxChars) => {
                 window.innerWidth = width;
-                workflow.info.name = longName;
+                application.getters.activeProjectName = () => longName;
                 doShallowMount();
     
-                const nameElement = wrapper.find('.workflow-title .text');
+                const nameElement = wrapper.find('.project-name .text');
                 
                 // +2 to account for the " …"
                 expect(nameElement.text().length).toBe(maxChars + 2);

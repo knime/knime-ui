@@ -18,7 +18,7 @@ const maxCharSwitch = [
 /* eslint-enable no-magic-numbers */
 
 /**
- * Header Bar containing Logo, workflow title and Switch to Java UI Button
+ * Header Bar containing Logo, project name and Switch to Java UI Button
  */
 export default {
     components: {
@@ -34,13 +34,10 @@ export default {
     },
     computed: {
         ...mapGetters('application', ['activeProjectName']),
-        truncatedWorkflowName() {
+        truncatedProjectName() {
             const maxCharFunction = maxCharSwitch.find(fn => fn(this.windowWidth));
             const maxChars = maxCharFunction(this.windowWidth);
             const name = this.activeProjectName;
-            if (!name) {
-                return null;
-            }
             return name.length > maxChars ? `${name.slice(0, maxChars)} …` : name;
         }
     },
@@ -66,12 +63,12 @@ export default {
       <KnimeIcon />
     </div>
     <div class="toolbar">
-      <!-- Closeable Workflow Title -->
+      <!-- Closeable Project Name -->
       <div
-        v-if="truncatedWorkflowName"
-        class="workflow-title"
+        v-if="activeProjectName"
+        class="project-name"
       >
-        <span class="text">{{ truncatedWorkflowName }}</span>
+        <span class="text">{{ truncatedProjectName }}</span>
         <FunctionButton
           class="icon"
           @click="closeWorkflow"
@@ -80,10 +77,10 @@ export default {
         </FunctionButton>
       </div>
 
-      <!-- Or App Title -->
+      <!-- Or Application Name -->
       <div
         v-else
-        class="application-title"
+        class="application-name"
       >
         <span class="text">KNIME Modern UI Preview</span>
       </div>
@@ -131,9 +128,9 @@ header {
     width: 100%;
     justify-content: space-between;
 
-    /* Application name or workflow name */
-    & .workflow-title,
-    & .application-title {
+    /* Application name or project name */
+    & .project-name,
+    & .application-name {
       padding: 0 20px;
       display: flex;
       min-width: 0;
