@@ -198,6 +198,17 @@ describe('application store', () => {
         });
     });
 
+    describe('getters', () => {
+        it('returns the active workflow name', () => {
+            store.commit('application/setOpenProjects',
+                [{ projectId: 'foo', name: 'bar' }, { projectId: 'bee', name: 'gee' }]);
+            store.commit('application/setActiveProjectId', 'foo');
+            expect(store.getters['application/activeProjectName']).toBe('bar');
+            store.commit('application/setActiveProjectId', 'bee');
+            expect(store.getters['application/activeProjectName']).toBe('gee');
+        });
+    });
+
     it('saves user state', async () => {
         await store.dispatch('application/replaceApplicationState', {
             openedWorkflows: [{ projectId: '1', name: 'p1' }]

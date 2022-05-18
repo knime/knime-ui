@@ -116,5 +116,14 @@ export const actions = {
         const savedState = savedUserState[activeProjectId][workflowId];
         commit('canvas/restoreState', savedState?.canvas, { root: true });
     }
+
 };
 
+export const getters = {
+    activeProjectName({ openProjects, activeProjectId }) {
+        if (!activeProjectId) {
+            return null;
+        }
+        return openProjects.find(project => project.projectId === activeProjectId).name;
+    }
+};

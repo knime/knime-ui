@@ -8,7 +8,7 @@ import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import CloseIcon from '~/assets/cancel.svg?inline';
 
 describe('AppHeader.vue', () => {
-    let propsData, mocks, doShallowMount, wrapper, storeConfig, $store;
+    let propsData, mocks, doShallowMount, wrapper, storeConfig, $store, workflow, application;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -17,29 +17,36 @@ describe('AppHeader.vue', () => {
 
     beforeEach(() => {
         wrapper = null;
-
-        storeConfig = {
-            workflow: {
-                state: {
-                    activeWorkflow: {
-                        info: {
-                            containerType: 'project',
-                            containerId: 'root',
-                            name: 'Workflow Title'
-                        },
-                        parents: []
-                    }
-                },
-                actions:
-                {
-                    closeWorkflow: jest.fn()
+        workflow = {
+            info: {
+                containerType: 'project',
+                containerId: 'root',
+                name: 'Workflow Title'
+            },
+            parents: []
+        };
+        application = {
+            getters: {
+                activeProjectName() {
+                    return workflow?.info?.name || null;
                 }
             }
         };
-
-        $store = mockVuexStore(storeConfig);
-        mocks = { $store };
         doShallowMount = () => {
+            storeConfig = {
+                application,
+                workflow: {
+                    state: {
+                        activeWorkflow: workflow
+                    },
+                    actions:
+                    {
+                        closeWorkflow: jest.fn()
+                    }
+                }
+            };
+            $store = mockVuexStore(storeConfig);
+            mocks = { $store };
             wrapper = shallowMount(AppHeader, { propsData, mocks });
         };
     });
@@ -60,7 +67,7 @@ describe('AppHeader.vue', () => {
         });
 
         it('render application title, if no workflow exists', () => {
-            storeConfig.workflow.state.activeWorkflow = null;
+            workflow = {};
             doShallowMount();
 
             const title = wrapper.find('.application-title');
@@ -86,7 +93,7 @@ describe('AppHeader.vue', () => {
                 [3000, 256]
             ])('truncates the name for a %spx width to a max of %s characters long', (width, maxChars) => {
                 window.innerWidth = width;
-                storeConfig.workflow.state.activeWorkflow.info.name = longName;
+                workflow.info.name = longName;
                 doShallowMount();
     
                 const nameElement = wrapper.find('.workflow-title .text');

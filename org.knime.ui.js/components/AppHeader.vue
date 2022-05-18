@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapActions } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 import KnimeIcon from '~/webapps-common/ui/assets/img/KNIME_Triangle.svg?inline';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/perspective-switch.svg?inline';
@@ -33,12 +33,14 @@ export default {
         };
     },
     computed: {
-        ...mapState('workflow', ['activeWorkflow']),
+        ...mapGetters('application', ['activeProjectName']),
         truncatedWorkflowName() {
             const maxCharFunction = maxCharSwitch.find(fn => fn(this.windowWidth));
             const maxChars = maxCharFunction(this.windowWidth);
-            
-            const { name } = this.activeWorkflow.info;
+            const name = this.activeProjectName;
+            if (!name) {
+                return null;
+            }
             return name.length > maxChars ? `${name.slice(0, maxChars)} …` : name;
         }
     },
@@ -66,7 +68,7 @@ export default {
     <div class="toolbar">
       <!-- Closeable Workflow Title -->
       <div
-        v-if="activeWorkflow"
+        v-if="truncatedWorkflowName"
         class="workflow-title"
       >
         <span class="text">{{ truncatedWorkflowName }}</span>
