@@ -3,6 +3,11 @@ import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { KnimeMIME } from '~/mixins/dropNode';
 
+const NODE_POSITION_EQUALS_DELTA = 10; // px
+const NODE_POSITION_SPACE_FACTOR = 1.8; // move node by this times nodeSize
+const WORKFLOW_ADD_START_PERCENT_X = 0.3; // 0, 0 means top left corner
+const WORKFLOW_ADD_START_PERCENT_Y = 0.2; // 0.5, 0.5 means center of canvas
+
 export default {
     components: {
         NodePreview
@@ -23,6 +28,7 @@ export default {
     computed: {
         ...mapState('nodeRepository', ['selectedNode']),
         ...mapState('panel', ['activeDescriptionPanel']),
+        ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('canvas', ['toCanvasCoordinates']),
 
@@ -92,18 +98,40 @@ export default {
                 this.openDescriptionPanel();
             }
         },
-        addNodeToCenterOfWorkflow() {
-            if (this.isWritable) {
-                const nodeFactory = this.nodeTemplate.nodeFactory;
-                const halfNodeSize = this.$shapes.nodeSize / 2;
-                const { clientWidth, clientHeight, scrollLeft, scrollTop } = document.getElementById('kanvas');
-                // position at center of canvas
-                const position = this.toCanvasCoordinates([
-                    clientWidth / 2 + scrollLeft - halfNodeSize,
-                    clientHeight / 2 + scrollTop - halfNodeSize
-                ]);
-                this.addNodeToWorkflow({ position, nodeFactory });
+        findFreeSpaceOnWorkflow(position) {
+            let otherNodePositions = [];
+            const nodeList = Object.values(this.workflow.nodes);
+            if (nodeList.length) {
+                otherNodePositions = nodeList.map(n => [n.position.x, n.position.y]);
             }
+
+            const isNearOtherNode = (candidate, index, delta) => otherNodePositions.some(
+                p => p[index] >= (candidate[index] - delta) && p[index] <= (candidate[index] + delta)
+            );
+
+            while (isNearOtherNode(position, 0, NODE_POSITION_EQUALS_DELTA)) {
+                position[0] += this.$shapes.nodeSize + this.$shapes.nodeSize * NODE_POSITION_SPACE_FACTOR;
+            }
+
+            return position;
+        },
+        addNodeToCenterOfWorkflow() {
+            if (!this.isWritable) {
+                return;
+            }
+
+            const halfNodeSize = this.$shapes.nodeSize / 2;
+            const { clientWidth, clientHeight, scrollLeft, scrollTop } = document.getElementById('kanvas');
+            // position at center of canvas
+            let position = this.toCanvasCoordinates([
+                clientWidth * WORKFLOW_ADD_START_PERCENT_X + scrollLeft - halfNodeSize,
+                clientHeight * WORKFLOW_ADD_START_PERCENT_Y + scrollTop - halfNodeSize
+            ]);
+
+            position = this.findFreeSpaceOnWorkflow(position);
+
+            const nodeFactory = this.nodeTemplate.nodeFactory;
+            this.addNodeToWorkflow({ position, nodeFactory });
         },
         onDrag(e) {
             if (!this.isWritable) {

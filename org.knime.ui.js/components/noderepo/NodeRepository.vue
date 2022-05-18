@@ -11,7 +11,7 @@ import NodeDescription from '~/components/noderepo/NodeDescription';
 import { debounce } from 'lodash';
 
 const SEARCH_COOLDOWN = 150; // ms
-const DESELECT_NODE_DELAY = 50; //ms - keep in sync with extension panel transition in SideMenu
+const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in SideMenu
 
 export default {
     components: {
