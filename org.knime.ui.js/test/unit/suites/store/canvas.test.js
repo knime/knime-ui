@@ -512,5 +512,33 @@ describe('canvas store', () => {
                 expect(round(store.state.canvas.zoomFactor)).toBe(round(1 / zoomMultiplier / zoomMultiplier));
             });
         });
+
+        describe('coordinate transformation', () => {
+            test('screenFromCanvasCoordinates', () => {
+                store.dispatch('canvas/initScrollContainerElement', {
+                    ...scrollContainer,
+                    offsetLeft: 10,
+                    offsetTop: 10,
+                    scrollLeft: 30,
+                    scrollTop: 30
+                });
+
+                expect(store.getters['canvas/screenFromCanvasCoordinates']({x: 0, y: 0}))
+                .toStrictEqual({ x: 300, y: 300 });
+            });
+
+            test('screenToCanvasCoordinates', () => {
+                store.dispatch('canvas/initScrollContainerElement', {
+                    ...scrollContainer,
+                    offsetLeft: 10,
+                    offsetTop: 10,
+                    scrollLeft: 30,
+                    scrollTop: 30
+                });
+
+                expect(store.getters['canvas/screenToCanvasCoordinates']([300, 300]))
+                .toStrictEqual([0, 0]);
+            });
+        })
     });
 });

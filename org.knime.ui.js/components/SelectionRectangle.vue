@@ -30,7 +30,7 @@ export default {
     }),
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
-        ...mapGetters('canvas', ['toCanvasCoordinates']),
+        ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapGetters('selection', ['selectedNodeIds']),
         selectionBounds() {
             const { endPos, startPos } = this;
@@ -63,8 +63,8 @@ export default {
             this.pointerId = e.pointerId;
             e.target.setPointerCapture(e.pointerId);
             
-            this.startPos = this.positionOnCanvas(e);
-            this.endPos = this.startPos;
+            [this.startPos.x, this.startPos.y] = this.screenToCanvasCoordinates([e.clientX, e.clientY]); 
+            this.endPos = {...this.startPos};
             
             this.nodeIdsToSelectOnEnd = [];
             this.nodeIdsToDeselectOnEnd = [];
@@ -121,24 +121,10 @@ export default {
                 return;
             }
             
-            let pointerOnCanvas = this.positionOnCanvas(e);
-            this.endPos = pointerOnCanvas;
-
-            this.previewSelectionForNodesInRectangle(this.startPos, pointerOnCanvas);
+            [this.endPos.x, this.endPos.y] = this.screenToCanvasCoordinates([e.clientX, e.clientY]);
+            this.previewSelectionForNodesInRectangle(this.startPos, this.endPos);
             /* eslint-enable no-invalid-this */
         }),
-
-        positionOnCanvas({ clientX, clientY }) {
-            const kanvasElement = document.getElementById('kanvas');
-            const { offsetLeft, offsetTop, scrollLeft, scrollTop } = kanvasElement;
-
-            const offsetX = clientX - offsetLeft + scrollLeft;
-            const offsetY = clientY - offsetTop + scrollTop;
-
-            // convert to kanvas coordinates
-            const [x, y] = this.toCanvasCoordinates([offsetX, offsetY]);
-            return { x, y };
-        },
 
         previewSelectionForNodesInRectangle(startPos, endPos) {
             let { inside, outside } = findNodesInsideOfRectangle({
