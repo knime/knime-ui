@@ -115,14 +115,14 @@ export default {
 
             return position;
         },
-        addNodeToCenterOfWorkflow() {
+        onDoubleClick() {
             if (!this.isWritable) {
-                return;
+                return; // end here
             }
 
+            // canvas start position
             const halfNodeSize = this.$shapes.nodeSize / 2;
             const { clientWidth, clientHeight, scrollLeft, scrollTop } = document.getElementById('kanvas');
-            // position at center of canvas
             let position = this.toCanvasCoordinates([
                 clientWidth * WORKFLOW_ADD_START_PERCENT_X + scrollLeft - halfNodeSize,
                 clientHeight * WORKFLOW_ADD_START_PERCENT_Y + scrollTop - halfNodeSize
@@ -150,7 +150,7 @@ export default {
     @dragstart="onDragStart"
     @dragend="onDragEnd"
     @click="onClick"
-    @dblclick="addNodeToCenterOfWorkflow"
+    @dblclick="onDoubleClick"
     @drag="onDrag"
   >
     <label :title="nodeTemplate.name">{{ nodeTemplate.name }}</label>
