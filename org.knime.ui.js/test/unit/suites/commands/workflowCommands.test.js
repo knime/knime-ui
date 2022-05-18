@@ -74,6 +74,11 @@ describe('workflowCommands', () => {
             workflowCommands.createComponent.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/collapseToContainer', { containerType: 'component' });
         });
+
+        test('expand metanode', () => {
+            workflowCommands.expandMetanode.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/expandContainer', { containerType: 'metanode' });
+        });
     });
 
     describe('condition', () => {
@@ -218,6 +223,37 @@ describe('workflowCommands', () => {
             test('it can not create component when workflow is not writable', () => {
                 $store.getters['workflow/isWritable'] = false;
                 expect(workflowCommands.createComponent.condition({ $store })).toBe(false);
+            });
+        });
+
+        describe('expandMetanode', () => {
+            test('it allows to expand if a metanode is selected and canExpand is true', () => {
+                $store.getters['workflow/isWritable'] = true;
+                $store.getters['selection/singleSelectedNode'] = {
+                    kind: 'component',
+                    allowedActions: {
+                        canExpand: 'true'
+                    }
+                };
+                expect(workflowCommands.expandMetanode.condition({ $store })).toBe(false);
+                $store.getters['selection/singleSelectedNode'] = {
+                    kind: 'metanode',
+                    allowedActions: {
+                        canExpand: 'true'
+                    }
+                };
+                expect(workflowCommands.expandMetanode.condition({ $store })).toBe(true);
+            });
+
+            test('it can not expand metanode when workflow is not writable', () => {
+                $store.getters['workflow/isWritable'] = false;
+                $store.getters['selection/singleSelectedNode'] = {
+                    kind: 'metanode',
+                    allowedActions: {
+                        canExpand: 'true'
+                    }
+                };
+                expect(workflowCommands.expandMetanode.condition({ $store })).toBe(false);
             });
         });
     });

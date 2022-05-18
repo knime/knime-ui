@@ -126,5 +126,20 @@ export default {
         condition:
         ({ $store }) => !$store.getters['selection/selectedNodes']
             .some(node => node.allowedActions.canCollapse === 'false') && $store.getters['workflow/isWritable']
+    },
+    expandMetanode: {
+        text: 'Expand Metanode',
+        title: 'Expand metanode',
+        hotkey: ['Ctrl', 'Shift', 'G'],
+        execute:
+        ({ $store }) => $store.dispatch('workflow/expandContainer', { containerType: 'metanode' }),
+        condition({ $store }) {
+            let selectedNode = $store.getters['selection/singleSelectedNode'];
+
+            if (!$store.getters['workflow/isWritable']) { return false; }
+
+            return selectedNode?.kind === 'metanode' && selectedNode?.allowedActions.canExpand !== 'false';
+        }
+            
     }
 };

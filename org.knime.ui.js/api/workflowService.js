@@ -200,3 +200,20 @@ export const collapseToContainer = ({
     projectId,
     workflowId
 });
+
+/**
+ * Expands a metanode or component
+ * @param { String } cfg.projectId
+ * @param {String} cfg.workflowId
+ * @param { String } cfg.containerType metanode or component
+ * @param { String } cfg.nodeId
+ * @returns {Promise}
+ */
+export const expandContainer = ({
+    projectId, workflowId, containerType, nodeId
+}) => workflowCommand({
+    command: 'expand',
+    args: { containerType, nodeId },
+    projectId,
+    workflowId
+});

@@ -606,6 +606,43 @@ describe('workflow store', () => {
                 projectId: 'bar',
                 workflowId: 'root',
                 nodeIds: ['foo', 'bar'],
+                containerType: 'metanode',
+                annotationIds: []
+            });
+        });
+
+        it('expands a container', async () => {
+            let expandContainer = jest.fn();
+            let apiMocks = { expandContainer };
+            await loadStore({ apiMocks });
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'bar',
+                nodes: {
+                    foo: {
+                        id: 'foo',
+                        kind: 'metanode',
+                        allowedActions: {
+                            canCancel: false,
+                            canCollapse: 'true',
+                            canDelete: true,
+                            canExecute: true,
+                            canOpenDialog: true,
+                            canReset: false,
+                            canExpand: 'true'
+                        }
+                    }
+                }
+            });
+            store.dispatch('selection/selectNode', 'foo');
+
+            store.dispatch('workflow/expandContainer', {
+                containerType: 'metanode'
+            });
+
+            expect(expandContainer).toHaveBeenCalledWith({
+                projectId: 'bar',
+                workflowId: 'root',
+                nodeId: 'foo',
                 containerType: 'metanode'
             });
         });

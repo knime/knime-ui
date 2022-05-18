@@ -1,7 +1,7 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
-    moveObjects, openDialog, openLegacyFlowVariableDialog as configureFlowVariables,
-    openView, undo, redo, removeEventListener, connectNodes,
-    addNode, saveWorkflow, closeWorkflow, renameContainer, collapseToContainer } from '~api';
+    moveObjects, openDialog, openLegacyFlowVariableDialog as configureFlowVariables, openView, undo, redo,
+    removeEventListener, connectNodes, addNode, saveWorkflow, closeWorkflow, renameContainer, collapseToContainer,
+    expandContainer } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -314,7 +314,7 @@ export const actions = {
             nodeFactory
         });
     },
-    async collapseToContainer({ state, getters, rootState, rootGetters, dispatch }, { containerType }) {
+    async collapseToContainer({ state, getters, rootGetters, dispatch }, { containerType }) {
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
         let canCollapse = false;
 
@@ -331,7 +331,29 @@ export const actions = {
                 containerType,
                 projectId: state.activeWorkflow.projectId,
                 workflowId: getters.activeWorkflowId,
-                nodeIds: selectedNodes
+                nodeIds: selectedNodes,
+                annotationIds: []
+            });
+        }
+    },
+    async expandContainer({ state, getters, rootGetters, dispatch }, { containerType }) {
+        const selectedNode = rootGetters['selection/singleSelectedNode'];
+        let canExpand = false;
+
+        if (selectedNode.allowedActions.canExpand === 'resetRequired') {
+            canExpand = window.confirm(`Expanding this ${containerType} will reset the executed nodes.`);
+        } else {
+            canExpand = true;
+        }
+
+        if (canExpand) {
+            dispatch('selection/deselectAllObjects', null, { root: true });
+
+            await expandContainer({
+                containerType,
+                projectId: state.activeWorkflow.projectId,
+                workflowId: getters.activeWorkflowId,
+                nodeId: selectedNode.id
             });
         }
     }

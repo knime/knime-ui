@@ -287,5 +287,20 @@ describe('ContextMenu.vue', () => {
                 expect(menuItemNames).not.toContain('editName');
             }
         });
+
+        it('shows expand metanode for single selected metanode', () => {
+            const node = {
+                id: 'root:0',
+                kind: 'metanode',
+                allowedActions: {}
+            };
+            storeConfig.selection.getters.singleSelectedNode = () => node;
+            doMount();
+            wrapper.setProps({ isVisible: true });
+
+            const menuItemNames = wrapper.findComponent(FloatingMenu).props('items').map(i => i.name);
+
+            expect(menuItemNames).toContain('expandMetanode');
+        });
     });
 });
