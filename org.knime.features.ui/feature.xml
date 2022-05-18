@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="org.knime.features.ui"
-      label="KNIME UI"
-      version="4.5.0.qualifier"
+      label="KNIME Modern UI Preview"
+      version="4.6.0.qualifier"
       provider-name="KNIME AG, Zurich, Switzerland">
 
   <description>
-      Feature containing the KNIME Analytics Platform UI.
-   </description>
+      This extension contains a preview of the new user interface for the upcoming KNIME Analytics
+      Platform. To use it, just click “Open KNIME Modern UI Preview” in the top right corner of the KNIME Analytics
+      Platform.
 
-  <copyright>
+      Workflow elements such as connectors or annotations are visualized in a new way and may therefore not look exactly
+      like in the current KNIME Analytics Platform.
+
+      We are looking forward to receiving your feedback through the KNIME forum - https://knime.com/modern-ui-feedback.
+
+      This extension is considered a preview and is currently under development.
+  </description>
+
+    <copyright>
       Copyright by KNIME AG, Zurich, Switzerland
    </copyright>
 

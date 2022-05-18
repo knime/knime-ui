@@ -1,6 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import { shallowMount } from '@vue/test-utils';
 import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
+import * as $shapes from '~/style/shapes';
 
 describe('LegacyAnnotationText.vue', () => {
     it('renders empty text', () => {
@@ -8,7 +9,7 @@ describe('LegacyAnnotationText.vue', () => {
             text: '',
             styleRanges: []
         };
-        let wrapper = shallowMount(LegacyAnnotationText, { propsData });
+        let wrapper = shallowMount(LegacyAnnotationText, { propsData, mocks: { $shapes } });
         expect(wrapper.findAll('span').length).toBe(0);
     });
 
@@ -21,7 +22,7 @@ describe('LegacyAnnotationText.vue', () => {
                 { start: 10, length: 1, italic: true, bold: true, fontSize: 13 }
             ]
         };
-        let wrapper = shallowMount(LegacyAnnotationText, { propsData });
+        let wrapper = shallowMount(LegacyAnnotationText, { propsData, mocks: { $shapes } });
         let spans = wrapper.findAll('span');
         expect(spans.length).toBe(7);
 
@@ -42,5 +43,18 @@ describe('LegacyAnnotationText.vue', () => {
         expect(spans.at(4).attributes().style).toBeUndefined();
         expect(spans.at(5).attributes().style).toBe('font-size: 13px; font-weight: bold; font-style: italic;');
         expect(spans.at(6).attributes().style).toBeUndefined();
+    });
+
+    it('honors annotationsFontSizePointToPixelFactor', () => {
+        let propsData = {
+            text: 'someopthertextdkenaendfkejkansn3',
+            styleRanges: [
+                { start: 3, length: 1, italic: true, bold: true, fontSize: 13 }
+            ]
+        };
+        let shapes = { ...$shapes, annotationsFontSizePointToPixelFactor: 2 };
+        let wrapper = shallowMount(LegacyAnnotationText, { propsData, mocks: { $shapes: shapes } });
+        let spans = wrapper.findAll('span');
+        expect(spans.at(1).attributes().style).toBe('font-size: 26px; font-weight: bold; font-style: italic;');
     });
 });
