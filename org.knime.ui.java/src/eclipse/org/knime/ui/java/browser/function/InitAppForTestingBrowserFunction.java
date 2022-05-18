@@ -49,10 +49,15 @@
 package org.knime.ui.java.browser.function;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.port.PortType;
+import org.knime.core.node.port.PortTypeRegistry;
+import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState.OpenedWorkflow;
 import org.knime.ui.java.TestingUtil;
 import org.knime.ui.java.browser.KnimeBrowserView;
@@ -97,23 +102,38 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
 					+ "'. The arguments are: " + Arrays.toString(args));
 		}
 
-		JsonNode appState;
+		JsonNode appStateNode;
 		try {
-			appState = MAPPER.readValue((String) args[0], JsonNode.class);
+			appStateNode = MAPPER.readValue((String) args[0], JsonNode.class);
 		} catch (JsonProcessingException ex) {
 			NodeLogger.getLogger(this.getClass()).warn("Argument couldn't be parsed to JSON", ex);
 			return null;
 		}
-		JsonNode openedWorkflows = appState.get("openedWorkflows");
+		JsonNode openedWorkflows = appStateNode.get("openedWorkflows");
         if (openedWorkflows != null) {
-            TestingUtil.initAppStateForTesting(
-                () -> StreamSupport.stream(openedWorkflows.spliterator(), false)
-                    .map(InitAppForTestingBrowserFunction::createOpenedWorkflow).collect(Collectors.toList()),
-                m_knimeBrowser.createEventConsumer());
+			var appState = new AppState() {
+				@Override
+				public List<OpenedWorkflow> getOpenedWorkflows() {
+					return StreamSupport.stream(openedWorkflows.spliterator(), false)
+							.map(InitAppForTestingBrowserFunction::createOpenedWorkflow).collect(Collectors.toList());
+				}
+
+                @Override
+                public Set<PortType> getAvailablePortTypes() {
+                    return PortTypeRegistry.getInstance().availablePortTypes().stream() //
+                        .collect(Collectors.toSet());
+                }
+
+                @Override
+                public List<PortType> getSuggestedPortTypes() {
+                    return AppState.SUGGESTED_PORT_TYPES;
+                }
+            };
+            TestingUtil.initAppStateForTesting(appState, m_knimeBrowser.createEventConsumer());
         }
-		m_knimeBrowser.setUrl(true);
-		return null;
-	}
+        m_knimeBrowser.setUrl(true);
+        return null;
+    }
 
 	private static OpenedWorkflow createOpenedWorkflow(final JsonNode json) {
 		return new OpenedWorkflow() {

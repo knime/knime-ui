@@ -17,13 +17,6 @@ export default {
             default: 'left',
             validator: val => ['left', 'center', 'right'].includes(val)
         },
-        /**
-         * Font size that should be applied to unstyled text
-         */
-        defaultFontSize: {
-            type: Number,
-            default: 11
-        },
         borderWidth: {
             type: Number,
             default: 2
@@ -59,7 +52,7 @@ export default {
             const { height, width } = this.bounds;
 
             return {
-                fontSize: `${this.defaultFontSize}px`,
+                fontSize: `${this.$shapes.annotationsDefaultFontSize}px`,
                 border: `${this.borderWidth}px solid ${this.borderColor}`,
                 background: this.backgroundColor,
                 width: `${width}px`,

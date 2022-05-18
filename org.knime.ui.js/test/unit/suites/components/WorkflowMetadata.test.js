@@ -95,4 +95,45 @@ describe('WorkflowMetadata.vue', () => {
         const header = wrapper.find('h2');
         expect(header.classes('with-node-preview')).toBe(true);
     });
+
+    it.each([
+        [
+            `<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP">`,
+            `&lt;img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP"&gt;`
+        ],
+        [
+            `<img src=x onerror="javascript:alert('XSS')">`,
+            `&lt;img src=x onerror="javascript:alert('XSS')"&gt;`
+        ],
+        [
+            `</li><span>HELLO WORLD!</span>`,
+            `&lt;/li&gt;&lt;span&gt;HELLO WORLD!&lt;/span&gt;`
+        ]
+    ])('sanitizes the node features options', (dangerousContent, expectedContent) => {
+        const nodeOptions = [
+            {
+                sectionDescription: dangerousContent,
+                fields: [{ description: dangerousContent, name: '' }]
+            }
+        ];
+        const wrapper = mount(WorkflowMetadata, {
+            propsData: {
+                title: 'Title',
+                lastEdit: '2000-01-01T00:00Z',
+                description: 'Description',
+                links: [{ text: 'link1' }],
+                tags: ['tag1'],
+                nodePreview: { type: 'nodePreviewData' },
+                nodeFeatures: {
+                    emptyText: 'nodeFeatureData',
+                    options: nodeOptions
+                }
+            }
+        });
+
+        const sectionDescription = wrapper.findComponent(NodeFeatureList).find('.options .section-description');
+        const optionDescription = wrapper.findComponent(NodeFeatureList).find('.options .option-description');
+        expect(sectionDescription.element.innerHTML).toMatch(expectedContent);
+        expect(optionDescription.element.innerHTML).toMatch(expectedContent);
+    });
 });

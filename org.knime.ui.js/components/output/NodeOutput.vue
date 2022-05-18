@@ -7,8 +7,6 @@ import Button from '~/webapps-common/ui/components/Button';
 import PlayIcon from '~/assets/execute.svg?inline';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 
-export const supportsPort = port => port.type === 'table' || port.type === 'flowVariable';
-
 const needsExecutionMessage = 'To show the output table, please execute the selected node.';
 const outputAvailableAfterExecutionMessage = 'Output is available after execution.';
 
@@ -35,7 +33,7 @@ export default {
         ...mapState('workflow', {
             isDragging: 'isDragging'
         }),
-        ...mapState('application', { projectId: 'activeProjectId' }),
+        ...mapState('application', { projectId: 'activeProjectId', portTypes: 'availablePortTypes' }),
         ...mapGetters('workflow', { workflowId: 'activeWorkflowId' }),
         
         // ========================== Sanity Check ============================
@@ -45,7 +43,7 @@ export default {
         selectedNodes() {
             return this.$store.getters['selection/selectedNodes'];
         },
-        
+
         // Step 1: make sure only one node is selected
         selectionHasProblem() {
             if (this.selectedNodes.length === 0) {
@@ -76,7 +74,7 @@ export default {
             }
 
             // check if node has at least one supported port
-            if (!node.outPorts.some(port => supportsPort(port))) {
+            if (!node.outPorts.some(port => this.supportsPort(port))) {
                 return 'The selected node has no supported output port.';
             }
             
@@ -93,12 +91,18 @@ export default {
             return this.nodeHasProblem ? null : this.selectedNode.outPorts[this.selectedPortIndex];
         },
 
+        // Return port kind only if a port was selected, otherwise return 'null'
+        selectedPortKind() {
+            const port = this.selectedPort;
+            return port ? this.getPortType(port).kind : null;
+        },
+
         // Step 3: check whether the selected port can be displayed
         portHasProblem() {
             let port = this.selectedPort;
             if (!port) { return 'No port selected'; }
                             
-            if (!supportsPort(port)) {
+            if (!this.supportsPort(port)) {
                 return 'The data at the output port is not supported by any viewer.';
             }
 
@@ -107,7 +111,7 @@ export default {
             }
 
             // only flow-variables can be shown if node hasn't yet executed
-            if (port.type !== 'flowVariable') {
+            if (this.selectedPortKind !== 'flowVariable') {
                 if (this.selectedNode.allowedActions.canExecute) {
                     return needsExecutionMessage;
                 }
@@ -138,7 +142,7 @@ export default {
         },
 
         // ========================== UI ===========================
-        // A port view can be in one  of the following states ['loading', 'error' & message, 'ready']
+        // A port view can be in one of the following states ['loading', 'error' & message, 'ready']
         isViewerReady() {
             return this.portViewerState?.state === 'ready';
         },
@@ -213,6 +217,19 @@ export default {
         onViewerUpdate(state) {
             consola.trace('port viewer state changed', state);
             this.portViewerState = state;
+        },
+        // Get port type from port
+        getPortType(port) {
+            return this.portTypes[port.typeId];
+        },
+        // Check if port is supported
+        supportsPort(port) {
+            try {
+                const portKind = this.getPortType(port).kind;
+                return portKind === 'table' || portKind === 'flowVariable';
+            } catch {
+                return false;
+            }
         }
     }
 };
@@ -252,7 +269,7 @@ export default {
     </div>
     <!-- Port Viewer -->
     <component
-      :is="selectedPort.type === 'flowVariable' ? 'FlowVariablePortView' : 'TablePortView'"
+      :is="selectedPortKind === 'flowVariable' ? 'FlowVariablePortView' : 'TablePortView'"
       v-if="!portHasProblem"
       v-show="isViewerReady"
       v-bind="portIdentifier"

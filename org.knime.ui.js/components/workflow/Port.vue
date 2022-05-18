@@ -1,4 +1,5 @@
 <script>
+import { mapState } from 'vuex';
 import PortIcon from '~/webapps-common/ui/components/node/PortIcon';
 
 export default {
@@ -12,21 +13,30 @@ export default {
         port: {
             type: Object,
             required: true,
-            validator: port => (typeof port.inactive === 'boolean' || !port.inactive) && typeof port.type === 'string'
+            validator: port => (typeof port.inactive === 'boolean' || !port.inactive) && typeof port.typeId === 'string'
         }
     },
     computed: {
+        ...mapState('application', {
+            portTypes: 'availablePortTypes'
+        }),
+        portKind() {
+            // port kind has to be fetched from port type map
+            return this.portTypes[this.port.typeId].kind;
+        },
+        portColor() {
+            return this.portKind === 'other'
+                // 'other' port types bring their own color
+                ? this.portTypes[this.port.typeId].color
+                // built-in port types have constant colors
+                : this.$colors.portColors[this.portKind];
+        },
         shouldFill() {
-            if (this.port.type === 'flowVariable' && this.port.index === 0) {
+            if (this.portKind === 'flowVariable' && this.port.index === 0) {
                 // Mickey Mouse ears are always rendered filled, even though they may technically be optional
                 return true;
             }
             return !this.port.optional;
-        },
-        portColor() {
-            // Flow Variable Ports and Data Table Ports have constant colors
-            // Other port types serve their own color
-            return this.$colors.portColors[this.port.type] || this.port.color;
         },
         /**
          * the traffic light of a metanode port displays the state of the inner node that it is connected to
@@ -57,7 +67,7 @@ export default {
     />
     <g class="scale">
       <PortIcon
-        :type="port.type"
+        :type="portKind"
         :color="portColor"
         :filled="shouldFill"
       />

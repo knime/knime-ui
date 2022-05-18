@@ -53,7 +53,8 @@ describe('application store', () => {
         expect(store.state.application).toStrictEqual({
             openProjects: [],
             activeProjectId: null,
-            savedUserState: {}
+            savedUserState: {},
+            availablePortTypes: {}
         });
     });
 
@@ -80,6 +81,12 @@ describe('application store', () => {
             let savedState = store.state.application.savedUserState;
 
             expect(savedState.p1.root).toBe('SAFE');
+        });
+
+        it('setting the available port types', () => {
+            store.commit('application/setAvailablePortTypes', { 'port type id': { kind: 'table', name: 'Data' } });
+            expect(store.state.application.availablePortTypes)
+                .toStrictEqual({ 'port type id': { kind: 'table', name: 'Data' } });
         });
     });
 

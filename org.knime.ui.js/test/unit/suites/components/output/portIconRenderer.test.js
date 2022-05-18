@@ -1,23 +1,48 @@
-import portIconRenderer from '~/components/output/PortIconRenderer';
-import { mount } from '@vue/test-utils';
+import { createLocalVue, mount } from '@vue/test-utils';
+import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import Vuex from 'vuex';
 
+import portIconRenderer from '~/components/output/PortIconRenderer';
 import * as $colors from '~/style/colors';
 import * as $shapes from '~/style/shapes';
 
 describe('PortIconRenderer', () => {
-    let doMount, wrapper, port, iconSize;
+
+    beforeAll(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
+    });
+
+    let $store, doMount, storeConfig, wrapper, port, iconSize;
 
     beforeEach(() => {
+        storeConfig = {
+            application: {
+                state: {
+                    availablePortTypes: {
+                        'table': {
+                            kind: 'table',
+                            name: 'Data'
+                        },
+                        'flowVariable': {
+                            kind: 'flowVariable',
+                            name: 'Flow Variable'
+                        }
+                    }
+                }
+            }
+        };
         doMount = () => {
-            wrapper = mount(portIconRenderer(port, iconSize), {
-                mocks: { $colors, $shapes }
-            });
+            $store = mockVuexStore(storeConfig);
+            let mocks = { $shapes, $colors, $store };
+            
+            wrapper = mount(portIconRenderer(port, iconSize), { mocks });
         };
     });
 
     it('renders a table portIcon', () => {
         port = {
-            type: 'table',
+            typeId: 'table',
             state: 'EXECUTED'
         };
         doMount();
@@ -30,7 +55,7 @@ describe('PortIconRenderer', () => {
 
     it('renders a flowVar port Icon', () => {
         port = {
-            type: 'flowVariable',
+            typeId: 'flowVariable',
             inactive: true,
             state: 'EXECUTED'
         };
@@ -44,7 +69,7 @@ describe('PortIconRenderer', () => {
 
     it('renders the port according to the port size', () => {
         port = {
-            type: 'table',
+            typeId: 'table',
             state: 'EXECUTED'
         };
         doMount();
@@ -55,7 +80,7 @@ describe('PortIconRenderer', () => {
 
     it('doesn´t set svg´s width', () => {
         port = {
-            type: 'table',
+            typeId: 'table',
             state: 'EXECUTED'
         };
         doMount();
@@ -65,7 +90,7 @@ describe('PortIconRenderer', () => {
 
     it('set svg´s width to provided arguments', () => {
         port = {
-            type: 'table',
+            typeId: 'table',
             state: 'EXECUTED'
         };
         iconSize = 12;

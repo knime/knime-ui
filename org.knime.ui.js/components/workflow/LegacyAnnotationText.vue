@@ -49,7 +49,7 @@ export default {
       v-for="(part, i) in styledText"
       :key="`text-${i}`"
       :style="{
-        fontSize: part.fontSize ? part.fontSize +'px' : null,
+        fontSize: part.fontSize ? `${part.fontSize * $shapes.annotationsFontSizePointToPixelFactor}px` : null,
         color: part.color,
         fontWeight: part.bold ? 'bold': null,
         fontStyle: part.italic ? 'italic' : null
