@@ -1,15 +1,17 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapMutations } from 'vuex';
 
 import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
 import SearchBar from '~/components/noderepo/SearchBar';
 import CloseableTagList from '~/components/noderepo/CloseableTagList';
-import CategoryResults from '~/components/noderepo/CategoryResults.vue';
-import SearchResults from '~/components/noderepo/SearchResults.vue';
+import CategoryResults from '~/components/noderepo/CategoryResults';
+import SearchResults from '~/components/noderepo/SearchResults';
+import NodeDescription from '~/components/noderepo/NodeDescription';
 
 import { debounce } from 'lodash';
 
 const SEARCH_COOLDOWN = 150; // ms
+const DESELECT_NODE_DELAY = 50; //ms - keep in sync with extension panel transition in SideMenu
 
 export default {
     components: {
@@ -17,10 +19,12 @@ export default {
         ActionBreadcrumb,
         SearchBar,
         CategoryResults,
+        NodeDescription,
         SearchResults
     },
     computed: {
         ...mapState('nodeRepository', ['tags', 'nodes', 'nodesPerCategory']),
+        ...mapState('panel', ['activeDescriptionPanel']),
         ...mapGetters('nodeRepository', {
             showSearchResults: 'searchIsActive'
         }),
@@ -48,12 +52,23 @@ export default {
                 : [{ text: 'Repository' }];
         }
     },
+    watch: {
+        // deselect node on panel close
+        activeDescriptionPanel(val) {
+            if (val === false) {
+                setTimeout(() => {
+                    this.setSelectedNode(null);
+                }, DESELECT_NODE_DELAY);
+            }
+        }
+    },
     mounted() {
         if (!this.nodesPerCategory.length) {
             this.$store.dispatch('nodeRepository/getAllNodes', false);
         }
     },
     methods: {
+        ...mapMutations('nodeRepository', ['setSelectedNode']),
         /* Navigation */
         onBreadcrumbClick(e) {
             if (e.id === 'clear') {
@@ -85,6 +100,9 @@ export default {
     </div>
     <SearchResults v-if="showSearchResults" />
     <CategoryResults v-else />
+    <portal to="extension-panel">
+      <NodeDescription v-if="activeDescriptionPanel" />
+    </portal>
   </div>
 </template>
 

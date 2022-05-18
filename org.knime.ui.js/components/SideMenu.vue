@@ -3,7 +3,6 @@ import { mapState, mapGetters } from 'vuex';
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
 import NodeRepository from '~/components/noderepo/NodeRepository';
-import NodeDescription from '~/components/noderepo/NodeDescription';
 
 /**
  * A component that shows the tab contents belonging to one workflow,
@@ -13,14 +12,12 @@ export default {
     components: {
         LeftCollapsiblePanel,
         WorkflowMetadata,
-        NodeRepository,
-        NodeDescription
+        NodeRepository
     },
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
         }),
-        ...mapState('panel', ['activeDescriptionPanel']),
         // TODO: NXT-844 do we really need a panel store? Store and Component should at least match in name
         ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive']),
         metadata() {
@@ -43,6 +40,14 @@ export default {
                 default:
                     return null;
             }
+        },
+        extensionPanelTransition() {
+            return {
+                functional: true,
+                render(h, context) {
+                    return h('transition', { props: { name: 'extension-panel' } }, context.children);
+                }
+            };
         }
     }
 };
@@ -71,12 +76,11 @@ export default {
         />
       </transition>
     </LeftCollapsiblePanel>
-
-    <!-- TODO: NXT-844 Node Description is part of the Node Repository.
-         Maybe move it there? -->
-    <transition name="extension-panel">
-      <NodeDescription v-if="activeDescriptionPanel" />
-    </transition>
+    <portal-target
+      slim
+      name="extension-panel"
+      :transition="extensionPanelTransition"
+    />
   </div>
 </template>
 

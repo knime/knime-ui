@@ -30,14 +30,6 @@ export default {
             return this.selectedNode && this.nodeTemplate.id === this.selectedNode.id;
         }
     },
-    watch: {
-        // deselect node on panel close
-        activeDescriptionPanel(val) {
-            if (val === false) {
-                this.setSelectedNode(null);
-            }
-        }
-    },
     methods: {
         ...mapActions('panel', ['openDescriptionPanel', 'closeDescriptionPanel']),
         ...mapMutations('nodeRepository', ['setSelectedNode', 'setDraggingNode']),
