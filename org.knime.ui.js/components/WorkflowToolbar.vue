@@ -15,7 +15,7 @@ export default {
     },
     computed: {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
-        ...mapGetters('workflow', ['isWorkflowEmpty', 'isComponent']),
+        ...mapGetters('workflow', ['isWorkflowEmpty']),
         ...mapGetters('selection', ['selectedNodes']),
         hasBreadcrumb() {
             return this.workflow?.parents?.length > 0;
@@ -43,7 +43,7 @@ export default {
                 // Workflow abstraction
                 createMetanode: this.selectedNodes.length,
                 createComponent: this.selectedNodes.length,
-                openLayoutEditor: this.isComponent
+                openLayoutEditor: this.workflow?.info.containerType === 'component'
             };
 
             return Object

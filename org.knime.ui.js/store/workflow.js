@@ -218,8 +218,9 @@ export const actions = {
         redo({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
     },
     /* See docs in API */
-    openLayoutEditor({ state }, workflowId) {
-        openLayoutEditor({ projectId: state.activeWorkflow.projectId, workflowId });
+    openLayoutEditor({ state, getters }) {
+        let { activeWorkflowId } = getters;
+        openLayoutEditor({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
     },
     saveWorkflow({ state }) {
         let { activeWorkflow: { projectId } } = state;
@@ -370,10 +371,6 @@ export const getters = {
         let hasAnnotations = Boolean(activeWorkflow?.workflowAnnotations.length);
 
         return !hasNodes && !hasAnnotations;
-    },
-    /* Check if a workflow is a component */
-    isComponent({ activeWorkflow }) {
-        return Boolean(activeWorkflow?.componentMetadata);
     },
     /*
         returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow

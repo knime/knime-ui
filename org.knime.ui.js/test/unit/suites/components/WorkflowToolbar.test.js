@@ -24,7 +24,9 @@ describe('WorkflowToolbar.vue', () => {
         selectedNodes = [];
         selectedConnections = [];
         workflow = {
-            info: {},
+            info: {
+                containerType: 'project'
+            },
             nodes: {
                 'root:1': {
                     id: 'root:1',
@@ -57,7 +59,6 @@ describe('WorkflowToolbar.vue', () => {
                     activeWorkflow: workflow
                 },
                 getters: {
-                    isComponent: () => false,
                     isWorkflowEmpty: jest.fn()
                 }
             },
@@ -157,7 +158,7 @@ describe('WorkflowToolbar.vue', () => {
         });
 
         it('shows layout editor button if inside a component', () => {
-            storeConfig.workflow.getters.isComponent = () => true;
+            storeConfig.workflow.state.activeWorkflow.info.containerType = 'component';
             doShallowMount();
             let toolbarCommands = wrapper.findAllComponents(ToolbarCommandButton).wrappers.map(tb => tb.props('name'));
             expect(toolbarCommands).toContain('openLayoutEditor');

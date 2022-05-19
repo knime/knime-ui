@@ -131,11 +131,12 @@ export default {
     openLayoutEditor: {
         text: 'Layout Editor',
         title: 'Layout editor',
-        hotkey: ['Ctrl', 'L'], // TODO: This interferes with a default Firefox shortcut
+        hotkey: ['Ctrl', 'L'],
         icon: LayoutIcon,
         execute:
-        ({ $store }) => $store.dispatch('workflow/openLayoutEditor', $store.getters['workflow/activeWorkflowId']),
+        ({ $store }) => $store.dispatch('workflow/openLayoutEditor'),
         condition:
-        ({ $store }) => $store.getters['workflow/isComponent'] && !$store.getters['workflow/isLinked']
+        ({ $store }) => $store.state.workflow.activeWorkflow?.info.containerType === 'component' &&
+            $store.getters['workflow/isWritable']
     }
 };

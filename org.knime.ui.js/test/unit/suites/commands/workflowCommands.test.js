@@ -11,7 +11,10 @@ describe('workflowCommands', () => {
             state: {
                 workflow: {
                     activeWorkflow: {
-                        allowedActions: {}
+                        allowedActions: {},
+                        info: {
+                            containerType: 'project'
+                        }
                     }
                 }
             },
@@ -20,8 +23,6 @@ describe('workflowCommands', () => {
                 'selection/selectedConnections': [],
                 'selection/singleSelectedNode': { id: 'root:0', allowedActions: {} },
                 'workflow/isWritable': false,
-                'workflow/isComponent': false,
-                'workflow/isLinked': false,
                 'workflow/activeWorkflowId': 'my workflow name 0'
             }
         };
@@ -80,7 +81,7 @@ describe('workflowCommands', () => {
 
         test('open layout editor', () => {
             workflowCommands.openLayoutEditor.execute({ $store });
-            expect(mockDispatch).toHaveBeenCalledWith('workflow/openLayoutEditor', 'my workflow name 0');
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/openLayoutEditor');
         });
     });
 
@@ -234,13 +235,15 @@ describe('workflowCommands', () => {
                 expect(workflowCommands.openLayoutEditor.condition({ $store })).toBeFalsy();
             });
 
-            test('it is a linked component, button disabled', () => {
-                $store.getters['workflow/isLinked'] = true;
+            test('it is not a writable component, button disabled', () => {
+                $store.state.workflow.activeWorkflow.info.containerType = 'component';
+                $store.getters['workflow/isWritable'] = false;
                 expect(workflowCommands.openLayoutEditor.condition({ $store })).toBeFalsy();
             });
 
-            test('it is a component, button enabled', () => {
-                $store.getters['workflow/isComponent'] = true;
+            test('it is a writable component, button enabled', () => {
+                $store.state.workflow.activeWorkflow.info.containerType = 'component';
+                $store.getters['workflow/isWritable'] = true;
                 expect(workflowCommands.openLayoutEditor.condition({ $store })).toBe(true);
             });
         });
