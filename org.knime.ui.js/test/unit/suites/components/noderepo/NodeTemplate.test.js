@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import Vuex from 'vuex';
 import Vue from 'vue';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
@@ -197,7 +198,8 @@ describe('NodeTemplate', () => {
             wrapper.find('.node').trigger('dblclick');
             await Vue.nextTick();
 
-            expect(addNodeMock).toHaveBeenCalledWith(expect.objectContaining({ position: [103.6, 4] }));
+            expect(addNodeMock)
+                .toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ position: [103.6, 4] }));
         });
 
         it('does nothing on double click if workflow it not writeable', async () => {
@@ -222,7 +224,8 @@ describe('NodeTemplate', () => {
             wrapper.find('.node').trigger('dblclick');
             await Vue.nextTick();
 
-            expect(addNodeMock).toHaveBeenCalledWith(expect.objectContaining({ position: [193.2, 4] }));
+            expect(addNodeMock)
+                .toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ position: [193.2, 4] }));
         });
     });
 
