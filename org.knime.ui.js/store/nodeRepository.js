@@ -35,7 +35,7 @@ export const state = () => ({
 export const getters = {
     hasSearchParams: state => state.query !== '' || state.selectedTags.length > 0,
     searchIsActive: state => Boolean(state.query || state.tags.length) && state.nodes !== null,
-    searchResultsContainSelectedNode: (state) => state.nodes?.some(node => node.id === state.selectedNode?.id),
+    searchResultsContainSelectedNode: (state) => Boolean(state.nodes?.some(node => node.id === state.selectedNode?.id)),
     nodesPerCategoryContainSelectedNode(state) {
         return state.nodesPerCategory.some(category => category.nodes.some(
             node => node.id === state.selectedNode?.id
