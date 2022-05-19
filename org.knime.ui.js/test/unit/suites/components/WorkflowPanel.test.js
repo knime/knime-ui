@@ -2,9 +2,12 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
+import Vue from 'vue';
 
 import WorkflowPanel from '~/components/WorkflowPanel';
 import ContextMenu from '~/components/ContextMenu';
+import PortTypeMenu from '~/components/PortTypeMenu';
+
 
 describe('WorkflowPanel', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, storeConfig;
@@ -125,6 +128,74 @@ describe('WorkflowPanel', () => {
             
             await wrapper.vm.$nextTick();
             expect(wrapper.findComponent(ContextMenu).isVisible()).toBe(false);
+        });
+    });
+
+    describe('Port Type menu', () => {
+        let closeCallback;
+
+        beforeEach(async () => {
+            doShallowMount();
+
+            expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(false);
+
+            closeCallback = jest.fn();
+            wrapper.trigger('open-port-type-menu', {
+                detail: {
+                    id: '0',
+                    props: { side: 'input' },
+                    events: { 'menu-close': closeCallback }
+                }
+            });
+
+            await Vue.nextTick();
+        });
+
+        test('passes props', () => {
+            let portMenu = wrapper.findComponent(PortTypeMenu);
+            expect(portMenu.vm.side).toBe('input');
+        });
+
+        test('binds events', () => {
+            let portMenu = wrapper.findComponent(PortTypeMenu);
+            portMenu.vm.$emit('menu-close');
+            expect(closeCallback).toHaveBeenCalled();
+        });
+
+        test('opening another menu closes current one', () => {
+            expect(closeCallback).not.toHaveBeenCalled();
+
+            wrapper.trigger('open-port-type-menu', {
+                detail: {
+                    id: '1',
+                    props: { side: 'input' },
+                    events: {}
+                }
+            });
+
+            expect(closeCallback).toHaveBeenCalled();
+        });
+
+        test('close menu', async () => {
+            wrapper.trigger('close-port-type-menu', {
+                detail: {
+                    id: '0'
+                }
+            });
+            await Vue.nextTick();
+
+            expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(false);
+        });
+
+        test('close event doesn`t interfere with current menu', async () => {
+            wrapper.trigger('close-port-type-menu', {
+                detail: {
+                    id: '1'
+                }
+            });
+            await Vue.nextTick();
+
+            expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(true);
         });
     });
 });

@@ -1,4 +1,7 @@
 <script>
+/* eslint-disable max-lines */
+// TODO: NXT-1069 split up this file
+
 import { mapActions, mapState, mapGetters } from 'vuex';
 import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
 import NodeState from '~/components/workflow/NodeState';
@@ -11,6 +14,7 @@ import portShift, { placeholderPosition, portPositions } from '~/util/portShift'
 import NodeActionBar from '~/components/workflow/NodeActionBar';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
 import NodeName from '~/components/workflow/NodeName';
+import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder';
 import { snapConnector } from '~/mixins';
 
 /**
@@ -33,7 +37,8 @@ export default {
         StreamingDecorator,
         LoopDecorator,
         NodeName,
-        NodeSelectionPlane
+        NodeSelectionPlane,
+        AddPortPlaceholder
     },
     mixins: [snapConnector],
     inheritAttrs: false,
@@ -167,7 +172,7 @@ export default {
     data() {
         return {
             hover: false,
-            showSelectionPreview: null,
+            selectionPreview: null,
             nameDimensions: {
                 width: 0,
                 height: 20
@@ -177,7 +182,7 @@ export default {
     computed: {
         ...mapState('application', { projectId: 'activeProjectId' }),
         ...mapState('workflow', ['isDragging']),
-        ...mapGetters('selection', ['isNodeSelected']),
+        ...mapGetters('selection', ['isNodeSelected', 'singleSelectedNode']),
         ...mapGetters('workflow', ['isWritable']),
         decoratorBackgroundType() {
             if (this.type) {
@@ -269,6 +274,16 @@ export default {
                 )
             };
         },
+        addPortPlaceholderPositions() {
+            return {
+                in: placeholderPosition(
+                    { portCount: this.inPorts.length, isMetanode: this.kind === 'metanode' }
+                ),
+                out: placeholderPosition(
+                    { portCount: this.outPorts.length, isMetanode: this.kind === 'metanode', isOutport: true }
+                )
+            };
+        },
         portBarHeight() {
             let lastInPortY = this.portPositions.in[this.portPositions.in.length - 1]?.[1] || 0;
             let lastOutPortY = this.portPositions.out[this.portPositions.out.length - 1]?.[1] || 0;
@@ -276,21 +291,26 @@ export default {
             return Math.max(lastInPortY, lastOutPortY) + this.$shapes.portSize / 2 +
                 this.$shapes.nodeHoverPortBottomMargin;
         },
+        isSelected() {
+            return this.isNodeSelected(this.id);
+        },
+        isSingleSelected() {
+            return this.singleSelectedNode?.id === this.id;
+        },
         showSelectionPlane() {
-            const isSelected = this.isNodeSelected(this.id);
             // no preview, honor dragging state
-            if (this.showSelectionPreview === null) {
-                return isSelected && !this.isDragging;
+            if (this.selectionPreview === null) {
+                return this.isSelected && !this.isDragging;
             }
             
             // preview can override selected state (think: deselect with shift)
-            if (isSelected && this.showSelectionPreview === 'hide') {
+            if (this.isSelected && this.selectionPreview === 'hide') {
                 return false;
             }
 
-            return this.showSelectionPreview === 'show' || isSelected;
+            return this.selectionPreview === 'show' || this.isSelected;
         },
-        isNameEditable() {
+        isEditableContainerNode() {
             // only non-linked metanodes and components have editable names
             return this.isWritable && ['metanode', 'component'].includes(this.kind) && this.link === null;
         },
@@ -407,9 +427,23 @@ export default {
 
             return false;
         },
+        onPortTypeMenuOpen(e) {
+            // show add-port button
+            e.target.style.opacity = 1;
+
+            // clear the close-timeout of this button if set
+            clearTimeout(e.target.closeTimeout);
+        },
+        onPortTypeMenuClose(e) {
+            // after closing the menu, keep the add-port button for 1s,
+            // then go back to styling by css
+            e.target.closeTimeout = setTimeout(() => {
+                e.target.style.opacity = null;
+            }, 1000);
+        },
         // public
         setSelectionPreview(preview) {
-            this.showSelectionPreview = preview === 'clear' ? null : preview;
+            this.selectionPreview = preview === 'clear' ? null : preview;
         }
     }
 };
@@ -522,7 +556,7 @@ export default {
       <DraggablePortWithTooltip
         v-for="port of inPorts"
         :key="`inport-${port.index}`"
-        :class="['port', { ...portAnimationClasses(port) }]"
+        :class="['port', portAnimationClasses(port)]"
         :relative-position="portPositions.in[port.index]"
         :port="port"
         :node-id="id"
@@ -533,31 +567,57 @@ export default {
       <DraggablePortWithTooltip
         v-for="port of outPorts"
         :key="`outport-${port.index}`"
-        :class="['port', { ...portAnimationClasses(port) }]"
+        :class="['port', portAnimationClasses(port)]"
         :relative-position="portPositions.out[port.index]"
         :port="port"
         :node-id="id"
         :targeted="targetPort && targetPort.side === 'out' && targetPort.index === port.index"
         direction="out"
       />
-    </g>
 
-    <!-- Node name / title -->
-    <NodeName
-      :node-id="id"
-      :node-position="position"
-      :value="name"
-      :editable="isNameEditable"
-      @click.native.left="onLeftMouseClick"
-      @contextmenu.prevent="onContextMenu"
-      @width-change="nameDimensions.width = $event"
-      @height-change="nameDimensions.height = $event"
-      @edit-start="hover = false"
-      @mouseenter="hover = true"
-      @mouseleave="onLeaveHoverArea"
-      @connector-enter.native.stop="onConnectorEnter"
-      @connector-leave.native.stop="onConnectorLeave"
-    />
+      <AddPortPlaceholder
+        v-if="isEditableContainerNode"
+        :node-id="id"
+        :position="addPortPlaceholderPositions.in"
+        :class="['add-port', {
+          'node-hover': hover,
+          'connector-hover': connectorHover,
+          'node-selected': isSingleSelected,
+        }]"
+        side="input"
+        @open-port-type-menu.native="onPortTypeMenuOpen($event)"
+        @close-port-type-menu.native="onPortTypeMenuClose($event)"
+      />
+
+      <AddPortPlaceholder
+        v-if="isEditableContainerNode"
+        :node-id="id"
+        :position="addPortPlaceholderPositions.out"
+        :class="['add-port', {
+          'node-hover': hover,
+          'connector-hover': connectorHover,
+          'node-selected': isSingleSelected,
+        }]"
+        side="output"
+        @open-port-type-menu.native="onPortTypeMenuOpen($event)"
+        @close-port-type-menu.native="onPortTypeMenuClose($event)"
+      />
+
+      <!-- Node name / title -->
+      <NodeName
+        :node-id="id"
+        :node-position="position"
+        :value="name"
+        :editable="isEditableContainerNode"
+        @click.native.left="onLeftMouseClick"
+        @contextmenu.prevent="onContextMenu"
+        @width-change="nameDimensions.width = $event"
+        @height-change="nameDimensions.height = $event"
+        @edit-start="hover = false"
+        @connector-enter.native.stop="onConnectorEnter"
+        @connector-leave.native.stop="onConnectorLeave"
+      />
+    </g>
   </g>
 </template>
 
@@ -575,10 +635,12 @@ export default {
 }
 
 .port {
+  transition: transform 120ms ease;
+
   &.mickey-mouse {
     /* TODO: NXT-1058 why is this transition no applied when the .connected class is removed? */
     opacity: 0;
-    transition: opacity 2000ms 0.25s;
+    transition: opacity 0.5s 0.25s;
 
     &.node-hover {
       /* fade-in port with delay when node is hovered */
@@ -589,7 +651,7 @@ export default {
     &:hover {
       /* immediately show port on direct hover */
 
-      /* TODO: NXT-1058 why is "transition opacity 0;" not working? */
+      /* TODO: NXT-1058 why is "transition: opacity 0;" not working? */
       transition: none;
       opacity: 1;
     }
@@ -605,6 +667,23 @@ export default {
       transition: opacity 0.25s;
       opacity: 1;
     }
+  }
+}
+
+.add-port {
+  opacity: 0;
+  transition:
+    opacity 0.2s,
+    transform 120ms ease-out;
+
+  &.node-selected,
+  &.node-hover {
+    opacity: 1;
+  }
+
+  &.connector-hover {
+    opacity: 1;
+    transition: opacity 0s;
   }
 }
 

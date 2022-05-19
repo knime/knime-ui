@@ -1,7 +1,7 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
     moveObjects, openDialog, openLegacyFlowVariableDialog as configureFlowVariables,
     openView, undo, redo, removeEventListener, connectNodes,
-    addNode, saveWorkflow, closeWorkflow, renameContainerNode, collapseToContainer } from '~api';
+    addNode, saveWorkflow, closeWorkflow, renameContainerNode, collapseToContainer, addContainerNodePort } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -230,6 +230,12 @@ export const actions = {
     },
     closeNameEditor({ commit }) {
         commit('setNameEditorNodeId', null);
+    },
+    addContainerNodePort({ state, getters }, { nodeId, side, typeId }) {
+        let { activeWorkflow: { projectId } } = state;
+        let { activeWorkflowId: workflowId } = getters;
+
+        addContainerNodePort({ projectId, workflowId, nodeId, side, typeId });
     },
     /**
      * Move either the outline of the nodes or the nodes itself,

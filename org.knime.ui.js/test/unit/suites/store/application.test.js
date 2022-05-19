@@ -54,7 +54,8 @@ describe('application store', () => {
             openProjects: [],
             activeProjectId: null,
             savedUserState: {},
-            availablePortTypes: {}
+            availablePortTypes: {},
+            suggestedPortTypes: []
         });
     });
 
@@ -83,10 +84,16 @@ describe('application store', () => {
             expect(savedState.p1.root).toBe('SAFE');
         });
 
-        it('setting the available port types', () => {
+        it('sets the available port types', () => {
             store.commit('application/setAvailablePortTypes', { 'port type id': { kind: 'table', name: 'Data' } });
             expect(store.state.application.availablePortTypes)
                 .toStrictEqual({ 'port type id': { kind: 'table', name: 'Data' } });
+        });
+
+        it('sets the suggested port types', () => {
+            store.commit('application/setSuggestedPortTypes', ['type1', 'type2']);
+            expect(store.state.application.suggestedPortTypes)
+                .toStrictEqual(['type1', 'type2']);
         });
     });
 
@@ -116,6 +123,33 @@ describe('application store', () => {
         expect(dispatchSpy).toHaveBeenCalledWith('application/setActiveProject', [
             { projectId: 'foo', name: 'bar' }
         ]);
+    });
+
+    test('set up port search', () => {
+        let portTypes = {
+            BufferedTable: {
+                kind: 'table',
+                name: 'Data'
+            },
+            FlowVariable: {
+                kind: 'flowVariable',
+                name: 'Flow Variable'
+            },
+            Hidden: {
+                kind: 'hidden',
+                name: 'Hidden Port',
+                hidden: true
+            }
+        };
+        store.commit('application/setAvailablePortTypes', portTypes);
+
+        let portTypeSearch = store.getters['application/portTypeSearch'];
+        expect(portTypeSearch.search('flow').map(result => result.item))
+            .toStrictEqual([{ typeId: 'FlowVariable', name: 'Flow Variable' }]);
+        expect(portTypeSearch.search('data').map(result => result.item))
+            .toStrictEqual([{ typeId: 'BufferedTable', name: 'Data' }]);
+        expect(portTypeSearch.search('hidden').map(result => result.item))
+            .toStrictEqual([]);
     });
 
     describe('set active workflow', () => {

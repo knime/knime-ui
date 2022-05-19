@@ -295,6 +295,18 @@ describe('workflow store', () => {
             expect(mock).toHaveBeenLastCalledWith({ nodeIds: ['root:2'], projectId: 'foo', workflowId: 'root' });
         });
 
+        it('can add ContainerNode Ports', async () => {
+            let apiMocks = { addContainerNodePort: jest.fn() };
+            await loadStore({ apiMocks });
+
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.dispatch(`workflow/addContainerNodePort`, { nodeId: 'node x', side: 'input', typeId: 'porty' });
+
+            expect(apiMocks.addContainerNodePort).toHaveBeenCalledWith(
+                { nodeId: 'node x', projectId: 'foo', workflowId: 'root', side: 'input', typeId: 'porty' }
+            );
+        });
+
         it.each(['openView', 'openDialog'])('passes %s to API', async (action) => {
             let mock = jest.fn();
             let apiMocks = { [action]: mock };

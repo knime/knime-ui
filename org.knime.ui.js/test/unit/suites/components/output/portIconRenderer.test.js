@@ -7,7 +7,6 @@ import * as $colors from '~/style/colors';
 import * as $shapes from '~/style/shapes';
 
 describe('PortIconRenderer', () => {
-
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
@@ -20,11 +19,11 @@ describe('PortIconRenderer', () => {
             application: {
                 state: {
                     availablePortTypes: {
-                        'table': {
+                        table: {
                             kind: 'table',
                             name: 'Data'
                         },
-                        'flowVariable': {
+                        flowVariable: {
                             kind: 'flowVariable',
                             name: 'Flow Variable'
                         }

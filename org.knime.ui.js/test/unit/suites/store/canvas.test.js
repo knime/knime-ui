@@ -523,8 +523,8 @@ describe('canvas store', () => {
                     scrollTop: 30
                 });
 
-                expect(store.getters['canvas/screenFromCanvasCoordinates']({x: 0, y: 0}))
-                .toStrictEqual({ x: 300, y: 300 });
+                expect(store.getters['canvas/screenFromCanvasCoordinates']({ x: 0, y: 0 }))
+                    .toStrictEqual({ x: 300, y: 300 });
             });
 
             test('screenToCanvasCoordinates', () => {
@@ -537,8 +537,8 @@ describe('canvas store', () => {
                 });
 
                 expect(store.getters['canvas/screenToCanvasCoordinates']([300, 300]))
-                .toStrictEqual([0, 0]);
+                    .toStrictEqual([0, 0]);
             });
-        })
+        });
     });
 });

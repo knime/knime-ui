@@ -63,8 +63,8 @@ export default {
             this.pointerId = e.pointerId;
             e.target.setPointerCapture(e.pointerId);
             
-            [this.startPos.x, this.startPos.y] = this.screenToCanvasCoordinates([e.clientX, e.clientY]); 
-            this.endPos = {...this.startPos};
+            [this.startPos.x, this.startPos.y] = this.screenToCanvasCoordinates([e.clientX, e.clientY]);
+            this.endPos = { ...this.startPos };
             
             this.nodeIdsToSelectOnEnd = [];
             this.nodeIdsToDeselectOnEnd = [];

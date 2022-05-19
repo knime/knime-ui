@@ -1,4 +1,5 @@
 import { fetchApplicationState, addEventListener, removeEventListener } from '~api';
+import Fuse from 'fuse.js';
 
 /*
 * This store provides global application logic
@@ -11,7 +12,10 @@ export const state = () => ({
     savedUserState: {},
 
     /* Map of port type id to port type */
-    availablePortTypes: {}
+    availablePortTypes: {},
+    
+    // A list provided by the backend that says which ports should be suggested to the user in the port type menu.
+    suggestedPortTypes: []
 });
 
 export const mutations = {
@@ -31,9 +35,11 @@ export const mutations = {
     },
     setAvailablePortTypes(state, availablePortTypes) {
         state.availablePortTypes = availablePortTypes;
+    },
+    setSuggestedPortTypes(state, portTypesIds) {
+        state.suggestedPortTypes = portTypesIds;
     }
 };
-
 
 export const actions = {
     async initializeApplication({ dispatch }) {
@@ -53,6 +59,7 @@ export const actions = {
 
         commit('setOpenProjects', openProjects);
         commit('setAvailablePortTypes', applicationState.availablePortTypes);
+        commit('setSuggestedPortTypes', applicationState.suggestedPortTypeIds);
 
         await dispatch('setActiveProject', openProjects);
     },
@@ -115,6 +122,29 @@ export const actions = {
         // is undefined if opened for the first time
         const savedState = savedUserState[activeProjectId][workflowId];
         commit('canvas/restoreState', savedState?.canvas, { root: true });
+    }
+};
+
+export const getters = {
+    portTypeSearch({ availablePortTypes }) {
+        let searchItems = Object.entries(availablePortTypes).map(([typeId, { name, hidden }]) => {
+            // filter out "hidden" portTypes
+            if (hidden) { return null; }
+            
+            return {
+                typeId,
+                name
+            };
+        }).filter(Boolean);
+
+        let fuzzySearch = new Fuse(searchItems, {
+            keys: ['name'],
+            shouldSort: true,
+            isCaseSensitive: false,
+            minMatchCharLength: 0
+        });
+
+        return fuzzySearch;
     }
 };
 
