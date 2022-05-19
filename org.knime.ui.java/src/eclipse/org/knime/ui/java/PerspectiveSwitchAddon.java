@@ -95,6 +95,11 @@ public final class PerspectiveSwitchAddon {
 
     private static final NodeLogger LOGGER = NodeLogger.getLogger(PerspectiveSwitchAddon.class);
 
+    /**
+     * The ID of the perspective that was active before the current one. {@code null} if not known.
+     */
+    private static String previousPerspectiveId;
+
     @Inject
     private EModelService m_modelService;
 
@@ -111,12 +116,14 @@ public final class PerspectiveSwitchAddon {
 
         MPerspective oldPerspective = (MPerspective)event.getProperty(EventTags.OLD_VALUE);
         MPerspective newPerspective = (MPerspective)newValue;
-            MPerspective webUIPerspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
+        MPerspective webUIPerspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
+
+        previousPerspectiveId = oldPerspective.getElementId();
 
         if (newPerspective == webUIPerspective) {
-                  onSwitchToWebUI();
+            onSwitchToWebUI();
         } else if (oldPerspective == webUIPerspective) {
-                  onSwitchToJavaUI();
+            onSwitchToJavaUI();
         }
     }
 
@@ -211,5 +218,12 @@ public final class PerspectiveSwitchAddon {
         modelService.find("org.eclipse.ui.main.toolbar", app).setVisible(visible);
         MTrimmedWindow window = (MTrimmedWindow)app.getChildren().get(0);
         window.getMainMenu().setToBeRendered(visible);
+    }
+
+    /**
+     * @return The ID of the Eclipse workbench perspective that was active previous to the currently active one.
+     */
+    public static java.util.Optional<String> getPreviousPerspectiveId() {
+        return java.util.Optional.ofNullable(previousPerspectiveId);
     }
 }
