@@ -16,7 +16,7 @@ describe('Workflow Annotation', () => {
             backgroundColor: '#000',
             bounds: { x: 1, y: 2, width: 100, height: 50 },
             text: 'hallo',
-            styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
+            styleRanges: [{ start: 0, length: 2, fontSize: 14 }]
         };
 
         doShallowMount = () => {
@@ -39,7 +39,7 @@ describe('Workflow Annotation', () => {
             });
 
             expect(wrapper.findComponent(LegacyAnnotationText).attributes().style).toBe(
-                'font-size: 11px; ' +
+                'font-size: 12px; ' +
                 'border: 4px solid #000; ' +
                 'background: rgb(0, 0, 0); ' +
                 'width: 100px; ' +
@@ -53,7 +53,7 @@ describe('Workflow Annotation', () => {
             expect(wrapper.findComponent(LegacyAnnotationText).props('text')).toBe('hallo');
 
             expect(wrapper.findComponent(LegacyAnnotationText).props('styleRanges')).toEqual(
-                [{ start: 0, length: 2, fontSize: 12 }]
+                [{ start: 0, length: 2, fontSize: 14 }]
             );
         });
     });

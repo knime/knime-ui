@@ -33,7 +33,7 @@ describe('Node Annotation', () => {
                 'text-align: right; ' +
                 'background-color: rgb(255, 216, 0); ' +
                 'padding: 2px; ' +
-                'font-size: 11px;'
+                'font-size: 12px;'
             );
         });
 
@@ -55,7 +55,6 @@ describe('Node Annotation', () => {
             it.each([
                 ['text', 'foo'],
                 ['textAlign', 'left'],
-                ['defaultFontSize', 1],
                 ['styleRanges', []]
             ])('updates the resizeKey when the "%s" prop changes', async (propName, propValue) => {
                 const initialValue = wrapper.findComponent(AutoSizeForeignObject).props('resizeKey');
