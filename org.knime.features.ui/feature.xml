@@ -6,12 +6,9 @@
       provider-name="KNIME AG, Zurich, Switzerland">
 
   <description>
-This extension contains a preview of the new user interface for the upcoming KNIME Analytics
-Platform. To use it, just click “Open KNIME Modern UI Preview” in the top right corner of the KNIME Analytics
-Platform.
+This extension contains a preview of the new user interface for the upcoming KNIME Analytics Platform. To use it, just click “Open KNIME Modern UI Preview” in the top right corner of the KNIME Analytics Platform.
 
-Workflow elements such as connectors or annotations are visualized in a new way and may therefore not look exactly
-like in the current KNIME Analytics Platform.
+Workflow elements such as connectors or annotations are visualized in a new way and may therefore not look exactly like in the current KNIME Analytics Platform.
 
 We are looking forward to receiving your feedback through the KNIME forum - https://knime.com/modern-ui-feedback.
 
