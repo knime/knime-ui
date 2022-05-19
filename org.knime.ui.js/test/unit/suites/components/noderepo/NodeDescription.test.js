@@ -8,7 +8,8 @@ import Description from '~/webapps-common/ui/components/Description';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 
 describe('NodeDescription', () => {
-    let mocks, doMount, wrapper, storeConfig, $store, closeDescriptionPanelMock, getNodeDescriptionMock, searchIsActive;
+    let mocks, doMount, wrapper, storeConfig, $store, closeDescriptionPanelMock,
+        getNodeDescriptionMock, selectedNodeIsVisible;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -19,7 +20,7 @@ describe('NodeDescription', () => {
         wrapper = null;
         closeDescriptionPanelMock = jest.fn();
         getNodeDescriptionMock = jest.fn();
-        searchIsActive = false;
+        selectedNodeIsVisible = true;
 
         storeConfig = {
             nodeRepository: {
@@ -52,8 +53,8 @@ describe('NodeDescription', () => {
                     getNodeDescription: getNodeDescriptionMock
                 },
                 getters: {
-                    searchIsActive() {
-                        return searchIsActive;
+                    selectedNodeIsVisible() {
+                        return selectedNodeIsVisible;
                     }
                 }
             },
@@ -112,11 +113,11 @@ describe('NodeDescription', () => {
         // adds event handler on mount
         doMount();
         wrapper.vm.$root.$emit('escape-pressed');
-        
+
         // removes event handler before destroying
         wrapper.destroy();
         wrapper.vm.$root.$emit('escape-pressed');
-        
+
         expect(closeDescriptionPanelMock).toHaveBeenCalledTimes(1);
     });
 
@@ -132,9 +133,7 @@ describe('NodeDescription', () => {
     });
 
     it('changes title and description when node is not visible', () => {
-        storeConfig.nodeRepository.state.selectedNode = {
-            id: 9
-        };
+        selectedNodeIsVisible = false;
         doMount();
         const title = wrapper.find('h2');
         expect(title.text()).toBe('');
@@ -142,14 +141,5 @@ describe('NodeDescription', () => {
         expect(wrapper.findComponent(NodeFeatureList).exists()).toBe(false);
         const placeholder = wrapper.find('.placeholder');
         expect(placeholder.text()).toBe('Please select a node');
-    });
-
-    it('correctly displays information when search is active', () => {
-        searchIsActive = true;
-        storeConfig.nodeRepository.state.selectedNode = storeConfig.nodeRepository.state.nodes[0];
-        doMount();
-        expect(wrapper.findComponent(Description).exists()).toBe(true);
-        const title = wrapper.find('h2');
-        expect(title.text()).toBe('Node');
     });
 });

@@ -7,7 +7,6 @@ import * as panelStoreConfig from '~/store/panel';
 import SideMenu from '~/components/SideMenu';
 import NodeRepository from '~/components/noderepo/NodeRepository';
 import WorkflowMetadata from '~/components/WorkflowMetadata';
-import NodeDescription from '~/components/noderepo/NodeDescription.vue';
 
 describe('SideMenu.vue', () => {
     beforeAll(() => {
@@ -133,14 +132,13 @@ describe('SideMenu.vue', () => {
         });
     });
 
-    describe('Node Description', () => {
+    describe('Extension Panel', () => {
         beforeEach(async () => {
             await doShallowMount();
-            store.dispatch('panel/openDescriptionPanel');
         });
 
-        it('shows description panel', () => {
-            expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
+        it('has portal for extension panel', () => {
+            expect(wrapper.find('portal-target[name="extension-panel"').exists()).toBe(true);
         });
     });
 
