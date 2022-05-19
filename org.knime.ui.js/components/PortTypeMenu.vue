@@ -85,7 +85,7 @@ export default {
         this.$refs.searchBar.focus();
     },
     methods: {
-        onContextMenuItemClick(e, item) {
+        onMenuItemClick(e, item) {
             this.$emit('item-click', item);
             this.$emit('menu-close', item);
         },
@@ -134,7 +134,7 @@ export default {
         :items="menuItems"
         class="search-results"
         aria-label="Port Type Menu"
-        @item-click="onContextMenuItemClick"
+        @item-click="onMenuItemClick"
         @item-active="$emit('item-active', $event)"
         @top-reached="onSearchResultsWrapAround"
         @bottom-reached="onSearchResultsWrapAround"
