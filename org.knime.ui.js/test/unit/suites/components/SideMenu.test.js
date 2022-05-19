@@ -2,6 +2,9 @@ import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 
+import Vue from 'vue';
+Vue.config.ignoredElements = ['portal-target'];
+
 import * as panelStoreConfig from '~/store/panel';
 
 import SideMenu from '~/components/SideMenu';
