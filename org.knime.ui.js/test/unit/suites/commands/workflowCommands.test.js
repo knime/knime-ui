@@ -22,8 +22,7 @@ describe('workflowCommands', () => {
                 'selection/selectedNodes': [],
                 'selection/selectedConnections': [],
                 'selection/singleSelectedNode': { id: 'root:0', allowedActions: {} },
-                'workflow/isWritable': false,
-                'workflow/activeWorkflowId': 'my workflow name 0'
+                'workflow/isWritable': false
             }
         };
     });
