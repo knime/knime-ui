@@ -8,7 +8,7 @@ import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
 import CloseIcon from '~/assets/cancel.svg?inline';
 
 describe('AppHeader.vue', () => {
-    let propsData, mocks, doShallowMount, wrapper, storeConfig, $store, application;
+    let propsData, mocks, doShallowMount, wrapper, storeConfig, $store;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -17,23 +17,22 @@ describe('AppHeader.vue', () => {
 
     beforeEach(() => {
         wrapper = null;
-        application = {
-            getters: {
-                activeProjectName() {
-                    return 'Project Name';
+
+        storeConfig = {
+            application: {
+                getters: {
+                    activeProjectName: () => 'Project Name'
+                }
+            },
+            workflow: {
+                actions:
+                {
+                    closeWorkflow: jest.fn()
                 }
             }
         };
+
         doShallowMount = () => {
-            storeConfig = {
-                application,
-                workflow: {
-                    actions:
-                    {
-                        closeWorkflow: jest.fn()
-                    }
-                }
-            };
             $store = mockVuexStore(storeConfig);
             mocks = { $store };
             wrapper = shallowMount(AppHeader, { propsData, mocks });
@@ -56,7 +55,7 @@ describe('AppHeader.vue', () => {
         });
 
         it('render application title, if no active project name exists', () => {
-            application.getters.activeProjectName = () => null;
+            storeConfig.application.getters.activeProjectName = () => null;
             doShallowMount();
 
             const title = wrapper.find('.application-name');
@@ -82,7 +81,7 @@ describe('AppHeader.vue', () => {
                 [3000, 256]
             ])('truncates the name for a %spx width to a max of %s characters long', (width, maxChars) => {
                 window.innerWidth = width;
-                application.getters.activeProjectName = () => longName;
+                storeConfig.application.getters.activeProjectName = () => longName;
                 doShallowMount();
     
                 const nameElement = wrapper.find('.project-name .text');
