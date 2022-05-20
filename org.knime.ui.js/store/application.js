@@ -118,3 +118,11 @@ export const actions = {
     }
 };
 
+export const getters = {
+    activeProjectName({ openProjects, activeProjectId }) {
+        if (!activeProjectId) {
+            return null;
+        }
+        return openProjects.find(project => project.projectId === activeProjectId).name;
+    }
+};
