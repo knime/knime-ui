@@ -14,7 +14,7 @@ describe('Node Annotation', () => {
             textAlign: 'right',
             text: 'hallo',
             backgroundColor: 'rgb(255, 216, 0)',
-            styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
+            styleRanges: [{ start: 0, length: 2, fontSize: 15 }],
             yOffset: 33
         };
         doShallowMount = () => {
@@ -47,7 +47,7 @@ describe('Node Annotation', () => {
             expect(wrapper.findComponent(LegacyAnnotationText).props('text')).toBe('hallo');
 
             expect(wrapper.findComponent(LegacyAnnotationText).props('styleRanges')).toEqual(
-                [{ start: 0, length: 2, fontSize: 12 }]
+                [{ start: 0, length: 2, fontSize: 15 }]
             );
         });
 
@@ -55,6 +55,7 @@ describe('Node Annotation', () => {
             it.each([
                 ['text', 'foo'],
                 ['textAlign', 'left'],
+                ['defaultFontSize', 1],
                 ['styleRanges', []]
             ])('updates the resizeKey when the "%s" prop changes', async (propName, propValue) => {
                 const initialValue = wrapper.findComponent(AutoSizeForeignObject).props('resizeKey');
@@ -64,5 +65,15 @@ describe('Node Annotation', () => {
                 expect(wrapper.findComponent(AutoSizeForeignObject).props('resizeKey')).not.toBe(initialValue);
             });
         });
+    });
+
+    it('honors annotationsFontSizePointToPixelFactor', () => {
+        let shapes = { ...$shapes, annotationsFontSizePointToPixelFactor: 2.5 };
+        propsData.defaultFontSize = 18;
+        mocks = { $shapes: shapes, adjustDimensions: jest.fn() };
+        wrapper = shallowMount(NodeAnnotation, { propsData, mocks });
+        expect(wrapper.findComponent(LegacyAnnotationText).attributes('style')).toContain(
+            'font-size: 45px;'
+        );
     });
 });

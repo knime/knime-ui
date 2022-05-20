@@ -189,6 +189,7 @@ describe('Node', () => {
         it('displays annotation', () => {
             expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
                 backgroundColor: 'rgb(255, 216, 0)',
+                defaultFontSize: 12,
                 styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
                 text: 'ThatsMyNode',
                 textAlign: 'center',
@@ -201,6 +202,7 @@ describe('Node', () => {
             doMount();
             expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
                 backgroundColor: 'rgb(255, 216, 0)',
+                defaultFontSize: 12,
                 styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
                 text: 'ThatsMyNode',
                 textAlign: 'center',
