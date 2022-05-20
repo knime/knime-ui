@@ -256,5 +256,36 @@ describe('workflowCommands', () => {
                 expect(workflowCommands.expandMetanode.condition({ $store })).toBe(false);
             });
         });
+
+        describe('expandComponent', () => {
+            test('it allows to expand if a component is selected and canExpand is true', () => {
+                $store.getters['workflow/isWritable'] = true;
+                $store.getters['selection/singleSelectedNode'] = {
+                    kind: 'metanode',
+                    allowedActions: {
+                        canExpand: 'true'
+                    }
+                };
+                expect(workflowCommands.expandComponent.condition({ $store })).toBe(false);
+                $store.getters['selection/singleSelectedNode'] = {
+                    kind: 'component',
+                    allowedActions: {
+                        canExpand: 'true'
+                    }
+                };
+                expect(workflowCommands.expandComponent.condition({ $store })).toBe(true);
+            });
+
+            test('it can not expand component when workflow is not writable', () => {
+                $store.getters['workflow/isWritable'] = false;
+                $store.getters['selection/singleSelectedNode'] = {
+                    kind: 'component',
+                    allowedActions: {
+                        canExpand: 'true'
+                    }
+                };
+                expect(workflowCommands.expandComponent.condition({ $store })).toBe(false);
+            });
+        });
     });
 });

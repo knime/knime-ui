@@ -59,6 +59,7 @@ export default {
                 'canOpenLegacyFlowVariableDialog' in this.singleSelectedNode.allowedActions;
             const isMetanodeOrComponent = ['metanode', 'component'].includes(this.singleSelectedNode?.kind);
             const isMetanode = ['metanode'].includes(this.singleSelectedNode?.kind);
+            const isComponent = ['component'].includes(this.singleSelectedNode?.kind);
 
             let allMenuItems = {
                 // Exactly one node selected
@@ -85,7 +86,8 @@ export default {
 
                 createMetanode: this.selectedNodes.length,
                 createComponent: this.selectedNodes.length,
-                expandMetanode: isMetanode
+                expandMetanode: isMetanode,
+                expandComponent: isComponent
             };
 
             // Array of name of commands

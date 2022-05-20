@@ -140,6 +140,19 @@ export default {
 
             return selectedNode?.kind === 'metanode' && selectedNode?.allowedActions.canExpand !== 'false';
         }
-            
+    },
+    expandComponent: {
+        text: 'Expand Component',
+        title: 'Expand component',
+        hotkey: ['Ctrl', 'Shift', 'K'],
+        execute:
+        ({ $store }) => $store.dispatch('workflow/expandContainer', { containerType: 'component' }),
+        condition({ $store }) {
+            let selectedNode = $store.getters['selection/singleSelectedNode'];
+
+            if (!$store.getters['workflow/isWritable']) { return false; }
+
+            return selectedNode?.kind === 'component' && selectedNode?.allowedActions.canExpand !== 'false';
+        }
     }
 };

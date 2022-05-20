@@ -302,5 +302,20 @@ describe('ContextMenu.vue', () => {
 
             expect(menuItemNames).toContain('expandMetanode');
         });
+
+        it('shows expand component for single selected component', () => {
+            const node = {
+                id: 'root:0',
+                kind: 'component',
+                allowedActions: {}
+            };
+            storeConfig.selection.getters.singleSelectedNode = () => node;
+            doMount();
+            wrapper.setProps({ isVisible: true });
+
+            const menuItemNames = wrapper.findComponent(FloatingMenu).props('items').map(i => i.name);
+
+            expect(menuItemNames).toContain('expandComponent');
+        });
     });
 });
