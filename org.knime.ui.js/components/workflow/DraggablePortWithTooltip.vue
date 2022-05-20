@@ -1,5 +1,5 @@
 <script>
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters, mapActions, mapState } from 'vuex';
 import PortWithTooltip from '~/components/workflow/PortWithTooltip';
 import Port from '~/components/workflow/Port';
 import Connector from '~/components/workflow/Connector';
@@ -44,6 +44,7 @@ export default {
     computed: {
         ...mapGetters('canvas', ['toCanvasCoordinates']),
         ...mapGetters('workflow', ['isWritable']),
+        ...mapState('application', { portTypes: 'availablePortTypes' }),
         /*
          * only in-Ports replace their current connector if a new one is connected
          * only in-Ports that are connected need to indicate connector replacement
@@ -92,7 +93,7 @@ export default {
                 allowedActions: {
                     canDelete: false
                 },
-                flowVariableConnection: this.port.type === 'flowVariable',
+                flowVariableConnection: this.portTypes[this.port.typeId].kind === 'flowVariable',
                 absolutePoint: this.positionOnCanvas([e.x, e.y])
             };
 
