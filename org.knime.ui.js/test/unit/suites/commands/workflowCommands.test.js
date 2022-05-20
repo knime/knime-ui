@@ -11,7 +11,10 @@ describe('workflowCommands', () => {
             state: {
                 workflow: {
                     activeWorkflow: {
-                        allowedActions: {}
+                        allowedActions: {},
+                        info: {
+                            containerType: 'project'
+                        }
                     }
                 }
             },
@@ -78,6 +81,11 @@ describe('workflowCommands', () => {
         test('expand metanode', () => {
             workflowCommands.expandMetanode.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/expandContainer', { containerType: 'metanode' });
+        });
+
+        test('open layout editor', () => {
+            workflowCommands.openLayoutEditor.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/openLayoutEditor');
         });
     });
 
@@ -285,6 +293,24 @@ describe('workflowCommands', () => {
                     }
                 };
                 expect(workflowCommands.expandComponent.condition({ $store })).toBe(false);
+            });
+        });
+
+        describe('openLayoutEditor', () => {
+            test('it is not a component, button disabled', () => {
+                expect(workflowCommands.openLayoutEditor.condition({ $store })).toBeFalsy();
+            });
+
+            test('it is not a writable component, button disabled', () => {
+                $store.state.workflow.activeWorkflow.info.containerType = 'component';
+                $store.getters['workflow/isWritable'] = false;
+                expect(workflowCommands.openLayoutEditor.condition({ $store })).toBeFalsy();
+            });
+
+            test('it is a writable component, button enabled', () => {
+                $store.state.workflow.activeWorkflow.info.containerType = 'component';
+                $store.getters['workflow/isWritable'] = true;
+                expect(workflowCommands.openLayoutEditor.condition({ $store })).toBe(true);
             });
         });
     });

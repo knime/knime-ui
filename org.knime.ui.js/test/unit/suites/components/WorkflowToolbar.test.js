@@ -24,7 +24,9 @@ describe('WorkflowToolbar.vue', () => {
         selectedNodes = [];
         selectedConnections = [];
         workflow = {
-            info: {},
+            info: {
+                containerType: 'project'
+            },
             nodes: {
                 'root:1': {
                     id: 'root:1',
@@ -142,7 +144,7 @@ describe('WorkflowToolbar.vue', () => {
             expect(toolbarCommands).toStrictEqual([]);
         });
 
-        it('shows menu items if no node is selected', () => {
+        it('shows menu items if no node is selected and not inside a component', () => {
             doShallowMount();
             let toolbarCommands = wrapper.findAllComponents(ToolbarCommandButton).wrappers.map(tb => tb.props('name'));
             expect(toolbarCommands).toStrictEqual([
@@ -153,6 +155,13 @@ describe('WorkflowToolbar.vue', () => {
                 'cancelAll',
                 'resetAll'
             ]);
+        });
+
+        it('shows layout editor button if inside a component', () => {
+            storeConfig.workflow.state.activeWorkflow.info.containerType = 'component';
+            doShallowMount();
+            let toolbarCommands = wrapper.findAllComponents(ToolbarCommandButton).wrappers.map(tb => tb.props('name'));
+            expect(toolbarCommands).toContain('openLayoutEditor');
         });
 
         it('shows correct menu items if one node is selected', () => {

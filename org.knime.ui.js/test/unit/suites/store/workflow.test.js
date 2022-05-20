@@ -405,26 +405,19 @@ describe('workflow store', () => {
             });
         });
 
-        it('passes undo to the API', async () => {
-            let undo = jest.fn();
-            let apiMocks = { undo };
+        it.each([
+            ['undo'],
+            ['redo'],
+            ['openLayoutEditor']
+        ])('passes %s to the API', async (action) => {
+            let mock = jest.fn();
+            let apiMocks = { [action]: mock };
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
 
-            store.dispatch('workflow/undo');
+            store.dispatch(`workflow/${action}`);
 
-            expect(undo).toHaveBeenCalledWith({ projectId: 'foo', workflowId: 'root' });
-        });
-
-        it('passes redo to the API', async () => {
-            let redo = jest.fn();
-            let apiMocks = { redo };
-            await loadStore({ apiMocks });
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
-
-            store.dispatch('workflow/redo');
-
-            expect(redo).toHaveBeenCalledWith({ projectId: 'foo', workflowId: 'root' });
+            expect(mock).toHaveBeenCalledWith({ projectId: 'foo', workflowId: 'root' });
         });
 
         it.each([
