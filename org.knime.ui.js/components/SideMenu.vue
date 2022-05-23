@@ -42,6 +42,8 @@ export default {
             }
         },
         extensionPanelTransition() {
+            // returns a functional component that is used as transition prop on <portal>. This way the transition
+            // behaves as without portal, see https://portal-vue.linusb.org/api/portal-target.html#transition
             return {
                 functional: true,
                 render(h, context) {
