@@ -10,8 +10,6 @@ import CreateMetanode from '~/assets/create-metanode.svg?inline';
 import CreateComponent from '~/assets/create-component.svg?inline';
 import LayoutIcon from '~/assets/layout.svg?inline';
 
-const isWritable = ({ $store }) => $store.getters['workflow/isWritable'];
-
 export default {
     ...executionCommands,
     save: {
@@ -89,7 +87,7 @@ export default {
         execute:
             ({ $store }) => $store.dispatch('workflow/deleteSelectedObjects'),
         condition({ $store }) {
-            if (!isWritable) { return false; }
+            if (!$store.getters['workflow/isWritable']) { return false; }
 
             const selectedNodes = $store.getters['selection/selectedNodes'];
             const selectedConnections = $store.getters['selection/selectedConnections'];
