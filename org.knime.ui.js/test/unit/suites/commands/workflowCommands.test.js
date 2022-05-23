@@ -11,7 +11,10 @@ describe('workflowCommands', () => {
             state: {
                 workflow: {
                     activeWorkflow: {
-                        allowedActions: {}
+                        allowedActions: {},
+                        info: {
+                            containerType: 'project'
+                        }
                     }
                 }
             },
@@ -73,6 +76,11 @@ describe('workflowCommands', () => {
         test('create component', () => {
             workflowCommands.createComponent.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/collapseToContainer', { containerType: 'component' });
+        });
+
+        test('open layout editor', () => {
+            workflowCommands.openLayoutEditor.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/openLayoutEditor');
         });
     });
 
@@ -218,6 +226,24 @@ describe('workflowCommands', () => {
             test('it can not create component when workflow is not writable', () => {
                 $store.getters['workflow/isWritable'] = false;
                 expect(workflowCommands.createComponent.condition({ $store })).toBe(false);
+            });
+        });
+
+        describe('openLayoutEditor', () => {
+            test('it is not a component, button disabled', () => {
+                expect(workflowCommands.openLayoutEditor.condition({ $store })).toBeFalsy();
+            });
+
+            test('it is not a writable component, button disabled', () => {
+                $store.state.workflow.activeWorkflow.info.containerType = 'component';
+                $store.getters['workflow/isWritable'] = false;
+                expect(workflowCommands.openLayoutEditor.condition({ $store })).toBeFalsy();
+            });
+
+            test('it is a writable component, button enabled', () => {
+                $store.state.workflow.activeWorkflow.info.containerType = 'component';
+                $store.getters['workflow/isWritable'] = true;
+                expect(workflowCommands.openLayoutEditor.condition({ $store })).toBe(true);
             });
         });
     });

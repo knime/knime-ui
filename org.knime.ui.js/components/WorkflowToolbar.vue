@@ -16,6 +16,7 @@ export default {
     computed: {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapGetters('workflow', ['isWorkflowEmpty']),
+        ...mapGetters('selection', ['selectedNodes']),
         hasBreadcrumb() {
             return this.workflow?.parents?.length > 0;
         },
@@ -23,28 +24,26 @@ export default {
             if (!this.workflow) {
                 return [];
             }
-
-            const selectedNodes = this.$store.getters['selection/selectedNodes'];
-            
             let visibleItems = {
-                // always visible
+                // Always visible
                 save: true,
                 undo: true,
                 redo: true,
 
                 // Workflow
-                executeAll: !selectedNodes.length,
-                cancelAll: !selectedNodes.length,
-                resetAll: !selectedNodes.length,
+                executeAll: !this.selectedNodes.length,
+                cancelAll: !this.selectedNodes.length,
+                resetAll: !this.selectedNodes.length,
 
-                // Node Execution
-                executeSelected: selectedNodes.length,
-                cancelSelected: selectedNodes.length,
-                resetSelected: selectedNodes.length,
+                // Node execution
+                executeSelected: this.selectedNodes.length,
+                cancelSelected: this.selectedNodes.length,
+                resetSelected: this.selectedNodes.length,
 
-                createMetanode: selectedNodes.length,
-                createComponent: selectedNodes.length
-
+                // Workflow abstraction
+                createMetanode: this.selectedNodes.length,
+                createComponent: this.selectedNodes.length,
+                openLayoutEditor: this.workflow?.info.containerType === 'component'
             };
 
             return Object

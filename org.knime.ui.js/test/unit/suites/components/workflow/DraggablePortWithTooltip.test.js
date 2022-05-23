@@ -36,7 +36,7 @@ describe('DraggablePortWithTooltip', () => {
             relativePosition: [16, 32],
             port: {
                 connectedVia: [],
-                type: 'port',
+                typeId: 'table',
                 inactive: false,
                 index: 0
             }
@@ -59,6 +59,15 @@ describe('DraggablePortWithTooltip', () => {
             canvas: {
                 getters: {
                     toCanvasCoordinates: () => x => x
+                }
+            },
+            application: {
+                state: {
+                    availablePortTypes: {
+                        table: {
+                            kind: 'table'
+                        }
+                    }
                 }
             }
         };
