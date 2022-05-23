@@ -2,9 +2,8 @@
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { KnimeMIME } from '~/mixins/dropNode';
+import findFreeSpaceOnCanvas from '~/util/findFreeSpaceOnCanvas';
 
-const NODE_POSITION_EQUALS_DELTA = 10; // px
-const NODE_POSITION_SPACE_FACTOR = 1.8; // move node by this times nodeSize
 const WORKFLOW_ADD_START_PERCENT_X = 0.3; // 0, 0 means top left corner
 const WORKFLOW_ADD_START_PERCENT_Y = 0.2; // 0.5, 0.5 means center of canvas
 export const WORKFLOW_ADD_START_MIN = 390; // px keep in sync with size of NodeDescription (360 + margin)
@@ -99,23 +98,6 @@ export default {
                 this.openDescriptionPanel();
             }
         },
-        findFreeSpaceOnWorkflow(position) {
-            let otherNodePositions = [];
-            const nodeList = Object.values(this.workflow.nodes);
-            if (nodeList.length) {
-                otherNodePositions = nodeList.map(n => [n.position.x, n.position.y]);
-            }
-
-            const isNearOtherNode = (candidate, index, delta) => otherNodePositions.some(
-                p => p[index] >= (candidate[index] - delta) && p[index] <= (candidate[index] + delta)
-            );
-
-            while (isNearOtherNode(position, 0, NODE_POSITION_EQUALS_DELTA)) {
-                position[0] += this.$shapes.nodeSize + this.$shapes.nodeSize * NODE_POSITION_SPACE_FACTOR;
-            }
-
-            return position;
-        },
         onDoubleClick() {
             if (!this.isWritable) {
                 return; // end here
@@ -130,7 +112,7 @@ export default {
                 clientHeight * WORKFLOW_ADD_START_PERCENT_Y + scrollTop - halfNodeSize
             ]);
 
-            position = this.findFreeSpaceOnWorkflow(position);
+            position = findFreeSpaceOnCanvas(position, this.workflow.nodes);
 
             const nodeFactory = this.nodeTemplate.nodeFactory;
             this.addNodeToWorkflow({ position, nodeFactory });
