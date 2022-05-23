@@ -213,7 +213,7 @@ export default {
     font-size: 14px;
   }
 
-  & >>> svg {
+  & >>> svg { /* stylelint-disable-line no-descending-specificity */
     height: 14px !important;
     width: 14px !important;
   }
