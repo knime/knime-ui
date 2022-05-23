@@ -190,6 +190,7 @@ describe('workflowCommands', () => {
             });
 
             test('all selected are deletable', () => {
+                $store.getters['workflow/isWritable'] = true;
                 $store.getters['selection/selectedNodes'] = [{ allowedActions: { canDelete: true } },
                     { allowedActions: { canDelete: true } }];
                 $store.getters['selection/selectedConnections'] = [{ allowedActions: { canDelete: true } },
@@ -198,6 +199,7 @@ describe('workflowCommands', () => {
             });
 
             test('only nodes are selected', () => {
+                $store.getters['workflow/isWritable'] = true;
                 $store.getters['selection/selectedNodes'] = [{ allowedActions: { canDelete: true } },
                     { allowedActions: { canDelete: true } }];
                 $store.getters['selection/selectedConnections'] = [];
