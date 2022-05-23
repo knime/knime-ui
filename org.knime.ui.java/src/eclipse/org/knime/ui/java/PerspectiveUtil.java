@@ -76,6 +76,11 @@ public final class PerspectiveUtil {
     public static final String WEB_UI_PERSPECTIVE_ID = "org.knime.ui.java.perspective";
 
     /**
+     * The main perspective of the classic AP UI.
+     */
+    public static final String CLASSIC_PERSPECTIVE_ID = "org.knime.workbench.ui.ModellerPerspective";
+
+    /**
      * The view part in the Web UI perspective that displays the Web UI.
      */
     public static final String BROWSER_VIEW_PART_ID = "org.knime.ui.java.browser.view";

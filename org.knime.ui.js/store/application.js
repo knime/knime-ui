@@ -142,6 +142,12 @@ export const getters = {
         });
 
         return fuzzySearch;
+    },
+    
+    activeProjectName({ openProjects, activeProjectId }) {
+        if (!activeProjectId) {
+            return null;
+        }
+        return openProjects.find(project => project.projectId === activeProjectId).name;
     }
 };
-
