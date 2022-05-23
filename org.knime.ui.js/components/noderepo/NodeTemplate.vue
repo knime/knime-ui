@@ -7,6 +7,7 @@ const NODE_POSITION_EQUALS_DELTA = 10; // px
 const NODE_POSITION_SPACE_FACTOR = 1.8; // move node by this times nodeSize
 const WORKFLOW_ADD_START_PERCENT_X = 0.3; // 0, 0 means top left corner
 const WORKFLOW_ADD_START_PERCENT_Y = 0.2; // 0.5, 0.5 means center of canvas
+export const WORKFLOW_ADD_START_MIN = 390; // px keep in sync with size of NodeDescription (360 + margin)
 
 export default {
     components: {
@@ -123,8 +124,9 @@ export default {
             // canvas start position
             const halfNodeSize = this.$shapes.nodeSize / 2;
             const { clientWidth, clientHeight, scrollLeft, scrollTop } = document.getElementById('kanvas');
+            const positionX = Math.max(clientWidth * WORKFLOW_ADD_START_PERCENT_X, WORKFLOW_ADD_START_MIN);
             let position = this.toCanvasCoordinates([
-                clientWidth * WORKFLOW_ADD_START_PERCENT_X + scrollLeft - halfNodeSize,
+                positionX + scrollLeft - halfNodeSize,
                 clientHeight * WORKFLOW_ADD_START_PERCENT_Y + scrollTop - halfNodeSize
             ]);
 
