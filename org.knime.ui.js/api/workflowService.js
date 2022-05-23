@@ -186,7 +186,7 @@ export const redo = async ({ projectId, workflowId }) => {
 /**
  * Creates a metanode or component
  * @param { String } cfg.projectId
- * @param {String} cfg.workflowId
+ * @param { String } cfg.workflowId
  * @param { String } cfg.containerType metanode or component
  * @param { Array } cfg.nodeIds
  * @param { Array } cfg.annotationIds
@@ -204,16 +204,15 @@ export const collapseToContainer = ({
 /**
  * Expands a metanode or component
  * @param { String } cfg.projectId
- * @param {String} cfg.workflowId
- * @param { String } cfg.containerType metanode or component
+ * @param { String } cfg.workflowId
  * @param { String } cfg.nodeId
  * @returns {Promise}
  */
-export const expandContainer = ({
-    projectId, workflowId, containerType, nodeId
+export const expandContainerNode = ({
+    projectId, workflowId, nodeId
 }) => workflowCommand({
     command: 'expand',
-    args: { containerType, nodeId },
+    args: { nodeId },
     projectId,
     workflowId
 });
