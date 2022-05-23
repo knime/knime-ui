@@ -52,12 +52,9 @@ export default {
     },
     methods: {
         onFocusOut(e) {
-            // TODO: why timeout here?
-            setTimeout(() => {
-                if (!this.$el.contains(document.activeElement)) {
-                    this.$emit('menu-close');
-                }
-            }, 1);
+            if (!this.$el.contains(e.relatedTarget)) {
+                this.$emit('menu-close');
+            }
         }
     }
 };
