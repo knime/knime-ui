@@ -78,9 +78,9 @@ describe('workflowCommands', () => {
             expect(mockDispatch).toHaveBeenCalledWith('workflow/collapseToContainer', { containerType: 'component' });
         });
 
-        test('expand metanode', () => {
+        test('expand container node', () => {
             workflowCommands.expandMetanode.execute({ $store });
-            expect(mockDispatch).toHaveBeenCalledWith('workflow/expandContainer', { containerType: 'metanode' });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/expandContainerNode');
         });
 
         test('open layout editor', () => {

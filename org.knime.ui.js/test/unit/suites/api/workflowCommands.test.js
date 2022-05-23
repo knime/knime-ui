@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { connectNodes, moveObjects, deleteObjects, addNode, collapseToContainer, expandContainer } from '~/api';
+import { connectNodes, moveObjects, deleteObjects, addNode, collapseToContainer, expandContainerNode } from '~/api';
 
 describe('workflow commands', () => {
     beforeEach(() => {
@@ -189,11 +189,10 @@ describe('workflow commands', () => {
         });
     });
 
-    test('expandContainer', () => {
-        expandContainer({
+    test('expandContainerNode', () => {
+        expandContainerNode({
             projectId: 'project',
             workflowId: 'workflow',
-            containerType: 'metanode',
             nodeId: 'root:1'
         });
         expect(window.jsonrpc).toHaveBeenCalledWith({
@@ -203,7 +202,6 @@ describe('workflow commands', () => {
                 'project',
                 'workflow',
                 {
-                    containerType: 'metanode',
                     kind: 'expand',
                     nodeId: 'root:1'
                 }

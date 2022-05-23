@@ -604,9 +604,9 @@ describe('workflow store', () => {
             });
         });
 
-        it('expands a container', async () => {
-            let expandContainer = jest.fn();
-            let apiMocks = { expandContainer };
+        it('expands a container node', async () => {
+            let expandContainerNode = jest.fn();
+            let apiMocks = { expandContainerNode };
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'bar',
@@ -628,15 +628,12 @@ describe('workflow store', () => {
             });
             store.dispatch('selection/selectNode', 'foo');
 
-            store.dispatch('workflow/expandContainer', {
-                containerType: 'metanode'
-            });
+            store.dispatch('workflow/expandContainerNode');
 
-            expect(expandContainer).toHaveBeenCalledWith({
+            expect(expandContainerNode).toHaveBeenCalledWith({
                 projectId: 'bar',
                 workflowId: 'root',
-                nodeId: 'foo',
-                containerType: 'metanode'
+                nodeId: 'foo'
             });
         });
     });
