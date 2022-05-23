@@ -32,7 +32,6 @@ export default {
         }
     },
     data: () => ({
-        visibleCommands: [],
         searchValue: ''
     }),
     computed: {
@@ -152,7 +151,7 @@ export default {
 <style lang="postcss" scoped>
 
 .header {
-  font-family: "Roboto Condensed";
+  font-family: "Roboto Condensed", sans-serif;
   font-weight: 500;
   font-size: 14px;
   margin-top: -7px;
@@ -214,14 +213,15 @@ export default {
     font-size: 14px;
   }
 
-  & >>> svg * {
-    pointer-events: none !important;
-  }
-
   & >>> svg {
     height: 14px !important;
     width: 14px !important;
   }
+
+  & >>> svg * {
+    pointer-events: none !important;
+  }
+
 
   & >>> li button {
     padding: 6px 6px;

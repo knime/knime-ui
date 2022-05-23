@@ -127,15 +127,12 @@ export const actions = {
 
 export const getters = {
     portTypeSearch({ availablePortTypes }) {
-        let searchItems = Object.entries(availablePortTypes).map(([typeId, { name, hidden }]) => {
-            // filter out "hidden" portTypes
-            if (hidden) { return null; }
-            
-            return {
+        let searchItems = Object.entries(availablePortTypes)
+            .filter(([_, { hidden }]) => !hidden) // don't index hidden port types
+            .map(([typeId, { name }]) => ({
                 typeId,
                 name
-            };
-        }).filter(Boolean);
+            }));
 
         let fuzzySearch = new Fuse(searchItems, {
             keys: ['name'],

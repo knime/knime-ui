@@ -67,8 +67,8 @@ export default {
                 y: this.anchorPoint.y + this.position[1]
             });
 
-            // Tell the WorkflowCanvas to render a portmenu with specified props and events
-            // This is like a custom teleport and can probably be replaced by Vue3's teleport
+            // Tell the WorkflowPanel to render a PortTypeMenu with specified props and events
+            // This works like a custom teleport and can probably be replaced by Vue3's teleport
             this.$el.dispatchEvent(new CustomEvent(
                 'open-port-type-menu', {
                     detail: {
