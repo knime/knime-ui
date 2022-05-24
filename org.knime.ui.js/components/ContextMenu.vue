@@ -54,6 +54,7 @@ export default {
     },
     methods: {
         onItemClick(e, command) {
+            this.$emit('menu-close');
             this.$commands.dispatch(command.name);
         },
         setMenuItems() {

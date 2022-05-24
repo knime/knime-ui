@@ -133,6 +133,14 @@ describe('ContextMenu.vue', () => {
         expect($commands.dispatch).toHaveBeenCalledWith('command');
     });
 
+    it('closes menu after item has been clicked', () => {
+        doMount();
+        
+        expect(wrapper.emitted('menu-close')).toBeFalsy();
+        wrapper.findComponent(MenuItems).vm.$emit('item-click', null, { name: 'command' });
+        expect(wrapper.emitted('menu-close')).toBeTruthy();
+    });
+
     describe('Visibility of menu items', () => {
         it('shows correct menu items if nothing is selected', async () => {
             doMount();
