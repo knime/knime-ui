@@ -13,7 +13,7 @@ import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
 describe('PortTypeMenu.vue', () => {
-    let storeConfig, propsData, mocks, doMount, wrapper, $store;
+    let storeConfig, propsData, mocks, doMount, wrapper, $store, portTypeSearchMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -30,6 +30,8 @@ describe('PortTypeMenu.vue', () => {
             side: 'output'
         };
 
+        portTypeSearchMock = jest.fn().mockReturnValue([]);
+
         storeConfig = {
             canvas: {
                 state: {
@@ -37,12 +39,15 @@ describe('PortTypeMenu.vue', () => {
                 }
             },
             application: {
-                getters: {
-                    portTemplates: () => ({
+                state: {
+                    availablePortTypes: {
                         flowVariable: { name: 'Flow Variable', color: 'red' },
                         table: { name: 'Table', color: 'black' }
-                    }),
-                    recommendedPortTypes: () => ['flowVariable', 'table']
+                    },
+                    suggestedPortTypes: ['flowVariable', 'table']
+                },
+                getters: {
+                    portTypeSearch: () => ({ search: portTypeSearchMock })
                 }
             }
         };
@@ -88,7 +93,7 @@ describe('PortTypeMenu.vue', () => {
                 doMount();
 
                 let header = wrapper.find('.header');
-                expect(header.attributes('style')).toMatch(`--margin: 17.794593847662533px`);
+                expect(header.attributes('style')).toMatch(`--margin: 16.669910139330234px`);
             });
 
             it('doesnt move header for smaller zoom levels', () => {
@@ -96,7 +101,7 @@ describe('PortTypeMenu.vue', () => {
                 doMount();
 
                 let header = wrapper.find('.header');
-                expect(header.attributes('style')).toMatch(`--margin: 5.822980581413319px`);
+                expect(header.attributes('style')).toMatch(`--margin: 6.1691425974866565px`);
             });
         });
 
@@ -149,12 +154,13 @@ describe('PortTypeMenu.vue', () => {
 
             test('v-model', async () => {
                 doMount();
-                wrapper.findComponent(SearchBar).find('input').element.value = 'table';
-                wrapper.findComponent(SearchBar).find('input').trigger('input');
+                let searchBar = wrapper.findComponent(SearchBar);
+
+                searchBar.find('input').element.value = 'table';
+                searchBar.find('input').trigger('input');
                 await Vue.nextTick();
 
                 expect(wrapper.vm.searchValue).toBe('table');
-                expect(wrapper.findComponent(SearchBar).props('value')).toBe('table');
             });
 
             test('keyboard navigation: down', () => {
@@ -185,34 +191,44 @@ describe('PortTypeMenu.vue', () => {
                 expect(wrapper.findComponent(MenuItems).props('items')).toStrictEqual([
                     {
                         icon: expect.anything(),
-                        port: { color: 'red', type: 'flowVariable' },
+                        port: { typeId: 'flowVariable' },
                         text: 'Flow Variable'
                     },
                     {
                         icon: expect.anything(),
-                        port: { color: 'black', type: 'table' },
+                        port: { typeId: 'table' },
                         text: 'Table'
                     }
                 ]);
             });
 
             it('does a fuzzy search', async () => {
+                portTypeSearchMock.mockReturnValue([
+                    { item: { name: 'Flow Variable', typeId: 'flowVariable' } }
+                ]);
+
                 doMount();
                 wrapper.setData({ searchValue: 'flow' });
                 await Vue.nextTick();
-
+                
+                // Test that the search function was called correctly
+                expect(portTypeSearchMock).toBeCalledWith('flow', { limit: 2 });
+                
+                // Test that the results are rendered properly
                 expect(wrapper.findComponent(MenuItems).props('items')).toStrictEqual([
                     {
                         icon: expect.anything(),
-                        port: { color: 'red', type: 'flowVariable' },
+                        port: { typeId: 'flowVariable' },
                         text: 'Flow Variable'
                     }
                 ]);
             });
 
             it('renders placeholder if nothing found', async () => {
+                portTypeSearchMock.mockReturnValue([]);
                 doMount();
-                wrapper.setData({ searchValue: 'doesntmatch' });
+
+                wrapper.setData({ searchValue: 'doesntexist' });
                 await Vue.nextTick();
 
                 expect(wrapper.findComponent(MenuItems).exists()).toBe(false);
@@ -249,255 +265,5 @@ describe('PortTypeMenu.vue', () => {
                 expect(wrapper.findComponent(MenuItems).classes()).toContain('search-results');
             });
         });
-
-        // it('focuses menu items on position change', async () => {
-        //     doMount();
-            
-        //     $store.state.selection._selectedNodes = ['a node'];
-        //     expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
-            
-        //     const focusMock = jest.fn();
-    
-        //     wrapper.findComponent(MenuItems).vm.$el.focus = focusMock;
-        //     wrapper.setProps({ position: { x: 2, y: 3 } });
-        //     await Vue.nextTick();
-    
-        //     expect(focusMock).toHaveBeenCalled();
-        // });
     });
-
-    // it('sets items on mounted', () => {
-    //     doMount();
-        
-    //     expect(wrapper.findComponent(MenuItems).props('items').length).toBe(3);
-    // });
-
-    // it('sets items on position change', async () => {
-    //     doMount();
-        
-    //     $store.state.selection._selectedNodes = ['a node'];
-    //     expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
-        
-    //     wrapper.setProps({ position: { x: 2, y: 3 } });
-    //     await Vue.nextTick();
-
-    //     expect(wrapper.findComponent(MenuItems).props('items').length).toBe(6);
-    // });
-
-    // it('items are not set reactively', async () => {
-    //     doMount();
-
-    //     $store.state.selection._selectedNodes = ['a node'];
-    //     expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
-    //     await Vue.nextTick();
-        
-    //     expect(wrapper.findComponent(MenuItems).props('items').length).toBe(3);
-    // });
-
-    // it('uses right format for MenuItems', async () => {
-    //     doMount();
-    //     wrapper.setProps({ isVisible: true });
-
-    //     await Vue.nextTick();
-
-    //     let menuItems = wrapper.getComponent(MenuItems).props('items');
-    //     expect($commands.isEnabled).toHaveBeenCalledWith('executeAll');
-    //     expect(menuItems).toEqual(expect.arrayContaining([{
-    //         text: 'text',
-    //         hotkeyText: 'hotkeyText',
-    //         name: 'executeAll',
-    //         disabled: true
-    //     }]));
-    // });
-
-    // it('fires correct action based on store data', () => {
-    //     doMount();
-    //     wrapper.findComponent(MenuItems).vm.$emit('item-click', null, { name: 'command' });
-    //     expect($commands.dispatch).toHaveBeenCalledWith('command');
-    // });
-
-    // describe('Visibility of menu items', () => {
-    //     it('shows correct menu items if nothing is selected', async () => {
-    //         doMount();
-    //         wrapper.setProps({ isVisible: true });
-    //         await Vue.nextTick();
-    //         expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
-    //             expect.arrayContaining(['executeAll', 'cancelAll', 'resetAll'])
-    //         );
-    //     });
-
-    //     it('shows correct menu items if one node is selected', async () => {
-    //         let node = {
-    //             id: 'root:0',
-    //             allowedActions: {}
-    //         };
-    //         storeConfig.selection.getters.selectedNodes = () => [node];
-    //         storeConfig.selection.getters.singleSelectedNode = () => node;
-    //         doMount();
-    //         wrapper.setProps({ isVisible: true });
-
-    //         await Vue.nextTick();
-
-    //         expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
-    //             expect.arrayContaining([
-    //                 'executeSelected',
-    //                 'cancelSelected',
-    //                 'resetSelected',
-    //                 'configureNode',
-    //                 'deleteSelected'
-    //             ])
-    //         );
-    //     });
-
-    //     it('shows correct menu items if selected node has loopInfo', async () => {
-    //         let node = {
-    //             id: 'root:0',
-    //             allowedActions: {},
-    //             loopInfo: { allowedActions: {} }
-    //         };
-    //         storeConfig.selection.getters.selectedNodes = () => [node];
-    //         storeConfig.selection.getters.singleSelectedNode = () => node;
-    //         doMount();
-    //         wrapper.setProps({ isVisible: true });
-
-    //         await Vue.nextTick();
-
-    //         expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
-    //             expect.arrayContaining([
-    //                 'executeSelected',
-    //                 'resumeLoopExecution',
-    //                 'pauseLoopExecution',
-    //                 'stepLoopExecution',
-    //                 'cancelSelected',
-    //                 'resetSelected',
-    //                 'configureNode',
-    //                 'deleteSelected'
-    //             ])
-    //         );
-    //     });
-
-    //     it('shows correct menu items if selected node can open view', async () => {
-    //         let node = {
-    //             id: 'root:0',
-    //             allowedActions: {
-    //                 canOpenLegacyFlowVariableDialog: true,
-    //                 canOpenView: true
-    //             }
-    //         };
-    //         storeConfig.selection.getters.selectedNodes = () => [node];
-    //         storeConfig.selection.getters.singleSelectedNode = () => node;
-    //         doMount();
-    //         wrapper.setProps({ isVisible: true });
-
-    //         await Vue.nextTick();
-
-    //         expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
-    //             expect.arrayContaining([
-    //                 'executeSelected',
-    //                 'cancelSelected',
-    //                 'resetSelected',
-    //                 'configureNode',
-    //                 'configureFlowVariables',
-    //                 'openView',
-    //                 'deleteSelected'
-    //             ])
-    //         );
-    //     });
-
-    //     it('shows correct menu items for multiple selected nodes', async () => {
-    //         let node = {
-    //             id: 'root:0',
-    //             allowedActions: {
-    //                 canOpenLegacyFlowVariableDialog: true,
-    //                 canOpenView: true,
-    //                 loopInfo: { allowedActions: {} }
-    //             }
-    //         };
-    //         let node2 = {
-    //             id: 'root:1',
-    //             allowedActions: {
-    //                 canOpenLegacyFlowVariableDialog: true,
-    //                 canOpenView: true,
-    //                 loopInfo: { allowedActions: {} }
-    //             }
-    //         };
-    //         storeConfig.selection.getters.selectedNodes = () => [node, node2];
-    //         storeConfig.selection.getters.singleSelectedNode = () => null;
-    //         doMount();
-    //         wrapper.setProps({ isVisible: true });
-
-    //         await Vue.nextTick();
-
-    //         expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
-    //             expect.arrayContaining([
-    //                 'executeSelected',
-    //                 'cancelSelected',
-    //                 'resetSelected',
-    //                 'deleteSelected'
-    //             ])
-    //         );
-    //     });
-
-    //     it('shows correct menu items for multiple selected connections', async () => {
-    //         let conn = {
-    //             id: 'conn1'
-    //         };
-    //         let conn2 = {
-    //             id: 'conn2'
-    //         };
-    //         storeConfig.selection.getters.selectedConnections = () => [conn, conn2];
-    //         doMount();
-    //         wrapper.setProps({ isVisible: true });
-
-    //         await Vue.nextTick();
-
-    //         expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
-    //             expect.arrayContaining([
-    //                 'deleteSelected'
-    //             ])
-    //         );
-    //     });
-
-    //     it('shows correct menu items for single selected connections', async () => {
-    //         let conn = {
-    //             id: 'conn1'
-    //         };
-    //         storeConfig.selection.getters.selectedConnections = () => [conn];
-    //         doMount();
-    //         wrapper.setProps({ isVisible: true });
-
-    //         await Vue.nextTick();
-
-    //         expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
-    //             expect.arrayContaining([
-    //                 'deleteSelected'
-    //             ])
-    //         );
-    //     });
-
-    //     it.each([
-    //         ['metanode', 'visible'],
-    //         ['component', 'visible'],
-    //         ['node', 'not visible']
-    //     ])('edit name option for "%s" is: "%s"', (kind, visibility) => {
-    //         const node = {
-    //             id: 'root:0',
-    //             kind,
-    //             allowedActions: {}
-    //         };
-    //         storeConfig.selection.getters.selectedNodes = () => [node];
-    //         storeConfig.selection.getters.singleSelectedNode = () => node;
-    //         const isVisible = visibility === 'visible';
-
-    //         doMount();
-
-    //         const menuItemNames = wrapper.findComponent(MenuItems).props('items').map(i => i.name);
-
-    //         if (isVisible) {
-    //             expect(menuItemNames).toContain('editName');
-    //         } else {
-    //             expect(menuItemNames).not.toContain('editName');
-    //         }
-    //     });
-    // });
 });

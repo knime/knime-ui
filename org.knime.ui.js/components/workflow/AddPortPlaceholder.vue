@@ -205,7 +205,7 @@ export default {
   &.active,
   &:active {
     transition: transform 80ms;
-    transform: scale(0.9);
+    transform: scale(0.8);
   }
 
   & path,

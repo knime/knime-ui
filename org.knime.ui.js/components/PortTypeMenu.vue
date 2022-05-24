@@ -41,7 +41,7 @@ export default {
         fixedWidth: () => fixedWidth,
         headerMargin() {
             // the x-position of the header text has to be adjusted for the growing/shrinking add-port-button
-            let distanceToPort = this.$shapes.portSize * Math.pow(this.zoomFactor, 0.9); // eslint-disable-line no-magic-numbers
+            let distanceToPort = this.$shapes.portSize * Math.pow(this.zoomFactor, 0.8); // eslint-disable-line no-magic-numbers
             return `${distanceToPort + 1}px`;
         },
         adjustedPosition() {
@@ -106,6 +106,7 @@ export default {
   <FloatingMenu
     ref="floatingMenu"
     :position="adjustedPosition"
+    :style="{ width: `${fixedWidth}px` }"
     @menu-close="$emit('menu-close')"
   >
     <div
@@ -156,6 +157,7 @@ export default {
   font-size: 14px;
   margin-top: -7px;
   backdrop-filter: blur(2px);
+  pointer-events: none;
 
   &.input {
     text-align: right;
