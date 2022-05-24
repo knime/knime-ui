@@ -341,13 +341,13 @@ export const actions = {
     },
     async expandContainerNode({ state, getters, rootGetters, dispatch }) {
         const selectedNode = rootGetters['selection/singleSelectedNode'];
-        let canExpand = true;
-
+        
+        let shouldExpand = true;
         if (selectedNode.allowedActions.canExpand === 'resetRequired') {
-            canExpand = window.confirm(`Expanding this ${selectedNode.kind} will reset the executed nodes.`);
+            shouldExpand = window.confirm(`Expanding this ${selectedNode.kind} will reset the executed nodes.`);
         }
 
-        if (canExpand) {
+        if (shouldExpand) {
             dispatch('selection/deselectAllObjects', null, { root: true });
 
             await expandContainerNode({
