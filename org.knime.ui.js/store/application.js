@@ -103,25 +103,25 @@ export const actions = {
         }
     },
     saveUserState({ state, commit, rootState, rootGetters }) {
-        let stateToSave = {
-            canvas: rootGetters['canvas/toSave']
-        };
+        // TODO: NXT-929 re-implement saving the user state
 
-        // deep clone without observers
-        stateToSave = JSON.parse(JSON.stringify(stateToSave));
+        // // deep clone without observers
+        // stateToSave = JSON.parse(JSON.stringify(stateToSave));
 
-        commit('saveUserState', {
-            projectId: state.activeProjectId,
-            workflowId: rootGetters['workflow/activeWorkflowId'],
-            stateToSave
-        });
+        // commit('saveUserState', {
+        //     projectId: state.activeProjectId,
+        //     workflowId: rootGetters['workflow/activeWorkflowId'],
+        //     stateToSave
+        // });
     },
     restoreUserState({ state: { savedUserState, activeProjectId }, commit, rootGetters }) {
-        const workflowId = rootGetters['workflow/activeWorkflowId'];
+        // TODO: NXT-929 re-implement saving the user state
+        
+        // const workflowId = rootGetters['workflow/activeWorkflowId'];
 
-        // is undefined if opened for the first time
-        const savedState = savedUserState[activeProjectId][workflowId];
-        commit('canvas/restoreState', savedState?.canvas, { root: true });
+        // // is undefined if opened for the first time
+        // const savedState = savedUserState[activeProjectId][workflowId];
+        // commit('canvas/restoreState', savedState?.canvas, { root: true });
     }
 };
 
