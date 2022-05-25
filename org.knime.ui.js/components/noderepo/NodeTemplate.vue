@@ -2,6 +2,11 @@
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { KnimeMIME } from '~/mixins/dropNode';
+import findFreeSpaceOnCanvas from '~/util/findFreeSpaceOnCanvas';
+
+const WORKFLOW_ADD_START_PERCENT_X = 0.3; // 0, 0 means top left corner
+const WORKFLOW_ADD_START_PERCENT_Y = 0.2; // 0.5, 0.5 means center of canvas
+export const WORKFLOW_ADD_START_MIN = 390; // px keep in sync with size of NodeDescription (360 + margin)
 
 export default {
     components: {
@@ -15,6 +20,7 @@ export default {
     },
     data() {
         return {
+            isHover: false,
             dragGhost: null,
             shouldSelectOnAbort: false
         };
@@ -22,24 +28,24 @@ export default {
     computed: {
         ...mapState('nodeRepository', ['selectedNode']),
         ...mapState('panel', ['activeDescriptionPanel']),
+        ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapGetters('workflow', ['isWritable']),
-        
-        // NXT: 844 the naming of this property doesn't fit its condition. Being selected is independent of the activeDescriptionPanel
+        ...mapGetters('canvas', ['toCanvasCoordinates']),
+
         isSelected() {
-            return this.activeDescriptionPanel && (this.nodeTemplate.id === this.selectedNode.id);
+            return this.selectedNode && this.nodeTemplate.id === this.selectedNode.id;
         }
     },
     methods: {
         ...mapActions('panel', ['openDescriptionPanel', 'closeDescriptionPanel']),
         ...mapMutations('nodeRepository', ['setSelectedNode', 'setDraggingNode']),
+        ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
         onDragStart(e) {
-            // remember if this node was selected
-            this.shouldSelectOnAbort = this.isSelected;
-            
-            // close description panel and deselect node
+            // close description panel
+            this.shouldSelectOnAbort = this.isSelected && this.activeDescriptionPanel;
             this.closeDescriptionPanel();
             this.setDraggingNode(true);
-            
+
             // Fix for cursor style for Firefox
             if (!this.isWritable && (navigator.userAgent.indexOf('Firefox') !== -1)) {
                 e.currentTarget.style.cursor = 'not-allowed';
@@ -85,14 +91,31 @@ export default {
             }
         },
         onClick() {
-            if (this.isSelected) {
-                // TODO: NXT-844 panel seems to be open, if and only if node is selected. We could make one trigger the other
-                this.setSelectedNode(null);
-                this.closeDescriptionPanel();
-            } else {
-                this.openDescriptionPanel();
+            if (!this.isSelected) {
                 this.setSelectedNode(this.nodeTemplate);
             }
+            if (!this.activeDescriptionPanel) {
+                this.openDescriptionPanel();
+            }
+        },
+        onDoubleClick() {
+            if (!this.isWritable) {
+                return; // end here
+            }
+
+            // canvas start position
+            const halfNodeSize = this.$shapes.nodeSize / 2;
+            const { clientWidth, clientHeight, scrollLeft, scrollTop } = document.getElementById('kanvas');
+            const positionX = Math.max(clientWidth * WORKFLOW_ADD_START_PERCENT_X, WORKFLOW_ADD_START_MIN);
+            let position = this.toCanvasCoordinates([
+                positionX + scrollLeft - halfNodeSize,
+                clientHeight * WORKFLOW_ADD_START_PERCENT_Y + scrollTop - halfNodeSize
+            ]);
+
+            position = findFreeSpaceOnCanvas(position, this.workflow.nodes);
+
+            const nodeFactory = this.nodeTemplate.nodeFactory;
+            this.addNodeToWorkflow({ position, nodeFactory });
         },
         onDrag(e) {
             if (!this.isWritable) {
@@ -111,6 +134,7 @@ export default {
     @dragstart="onDragStart"
     @dragend="onDragEnd"
     @click="onClick"
+    @dblclick="onDoubleClick"
     @drag="onDrag"
   >
     <label :title="nodeTemplate.name">{{ nodeTemplate.name }}</label>
@@ -159,6 +183,16 @@ export default {
     position: absolute;
     bottom: -15px;
     right: 15px;
+  }
+
+  & .add-action-button {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50px;
+    right: 0;
+    overflow: visible;
+    width: auto;
   }
 
   &:hover {

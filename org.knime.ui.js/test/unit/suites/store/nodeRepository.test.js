@@ -121,6 +121,40 @@ describe('Node Repository store', () => {
             store.state.nodeRepository.query = 'value';
             expect(store.getters['nodeRepository/searchIsActive']).toBe(true);
         });
+
+        it('returns proper value for searchResultsContainSelectedNode', () => {
+            expect(store.getters['nodeRepository/searchResultsContainSelectedNode']).toBe(false);
+            store.state.nodeRepository.nodes = [{ id: 1, name: 'Node' }];
+            expect(store.getters['nodeRepository/searchResultsContainSelectedNode']).toBe(false);
+            store.state.nodeRepository.selectedNode = { id: 1, name: 'Node' };
+            expect(store.getters['nodeRepository/searchResultsContainSelectedNode']).toBe(true);
+        });
+
+        it('returns proper value for nodesPerCategoryContainSelectedNode', () => {
+            expect(store.getters['nodeRepository/nodesPerCategoryContainSelectedNode']).toBe(false);
+            store.state.nodeRepository.nodesPerCategory = [{ tag: 'tag:1', nodes: [{ id: 1 }, { id: 2 }] }];
+            expect(store.getters['nodeRepository/nodesPerCategoryContainSelectedNode']).toBe(false);
+            store.state.nodeRepository.selectedNode = { id: 1, name: 'Node' };
+            expect(store.getters['nodeRepository/nodesPerCategoryContainSelectedNode']).toBe(true);
+        });
+
+        it('returns proper value for selectedNodeIsVisible for searches', () => {
+            // searchIsActive = true
+            store.state.nodeRepository.nodes = [{ id: 1, name: 'Node' }];
+            store.state.nodeRepository.query = 'value';
+            store.state.nodeRepository.selectedNode = { id: 3, name: 'Node 3' };
+            expect(store.getters['nodeRepository/selectedNodeIsVisible']).toBe(false);
+            store.state.nodeRepository.selectedNode = { id: 1, name: 'Node' };
+            expect(store.getters['nodeRepository/selectedNodeIsVisible']).toBe(true);
+        });
+
+        it('returns proper value for selectedNodeIsVisible for categories', () => {
+            // searchIsActive = false
+            expect(store.getters['nodeRepository/selectedNodeIsVisible']).toBe(false);
+            store.state.nodeRepository.nodesPerCategory = [{ tag: 'tag:1', nodes: [{ id: 1 }, { id: 2 }] }];
+            store.state.nodeRepository.selectedNode = { id: 2, name: 'Node' };
+            expect(store.getters['nodeRepository/selectedNodeIsVisible']).toBe(true);
+        });
     });
 
     describe('mutations', () => {

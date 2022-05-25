@@ -14,24 +14,17 @@ export default {
         ExternalResourcesList
     },
     computed: {
-        ...mapState('nodeRepository', ['selectedNode', 'nodeDescriptionObject', 'nodes', 'nodesPerCategory']),
-        ...mapGetters('nodeRepository', ['searchIsActive']),
-        // TODO: NXT-844 this component shouldn't know about search or categories
-        isSelectedNodeVisible() {
-            if (this.searchIsActive) {
-                return this.nodes.some(node => node.id === this.selectedNode.id);
-            } else {
-                return this.nodesPerCategory.some(category => category.nodes.some(
-                    node => node.id === this.selectedNode.id
-                ));
-            }
-        }
+        ...mapState('nodeRepository', ['selectedNode', 'nodeDescriptionObject']),
+        ...mapGetters('nodeRepository', ['selectedNodeIsVisible'])
     },
     watch: {
+        // update description on change of node (if not null which means unselected)
         selectedNode: {
             immediate: true,
             handler() {
-                this.getNodeDescription();
+                if (this.selectedNode !== null) {
+                    this.getNodeDescription();
+                }
             }
         }
     },
@@ -54,7 +47,7 @@ export default {
 <template>
   <div class="node-description">
     <div class="header">
-      <h2>{{ isSelectedNodeVisible ? selectedNode.name : '&nbsp;' }}</h2>
+      <h2>{{ selectedNodeIsVisible ? selectedNode.name : '&nbsp;' }}</h2>
       <button
         @click="closeDescriptionPanel"
       >
@@ -66,15 +59,16 @@ export default {
 
     <div class="scroll-container">
       <div class="node-info">
-        <!-- TODO: NXT-844 add comments explaining this double template construct, or find more readable solution -->
-        <template v-if="isSelectedNodeVisible">
+        <!-- The v-else should be active if the selected node is not visible, but the nodeDescriptionObject might still
+             have some data as the selection is not cleared. -->
+        <template v-if="selectedNodeIsVisible">
           <template v-if="nodeDescriptionObject">
             <Description
               v-if="nodeDescriptionObject.description"
               :text="nodeDescriptionObject.description"
               render-as-html
             />
-          
+
             <span
               v-else
               class="placeholder"
@@ -95,7 +89,6 @@ export default {
             />
           </template>
         </template>
-        
         <div
           v-else
           class="placeholder no-node"
