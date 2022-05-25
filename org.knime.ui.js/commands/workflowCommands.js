@@ -10,8 +10,6 @@ import CreateMetanode from '~/assets/create-metanode.svg?inline';
 import CreateComponent from '~/assets/create-component.svg?inline';
 import LayoutIcon from '~/assets/layout.svg?inline';
 
-const isWritable = ({ $store }) => $store.getters['workflow/isWritable'];
-
 export default {
     ...executionCommands,
     save: {
@@ -89,7 +87,7 @@ export default {
         execute:
             ({ $store }) => $store.dispatch('workflow/deleteSelectedObjects'),
         condition({ $store }) {
-            if (!isWritable) { return false; }
+            if (!$store.getters['workflow/isWritable']) { return false; }
 
             const selectedNodes = $store.getters['selection/selectedNodes'];
             const selectedConnections = $store.getters['selection/selectedConnections'];
@@ -112,10 +110,10 @@ export default {
         hotkey: ['Ctrl', 'G'],
         icon: CreateMetanode,
         execute:
-        ({ $store }) => $store.dispatch('workflow/collapseToContainer', { containerType: 'metanode' }),
+            ({ $store }) => $store.dispatch('workflow/collapseToContainer', { containerType: 'metanode' }),
         condition:
-        ({ $store }) => !$store.getters['selection/selectedNodes']
-            .some(node => node.allowedActions.canCollapse === 'false') && $store.getters['workflow/isWritable']
+            ({ $store }) => !$store.getters['selection/selectedNodes']
+                .some(node => node.allowedActions.canCollapse === 'false') && $store.getters['workflow/isWritable']
     },
     createComponent: {
         text: 'Create Component',
@@ -123,10 +121,36 @@ export default {
         hotkey: ['Ctrl', 'K'],
         icon: CreateComponent,
         execute:
-        ({ $store }) => $store.dispatch('workflow/collapseToContainer', { containerType: 'component' }),
+            ({ $store }) => $store.dispatch('workflow/collapseToContainer', { containerType: 'component' }),
         condition:
-        ({ $store }) => !$store.getters['selection/selectedNodes']
-            .some(node => node.allowedActions.canCollapse === 'false') && $store.getters['workflow/isWritable']
+            ({ $store }) => !$store.getters['selection/selectedNodes']
+                .some(node => node.allowedActions.canCollapse === 'false') && $store.getters['workflow/isWritable']
+    },
+    expandMetanode: {
+        text: 'Expand Metanode',
+        title: 'Expand metanode',
+        hotkey: ['Ctrl', 'Shift', 'G'],
+        execute:
+            ({ $store }) => $store.dispatch('workflow/expandContainerNode'),
+        condition({ $store }) {
+            if (!$store.getters['workflow/isWritable']) { return false; }
+
+            let selectedNode = $store.getters['selection/singleSelectedNode'];
+            return selectedNode?.kind === 'metanode' && selectedNode?.allowedActions.canExpand !== 'false';
+        }
+    },
+    expandComponent: {
+        text: 'Expand Component',
+        title: 'Expand component',
+        hotkey: ['Ctrl', 'Shift', 'K'],
+        execute:
+            ({ $store }) => $store.dispatch('workflow/expandContainerNode'),
+        condition({ $store }) {
+            if (!$store.getters['workflow/isWritable']) { return false; }
+
+            let selectedNode = $store.getters['selection/singleSelectedNode'];
+            return selectedNode?.kind === 'component' && selectedNode?.allowedActions.canExpand !== 'false';
+        }
     },
     openLayoutEditor: {
         text: 'Layout Editor',
@@ -134,9 +158,9 @@ export default {
         hotkey: ['Ctrl', 'L'],
         icon: LayoutIcon,
         execute:
-        ({ $store }) => $store.dispatch('workflow/openLayoutEditor'),
+            ({ $store }) => $store.dispatch('workflow/openLayoutEditor'),
         condition:
-        ({ $store }) => $store.state.workflow.activeWorkflow?.info.containerType === 'component' &&
+            ({ $store }) => $store.state.workflow.activeWorkflow?.info.containerType === 'component' &&
             $store.getters['workflow/isWritable']
     }
 };

@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { connectNodes, moveObjects, deleteObjects, addNode, collapseToContainer } from '~/api';
+import { connectNodes, moveObjects, deleteObjects, addNode, collapseToContainer, expandContainerNode } from '~/api';
 
 describe('workflow commands', () => {
     beforeEach(() => {
@@ -183,6 +183,27 @@ describe('workflow commands', () => {
                     annotationIds: [],
                     kind: 'collapse',
                     nodeIds: ['root:1', 'root:2']
+                }
+            ],
+            id: 0
+        });
+    });
+
+    test('expandContainerNode', () => {
+        expandContainerNode({
+            projectId: 'project',
+            workflowId: 'workflow',
+            nodeId: 'root:1'
+        });
+        expect(window.jsonrpc).toHaveBeenCalledWith({
+            jsonrpc: '2.0',
+            method: 'WorkflowService.executeWorkflowCommand',
+            params: [
+                'project',
+                'workflow',
+                {
+                    kind: 'expand',
+                    nodeId: 'root:1'
                 }
             ],
             id: 0

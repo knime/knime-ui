@@ -19,6 +19,13 @@ export default {
             default: 'center',
             validator: val => ['left', 'center', 'right'].includes(val)
         },
+        /**
+         * Font size (in pt) that should be applied to un-styled text
+         */
+        defaultFontSize: {
+            type: Number,
+            default: 12
+        },
         backgroundColor: {
             type: String,
             default: null
@@ -53,12 +60,13 @@ export default {
                 textAlign: this.textAlign,
                 backgroundColor: this.backgroundColor === '#FFFFFF' ? 'transparent' : this.backgroundColor,
                 padding: `${this.$shapes.nodeAnnotationPadding}px`,
-                fontSize: `${this.$shapes.annotationsDefaultFontSize}px`
+                fontSize: `${this.defaultFontSize * this.$shapes.annotationsFontSizePointToPixelFactor}px`
             };
         }
     },
     watch: {
         textAlign() { this.updateResizeKey(); },
+        defaultFontSize() { this.updateResizeKey(); },
         text() { this.updateResizeKey(); },
         styleRanges() { this.updateResizeKey(); }
     },

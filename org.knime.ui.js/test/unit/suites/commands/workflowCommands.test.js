@@ -78,6 +78,11 @@ describe('workflowCommands', () => {
             expect(mockDispatch).toHaveBeenCalledWith('workflow/collapseToContainer', { containerType: 'component' });
         });
 
+        test('expand container node', () => {
+            workflowCommands.expandMetanode.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/expandContainerNode');
+        });
+
         test('open layout editor', () => {
             workflowCommands.openLayoutEditor.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/openLayoutEditor');
@@ -185,6 +190,7 @@ describe('workflowCommands', () => {
             });
 
             test('all selected are deletable', () => {
+                $store.getters['workflow/isWritable'] = true;
                 $store.getters['selection/selectedNodes'] = [{ allowedActions: { canDelete: true } },
                     { allowedActions: { canDelete: true } }];
                 $store.getters['selection/selectedConnections'] = [{ allowedActions: { canDelete: true } },
@@ -193,6 +199,7 @@ describe('workflowCommands', () => {
             });
 
             test('only nodes are selected', () => {
+                $store.getters['workflow/isWritable'] = true;
                 $store.getters['selection/selectedNodes'] = [{ allowedActions: { canDelete: true } },
                     { allowedActions: { canDelete: true } }];
                 $store.getters['selection/selectedConnections'] = [];
@@ -226,6 +233,68 @@ describe('workflowCommands', () => {
             test('it can not create component when workflow is not writable', () => {
                 $store.getters['workflow/isWritable'] = false;
                 expect(workflowCommands.createComponent.condition({ $store })).toBe(false);
+            });
+        });
+
+        describe('expandMetanode', () => {
+            test('it allows to expand if a metanode is selected and canExpand is true', () => {
+                $store.getters['workflow/isWritable'] = true;
+                $store.getters['selection/singleSelectedNode'] = {
+                    kind: 'component',
+                    allowedActions: {
+                        canExpand: 'true'
+                    }
+                };
+                expect(workflowCommands.expandMetanode.condition({ $store })).toBe(false);
+                $store.getters['selection/singleSelectedNode'] = {
+                    kind: 'metanode',
+                    allowedActions: {
+                        canExpand: 'true'
+                    }
+                };
+                expect(workflowCommands.expandMetanode.condition({ $store })).toBe(true);
+            });
+
+            test('it can not expand metanode when workflow is not writable', () => {
+                $store.getters['workflow/isWritable'] = false;
+                $store.getters['selection/singleSelectedNode'] = {
+                    kind: 'metanode',
+                    allowedActions: {
+                        canExpand: 'true'
+                    }
+                };
+                expect(workflowCommands.expandMetanode.condition({ $store })).toBe(false);
+            });
+        });
+
+        describe('expandComponent', () => {
+            test('it allows to expand if a component is selected and canExpand is true', () => {
+                $store.getters['workflow/isWritable'] = true;
+                $store.getters['selection/singleSelectedNode'] = {
+                    kind: 'metanode',
+                    allowedActions: {
+                        canExpand: 'true'
+                    }
+                };
+                expect(workflowCommands.expandComponent.condition({ $store })).toBe(false);
+                $store.getters['selection/singleSelectedNode'] = {
+                    kind: 'component',
+                    allowedActions: {
+                        canExpand: 'true'
+                    }
+                };
+                expect(workflowCommands.expandComponent.condition({ $store })).toBe(true);
+            });
+
+            test('it can not expand component when workflow is not writable', () => {
+                $store.getters['workflow/isWritable'] = false;
+                $store.getters['selection/singleSelectedNode'] = {
+                    kind: 'component',
+                    allowedActions: {
+                        canExpand: 'true'
+                    }
+                };
+                expect(workflowCommands.expandComponent.condition({ $store })).toBe(false);
             });
         });
 

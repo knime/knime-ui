@@ -21,6 +21,8 @@ export default {
             return this.workflow?.parents?.length > 0;
         },
         toolbarCommands() {
+            const isInsideComponent = this.workflow?.info.containerType === 'component';
+          
             if (!this.workflow) {
                 return [];
             }
@@ -43,7 +45,7 @@ export default {
                 // Workflow abstraction
                 createMetanode: this.selectedNodes.length,
                 createComponent: this.selectedNodes.length,
-                openLayoutEditor: this.workflow?.info.containerType === 'component'
+                openLayoutEditor: isInsideComponent
             };
 
             return Object

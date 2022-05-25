@@ -1,7 +1,7 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
-    moveObjects, openDialog, openLegacyFlowVariableDialog as configureFlowVariables,
-    openView, undo, redo, removeEventListener, connectNodes, addNode, saveWorkflow, closeWorkflow, renameContainerNode,
-    collapseToContainer, addContainerNodePort, openLayoutEditor } from '~api';
+    moveObjects, openDialog, openLegacyFlowVariableDialog as configureFlowVariables, openView, undo, redo,
+    removeEventListener, connectNodes, addNode, saveWorkflow, closeWorkflow, renameContainerNode, collapseToContainer,
+    addContainerNodePort, expandContainerNode, openLayoutEditor } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -325,14 +325,12 @@ export const actions = {
             nodeFactory
         });
     },
-    async collapseToContainer({ state, getters, rootState, rootGetters, dispatch }, { containerType }) {
+    async collapseToContainer({ state, getters, rootGetters, dispatch }, { containerType }) {
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
-        let canCollapse = false;
+        let canCollapse = true;
 
         if (rootGetters['selection/selectedNodes'].some(node => node.allowedActions.canCollapse === 'resetRequired')) {
             canCollapse = window.confirm(`Creating this ${containerType} will reset the executed nodes.`);
-        } else {
-            canCollapse = true;
         }
 
         if (canCollapse) {
@@ -342,7 +340,26 @@ export const actions = {
                 containerType,
                 projectId: state.activeWorkflow.projectId,
                 workflowId: getters.activeWorkflowId,
-                nodeIds: selectedNodes
+                nodeIds: selectedNodes,
+                annotationIds: []
+            });
+        }
+    },
+    async expandContainerNode({ state, getters, rootGetters, dispatch }) {
+        const selectedNode = rootGetters['selection/singleSelectedNode'];
+        
+        let shouldExpand = true;
+        if (selectedNode.allowedActions.canExpand === 'resetRequired') {
+            shouldExpand = window.confirm(`Expanding this ${selectedNode.kind} will reset the executed nodes.`);
+        }
+
+        if (shouldExpand) {
+            dispatch('selection/deselectAllObjects', null, { root: true });
+
+            await expandContainerNode({
+                projectId: state.activeWorkflow.projectId,
+                workflowId: getters.activeWorkflowId,
+                nodeId: selectedNode.id
             });
         }
     }

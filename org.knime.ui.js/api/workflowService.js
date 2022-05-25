@@ -218,3 +218,19 @@ export const addContainerNodePort = ({
     projectId,
     workflowId
 });
+
+/**
+ * Expands a metanode or component
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param { String } cfg.nodeId
+ * @returns {Promise}
+ */
+export const expandContainerNode = ({
+    projectId, workflowId, nodeId
+}) => workflowCommand({
+    command: 'expand',
+    args: { nodeId },
+    projectId,
+    workflowId
+});
