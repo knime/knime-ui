@@ -114,10 +114,11 @@ export const getters = {
         if (!rootState.workflow.activeWorkflow) {
             return [];
         }
-        return Object.keys(state.selectedNodes).map(
-            (nodeId) => rootState.workflow.activeWorkflow.nodes[nodeId] ||
+        return Object.keys(state.selectedNodes)
+            .map(
+                (nodeId) => rootState.workflow.activeWorkflow.nodes[nodeId] ||
                 consola.error(`Selected node '${nodeId}' not found in activeWorkflow`)
-        );
+            ).filter(Boolean);
     },
 
     // Returns null if none or multiple nodes are selected, otherwise returns the selected node

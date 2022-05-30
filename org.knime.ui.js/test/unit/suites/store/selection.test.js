@@ -202,8 +202,7 @@ describe('workflow store', () => {
 
             expect($store.getters['selection/selectedNodes']).toStrictEqual(expect.objectContaining([
                 { id: 'root:1' },
-                { id: 'root:2' },
-                undefined
+                { id: 'root:2' }
             ]));
             expect(consolaError).toHaveBeenCalledTimes(1);
 
