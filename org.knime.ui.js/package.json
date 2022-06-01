@@ -4,8 +4,9 @@
   "description": "KNIME HTML based UI",
   "author": "KNIME AG",
   "scripts": {
-    "dev": "nuxt",
-    "build": "nuxt build && node buildtools/inline-html.mjs",
+    "dev": "nuxt && npm run opensourcecredits -- -- -- --no-overwrite",
+    "_prebuild": "npm run opensourcecredits",
+    "build": "npm run _prebuild && nuxt build && node buildtools/inline-html.mjs",
     "start": "nuxt start",
     "lint": "npm run lint:js && npm run lint:css && npm run lint:json",
     "lint:js": "eslint --ext .js,.mjs,.vue .",
@@ -15,7 +16,8 @@
     "test:unit": "jest",
     "coverage": "jest --coverage",
     "coverage:watch": "npm run test:unit -- --coverage --watch",
-    "sendcoverage": "cross-var sonar-scanner -Dsonar.login=\"$SONAR_LOGIN\" -Dsonar.password=\"$SONAR_PASSWORD\""
+    "sendcoverage": "cross-var sonar-scanner -Dsonar.login=\"$SONAR_LOGIN\" -Dsonar.password=\"$SONAR_PASSWORD\"",
+    "opensourcecredits": "npm run --prefix org.knime.ui.js/webapps-common opensourcecredits"
   },
   "dependencies": {
     "@fontsource/roboto": "4.5.3",

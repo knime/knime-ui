@@ -1,11 +1,13 @@
 <script>
 import CirclePlusIcon from '~/webapps-common/ui/assets/img/icons/circle-plus.svg?inline';
 import FolderWorkflowIcon from '~/webapps-common/ui/assets/img/icons/folder-workflow.svg?inline';
+import OpenSourceCreditsModal from '../OpenSourceCreditsModal';
 
 export default {
     components: {
         CirclePlusIcon,
-        FolderWorkflowIcon
+        FolderWorkflowIcon,
+        OpenSourceCreditsModal
     }
 };
 </script>
@@ -29,6 +31,9 @@ export default {
           Open workflow
         </div>
       </button>
+    </div>
+    <div class="footer">
+      <OpenSourceCreditsModal />
     </div>
   </main>
 </template>
@@ -116,4 +121,21 @@ button {
   }
 }
 
+.footer {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+
+  & >>> .primary {
+    color: var(--knime-masala);
+    font-size: 12px;
+    background-color: transparent;
+
+    &:matches(:hover, :focus, :active) {
+      color: var(--knime-masala);
+      background-color: transparent;
+      text-decoration: underline;
+    }
+  }
+}
 </style>
