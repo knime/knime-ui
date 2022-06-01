@@ -124,8 +124,8 @@ export default {
             }
         },
 
-        getPortsWithMappedType(ports) {
-            // The NodePreview component reads the type and color of the port from the properties of the same name
+        mapPortTypes(ports) {
+            // The NodePreview component reads the `type` and `color` of the port from the properties of the same name
             // but these have to be added via this map since the port kind and color are available globally instead
             return ports.map(port => ({
                 ...port,
@@ -153,8 +153,8 @@ export default {
       ref="nodePreview"
       class="node-preview"
       :type="nodeTemplate.type"
-      :in-ports="getPortsWithMappedType(nodeTemplate.inPorts)"
-      :out-ports="getPortsWithMappedType(nodeTemplate.outPorts)"
+      :in-ports="mapPortTypes(nodeTemplate.inPorts)"
+      :out-ports="mapPortTypes(nodeTemplate.outPorts)"
       :icon="nodeTemplate.icon"
     />
   </div>
