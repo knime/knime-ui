@@ -52,8 +52,8 @@ describe('NodeTemplate', () => {
                 },
                 icon: 'data:image/node-icon',
                 type: 'node-type',
-                inPorts: ['port'],
-                outPorts: ['port'],
+                inPorts: [{ typeId: 'org.port.mockId' }],
+                outPorts: [{ typeId: 'org.port.mockId' }],
                 component: true
             }
         };
@@ -72,6 +72,16 @@ describe('NodeTemplate', () => {
         toCanvasCoordinatesMock = ([x, y]) => [x - 10, y - 10];
 
         storeConfig = {
+            application: {
+                state: {
+                    availablePortTypes: {
+                        'org.port.mockId': {
+                            kind: 'mockKind',
+                            color: 'mockColor'
+                        }
+                    }
+                }
+            },
             workflow: {
                 state: {
                     activeWorkflow
@@ -124,7 +134,7 @@ describe('NodeTemplate', () => {
         expect(wrapper.find('label').text()).toBe('node-name');
     });
 
-    it('renders a node preview', () => {
+    it('renders a node preview, looks up port´s type and color', () => {
         doMount();
 
         let nodePreview = wrapper.findComponent(NodePreview);
@@ -132,8 +142,8 @@ describe('NodeTemplate', () => {
         expect(nodePreview.props()).toStrictEqual({
             type: 'node-type',
             isComponent: false,
-            inPorts: ['port'],
-            outPorts: ['port'],
+            inPorts: [{ typeId: 'org.port.mockId', color: 'mockColor', type: 'mockKind' }],
+            outPorts: [{ typeId: 'org.port.mockId', color: 'mockColor', type: 'mockKind' }],
             hasDynPorts: false,
             icon: 'data:image/node-icon'
         });

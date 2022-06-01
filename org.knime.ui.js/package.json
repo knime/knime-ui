@@ -13,6 +13,7 @@
     "lint:json": "eslint --ext .json --no-error-on-unmatched-pattern .",
     "lint:css": "stylelint '**/*.{css,vue}'",
     "audit": "check-audit --production",
+    "audit:resolve": "resolve-audit --production",
     "test:unit": "jest",
     "coverage": "jest --coverage",
     "coverage:watch": "npm run test:unit -- --coverage --watch",

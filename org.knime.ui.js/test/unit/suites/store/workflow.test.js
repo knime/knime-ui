@@ -580,6 +580,7 @@ describe('workflow store', () => {
                 projectId: 'bar',
                 nodes: {
                     foo: {
+                        id: 'foo',
                         allowedActions: {
                             canCancel: false,
                             canCollapse: 'true',
@@ -590,6 +591,7 @@ describe('workflow store', () => {
                         }
                     },
                     bar: {
+                        id: 'bar',
                         allowedActions: {
                             canCancel: false,
                             canCollapse: 'true',
