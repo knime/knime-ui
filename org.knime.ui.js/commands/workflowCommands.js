@@ -153,9 +153,9 @@ export default {
         }
     },
     openLayoutEditor: {
-        text: 'Layout Editor',
-        title: 'Layout editor',
-        hotkey: ['Ctrl', 'L'],
+        text: 'Open Layout editor',
+        title: 'Open Layout editor',
+        hotkey: ['Ctrl', 'D'],
         icon: LayoutIcon,
         execute:
             ({ $store }) => $store.dispatch('workflow/openLayoutEditor'),
