@@ -209,4 +209,6 @@ describe('workflow commands', () => {
             id: 0
         });
     });
+
+    // TODO: add test for open layout editor
 });
