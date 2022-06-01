@@ -26,6 +26,7 @@ export default {
         };
     },
     computed: {
+        ...mapState('application', ['availablePortTypes']),
         ...mapState('nodeRepository', ['selectedNode']),
         ...mapState('panel', ['activeDescriptionPanel']),
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
@@ -121,6 +122,16 @@ export default {
             if (!this.isWritable) {
                 e.currentTarget.style.cursor = 'not-allowed';
             }
+        },
+
+        getPortsWithMappedType(ports) {
+            // The NodePreview component reads the type and color of the port from the properties of the same name
+            // but these have to be added via this map since the port kind and color are available globally instead
+            return ports.map(port => ({
+                ...port,
+                type: this.availablePortTypes[port.typeId].kind,
+                color: this.availablePortTypes[port.typeId].color
+            }));
         }
     }
 };
@@ -142,8 +153,8 @@ export default {
       ref="nodePreview"
       class="node-preview"
       :type="nodeTemplate.type"
-      :in-ports="nodeTemplate.inPorts"
-      :out-ports="nodeTemplate.outPorts"
+      :in-ports="getPortsWithMappedType(nodeTemplate.inPorts)"
+      :out-ports="getPortsWithMappedType(nodeTemplate.outPorts)"
       :icon="nodeTemplate.icon"
     />
   </div>

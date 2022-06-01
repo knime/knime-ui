@@ -52,8 +52,8 @@ describe('NodeTemplate', () => {
                 },
                 icon: 'data:image/node-icon',
                 type: 'node-type',
-                inPorts: ['port'],
-                outPorts: ['port'],
+                inPorts: [{ typeId: 'org.port.mockId' }],
+                outPorts: [{ typeId: 'org.port.mockId' }],
                 component: true
             }
         };
@@ -72,6 +72,13 @@ describe('NodeTemplate', () => {
         toCanvasCoordinatesMock = ([x, y]) => [x - 10, y - 10];
 
         storeConfig = {
+            application: {
+                state: {
+                    availablePortTypes: {
+                        'org.port.mockId': {}
+                    }
+                }
+            },
             workflow: {
                 state: {
                     activeWorkflow
@@ -132,8 +139,42 @@ describe('NodeTemplate', () => {
         expect(nodePreview.props()).toStrictEqual({
             type: 'node-type',
             isComponent: false,
-            inPorts: ['port'],
-            outPorts: ['port'],
+            inPorts: expect.arrayContaining([expect.objectContaining({ typeId: 'org.port.mockId' })]),
+            outPorts: expect.arrayContaining([expect.objectContaining({ typeId: 'org.port.mockId' })]),
+            hasDynPorts: false,
+            icon: 'data:image/node-icon'
+        });
+    });
+
+    it('maps the type and color of the ports from the store to pass it to the node preview', () => {
+        const mockPortMetadata = {
+            kind: 'mockKind',
+            color: 'mockColor'
+        };
+
+        storeConfig.application.state.availablePortTypes = {
+            'org.port.mockId': mockPortMetadata
+        };
+
+        doMount();
+
+        let nodePreview = wrapper.findComponent(NodePreview);
+        expect(nodePreview.element.className).toMatch('node-preview');
+        expect(nodePreview.props()).toStrictEqual({
+            type: 'node-type',
+            isComponent: false,
+            inPorts: expect.arrayContaining([
+                expect.objectContaining({
+                    color: mockPortMetadata.color,
+                    type: mockPortMetadata.kind
+                })
+            ]),
+            outPorts: expect.arrayContaining([
+                expect.objectContaining({
+                    color: mockPortMetadata.color,
+                    type: mockPortMetadata.kind
+                })
+            ]),
             hasDynPorts: false,
             icon: 'data:image/node-icon'
         });
