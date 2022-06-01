@@ -161,9 +161,12 @@ describe('workflow store', () => {
         beforeEach(() => {
             $store.commit('selection/addNodesToSelection', ['root:1', 'root:2']);
             $store.commit('selection/addConnectionsToSelection', ['root:2_1', 'root:2_2']);
+
+            $store.commit('selection/addNodesToSelection', ['unknown node']);
+            $store.commit('selection/addConnectionsToSelection', ['unknown connection']);
         });
 
-        test('get all selected node ids', () => {
+        test('get all selected node ids, for that nodes exist', () => {
             expect($store.getters['selection/selectedNodeIds']).toStrictEqual(['root:1', 'root:2']);
         });
 
@@ -204,7 +207,7 @@ describe('workflow store', () => {
                 { id: 'root:1' },
                 { id: 'root:2' }
             ]));
-            expect(consolaError).toHaveBeenCalledTimes(1);
+            expect(consolaError).toHaveBeenCalledTimes(2);
 
             consolaError.mockRestore();
         });
@@ -230,7 +233,7 @@ describe('workflow store', () => {
                 { allowedActions: { canDelete: true }, id: 'root:2_1' },
                 { allowedActions: { canDelete: true }, id: 'root:2_2' }
             ]));
-            expect(consolaError).toHaveBeenCalledTimes(1);
+            expect(consolaError).toHaveBeenCalledTimes(2);
 
             consolaError.mockRestore();
         });
