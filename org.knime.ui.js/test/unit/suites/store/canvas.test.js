@@ -33,6 +33,12 @@ describe('canvas store', () => {
             scrollTop: 0,
             clientWidth: 300,
             clientHeight: 300,
+            getBoundingClientRect: jest.fn().mockReturnValue({
+                x: 10,
+                y: 10,
+                width: 300,
+                height: 300
+            }),
             scrollTo: jest.fn().mockImplementation(({ top, left, behavior }) => {
                 scrollContainer.scrollLeft = left;
                 scrollContainer.scrollTop = top;

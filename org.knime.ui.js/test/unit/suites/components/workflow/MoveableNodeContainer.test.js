@@ -163,7 +163,7 @@ describe('MoveableNodeContainer', () => {
             };
 
             storeConfig.workflow.state.isDragging = true;
-            storeConfig.canvas.getters.toCanvasCoordinates =
+            storeConfig.canvas.getters.screenToCanvasCoordinates =
                 () => jest.fn(() => [positionAfterMove.x, positionAfterMove.y]);
 
             doMount();

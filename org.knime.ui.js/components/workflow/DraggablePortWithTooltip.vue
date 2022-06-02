@@ -42,7 +42,7 @@ export default {
         dragConnector: null
     }),
     computed: {
-        ...mapGetters('canvas', ['toCanvasCoordinates']),
+        ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapGetters('workflow', ['isWritable']),
         ...mapState('application', { portTypes: 'availablePortTypes' }),
         /*
@@ -69,14 +69,6 @@ export default {
         ...mapActions('workflow', ['connectNodes']),
 
         /* ======== Drag Connector ======== */
-        positionOnCanvas([x, y]) {
-            const { offsetLeft, offsetTop, scrollLeft, scrollTop } = this.kanvasElement;
-            let result = this.toCanvasCoordinates([
-                x - offsetLeft + scrollLeft,
-                y - offsetTop + scrollTop
-            ]);
-            return result;
-        },
         onPointerDown(e) {
             if (!this.isWritable || e.button !== 0 || e.shiftKey || e.ctrlKey) {
                 return;
@@ -94,7 +86,7 @@ export default {
                     canDelete: false
                 },
                 flowVariableConnection: this.portTypes[this.port.typeId].kind === 'flowVariable',
-                absolutePoint: this.positionOnCanvas([e.x, e.y])
+                absolutePoint: this.screenToCanvasCoordinates([e.x, e.y])
             };
 
             if (this.direction === 'out') {
@@ -163,7 +155,7 @@ export default {
             let hitTarget = document.elementFromPoint(e.x, e.y);
 
             // create move event
-            let [absoluteX, absoluteY] = this.positionOnCanvas([e.x, e.y]);
+            let [absoluteX, absoluteY] = this.screenToCanvasCoordinates([e.x, e.y]);
             let moveEvent = new CustomEvent('connector-move', {
                 detail: {
                     x: absoluteX,

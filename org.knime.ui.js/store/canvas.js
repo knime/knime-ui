@@ -360,7 +360,8 @@ export const getters = {
         let scrollContainerElement = getScrollContainerElement();
         
         return ({ x, y }) => {
-            const { offsetLeft, offsetTop, scrollLeft, scrollTop } = scrollContainerElement;
+            const { x: offsetLeft, y: offsetTop } = scrollContainerElement.getBoundingClientRect();
+            const { scrollLeft, scrollTop } = scrollContainerElement;
             
             let screenCoordinates = fromCanvasCoordinates({ x, y });
             screenCoordinates.x = screenCoordinates.x - scrollLeft + offsetLeft;
@@ -387,7 +388,8 @@ export const getters = {
         let scrollContainerElement = getScrollContainerElement();
         
         return ([origX, origY]) => {
-            const { offsetLeft, offsetTop, scrollLeft, scrollTop } = scrollContainerElement;
+            const { x: offsetLeft, y: offsetTop } = scrollContainerElement.getBoundingClientRect();
+            const { scrollLeft, scrollTop } = scrollContainerElement;
             
             const offsetX = origX - offsetLeft + scrollLeft;
             const offsetY = origY - offsetTop + scrollTop;

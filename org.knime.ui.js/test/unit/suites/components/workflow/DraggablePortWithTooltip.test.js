@@ -58,7 +58,7 @@ describe('DraggablePortWithTooltip', () => {
             },
             canvas: {
                 getters: {
-                    toCanvasCoordinates: () => x => x
+                    screenToCanvasCoordinates: () => x => x
                 }
             },
             application: {
@@ -315,7 +315,7 @@ describe('DraggablePortWithTooltip', () => {
                     // port doesn't receive pointer-events
 
                     let port = wrapper.findComponent(Port);
-                    expect(port.attributes('transform')).toBe('translate(16,16)');
+                    expect(port.attributes('transform')).toBe('translate(8,8)');
                     expect(port.attributes('class')).toMatch('non-interactive');
                 });
 
@@ -329,7 +329,7 @@ describe('DraggablePortWithTooltip', () => {
                             canDelete: false
                         },
                         flowVariableConnection: false,
-                        absolutePoint: [16, 16],
+                        absolutePoint: [8, 8],
                         sourceNode: 'node:1',
                         sourcePort: 0
                     });
@@ -347,7 +347,7 @@ describe('DraggablePortWithTooltip', () => {
                             canDelete: false
                         },
                         flowVariableConnection: false,
-                        absolutePoint: [16, 16],
+                        absolutePoint: [8, 8],
                         destNode: 'node:1',
                         destPort: 0
                     });
@@ -360,11 +360,11 @@ describe('DraggablePortWithTooltip', () => {
         describe('Drag Move', () => {
             test('move onto nothing', () => {
                 startDragging([0, 0]);
-                expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([8, 8]);
+                expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([0, 0]);
 
                 dragAboveTarget(null, [2, 2]);
 
-                expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([10, 10]);
+                expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([2, 2]);
             });
 
             test('move onto element', () => {
@@ -376,8 +376,8 @@ describe('DraggablePortWithTooltip', () => {
                 expect(hitTarget._connectorEnterEvent).toBeTruthy();
 
                 expect(hitTarget._connectorMoveEvent.detail).toStrictEqual({
-                    x: 8,
-                    y: 8,
+                    x: 0,
+                    y: 0,
                     targetPortDirection: 'out',
                     overwritePosition: expect.any(Function)
                 });
@@ -414,11 +414,11 @@ describe('DraggablePortWithTooltip', () => {
 
             test('move sets connector and port', () => {
                 startDragging([0, 0]);
-                expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([8, 8]);
+                expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([0, 0]);
 
                 dragAboveTarget(null, [2, 2]);
 
-                expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([10, 10]);
+                expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([2, 2]);
             });
 
             test('overwrite connector position', () => {

@@ -36,7 +36,7 @@ export default {
     computed: {
         ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('selection', ['isNodeSelected']),
-        ...mapGetters('canvas', ['toCanvasCoordinates']),
+        ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapState('application', ['activeProjectId']),
         ...mapState('workflow', ['isDragging', 'deltaMovePosition', 'activeWorkflow']),
         ...mapState('canvas', ['zoomFactor']),
@@ -78,18 +78,6 @@ export default {
             }
         },
 
-        positionOnCanvas({ x, y }) {
-            const kanvasElement = document.getElementById('kanvas');
-            const { offsetLeft, offsetTop, scrollLeft, scrollTop } = kanvasElement;
-
-            const offsetX = x - offsetLeft + scrollLeft;
-            const offsetY = y - offsetTop + scrollTop;
-
-            // convert to kanvas coordinates
-            const [absoluteX, absoluteY] = this.toCanvasCoordinates([offsetX, offsetY]);
-            return { x: absoluteX, y: absoluteY };
-        },
-
         /**
          * Handles the start of a move event
          * @param {Object} e - details of the mousedown event
@@ -116,10 +104,12 @@ export default {
                 return;
             }
 
-            const { nodeSize } = this.$shapes;
-            const updatedPos = this.positionOnCanvas({ x: clientX, y: clientY });
+            // get absolute coordinates
+            const [x, y] = this.screenToCanvasCoordinates([clientX, clientY]);
+            const updatedPos = { x, y };
 
             // adjust the delta using `nodeSize` to make sure the reference is from the center of the node
+            const { nodeSize } = this.$shapes;
             let deltaX = updatedPos.x - this.startPos.x - nodeSize / 2;
             let deltaY = updatedPos.y - this.startPos.y - nodeSize / 2;
             
