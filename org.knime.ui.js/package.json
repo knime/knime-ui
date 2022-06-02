@@ -18,13 +18,15 @@
     "coverage": "jest --coverage",
     "coverage:watch": "npm run test:unit -- --coverage --watch",
     "sendcoverage": "cross-var sonar-scanner -Dsonar.login=\"$SONAR_LOGIN\" -Dsonar.password=\"$SONAR_PASSWORD\"",
-    "opensourcecredits": "npm run --prefix org.knime.ui.js/webapps-common opensourcecredits"
+    "opensourcecredits": "npm run --prefix webapps-common opensourcecredits"
   },
   "dependencies": {
     "@fontsource/roboto": "4.5.3",
     "@fontsource/roboto-condensed": "4.5.4",
     "@fontsource/roboto-mono": "4.5.3",
     "consola": "2.15.3",
+    "focus-trap": "^6.9.3",
+    "focus-trap-vue": "^1.1.1",
     "fuse.js": "^6.5.3",
     "gsap": "3.8.0",
     "lodash": "4.17.21",

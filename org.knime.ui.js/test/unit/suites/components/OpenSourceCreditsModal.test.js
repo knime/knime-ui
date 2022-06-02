@@ -10,7 +10,11 @@ describe('OpenSourceCreditsModal', () => {
         wrapper = null;
 
         doMount = () => {
-            wrapper = mount(OpenSourceCreditsModal);
+            wrapper = mount(OpenSourceCreditsModal, {
+                stubs: {
+                    FocusTrap: true
+                }
+            });
         };
     });
 
