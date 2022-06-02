@@ -103,7 +103,7 @@ export default {
 }
 
 input {
-  width: 100%;
+  flex-grow: 1;
   height: 100%;
   border: 0;
   padding-right: 6px;
