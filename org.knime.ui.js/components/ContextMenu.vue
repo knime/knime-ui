@@ -13,7 +13,7 @@ export default {
     },
     props: {
         /**
-         * Absolute position of the menu. It's relative to the next absolute/relative positioned parent.
+         * Position of the menu in canvas coordinates.
          */
         position: {
             type: Object,
@@ -109,8 +109,9 @@ export default {
 <template>
   <FloatingMenu
     class="context-menu"
-    :position="position"
+    :canvas-position="position"
     aria-label="Context Menu"
+    prevent-overflow
     @menu-close="$emit('menu-close')"
   >
     <MenuItems

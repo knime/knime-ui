@@ -53,7 +53,12 @@ describe('WorkflowPanel', () => {
             }
         };
         storeConfig = {
-            workflow: workflowStoreConfig
+            workflow: workflowStoreConfig,
+            canvas: {
+                getters: {
+                    screenToCanvasCoordinates: () => position => position
+                }
+            }
         };
 
         $store = mockVuexStore(storeConfig);
@@ -110,7 +115,7 @@ describe('WorkflowPanel', () => {
         it('renders context menu', async () => {
             doShallowMount();
             
-            expect(wrapper.findComponent(ContextMenu).isVisible()).toBe(false);
+            expect(wrapper.findComponent(ContextMenu).exists()).toBe(false);
             
             wrapper.trigger('contextmenu', { clientX: 242, clientY: 122 });
             await wrapper.vm.$nextTick();
@@ -127,7 +132,7 @@ describe('WorkflowPanel', () => {
             wrapper.findComponent(ContextMenu).vm.$emit('menu-close');
             
             await wrapper.vm.$nextTick();
-            expect(wrapper.findComponent(ContextMenu).isVisible()).toBe(false);
+            expect(wrapper.findComponent(ContextMenu).exists()).toBe(false);
         });
     });
 

@@ -30,7 +30,8 @@ export default {
             'isWritable',
             'isStreaming',
             'activeWorkflowId'
-        ])
+        ]),
+        ...mapGetters('canvas', ['screenToCanvasCoordinates'])
     },
     methods: {
         onContextMenu(e) {
@@ -42,10 +43,9 @@ export default {
             e.preventDefault();
 
             // update position to current mouse coordinates
-            this.contextMenuPosition = {
-                x: e.clientX,
-                y: e.clientY
-            };
+
+            let [x, y] = this.screenToCanvasCoordinates([e.clientX, e.clientY]);
+            this.contextMenuPosition = { x, y };
         },
         onOpenPortTypeMenu(e) {
             if (this.portTypeMenuConfig && this.portTypeMenuConfig.id !== e.detail.id) {
@@ -72,8 +72,8 @@ export default {
     @close-port-type-menu="onClosePortTypeMenu"
   >
     <ContextMenu
-      v-show="Boolean(contextMenuPosition)"
-      :position="contextMenuPosition || {x: 0, y: 0}"
+      v-if="Boolean(contextMenuPosition)"
+      :position="contextMenuPosition"
       @menu-close="contextMenuPosition = null"
     />
     

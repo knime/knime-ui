@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { createLocalVue, mount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
@@ -51,14 +51,15 @@ describe('ContextMenu.vue', () => {
         doMount = () => {
             $store = mockVuexStore(storeConfig);
             mocks = { $store, $commands };
-            wrapper = mount(ContextMenu, { propsData, mocks });
+            wrapper = shallowMount(ContextMenu, { propsData, mocks });
         };
     });
 
     describe('Menu', () => {
         it('sets position', () => {
             doMount();
-            expect(wrapper.findComponent(FloatingMenu).props('position')).toStrictEqual({ x: 10, y: 10 });
+            expect(wrapper.findComponent(FloatingMenu).props('canvasPosition')).toStrictEqual({ x: 10, y: 10 });
+            expect(wrapper.findComponent(FloatingMenu).props('preventOverflow')).toBe(true);
         });
         
         it('re-emits menu-close', () => {

@@ -61,11 +61,11 @@ export default {
     methods: {
         ...mapActions('workflow', ['addContainerNodePort']),
         openMenu() {
-            // find the position in coordinates meaningful to the WorkflowCanvas
-            let coordinates = this.screenFromCanvasCoordinates({
+            // find the position in coordinates relative to the origin
+            let position = {
                 x: this.anchorPoint.x + this.position[0],
                 y: this.anchorPoint.y + this.position[1]
-            });
+            };
 
             // Tell the WorkflowPanel to render a PortTypeMenu with specified props and events
             // This works like a custom teleport and can probably be replaced by Vue3's teleport
@@ -74,7 +74,7 @@ export default {
                     detail: {
                         id: `${this.nodeId}-${this.side}`,
                         props: {
-                            position: coordinates,
+                            position,
                             side: this.side
                         },
                         events: {

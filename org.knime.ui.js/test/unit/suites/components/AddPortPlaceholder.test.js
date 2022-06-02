@@ -32,11 +32,6 @@ describe('PortTypeMenu.vue', () => {
         screenFromCanvasCoordinatesMock = jest.fn().mockReturnValue([30, 30]);
 
         storeConfig = {
-            canvas: {
-                getters: {
-                    screenFromCanvasCoordinates: () => screenFromCanvasCoordinatesMock
-                }
-            },
             workflow: {
                 actions: {
                     addContainerNodePort: jest.fn()
@@ -88,7 +83,7 @@ describe('PortTypeMenu.vue', () => {
                 expect(openEvent.detail).toStrictEqual({
                     id: 'node-id-output',
                     props: {
-                        position: [30, 30],
+                        position: { x: 20, y: 20 },
                         side: 'output'
                     },
                     events: {

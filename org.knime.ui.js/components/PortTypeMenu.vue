@@ -8,7 +8,6 @@ import SearchBar from '~/components/noderepo/SearchBar.vue';
 /**
  * ContextMenu offers actions for the Kanvas based on the selected nodes.
  */
-export const fixedWidth = 200;
 
 export default {
     components: {
@@ -38,7 +37,6 @@ export default {
         ...mapState('canvas', ['zoomFactor']),
         ...mapState('application', ['availablePortTypes', 'suggestedPortTypes']),
         ...mapGetters('application', ['portTypeSearch']),
-        fixedWidth: () => fixedWidth,
         headerMargin() {
             // the x-position of the header text has to be adjusted for the growing/shrinking add-port-button
             let distanceToPort = this.$shapes.portSize * Math.pow(this.zoomFactor, 0.8); // eslint-disable-line no-magic-numbers
@@ -47,15 +45,12 @@ export default {
         adjustedPosition() {
             // for zoom > 100%, the y-position of the menu has to be adjusted for the growing add-port-button
             let verticalShift = this.zoomFactor > 1
-                ? (this.$shapes.portSize / 2) * Math.pow(this.zoomFactor - 1, 1.2) // eslint-disable-line no-magic-numbers
+                ? this.$shapes.portSize / 2 * Math.log(this.zoomFactor) / 1.2 // eslint-disable-line no-magic-numbers
                 : 0;
-
-            // for input ports move menu to the left
-            let horizontalShift = this.side === 'input' ? -this.fixedWidth : 0;
 
             return {
                 y: this.position.y + verticalShift,
-                x: this.position.x + horizontalShift
+                x: this.position.x
             };
         },
         suggestedSearchResults() {
@@ -105,8 +100,8 @@ export default {
 <template>
   <FloatingMenu
     ref="floatingMenu"
-    :position="adjustedPosition"
-    :style="{ width: `${fixedWidth}px` }"
+    :anchor="side === 'input' ? 'top-right' : 'top-left'"
+    :canvas-position="adjustedPosition"
     @menu-close="$emit('menu-close')"
   >
     <div

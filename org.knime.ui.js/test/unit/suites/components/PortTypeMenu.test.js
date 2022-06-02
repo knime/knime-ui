@@ -1,10 +1,10 @@
 /* eslint-disable no-magic-numbers */
-import { createLocalVue, mount } from '@vue/test-utils';
+import { createLocalVue, mount as deepMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import PortTypeMenu, { fixedWidth } from '~/components/PortTypeMenu';
+import PortTypeMenu from '~/components/PortTypeMenu';
 import FloatingMenu from '~/components/FloatingMenu';
 import MenuItems from '~/webapps-common/ui/components/MenuItems';
 import SearchBar from '~/components/noderepo/SearchBar';
@@ -13,7 +13,7 @@ import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
 describe('PortTypeMenu.vue', () => {
-    let storeConfig, propsData, mocks, doMount, wrapper, $store, portTypeSearchMock;
+    let storeConfig, propsData, mocks, doMount, wrapper, $store, portTypeSearchMock, FloatingMenuStub;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -36,6 +36,9 @@ describe('PortTypeMenu.vue', () => {
             canvas: {
                 state: {
                     zoomFactor: 1
+                },
+                getters: {
+                    screenFromCanvasCoordinates: () => position => position
                 }
             },
             application: {
@@ -52,11 +55,24 @@ describe('PortTypeMenu.vue', () => {
             }
         };
 
+        FloatingMenuStub = {
+            template: `<div><slot /></div>`,
+            props: FloatingMenu.props
+        };
+
         doMount = () => {
             $store = mockVuexStore(storeConfig);
             mocks = { $store, $shapes, $colors };
+            
             // attachTo document body so that focus works
-            wrapper = mount(PortTypeMenu, { propsData, mocks, attachTo: document.body });
+            wrapper = deepMount(PortTypeMenu, {
+                propsData,
+                mocks,
+                attachTo: document.body,
+                stubs: {
+                    FloatingMenu: FloatingMenuStub
+                }
+            });
         };
     });
 
@@ -64,7 +80,7 @@ describe('PortTypeMenu.vue', () => {
         it('re-emits menu-close', () => {
             doMount();
 
-            wrapper.findComponent(FloatingMenu).vm.$emit('menu-close');
+            wrapper.findComponent(FloatingMenuStub).vm.$emit('menu-close');
             expect(wrapper.emitted('menu-close')).toBeTruthy();
         });
 
@@ -106,42 +122,37 @@ describe('PortTypeMenu.vue', () => {
         });
 
         describe('menu position', () => {
-            it('sets fixed width', () => {
-                doMount();
-    
-                let floatingMenu = wrapper.findComponent(FloatingMenu);
-                expect(floatingMenu.attributes('style')).toMatch(`width: ${fixedWidth}px`);
-            });
-
             test('100% zoom and output', () => {
                 doMount();
 
-                let floatingMenu = wrapper.findComponent(FloatingMenu);
-                expect(floatingMenu.props('position')).toStrictEqual({ x: 10, y: 10 });
+                let floatingMenu = wrapper.findComponent(FloatingMenuStub);
+                expect(floatingMenu.props('anchor')).toBe('top-left');
+                expect(floatingMenu.props('canvasPosition')).toStrictEqual({ x: 10, y: 10 });
             });
 
             test('100% zoom and input', () => {
                 propsData.side = 'input';
                 doMount();
 
-                let floatingMenu = wrapper.findComponent(FloatingMenu);
-                expect(floatingMenu.props('position')).toStrictEqual({ x: 10 - fixedWidth, y: 10 });
+                let floatingMenu = wrapper.findComponent(FloatingMenuStub);
+                expect(floatingMenu.props('anchor')).toBe('top-right');
+                expect(floatingMenu.props('canvasPosition')).toStrictEqual({ x: 10, y: 10 });
             });
 
             test('50% zoom, no vertical shift', () => {
                 storeConfig.canvas.state.zoomFactor = 0.5;
                 doMount();
 
-                let floatingMenu = wrapper.findComponent(FloatingMenu);
-                expect(floatingMenu.props('position')).toStrictEqual({ x: 10, y: 10 });
+                let floatingMenu = wrapper.findComponent(FloatingMenuStub);
+                expect(floatingMenu.props('canvasPosition')).toStrictEqual({ x: 10, y: 10 });
             });
 
             test('200% zoom, vertical shift', () => {
                 storeConfig.canvas.state.zoomFactor = 2;
                 doMount();
 
-                let floatingMenu = wrapper.findComponent(FloatingMenu);
-                expect(floatingMenu.props('position')).toStrictEqual({ x: 10, y: 14.5 });
+                let floatingMenu = wrapper.findComponent(FloatingMenuStub);
+                expect(floatingMenu.props('canvasPosition')).toStrictEqual({ x: 10, y: 12.599301927099795 });
             });
         });
 
