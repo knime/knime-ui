@@ -120,17 +120,12 @@ export default {
             deltaY = Math.round(deltaY / gridSize.y) * gridSize.y;
             
             // prevent unneeded dispatches if the position hasn't changed
-            if (
-                this.deltaMovePosition.x === deltaX &&
-                this.deltaMovePosition.y === deltaY
-            ) {
-                return;
+            if (this.deltaMovePosition.x !== deltaX || this.deltaMovePosition.y !== deltaY) {
+                this.$store.dispatch('workflow/moveNodes', {
+                    deltaX,
+                    deltaY
+                });
             }
-
-            this.$store.dispatch('workflow/moveNodes', {
-                deltaX,
-                deltaY
-            });
             /* eslint-enable no-invalid-this */
         }),
 
