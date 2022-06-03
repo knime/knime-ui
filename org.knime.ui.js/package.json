@@ -5,8 +5,8 @@
   "author": "KNIME AG",
   "scripts": {
     "dev": "nuxt && npm run opensourcecredits -- -- -- --no-overwrite",
-    "_prebuild": "npm run opensourcecredits",
-    "build": "npm run _prebuild && nuxt build && node buildtools/inline-html.mjs",
+    "build": "nuxt build && node buildtools/inline-html.mjs",
+    "postinstall": "npm run opensourcecredits -- --no-overwrite",
     "start": "nuxt start",
     "lint": "npm run lint:js && npm run lint:css && npm run lint:json",
     "lint:js": "eslint --ext .js,.mjs,.vue .",
