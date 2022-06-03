@@ -11,7 +11,7 @@ import Port from '~/components/workflow/Port';
 import AddPortPlaceholder, { addPortPlaceholderPath } from '~/components/workflow/AddPortPlaceholder';
 
 describe('PortTypeMenu.vue', () => {
-    let storeConfig, propsData, mocks, doMount, wrapper, provide, $store, screenFromCanvasCoordinatesMock;
+    let storeConfig, propsData, mocks, doMount, wrapper, provide, $store;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -28,8 +28,6 @@ describe('PortTypeMenu.vue', () => {
         provide = {
             anchorPoint: { x: 10, y: 10 }
         };
-
-        screenFromCanvasCoordinatesMock = jest.fn().mockReturnValue([30, 30]);
 
         storeConfig = {
             workflow: {

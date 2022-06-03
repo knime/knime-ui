@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import { nodeSize, portSize } from '~/style/shapes';
 
 /**
@@ -34,7 +35,6 @@ const portShift = (portIndex, portCount, isMetanode, isOutPort) => {
     const middleIndex = 2;
     const portMargin = 1.5;
 
-    // eslint-disable-next-line no-magic-numbers
     if (portCount === 3 && portIndex === 2) { portIndex = 3; } // leave the middle port free (index: 2 -> 3)
 
     let dy = middleY + (portIndex - middleIndex) * (portSize + portMargin);

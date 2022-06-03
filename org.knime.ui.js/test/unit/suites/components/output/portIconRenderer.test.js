@@ -92,7 +92,7 @@ describe('PortIconRenderer', () => {
             typeId: 'table',
             state: 'EXECUTED'
         };
-        iconSize = 12;
+        iconSize = 12; // eslint-disable-line no-magic-numbers
         doMount();
 
         expect(wrapper.element.style.width).toBe('12px');
