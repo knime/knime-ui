@@ -32,7 +32,8 @@ describe('PortWithTooltip.vue', () => {
                 type: 'table',
                 color: '#123442',
                 name: 'portName',
-                info: 'portInfo'
+                info: 'portInfo',
+                typeId: ''
             }
         };
         let $store = mockVuexStore({
