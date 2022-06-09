@@ -13,6 +13,10 @@ export default {
         NodePreview
     },
     props: {
+        /**
+         * Additional to the properties of the NodeTemplate from the gateway API, this object
+         * contains the port information (color and kind) which was mapped from the store
+         */
         nodeTemplate: {
             type: Object,
             default: null
@@ -26,7 +30,6 @@ export default {
         };
     },
     computed: {
-        ...mapState('application', ['availablePortTypes']),
         ...mapState('nodeRepository', ['selectedNode']),
         ...mapState('panel', ['activeDescriptionPanel']),
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
@@ -122,16 +125,6 @@ export default {
             if (!this.isWritable) {
                 e.currentTarget.style.cursor = 'not-allowed';
             }
-        },
-
-        mapPortTypes(ports) {
-            // The NodePreview component reads the `type` and `color` of the port from the properties of the same name
-            // but these have to be added via this map since the port kind and color are available globally instead
-            return ports.map(port => ({
-                ...port,
-                type: this.availablePortTypes[port.typeId].kind,
-                color: this.availablePortTypes[port.typeId].color
-            }));
         }
     }
 };
@@ -153,8 +146,8 @@ export default {
       ref="nodePreview"
       class="node-preview"
       :type="nodeTemplate.type"
-      :in-ports="mapPortTypes(nodeTemplate.inPorts)"
-      :out-ports="mapPortTypes(nodeTemplate.outPorts)"
+      :in-ports="nodeTemplate.inPorts"
+      :out-ports="nodeTemplate.outPorts"
       :icon="nodeTemplate.icon"
     />
   </div>

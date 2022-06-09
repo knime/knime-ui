@@ -78,7 +78,8 @@ describe('Node Repository store', () => {
         }), { virtual: true });
 
         store = mockVuexStore({
-            nodeRepository: await import('~/store/nodeRepository')
+            nodeRepository: await import('~/store/nodeRepository'),
+            application: { availablePortTypes: {} }
         });
         commitSpy = jest.spyOn(store, 'commit');
         dispatchSpy = jest.spyOn(store, 'dispatch');
@@ -306,95 +307,200 @@ describe('Node Repository store', () => {
             });
         });
 
-        it('clears search results on empty parameters (tags and query)', async () => {
-            await store.dispatch('nodeRepository/searchNodes');
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', null, undefined);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', [], undefined);
-        });
+        describe('search', () => {
+            const withPorts = searchNodesResponse.nodes.map(node => ({ ...node, inPorts: [], outPorts: [] }));
 
-        it('searches for nodes', async () => {
-            store.commit('nodeRepository/setQuery', 'lookup');
-            await store.dispatch('nodeRepository/searchNodes');
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
-            expect(searchNodesMock).toHaveBeenCalledWith({
-                allTagsMatch: true,
-                fullTemplateInfo: true,
-                nodeLimit: 100,
-                nodeOffset: 0,
-                query: 'lookup',
-                tags: []
+            it('clears search results on empty parameters (tags and query)', async () => {
+                await store.dispatch('nodeRepository/searchNodes');
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', null, undefined);
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', [], undefined);
             });
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTotalNumNodes',
-                searchNodesResponse.totalNumNodes, undefined);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes',
-                searchNodesResponse.nodes, undefined);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', searchNodesResponse.tags, undefined);
-        });
-
-        it('searches for nodes with append=true', async () => {
-            store.commit('nodeRepository/setNodes', []);
-            store.commit('nodeRepository/setQuery', 'lookup');
-            await store.dispatch('nodeRepository/searchNodes', true);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 1, undefined);
-            expect(searchNodesMock).toHaveBeenCalledWith({
-                allTagsMatch: true,
-                fullTemplateInfo: true,
-                nodeLimit: 100,
-                nodeOffset: 100,
-                query: 'lookup',
-                tags: []
+    
+            it('searches for nodes', async () => {
+                store.commit('nodeRepository/setQuery', 'lookup');
+                await store.dispatch('nodeRepository/searchNodes');
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
+                expect(searchNodesMock).toHaveBeenCalledWith({
+                    allTagsMatch: true,
+                    fullTemplateInfo: true,
+                    nodeLimit: 100,
+                    nodeOffset: 0,
+                    query: 'lookup',
+                    tags: []
+                });
+                expect(commitSpy).toHaveBeenCalledWith(
+                    'nodeRepository/setTotalNumNodes',
+                    searchNodesResponse.totalNumNodes,
+                    undefined
+                );
+                
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', withPorts, undefined);
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', searchNodesResponse.tags, undefined);
             });
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTotalNumNodes',
-                searchNodesResponse.totalNumNodes, undefined);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/addNodes', searchNodesResponse.nodes, undefined);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', searchNodesResponse.tags, undefined);
+
+            it('adds the port type and color from the global state to the search results', async () => {
+                const mockFullyQualifiedPortName = 'mock-port-id';
+                const mockPortMetadata = {
+                    kind: 'MOCK-KIND',
+                    color: 'MOCK-COLOR'
+                };
+                // add port metadata to global state
+                store.state.application.availablePortTypes = {
+                    [mockFullyQualifiedPortName]: mockPortMetadata
+                };
+                
+                /* eslint-disable max-nested-callbacks */
+                // add `typeId` property to ports returned in the search response
+                searchNodesMock.mockReturnValueOnce({
+                    ...searchNodesResponse,
+                    nodes: searchNodesResponse.nodes.map(node => ({
+                        ...node,
+                        inPorts: [{ typeId: mockFullyQualifiedPortName }],
+                        outPorts: [{ typeId: mockFullyQualifiedPortName }]
+                    }))
+                });
+
+                const expectedNodes = searchNodesResponse.nodes.map(node => ({
+                    ...node,
+                    inPorts: [{
+                        typeId: mockFullyQualifiedPortName,
+                        type: mockPortMetadata.kind,
+                        color: mockPortMetadata.color
+                    }],
+                    outPorts: [{
+                        typeId: mockFullyQualifiedPortName,
+                        type: mockPortMetadata.kind,
+                        color: mockPortMetadata.color
+                    }]
+                }));
+                /* eslint-enable max-nested-callbacks */
+
+                store.commit('nodeRepository/setQuery', 'lookup');
+                await store.dispatch('nodeRepository/searchNodes');
+                                
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', expectedNodes, undefined);
+            });
+    
+            it('searches for nodes with append=true', async () => {
+                store.commit('nodeRepository/setNodes', []);
+                store.commit('nodeRepository/setQuery', 'lookup');
+                await store.dispatch('nodeRepository/searchNodes', true);
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 1, undefined);
+                expect(searchNodesMock).toHaveBeenCalledWith({
+                    allTagsMatch: true,
+                    fullTemplateInfo: true,
+                    nodeLimit: 100,
+                    nodeOffset: 100,
+                    query: 'lookup',
+                    tags: []
+                });
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTotalNumNodes',
+                    searchNodesResponse.totalNumNodes, undefined);
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/addNodes', withPorts, undefined);
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', searchNodesResponse.tags, undefined);
+            });
+
+            it('updates query', async () => {
+                await store.dispatch('nodeRepository/updateQuery', 'some value');
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setQuery', 'some value', undefined);
+                expect(dispatchSpy).toHaveBeenCalledWith(
+                    'nodeRepository/searchNodes', undefined
+                );
+            });
+    
+            it('searches for nodes next page', async () => {
+                await store.dispatch('nodeRepository/searchNodesNextPage');
+                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', true);
+            });
+    
+            it('set selected Tags', () => {
+                store.dispatch('nodeRepository/setSelectedTags', ['myTag', 'myTag2']);
+                expect(commitSpy).toHaveBeenCalledWith(
+                    'nodeRepository/setSelectedTags',
+                    ['myTag', 'myTag2'],
+                    undefined
+                );
+                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
+            });
+    
+            it('clears search params (tags and query)', () => {
+                store.dispatch('nodeRepository/clearSearchParams');
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setSelectedTags', [], undefined);
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setQuery', '', undefined);
+                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/clearSearchResults', undefined);
+            });
+    
+            it('clears search results', () => {
+                store.dispatch('nodeRepository/clearSearchResults');
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', [], undefined);
+                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', null, undefined);
+            });
         });
 
-        it('updates query', async () => {
-            await store.dispatch('nodeRepository/updateQuery', 'some value');
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setQuery', 'some value', undefined);
-            expect(dispatchSpy).toHaveBeenCalledWith(
-                'nodeRepository/searchNodes', undefined
-            );
-        });
+        describe('node description', () => {
+            it('fetches node description', async () => {
+                const node = {
+                    id: 'node1',
+                    nodeFactory: {
+                        className: 'test',
+                        settings: 'test1'
+                    }
+                };
 
-        it('searches for nodes next page', async () => {
-            await store.dispatch('nodeRepository/searchNodesNextPage');
-            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', true);
-        });
+                store.commit('nodeRepository/setSelectedNode', node);
+                await store.dispatch('nodeRepository/getNodeDescription');
+                
+                expect(getNodeDescriptionMock).toHaveBeenCalled();
+                expect(commitSpy).toHaveBeenCalledWith(
+                    'nodeRepository/setNodeDescription',
+                    expect.objectContaining(getNodeDescriptionResponse),
+                    undefined
+                );
+            });
 
-        it('set selected Tags', () => {
-            store.dispatch('nodeRepository/setSelectedTags', ['myTag', 'myTag2']);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setSelectedTags', ['myTag', 'myTag2'], undefined);
-            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
-        });
+            it('adds the port metadata to the description object', async () => {
+                const mockFullyQualifiedPortName = 'mock-port-id';
+                const mockPortMetadata = {
+                    kind: 'MOCK-KIND',
+                    color: 'MOCK-COLOR'
+                };
 
-        it('clears search params (tags and query)', () => {
-            store.dispatch('nodeRepository/clearSearchParams');
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setSelectedTags', [], undefined);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setQuery', '', undefined);
-            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/clearSearchResults', undefined);
-        });
+                // add port metadata to global state
+                store.state.application.availablePortTypes = {
+                    [mockFullyQualifiedPortName]: mockPortMetadata
+                };
 
-        it('clears search results', () => {
-            store.dispatch('nodeRepository/clearSearchResults');
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', [], undefined);
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', null, undefined);
-        });
+                getNodeDescriptionMock.mockReturnValueOnce({
+                    ...getNodeDescriptionResponse,
+                    // add a port to the node returned by the description endpoint
+                    inPorts: [{ typeId: mockFullyQualifiedPortName }]
+                });
 
-        it('fetches node description', async () => {
-            const node = {
-                id: 'node1',
-                nodeFactory: {
-                    className: 'test',
-                    settings: 'test1'
-                }
-            };
-            store.commit('nodeRepository/setSelectedNode', node);
-            await store.dispatch('nodeRepository/getNodeDescription');
-            expect(getNodeDescriptionMock).toHaveBeenCalled();
-            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeDescription',
-                getNodeDescriptionResponse, undefined);
+                const node = {
+                    id: 'node1',
+                    nodeFactory: {
+                        className: 'test',
+                        settings: 'test1'
+                    }
+                };
+
+                store.commit('nodeRepository/setSelectedNode', node);
+                await store.dispatch('nodeRepository/getNodeDescription');
+                
+                expect(getNodeDescriptionMock).toHaveBeenCalled();
+                expect(commitSpy).toHaveBeenCalledWith(
+                    'nodeRepository/setNodeDescription',
+                    expect.objectContaining({
+                        ...getNodeDescriptionResponse,
+                        inPorts: [{
+                            typeId: mockFullyQualifiedPortName,
+                            type: mockPortMetadata.kind,
+                            color: mockPortMetadata.color
+                        }]
+                    }),
+                    undefined
+                );
+            });
         });
     });
 });
