@@ -3,9 +3,16 @@
 /* eslint-disable */
 export default () => {
     // eslint-disable-next-line no-console
-    window.EquoCommService.on('org.knime.ui.java.jsonrpcNotification', jsonrpcNotificationBase64Decoded, e => console.error(e));
-    if (!window.jsonrpc) {
-        window.jsonrpc = request => window.EquoCommService.send('org.knime.ui.java.jsonrpc', JSON.stringify(request));
+    if (window.EquoCommService) {
+        window.EquoCommService.on(
+            'org.knime.ui.java.jsonrpcNotification', 
+            jsonrpcNotificationBase64Decoded, 
+            e => console.error(e)
+        );
+        
+        if (!window.jsonrpc) {
+            window.jsonrpc = request => window.EquoCommService.send('org.knime.ui.java.jsonrpc', JSON.stringify(request));
+        }
     }
 };
 
