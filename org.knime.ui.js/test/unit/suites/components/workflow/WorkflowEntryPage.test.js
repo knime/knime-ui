@@ -1,7 +1,7 @@
-/* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import Vuex from 'vuex';
 import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
+import OpenSourceCreditsModal from '~/components/OpenSourceCreditsModal';
 
 
 describe('WorkflowEntryPage', () => {
@@ -29,6 +29,12 @@ describe('WorkflowEntryPage', () => {
         doShallowMount();
         const buttons = wrapper.findAll('button');
         expect(buttons.length).toBe(2);
+    });
+
+    it('renders open source credits modal', () => {
+        doShallowMount();
+
+        expect(wrapper.findComponent(OpenSourceCreditsModal).exists()).toBe(true);
     });
 
     it('dispatches command openWorkflow', () => {

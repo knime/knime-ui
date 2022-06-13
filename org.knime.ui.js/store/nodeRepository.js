@@ -9,6 +9,36 @@ const nodeSearchPageSize = 100;
 const categoryPageSize = 3;
 const firstLoadOffset = 6;
 
+/**
+ * Maps over a collection of ports to add information about their color and kind, extracted from the
+ * provided dictionary in the parameter `availablePortTypes`
+ * @param {Array} ports
+ * @param {Record<string, any>} availablePortTypes
+ * @returns {Array} ports
+ */
+const mapPortTypes = (ports = [], availablePortTypes = {}) => ports.map(port => ({
+    ...port,
+    type: availablePortTypes[port.typeId].kind,
+    color: availablePortTypes[port.typeId].color
+}));
+
+/**
+ * Maps over a collection of nodes in order to add to their ports information about each
+ * port's color and kind. This information will be read from the provided `availablePortTypes` parameter
+ * which acts as a dictionary of all the ports' metadata and is indexed by the
+ * fully qualified name of the port (aka `typeId`)
+ *
+ * @param {{ inPorts: Array, outPorts: Array }} nodes
+ * @param {Record<string, any>} availablePortTypes
+ * @returns {{ inPorts: Array, outPorts: Array }} mapped nodes
+ */
+const mapNodes = (nodes = [], availablePortTypes) => nodes.map((node) => {
+    const { inPorts = [], outPorts = [] } = node;
+    const mappedInPorts = mapPortTypes(inPorts, availablePortTypes);
+    const mappedOutPorts = mapPortTypes(outPorts, availablePortTypes);
+    return { ...node, inPorts: mappedInPorts, outPorts: mappedOutPorts };
+});
+
 export const state = () => ({
     /* categories */
     nodesPerCategory: [],
@@ -81,7 +111,7 @@ export const actions = {
      *      should be cleared (for a new search).
      * @returns {Promise}
      */
-    async searchNodes({ commit, state, dispatch, getters }, append = false) {
+    async searchNodes({ commit, state, dispatch, getters, rootState }, append = false) {
         // only do request if we search for something
         if (!getters.hasSearchParams) {
             // clear old results
@@ -102,22 +132,31 @@ export const actions = {
             nodeLimit: nodeSearchPageSize,
             fullTemplateInfo: true
         });
+
+        const { availablePortTypes } = rootState.application;
+        const withMappedPorts = mapNodes(res.nodes, availablePortTypes);
+
         commit('setTotalNumNodes', res.totalNumNodes);
+
         if (append) {
-            commit('addNodes', res.nodes);
+            commit('addNodes', withMappedPorts);
         } else {
-            commit('setNodes', res.nodes);
+            commit('setNodes', withMappedPorts);
         }
+
         commit('setTags', res.tags);
     },
 
-    async getNodeDescription({ commit, state }) {
+    async getNodeDescription({ commit, state, rootState }) {
         let results = await getNodeDescription({
             className: state.selectedNode.nodeFactory.className,
             settings: state.selectedNode.nodeFactory.settings
         });
 
-        commit('setNodeDescription', results);
+        const { availablePortTypes } = rootState.application;
+        const [withMappedPorts] = mapNodes([results], availablePortTypes);
+
+        commit('setNodeDescription', withMappedPorts);
     },
 
     /**

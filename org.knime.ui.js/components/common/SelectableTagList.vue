@@ -131,10 +131,7 @@ export default {
 
     &.clickable {
       &:hover {
-        color: var(--knime-dove-gray);
-        background-color: transparent;
         text-decoration: line-through;
-        border-color: var(--knime-dove-gray);
 
         & svg {
           stroke: var(--knime-dove-gray);

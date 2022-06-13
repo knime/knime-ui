@@ -134,21 +134,6 @@ describe('NodeTemplate', () => {
         expect(wrapper.find('label').text()).toBe('node-name');
     });
 
-    it('renders a node preview, looks up port´s type and color', () => {
-        doMount();
-
-        let nodePreview = wrapper.findComponent(NodePreview);
-        expect(nodePreview.element.className).toMatch('node-preview');
-        expect(nodePreview.props()).toStrictEqual({
-            type: 'node-type',
-            isComponent: false,
-            inPorts: [{ typeId: 'org.port.mockId', color: 'mockColor', type: 'mockKind' }],
-            outPorts: [{ typeId: 'org.port.mockId', color: 'mockColor', type: 'mockKind' }],
-            hasDynPorts: false,
-            icon: 'data:image/node-icon'
-        });
-    });
-
     it('opens description panel when clicked', () => {
         doMount();
 

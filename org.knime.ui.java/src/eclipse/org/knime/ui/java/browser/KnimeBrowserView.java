@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -208,10 +209,9 @@ public class KnimeBrowserView {
         var params = jsonrpc.arrayNode();
         params.addPOJO(event);
         try {
-            var resultString =
+            var string =
                 mapper.writeValueAsString(jsonrpc.put("jsonrpc", "2.0").put("method", name).set("params", params));
-            var escapedResultString = mapper.writeValueAsString(resultString);
-            return escapedResultString.substring(1, escapedResultString.length() - 1);
+            return Base64.getEncoder().encodeToString(string.getBytes(StandardCharsets.UTF_8));
         } catch (JsonProcessingException ex) {
             throw new IllegalStateException("Problem creating a json-rpc notification in order to send an event", ex);
         }

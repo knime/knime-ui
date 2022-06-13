@@ -46,7 +46,7 @@ export const actions = {
         await addEventListener('AppStateChanged');
         
         const applicationState = await fetchApplicationState();
-        dispatch('replaceApplicationState', applicationState);
+        await dispatch('replaceApplicationState', applicationState);
     },
     destroyApplication({ dispatch }) {
         removeEventListener('AppStateChanged');
@@ -66,8 +66,7 @@ export const actions = {
     async setActiveProject({ commit, dispatch }, openProjects) {
         if (openProjects.length === 0) {
             consola.info('No workflows opened');
-            dispatch('switchWorkflow', null);
-            return;
+            return dispatch('switchWorkflow', null);
         }
 
         // either choose the project that has been marked as active, or the first one
@@ -82,7 +81,7 @@ export const actions = {
             projectId: activeWorkflow.projectId
         });
     },
-    switchWorkflow({ commit, dispatch, rootGetters }, newWorkflow) {
+    async switchWorkflow({ commit, dispatch, rootGetters }, newWorkflow) {
         // save user state like scroll and zoom
         if (rootGetters['workflow/activeWorkflowId']) {
             dispatch('saveUserState');
@@ -96,7 +95,7 @@ export const actions = {
         if (newWorkflow) {
             let { projectId, workflowId } = newWorkflow;
             commit('setActiveProjectId', projectId);
-            dispatch('workflow/loadWorkflow', { projectId, workflowId }, { root: true });
+            await dispatch('workflow/loadWorkflow', { projectId, workflowId }, { root: true });
 
             // restore scroll and zoom if saved before
             dispatch('restoreUserState');
