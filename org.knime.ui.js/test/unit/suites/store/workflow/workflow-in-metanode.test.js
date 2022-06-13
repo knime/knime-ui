@@ -6,7 +6,7 @@ import Vuex from 'vuex';
 import * as canvasStoreConfig from '~/store/canvas';
 
 describe('workflow store', () => {
-    let store, localVue, templateMutationMock, loadStore;
+    let store, localVue, loadStore;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -14,8 +14,6 @@ describe('workflow store', () => {
     });
 
     beforeEach(() => {
-        templateMutationMock = jest.fn();
-
         loadStore = async ({ apiMocks = {}, nodes = {} } = {}) => {
             /**
              * We have to import the workflow-store dynamically to apply our ~api mocks.
@@ -30,11 +28,6 @@ describe('workflow store', () => {
 
             store = mockVuexStore({
                 workflow: await import('~/store/workflow'),
-                nodeTemplates: {
-                    mutations: {
-                        add: templateMutationMock
-                    }
-                },
                 canvas: canvasStoreConfig
             });
         };
