@@ -307,25 +307,6 @@ describe('workflow store', () => {
             );
         });
 
-        it.each(['openView', 'openDialog'])('passes %s to API', async (action) => {
-            let mock = jest.fn();
-            let apiMocks = { [action]: mock };
-            await loadStore({ apiMocks });
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
-            store.dispatch(`workflow/${action}`, 'node x');
-
-            expect(mock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo' });
-        });
-
-        // TODO: NXT-1007 improve tests by making an easier API mock import
-        it('calls configureFlowVariables from API', async () => {
-            await loadStore();
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
-            store.dispatch('workflow/configureFlowVariables', 'node x');
-
-            expect(openLegacyFlowVariableDialogMock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo' });
-        });
-
         it('moves actual nodes', async () => {
             await loadStore();
             store.commit('workflow/setActiveWorkflow', {
@@ -419,8 +400,7 @@ describe('workflow store', () => {
 
         it.each([
             ['undo'],
-            ['redo'],
-            ['openLayoutEditor']
+            ['redo']
         ])('passes %s to the API', async (action) => {
             let mock = jest.fn();
             let apiMocks = { [action]: mock };
@@ -550,27 +530,6 @@ describe('workflow store', () => {
             });
         });
 
-        it('saves the workflow via the API', async () => {
-            let saveWorkflow = jest.fn();
-            let apiMocks = { saveWorkflow };
-            await loadStore({ apiMocks });
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
-
-            store.dispatch('workflow/saveWorkflow');
-
-            expect(saveWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
-        });
-
-        it('closes the workflow via the API', async () => {
-            let closeWorkflow = jest.fn();
-            let apiMocks = { closeWorkflow };
-            await loadStore({ apiMocks });
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
-
-            store.dispatch('workflow/closeWorkflow');
-
-            expect(closeWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
-        });
 
         it('collapse to a container', async () => {
             let collapseToContainer = jest.fn();
