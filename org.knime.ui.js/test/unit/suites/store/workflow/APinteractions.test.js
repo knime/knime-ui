@@ -4,7 +4,7 @@ import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 
-describe('workflow store', () => {
+describe('workflow store: AP Interactions', () => {
     let store, localVue, loadStore,
         openLegacyFlowVariableDialogMock;
 
@@ -36,7 +36,7 @@ describe('workflow store', () => {
         };
     });
 
-    describe('workflow store: AP Interactions', () => {
+    describe('actions', () => {
         it.each(['openView', 'openDialog'])('passes %s to API', async (action) => {
             let mock = jest.fn();
             let apiMocks = { [action]: mock };
