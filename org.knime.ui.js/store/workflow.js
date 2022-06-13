@@ -1,11 +1,13 @@
-import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
-    moveObjects, openDialog, openLegacyFlowVariableDialog as configureFlowVariables, openView, undo, redo,
-    removeEventListener, connectNodes, addNode, saveWorkflow, closeWorkflow, renameContainerNode, collapseToContainer,
-    addContainerNodePort, expandContainerNode, openLayoutEditor } from '~api';
 import Vue from 'vue';
-import * as $shapes from '~/style/shapes';
-import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
 
+import { addEventListener, loadWorkflow as loadWorkflowFromApi, removeEventListener } from '~api';
+
+import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
+import * as workflowEditor from './workflow/workflowEditor';
+import * as APinteractions from './workflow/APinteractions';
+import * as workflowExecution from './workflow/workflowExecution';
+
+import * as $shapes from '~/style/shapes';
 
 /**
  * Store that holds a workflow graph and the associated tooltips.
@@ -15,47 +17,47 @@ import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '..
  */
 
 export const state = () => ({
+    ...workflowExecution.state,
+    ...workflowEditor.state,
+    ...APinteractions.state,
+    
+    // TODO: rename to just workflow someday
     activeWorkflow: null,
     activeSnapshotId: null,
-    tooltip: null,
-    isDragging: false,
-    deltaMovePosition: { x: 0, y: 0 },
-    nameEditorNodeId: null
+
+    // TODO: find a better place for the tooltip logic
+    // maybe use an event that bubbles to the top (workflow canvas?)
+    tooltip: null
 });
 
 export const mutations = {
     ...jsonPatchMutations,
+    ...workflowExecution.mutations,
+    ...workflowEditor.mutations,
+    ...APinteractions.mutations,
 
     // extracts the workflow
+    // TODO: do both in one step/commit
     setActiveWorkflow(state, workflow) {
         state.activeWorkflow = workflow;
     },
     setActiveSnapshotId(state, id) {
         state.activeSnapshotId = id;
     },
+
     setTooltip(state, tooltip) {
         Vue.set(state, 'tooltip', tooltip);
-    },
-    // Shifts the position of the node for the provided amount
-    shiftPosition(state, { deltaX, deltaY }) {
-        state.deltaMovePosition.x = deltaX;
-        state.deltaMovePosition.y = deltaY;
-    },
-    // Reset the position of the outline
-    resetDragPosition(state) {
-        state.deltaMovePosition = { x: 0, y: 0 };
-    },
-    // change the isDragging property to the provided Value
-    setDragging(state, { isDragging }) {
-        state.isDragging = isDragging;
-    },
-    setNameEditorNodeId(state, nodeId) {
-        state.nameEditorNodeId = nodeId;
     }
 };
 
 export const actions = {
     ...jsonPatchActions,
+    ...workflowExecution.actions,
+    ...workflowEditor.actions,
+    ...APinteractions.actions,
+
+    // AP specific
+    // TODO: move to application store
     async loadWorkflow({ commit, dispatch, getters }, { projectId, workflowId = 'root' }) {
         const project = await loadWorkflowFromApi({ projectId, workflowId });
         if (project) {
@@ -73,6 +75,9 @@ export const actions = {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
+    
+    // AP specific
+    // TODO: move to application store
     unloadActiveWorkflow({ state, commit, dispatch, getters: { activeWorkflowId }, rootGetters }, { clearWorkflow }) {
         if (!state.activeWorkflow) {
             // nothing to do (no tabs open)
@@ -94,300 +99,24 @@ export const actions = {
         if (clearWorkflow) {
             commit('setActiveWorkflow', null);
         }
-    },
-
-    /**
-     * Deletes all selected objects and displays an error message for the objects, that cannot be deleted.
-     * If the objects can be deleted a deselect event is fired.
-     * @param {Object} context - store context
-     * @returns {void} - nothing to return
-     */
-    deleteSelectedObjects({
-        state: { activeWorkflow },
-        getters: { activeWorkflowId },
-        rootState,
-        rootGetters,
-        dispatch
-    }) {
-        const selectedNodes = rootGetters['selection/selectedNodes'];
-        const selectedConnections = rootGetters['selection/selectedConnections'];
-        const deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
-        const nonDeletableNodeIds = selectedNodes.filter(node => !node.allowedActions.canDelete).map(node => node.id);
-        const deletableConnectionIds = selectedConnections.filter(
-            connection => connection.allowedActions.canDelete
-        ).map(connection => connection.id);
-        const nonDeletableConnectionIds = selectedConnections.filter(
-            connection => !connection.allowedActions.canDelete
-        ).map(connection => connection.id);
-
-        if (deletableNodeIds.length || deletableConnectionIds.length) {
-            deleteObjects({
-                projectId: activeWorkflow.projectId,
-                workflowId: activeWorkflowId,
-                nodeIds: deletableNodeIds.length ? deletableNodeIds : [],
-                connectionIds: deletableConnectionIds ? deletableConnectionIds : []
-            });
-            dispatch('selection/deselectAllObjects', null, { root: true });
-        }
-
-        let messages = [];
-        if (nonDeletableNodeIds.length) {
-            messages.push(`The following nodes can’t be deleted: [${nonDeletableNodeIds.join(', ')}]`);
-        }
-        if (nonDeletableConnectionIds.length) {
-            messages.push(`The following connections can’t be deleted: [${nonDeletableConnectionIds.join(', ')}]`);
-        }
-        if (messages.length) {
-            window.alert(messages.join(' \n'));
-        }
-    },
-    changeNodeState({ state, getters, rootGetters }, { action, nodes }) {
-        let { activeWorkflow: { projectId } } = state;
-        let { activeWorkflowId } = getters;
-
-        if (Array.isArray(nodes)) {
-            // act upon a list of nodes
-            changeNodeState({ projectId, nodeIds: nodes, action, workflowId: activeWorkflowId });
-        } else if (nodes === 'all') {
-            // act upon entire workflow
-            changeNodeState({ projectId, action, workflowId: activeWorkflowId });
-        } else if (nodes === 'selected') {
-            // act upon selected nodes
-            changeNodeState({
-                projectId,
-                nodeIds: rootGetters['selection/selectedNodeIds'],
-                action,
-                workflowId: activeWorkflowId
-            });
-        } else {
-            throw new TypeError("'nodes' has to be of type 'all' | 'selected' | Array<nodeId>]");
-        }
-    },
-    changeLoopState({ state, getters }, { action, nodeId }) {
-        let { activeWorkflow: { projectId } } = state;
-        let { activeWorkflowId: workflowId } = getters;
-
-        changeLoopState({
-            projectId,
-            workflowId,
-            nodeId,
-            action
-        });
-    },
-    executeNodes({ dispatch }, nodes) {
-        dispatch('changeNodeState', { action: 'execute', nodes });
-    },
-    resetNodes({ dispatch }, nodes) {
-        dispatch('changeNodeState', { action: 'reset', nodes });
-    },
-    cancelNodeExecution({ dispatch }, nodes) {
-        dispatch('changeNodeState', { action: 'cancel', nodes });
-    },
-    /* See docs in API */
-    pauseLoopExecution({ dispatch }, nodeId) {
-        dispatch('changeLoopState', { action: 'pause', nodeId });
-    },
-    /* See docs in API */
-    resumeLoopExecution({ dispatch }, nodeId) {
-        dispatch('changeLoopState', { action: 'resume', nodeId });
-    },
-    /* See docs in API */
-    stepLoopExecution({ dispatch }, nodeId) {
-        dispatch('changeLoopState', { action: 'step', nodeId });
-    },
-    /* See docs in API */
-    openView({ state }, nodeId) {
-        openView({ projectId: state.activeWorkflow.projectId, nodeId });
-    },
-    /* See docs in API */
-    openDialog({ state }, nodeId) {
-        openDialog({ projectId: state.activeWorkflow.projectId, nodeId });
-    },
-    /* See docs in API */
-    configureFlowVariables({ state }, nodeId) {
-        configureFlowVariables({ projectId: state.activeWorkflow.projectId, nodeId });
-    },
-    /* See docs in API */
-    undo({ state, getters }) {
-        let { activeWorkflowId } = getters;
-        undo({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
-    },
-    /* See docs in API */
-    redo({ state, getters }) {
-        let { activeWorkflowId } = getters;
-        redo({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
-    },
-    /* See docs in API */
-    openLayoutEditor({ state, getters }) {
-        let { activeWorkflowId } = getters;
-        openLayoutEditor({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
-    },
-    saveWorkflow({ state }) {
-        let { activeWorkflow: { projectId } } = state;
-        saveWorkflow({ projectId });
-    },
-    closeWorkflow({ dispatch, state }) {
-        let { activeWorkflow: { projectId } } = state;
-        closeWorkflow({ projectId });
-    },
-    openNameEditor({ commit }, nodeId) {
-        commit('setNameEditorNodeId', nodeId);
-    },
-    closeNameEditor({ commit }) {
-        commit('setNameEditorNodeId', null);
-    },
-    addContainerNodePort({ state, getters }, { nodeId, side, typeId }) {
-        let { activeWorkflow: { projectId } } = state;
-        let { activeWorkflowId: workflowId } = getters;
-
-        addContainerNodePort({ projectId, workflowId, nodeId, side, typeId });
-    },
-    /**
-     * Move either the outline of the nodes or the nodes itself,
-     * depending on the amount of selected nodes. Delta is hereby the amount
-     * of movement to the last position of the node.
-     * @param {Object} context - store context
-     * @param {Object} params
-     * @param {string} params.deltaX - pixels moved since the last
-     * @param {string} params.deltaY - id of the node
-     * @returns {void} - nothing to return
-     */
-    moveNodes({ commit, rootGetters }, { deltaX, deltaY }) {
-        commit('shiftPosition', { deltaX, deltaY });
-    },
-
-    /**
-     * Renames a container (metanode or component).
-     * @param {Object} context - store context
-     * @param {string} params.nodeId - container node id
-     * @param {string} params.name - new new
-     * @returns {void} - nothing to return
-     */
-    renameContainerNode({ state, getters }, { nodeId, name }) {
-        const { activeWorkflow: { projectId } } = state;
-        const { activeWorkflowId } = getters;
-        renameContainerNode({
-            nodeId,
-            name,
-            projectId,
-            workflowId: activeWorkflowId
-        });
-    },
-
-    /**
-     * Calls the API to save the position of the nodes after the move is over
-     * @param {Object} context - store context
-     * @param {Object} params
-     * @param {string} params.projectId - id of the project
-     * @param {string} params.nodeId - id of the node
-     * @param {Object} params.startPos - start position {x: , y: } of the move event
-     * @returns {void} - nothing to return
-     */
-    saveNodeMoves({ state, getters, commit, rootGetters }, { projectId }) {
-        let translation;
-        let selectedNodes = rootGetters['selection/selectedNodeIds'];
-        // calculate the translation either relative to the position or the outline position
-        translation = {
-            x: state.deltaMovePosition.x,
-            y: state.deltaMovePosition.y
-        };
-        moveObjects({
-            projectId,
-            workflowId: getters.activeWorkflowId,
-            nodeIds: selectedNodes,
-            translation,
-            annotationIds: []
-        }).then((e) => {
-            // nothing todo when movement is successful
-        }, (error) => {
-            consola.log('The following error occured: ', error);
-            commit('resetDragPosition');
-        });
-    },
-    async connectNodes({ state, getters }, { sourceNode, destNode, sourcePort, destPort }) {
-        await connectNodes({
-            projectId: state.activeWorkflow.projectId,
-            workflowId: getters.activeWorkflowId,
-            sourceNode,
-            sourcePort,
-            destNode,
-            destPort
-        });
-    },
-    async addNode({ state, getters }, { position, nodeFactory }) {
-        await addNode({
-            projectId: state.activeWorkflow.projectId,
-            workflowId: getters.activeWorkflowId,
-            position: {
-                x: position[0],
-                y: position[1]
-            },
-            nodeFactory
-        });
-    },
-    async collapseToContainer({ state, getters, rootGetters, dispatch }, { containerType }) {
-        const selectedNodes = rootGetters['selection/selectedNodeIds'];
-        let canCollapse = true;
-
-        if (rootGetters['selection/selectedNodes'].some(node => node.allowedActions.canCollapse === 'resetRequired')) {
-            canCollapse = window.confirm(`Creating this ${containerType} will reset the executed nodes.`);
-        }
-
-        if (canCollapse) {
-            dispatch('selection/deselectAllObjects', null, { root: true });
-
-            await collapseToContainer({
-                containerType,
-                projectId: state.activeWorkflow.projectId,
-                workflowId: getters.activeWorkflowId,
-                nodeIds: selectedNodes,
-                annotationIds: []
-            });
-        }
-    },
-    async expandContainerNode({ state, getters, rootGetters, dispatch }) {
-        const selectedNode = rootGetters['selection/singleSelectedNode'];
-        
-        let shouldExpand = true;
-        if (selectedNode.allowedActions.canExpand === 'resetRequired') {
-            shouldExpand = window.confirm(`Expanding this ${selectedNode.kind} will reset the executed nodes.`);
-        }
-
-        if (shouldExpand) {
-            dispatch('selection/deselectAllObjects', null, { root: true });
-
-            await expandContainerNode({
-                projectId: state.activeWorkflow.projectId,
-                workflowId: getters.activeWorkflowId,
-                nodeId: selectedNode.id
-            });
-        }
     }
 };
 
 // The name getters can be misleading, its more like Vues computed propeties which may return functions.
 // Please consult: https://vuex.vuejs.org/guide/getters.html
 export const getters = {
-    isStreaming({ activeWorkflow }) {
-        return Boolean(activeWorkflow?.info.jobManager);
-    },
-    isLinked({ activeWorkflow }) {
-        return Boolean(activeWorkflow?.info.linked);
-    },
-    isInsideLinked(state, getters) {
-        return Boolean(getters.insideLinkedType);
-    },
-    insideLinkedType({ activeWorkflow }) {
-        if (!activeWorkflow?.parents) {
+    ...workflowExecution.getters,
+    ...workflowEditor.getters,
+    ...APinteractions.getters,
+    
+    // NXT-962: make this getter obsolete and always include the workflowId in the data
+    activeWorkflowId({ activeWorkflow }) {
+        if (!activeWorkflow) {
             return null;
         }
+        return activeWorkflow?.info?.containerId || 'root';
+    },
 
-        return activeWorkflow.parents.find(({ linked }) => linked)?.containerType;
-    },
-    /* Workflow is writable, if it is not linked or inside a linked workflow */
-    isWritable(state, getters) {
-        return !(getters.isLinked || getters.isInsideLinked);
-    },
     /* Workflow is empty if it doesn't contain nodes */
     isWorkflowEmpty({ activeWorkflow }) {
         let hasNodes = Boolean(Object.keys(activeWorkflow?.nodes).length);
@@ -395,9 +124,32 @@ export const getters = {
 
         return !hasNodes && !hasAnnotations;
     },
-    /*
-        returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow
-    */
+
+    isStreaming({ activeWorkflow }) {
+        return Boolean(activeWorkflow?.info.jobManager);
+    },
+
+    isLinked({ activeWorkflow }) {
+        return Boolean(activeWorkflow?.info.linked);
+    },
+    insideLinkedType({ activeWorkflow }) {
+        if (!activeWorkflow?.parents) { return null; }
+
+        return activeWorkflow.parents.find(({ linked }) => linked)?.containerType;
+    },
+    isInsideLinked(state, getters) {
+        return Boolean(getters.insideLinkedType);
+    },
+
+    /* Workflow is writable, if it is not linked or inside a linked workflow */
+    isWritable(state, getters) {
+        const linkage = getters.isLinked || getters.isInsideLinked;
+
+        // TODO: document better under which conditions a workflow is not writable
+        return !linkage;
+    },
+
+    /* returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow */
     workflowBounds({ activeWorkflow }) {
         if (!activeWorkflow) {
             return {
@@ -502,47 +254,33 @@ export const getters = {
         };
     },
 
-    // NXT-962: make this getter obsolete
-    activeWorkflowId({ activeWorkflow }) {
-        if (!activeWorkflow) {
-            return null;
+    getNodeIcon: ({ activeWorkflow }) => nodeId => {
+        let node = activeWorkflow.nodes[nodeId];
+        let { templateId } = node;
+        if (templateId) {
+            return activeWorkflow.nodeTemplates[templateId].icon;
+        } else {
+            return node.icon;
         }
-        return activeWorkflow?.info?.containerId || 'root';
     },
 
-    getNodeIcon({ activeWorkflow }) {
-        return (nodeId) => {
-            let node = activeWorkflow.nodes[nodeId];
-            let { templateId } = node;
-            if (templateId) {
-                return activeWorkflow.nodeTemplates[templateId].icon;
-            } else {
-                return node.icon;
-            }
-        };
+    getNodeName: ({ activeWorkflow }) => nodeId => {
+        let node = activeWorkflow.nodes[nodeId];
+        let { templateId } = node;
+        if (templateId) {
+            return activeWorkflow.nodeTemplates[templateId].name;
+        } else {
+            return node.name;
+        }
     },
 
-    getNodeName({ activeWorkflow }) {
-        return (nodeId) => {
-            let node = activeWorkflow.nodes[nodeId];
-            let { templateId } = node;
-            if (templateId) {
-                return activeWorkflow.nodeTemplates[templateId].name;
-            } else {
-                return node.name;
-            }
-        };
-    },
-
-    getNodeType({ activeWorkflow }) {
-        return (nodeId) => {
-            let node = activeWorkflow.nodes[nodeId];
-            let { templateId } = node;
-            if (templateId) {
-                return activeWorkflow.nodeTemplates[templateId].type;
-            } else {
-                return node.type;
-            }
-        };
+    getNodeType: ({ activeWorkflow }) => nodeId => {
+        let node = activeWorkflow.nodes[nodeId];
+        let { templateId } = node;
+        if (templateId) {
+            return activeWorkflow.nodeTemplates[templateId].type;
+        } else {
+            return node.type;
+        }
     }
 };
