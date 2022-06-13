@@ -6,6 +6,7 @@
 /* prevent "bounce" effect when scrolling with touch pad */
 body {
   overscroll-behavior: none;
+  overflow: hidden;
 }
 
 button {
