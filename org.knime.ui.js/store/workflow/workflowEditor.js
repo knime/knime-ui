@@ -9,12 +9,13 @@ export const state = {
 
 export const mutations = {
     // Shifts the position of the node for the provided amount
-    // TODO: rename to previewNodeDelta
+    // TODO: rename to previewMoveDelta
     shiftPosition(state, { deltaX, deltaY }) {
         state.deltaMovePosition.x = deltaX;
         state.deltaMovePosition.y = deltaY;
     },
     // Reset the position of the outline
+    // TODO: rename accordingly, or merge with above method
     resetDragPosition(state) {
         state.deltaMovePosition = { x: 0, y: 0 };
     },

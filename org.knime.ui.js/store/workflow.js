@@ -1,7 +1,5 @@
 import Vue from 'vue';
 
-import { addEventListener, loadWorkflow as loadWorkflowFromApi, removeEventListener } from '~api';
-
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
 import * as workflowEditor from './workflow/workflowEditor';
 import * as APinteractions from './workflow/APinteractions';
@@ -54,52 +52,7 @@ export const actions = {
     ...jsonPatchActions,
     ...workflowExecution.actions,
     ...workflowEditor.actions,
-    ...APinteractions.actions,
-
-    // AP specific
-    // TODO: move to application store
-    async loadWorkflow({ commit, dispatch, getters }, { projectId, workflowId = 'root' }) {
-        const project = await loadWorkflowFromApi({ projectId, workflowId });
-        if (project) {
-            commit('setActiveWorkflow', {
-                ...project.workflow,
-                projectId
-            });
-
-            let snapshotId = project.snapshotId;
-            commit('setActiveSnapshotId', snapshotId);
-
-            let workflowId = getters.activeWorkflowId;
-            addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
-        } else {
-            throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
-        }
-    },
-    
-    // AP specific
-    // TODO: move to application store
-    unloadActiveWorkflow({ state, commit, dispatch, getters: { activeWorkflowId }, rootGetters }, { clearWorkflow }) {
-        if (!state.activeWorkflow) {
-            // nothing to do (no tabs open)
-            return;
-        }
-        // clean up
-        try {
-            let { projectId } = state.activeWorkflow;
-            let { activeSnapshotId: snapshotId } = state;
-
-            removeEventListener('WorkflowChanged', { projectId, workflowId: activeWorkflowId, snapshotId });
-        } catch (e) {
-            consola.error(e);
-        }
-
-        commit('selection/clearSelection', null, { root: true });
-        commit('setTooltip', null);
-        
-        if (clearWorkflow) {
-            commit('setActiveWorkflow', null);
-        }
-    }
+    ...APinteractions.actions
 };
 
 // The name getters can be misleading, its more like Vues computed propeties which may return functions.
@@ -142,8 +95,8 @@ export const getters = {
     },
 
     /* Workflow is writable, if it is not linked or inside a linked workflow */
-    isWritable(state, getters) {
-        const linkage = getters.isLinked || getters.isInsideLinked;
+    isWritable(state, { isLinked, isInsideLinked }) {
+        const linkage = isLinked || isInsideLinked;
 
         // TODO: document better under which conditions a workflow is not writable
         return !linkage;
