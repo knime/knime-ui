@@ -36,14 +36,14 @@ describe('MoveableNodeContainer', () => {
             workflow: {
                 mutations: {
                     setDragging: jest.fn(),
-                    resetDragPosition: jest.fn()
+                    resetMovePreview: jest.fn()
                 },
                 getters: {
                     isWritable() { return true; }
                 },
                 actions: {
-                    moveNodes: jest.fn(),
-                    saveNodeMoves: jest.fn()
+                    previewMoveObjects: jest.fn(),
+                    moveObjects: jest.fn()
                 },
                 state: {
                     isDragging: false,
@@ -195,7 +195,7 @@ describe('MoveableNodeContainer', () => {
                 deltaY: Math.round(initialDelta.y / gridSize.y) * gridSize.y
             };
 
-            expect(storeConfig.workflow.actions.moveNodes).toHaveBeenCalledWith(
+            expect(storeConfig.workflow.actions.previewMoveObjects).toHaveBeenCalledWith(
                 expect.anything(),
                 expectedDelta
             );
@@ -208,7 +208,7 @@ describe('MoveableNodeContainer', () => {
             jest.advanceTimersByTime(5000); /* eslint-disable-line no-magic-numbers */
             await Promise.resolve();
             jest.runOnlyPendingTimers();
-            expect(storeConfig.workflow.actions.saveNodeMoves).toHaveBeenCalledWith(
+            expect(storeConfig.workflow.actions.moveObjects).toHaveBeenCalledWith(
                 expect.anything(),
                 { nodeId: 'root:1', projectId: 'projectId', startPos: { x: 0, y: 0 } }
             );

@@ -74,7 +74,7 @@ export default {
         handleMoveFromStore() {
             if (this.isDragging) {
                 this.$store.commit('workflow/setDragging', { isDragging: false });
-                this.$store.commit('workflow/resetDragPosition');
+                this.$store.commit('workflow/resetMovePreview');
             }
         },
 
@@ -121,7 +121,7 @@ export default {
             
             // prevent unneeded dispatches if the position hasn't changed
             if (this.deltaMovePosition.x !== deltaX || this.deltaMovePosition.y !== deltaY) {
-                this.$store.dispatch('workflow/moveNodes', {
+                this.$store.dispatch('workflow/previewMoveObjects', {
                     deltaX,
                     deltaY
                 });
@@ -138,7 +138,7 @@ export default {
          */
         onMoveEnd: throttle(function () {
             /* eslint-disable no-invalid-this */
-            this.$store.dispatch('workflow/saveNodeMoves', {
+            this.$store.dispatch('workflow/moveObjects', {
                 projectId: this.activeProjectId,
                 startPos: this.startPos,
                 nodeId: this.id

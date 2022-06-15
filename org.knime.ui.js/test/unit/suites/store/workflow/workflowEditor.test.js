@@ -54,7 +54,7 @@ describe('workflow store: Editing', () => {
             });
 
             let node = store.state.workflow.activeWorkflow.nodes['root:1'];
-            store.commit('workflow/shiftPosition', { node, deltaX: 50, deltaY: 50 });
+            store.commit('workflow/setPreviewMoveDelta', { node, deltaX: 50, deltaY: 50 });
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
         });
 
@@ -67,9 +67,9 @@ describe('workflow store: Editing', () => {
             });
 
             let node = store.state.workflow.activeWorkflow.nodes['root:1'];
-            store.commit('workflow/shiftPosition', { node, deltaX: 50, deltaY: 50 });
+            store.commit('workflow/setPreviewMoveDelta', { node, deltaX: 50, deltaY: 50 });
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
-            store.commit('workflow/resetDragPosition', { nodeId: node.id });
+            store.commit('workflow/resetMovePreview', { nodeId: node.id });
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 0, y: 0 });
         });
 
@@ -113,7 +113,7 @@ describe('workflow store: Editing', () => {
             store.dispatch('selection/selectAllNodes');
             await Vue.nextTick();
 
-            store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
+            store.dispatch('workflow/previewMoveObjects', { deltaX: 50, deltaY: 50 });
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
         });
 
@@ -130,7 +130,7 @@ describe('workflow store: Editing', () => {
             });
             store.dispatch('selection/selectAllNodes');
             await Vue.nextTick();
-            store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
+            store.dispatch('workflow/previewMoveObjects', { deltaX: 50, deltaY: 50 });
 
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
         });
@@ -153,7 +153,7 @@ describe('workflow store: Editing', () => {
                     store.dispatch('selection/selectNode', node.id);
                 }
             });
-            store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
+            store.dispatch('workflow/previewMoveObjects', { deltaX: 50, deltaY: 50 });
 
             expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
         });
@@ -181,8 +181,8 @@ describe('workflow store: Editing', () => {
                 nodeIds.push(node.id);
             });
 
-            store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
-            store.dispatch('workflow/saveNodeMoves', { projectId: 'foo', nodeId: 'node-0', startPos: { x: 0, y: 0 } });
+            store.dispatch('workflow/previewMoveObjects', { deltaX: 50, deltaY: 50 });
+            store.dispatch('workflow/moveObjects', { projectId: 'foo', nodeId: 'node-0', startPos: { x: 0, y: 0 } });
             expect(moveObjectsMock).toHaveBeenNthCalledWith(1, {
                 projectId: 'foo',
                 nodeIds,

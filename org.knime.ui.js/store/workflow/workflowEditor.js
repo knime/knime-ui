@@ -14,14 +14,13 @@ export const state = {
 
 export const mutations = {
     // Shifts the position of the node for the provided amount
-    // TODO: rename to previewMoveDelta
-    shiftPosition(state, { deltaX, deltaY }) {
+    setPreviewMoveDelta(state, { deltaX, deltaY }) {
         state.deltaMovePosition.x = deltaX;
         state.deltaMovePosition.y = deltaY;
     },
     // Reset the position of the outline
     // TODO: rename accordingly, or merge with above method
-    resetDragPosition(state) {
+    resetMovePreview(state) {
         state.deltaMovePosition = { x: 0, y: 0 };
     },
     // change the isDragging property to the provided Value
@@ -56,8 +55,8 @@ export const actions = {
      * @param {string} params.deltaY - id of the node
      * @returns {void} - nothing to return
      */
-    moveNodes({ commit, rootGetters }, { deltaX, deltaY }) {
-        commit('shiftPosition', { deltaX, deltaY });
+    previewMoveObjects({ commit, rootGetters }, { deltaX, deltaY }) {
+        commit('setPreviewMoveDelta', { deltaX, deltaY });
     },
     /**
      * Calls the API to save the position of the nodes after the move is over
@@ -68,7 +67,7 @@ export const actions = {
      * @param {Object} params.startPos - start position {x: , y: } of the move event
      * @returns {void} - nothing to return
      */
-    saveNodeMoves({ state, getters, commit, rootGetters }, { projectId }) {
+    async moveObjects({ state, getters, commit, rootGetters }, { projectId }) {
         let translation;
         let selectedNodes = rootGetters['selection/selectedNodeIds'];
         // calculate the translation either relative to the position or the outline position
@@ -76,18 +75,18 @@ export const actions = {
             x: state.deltaMovePosition.x,
             y: state.deltaMovePosition.y
         };
-        moveObjects({
-            projectId,
-            workflowId: getters.activeWorkflowId,
-            nodeIds: selectedNodes,
-            translation,
-            annotationIds: []
-        }).then((e) => {
-            // nothing todo when movement is successful
-        }, (error) => {
-            consola.log('The following error occured: ', error);
-            commit('resetDragPosition');
-        });
+        try {
+            await moveObjects({
+                projectId,
+                workflowId: getters.activeWorkflowId,
+                nodeIds: selectedNodes,
+                translation,
+                annotationIds: []
+            });
+        } catch (e) {
+            consola.log('The following error occured: ', e);
+            commit('resetMovePreview');
+        }
     },
 
     async connectNodes({ state, getters }, { sourceNode, destNode, sourcePort, destPort }) {
