@@ -25,10 +25,10 @@ export default {
         ...mapState('application', ['availablePortTypes']),
         metadata() {
             const metadataMapper = {
-                project: () => this.workflow.projectMetadata || { title: this.workflow.info.name },
+                project: () => this.workflow.projectMetadata || { title: this.workflow?.info?.name },
                 component: () => {
                     const {
-                        componentMetadata: { inPorts, outPorts, name, type, icon, description, options, views }
+                        componentMetadata: { inPorts, outPorts, name, type, icon, description, options, views } = {}
                     } = this.workflow;
                     
                     const mappedInPorts = mapPortTypes(inPorts, this.availablePortTypes);
@@ -52,7 +52,7 @@ export default {
             };
             const defaultHandler = () => null;
 
-            return (metadataMapper[this.workflow.info.containerType] || defaultHandler)();
+            return (metadataMapper[this.workflow?.info?.containerType] || defaultHandler)();
         }
     },
     methods: {
@@ -129,7 +129,7 @@ export default {
       <h2>Tags</h2>
       <hr>
       <TagList
-        v-if="metadata.tags.length"
+        v-if="metadata.tags && metadata.tags.length"
         :tags="metadata.tags"
       />
       <div
