@@ -40,7 +40,7 @@ describe('ConnectorLabel.vue', () => {
                             }
                         },
                         isDragging: false,
-                        deltaMovePosition: { x: 0, y: 0 }
+                        movePreviewDelta: { x: 0, y: 0 }
                     },
                     mutations: {
                         setState(state, update = {}) {
@@ -80,7 +80,7 @@ describe('ConnectorLabel.vue', () => {
             isNodeSelectedMock.mockReturnValue(nodeId => ({ 'root:1': true, 'root:2': true }[nodeId]));
             $store.commit('workflow/setState', {
                 isDragging: true,
-                deltaMovePosition: { x: 200, y: 200 }
+                movePreviewDelta: { x: 200, y: 200 }
             });
             await Vue.nextTick();
 
@@ -100,7 +100,7 @@ describe('ConnectorLabel.vue', () => {
             isNodeSelectedMock.mockReturnValue(false);
             $store.commit('workflow/setState', {
                 isDragging: true,
-                deltaMovePosition: { x: 200, y: 200 }
+                movePreviewDelta: { x: 200, y: 200 }
             });
             await Vue.nextTick();
 

@@ -47,7 +47,7 @@ describe('MoveableNodeContainer', () => {
                 },
                 state: {
                     isDragging: false,
-                    deltaMovePosition: { x: 250, y: 250 },
+                    movePreviewDelta: { x: 250, y: 250 },
                     activeWorkflow: { nodes: { 'root:1': { id: 'root:1' }, 'root:2': { id: 'root:2' } } }
                 }
             },

@@ -55,7 +55,7 @@ describe('workflow store: Editing', () => {
 
             let node = store.state.workflow.activeWorkflow.nodes['root:1'];
             store.commit('workflow/setMovePreview', { node, deltaX: 50, deltaY: 50 });
-            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
+            expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 50, y: 50 });
         });
 
         it('resets the position of the outlint', () => {
@@ -68,9 +68,9 @@ describe('workflow store: Editing', () => {
 
             let node = store.state.workflow.activeWorkflow.nodes['root:1'];
             store.commit('workflow/setMovePreview', { node, deltaX: 50, deltaY: 50 });
-            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
+            expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 50, y: 50 });
             store.commit('workflow/resetMovePreview', { nodeId: node.id });
-            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 0, y: 0 });
+            expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 0, y: 0 });
         });
 
         it('checks node dragging', () => {
@@ -114,7 +114,7 @@ describe('workflow store: Editing', () => {
             await Vue.nextTick();
 
             store.commit('workflow/setMovePreview', { deltaX: 50, deltaY: 50 });
-            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
+            expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 50, y: 50 });
         });
 
         it('moves nodes outline', async () => {
@@ -132,7 +132,7 @@ describe('workflow store: Editing', () => {
             await Vue.nextTick();
             store.commit('workflow/setMovePreview', { deltaX: 50, deltaY: 50 });
 
-            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
+            expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 50, y: 50 });
         });
 
         it('moves subset of node outlines', async () => {
@@ -155,7 +155,7 @@ describe('workflow store: Editing', () => {
             });
             store.commit('workflow/setMovePreview', { deltaX: 50, deltaY: 50 });
 
-            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
+            expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 50, y: 50 });
         });
 
         it.each([

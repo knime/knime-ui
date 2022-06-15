@@ -8,20 +8,19 @@ import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameCo
 
 export const state = {
     isDragging: false,
-    deltaMovePosition: { x: 0, y: 0 },
+    movePreviewDelta: { x: 0, y: 0 },
     nameEditorNodeId: null
 };
 
 export const mutations = {
     // Shifts the position of the node for the provided amount
     setMovePreview(state, { deltaX, deltaY }) {
-        state.deltaMovePosition.x = deltaX;
-        state.deltaMovePosition.y = deltaY;
+        state.movePreviewDelta.x = deltaX;
+        state.movePreviewDelta.y = deltaY;
     },
     // Reset the position of the outline
-    // TODO: rename accordingly, or merge with above method
     resetMovePreview(state) {
-        state.deltaMovePosition = { x: 0, y: 0 };
+        state.movePreviewDelta = { x: 0, y: 0 };
     },
     // change the isDragging property to the provided Value
     setDragging(state, { isDragging }) {
@@ -58,8 +57,8 @@ export const actions = {
         let selectedNodes = rootGetters['selection/selectedNodeIds'];
         // calculate the translation either relative to the position or the outline position
         translation = {
-            x: state.deltaMovePosition.x,
-            y: state.deltaMovePosition.y
+            x: state.movePreviewDelta.x,
+            y: state.movePreviewDelta.y
         };
         try {
             await moveObjects({

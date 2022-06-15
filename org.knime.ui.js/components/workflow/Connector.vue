@@ -45,7 +45,7 @@ export default {
         ...mapState('workflow', {
             workflow: 'activeWorkflow',
             isDragging: 'isDragging',
-            deltaMovePosition: 'deltaMovePosition'
+            movePreviewDelta: 'movePreviewDelta'
         }),
         ...mapGetters('workflow', {
             isWorkflowWritable: 'isWritable'
@@ -56,12 +56,12 @@ export default {
             // Update position of source or destination node is being moved
             if (this.isDragging) {
                 if (this.isNodeSelected(this.sourceNode)) {
-                    x1 += this.deltaMovePosition.x;
-                    y1 += this.deltaMovePosition.y;
+                    x1 += this.movePreviewDelta.x;
+                    y1 += this.movePreviewDelta.y;
                 }
                 if (this.isNodeSelected(this.destNode)) {
-                    x2 += this.deltaMovePosition.x;
-                    y2 += this.deltaMovePosition.y;
+                    x2 += this.movePreviewDelta.x;
+                    y2 += this.movePreviewDelta.y;
                 }
             }
 

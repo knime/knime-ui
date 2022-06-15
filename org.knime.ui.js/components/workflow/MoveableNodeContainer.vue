@@ -38,14 +38,14 @@ export default {
         ...mapGetters('selection', ['isNodeSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapState('application', ['activeProjectId']),
-        ...mapState('workflow', ['isDragging', 'deltaMovePosition', 'activeWorkflow']),
+        ...mapState('workflow', ['isDragging', 'movePreviewDelta', 'activeWorkflow']),
         ...mapState('canvas', ['zoomFactor']),
 
         // Combined position of original position + the dragged amount
         combinedPosition() {
             return {
-                x: this.position.x + this.deltaMovePosition.x,
-                y: this.position.y + this.deltaMovePosition.y
+                x: this.position.x + this.movePreviewDelta.x,
+                y: this.position.y + this.movePreviewDelta.y
             };
         },
         
@@ -121,7 +121,7 @@ export default {
             deltaY = Math.round(deltaY / gridSize.y) * gridSize.y;
             
             // prevent unneeded dispatches if the position hasn't changed
-            if (this.deltaMovePosition.x !== deltaX || this.deltaMovePosition.y !== deltaY) {
+            if (this.movePreviewDelta.x !== deltaX || this.movePreviewDelta.y !== deltaY) {
                 this.setMovePreview({ deltaX, deltaY });
             }
             /* eslint-enable no-invalid-this */
