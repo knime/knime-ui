@@ -36,13 +36,13 @@ describe('MoveableNodeContainer', () => {
             workflow: {
                 mutations: {
                     setDragging: jest.fn(),
-                    resetMovePreview: jest.fn()
+                    resetMovePreview: jest.fn(),
+                    setMovePreview: jest.fn()
                 },
                 getters: {
                     isWritable() { return true; }
                 },
                 actions: {
-                    previewMoveObjects: jest.fn(),
                     moveObjects: jest.fn()
                 },
                 state: {
@@ -195,7 +195,7 @@ describe('MoveableNodeContainer', () => {
                 deltaY: Math.round(initialDelta.y / gridSize.y) * gridSize.y
             };
 
-            expect(storeConfig.workflow.actions.previewMoveObjects).toHaveBeenCalledWith(
+            expect(storeConfig.workflow.mutations.setMovePreview).toHaveBeenCalledWith(
                 expect.anything(),
                 expectedDelta
             );

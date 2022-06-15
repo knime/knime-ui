@@ -14,7 +14,7 @@ export const state = {
 
 export const mutations = {
     // Shifts the position of the node for the provided amount
-    setPreviewMoveDelta(state, { deltaX, deltaY }) {
+    setMovePreview(state, { deltaX, deltaY }) {
         state.deltaMovePosition.x = deltaX;
         state.deltaMovePosition.y = deltaY;
     },
@@ -44,20 +44,6 @@ export const actions = {
         redo({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
     },
 
-
-    /**
-     * Move either the outline of the nodes or the nodes itself,
-     * depending on the amount of selected nodes. Delta is hereby the amount
-     * of movement to the last position of the node.
-     * @param {Object} context - store context
-     * @param {Object} params
-     * @param {string} params.deltaX - pixels moved since the last
-     * @param {string} params.deltaY - id of the node
-     * @returns {void} - nothing to return
-     */
-    previewMoveObjects({ commit, rootGetters }, { deltaX, deltaY }) {
-        commit('setPreviewMoveDelta', { deltaX, deltaY });
-    },
     /**
      * Calls the API to save the position of the nodes after the move is over
      * @param {Object} context - store context

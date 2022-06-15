@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex';
+import { mapState, mapGetters, mapActions, mapMutations } from 'vuex';
 import throttle from 'raf-throttle';
 
 export default {
@@ -66,6 +66,7 @@ export default {
     },
     methods: {
         ...mapActions('selection', ['selectNode', 'deselectNode', 'deselectAllObjects']),
+        ...mapMutations('workflow', ['setMovePreview']),
         /**
          * Resets the drag position in the store. This can only happen here, as otherwise the node
          * will be reset to its position before the actual movement of the store happened.
@@ -121,10 +122,7 @@ export default {
             
             // prevent unneeded dispatches if the position hasn't changed
             if (this.deltaMovePosition.x !== deltaX || this.deltaMovePosition.y !== deltaY) {
-                this.$store.dispatch('workflow/previewMoveObjects', {
-                    deltaX,
-                    deltaY
-                });
+                this.setMovePreview({ deltaX, deltaY });
             }
             /* eslint-enable no-invalid-this */
         }),
