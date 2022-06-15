@@ -14,6 +14,10 @@ const mockVuexStore = (moduleInput) => {
         Object.assign(storeConfig, moduleInput.index);
     }
 
+    if (typeof storeConfig.state === 'object') {
+        storeConfig.state = () => storeConfig.state;
+    }
+
     return new Vuex.Store(storeConfig);
 };
 

@@ -72,20 +72,6 @@ describe('workflow store: Editing', () => {
             store.commit('workflow/resetMovePreview', { nodeId: node.id });
             expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 0, y: 0 });
         });
-
-        it('checks node dragging', () => {
-            store.commit('workflow/setActiveWorkflow', {
-                projectId: 'bar',
-                nodes: {
-                    'root:1': { id: 'root:1' }
-                }
-            });
-
-            store.commit('workflow/setDragging', { isDragging: true });
-            expect(store.state.workflow.isDragging).toBe(true);
-            store.commit('workflow/setDragging', { isDragging: false });
-            expect(store.state.workflow.isDragging).toBe(false);
-        });
     });
 
     describe('actions', () => {

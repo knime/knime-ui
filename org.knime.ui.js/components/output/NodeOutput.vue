@@ -30,11 +30,8 @@ export default {
         };
     },
     computed: {
-        ...mapState('workflow', {
-            isDragging: 'isDragging'
-        }),
         ...mapState('application', { projectId: 'activeProjectId', portTypes: 'availablePortTypes' }),
-        ...mapGetters('workflow', { workflowId: 'activeWorkflowId' }),
+        ...mapGetters('workflow', { workflowId: 'activeWorkflowId', isDragging: 'isDragging' }),
         
         // ========================== Sanity Check ============================
         // The following properties execute from top to bottom

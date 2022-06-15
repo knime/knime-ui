@@ -52,11 +52,11 @@ describe('NodeOutput.vue', () => {
                 activeWorkflow: {
                     nodes: dummyNodes,
                     state: {}
-                },
-                isDragging: false
+                }
             },
             getters: {
-                activeWorkflowId: jest.fn().mockReturnValue('workflowId')
+                activeWorkflowId: jest.fn().mockReturnValue('workflowId'),
+                isDragging: jest.fn().mockReturnValue(false)
             },
             actions: {
                 executeNodes: jest.fn()
@@ -125,8 +125,9 @@ describe('NodeOutput.vue', () => {
 
     describe('node problems', () => {
         it("is dragging and table hasn't been loaded yet", () => {
-            workflow.state.isDragging = true;
+            workflow.getters.isDragging.mockReturnValue(true);
             doShallowMount();
+            
             wrapper.setData({ portViewerState: null });
             expect(wrapper.find('.placeholder').text()).toBe('Node output will be loaded after moving is completed');
             expect(wrapper.findComponent(PortTabs).exists()).toBe(true);

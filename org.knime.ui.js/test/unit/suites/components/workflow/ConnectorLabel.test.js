@@ -39,8 +39,8 @@ describe('ConnectorLabel.vue', () => {
                                 'root:2': { position: { x: 12, y: 14 }, inPorts: [] }
                             }
                         },
-                        isDragging: false,
-                        movePreviewDelta: { x: 0, y: 0 }
+                        movePreviewDelta: { x: 0, y: 0 },
+                        _isDragging: false
                     },
                     mutations: {
                         setState(state, update = {}) {
@@ -48,6 +48,9 @@ describe('ConnectorLabel.vue', () => {
                                 state[key] = value;
                             });
                         }
+                    },
+                    getters: {
+                        isDragging: (state) => state._isDragging
                     }
                 },
                 selection: {
@@ -79,8 +82,8 @@ describe('ConnectorLabel.vue', () => {
 
             isNodeSelectedMock.mockReturnValue(nodeId => ({ 'root:1': true, 'root:2': true }[nodeId]));
             $store.commit('workflow/setState', {
-                isDragging: true,
-                movePreviewDelta: { x: 200, y: 200 }
+                movePreviewDelta: { x: 200, y: 200 },
+                _isDragging: true
             });
             await Vue.nextTick();
 

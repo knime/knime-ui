@@ -1,5 +1,6 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import Vuex from 'vuex';
+import Vue from 'vue';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import * as $shapes from '~/style/shapes';
 
@@ -35,7 +36,6 @@ describe('MoveableNodeContainer', () => {
         storeConfig = {
             workflow: {
                 mutations: {
-                    setDragging: jest.fn(),
                     resetMovePreview: jest.fn(),
                     setMovePreview: jest.fn()
                 },
@@ -204,13 +204,16 @@ describe('MoveableNodeContainer', () => {
         it('ends movement of a node', async () => {
             doMount();
             jest.useFakeTimers();
+
             wrapper.vm.onMoveEnd();
+            
             jest.advanceTimersByTime(5000); /* eslint-disable-line no-magic-numbers */
-            await Promise.resolve();
+            await Vue.nextTick();
+
             jest.runOnlyPendingTimers();
             expect(storeConfig.workflow.actions.moveObjects).toHaveBeenCalledWith(
                 expect.anything(),
-                { nodeId: 'root:1', projectId: 'projectId', startPos: { x: 0, y: 0 } }
+                { nodeId: 'root:1', projectId: 'projectId', startPos: null }
             );
             jest.useRealTimers();
         });

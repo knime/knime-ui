@@ -181,9 +181,8 @@ export default {
     },
     computed: {
         ...mapState('application', { projectId: 'activeProjectId' }),
-        ...mapState('workflow', ['isDragging']),
         ...mapGetters('selection', ['isNodeSelected', 'singleSelectedNode']),
-        ...mapGetters('workflow', ['isWritable']),
+        ...mapGetters('workflow', ['isWritable', 'isDragging']),
         decoratorBackgroundType() {
             if (this.type) {
                 return this.type;

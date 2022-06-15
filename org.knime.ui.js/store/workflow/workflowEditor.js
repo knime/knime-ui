@@ -7,7 +7,6 @@ import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameCo
  */
 
 export const state = {
-    isDragging: false,
     movePreviewDelta: { x: 0, y: 0 },
     nameEditorNodeId: null
 };
@@ -22,10 +21,7 @@ export const mutations = {
     resetMovePreview(state) {
         state.movePreviewDelta = { x: 0, y: 0 };
     },
-    // change the isDragging property to the provided Value
-    setDragging(state, { isDragging }) {
-        state.isDragging = isDragging;
-    },
+    
     setNameEditorNodeId(state, nodeId) {
         state.nameEditorNodeId = nodeId;
     }
@@ -212,4 +208,8 @@ export const actions = {
     }
 };
 
-export const getters = { };
+export const getters = {
+    isDragging({ movePreviewDelta }) {
+        return movePreviewDelta.x !== 0 || movePreviewDelta.y !== 0;
+    }
+};

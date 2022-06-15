@@ -29,16 +29,16 @@ export default {
     },
     data: () => ({
         // Start position of the dragging
-        startPos: { x: 0, y: 0 },
+        startPos: null,
         nodeSelectionWidth: 0,
         nodeSelectionExtraHeight: 20
     }),
     computed: {
-        ...mapGetters('workflow', ['isWritable']),
+        ...mapGetters('workflow', ['isWritable', 'isDragging']),
         ...mapGetters('selection', ['isNodeSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapState('application', ['activeProjectId']),
-        ...mapState('workflow', ['isDragging', 'movePreviewDelta', 'activeWorkflow']),
+        ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow']),
         ...mapState('canvas', ['zoomFactor']),
 
         // Combined position of original position + the dragged amount
@@ -74,7 +74,6 @@ export default {
          */
         handleMoveFromStore() {
             if (this.isDragging) {
-                this.$store.commit('workflow/setDragging', { isDragging: false });
                 this.$store.commit('workflow/resetMovePreview');
             }
         },
@@ -85,7 +84,6 @@ export default {
          * @returns {void} nothing to return
          */
         onMoveStart({ detail }) {
-            this.$store.commit('workflow/setDragging', { isDragging: true });
             if (!detail.event.shiftKey && !this.isNodeSelected(this.id)) {
                 this.deselectAllObjects();
             }
@@ -101,7 +99,7 @@ export default {
          */
         onMove: throttle(function ({ detail: { clientX, clientY, altKey } }) {
             /* eslint-disable no-invalid-this */
-            if (!this.isDragging) {
+            if (!this.startPos) {
                 return;
             }
 
