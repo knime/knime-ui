@@ -1,4 +1,4 @@
-import { openDialog, openLegacyFlowVariableDialog as configureFlowVariables, openView, saveWorkflow, closeWorkflow,
+import { openDialog, openLegacyFlowVariableDialog, openView, saveWorkflow, closeWorkflow,
     openLayoutEditor } from '~api';
 
 /**
@@ -35,9 +35,8 @@ export const actions = {
     },
     
     /* See docs in API */
-    // TODO: rename to openFlowVariableEditor
-    configureFlowVariables({ state }, nodeId) {
-        configureFlowVariables({ projectId: state.activeWorkflow.projectId, nodeId });
+    openFlowVariableConfiguration({ state }, nodeId) {
+        openLegacyFlowVariableDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },
     
     /* See docs in API */

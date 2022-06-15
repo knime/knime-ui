@@ -48,10 +48,10 @@ describe('workflow store: AP Interactions', () => {
         });
 
         // TODO: NXT-1007 improve tests by making an easier API mock import
-        it('calls configureFlowVariables from API', async () => {
+        it('calls openFlowVariableConfiguration from API', async () => {
             await loadStore();
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
-            store.dispatch('workflow/configureFlowVariables', 'node x');
+            store.dispatch('workflow/openFlowVariableConfiguration', 'node x');
 
             expect(openLegacyFlowVariableDialogMock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo' });
         });

@@ -50,7 +50,7 @@ describe('workflowCommands', () => {
 
         test('configureFlowVariables', () => {
             workflowCommands.configureFlowVariables.execute({ $store });
-            expect(mockDispatch).toHaveBeenCalledWith('workflow/configureFlowVariables', 'root:0');
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/openFlowVariableConfiguration', 'root:0');
         });
 
         test('openView', () => {
