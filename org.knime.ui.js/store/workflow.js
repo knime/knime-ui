@@ -8,7 +8,9 @@ import * as workflowExecution from './workflow/workflowExecution';
 import * as $shapes from '~/style/shapes';
 
 /**
- * Store that holds a workflow graph and the associated tooltips.
+ * The workflow store holds a workflow graph and the associated tooltips.
+ * The store is split up into several files.
+ *
  * A workflow can either be contained in a component / metanode, or it can be the top level workflow.
  * Note that the notion of "workflow" is different from what users call a "KNIME workflow".
  * The technical term for the latter in this application is "project".
@@ -23,7 +25,7 @@ export const state = () => ({
     activeWorkflow: null,
     activeSnapshotId: null,
 
-    // TODO: find a better place for the tooltip logic
+    // TODO: NXT-1143 find a better place for the tooltip logic
     // maybe use an event that bubbles to the top (workflow canvas?)
     tooltip: null
 });
@@ -34,8 +36,6 @@ export const mutations = {
     ...workflowEditor.mutations,
     ...APinteractions.mutations,
 
-    // extracts the workflow
-    // TODO: do both in one step/commit
     setActiveWorkflow(state, workflow) {
         state.activeWorkflow = workflow;
     },
@@ -55,8 +55,6 @@ export const actions = {
     ...APinteractions.actions
 };
 
-// The name getters can be misleading, its more like Vues computed propeties which may return functions.
-// Please consult: https://vuex.vuejs.org/guide/getters.html
 export const getters = {
     ...workflowExecution.getters,
     ...workflowEditor.getters,

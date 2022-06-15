@@ -1,6 +1,11 @@
 import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameContainerNode, collapseToContainer,
     addContainerNodePort, expandContainerNode } from '~api';
 
+/**
+ * This store is not instantiated by Nuxt but merged with the workflow store.
+ * It handles shared state regarding editing.
+ */
+
 export const state = {
     isDragging: false,
     deltaMovePosition: { x: 0, y: 0 },

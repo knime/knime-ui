@@ -2,13 +2,11 @@ import { openDialog, openLegacyFlowVariableDialog as configureFlowVariables, ope
     openLayoutEditor } from '~api';
 
 /**
- * Store that holds a workflow graph and the associated tooltips.
- * A workflow can either be contained in a component / metanode, or it can be the top level workflow.
- * Note that the notion of "workflow" is different from what users call a "KNIME workflow".
- * The technical term for the latter in this application is "project".
+ * This store is not instantiated by Nuxt but merged with the workflow store.
+ * It holds all calls from the workflow store to the local Analytics Platform.
  */
 
-export const state = () => ({ });
+export const state = { };
 
 export const mutations = { };
 
