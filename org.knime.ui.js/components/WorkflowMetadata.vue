@@ -1,4 +1,5 @@
 <script>
+import { mapState } from 'vuex';
 import Description from '~/webapps-common/ui/components/Description';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
@@ -6,6 +7,8 @@ import TagList from '~/webapps-common/ui/components/TagList';
 import { formatDateString } from '~/webapps-common/util/format';
 import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
 import ExternalResourcesList from '~/components/common/ExternalResourcesList';
+
+import { mapPortTypes } from '~/util/portDataMapper';
 
 /** Displays metadata attached to a root-level workflow */
 export default {
@@ -17,51 +20,39 @@ export default {
         ScrollViewContainer,
         ExternalResourcesList
     },
-    props: {
-        /** Single-line description of the workflow */
-        title: {
-            type: String,
-            default: null
-        },
-        /**  A detailed description of the workflow. */
-        description: {
-            type: String,
-            default: null
-        },
-        /** The date and time of the last change made to this workflow. Formatted as ISO-String */
-        lastEdit: {
-            type: String,
-            default: null
-        },
-        /** A list of links external resources (text, url) attached to the workflow */
-        links: {
-            type: Array,
-            default: () => []
-        },
-        /** A list of tags the user chose to describe the workflow */
-        tags: {
-            type: Array,
-            default: () => [],
-            validator: tags => tags.every(tag => typeof tag === 'string')
-        },
-        /** Passed through to NodePreview.vue */
-        nodePreview: {
-            type: Object,
-            default: null
-        },
-        /** Passed through to NodeFeatureList.vue */
-        nodeFeatures: {
-            type: Object,
-            default: null
-        },
-        /**
-         * Project or Component.
-         * Tags, Last Update, External resources cannot be set in the AP for now
-         * Influences whether they are rendered with placeholders or hidden completely
-         */
-        isComponent: {
-            type: Boolean,
-            default: false
+    computed: {
+        ...mapState('workflow', { workflow: 'activeWorkflow' }),
+        ...mapState('application', ['availablePortTypes']),
+        metadata() {
+            const metadataMapper = {
+                project: () => this.workflow.projectMetadata || { title: this.workflow.info.name },
+                component: () => {
+                    const {
+                        componentMetadata: { inPorts, outPorts, name, type, icon, description, options, views }
+                    } = this.workflow;
+                    
+                    const mappedInPorts = mapPortTypes(inPorts, this.availablePortTypes);
+                    const mappedOutPorts = mapPortTypes(outPorts, this.availablePortTypes);
+
+                    return {
+                        title: name,
+                        description,
+                        nodePreview: {
+                            inPorts: mappedInPorts,
+                            outPorts: mappedOutPorts,
+                            icon,
+                            type,
+                            isComponent: true,
+                            hasDynPorts: false
+                        },
+                        nodeFeatures: { inPorts: mappedInPorts, outPorts: mappedOutPorts, views, options },
+                        isComponent: true
+                    };
+                }
+            };
+            const defaultHandler = () => null;
+
+            return (metadataMapper[this.workflow.info.containerType] || defaultHandler)();
         }
     },
     methods: {
@@ -72,36 +63,41 @@ export default {
 
 <template>
   <!-- TODO: NXT-844 why use this stateful ScrollViewContainer here? -->
-  <ScrollViewContainer class="metadata">
-    <h2 :class="['title', { 'with-node-preview': nodePreview }]">
+  <ScrollViewContainer
+    v-if="metadata"
+    class="metadata"
+  >
+    <h2 :class="['title', { 'with-node-preview': metadata.nodePreview }]">
       <div
-        v-if="nodePreview"
+        v-if="metadata.nodePreview"
         class="node-preview"
       >
-        <NodePreview v-bind="nodePreview" />
+        <NodePreview v-bind="metadata.nodePreview" />
       </div>
 
-      <span v-if="title">{{ title }}</span>
+      <span v-if="metadata.title">{{ metadata.title }}</span>
       <span
         v-else
         class="placeholder"
-      >No title has been set yet</span>
+      >
+        No title has been set yet
+      </span>
     </h2>
 
-    <hr v-if="!nodePreview">
+    <hr v-if="!metadata.nodePreview">
 
     <div
-      v-if="!isComponent"
+      v-if="!metadata.isComponent"
       class="last-updated"
     >
-      <span v-if="lastEdit">Last update: {{ formatDateString(lastEdit) }}</span>
+      <span v-if="metadata.lastEdit">Last update: {{ formatDateString(metadata.lastEdit) }}</span>
       <span v-else>Last update: no update yet</span>
     </div>
 
     <div class="description">
       <Description
-        v-if="description"
-        :text="description"
+        v-if="metadata.description"
+        :text="metadata.description"
       />
       <span
         v-else
@@ -110,31 +106,31 @@ export default {
     </div>
 
     <NodeFeatureList
-      v-if="nodeFeatures"
-      :in-ports="nodeFeatures.inPorts"
-      :dyn-in-ports="nodeFeatures.dynInPorts"
-      :out-ports="nodeFeatures.outPorts"
-      :dyn-out-ports="nodeFeatures.dynOutPorts"
-      :views="nodeFeatures.views"
-      :options="nodeFeatures.options"
+      v-if="metadata.nodeFeatures"
+      :in-ports="metadata.nodeFeatures.inPorts"
+      :dyn-in-ports="metadata.nodeFeatures.dynInPorts"
+      :out-ports="metadata.nodeFeatures.outPorts"
+      :dyn-out-ports="metadata.nodeFeatures.dynOutPorts"
+      :views="metadata.nodeFeatures.views"
+      :options="metadata.nodeFeatures.options"
       sanitize-content
       class="node-feature-list"
     />
 
     <ExternalResourcesList
-      v-if="!isComponent"
-      :links="links"
+      v-if="!metadata.isComponent"
+      :links="metadata.links"
     />
 
     <div
-      v-if="!isComponent"
+      v-if="!metadata.isComponent"
       class="tags"
     >
       <h2>Tags</h2>
       <hr>
       <TagList
-        v-if="tags.length"
-        :tags="tags"
+        v-if="metadata.tags.length"
+        :tags="metadata.tags"
       />
       <div
         v-else

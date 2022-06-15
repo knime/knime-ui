@@ -1,12 +1,22 @@
-import { mount, createLocalVue } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import vuex from 'vuex';
+import Vue from 'vue';
+import { shallowMount, createLocalVue } from '@vue/test-utils';
+
+import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import * as panelStoreConfig from '~/store/panel';
 
 import Sidebar from '~/components/Sidebar';
 
+import InfoIcon from '~/webapps-common/ui/assets/img/icons/circle-info.svg?inline';
+import PlusIcon from '~/webapps-common/ui/assets/img/icons/circle-plus.svg?inline';
+
+import NodeRepository from '~/components/noderepo/NodeRepository';
+import WorkflowMetadata from '~/components/WorkflowMetadata';
+
+Vue.config.ignoredElements = ['portal-target'];
+
 describe('Sidebar', () => {
-    let wrapper;
+    let store, workflow, wrapper, doShallowMount;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -14,16 +24,40 @@ describe('Sidebar', () => {
     });
 
     beforeEach(() => {
-        wrapper = mount(Sidebar, {
-            mocks: {
-                $store: mockVuexStore({ panel: panelStoreConfig })
+        workflow = {
+            projectMetadata: {
+                title: 'title'
+            },
+            info: {
+                name: 'fileName',
+                containerType: 'project'
             }
+        };
+
+        store = mockVuexStore({
+            workflow: {
+                state: {
+                    activeWorkflow: workflow
+                }
+            },
+            panel: panelStoreConfig
         });
+        
+        doShallowMount = () => {
+            wrapper = shallowMount(Sidebar, {
+                mocks: {
+                    $store: store
+                }
+            });
+        };
     });
 
     it('renders default', () => {
+        doShallowMount();
         expect(wrapper.exists()).toBe(true);
-        expect(wrapper.findAll('svg').length).toBe(2);
+        expect(wrapper.findComponent(InfoIcon).exists()).toBe(true);
+        expect(wrapper.findComponent(PlusIcon).exists()).toBe(true);
+
         expect(wrapper.find('[title="Workflow metadata"]').classes('active')).toBe(true);
         expect(wrapper.find('[title="Node repository"]').classes('active')).toBe(false);
         wrapper.findAll('li').wrappers.forEach(wp => {
@@ -31,51 +65,62 @@ describe('Sidebar', () => {
         });
     });
 
-    it('expands and activates wf meta info', () => {
-        expect(wrapper.vm.expanded).toBe(false);
-        wrapper.find('li').trigger('click');
-        expect(wrapper.vm.expanded).toBe(true);
-        expect(wrapper.vm.workflowMetaActive).toBe(true);
+    it.each([
+        ['Workflow metadata', WorkflowMetadata],
+        ['Node repository', NodeRepository]
+    ])('expands and activates "%s"', async (tabName, renderedComponent) => {
+        doShallowMount();
+        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(false);
+
+        await wrapper.find(`[title="${tabName}"]`).trigger('click');
+        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(true);
+        expect(wrapper.find(`[title="${tabName}"]`).classes('active')).toBe(true);
+
+        expect(wrapper.findComponent(renderedComponent).exists()).toBe(true);
     });
 
-    it('expands and activates node repo', async () => {
-        expect(wrapper.vm.expanded).toBe(false);
-        await wrapper.findAll('li').at(1).trigger('click');
-        expect(wrapper.vm.expanded).toBe(true);
-        expect(wrapper.vm.nodeRepositoryActive).toBe(true);
-        wrapper.findAll('li').wrappers.forEach(item => {
-            expect(item.classes()).toContain('expanded');
-        });
+    it.each([
+        ['Workflow metadata', WorkflowMetadata],
+        ['Node repository', NodeRepository]
+    ])('clicking on open tab should close it', async (tabName, renderedComponent) => {
+        doShallowMount();
+        await wrapper.find(`[title="${tabName}"]`).trigger('click');
+        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(true);
+
+        await wrapper.find(`[title="${tabName}"]`).trigger('click');
+        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(false);
     });
 
-    test('click on open tab closes panel', async () => {
-        await wrapper.findAll('li').at(0).trigger('click');
-        expect(wrapper.vm.expanded).toBe(true);
+    it('click on node repository icon when description panel is open closes both panels', async () => {
+        doShallowMount();
+        // open node repository
+        await wrapper.find('[title="Node repository"]').trigger('click');
+        // emulate opening the description panel
+        await store.dispatch('panel/openDescriptionPanel');
+        expect(store.state.panel.activeDescriptionPanel).toBe(true);
 
-        await wrapper.findAll('li').at(0).trigger('click');
-        expect(wrapper.vm.expanded).toBe(false);
+        await wrapper.find('[title="Node repository"]').trigger('click');
+        expect(store.state.panel.activeDescriptionPanel).toBe(false);
     });
 
-    test('click on node repository icon when description panel is open closes both panels', async () => {
-        await wrapper.findAll('li').at(1).trigger('click');
-        expect(wrapper.vm.nodeRepositoryActive).toBe(true);
-        wrapper.vm.$store.dispatch('panel/openDescriptionPanel');
-        expect(wrapper.vm.activeDescriptionPanel).toBe(true);
-        expect(wrapper.vm.expanded).toBe(true);
-        await wrapper.findAll('li').at(1).trigger('click');
-        expect(wrapper.vm.expanded).toBe(false);
-        expect(wrapper.vm.activeDescriptionPanel).toBe(false);
+    it('click on a different tab when description panel is open, retains the description panel open', async () => {
+        doShallowMount();
+
+        await wrapper.find('[title="Node repository"]').trigger('click');
+        // emulate opening the description panel
+        await store.dispatch('panel/openDescriptionPanel');
+
+        // back to workflow metadata
+        await wrapper.find('[title="Workflow metadata"]').trigger('click');
+
+        // back to node repository
+        await wrapper.find('[title="Node repository"]').trigger('click');
+
+        expect(store.state.panel.activeDescriptionPanel).toBe(true);
     });
 
-    test('click on a different tab when description panel is open, closes only description panel', async () => {
-        await wrapper.findAll('li').at(1).trigger('click');
-        expect(wrapper.vm.nodeRepositoryActive).toBe(true);
-        wrapper.vm.$store.dispatch('panel/openDescriptionPanel');
-        expect(wrapper.vm.activeDescriptionPanel).toBe(true);
-        expect(wrapper.vm.expanded).toBe(true);
-        await wrapper.findAll('li').at(0).trigger('click');
-        expect(wrapper.vm.nodeRepositoryActive).toBe(false);
-        expect(wrapper.vm.activeDescriptionPanel).toBe(false);
-        expect(wrapper.vm.workflowMetaActive).toBe(true);
+    it('has portal for extension panel', () => {
+        doShallowMount();
+        expect(wrapper.find('portal-target[name="extension-panel"').exists()).toBe(true);
     });
 });
