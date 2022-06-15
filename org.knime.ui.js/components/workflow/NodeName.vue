@@ -49,7 +49,9 @@ export default {
             this.$emit('edit-start');
         },
         onSave({ dimensionsOnClose, newName }) {
-            this.renameContainerNode({ nodeId: this.nodeId, name: newName });
+            // Following characters should be excluded: *?#:“<>%~|/\
+            const noSpecialCharactersName = newName.replace(/[*?#:“<>%~|/\\]/g, '');
+            this.renameContainerNode({ nodeId: this.nodeId, name: noSpecialCharactersName });
             this.editorInitialDimensions = dimensionsOnClose;
 
             // Schedule closing editor on next the event loop run

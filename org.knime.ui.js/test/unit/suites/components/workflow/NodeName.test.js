@@ -160,6 +160,23 @@ describe('NodeName', () => {
             expect(wrapper.findComponent(NodeNameText).exists()).toBe(true);
         });
 
+        it('should remove certain special characters from the name', () => {
+            const saveEventPayload = {
+                newName: '*New name!*?-test_12(#)',
+                dimensionsOnClose: {
+                    width: 200,
+                    height: 100
+                }
+            };
+            const noSpecialCharactersName = 'New name!-test_12()';
+            
+            wrapper.findComponent(NodeNameEditor).vm.$emit('save', saveEventPayload);
+            expect(storeConfig.workflow.actions.renameContainerNode).toHaveBeenCalledWith(
+                expect.any(Object),
+                expect.objectContaining({ nodeId: defaultProps.nodeId, name: noSpecialCharactersName })
+            );
+        });
+
         it('should handle closing the editor', async () => {
             wrapper.findComponent(NodeNameEditor).vm.$emit('cancel');
             
