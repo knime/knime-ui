@@ -1,4 +1,7 @@
 /* eslint-disable no-magic-numbers */
+export const headerHeight = 80;
+export const toolbarHeight = 50;
+
 export const nodeSize = 32;
 export const portSize = 9;
 

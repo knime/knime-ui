@@ -106,7 +106,7 @@ export default {
 <style lang="postcss" scoped>
 header {
   display: flex;
-  height: 80px;
+  height: calc(var(--header-height-shape) * 1px);
   background-color: var(--knime-masala);
   border-bottom: 4px solid var(--knime-yellow);
   position: relative;

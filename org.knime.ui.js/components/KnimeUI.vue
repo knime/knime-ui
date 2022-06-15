@@ -144,10 +144,10 @@ export default {
 
 #toolbar {
   grid-area: header;
-  height: 50px;
+  height: calc(var(--toolbar-height-shape) * 1px);
   flex: 0 0 auto;
   padding: 10px;
-  margin-top: 80px;
+  margin-top: calc(var(--header-height-shape) * 1px);
   background-color: var(--knime-porcelain);
   border-bottom: 1px solid var(--knime-silver-sand);
 }
