@@ -322,7 +322,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('workflow', ['openDialog']),
+        ...mapActions('workflow', ['openNodeConfiguration']),
         ...mapActions('selection', ['selectNode', 'deselectAllObjects', 'deselectNode']),
         portShift,
         onLeaveHoverArea(e) {
@@ -357,7 +357,7 @@ export default {
                 this.openContainerNode();
             } else if (this.allowedActions?.canOpenDialog) {
                 // open node dialog if one is present
-                this.openDialog(this.id);
+                this.openNodeConfiguration(this.id);
             }
         },
 

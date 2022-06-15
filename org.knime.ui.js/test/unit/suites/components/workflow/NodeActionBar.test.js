@@ -29,7 +29,7 @@ describe('NodeActionBar', () => {
                     resumeLoopExecution: jest.fn(),
                     stepLoopExecution: jest.fn(),
                     openView: jest.fn(),
-                    openDialog: jest.fn()
+                    openNodeConfiguration: jest.fn()
                 }
             },
             selection: {
@@ -56,7 +56,7 @@ describe('NodeActionBar', () => {
         };
     });
 
-    it('renders disabled action buttons without openDialog and openView', () => {
+    it('renders disabled action buttons without openNodeConfiguration and openView', () => {
         doMount();
 
         let buttons = wrapper.findAllComponents(ActionButton);
@@ -67,7 +67,7 @@ describe('NodeActionBar', () => {
         /* eslint-enable no-magic-numbers */
     });
 
-    it('renders disabled action buttons with openDialog and without openView', () => {
+    it('renders disabled action buttons with openNodeConfiguration and without openView', () => {
         propsData.canOpenDialog = false;
         doMount();
 
@@ -80,7 +80,7 @@ describe('NodeActionBar', () => {
         /* eslint-enable no-magic-numbers */
     });
 
-    it('renders disabled action buttons with openDialog and openView', () => {
+    it('renders disabled action buttons with openNodeConfiguration and openView', () => {
         propsData.canOpenDialog = false;
         propsData.canOpenView = false;
         doMount();
@@ -110,7 +110,7 @@ describe('NodeActionBar', () => {
 
         // fires action event
         buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
-        expect(storeConfig.workflow.actions.openDialog).toHaveBeenCalled();
+        expect(storeConfig.workflow.actions.openNodeConfiguration).toHaveBeenCalled();
         expect(storeConfig.workflow.actions.executeNodes).toHaveBeenCalled();
         expect(storeConfig.workflow.actions.cancelNodeExecution).toHaveBeenCalled();
         expect(storeConfig.workflow.actions.resetNodes).toHaveBeenCalled();

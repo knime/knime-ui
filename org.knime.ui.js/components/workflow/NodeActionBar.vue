@@ -71,7 +71,7 @@ export default {
                     title: 'Configure',
                     isEnabled: this.canOpenDialog,
                     icon: OpenDialogIcon,
-                    handler: () => this.openDialog(this.nodeId),
+                    handler: () => this.openNodeConfiguration(this.nodeId),
                     hotkeyText: this.$commands.get('configureNode').hotkeyText
                 },
                 pauseLoopExecution: {
@@ -169,7 +169,7 @@ export default {
             'resumeLoopExecution',
             'stepLoopExecution',
             'openView',
-            'openDialog'
+            'openNodeConfiguration'
         ]),
         /*
          * If this node is selected, hoverTitle appends the hotkey to the title

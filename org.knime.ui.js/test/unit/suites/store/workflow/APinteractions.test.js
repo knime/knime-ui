@@ -5,8 +5,7 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 
 describe('workflow store: AP Interactions', () => {
-    let store, localVue, loadStore,
-        openLegacyFlowVariableDialogMock;
+    let store, localVue, loadStore;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -15,7 +14,6 @@ describe('workflow store: AP Interactions', () => {
 
     beforeEach(() => {
         store = null;
-        openLegacyFlowVariableDialogMock = jest.fn();
 
         loadStore = async ({ apiMocks = {} } = {}) => {
             /**
@@ -26,8 +24,7 @@ describe('workflow store: AP Interactions', () => {
             jest.resetModules();
             jest.doMock('~api', () => ({
                 __esModule: true,
-                ...apiMocks,
-                openLegacyFlowVariableDialog: openLegacyFlowVariableDialogMock
+                ...apiMocks
             }), { virtual: true });
 
             store = mockVuexStore({
@@ -37,37 +34,45 @@ describe('workflow store: AP Interactions', () => {
     });
 
     describe('actions', () => {
-        it.each(['openView', 'openDialog'])('passes %s to API', async (action) => {
-            let mock = jest.fn();
-            let apiMocks = { [action]: mock };
-            await loadStore({ apiMocks });
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
-            store.dispatch(`workflow/${action}`, 'node x');
+        it('calls openView from API', async () => {
+            let openView = jest.fn();
+            await loadStore({ apiMocks: { openView } });
 
-            expect(mock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo' });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.dispatch('workflow/openView', 'node x');
+
+            expect(openView).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo' });
         });
 
-        // TODO: NXT-1007 improve tests by making an easier API mock import
+        it('calls openNodeDialog from API', async () => {
+            let openNodeDialog = jest.fn();
+            await loadStore({ apiMocks: { openNodeDialog } });
+
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.dispatch('workflow/openNodeConfiguration', 'node x');
+
+            expect(openNodeDialog).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo' });
+        });
+
         it('calls openFlowVariableConfiguration from API', async () => {
-            await loadStore();
+            let openLegacyFlowVariableDialog = jest.fn();
+            await loadStore({ apiMocks: { openLegacyFlowVariableDialog } });
+
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
             store.dispatch('workflow/openFlowVariableConfiguration', 'node x');
 
-            expect(openLegacyFlowVariableDialogMock).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo' });
+            expect(openLegacyFlowVariableDialog).toHaveBeenCalledWith({ nodeId: 'node x', projectId: 'foo' });
         });
 
-        // TODO: refactor this test
-        it.each([
-            ['openLayoutEditor']
-        ])('passes %s to the API', async (action) => {
-            let mock = jest.fn();
-            let apiMocks = { [action]: mock };
-            await loadStore({ apiMocks });
+
+        it('calls openLayoutEditor from API', async () => {
+            let openLayoutEditor = jest.fn();
+            await loadStore({ apiMocks: { openLayoutEditor } });
+
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.dispatch('workflow/openLayoutEditor', 'node x');
 
-            store.dispatch(`workflow/${action}`);
-
-            expect(mock).toHaveBeenCalledWith({ projectId: 'foo', workflowId: 'root' });
+            expect(openLayoutEditor).toHaveBeenCalledWith({ projectId: 'foo', workflowId: 'root' });
         });
 
 

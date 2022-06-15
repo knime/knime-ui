@@ -44,7 +44,8 @@ export default {
         hotkey: ['F6'],
         icon: OpenDialogIcon,
         execute:
-            ({ $store }) => $store.dispatch('workflow/openDialog', $store.getters['selection/singleSelectedNode'].id),
+            ({ $store }) => $store.dispatch('workflow/openNodeConfiguration',
+                $store.getters['selection/singleSelectedNode'].id),
         condition:
             ({ $store }) => $store.getters['selection/singleSelectedNode']?.allowedActions.canOpenDialog
     },

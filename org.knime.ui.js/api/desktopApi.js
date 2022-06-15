@@ -4,7 +4,7 @@
  * @param {String} nodeId The node for which to open the dialog.
  * @returns {void}
  */
-export const openDialog = ({ projectId, nodeId }) => {
+export const openNodeDialog = ({ projectId, nodeId }) => {
     try {
         // returns falsy on success
         let error = window.openNodeDialog(projectId, nodeId);
