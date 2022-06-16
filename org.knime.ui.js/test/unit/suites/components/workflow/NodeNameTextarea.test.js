@@ -102,4 +102,17 @@ describe('NodeNameTextarea', () => {
         await wrapper.vm.$nextTick();
         expect(getHeight(wrapper.find('textarea').element)).toBe(`${mockHeight}px`);
     });
+
+    it('should not allow illegal characters', () => {
+        const pattern = new RegExp(/[*?#:“<>%~|/\\]/g);
+        const wrapper = doShallowMount({ propsData: { pattern } });
+
+        const emittedValue = '*New name!*?-test_12(#)';
+
+        wrapper.find('textarea').setValue(emittedValue);
+        wrapper.find('textarea').trigger('input');
+
+        expect(wrapper.emitted('invalidCharacter')).toBeDefined();
+        expect(wrapper.emitted('input')[0][0]).toBe('New name!-test_12()');
+    });
 });
