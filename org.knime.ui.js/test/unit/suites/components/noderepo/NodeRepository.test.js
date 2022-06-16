@@ -75,7 +75,8 @@ describe('NodeRepository', () => {
                     selectedTags: ['myTag2'],
                     tags: ['myTag1', 'myTag2'],
                     query: '',
-                    scrollPosition: 100
+                    scrollPosition: 100,
+                    isDescriptionPanelOpen: false
                 },
                 actions: {
                     searchNodes: searchNodesMock,
@@ -93,11 +94,6 @@ describe('NodeRepository', () => {
                 mutations: {
                     setScrollPosition: setScrollPositionMock,
                     setSelectedNode: setSelectedNodeMock
-                }
-            },
-            panel: {
-                state: {
-                    activeDescriptionPanel: false
                 }
             }
         });
@@ -195,7 +191,7 @@ describe('NodeRepository', () => {
             doShallowMount();
             expect(wrapper.findComponent(NodeDescription).exists()).toBe(false);
 
-            $store.state.panel.activeDescriptionPanel = true;
+            $store.state.nodeRepository.isDescriptionPanelOpen = true;
             await wrapper.vm.$nextTick();
 
             expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
@@ -206,9 +202,9 @@ describe('NodeRepository', () => {
                 fn();
                 return 0;
             });
-            $store.state.panel.activeDescriptionPanel = true;
+            $store.state.nodeRepository.isDescriptionPanelOpen = true;
             doShallowMount();
-            $store.state.panel.activeDescriptionPanel = false;
+            $store.state.nodeRepository.isDescriptionPanelOpen = false;
             await wrapper.vm.$nextTick();
 
             expect(setSelectedNodeMock).toHaveBeenCalledWith(expect.anything(), null);

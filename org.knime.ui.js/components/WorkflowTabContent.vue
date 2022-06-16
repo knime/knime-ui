@@ -24,20 +24,17 @@ export default {
 
 <template>
   <main v-if="workflow">
-    <!-- TODO: NXT-844 why do we need this collapser-kanvas div? -->
-    <div class="collapser-kanvas">
-      <Splitter
-        id="kanvasOutputSplitter"
-        direction="column"
-      >
-        <!-- TODO: NXT-844 this is a temporary component that can be merged with WorkflowTabContent as soon as
+    <Splitter
+      id="kanvasOutputSplitter"
+      direction="column"
+    >
+      <!-- TODO: NXT-844 this is a temporary component that can be merged with WorkflowTabContent as soon as
         WorkflowTabContent has been cleaned up -->
-        <WorkflowPanel id="workflow-panel" />
-        <template #secondary>
-          <NodeOutput />
-        </template>
-      </Splitter>
-    </div>
+      <WorkflowPanel id="workflow-panel" />
+      <template #secondary>
+        <NodeOutput />
+      </template>
+    </Splitter>
   </main>
   <div
     v-else
@@ -56,14 +53,6 @@ main {
   flex-direction: column;
   align-items: stretch;
   height: 100%;
-}
-
-.collapser-kanvas {
-  display: flex;
-  flex-grow: 1;
-  flex-direction: row;
-  align-items: stretch;
-  overflow: hidden;
 }
 
 .placeholder {

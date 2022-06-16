@@ -9,8 +9,7 @@ export const TABS = {
 
 export const state = () => ({
     expanded: false,
-    activeTab: TABS.WORKFLOW_METADATA,
-    activeDescriptionPanel: false
+    activeTab: TABS.WORKFLOW_METADATA
 });
 
 export const getters = {
@@ -24,9 +23,6 @@ export const mutations = {
     },
     setActiveTab(state, active) {
         state.activeTab = active;
-    },
-    setDescriptionPanel(state, value) {
-        state.activeDescriptionPanel = value;
     }
 };
 
@@ -47,15 +43,5 @@ export const actions = {
 
     close({ commit }) {
         commit('setExpanded', false);
-    },
-
-    // TODO: NXT-844 this description panel is part of and only used for the node repository
-    // should be moved to node repository store or used as generic expansion panel
-    openDescriptionPanel({ commit }) {
-        commit('setDescriptionPanel', true);
-    },
-
-    closeDescriptionPanel({ commit }) {
-        commit('setDescriptionPanel', false);
     }
 };

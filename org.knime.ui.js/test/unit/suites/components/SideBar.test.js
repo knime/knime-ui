@@ -4,6 +4,7 @@ import { shallowMount, createLocalVue } from '@vue/test-utils';
 
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import * as panelStoreConfig from '~/store/panel';
+import * as nodeRepositoryStoreConfig from '~/store/nodeRepository';
 
 import Sidebar from '~/components/Sidebar';
 
@@ -40,7 +41,8 @@ describe('Sidebar', () => {
                     activeWorkflow: workflow
                 }
             },
-            panel: panelStoreConfig
+            panel: panelStoreConfig,
+            nodeRepository: nodeRepositoryStoreConfig
         });
         
         doShallowMount = () => {
@@ -96,19 +98,19 @@ describe('Sidebar', () => {
         // open node repository
         await wrapper.find('[title="Node repository"]').trigger('click');
         // emulate opening the description panel
-        await store.dispatch('panel/openDescriptionPanel');
-        expect(store.state.panel.activeDescriptionPanel).toBe(true);
-
+        await store.dispatch('nodeRepository/openDescriptionPanel');
+        expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(true);
+        
         await wrapper.find('[title="Node repository"]').trigger('click');
-        expect(store.state.panel.activeDescriptionPanel).toBe(false);
+        expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(false);
     });
 
-    it('click on a different tab when description panel is open, retains the description panel open', async () => {
+    it('click on a different tab when description panel is open, closes the description panel', async () => {
         doShallowMount();
 
         await wrapper.find('[title="Node repository"]').trigger('click');
         // emulate opening the description panel
-        await store.dispatch('panel/openDescriptionPanel');
+        await store.dispatch('nodeRepository/openDescriptionPanel');
 
         // back to workflow metadata
         await wrapper.find('[title="Workflow metadata"]').trigger('click');
@@ -116,7 +118,7 @@ describe('Sidebar', () => {
         // back to node repository
         await wrapper.find('[title="Node repository"]').trigger('click');
 
-        expect(store.state.panel.activeDescriptionPanel).toBe(true);
+        expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(false);
     });
 
     it('has portal for extension panel', () => {

@@ -16,7 +16,8 @@ export default {
         NodeRepository
     },
     computed: {
-        ...mapState('panel', ['activeTab', 'expanded', 'activeDescriptionPanel']),
+        ...mapState('panel', ['activeTab', 'expanded']),
+        ...mapState('nodeRepository', ['isDescriptionPanelOpen']),
         ...mapGetters('panel', ['isWorkflowMetaActive', 'isNodeRepositoryActive']),
         extensionPanelTransition() {
             // returns a functional component that is used as transition prop on <portal>. This way the transition
@@ -34,16 +35,17 @@ export default {
             'setWorkflowMetaActive',
             'setNodeRepositoryActive',
             'close',
-            'closeDescriptionPanel',
             'toggleExpanded'
         ]),
+        ...mapActions('nodeRepository', ['closeDescriptionPanel']),
         clickItem(alreadyActive, setActive) {
             if (alreadyActive && this.expanded) {
                 this.close();
-                this.closeDescriptionPanel();
             } else {
                 setActive();
             }
+
+            this.closeDescriptionPanel();
         }
     }
 };
@@ -75,7 +77,7 @@ export default {
       width="360px"
       title="Open sidebar"
       :expanded="expanded"
-      :disabled="activeDescriptionPanel && isNodeRepositoryActive"
+      :disabled="isDescriptionPanelOpen && isNodeRepositoryActive"
       @toggle-expand="toggleExpanded"
     >
       <transition-group name="tab-transition">

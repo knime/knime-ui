@@ -30,7 +30,9 @@ export const state = () => ({
     selectedNode: null,
     nodeDescriptionObject: null,
 
-    isDraggingNode: false
+    isDraggingNode: false,
+
+    isDescriptionPanelOpen: false
 });
 
 export const getters = {
@@ -184,6 +186,14 @@ export const actions = {
     async setSelectedTags({ dispatch, commit }, tags) {
         commit('setSelectedTags', tags);
         await dispatch('searchNodes');
+    },
+
+    openDescriptionPanel({ commit }) {
+        commit('setDescriptionPanel', true);
+    },
+
+    closeDescriptionPanel({ commit }) {
+        commit('setDescriptionPanel', false);
     }
 };
 
@@ -245,5 +255,8 @@ export const mutations = {
     },
     setDraggingNode(state, value) {
         state.isDraggingNode = value;
+    },
+    setDescriptionPanel(state, value) {
+        state.isDescriptionPanelOpen = value;
     }
 };

@@ -100,7 +100,8 @@ describe('Node Repository store', () => {
             categoryScrollPosition: 0,
             selectedNode: null,
             nodeDescriptionObject: null,
-            isDraggingNode: false
+            isDraggingNode: false,
+            isDescriptionPanelOpen: false
         });
     });
 
@@ -500,6 +501,18 @@ describe('Node Repository store', () => {
                     }),
                     undefined
                 );
+            });
+
+            it('opens description panel', () => {
+                store.state.nodeRepository.isDescriptionPanelOpen = false;
+                store.dispatch('nodeRepository/openDescriptionPanel');
+                expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(true);
+            });
+        
+            it('closes description panel', () => {
+                store.state.nodeRepository.isDescriptionPanelOpen = true;
+                store.dispatch('nodeRepository/closeDescriptionPanel');
+                expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(false);
             });
         });
     });
