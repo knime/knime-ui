@@ -5,7 +5,6 @@ import Vuex from 'vuex';
 import WorkflowTabContent from '~/components/WorkflowTabContent';
 import WorkflowPanel from '~/components/WorkflowPanel';
 import Splitter from '~/components/Splitter';
-import SideMenu from '~/components/SideMenu';
 
 describe('WorkflowTabContent.vue', () => {
     beforeAll(() => {
@@ -53,12 +52,6 @@ describe('WorkflowTabContent.vue', () => {
             let splitter = wrapper.findComponent(Splitter);
             expect(splitter.exists()).toBe(true);
             expect(splitter.vm.$slots.secondary[0].componentOptions.tag).toBe('NodeOutput');
-        });
-
-        it('displays side menu', async () => {
-            await doShallowMount();
-
-            expect(wrapper.findComponent(SideMenu).exists()).toBe(true);
         });
     });
 

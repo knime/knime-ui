@@ -40,11 +40,6 @@ export default {
         requestAnimationFrame(() => {
             this.showContainerTransition = false;
         });
-    },
-    methods: {
-        toggleExpanded() {
-            this.$store.dispatch('panel/toggleExpanded');
-        }
     }
 };
 </script>
@@ -66,7 +61,7 @@ export default {
     <button
       :title="expanded ? null : title"
       :disabled="disabled"
-      @click="toggleExpanded"
+      @click="$emit('toggle-expand')"
     >
       <SwitchIcon :style="{ transform: expanded ? null : 'scaleX(-1)' }" />
     </button>

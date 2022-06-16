@@ -11,7 +11,7 @@ import InfoIcon from '~/webapps-common/ui/assets/img/icons/circle-info.svg?inlin
 import PlusIcon from '~/webapps-common/ui/assets/img/icons/circle-plus.svg?inline';
 
 import NodeRepository from '~/components/noderepo/NodeRepository';
-import WorkflowMetadata from '~/components/WorkflowMetadata';
+import WorkflowMetadata from '~/components/workflowMetadata/WorkflowMetadata';
 
 Vue.config.ignoredElements = ['portal-target'];
 

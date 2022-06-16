@@ -4,7 +4,7 @@ import InfoIcon from '~/webapps-common/ui/assets/img/icons/circle-info.svg?inlin
 import PlusIcon from '~/webapps-common/ui/assets/img/icons/circle-plus.svg?inline';
 
 import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
-import WorkflowMetadata from '~/components/WorkflowMetadata';
+import WorkflowMetadata from '~/components/workflowMetadata/WorkflowMetadata';
 import NodeRepository from '~/components/noderepo/NodeRepository';
 
 export default {
@@ -34,7 +34,8 @@ export default {
             'setWorkflowMetaActive',
             'setNodeRepositoryActive',
             'close',
-            'closeDescriptionPanel'
+            'closeDescriptionPanel',
+            'toggleExpanded'
         ]),
         clickItem(alreadyActive, setActive) {
             if (alreadyActive && this.expanded) {
@@ -75,6 +76,7 @@ export default {
       title="Open sidebar"
       :expanded="expanded"
       :disabled="activeDescriptionPanel && isNodeRepositoryActive"
+      @toggle-expand="toggleExpanded"
     >
       <transition-group name="tab-transition">
         <NodeRepository
@@ -151,7 +153,7 @@ nav {
 #left-panel {
   flex: 0 0 auto;
   border-right: 1px solid var(--knime-silver-sand);
-  
+
   & >>> .container {
     /* prevent scrollbar jump when switching between tabs in the LeftCollapsiblePanel */
     overflow-y: hidden;

@@ -3,7 +3,7 @@ import { mount, createLocalVue } from '@vue/test-utils';
 
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 
-import WorkflowMetadata from '~/components/WorkflowMetadata';
+import WorkflowMetadata from '~/components/workflowMetadata/WorkflowMetadata';
 import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
 import ExternalResourcesList from '~/components/common/ExternalResourcesList';
 import LinkList from '~/webapps-common/ui/components/LinkList';
@@ -12,6 +12,9 @@ import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import Description from '~/webapps-common/ui/components/Description';
 import TagList from '~/webapps-common/ui/components/TagList';
 import Tag from '~/webapps-common/ui/components/Tag';
+
+import WorkflowMetadataTitle from '~/components/workflowMetadata/WorkflowMetadataTitle.vue';
+import WorkflowMetadataDescription from '~/components/workflowMetadata/WorkflowMetadataDescription.vue';
 
 describe('WorkflowMetadata.vue', () => {
     let store, workflow, wrapper, doMount, availablePortTypes;
@@ -141,6 +144,28 @@ describe('WorkflowMetadata.vue', () => {
     });
 
     describe('Component', () => {
+        it('displays component metadata', () => {
+            availablePortTypes = { mock: {} };
+            doMount({
+                info: {
+                    containerType: 'component'
+                },
+                componentMetadata: {
+                    name: 'name',
+                    description: 'description',
+                    inPorts: [{ typeId: 'mock' }],
+                    outPorts: [{ typeId: 'mock' }],
+                    type: 'type',
+                    views: ['views'],
+                    options: ['options']
+                }
+            });
+
+            expect(wrapper.findComponent(WorkflowMetadataTitle).findComponent(NodePreview).exists()).toBe(true);
+            expect(wrapper.findComponent(WorkflowMetadataTitle).text()).toMatch('name');
+            expect(wrapper.findComponent(WorkflowMetadataDescription).text()).toMatch('description');
+        });
+
         it('removes placeholders for components', () => {
             doMount({ info: { containerType: 'component' } });
     
@@ -206,6 +231,21 @@ describe('WorkflowMetadata.vue', () => {
             // a `rect` element is expected for an unrecognized a port kind
             expect(
                 wrapper
+                    .findComponent(WorkflowMetadataTitle)
+                    .find(`rect[fill="${mockPortMetadata.color}"]`)
+                    .exists()
+            ).toBe(true);
+
+            expect(
+                wrapper
+                    .findComponent(WorkflowMetadataTitle)
+                    .find(`rect[stroke="${mockPortMetadata.color}"]`)
+                    .exists()
+            ).toBe(true);
+
+            // a `rect` element is expected for an unrecognized a port kind
+            expect(
+                wrapper
                     .findComponent(NodeFeatureList)
                     .find(`rect[fill="${mockPortMetadata.color}"]`)
                     .exists()
@@ -218,5 +258,11 @@ describe('WorkflowMetadata.vue', () => {
                     .exists()
             ).toBe(true);
         });
+    });
+
+    it('no metadata for metanodes', () => {
+        doMount({ info: { containerType: 'metanode' } });
+
+        expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(false);
     });
 });
