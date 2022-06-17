@@ -18,10 +18,6 @@ export default {
             type: String,
             default: ''
         },
-        pattern: {
-            default: null,
-            type: RegExp
-        },
         nodeId: {
             type: String,
             required: true
@@ -130,7 +126,6 @@ export default {
       :transform="`translate(${nodePosition.x}, ${nodePosition.y})`"
       :start-width="startWidth"
       :start-height="startHeight"
-      :pattern="pattern"
       @width-change="handleDimensionChange('width', $event)"
       @height-change="handleDimensionChange('height', $event)"
       @save="onSave"
