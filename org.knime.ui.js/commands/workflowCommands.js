@@ -112,13 +112,10 @@ export default {
         execute:
             ({ $store }) => $store.dispatch('workflow/collapseToContainer', { containerType: 'metanode' }),
         condition({ $store }) {
-            const selectedNodes = $store.getters['selection/selectedNodes'];
-            if (selectedNodes.length === 0) {
-                return false;
-            }
+            if (!$store.getters['workflow/isWritable']) { return false; }
+            if (!$store.getters['selection/selectedNodes'].length) { return false; }
 
-            return !$store.getters['selection/selectedNodes']
-                .some(node => node.allowedActions.canCollapse === 'false') && $store.getters['workflow/isWritable'];
+            return $store.getters['selection/selectedNodes'].every(node => node.allowedActions.canCollapse !== 'false');
         }
     },
     createComponent: {
@@ -129,12 +126,10 @@ export default {
         execute:
             ({ $store }) => $store.dispatch('workflow/collapseToContainer', { containerType: 'component' }),
         condition({ $store }) {
-            const selectedNodes = $store.getters['selection/selectedNodes'];
-            if (selectedNodes.length === 0) {
-                return false;
-            }
-            return !$store.getters['selection/selectedNodes']
-                .some(node => node.allowedActions.canCollapse === 'false') && $store.getters['workflow/isWritable'];
+            if (!$store.getters['workflow/isWritable']) { return false; }
+            if (!$store.getters['selection/selectedNodes'].length) { return false; }
+
+            return $store.getters['selection/selectedNodes'].every(node => node.allowedActions.canCollapse !== 'false');
         }
     },
     expandMetanode: {
