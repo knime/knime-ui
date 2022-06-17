@@ -1,5 +1,5 @@
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapMutations, mapActions } from 'vuex';
 
 import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
 import NodeCategory from './NodeCategory.vue';
@@ -13,16 +13,17 @@ export default {
         ...mapState('nodeRepository', ['categoryScrollPosition', 'nodesPerCategory'])
     },
     methods: {
+        ...mapActions('nodeRepository', ['getAllNodes', 'setSelectedTags']),
+        ...mapMutations('nodeRepository', ['setCategoryScrollPosition']),
+
         onScrollBottom() {
-            this.$store.dispatch('nodeRepository/getAllNodes', true);
+            this.getAllNodes(true);
         },
-        // TODO: NXT-844 why do we save the scroll position instead of using keep-alive for the repo?
-        // Also currently the NodeRepository isn't destroyed upon closing
         onSaveScrollPosition(position) {
-            this.$store.commit('nodeRepository/setCategoryScrollPosition', position);
+            this.setCategoryScrollPosition(position);
         },
         onSelectTag(tag) {
-            this.$store.dispatch('nodeRepository/setSelectedTags', [tag]);
+            this.setSelectedTags([tag]);
         }
     }
 };
@@ -36,7 +37,7 @@ export default {
     @save-position="onSaveScrollPosition"
   >
     <div class="content">
-      <template v-for="({tag, nodes}) in nodesPerCategory">
+      <template v-for="({ tag, nodes }) in nodesPerCategory">
         <NodeCategory
           :key="`tag-${tag}`"
           class="category"

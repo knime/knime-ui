@@ -1,4 +1,3 @@
-// TODO: NXT-844 bring this store into normal order
 import { searchNodes, getNodesGroupedByTags, getNodeDescription } from '~api';
 import { mapNodePorts } from '../util/portDataMapper';
 
@@ -35,18 +34,68 @@ export const state = () => ({
     isDescriptionPanelOpen: false
 });
 
-export const getters = {
-    hasSearchParams: state => state.query !== '' || state.selectedTags.length > 0,
-    searchIsActive: state => Boolean(state.query || state.tags.length) && state.nodes !== null,
-    searchResultsContainSelectedNode: (state) => Boolean(state.nodes?.some(node => node.id === state.selectedNode?.id)),
-    nodesPerCategoryContainSelectedNode(state) {
-        return state.nodesPerCategory.some(category => category.nodes.some(
-            node => node.id === state.selectedNode?.id
-        ));
+export const mutations = {
+
+    setCategoryPage(state, pageNumber) {
+        state.categoryPage = pageNumber;
     },
-    selectedNodeIsVisible: (state, getters) => getters.searchIsActive
-        ? getters.searchResultsContainSelectedNode
-        : getters.nodesPerCategoryContainSelectedNode
+    setNodeSearchPage(state, pageNumber) {
+        state.nodeSearchPage = pageNumber;
+    },
+
+    setTotalNumNodes(state, totalNumNodes) {
+        state.totalNumNodes = totalNumNodes;
+    },
+
+    addNodes(state, nodes) {
+        let existingNodeIds = state.nodes.map(node => node.id);
+        let newNodes = nodes.filter(node => !existingNodeIds.includes(node.id));
+        state.nodes.push(...newNodes);
+    },
+
+    setNodes(state, nodes) {
+        state.nodes = nodes;
+    },
+
+    setTags(state, tags) {
+        state.tags = tags;
+    },
+
+    setSelectedTags(state, selectedTags) {
+        state.selectedTags = selectedTags;
+        state.searchScrollPosition = 0;
+    },
+    setNodesPerCategories(state, groupedNodes) {
+        state.nodesPerCategory = groupedNodes;
+    },
+    addNodesPerCategories(state, groupedNodes) {
+        state.nodesPerCategory = state.nodesPerCategory.concat(groupedNodes);
+    },
+    setQuery(state, value) {
+        state.query = value;
+        state.searchScrollPosition = 0;
+    },
+    setTotalNumCategories(state, totalNumCategories) {
+        state.totalNumCategories = totalNumCategories;
+    },
+    setSearchScrollPosition(state, value) {
+        state.searchScrollPosition = value;
+    },
+    setCategoryScrollPosition(state, value) {
+        state.categoryScrollPosition = value;
+    },
+    setNodeDescription(state, nodeDescriptionObject) {
+        state.nodeDescriptionObject = nodeDescriptionObject;
+    },
+    setSelectedNode(state, node) {
+        state.selectedNode = node;
+    },
+    setDraggingNode(state, value) {
+        state.isDraggingNode = value;
+    },
+    setDescriptionPanel(state, value) {
+        state.isDescriptionPanelOpen = value;
+    }
 };
 
 export const actions = {
@@ -197,66 +246,16 @@ export const actions = {
     }
 };
 
-export const mutations = {
-
-    setCategoryPage(state, pageNumber) {
-        state.categoryPage = pageNumber;
+export const getters = {
+    hasSearchParams: state => state.query !== '' || state.selectedTags.length > 0,
+    searchIsActive: state => Boolean(state.query || state.tags.length) && state.nodes !== null,
+    searchResultsContainSelectedNode: (state) => Boolean(state.nodes?.some(node => node.id === state.selectedNode?.id)),
+    nodesPerCategoryContainSelectedNode(state) {
+        return state.nodesPerCategory.some(category => category.nodes.some(
+            node => node.id === state.selectedNode?.id
+        ));
     },
-    setNodeSearchPage(state, pageNumber) {
-        state.nodeSearchPage = pageNumber;
-    },
-
-    setTotalNumNodes(state, totalNumNodes) {
-        state.totalNumNodes = totalNumNodes;
-    },
-
-    addNodes(state, nodes) {
-        let existingNodeIds = state.nodes.map(node => node.id);
-        let newNodes = nodes.filter(node => !existingNodeIds.includes(node.id));
-        state.nodes.push(...newNodes);
-    },
-
-    setNodes(state, nodes) {
-        state.nodes = nodes;
-    },
-
-    setTags(state, tags) {
-        state.tags = tags;
-    },
-
-    setSelectedTags(state, selectedTags) {
-        state.selectedTags = selectedTags;
-        state.searchScrollPosition = 0;
-    },
-    setNodesPerCategories(state, groupedNodes) {
-        state.nodesPerCategory = groupedNodes;
-    },
-    addNodesPerCategories(state, groupedNodes) {
-        state.nodesPerCategory = state.nodesPerCategory.concat(groupedNodes);
-    },
-    setQuery(state, value) {
-        state.query = value;
-        state.searchScrollPosition = 0;
-    },
-    setTotalNumCategories(state, totalNumCategories) {
-        state.totalNumCategories = totalNumCategories;
-    },
-    setSearchScrollPosition(state, value) {
-        state.searchScrollPosition = value;
-    },
-    setCategoryScrollPosition(state, value) {
-        state.categoryScrollPosition = value;
-    },
-    setNodeDescription(state, nodeDescriptionObject) {
-        state.nodeDescriptionObject = nodeDescriptionObject;
-    },
-    setSelectedNode(state, node) {
-        state.selectedNode = node;
-    },
-    setDraggingNode(state, value) {
-        state.isDraggingNode = value;
-    },
-    setDescriptionPanel(state, value) {
-        state.isDescriptionPanelOpen = value;
-    }
+    selectedNodeIsVisible: (state, getters) => getters.searchIsActive
+        ? getters.searchResultsContainSelectedNode
+        : getters.nodesPerCategoryContainSelectedNode
 };
