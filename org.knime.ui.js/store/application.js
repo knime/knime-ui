@@ -54,7 +54,7 @@ export const actions = {
     
     destroyApplication({ dispatch }) {
         removeEventListener('AppStateChanged');
-        dispatch('workflow/unloadActiveWorkflow', { clearWorkflow: true }, { root: true });
+        dispatch('unloadActiveWorkflow', { clearWorkflow: true });
     },
     // -------------------------------------------------------------------- //
     async replaceApplicationState({ commit, dispatch, state }, applicationState) {
