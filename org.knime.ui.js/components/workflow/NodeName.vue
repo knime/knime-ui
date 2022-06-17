@@ -73,6 +73,7 @@ export default {
           :node-id="nodeId"
           :node-position="nodePosition"
           :value="value"
+          :pattern="/[*?#:“<>%~|/\\]/g"
           :start-width="editorInitialDimensions.width"
           :start-height="editorInitialDimensions.height"
           @width-change="$emit('width-change', $event)"
