@@ -1,9 +1,9 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import StreamingIcon from '~/webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
-import ContextMenu from '~/components/ContextMenu';
-import WorkflowCanvas from '~/components/WorkflowCanvas';
-import PortTypeMenu from '~/components/PortTypeMenu';
+import StreamingIcon from '~webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
+import ContextMenu from '~knime-ui/components/ContextMenu';
+import WorkflowCanvas from '~knime-ui/components/WorkflowCanvas';
+import PortTypeMenu from '~knime-ui/components/PortTypeMenu';
 
 export default {
     components: {

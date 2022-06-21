@@ -3,25 +3,25 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 
-import Node from '~/components/workflow/Node';
-import NodeTorso from '~/components/workflow/NodeTorso';
-import NodeState from '~/components/workflow/NodeState';
-import NodeAnnotation from '~/components/workflow/NodeAnnotation';
-import LinkDecorator from '~/components/workflow/LinkDecorator';
-import StreamingDecorator from '~/components/workflow/StreamingDecorator';
-import LoopDecorator from '~/components/workflow/LoopDecorator';
-import NodeActionBar from '~/components/workflow/NodeActionBar';
-import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
-import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
-import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder';
+import Node from '~knime-ui/components/workflow/Node';
+import NodeTorso from '~knime-ui/components/workflow/NodeTorso';
+import NodeState from '~knime-ui/components/workflow/NodeState';
+import NodeAnnotation from '~knime-ui/components/workflow/NodeAnnotation';
+import LinkDecorator from '~knime-ui/components/workflow/LinkDecorator';
+import StreamingDecorator from '~knime-ui/components/workflow/StreamingDecorator';
+import LoopDecorator from '~knime-ui/components/workflow/LoopDecorator';
+import NodeActionBar from '~knime-ui/components/workflow/NodeActionBar';
+import DraggablePortWithTooltip from '~knime-ui/components/workflow/DraggablePortWithTooltip';
+import NodeSelectionPlane from '~knime-ui/components/workflow/NodeSelectionPlane';
+import AddPortPlaceholder from '~knime-ui/components/workflow/AddPortPlaceholder';
 
-import '~/plugins/directive-move';
+import '~knime-ui/plugins/directive-move';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
-import NodeName from '~/components/workflow/NodeName';
+import * as $shapes from '~knime-ui/style/shapes';
+import * as $colors from '~knime-ui/style/colors';
+import NodeName from '~knime-ui/components/workflow/NodeName';
 
 const mockPort = ({ index, connectedVia = [] }) => ({
     inactive: false,

@@ -1,7 +1,7 @@
 import { createLocalVue } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 import Vuex from 'vuex';
-import * as panelStoreConfig from '~/store/panel';
+import * as panelStoreConfig from '~knime-ui/store/panel';
 
 describe('panel store', () => {
     let store, localVue;

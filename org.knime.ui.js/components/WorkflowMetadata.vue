@@ -1,11 +1,11 @@
 <script>
-import Description from '~/webapps-common/ui/components/Description';
-import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
-import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
-import TagList from '~/webapps-common/ui/components/TagList';
-import { formatDateString } from '~/webapps-common/util/format';
-import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
-import ExternalResourcesList from '~/components/common/ExternalResourcesList';
+import Description from '~webapps-common/ui/components/Description';
+import NodeFeatureList from '~webapps-common/ui/components/node/NodeFeatureList';
+import NodePreview from '~webapps-common/ui/components/node/NodePreview';
+import TagList from '~webapps-common/ui/components/TagList';
+import { formatDateString } from '~webapps-common/util/format';
+import ScrollViewContainer from '~knime-ui/components/noderepo/ScrollViewContainer';
+import ExternalResourcesList from '~knime-ui/components/common/ExternalResourcesList';
 
 /** Displays metadata attached to a root-level workflow */
 export default {

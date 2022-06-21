@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import NestedSVG from '~/components/NestedSVG';
+import NestedSVG from '~knime-ui/components/NestedSVG';
 
 describe('NestedSVG', () => {
     it('renders svg and passes attributes', () => {

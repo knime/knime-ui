@@ -11,7 +11,7 @@ describe('logger', () => {
     });
 
     it('defines a logger', () => {
-        require('~/plugins/logger');
+        require('~knime-ui/plugins/logger');
         [
             'debug',
             'error',

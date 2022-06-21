@@ -1,4 +1,4 @@
-import { applyStyleRanges } from '~/util/styleRanges';
+import { applyStyleRanges } from '~knime-ui/util/styleRanges';
 
 describe('styleRanges util', () => {
     it('handles empty ranges', () => {

@@ -1,14 +1,14 @@
-import ExecuteAllIcon from '~/assets/execute-all.svg?inline';
-import CancelAllIcon from '~/assets/cancel.svg?inline';
-import ResetAllIcon from '~/assets/reset-all.svg?inline';
+import ExecuteAllIcon from '~knime-ui/assets/execute-all.svg?inline';
+import CancelAllIcon from '~knime-ui/assets/cancel.svg?inline';
+import ResetAllIcon from '~knime-ui/assets/reset-all.svg?inline';
 
-import ExecuteSelectedIcon from '~/assets/execute-selected.svg?inline';
-import CancelSelectedIcon from '~/assets/cancel-selected.svg?inline';
-import ResetSelectedIcon from '~/assets/reset-selected.svg?inline';
+import ExecuteSelectedIcon from '~knime-ui/assets/execute-selected.svg?inline';
+import CancelSelectedIcon from '~knime-ui/assets/cancel-selected.svg?inline';
+import ResetSelectedIcon from '~knime-ui/assets/reset-selected.svg?inline';
 
-import ResumeLoopIcon from '~/assets/resume-execution.svg?inline';
-import PauseLoopIcon from '~/assets/pause-execution.svg?inline';
-import StepLoopIcon from '~/assets/step-execution.svg?inline';
+import ResumeLoopIcon from '~knime-ui/assets/resume-execution.svg?inline';
+import PauseLoopIcon from '~knime-ui/assets/pause-execution.svg?inline';
+import StepLoopIcon from '~knime-ui/assets/step-execution.svg?inline';
 
 export default {
     executeAll: {

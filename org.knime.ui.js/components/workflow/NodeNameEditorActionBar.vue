@@ -1,7 +1,7 @@
 <script>
-import SaveIcon from '~/assets/ok.svg?inline';
-import CancelIcon from '~/assets/cancel.svg?inline';
-import ActionButton from '~/components/workflow/ActionButton';
+import SaveIcon from '~knime-ui/assets/ok.svg?inline';
+import CancelIcon from '~knime-ui/assets/cancel.svg?inline';
+import ActionButton from '~knime-ui/components/workflow/ActionButton';
 
 /**
  * ActionBar that is displayed when the NodeNameEditor is in edit state.

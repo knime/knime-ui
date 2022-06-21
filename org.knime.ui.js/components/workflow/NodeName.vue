@@ -1,8 +1,8 @@
 <script>
 import { mapState, mapActions } from 'vuex';
 
-import NodeNameEditor from '~/components/workflow/NodeNameEditor';
-import NodeNameText from '~/components/workflow/NodeNameText';
+import NodeNameEditor from '~knime-ui/components/workflow/NodeNameEditor';
+import NodeNameText from '~knime-ui/components/workflow/NodeNameText';
 
 /**
  * Node name coordinates everything related to the name editing behavior. Determines whether to display

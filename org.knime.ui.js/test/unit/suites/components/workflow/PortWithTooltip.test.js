@@ -1,14 +1,14 @@
 /* eslint-disable no-magic-numbers */
 
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
-import PortWithTooltip from '~/components/workflow/PortWithTooltip';
-import Port from '~/components/workflow/Port';
+import * as $shapes from '~knime-ui/style/shapes';
+import * as $colors from '~knime-ui/style/colors';
+import PortWithTooltip from '~knime-ui/components/workflow/PortWithTooltip';
+import Port from '~knime-ui/components/workflow/Port';
 
 describe('PortWithTooltip.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, currentTooltip, stubs;

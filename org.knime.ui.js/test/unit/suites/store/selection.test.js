@@ -1,8 +1,8 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 import Vuex from 'vuex';
-import * as selectionStoreConfig from '~/store/selection';
+import * as selectionStoreConfig from '~knime-ui/store/selection';
 
 describe('workflow store', () => {
     let $store, storeConfig, localVue;

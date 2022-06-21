@@ -1,5 +1,5 @@
 <script>
-import NodeNameText from '~/components/workflow/NodeNameText';
+import NodeNameText from '~knime-ui/components/workflow/NodeNameText';
 
 const forbiddenCharacters = /[*?#:“<>%~|/\\]/g;
 

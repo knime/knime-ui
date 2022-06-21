@@ -1,11 +1,11 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import Vuex from 'vuex';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~knime-ui/style/shapes';
 
-import NodeActionBar from '~/components/workflow/NodeActionBar';
-import ActionButton from '~/components/workflow/ActionButton';
+import NodeActionBar from '~knime-ui/components/workflow/NodeActionBar';
+import ActionButton from '~knime-ui/components/workflow/ActionButton';
 
 describe('NodeActionBar', () => {
     let mocks, doMount, storeConfig, $commands, propsData, wrapper;

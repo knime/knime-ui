@@ -1,9 +1,9 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
-import * as $shapes from '~/style/shapes';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
+import * as $shapes from '~knime-ui/style/shapes';
 import Vuex from 'vuex';
 
-import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
+import AutoSizeForeignObject from '~knime-ui/components/common/AutoSizeForeignObject';
 
 const mockBoundingRect = ({ x, y, width, height }) => {
     const mockFn = jest.fn(() => ({ x, y, width, height }));

@@ -1,4 +1,4 @@
-import executionCommands from '~/commands/executionCommands';
+import executionCommands from '~knime-ui/commands/executionCommands';
 
 describe('executionCommands', () => {
     let mockDispatch, $store;

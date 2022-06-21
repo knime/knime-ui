@@ -1,10 +1,10 @@
 import { shallowMount, createLocalVue } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vue from 'vue';
 import vuex from 'vuex';
-import * as panelStoreConfig from '~/store/panel';
-import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
-import SwitchIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
+import * as panelStoreConfig from '~knime-ui/store/panel';
+import LeftCollapsiblePanel from '~knime-ui/components/LeftCollapsiblePanel';
+import SwitchIcon from '~webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 
 describe('LeftCollapsiblePanel.vue', () => {
     let wrapper, $store, doShallowMount;

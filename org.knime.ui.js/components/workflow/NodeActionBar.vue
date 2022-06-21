@@ -1,16 +1,16 @@
 <script>
 import { mapActions, mapGetters } from 'vuex';
 
-import ExecuteIcon from '~/assets/execute.svg?inline';
-import ResumeIcon from '~/assets/resume-execution.svg?inline';
-import ResetIcon from '~/assets/reset-all.svg?inline';
-import CancelIcon from '~/assets/cancel.svg?inline';
-import PauseIcon from '~/assets/pause-execution.svg?inline';
-import StepIcon from '~/assets/step-execution.svg?inline';
-import OpenViewIcon from '~/assets/open-view.svg?inline';
-import OpenDialogIcon from '~/assets/configure-node.svg?inline';
+import ExecuteIcon from '~knime-ui/assets/execute.svg?inline';
+import ResumeIcon from '~knime-ui/assets/resume-execution.svg?inline';
+import ResetIcon from '~knime-ui/assets/reset-all.svg?inline';
+import CancelIcon from '~knime-ui/assets/cancel.svg?inline';
+import PauseIcon from '~knime-ui/assets/pause-execution.svg?inline';
+import StepIcon from '~knime-ui/assets/step-execution.svg?inline';
+import OpenViewIcon from '~knime-ui/assets/open-view.svg?inline';
+import OpenDialogIcon from '~knime-ui/assets/configure-node.svg?inline';
 
-import ActionButton from '~/components/workflow/ActionButton';
+import ActionButton from '~knime-ui/components/workflow/ActionButton';
 
 /**
  *  Displays a bar of action buttons above nodes

@@ -1,9 +1,9 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import FloatingMenu from '~/components/FloatingMenu';
-import portIcon from '~/components/output/PortIconRenderer';
-import MenuItems from '~/webapps-common/ui/components/MenuItems';
-import SearchBar from '~/components/noderepo/SearchBar.vue';
+import FloatingMenu from '~knime-ui/components/FloatingMenu';
+import portIcon from '~knime-ui/components/output/PortIconRenderer';
+import MenuItems from '~webapps-common/ui/components/MenuItems';
+import SearchBar from '~knime-ui/components/noderepo/SearchBar.vue';
 
 /**
  * ContextMenu offers actions for the Kanvas based on the selected nodes.

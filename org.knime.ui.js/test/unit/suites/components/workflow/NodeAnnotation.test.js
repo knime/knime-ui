@@ -1,9 +1,9 @@
 import { shallowMount } from '@vue/test-utils';
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~knime-ui/style/shapes';
 
-import NodeAnnotation from '~/components/workflow/NodeAnnotation';
-import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
-import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
+import NodeAnnotation from '~knime-ui/components/workflow/NodeAnnotation';
+import LegacyAnnotationText from '~knime-ui/components/workflow/LegacyAnnotationText';
+import AutoSizeForeignObject from '~knime-ui/components/common/AutoSizeForeignObject';
 
 describe('Node Annotation', () => {
     let propsData, mocks, doShallowMount, wrapper;

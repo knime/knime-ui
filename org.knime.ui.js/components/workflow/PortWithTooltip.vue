@@ -1,6 +1,6 @@
 <script>
-import Port from '~/components/workflow/Port';
-import { tooltip } from '~/mixins';
+import Port from '~knime-ui/components/workflow/Port';
+import { tooltip } from '~knime-ui/mixins';
 
 /**
  * A port with attached tooltip.

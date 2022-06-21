@@ -1,9 +1,9 @@
 <script>
 import { mapState } from 'vuex';
-import WorkflowPanel from '~/components/WorkflowPanel';
-import NodeOutput from '~/components/output/NodeOutput';
-import Splitter from '~/components/Splitter';
-import SideMenu from '~/components/SideMenu';
+import WorkflowPanel from '~knime-ui/components/WorkflowPanel';
+import NodeOutput from '~knime-ui/components/output/NodeOutput';
+import Splitter from '~knime-ui/components/Splitter';
+import SideMenu from '~knime-ui/components/SideMenu';
 
 /**
  * A component that shows the tab contents belonging to one workflow,

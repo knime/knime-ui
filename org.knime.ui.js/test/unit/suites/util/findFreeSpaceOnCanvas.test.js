@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import findFreeSpaceOnCanvas, { NODE_POSITION_SPACE_FACTOR }
-    from '~/util/findFreeSpaceOnCanvas';
-import { nodeSize } from '~/style/shapes';
+    from '~knime-ui/util/findFreeSpaceOnCanvas';
+import { nodeSize } from '~knime-ui/style/shapes';
 
 describe('findFreeSpaceOnCanvas', () => {
     let nodes = {

@@ -1,11 +1,11 @@
 /* eslint-disable no-magic-numbers */
 import { shallowMount, createLocalVue } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 import Vuex from 'vuex';
 
-import AppHeader from '~/components/AppHeader';
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
-import CloseIcon from '~/assets/cancel.svg?inline';
+import AppHeader from '~knime-ui/components/AppHeader';
+import FunctionButton from '~webapps-common/ui/components/FunctionButton';
+import CloseIcon from '~knime-ui/assets/cancel.svg?inline';
 
 describe('AppHeader.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, storeConfig, $store;

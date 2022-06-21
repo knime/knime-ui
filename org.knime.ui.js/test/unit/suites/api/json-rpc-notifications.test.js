@@ -1,4 +1,4 @@
-import { registerEventHandlers } from '~/api/json-rpc-notifications';
+import { registerEventHandlers } from '~knime-ui/api/json-rpc-notifications';
 
 describe('JsonRpcNotifications', () => {
     let eventHandlers;

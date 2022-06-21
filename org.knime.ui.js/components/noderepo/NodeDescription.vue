@@ -1,10 +1,10 @@
 <script>
 import { mapState, mapActions, mapGetters } from 'vuex';
-import CloseIcon from '~/assets/cancel.svg?inline';
-import Description from '~/webapps-common/ui/components/Description';
-import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
+import CloseIcon from '~knime-ui/assets/cancel.svg?inline';
+import Description from '~webapps-common/ui/components/Description';
+import NodeFeatureList from '~webapps-common/ui/components/node/NodeFeatureList';
 
-import ExternalResourcesList from '~/components/common/ExternalResourcesList';
+import ExternalResourcesList from '~knime-ui/components/common/ExternalResourcesList';
 
 export default {
     components: {

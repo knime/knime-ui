@@ -1,5 +1,5 @@
-export { connectorPosition } from '~/mixins/connectorPosition';
-export { portBar } from '~/mixins/portBar';
-export { tooltip } from '~/mixins/tooltip';
-export { dropNode } from '~/mixins/dropNode';
-export { snapConnector } from '~/mixins/snapConnector';
+export { connectorPosition } from '~knime-ui/mixins/connectorPosition';
+export { portBar } from '~knime-ui/mixins/portBar';
+export { tooltip } from '~knime-ui/mixins/tooltip';
+export { dropNode } from '~knime-ui/mixins/dropNode';
+export { snapConnector } from '~knime-ui/mixins/snapConnector';

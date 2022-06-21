@@ -1,4 +1,4 @@
-import { changeLoopState, changeNodeState } from '~api';
+import { changeLoopState, changeNodeState } from '~knime-ui/api';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.

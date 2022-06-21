@@ -1,17 +1,17 @@
 /* eslint-disable max-params */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vue from 'vue';
 import Vuex from 'vuex';
 
-import * as $shapes from '~/style/shapes';
-import NodeOutput from '~/components/output/NodeOutput';
-import PortTabs from '~/components/output/PortTabs';
-import FlowVariablePortView from '~/components/output/FlowVariablePortView';
-import TablePortView from '~/components/output/TablePortView';
+import * as $shapes from '~knime-ui/style/shapes';
+import NodeOutput from '~knime-ui/components/output/NodeOutput';
+import PortTabs from '~knime-ui/components/output/PortTabs';
+import FlowVariablePortView from '~knime-ui/components/output/FlowVariablePortView';
+import TablePortView from '~knime-ui/components/output/TablePortView';
 
-import Button from '~/webapps-common/ui/components/Button';
-import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
+import Button from '~webapps-common/ui/components/Button';
+import ReloadIcon from '~webapps-common/ui/assets/img/icons/reload.svg?inline';
 
 describe('NodeOutput.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, dummyNodes, workflow, application;

@@ -1,6 +1,6 @@
 /* eslint-disable max-nested-callbacks */
 /* eslint-disable no-magic-numbers */
-import portShift, { portPositions, placeholderPosition } from '~/util/portShift';
+import portShift, { portPositions, placeholderPosition } from '~knime-ui/util/portShift';
 
 // nodeSize: 32
 // portSize: 9

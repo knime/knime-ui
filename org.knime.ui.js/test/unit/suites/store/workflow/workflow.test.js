@@ -1,8 +1,8 @@
 /* eslint-disable no-magic-numbers */
 /* eslint-disable max-lines */
 import { createLocalVue } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
-import * as $shapes from '~/style/shapes';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
+import * as $shapes from '~knime-ui/style/shapes';
 import Vuex from 'vuex';
 
 describe('workflow store', () => {
@@ -33,8 +33,8 @@ describe('workflow store', () => {
             }), { virtual: true });
 
             store = mockVuexStore({
-                workflow: await import('~/store/workflow'),
-                selection: await import('~/store/selection')
+                workflow: await import('~knime-ui/store/workflow'),
+                selection: await import('~knime-ui/store/selection')
             });
         };
     });

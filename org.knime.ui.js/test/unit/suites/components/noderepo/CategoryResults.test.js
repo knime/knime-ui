@@ -1,10 +1,10 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
-import CategoryResults from '~/components/noderepo/CategoryResults';
-import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer.vue';
-import NodeCategory from '~/components/noderepo/NodeCategory';
+import CategoryResults from '~knime-ui/components/noderepo/CategoryResults';
+import ScrollViewContainer from '~knime-ui/components/noderepo/ScrollViewContainer.vue';
+import NodeCategory from '~knime-ui/components/noderepo/NodeCategory';
 
 describe('CategoryResults', () => {
     let doShallowMount, wrapper, $store, storeState, getAllNodesMock, setSelectedTagsMock,

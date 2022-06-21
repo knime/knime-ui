@@ -1,5 +1,5 @@
 <script>
-import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
+import AutoSizeForeignObject from '~knime-ui/components/common/AutoSizeForeignObject';
 
 /**
  * Renders the node name and takes care of styling and clipping it when the contents are too large.

@@ -1,4 +1,4 @@
-import { findNodesInsideOfRectangle } from '~/util/rectangleSelection';
+import { findNodesInsideOfRectangle } from '~knime-ui/util/rectangleSelection';
 
 describe('findNodesInsideOfRectangle', () => {
     let workflow;

@@ -26,12 +26,12 @@ const config = {
     plugins: [
         // To work together with knime-ui-internal and to configure logging for the other plugins,
         // 'logger' must be plugin number zero
-        '~/plugins/logger.js',
-        '~/plugins/constants.js',
-        '~/plugins/directive-move.js',
-        '~/plugins/events.js',
-        '~/plugins/equo-comm.js',
-        '~/plugins/commands.js'
+        '~knime-ui/plugins/logger.js',
+        '~knime-ui/plugins/constants.js',
+        '~knime-ui/plugins/directive-move.js',
+        '~knime-ui/plugins/events.js',
+        '~knime-ui/plugins/equo-comm.js',
+        '~knime-ui/plugins/commands.js'
     ],
     modules: ['portal-vue/nuxt'],
     css: ['@/assets/index.css'],

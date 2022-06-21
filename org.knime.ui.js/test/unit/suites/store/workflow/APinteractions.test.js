@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
 /* eslint-disable max-lines */
 import { createLocalVue } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 import Vuex from 'vuex';
 
 describe('workflow store: AP Interactions', () => {
@@ -28,7 +28,7 @@ describe('workflow store: AP Interactions', () => {
             }), { virtual: true });
 
             store = mockVuexStore({
-                workflow: await import('~/store/workflow')
+                workflow: await import('~knime-ui/store/workflow')
             });
         };
     });

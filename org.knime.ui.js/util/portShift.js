@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { nodeSize, portSize } from '~/style/shapes';
+import { nodeSize, portSize } from '~knime-ui/style/shapes';
 
 /**
  * Calculates the position of the center of a port on a node depending on its index and the total number

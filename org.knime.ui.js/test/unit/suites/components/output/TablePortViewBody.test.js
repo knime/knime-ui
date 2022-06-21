@@ -1,10 +1,10 @@
 /* eslint-disable no-magic-numbers */
 import { shallowMount } from '@vue/test-utils';
-import MissingValueIcon from '~/assets/missing-value.svg?inline';
+import MissingValueIcon from '~knime-ui/assets/missing-value.svg?inline';
 
-jest.mock('~/webapps-common/ui/util/svgWithTitle', () => x => x, { virtual: true });
+jest.mock('~webapps-common/ui/util/svgWithTitle', () => x => x, { virtual: true });
 
-import TablePortViewBody from '~/components/output/TablePortViewBody';
+import TablePortViewBody from '~knime-ui/components/output/TablePortViewBody';
 
 describe('TablePortViewBody.vue', () => {
     let propsData, doShallowMount, wrapper;

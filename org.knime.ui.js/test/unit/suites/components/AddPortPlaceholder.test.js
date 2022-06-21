@@ -1,14 +1,14 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, mount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~knime-ui/style/shapes';
+import * as $colors from '~knime-ui/style/colors';
 
-import Port from '~/components/workflow/Port';
-import AddPortPlaceholder, { addPortPlaceholderPath } from '~/components/workflow/AddPortPlaceholder';
+import Port from '~knime-ui/components/workflow/Port';
+import AddPortPlaceholder, { addPortPlaceholderPath } from '~knime-ui/components/workflow/AddPortPlaceholder';
 
 describe('PortTypeMenu.vue', () => {
     let storeConfig, propsData, mocks, doMount, wrapper, provide, $store;

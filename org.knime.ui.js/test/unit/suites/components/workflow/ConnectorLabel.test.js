@@ -1,9 +1,9 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
-import ConnectorLabel from '~/components/workflow/ConnectorLabel';
+import ConnectorLabel from '~knime-ui/components/workflow/ConnectorLabel';
 
 jest.mock('~api', () => {
 }, { virtual: true });

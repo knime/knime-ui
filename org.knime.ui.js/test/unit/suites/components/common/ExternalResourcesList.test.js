@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 
-import ExternalResourcesList from '~/components/common/ExternalResourcesList';
-import LinkList from '~/webapps-common/ui/components/LinkList';
+import ExternalResourcesList from '~knime-ui/components/common/ExternalResourcesList';
+import LinkList from '~webapps-common/ui/components/LinkList';
 
 
 const links = [

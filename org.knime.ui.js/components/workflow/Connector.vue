@@ -1,7 +1,7 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex';
-import { portBar, connectorPosition } from '~/mixins';
-import connectorPath from '~/util/connectorPath';
+import { portBar, connectorPosition } from '~knime-ui/mixins';
+import connectorPath from '~knime-ui/util/connectorPath';
 import gsap from 'gsap';
 
 /**

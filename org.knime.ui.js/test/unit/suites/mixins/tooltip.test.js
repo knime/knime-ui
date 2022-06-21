@@ -1,11 +1,11 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import { tooltip } from '~/mixins';
-import { entryDelay } from '~/mixins/tooltip';
+import { tooltip } from '~knime-ui/mixins';
+import { entryDelay } from '~knime-ui/mixins/tooltip';
 
 let wrapper, setTooltipMock, setTimeoutMock;
 

@@ -1,15 +1,15 @@
 import { createLocalVue } from '@vue/test-utils';
-import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils';
+import { mockVuexStore, shallowMountWithAsyncData } from '~knime-ui/test/unit/test-utils';
 import Vuex from 'vuex';
 
 import Vue from 'vue';
 Vue.config.ignoredElements = ['portal-target'];
 
-import * as panelStoreConfig from '~/store/panel';
+import * as panelStoreConfig from '~knime-ui/store/panel';
 
-import SideMenu from '~/components/SideMenu';
-import NodeRepository from '~/components/noderepo/NodeRepository';
-import WorkflowMetadata from '~/components/WorkflowMetadata';
+import SideMenu from '~knime-ui/components/SideMenu';
+import NodeRepository from '~knime-ui/components/noderepo/NodeRepository';
+import WorkflowMetadata from '~knime-ui/components/WorkflowMetadata';
 
 describe('SideMenu.vue', () => {
     beforeAll(() => {

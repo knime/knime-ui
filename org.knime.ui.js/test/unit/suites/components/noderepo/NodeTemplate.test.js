@@ -2,11 +2,11 @@
 import Vuex from 'vuex';
 import Vue from 'vue';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
-import NodeTemplate, { WORKFLOW_ADD_START_MIN } from '~/components/noderepo/NodeTemplate';
-import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
-import { KnimeMIME } from '~/mixins/dropNode';
-import { nodeSize } from '~/style/shapes';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
+import NodeTemplate, { WORKFLOW_ADD_START_MIN } from '~knime-ui/components/noderepo/NodeTemplate';
+import NodePreview from '~webapps-common/ui/components/node/NodePreview';
+import { KnimeMIME } from '~knime-ui/mixins/dropNode';
+import { nodeSize } from '~knime-ui/style/shapes';
 
 describe('NodeTemplate', () => {
     let propsData, doMount, wrapper, testEvent, isWritable, mocks, openDescriptionPanelMock, closeDescriptionPanelMock,

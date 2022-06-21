@@ -1,5 +1,5 @@
 import { openNodeDialog, openLegacyFlowVariableDialog, openView, saveWorkflow, closeWorkflow,
-    openLayoutEditor } from '~api';
+    openLayoutEditor } from '~knime-ui/api';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.

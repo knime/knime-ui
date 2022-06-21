@@ -1,9 +1,9 @@
 <script>
 import { mapGetters } from 'vuex';
-import NodeTorsoMissing from '~/components/workflow/NodeTorsoMissing';
-import NodeTorsoUnknown from '~/components/workflow/NodeTorsoUnknown';
-import NodeTorsoMetanode from '~/components/workflow/NodeTorsoMetanode';
-import NodeTorsoNormal from '~/webapps-common/ui/components/node/NodeTorsoNormal';
+import NodeTorsoMissing from '~knime-ui/components/workflow/NodeTorsoMissing';
+import NodeTorsoUnknown from '~knime-ui/components/workflow/NodeTorsoUnknown';
+import NodeTorsoMetanode from '~knime-ui/components/workflow/NodeTorsoMetanode';
+import NodeTorsoNormal from '~webapps-common/ui/components/node/NodeTorsoNormal';
 
 /**
  * Main part of the node icon.

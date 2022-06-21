@@ -1,13 +1,13 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import NodeState from '~/components/workflow/NodeState';
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
-import muteConsole from '~/webapps-common/util/test-utils/muteConsole';
+import NodeState from '~knime-ui/components/workflow/NodeState';
+import * as $shapes from '~knime-ui/style/shapes';
+import * as $colors from '~knime-ui/style/colors';
+import muteConsole from '~webapps-common/util/test-utils/muteConsole';
 
 describe('NodeState.vue', () => {
     const provide = {

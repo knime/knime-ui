@@ -1,11 +1,11 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import TablePortView from '~/components/output/TablePortView';
-import FlowVariablePortView from '~/components/output/FlowVariablePortView';
-import PortTabs from '~/components/output/PortTabs';
-import Button from '~/webapps-common/ui/components/Button';
-import PlayIcon from '~/assets/execute.svg?inline';
-import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
+import TablePortView from '~knime-ui/components/output/TablePortView';
+import FlowVariablePortView from '~knime-ui/components/output/FlowVariablePortView';
+import PortTabs from '~knime-ui/components/output/PortTabs';
+import Button from '~webapps-common/ui/components/Button';
+import PlayIcon from '~knime-ui/assets/execute.svg?inline';
+import ReloadIcon from '~webapps-common/ui/assets/img/icons/reload.svg?inline';
 
 const needsExecutionMessage = 'To show the output table, please execute the selected node.';
 const outputAvailableAfterExecutionMessage = 'Output is available after execution.';

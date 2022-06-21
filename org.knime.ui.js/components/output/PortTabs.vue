@@ -1,7 +1,7 @@
 <script>
-import FlowVarTabIcon from '~/assets/flow-variables.svg?inline';
+import FlowVarTabIcon from '~knime-ui/assets/flow-variables.svg?inline';
 import portIcon from './PortIconRenderer';
-import TabBar from '~/webapps-common/ui/components/TabBar';
+import TabBar from '~webapps-common/ui/components/TabBar';
 
 /**
  * Tab Bar that displays output ports of a given node.

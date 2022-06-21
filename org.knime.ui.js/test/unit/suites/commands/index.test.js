@@ -1,5 +1,5 @@
 /* eslint-disable max-nested-callbacks */
-jest.mock('~/commands/workflowCommands', () => ({
+jest.mock('~knime-ui/commands/workflowCommands', () => ({
     __esModule: true,
     default: {
         save: {},
@@ -7,7 +7,7 @@ jest.mock('~/commands/workflowCommands', () => ({
     }
 }));
 
-jest.mock('~/commands/canvasCommands', () => ({
+jest.mock('~knime-ui/commands/canvasCommands', () => ({
     __esModule: true,
     default: {
         fitToScreen: {},
@@ -15,9 +15,9 @@ jest.mock('~/commands/canvasCommands', () => ({
     }
 }));
 
-import commands, { conditionGroup } from '~/commands';
-import workflowCommandsMock from '~/commands/workflowCommands';
-import canvasCommandsMock from '~/commands/canvasCommands';
+import commands, { conditionGroup } from '~knime-ui/commands';
+import workflowCommandsMock from '~knime-ui/commands/workflowCommands';
+import canvasCommandsMock from '~knime-ui/commands/canvasCommands';
 
 describe('Commands', () => {
     describe('condition group', () => {

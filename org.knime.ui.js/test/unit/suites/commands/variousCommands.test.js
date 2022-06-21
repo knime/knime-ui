@@ -1,4 +1,4 @@
-import { sidePanelCommands, selectionCommands } from '~/commands/variousCommands';
+import { sidePanelCommands, selectionCommands } from '~knime-ui/commands/variousCommands';
 
 describe('variousCommands', () => {
     let mockDispatch, $store;

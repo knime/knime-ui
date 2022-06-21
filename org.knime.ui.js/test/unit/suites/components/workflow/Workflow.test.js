@@ -1,16 +1,16 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~knime-ui/style/shapes';
 
-import Workflow from '~/components/workflow/Workflow';
-import Node from '~/components/workflow/Node';
-import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer';
-import Connector from '~/components/workflow/Connector';
-import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation';
-import MetaNodePortBars from '~/components/workflow/MetaNodePortBars';
+import Workflow from '~knime-ui/components/workflow/Workflow';
+import Node from '~knime-ui/components/workflow/Node';
+import MoveableNodeContainer from '~knime-ui/components/workflow/MoveableNodeContainer';
+import Connector from '~knime-ui/components/workflow/Connector';
+import WorkflowAnnotation from '~knime-ui/components/workflow/WorkflowAnnotation';
+import MetaNodePortBars from '~knime-ui/components/workflow/MetaNodePortBars';
 
 const mockNode = ({ id, position }) => ({
     name: '',

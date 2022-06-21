@@ -1,13 +1,13 @@
 import { shallowMount, createLocalVue } from '@vue/test-utils';
 import Vuex from 'vuex';
 
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~knime-ui/style/shapes';
 
-import NodeNameEditor from '~/components/workflow/NodeNameEditor';
-import NodeNameTextarea from '~/components/workflow/NodeNameTextarea';
-import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar';
+import NodeNameEditor from '~knime-ui/components/workflow/NodeNameEditor';
+import NodeNameTextarea from '~knime-ui/components/workflow/NodeNameTextarea';
+import NodeNameEditorActionBar from '~knime-ui/components/workflow/NodeNameEditorActionBar';
 
 describe('NodeNameEditor', () => {
     const propsData = {

@@ -1,14 +1,14 @@
 import executionCommands from './executionCommands';
 
-import RedoIcon from '~/assets/redo.svg?inline';
-import UndoIcon from '~/assets/undo.svg?inline';
-import DeleteIcon from '~/assets/delete.svg?inline';
-import OpenViewIcon from '~/assets/open-view.svg?inline';
-import OpenDialogIcon from '~/assets/configure-node.svg?inline';
-import SaveIcon from '~/assets/save.svg?inline';
-import CreateMetanode from '~/assets/create-metanode.svg?inline';
-import CreateComponent from '~/assets/create-component.svg?inline';
-import LayoutIcon from '~/assets/layout.svg?inline';
+import RedoIcon from '~knime-ui/assets/redo.svg?inline';
+import UndoIcon from '~knime-ui/assets/undo.svg?inline';
+import DeleteIcon from '~knime-ui/assets/delete.svg?inline';
+import OpenViewIcon from '~knime-ui/assets/open-view.svg?inline';
+import OpenDialogIcon from '~knime-ui/assets/configure-node.svg?inline';
+import SaveIcon from '~knime-ui/assets/save.svg?inline';
+import CreateMetanode from '~knime-ui/assets/create-metanode.svg?inline';
+import CreateComponent from '~knime-ui/assets/create-component.svg?inline';
+import LayoutIcon from '~knime-ui/assets/layout.svg?inline';
 
 export default {
     ...executionCommands,

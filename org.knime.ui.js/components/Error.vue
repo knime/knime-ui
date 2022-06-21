@@ -1,10 +1,10 @@
 <script>
-import Button from '~/webapps-common/ui/components/Button';
-import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
-import CopyIcon from '~/webapps-common/ui/assets/img/icons/copy.svg?inline';
-import CheckIcon from '~/webapps-common/ui/assets/img/icons/check.svg?inline';
-import WarningIcon from '~/webapps-common/ui/assets/img/icons/circle-warning.svg?inline';
-import { copyText } from '~/webapps-common/util/copyText.js';
+import Button from '~webapps-common/ui/components/Button';
+import ReloadIcon from '~webapps-common/ui/assets/img/icons/reload.svg?inline';
+import CopyIcon from '~webapps-common/ui/assets/img/icons/copy.svg?inline';
+import CheckIcon from '~webapps-common/ui/assets/img/icons/check.svg?inline';
+import WarningIcon from '~webapps-common/ui/assets/img/icons/circle-warning.svg?inline';
+import { copyText } from '~webapps-common/util/copyText.js';
 
 /**
  * Error.vue

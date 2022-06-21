@@ -1,9 +1,9 @@
 import { mount, createLocalVue } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import vuex from 'vuex';
-import * as panelStoreConfig from '~/store/panel';
+import * as panelStoreConfig from '~knime-ui/store/panel';
 
-import Sidebar from '~/components/Sidebar';
+import Sidebar from '~knime-ui/components/Sidebar';
 
 describe('Sidebar', () => {
     let wrapper;

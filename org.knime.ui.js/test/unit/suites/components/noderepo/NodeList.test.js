@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 
-import NodeTemplate from '~/components/noderepo/NodeTemplate';
-import NodeList from '~/components/noderepo/NodeList';
+import NodeTemplate from '~knime-ui/components/noderepo/NodeTemplate';
+import NodeList from '~knime-ui/components/noderepo/NodeList';
 
 describe('NodeList', () => {
     let doShallowMount, wrapper, propsData;

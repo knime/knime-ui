@@ -1,10 +1,10 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import Kanvas, { RESIZE_DEBOUNCE } from '~/components/Kanvas';
+import Kanvas, { RESIZE_DEBOUNCE } from '~knime-ui/components/Kanvas';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {

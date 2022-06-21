@@ -1,14 +1,14 @@
 import { shallowMount, mount } from '@vue/test-utils';
 
-import WorkflowMetadata from '~/components/WorkflowMetadata';
-import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
-import ExternalResourcesList from '~/components/common/ExternalResourcesList';
-import LinkList from '~/webapps-common/ui/components/LinkList';
-import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
-import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
-import Description from '~/webapps-common/ui/components/Description';
-import TagList from '~/webapps-common/ui/components/TagList';
-import Tag from '~/webapps-common/ui/components/Tag';
+import WorkflowMetadata from '~knime-ui/components/WorkflowMetadata';
+import ScrollViewContainer from '~knime-ui/components/noderepo/ScrollViewContainer';
+import ExternalResourcesList from '~knime-ui/components/common/ExternalResourcesList';
+import LinkList from '~webapps-common/ui/components/LinkList';
+import NodeFeatureList from '~webapps-common/ui/components/node/NodeFeatureList';
+import NodePreview from '~webapps-common/ui/components/node/NodePreview';
+import Description from '~webapps-common/ui/components/Description';
+import TagList from '~webapps-common/ui/components/TagList';
+import Tag from '~webapps-common/ui/components/Tag';
 
 describe('WorkflowMetadata.vue', () => {
     it.each([

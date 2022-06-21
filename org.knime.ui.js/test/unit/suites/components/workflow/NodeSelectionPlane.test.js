@@ -1,10 +1,10 @@
 import Vuex from 'vuex';
 
-import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
+import NodeSelectionPlane from '~knime-ui/components/workflow/NodeSelectionPlane';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~knime-ui/style/shapes';
+import * as $colors from '~knime-ui/style/colors';
 
 describe('NodeSlectionPlane.vue', () => {
     let propsData, commonPlane;

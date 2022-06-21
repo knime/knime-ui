@@ -1,15 +1,15 @@
 /* eslint-disable no-magic-numbers */
 
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~knime-ui/style/shapes';
+import * as $colors from '~knime-ui/style/colors';
 
-import MetaNodePortBar from '~/components/workflow/MetaNodePortBar';
-import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
+import MetaNodePortBar from '~knime-ui/components/workflow/MetaNodePortBar';
+import DraggablePortWithTooltip from '~knime-ui/components/workflow/DraggablePortWithTooltip';
 
 describe('MetaNodePortBar.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, $store;

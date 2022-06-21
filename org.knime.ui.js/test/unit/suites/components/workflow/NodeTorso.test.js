@@ -1,15 +1,15 @@
 import Vuex from 'vuex';
 
-import NodeTorso from '~/components/workflow/NodeTorso';
-import NodeTorsoMissing from '~/components/workflow/NodeTorsoMissing';
-import NodeTorsoUnknown from '~/components/workflow/NodeTorsoUnknown';
-import NodeTorsoMetanode from '~/components/workflow/NodeTorsoMetanode';
-import NodeTorsoNormal from '~/webapps-common/ui/components/node/NodeTorsoNormal';
+import NodeTorso from '~knime-ui/components/workflow/NodeTorso';
+import NodeTorsoMissing from '~knime-ui/components/workflow/NodeTorsoMissing';
+import NodeTorsoUnknown from '~knime-ui/components/workflow/NodeTorsoUnknown';
+import NodeTorsoMetanode from '~knime-ui/components/workflow/NodeTorsoMetanode';
+import NodeTorsoNormal from '~webapps-common/ui/components/node/NodeTorsoNormal';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~knime-ui/style/shapes';
+import * as $colors from '~knime-ui/style/colors';
 
 describe('NodeTorso.vue', () => {
     beforeAll(() => {

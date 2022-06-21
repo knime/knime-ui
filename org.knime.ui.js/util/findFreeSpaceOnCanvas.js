@@ -1,4 +1,4 @@
-import { nodeSize } from '~/style/shapes';
+import { nodeSize } from '~knime-ui/style/shapes';
 
 const NODE_POSITION_EQUALS_DELTA = 10; // px
 export const NODE_POSITION_SPACE_FACTOR = 1.8; // move node by this times nodeSize

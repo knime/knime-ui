@@ -1,7 +1,7 @@
 <script>
 import { mapState, mapGetters, mapActions } from 'vuex';
-import InfoIcon from '~/webapps-common/ui/assets/img/icons/circle-info.svg?inline';
-import PlusIcon from '~/webapps-common/ui/assets/img/icons/circle-plus.svg?inline';
+import InfoIcon from '~webapps-common/ui/assets/img/icons/circle-info.svg?inline';
+import PlusIcon from '~webapps-common/ui/assets/img/icons/circle-plus.svg?inline';
 
 export default {
     components: {

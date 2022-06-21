@@ -1,13 +1,13 @@
 <script>
 import { mapActions, mapState } from 'vuex';
-import AppHeader from '~/components/AppHeader';
-import Sidebar from '~/components/Sidebar';
-import WorkflowToolbar from '~/components/WorkflowToolbar';
-import WorkflowTabContent from '~/components/WorkflowTabContent';
-import TooltipContainer from '~/components/TooltipContainer';
-import Error from '~/components/Error';
-import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
-import HotkeyHandler from '~/components/HotkeyHandler';
+import AppHeader from '~knime-ui/components/AppHeader';
+import Sidebar from '~knime-ui/components/Sidebar';
+import WorkflowToolbar from '~knime-ui/components/WorkflowToolbar';
+import WorkflowTabContent from '~knime-ui/components/WorkflowTabContent';
+import TooltipContainer from '~knime-ui/components/TooltipContainer';
+import Error from '~knime-ui/components/Error';
+import WorkflowEntryPage from '~knime-ui/components/workflow/WorkflowEntryPage';
+import HotkeyHandler from '~knime-ui/components/HotkeyHandler';
 
 /**
  * Main page and entry point of KNIME Next

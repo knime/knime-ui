@@ -1,18 +1,18 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
 import Vue from 'vue';
 Vue.config.ignoredElements = ['portal'];
 
-import NodeRepository from '~/components/noderepo/NodeRepository';
+import NodeRepository from '~knime-ui/components/noderepo/NodeRepository';
 
-import SearchBar from '~/components/noderepo/SearchBar';
-import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
-import CloseableTagList from '~/components/noderepo/CloseableTagList';
-import CategoryResults from '~/components/noderepo/CategoryResults';
-import SearchResults from '~/components/noderepo/SearchResults';
-import NodeDescription from '~/components/noderepo/NodeDescription';
+import SearchBar from '~knime-ui/components/noderepo/SearchBar';
+import ActionBreadcrumb from '~knime-ui/components/common/ActionBreadcrumb';
+import CloseableTagList from '~knime-ui/components/noderepo/CloseableTagList';
+import CategoryResults from '~knime-ui/components/noderepo/CategoryResults';
+import SearchResults from '~knime-ui/components/noderepo/SearchResults';
+import NodeDescription from '~knime-ui/components/noderepo/NodeDescription';
 
 jest.mock('lodash', () => ({
     debounce(func) {

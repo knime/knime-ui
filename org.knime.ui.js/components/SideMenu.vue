@@ -1,8 +1,8 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
-import WorkflowMetadata from '~/components/WorkflowMetadata';
-import NodeRepository from '~/components/noderepo/NodeRepository';
+import LeftCollapsiblePanel from '~knime-ui/components/LeftCollapsiblePanel';
+import WorkflowMetadata from '~knime-ui/components/WorkflowMetadata';
+import NodeRepository from '~knime-ui/components/noderepo/NodeRepository';
 
 /**
  * A component that shows the tab contents belonging to one workflow,

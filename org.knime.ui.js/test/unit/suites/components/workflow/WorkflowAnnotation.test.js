@@ -1,8 +1,8 @@
 import { shallowMount } from '@vue/test-utils';
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~knime-ui/style/shapes';
 
-import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation';
-import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
+import WorkflowAnnotation from '~knime-ui/components/workflow/WorkflowAnnotation';
+import LegacyAnnotationText from '~knime-ui/components/workflow/LegacyAnnotationText';
 
 describe('Workflow Annotation', () => {
     let propsData, mocks, doShallowMount, wrapper;

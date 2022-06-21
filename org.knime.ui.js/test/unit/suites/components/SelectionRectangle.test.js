@@ -1,14 +1,14 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~knime-ui/style/shapes';
+import * as $colors from '~knime-ui/style/colors';
 
-import SelectionRectangle from '~/components/SelectionRectangle';
-import { findNodesInsideOfRectangle as findNodesInsideOfRectangleMock } from '~/util/rectangleSelection';
+import SelectionRectangle from '~knime-ui/components/SelectionRectangle';
+import { findNodesInsideOfRectangle as findNodesInsideOfRectangleMock } from '~knime-ui/util/rectangleSelection';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {
@@ -17,7 +17,7 @@ jest.mock('raf-throttle', () => function (func) {
     };
 });
 
-jest.mock('~/util/rectangleSelection', () => ({
+jest.mock('~knime-ui/util/rectangleSelection', () => ({
     findNodesInsideOfRectangle: jest.fn()
 }));
 

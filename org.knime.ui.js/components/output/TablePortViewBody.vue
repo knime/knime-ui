@@ -1,6 +1,6 @@
 <script>
-import MissingValueIcon from '~/assets/missing-value.svg?inline';
-import svgWithTitle from '~/webapps-common/ui/util/svgWithTitle';
+import MissingValueIcon from '~knime-ui/assets/missing-value.svg?inline';
+import svgWithTitle from '~webapps-common/ui/util/svgWithTitle';
 
 /**
  * Data table body that renders the content of

@@ -1,6 +1,6 @@
 <script>
-import SelectableTagList from '~/components/common/SelectableTagList';
-import ClosePopoverIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
+import SelectableTagList from '~knime-ui/components/common/SelectableTagList';
+import ClosePopoverIcon from '~webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 import { mixin as clickaway } from 'vue-clickaway2';
 
 const maxLengthOfTagInChars = 31;

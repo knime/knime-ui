@@ -1,10 +1,10 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vue from 'vue';
 import Vuex from 'vuex';
 
-import FloatingMenu from '~/components/FloatingMenu';
+import FloatingMenu from '~knime-ui/components/FloatingMenu';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {

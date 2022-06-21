@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 
-import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
+import ActionBreadcrumb from '~knime-ui/components/common/ActionBreadcrumb';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb';
 
 describe('ActionBreadcrumb.vue', () => {

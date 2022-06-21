@@ -1,17 +1,17 @@
 import { createLocalVue } from '@vue/test-utils';
-import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils';
+import { mockVuexStore, shallowMountWithAsyncData } from '~knime-ui/test/unit/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import KnimeUI from '~/components/KnimeUI';
-import AppHeader from '~/components/AppHeader';
-import Sidebar from '~/components/Sidebar';
-import WorkflowToolbar from '~/components/WorkflowToolbar';
-import WorkflowTabContent from '~/components/WorkflowTabContent';
-import TooltipContainer from '~/components/TooltipContainer';
-import Error from '~/components/Error';
-import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
-import HotkeyHandler from '~/components/HotkeyHandler';
+import KnimeUI from '~knime-ui/components/KnimeUI';
+import AppHeader from '~knime-ui/components/AppHeader';
+import Sidebar from '~knime-ui/components/Sidebar';
+import WorkflowToolbar from '~knime-ui/components/WorkflowToolbar';
+import WorkflowTabContent from '~knime-ui/components/WorkflowTabContent';
+import TooltipContainer from '~knime-ui/components/TooltipContainer';
+import Error from '~knime-ui/components/Error';
+import WorkflowEntryPage from '~knime-ui/components/workflow/WorkflowEntryPage';
+import HotkeyHandler from '~knime-ui/components/HotkeyHandler';
 
 describe('KnimeUI.vue', () => {
     beforeAll(() => {

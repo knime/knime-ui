@@ -1,12 +1,12 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import WorkflowPanel from '~/components/WorkflowPanel';
-import ContextMenu from '~/components/ContextMenu';
-import PortTypeMenu from '~/components/PortTypeMenu';
+import WorkflowPanel from '~knime-ui/components/WorkflowPanel';
+import ContextMenu from '~knime-ui/components/ContextMenu';
+import PortTypeMenu from '~knime-ui/components/PortTypeMenu';
 
 
 describe('WorkflowPanel', () => {

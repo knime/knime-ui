@@ -3,11 +3,11 @@ jest.mock('~api', () => ({
 }), { virtual: true });
 
 import Vue from 'vue';
-import { shallowMountWithAsyncData, mountWithAsyncData as deepMountWithAsyncData } from '~/test/unit/test-utils';
-import TablePortView from '~/components/output/TablePortView';
-import Header from '~/components/output/TablePortViewHeader';
-import Body from '~/components/output/TablePortViewBody';
-import MissingValueIcon from '~/assets/missing-value.svg?inline';
+import { shallowMountWithAsyncData, mountWithAsyncData as deepMountWithAsyncData } from '~knime-ui/test/unit/test-utils';
+import TablePortView from '~knime-ui/components/output/TablePortView';
+import Header from '~knime-ui/components/output/TablePortViewHeader';
+import Body from '~knime-ui/components/output/TablePortViewBody';
+import MissingValueIcon from '~knime-ui/assets/missing-value.svg?inline';
 import { loadTable as loadTableMock } from '~api';
 
 // eslint-disable-next-line no-magic-numbers

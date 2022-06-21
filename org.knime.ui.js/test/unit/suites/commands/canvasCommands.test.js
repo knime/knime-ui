@@ -1,4 +1,4 @@
-import canvasCommands from '~/commands/canvasCommands';
+import canvasCommands from '~knime-ui/commands/canvasCommands';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {

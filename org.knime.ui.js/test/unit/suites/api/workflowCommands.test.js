@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { connectNodes, moveObjects, deleteObjects, addNode, collapseToContainer, expandContainerNode } from '~/api';
+import { connectNodes, moveObjects, deleteObjects, addNode, collapseToContainer, expandContainerNode } from '~knime-ui/api';
 
 describe('workflow commands', () => {
     beforeEach(() => {

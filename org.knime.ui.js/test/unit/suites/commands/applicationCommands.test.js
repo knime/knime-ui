@@ -4,7 +4,7 @@ jest.mock('~api', () => ({
     createWorkflow: jest.fn()
 }));
 
-import applicationCommands from '~/commands/applicationCommands';
+import applicationCommands from '~knime-ui/commands/applicationCommands';
 import { openWorkflow as mockOpenWorkflow, createWorkflow as mockCreateWorkflow } from '~api';
 
 describe('applicationCommands', () => {

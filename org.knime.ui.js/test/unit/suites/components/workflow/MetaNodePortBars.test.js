@@ -1,11 +1,11 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~knime-ui/style/shapes';
 
-import MetaNodePortBars from '~/components/workflow/MetaNodePortBars';
-import MetaNodePortBar from '~/components/workflow/MetaNodePortBar';
+import MetaNodePortBars from '~knime-ui/components/workflow/MetaNodePortBars';
+import MetaNodePortBar from '~knime-ui/components/workflow/MetaNodePortBar';
 
 describe('MetaNodePortBars.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, activeWorkflow;

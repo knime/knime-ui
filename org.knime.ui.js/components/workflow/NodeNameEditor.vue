@@ -1,8 +1,8 @@
 <script>
 import { mapGetters } from 'vuex';
 
-import NodeNameTextarea from '~/components/workflow/NodeNameTextarea';
-import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar';
+import NodeNameTextarea from '~knime-ui/components/workflow/NodeNameTextarea';
+import NodeNameEditorActionBar from '~knime-ui/components/workflow/NodeNameEditorActionBar';
 
 /**
  * Node Name Editor. Component wraps inline textarea and editor action bar (cancel, save). It overlays the whole

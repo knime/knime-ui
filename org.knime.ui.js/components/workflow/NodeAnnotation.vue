@@ -1,6 +1,6 @@
 <script>
-import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
-import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
+import LegacyAnnotationText from '~knime-ui/components/workflow/LegacyAnnotationText';
+import AutoSizeForeignObject from '~knime-ui/components/common/AutoSizeForeignObject';
 /**
  * A node annotation, a rectangular box containing text.
  */

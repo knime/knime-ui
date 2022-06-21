@@ -1,12 +1,12 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import Node from '~/components/workflow/Node';
-import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer';
-import Connector from '~/components/workflow/Connector';
-import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation';
-import MetaNodePortBars from '~/components/workflow/MetaNodePortBars';
-import ConnectorLabel from '~/components/workflow/ConnectorLabel';
-import { dropNode } from '~/mixins';
+import Node from '~knime-ui/components/workflow/Node';
+import MoveableNodeContainer from '~knime-ui/components/workflow/MoveableNodeContainer';
+import Connector from '~knime-ui/components/workflow/Connector';
+import WorkflowAnnotation from '~knime-ui/components/workflow/WorkflowAnnotation';
+import MetaNodePortBars from '~knime-ui/components/workflow/MetaNodePortBars';
+import ConnectorLabel from '~knime-ui/components/workflow/ConnectorLabel';
+import { dropNode } from '~knime-ui/mixins';
 
 export default {
     components: {
@@ -18,6 +18,7 @@ export default {
         MoveableNodeContainer
     },
     mixins: [dropNode],
+    inject: ['buildTarget'],
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
@@ -76,25 +77,38 @@ export default {
     <MetaNodePortBars
       v-if="workflow.info.containerType === 'metanode'"
     />
-
-    <MoveableNodeContainer
-      v-for="node of sortedNodes"
-      :id="node.id"
-      :key="`node-${node.id}`"
-      :position="node.position"
-      :kind="node.kind"
-    >
-      <template #default="{ position }">
-        <Node
+    <template v-if="buildTarget === 'hub_preview'">
+      <Node
+          v-for="node of sortedNodes"
+          :key="`node-${node.id}`"
           :ref="`node-${node.id}`"
           v-bind="node"
+          :transform="`translate(${ node.position.x }, ${ node.position.y })`"
           :icon="$store.getters['workflow/getNodeIcon'](node.id)"
           :name="$store.getters['workflow/getNodeName'](node.id)"
           :type="$store.getters['workflow/getNodeType'](node.id)"
-          :position="position"
         />
-      </template>
-    </MoveableNodeContainer>
+    </template>
+    <template v-else>
+      <MoveableNodeContainer
+        v-for="node of sortedNodes"
+        :id="node.id"
+        :key="`node-${node.id}`"
+        :position="node.position"
+        :kind="node.kind"
+      >
+        <template #default="{ position }">
+          <Node
+            :ref="`node-${node.id}`"
+            v-bind="node"
+            :icon="$store.getters['workflow/getNodeIcon'](node.id)"
+            :name="$store.getters['workflow/getNodeName'](node.id)"
+            :type="$store.getters['workflow/getNodeType'](node.id)"
+            :position="position"
+          />
+        </template>
+      </MoveableNodeContainer>
+    </template>
 
     <!-- Editor Layer; only one editor is open at a time -->
     <portal-target

@@ -1,10 +1,10 @@
 import { createLocalVue, mount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
-import portIconRenderer from '~/components/output/PortIconRenderer';
-import * as $colors from '~/style/colors';
-import * as $shapes from '~/style/shapes';
+import portIconRenderer from '~knime-ui/components/output/PortIconRenderer';
+import * as $colors from '~knime-ui/style/colors';
+import * as $shapes from '~knime-ui/style/shapes';
 
 describe('PortIconRenderer', () => {
     beforeAll(() => {

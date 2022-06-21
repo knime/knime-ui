@@ -1,24 +1,24 @@
 /* eslint-disable no-magic-numbers */
 /* eslint-disable max-lines */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import * as workflowStoreConfig from '~/store/workflow';
+import * as workflowStoreConfig from '~knime-ui/store/workflow';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~knime-ui/style/shapes';
+import * as $colors from '~knime-ui/style/colors';
 
-import * as portShift from '~/util/portShift';
-import connectorPath from '~/util/connectorPath';
+import * as portShift from '~knime-ui/util/portShift';
+import connectorPath from '~knime-ui/util/connectorPath';
 
-import Connector from '~/components/workflow/Connector';
+import Connector from '~knime-ui/components/workflow/Connector';
 
 import gsap from 'gsap';
 
 jest.mock('~api', () => { }, { virtual: true });
-jest.mock('~/util/connectorPath', () => jest.fn());
+jest.mock('~knime-ui/util/connectorPath', () => jest.fn());
 jest.mock('gsap', () => ({
     to: jest.fn()
 }));

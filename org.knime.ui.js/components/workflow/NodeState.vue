@@ -1,5 +1,5 @@
 <script>
-import { tooltip } from '~/mixins';
+import { tooltip } from '~knime-ui/mixins';
 
 export default {
     mixins: [tooltip],

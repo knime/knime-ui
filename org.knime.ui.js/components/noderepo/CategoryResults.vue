@@ -1,7 +1,7 @@
 <script>
 import { mapState } from 'vuex';
 
-import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
+import ScrollViewContainer from '~knime-ui/components/noderepo/ScrollViewContainer';
 import NodeCategory from './NodeCategory.vue';
 
 export default {

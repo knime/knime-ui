@@ -1,5 +1,5 @@
 import { createLocalVue } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 import Vuex from 'vuex';
 
 describe('application store', () => {
@@ -32,8 +32,8 @@ describe('application store', () => {
         jest.clearAllMocks();
 
         storeConfig = {
-            application: await import('~/store/application'),
-            workflow: await import('~/store/workflow'),
+            application: await import('~knime-ui/store/application'),
+            workflow: await import('~knime-ui/store/workflow'),
             canvas: {
                 mutations: {
                     restoreState: jest.fn()

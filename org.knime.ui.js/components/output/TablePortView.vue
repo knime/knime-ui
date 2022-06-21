@@ -1,7 +1,7 @@
 <script>
 import Header from './TablePortViewHeader';
 import Body from './TablePortViewBody';
-import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
+import ReloadIcon from '~webapps-common/ui/assets/img/icons/reload.svg?inline';
 import { throttle } from 'lodash';
 import { loadTable } from '~api';
 

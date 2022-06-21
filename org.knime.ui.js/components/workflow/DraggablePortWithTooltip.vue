@@ -1,10 +1,10 @@
 <script>
 import { mapGetters, mapActions, mapState } from 'vuex';
-import PortWithTooltip from '~/components/workflow/PortWithTooltip';
-import Port from '~/components/workflow/Port';
-import Connector from '~/components/workflow/Connector';
+import PortWithTooltip from '~knime-ui/components/workflow/PortWithTooltip';
+import Port from '~knime-ui/components/workflow/Port';
+import Connector from '~knime-ui/components/workflow/Connector';
 import throttle from 'raf-throttle';
-import { circleDetection } from '~/util/compatibleConnections';
+import { circleDetection } from '~knime-ui/util/compatibleConnections';
 
 export default {
     components: {

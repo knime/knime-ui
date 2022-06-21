@@ -1,10 +1,10 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, mount as deepMount, shallowMount } from '@vue/test-utils';
 import Vuex from 'vuex';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 
-import ZoomMenu from '~/components/ZoomMenu';
-import SubMenu from '~/webapps-common/ui/components/SubMenu';
+import ZoomMenu from '~knime-ui/components/ZoomMenu';
+import SubMenu from '~webapps-common/ui/components/SubMenu';
 
 describe('ZoomMenu', () => {
     let propsData, doMount, $store, $commands, zoomFactor, wrapper, storeConfig;

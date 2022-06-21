@@ -1,12 +1,12 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import SearchResults from '~/components/noderepo/SearchResults';
-import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer.vue';
-import NodeList from '~/components/noderepo/NodeList';
-import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
+import SearchResults from '~knime-ui/components/noderepo/SearchResults';
+import ScrollViewContainer from '~knime-ui/components/noderepo/ScrollViewContainer.vue';
+import NodeList from '~knime-ui/components/noderepo/NodeList';
+import ReloadIcon from '~webapps-common/ui/assets/img/icons/reload.svg?inline';
 
 describe('SearchResults', () => {
     let doShallowMount, wrapper, $store, storeState, searchNodesNextPageMock, setSearchScrollPositionMock;

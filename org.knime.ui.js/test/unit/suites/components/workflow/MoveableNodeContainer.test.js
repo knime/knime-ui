@@ -1,12 +1,12 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
-import { mockVuexStore } from '~/test/unit/test-utils';
-import * as $shapes from '~/style/shapes';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
+import * as $shapes from '~knime-ui/style/shapes';
 
-import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer';
+import MoveableNodeContainer from '~knime-ui/components/workflow/MoveableNodeContainer';
 
-import '~/plugins/directive-move';
+import '~knime-ui/plugins/directive-move';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {

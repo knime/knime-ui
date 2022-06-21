@@ -22,7 +22,7 @@ export const state = () => ({
     zoomFactor: defaultZoomFactor,
     suggestPanning: false,
     containerSize: { width: 0, height: 0 },
-    getScrollContainerElement: unsetScrollContainer,
+    getScrollContainerElement: null,
     interactionsEnabled: true
 });
 

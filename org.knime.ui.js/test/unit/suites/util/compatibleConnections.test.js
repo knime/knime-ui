@@ -1,6 +1,6 @@
 /* eslint-disable dot-notation */
 /* eslint-disable quote-props */
-import { circleDetection } from '~/util/compatibleConnections';
+import { circleDetection } from '~knime-ui/util/compatibleConnections';
 
 describe('Circle Detection', () => {
     let workflow;

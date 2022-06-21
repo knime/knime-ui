@@ -1,4 +1,4 @@
-import commands from '~/commands';
+import commands from '~knime-ui/commands';
 
 // The user agent tells whether this code is currently run on a mac
 const isMac = navigator?.userAgent?.toLowerCase()?.includes('mac');

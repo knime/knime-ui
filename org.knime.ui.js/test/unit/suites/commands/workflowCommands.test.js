@@ -1,4 +1,4 @@
-import workflowCommands from '~/commands/workflowCommands';
+import workflowCommands from '~knime-ui/commands/workflowCommands';
 
 
 describe('workflowCommands', () => {

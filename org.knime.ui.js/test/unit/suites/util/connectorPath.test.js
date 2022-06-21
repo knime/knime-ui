@@ -1,6 +1,6 @@
 /* eslint-disable dot-notation */
 /* eslint-disable quote-props */
-import connectorPath from '~/util/connectorPath';
+import connectorPath from '~knime-ui/util/connectorPath';
 
 describe('Connector Path', () => {
     let sourcePort = {

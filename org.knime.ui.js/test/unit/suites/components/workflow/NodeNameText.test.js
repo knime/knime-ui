@@ -1,9 +1,9 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~knime-ui/style/shapes';
 import Vuex from 'vuex';
 
-import NodeNameText from '~/components/workflow/NodeNameText';
-import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
+import NodeNameText from '~knime-ui/components/workflow/NodeNameText';
+import AutoSizeForeignObject from '~knime-ui/components/common/AutoSizeForeignObject';
 
 
 describe('NodeNameText.vue', () => {

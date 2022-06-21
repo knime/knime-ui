@@ -1,5 +1,5 @@
 <script>
-import LinkList from '~/webapps-common/ui/components/LinkList';
+import LinkList from '~webapps-common/ui/components/LinkList';
 
 /**
  * Wraps the webapps-common LinkList component to render them alongside a title and a separator

@@ -1,7 +1,7 @@
 /* eslint-disable new-cap */
-import eventsPlugin from '~/plugins/events';
+import eventsPlugin from '~knime-ui/plugins/events';
 
-jest.mock('~/api/json-rpc-notifications', () => {
+jest.mock('~knime-ui/api/json-rpc-notifications', () => {
     let registeredHandlers = {};
     const registerEventHandlers = (handlers) => {
         Object.entries(handlers).forEach(([key, value]) => {
@@ -14,7 +14,7 @@ jest.mock('~/api/json-rpc-notifications', () => {
         registeredHandlers
     };
 });
-import { registeredHandlers } from '~/api/json-rpc-notifications';
+import { registeredHandlers } from '~knime-ui/api/json-rpc-notifications';
 
 describe('Event Plugin', () => {
     let storeMock;

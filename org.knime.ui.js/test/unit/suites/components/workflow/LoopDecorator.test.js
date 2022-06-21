@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
-import LoopDecorator from '~/components/workflow/LoopDecorator';
+import LoopDecorator from '~knime-ui/components/workflow/LoopDecorator';
 
-import * as $colors from '~/style/colors';
+import * as $colors from '~knime-ui/style/colors';
 
 describe('LoopDecorator.vue', () => {
     let doShallowMount = (loopStatus) => shallowMount(LoopDecorator, {

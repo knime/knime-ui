@@ -5,7 +5,7 @@ import * as workflowEditor from './workflow/workflowEditor';
 import * as APinteractions from './workflow/APinteractions';
 import * as workflowExecution from './workflow/workflowExecution';
 
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~knime-ui/style/shapes';
 
 /**
  * The workflow store holds a workflow graph and the associated tooltips.
@@ -69,7 +69,9 @@ export const getters = {
     },
 
     /* Workflow is empty if it doesn't contain nodes */
-    isWorkflowEmpty({ activeWorkflow }) {
+    isWorkflowEmpty({activeWorkflow}) {
+        if (!state.activeWorkflow) { return null; }
+
         let hasNodes = Boolean(Object.keys(activeWorkflow?.nodes).length);
         let hasAnnotations = Boolean(activeWorkflow?.workflowAnnotations.length);
 

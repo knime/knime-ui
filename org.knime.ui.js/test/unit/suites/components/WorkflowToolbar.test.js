@@ -1,12 +1,12 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
-import WorkflowToolbar from '~/components/WorkflowToolbar';
-import ToolbarCommandButton from '~/components/ToolbarCommandButton';
-import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
-import ZoomMenu from '~/components/ZoomMenu';
+import WorkflowToolbar from '~knime-ui/components/WorkflowToolbar';
+import ToolbarCommandButton from '~knime-ui/components/ToolbarCommandButton';
+import WorkflowBreadcrumb from '~knime-ui/components/WorkflowBreadcrumb';
+import ZoomMenu from '~knime-ui/components/ZoomMenu';
 
 describe('WorkflowToolbar.vue', () => {
     let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper,

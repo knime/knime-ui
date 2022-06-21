@@ -4,8 +4,8 @@ jest.mock('~api', () => ({
 }), { virtual: true });
 
 import Vue from 'vue';
-import { shallowMountWithAsyncData } from '~/test/unit/test-utils';
-import FlowVariablePortView from '~/components/output/FlowVariablePortView';
+import { shallowMountWithAsyncData } from '~knime-ui/test/unit/test-utils';
+import FlowVariablePortView from '~knime-ui/components/output/FlowVariablePortView';
 import { loadFlowVariables as loadFlowVariablesMock } from '~api';
 
 describe('FlowVariablePortView.vue', () => {

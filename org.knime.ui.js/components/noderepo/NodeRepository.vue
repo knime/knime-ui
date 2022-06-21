@@ -1,12 +1,12 @@
 <script>
 import { mapState, mapGetters, mapMutations } from 'vuex';
 
-import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
-import SearchBar from '~/components/noderepo/SearchBar';
-import CloseableTagList from '~/components/noderepo/CloseableTagList';
-import CategoryResults from '~/components/noderepo/CategoryResults';
-import SearchResults from '~/components/noderepo/SearchResults';
-import NodeDescription from '~/components/noderepo/NodeDescription';
+import ActionBreadcrumb from '~knime-ui/components/common/ActionBreadcrumb';
+import SearchBar from '~knime-ui/components/noderepo/SearchBar';
+import CloseableTagList from '~knime-ui/components/noderepo/CloseableTagList';
+import CategoryResults from '~knime-ui/components/noderepo/CategoryResults';
+import SearchResults from '~knime-ui/components/noderepo/SearchResults';
+import NodeDescription from '~knime-ui/components/noderepo/NodeDescription';
 
 import { debounce } from 'lodash';
 

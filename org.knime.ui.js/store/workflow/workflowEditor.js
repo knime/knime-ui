@@ -1,5 +1,5 @@
 import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameContainerNode, collapseToContainer,
-    addContainerNodePort, expandContainerNode } from '~api';
+    addContainerNodePort, expandContainerNode } from '~knime-ui/api';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.

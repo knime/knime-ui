@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import '~/plugins/directive-move';
+import '~knime-ui/plugins/directive-move';
 import Vue from 'vue';
 
 describe('directive-move', () => {

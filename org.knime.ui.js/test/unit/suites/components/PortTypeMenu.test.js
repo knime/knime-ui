@@ -1,16 +1,16 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, mount as deepMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import PortTypeMenu from '~/components/PortTypeMenu';
-import FloatingMenu from '~/components/FloatingMenu';
-import MenuItems from '~/webapps-common/ui/components/MenuItems';
-import SearchBar from '~/components/noderepo/SearchBar';
+import PortTypeMenu from '~knime-ui/components/PortTypeMenu';
+import FloatingMenu from '~knime-ui/components/FloatingMenu';
+import MenuItems from '~webapps-common/ui/components/MenuItems';
+import SearchBar from '~knime-ui/components/noderepo/SearchBar';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~knime-ui/style/shapes';
+import * as $colors from '~knime-ui/style/colors';
 
 describe('PortTypeMenu.vue', () => {
     let storeConfig, propsData, mocks, doMount, wrapper, $store, portTypeSearchMock, FloatingMenuStub;

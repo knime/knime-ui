@@ -1,7 +1,7 @@
 <script>
 import { mapGetters, mapState, mapActions } from 'vuex';
 import throttle from 'raf-throttle';
-import { findNodesInsideOfRectangle } from '~/util/rectangleSelection';
+import { findNodesInsideOfRectangle } from '~knime-ui/util/rectangleSelection';
 
 /**
  * SelectionRectangle - select multiple nodes by drawing a rectangle with by mouse (pointer) movement

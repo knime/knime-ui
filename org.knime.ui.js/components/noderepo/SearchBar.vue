@@ -1,8 +1,8 @@
 <script>
-import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
-import LensIcon from '~/webapps-common/ui/assets/img/icons/lens.svg?inline';
+import CloseIcon from '~webapps-common/ui/assets/img/icons/close.svg?inline';
+import LensIcon from '~webapps-common/ui/assets/img/icons/lens.svg?inline';
 
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+import FunctionButton from '~webapps-common/ui/components/FunctionButton';
 
 /**
  * Search input box for searches of nodes in the NodeRepository view of the sidebar.

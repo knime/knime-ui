@@ -1,11 +1,11 @@
 import { shallowMount, createLocalVue } from '@vue/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 
-import NodeName from '~/components/workflow/NodeName';
-import NodeNameText from '~/components/workflow/NodeNameText';
-import NodeNameEditor from '~/components/workflow/NodeNameEditor';
+import NodeName from '~knime-ui/components/workflow/NodeName';
+import NodeNameText from '~knime-ui/components/workflow/NodeNameText';
+import NodeNameEditor from '~knime-ui/components/workflow/NodeNameEditor';
 
 describe('NodeName', () => {
     const defaultProps = {

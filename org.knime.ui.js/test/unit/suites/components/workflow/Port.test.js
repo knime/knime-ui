@@ -1,12 +1,12 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
-import Port from '~/components/workflow/Port';
-import PortIcon from '~/webapps-common/ui/components/node/PortIcon';
+import Port from '~knime-ui/components/workflow/Port';
+import PortIcon from '~webapps-common/ui/components/node/PortIcon';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~knime-ui/style/shapes';
+import * as $colors from '~knime-ui/style/colors';
 
 describe('Port', () => {
     beforeAll(() => {

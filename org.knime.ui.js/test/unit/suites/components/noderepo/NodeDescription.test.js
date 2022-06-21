@@ -1,11 +1,11 @@
 import { createLocalVue, mount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vue from 'vue';
 import Vuex from 'vuex';
-import NodeDescription from '~/components/noderepo/NodeDescription';
-import ExternalResourcesList from '~/components/common/ExternalResourcesList';
-import Description from '~/webapps-common/ui/components/Description';
-import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
+import NodeDescription from '~knime-ui/components/noderepo/NodeDescription';
+import ExternalResourcesList from '~knime-ui/components/common/ExternalResourcesList';
+import Description from '~webapps-common/ui/components/Description';
+import NodeFeatureList from '~webapps-common/ui/components/node/NodeFeatureList';
 
 describe('NodeDescription', () => {
     let mocks, doMount, wrapper, storeConfig, $store, closeDescriptionPanelMock,

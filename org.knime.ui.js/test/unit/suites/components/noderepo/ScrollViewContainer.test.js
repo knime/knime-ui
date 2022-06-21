@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
+import ScrollViewContainer from '~knime-ui/components/noderepo/ScrollViewContainer';
 
 jest.mock('lodash', () => ({
     throttle(func) {

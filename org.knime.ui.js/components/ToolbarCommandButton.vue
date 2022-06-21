@@ -1,5 +1,5 @@
 <script>
-import ToolbarButton from '~/components/ToolbarButton';
+import ToolbarButton from '~knime-ui/components/ToolbarButton';
 
 export default {
     components: {

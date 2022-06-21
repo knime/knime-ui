@@ -1,7 +1,7 @@
 import { createLocalVue } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
-import { mutations, actions } from '~/store-plugins/json-patch';
+import { mutations, actions } from '~knime-ui/store-plugins/json-patch';
 
 describe('json-patch plugin', () => {
     let localVue, store;

@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-import ArrowDown from '~/webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
+import ArrowDown from '~webapps-common/ui/assets/img/icons/arrow-down.svg?inline';
 
 export default {
     components: {

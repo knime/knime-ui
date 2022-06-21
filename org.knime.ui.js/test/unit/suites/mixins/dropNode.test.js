@@ -1,11 +1,11 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 import Vuex from 'vuex';
 
-import * as $shapes from '~/style/shapes';
-import { dropNode } from '~/mixins';
-import { KnimeMIME } from '~/mixins/dropNode';
+import * as $shapes from '~knime-ui/style/shapes';
+import { dropNode } from '~knime-ui/mixins';
+import { KnimeMIME } from '~knime-ui/mixins/dropNode';
 
 describe('Drop Node Mixin', () => {
     let doMount, wrapper, addNodeMock, dummyEvent, kanvasElement, isWritable;

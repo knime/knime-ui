@@ -1,9 +1,9 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
-import { defaultMetaNodeBarHeight, defaultMetanodeBarPosition, metaNodeBarWidth, portSize } from '~/style/shapes';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
+import { defaultMetaNodeBarHeight, defaultMetanodeBarPosition, metaNodeBarWidth, portSize } from '~knime-ui/style/shapes';
 import Vuex from 'vuex';
-import * as canvasStoreConfig from '~/store/canvas';
+import * as canvasStoreConfig from '~knime-ui/store/canvas';
 
 describe('workflow store', () => {
     let store, localVue, loadStore;
@@ -27,7 +27,7 @@ describe('workflow store', () => {
             }), { virtual: true });
 
             store = mockVuexStore({
-                workflow: await import('~/store/workflow'),
+                workflow: await import('~knime-ui/store/workflow'),
                 canvas: canvasStoreConfig
             });
         };

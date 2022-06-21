@@ -1,7 +1,7 @@
 <script>
-import Modal from '~/webapps-common/ui/components/Modal';
-import Button from '~/webapps-common/ui/components/Button';
-import OpenSourceCredits from '~/webapps-common/ui/components/OpenSourceCredits.vue';
+import Modal from '~webapps-common/ui/components/Modal';
+import Button from '~webapps-common/ui/components/Button';
+import OpenSourceCredits from '~webapps-common/ui/components/OpenSourceCredits.vue';
 
 export default {
     components: {

@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 import Vuex from 'vuex';
 
 const getNodesGroupedByTagsResponse = {
@@ -78,7 +78,7 @@ describe('Node Repository store', () => {
         }), { virtual: true });
 
         store = mockVuexStore({
-            nodeRepository: await import('~/store/nodeRepository'),
+            nodeRepository: await import('~knime-ui/store/nodeRepository'),
             application: { availablePortTypes: {} }
         });
         commitSpy = jest.spyOn(store, 'commit');

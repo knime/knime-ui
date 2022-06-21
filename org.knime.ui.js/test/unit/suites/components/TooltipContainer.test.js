@@ -1,11 +1,11 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~knime-ui/style/shapes';
 
-import Tooltip from '~/components/Tooltip';
-import TooltipContainer from '~/components/TooltipContainer';
+import Tooltip from '~knime-ui/components/Tooltip';
+import TooltipContainer from '~knime-ui/components/TooltipContainer';
 
 describe('TooltipContainer', () => {
     let doShallowMount, wrapper, $store, storeConfig, tooltip, kanvasElement, screenFromCanvasCoordinatesMock;

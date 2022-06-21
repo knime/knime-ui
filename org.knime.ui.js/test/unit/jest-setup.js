@@ -1,4 +1,4 @@
 import consola from 'consola';
-import { level } from '~/jest-logger.config';
+import { level } from '~knime-ui/jest-logger.config';
 
 consola.level = level;

@@ -1,8 +1,8 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
-import ZoomMenu from '~/components/ZoomMenu';
-import ToolbarCommandButton from '~/components/ToolbarCommandButton';
+import WorkflowBreadcrumb from '~knime-ui/components/WorkflowBreadcrumb';
+import ZoomMenu from '~knime-ui/components/ZoomMenu';
+import ToolbarCommandButton from '~knime-ui/components/ToolbarCommandButton';
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.

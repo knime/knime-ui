@@ -1,11 +1,11 @@
 import { shallowMount } from '@vue/test-utils';
-import PortTabs, { portIconSize } from '~/components/output/PortTabs';
-import TabBar from '~/webapps-common/ui/components/TabBar';
+import PortTabs, { portIconSize } from '~knime-ui/components/output/PortTabs';
+import TabBar from '~webapps-common/ui/components/TabBar';
 import Vue from 'vue';
-import FlowVarTabIcon from '~/assets/flow-variables.svg?inline';
+import FlowVarTabIcon from '~knime-ui/assets/flow-variables.svg?inline';
 
-jest.mock('~/components/output/PortIconRenderer', () => jest.fn());
-import portIcon from '~/components/output/PortIconRenderer';
+jest.mock('~knime-ui/components/output/PortIconRenderer', () => jest.fn());
+import portIcon from '~knime-ui/components/output/PortIconRenderer';
 
 
 describe('PortTabs.vue', () => {

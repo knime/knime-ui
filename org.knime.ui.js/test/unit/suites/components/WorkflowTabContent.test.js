@@ -1,11 +1,11 @@
 import { createLocalVue } from '@vue/test-utils';
-import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils';
+import { mockVuexStore, shallowMountWithAsyncData } from '~knime-ui/test/unit/test-utils';
 import Vuex from 'vuex';
 
-import WorkflowTabContent from '~/components/WorkflowTabContent';
-import WorkflowPanel from '~/components/WorkflowPanel';
-import Splitter from '~/components/Splitter';
-import SideMenu from '~/components/SideMenu';
+import WorkflowTabContent from '~knime-ui/components/WorkflowTabContent';
+import WorkflowPanel from '~knime-ui/components/WorkflowPanel';
+import Splitter from '~knime-ui/components/Splitter';
+import SideMenu from '~knime-ui/components/SideMenu';
 
 describe('WorkflowTabContent.vue', () => {
     beforeAll(() => {

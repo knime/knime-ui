@@ -1,4 +1,4 @@
-import { metaNodeBarWidth } from '~/style/shapes';
+import { metaNodeBarWidth } from '~knime-ui/style/shapes';
 import { mapGetters } from 'vuex';
 
 export const portBar = {

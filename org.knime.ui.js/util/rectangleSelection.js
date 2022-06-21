@@ -1,4 +1,4 @@
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~knime-ui/style/shapes';
 
 // find nodes that are fully or partly inside the rectangle defined by startPos and endPos
 export const findNodesInsideOfRectangle = ({ startPos, endPos, workflow }) => {

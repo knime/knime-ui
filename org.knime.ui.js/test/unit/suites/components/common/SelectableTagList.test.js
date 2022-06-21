@@ -1,6 +1,6 @@
 import { shallowMount, mount } from '@vue/test-utils';
-import SelectableTagList, { defaultInitialTagCount } from '~/components/common/SelectableTagList';
-import Tag from '~/webapps-common/ui/components/Tag';
+import SelectableTagList, { defaultInitialTagCount } from '~knime-ui/components/common/SelectableTagList';
+import Tag from '~webapps-common/ui/components/Tag';
 
 const sevenTags = ['tag:1', 'tag:2', 'tag:3', 'tag:4', 'tag:5', 'tag:6', 'tag:7'];
 const threeTags = ['tag:1', 'tag:2', 'tag:3'];

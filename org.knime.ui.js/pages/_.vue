@@ -1,5 +1,5 @@
 <script>
-import KnimeUI from '~/components/KnimeUI';
+import KnimeUI from '~knime-ui/components/KnimeUI';
 
 export default {
     components: {

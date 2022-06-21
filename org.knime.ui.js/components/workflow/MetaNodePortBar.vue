@@ -1,6 +1,6 @@
 <script>
-import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
-import { portBar, snapConnector } from '~/mixins';
+import DraggablePortWithTooltip from '~knime-ui/components/workflow/DraggablePortWithTooltip';
+import { portBar, snapConnector } from '~knime-ui/mixins';
 
 /**
  * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.

@@ -1,10 +1,10 @@
 /* eslint-disable no-magic-numbers */
 
 import { createLocalVue } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 import Vue from 'vue';
 import Vuex from 'vuex';
-import * as canvasStoreConfig from '~/store/canvas';
+import * as canvasStoreConfig from '~knime-ui/store/canvas';
 
 const { defaultZoomFactor, minZoomFactor, maxZoomFactor, zoomMultiplier, padding } = canvasStoreConfig;
 

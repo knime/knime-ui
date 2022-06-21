@@ -1,14 +1,14 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import WorkflowCanvas from '~/components/WorkflowCanvas';
-import Workflow from '~/components/workflow/Workflow';
-import SelectionRectangle from '~/components/SelectionRectangle';
-import Kanvas from '~/components/Kanvas';
-import WorkflowEmpty from '~/components/workflow/WorkflowEmpty';
+import WorkflowCanvas from '~knime-ui/components/WorkflowCanvas';
+import Workflow from '~knime-ui/components/workflow/Workflow';
+import SelectionRectangle from '~knime-ui/components/SelectionRectangle';
+import Kanvas from '~knime-ui/components/Kanvas';
+import WorkflowEmpty from '~knime-ui/components/workflow/WorkflowEmpty';
 
 describe('Kanvas', () => {
     let mocks, doShallowMount, wrapper, $store, storeConfig, isWorkflowEmpty;

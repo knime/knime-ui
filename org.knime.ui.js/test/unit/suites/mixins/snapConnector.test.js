@@ -1,9 +1,9 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils';
 import Vuex from 'vuex';
 
-import { snapConnector } from '~/mixins';
+import { snapConnector } from '~knime-ui/mixins';
 
 let snapContainerConfig,
     doMount,

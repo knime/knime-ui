@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~knime-ui/style/shapes';
 
-import NodeNameTextarea from '~/components/workflow/NodeNameTextarea';
+import NodeNameTextarea from '~knime-ui/components/workflow/NodeNameTextarea';
 
 describe('NodeNameTextarea', () => {
     const mockSizeChangeFn = jest.fn();

@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-import SwitchIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
+import SwitchIcon from '~webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 
 export default {
     components: {

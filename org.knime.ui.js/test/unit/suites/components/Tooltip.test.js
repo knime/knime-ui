@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 
-import Tooltip from '~/components/Tooltip';
-import * as $shapes from '~/style/shapes';
+import Tooltip from '~knime-ui/components/Tooltip';
+import * as $shapes from '~knime-ui/style/shapes';
 
 describe('Tooltip', () => {
     let mocks, doShallowMount, propsData, wrapper;

@@ -1,5 +1,5 @@
 <script>
-import NestedSvg from '~/components/NestedSVG';
+import NestedSvg from '~knime-ui/components/NestedSVG';
 
 /** SVG Button that is displayed above a hovered or selected node */
 export default {

@@ -1,13 +1,13 @@
 <script>
 import { mapGetters, mapMutations, mapActions, mapState } from 'vuex';
 
-import Workflow from '~/components/workflow/Workflow';
-import Kanvas from '~/components/Kanvas';
-import SelectionRectangle from '~/components/SelectionRectangle';
-import WorkflowEmpty from '~/components/workflow/WorkflowEmpty';
-import KanvasFilters from '~/components/workflow/KanvasFilters';
+import Workflow from '~knime-ui/components/workflow/Workflow';
+import Kanvas from '~knime-ui/components/Kanvas';
+import SelectionRectangle from '~knime-ui/components/SelectionRectangle';
+import WorkflowEmpty from '~knime-ui/components/workflow/WorkflowEmpty';
+import KanvasFilters from '~knime-ui/components/workflow/KanvasFilters';
 
-import { dropNode } from '~/mixins';
+import { dropNode } from '~knime-ui/mixins';
 
 export default {
     components: {
@@ -27,6 +27,7 @@ export default {
         isWorkflowEmpty: {
             immediate: true,
             async handler(isWorkflowEmpty) {
+                debugger;
                 // disable zoom & pan if workflow is empty
                 this.setInteractionsEnabled(!isWorkflowEmpty);
                 

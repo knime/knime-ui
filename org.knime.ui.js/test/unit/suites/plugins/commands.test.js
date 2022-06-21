@@ -10,7 +10,7 @@ describe('Commands Plugin', () => {
         };
 
         loadPlugin = async () => {
-            jest.mock('~/commands', () => ({
+            jest.mock('~knime-ui/commands', () => ({
                 crazyHotkey: {
                     hotkey: ['Ctrl', 'Alt', 'Shift', 'Delete'],
                     execute: jest.fn(),
@@ -21,7 +21,7 @@ describe('Commands Plugin', () => {
                 }
             }));
             mockUserAgent(userAgent);
-            let { default: commandPlugin } = await import('~/plugins/commands');
+            let { default: commandPlugin } = await import('~knime-ui/plugins/commands');
 
             commandPlugin(context, mockInject);
         };

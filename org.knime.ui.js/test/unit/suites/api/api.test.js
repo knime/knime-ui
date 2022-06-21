@@ -1,5 +1,5 @@
 /* eslint-disable consistent-return */
-import * as api from '~/api';
+import * as api from '~knime-ui/api';
 
 describe('API', () => {
     beforeEach(() => {

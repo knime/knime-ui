@@ -1,10 +1,10 @@
 import { shallowMount, mount } from '@vue/test-utils';
-import Button from '~/webapps-common/ui/components/Button';
-import Error from '~/components/Error';
+import Button from '~webapps-common/ui/components/Button';
+import Error from '~knime-ui/components/Error';
 import Vue from 'vue';
-import { copyText } from '~/webapps-common/util/copyText.js'; // copyText is already mocked
+import { copyText } from '~webapps-common/util/copyText.js'; // copyText is already mocked
 
-jest.mock('~/webapps-common/util/copyText.js', () => ({
+jest.mock('~webapps-common/util/copyText.js', () => ({
     copyText: jest.fn()
 }));
 

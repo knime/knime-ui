@@ -1,15 +1,15 @@
 /* eslint-disable no-magic-numbers */
 
 import { createLocalVue, shallowMount, createWrapper } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '~knime-ui/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
-import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
-import PortWithTooltip from '~/components/workflow/PortWithTooltip';
-import Port from '~/components/workflow/Port';
-import Connector from '~/components/workflow/Connector';
+import DraggablePortWithTooltip from '~knime-ui/components/workflow/DraggablePortWithTooltip';
+import PortWithTooltip from '~knime-ui/components/workflow/PortWithTooltip';
+import Port from '~knime-ui/components/workflow/Port';
+import Connector from '~knime-ui/components/workflow/Connector';
 import Vue from 'vue';
-import { circleDetection } from '~/util/compatibleConnections';
+import { circleDetection } from '~knime-ui/util/compatibleConnections';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {
@@ -17,7 +17,7 @@ jest.mock('raf-throttle', () => function (func) {
         return func.apply(this, args);
     };
 });
-jest.mock('~/util/compatibleConnections', () => ({
+jest.mock('~knime-ui/util/compatibleConnections', () => ({
     circleDetection: jest.fn().mockReturnValue([])
 }));
 
