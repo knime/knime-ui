@@ -341,6 +341,12 @@ export default {
             let isMickeyMousePort = this.kind !== 'metanode' && port.index === 0;
 
             if (!isMickeyMousePort) { return {}; }
+
+            if (this.buildTarget === 'hub_preview' && !port.connectedVia.length) {
+                return {
+                    hidden: true
+                };
+            }
             
             return {
                 'mickey-mouse': true,
@@ -635,6 +641,10 @@ export default {
 
 .port {
   transition: transform 120ms ease;
+
+  &.hidden {
+    display: none;
+  }
 
   &.mickey-mouse {
     /* TODO: NXT-1058 why is this transition no applied when the .connected class is removed? */
