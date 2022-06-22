@@ -378,6 +378,7 @@ export default {
             if (this.isDragging) {
                 return;
             }
+
             this.$refs.mouseClickable.focus();
 
             if (e.ctrlKey || e.metaKey) {
@@ -708,7 +709,11 @@ export default {
   width: 125px;
 }
 
-.mouse-clickable:focus {
-  outline: none;
+.mouse-clickable {
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+  }
 }
 </style>
