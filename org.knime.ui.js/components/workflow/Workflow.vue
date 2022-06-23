@@ -50,7 +50,7 @@ export default {
 </script>
 
 <template>
-  <g>
+  <g v-if="workflow">
     <!-- Workflow Annotation Layer. Background -->
     <WorkflowAnnotation
       v-for="annotation of workflow.workflowAnnotations"
@@ -79,15 +79,15 @@ export default {
     />
     <template v-if="buildTarget === 'hub_preview'">
       <Node
-          v-for="node of sortedNodes"
-          :key="`node-${node.id}`"
-          :ref="`node-${node.id}`"
-          v-bind="node"
-          :transform="`translate(${ node.position.x }, ${ node.position.y })`"
-          :icon="$store.getters['workflow/getNodeIcon'](node.id)"
-          :name="$store.getters['workflow/getNodeName'](node.id)"
-          :type="$store.getters['workflow/getNodeType'](node.id)"
-        />
+        v-for="node of sortedNodes"
+        :key="`node-${node.id}`"
+        :ref="`node-${node.id}`"
+        v-bind="node"
+        :transform="`translate(${ node.position.x }, ${ node.position.y })`"
+        :icon="$store.getters['workflow/getNodeIcon'](node.id)"
+        :name="$store.getters['workflow/getNodeName'](node.id)"
+        :type="$store.getters['workflow/getNodeType'](node.id)"
+      />
     </template>
     <template v-else>
       <MoveableNodeContainer

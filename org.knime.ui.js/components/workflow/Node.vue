@@ -167,6 +167,10 @@ export default {
             default: () => ({
                 allowedActions: {}
             })
+        },
+        templateId: {
+            type: String,
+            default: null
         }
     },
     data() {
@@ -355,8 +359,28 @@ export default {
                 'node-hover': this.hover
             };
         },
-        
+        onDoubleClickHub(e) {
+            if (this.buildTarget === 'hub_preview') {
+                if (['metanode', 'component'].includes(this.kind)) {
+                    this.$router.push({
+                        path: this.$route.path,
+                        query: {
+                            ...this.$route.query,
+                            containerId: this.id
+                        }
+                    });
+                    // this.$store.dispatch('application/switchWorkflow', { workflowId: this.id, projectId: this.projectId });
+                } else {
+                    this.$store.dispatch('workflow/openNodePage', { className: this.templateId });
+                }
+            }
+        },
+
         onLeftDoubleClick(e) {
+            if (this.buildTarget === 'hub_preview') {
+                return;
+            }
+
             // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
             if (this.kind === 'metanode' || (this.kind === 'component' && (e.ctrlKey || e.metaKey))) {
                 this.openContainerNode();
@@ -509,6 +533,7 @@ export default {
         class="mouse-clickable"
         tabindex="0"
         @click.left="onLeftMouseClick"
+        @dblclick.left="onDoubleClickHub"
       >
         <!-- Hover Area, larger than the node torso -->
         <rect
@@ -524,7 +549,6 @@ export default {
           :icon="icon"
           :execution-state="state && state.executionState"
           :filter="hover && 'url(#node-torso-shadow)'"
-          @dblclick.left.native="onLeftDoubleClick"
         />
 
         <LinkDecorator
