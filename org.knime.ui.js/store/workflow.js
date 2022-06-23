@@ -1,7 +1,7 @@
 import { addEventListener, changeLoopState, changeNodeState, deleteObjects, loadWorkflow as loadWorkflowFromApi,
     moveObjects, openDialog, openLegacyFlowVariableDialog as configureFlowVariables, openView, undo, redo,
     removeEventListener, connectNodes, addNode, saveWorkflow, closeWorkflow, renameContainerNode, collapseToContainer,
-    addContainerNodePort, expandContainerNode, openLayoutEditor } from '~api';
+    addContainerNodePort, expandContainerNode } from '~api';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
@@ -20,7 +20,8 @@ export const state = () => ({
     tooltip: null,
     isDragging: false,
     deltaMovePosition: { x: 0, y: 0 },
-    nameEditorNodeId: null
+    nameEditorNodeId: null,
+    isLayoutEditorOpen: false
 });
 
 export const mutations = {
@@ -51,6 +52,9 @@ export const mutations = {
     },
     setNameEditorNodeId(state, nodeId) {
         state.nameEditorNodeId = nodeId;
+    },
+    setIsLayoutEditorOpen(state, value) {
+        state.isLayoutEditorOpen = value;
     }
 };
 
@@ -218,9 +222,10 @@ export const actions = {
         redo({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
     },
     /* See docs in API */
-    openLayoutEditor({ state, getters }) {
-        let { activeWorkflowId } = getters;
-        openLayoutEditor({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
+    openLayoutEditor({ state, getters, commit }) {
+        // let { activeWorkflowId } = getters;
+        // openLayoutEditor({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
+        commit('setIsLayoutEditorOpen', !state.isLayoutEditorOpen);
     },
     saveWorkflow({ state }) {
         let { activeWorkflow: { projectId } } = state;

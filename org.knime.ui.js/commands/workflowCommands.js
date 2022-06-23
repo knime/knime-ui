@@ -153,8 +153,14 @@ export default {
         }
     },
     openLayoutEditor: {
-        text: 'Open Layout editor',
-        title: 'Open Layout editor',
+        text: ({ $store }) => {
+            const { isLayoutEditorOpen } = $store.state.workflow;
+            return `${isLayoutEditorOpen ? 'Close' : 'Open'} Layout editor`;
+        },
+        title: ({ $store }) => {
+            const { isLayoutEditorOpen } = $store.state.workflow;
+            return `${isLayoutEditorOpen ? 'Close' : 'Open'} Layout editor`;
+        },
         hotkey: ['Ctrl', 'D'],
         icon: LayoutIcon,
         execute:

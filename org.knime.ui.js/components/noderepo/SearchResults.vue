@@ -3,6 +3,7 @@ import { mapState, mapActions, mapMutations } from 'vuex';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 import ScrollViewContainer from './ScrollViewContainer.vue';
 import NodeList from './NodeList.vue';
+import nodeMocks from '../layoutEditor/node-mocks.json';
 
 export default {
     components: {
@@ -16,9 +17,30 @@ export default {
         };
     },
     computed: {
+        ...mapState('workflow', ['isLayoutEditorOpen', 'activeWorkflow']),
         ...mapState('nodeRepository', ['nodes', 'query', 'selectedTags', 'searchScrollPosition', 'totalNumNodes']),
         hasNoSearchResults() {
-            return this.nodes.length === 0;
+            return this.availableNodes?.length === 0;
+        },
+        availableNodes() {
+            if (!this.isLayoutEditorOpen) {
+                return this.nodes;
+            }
+
+            console.log('this.nodes', this.nodes);
+
+            console.log(
+                Object.keys(this.activeWorkflow.nodes)
+                    .filter(nodeId => {
+                        const { templateId = '' } = this.activeWorkflow.nodes[nodeId];
+
+                        return templateId.startsWith('org.knime.js.base.node.viz') ||
+                          templateId.startsWith('org.knime.js.base.node.widget');
+                    })
+                    .map(nodeId => this.activeWorkflow.nodes[nodeId])
+            );
+
+            return nodeMocks;
         }
     },
     watch: {
@@ -70,9 +92,7 @@ export default {
     @scroll-bottom="loadMoreSearchResults"
   >
     <div class="content">
-      <NodeList
-        :nodes="nodes"
-      />
+      <NodeList :nodes="availableNodes" />
       <ReloadIcon
         v-if="isLoading"
         class="loading-indicator"

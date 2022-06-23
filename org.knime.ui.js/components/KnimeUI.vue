@@ -59,9 +59,7 @@ export default {
         }
     },
     computed: {
-        ...mapState('workflow', {
-            workflow: 'activeWorkflow'
-        })
+        ...mapState('workflow', { workflow: 'activeWorkflow', isLayoutEditorOpen: 'isLayoutEditorOpen' })
     },
     async beforeDestroy() {
         await this.destroyApplication();
@@ -108,9 +106,16 @@ export default {
 
       <template v-if="workflow">
         <Sidebar id="sidebar" />
+        
+        <main
+          v-if="isLayoutEditorOpen"
+          class="workflow-area"
+        >
+          <LayoutEditor />
+        </main>
 
         <main
-          v-if="false"
+          v-else
           class="workflow-area"
         >
           <Splitter
@@ -122,13 +127,6 @@ export default {
               <NodeOutput />
             </template>
           </Splitter>
-        </main>
-
-        <main
-          v-else
-          class="workflow-area"
-        >
-          <LayoutEditor />
         </main>
       </template>
       

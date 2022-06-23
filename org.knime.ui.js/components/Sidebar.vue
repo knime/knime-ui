@@ -17,6 +17,7 @@ export default {
     },
     computed: {
         ...mapState('panel', ['activeTab', 'expanded']),
+        ...mapState('workflow', ['isLayoutEditorOpen']),
         ...mapState('nodeRepository', ['isDescriptionPanelOpen']),
         ...mapGetters('panel', ['isWorkflowMetaActive', 'isNodeRepositoryActive']),
         extensionPanelTransition() {
@@ -28,6 +29,13 @@ export default {
                     return h('transition', { props: { name: 'extension-panel' } }, context.children);
                 }
             };
+        }
+    },
+    watch: {
+        isLayoutEditorOpen() {
+            if (this.isLayoutEditorOpen) {
+                this.setNodeRepositoryActive();
+            }
         }
     },
     methods: {
@@ -56,6 +64,7 @@ export default {
     <nav>
       <ul>
         <li
+          v-if="!isLayoutEditorOpen"
           :class="{ active: isWorkflowMetaActive, expanded }"
           title="Workflow metadata"
           @click="clickItem(isWorkflowMetaActive, setWorkflowMetaActive)"
@@ -87,6 +96,7 @@ export default {
         />
 
         <WorkflowMetadata
+          v-if="!isLayoutEditorOpen"
           v-show="isWorkflowMetaActive"
           key="workflow-metadata"
         />

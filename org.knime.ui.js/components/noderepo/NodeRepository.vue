@@ -23,6 +23,7 @@ export default {
         SearchResults
     },
     computed: {
+        ...mapState('workflow', ['isLayoutEditorOpen']),
         ...mapState('nodeRepository', ['tags', 'nodes', 'nodesPerCategory', 'isDescriptionPanelOpen']),
         ...mapGetters('nodeRepository', { showSearchResults: 'searchIsActive' }),
 
@@ -78,7 +79,10 @@ export default {
 
 <template>
   <div class="node-repo">
-    <div class="header">
+    <div
+      v-if="!isLayoutEditorOpen"
+      class="header"
+    >
       <div class="title-and-search">
         <ActionBreadcrumb
           :items="breadcrumbItems"
@@ -99,7 +103,7 @@ export default {
       />
       <hr v-if="!nodes || nodes.length">
     </div>
-    <SearchResults v-if="showSearchResults" />
+    <SearchResults v-if="showSearchResults || isLayoutEditorOpen" />
     <CategoryResults v-else />
     <portal to="extension-panel">
       <NodeDescription v-if="isDescriptionPanelOpen" />

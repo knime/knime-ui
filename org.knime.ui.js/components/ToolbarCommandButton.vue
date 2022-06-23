@@ -16,8 +16,19 @@ export default {
             return this.$commands.get(this.name);
         },
         title() {
-            const { title, hotkeyText } = this.command;
+            const { title: renderTitle, hotkeyText } = this.command;
+            const title = typeof renderTitle === 'function'
+                ? renderTitle({ $store: this.$store })
+                : renderTitle;
+
             return [title, hotkeyText].filter(Boolean).join(' – ');
+        },
+        text() {
+            const { text: renderText } = this.command;
+
+            return typeof renderText === 'function'
+                ? renderText({ $store: this.$store })
+                : renderText;
         },
         enabled() {
             return this.$commands.isEnabled(this.name);
@@ -37,7 +48,7 @@ export default {
       :is="command.icon"
       v-if="command.icon"
     />
-    {{ command.text }}
+    {{ text }}
   </ToolbarButton>
 </template>
 

@@ -3,6 +3,7 @@ import { mapState, mapGetters } from 'vuex';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import ZoomMenu from '~/components/ZoomMenu';
 import ToolbarCommandButton from '~/components/ToolbarCommandButton';
+import ValueSwitch from '~/webapps-common/ui/components/forms/ValueSwitch.vue';
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
@@ -11,10 +12,11 @@ export default {
     components: {
         WorkflowBreadcrumb,
         ZoomMenu,
-        ToolbarCommandButton
+        ToolbarCommandButton,
+        ValueSwitch
     },
     computed: {
-        ...mapState('workflow', { workflow: 'activeWorkflow' }),
+        ...mapState('workflow', { workflow: 'activeWorkflow', isLayoutEditorOpen: 'isLayoutEditorOpen' }),
         ...mapGetters('workflow', ['isWorkflowEmpty']),
         ...mapGetters('selection', ['selectedNodes']),
         hasBreadcrumb() {
@@ -26,27 +28,29 @@ export default {
             if (!this.workflow) {
                 return [];
             }
-            let visibleItems = {
+            let visibleItems = this.isLayoutEditorOpen
+                ? { openLayoutEditor: isInsideComponent }
+                : {
                 // Always visible
-                save: true,
-                undo: true,
-                redo: true,
+                    save: true,
+                    undo: true,
+                    redo: true,
 
-                // Workflow
-                executeAll: !this.selectedNodes.length,
-                cancelAll: !this.selectedNodes.length,
-                resetAll: !this.selectedNodes.length,
+                    // Workflow
+                    executeAll: !this.selectedNodes.length,
+                    cancelAll: !this.selectedNodes.length,
+                    resetAll: !this.selectedNodes.length,
 
-                // Node execution
-                executeSelected: this.selectedNodes.length,
-                cancelSelected: this.selectedNodes.length,
-                resetSelected: this.selectedNodes.length,
+                    // Node execution
+                    executeSelected: this.selectedNodes.length,
+                    cancelSelected: this.selectedNodes.length,
+                    resetSelected: this.selectedNodes.length,
 
-                // Workflow abstraction
-                createMetanode: this.selectedNodes.length,
-                createComponent: this.selectedNodes.length,
-                openLayoutEditor: isInsideComponent
-            };
+                    // Workflow abstraction
+                    createMetanode: this.selectedNodes.length,
+                    createComponent: this.selectedNodes.length,
+                    openLayoutEditor: isInsideComponent
+                };
 
             return Object
                 .entries(visibleItems)
@@ -81,15 +85,27 @@ export default {
     </transition-group>
 
     <WorkflowBreadcrumb
-      v-if="hasBreadcrumb"
+      v-if="hasBreadcrumb && !isLayoutEditorOpen"
       class="breadcrumb"
     />
 
-    <ZoomMenu
-      v-if="workflow"
-      :disabled="isWorkflowEmpty"
-      class="zoommenu"
-    />
+    <div style="margin-left: auto; display: flex">
+      <ValueSwitch
+        v-if="isLayoutEditorOpen"
+        :possible-values="[
+          { id: 'desktop', text: 'Desktop' },
+          { id: 'tablet', text: 'Tablet' },
+          { id: 'mobile', text: 'Mobile' }
+        ]"
+        value="desktop"
+      />
+
+      <ZoomMenu
+        v-if="workflow"
+        :disabled="isWorkflowEmpty"
+        class="zoommenu"
+      />
+    </div>
   </div>
 </template>
 

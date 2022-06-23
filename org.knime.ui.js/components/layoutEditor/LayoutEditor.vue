@@ -2,28 +2,14 @@
 /* eslint-disable no-magic-numbers */
 import TransformControls from './TransformControls.vue';
 import * as echarts from 'echarts';
+import { barChart as bar, lineChart as line, heatmapChart as heatmap } from './chart-options';
+import { mixin as clickaway } from 'vue-clickaway2';
 
-const renderChart = (element) => {
+const renderChart = (element, chartTypeOptions) => {
     // initialize the echarts instance
     const myChart = echarts.init(element);
     // Draw the chart
-    myChart.setOption({
-        title: {
-            text: 'ECharts Getting Started Example'
-        },
-        tooltip: {},
-        xAxis: {
-            data: ['shirt', 'cardigan', 'chiffon', 'pants', 'heels', 'socks']
-        },
-        yAxis: {},
-        series: [
-            {
-                name: 'sales',
-                type: 'bar',
-                data: [5, 20, 36, 10, 10, 20]
-            }
-        ]
-    });
+    myChart.setOption(chartTypeOptions);
 
     return myChart;
 };
@@ -32,32 +18,50 @@ export default {
     components: {
         TransformControls
     },
+    mixins: [clickaway],
     data() {
         return {
             isTransforming: null,
             blocks: {
-                'block:1': {
-                    id: 'block:1',
-                    coords: { x: 10, y: 10, width: 150, height: 150 }
+                'block-1': {
+                    id: 'block-1',
+                    coords: { x: 17, y: 342, width: 272, height: 202 },
+                    chart: 'bar'
                 },
-                'block:2': {
-                    id: 'block:2',
-                    coords: { x: 170, y: 240, width: 150, height: 150 }
+                'block-2': {
+                    id: 'block-2',
+                    coords: { x: 300, y: 342, width: 445, height: 260 },
+                    chart: 'line'
                 },
-                'block:3': {
-                    id: 'block:3',
-                    coords: { x: 300, y: 10, width: 150, height: 150 }
+                'block-3': {
+                    id: 'block-3',
+                    coords: { x: 19, y: 660, width: 751, height: 310 },
+                    chart: 'heatmap'
+                },
+                'block-4': {
+                    id: 'block-4',
+                    coords: { x: 540, y: 20, width: 220, height: 63 },
+                    type: 'text',
+                    content: 'Lorem Ipsum'
                 }
             },
             chartRefs: {}
         };
     },
     mounted() {
-        const chartContainers = document.querySelectorAll('.chart-container');
+        Object.values(this.blocks).forEach((block) => {
+            const { chart } = block;
+
+            if (chart) {
+                const chartContainer = document.querySelector(`#${block.id} .chart-container`);
+
+                if (chartContainer) {
+                    const chartOptions = { line, bar, heatmap };
+                    const chartInstance = renderChart(chartContainer, chartOptions[chart]);
         
-        chartContainers.forEach((view, index) => {
-            const chartInstance = renderChart(view);
-            this.chartRefs[`block:${index + 1}`] = chartInstance;
+                    this.chartRefs[block.id] = chartInstance;
+                }
+            }
         });
     },
     methods: {
@@ -123,6 +127,7 @@ export default {
         v-for="block in blocks"
         :id="block.id"
         :key="block.id"
+        v-on-clickaway="() => isTransforming = null"
         class="block"
         :style="{
           top: `${block.coords.y}px`,
@@ -139,7 +144,12 @@ export default {
           @change="updateBlockCoords(block.id, $event)"
         />
         
-        <div class="chart-container" />
+        <div
+          v-if="block.chart"
+          class="chart-container"
+        />
+
+        <h1 v-if="block.type === 'text'">{{ block.content }}</h1>
       </div>
     </div>
   </div>
@@ -149,7 +159,8 @@ export default {
 .layout-wrapper {
     background: #eee;
     width: calc(100vw - 51px);
-    height: 100vh;
+
+    padding: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -158,8 +169,8 @@ export default {
 .layout-page {
     position: relative;
     background: white;
-    width: 80%;
-    height: 80%;
+    height: 1123px;
+    width: 794px;
     box-shadow: 0px 1px 4px rgb(0 0 0 / 26%)
 }
 
@@ -167,9 +178,14 @@ export default {
     user-select: none;
     border: 1px solid;
     position: absolute;
+    overflow: hidden;
 }
 
 .chart-container {
   height: 100%;
+}
+
+h1 {
+    margin: 0
 }
 </style>

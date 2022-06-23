@@ -93,7 +93,7 @@ export default {
 
 <style lang="postcss" scoped>
 .zoom {
-  margin-left: auto;
+  /* margin-left: auto; */
   z-index: 5;
 
   & >>> .submenu-toggle {
