@@ -10,6 +10,7 @@ import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
 import HotkeyHandler from '~/components/HotkeyHandler';
 import WorkflowPanel from '~/components/WorkflowPanel';
 import NodeOutput from '~/components/output/NodeOutput';
+import LayoutEditor from '~/components/layoutEditor/LayoutEditor';
 import Splitter from '~/components/Splitter';
 
 /**
@@ -28,7 +29,8 @@ export default {
         WorkflowEntryPage,
         WorkflowPanel,
         NodeOutput,
-        Splitter
+        Splitter,
+        LayoutEditor
     },
     data() {
         return {
@@ -107,7 +109,10 @@ export default {
       <template v-if="workflow">
         <Sidebar id="sidebar" />
 
-        <main class="workflow-area">
+        <main
+          v-if="false"
+          class="workflow-area"
+        >
           <Splitter
             id="kanvasOutputSplitter"
             direction="column"
@@ -117,6 +122,13 @@ export default {
               <NodeOutput />
             </template>
           </Splitter>
+        </main>
+
+        <main
+          v-else
+          class="workflow-area"
+        >
+          <LayoutEditor />
         </main>
       </template>
       
