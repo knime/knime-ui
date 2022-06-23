@@ -23,7 +23,8 @@ export const state = () => ({
     suggestPanning: false,
     containerSize: { width: 0, height: 0 },
     getScrollContainerElement: null,
-    interactionsEnabled: true
+    interactionsEnabled: true,
+    buildTarget: 'ap'
 });
 
 export const mutations = {
@@ -64,11 +65,19 @@ export const mutations = {
         state.zoomFactor = clampZoomFactor(newFactor);
     },
     setContainerSize(state, { width, height }) {
-        state.containerSize.width = width;
-        state.containerSize.height = height;
+        if (width) {
+            state.containerSize.width = width;
+        }
+
+        if (height) {
+            state.containerSize.height = height;
+        }
     },
     setInteractionsEnabled(state, value) {
         state.interactionsEnabled = value;
+    },
+    setBuildTarget(state, target) {
+        state.buildTarget = target;
     }
 };
 
@@ -145,6 +154,12 @@ export const actions = {
      * Zooms in/out of the workflow such that the pointer stays fixated
      */
     zoomAroundPointer({ commit, getters, state }, { factor, delta, cursorX, cursorY }) {
+        if (state.buildTarget === 'hub_preview') {
+            if (delta === -1 && state.zoomFactor < getters.fitToScreenZoomFactor.min) {
+                return;
+            }
+        }
+        
         let kanvas = state.getScrollContainerElement();
         let { scrollLeft, scrollTop } = kanvas;
 
@@ -297,14 +312,31 @@ export const getters = {
         };
     },
 
-    contentPadding({ containerSize, zoomFactor }) {
-        let left = containerSize.width / zoomFactor;
-        let top = containerSize.height / zoomFactor;
+    contentPadding({ containerSize, zoomFactor, buildTarget }, { contentBounds }) {
+        switch (buildTarget) {
+            case 'ap': {
+                let left = containerSize.width / zoomFactor;
+                let top = containerSize.height / zoomFactor;
 
-        let right = containerSize.width / zoomFactor;
-        let bottom = containerSize.height / zoomFactor;
+                let right = containerSize.width / zoomFactor;
+                let bottom = containerSize.height / zoomFactor;
+        
+                return { left, right, top, bottom };
+            }
+            case 'hub_preview': {
+                let vertical = Math.max(containerSize.height - contentBounds.height, 0);
+                let horizontal = Math.max(containerSize.width - contentBounds.width, 0);
 
-        return { left, right, top, bottom };
+                return {
+                    left: horizontal,
+                    top: vertical,
+                    right: horizontal,
+                    bottom: vertical
+                };
+            }
+            default:
+                throw new Error('wo bin ich?');
+        }
     },
 
     paddedBounds(state, { contentBounds, contentPadding }) {

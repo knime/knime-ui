@@ -27,7 +27,6 @@ export default {
         isWorkflowEmpty: {
             immediate: true,
             async handler(isWorkflowEmpty) {
-                debugger;
                 // disable zoom & pan if workflow is empty
                 this.setInteractionsEnabled(!isWorkflowEmpty);
                 
