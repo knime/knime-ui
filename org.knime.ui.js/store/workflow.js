@@ -21,7 +21,8 @@ export const state = () => ({
     isDragging: false,
     deltaMovePosition: { x: 0, y: 0 },
     nameEditorNodeId: null,
-    isLayoutEditorOpen: false
+    isLayoutEditorOpen: false,
+    addDummyNodeToLayoutEditor: false
 });
 
 export const mutations = {
@@ -55,6 +56,9 @@ export const mutations = {
     },
     setIsLayoutEditorOpen(state, value) {
         state.isLayoutEditorOpen = value;
+    },
+    setAddDummyNode(state) {
+        state.addDummyNodeToLayoutEditor = true;
     }
 };
 

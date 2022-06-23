@@ -27,19 +27,6 @@ export default {
                 return this.nodes;
             }
 
-            console.log('this.nodes', this.nodes);
-
-            console.log(
-                Object.keys(this.activeWorkflow.nodes)
-                    .filter(nodeId => {
-                        const { templateId = '' } = this.activeWorkflow.nodes[nodeId];
-
-                        return templateId.startsWith('org.knime.js.base.node.viz') ||
-                          templateId.startsWith('org.knime.js.base.node.widget');
-                    })
-                    .map(nodeId => this.activeWorkflow.nodes[nodeId])
-            );
-
             return nodeMocks;
         }
     },
@@ -71,6 +58,12 @@ export default {
             this.isLoading = true;
             await this.searchNodesNextPage(true);
             this.isLoading = false;
+        },
+        addNodeToLayoutEditor(event) {
+            if (this.isLayoutEditorOpen) {
+                event.stopPropagation();
+                this.$store.commit('workflow/setAddDummyNode');
+            }
         }
     }
 };
@@ -92,7 +85,10 @@ export default {
     @scroll-bottom="loadMoreSearchResults"
   >
     <div class="content">
-      <NodeList :nodes="availableNodes" />
+      <NodeList
+        :nodes="availableNodes"
+        @click:node-template="addNodeToLayoutEditor"
+      />
       <ReloadIcon
         v-if="isLoading"
         class="loading-indicator"

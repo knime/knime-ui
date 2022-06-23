@@ -95,12 +95,12 @@ export default {
             }
         },
         onClick() {
-            if (!this.isSelected) {
-                this.setSelectedNode(this.nodeTemplate);
-            }
-            if (!this.isDescriptionPanelOpen) {
-                this.openDescriptionPanel();
-            }
+            // if (!this.isSelected) {
+            //     this.setSelectedNode(this.nodeTemplate);
+            // }
+            // if (!this.isDescriptionPanelOpen) {
+            //     this.openDescriptionPanel();
+            // }
         },
         onDoubleClick() {
             if (!this.isWritable) {

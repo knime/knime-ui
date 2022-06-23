@@ -1,5 +1,6 @@
 <script>
 /* eslint-disable no-magic-numbers */
+import { mapState } from 'vuex';
 import TransformControls from './TransformControls.vue';
 import * as echarts from 'echarts';
 import { barChart as bar, lineChart as line, heatmapChart as heatmap } from './chart-options';
@@ -23,11 +24,11 @@ export default {
         return {
             isTransforming: null,
             blocks: {
-                'block-1': {
-                    id: 'block-1',
-                    coords: { x: 17, y: 342, width: 272, height: 202 },
-                    chart: 'bar'
-                },
+                // 'block-1': {
+                //     id: 'block-1',
+                //     coords: { x: 17, y: 342, width: 272, height: 202 },
+                //     chart: 'bar'
+                // },
                 'block-2': {
                     id: 'block-2',
                     coords: { x: 300, y: 342, width: 445, height: 260 },
@@ -48,23 +49,44 @@ export default {
             chartRefs: {}
         };
     },
-    mounted() {
-        Object.values(this.blocks).forEach((block) => {
-            const { chart } = block;
-
-            if (chart) {
-                const chartContainer = document.querySelector(`#${block.id} .chart-container`);
-
-                if (chartContainer) {
-                    const chartOptions = { line, bar, heatmap };
-                    const chartInstance = renderChart(chartContainer, chartOptions[chart]);
-        
-                    this.chartRefs[block.id] = chartInstance;
+    computed: {
+        ...mapState('workflow', ['addDummyNodeToLayoutEditor'])
+    },
+    watch: {
+        addDummyNodeToLayoutEditor() {
+            this.blocks = {
+                ...this.blocks,
+                'block-1': {
+                    id: 'block-1',
+                    coords: { x: 17, y: 342, width: 272, height: 202 },
+                    chart: 'bar'
                 }
-            }
-        });
+            };
+            this.$nextTick(() => {
+                this.renderAllCharts();
+            });
+        }
+    },
+    mounted() {
+        this.renderAllCharts();
     },
     methods: {
+        renderAllCharts() {
+            Object.values(this.blocks).forEach((block) => {
+                const { chart } = block;
+
+                if (chart) {
+                    const chartContainer = document.querySelector(`#${block.id} .chart-container`);
+
+                    if (chartContainer && !this.chartRefs[block.id]) {
+                        const chartOptions = { line, bar, heatmap };
+                        const chartInstance = renderChart(chartContainer, chartOptions[chart]);
+        
+                        this.chartRefs[block.id] = chartInstance;
+                    }
+                }
+            });
+        },
         modeBlock(id, { clientX, clientY }) {
             // this.isTransforming = null;
             let startX = clientX;

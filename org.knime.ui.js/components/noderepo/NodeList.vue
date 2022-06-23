@@ -26,6 +26,7 @@ export default {
       <li
         v-for="node in nodes"
         :key="node.id"
+        @click="$emit('click:node-template', $event)"
       >
         <NodeTemplate :node-template="node" />
       </li>
