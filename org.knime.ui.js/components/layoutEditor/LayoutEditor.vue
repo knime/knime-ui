@@ -42,7 +42,7 @@ export default {
                     id: 'block-4',
                     coords: { x: 540, y: 20, width: 220, height: 63 },
                     type: 'text',
-                    content: 'Lorem Ipsum'
+                    content: 'Browser Usage Data'
                 }
             },
             chartRefs: {}
@@ -72,6 +72,9 @@ export default {
             const pageElem = this.$refs.page;
             const elem = document.getElementById(id);
 
+            const guideV = document.querySelector(`.guide-v`);
+            const guideH = document.querySelector(`.guide-h`);
+
             const { height: elemHeight, width: elemWidth } = elem.getBoundingClientRect();
             const { height: pageHeight, width: pageWidth } = pageElem.getBoundingClientRect();
 
@@ -89,12 +92,31 @@ export default {
                     ? elem.offsetLeft - newX
                     : elem.offsetLeft;
 
+                const moveGuides = ({ top, left }) => {
+                    guideV.style.left = `${left + elemWidth / 2}px`;
+                    
+                    guideH.style.top = `${top + elemHeight / 2}px`;
+                    
+                    guideV.style.display = 'block';
+                    guideH.style.display = 'block';
+                };
+
+                moveGuides({ top: newTop, left: newLeft });
+
+                // function startGuides(targetEl) {
+                //     let c = getMyCorners(targetEl);
+                //     moveGuides(c.top, c.right);
+                //     $('.guide').show();
+                // }
+
                 this.updateBlockCoords(id, { x: newLeft, y: newTop });
             };
 
             const onMoveEnd = () => {
                 document.removeEventListener('mousemove', onMove);
                 document.removeEventListener('mouseup', onMoveEnd);
+                guideV.style.display = 'none';
+                guideH.style.display = 'none';
             };
 
             document.addEventListener('mousemove', onMove);
@@ -122,13 +144,17 @@ export default {
     <div
       ref="page"
       class="layout-page"
+      @click.self="isTransforming = null"
     >
+      <div class="guide-h" />
+      <div class="guide-v" />
+
       <div
         v-for="block in blocks"
         :id="block.id"
         :key="block.id"
-        v-on-clickaway="() => isTransforming = null"
         class="block"
+        :class="{ border: isTransforming !== block.id }"
         :style="{
           top: `${block.coords.y}px`,
           left: `${block.coords.x}px`,
@@ -149,7 +175,9 @@ export default {
           class="chart-container"
         />
 
-        <h1 v-if="block.type === 'text'">{{ block.content }}</h1>
+        <h1 v-if="block.type === 'text'">
+          {{ block.content }}
+        </h1>
       </div>
     </div>
   </div>
@@ -176,9 +204,12 @@ export default {
 
 .block {
     user-select: none;
-    border: 1px solid;
     position: absolute;
     overflow: hidden;
+    
+    &.border {
+        border: 1px dashed var(--knime-silver-sand);
+    }
 }
 
 .chart-container {
@@ -187,5 +218,22 @@ export default {
 
 h1 {
     margin: 0
+}
+
+.guide-h, .guide-v {
+    position: absolute;
+    display: none;
+    left: 0;
+    top: 0;
+}
+
+.guide-h {
+  border-top: 1px dashed var(--knime-coral-dark);
+  width: 100vw;
+}
+
+.guide-v {
+  border-left: 1px dashed var(--knime-coral-dark);
+  height: 100vh;
 }
 </style>
