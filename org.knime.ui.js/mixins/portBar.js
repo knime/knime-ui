@@ -12,6 +12,8 @@ export const portBar = {
          * @returns {Number} The horizontal position
          */
         portBarXPos(ports, isOut) {
+            if (!ports) { return 0; }
+            
             if (ports.xPos) {
                 return ports.xPos;
             }

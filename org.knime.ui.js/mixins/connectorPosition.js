@@ -54,6 +54,10 @@ export const connectorPosition = {
         },
         getMetaNodePortPos({ sourceNodeIndex, type }) {
             let allPorts = type === 'source' ? this.workflow.metaInPorts : this.workflow.metaOutPorts;
+            if (!allPorts) {
+                return [0, 0];
+            }
+
             let x = this.portBarXPos(allPorts, type === 'dest');
             let delta = this.$shapes.portSize / 2;
             x += type === 'source' ? delta : -delta;
