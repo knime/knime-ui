@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex';
+import { mapState, mapGetters, mapActions, mapMutations } from 'vuex';
 import throttle from 'raf-throttle';
 
 export default {
@@ -29,23 +29,23 @@ export default {
     },
     data: () => ({
         // Start position of the dragging
-        startPos: { x: 0, y: 0 },
+        startPos: null,
         nodeSelectionWidth: 0,
         nodeSelectionExtraHeight: 20
     }),
     computed: {
-        ...mapGetters('workflow', ['isWritable']),
+        ...mapGetters('workflow', ['isWritable', 'isDragging']),
         ...mapGetters('selection', ['isNodeSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapState('application', ['activeProjectId']),
-        ...mapState('workflow', ['isDragging', 'deltaMovePosition', 'activeWorkflow']),
+        ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow']),
         ...mapState('canvas', ['zoomFactor']),
 
         // Combined position of original position + the dragged amount
         combinedPosition() {
             return {
-                x: this.position.x + this.deltaMovePosition.x,
-                y: this.position.y + this.deltaMovePosition.y
+                x: this.position.x + this.movePreviewDelta.x,
+                y: this.position.y + this.movePreviewDelta.y
             };
         },
         
@@ -66,6 +66,7 @@ export default {
     },
     methods: {
         ...mapActions('selection', ['selectNode', 'deselectNode', 'deselectAllObjects']),
+        ...mapMutations('workflow', ['setMovePreview']),
         /**
          * Resets the drag position in the store. This can only happen here, as otherwise the node
          * will be reset to its position before the actual movement of the store happened.
@@ -73,8 +74,7 @@ export default {
          */
         handleMoveFromStore() {
             if (this.isDragging) {
-                this.$store.commit('workflow/setDragging', { isDragging: false });
-                this.$store.commit('workflow/resetDragPosition');
+                this.$store.commit('workflow/resetMovePreview');
             }
         },
 
@@ -84,7 +84,6 @@ export default {
          * @returns {void} nothing to return
          */
         onMoveStart({ detail }) {
-            this.$store.commit('workflow/setDragging', { isDragging: true });
             if (!detail.event.shiftKey && !this.isNodeSelected(this.id)) {
                 this.deselectAllObjects();
             }
@@ -100,7 +99,7 @@ export default {
          */
         onMove: throttle(function ({ detail: { clientX, clientY, altKey } }) {
             /* eslint-disable no-invalid-this */
-            if (!this.isDragging) {
+            if (!this.startPos) {
                 return;
             }
 
@@ -120,11 +119,8 @@ export default {
             deltaY = Math.round(deltaY / gridSize.y) * gridSize.y;
             
             // prevent unneeded dispatches if the position hasn't changed
-            if (this.deltaMovePosition.x !== deltaX || this.deltaMovePosition.y !== deltaY) {
-                this.$store.dispatch('workflow/moveNodes', {
-                    deltaX,
-                    deltaY
-                });
+            if (this.movePreviewDelta.x !== deltaX || this.movePreviewDelta.y !== deltaY) {
+                this.setMovePreview({ deltaX, deltaY });
             }
             /* eslint-enable no-invalid-this */
         }),
@@ -138,7 +134,7 @@ export default {
          */
         onMoveEnd: throttle(function () {
             /* eslint-disable no-invalid-this */
-            this.$store.dispatch('workflow/saveNodeMoves', {
+            this.$store.dispatch('workflow/moveObjects', {
                 projectId: this.activeProjectId,
                 startPos: this.startPos,
                 nodeId: this.id

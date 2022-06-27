@@ -7,27 +7,21 @@ import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameCo
  */
 
 export const state = {
-    isDragging: false,
-    deltaMovePosition: { x: 0, y: 0 },
+    movePreviewDelta: { x: 0, y: 0 },
     nameEditorNodeId: null
 };
 
 export const mutations = {
     // Shifts the position of the node for the provided amount
-    // TODO: rename to previewMoveDelta
-    shiftPosition(state, { deltaX, deltaY }) {
-        state.deltaMovePosition.x = deltaX;
-        state.deltaMovePosition.y = deltaY;
+    setMovePreview(state, { deltaX, deltaY }) {
+        state.movePreviewDelta.x = deltaX;
+        state.movePreviewDelta.y = deltaY;
     },
     // Reset the position of the outline
-    // TODO: rename accordingly, or merge with above method
-    resetDragPosition(state) {
-        state.deltaMovePosition = { x: 0, y: 0 };
+    resetMovePreview(state) {
+        state.movePreviewDelta = { x: 0, y: 0 };
     },
-    // change the isDragging property to the provided Value
-    setDragging(state, { isDragging }) {
-        state.isDragging = isDragging;
-    },
+    
     setNameEditorNodeId(state, nodeId) {
         state.nameEditorNodeId = nodeId;
     }
@@ -45,20 +39,6 @@ export const actions = {
         redo({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
     },
 
-
-    /**
-     * Move either the outline of the nodes or the nodes itself,
-     * depending on the amount of selected nodes. Delta is hereby the amount
-     * of movement to the last position of the node.
-     * @param {Object} context - store context
-     * @param {Object} params
-     * @param {string} params.deltaX - pixels moved since the last
-     * @param {string} params.deltaY - id of the node
-     * @returns {void} - nothing to return
-     */
-    moveNodes({ commit, rootGetters }, { deltaX, deltaY }) {
-        commit('shiftPosition', { deltaX, deltaY });
-    },
     /**
      * Calls the API to save the position of the nodes after the move is over
      * @param {Object} context - store context
@@ -68,26 +48,26 @@ export const actions = {
      * @param {Object} params.startPos - start position {x: , y: } of the move event
      * @returns {void} - nothing to return
      */
-    saveNodeMoves({ state, getters, commit, rootGetters }, { projectId }) {
+    async moveObjects({ state, getters, commit, rootGetters }, { projectId }) {
         let translation;
         let selectedNodes = rootGetters['selection/selectedNodeIds'];
         // calculate the translation either relative to the position or the outline position
         translation = {
-            x: state.deltaMovePosition.x,
-            y: state.deltaMovePosition.y
+            x: state.movePreviewDelta.x,
+            y: state.movePreviewDelta.y
         };
-        moveObjects({
-            projectId,
-            workflowId: getters.activeWorkflowId,
-            nodeIds: selectedNodes,
-            translation,
-            annotationIds: []
-        }).then((e) => {
-            // nothing todo when movement is successful
-        }, (error) => {
-            consola.log('The following error occured: ', error);
-            commit('resetDragPosition');
-        });
+        try {
+            await moveObjects({
+                projectId,
+                workflowId: getters.activeWorkflowId,
+                nodeIds: selectedNodes,
+                translation,
+                annotationIds: []
+            });
+        } catch (e) {
+            consola.log('The following error occured: ', e);
+            commit('resetMovePreview');
+        }
     },
 
     async connectNodes({ state, getters }, { sourceNode, destNode, sourcePort, destPort }) {
@@ -228,4 +208,8 @@ export const actions = {
     }
 };
 
-export const getters = { };
+export const getters = {
+    isDragging({ movePreviewDelta }) {
+        return movePreviewDelta.x !== 0 || movePreviewDelta.y !== 0;
+    }
+};

@@ -2,8 +2,8 @@ import { fetchApplicationState, addEventListener, removeEventListener, loadWorkf
 import Fuse from 'fuse.js';
 
 /*
-* This store provides global application logic
-*/
+ * This store provides global application logic
+ */
 export const state = () => ({
     openProjects: [],
     activeProjectId: null,

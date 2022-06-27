@@ -104,15 +104,13 @@ describe('NodeNameTextarea', () => {
     });
 
     it('should not allow illegal characters', () => {
-        const pattern = new RegExp(/[*?#:“<>%~|/\\]/g);
-        const wrapper = doShallowMount({ propsData: { pattern } });
+        const wrapper = doShallowMount();
 
         const emittedValue = '*New name!*?-test_12(#)';
 
         wrapper.find('textarea').setValue(emittedValue);
         wrapper.find('textarea').trigger('input');
 
-        expect(wrapper.emitted('invalidCharacter')).toBeDefined();
         expect(wrapper.emitted('input')[0][0]).toBe('New name!-test_12()');
     });
 });

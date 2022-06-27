@@ -44,14 +44,15 @@ export default {
         hotkey: ['F6'],
         icon: OpenDialogIcon,
         execute:
-            ({ $store }) => $store.dispatch('workflow/openDialog', $store.getters['selection/singleSelectedNode'].id),
+            ({ $store }) => $store.dispatch('workflow/openNodeConfiguration',
+                $store.getters['selection/singleSelectedNode'].id),
         condition:
             ({ $store }) => $store.getters['selection/singleSelectedNode']?.allowedActions.canOpenDialog
     },
     configureFlowVariables: {
         text: 'Configure flow variables',
         execute:
-            ({ $store }) => $store.dispatch('workflow/configureFlowVariables',
+            ({ $store }) => $store.dispatch('workflow/openFlowVariableConfiguration',
                 $store.getters['selection/singleSelectedNode'].id),
         condition:
             ({ $store }) => $store.getters['selection/singleSelectedNode']?.allowedActions
@@ -65,7 +66,6 @@ export default {
             ({ $store }) => $store.dispatch('workflow/openView', $store.getters['selection/singleSelectedNode'].id),
         condition:
             ({ $store }) => $store.getters['selection/singleSelectedNode']?.allowedActions.canOpenView
-
     },
     editName: {
         text: 'Rename',

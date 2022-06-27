@@ -45,12 +45,12 @@ describe('workflowCommands', () => {
 
         test('configureNode', () => {
             workflowCommands.configureNode.execute({ $store });
-            expect(mockDispatch).toHaveBeenCalledWith('workflow/openDialog', 'root:0');
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/openNodeConfiguration', 'root:0');
         });
 
         test('configureFlowVariables', () => {
             workflowCommands.configureFlowVariables.execute({ $store });
-            expect(mockDispatch).toHaveBeenCalledWith('workflow/configureFlowVariables', 'root:0');
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/openFlowVariableConfiguration', 'root:0');
         });
 
         test('openView', () => {
