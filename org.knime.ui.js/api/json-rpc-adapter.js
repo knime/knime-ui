@@ -47,12 +47,13 @@ export const handleResponse = ({ response, method = '<unknown>', args }) => {
  *
  * @private
  */
+let id = 0;
 export default async (method, ...args) => {
     const req = {
         jsonrpc: '2.0',
         method,
         params: args,
-        id: 0
+        id: id++
     };
     consola.trace('JSON-RPC Request:', req);
 
