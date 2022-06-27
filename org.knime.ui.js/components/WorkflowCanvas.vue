@@ -53,6 +53,9 @@ export default {
             // TODO: To be changed in NXT-929
             this.fillScreen();
         });
+        window.pollUpdates = () => {
+            this.$store.dispatch('workflow/pollUpdates');
+        };
     },
     methods: {
         ...mapMutations('canvas', ['setInteractionsEnabled']),

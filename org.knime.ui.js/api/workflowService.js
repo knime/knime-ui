@@ -1,5 +1,4 @@
 import rpc from './json-rpc-adapter.js';
-
 /**
  * Load a specific workflow.
  * @param { Object } cfg The configuration object
@@ -39,7 +38,9 @@ const workflowCommand = async ({ projectId, workflowId, command, args }) => {
             kind: command,
             ...args
         };
-        return await rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
+        const result = await rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
+        setTimeout(() => window.pollUpdates(), 500);
+        return result;
     } catch (e) {
         consola.error(e);
         throw new Error(`Couldn't execute ${command}(${JSON.stringify(args)})`);

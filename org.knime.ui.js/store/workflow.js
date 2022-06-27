@@ -56,6 +56,18 @@ export const mutations = {
 
 export const actions = {
     ...jsonPatchActions,
+    async pollUpdates({ commit, dispatch, getters, rootState }) {
+        const projectId = rootState.application.activeProjectId;
+        const workflowId = getters.activeWorkflowId;
+        debugger;
+        const project = await loadWorkflowFromApi({ projectId, workflowId });
+        if (project) {
+            commit('setActiveWorkflow', {
+                ...project.workflow,
+                projectId
+            });
+        }
+    },
     async loadWorkflow({ commit, dispatch, getters }, { projectId, workflowId = 'root' }) {
         const project = await loadWorkflowFromApi({ projectId, workflowId });
         if (project) {
