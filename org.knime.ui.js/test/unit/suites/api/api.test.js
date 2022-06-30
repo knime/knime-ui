@@ -1,6 +1,8 @@
 /* eslint-disable consistent-return */
 import * as api from '~/api';
 
+const origErrorLogger = window.consola.error;
+
 describe('API', () => {
     beforeEach(() => {
         window.jsonrpc = jest.fn().mockReturnValue({
@@ -9,7 +11,7 @@ describe('API', () => {
             id: -1
         });
     });
-
+    
     describe('Application Service', () => {
         describe('fetchApplicationState', () => {
             it('calls jsonrpc', async () => {
@@ -26,12 +28,20 @@ describe('API', () => {
 
 
         describe('error handling', () => {
+            beforeAll(() => {
+                window.consola.error = jest.fn();
+            });
+
             beforeEach(() => {
                 window.jsonrpc.mockReturnValueOnce({
                     jsonrpc: '2.0',
                     error: 'There has been an error',
                     id: -1
                 });
+            });
+
+            afterAll(() => {
+                window.consola.error = origErrorLogger;
             });
 
             it('handles errors on fetchApplicationState', async () => {
@@ -53,6 +63,10 @@ describe('API', () => {
 
 
         describe('error handling', () => {
+            beforeAll(() => {
+                window.consola.error = jest.fn();
+            });
+
             beforeEach(() => {
                 window.jsonrpc.mockReturnValueOnce({
                     jsonrpc: '2.0',
@@ -60,6 +74,11 @@ describe('API', () => {
                     id: -1
                 });
             });
+
+            afterAll(() => {
+                window.consola.error = origErrorLogger;
+            });
+
 
             it('handles errors on addEventListener', async () => {
                 await expect(api.addEventListener('foo'))
@@ -114,12 +133,20 @@ describe('API', () => {
         });
 
         describe('error handling', () => {
+            beforeAll(() => {
+                window.consola.error = jest.fn();
+            });
+
             beforeEach(() => {
                 window.jsonrpc.mockReturnValueOnce({
                     jsonrpc: '2.0',
                     error: 'There has been an error',
                     id: -1
                 });
+            });
+
+            afterAll(() => {
+                window.consola.error = origErrorLogger;
             });
 
             it('handles errors on searchNodes', async () => {
@@ -190,12 +217,20 @@ describe('API', () => {
 
 
         describe('error handling', () => {
+            beforeAll(() => {
+                window.consola.error = jest.fn();
+            });
+
             beforeEach(() => {
                 window.jsonrpc.mockReturnValueOnce({
                     jsonrpc: '2.0',
                     error: 'There has been an error',
                     id: -1
                 });
+            });
+
+            afterAll(() => {
+                window.consola.error = origErrorLogger;
             });
 
             it('handles errors for changeNodeState', async () => {
@@ -273,12 +308,20 @@ describe('API', () => {
         });
 
         describe('error handling', () => {
+            beforeAll(() => {
+                window.consola.error = jest.fn();
+            });
+
             beforeEach(() => {
                 window.jsonrpc.mockReturnValueOnce({
                     jsonrpc: '2.0',
                     error: 'There has been an error',
                     id: -1
                 });
+            });
+
+            afterAll(() => {
+                window.consola.error = origErrorLogger;
             });
 
             it('handles errors on loadWorkflow', async () => {
@@ -353,12 +396,20 @@ describe('API', () => {
         });
 
         describe('error handling', () => {
+            beforeAll(() => {
+                window.consola.error = jest.fn();
+            });
+            
             beforeEach(() => {
                 window.jsonrpc.mockReturnValueOnce({
                     jsonrpc: '2.0',
                     error: 'There has been an error',
                     id: -1
                 });
+            });
+
+            afterAll(() => {
+                window.consola.error = origErrorLogger;
             });
 
             it('handles errors on loadTable', async () => {

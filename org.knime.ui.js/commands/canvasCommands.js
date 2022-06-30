@@ -16,14 +16,18 @@ export default {
         text: 'Zoom in',
         hotkey: ['Ctrl', '+'],
         execute: throttle(
-            ({ $store }) => { $store.dispatch('canvas/zoomCentered', { delta: 1 }); }
+            ({ $store }) => {
+                $store.dispatch('canvas/zoomCentered', { delta: 1 });
+            }
         )
     },
     zoomOut: {
         text: 'Zoom out',
         hotkey: ['Ctrl', '-'],
         execute: throttle(
-            ({ $store }) => { $store.dispatch('canvas/zoomCentered', { delta: -1 }); }
+            ({ $store }) => {
+                $store.dispatch('canvas/zoomCentered', { delta: -1 });
+            }
         )
     },
     zoomTo75: {

@@ -173,7 +173,7 @@ describe('WorkflowPanel', () => {
             wrapper.trigger('open-port-type-menu', {
                 detail: {
                     id: '1',
-                    props: { side: 'input' },
+                    props: { side: 'input', position: { x: 0, y: 0 } },
                     events: {}
                 }
             });

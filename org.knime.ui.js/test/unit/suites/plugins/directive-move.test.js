@@ -13,7 +13,9 @@ describe('directive-move', () => {
         onMoveStart = jest.fn();
         onMoveEnd = jest.fn();
         dummyTarget = {
-            hasPointerCapture() { return false; },
+            hasPointerCapture() {
+                return false;
+            },
             setPointerCapture() { /* do nothing */ }
         };
     });

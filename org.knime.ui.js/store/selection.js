@@ -23,7 +23,9 @@ export const mutations = {
     addNodesToSelection(state, nodeIds) {
         // Work on a copy of the state. The vue reactivity-machinery only runs once afterwards
         let selectedNodes = { ...state.selectedNodes };
-        nodeIds.forEach(id => { selectedNodes[id] = true; });
+        nodeIds.forEach(id => {
+            selectedNodes[id] = true;
+        });
 
         state.selectedNodes = selectedNodes;
     },
@@ -32,7 +34,9 @@ export const mutations = {
     removeNodesFromSelection(state, nodeIds) {
         // Work on a copy of the state. The vue reactivity-machinery only runs once afterwards
         let selectedNodes = { ...state.selectedNodes };
-        nodeIds.forEach(id => { delete selectedNodes[id]; });
+        nodeIds.forEach(id => {
+            delete selectedNodes[id];
+        });
 
         state.selectedNodes = selectedNodes;
     },
@@ -126,7 +130,9 @@ export const getters = {
 
     // Returns null if none or multiple nodes are selected, otherwise returns the selected node
     singleSelectedNode(state, { selectedNodes }) {
-        if (selectedNodes.length !== 1) { return null; }
+        if (selectedNodes.length !== 1) {
+            return null;
+        }
         return selectedNodes[0];
     },
 

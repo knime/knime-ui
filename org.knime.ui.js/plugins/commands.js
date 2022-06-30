@@ -40,7 +40,9 @@ export default (context, inject) => {
     // currently only the first match is returned, assuming no two commands share the same hotkey
     const findByHotkey = ({ key, metaKey, ctrlKey, shiftKey, altKey }) => {
         for (let [commandName, { hotkey }] of Object.entries(commands)) {
-            if (!hotkey) { continue; }
+            if (!hotkey) {
+                continue;
+            }
 
             let modifiers = [...hotkey];
             let character = modifiers.pop();

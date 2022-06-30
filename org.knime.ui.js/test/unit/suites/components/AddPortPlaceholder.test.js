@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { createLocalVue, mount } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
@@ -41,7 +41,7 @@ describe('PortTypeMenu.vue', () => {
             $store = mockVuexStore(storeConfig);
             mocks = { $store, $shapes, $colors };
 
-            wrapper = mount(AddPortPlaceholder, { propsData, mocks, provide });
+            wrapper = shallowMount(AddPortPlaceholder, { propsData, mocks, provide });
         };
     });
 

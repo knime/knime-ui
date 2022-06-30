@@ -54,7 +54,7 @@ export const actions = {
     
     destroyApplication({ dispatch }) {
         removeEventListener('AppStateChanged');
-        dispatch('workflow/unloadActiveWorkflow', { clearWorkflow: true }, { root: true });
+        dispatch('unloadActiveWorkflow', { clearWorkflow: true });
     },
     // -------------------------------------------------------------------- //
     async replaceApplicationState({ commit, dispatch, state }, applicationState) {
@@ -133,7 +133,9 @@ export const actions = {
         let activeWorkflow = rootState.workflow.activeWorkflow;
 
         // nothing to do (no tabs open)
-        if (!activeWorkflow) { return; }
+        if (!activeWorkflow) {
+            return;
+        }
         
         // clean up
         let { projectId } = activeWorkflow;

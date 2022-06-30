@@ -125,8 +125,9 @@ export default {
             });
         },
         onPointerUp(e) {
-            console.log('POINTER UP', e);
-            if (!this.dragConnector) { return; }
+            if (!this.dragConnector) {
+                return;
+            }
 
             e.stopPropagation();
             e.target.releasePointerCapture(e.pointerId);
@@ -165,7 +166,9 @@ export default {
         onPointerMove: throttle(function (e) {
             console.log('MOVE');
             /* eslint-disable no-invalid-this */
-            if (!this.dragConnector) { return; }
+            if (!this.dragConnector) {
+                return;
+            }
 
             this.didMove = true;
             // find HTML-Element below cursor

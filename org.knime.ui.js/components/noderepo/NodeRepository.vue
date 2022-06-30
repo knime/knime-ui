@@ -31,13 +31,17 @@ export default {
 
         /* Search and Filter */
         selectedTags: {
-            get() { return this.$store.state.nodeRepository.selectedTags; },
+            get() {
+                return this.$store.state.nodeRepository.selectedTags;
+            },
             set(value) {
                 this.$store.dispatch('nodeRepository/setSelectedTags', value);
             }
         },
         searchQuery: {
-            get() { return this.$store.state.nodeRepository.query; },
+            get() {
+                return this.$store.state.nodeRepository.query;
+            },
             set: debounce(function (value) {
                 this.$store.dispatch('nodeRepository/updateQuery', value); // eslint-disable-line no-invalid-this
             },
