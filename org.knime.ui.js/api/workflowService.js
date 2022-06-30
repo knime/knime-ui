@@ -220,6 +220,24 @@ export const addContainerNodePort = ({
 });
 
 /**
+ * Removes a port from a container node
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param { String } cfg.nodeId
+ * @param { String } cfg.portType
+ * @param { 'input' | 'output' } cfg.side
+ * @returns { Promise }
+ */
+export const removeContainerNodePort = ({
+    projectId, workflowId, nodeId, typeId, side, portIndex
+}) => workflowCommand({
+    command: 'remove_port',
+    args: { nodeId, portTypeId: typeId, side, portIndex },
+    projectId,
+    workflowId
+});
+
+/**
  * Expands a metanode or component
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId

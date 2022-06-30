@@ -176,7 +176,8 @@ export default {
             nameDimensions: {
                 width: 0,
                 height: 20
-            }
+            },
+            selectedPort: null
         };
     },
     computed: {
@@ -440,6 +441,22 @@ export default {
                 e.target.style.opacity = null;
             }, 1000);
         },
+        selectPort(port, type) {
+            const canSelectPort = (this.kind === 'component' && port.index !== 0) || this.kind === 'metanode';
+
+            this.selectedPort = this.selectedPort === `${this.id}-${type}-${port.index}` || !canSelectPort
+                ? null
+                : `${this.id}-${type}-${port.index}`;
+        },
+        deletePort(port, side) {
+            this.$store.dispatch('workflow/removeContainerNodePort', {
+                nodeId: this.id,
+                side,
+                typeId: port.typeId,
+                portIndex: port.index
+            });
+            this.selectedPort = null;
+        },
         // public
         setSelectionPreview(preview) {
             this.selectionPreview = preview === 'clear' ? null : preview;
@@ -560,7 +577,10 @@ export default {
         :port="port"
         :node-id="id"
         :targeted="targetPort && targetPort.side === 'in' && targetPort.index === port.index"
+        :is-selected="selectedPort === `inport-${port.index}`"
         direction="in"
+        @select="selectPort(port, 'inport')"
+        @delete="deletePort(port, 'input')"
       />
 
       <DraggablePortWithTooltip
@@ -571,7 +591,10 @@ export default {
         :port="port"
         :node-id="id"
         :targeted="targetPort && targetPort.side === 'out' && targetPort.index === port.index"
+        :is-selected="selectedPort === `${id}-outport-${port.index}`"
         direction="out"
+        @select="selectPort(port, 'outport')"
+        @delete="deletePort(port, 'output')"
       />
 
       <AddPortPlaceholder
@@ -615,6 +638,12 @@ export default {
         @edit-start="hover = false"
         @connector-enter.native.stop="onConnectorEnter"
         @connector-leave.native.stop="onConnectorLeave"
+      />
+
+      <portal-target
+        v-if="selectedPort"
+        name="selected-port-outline"
+        tag="g"
       />
     </g>
   </g>

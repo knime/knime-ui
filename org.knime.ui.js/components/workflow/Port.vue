@@ -14,6 +14,15 @@ export default {
             type: Object,
             required: true,
             validator: port => (typeof port.inactive === 'boolean' || !port.inactive) && typeof port.typeId === 'string'
+        },
+        isSelected: {
+            type: Boolean,
+            default: false
+        },
+        position: {
+            type: Array,
+            default: () => [0, 0],
+            validator: position => Array.isArray(position) && position.length === 2
         }
     },
     computed: {
@@ -57,7 +66,30 @@ export default {
 </script>
 
 <template>
-  <g class="port">
+  <g
+    class="port"
+    @click="$emit('select', $event)"
+  >
+    <portal
+      v-if="isSelected && position"
+      to="selected-port-outline"
+    >
+      <g
+        :transform="`translate(${position})`"
+        @click="$emit('select', $event)"
+      >
+        <circle
+          class="port-outline"
+          r="9"
+        />
+        <PortIcon
+          :type="portKind"
+          :color="portColor"
+          :filled="shouldFill"
+        />
+      </g>
+    </portal>
+
     <rect
       :x="-$shapes.portSize / 2"
       :y="-$shapes.portSize / 2 - 1"
@@ -121,13 +153,13 @@ export default {
 <style lang="postcss" scoped>
 .port {
   & .hover-area {
-    pointer-events: fill;
+    /* pointer-events: fill; */
     fill: none;
     stroke: none;
   }
 
   & .scale {
-    pointer-events: none;
+    /* pointer-events: none; */
     transition: transform 0.1s linear;
   }
 
@@ -137,4 +169,8 @@ export default {
   }
 }
 
+.port-outline {
+  fill: white;
+  stroke: var(--knime-cornflower-dark);
+}
 </style>

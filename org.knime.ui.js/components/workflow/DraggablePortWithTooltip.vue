@@ -6,11 +6,17 @@ import Connector from '~/components/workflow/Connector';
 import throttle from 'raf-throttle';
 import { circleDetection } from '~/util/compatibleConnections';
 
+import ActionButton from '~/components/workflow/ActionButton';
+import DeleteIcon from '~/assets/delete.svg?inline';
+
+
 export default {
     components: {
         PortWithTooltip,
         Port,
-        Connector
+        Connector,
+        ActionButton,
+        DeleteIcon
     },
     props: {
         /** direction of the port and the connector coming out of it: in-coming or out-going */
@@ -36,10 +42,15 @@ export default {
         targeted: {
             type: Boolean,
             default: false
+        },
+        isSelected: {
+            type: Boolean,
+            default: false
         }
     },
     data: () => ({
-        dragConnector: null
+        dragConnector: null,
+        didMove: false
     }),
     computed: {
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
@@ -70,6 +81,7 @@ export default {
 
         /* ======== Drag Connector ======== */
         onPointerDown(e) {
+            console.log('POINTER DOWN', e);
             if (!this.isWritable || e.button !== 0 || e.shiftKey || e.ctrlKey) {
                 return;
             }
@@ -113,6 +125,7 @@ export default {
             });
         },
         onPointerUp(e) {
+            console.log('POINTER UP', e);
             if (!this.dragConnector) { return; }
 
             e.stopPropagation();
@@ -141,16 +154,20 @@ export default {
             }
         },
         onLostPointerCapture(e) {
+            console.log('LOST POINTER CAPTURE', e);
             this.dragConnector = null;
             if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
                 this.lastHitTarget.element.dispatchEvent(new CustomEvent('connector-leave', { bubbles: true }));
             }
             this.$root.$emit('connector-end');
+            this.didMove = false;
         },
         onPointerMove: throttle(function (e) {
+            console.log('MOVE');
             /* eslint-disable no-invalid-this */
             if (!this.dragConnector) { return; }
 
+            this.didMove = true;
             // find HTML-Element below cursor
             let hitTarget = document.elementFromPoint(e.x, e.y);
 
@@ -221,7 +238,18 @@ export default {
 
             this.dragConnector.absolutePoint = [absoluteX, absoluteY];
             /* eslint-enable no-invalid-this */
-        })
+        }),
+        onClick(e) {
+            console.log('CLICK', e);
+            console.log('this.didMove', this.didMove);
+            if (!this.didMove) {
+                this.dragConnector = null;
+                this.$emit('select', this.port);
+            }
+        },
+        onDelete() {
+            this.$emit('delete', this.port);
+        }
     }
 };
 </script>
@@ -236,9 +264,24 @@ export default {
     @lostpointercapture.stop="onLostPointerCapture"
   >
     <PortWithTooltip
+      :is-selected="isSelected"
       :port="port"
       :tooltip-position="relativePosition"
+      @select="onClick"
     />
+
+    <transition name="appear">
+      <ActionButton
+        v-if="isSelected"
+        :x="relativePosition[0] - (direction === 'in' ? 22 : 10)"
+        :disabled="!port.canRemovePort"
+        title="Delete port"
+        @click="$emit('delete', port)"
+      >
+        <DeleteIcon />
+      </ActionButton>
+    </transition>
+
     <portal
       v-if="dragConnector"
       to="drag-connector"
@@ -268,5 +311,23 @@ export default {
 
 .targeted >>> .scale {
   transform: scale(1.4);
+}
+
+.port-action {
+  fill: white;
+  stroke: var(--knime-silver-sand);
+}
+
+.appear-enter-active {
+  animation: appear 0.2s;
+}
+
+.appear-leave-active {
+  animation: appear 0.2s reverse;
+}
+
+@keyframes appear {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
 }
 </style>

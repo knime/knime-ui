@@ -1,5 +1,5 @@
 import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameContainerNode, collapseToContainer,
-    addContainerNodePort, expandContainerNode } from '~api';
+    addContainerNodePort, expandContainerNode, removeContainerNodePort } from '~api';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -205,6 +205,16 @@ export const actions = {
         let { activeWorkflowId: workflowId } = getters;
     
         addContainerNodePort({ projectId, workflowId, nodeId, side, typeId });
+    },
+
+    removeContainerNodePort({ state, getters }, { nodeId, side, typeId, portIndex }) {
+        // console.log('now', nodeId);
+        // console.log('now', side);
+        // console.log('now', typeId);
+        let { activeWorkflow: { projectId } } = state;
+        let { activeWorkflowId: workflowId } = getters;
+    
+        removeContainerNodePort({ projectId, workflowId, nodeId, side, typeId, portIndex });
     }
 };
 
