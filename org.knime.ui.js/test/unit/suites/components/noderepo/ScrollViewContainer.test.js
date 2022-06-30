@@ -64,7 +64,10 @@ describe('ScrollViewContainer', () => {
                 HTMLElement.prototype,
                 'scrollHeight',
                 {
-                    get() { return 400; }, // eslint-disable-line no-magic-numbers,
+                    get() {
+                        // eslint-disable-next-line no-magic-numbers
+                        return 400;
+                    },
                     configurable: true
                 }
             );

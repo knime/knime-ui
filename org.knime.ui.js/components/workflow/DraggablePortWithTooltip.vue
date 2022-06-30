@@ -113,7 +113,9 @@ export default {
             });
         },
         onPointerUp(e) {
-            if (!this.dragConnector) { return; }
+            if (!this.dragConnector) {
+                return;
+            }
 
             e.stopPropagation();
             e.target.releasePointerCapture(e.pointerId);
@@ -149,7 +151,9 @@ export default {
         },
         onPointerMove: throttle(function (e) {
             /* eslint-disable no-invalid-this */
-            if (!this.dragConnector) { return; }
+            if (!this.dragConnector) {
+                return;
+            }
 
             // find HTML-Element below cursor
             let hitTarget = document.elementFromPoint(e.x, e.y);

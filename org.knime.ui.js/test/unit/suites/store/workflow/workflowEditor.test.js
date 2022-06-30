@@ -54,8 +54,8 @@ describe('workflow store: Editing', () => {
             });
 
             let node = store.state.workflow.activeWorkflow.nodes['root:1'];
-            store.commit('workflow/shiftPosition', { node, deltaX: 50, deltaY: 50 });
-            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
+            store.commit('workflow/setMovePreview', { node, deltaX: 50, deltaY: 50 });
+            expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 50, y: 50 });
         });
 
         it('resets the position of the outlint', () => {
@@ -67,24 +67,10 @@ describe('workflow store: Editing', () => {
             });
 
             let node = store.state.workflow.activeWorkflow.nodes['root:1'];
-            store.commit('workflow/shiftPosition', { node, deltaX: 50, deltaY: 50 });
-            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
-            store.commit('workflow/resetDragPosition', { nodeId: node.id });
-            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 0, y: 0 });
-        });
-
-        it('checks node dragging', () => {
-            store.commit('workflow/setActiveWorkflow', {
-                projectId: 'bar',
-                nodes: {
-                    'root:1': { id: 'root:1' }
-                }
-            });
-
-            store.commit('workflow/setDragging', { isDragging: true });
-            expect(store.state.workflow.isDragging).toBe(true);
-            store.commit('workflow/setDragging', { isDragging: false });
-            expect(store.state.workflow.isDragging).toBe(false);
+            store.commit('workflow/setMovePreview', { node, deltaX: 50, deltaY: 50 });
+            expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 50, y: 50 });
+            store.commit('workflow/resetMovePreview', { nodeId: node.id });
+            expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 0, y: 0 });
         });
     });
 
@@ -113,8 +99,8 @@ describe('workflow store: Editing', () => {
             store.dispatch('selection/selectAllNodes');
             await Vue.nextTick();
 
-            store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
-            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
+            store.commit('workflow/setMovePreview', { deltaX: 50, deltaY: 50 });
+            expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 50, y: 50 });
         });
 
         it('moves nodes outline', async () => {
@@ -130,9 +116,9 @@ describe('workflow store: Editing', () => {
             });
             store.dispatch('selection/selectAllNodes');
             await Vue.nextTick();
-            store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
+            store.commit('workflow/setMovePreview', { deltaX: 50, deltaY: 50 });
 
-            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
+            expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 50, y: 50 });
         });
 
         it('moves subset of node outlines', async () => {
@@ -153,9 +139,9 @@ describe('workflow store: Editing', () => {
                     store.dispatch('selection/selectNode', node.id);
                 }
             });
-            store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
+            store.commit('workflow/setMovePreview', { deltaX: 50, deltaY: 50 });
 
-            expect(store.state.workflow.deltaMovePosition).toStrictEqual({ x: 50, y: 50 });
+            expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 50, y: 50 });
         });
 
         it.each([
@@ -181,8 +167,8 @@ describe('workflow store: Editing', () => {
                 nodeIds.push(node.id);
             });
 
-            store.dispatch('workflow/moveNodes', { deltaX: 50, deltaY: 50 });
-            store.dispatch('workflow/saveNodeMoves', { projectId: 'foo', nodeId: 'node-0', startPos: { x: 0, y: 0 } });
+            store.commit('workflow/setMovePreview', { deltaX: 50, deltaY: 50 });
+            store.dispatch('workflow/moveObjects', { projectId: 'foo', nodeId: 'node-0', startPos: { x: 0, y: 0 } });
             expect(moveObjectsMock).toHaveBeenNthCalledWith(1, {
                 projectId: 'foo',
                 nodeIds,

@@ -45,12 +45,12 @@ describe('workflowCommands', () => {
 
         test('configureNode', () => {
             workflowCommands.configureNode.execute({ $store });
-            expect(mockDispatch).toHaveBeenCalledWith('workflow/openDialog', 'root:0');
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/openNodeConfiguration', 'root:0');
         });
 
         test('configureFlowVariables', () => {
             workflowCommands.configureFlowVariables.execute({ $store });
-            expect(mockDispatch).toHaveBeenCalledWith('workflow/configureFlowVariables', 'root:0');
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/openFlowVariableConfiguration', 'root:0');
         });
 
         test('openView', () => {
@@ -210,12 +210,19 @@ describe('workflowCommands', () => {
         describe('createMetanode', () => {
             test('it can not create metanode when canCollapse is false', () => {
                 $store.getters['workflow/isWritable'] = true;
+                $store.getters['selection/selectedNodes'] = [{ allowedActions: { canCollapse: 'true' } }];
                 expect(workflowCommands.createMetanode.condition({ $store })).toBe(true);
                 $store.getters['selection/selectedNodes'] = [{ allowedActions: { canCollapse: 'false' } }];
                 expect(workflowCommands.createMetanode.condition({ $store })).toBe(false);
             });
 
             test('it can not create metanode when workflow is not writable', () => {
+                $store.getters['workflow/isWritable'] = false;
+                $store.getters['selection/selectedNodes'] = [{ allowedActions: { canCollapse: 'true' } }];
+                expect(workflowCommands.createMetanode.condition({ $store })).toBe(false);
+            });
+
+            test('it can not create metanode when no node is selected', () => {
                 $store.getters['workflow/isWritable'] = false;
                 expect(workflowCommands.createMetanode.condition({ $store })).toBe(false);
             });
@@ -225,12 +232,19 @@ describe('workflowCommands', () => {
         describe('createComponent', () => {
             test('it can not create component when canCollapse is false', () => {
                 $store.getters['workflow/isWritable'] = true;
+                $store.getters['selection/selectedNodes'] = [{ allowedActions: { canCollapse: 'true' } }];
                 expect(workflowCommands.createComponent.condition({ $store })).toBe(true);
                 $store.getters['selection/selectedNodes'] = [{ allowedActions: { canCollapse: 'false' } }];
                 expect(workflowCommands.createComponent.condition({ $store })).toBe(false);
             });
 
             test('it can not create component when workflow is not writable', () => {
+                $store.getters['workflow/isWritable'] = false;
+                $store.getters['selection/selectedNodes'] = [{ allowedActions: { canCollapse: 'true' } }];
+                expect(workflowCommands.createComponent.condition({ $store })).toBe(false);
+            });
+
+            test('it can not create component when no node is selected', () => {
                 $store.getters['workflow/isWritable'] = false;
                 expect(workflowCommands.createComponent.condition({ $store })).toBe(false);
             });

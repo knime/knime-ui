@@ -39,7 +39,9 @@ export default {
             let table = await loadTable({ projectId, workflowId, nodeId, portIndex, batchSize: firstRows });
 
             // number of rows unknown. Easier for comparison
-            if (table.totalNumRows === -1) { table.totalNumRows = Infinity; }
+            if (table.totalNumRows === -1) {
+                table.totalNumRows = Infinity;
+            }
 
             this.table = table;
 
@@ -142,7 +144,9 @@ export default {
         },
         onScroll: throttle(function () {
             /* eslint-disable no-invalid-this */
-            if (!this.canLoadMoreRows || this.isLazyLoading) { return; }
+            if (!this.canLoadMoreRows || this.isLazyLoading) {
+                return;
+            }
 
             let { table, scroller } = this.$refs;
 

@@ -82,6 +82,7 @@ export default {
                 configureFlowVariables: hasLegacyFlowVariableDialog,
                 openView: isView,
                 editName: isMetanodeOrComponent,
+                
                 // Something selected
                 deleteSelected: somethingSelected,
 

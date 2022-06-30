@@ -2,8 +2,8 @@ import { fetchApplicationState, addEventListener, removeEventListener, loadWorkf
 import Fuse from 'fuse.js';
 
 /*
-* This store provides global application logic
-*/
+ * This store provides global application logic
+ */
 export const state = () => ({
     openProjects: [],
     activeProjectId: null,
@@ -133,7 +133,9 @@ export const actions = {
         let activeWorkflow = rootState.workflow.activeWorkflow;
 
         // nothing to do (no tabs open)
-        if (!activeWorkflow) { return; }
+        if (!activeWorkflow) {
+            return;
+        }
         
         // clean up
         let { projectId } = activeWorkflow;
