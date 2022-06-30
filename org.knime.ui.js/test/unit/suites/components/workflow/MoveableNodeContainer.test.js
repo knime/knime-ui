@@ -40,7 +40,9 @@ describe('MoveableNodeContainer', () => {
                     setMovePreview: jest.fn()
                 },
                 getters: {
-                    isWritable() { return true; }
+                    isWritable() {
+                        return true;
+                    }
                 },
                 actions: {
                     moveObjects: jest.fn()

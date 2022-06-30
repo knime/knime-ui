@@ -60,7 +60,9 @@ export default {
         // This property is $watched and the selected port is updated upon change
         nodeHasProblem() {
             let node = this.selectedNode;
-            if (!node) { return 'No node selected'; }
+            if (!node) {
+                return 'No node selected';
+            }
 
             if (this.isDragging && !this.isViewerReady) {
                 return 'Node output will be loaded after moving is completed';
@@ -97,7 +99,9 @@ export default {
         // Step 3: check whether the selected port can be displayed
         portHasProblem() {
             let port = this.selectedPort;
-            if (!port) { return 'No port selected'; }
+            if (!port) {
+                return 'No port selected';
+            }
                             
             if (!this.supportsPort(port)) {
                 return 'The data at the output port is not supported by any viewer.';
@@ -123,7 +127,9 @@ export default {
 
         // If Step 3 is successful, return necessary data for the port views
         portIdentifier() {
-            if (this.portHasProblem) { return null; }
+            if (this.portHasProblem) {
+                return null;
+            }
 
             const { projectId, workflowId, selectedNode: { id: nodeId }, selectedPortIndex, selectedPort } = this;
 

@@ -133,7 +133,9 @@ export const actions = {
         let activeWorkflow = rootState.workflow.activeWorkflow;
 
         // nothing to do (no tabs open)
-        if (!activeWorkflow) { return; }
+        if (!activeWorkflow) {
+            return;
+        }
         
         // clean up
         let { projectId } = activeWorkflow;

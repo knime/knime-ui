@@ -340,7 +340,9 @@ export default {
         portAnimationClasses(port) {
             let isMickeyMousePort = this.kind !== 'metanode' && port.index === 0;
 
-            if (!isMickeyMousePort) { return {}; }
+            if (!isMickeyMousePort) {
+                return {};
+            }
             
             return {
                 'mickey-mouse': true,
@@ -399,7 +401,9 @@ export default {
          * We use the contextmenu event as click with button = 2 was not reliable.
          */
         onContextMenu(e) {
-            if (this.isDragging) { return; }
+            if (this.isDragging) {
+                return;
+            }
             
             if (e.ctrlKey || e.metaKey) {
                 // user tries to open component or metanode
@@ -420,9 +424,15 @@ export default {
         isOutsideConnectorHoverRegion(x, y, targetPortDirection) {
             const upperBound = -20;
 
-            if (y < upperBound) { return true; }
-            if (targetPortDirection === 'in' && x > this.$shapes.nodeSize) { return true; }
-            if (targetPortDirection === 'out' && x < 0) { return true; }
+            if (y < upperBound) {
+                return true;
+            }
+            if (targetPortDirection === 'in' && x > this.$shapes.nodeSize) {
+                return true;
+            }
+            if (targetPortDirection === 'out' && x < 0) {
+                return true;
+            }
 
             return false;
         },

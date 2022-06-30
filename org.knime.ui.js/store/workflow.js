@@ -84,7 +84,9 @@ export const getters = {
         return Boolean(activeWorkflow?.info.linked);
     },
     insideLinkedType({ activeWorkflow }) {
-        if (!activeWorkflow?.parents) { return null; }
+        if (!activeWorkflow?.parents) {
+            return null;
+        }
 
         return activeWorkflow.parents.find(({ linked }) => linked)?.containerType;
     },
@@ -128,18 +130,34 @@ export const getters = {
             const nodeLeft = x - horizontalNodePadding;
             const nodeRight = x + nodeSize + horizontalNodePadding;
 
-            if (nodeLeft < left) { left = nodeLeft; }
-            if (nodeTop < top) { top = nodeTop; }
+            if (nodeLeft < left) {
+                left = nodeLeft;
+            }
+            if (nodeTop < top) {
+                top = nodeTop;
+            }
 
-            if (nodeRight > right) { right = nodeRight; }
-            if (nodeBottom > bottom) { bottom = nodeBottom; }
+            if (nodeRight > right) {
+                right = nodeRight;
+            }
+            if (nodeBottom > bottom) {
+                bottom = nodeBottom;
+            }
         });
         workflowAnnotations.forEach(({ bounds: { x, y, height, width } }) => {
-            if (x < left) { left = x; }
-            if (y < top) { top = y; }
+            if (x < left) {
+                left = x;
+            }
+            if (y < top) {
+                top = y;
+            }
 
-            if (x + width > right) { right = x + width; }
-            if (y + height > bottom) { bottom = y + height; }
+            if (x + width > right) {
+                right = x + width;
+            }
+            if (y + height > bottom) {
+                bottom = y + height;
+            }
         });
 
         // there are neither nodes nor workflows annotations
@@ -174,8 +192,12 @@ export const getters = {
                 leftBorder = Math.min(0, left) - metaNodeBarWidth;
                 rightBorder = leftBorder + metaNodeBarWidth + portSize;
             }
-            if (leftBorder < left) { left = leftBorder; }
-            if (rightBorder > right) { right = rightBorder; }
+            if (leftBorder < left) {
+                left = leftBorder;
+            }
+            if (rightBorder > right) {
+                right = rightBorder;
+            }
         }
 
         if (metaOutPorts?.ports?.length) {
@@ -187,8 +209,12 @@ export const getters = {
                 leftBorder = left + defaultBarPosition - portSize;
                 rightBorder = leftBorder + metaNodeBarWidth + portSize;
             }
-            if (leftBorder < left) { left = leftBorder; }
-            if (rightBorder > right) { right = rightBorder; }
+            if (leftBorder < left) {
+                left = leftBorder;
+            }
+            if (rightBorder > right) {
+                right = rightBorder;
+            }
         }
 
         if (metaInPorts?.ports?.length || metaOutPorts?.ports?.length) {

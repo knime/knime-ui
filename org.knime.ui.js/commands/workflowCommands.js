@@ -87,7 +87,9 @@ export default {
         execute:
             ({ $store }) => $store.dispatch('workflow/deleteSelectedObjects'),
         condition({ $store }) {
-            if (!$store.getters['workflow/isWritable']) { return false; }
+            if (!$store.getters['workflow/isWritable']) {
+                return false;
+            }
 
             const selectedNodes = $store.getters['selection/selectedNodes'];
             const selectedConnections = $store.getters['selection/selectedConnections'];
@@ -112,8 +114,13 @@ export default {
         execute:
             ({ $store }) => $store.dispatch('workflow/collapseToContainer', { containerType: 'metanode' }),
         condition({ $store }) {
-            if (!$store.getters['workflow/isWritable']) { return false; }
-            if (!$store.getters['selection/selectedNodes'].length) { return false; }
+            if (!$store.getters['workflow/isWritable']) {
+                return false;
+            }
+            
+            if (!$store.getters['selection/selectedNodes'].length) {
+                return false;
+            }
 
             return $store.getters['selection/selectedNodes'].every(node => node.allowedActions.canCollapse !== 'false');
         }
@@ -126,8 +133,12 @@ export default {
         execute:
             ({ $store }) => $store.dispatch('workflow/collapseToContainer', { containerType: 'component' }),
         condition({ $store }) {
-            if (!$store.getters['workflow/isWritable']) { return false; }
-            if (!$store.getters['selection/selectedNodes'].length) { return false; }
+            if (!$store.getters['workflow/isWritable']) {
+                return false;
+            }
+            if (!$store.getters['selection/selectedNodes'].length) {
+                return false;
+            }
 
             return $store.getters['selection/selectedNodes'].every(node => node.allowedActions.canCollapse !== 'false');
         }
@@ -139,7 +150,9 @@ export default {
         execute:
             ({ $store }) => $store.dispatch('workflow/expandContainerNode'),
         condition({ $store }) {
-            if (!$store.getters['workflow/isWritable']) { return false; }
+            if (!$store.getters['workflow/isWritable']) {
+                return false;
+            }
 
             let selectedNode = $store.getters['selection/singleSelectedNode'];
             return selectedNode?.kind === 'metanode' && selectedNode?.allowedActions.canExpand !== 'false';
@@ -152,7 +165,9 @@ export default {
         execute:
             ({ $store }) => $store.dispatch('workflow/expandContainerNode'),
         condition({ $store }) {
-            if (!$store.getters['workflow/isWritable']) { return false; }
+            if (!$store.getters['workflow/isWritable']) {
+                return false;
+            }
 
             let selectedNode = $store.getters['selection/singleSelectedNode'];
             return selectedNode?.kind === 'component' && selectedNode?.allowedActions.canExpand !== 'false';

@@ -69,7 +69,9 @@ describe('Kanvas', () => {
                     updateContainerSize: jest.fn(),
                     contentBoundsChanged: jest.fn(),
                     initScrollContainerElement: jest.fn().mockImplementation(
-                        ({ state }, el) => { state.getScrollContainerElement = () => el; }
+                        ({ state }, el) => {
+                            state.getScrollContainerElement = () => el;
+                        }
                     )
                 },
                 mutations: {

@@ -92,6 +92,8 @@ export default {
             }
         }
     },
-    render() { return null; }
+    render() {
+        return null;
+    }
 };
 </script>
