@@ -42,6 +42,9 @@ describe('MoveableNodeContainer', () => {
                 getters: {
                     isWritable() {
                         return true;
+                    },
+                    isDragging() {
+                        return false;
                     }
                 },
                 actions: {

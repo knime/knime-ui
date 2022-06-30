@@ -241,6 +241,9 @@ describe('Connector.vue', () => {
                     getters: {
                         isWritable() {
                             return false;
+                        },
+                        isDragging() {
+                            return false;
                         }
                     }
                 },
@@ -274,6 +277,9 @@ describe('Connector.vue', () => {
                         },
                         isStreaming() {
                             return true;
+                        },
+                        isDragging() {
+                            return false;
                         }
                     }
                 }
@@ -419,6 +425,9 @@ describe('Connector.vue', () => {
                     getters: {
                         isWritable() {
                             return true;
+                        },
+                        isDragging() {
+                            return false;
                         }
                     }
                 },
@@ -491,6 +500,9 @@ describe('Connector.vue', () => {
                     getters: {
                         isWritable() {
                             return true;
+                        },
+                        isDragging() {
+                            return false;
                         }
                     }
                 },

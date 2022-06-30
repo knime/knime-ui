@@ -100,7 +100,8 @@ describe('Node', () => {
                     openView: jest.fn()
                 },
                 getters: {
-                    isWritable: () => true
+                    isWritable: () => true,
+                    isDragging: () => false
                 }
             },
             application: {
