@@ -1,6 +1,8 @@
 <script>
 import NodeNameText from '~/components/workflow/NodeNameText';
 
+const forbiddenCharacters = /[*?#:"<>%~|/\\]/g;
+
 /**
  * Inline editor for the node name. Emits 'save' and 'cancel' events. Implements v-model pattern. On input it might
  * emit 'invalidCharacter' if the input matches given 'pattern' prop.
@@ -11,10 +13,6 @@ export default {
         value: {
             type: String,
             default: ''
-        },
-        pattern: {
-            default: null,
-            type: RegExp
         },
         /* start width to avoid jumping on replace of <NodeName> */
         startWidth: {
@@ -43,10 +41,7 @@ export default {
             value = value.replace(/(\r\n|\n|\r)/gm, ''); // remove all new lines
             
             // remove invalid characters here as well, they could have been sneaked in via paste or drop
-            if (this.pattern && this.pattern.test(value)) {
-                this.$emit('invalidCharacter');
-                value = value.replace(this.pattern, '');
-            }
+            value = value.replace(forbiddenCharacters, '');
 
             this.$refs.textarea.value = value;
             this.$refs.ghost.innerText = value;

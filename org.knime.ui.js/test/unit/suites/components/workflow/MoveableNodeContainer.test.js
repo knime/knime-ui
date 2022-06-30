@@ -1,5 +1,6 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import Vuex from 'vuex';
+import Vue from 'vue';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import * as $shapes from '~/style/shapes';
 
@@ -35,19 +36,20 @@ describe('MoveableNodeContainer', () => {
         storeConfig = {
             workflow: {
                 mutations: {
-                    setDragging: jest.fn(),
-                    resetDragPosition: jest.fn()
+                    resetMovePreview: jest.fn(),
+                    setMovePreview: jest.fn()
                 },
                 getters: {
-                    isWritable() { return true; }
+                    isWritable() {
+                        return true;
+                    }
                 },
                 actions: {
-                    moveNodes: jest.fn(),
-                    saveNodeMoves: jest.fn()
+                    moveObjects: jest.fn()
                 },
                 state: {
                     isDragging: false,
-                    deltaMovePosition: { x: 250, y: 250 },
+                    movePreviewDelta: { x: 250, y: 250 },
                     activeWorkflow: { nodes: { 'root:1': { id: 'root:1' }, 'root:2': { id: 'root:2' } } }
                 }
             },
@@ -195,7 +197,7 @@ describe('MoveableNodeContainer', () => {
                 deltaY: Math.round(initialDelta.y / gridSize.y) * gridSize.y
             };
 
-            expect(storeConfig.workflow.actions.moveNodes).toHaveBeenCalledWith(
+            expect(storeConfig.workflow.mutations.setMovePreview).toHaveBeenCalledWith(
                 expect.anything(),
                 expectedDelta
             );
@@ -204,13 +206,16 @@ describe('MoveableNodeContainer', () => {
         it('ends movement of a node', async () => {
             doMount();
             jest.useFakeTimers();
+
             wrapper.vm.onMoveEnd();
+            
             jest.advanceTimersByTime(5000); /* eslint-disable-line no-magic-numbers */
-            await Promise.resolve();
+            await Vue.nextTick();
+
             jest.runOnlyPendingTimers();
-            expect(storeConfig.workflow.actions.saveNodeMoves).toHaveBeenCalledWith(
+            expect(storeConfig.workflow.actions.moveObjects).toHaveBeenCalledWith(
                 expect.anything(),
-                { nodeId: 'root:1', projectId: 'projectId', startPos: { x: 0, y: 0 } }
+                { nodeId: 'root:1', projectId: 'projectId', startPos: null }
             );
             jest.useRealTimers();
         });

@@ -1,9 +1,9 @@
-import { fetchApplicationState, addEventListener, removeEventListener } from '~api';
+import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '~api';
 import Fuse from 'fuse.js';
 
 /*
-* This store provides global application logic
-*/
+ * This store provides global application logic
+ */
 export const state = () => ({
     openProjects: [],
     activeProjectId: null,
@@ -42,19 +42,23 @@ export const mutations = {
 };
 
 export const actions = {
+    /*
+     *   A P P L I C A T I O N   L I F E C Y C L E
+     */
     async initializeApplication({ dispatch }) {
         await addEventListener('AppStateChanged');
         
         const applicationState = await fetchApplicationState();
         await dispatch('replaceApplicationState', applicationState);
     },
+    
     destroyApplication({ dispatch }) {
         removeEventListener('AppStateChanged');
         dispatch('workflow/unloadActiveWorkflow', { clearWorkflow: true }, { root: true });
     },
     // -------------------------------------------------------------------- //
     async replaceApplicationState({ commit, dispatch, state }, applicationState) {
-        // NXT-962: rename openendWorkflows to openProjects
+        // NXT-962: rename openedWorkflows to openProjects
         const openProjects = applicationState.openedWorkflows;
 
         commit('setOpenProjects', openProjects);
@@ -66,7 +70,8 @@ export const actions = {
     async setActiveProject({ commit, dispatch }, openProjects) {
         if (openProjects.length === 0) {
             consola.info('No workflows opened');
-            return dispatch('switchWorkflow', null);
+            await dispatch('switchWorkflow', null);
+            return;
         }
 
         // either choose the project that has been marked as active, or the first one
@@ -81,13 +86,18 @@ export const actions = {
             projectId: activeWorkflow.projectId
         });
     },
+
+    /*
+     *   W O R K F L O W   L I F E C Y C L E
+     */
+
     async switchWorkflow({ commit, dispatch, rootGetters }, newWorkflow) {
         // save user state like scroll and zoom
         if (rootGetters['workflow/activeWorkflowId']) {
             dispatch('saveUserState');
 
             // unload current workflow
-            dispatch('workflow/unloadActiveWorkflow', { clearWorkflow: !newWorkflow }, { root: true });
+            dispatch('unloadActiveWorkflow', { clearWorkflow: !newWorkflow });
             commit('setActiveProjectId', null);
         }
 
@@ -95,10 +105,50 @@ export const actions = {
         if (newWorkflow) {
             let { projectId, workflowId } = newWorkflow;
             commit('setActiveProjectId', projectId);
-            await dispatch('workflow/loadWorkflow', { projectId, workflowId }, { root: true });
+            await dispatch('loadWorkflow', { projectId, workflowId });
 
             // restore scroll and zoom if saved before
             dispatch('restoreUserState');
+        }
+    },
+    async loadWorkflow({ commit, rootGetters }, { projectId, workflowId = 'root' }) {
+        const project = await loadWorkflow({ projectId, workflowId });
+        if (project) {
+            commit('workflow/setActiveWorkflow', {
+                ...project.workflow,
+                projectId
+            }, { root: true });
+
+            let snapshotId = project.snapshotId;
+            commit('workflow/setActiveSnapshotId', snapshotId, { root: true });
+
+            // NXT-962: make this getter obsolete and always include the workflowId in the data
+            let workflowId = rootGetters['workflow/activeWorkflowId'];
+            addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+        } else {
+            throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
+        }
+    },
+    unloadActiveWorkflow({ commit, rootGetters, rootState }, { clearWorkflow }) {
+        let activeWorkflow = rootState.workflow.activeWorkflow;
+
+        // nothing to do (no tabs open)
+        if (!activeWorkflow) {
+            return;
+        }
+        
+        // clean up
+        let { projectId } = activeWorkflow;
+        let { activeSnapshotId: snapshotId } = rootState.workflow;
+        let workflowId = rootGetters['workflow/activeWorkflowId'];
+
+        removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+       
+        commit('selection/clearSelection', null, { root: true });
+        commit('workflow/setTooltip', null, { root: true });
+        
+        if (clearWorkflow) {
+            commit('workflow/setActiveWorkflow', null, { root: true });
         }
     },
     saveUserState({ state, commit, rootState, rootGetters }) {

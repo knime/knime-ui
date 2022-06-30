@@ -85,7 +85,9 @@ export default {
             }
 
             // ending with dropEffect none indicates that dragging has been aborted
-            if (e.dataTransfer.dropEffect === 'none') { this.onDragAbort(); }
+            if (e.dataTransfer.dropEffect === 'none') {
+                this.onDragAbort();
+            }
         },
         onDragAbort() {
             // if drag is aborted and node was selected before, select it again

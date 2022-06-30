@@ -96,7 +96,7 @@ describe('Node', () => {
                     executeNodes: jest.fn(),
                     cancelNodeExecution: jest.fn(),
                     resetNodes: jest.fn(),
-                    openDialog: jest.fn(),
+                    openNodeConfiguration: jest.fn(),
                     openView: jest.fn()
                 },
                 getters: {
@@ -256,7 +256,7 @@ describe('Node', () => {
         doMount();
         await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
-        expect(storeConfig.workflow.actions.openDialog).toHaveBeenCalledWith(expect.anything(), 'root:1');
+        expect(storeConfig.workflow.actions.openNodeConfiguration).toHaveBeenCalledWith(expect.anything(), 'root:1');
     });
 
     describe('Mickey-Mouse ports', () => {

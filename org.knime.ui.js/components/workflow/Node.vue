@@ -181,9 +181,8 @@ export default {
     },
     computed: {
         ...mapState('application', { projectId: 'activeProjectId' }),
-        ...mapState('workflow', ['isDragging']),
         ...mapGetters('selection', ['isNodeSelected', 'singleSelectedNode']),
-        ...mapGetters('workflow', ['isWritable']),
+        ...mapGetters('workflow', ['isWritable', 'isDragging']),
         decoratorBackgroundType() {
             if (this.type) {
                 return this.type;
@@ -322,7 +321,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('workflow', ['openDialog']),
+        ...mapActions('workflow', ['openNodeConfiguration']),
         ...mapActions('selection', ['selectNode', 'deselectAllObjects', 'deselectNode']),
         portShift,
         onLeaveHoverArea(e) {
@@ -341,7 +340,9 @@ export default {
         portAnimationClasses(port) {
             let isMickeyMousePort = this.kind !== 'metanode' && port.index === 0;
 
-            if (!isMickeyMousePort) { return {}; }
+            if (!isMickeyMousePort) {
+                return {};
+            }
             
             return {
                 'mickey-mouse': true,
@@ -357,7 +358,7 @@ export default {
                 this.openContainerNode();
             } else if (this.allowedActions?.canOpenDialog) {
                 // open node dialog if one is present
-                this.openDialog(this.id);
+                this.openNodeConfiguration(this.id);
             }
         },
 
@@ -400,7 +401,9 @@ export default {
          * We use the contextmenu event as click with button = 2 was not reliable.
          */
         onContextMenu(e) {
-            if (this.isDragging) { return; }
+            if (this.isDragging) {
+                return;
+            }
             
             if (e.ctrlKey || e.metaKey) {
                 // user tries to open component or metanode
@@ -421,9 +424,15 @@ export default {
         isOutsideConnectorHoverRegion(x, y, targetPortDirection) {
             const upperBound = -20;
 
-            if (y < upperBound) { return true; }
-            if (targetPortDirection === 'in' && x > this.$shapes.nodeSize) { return true; }
-            if (targetPortDirection === 'out' && x < 0) { return true; }
+            if (y < upperBound) {
+                return true;
+            }
+            if (targetPortDirection === 'in' && x > this.$shapes.nodeSize) {
+                return true;
+            }
+            if (targetPortDirection === 'out' && x < 0) {
+                return true;
+            }
 
             return false;
         },

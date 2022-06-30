@@ -43,7 +43,9 @@ export const snapConnector = {
          */
         snapPartitions() {
             let makePartitions = positions => {
-                if (!positions.length) { return null; }
+                if (!positions.length) {
+                    return null;
+                }
 
                 let partitions = [];
                 for (let i = 0; i < positions.length - 1; i++) {
@@ -119,7 +121,9 @@ export const snapConnector = {
             let portPositions = this.portPositions[targetPortDirection];
 
             // no port, no snap, assumes partitions don't change while dragging connector
-            if (!snapPartitions) { return; }
+            if (!snapPartitions) {
+                return;
+            }
 
             // find index of port to snap to
             let partitionIndex = snapPartitions.findIndex(boundary => relativeY <= boundary);

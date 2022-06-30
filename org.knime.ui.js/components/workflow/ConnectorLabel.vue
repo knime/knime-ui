@@ -26,7 +26,8 @@ export default {
         };
     },
     computed: {
-        ...mapState('workflow', ['deltaMovePosition', 'isDragging']),
+        ...mapState('workflow', ['movePreviewDelta']),
+        ...mapGetters('workflow', ['isDragging']),
         ...mapGetters('selection', ['isNodeSelected']),
         /**
          * Find the position between two connectors and add some offset to let the label
@@ -37,7 +38,7 @@ export default {
             // Calculates the middle point and subtracts half of the length of the text element
             let offset = { x: 0, y: 0 };
             if (this.isDragging && (this.isNodeSelected(this.sourceNode) || this.isNodeSelected(this.destNode))) {
-                offset = this.deltaMovePosition;
+                offset = this.movePreviewDelta;
             }
 
             return [

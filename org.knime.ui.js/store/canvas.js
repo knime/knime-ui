@@ -46,7 +46,9 @@ export const mutations = {
         don't restore containerSize, it might have changed
     */
     restoreState(state, savedState) {
-        if (!savedState) { return; }
+        if (!savedState) {
+            return;
+        }
         let { zoomFactor, scrollLeft, scrollTop } = savedState;
         state.zoomFactor = zoomFactor;
 
