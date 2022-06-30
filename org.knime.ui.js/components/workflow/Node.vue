@@ -452,6 +452,7 @@ export default {
             }, 1000);
         },
         selectPort(port, type) {
+            // skip hidden variable ports on components (mickey mouse) or allow for all metanode ports
             const canSelectPort = (this.kind === 'component' && port.index !== 0) || this.kind === 'metanode';
 
             this.selectedPort = this.selectedPort === `${this.id}-${type}-${port.index}` || !canSelectPort
@@ -587,7 +588,7 @@ export default {
         :port="port"
         :node-id="id"
         :targeted="targetPort && targetPort.side === 'in' && targetPort.index === port.index"
-        :is-selected="selectedPort === `inport-${port.index}`"
+        :is-selected="selectedPort === `${id}-inport-${port.index}`"
         direction="in"
         @select="selectPort(port, 'inport')"
         @delete="deletePort(port, 'input')"

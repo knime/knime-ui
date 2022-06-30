@@ -27,7 +27,7 @@ const mockPort = ({ index, connectedVia = [] }) => ({
     inactive: false,
     optional: false,
     index,
-    type: 'other',
+    typeId: 'other',
     connectedVia
 });
 
@@ -97,7 +97,8 @@ describe('Node', () => {
                     cancelNodeExecution: jest.fn(),
                     resetNodes: jest.fn(),
                     openNodeConfiguration: jest.fn(),
-                    openView: jest.fn()
+                    openView: jest.fn(),
+                    removeContainerNodePort: jest.fn()
                 },
                 getters: {
                     isWritable: () => true,
@@ -877,108 +878,223 @@ describe('Node', () => {
         });
     });
 
-    describe('Add-Port Placeholder', () => {
-        test('native node has no placeholders', () => {
-            propsData = { ...nativeNode };
-            doMount();
+    describe('Dynamic ports', () => {
+        describe('Adding ports', () => {
+            test('native node has no placeholders', () => {
+                propsData = { ...nativeNode };
+                doMount();
 
-            expect(wrapper.findComponent(AddPortPlaceholder).exists()).toBe(false);
+                expect(wrapper.findComponent(AddPortPlaceholder).exists()).toBe(false);
+            });
+
+            describe.each([componentNode, metaNode])('Container Nodes', (containerNode) => {
+                beforeEach(() => {
+                    propsData = { ...containerNode };
+                });
+
+                test('render, setup, props', () => {
+                    doMount();
+
+                    let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
+                
+                    expect(addPortPlaceholders.at(0).props('nodeId')).toBe('root:1');
+                    expect(addPortPlaceholders.at(1).props('nodeId')).toBe('root:1');
+
+                    expect(addPortPlaceholders.at(0).classes()).toContain('add-port');
+                    expect(addPortPlaceholders.at(1).classes()).toContain('add-port');
+
+                    expect(addPortPlaceholders.at(0).props('side')).toBe('input');
+                    expect(addPortPlaceholders.at(1).props('side')).toBe('output');
+                
+                    expect(addPortPlaceholders.at(0).props('position')).toStrictEqual([-4.5, 37]);
+                    expect(addPortPlaceholders.at(1).props('position')).toStrictEqual([36.5, 37]);
+                });
+
+                test('show and hide with port type menu', () => {
+                    doMount();
+                
+                    let addPortPlaceholder = wrapper.findComponent(AddPortPlaceholder);
+                    expect(addPortPlaceholder.element.style.opacity).toBe('');
+                
+                    addPortPlaceholder.trigger('open-port-type-menu');
+                    expect(addPortPlaceholder.element.style.opacity).toBe('1');
+                
+                    // wait for 1000ms
+                    jest.useFakeTimers();
+                    addPortPlaceholder.trigger('close-port-type-menu');
+                    jest.runAllTimers();
+
+                    expect(addPortPlaceholder.element.style.opacity).toBe('');
+                });
+
+                test('opening menu again aborts delayed fade out', () => {
+                    doMount();
+                
+                    let addPortPlaceholder = wrapper.findComponent(AddPortPlaceholder);
+                
+                    jest.useFakeTimers();
+                    addPortPlaceholder.trigger('open-port-type-menu');
+                    addPortPlaceholder.trigger('close-port-type-menu');
+                    addPortPlaceholder.trigger('open-port-type-menu');
+                    jest.runAllTimers();
+                
+                    expect(addPortPlaceholder.element.style.opacity).toBe('1');
+                });
+
+                test('sets hover state', async () => {
+                    doMount();
+                    let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
+                
+                    expect(addPortPlaceholders.at(0).classes()).not.toContain('node-hover');
+                    expect(addPortPlaceholders.at(1).classes()).not.toContain('node-hover');
+                
+                    wrapper.setData({ hover: true });
+                    await Vue.nextTick();
+
+                    expect(addPortPlaceholders.at(0).classes()).toContain('node-hover');
+                    expect(addPortPlaceholders.at(1).classes()).toContain('node-hover');
+                });
+
+                test('sets connector-hover state', async () => {
+                    doMount();
+                    let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
+                
+                    expect(addPortPlaceholders.at(0).classes()).not.toContain('connector-hover');
+                    expect(addPortPlaceholders.at(1).classes()).not.toContain('connector-hover');
+                
+                    wrapper.setData({ connectorHover: true });
+                    await Vue.nextTick();
+
+                    expect(addPortPlaceholders.at(0).classes()).toContain('connector-hover');
+                    expect(addPortPlaceholders.at(1).classes()).toContain('connector-hover');
+                });
+
+                test('sets selected state', async () => {
+                    doMount();
+                    let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
+                
+                    expect(addPortPlaceholders.at(0).classes()).not.toContain('node-selected');
+                    expect(addPortPlaceholders.at(1).classes()).not.toContain('node-selected');
+                
+                    Vue.set($store.state.selection, 'singleSelectedNode', { id: 'root:1' });
+                    await Vue.nextTick();
+
+                    expect(addPortPlaceholders.at(0).classes()).toContain('node-selected');
+                    expect(addPortPlaceholders.at(1).classes()).toContain('node-selected');
+                });
+            });
+        });
+    
+        describe('Selecting ports', () => {
+            const emitSelection = (_wrapper, portIndex) => {
+                _wrapper.findAllComponents(DraggablePortWithTooltip).at(portIndex).vm.$emit('select');
+                return _wrapper.vm.$nextTick();
+            };
+
+            it.each([
+                ['inports', 1],
+                ['outports', 3]
+            ])('should select %p', async (portType, portIndex) => {
+                propsData = { ...componentNode };
+                doMount();
+                
+                expect(
+                    wrapper.findAllComponents(DraggablePortWithTooltip).at(portIndex).props('isSelected')
+                ).toBe(false);
+                
+                await emitSelection(wrapper, portIndex);
+
+                expect(
+                    wrapper.findAllComponents(DraggablePortWithTooltip).at(portIndex).props('isSelected')
+                ).toBe(true);
+            });
+
+            it.each([
+                [0], // index 0 is 1st input port
+                [2] // index 2 is 1st output port
+            ])('should not select mickey mouse ports on components', async (portIndex) => {
+                propsData = { ...componentNode };
+                doMount();
+                
+                await emitSelection(wrapper, portIndex);
+
+                expect(
+                    wrapper.findAllComponents(DraggablePortWithTooltip).at(portIndex).props('isSelected')
+                ).toBe(false);
+            });
+
+            it('should not allow selecting ports of native nodes', async () => {
+                propsData = { ...nativeNode };
+                const portIndex = 1;
+                doMount();
+
+                await emitSelection(wrapper, portIndex);
+
+                expect(
+                    wrapper.findAllComponents(DraggablePortWithTooltip).at(portIndex).props('isSelected')
+                ).toBe(false);
+            });
+
+            it('should unselect port if clicked again after being already selected', async () => {
+                propsData = { ...componentNode };
+                const portIndex = 1;
+                doMount();
+                
+                await emitSelection(wrapper, portIndex);
+                
+                expect(
+                    wrapper.findAllComponents(DraggablePortWithTooltip).at(1).props('isSelected')
+                ).toBe(true);
+                    
+                await emitSelection(wrapper, portIndex);
+
+                expect(
+                    wrapper.findAllComponents(DraggablePortWithTooltip).at(1).props('isSelected')
+                ).toBe(false);
+            });
         });
 
-        describe.each([componentNode, metaNode])('Container Nodes', (containerNode) => {
-            beforeEach(() => {
-                propsData = { ...containerNode };
-            });
+        describe('Deleting ports', () => {
+            it.each([
+                ['input', 1],
+                ['output', 3]
+            ])('should dispatch a port delete action for an %p port', (portType, portComponentIndex) => {
+                propsData = { ...componentNode };
 
-            test('render, setup, props', () => {
+                const portIndex = 1; // skip the first port which is a mickeymouse port
+                const portProperty = portType === 'input' ? 'inPorts' : 'outPorts';
+                const port = componentNode[portProperty][portIndex];
                 doMount();
 
-                let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
-                
-                expect(addPortPlaceholders.at(0).props('nodeId')).toBe('root:1');
-                expect(addPortPlaceholders.at(1).props('nodeId')).toBe('root:1');
+                wrapper.findAllComponents(DraggablePortWithTooltip).at(portComponentIndex).vm.$emit('delete');
 
-                expect(addPortPlaceholders.at(0).classes()).toContain('add-port');
-                expect(addPortPlaceholders.at(1).classes()).toContain('add-port');
-
-                expect(addPortPlaceholders.at(0).props('side')).toBe('input');
-                expect(addPortPlaceholders.at(1).props('side')).toBe('output');
-                
-                expect(addPortPlaceholders.at(0).props('position')).toStrictEqual([-4.5, 37]);
-                expect(addPortPlaceholders.at(1).props('position')).toStrictEqual([36.5, 37]);
+                const { workflow: { actions: { removeContainerNodePort } } } = storeConfig;
+                expect(removeContainerNodePort).toHaveBeenCalledWith(
+                    expect.any(Object), // Vuex context
+                    expect.objectContaining({
+                        nodeId: componentNode.id,
+                        side: portType,
+                        typeId: port.typeId,
+                        portIndex
+                    })
+                );
             });
 
-            test('show and hide with port type menu', () => {
+            it('should unselect the port', async () => {
+                propsData = { ...componentNode };
                 doMount();
-                
-                let addPortPlaceholder = wrapper.findComponent(AddPortPlaceholder);
-                expect(addPortPlaceholder.element.style.opacity).toBe('');
-                
-                addPortPlaceholder.trigger('open-port-type-menu');
-                expect(addPortPlaceholder.element.style.opacity).toBe('1');
-                
-                // wait for 1000ms
-                jest.useFakeTimers();
-                addPortPlaceholder.trigger('close-port-type-menu');
-                jest.runAllTimers();
 
-                expect(addPortPlaceholder.element.style.opacity).toBe('');
-            });
+                // select first
+                wrapper.findAllComponents(DraggablePortWithTooltip).at(1).vm.$emit('select');
+                await wrapper.vm.$nextTick();
+                
+                // then delete
+                wrapper.findAllComponents(DraggablePortWithTooltip).at(1).vm.$emit('delete');
+                await wrapper.vm.$nextTick();
 
-            test('opening menu again aborts delayed fade out', () => {
-                doMount();
-                
-                let addPortPlaceholder = wrapper.findComponent(AddPortPlaceholder);
-                
-                jest.useFakeTimers();
-                addPortPlaceholder.trigger('open-port-type-menu');
-                addPortPlaceholder.trigger('close-port-type-menu');
-                addPortPlaceholder.trigger('open-port-type-menu');
-                jest.runAllTimers();
-                
-                expect(addPortPlaceholder.element.style.opacity).toBe('1');
-            });
-
-            test('sets hover state', async () => {
-                doMount();
-                let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
-                
-                expect(addPortPlaceholders.at(0).classes()).not.toContain('node-hover');
-                expect(addPortPlaceholders.at(1).classes()).not.toContain('node-hover');
-                
-                wrapper.setData({ hover: true });
-                await Vue.nextTick();
-
-                expect(addPortPlaceholders.at(0).classes()).toContain('node-hover');
-                expect(addPortPlaceholders.at(1).classes()).toContain('node-hover');
-            });
-
-            test('sets connector-hover state', async () => {
-                doMount();
-                let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
-                
-                expect(addPortPlaceholders.at(0).classes()).not.toContain('connector-hover');
-                expect(addPortPlaceholders.at(1).classes()).not.toContain('connector-hover');
-                
-                wrapper.setData({ connectorHover: true });
-                await Vue.nextTick();
-
-                expect(addPortPlaceholders.at(0).classes()).toContain('connector-hover');
-                expect(addPortPlaceholders.at(1).classes()).toContain('connector-hover');
-            });
-
-            test('sets selected state', async () => {
-                doMount();
-                let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
-                
-                expect(addPortPlaceholders.at(0).classes()).not.toContain('node-selected');
-                expect(addPortPlaceholders.at(1).classes()).not.toContain('node-selected');
-                
-                Vue.set($store.state.selection, 'singleSelectedNode', { id: 'root:1' });
-                await Vue.nextTick();
-
-                expect(addPortPlaceholders.at(0).classes()).toContain('node-selected');
-                expect(addPortPlaceholders.at(1).classes()).toContain('node-selected');
+                expect(
+                    wrapper.findAllComponents(DraggablePortWithTooltip).at(1).props('isSelected')
+                ).toBe(false);
             });
         });
     });

@@ -102,7 +102,7 @@ describe('MetaNodePortBar.vue', () => {
 
             expect(ports.length).toBe(2);
 
-            expect(port0.props()).toStrictEqual({
+            expect(port0.props()).toStrictEqual(expect.objectContaining({
                 port: propsData.ports[0],
                 direction: type === 'in' ? 'out' : 'in',
                 nodeId: 'metanode:1',
@@ -111,9 +111,9 @@ describe('MetaNodePortBar.vue', () => {
                     549 / (ports.length + 1)
                 ],
                 targeted: null
-            });
+            }));
 
-            expect(port1.props()).toStrictEqual({
+            expect(port1.props()).toStrictEqual(expect.objectContaining({
                 port: propsData.ports[1],
                 direction: type === 'in' ? 'out' : 'in',
                 nodeId: 'metanode:1',
@@ -122,7 +122,7 @@ describe('MetaNodePortBar.vue', () => {
                     2 * 549 / (ports.length + 1)
                 ],
                 targeted: null
-            });
+            }));
         });
 
         it('sets target port', async () => {

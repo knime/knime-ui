@@ -156,5 +156,29 @@ describe('Port', () => {
             expect(d).not.toContain('h');
             expect(transform).toBeUndefined();
         });
+        
+        describe('Selection', () => {
+            it('should display the port-outline when selected', async () => {
+                doShallowMount();
+                await wrapper.setProps({ isSelected: true });
+
+                expect(wrapper.find('.port-outline').exists()).toBe(true);
+            });
+
+            it('should emit a select event', () => {
+                doShallowMount();
+                
+                wrapper.find('.port').trigger('click');
+                expect(wrapper.emitted('select')).toBeDefined();
+            });
+
+            it('should emit a select event when clicking on the port-outline', async () => {
+                doShallowMount();
+                await wrapper.setProps({ isSelected: true });
+                
+                wrapper.find('.port-outline').trigger('click');
+                expect(wrapper.emitted('select')).toBeDefined();
+            });
+        });
     });
 });

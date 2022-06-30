@@ -81,7 +81,6 @@ export default {
 
         /* ======== Drag Connector ======== */
         onPointerDown(e) {
-            console.log('POINTER DOWN', e);
             if (!this.isWritable || e.button !== 0 || e.shiftKey || e.ctrlKey) {
                 return;
             }
@@ -155,7 +154,6 @@ export default {
             }
         },
         onLostPointerCapture(e) {
-            console.log('LOST POINTER CAPTURE', e);
             this.dragConnector = null;
             if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
                 this.lastHitTarget.element.dispatchEvent(new CustomEvent('connector-leave', { bubbles: true }));
@@ -164,7 +162,6 @@ export default {
             this.didMove = false;
         },
         onPointerMove: throttle(function (e) {
-            console.log('MOVE');
             /* eslint-disable no-invalid-this */
             if (!this.dragConnector) {
                 return;
@@ -243,8 +240,6 @@ export default {
             /* eslint-enable no-invalid-this */
         }),
         onClick(e) {
-            console.log('CLICK', e);
-            console.log('this.didMove', this.didMove);
             if (!this.didMove) {
                 this.dragConnector = null;
                 this.$emit('select', this.port);

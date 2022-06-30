@@ -225,6 +225,7 @@ export const addContainerNodePort = ({
  * @param { String } cfg.workflowId
  * @param { String } cfg.nodeId
  * @param { String } cfg.portType
+ * @param { Number } cfg.portIndex
  * @param { 'input' | 'output' } cfg.side
  * @returns { Promise }
  */

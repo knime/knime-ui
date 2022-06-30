@@ -208,9 +208,6 @@ export const actions = {
     },
 
     removeContainerNodePort({ state, getters }, { nodeId, side, typeId, portIndex }) {
-        // console.log('now', nodeId);
-        // console.log('now', side);
-        // console.log('now', typeId);
         let { activeWorkflow: { projectId } } = state;
         let { activeWorkflowId: workflowId } = getters;
     

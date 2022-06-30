@@ -26,9 +26,7 @@ export default {
         }
     },
     computed: {
-        ...mapState('application', {
-            portTypes: 'availablePortTypes'
-        }),
+        ...mapState('application', { portTypes: 'availablePortTypes' }),
         portKind() {
             // port kind has to be fetched from port type map
             return this.portTypes[this.port.typeId].kind;
@@ -153,13 +151,13 @@ export default {
 <style lang="postcss" scoped>
 .port {
   & .hover-area {
-    /* pointer-events: fill; */
+    pointer-events: fill;
     fill: none;
     stroke: none;
   }
 
   & .scale {
-    /* pointer-events: none; */
+    pointer-events: none;
     transition: transform 0.1s linear;
   }
 

@@ -10,6 +10,8 @@ import Port from '~/components/workflow/Port';
 import Connector from '~/components/workflow/Connector';
 import Vue from 'vue';
 import { circleDetection } from '~/util/compatibleConnections';
+import ActionButton from '~/components/workflow/ActionButton';
+
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {
@@ -367,6 +369,19 @@ describe('DraggablePortWithTooltip', () => {
                 expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([2, 2]);
             });
 
+            test('moving does not select port', () => {
+                startDragging([0, 0]);
+
+                dragAboveTarget(null, [2, 2]);
+
+                dropOnTarget();
+
+                // mimic a click event being sent along with the pointer(down/up) events
+                wrapper.findComponent(PortWithTooltip).vm.$emit('select');
+
+                expect(wrapper.emitted('select')).toBeUndefined();
+            });
+
             test('move onto element', () => {
                 startDragging([0, 0]);
 
@@ -530,6 +545,44 @@ describe('DraggablePortWithTooltip', () => {
 
             dropOnTarget();
             expect(hitTarget._connectorDropEvent).toBeFalsy();
+        });
+    });
+
+    describe('Port selection and deletion', () => {
+        it('should emit a port selection event', () => {
+            doShallowMount();
+
+            wrapper.findComponent(PortWithTooltip).vm.$emit('select');
+            expect(wrapper.emitted('select')[0][0]).toBe(propsData.port);
+        });
+
+        it('should render the delete action button when the port is selected', async () => {
+            doShallowMount();
+
+            expect(wrapper.findComponent(ActionButton).exists()).toBe(false);
+            
+            await wrapper.setProps({ isSelected: true });
+
+            expect(wrapper.findComponent(ActionButton).exists()).toBe(true);
+        });
+        
+        it('should emit a delete port event when the action button is clicked', async () => {
+            doShallowMount();
+
+            await wrapper.setProps({ isSelected: true });
+
+            wrapper.findComponent(ActionButton).vm.$emit('click');
+            expect(wrapper.emitted('delete')[0][0]).toBe(propsData.port);
+        });
+
+        it('should disable the delete action button if the port cannot be removed', async () => {
+            doShallowMount();
+
+            await wrapper.setProps({ isSelected: true, canRemovePort: false });
+
+            const actionButton = wrapper.findComponent(ActionButton);
+
+            expect(actionButton.props('disabled')).toBe(true);
         });
     });
 });
