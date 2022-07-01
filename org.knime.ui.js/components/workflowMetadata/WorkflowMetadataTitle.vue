@@ -11,7 +11,7 @@ export default {
     props: {
         title: {
             type: String,
-            required: true
+            default: null
         },
         nodePreview: {
             type: Object,
@@ -46,7 +46,7 @@ h2 {
   margin: 0;
   font-weight: 400;
   font-size: 18px;
-  line-height: 36px;
+  line-height: 36px; /* TODO: NXT-1164 maybe make line height smaller */
 }
 
 hr {

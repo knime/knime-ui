@@ -76,7 +76,6 @@ describe('WorkflowMetadata.vue', () => {
             // show placeholder parents
             expect(wrapper.find('.last-updated').exists()).toBe(true);
             expect(wrapper.find('.tags').exists()).toBe(true);
-            expect(wrapper.findComponent(ScrollViewContainer).exists()).toBe(true);
             expect(wrapper.findComponent(ExternalResourcesList).exists()).toBe(true);
     
             // show placeholder tags
@@ -120,26 +119,7 @@ describe('WorkflowMetadata.vue', () => {
             expect(tags.length).toBe(1);
             expect(tags.at(0).text()).toBe('tag1');
     
-            expect(wrapper.findComponent(NodePreview).props('type')).toBe('nodePreviewData');
             expect(wrapper.findComponent(NodeFeatureList).props('inPorts')).toEqual([{ name: 'Port 1' }]);
-        });
-
-        it('adds class if nodePreview exists', () => {
-            doMount({
-                info: { containerType: 'project' },
-                projectMetadata: {
-                    title: 'Title',
-                    lastEdit: '2000-01-01T00:00Z',
-                    description: 'Description',
-                    links: [{ text: 'link1' }],
-                    tags: ['tag1'],
-                    nodePreview: { type: 'nodePreviewData' },
-                    nodeFeatures: { emptyText: 'nodeFeatureData' }
-                }
-            });
-    
-            const header = wrapper.find('h2');
-            expect(header.classes('with-node-preview')).toBe(true);
         });
     });
 
@@ -164,6 +144,24 @@ describe('WorkflowMetadata.vue', () => {
             expect(wrapper.findComponent(WorkflowMetadataTitle).findComponent(NodePreview).exists()).toBe(true);
             expect(wrapper.findComponent(WorkflowMetadataTitle).text()).toMatch('name');
             expect(wrapper.findComponent(WorkflowMetadataDescription).text()).toMatch('description');
+        });
+
+        it('adds class if nodePreview exists', () => {
+            doMount({
+                info: { containerType: 'component' },
+                projectMetadata: {
+                    title: 'Title',
+                    lastEdit: '2000-01-01T00:00Z',
+                    description: 'Description',
+                    links: [{ text: 'link1' }],
+                    tags: ['tag1'],
+                    nodePreview: { type: 'nodePreviewData' },
+                    nodeFeatures: { emptyText: 'nodeFeatureData' }
+                }
+            });
+    
+            const header = wrapper.find('h2');
+            expect(header.classes('with-node-preview')).toBe(true);
         });
 
         it('removes placeholders for components', () => {

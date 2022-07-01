@@ -14,12 +14,12 @@ export default {
 </script>
 
 <template>
-  <span
+  <div
     class="placeholder"
     :class="{ padded }"
   >
     {{ text }}
-  </span>
+  </div>
 </template>
 
 <style lang="postcss" scoped>

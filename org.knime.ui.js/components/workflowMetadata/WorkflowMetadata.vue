@@ -2,13 +2,13 @@
 import { mapState } from 'vuex';
 
 import { mapPortTypes } from '~/util/portDataMapper';
+import ExternalResourcesList from '~/components/common/ExternalResourcesList';
 
 import WorkflowMetadataTitle from './WorkflowMetadataTitle.vue';
 import WorkflowMetadataLastEdit from './WorkflowMetadataLastEdit.vue';
 import WorkflowMetadataDescription from './WorkflowMetadataDescription.vue';
 import WorkflowMetadataNodeFeatures from './WorkflowMetadataNodeFeatures.vue';
 import WorkflowMetadataTags from './WorkflowMetadataTags.vue';
-import ExternalResourcesList from '~/components/common/ExternalResourcesList';
 
 /** Displays metadata attached to a root-level workflow */
 export default {
@@ -18,13 +18,10 @@ export default {
         WorkflowMetadataDescription,
         WorkflowMetadataTags,
 
-        // TODO: Merge with Node Description Metadata
+        // TODO: NXT-1164 Merge with Node Description Metadata
         WorkflowMetadataNodeFeatures,
-
-        // TODO: Put this into metadata folder
+        // TODO: NXT-1164 Put this into metadata folder
         ExternalResourcesList
-
-        // TODO: styling margin
     },
     computed: {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
@@ -141,7 +138,8 @@ export default {
 
 <style lang="postcss" scoped>
 .metadata {
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   height: 100%;
   padding: 8px 20px 20px;
   font-family: "Roboto Condensed", sans-serif;
