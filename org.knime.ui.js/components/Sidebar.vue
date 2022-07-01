@@ -31,12 +31,7 @@ export default {
         }
     },
     methods: {
-        ...mapActions('panel', [
-            'setWorkflowMetaActive',
-            'setNodeRepositoryActive',
-            'close',
-            'toggleExpanded'
-        ]),
+        ...mapActions('panel', ['setWorkflowMetaActive', 'setNodeRepositoryActive', 'close', 'toggleExpanded']),
         ...mapActions('nodeRepository', ['closeDescriptionPanel']),
         clickItem(alreadyActive, setActive) {
             if (alreadyActive && this.expanded) {
@@ -105,10 +100,8 @@ export default {
 
 .sidebar-wrapper {
   display: flex;
-  height: calc(
-    100vh -
-    ((var(--header-height-shape) + var(--toolbar-height-shape)) * 1px)
-  ) !important;
+  height: 100%;
+  overflow: auto;
 }
 
 nav {

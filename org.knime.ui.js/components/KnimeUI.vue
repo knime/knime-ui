@@ -139,9 +139,10 @@ export default {
 
   display: grid;
   grid-template-columns: min-content auto;
-  grid-template-rows: min-content auto;
+  grid-template-rows: min-content min-content auto;
   grid-template-areas:
     "header header"
+    "toolbar toolbar"
     "sidebar workflow";
   height: 100vh;
   background: var(--knime-white);
@@ -155,15 +156,13 @@ export default {
 
 #sidebar {
   grid-area: sidebar;
-  height: 100%;
 }
 
 #toolbar {
-  grid-area: header;
-  height: calc(var(--toolbar-height-shape) * 1px);
+  grid-area: toolbar;
+  height: 50px;
   flex: 0 0 auto;
   padding: 10px;
-  margin-top: calc(var(--header-height-shape) * 1px);
   background-color: var(--knime-porcelain);
   border-bottom: 1px solid var(--knime-silver-sand);
 }

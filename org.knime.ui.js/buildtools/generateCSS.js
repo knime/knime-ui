@@ -17,9 +17,7 @@ const shapeNames = [
     'nodeNamePadding',
     'nodeNameFontSize',
     'nodeNameLineHeight',
-    'nodeNameMaxLines',
-    'headerHeight',
-    'toolbarHeight'
+    'nodeNameMaxLines'
 ];
 // --
 
