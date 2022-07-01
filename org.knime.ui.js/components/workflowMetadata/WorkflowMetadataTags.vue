@@ -8,31 +8,20 @@ export default {
         TagList
     },
     props: {
-        workflowData: {
-            type: Object,
-            required: true
-        }
-    },
-    computed: {
-        isComponent() {
-            return this.workflowData?.info?.containerType === 'component';
-        },
-        tags() {
-            return this.workflowData.projectMetadata?.tags;
+        tags: {
+            type: Array,
+            default: () => []
         }
     }
 };
 </script>
 
 <template>
-  <div
-    v-if="!isComponent"
-    class="tags"
-  >
+  <div class="tags">
     <h2>Tags</h2>
     <hr>
     <TagList
-      v-if="tags && tags.length"
+      v-if="tags.length"
       :tags="tags"
     />
     <MetadataPlaceholder

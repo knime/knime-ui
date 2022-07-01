@@ -1,39 +1,14 @@
 <script>
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
-import { mapPortTypes } from '~/util/portDataMapper';
 
 export default {
     components: {
         NodeFeatureList
     },
     props: {
-        workflowData: {
+        nodeFeatures: {
             type: Object,
             required: true
-        },
-        availablePortTypes: {
-            type: Object,
-            required: true
-        }
-    },
-    computed: {
-        nodeFeatures() {
-            const metadataMapper = {
-                project: () => this.workflowData.projectMetadata?.nodeFeatures,
-                component: () => {
-                    const {
-                        componentMetadata: { inPorts, outPorts, options, views } = {}
-                    } = this.workflowData;
-                    
-                    const mappedInPorts = mapPortTypes(inPorts, this.availablePortTypes);
-                    const mappedOutPorts = mapPortTypes(outPorts, this.availablePortTypes);
-
-                    return { inPorts: mappedInPorts, outPorts: mappedOutPorts, views, options };
-                }
-            };
-            const defaultHandler = () => null;
-
-            return (metadataMapper[this.workflowData?.info?.containerType] || defaultHandler)();
         }
     }
 };
@@ -41,7 +16,6 @@ export default {
 
 <template>
   <NodeFeatureList
-    v-if="nodeFeatures"
     :in-ports="nodeFeatures.inPorts"
     :dyn-in-ports="nodeFeatures.dynInPorts"
     :out-ports="nodeFeatures.outPorts"

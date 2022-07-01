@@ -1,5 +1,4 @@
 <script>
-import { mapPortTypes } from '~/util/portDataMapper';
 import MetadataPlaceholder from './MetadataPlaceholder.vue';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 
@@ -10,55 +9,13 @@ export default {
         NodePreview
     },
     props: {
-        workflowData: {
-            type: Object,
+        title: {
+            type: String,
             required: true
         },
-        availablePortTypes: {
+        nodePreview: {
             type: Object,
-            required: true
-        }
-    },
-
-    computed: {
-        containerType() {
-            return this.workflowData?.info?.containerType;
-        },
-        title() {
-            const metadataMapper = {
-                project: () => this.workflowData.projectMetadata?.title || this.workflowData?.info?.name,
-                component: () => {
-                    const { componentMetadata: { name } = {} } = this.workflowData;
-                    
-                    return name;
-                }
-            };
-            const defaultHandler = () => null;
-
-            return (metadataMapper[this.containerType] || defaultHandler)();
-        },
-        nodePreview() {
-            const metadataMapper = {
-                project: () => this.workflowData.projectMetadata?.nodePreview,
-                component: () => {
-                    const { componentMetadata: { inPorts, outPorts, type, icon } = {} } = this.workflowData;
-                    
-                    const mappedInPorts = mapPortTypes(inPorts, this.availablePortTypes);
-                    const mappedOutPorts = mapPortTypes(outPorts, this.availablePortTypes);
-
-                    return {
-                        inPorts: mappedInPorts,
-                        outPorts: mappedOutPorts,
-                        icon,
-                        type,
-                        isComponent: true,
-                        hasDynPorts: false
-                    };
-                }
-            };
-            const defaultHandler = () => null;
-
-            return (metadataMapper[this.containerType] || defaultHandler)();
+            default: null
         }
     }
 };

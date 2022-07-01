@@ -4,17 +4,9 @@ import { formatDateString } from '~/webapps-common/util/format';
 
 export default {
     props: {
-        workflowData: {
-            type: Object,
-            required: true
-        }
-    },
-    computed: {
-        isComponent() {
-            return this.workflowData?.info?.containerType === 'component';
-        },
-        lastEdit() {
-            return this.workflowData.projectMetadata?.lastEdit;
+        lastEdit: {
+            type: String,
+            default: null
         }
     },
     methods: {
@@ -24,10 +16,7 @@ export default {
 </script>
 
 <template>
-  <div
-    v-if="!isComponent"
-    class="last-updated"
-  >
+  <div class="last-updated">
     <span v-if="lastEdit">Last update: {{ formatDateString(lastEdit) }}</span>
     <span v-else>Last update: no update yet</span>
   </div>

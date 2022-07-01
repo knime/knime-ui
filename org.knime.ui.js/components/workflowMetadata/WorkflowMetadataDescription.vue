@@ -8,24 +8,9 @@ export default {
         MetadataPlaceholder
     },
     props: {
-        workflowData: {
-            type: Object,
-            required: true
-        }
-    },
-    computed: {
-        description() {
-            const metadataMapper = {
-                project: () => this.workflowData.projectMetadata?.description,
-                component: () => {
-                    const { componentMetadata: { description } = {} } = this.workflowData;
-                    
-                    return description;
-                }
-            };
-            const defaultHandler = () => null;
-
-            return (metadataMapper[this.workflowData?.info?.containerType] || defaultHandler)();
+        description: {
+            type: String,
+            default: null
         }
     }
 };

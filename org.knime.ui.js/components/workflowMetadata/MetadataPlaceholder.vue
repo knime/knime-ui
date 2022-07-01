@@ -28,7 +28,7 @@ export default {
   color: var(--knime-dove-gray);
 
   &.padded {
-    padding-top: 10px;
+    margin-top: 10px;
   }
 }
 </style>
