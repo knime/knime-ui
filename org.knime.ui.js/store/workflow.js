@@ -16,6 +16,25 @@ import * as $shapes from '~/style/shapes';
  * The technical term for the latter in this application is "project".
  */
 
+/*
+// AP
+- load to workflow store from api
+
+store.dispatch('workflow')
+store.dispatch('workflow/editor')
+store.dispatch('workflow/AP_interactions')
+store.dispatch('workflow/selection')
+store.dispatch('workflow/execution')
+AP_Interactions
+
+// Viewing on Hub (Workflow Renderer)
+- load to workflow store from static resource
+- disable all interaction
+store.dispatch('workflow')
+store.dispatch('workflow/selection')
+WorkflowCanvas
+*/
+
 export const state = () => ({
     ...workflowExecution.state,
     ...workflowEditor.state,

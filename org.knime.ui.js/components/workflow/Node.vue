@@ -3,18 +3,18 @@
 // TODO: NXT-1069 split up this file
 
 import { mapActions, mapState, mapGetters } from 'vuex';
-import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
+
+import NodePorts from './NodePorts';
 import NodeState from '~/components/workflow/NodeState';
 import NodeTorso from '~/components/workflow/NodeTorso';
 import NodeAnnotation from '~/components/workflow/NodeAnnotation';
 import LinkDecorator from '~/components/workflow/LinkDecorator';
 import StreamingDecorator from '~/components/workflow/StreamingDecorator';
 import LoopDecorator from '~/components/workflow/LoopDecorator';
-import portShift, { placeholderPosition, portPositions } from '~/util/portShift';
 import NodeActionBar from '~/components/workflow/NodeActionBar';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
 import NodeName from '~/components/workflow/NodeName';
-import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder';
+
 import { snapConnector } from '~/mixins';
 
 /**
@@ -22,14 +22,11 @@ import { snapConnector } from '~/mixins';
  * Must be embedded in an `<svg>` element.
  * Requires the `portal-vue` module.
  *
- * If node is hovered default Flow Variable Ports are faded-in.
- * If node is selected, it will be portalled and redrawn. This causes the default Flow Variable Ports to appear
- * instantly, which is desired.
+ * It needs to be the direct parent of <NodePorts> and is tightly coupled by direct access in both direction
  * */
 export default {
     components: {
         NodeActionBar,
-        DraggablePortWithTooltip,
         NodeAnnotation,
         NodeTorso,
         NodeState,
@@ -37,8 +34,8 @@ export default {
         StreamingDecorator,
         LoopDecorator,
         NodeName,
-        NodeSelectionPlane,
-        AddPortPlaceholder
+        NodePorts,
+        NodeSelectionPlane
     },
     mixins: [snapConnector],
     inheritAttrs: false,
@@ -191,6 +188,10 @@ export default {
                 return this.kind[0].toUpperCase() + this.kind.substring(1);
             }
         },
+        // provided as required by snapConnector mixin
+        portPositions() {
+            return this.$refs.nodePorts.portPositions;
+        },
         /**
          * Width of the node selection plane. It accounts not only for the node margins
          * but also for the width of the name as it changes
@@ -247,7 +248,7 @@ export default {
             }
             if (this.connectorHover || this.hover) {
                 // enlarge hover area to include all ports
-                let newBottom = Math.max(hoverBounds.bottom, this.portBarHeight);
+                let newBottom = Math.max(hoverBounds.bottom, this.$refs.nodePorts.portBarHeight);
                 hoverBounds.bottom = newBottom;
             }
 
@@ -257,38 +258,6 @@ export default {
                 width: hoverBounds.right - hoverBounds.left,
                 height: hoverBounds.bottom - hoverBounds.top
             };
-        },
-        /**
-         * @returns {object} the position of all inPorts and outPorts.
-         * The position for each port is an array with two coordinates [x, y].
-         * Format as required by snapConnector mixin
-         */
-        portPositions() {
-            return {
-                in: portPositions(
-                    { portCount: this.inPorts.length, isMetanode: this.kind === 'metanode' }
-                ),
-                out: portPositions(
-                    { portCount: this.outPorts.length, isMetanode: this.kind === 'metanode', isOutports: true }
-                )
-            };
-        },
-        addPortPlaceholderPositions() {
-            return {
-                in: placeholderPosition(
-                    { portCount: this.inPorts.length, isMetanode: this.kind === 'metanode' }
-                ),
-                out: placeholderPosition(
-                    { portCount: this.outPorts.length, isMetanode: this.kind === 'metanode', isOutport: true }
-                )
-            };
-        },
-        portBarHeight() {
-            let lastInPortY = this.portPositions.in[this.portPositions.in.length - 1]?.[1] || 0;
-            let lastOutPortY = this.portPositions.out[this.portPositions.out.length - 1]?.[1] || 0;
-
-            return Math.max(lastInPortY, lastOutPortY) + this.$shapes.portSize / 2 +
-                this.$shapes.nodeHoverPortBottomMargin;
         },
         isSelected() {
             return this.isNodeSelected(this.id);
@@ -323,7 +292,7 @@ export default {
     methods: {
         ...mapActions('workflow', ['openNodeConfiguration']),
         ...mapActions('selection', ['selectNode', 'deselectAllObjects', 'deselectNode']),
-        portShift,
+        
         onLeaveHoverArea(e) {
             if (this.$refs.actionbar?.$el?.contains(e.relatedTarget)) {
                 // Used to test for elements that are logically contained inside this node
@@ -336,22 +305,6 @@ export default {
             this.hover = false;
         },
 
-        // default flow variable ports (Mickey Mouse ears) are only shown if connected, selected, or on hover
-        portAnimationClasses(port) {
-            let isMickeyMousePort = this.kind !== 'metanode' && port.index === 0;
-
-            if (!isMickeyMousePort) {
-                return {};
-            }
-            
-            return {
-                'mickey-mouse': true,
-                'connector-hover': this.connectorHover,
-                'connected': port.connectedVia.length, // eslint-disable-line quote-props
-                'node-hover': this.hover
-            };
-        },
-        
         onLeftDoubleClick(e) {
             // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
             if (this.kind === 'metanode' || (this.kind === 'component' && (e.ctrlKey || e.metaKey))) {
@@ -436,20 +389,7 @@ export default {
 
             return false;
         },
-        onPortTypeMenuOpen(e) {
-            // show add-port button
-            e.target.style.opacity = 1;
-
-            // clear the close-timeout of this button if set
-            clearTimeout(e.target.closeTimeout);
-        },
-        onPortTypeMenuClose(e) {
-            // after closing the menu, keep the add-port button for 1s,
-            // then go back to styling by css
-            e.target.closeTimeout = setTimeout(() => {
-                e.target.style.opacity = null;
-            }, 1000);
-        },
+        
         // public
         setSelectionPreview(preview) {
             this.selectionPreview = preview === 'clear' ? null : preview;
@@ -562,54 +502,15 @@ export default {
         />
       </g>
 
-      <DraggablePortWithTooltip
-        v-for="port of inPorts"
-        :key="`inport-${port.index}`"
-        :class="['port', portAnimationClasses(port)]"
-        :relative-position="portPositions.in[port.index]"
-        :port="port"
+      <!-- Node Ports -->
+      <NodePorts
+        ref="nodePorts"
+        :is-metanode="kind === 'metanode'"
+        :in-ports="inPorts"
+        :out-ports="outPorts"
+        :target-port="targetPort"
+        :can-add-ports="isEditableContainerNode"
         :node-id="id"
-        :targeted="targetPort && targetPort.side === 'in' && targetPort.index === port.index"
-        direction="in"
-      />
-
-      <DraggablePortWithTooltip
-        v-for="port of outPorts"
-        :key="`outport-${port.index}`"
-        :class="['port', portAnimationClasses(port)]"
-        :relative-position="portPositions.out[port.index]"
-        :port="port"
-        :node-id="id"
-        :targeted="targetPort && targetPort.side === 'out' && targetPort.index === port.index"
-        direction="out"
-      />
-
-      <AddPortPlaceholder
-        v-if="isEditableContainerNode"
-        :node-id="id"
-        :position="addPortPlaceholderPositions.in"
-        :class="['add-port', {
-          'node-hover': hover,
-          'connector-hover': connectorHover,
-          'node-selected': isSingleSelected,
-        }]"
-        side="input"
-        @open-port-type-menu.native="onPortTypeMenuOpen($event)"
-        @close-port-type-menu.native="onPortTypeMenuClose($event)"
-      />
-
-      <AddPortPlaceholder
-        v-if="isEditableContainerNode"
-        :node-id="id"
-        :position="addPortPlaceholderPositions.out"
-        :class="['add-port', {
-          'node-hover': hover,
-          'connector-hover': connectorHover,
-          'node-selected': isSingleSelected,
-        }]"
-        side="output"
-        @open-port-type-menu.native="onPortTypeMenuOpen($event)"
-        @close-port-type-menu.native="onPortTypeMenuClose($event)"
       />
 
       <!-- Node name / title -->
@@ -641,59 +542,6 @@ export default {
 
 .connection-forbidden .hover-container {
   filter: grayscale(40%) opacity(50%);
-}
-
-.port {
-  transition: transform 120ms ease;
-
-  &.mickey-mouse {
-    /* TODO: NXT-1058 why is this transition no applied when the .connected class is removed? */
-    opacity: 0;
-    transition: opacity 0.5s 0.25s;
-
-    &.node-hover {
-      /* fade-in port with delay when node is hovered */
-      transition: opacity 0.5s 0.5s;
-      opacity: 1;
-    }
-
-    &:hover {
-      /* immediately show port on direct hover */
-
-      /* TODO: NXT-1058 why is "transition: opacity 0;" not working? */
-      transition: none;
-      opacity: 1;
-    }
-
-    &.connector-hover {
-      /* fade-in port without delay on connectorHover */
-      transition: opacity 0.25s;
-      opacity: 1;
-    }
-
-    &.connected {
-      /* fade in port when a connection has been created */
-      transition: opacity 0.25s;
-      opacity: 1;
-    }
-  }
-}
-
-.add-port {
-  opacity: 0;
-  transition:
-    opacity 0.2s,
-    transform 120ms ease-out;
-
-  &.node-selected,
-  &.node-hover {
-    opacity: 1;
-  }
-
-  &.connector-hover {
-    opacity: 1;
-    transition: opacity 0s;
-  }
 }
 
 .hover-area {
