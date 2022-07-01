@@ -99,7 +99,7 @@ export const mutations = {
 };
 
 export const actions = {
-    async getAllNodes({ commit, state }, append) {
+    async getAllNodes({ commit, state }, { append }) {
         if (state.nodesPerCategory.length === state.totalNumCategories) {
             return;
         }
@@ -133,7 +133,7 @@ export const actions = {
      *      should be cleared (for a new search).
      * @returns {Promise}
      */
-    async searchNodes({ commit, state, dispatch, getters, rootState }, append = false) {
+    async searchNodes({ commit, state, dispatch, getters, rootState }, { append = false } = {}) {
         // only do request if we search for something
         if (!getters.hasSearchParams) {
             // clear old results
@@ -222,7 +222,7 @@ export const actions = {
      * @returns {undefined}
      */
     async searchNodesNextPage({ dispatch }) {
-        await dispatch('searchNodes', true);
+        await dispatch('searchNodes', { append: true });
     },
 
     /**

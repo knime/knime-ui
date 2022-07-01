@@ -17,8 +17,7 @@ export default {
         ...mapMutations('nodeRepository', ['setCategoryScrollPosition']),
 
         onScrollBottom() {
-            // TODO: use named parameter for this flag
-            this.getAllNodes(true);
+            this.getAllNodes({ append: true });
         },
         onSaveScrollPosition(position) {
             this.setCategoryScrollPosition(position);

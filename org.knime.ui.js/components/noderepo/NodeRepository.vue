@@ -65,7 +65,7 @@ export default {
     },
     mounted() {
         if (!this.nodesPerCategory.length) {
-            this.$store.dispatch('nodeRepository/getAllNodes', false);
+            this.$store.dispatch('nodeRepository/getAllNodes', { append: false });
         }
     },
     methods: {
