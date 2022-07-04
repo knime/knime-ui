@@ -190,8 +190,7 @@ export default {
          * @return {boolean} if true action bar will be hidden
          */
         insideStreamingComponent() {
-            // TODO: NXT-740 isDragging in this condition doesn't fit the function name.
-            return typeof this.executionInfo?.streamable !== 'undefined' || this.isDragging;
+            return typeof this.executionInfo?.streamable !== 'undefined';
         },
         allNodeActions() {
             return {
@@ -262,19 +261,27 @@ export default {
 
             return this.selectionPreview === 'show' || this.isSelected;
         },
+        isEditable() {
+            return this.isWritable && !this.link;
+        },
         isEditableContainerNode() {
             // only non-linked metanodes and components have editable names
-            return this.isWritable && ['metanode', 'component'].includes(this.kind) && this.link === null;
+            return this.isEditable && ['metanode', 'component'].includes(this.kind);
         },
         actionBarPosition() {
             return {
                 x: this.position.x + this.$shapes.nodeSize / 2,
                 y: this.position.y - this.$shapes.nodeSelectionPadding[0] - this.nameDimensions.height
             };
+        },
+        // provided as required by snapConnector mixin
+        portPositions() {
+            return this.$refs.nodePorts.portPositions;
         }
     },
     methods: {
         ...mapActions('workflow', ['openNodeConfiguration']),
+        ...mapActions('application', ['switchWorkflow']),
         ...mapActions('selection', ['selectNode', 'deselectAllObjects', 'deselectNode']),
         
         onLeaveHoverArea(e) {
@@ -292,16 +299,13 @@ export default {
         onLeftDoubleClick(e) {
             // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
             if (this.kind === 'metanode' || (this.kind === 'component' && (e.ctrlKey || e.metaKey))) {
-                this.openContainerNode();
+                this.switchWorkflow({ workflowId: this.id, projectId: this.projectId });
             } else if (this.allowedActions?.canOpenDialog) {
                 // open node dialog if one is present
                 this.openNodeConfiguration(this.id);
             }
         },
 
-        openContainerNode() {
-            this.$store.dispatch('application/switchWorkflow', { workflowId: this.id, projectId: this.projectId });
-        },
         /*
          * Left-Click         => Select only this node
          * Left-Click & Shift => Add/Remove this node to/from selection
@@ -357,6 +361,12 @@ export default {
                 this.selectNode(this.id);
             }
         },
+        
+        // public
+        setSelectionPreview(preview) {
+            this.selectionPreview = preview === 'clear' ? null : preview;
+        },
+
         // implemented as required by snapConnector mixin
         isOutsideConnectorHoverRegion(x, y, targetPortDirection) {
             const upperBound = -20;
@@ -372,11 +382,6 @@ export default {
             }
 
             return false;
-        },
-        
-        // public
-        setSelectionPreview(preview) {
-            this.selectionPreview = preview === 'clear' ? null : preview;
         }
     }
 };
@@ -389,7 +394,7 @@ export default {
       to="node-actions"
     >
       <NodeActionBar
-        v-if="!insideStreamingComponent && hover"
+        v-if="!insideStreamingComponent && hover && !isDragging"
         ref="actionbar"
         v-bind="allNodeActions"
         :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y})`"
@@ -450,6 +455,7 @@ export default {
           :kind="kind"
           :icon="icon"
           :execution-state="state && state.executionState"
+          :class="['node-torso', { hover }]"
           :filter="hover && 'url(#node-torso-shadow)'"
           @dblclick.left.native="onLeftDoubleClick"
         />
@@ -465,7 +471,7 @@ export default {
         <NodeState
           v-if="kind !== 'metanode'"
           v-bind="state"
-          :filter="hover && 'url(#node-state-shadow)'"
+          :class="['node-state', { hover }]"
           :loop-status="loopInfo.status"
           :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`"
         />
@@ -505,17 +511,23 @@ export default {
   user-select: none;
 }
 
+
 .hover-container {
   transition: filter 0.4s;
-}
-
-.connection-forbidden .hover-container {
-  filter: grayscale(40%) opacity(50%);
 }
 
 .hover-area {
   fill: none;
   pointer-events: fill;
+}
+
+.node-torso:hover,
+.node-state:hover {
+  filter: 'url(#node-state-shadow)';
+}
+
+.connection-forbidden .hover-container {
+  filter: grayscale(40%) opacity(50%);
 }
 
 .annotation {
