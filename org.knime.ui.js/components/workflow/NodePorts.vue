@@ -6,7 +6,7 @@ import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder';
 /**
  * This component renders and handles interactions with a Node's Ports
  * It needs to be a direct child of <Node> and is tightly coupled by direct access in both direction
- * uses $parent .hover, .connectorHover, .isSingleConnected
+ * uses $parent .id, .hover, .connectorHover, .isSingleConnected
  */
 export default {
     components: {
@@ -27,11 +27,6 @@ export default {
          */
         outPorts: {
             type: Array,
-            required: true
-        },
-
-        nodeId: {
-            type: String,
             required: true
         },
 
@@ -130,7 +125,7 @@ export default {
       :class="['port', portAnimationClasses(port)]"
       :relative-position="portPositions.in[port.index]"
       :port="port"
-      :node-id="nodeId"
+      :node-id="$parent.id"
       :targeted="targetPort && targetPort.side === 'in' && targetPort.index === port.index"
       direction="in"
     />
@@ -141,7 +136,7 @@ export default {
       :class="['port', portAnimationClasses(port)]"
       :relative-position="portPositions.out[port.index]"
       :port="port"
-      :node-id="nodeId"
+      :node-id="$parent.id"
       :targeted="targetPort && targetPort.side === 'out' && targetPort.index === port.index"
       direction="out"
     />
