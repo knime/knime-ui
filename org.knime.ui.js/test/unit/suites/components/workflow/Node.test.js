@@ -104,7 +104,7 @@ describe('Node', () => {
             selection: {
                 getters: {
                     isNodeSelected: () => jest.fn(),
-                    singleSelectedNode: (state) => state.singleSelectedNode
+                    singleSelectedNode: jest.fn()
                 },
                 actions: {
                     deselectAllObjects: jest.fn(),
@@ -122,7 +122,8 @@ describe('Node', () => {
         NodePortsMock = {
             props: NodePorts.props,
             data: () => ({
-                portBarHeight: 40
+                portBarBottom: 101,
+                portPositions: 'port-positions'
             }),
             template: '<div />'
         };
@@ -156,11 +157,15 @@ describe('Node', () => {
             doMount();
             let nodePorts = wrapper.findComponent(NodePortsMock);
 
+            expect(nodePorts.props('nodeId')).toBe(commonNode.id);
             expect(nodePorts.props('inPorts')).toStrictEqual(commonNode.inPorts);
             expect(nodePorts.props('outPorts')).toStrictEqual(commonNode.inPorts);
             expect(nodePorts.props('targetPort')).toBe(null);
             expect(nodePorts.props('canAddPorts')).toBe(false);
             expect(nodePorts.props('isMetanode')).toBe(false);
+            expect(nodePorts.props('hover')).toBe(false);
+            expect(nodePorts.props('connectorHover')).toBe(false);
+            expect(nodePorts.props('isSingleSelected')).toBe(false);
         });
 
         it('renders ports for metanodes', () => {
@@ -431,14 +436,24 @@ describe('Node', () => {
                 expect.stringMatching('root:1')
             );
         });
+
+        it('forwards hover state to children', () => {
+            storeConfig.selection.getters.singleSelectedNode.mockReturnValue(commonNode);
+            doMount();
+
+            expect(wrapper.find(NodePortsMock).props('isSingleSelected')).toBe(true);
+        });
     });
 
     describe('Node hover', () => {
+        let previousHoverHeight;
+
         beforeEach(() => {
             propsData = {
                 ...commonNode
             };
             doMount();
+            previousHoverHeight = Number(wrapper.find('.hover-area').attributes('height'));
 
             expect(wrapper.vm.hover).toBe(false);
             wrapper.find('.hover-container').trigger('mouseenter');
@@ -499,6 +514,17 @@ describe('Node', () => {
                 expect(wrapper.vm.hover).toBe(false);
             });
         });
+
+        it('enlargens the hover area to include ports', () => {
+            expect(previousHoverHeight).toBe(89);
+
+            let currentHoverHeight = Number(wrapper.find('.hover-area').attributes('height'));
+            expect(currentHoverHeight).toBe(165);
+        });
+
+        it('forwards hover state to children', () => {
+            expect(wrapper.find(NodePortsMock).props('hover')).toBe(true);
+        });
     });
 
     describe('Connector drag & drop', () => {
@@ -507,6 +533,24 @@ describe('Node', () => {
                 ...commonNode
             };
             doMount();
+        });
+
+        it('forwards connector hover state to children', async () => {
+            wrapper.setData({ connectorHover: true });
+            await Vue.nextTick();
+
+            expect(wrapper.find(NodePortsMock).props('connectorHover')).toBe(true);
+        });
+
+        it('forwards targetPort to children', async () => {
+            wrapper.setData({ targetPort: 'something' });
+            await Vue.nextTick();
+
+            expect(wrapper.find(NodePortsMock).props('targetPort')).toBe('something');
+        });
+
+        it('reads portPositions from NodePorts.vue', () => {
+            expect(wrapper.vm.portPositions).toBe('port-positions');
         });
 
         describe('outside hover region?', () => {

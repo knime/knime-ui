@@ -1,11 +1,13 @@
 /* eslint-disable no-magic-numbers */
 import { shallowMount } from '@vue/test-utils';
+import Vue from 'vue';
 
+import * as $shapes from '~/style/shapes';
 import NodePorts from '~/components/workflow/NodePorts';
 import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
 import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder';
 
-let wrapper, propsData, doMount, $parent;
+let wrapper, propsData, doMount;
 
 const mockPort = ({ index, connectedVia = [] }) => ({
     inactive: false,
@@ -32,25 +34,17 @@ describe('NodePorts.vue', () => {
             nodeId: 'root:1',
             isMetanode: false,
             canAddPorts: false,
-            targetPort: null
-        };
-        
-        $parent = {
+            targetPort: null,
             hover: false,
             connectorHover: false,
-            isSingleConnected: false,
-            id: 'root:1'
+            isSingleConnected: false
         };
         
         doMount = () => {
-            let mocks = { $parent };
+            let mocks = { $shapes };
             wrapper = shallowMount(NodePorts, {
                 propsData,
-                mocks,
-                parentComponent: {
-                    data: () => $parent,
-                    template: '<div />'
-                }
+                mocks
             });
         };
     });
@@ -148,7 +142,7 @@ describe('NodePorts.vue', () => {
         });
 
         it('hover fades-in mickey-mouse ports', () => {
-            $parent.hover = true;
+            propsData.hover = true;
             doMount();
 
             let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
@@ -159,7 +153,7 @@ describe('NodePorts.vue', () => {
         });
 
         it('hover fades-out mickey-mouse ports', () => {
-            $parent.hover = false;
+            propsData.hover = false;
             doMount();
 
             let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
@@ -240,7 +234,7 @@ describe('NodePorts.vue', () => {
         });
 
         test('visible on hover', () => {
-            $parent.hover = true;
+            propsData.hover = true;
             doMount();
 
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
@@ -249,7 +243,7 @@ describe('NodePorts.vue', () => {
         });
 
         test('visible on connector-hover', () => {
-            $parent.connectorHover = true;
+            propsData.connectorHover = true;
             doMount();
 
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
@@ -258,7 +252,7 @@ describe('NodePorts.vue', () => {
         });
 
         test('visible if selected', () => {
-            $parent.isSingleSelected = true;
+            propsData.isSingleSelected = true;
             doMount();
 
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
@@ -286,5 +280,18 @@ describe('NodePorts.vue', () => {
             inPort.props('targeted'),
             outPort.props('targeted')
         ]).toStrictEqual(result);
+    });
+
+    test('portBarBottom', async () => {
+        doMount();
+
+        expect(wrapper.vm.portBarBottom).toBe(31);
+        
+        // reduce number of outports to 1
+        let newOutPorts = [propsData.outPorts[0]];
+        wrapper.setProps({ outPorts: newOutPorts });
+        await Vue.nextTick();
+
+        expect(wrapper.vm.portBarBottom).toBe(20.5);
     });
 });

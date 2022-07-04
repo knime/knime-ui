@@ -20,7 +20,7 @@ import { snapConnector } from '~/mixins';
  * Must be embedded in an `<svg>` element.
  * Requires the `portal-vue` module.
  *
- * It needs to be the direct parent of <NodePorts> and is tightly coupled by direct access in both direction
+ * It needs to be the direct parent of <NodePorts> and is tightly coupled by direct access
  * */
 export default {
     components: {
@@ -34,7 +34,6 @@ export default {
         NodeDecorators
     },
     mixins: [snapConnector],
-    inheritAttrs: false,
     provide() {
         return {
             // Provide position as anchorPoint for tooltips
@@ -231,8 +230,12 @@ export default {
             }
             if (this.connectorHover || this.hover) {
                 // enlarge hover area to include all ports
-                let newBottom = Math.max(hoverBounds.bottom, this.$refs.nodePorts.portBarHeight);
-                hoverBounds.bottom = newBottom;
+
+                let portBarBottom = this.$refs.nodePorts.portBarBottom;
+                let margin = this.$shapes.nodeHoverPortBottomMargin;
+                
+                // if portBarBottom + margin is larger, then extend hover bounds
+                hoverBounds.bottom = Math.max(portBarBottom + margin, hoverBounds.bottom);
             }
 
             return {
@@ -480,12 +483,15 @@ export default {
       <!-- Node Ports -->
       <NodePorts
         ref="nodePorts"
+        :node-id="id"
         :is-metanode="kind === 'metanode'"
         :in-ports="inPorts"
         :out-ports="outPorts"
         :target-port="targetPort"
         :can-add-ports="isEditableContainerNode"
-        :node-id="id"
+        :hover="hover"
+        :connector-hover="connectorHover"
+        :is-single-selected="isSingleSelected"
       />
 
       <!-- Node name / title -->

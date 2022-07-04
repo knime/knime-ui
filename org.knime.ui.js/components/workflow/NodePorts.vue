@@ -5,8 +5,7 @@ import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder';
 
 /**
  * This component renders and handles interactions with a Node's Ports
- * It needs to be a direct child of <Node> and is tightly coupled by direct access in both direction
- * uses $parent .id, .hover, .connectorHover, .isSingleConnected
+ * It needs to be a direct child of <Node> because is coupled by direct access to portBarBottom
  */
 export default {
     components: {
@@ -14,6 +13,10 @@ export default {
         AddPortPlaceholder
     },
     props: {
+        nodeId: {
+            type: String,
+            required: true
+        },
         /**
          * Input ports. List of configuration objects passed-through to the `Port` component
          */
@@ -45,6 +48,20 @@ export default {
         targetPort: {
             type: Object,
             default: null
+        },
+
+        /** Interaction state of Node.vue that is passed through */
+        hover: {
+            type: Boolean,
+            default: false
+        },
+        connectorHover: {
+            type: Boolean,
+            default: false
+        },
+        isSingleSelected: {
+            type: Boolean,
+            default: false
         }
     },
     computed: {
@@ -73,14 +90,18 @@ export default {
                 )
             };
         },
-        portBarHeight() {
+        /* accessed by parent Node.vue */
+        portBarBottom() {
             let portPositions = this.portPositions;
 
-            let lastInPortY = portPositions.in[portPositions.in.length - 1]?.[1] || 0;
-            let lastOutPortY = portPositions.out[portPositions.out.length - 1]?.[1] || 0;
+            let lastInPort = portPositions.in[portPositions.in.length - 1];
+            let lastOutPort = portPositions.out[portPositions.out.length - 1];
 
-            return Math.max(lastInPortY, lastOutPortY) + this.$shapes.portSize / 2 +
-                this.$shapes.nodeHoverPortBottomMargin;
+            // take y-position of last port in the list or default to 0 for an empty list
+            let lastInPortY = lastInPort?.[1] || 0;
+            let lastOutPortY = lastOutPort?.[1] || 0;
+
+            return Math.max(lastInPortY, lastOutPortY) + this.$shapes.portSize / 2;
         }
     },
     methods: {
@@ -94,9 +115,9 @@ export default {
 
             return {
                 'mickey-mouse': true,
-                'connector-hover': this.$parent.connectorHover,
+                'connector-hover': this.connectorHover,
                 'connected': port.connectedVia.length, // eslint-disable-line quote-props
-                'node-hover': this.$parent.hover
+                'node-hover': this.hover
             };
         },
         onPortTypeMenuOpen(e) {
@@ -125,7 +146,7 @@ export default {
       :class="['port', portAnimationClasses(port)]"
       :relative-position="portPositions.in[port.index]"
       :port="port"
-      :node-id="$parent.id"
+      :node-id="nodeId"
       :targeted="targetPort && targetPort.side === 'in' && targetPort.index === port.index"
       direction="in"
     />
@@ -136,19 +157,19 @@ export default {
       :class="['port', portAnimationClasses(port)]"
       :relative-position="portPositions.out[port.index]"
       :port="port"
-      :node-id="$parent.id"
+      :node-id="nodeId"
       :targeted="targetPort && targetPort.side === 'out' && targetPort.index === port.index"
       direction="out"
     />
 
     <AddPortPlaceholder
       v-if="canAddPorts"
-      :node-id="$parent.id"
+      :node-id="nodeId"
       :position="addPortPlaceholderPositions.in"
       :class="['add-port', {
-        'node-hover': $parent.hover,
-        'connector-hover': $parent.connectorHover,
-        'node-selected': $parent.isSingleSelected,
+        'node-hover': hover,
+        'connector-hover': connectorHover,
+        'node-selected': isSingleSelected,
       }]"
       side="input"
       @open-port-type-menu.native="onPortTypeMenuOpen($event)"
@@ -157,12 +178,12 @@ export default {
 
     <AddPortPlaceholder
       v-if="canAddPorts"
-      :node-id="$parent.id"
+      :node-id="nodeId"
       :position="addPortPlaceholderPositions.out"
       :class="['add-port', {
-        'node-hover': $parent.hover,
-        'connector-hover': $parent.connectorHover,
-        'node-selected': $parent.isSingleSelected,
+        'node-hover': hover,
+        'connector-hover': connectorHover,
+        'node-selected': isSingleSelected,
       }]"
       side="output"
       @open-port-type-menu.native="onPortTypeMenuOpen($event)"
