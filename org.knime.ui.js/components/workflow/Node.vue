@@ -5,12 +5,10 @@
 import { mapActions, mapState, mapGetters } from 'vuex';
 
 import NodePorts from './NodePorts';
+import NodeDecorators from './NodeDecorators.vue';
 import NodeState from '~/components/workflow/NodeState';
 import NodeTorso from '~/components/workflow/NodeTorso';
 import NodeAnnotation from '~/components/workflow/NodeAnnotation';
-import LinkDecorator from '~/components/workflow/LinkDecorator';
-import StreamingDecorator from '~/components/workflow/StreamingDecorator';
-import LoopDecorator from '~/components/workflow/LoopDecorator';
 import NodeActionBar from '~/components/workflow/NodeActionBar';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
 import NodeName from '~/components/workflow/NodeName';
@@ -30,12 +28,10 @@ export default {
         NodeAnnotation,
         NodeTorso,
         NodeState,
-        LinkDecorator,
-        StreamingDecorator,
-        LoopDecorator,
         NodeName,
         NodePorts,
-        NodeSelectionPlane
+        NodeSelectionPlane,
+        NodeDecorators
     },
     mixins: [snapConnector],
     inheritAttrs: false,
@@ -180,18 +176,6 @@ export default {
         ...mapState('application', { projectId: 'activeProjectId' }),
         ...mapGetters('selection', ['isNodeSelected', 'singleSelectedNode']),
         ...mapGetters('workflow', ['isWritable', 'isDragging']),
-        decoratorBackgroundType() {
-            if (this.type) {
-                return this.type;
-            } else {
-                // uppercase first letter of kind (metanode or component)
-                return this.kind[0].toUpperCase() + this.kind.substring(1);
-            }
-        },
-        // provided as required by snapConnector mixin
-        portPositions() {
-            return this.$refs.nodePorts.portPositions;
-        },
         /**
          * Width of the node selection plane. It accounts not only for the node margins
          * but also for the width of the name as it changes
@@ -470,27 +454,12 @@ export default {
           @dblclick.left.native="onLeftDoubleClick"
         />
 
-        <LinkDecorator
-          v-if="link"
-          :background-type="decoratorBackgroundType"
-          transform="translate(0, 21)"
-        />
-
-        <!-- Nodes contained in a component with a Streaming Job Manager get a little arrow or "x" to indicate their
-        compatibility. Components with a Streaming Job Manager also get a little arrow.
-        In both cases, the backend sets the `executionInfo` attribute. -->
-        <!-- TODO: NXT-832 Currently there is no test/example-workflow to test this case in action -->
-        <StreamingDecorator
-          v-if="executionInfo"
-          :background-type="decoratorBackgroundType"
+        <NodeDecorators
+          v-bind="$attrs"
+          :link="link"
           :execution-info="executionInfo"
-          transform="translate(21, 21)"
-        />
-
-        <LoopDecorator
-          v-if="type === 'LoopStart' || type === 'LoopEnd'"
-          :loop-status="loopInfo.status"
-          transform="translate(20, 20)"
+          :type="type"
+          :kind="kind"
         />
 
         <NodeState

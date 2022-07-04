@@ -10,9 +10,6 @@ import NodePorts from '~/components/workflow/NodePorts';
 import NodeTorso from '~/components/workflow/NodeTorso';
 import NodeState from '~/components/workflow/NodeState';
 import NodeAnnotation from '~/components/workflow/NodeAnnotation';
-import LinkDecorator from '~/components/workflow/LinkDecorator';
-import StreamingDecorator from '~/components/workflow/StreamingDecorator';
-import LoopDecorator from '~/components/workflow/LoopDecorator';
 import NodeActionBar from '~/components/workflow/NodeActionBar';
 import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
@@ -153,27 +150,6 @@ describe('Node', () => {
         beforeEach(() => {
             propsData = JSON.parse(JSON.stringify(commonNode));
             doMount();
-        });
-
-        it('shows/hides LinkDecorator', () => {
-            expect(wrapper.findComponent(LinkDecorator).exists()).toBe(false);
-            propsData.link = 'linkylinky';
-            doMount();
-            expect(wrapper.findComponent(LinkDecorator).exists()).toBe(true);
-        });
-
-        it('shows/hides StreamingDecorator', () => {
-            expect(wrapper.findComponent(StreamingDecorator).exists()).toBe(false);
-            propsData.executionInfo = { jobManager: 'sampleJobManager' };
-            doMount();
-            expect(wrapper.findComponent(StreamingDecorator).exists()).toBe(true);
-        });
-
-        it('shows/hides LoopDecorator', () => {
-            expect(wrapper.findComponent(LoopDecorator).exists()).toBe(false);
-            propsData.type = 'LoopEnd';
-            doMount();
-            expect(wrapper.findComponent(LoopDecorator).exists()).toBe(true);
         });
 
         it('renders ports', () => {
@@ -508,8 +484,8 @@ describe('Node', () => {
         });
 
         it('shows shadows', () => {
-            expect(wrapper.findComponent(NodeState).attributes().filter).toBe('url(#node-state-shadow)');
-            expect(wrapper.findComponent(NodeTorso).attributes().filter).toBe('url(#node-torso-shadow)');
+            expect(wrapper.findComponent(NodeState).classes()).toContain('hover');
+            expect(wrapper.findComponent(NodeTorso).classes()).toContain('hover');
         });
 
         it('leaving hover container unsets hover', () => {
