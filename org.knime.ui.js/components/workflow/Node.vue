@@ -463,13 +463,7 @@ export default {
           @dblclick.left.native="onLeftDoubleClick"
         />
 
-        <NodeDecorators
-          v-bind="$attrs"
-          :link="link"
-          :execution-info="executionInfo"
-          :type="type"
-          :kind="kind"
-        />
+        <NodeDecorators v-bind="$props" />
 
         <NodeState
           v-if="kind !== 'metanode'"

@@ -7,6 +7,7 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 
 import Node from '~/components/workflow/Node';
 import NodePorts from '~/components/workflow/NodePorts';
+import NodeDecorators from '~/components/workflow/NodeDecorators';
 import NodeTorso from '~/components/workflow/NodeTorso';
 import NodeState from '~/components/workflow/NodeState';
 import NodeAnnotation from '~/components/workflow/NodeAnnotation';
@@ -38,7 +39,6 @@ const commonNode = {
     type: 'Source',
 
     icon: 'data:image/icon',
-    selected: false,
 
     allowedActions: {
         canExecute: true,
@@ -46,6 +46,13 @@ const commonNode = {
         canReset: true,
         canOpenDialog: true,
         canOpenView: true
+    },
+
+    link: null,
+    executionInfo: null,
+    loopState: null,
+    loopInfo: {
+        allowedActions: {}
     }
 };
 const nativeNode = {
@@ -166,6 +173,13 @@ describe('Node', () => {
             expect(nodePorts.props('hover')).toBe(false);
             expect(nodePorts.props('connectorHover')).toBe(false);
             expect(nodePorts.props('isSingleSelected')).toBe(false);
+        });
+
+        it('renders decorators', () => {
+            doMount();
+
+            let decoratorProps = wrapper.findComponent(NodeDecorators).props();
+            expect(propsData).toMatchObject(decoratorProps);
         });
 
         it('renders ports for metanodes', () => {
