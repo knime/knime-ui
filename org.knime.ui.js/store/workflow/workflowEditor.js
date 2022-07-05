@@ -1,6 +1,5 @@
 import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameContainerNode, collapseToContainer,
     addContainerNodePort, expandContainerNode } from '~api';
-
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
  * It handles shared state regarding editing.
@@ -102,13 +101,18 @@ export const actions = {
         if (canCollapse) {
             dispatch('selection/deselectAllObjects', null, { root: true });
     
-            await collapseToContainer({
+            const { newNodeId } = await collapseToContainer({
                 containerType,
                 projectId: state.activeWorkflow.projectId,
                 workflowId: getters.activeWorkflowId,
                 nodeIds: selectedNodes,
                 annotationIds: []
             });
+
+            if (rootGetters['selection/isSelectionEmpty']) {
+                dispatch('selection/selectNode', newNodeId, { root: true });
+                dispatch('openNameEditor', newNodeId);
+            }
         }
     },
     async expandContainerNode({ state, getters, rootGetters, dispatch }) {
@@ -122,11 +126,15 @@ export const actions = {
         if (shouldExpand) {
             dispatch('selection/deselectAllObjects', null, { root: true });
     
-            await expandContainerNode({
+            const { expandedNodeIds } = await expandContainerNode({
                 projectId: state.activeWorkflow.projectId,
                 workflowId: getters.activeWorkflowId,
                 nodeId: selectedNode.id
             });
+
+            if (rootGetters['selection/isSelectionEmpty']) {
+                dispatch('selection/selectNodes', expandedNodeIds, { root: true });
+            }
         }
     },
         
