@@ -134,6 +134,9 @@ export default {
       :tags="tags"
     />
   </div>
+
+  <!-- Render an element to prevent issue with transition-group and conditional elements -->
+  <div v-else />
 </template>
 
 <style lang="postcss" scoped>
