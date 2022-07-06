@@ -8,6 +8,7 @@ const srcDir = path.resolve(__dirname);
 const commonsDir = path.resolve(srcDir, 'webapps-common');
 
 const config = {
+    telemetry: false,
     alias: {
         'webapps-common': commonsDir
     },

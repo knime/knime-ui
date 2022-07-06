@@ -19,6 +19,10 @@
     "1070415|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-svgo>svgo>css-select>nth-check": {
       "decision": "ignore",
       "madeAt": 1653988145315
+    },
+    "1080923|nuxt>@nuxt/telemetry>git-url-parse>git-up>parse-url>parse-path": {
+      "decision": "ignore",
+      "madeAt": 1657101271172
     }
   },
   "rules": {},
