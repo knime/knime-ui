@@ -12,7 +12,6 @@ import { mapActions } from 'vuex';
  *   },
  *   position: {x, y},
  *   isOutsideConnectorHoverRegion?: (mouseX, mouseY, 'in' | 'out') -> Boolean,
- *   snapContainerId: String
  * }
  *
  * Requires component to register the following event handlers
