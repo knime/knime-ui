@@ -30,7 +30,6 @@ const config = {
         '~/plugins/constants.js',
         '~/plugins/directive-move.js',
         '~/plugins/events.js',
-        '~/plugins/equo-comm.js',
         '~/plugins/commands.js'
     ],
     modules: ['portal-vue/nuxt'],
