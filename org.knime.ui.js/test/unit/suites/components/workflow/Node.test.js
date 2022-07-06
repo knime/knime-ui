@@ -455,7 +455,7 @@ describe('Node', () => {
             storeConfig.selection.getters.singleSelectedNode.mockReturnValue(commonNode);
             doMount();
 
-            expect(wrapper.find(NodePortsMock).props('isSingleSelected')).toBe(true);
+            expect(wrapper.findComponent(NodePortsMock).props('isSingleSelected')).toBe(true);
         });
     });
 
@@ -537,7 +537,7 @@ describe('Node', () => {
         });
 
         it('forwards hover state to children', () => {
-            expect(wrapper.find(NodePortsMock).props('hover')).toBe(true);
+            expect(wrapper.findComponent(NodePortsMock).props('hover')).toBe(true);
         });
     });
 
@@ -553,14 +553,14 @@ describe('Node', () => {
             wrapper.setData({ connectorHover: true });
             await Vue.nextTick();
 
-            expect(wrapper.find(NodePortsMock).props('connectorHover')).toBe(true);
+            expect(wrapper.findComponent(NodePortsMock).props('connectorHover')).toBe(true);
         });
 
         it('forwards targetPort to children', async () => {
-            wrapper.setData({ targetPort: 'something' });
+            wrapper.setData({ targetPort: { mock: 'something' } });
             await Vue.nextTick();
 
-            expect(wrapper.find(NodePortsMock).props('targetPort')).toBe('something');
+            expect(wrapper.findComponent(NodePortsMock).props('targetPort')).toEqual({ mock: 'something' });
         });
 
         it('reads portPositions from NodePorts.vue', () => {
