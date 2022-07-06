@@ -87,7 +87,7 @@ describe('ContextMenu.vue', () => {
     it('sets items on mounted', () => {
         doMount();
         
-        expect(wrapper.findComponent(MenuItems).props('items').length).toBe(3);
+        expect(wrapper.findComponent(MenuItems).props('items').length).toBe(4);
     });
 
     it('sets items on position change', async () => {
@@ -99,7 +99,7 @@ describe('ContextMenu.vue', () => {
         wrapper.setProps({ position: { x: 2, y: 3 } });
         await Vue.nextTick();
 
-        expect(wrapper.findComponent(MenuItems).props('items').length).toBe(6);
+        expect(wrapper.findComponent(MenuItems).props('items').length).toBe(8);
     });
 
     it('items are not set reactively', async () => {
@@ -109,7 +109,7 @@ describe('ContextMenu.vue', () => {
         expect($store.getters['selection/selectedNodes']).toStrictEqual(['a node']);
         await Vue.nextTick();
         
-        expect(wrapper.findComponent(MenuItems).props('items').length).toBe(3);
+        expect(wrapper.findComponent(MenuItems).props('items').length).toBe(4);
     });
 
     it('uses right format for MenuItems', async () => {
@@ -148,7 +148,7 @@ describe('ContextMenu.vue', () => {
             wrapper.setProps({ isVisible: true });
             await Vue.nextTick();
             expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
-                expect.arrayContaining(['executeAll', 'cancelAll', 'resetAll'])
+                expect.arrayContaining(['paste', 'executeAll', 'cancelAll', 'resetAll'])
             );
         });
 
@@ -166,6 +166,8 @@ describe('ContextMenu.vue', () => {
 
             expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
                 expect.arrayContaining([
+                    'copy',
+                    'cut',
                     'executeSelected',
                     'cancelSelected',
                     'resetSelected',
@@ -256,6 +258,8 @@ describe('ContextMenu.vue', () => {
 
             expect(wrapper.findComponent(MenuItems).props('items').map(i => i.name)).toEqual(
                 expect.arrayContaining([
+                    'copy',
+                    'cut',
                     'executeSelected',
                     'cancelSelected',
                     'resetSelected',

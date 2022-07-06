@@ -183,5 +183,33 @@ export default {
         condition:
             ({ $store }) => $store.state.workflow.activeWorkflow?.info.containerType === 'component' &&
             $store.getters['workflow/isWritable']
+    },
+    copy: {
+        text: 'Copy',
+        title: 'Copy selection',
+        hotkey: ['Ctrl', 'C'],
+        execute:
+            ({ $store }) => $store.dispatch('workflow/copyOrCutWorkflowParts', { methodType: 'copy' }),
+        condition:
+            ({ $store }) => Object.keys($store.getters['selection/selectedNodes']).length !== 0
+    },
+    cut: {
+        text: 'Cut',
+        title: 'Cut selection',
+        hotkey: ['Ctrl', 'X'],
+        execute:
+            ({ $store }) => $store.dispatch('workflow/copyOrCutWorkflowParts', { methodType: 'cut' }),
+        condition:
+            ({ $store }) => Object.keys($store.getters['selection/selectedNodes']).length !== 0 &&
+            $store.getters['workflow/isWritable']
+    },
+    paste: {
+        text: 'Paste',
+        title: 'Paste from clipboard',
+        hotkey: ['Ctrl', 'V'],
+        execute:
+            ({ $store }) => $store.dispatch('workflow/pasteWorkflowParts'),
+        condition:
+            ({ $store }) => $store.getters['workflow/isWritable']
     }
 };

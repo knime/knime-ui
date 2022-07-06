@@ -253,3 +253,55 @@ export const expandContainerNode = ({
     projectId,
     workflowId
 });
+
+/**
+ * Copies workflow parts and serializes them
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param { Array } cfg.nodeIds The node ids to copy
+ * @param { Array } cfg.annotationIds The annotation ids to copy
+ * @returns { Promise } The serialized workflow parts
+ */
+export const copyWorkflowParts = ({
+    projectId, workflowId, nodeIds = [], annotationIds = []
+}) => workflowCommand({
+    command: 'copy',
+    args: { nodeIds, annotationIds },
+    projectId,
+    workflowId
+});
+
+/**
+ * Cuts workflow parts and serializes them
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param { Array } cfg.nodeIds The node ids to copy
+ * @param { Array } cfg.annotationIds The annotation ids to copy
+ * @returns { Promise } The serialized workflow parts
+ */
+export const cutWorkflowParts = ({
+    projectId, workflowId, nodeIds = [], annotationIds = []
+}) => workflowCommand({
+    command: 'cut',
+    args: { nodeIds, annotationIds },
+    projectId,
+    workflowId
+});
+
+/**
+ * Pastes workflow parts to the canvas
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param { Object } content Workflow parts to be pasted
+ * @param { Object } position Paste the workflow parts at this position
+ * @param { Object } offset Shift the pasted item by this offset
+ * @returns { void }
+ */
+export const pasteWorkflowParts = ({
+    projectId, workflowId, content = {}, position, offset
+}) => workflowCommand({
+    command: 'paste',
+    args: { content, position, offset },
+    projectId,
+    workflowId
+});

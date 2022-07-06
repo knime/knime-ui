@@ -387,5 +387,10 @@ describe('workflow store: Editing', () => {
                 nodeId: 'foo'
             });
         });
+
+        // TODO: Write tests for copy, cut and paste actions:
+        // * `Copy` does nothing to the workflow state
+        // * `Cut` removes the selected nodes from the workflow
+        // * `Paste` adds new nodes to the workflow
     });
 });

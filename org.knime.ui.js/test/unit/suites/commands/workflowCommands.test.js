@@ -87,6 +87,23 @@ describe('workflowCommands', () => {
             workflowCommands.openLayoutEditor.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/openLayoutEditor');
         });
+
+        test('copy', () => {
+            workflowCommands.copy.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/copyOrCutWorkflowParts',
+                { methodType: 'copy' });
+        });
+
+        test('cut', () => {
+            workflowCommands.cut.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/copyOrCutWorkflowParts',
+                { methodType: 'cut' });
+        });
+
+        test('paste', () => {
+            workflowCommands.paste.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/pasteWorkflowParts');
+        });
     });
 
     describe('condition', () => {
@@ -328,6 +345,40 @@ describe('workflowCommands', () => {
                 $store.getters['workflow/isWritable'] = true;
                 expect(workflowCommands.openLayoutEditor.condition({ $store })).toBe(true);
             });
+        });
+
+        test('copy', () => {
+            expect(workflowCommands.copy.condition({ $store })).toBeFalsy();
+            $store.getters['selection/selectedNodes'] = [{ allowedActions: {} }];
+            expect(workflowCommands.copy.condition({ $store })).toBe(true);
+        });
+
+        describe('cut', () => {
+            test('nothing selected, not writeable -> disabled', () => {
+                expect(workflowCommands.cut.condition({ $store })).toBeFalsy();
+            });
+
+            test('nodes selected, not writeable -> disabled', () => {
+                $store.getters['selection/selectedNodes'] = [{ allowedActions: {} }];
+                expect(workflowCommands.cut.condition({ $store })).toBeFalsy();
+            });
+
+            test('nothing selected, writeable -> disabled', () => {
+                $store.getters['workflow/isWritable'] = true;
+                expect(workflowCommands.cut.condition({ $store })).toBeFalsy();
+            });
+
+            test('nodes selected, writeable -> enabled', () => {
+                $store.getters['selection/selectedNodes'] = [{ allowedActions: {} }];
+                $store.getters['workflow/isWritable'] = true;
+                expect(workflowCommands.cut.condition({ $store })).toBe(true);
+            });
+        });
+
+        test('paste', () => {
+            expect(workflowCommands.paste.condition({ $store })).toBeFalsy();
+            $store.getters['workflow/isWritable'] = true;
+            expect(workflowCommands.paste.condition({ $store })).toBe(true);
         });
     });
 });

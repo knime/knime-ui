@@ -1,5 +1,6 @@
 import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameContainerNode, collapseToContainer,
-    addContainerNodePort, expandContainerNode, removeContainerNodePort } from '~api';
+    addContainerNodePort, expandContainerNode, removeContainerNodePort, copyWorkflowParts, cutWorkflowParts,
+    pasteWorkflowParts } from '~api';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -212,6 +213,69 @@ export const actions = {
         let { activeWorkflowId: workflowId } = getters;
     
         removeContainerNodePort({ projectId, workflowId, nodeId, side, typeId, portIndex });
+    },
+
+    async copyOrCutWorkflowParts({ state, getters, rootGetters, dispatch }, { methodType }) {
+        const selectedNodes = rootGetters['selection/selectedNodeIds'];
+        const selectedAnnotations = []; // Annotations cannot be selected yet
+        const params = {
+            projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            nodeIds: selectedNodes,
+            annotationIds: selectedAnnotations
+        };
+        let response;
+        if (methodType === 'copy') {
+            response = await copyWorkflowParts(params);
+        } else {
+            dispatch('selection/deselectAllObjects', null, { root: true });
+            response = await cutWorkflowParts(params);
+        }
+        const clipboardContent = JSON.parse(response.content);
+        consola.info('copyWorkflowParts', clipboardContent);
+        let permission;
+        try {
+            // If Permission API is available
+            permission = await navigator.permissions.query({ name: 'clipboard-write' });
+        } catch (error) {
+            // If Permission API is not available
+            permission = { state: 'granted' };
+        }
+        if (permission.state === 'denied') {
+            throw new Error('Not allowed to write clipboard', permission);
+        }
+        navigator.clipboard.writeText(JSON.stringify(clipboardContent));
+    },
+    
+    async pasteWorkflowParts({ state, getters, rootGetters }) {
+        let permission = {};
+        try {
+            // If Permission API is available
+            permission = await navigator.permissions.query({ name: 'clipboard-read' });
+        } catch (error) {
+            // If Permission API is not available
+            permission = { state: 'granted' };
+        }
+        if (permission.state === 'denied') {
+            throw new Error('Not allowed to read clipboard: ', permission);
+        }
+        const clipboardContent = await navigator.clipboard.readText();
+        try {
+            // TODO:
+            // * Maybe some more verification here before we send the clipbaord content to the backend?
+            // * Set an upper bound on the clipboard content size that can be sent to the backend?
+            // * Is it even possible to grab the current cursor position when `Paste` was triggered via context menu?
+            // * Can the frontend otherwise perform some clever things related to the position?
+            const verifiedContent = JSON.parse(clipboardContent);
+            consola.info('pasteWorkflowParts', verifiedContent);
+            pasteWorkflowParts({
+                projectId: state.activeWorkflow.projectId,
+                workflowId: getters.activeWorkflowId,
+                content: JSON.stringify(verifiedContent)
+            });
+        } catch (error) {
+            consola.warn(`This is not a JSON object: <${clipboardContent.substring(0, 63)}>`);
+        }
     }
 };
 
