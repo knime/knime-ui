@@ -1,0 +1,15 @@
+function jsonrpcNotificationBase64Decoded(base64JsonString) {
+    window.jsonrpcNotification(window.atob(base64JsonString));
+}
+
+if (window.EquoCommService) {
+    window.EquoCommService.on(
+        '##JSON_RPC_NOTIFICATION_ACTION_ID##', 
+        jsonrpcNotificationBase64Decoded, 
+        e => console.error(e)
+    );
+    
+    if (!window.jsonrpc) {
+        window.jsonrpc = request => window.EquoCommService.send('##JSON_RPC_ACTION_ID##', JSON.stringify(request));
+    }
+}

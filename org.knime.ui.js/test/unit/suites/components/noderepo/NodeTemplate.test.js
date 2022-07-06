@@ -95,22 +95,18 @@ describe('NodeTemplate', () => {
                     addNode: addNodeMock
                 }
             },
-            panel: {
-                actions: {
-                    openDescriptionPanel: openDescriptionPanelMock,
-                    closeDescriptionPanel: closeDescriptionPanelMock
-                },
-                state: {
-                    activeDescriptionPanel: false
-                }
-            },
             nodeRepository: {
                 mutations: {
                     setSelectedNode: setSelectedNodeMock,
                     setDraggingNode: setDraggingNodeMock
                 },
+                actions: {
+                    openDescriptionPanel: openDescriptionPanelMock,
+                    closeDescriptionPanel: closeDescriptionPanelMock
+                },
                 state: {
-                    selectedNode: null
+                    selectedNode: null,
+                    isDescriptionPanelOpen: false
                 }
             },
             canvas: {
@@ -159,7 +155,7 @@ describe('NodeTemplate', () => {
         storeConfig.nodeRepository.state.selectedNode = {
             id: 'node-id'
         };
-        storeConfig.panel.state.activeDescriptionPanel = true;
+        storeConfig.nodeRepository.state.isDescriptionPanelOpen = true;
         doMount();
 
         const node = wrapper.find('.node');
@@ -170,7 +166,7 @@ describe('NodeTemplate', () => {
     });
 
     it('adds style if node is selected', () => {
-        storeConfig.panel.state.activeDescriptionPanel = true;
+        storeConfig.nodeRepository.state.isDescriptionPanelOpen = true;
         storeConfig.nodeRepository.state.selectedNode = {
             id: 'node-id'
         };
@@ -332,7 +328,7 @@ describe('NodeTemplate', () => {
         });
 
         it('re-opens description panel, when dragging is aborted', () => {
-            storeConfig.panel.state.activeDescriptionPanel = true;
+            storeConfig.nodeRepository.state.isDescriptionPanelOpen = true;
             storeConfig.nodeRepository.state.selectedNode = {
                 id: 'node-id'
             };
@@ -357,7 +353,7 @@ describe('NodeTemplate', () => {
         });
 
         it('description panel stays closed, when dragging is completed succesfully', () => {
-            storeConfig.panel.state.activeDescriptionPanel = true;
+            storeConfig.nodeRepository.state.isDescriptionPanelOpen = true;
             storeConfig.nodeRepository.state.selectedNode = {
                 id: 'node-id'
             };

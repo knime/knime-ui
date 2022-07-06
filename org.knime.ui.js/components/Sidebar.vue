@@ -3,60 +3,106 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import InfoIcon from '~/webapps-common/ui/assets/img/icons/circle-info.svg?inline';
 import PlusIcon from '~/webapps-common/ui/assets/img/icons/circle-plus.svg?inline';
 
+import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
+import WorkflowMetadata from '~/components/workflowMetadata/WorkflowMetadata';
+import NodeRepository from '~/components/noderepo/NodeRepository';
+
 export default {
     components: {
         InfoIcon,
-        PlusIcon
-    },
-    data() {
-        return {
-            activeTab: 'nodeRepository'
-        };
+        PlusIcon,
+        LeftCollapsiblePanel,
+        WorkflowMetadata,
+        NodeRepository
     },
     computed: {
-        ...mapState('panel', ['expanded', 'activeDescriptionPanel']),
-        ...mapGetters('panel', ['workflowMetaActive', 'nodeRepositoryActive'])
+        ...mapState('panel', ['activeTab', 'expanded']),
+        ...mapState('nodeRepository', ['isDescriptionPanelOpen']),
+        ...mapGetters('panel', ['isWorkflowMetaActive', 'isNodeRepositoryActive']),
+        extensionPanelTransition() {
+            // returns a functional component that is used as transition prop on <portal>. This way the transition
+            // behaves as without portal, see https://portal-vue.linusb.org/api/portal-target.html#transition
+            return {
+                functional: true,
+                render(h, context) {
+                    return h('transition', { props: { name: 'extension-panel' } }, context.children);
+                }
+            };
+        }
     },
     methods: {
-        ...mapActions('panel', ['setWorkflowMetaActive', 'setNodeRepositoryActive', 'close',
-            'closeDescriptionPanel']),
+        ...mapActions('panel', ['setWorkflowMetaActive', 'setNodeRepositoryActive', 'close', 'toggleExpanded']),
+        ...mapActions('nodeRepository', ['closeDescriptionPanel']),
         clickItem(alreadyActive, setActive) {
-            if (alreadyActive && this.expanded && this.activeDescriptionPanel) {
-                this.close();
-                this.closeDescriptionPanel();
-            } else if (alreadyActive && this.expanded) {
+            if (alreadyActive && this.expanded) {
                 this.close();
             } else {
                 setActive();
-                this.closeDescriptionPanel();
             }
+
+            this.closeDescriptionPanel();
         }
     }
 };
 </script>
 
 <template>
-  <nav>
-    <ul>
-      <li
-        :class="{ active: workflowMetaActive, expanded }"
-        title="Workflow metadata"
-        @click="clickItem(workflowMetaActive, setWorkflowMetaActive)"
-      >
-        <InfoIcon />
-      </li>
-      <li
-        :class="{ active: nodeRepositoryActive, expanded }"
-        title="Node repository"
-        @click="clickItem(nodeRepositoryActive, setNodeRepositoryActive)"
-      >
-        <PlusIcon />
-      </li>
-    </ul>
-  </nav>
+  <div class="sidebar-wrapper">
+    <nav>
+      <ul>
+        <li
+          :class="{ active: isWorkflowMetaActive, expanded }"
+          title="Workflow metadata"
+          @click="clickItem(isWorkflowMetaActive, setWorkflowMetaActive)"
+        >
+          <InfoIcon />
+        </li>
+        <li
+          :class="{ active: isNodeRepositoryActive, expanded }"
+          title="Node repository"
+          @click="clickItem(isNodeRepositoryActive, setNodeRepositoryActive)"
+        >
+          <PlusIcon />
+        </li>
+      </ul>
+    </nav>
+
+    <LeftCollapsiblePanel
+      id="left-panel"
+      width="360px"
+      title="Open sidebar"
+      :expanded="expanded"
+      :disabled="isDescriptionPanelOpen && isNodeRepositoryActive"
+      @toggle-expand="toggleExpanded"
+    >
+      <transition-group name="tab-transition">
+        <NodeRepository
+          v-show="isNodeRepositoryActive"
+          key="node-repository"
+        />
+
+        <WorkflowMetadata
+          v-show="isWorkflowMetaActive"
+          key="workflow-metadata"
+        />
+      </transition-group>
+    </LeftCollapsiblePanel>
+
+    <portal-target
+      slim
+      name="extension-panel"
+      :transition="extensionPanelTransition"
+    />
+  </div>
 </template>
 
 <style lang="postcss" scoped>
+
+.sidebar-wrapper {
+  display: flex;
+  height: 100%;
+  overflow: auto;
+}
 
 nav {
   width: var(--side-bar-width);
@@ -97,5 +143,41 @@ nav {
       }
     }
   }
+}
+
+#left-panel {
+  flex: 0 0 auto;
+  border-right: 1px solid var(--knime-silver-sand);
+
+  & >>> .container {
+    /* prevent scrollbar jump when switching between tabs in the LeftCollapsiblePanel */
+    overflow-y: hidden;
+  }
+}
+
+.extension-panel-enter-active {
+  transition: all 50ms ease-in;
+}
+
+.extension-panel-leave-active {
+  transition: all 50ms ease-out;
+}
+
+.extension-panel-enter,
+.extension-panel-leave-to {
+  opacity: 0;
+}
+
+.tab-transition-enter-active {
+  transition: all 150ms ease-in;
+}
+
+.tab-transition-leave-active {
+  transition: all 150ms ease-out;
+}
+
+.tab-transition-enter,
+.tab-transition-leave-to {
+  opacity: 0;
 }
 </style>

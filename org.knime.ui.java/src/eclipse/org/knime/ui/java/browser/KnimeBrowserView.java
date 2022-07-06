@@ -3,9 +3,15 @@ package org.knime.ui.java.browser;
 import static org.knime.ui.java.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
@@ -86,7 +92,7 @@ public class KnimeBrowserView {
 	@PostConstruct
 	public void createPartControl(final Composite parent) {
 		m_browser = new Browser(parent, SWT.NONE);
-		m_browser.addLocationListener(new KnimeBrowserLocationListener());
+		m_browser.addLocationListener(new KnimeBrowserLocationListener(this));
 		m_browser.setMenu(new Menu(m_browser.getShell()));
 		initializeResourceHandler();
 	}
@@ -214,6 +220,31 @@ public class KnimeBrowserView {
             return Base64.getEncoder().encodeToString(string.getBytes(StandardCharsets.UTF_8));
         } catch (JsonProcessingException ex) {
             throw new IllegalStateException("Problem creating a json-rpc notification in order to send an event", ex);
+        }
+    }
+
+    void initializeJSBrowserCommunication() {
+        try {
+            var script = Files.readString(Path.of(getAbsolutePath(DOMAIN_NAME, "files/script-snippet.template")))
+                .replace("##JSON_RPC_NOTIFICATION_ACTION_ID##", JSON_RPC_NOTIFICATION_ACTION_ID)
+                .replace("##JSON_RPC_ACTION_ID##", JSON_RPC_ACTION_ID);
+            if (!m_browser.execute(script)) {
+                NodeLogger.getLogger(this.getClass())
+                    .error("Script to initialize JS browser communication failed to execute");
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read script to initialize JS browser communication", e);
+        }
+    }
+
+    private static String getAbsolutePath(final String bundle, final String relativePath) {
+        var url = Platform.getBundle(bundle).getEntry(relativePath);
+        try {
+            var fileUrl = FileLocator.toFileURL(url);
+            return Paths.get(new URI(fileUrl.getProtocol(), fileUrl.getFile(), null)).toString();
+        } catch (IOException | URISyntaxException e) {
+            // should never happen
+            throw new IllegalStateException(e);
         }
     }
 

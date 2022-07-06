@@ -71,7 +71,7 @@ describe('CategoryResults', () => {
             let scrollViewContainer = wrapper.findComponent(ScrollViewContainer);
             scrollViewContainer.vm.$emit('scroll-bottom');
 
-            expect(getAllNodesMock).toHaveBeenCalledWith(expect.anything(), true);
+            expect(getAllNodesMock).toHaveBeenCalledWith(expect.anything(), { append: true });
         });
     });
 
