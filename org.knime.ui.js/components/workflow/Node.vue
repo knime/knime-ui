@@ -381,23 +381,6 @@ export default {
 
             return false;
         },
-        selectPort(port, type) {
-            // skip hidden variable ports on components (mickey mouse) or allow for all metanode ports
-            const canSelectPort = (this.kind === 'component' && port.index !== 0) || this.kind === 'metanode';
-
-            this.selectedPort = this.selectedPort === `${this.id}-${type}-${port.index}` || !canSelectPort
-                ? null
-                : `${this.id}-${type}-${port.index}`;
-        },
-        deletePort(port, side) {
-            this.$store.dispatch('workflow/removeContainerNodePort', {
-                nodeId: this.id,
-                side,
-                typeId: port.typeId,
-                portIndex: port.index
-            });
-            this.selectedPort = null;
-        },
         // public
         setSelectionPreview(preview) {
             this.selectionPreview = preview === 'clear' ? null : preview;
@@ -519,12 +502,6 @@ export default {
         @connector-enter.native.stop="onConnectorEnter"
         @connector-leave.native.stop="onConnectorLeave"
       />
-
-      <!-- <portal-target
-        v-if="selectedPort"
-        name="selected-port-outline"
-        tag="g"
-      /> -->
     </g>
   </g>
 </template>

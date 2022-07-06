@@ -1,13 +1,15 @@
 <script>
-import { mapGetters, mapActions, mapState } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
+import throttle from 'raf-throttle';
+import { mixin as clickaway } from 'vue-clickaway2';
+
 import PortWithTooltip from '~/components/workflow/PortWithTooltip';
 import Port from '~/components/workflow/Port';
 import Connector from '~/components/workflow/Connector';
-import throttle from 'raf-throttle';
-import { circleDetection } from '~/util/compatibleConnections';
-
 import ActionButton from '~/components/workflow/ActionButton';
 import DeleteIcon from '~/assets/delete.svg?inline';
+
+import { circleDetection } from '~/util/compatibleConnections';
 
 
 export default {
@@ -18,6 +20,8 @@ export default {
         ActionButton,
         DeleteIcon
     },
+    mixins: [clickaway],
+    inject: ['anchorPoint'],
     props: {
         /** direction of the port and the connector coming out of it: in-coming or out-going */
         direction: {
@@ -55,7 +59,7 @@ export default {
     computed: {
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapGetters('workflow', ['isWritable']),
-        ...mapState('application', { portTypes: 'availablePortTypes' }),
+        ...mapState('application', ['availablePortTypes']),
         /*
          * only in-Ports replace their current connector if a new one is connected
          * only in-Ports that are connected need to indicate connector replacement
@@ -65,6 +69,13 @@ export default {
         indicateConnectorReplacement() {
             return this.direction === 'in' && Boolean(this.port.connectedVia.length) &&
             (this.targeted || Boolean(this.dragConnector));
+        },
+        selectedPortPosition() {
+            const [x, y] = this.relativePosition;
+            return [
+                this.anchorPoint.x + x,
+                this.anchorPoint.y + y
+            ];
         }
     },
     watch: {
@@ -77,8 +88,6 @@ export default {
         }
     },
     methods: {
-        ...mapActions('workflow', ['connectNodes']),
-
         /* ======== Drag Connector ======== */
         onPointerDown(e) {
             if (!this.isWritable || e.button !== 0 || e.shiftKey || e.ctrlKey) {
@@ -96,7 +105,7 @@ export default {
                 allowedActions: {
                     canDelete: false
                 },
-                flowVariableConnection: this.portTypes[this.port.typeId].kind === 'flowVariable',
+                flowVariableConnection: this.availablePortTypes[this.port.typeId].kind === 'flowVariable',
                 absolutePoint: this.screenToCanvasCoordinates([e.x, e.y])
             };
 
@@ -239,7 +248,7 @@ export default {
             this.dragConnector.absolutePoint = [absoluteX, absoluteY];
             /* eslint-enable no-invalid-this */
         }),
-        onClick(e) {
+        onClick() {
             if (!this.didMove) {
                 this.dragConnector = null;
                 this.$emit('select', this.port);
@@ -254,6 +263,7 @@ export default {
 
 <template>
   <g
+    v-on-clickaway="() => isSelected && $emit('select', null)"
     :transform="`translate(${relativePosition})`"
     :class="{ 'targeted': targeted }"
     @pointerdown="onPointerDown"
@@ -262,26 +272,36 @@ export default {
     @lostpointercapture.stop="onLostPointerCapture"
   >
     <PortWithTooltip
-      :is-selected="isSelected"
       :port="port"
       :tooltip-position="relativePosition"
-      @select="onClick"
+      :class="{ 'non-interactive': isSelected }"
+      @click.native="onClick"
     />
 
-    <transition name="appear">
-      <ActionButton
+    <portal to="selected-port">
+      <g
         v-if="isSelected"
-        :x="relativePosition[0] - (direction === 'in' ? 22 : 10)"
-        :disabled="!port.canRemovePort"
-        title="Delete port"
-        @click="$emit('delete', port)"
+        :key="`${nodeId}-${port.index}`"
+        :transform="`translate(${selectedPortPosition})`"
       >
-        <DeleteIcon />
-      </ActionButton>
-    </transition>
+        <Port
+          :port="port"
+          is-selected
+          class="non-interactive"
+        />
+
+        <ActionButton
+          :x="relativePosition[0] - (direction === 'in' ? 22 : 10)"
+          title="Delete port"
+          @click="$emit('delete', port)"
+        >
+          <DeleteIcon />
+        </ActionButton>
+      </g>
+    </portal>
 
     <portal
-      v-if="dragConnector"
+      v-if="dragConnector && didMove"
       to="drag-connector"
     >
       <Connector

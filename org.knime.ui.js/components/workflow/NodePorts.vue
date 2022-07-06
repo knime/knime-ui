@@ -1,4 +1,5 @@
 <script>
+import { mapGetters } from 'vuex';
 import { placeholderPosition, portPositions } from '~/util/portShift';
 import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
 import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder';
@@ -72,10 +73,11 @@ export default {
     },
     data() {
         return {
-            selectedPort: null
+            selectedNodePort: null
         };
     },
     computed: {
+        ...mapGetters('workflow', ['isDragging']),
         /**
          * @returns {object} the position of all inPorts and outPorts.
          * The position for each port is an array with two coordinates [x, y].
@@ -115,6 +117,13 @@ export default {
             return Math.max(lastInPortY, lastOutPortY) + this.$shapes.portSize / 2;
         }
     },
+    watch: {
+        isDragging() {
+            if (this.selectedNodePort) {
+                this.selectedNodePort = null;
+            }
+        }
+    },
     methods: {
         // default flow variable ports (Mickey Mouse ears) are only shown if connected, selected, or on hover
         portAnimationClasses(port) {
@@ -146,21 +155,32 @@ export default {
             }, 1000);
         },
         selectPort(port, type) {
-            // skip hidden variable ports on components (mickey mouse) or allow for all metanode ports
-            const canSelectPort = (this.nodeKind === 'component' && port.index !== 0) || this.nodeKind === 'metanode';
+            if (port) {
+                const canSelectPort =
+                  // skip hidden variable ports on components (mickey mouse)
+                  (this.nodeKind === 'component' && port.index !== 0) ||
+                  // allow for all metanode ports
+                  this.nodeKind === 'metanode';
+    
+                const isAlreadySelected = this.selectedNodePort === `${this.nodeId}-${type}-${port.index}`;
+                const selectedPort = isAlreadySelected || !canSelectPort
+                    ? null
+                    : `${this.nodeId}-${type}-${port.index}`;
 
-            this.selectedPort = this.selectedPort === `${this.id}-${type}-${port.index}` || !canSelectPort
-                ? null
-                : `${this.id}-${type}-${port.index}`;
+                this.selectedNodePort = selectedPort;
+            } else {
+                this.selectedNodePort = null;
+            }
         },
         deletePort(port, side) {
             this.$store.dispatch('workflow/removeContainerNodePort', {
-                nodeId: this.id,
+                nodeId: this.nodeId,
                 side,
                 typeId: port.typeId,
                 portIndex: port.index
             });
-            this.selectedPort = null;
+
+            this.selectedNodePort = null;
         }
     }
 };
@@ -168,19 +188,6 @@ export default {
 
 <template>
   <g>
-    <!-- <DraggablePortWithTooltip
-        v-for="port of outPorts"
-        :key="`outport-${port.index}`"
-        :class="['port', portAnimationClasses(port)]"
-        :relative-position="portPositions.out[port.index]"
-        :port="port"
-        :node-id="id"
-        :targeted="targetPort && targetPort.side === 'out' && targetPort.index === port.index"
-        :is-selected="selectedPort === `${id}-outport-${port.index}`"
-        direction="out"
-        @select="selectPort(port, 'outport')"
-        @delete="deletePort(port, 'output')"
-      /> -->
     <DraggablePortWithTooltip
       v-for="port of inPorts"
       :key="`inport-${port.index}`"
@@ -189,10 +196,10 @@ export default {
       :port="port"
       :node-id="nodeId"
       :targeted="targetPort && targetPort.side === 'in' && targetPort.index === port.index"
-      :is-selected="selectedPort === `${nodeId}-inport-${port.index}`"
+      :is-selected="selectedNodePort === `${nodeId}-inport-${port.index}`"
       direction="in"
-      @select="selectPort(port, 'inport')"
-      @delete="deletePort(port, 'input')"
+      @select="selectPort($event, 'inport')"
+      @delete="deletePort($event, 'input')"
     />
 
     <DraggablePortWithTooltip
@@ -203,10 +210,10 @@ export default {
       :port="port"
       :node-id="nodeId"
       :targeted="targetPort && targetPort.side === 'out' && targetPort.index === port.index"
-      :is-selected="selectedPort === `${nodeId}-outport-${port.index}`"
+      :is-selected="selectedNodePort === `${nodeId}-outport-${port.index}`"
       direction="out"
-      @select="selectPort(port, 'outport')"
-      @delete="deletePort(port, 'output')"
+      @select="selectPort($event, 'outport')"
+      @delete="deletePort($event, 'output')"
     />
 
     <AddPortPlaceholder

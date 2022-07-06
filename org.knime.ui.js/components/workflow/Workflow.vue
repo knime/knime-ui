@@ -37,6 +37,16 @@ export default {
                 }
             }
             return [...unselected, ...selected];
+        },
+        selectedPortTransition() {
+            // returns a functional component that is used as transition prop on <portal>. This way the transition
+            // behaves as without portal, see https://portal-vue.linusb.org/api/portal-target.html#transition
+            return {
+                functional: true,
+                render(h, context) {
+                    return h('transition', { props: { name: 'fade' } }, context.children);
+                }
+            };
         }
     },
     methods: {
@@ -117,7 +127,36 @@ export default {
 
     <portal-target
       tag="g"
+      name="selected-port"
+      :transition="selectedPortTransition"
+    />
+
+    <portal-target
+      tag="g"
       name="drag-connector"
     />
   </g>
 </template>
+
+<style lang="postcss" scoped>
+.fade-enter {
+  & >>> .action-button {
+    opacity: 0;
+  }
+}
+
+.fade-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-active, {
+  /* TODO: leave comment */
+  & >>> .action-button {
+    transition: all 120ms ease-in;
+  }
+}
+
+.fade-leave-active {
+  transition: all 120ms ease-out;
+}
+</style>

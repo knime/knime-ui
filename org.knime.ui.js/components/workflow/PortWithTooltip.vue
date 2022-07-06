@@ -41,7 +41,7 @@ export default {
     },
     render(createElement) {
         return createElement(Port, {
-            props: { ...this.$props, position: this.$props.tooltipPosition },
+            props: this.$props,
             attrs: this.$attrs,
             on: this.$listeners
         });

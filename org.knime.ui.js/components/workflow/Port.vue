@@ -18,11 +18,6 @@ export default {
         isSelected: {
             type: Boolean,
             default: false
-        },
-        position: {
-            type: Array,
-            default: () => [0, 0],
-            validator: position => Array.isArray(position) && position.length === 2
         }
     },
     computed: {
@@ -58,36 +53,34 @@ export default {
                 HALTED: 'green',
                 EXECUTED: 'green'
             }[this.port.nodeState];
+        },
+        outlineX() {
+            let offset = 0;
+            
+            // trafic light ports and table ports need to offset the outline to
+            // make the port look centered
+            if (this.trafficLight) {
+                offset--;
+            }
+
+            if (this.portKind === 'table') {
+                offset--;
+            }
+
+            return offset;
         }
     }
 };
 </script>
 
 <template>
-  <g
-    class="port"
-    @click="$emit('select', $event)"
-  >
-    <portal
-      v-if="isSelected && position"
-      to="selected-port-outline"
-    >
-      <g
-        :transform="`translate(${position})`"
-        @click="$emit('select', $event)"
-      >
-        <circle
-          class="port-outline"
-          r="9"
-        />
-        <PortIcon
-          :type="portKind"
-          :color="portColor"
-          :filled="shouldFill"
-        />
-      </g>
-    </portal>
-
+  <g class="port">
+    <circle
+      v-if="isSelected"
+      class="port-outline"
+      :cx="outlineX"
+      r="9.5"
+    />
     <rect
       :x="-$shapes.portSize / 2"
       :y="-$shapes.portSize / 2 - 1"
