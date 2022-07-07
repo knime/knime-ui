@@ -247,7 +247,7 @@ export const actions = {
         navigator.clipboard.writeText(JSON.stringify(clipboardContent));
     },
     
-    async pasteWorkflowParts({ state, getters, rootGetters }) {
+    async pasteWorkflowParts({ state, getters }) {
         let permission = {};
         try {
             // If Permission API is available
@@ -269,12 +269,16 @@ export const actions = {
             // * NXT-1153: We need to pass a position parameter to the backend
             const verifiedContent = JSON.parse(clipboardContent);
             consola.info('pasteWorkflowParts', verifiedContent);
+            let position;
+            // Handle empty workflow case
+            if (getters.isWorkflowEmpty) {
+                position = { x: 0, y: 0 };
+            }
             pasteWorkflowParts({
                 projectId: state.activeWorkflow.projectId,
                 workflowId: getters.activeWorkflowId,
                 content: JSON.stringify(verifiedContent),
-                position: null
-                // position: { x: 0, y: 0 }
+                position
             });
         } catch (error) {
             consola.warn(`This is not a JSON object: <${clipboardContent.substring(0, 63)}>`);
