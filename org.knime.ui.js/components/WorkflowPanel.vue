@@ -3,17 +3,20 @@ import { mapState, mapGetters } from 'vuex';
 import StreamingIcon from '~/webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
 import ContextMenu from '~/components/ContextMenu';
 import WorkflowCanvas from '~/components/WorkflowCanvas';
+import PortTypeMenu from '~/components/PortTypeMenu';
 
 export default {
     components: {
         StreamingIcon,
         ContextMenu,
-        WorkflowCanvas
+        WorkflowCanvas,
+        PortTypeMenu
     },
     data() {
         return {
             // null (or falsy) means context menu is invisible, otherwise should be an Object with x, y as Numbers
-            contextMenuPosition: null
+            contextMenuPosition: null,
+            portTypeMenuConfig: null
         };
     },
     computed: {
@@ -27,7 +30,8 @@ export default {
             'isWritable',
             'isStreaming',
             'activeWorkflowId'
-        ])
+        ]),
+        ...mapGetters('canvas', ['screenToCanvasCoordinates'])
     },
     methods: {
         onContextMenu(e) {
@@ -39,10 +43,22 @@ export default {
             e.preventDefault();
 
             // update position to current mouse coordinates
-            this.contextMenuPosition = {
-                x: e.clientX,
-                y: e.clientY
-            };
+
+            let [x, y] = this.screenToCanvasCoordinates([e.clientX, e.clientY]);
+            this.contextMenuPosition = { x, y };
+        },
+        onOpenPortTypeMenu(e) {
+            if (this.portTypeMenuConfig && this.portTypeMenuConfig.id !== e.detail.id) {
+                // if another menu than the current one sends an open signal, close the other one first
+                this.portTypeMenuConfig.events['menu-close']();
+            }
+            this.portTypeMenuConfig = e.detail;
+        },
+        onClosePortTypeMenu(e) {
+            // if the menu that is currently open sends a close signal, then close the current menu
+            if (this.portTypeMenuConfig.id === e.detail.id) {
+                this.portTypeMenuConfig = null;
+            }
         }
     }
 };
@@ -52,11 +68,21 @@ export default {
   <div
     :class="['workflow-panel', { 'read-only': !isWritable }]"
     @contextmenu="onContextMenu"
+    @open-port-type-menu="onOpenPortTypeMenu"
+    @close-port-type-menu="onClosePortTypeMenu"
   >
     <ContextMenu
-      v-show="Boolean(contextMenuPosition)"
-      :position="contextMenuPosition || {x: 0, y: 0}"
+      v-if="Boolean(contextMenuPosition)"
+      :position="contextMenuPosition"
       @menu-close="contextMenuPosition = null"
+    />
+    
+    <PortTypeMenu
+      v-if="Boolean(portTypeMenuConfig)"
+      :key="portTypeMenuConfig.id"
+      ref="portTypeMenu"
+      v-bind="portTypeMenuConfig.props"
+      v-on="portTypeMenuConfig.events"
     />
 
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->

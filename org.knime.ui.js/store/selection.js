@@ -4,6 +4,7 @@ import Vue from 'vue';
  * Store that holds selected objects (nodes, connections)
  */
 
+// WARNING: Do not use this state directly. Use getters that filter non existent workflow objects.
 export const state = () => ({
     /**
      * Selected nodes object. If key exists it means it is selected.
@@ -22,7 +23,9 @@ export const mutations = {
     addNodesToSelection(state, nodeIds) {
         // Work on a copy of the state. The vue reactivity-machinery only runs once afterwards
         let selectedNodes = { ...state.selectedNodes };
-        nodeIds.forEach(id => { selectedNodes[id] = true; });
+        nodeIds.forEach(id => {
+            selectedNodes[id] = true;
+        });
 
         state.selectedNodes = selectedNodes;
     },
@@ -31,7 +34,9 @@ export const mutations = {
     removeNodesFromSelection(state, nodeIds) {
         // Work on a copy of the state. The vue reactivity-machinery only runs once afterwards
         let selectedNodes = { ...state.selectedNodes };
-        nodeIds.forEach(id => { delete selectedNodes[id]; });
+        nodeIds.forEach(id => {
+            delete selectedNodes[id];
+        });
 
         state.selectedNodes = selectedNodes;
     },
@@ -105,24 +110,29 @@ export const actions = {
 };
 
 export const getters = {
-
-    // Returns an array of all selected node ids.
-    selectedNodeIds: (state) => Object.keys(state.selectedNodes),
-
     // Returns an array of selected node objects.
+    // This getter filters non-existent selected nodes
     selectedNodes(state, getters, rootState) {
         if (!rootState.workflow.activeWorkflow) {
             return [];
         }
-        return Object.keys(state.selectedNodes).map(
-            (nodeId) => rootState.workflow.activeWorkflow.nodes[nodeId] ||
+        return Object.keys(state.selectedNodes)
+            .map(
+                (nodeId) => rootState.workflow.activeWorkflow.nodes[nodeId] ||
                 consola.error(`Selected node '${nodeId}' not found in activeWorkflow`)
-        );
+            ).filter(Boolean);
+    },
+
+    // Returns an array of all selected node ids.
+    selectedNodeIds(state, { selectedNodes }) {
+        return selectedNodes.map(node => node.id);
     },
 
     // Returns null if none or multiple nodes are selected, otherwise returns the selected node
     singleSelectedNode(state, { selectedNodes }) {
-        if (selectedNodes.length !== 1) { return null; }
+        if (selectedNodes.length !== 1) {
+            return null;
+        }
         return selectedNodes[0];
     },
 

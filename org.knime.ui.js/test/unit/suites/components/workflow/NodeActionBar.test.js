@@ -29,7 +29,7 @@ describe('NodeActionBar', () => {
                     resumeLoopExecution: jest.fn(),
                     stepLoopExecution: jest.fn(),
                     openView: jest.fn(),
-                    openDialog: jest.fn()
+                    openNodeConfiguration: jest.fn()
                 }
             },
             selection: {
@@ -56,7 +56,7 @@ describe('NodeActionBar', () => {
         };
     });
 
-    it('renders disabled action buttons without openDialog and openView', () => {
+    it('renders disabled action buttons without openNodeConfiguration and openView', () => {
         doMount();
 
         let buttons = wrapper.findAllComponents(ActionButton);
@@ -67,7 +67,7 @@ describe('NodeActionBar', () => {
         /* eslint-enable no-magic-numbers */
     });
 
-    it('renders disabled action buttons with openDialog and without openView', () => {
+    it('renders disabled action buttons with openNodeConfiguration and without openView', () => {
         propsData.canOpenDialog = false;
         doMount();
 
@@ -80,7 +80,7 @@ describe('NodeActionBar', () => {
         /* eslint-enable no-magic-numbers */
     });
 
-    it('renders disabled action buttons with openDialog and openView', () => {
+    it('renders disabled action buttons with openNodeConfiguration and openView', () => {
         propsData.canOpenDialog = false;
         propsData.canOpenView = false;
         doMount();
@@ -109,8 +109,10 @@ describe('NodeActionBar', () => {
         let buttons = wrapper.findAllComponents(ActionButton);
 
         // fires action event
-        buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
-        expect(storeConfig.workflow.actions.openDialog).toHaveBeenCalled();
+        buttons.wrappers.forEach(button => {
+            button.vm.$emit('click');
+        });
+        expect(storeConfig.workflow.actions.openNodeConfiguration).toHaveBeenCalled();
         expect(storeConfig.workflow.actions.executeNodes).toHaveBeenCalled();
         expect(storeConfig.workflow.actions.cancelNodeExecution).toHaveBeenCalled();
         expect(storeConfig.workflow.actions.resetNodes).toHaveBeenCalled();
@@ -123,7 +125,9 @@ describe('NodeActionBar', () => {
 
             // fires action event
             let buttons = wrapper.findAllComponents(ActionButton);
-            buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
+            buttons.wrappers.forEach(button => {
+                button.vm.$emit('click');
+            });
 
             expect(storeConfig.workflow.actions.pauseLoopExecution).toHaveBeenCalled();
             expect(storeConfig.workflow.actions.stepLoopExecution).toHaveBeenCalled();
@@ -133,7 +137,9 @@ describe('NodeActionBar', () => {
             doMount({ canStep: true, canPause: false, canResume: true });
 
             let buttons = wrapper.findAllComponents(ActionButton);
-            buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
+            buttons.wrappers.forEach(button => {
+                button.vm.$emit('click');
+            });
             expect(storeConfig.workflow.actions.resumeLoopExecution).toHaveBeenCalled();
             expect(storeConfig.workflow.actions.stepLoopExecution).toHaveBeenCalled();
         });
@@ -143,7 +149,9 @@ describe('NodeActionBar', () => {
             doMount({ canStep: true, canPause: true, canResume: true });
 
             let buttons = wrapper.findAllComponents(ActionButton);
-            buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
+            buttons.wrappers.forEach(button => {
+                button.vm.$emit('click');
+            });
             expect(storeConfig.workflow.actions.pauseLoopExecution).toHaveBeenCalled();
             expect(storeConfig.workflow.actions.stepLoopExecution).toHaveBeenCalled();
             expect(storeConfig.workflow.actions.resumeLoopExecution).not.toHaveBeenCalled();

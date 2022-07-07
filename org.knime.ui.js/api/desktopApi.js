@@ -4,7 +4,7 @@
  * @param {String} nodeId The node for which to open the dialog.
  * @returns {void}
  */
-export const openDialog = ({ projectId, nodeId }) => {
+export const openNodeDialog = ({ projectId, nodeId }) => {
     try {
         // returns falsy on success
         let error = window.openNodeDialog(projectId, nodeId);
@@ -115,5 +115,23 @@ export const createWorkflow = () => {
         }
     } catch (e) {
         consola.error(`Could not create a workflow`, e);
+    }
+};
+
+/**
+ * Opens the layout editor for a component.
+ * @param {String} projectId
+ * @param {String} workflowId
+ * @returns {void}
+ */
+export const openLayoutEditor = ({ projectId, workflowId }) => {
+    try {
+        // returns falsy on success
+        let error = window.openLayoutEditor(projectId, workflowId);
+        if (error) {
+            throw new Error(error);
+        }
+    } catch (e) {
+        consola.error(`Could not open layout editor`, e);
     }
 };

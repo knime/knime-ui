@@ -20,11 +20,11 @@ export default {
             validator: val => ['left', 'center', 'right'].includes(val)
         },
         /**
-         * Font size that should be applied to unstyled text
+         * Font size (in pt) that should be applied to un-styled text
          */
         defaultFontSize: {
             type: Number,
-            default: 11
+            default: 12
         },
         backgroundColor: {
             type: String,
@@ -60,15 +60,23 @@ export default {
                 textAlign: this.textAlign,
                 backgroundColor: this.backgroundColor === '#FFFFFF' ? 'transparent' : this.backgroundColor,
                 padding: `${this.$shapes.nodeAnnotationPadding}px`,
-                fontSize: `${this.defaultFontSize}px`
+                fontSize: `${this.defaultFontSize * this.$shapes.annotationsFontSizePointToPixelFactor}px`
             };
         }
     },
     watch: {
-        textAlign() { this.updateResizeKey(); },
-        defaultFontSize() { this.updateResizeKey(); },
-        text() { this.updateResizeKey(); },
-        styleRanges() { this.updateResizeKey(); }
+        textAlign() {
+            this.updateResizeKey();
+        },
+        defaultFontSize() {
+            this.updateResizeKey();
+        },
+        text() {
+            this.updateResizeKey();
+        },
+        styleRanges() {
+            this.updateResizeKey();
+        }
     },
     methods: {
         updateResizeKey() {

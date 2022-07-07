@@ -2,7 +2,9 @@ import { clear as clearUserAgent, mockUserAgent } from 'jest-useragent-mock';
 
 describe('Commands Plugin', () => {
     let loadPlugin, $commands, context, userAgent;
-    const mockInject = (key, value) => { $commands = value; };
+    const mockInject = (key, value) => {
+        $commands = value;
+    };
 
     beforeEach(() => {
         context = {

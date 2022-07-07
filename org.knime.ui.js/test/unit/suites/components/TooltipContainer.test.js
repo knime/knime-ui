@@ -8,7 +8,7 @@ import Tooltip from '~/components/Tooltip';
 import TooltipContainer from '~/components/TooltipContainer';
 
 describe('TooltipContainer', () => {
-    let doShallowMount, wrapper, $store, storeConfig, tooltip, kanvasElement;
+    let doShallowMount, wrapper, $store, storeConfig, tooltip, kanvasElement, screenFromCanvasCoordinatesMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -18,10 +18,11 @@ describe('TooltipContainer', () => {
     beforeEach(() => {
         wrapper = null;
         $store = null;
+        screenFromCanvasCoordinatesMock = jest.fn().mockImplementation(({ x, y }) => ({ x: x * 2, y: y * 2 }));
         storeConfig = {
             canvas: {
                 getters: {
-                    fromCanvasCoordinates: () => ({ x, y }) => ({ x: x * 2, y: y * 2 })
+                    screenFromCanvasCoordinates: () => screenFromCanvasCoordinatesMock
                 },
                 state: {
                     zoomFactor: 1
@@ -29,7 +30,9 @@ describe('TooltipContainer', () => {
             },
             workflow: {
                 mutations: {
-                    setTooltip: (state, tooltip) => { state.tooltip = tooltip; }
+                    setTooltip: (state, tooltip) => {
+                        state.tooltip = tooltip;
+                    }
                 },
                 state: {
                     tooltip
@@ -115,44 +118,6 @@ describe('TooltipContainer', () => {
             });
         });
 
-        it('shifts by kanvas offset', async () => {
-            let tooltip = {
-                anchorPoint: { x: 0, y: 0 },
-                position: { x: 0, y: 0 }
-            };
-            kanvasElement.offsetLeft = 100;
-            kanvasElement.offsetTop = 100;
-
-            doShallowMount();
-            $store.commit('workflow/setTooltip', tooltip);
-            await Vue.nextTick();
-
-            expect(wrapper.findComponent(Tooltip).props()).toMatchObject({
-                x: 100,
-                y: 100
-            });
-        });
-
-        it('shifts by scroll offset', async () => {
-            let tooltip = {
-                anchorPoint: { x: 0, y: 0 },
-                position: { x: 0, y: 0 }
-            };
-            kanvasElement.offsetLeft = 100;
-            kanvasElement.offsetTop = 100;
-            kanvasElement.scrollLeft = 100;
-            kanvasElement.scrollTop = 100;
-
-            doShallowMount();
-            $store.commit('workflow/setTooltip', tooltip);
-            await Vue.nextTick();
-
-            expect(wrapper.findComponent(Tooltip).props()).toMatchObject({
-                x: 0,
-                y: 0
-            });
-        });
-
         it('passes other props', async () => {
             let tooltip = {
                 position: { x: 0, y: 0 }, // necessary
@@ -220,17 +185,18 @@ describe('TooltipContainer', () => {
         test('tooltip moves while scrolling', async () => {
             let tooltip = {
                 anchorPoint: { x: 0, y: 0 },
-                position: { x: 0, y: 0 }
+                position: { x: 10, y: 10 }
             };
 
             doShallowMount();
             $store.commit('workflow/setTooltip', tooltip);
             await Vue.nextTick();
             expect(wrapper.findComponent(Tooltip).props()).toMatchObject({
-                x: 0,
-                y: 0
+                x: 20,
+                y: 20
             });
-
+            
+            screenFromCanvasCoordinatesMock.mockReturnValue({ x: -50, y: -50 });
             kanvasElement.scrollEventListener({ target: { scrollLeft: 50, scrollTop: 50 } });
             await Vue.nextTick();
             expect(wrapper.findComponent(Tooltip).props()).toMatchObject({

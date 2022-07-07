@@ -15,6 +15,8 @@ import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 
 describe('NodeOutput.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, dummyNodes, workflow, application;
+    const FLOW_VARIABLE = 'FV';
+    const TABLE = 'TA';
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -50,11 +52,11 @@ describe('NodeOutput.vue', () => {
                 activeWorkflow: {
                     nodes: dummyNodes,
                     state: {}
-                },
-                isDragging: false
+                }
             },
             getters: {
-                activeWorkflowId: jest.fn().mockReturnValue('workflowId')
+                activeWorkflowId: jest.fn().mockReturnValue('workflowId'),
+                isDragging: jest.fn().mockReturnValue(false)
             },
             actions: {
                 executeNodes: jest.fn()
@@ -71,7 +73,17 @@ describe('NodeOutput.vue', () => {
 
         application = {
             state: {
-                activeProjectId: 'projectId'
+                activeProjectId: 'projectId',
+                availablePortTypes: {
+                    [TABLE]: {
+                        kind: 'table',
+                        name: 'Data'
+                    },
+                    [FLOW_VARIABLE]: {
+                        kind: 'flowVariable',
+                        name: 'Flow Variable'
+                    }
+                }
             }
         };
 
@@ -113,8 +125,9 @@ describe('NodeOutput.vue', () => {
 
     describe('node problems', () => {
         it("is dragging and table hasn't been loaded yet", () => {
-            workflow.state.isDragging = true;
+            workflow.getters.isDragging.mockReturnValue(true);
             doShallowMount();
+            
             wrapper.setData({ portViewerState: null });
             expect(wrapper.find('.placeholder').text()).toBe('Node output will be loaded after moving is completed');
             expect(wrapper.findComponent(PortTabs).exists()).toBe(true);
@@ -133,7 +146,7 @@ describe('NodeOutput.vue', () => {
         });
 
         it('renders placeholder if node needs to be configured', () => {
-            dummyNodes.node1.outPorts[0] = { type: 'table' };
+            dummyNodes.node1.outPorts[0] = { typeId: TABLE };
             dummyNodes.node1.state = { executionState: 'IDLE' };
             doShallowMount();
             expect(wrapper.findComponent(PortTabs).exists()).toBe(true);
@@ -156,11 +169,11 @@ describe('NodeOutput.vue', () => {
     describe('port problems', () => {
         beforeEach(() => {
             // have at least one supported output port
-            dummyNodes.node1.outPorts[0] = { type: 'flowVariable' };
+            dummyNodes.node1.outPorts[0] = { typeId: FLOW_VARIABLE };
         });
 
         it('selected port is unsupported', () => {
-            dummyNodes.node1.outPorts[1] = { type: 'something unsupported' };
+            dummyNodes.node1.outPorts[1] = { typeId: 'something unsupported' };
             doShallowMount();
 
             expect(wrapper.find('.placeholder').text()).toBe(
@@ -183,7 +196,7 @@ describe('NodeOutput.vue', () => {
         });
 
         it('node is not yet executed (flow variable port)', () => {
-            dummyNodes.node1.outPorts[0] = { type: 'flowVariable' };
+            dummyNodes.node1.outPorts[0] = { typeId: FLOW_VARIABLE };
             dummyNodes.node1.allowedActions = { canExecute: true };
             doShallowMount();
 
@@ -196,7 +209,7 @@ describe('NodeOutput.vue', () => {
         });
 
         it('node is not yet executed (any other port)', () => {
-            dummyNodes.node1.outPorts[0] = { type: 'table' };
+            dummyNodes.node1.outPorts[0] = { typeId: TABLE };
             dummyNodes.node1.allowedActions = { canExecute: true };
             doShallowMount();
 
@@ -212,7 +225,7 @@ describe('NodeOutput.vue', () => {
 
         describe.each(['EXECUTING', 'QUEUED'])('only flow variables can be shown while %s', (executingOrQueued) => {
             it('flow variable port', () => {
-                dummyNodes.node1.outPorts[0] = { type: 'flowVariable' };
+                dummyNodes.node1.outPorts[0] = { typeId: FLOW_VARIABLE };
                 dummyNodes.node1.state = { executionState: executingOrQueued };
                 doShallowMount();
 
@@ -224,7 +237,7 @@ describe('NodeOutput.vue', () => {
             });
 
             it('any other port', () => {
-                dummyNodes.node1.outPorts[0] = { type: 'table' };
+                dummyNodes.node1.outPorts[0] = { typeId: TABLE };
                 dummyNodes.node1.state = { executionState: executingOrQueued };
                 doShallowMount();
 
@@ -245,7 +258,7 @@ describe('NodeOutput.vue', () => {
 
         beforeEach(() => {
             dummyNodes.node1.state.executionState = 'EXECUTED';
-            dummyNodes.node1.outPorts[0] = { type: 'table', portObjectVersion: 'ticker' };
+            dummyNodes.node1.outPorts[0] = { typeId: TABLE, portObjectVersion: 'ticker' };
 
             doShallowMount();
             portView = wrapper.findComponent(TablePortView);
@@ -302,7 +315,7 @@ describe('NodeOutput.vue', () => {
 
         it('node gets problem -> reset selected port', async () => {
             dummyNodes.node1.state.executionState = 'EXECUTED';
-            dummyNodes.node1.outPorts[0] = { type: 'table' };
+            dummyNodes.node1.outPorts[0] = { typeId: TABLE };
             doShallowMount();
 
             expect(wrapper.vm.selectedPortIndex).toBe('0');
@@ -321,7 +334,7 @@ describe('NodeOutput.vue', () => {
 
         it('node loses problem -> default port is selected', async () => {
             dummyNodes.node1.state.executionState = 'IDLE';
-            dummyNodes.node1.outPorts[0] = { type: 'table' };
+            dummyNodes.node1.outPorts[0] = { typeId: TABLE };
             doShallowMount();
 
             expect(wrapper.vm.selectedPortIndex).toBe(null);
@@ -338,7 +351,7 @@ describe('NodeOutput.vue', () => {
 
         it('selected node changes -> default port is selected', async () => {
             dummyNodes.node1.state.executionState = 'EXECUTED';
-            dummyNodes.node1.outPorts[0] = { type: 'table' };
+            dummyNodes.node1.outPorts[0] = { typeId: TABLE };
             dummyNodes.node1.selected = false;
             doShallowMount();
 
@@ -364,18 +377,18 @@ describe('NodeOutput.vue', () => {
                 nodeWithPort = {
                     ...JSON.parse(JSON.stringify(dummyNodes.node1)),
                     kind: 'node',
-                    outPorts: [{ type: 'flowVariable' }, { type: 'table' }],
+                    outPorts: [{ typeId: FLOW_VARIABLE }, { typeId: TABLE }],
                     state: { executionState: 'EXECUTED' }
                 };
 
                 nodeWithManyPorts = {
                     ...JSON.parse(JSON.stringify(nodeWithPort)),
-                    outPorts: [{ type: 'flowVariable' }, { type: 'table' }, { type: 'table' }]
+                    outPorts: [{ typeId: FLOW_VARIABLE }, { typeId: TABLE }, { typeId: TABLE }]
                 };
 
                 nodeWithoutPort = {
                     ...JSON.parse(JSON.stringify(nodeWithPort)),
-                    outPorts: [{ type: 'flowVariable' }]
+                    outPorts: [{ typeId: FLOW_VARIABLE }]
                 };
 
                 metanode = {

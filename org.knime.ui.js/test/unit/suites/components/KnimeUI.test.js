@@ -7,7 +7,6 @@ import KnimeUI from '~/components/KnimeUI';
 import AppHeader from '~/components/AppHeader';
 import Sidebar from '~/components/Sidebar';
 import WorkflowToolbar from '~/components/WorkflowToolbar';
-import WorkflowTabContent from '~/components/WorkflowTabContent';
 import TooltipContainer from '~/components/TooltipContainer';
 import Error from '~/components/Error';
 import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
@@ -56,7 +55,6 @@ describe('KnimeUI.vue', () => {
         expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(true);
         expect(wrapper.findComponent(TooltipContainer).exists()).toBe(true);
         expect(wrapper.findComponent(Sidebar).exists()).toBe(false);
-        expect(wrapper.findComponent(WorkflowTabContent).exists()).toBe(false);
         expect(wrapper.findComponent(WorkflowEntryPage).exists()).toBe(false);
         expect(wrapper.findComponent(HotkeyHandler).exists()).toBe(false);
     });
@@ -94,7 +92,6 @@ describe('KnimeUI.vue', () => {
         await Vue.nextTick();
 
         expect(wrapper.findComponent(Sidebar).exists()).toBe(true);
-        expect(wrapper.findComponent(WorkflowTabContent).exists()).toBe(true);
     });
 
     it('renders after loading without a workflow', async () => {

@@ -52,6 +52,8 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
+import org.knime.ui.java.PerspectiveSwitchAddon;
+import org.knime.ui.java.PerspectiveUtil;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
@@ -74,7 +76,9 @@ public class SwitchToJavaUIBrowserFunction extends BrowserFunction {
 		IWorkbench workbench = PlatformUI.getWorkbench();
 		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
 		try {
-			workbench.showPerspective("org.knime.workbench.ui.ModellerPerspective", window);
+            var perspToRestore = PerspectiveSwitchAddon.getPreviousPerspectiveId() //
+                .orElse(PerspectiveUtil.CLASSIC_PERSPECTIVE_ID);
+            workbench.showPerspective(perspToRestore, window);
 		} catch (WorkbenchException e) {
 			// should never happen
 			throw new RuntimeException(e); // NOSONAR

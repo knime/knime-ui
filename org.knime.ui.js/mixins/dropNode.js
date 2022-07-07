@@ -5,7 +5,7 @@ const isKnimeNode = (e) => e.dataTransfer.types.includes(KnimeMIME);
 
 export const dropNode = {
     computed: {
-        ...mapGetters('canvas', ['toCanvasCoordinates']),
+        ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapGetters('workflow', ['isWritable'])
     },
     methods: {
@@ -21,14 +21,10 @@ export const dropNode = {
             e.preventDefault();
         },
         getDestinationPosition(e) {
-            const halfNodeSize = this.$shapes.nodeSize / 2;
-            const kanvasElement = document.getElementById('kanvas');
-            const { offsetLeft, offsetTop, scrollLeft, scrollTop } = kanvasElement;
-            let result = this.toCanvasCoordinates([
-                e.clientX - offsetLeft + scrollLeft - halfNodeSize,
-                e.clientY - offsetTop + scrollTop - halfNodeSize
+            return this.screenToCanvasCoordinates([
+                e.clientX - this.$shapes.nodeSize / 2,
+                e.clientY - this.$shapes.nodeSize / 2
             ]);
-            return result;
         },
         onDragOver(e) {
             if (this.isWritable && isKnimeNode(e)) {

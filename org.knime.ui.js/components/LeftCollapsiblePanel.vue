@@ -1,5 +1,4 @@
 <script>
-import { mapState } from 'vuex';
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 
 export default {
@@ -7,6 +6,14 @@ export default {
         SwitchIcon
     },
     props: {
+        expanded: {
+            type: Boolean,
+            default: false
+        },
+        disabled: {
+            type: Boolean,
+            default: false
+        },
         /**
          *  Expanded width of the panel's content.
          *  Should be a fixed width.
@@ -27,20 +34,12 @@ export default {
     data: () => ({
         showContainerTransition: false
     }),
-    computed: {
-        ...mapState('panel', ['expanded', 'activeTab', 'activeDescriptionPanel'])
-    },
     mounted() {
         this.showContainerTransition = true;
 
         requestAnimationFrame(() => {
             this.showContainerTransition = false;
         });
-    },
-    methods: {
-        toggleExpanded() {
-            this.$store.dispatch('panel/toggleExpanded');
-        }
     }
 };
 </script>
@@ -61,8 +60,8 @@ export default {
 
     <button
       :title="expanded ? null : title"
-      :disabled="activeDescriptionPanel"
-      @click="toggleExpanded"
+      :disabled="disabled"
+      @click="$emit('toggle-expand')"
     >
       <SwitchIcon :style="{ transform: expanded ? null : 'scaleX(-1)' }" />
     </button>

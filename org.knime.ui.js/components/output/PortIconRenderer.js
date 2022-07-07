@@ -1,23 +1,26 @@
 import Port from '~/components/workflow/Port';
 
-const size = 21;
-
 /**
  * Higher order component that wraps a `Port` output in an svg element.
  * Does not render the port "state" (small circle on metanode output ports).
  * @param {Object} portConfig Passed as `port` config to Port.vue
+ * @param {Number} iconSize The width of the rendered svg will be set to this size
  * @returns {Object} A Vue component
  */
-export default (portConfig) => ({
+export default (portConfig, iconSize) => ({
     render(createElement) {
         let port = { ...portConfig };
         delete port.nodeState;
         let g = createElement(Port, {
             props: { port }
         });
+        
+        
+        let portSize = this.$shapes.portSize;
 
         let attrs = {
-            viewBox: `-${size / 2} -${size / 2} ${size} ${size}`
+            viewBox: `-${portSize / 2} -${portSize / 2} ${portSize} ${portSize}`,
+            style: iconSize && `width: ${iconSize}px`
         };
         return createElement('svg', { attrs }, [g]);
     }

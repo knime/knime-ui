@@ -33,6 +33,12 @@ describe('canvas store', () => {
             scrollTop: 0,
             clientWidth: 300,
             clientHeight: 300,
+            getBoundingClientRect: jest.fn().mockReturnValue({
+                x: 10,
+                y: 10,
+                width: 300,
+                height: 300
+            }),
             scrollTo: jest.fn().mockImplementation(({ top, left, behavior }) => {
                 scrollContainer.scrollLeft = left;
                 scrollContainer.scrollTop = top;
@@ -510,6 +516,34 @@ describe('canvas store', () => {
 
                 store.dispatch('canvas/zoomAroundPointer', { delta: -1 });
                 expect(round(store.state.canvas.zoomFactor)).toBe(round(1 / zoomMultiplier / zoomMultiplier));
+            });
+        });
+
+        describe('coordinate transformation', () => {
+            test('screenFromCanvasCoordinates', () => {
+                store.dispatch('canvas/initScrollContainerElement', {
+                    ...scrollContainer,
+                    offsetLeft: 10,
+                    offsetTop: 10,
+                    scrollLeft: 30,
+                    scrollTop: 30
+                });
+
+                expect(store.getters['canvas/screenFromCanvasCoordinates']({ x: 0, y: 0 }))
+                    .toStrictEqual({ x: 300, y: 300 });
+            });
+
+            test('screenToCanvasCoordinates', () => {
+                store.dispatch('canvas/initScrollContainerElement', {
+                    ...scrollContainer,
+                    offsetLeft: 10,
+                    offsetTop: 10,
+                    scrollLeft: 30,
+                    scrollTop: 30
+                });
+
+                expect(store.getters['canvas/screenToCanvasCoordinates']([300, 300]))
+                    .toStrictEqual([0, 0]);
             });
         });
     });

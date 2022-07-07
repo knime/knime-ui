@@ -1,5 +1,5 @@
 <script>
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters, mapActions, mapState } from 'vuex';
 import PortWithTooltip from '~/components/workflow/PortWithTooltip';
 import Port from '~/components/workflow/Port';
 import Connector from '~/components/workflow/Connector';
@@ -42,8 +42,9 @@ export default {
         dragConnector: null
     }),
     computed: {
-        ...mapGetters('canvas', ['toCanvasCoordinates']),
+        ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapGetters('workflow', ['isWritable']),
+        ...mapState('application', { portTypes: 'availablePortTypes' }),
         /*
          * only in-Ports replace their current connector if a new one is connected
          * only in-Ports that are connected need to indicate connector replacement
@@ -68,14 +69,6 @@ export default {
         ...mapActions('workflow', ['connectNodes']),
 
         /* ======== Drag Connector ======== */
-        positionOnCanvas([x, y]) {
-            const { offsetLeft, offsetTop, scrollLeft, scrollTop } = this.kanvasElement;
-            let result = this.toCanvasCoordinates([
-                x - offsetLeft + scrollLeft,
-                y - offsetTop + scrollTop
-            ]);
-            return result;
-        },
         onPointerDown(e) {
             if (!this.isWritable || e.button !== 0 || e.shiftKey || e.ctrlKey) {
                 return;
@@ -92,8 +85,8 @@ export default {
                 allowedActions: {
                     canDelete: false
                 },
-                flowVariableConnection: this.port.type === 'flowVariable',
-                absolutePoint: this.positionOnCanvas([e.x, e.y])
+                flowVariableConnection: this.portTypes[this.port.typeId].kind === 'flowVariable',
+                absolutePoint: this.screenToCanvasCoordinates([e.x, e.y])
             };
 
             if (this.direction === 'out') {
@@ -120,7 +113,9 @@ export default {
             });
         },
         onPointerUp(e) {
-            if (!this.dragConnector) { return; }
+            if (!this.dragConnector) {
+                return;
+            }
 
             e.stopPropagation();
             e.target.releasePointerCapture(e.pointerId);
@@ -156,13 +151,15 @@ export default {
         },
         onPointerMove: throttle(function (e) {
             /* eslint-disable no-invalid-this */
-            if (!this.dragConnector) { return; }
+            if (!this.dragConnector) {
+                return;
+            }
 
             // find HTML-Element below cursor
             let hitTarget = document.elementFromPoint(e.x, e.y);
 
             // create move event
-            let [absoluteX, absoluteY] = this.positionOnCanvas([e.x, e.y]);
+            let [absoluteX, absoluteY] = this.screenToCanvasCoordinates([e.x, e.y]);
             let moveEvent = new CustomEvent('connector-move', {
                 detail: {
                     x: absoluteX,

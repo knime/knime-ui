@@ -4,8 +4,9 @@
   "description": "KNIME HTML based UI",
   "author": "KNIME AG",
   "scripts": {
-    "dev": "nuxt",
+    "dev": "nuxt && npm run opensourcecredits -- -- -- --no-overwrite",
     "build": "nuxt build && node buildtools/inline-html.mjs",
+    "postinstall": "npm run opensourcecredits -- --no-overwrite",
     "start": "nuxt start",
     "lint": "npm run lint:js && npm run lint:css && npm run lint:json",
     "lint:ci": "eslint --ext .js,.ts,.json . -f json -o target/eslint.json || true; stylelint '**/*.css' -f json -o target/stylelint.json || true",
@@ -13,15 +14,20 @@
     "lint:json": "eslint --ext .json --no-error-on-unmatched-pattern .",
     "lint:css": "stylelint '**/*.{css,vue}'",
     "audit": "check-audit --production --json > target/audit.json || true",
+    "audit:resolve": "resolve-audit --production",
     "test:unit": "jest",
     "coverage": "jest --coverage",
-    "coverage:watch": "npm run test:unit -- --coverage --watch"
+    "coverage:watch": "npm run test:unit -- --coverage --watch",
+    "opensourcecredits": "npm run --prefix webapps-common opensourcecredits"
   },
   "dependencies": {
     "@fontsource/roboto": "4.5.3",
     "@fontsource/roboto-condensed": "4.5.4",
     "@fontsource/roboto-mono": "4.5.3",
     "consola": "2.15.3",
+    "focus-trap": "6.0.1",
+    "focus-trap-vue": "0.0.6",
+    "fuse.js": "6.5.3",
     "gsap": "3.8.0",
     "lodash": "4.17.21",
     "nuxt": "2.15.8",

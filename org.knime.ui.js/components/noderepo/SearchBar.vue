@@ -18,12 +18,20 @@ export default {
         value: {
             type: String,
             default: ''
+        },
+        placeholder: {
+            type: String,
+            default: null
         }
     },
     methods: {
         clearSearch() {
-            // only clear the search query - tags will be kept
+            this.$emit('clear');
             this.$emit('input', '');
+            this.$refs.searchInput.focus();
+        },
+        // publicly accessible
+        focus() {
             this.$refs.searchInput.focus();
         }
     }
@@ -42,7 +50,7 @@ export default {
     <input
       ref="searchInput"
       :value="value"
-      placeholder="Search nodes"
+      :placeholder="placeholder"
       type="text"
       @input="$emit('input', $event.target.value)"
     >
@@ -58,56 +66,49 @@ export default {
 
 <style lang="postcss" scoped>
 .node-search {
-  height: 40px;
   display: flex;
   align-items: center;
   position: relative;
   border: 1px solid var(--knime-stone-gray);
   background-color: var(--knime-white);
-
-  &:hover {
-    background-color: var(--knime-silver-sand-semi);
-  }
-
-  &:focus-within {
-    background-color: var(--knime-white);
-    border-color: var(--knime-masala);
-  }
+  font-size: 17px;
 
   & .lens-icon {
     display: flex;
     padding: 6px;
     margin-left: 3px;
     pointer-events: none;
+    --icon-size: 18;
 
     & svg {
       vertical-align: top;
       stroke: var(--theme-button-function-foreground-color);
-      width: 18px;
-      height: 18px;
-      stroke-width: calc(32px / 18);
+      width: calc(var(--icon-size) * 1px);
+      height: calc(var(--icon-size) * 1px);
+      stroke-width: calc(32px / var(--icon-size));
     }
   }
 
   & .clear-search {
-    margin-right: 6px;
+    --icon-size: 12;
+
+    margin-right: calc(var(--icon-size) / 2 * 1px);
 
     & >>> svg {
-      width: 12px;
-      height: 12px;
-      stroke-width: calc(32px / 12);
+      width: calc(var(--icon-size) * 1px);
+      height: calc(var(--icon-size) * 1px);
+      stroke-width: calc(32px / var(--icon-size));
     }
   }
 }
 
 input {
-  width: 100%;
+  flex-grow: 1;
   height: 100%;
   border: 0;
   padding-right: 6px;
   color: var(--knime-masala);
   background-color: transparent;
-  font-size: 17px;
 
   &:focus {
     outline: none;

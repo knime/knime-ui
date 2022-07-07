@@ -46,7 +46,9 @@ export const mutations = {
         don't restore containerSize, it might have changed
     */
     restoreState(state, savedState) {
-        if (!savedState) { return; }
+        if (!savedState) {
+            return;
+        }
         let { zoomFactor, scrollLeft, scrollTop } = savedState;
         state.zoomFactor = zoomFactor;
 
@@ -354,6 +356,24 @@ export const getters = {
     },
 
     /*
+        returns the position of a given point on the workflow relative to the window
+    */
+    screenFromCanvasCoordinates({ getScrollContainerElement }, { fromCanvasCoordinates }) {
+        let scrollContainerElement = getScrollContainerElement();
+        
+        return ({ x, y }) => {
+            const { x: offsetLeft, y: offsetTop } = scrollContainerElement.getBoundingClientRect();
+            const { scrollLeft, scrollTop } = scrollContainerElement;
+            
+            let screenCoordinates = fromCanvasCoordinates({ x, y });
+            screenCoordinates.x = screenCoordinates.x - scrollLeft + offsetLeft;
+            screenCoordinates.y = screenCoordinates.y - scrollTop + offsetTop;
+
+            return screenCoordinates;
+        };
+    },
+
+    /*
         find point in workflow, based on absolute coordinate on canvas
     */
     toCanvasCoordinates({ zoomFactor }, { viewBox }) {
@@ -361,6 +381,23 @@ export const getters = {
             origX / zoomFactor + viewBox.left,
             origY / zoomFactor + viewBox.top
         ];
+    },
+
+    /*
+        returns the position of a given point on the workflow relative to the window
+    */
+    screenToCanvasCoordinates({ getScrollContainerElement }, { toCanvasCoordinates }) {
+        let scrollContainerElement = getScrollContainerElement();
+        
+        return ([origX, origY]) => {
+            const { x: offsetLeft, y: offsetTop } = scrollContainerElement.getBoundingClientRect();
+            const { scrollLeft, scrollTop } = scrollContainerElement;
+            
+            const offsetX = origX - offsetLeft + scrollLeft;
+            const offsetY = origY - offsetTop + scrollTop;
+            
+            return toCanvasCoordinates([offsetX, offsetY]);
+        };
     },
 
     /*

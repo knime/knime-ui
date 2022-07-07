@@ -26,6 +26,7 @@ export default {
       v-if="links.length"
       :links="links"
     />
+    <!-- Use MetadataPlaceholder? -->
     <div
       v-else
       class="placeholder"

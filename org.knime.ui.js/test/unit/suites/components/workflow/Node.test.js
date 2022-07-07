@@ -6,12 +6,11 @@ import Vue from 'vue';
 import { mockVuexStore } from '~/test/unit/test-utils';
 
 import Node from '~/components/workflow/Node';
+import NodePorts from '~/components/workflow/NodePorts';
+import NodeDecorators from '~/components/workflow/NodeDecorators';
 import NodeTorso from '~/components/workflow/NodeTorso';
 import NodeState from '~/components/workflow/NodeState';
 import NodeAnnotation from '~/components/workflow/NodeAnnotation';
-import LinkDecorator from '~/components/workflow/LinkDecorator';
-import StreamingDecorator from '~/components/workflow/StreamingDecorator';
-import LoopDecorator from '~/components/workflow/LoopDecorator';
 import NodeActionBar from '~/components/workflow/NodeActionBar';
 import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
@@ -22,27 +21,12 @@ import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 import NodeName from '~/components/workflow/NodeName';
 
-const mockPort = ({ index, connectedVia = [] }) => ({
-    inactive: false,
-    optional: false,
-    index,
-    type: 'other',
-    connectedVia
-});
-
 const commonNode = {
     id: 'root:1',
     kind: 'node',
 
-    inPorts: [
-        mockPort({ index: 0, connectedVia: ['inA'] }),
-        mockPort({ index: 1 })
-    ],
-    outPorts: [
-        mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] }),
-        mockPort({ index: 1, outgoing: true }),
-        mockPort({ index: 2, outgoing: true, connectedVia: ['outB'] })
-    ],
+    inPorts: [],
+    outPorts: [],
 
     position: { x: 500, y: 200 },
     annotation: {
@@ -55,8 +39,21 @@ const commonNode = {
     type: 'Source',
 
     icon: 'data:image/icon',
-    selected: false
 
+    allowedActions: {
+        canExecute: true,
+        canCancel: true,
+        canReset: true,
+        canOpenDialog: true,
+        canOpenView: true
+    },
+
+    link: null,
+    executionInfo: null,
+    loopState: null,
+    loopInfo: {
+        allowedActions: {}
+    }
 };
 const nativeNode = {
     ...commonNode,
@@ -79,7 +76,7 @@ const metaNode = {
 };
 
 describe('Node', () => {
-    let propsData, mocks, doMount, wrapper, portShiftMock, storeConfig;
+    let propsData, mocks, doMount, wrapper, storeConfig, $store, NodePortsMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -95,11 +92,12 @@ describe('Node', () => {
                     executeNodes: jest.fn(),
                     cancelNodeExecution: jest.fn(),
                     resetNodes: jest.fn(),
-                    openDialog: jest.fn(),
+                    openNodeConfiguration: jest.fn(),
                     openView: jest.fn()
                 },
                 getters: {
-                    isWritable: () => true
+                    isWritable: () => true,
+                    isDragging: () => false
                 }
             },
             application: {
@@ -112,7 +110,8 @@ describe('Node', () => {
             },
             selection: {
                 getters: {
-                    isNodeSelected: () => jest.fn()
+                    isNodeSelected: () => jest.fn(),
+                    singleSelectedNode: jest.fn()
                 },
                 actions: {
                     deselectAllObjects: jest.fn(),
@@ -127,21 +126,31 @@ describe('Node', () => {
             }
         };
 
+        NodePortsMock = {
+            props: NodePorts.props,
+            data: () => ({
+                portBarBottom: 101,
+                portPositions: 'port-positions'
+            }),
+            template: '<div />'
+        };
+
 
         propsData = {
             // insert node before mounting
         };
 
-        mocks = { $shapes, $colors };
-
-        if (portShiftMock) {
-            portShiftMock.mockRestore();
-        }
-        portShiftMock = jest.spyOn(Node.methods, 'portShift');
 
         doMount = () => {
-            mocks.$store = mockVuexStore(storeConfig);
-            wrapper = shallowMount(Node, { propsData, mocks });
+            $store = mockVuexStore(storeConfig);
+            mocks = { $shapes, $colors, $store };
+            wrapper = shallowMount(Node, {
+                propsData,
+                mocks,
+                stubs: {
+                    NodePorts: NodePortsMock
+                }
+            });
         };
     });
 
@@ -151,25 +160,44 @@ describe('Node', () => {
             doMount();
         });
 
-        it('shows/hides LinkDecorator', () => {
-            expect(wrapper.findComponent(LinkDecorator).exists()).toBe(false);
-            propsData.link = 'linkylinky';
+        it('renders ports', () => {
             doMount();
-            expect(wrapper.findComponent(LinkDecorator).exists()).toBe(true);
+            let nodePorts = wrapper.findComponent(NodePortsMock);
+
+            expect(nodePorts.props('nodeId')).toBe(commonNode.id);
+            expect(nodePorts.props('inPorts')).toStrictEqual(commonNode.inPorts);
+            expect(nodePorts.props('outPorts')).toStrictEqual(commonNode.inPorts);
+            expect(nodePorts.props('targetPort')).toBe(null);
+            expect(nodePorts.props('canAddPorts')).toBe(false);
+            expect(nodePorts.props('isMetanode')).toBe(false);
+            expect(nodePorts.props('hover')).toBe(false);
+            expect(nodePorts.props('connectorHover')).toBe(false);
+            expect(nodePorts.props('isSingleSelected')).toBe(false);
         });
 
-        it('shows/hides StreamingDecorator', () => {
-            expect(wrapper.findComponent(StreamingDecorator).exists()).toBe(false);
-            propsData.executionInfo = { jobManager: 'sampleJobManager' };
+        it('renders decorators', () => {
             doMount();
-            expect(wrapper.findComponent(StreamingDecorator).exists()).toBe(true);
+
+            let decoratorProps = wrapper.findComponent(NodeDecorators).props();
+            expect(propsData).toMatchObject(decoratorProps);
         });
 
-        it('shows/hides LoopDecorator', () => {
-            expect(wrapper.findComponent(LoopDecorator).exists()).toBe(false);
-            propsData.type = 'LoopEnd';
+        it('renders ports for metanodes', () => {
+            propsData = { ...metaNode };
             doMount();
-            expect(wrapper.findComponent(LoopDecorator).exists()).toBe(true);
+            let nodePorts = wrapper.findComponent(NodePortsMock);
+
+            expect(nodePorts.props('canAddPorts')).toBe(true);
+            expect(nodePorts.props('isMetanode')).toBe(true);
+        });
+
+        it('renders ports for components', () => {
+            propsData = { ...componentNode };
+            doMount();
+            let nodePorts = wrapper.findComponent(NodePortsMock);
+
+            expect(nodePorts.props('canAddPorts')).toBe(true);
+            expect(nodePorts.props('isMetanode')).toBe(false);
         });
 
         it("doesn't render non-existent node annotation", () => {
@@ -189,7 +217,7 @@ describe('Node', () => {
         it('displays annotation', () => {
             expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
                 backgroundColor: 'rgb(255, 216, 0)',
-                defaultFontSize: 11,
+                defaultFontSize: 12,
                 styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
                 text: 'ThatsMyNode',
                 textAlign: 'center',
@@ -202,7 +230,7 @@ describe('Node', () => {
             doMount();
             expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
                 backgroundColor: 'rgb(255, 216, 0)',
-                defaultFontSize: 11,
+                defaultFontSize: 12,
                 styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
                 text: 'ThatsMyNode',
                 textAlign: 'center',
@@ -254,43 +282,7 @@ describe('Node', () => {
         doMount();
         await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
-        expect(storeConfig.workflow.actions.openDialog).toHaveBeenCalledWith(expect.anything(), 'root:1');
-    });
-
-    describe('Mickey-Mouse ports', () => {
-        test.each([
-            ['native node', nativeNode],
-            ['component', componentNode]
-        ])('only first ports of %s are mickey mouse ports', (_, node) => {
-            propsData = { ...node };
-            doMount();
-
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
-            expect(ports.at(0).attributes().class).toMatch('mickey-mouse');
-            expect(ports.at(1).attributes().class).not.toMatch('mickey-mouse');
-            expect(ports.at(2).attributes().class).toMatch('mickey-mouse');
-            expect(ports.at(3).attributes().class).not.toMatch('mickey-mouse');
-            expect(ports.at(4).attributes().class).not.toMatch('mickey-mouse');
-        });
-
-        test('metanodes have no mickey-mouse ports', () => {
-            propsData = { ...metaNode };
-            doMount();
-
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
-            ports.forEach(port => {
-                expect(port.attributes().class).not.toMatch('mickey-mouse');
-            });
-        });
-
-        test('connected ports are displayed', () => {
-            propsData = { ...nativeNode };
-            doMount();
-
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
-            expect(ports.at(0).attributes().class).toMatch('connected');
-            expect(ports.at(1).attributes().class).not.toMatch('connected');
-        });
+        expect(storeConfig.workflow.actions.openNodeConfiguration).toHaveBeenCalledWith(expect.anything(), 'root:1');
     });
 
     describe('Node selection preview', () => {
@@ -298,11 +290,6 @@ describe('Node', () => {
             propsData =
                 {
                     ...commonNode,
-                    allowedActions: {
-                        canExecute: true,
-                        canOpenDialog: true,
-                        canOpenView: false
-                    },
                     state: {
                         executionState: 'IDLE'
                     }
@@ -349,7 +336,6 @@ describe('Node', () => {
             propsData =
             {
                 ...commonNode,
-                allowedActions: { canExecute: true, canOpenDialog: true, canOpenView: false },
                 state: {
                     executionState: 'IDLE'
                 }
@@ -366,22 +352,6 @@ describe('Node', () => {
             expect(wrapper.findComponent(NodeSelectionPlane).isVisible()).toBe(false);
         });
 
-        it('shows hidden flow variable ports', () => {
-            propsData.inPorts[0].connectedVia = [];
-            propsData.outPorts[0].connectedVia = [];
-            doMount();
-
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
-            const locations = ports.map(p => p.props().relativePosition);
-            expect(locations).toStrictEqual([
-                [0, -4.5],
-                [-4.5, 16],
-                [32, -4.5],
-                [36.5, 5.5],
-                [36.5, 26.5]
-            ]);
-        });
-
         it('has no shadow effect', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
             doMount();
@@ -396,13 +366,13 @@ describe('Node', () => {
             expect(wrapper.findComponent(NodeActionBar).props()).toStrictEqual({
                 nodeId: 'root:1',
                 canExecute: true,
-                canCancel: false,
-                canReset: false,
+                canCancel: true,
+                canReset: true,
                 canPause: null,
                 canResume: null,
                 canStep: null,
                 canOpenDialog: true,
-                canOpenView: false
+                canOpenView: true
             });
             expect(wrapper.findComponent(NodeActionBar).attributes().transform).toBe('translate(516, 161)');
         });
@@ -480,23 +450,24 @@ describe('Node', () => {
                 expect.stringMatching('root:1')
             );
         });
+
+        it('forwards hover state to children', () => {
+            storeConfig.selection.getters.singleSelectedNode.mockReturnValue(commonNode);
+            doMount();
+
+            expect(wrapper.findComponent(NodePortsMock).props('isSingleSelected')).toBe(true);
+        });
     });
 
     describe('Node hover', () => {
+        let previousHoverHeight;
+
         beforeEach(() => {
             propsData = {
-                ...commonNode,
-                inPorts: [mockPort({ index: 0 })],
-                outPorts: [mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] })],
-                allowedActions: {
-                    canExecute: true,
-                    canCancel: true,
-                    canReset: true,
-                    canOpenDialog: true,
-                    canOpenView: true
-                }
+                ...commonNode
             };
             doMount();
+            previousHoverHeight = Number(wrapper.find('.hover-area').attributes('height'));
 
             expect(wrapper.vm.hover).toBe(false);
             wrapper.find('.hover-container').trigger('mouseenter');
@@ -515,11 +486,11 @@ describe('Node', () => {
 
         it('fits the hover-area to the node name', async () => {
             let { y: oldY, height: oldHeight } = wrapper.find('.hover-area').attributes();
-            
+
             // increase from 20 to 40 (by 20)
             wrapper.findComponent(NodeName).vm.$emit('height-change', 40);
             await Vue.nextTick();
-            
+
             let { y, height } = wrapper.find('.hover-area').attributes();
             expect(oldY - y).toBe(20);
             expect(height - oldHeight).toBe(20);
@@ -542,23 +513,8 @@ describe('Node', () => {
         });
 
         it('shows shadows', () => {
-            expect(wrapper.findComponent(NodeState).attributes().filter).toBe('url(#node-state-shadow)');
-            expect(wrapper.findComponent(NodeTorso).attributes().filter).toBe('url(#node-torso-shadow)');
-        });
-
-        it('fades-in/out mickey-mouse ports', async () => {
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
-
-            // flowVariable ports fades in
-            expect(ports.at(0).attributes().class).toMatch('node-hover');
-            expect(ports.at(1).attributes().class).toMatch('node-hover');
-            
-            wrapper.vm.hover = false;
-            await Vue.nextTick();
-
-            // flowVariable ports fades out
-            expect(ports.at(0).attributes().class).not.toMatch('node-hover');
-            expect(ports.at(1).attributes().class).not.toMatch('node-hover');
+            expect(wrapper.findComponent(NodeState).classes()).toContain('hover');
+            expect(wrapper.findComponent(NodeTorso).classes()).toContain('hover');
         });
 
         it('leaving hover container unsets hover', () => {
@@ -566,96 +522,49 @@ describe('Node', () => {
             expect(wrapper.vm.hover).toBe(false);
         });
 
-
         describe('portalled elements need MouseLeave Listener', () => {
             it('NodeActionBar', () => {
                 wrapper.findComponent(NodeActionBar).trigger('mouseleave');
                 expect(wrapper.vm.hover).toBe(false);
             });
         });
+
+        it('enlargens the hover area to include ports', () => {
+            expect(previousHoverHeight).toBe(89);
+
+            let currentHoverHeight = Number(wrapper.find('.hover-area').attributes('height'));
+            expect(currentHoverHeight).toBe(165);
+        });
+
+        it('forwards hover state to children', () => {
+            expect(wrapper.findComponent(NodePortsMock).props('hover')).toBe(true);
+        });
     });
 
     describe('Connector drag & drop', () => {
         beforeEach(() => {
             propsData = {
-                ...commonNode,
-                inPorts: [mockPort({ index: 0 })],
-                outPorts: [mockPort({ index: 0, outgoing: true })],
-                allowedActions: {
-                    canExecute: true,
-                    canCancel: true,
-                    canReset: true,
-                    canOpenDialog: true,
-                    canOpenView: true
-                }
+                ...commonNode
             };
             doMount();
         });
 
-        it('hovering with a connector shows mickey-mouse ports', async () => {
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
-
+        it('forwards connector hover state to children', async () => {
             wrapper.setData({ connectorHover: true });
             await Vue.nextTick();
 
-            // flowVariable ports fade in
-            expect(ports.at(0).attributes().class).toMatch('connector-hover');
-            expect(ports.at(1).attributes().class).toMatch('connector-hover');
-
-            wrapper.setData({ connectorHover: false });
-            await Vue.nextTick();
-
-            // unconnected flowVariable ports are hidden
-            expect(ports.at(0).attributes().class).not.toMatch('connector-hover');
-            expect(ports.at(1).attributes().class).not.toMatch('connector-hover');
+            expect(wrapper.findComponent(NodePortsMock).props('connectorHover')).toBe(true);
         });
 
-        it('sets target port', async () => {
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
-            const [inPort, outPort] = ports.wrappers;
-
-            expect(inPort.props('targeted')).toBeFalsy();
-            expect(outPort.props('targeted')).toBeFalsy();
-
-            wrapper.setData({
-                targetPort: {
-                    index: 0,
-                    side: 'in'
-                }
-            });
+        it('forwards targetPort to children', async () => {
+            wrapper.setData({ targetPort: { mock: 'something' } });
             await Vue.nextTick();
-            expect(inPort.props('targeted')).toBe(true);
-            expect(outPort.props('targeted')).toBeFalsy();
 
-            wrapper.setData({
-                targetPort: {
-                    index: 1,
-                    side: 'in'
-                }
-            });
-            await Vue.nextTick();
-            expect(inPort.props('targeted')).toBeFalsy();
-            expect(outPort.props('targeted')).toBeFalsy();
+            expect(wrapper.findComponent(NodePortsMock).props('targetPort')).toEqual({ mock: 'something' });
+        });
 
-            wrapper.setData({
-                targetPort: {
-                    index: 0,
-                    side: 'out'
-                }
-            });
-            await Vue.nextTick();
-            expect(inPort.props('targeted')).toBeFalsy();
-            expect(outPort.props('targeted')).toBe(true);
-
-            wrapper.setData({
-                targetPort: {
-                    index: 1,
-                    side: 'out'
-                }
-            });
-            await Vue.nextTick();
-            expect(inPort.props('targeted')).toBeFalsy();
-            expect(outPort.props('targeted')).toBeFalsy();
+        it('reads portPositions from NodePorts.vue', () => {
+            expect(wrapper.vm.portPositions).toBe('port-positions');
         });
 
         describe('outside hover region?', () => {
@@ -700,59 +609,6 @@ describe('Node', () => {
                 await Vue.nextTick();
                 expect(wrapper.classes('connection-forbidden')).toBe(false);
             });
-        });
-    });
-
-    describe('Port positions', () => {
-        it('for meta node', () => {
-            propsData = { ...metaNode };
-            doMount();
-
-            const ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
-            const locations = ports.map(p => p.props().relativePosition);
-            const portAttrs = ports.map(p => p.props().port.index);
-
-            expect(locations).toStrictEqual([
-                [-4.5, 5.5],
-                [-4.5, 26.5],
-                [36.5, 5.5],
-                [36.5, 16],
-                [36.5, 26.5]
-            ]);
-
-            expect(portAttrs).toStrictEqual([0, 1, 0, 1, 2]);
-        });
-
-        it.each([
-            ['native', nativeNode],
-            ['component', componentNode]
-        ])('for %s node', (kind, node) => {
-            propsData = { ...node };
-            doMount();
-
-            const ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
-            const locations = ports.map(p => p.props().relativePosition);
-            const portAttrs = ports.map(p => p.props().port.index);
-
-            expect(locations).toStrictEqual([
-                [0, -4.5], // left flowVariablePort (index 0)
-                [-4.5, 16], // left side port (index 1)
-                [32, -4.5], // right flowVariablePort (index 0)
-                [36.5, 5.5],
-                [36.5, 26.5]
-            ]);
-
-            expect(portAttrs).toStrictEqual([0, 1, 0, 1, 2]);
-        });
-
-        it('always shows ports other than mickey-mouse', () => {
-            propsData = { ...commonNode };
-            doMount();
-
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
-            expect(ports.at(1).attributes().class).toBe('port');
-            expect(ports.at(3).attributes().class).toBe('port');
-            expect(ports.at(4).attributes().class).toBe('port');
         });
     });
 
@@ -805,7 +661,7 @@ describe('Node', () => {
             propsData = { ...commonNode };
             doMount();
         });
-        
+
         it('should forward to NodeName component', () => {
             expect(wrapper.findComponent(NodeName).props()).toStrictEqual({
                 nodeId: commonNode.id,
@@ -823,21 +679,6 @@ describe('Node', () => {
             await wrapper.setProps({ kind });
 
             expect(wrapper.findComponent(NodeName).props('editable')).toBe(expectedValue);
-        });
-
-        it('should display/hide node actions on mouseenter/mouseleave', async () => {
-            expect(wrapper.findComponent(NodeActionBar).exists()).toBe(false);
-            
-            wrapper.findComponent(NodeName).vm.$emit('mouseenter');
-            
-            await Vue.nextTick();
-            expect(wrapper.findComponent(NodeActionBar).exists()).toBe(true);
-
-            const dummyNode = document.createElement('div');
-            wrapper.findComponent(NodeName).vm.$emit('mouseleave', { relatedTarget: dummyNode });
-            
-            await Vue.nextTick();
-            expect(wrapper.findComponent(NodeActionBar).exists()).toBe(false);
         });
 
         it('should handle contextmenu events', async () => {

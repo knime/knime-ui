@@ -2,6 +2,9 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
+import Vue from 'vue';
+Vue.config.ignoredElements = ['portal'];
+
 import NodeRepository from '~/components/noderepo/NodeRepository';
 
 import SearchBar from '~/components/noderepo/SearchBar';
@@ -9,6 +12,7 @@ import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
 import CloseableTagList from '~/components/noderepo/CloseableTagList';
 import CategoryResults from '~/components/noderepo/CategoryResults';
 import SearchResults from '~/components/noderepo/SearchResults';
+import NodeDescription from '~/components/noderepo/NodeDescription';
 
 jest.mock('lodash', () => ({
     debounce(func) {
@@ -27,7 +31,8 @@ jest.mock('lodash', () => ({
 
 describe('NodeRepository', () => {
     let mocks, doShallowMount, wrapper, $store, searchNodesMock, searchNodesNextPageMock, setSelectedTagsMock,
-        getAllNodesMock, clearSearchParamsMock, setScrollPositionMock, updateQueryMock, searchIsActive;
+        getAllNodesMock, clearSearchParamsMock, setScrollPositionMock,
+        setSelectedNodeMock, updateQueryMock, searchIsActive;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -42,6 +47,7 @@ describe('NodeRepository', () => {
         getAllNodesMock = jest.fn();
         clearSearchParamsMock = jest.fn();
         setScrollPositionMock = jest.fn();
+        setSelectedNodeMock = jest.fn();
         updateQueryMock = jest.fn();
         searchIsActive = true;
 
@@ -69,7 +75,8 @@ describe('NodeRepository', () => {
                     selectedTags: ['myTag2'],
                     tags: ['myTag1', 'myTag2'],
                     query: '',
-                    scrollPosition: 100
+                    scrollPosition: 100,
+                    isDescriptionPanelOpen: false
                 },
                 actions: {
                     searchNodes: searchNodesMock,
@@ -85,7 +92,8 @@ describe('NodeRepository', () => {
                     }
                 },
                 mutations: {
-                    setScrollPosition: setScrollPositionMock
+                    setScrollPosition: setScrollPositionMock,
+                    setSelectedNode: setSelectedNodeMock
                 }
             }
         });
@@ -169,13 +177,37 @@ describe('NodeRepository', () => {
         });
 
         it('links back to repository view on search/filter results', () => {
-            const singleSearchText = 'some node';
-            $store.state.nodeRepository.query = singleSearchText;
+            $store.state.nodeRepository.query = 'some node';
             $store.state.nodeRepository.selectedTags = [];
             $store.state.nodeRepository.nodes = [];
             doShallowMount();
             expect(wrapper.findComponent(ActionBreadcrumb).props('items'))
                 .toEqual([{ id: 'clear', text: 'Repository' }, { text: 'Results' }]);
+        });
+    });
+
+    describe('Info panel', () => {
+        it('shows node description panel', async () => {
+            doShallowMount();
+            expect(wrapper.findComponent(NodeDescription).exists()).toBe(false);
+
+            $store.state.nodeRepository.isDescriptionPanelOpen = true;
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
+        });
+
+        it('de-selectes node on close of description panel', async () => {
+            window.setTimeout = jest.fn().mockImplementation(fn => {
+                fn();
+                return 0;
+            });
+            $store.state.nodeRepository.isDescriptionPanelOpen = true;
+            doShallowMount();
+            $store.state.nodeRepository.isDescriptionPanelOpen = false;
+            await wrapper.vm.$nextTick();
+
+            expect(setSelectedNodeMock).toHaveBeenCalledWith(expect.anything(), null);
         });
     });
 });

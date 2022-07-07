@@ -70,6 +70,8 @@ import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.port.PortType;
+import org.knime.core.node.port.PortTypeRegistry;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowContext;
@@ -113,7 +115,23 @@ public final class EclipseUIStateUtil {
      * @return The state of the Eclipse UI in terms of {@link AppState}.
      */
     public static AppState createAppState(final EModelService modelService, final MApplication app) {
-        return () -> collectOpenedWorkflows(modelService, app);
+        return new AppState() {
+            @Override
+            public List<OpenedWorkflow> getOpenedWorkflows() {
+                return collectOpenedWorkflows(modelService, app);
+            }
+
+            @Override
+            public Set<PortType> getAvailablePortTypes() {
+                return PortTypeRegistry.getInstance().availablePortTypes().stream() //
+                    .collect(Collectors.toSet());
+            }
+
+            @Override
+            public List<PortType> getSuggestedPortTypes() {
+                return AppState.SUGGESTED_PORT_TYPES;
+            }
+        };
     }
 
     private static Pair<WorkflowProject, OpenedWorkflow>

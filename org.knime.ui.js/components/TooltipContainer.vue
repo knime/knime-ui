@@ -14,44 +14,24 @@ export default {
         Tooltip
     },
     data: () => ({
-        scrollOffsetLeft: 0,
-        scrollOffsetTop: 0,
-        canvasOffsetLeft: 0,
-        canvasOffsetTop: 0
+        position: null
     }),
     computed: {
         ...mapState('workflow', ['tooltip']),
         ...mapState('canvas', ['zoomFactor']),
-        ...mapGetters('canvas', ['fromCanvasCoordinates']),
+        ...mapGetters('canvas', ['screenFromCanvasCoordinates']),
         /*
             The gap has to grow with the zoomFactor.
             Using the square root gives a more appropriate visual impression for larger factors
         */
         zoomedGap() {
             return Math.sqrt(this.zoomFactor) * (this.tooltip.gap || 0);
-        },
-        positionOnCanvas() {
-            if (!this.tooltip) { return null; }
-            let { anchorPoint = { x: 0, y: 0 }, position } = this.tooltip;
-
-            // get coordinates relative to kanvas' bounds
-            let { x, y } = this.fromCanvasCoordinates({
-                x: anchorPoint.x + position.x,
-                y: anchorPoint.y + position.y
-            });
-            return { x, y };
-        },
-        position() {
-            // Account for scroll and canvas position
-            return {
-                x: this.positionOnCanvas.x + this.canvasOffsetLeft - this.scrollOffsetLeft,
-                y: this.positionOnCanvas.y + this.canvasOffsetTop - this.scrollOffsetTop
-            };
         }
     },
     watch: {
         tooltip(newTooltip, oldTooltip) {
             if (!oldTooltip) {
+                this.setPosition();
                 this.openTooltip();
             } else if (!newTooltip) {
                 this.closeTooltip();
@@ -63,19 +43,24 @@ export default {
         this.closeTooltip();
     },
     methods: {
+        setPosition() {
+            if (!this.tooltip) {
+                this.position = null;
+                return;
+            }
+
+            // get coordinates relative to kanvas' bounds
+            let { anchorPoint = { x: 0, y: 0 }, position } = this.tooltip;
+            this.position = this.screenFromCanvasCoordinates({
+                x: anchorPoint.x + position.x,
+                y: anchorPoint.y + position.y
+            });
+        },
         openTooltip() {
             consola.trace('add kanvas scroll listener for tooltips');
                 
             let kanvas = document.getElementById('kanvas');
-                
-            // watch kanvas' scroll
-            this.scrollOffsetLeft = kanvas.scrollLeft;
-            this.scrollOffsetTop = kanvas.scrollTop;
             kanvas.addEventListener('scroll', this.onCanvasScroll);
-                
-            // use kanvas' offset (not watched)
-            this.canvasOffsetLeft = kanvas.offsetLeft;
-            this.canvasOffsetTop = kanvas.offsetTop;
         },
         closeTooltip() {
             consola.trace('remove kanvas scroll listener for tooltips');
@@ -88,9 +73,9 @@ export default {
             // trigger closing tooltip
             this.$store.commit('workflow/setTooltip', null);
         },
-        onCanvasScroll({ target: kanvas }) {
-            this.scrollOffsetLeft = kanvas.scrollLeft;
-            this.scrollOffsetTop = kanvas.scrollTop;
+        onCanvasScroll() {
+            consola.trace('scrolling canvas while tooltip is open');
+            this.setPosition();
         }
     }
 };

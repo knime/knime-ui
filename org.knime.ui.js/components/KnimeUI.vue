@@ -1,13 +1,16 @@
 <script>
 import { mapActions, mapState } from 'vuex';
+
 import AppHeader from '~/components/AppHeader';
 import Sidebar from '~/components/Sidebar';
 import WorkflowToolbar from '~/components/WorkflowToolbar';
-import WorkflowTabContent from '~/components/WorkflowTabContent';
 import TooltipContainer from '~/components/TooltipContainer';
 import Error from '~/components/Error';
 import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
 import HotkeyHandler from '~/components/HotkeyHandler';
+import WorkflowPanel from '~/components/WorkflowPanel';
+import NodeOutput from '~/components/output/NodeOutput';
+import Splitter from '~/components/Splitter';
 
 /**
  * Main page and entry point of KNIME Next
@@ -22,8 +25,10 @@ export default {
         Sidebar,
         TooltipContainer,
         WorkflowToolbar,
-        WorkflowTabContent,
-        WorkflowEntryPage
+        WorkflowEntryPage,
+        WorkflowPanel,
+        NodeOutput,
+        Splitter
     },
     data() {
         return {
@@ -101,7 +106,18 @@ export default {
 
       <template v-if="workflow">
         <Sidebar id="sidebar" />
-        <WorkflowTabContent class="workflow-area" />
+
+        <main class="workflow-area">
+          <Splitter
+            id="kanvasOutputSplitter"
+            direction="column"
+          >
+            <WorkflowPanel id="workflow-panel" />
+            <template #secondary>
+              <NodeOutput />
+            </template>
+          </Splitter>
+        </main>
       </template>
       
       <WorkflowEntryPage
@@ -123,9 +139,10 @@ export default {
 
   display: grid;
   grid-template-columns: min-content auto;
-  grid-template-rows: min-content auto;
+  grid-template-rows: min-content min-content auto;
   grid-template-areas:
     "header header"
+    "toolbar toolbar"
     "sidebar workflow";
   height: 100vh;
   background: var(--knime-white);
@@ -139,17 +156,23 @@ export default {
 
 #sidebar {
   grid-area: sidebar;
-  height: 100%;
 }
 
 #toolbar {
-  grid-area: header;
+  grid-area: toolbar;
   height: 50px;
   flex: 0 0 auto;
   padding: 10px;
-  margin-top: 80px;
   background-color: var(--knime-porcelain);
   border-bottom: 1px solid var(--knime-silver-sand);
+}
+
+main {
+  display: flex;
+  overflow: auto;
+  flex-direction: column;
+  align-items: stretch;
+  height: 100%;
 }
 
 .workflow-area {

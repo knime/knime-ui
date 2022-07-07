@@ -1,15 +1,17 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapMutations } from 'vuex';
 
 import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
 import SearchBar from '~/components/noderepo/SearchBar';
 import CloseableTagList from '~/components/noderepo/CloseableTagList';
-import CategoryResults from '~/components/noderepo/CategoryResults.vue';
-import SearchResults from '~/components/noderepo/SearchResults.vue';
+import CategoryResults from '~/components/noderepo/CategoryResults';
+import SearchResults from '~/components/noderepo/SearchResults';
+import NodeDescription from '~/components/noderepo/NodeDescription';
 
 import { debounce } from 'lodash';
 
 const SEARCH_COOLDOWN = 150; // ms
+const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in SideMenu
 
 export default {
     components: {
@@ -17,23 +19,26 @@ export default {
         ActionBreadcrumb,
         SearchBar,
         CategoryResults,
+        NodeDescription,
         SearchResults
     },
     computed: {
-        ...mapState('nodeRepository', ['tags', 'nodes', 'nodesPerCategory']),
-        ...mapGetters('nodeRepository', {
-            showSearchResults: 'searchIsActive'
-        }),
+        ...mapState('nodeRepository', ['tags', 'nodes', 'nodesPerCategory', 'isDescriptionPanelOpen']),
+        ...mapGetters('nodeRepository', { showSearchResults: 'searchIsActive' }),
 
         /* Search and Filter */
         selectedTags: {
-            get() { return this.$store.state.nodeRepository.selectedTags; },
+            get() {
+                return this.$store.state.nodeRepository.selectedTags;
+            },
             set(value) {
                 this.$store.dispatch('nodeRepository/setSelectedTags', value);
             }
         },
         searchQuery: {
-            get() { return this.$store.state.nodeRepository.query; },
+            get() {
+                return this.$store.state.nodeRepository.query;
+            },
             set: debounce(function (value) {
                 this.$store.dispatch('nodeRepository/updateQuery', value); // eslint-disable-line no-invalid-this
             },
@@ -48,12 +53,23 @@ export default {
                 : [{ text: 'Repository' }];
         }
     },
+    watch: {
+        // deselect node on panel close
+        isDescriptionPanelOpen(val) {
+            if (val === false) {
+                setTimeout(() => {
+                    this.setSelectedNode(null);
+                }, DESELECT_NODE_DELAY);
+            }
+        }
+    },
     mounted() {
         if (!this.nodesPerCategory.length) {
-            this.$store.dispatch('nodeRepository/getAllNodes', false);
+            this.$store.dispatch('nodeRepository/getAllNodes', { append: false });
         }
     },
     methods: {
+        ...mapMutations('nodeRepository', ['setSelectedNode']),
         /* Navigation */
         onBreadcrumbClick(e) {
             if (e.id === 'clear') {
@@ -74,7 +90,11 @@ export default {
           @click="onBreadcrumbClick"
         />
         <hr>
-        <SearchBar v-model="searchQuery" />
+        <SearchBar
+          v-model="searchQuery"
+          placeholder="Search Nodes"
+          class="search-bar"
+        />
       </div>
       <CloseableTagList
         v-if="showSearchResults"
@@ -85,6 +105,9 @@ export default {
     </div>
     <SearchResults v-if="showSearchResults" />
     <CategoryResults v-else />
+    <portal to="extension-panel">
+      <NodeDescription v-if="isDescriptionPanelOpen" />
+    </portal>
   </div>
 </template>
 
@@ -138,6 +161,20 @@ export default {
     & >>> svg.arrow {
       margin-top: 6px;
     }
+  }
+}
+
+.search-bar {
+  height: 40px;
+  font-size: 17px;
+
+  &:hover {
+    background-color: var(--knime-silver-sand-semi);
+  }
+
+  &:focus-within {
+    background-color: var(--knime-white);
+    border-color: var(--knime-masala);
   }
 }
 

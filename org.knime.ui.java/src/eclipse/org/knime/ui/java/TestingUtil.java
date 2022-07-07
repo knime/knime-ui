@@ -50,7 +50,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.knime.core.node.CanceledExecutionException;
@@ -65,7 +64,6 @@ import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
-import org.knime.gateway.impl.webui.service.ServiceDependencies;
 
 /**
  * Utility methods for testing.
@@ -82,15 +80,14 @@ public final class TestingUtil {
     /**
      * @param newAppState
      * @param eventConsumer
-     * @see DefaultServicesUtil#setDefaultServiceDependencies(Supplier, EventConsumer)
+     * @see DefaultServicesUtil#setDefaultServiceDependencies(AppStateProvider, EventConsumer)
      */
     public static void initAppStateForTesting(final AppState newAppState,
         final EventConsumer eventConsumer) {
         clearAppStateForTesting();
         newAppState.getOpenedWorkflows().forEach(TestingUtil::addToProjectManagerForTesting);
         var appStateProvider = new AppStateProvider(() -> newAppState);
-        ServiceDependencies.setServiceDependency(AppStateProvider.class, appStateProvider);
-        ServiceDependencies.setServiceDependency(EventConsumer.class, eventConsumer);
+        DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer);
     }
 
     /**

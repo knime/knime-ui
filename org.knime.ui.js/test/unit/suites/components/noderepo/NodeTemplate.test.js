@@ -1,13 +1,17 @@
+/* eslint-disable no-magic-numbers */
 import Vuex from 'vuex';
+import Vue from 'vue';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
-import NodeTemplate from '~/components/noderepo/NodeTemplate';
+import NodeTemplate, { WORKFLOW_ADD_START_MIN } from '~/components/noderepo/NodeTemplate';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
 import { KnimeMIME } from '~/mixins/dropNode';
+import { nodeSize } from '~/style/shapes';
 
 describe('NodeTemplate', () => {
     let propsData, doMount, wrapper, testEvent, isWritable, mocks, openDescriptionPanelMock, closeDescriptionPanelMock,
-        setSelectedNodeMock, $store, storeConfig, setDraggingNodeMock;
+        setSelectedNodeMock, $store, storeConfig, setDraggingNodeMock, addNodeMock, getElementByIdMock, activeWorkflow,
+        toCanvasCoordinatesMock;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -21,12 +25,15 @@ describe('NodeTemplate', () => {
         closeDescriptionPanelMock = jest.fn();
         setSelectedNodeMock = jest.fn();
         setDraggingNodeMock = jest.fn();
+        addNodeMock = jest.fn();
 
         let getBoundingClientRectMock = jest.fn().mockReturnValue({
             width: 70,
             height: 70
         });
+        getElementByIdMock = jest.fn();
         HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
+        Document.prototype.getElementById = getElementByIdMock;
 
         testEvent = {
             dataTransfer: {
@@ -45,27 +52,47 @@ describe('NodeTemplate', () => {
                 },
                 icon: 'data:image/node-icon',
                 type: 'node-type',
-                inPorts: ['port'],
-                outPorts: ['port'],
+                inPorts: [{ typeId: 'org.port.mockId' }],
+                outPorts: [{ typeId: 'org.port.mockId' }],
                 component: true
             }
         };
 
+        activeWorkflow = {
+            nodes: {
+                'root:1': {
+                    position: {
+                        x: 10,
+                        y: 20
+                    }
+                }
+            }
+        };
+
+        toCanvasCoordinatesMock = ([x, y]) => [x - 10, y - 10];
+
         storeConfig = {
+            application: {
+                state: {
+                    availablePortTypes: {
+                        'org.port.mockId': {
+                            kind: 'mockKind',
+                            color: 'mockColor'
+                        }
+                    }
+                }
+            },
             workflow: {
+                state: {
+                    activeWorkflow
+                },
                 getters: {
                     isWritable() {
                         return isWritable;
                     }
-                }
-            },
-            panel: {
-                actions: {
-                    openDescriptionPanel: openDescriptionPanelMock,
-                    closeDescriptionPanel: closeDescriptionPanelMock
                 },
-                state: {
-                    activeDescriptionPanel: false
+                actions: {
+                    addNode: addNodeMock
                 }
             },
             nodeRepository: {
@@ -73,8 +100,18 @@ describe('NodeTemplate', () => {
                     setSelectedNode: setSelectedNodeMock,
                     setDraggingNode: setDraggingNodeMock
                 },
+                actions: {
+                    openDescriptionPanel: openDescriptionPanelMock,
+                    closeDescriptionPanel: closeDescriptionPanelMock
+                },
                 state: {
-                    selectedNode: null
+                    selectedNode: null,
+                    isDescriptionPanelOpen: false
+                }
+            },
+            canvas: {
+                getters: {
+                    toCanvasCoordinates: state => toCanvasCoordinatesMock
                 }
             }
         };
@@ -82,38 +119,23 @@ describe('NodeTemplate', () => {
         $store = mockVuexStore(storeConfig);
 
         doMount = () => {
-            mocks = { $store };
+            mocks = { $store, $shapes: { nodeSize: 32 } };
             wrapper = shallowMount(NodeTemplate, { propsData, mocks });
         };
     });
 
     it('shows node name in label', () => {
         doMount();
-        
+
         expect(wrapper.find('label').text()).toBe('node-name');
-    });
-
-    it('renders a node preview', () => {
-        doMount();
-
-        let nodePreview = wrapper.findComponent(NodePreview);
-        expect(nodePreview.element.className).toMatch('node-preview');
-        expect(nodePreview.props()).toStrictEqual({
-            type: 'node-type',
-            isComponent: false,
-            inPorts: ['port'],
-            outPorts: ['port'],
-            hasDynPorts: false,
-            icon: 'data:image/node-icon'
-        });
     });
 
     it('opens description panel when clicked', () => {
         doMount();
-        
+
         const nodePreview = wrapper.findComponent(NodePreview);
         nodePreview.trigger('click');
-        
+
         expect(openDescriptionPanelMock).toHaveBeenCalled();
     });
 
@@ -122,27 +144,29 @@ describe('NodeTemplate', () => {
 
         const node = wrapper.find('.node');
         node.trigger('click');
-        
-        // TODO: NXT-844 to have been called with what?
-        expect(setSelectedNodeMock).toHaveBeenCalled();
+
+        expect(setSelectedNodeMock).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({ name: 'node-name' })
+        );
     });
 
-    it('deselects a selected node and closes description panel', () => {
+    it('never deselects a selected item via click', () => {
         storeConfig.nodeRepository.state.selectedNode = {
             id: 'node-id'
         };
-        storeConfig.panel.state.activeDescriptionPanel = true;
+        storeConfig.nodeRepository.state.isDescriptionPanelOpen = true;
         doMount();
 
         const node = wrapper.find('.node');
         node.trigger('click');
 
-        expect(setSelectedNodeMock).toHaveBeenCalledWith(expect.anything(), null);
-        expect(closeDescriptionPanelMock).toHaveBeenCalled();
+        expect(setSelectedNodeMock).not.toHaveBeenCalledWith(expect.anything(), null);
+        expect(closeDescriptionPanelMock).not.toHaveBeenCalled();
     });
 
     it('adds style if node is selected', () => {
-        storeConfig.panel.state.activeDescriptionPanel = true;
+        storeConfig.nodeRepository.state.isDescriptionPanelOpen = true;
         storeConfig.nodeRepository.state.selectedNode = {
             id: 'node-id'
         };
@@ -150,6 +174,73 @@ describe('NodeTemplate', () => {
 
         const node = wrapper.find('.node');
         expect(node.classes()).toContain('selected');
+    });
+
+    describe('double click', () => {
+        beforeEach(() => {
+            getElementByIdMock.mockImplementation(() => ({
+                clientWidth: 1920,
+                clientHeight: 1080,
+                scrollLeft: 10,
+                scrollTop: 10
+            }));
+        });
+
+        it('adds node to workflow on double click', async () => {
+            isWritable = true;
+            doMount();
+
+            wrapper.find('.node').trigger('dblclick');
+            await Vue.nextTick();
+
+            expect(addNodeMock)
+                .toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ position: [560, 200] }));
+        });
+
+        it('does nothing on double click if workflow it not writeable', async () => {
+            isWritable = false;
+            doMount();
+
+            wrapper.find('.node').trigger('dblclick');
+            await Vue.nextTick();
+
+            expect(addNodeMock).not.toHaveBeenCalled();
+        });
+
+        it('looks for free space to position node if there is already a node', async () => {
+            activeWorkflow.nodes['root:2'] = {
+                position: {
+                    x: 560,
+                    y: 200
+                }
+            };
+            doMount();
+
+            wrapper.find('.node').trigger('dblclick');
+            await Vue.nextTick();
+
+            expect(addNodeMock)
+                .toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ position: [649.6, 200] }));
+        });
+
+        it('avoids to insert behind overlay panel by using min x position', async () => {
+            getElementByIdMock.mockImplementation(() => ({
+                clientWidth: 100,
+                clientHeight: 100,
+                scrollLeft: 10,
+                scrollTop: 10
+            }));
+            doMount();
+
+            wrapper.find('.node').trigger('dblclick');
+            await Vue.nextTick();
+
+            const { scrollLeft } = getElementByIdMock();
+            const [x] = toCanvasCoordinatesMock([WORKFLOW_ADD_START_MIN + scrollLeft - (nodeSize / 2), 0]);
+
+            expect(addNodeMock)
+                .toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ position: [x, 4] }));
+        });
     });
 
     describe('drag node', () => {
@@ -237,7 +328,7 @@ describe('NodeTemplate', () => {
         });
 
         it('re-opens description panel, when dragging is aborted', () => {
-            storeConfig.panel.state.activeDescriptionPanel = true;
+            storeConfig.nodeRepository.state.isDescriptionPanelOpen = true;
             storeConfig.nodeRepository.state.selectedNode = {
                 id: 'node-id'
             };
@@ -245,11 +336,11 @@ describe('NodeTemplate', () => {
 
             // start dragging while node is selected
             wrapper.trigger('dragstart', testEvent);
-            
+
             // clear mock records
             setSelectedNodeMock.mockClear();
             openDescriptionPanelMock.mockClear();
-            
+
             // abort dragging
             wrapper.trigger('dragend', {
                 dataTransfer: {
@@ -262,7 +353,7 @@ describe('NodeTemplate', () => {
         });
 
         it('description panel stays closed, when dragging is completed succesfully', () => {
-            storeConfig.panel.state.activeDescriptionPanel = true;
+            storeConfig.nodeRepository.state.isDescriptionPanelOpen = true;
             storeConfig.nodeRepository.state.selectedNode = {
                 id: 'node-id'
             };
@@ -270,11 +361,11 @@ describe('NodeTemplate', () => {
 
             // start dragging while node is selected
             wrapper.trigger('dragstart', testEvent);
-            
+
             // clear mock records
             setSelectedNodeMock.mockClear();
             openDescriptionPanelMock.mockClear();
-            
+
             // abort dragging
             wrapper.trigger('dragend', {
                 dataTransfer: {

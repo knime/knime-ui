@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import { nodeSize, portSize } from '~/style/shapes';
 
 /**
@@ -29,16 +30,38 @@ const portShift = (portIndex, portCount, isMetanode, isOutPort) => {
 
     // consider ports on the side
     const middleY = nodeSize / 2;
-    if (portCount === 2) { return [x, middleY]; }
+    if (portCount === 2) {
+        return [x, middleY];
+    }
 
     const middleIndex = 2;
     const portMargin = 1.5;
 
-    // eslint-disable-next-line no-magic-numbers
-    if (portCount === 3 && portIndex === 2) { portIndex = 3; } // leave the middle port free (index: 2 -> 3)
+    // leave the middle port free (index: 2 -> 3)
+    if (portCount === 3 && portIndex === 2) {
+        portIndex = 3;
+    }
 
     let dy = middleY + (portIndex - middleIndex) * (portSize + portMargin);
     return [x, dy];
 };
+
+export const placeholderPosition = ({ portCount, isOutport = false, isMetanode = false }) => {
+    isMetanode = Number(isMetanode); // cast to 1 or 0
+    switch (portCount) {
+        case 1 - isMetanode:
+            return portShift(portCount, portCount + 1, isMetanode, isOutport);
+        default:
+            return portShift(
+                Math.max(4 - isMetanode, portCount),
+                Math.max(4 - isMetanode, portCount) + 1,
+                isMetanode,
+                isOutport
+            );
+    }
+};
+
+export const portPositions = ({ portCount, isMetanode = false, isOutports = false }) => [...Array(portCount).keys()]
+    .map(index => portShift(index, portCount, isMetanode, isOutports));
 
 export default portShift;

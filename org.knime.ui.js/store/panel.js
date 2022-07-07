@@ -2,20 +2,19 @@
  * Store that manages the global state of the side-panel (tabs plus expanding drawer).
  */
 
-const TABS = {
+export const TABS = {
     WORKFLOW_METADATA: 'workflowMetadata',
     NODE_REPOSITORY: 'nodeRepository'
 };
 
 export const state = () => ({
     expanded: false,
-    activeTab: TABS.WORKFLOW_METADATA,
-    activeDescriptionPanel: false
+    activeTab: TABS.WORKFLOW_METADATA
 });
 
 export const getters = {
-    workflowMetaActive: state => state.activeTab === TABS.WORKFLOW_METADATA,
-    nodeRepositoryActive: state => state.activeTab === TABS.NODE_REPOSITORY
+    isWorkflowMetaActive: state => state.activeTab === TABS.WORKFLOW_METADATA,
+    isNodeRepositoryActive: state => state.activeTab === TABS.NODE_REPOSITORY
 };
 
 export const mutations = {
@@ -24,9 +23,6 @@ export const mutations = {
     },
     setActiveTab(state, active) {
         state.activeTab = active;
-    },
-    setDescriptionPanel(state, value) {
-        state.activeDescriptionPanel = value;
     }
 };
 
@@ -47,15 +43,5 @@ export const actions = {
 
     close({ commit }) {
         commit('setExpanded', false);
-    },
-
-    // TODO: NXT-844 this description panel is part of and only used for the node repository
-    // should be moved to node repository store or used as generic expansion panel
-    openDescriptionPanel({ commit }) {
-        commit('setDescriptionPanel', true);
-    },
-
-    closeDescriptionPanel({ commit }) {
-        commit('setDescriptionPanel', false);
     }
 };

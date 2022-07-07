@@ -1,6 +1,6 @@
-# knime-ui
+# org.knime.ui.js 
 
-This repository contains the web frontend for the KNIME Analytics Platform.
+This project contains the web frontend for the KNIME Analytics Platform.
 The frontend is based on the [Nuxt.js] JavaScript framework.
 
 ## Development

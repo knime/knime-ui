@@ -1,5 +1,6 @@
+/* eslint-disable max-nested-callbacks */
 /* eslint-disable no-magic-numbers */
-import portShift from '~/util/portShift';
+import portShift, { portPositions, placeholderPosition } from '~/util/portShift';
 
 // nodeSize: 32
 // portSize: 9
@@ -111,6 +112,53 @@ describe('portShift', () => {
                 expect(portShift(2, 5, false, true)).toStrictEqual([36.5, 16]);
                 expect(portShift(3, 5, false, true)).toStrictEqual([36.5, 26.5]);
                 expect(portShift(4, 5, false, true)).toStrictEqual([36.5, 37]);
+            });
+        });
+    });
+
+    describe('helpers', () => {
+        test('port positions', () => {
+            let result = portPositions({ portCount: 2, isOutports: true, isMetanode: true });
+            expect(result).toStrictEqual([
+                portShift(0, 2, true, true),
+                portShift(1, 2, true, true)
+            ]);
+        });
+
+        describe.each([
+            ['inPorts', false, -4.5],
+            ['outPorts', true, 36.5]
+        ])('placeholder position for %s', (name, isOutport, x) => {
+            describe('normal nodes', () => {
+                test('placeholder in the middle', () => {
+                    expect(placeholderPosition({ portCount: 1, isOutport })).toStrictEqual([x, 16]);
+                });
+                
+                test('placeholder bottom', () => {
+                    expect(placeholderPosition({ portCount: 2, isOutport })).toStrictEqual([x, 37]);
+                    expect(placeholderPosition({ portCount: 3, isOutport })).toStrictEqual([x, 37]);
+                    expect(placeholderPosition({ portCount: 4, isOutport })).toStrictEqual([x, 37]);
+                });
+                
+                test('flowing with the ports', () => {
+                    expect(placeholderPosition({ portCount: 5, isOutport })).toStrictEqual([x, 47.5]);
+                });
+            });
+            
+            describe('metanodes', () => {
+                test('placeholder in the middle', () => {
+                    expect(placeholderPosition({ portCount: 0, isMetanode: true, isOutport })).toStrictEqual([x, 16]);
+                });
+                
+                test('placeholder bottom', () => {
+                    expect(placeholderPosition({ portCount: 1, isMetanode: true, isOutport })).toStrictEqual([x, 37]);
+                    expect(placeholderPosition({ portCount: 2, isMetanode: true, isOutport })).toStrictEqual([x, 37]);
+                    expect(placeholderPosition({ portCount: 3, isMetanode: true, isOutport })).toStrictEqual([x, 37]);
+                });
+                
+                test('flowing with the ports', () => {
+                    expect(placeholderPosition({ portCount: 4, isMetanode: true, isOutport })).toStrictEqual([x, 47.5]);
+                });
             });
         });
     });

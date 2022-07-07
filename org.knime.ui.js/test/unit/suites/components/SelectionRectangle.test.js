@@ -54,7 +54,7 @@ describe('SelectionRectangle', () => {
             },
             canvas: {
                 getters: {
-                    toCanvasCoordinates: state => ([x, y]) => [x, y]
+                    screenToCanvasCoordinates: () => jest.fn().mockImplementation(([x, y]) => [x, y])
                 }
             },
             selection: {
