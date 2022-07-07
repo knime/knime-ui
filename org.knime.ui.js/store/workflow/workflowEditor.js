@@ -264,14 +264,17 @@ export const actions = {
             // TODO:
             // * Maybe some more verification here before we send the clipbaord content to the backend?
             // * Set an upper bound on the clipboard content size that can be sent to the backend?
-            // * Is it even possible to grab the current cursor position when `Paste` was triggered via context menu?
-            // * Can the frontend otherwise perform some clever things related to the position?
+            //   -> This creates a text string of about 54 million characters for the "Buildings" workflow
+            //   -> Paste command takes about 18 seconds to finish on a local machine
+            // * NXT-1153: We need to pass a position parameter to the backend
             const verifiedContent = JSON.parse(clipboardContent);
             consola.info('pasteWorkflowParts', verifiedContent);
             pasteWorkflowParts({
                 projectId: state.activeWorkflow.projectId,
                 workflowId: getters.activeWorkflowId,
-                content: JSON.stringify(verifiedContent)
+                content: JSON.stringify(verifiedContent),
+                position: null
+                // position: { x: 0, y: 0 }
             });
         } catch (error) {
             consola.warn(`This is not a JSON object: <${clipboardContent.substring(0, 63)}>`);

@@ -294,14 +294,13 @@ export const cutWorkflowParts = ({
  * @param { String } cfg.workflowId
  * @param { Object } content Workflow parts to be pasted
  * @param { Object } position Paste the workflow parts at this position
- * @param { Object } offset Shift the pasted item by this offset
  * @returns { void }
  */
 export const pasteWorkflowParts = ({
-    projectId, workflowId, content = {}, position, offset
+    projectId, workflowId, content = {}, position
 }) => workflowCommand({
     command: 'paste',
-    args: { content, position, offset },
+    args: { content, position },
     projectId,
     workflowId
 });

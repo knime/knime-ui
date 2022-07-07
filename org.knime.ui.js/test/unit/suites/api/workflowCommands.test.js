@@ -268,6 +268,10 @@ describe('workflow commands', () => {
                     payload: {},
                     payloadIdentifier: '',
                     version: ''
+                },
+                position: {
+                    x: 128,
+                    y: 256
                 }
             });
             expect(window.jsonrpc).toHaveBeenCalledWith({
@@ -282,6 +286,10 @@ describe('workflow commands', () => {
                             payload: {},
                             payloadIdentifier: '',
                             version: ''
+                        },
+                        position: {
+                            x: 128,
+                            y: 256
                         }
                     }
                 ],
