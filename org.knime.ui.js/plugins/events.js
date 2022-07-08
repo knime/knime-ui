@@ -1,4 +1,4 @@
-import { registerEventHandlers } from '~/api/json-rpc-notifications';
+import { registerEventHandlers } from '~api';
 import { notifyEvent } from '~/util/event-syncer';
 
 export default ({ store: $store }) => {
