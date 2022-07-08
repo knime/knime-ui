@@ -46,18 +46,19 @@ export default {
             type: Boolean,
             default: false
         },
-        isSelected: {
+        canSelect: {
             type: Boolean,
             default: false
         }
     },
     data: () => ({
         dragConnector: null,
-        didMove: false
+        didMove: false,
+        isSelected: false
     }),
     computed: {
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
-        ...mapGetters('workflow', ['isWritable']),
+        ...mapGetters('workflow', ['isWritable', 'isDragging']),
         ...mapState('application', ['availablePortTypes']),
         /*
          * only in-Ports replace their current connector if a new one is connected
@@ -248,13 +249,46 @@ export default {
             /* eslint-enable no-invalid-this */
         }),
         onClick() {
-            if (!this.didMove) {
+            if (!this.didMove && this.canSelect) {
                 this.dragConnector = null;
-                this.$emit('select', this.port);
+                this.isSelected = true;
+                this.setupIsDraggingWatcher();
+            }
+        },
+        onClickAway() {
+            if (this.isSelected) {
+                this.isSelected = false;
+                this.removeIsDraggingWatcher();
             }
         },
         onDelete() {
-            this.$emit('delete', this.port);
+            const side = this.direction === 'in' ? 'input' : 'output';
+            this.isSelected = false;
+            
+            this.$store.dispatch('workflow/removeContainerNodePort', {
+                nodeId: this.nodeId,
+                side,
+                typeId: this.port.typeId,
+                portIndex: this.port.index
+            });
+
+            this.removeIsDraggingWatcher();
+        },
+        setupIsDraggingWatcher() {
+            if (!this.unwatchIsDragging) {
+                this.unwatchIsDragging = this.$watch('isDragging', () => {
+                    if (this.isSelected) {
+                        this.isSelected = false;
+                        this.removeIsDraggingWatcher();
+                    }
+                });
+            }
+        },
+        removeIsDraggingWatcher() {
+            if (this.unwatchIsDragging) {
+                this.unwatchIsDragging();
+                this.unwatchIsDragging = null;
+            }
         }
     }
 };
@@ -262,7 +296,7 @@ export default {
 
 <template>
   <g
-    v-on-clickaway="() => isSelected && $emit('select', null)"
+    v-on-clickaway="() => onClickAway()"
     :transform="`translate(${relativePosition})`"
     :class="{ 'targeted': targeted }"
     @pointerdown="onPointerDown"
@@ -293,7 +327,7 @@ export default {
           :x="relativePosition[0] - (direction === 'in' ? 22 : 10)"
           title="Delete port"
           :disabled="!port.canRemove"
-          @click="$emit('delete', port)"
+          @click="onDelete"
         >
           <DeleteIcon />
         </ActionButton>

@@ -40,11 +40,6 @@ export default {
             required: true
         },
 
-        isMetanode: {
-            type: Boolean,
-            default: false
-        },
-
         /** controls visibility of the AddPortPlaceholder */
         canAddPorts: {
             type: Boolean,
@@ -79,6 +74,10 @@ export default {
     },
     computed: {
         ...mapGetters('workflow', ['isDragging']),
+
+        isMetanode() {
+            return this.nodeKind === 'metanode';
+        },
         /**
          * @returns {object} the position of all inPorts and outPorts.
          * The position for each port is an array with two coordinates [x, y].
@@ -119,6 +118,14 @@ export default {
         }
     },
     methods: {
+        canSelectPort(port) {
+            return (
+                // skip hidden variable ports on components (mickey mouse)
+                (this.nodeKind === 'component' && port.index !== 0) ||
+                // allow for all metanode ports
+                this.isMetanode
+            );
+        },
         // default flow variable ports (Mickey Mouse ears) are only shown if connected, selected, or on hover
         portAnimationClasses(port) {
             let isMickeyMousePort = !this.isMetanode && port.index === 0;
@@ -147,44 +154,6 @@ export default {
             e.target.closeTimeout = setTimeout(() => {
                 e.target.style.opacity = null;
             }, 1000);
-        },
-        selectPort(port, type) {
-            if (!this.unwatchIsDragging) {
-                this.unwatchIsDragging = this.$watch('isDragging', () => {
-                    if (this.selectedNodePort) {
-                        this.selectedNodePort = null;
-                        this.unwatchIsDragging();
-                        this.unwatchIsDragging = null;
-                    }
-                });
-            }
-
-            if (port) {
-                const canSelectPort =
-                  // skip hidden variable ports on components (mickey mouse)
-                  (this.nodeKind === 'component' && port.index !== 0) ||
-                  // allow for all metanode ports
-                  this.nodeKind === 'metanode';
-    
-                const isAlreadySelected = this.selectedNodePort === `${this.nodeId}-${type}-${port.index}`;
-                const selectedPort = isAlreadySelected || !canSelectPort
-                    ? null
-                    : `${this.nodeId}-${type}-${port.index}`;
-
-                this.selectedNodePort = selectedPort;
-            } else {
-                this.selectedNodePort = null;
-            }
-        },
-        deletePort(port, side) {
-            this.$store.dispatch('workflow/removeContainerNodePort', {
-                nodeId: this.nodeId,
-                side,
-                typeId: port.typeId,
-                portIndex: port.index
-            });
-
-            this.selectedNodePort = null;
         }
     }
 };
@@ -200,10 +169,8 @@ export default {
       :port="port"
       :node-id="nodeId"
       :targeted="targetPort && targetPort.side === 'in' && targetPort.index === port.index"
-      :is-selected="selectedNodePort === `${nodeId}-inport-${port.index}`"
+      :can-select="canSelectPort(port)"
       direction="in"
-      @select="selectPort($event, 'inport')"
-      @delete="deletePort($event, 'input')"
     />
 
     <DraggablePortWithTooltip
@@ -214,10 +181,8 @@ export default {
       :port="port"
       :node-id="nodeId"
       :targeted="targetPort && targetPort.side === 'out' && targetPort.index === port.index"
-      :is-selected="selectedNodePort === `${nodeId}-outport-${port.index}`"
+      :can-select="canSelectPort(port)"
       direction="out"
-      @select="selectPort($event, 'outport')"
-      @delete="deletePort($event, 'output')"
     />
 
     <AddPortPlaceholder

@@ -478,7 +478,6 @@ export default {
         ref="nodePorts"
         :node-id="id"
         :node-kind="kind"
-        :is-metanode="kind === 'metanode'"
         :in-ports="inPorts"
         :out-ports="outPorts"
         :target-port="targetPort"
