@@ -73,7 +73,8 @@ export default {
     },
     data() {
         return {
-            selectedNodePort: null
+            selectedNodePort: null,
+            unwatchIsDragging: null
         };
     },
     computed: {
@@ -117,13 +118,6 @@ export default {
             return Math.max(lastInPortY, lastOutPortY) + this.$shapes.portSize / 2;
         }
     },
-    watch: {
-        isDragging() {
-            if (this.selectedNodePort) {
-                this.selectedNodePort = null;
-            }
-        }
-    },
     methods: {
         // default flow variable ports (Mickey Mouse ears) are only shown if connected, selected, or on hover
         portAnimationClasses(port) {
@@ -155,6 +149,16 @@ export default {
             }, 1000);
         },
         selectPort(port, type) {
+            if (!this.unwatchIsDragging) {
+                this.unwatchIsDragging = this.$watch('isDragging', () => {
+                    if (this.selectedNodePort) {
+                        this.selectedNodePort = null;
+                        this.unwatchIsDragging();
+                        this.unwatchIsDragging = null;
+                    }
+                });
+            }
+
             if (port) {
                 const canSelectPort =
                   // skip hidden variable ports on components (mickey mouse)

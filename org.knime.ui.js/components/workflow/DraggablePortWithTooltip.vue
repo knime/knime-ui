@@ -11,7 +11,6 @@ import DeleteIcon from '~/assets/delete.svg?inline';
 
 import { circleDetection } from '~/util/compatibleConnections';
 
-
 export default {
     components: {
         PortWithTooltip,
@@ -293,6 +292,7 @@ export default {
         <ActionButton
           :x="relativePosition[0] - (direction === 'in' ? 22 : 10)"
           title="Delete port"
+          :disabled="!port.canRemove"
           @click="$emit('delete', port)"
         >
           <DeleteIcon />
