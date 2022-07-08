@@ -1,5 +1,5 @@
 import { registerEventHandlers } from '~api';
-import { notifyEvent } from '~/util/event-syncer';
+import { notifyPatch } from '~/util/event-syncer';
 
 export default ({ store: $store }) => {
     registerEventHandlers({
@@ -8,16 +8,16 @@ export default ({ store: $store }) => {
          * Sends a list of json-patch operations to update the frontend's state
          */
         // NXT-962: Unpack arguments from Object?
-        WorkflowChangedEvent(payload) {
-            const { patch: { ops } } = payload;
-            
+        WorkflowChangedEvent({ patch: { ops }, snapshotId }) {
             // for all patch ops rewrite their path such that they are applied to 'activeWorkflow'
-            $store.dispatch(
-                'workflow/patch.apply',
-                ops.map(op => ({ ...op, path: `/activeWorkflow${op.path}` }))
-            );
+            ops.forEach(op => {
+                op.path = `/activeWorkflow${op.path}`;
+            });
+            $store.dispatch('workflow/patch.apply', ops);
         
-            notifyEvent(payload);
+            if (snapshotId) {
+                notifyPatch(snapshotId);
+            }
         },
         
         /*
