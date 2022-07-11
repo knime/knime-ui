@@ -122,7 +122,7 @@ export default {
       
       <WorkflowEntryPage
         v-else
-        class="workflow-area"
+        class="workflow-empty"
       />
     </template>
     
@@ -177,6 +177,11 @@ main {
 
 .workflow-area {
   grid-area: workflow;
+}
+
+.workflow-empty {
+  grid-area: workflow;
+  grid-column-start: 1;
 }
 
 .loader {

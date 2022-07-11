@@ -267,9 +267,8 @@ export default {
         isEditable() {
             return this.isWritable && !this.link;
         },
-        isEditableContainerNode() {
-            // only non-linked metanodes and components have editable names
-            return this.isEditable && ['metanode', 'component'].includes(this.kind);
+        isContainerNode() {
+            return ['metanode', 'component'].includes(this.kind);
         },
         actionBarPosition() {
             return {
@@ -481,7 +480,7 @@ export default {
         :in-ports="inPorts"
         :out-ports="outPorts"
         :target-port="targetPort"
-        :can-add-ports="isEditableContainerNode"
+        :is-editable="isEditable"
         :hover="hover"
         :connector-hover="connectorHover"
         :is-single-selected="isSingleSelected"
@@ -492,7 +491,7 @@ export default {
         :node-id="id"
         :node-position="position"
         :value="name"
-        :editable="isEditableContainerNode"
+        :editable="isEditable && isContainerNode"
         @click.native.left="onLeftMouseClick"
         @contextmenu.prevent="onContextMenu"
         @width-change="nameDimensions.width = $event"

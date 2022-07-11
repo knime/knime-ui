@@ -39,12 +39,6 @@ export default {
             type: Array,
             required: true
         },
-
-        /** controls visibility of the AddPortPlaceholder */
-        canAddPorts: {
-            type: Boolean,
-            default: false
-        },
         
         /** object that contains information which port to highlight */
         targetPort: {
@@ -64,6 +58,10 @@ export default {
         isSingleSelected: {
             type: Boolean,
             default: false
+        },
+        isEditable: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -77,6 +75,10 @@ export default {
 
         isMetanode() {
             return this.nodeKind === 'metanode';
+        },
+
+        isComponent() {
+            return this.nodeKind === 'component';
         },
         /**
          * @returns {object} the position of all inPorts and outPorts.
@@ -121,7 +123,7 @@ export default {
         canSelectPort(port) {
             return (
                 // skip hidden variable ports on components (mickey mouse)
-                (this.nodeKind === 'component' && port.index !== 0) ||
+                (this.isComponent && port.index !== 0) ||
                 // allow for all metanode ports
                 this.isMetanode
             );
@@ -186,7 +188,7 @@ export default {
     />
 
     <AddPortPlaceholder
-      v-if="canAddPorts"
+      v-if="isEditable && (isComponent || isMetanode)"
       :node-id="nodeId"
       :position="addPortPlaceholderPositions.in"
       :class="['add-port', {
@@ -200,7 +202,7 @@ export default {
     />
 
     <AddPortPlaceholder
-      v-if="canAddPorts"
+      v-if="isEditable && (isComponent || isMetanode)"
       :node-id="nodeId"
       :position="addPortPlaceholderPositions.out"
       :class="['add-port', {
