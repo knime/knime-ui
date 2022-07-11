@@ -32,8 +32,8 @@ describe('NodePorts.vue', () => {
                 mockPort({ index: 2, outgoing: true, connectedVia: ['outB'] })
             ],
             nodeId: 'root:1',
-            isMetanode: false,
-            canAddPorts: false,
+            nodeKind: 'node',
+            isEditable: false,
             targetPort: null,
             hover: false,
             connectorHover: false,
@@ -51,7 +51,7 @@ describe('NodePorts.vue', () => {
 
     describe('Port positions', () => {
         it('for meta node', () => {
-            propsData.isMetanode = true;
+            propsData.nodeKind = 'metanode';
             doMount();
 
             const ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
@@ -69,8 +69,11 @@ describe('NodePorts.vue', () => {
             expect(portAttrs).toStrictEqual([0, 1, 0, 1, 2]);
         });
 
-        it('for component/native node', () => {
-            propsData.isMetanode = false;
+        it.each([
+            ['component'],
+            ['node']
+        ])('for %s', (nodeKind) => {
+            propsData.nodeKind = nodeKind;
             doMount();
 
             const ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
@@ -88,8 +91,9 @@ describe('NodePorts.vue', () => {
             expect(portAttrs).toStrictEqual([0, 1, 0, 1, 2]);
         });
 
-        test('placeholderPositions on component', () => {
-            propsData.canAddPorts = true;
+        it('placeholderPositions on component', () => {
+            propsData.isEditable = true;
+            propsData.nodeKind = 'component';
             doMount();
 
             const addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
@@ -112,7 +116,7 @@ describe('NodePorts.vue', () => {
             propsData.isMetanode = false;
         });
 
-        test('only first ports of %s are mickey mouse ports', () => {
+        it('only first ports of %s are mickey mouse ports', () => {
             doMount();
 
             let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
@@ -123,8 +127,8 @@ describe('NodePorts.vue', () => {
             expect(ports.at(4).attributes().class).not.toMatch('mickey-mouse');
         });
 
-        test('metanodes have no mickey-mouse ports', () => {
-            propsData.isMetanode = true;
+        it('metanodes have no mickey-mouse ports', () => {
+            propsData.nodeKind = 'metanode';
             doMount();
 
             let ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
@@ -133,7 +137,7 @@ describe('NodePorts.vue', () => {
             });
         });
 
-        test('connected ports are displayed', () => {
+        it('connected ports are displayed', () => {
             doMount();
 
             let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
@@ -166,17 +170,18 @@ describe('NodePorts.vue', () => {
 
     describe('Add-Port Placeholder', () => {
         beforeEach(() => {
-            propsData.canAddPorts = true;
+            propsData.isEditable = true;
+            propsData.nodeKind = 'component';
         });
 
-        test('AddPortPlaceholders disabled by default', () => {
-            propsData.canAddPorts = false;
+        it('AddPortPlaceholders disabled if `isEditable` prop is false', () => {
+            propsData.isEditable = false;
             doMount();
 
             expect(wrapper.findComponent(AddPortPlaceholder).exists()).toBe(false);
         });
 
-        test('render, setup, props', () => {
+        it('render, setup, props', () => {
             doMount();
 
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
@@ -194,7 +199,7 @@ describe('NodePorts.vue', () => {
             expect(addPortPlaceholders.at(1).props('position')).toStrictEqual([36.5, 37]);
         });
 
-        test('show and hide with port type menu', () => {
+        it('show and hide with port type menu', () => {
             doMount();
                 
             let addPortPlaceholder = wrapper.findComponent(AddPortPlaceholder);
@@ -211,7 +216,7 @@ describe('NodePorts.vue', () => {
             expect(addPortPlaceholder.element.style.opacity).toBe('');
         });
 
-        test('opening menu again aborts delayed fade out', () => {
+        it('opening menu again aborts delayed fade out', () => {
             doMount();
                 
             let addPortPlaceholder = wrapper.findComponent(AddPortPlaceholder);
@@ -225,7 +230,7 @@ describe('NodePorts.vue', () => {
             expect(addPortPlaceholder.element.style.opacity).toBe('1');
         });
 
-        test('not visible by default', () => {
+        it('not visible by default', () => {
             doMount();
 
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
@@ -233,7 +238,7 @@ describe('NodePorts.vue', () => {
             expect(addPortPlaceholders.at(1).classes()).not.toContain('node-hover');
         });
 
-        test('visible on hover', () => {
+        it('visible on hover', () => {
             propsData.hover = true;
             doMount();
 
@@ -242,7 +247,7 @@ describe('NodePorts.vue', () => {
             expect(addPortPlaceholders.at(1).classes()).toContain('node-hover');
         });
 
-        test('visible on connector-hover', () => {
+        it('visible on connector-hover', () => {
             propsData.connectorHover = true;
             doMount();
 
@@ -251,7 +256,7 @@ describe('NodePorts.vue', () => {
             expect(addPortPlaceholders.at(1).classes()).toContain('connector-hover');
         });
 
-        test('visible if selected', () => {
+        it('visible if selected', () => {
             propsData.isSingleSelected = true;
             doMount();
 
@@ -282,7 +287,7 @@ describe('NodePorts.vue', () => {
         ]).toStrictEqual(result);
     });
 
-    test('portBarBottom', async () => {
+    it('portBarBottom', async () => {
         doMount();
 
         expect(wrapper.vm.portBarBottom).toBe(31);

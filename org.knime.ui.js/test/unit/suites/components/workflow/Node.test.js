@@ -169,8 +169,8 @@ describe('Node', () => {
             expect(nodePorts.props('inPorts')).toStrictEqual(commonNode.inPorts);
             expect(nodePorts.props('outPorts')).toStrictEqual(commonNode.inPorts);
             expect(nodePorts.props('targetPort')).toBe(null);
-            expect(nodePorts.props('canAddPorts')).toBe(false);
-            expect(nodePorts.props('isMetanode')).toBe(false);
+            expect(nodePorts.props('isEditable')).toBe(true);
+            expect(nodePorts.props('nodeKind')).toBe(commonNode.kind);
             expect(nodePorts.props('hover')).toBe(false);
             expect(nodePorts.props('connectorHover')).toBe(false);
             expect(nodePorts.props('isSingleSelected')).toBe(false);
@@ -188,8 +188,8 @@ describe('Node', () => {
             doMount();
             let nodePorts = wrapper.findComponent(NodePortsMock);
 
-            expect(nodePorts.props('canAddPorts')).toBe(true);
-            expect(nodePorts.props('isMetanode')).toBe(true);
+            expect(nodePorts.props('isEditable')).toBe(true);
+            expect(nodePorts.props('nodeKind')).toBe('metanode');
         });
 
         it('renders ports for components', () => {
@@ -197,8 +197,8 @@ describe('Node', () => {
             doMount();
             let nodePorts = wrapper.findComponent(NodePortsMock);
 
-            expect(nodePorts.props('canAddPorts')).toBe(true);
-            expect(nodePorts.props('isMetanode')).toBe(false);
+            expect(nodePorts.props('isEditable')).toBe(true);
+            expect(nodePorts.props('nodeKind')).toBe('component');
         });
 
         it("doesn't render non-existent node annotation", () => {

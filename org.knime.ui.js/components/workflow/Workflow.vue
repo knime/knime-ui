@@ -139,24 +139,31 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+/*
+  This targets the action button of the selected port. This workarond is required in order to make the transition
+  work, for SVG elements coming into and out of a portal (html element work with the provided vue-portal API)
+*/
+>>> .action-button {
+  transition: all 150ms ease-in;
+  transform: scale(1);
+}
+
 .fade-enter {
   & >>> .action-button {
     opacity: 0;
+    transform: scale(0);
   }
 }
 
 .fade-leave-to {
   opacity: 0;
-}
 
-.fade-enter-active, {
-  /* TODO: leave comment */
   & >>> .action-button {
-    transition: all 120ms ease-in;
+    transform: scale(0);
   }
 }
 
 .fade-leave-active {
-  transition: all 120ms ease-out;
+  transition: all 150ms ease-out;
 }
 </style>
