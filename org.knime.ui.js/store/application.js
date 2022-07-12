@@ -15,7 +15,8 @@ export const state = () => ({
     availablePortTypes: {},
     
     // A list provided by the backend that says which ports should be suggested to the user in the port type menu.
-    suggestedPortTypes: []
+    suggestedPortTypes: [],
+    zoomAndScroll: []
 });
 
 export const mutations = {
@@ -38,6 +39,10 @@ export const mutations = {
     },
     setSuggestedPortTypes(state, portTypesIds) {
         state.suggestedPortTypes = portTypesIds;
+    },
+    setZoomAndScroll(state, zoomAndScroll) {
+        state.zoomAndScroll = [...state.zoomAndScroll.filter((zoom) => zoom.workflow !== zoomAndScroll.workflow ||
+            zoom.project !== zoomAndScroll.project), { ...zoomAndScroll }];
     }
 };
 
@@ -108,7 +113,7 @@ export const actions = {
             await dispatch('loadWorkflow', { projectId, workflowId });
 
             // restore scroll and zoom if saved before
-            dispatch('restoreUserState');
+            dispatch('restoreUserState', newWorkflow);
         }
     },
     async loadWorkflow({ commit, rootGetters }, { projectId, workflowId = 'root' }) {
@@ -163,14 +168,16 @@ export const actions = {
         //     stateToSave
         // });
     },
-    restoreUserState({ state: { savedUserState, activeProjectId }, commit, rootGetters }) {
-        // TODO: NXT-929 re-implement saving the user state
-        
-        // const workflowId = rootGetters['workflow/activeWorkflowId'];
+    restoreUserState({ state, commit, rootGetters }, workflow) {
+        let { projectId, workflowId } = workflow;
+        const savedStates = state.zoomAndScroll;
 
-        // // is undefined if opened for the first time
-        // const savedState = savedUserState[activeProjectId][workflowId];
-        // commit('canvas/restoreState', savedState?.canvas, { root: true });
+        const savedStateWorkflow = savedStates.find((savedState) => workflowId === savedState.workflow &&
+        projectId === savedState.project);
+
+        if (savedStateWorkflow) {
+            commit('canvas/restoreState', savedStateWorkflow, { root: true });
+        }
     }
 };
 

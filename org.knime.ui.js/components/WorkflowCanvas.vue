@@ -18,10 +18,20 @@ export default {
         KanvasFilters
     },
     mixins: [dropNode],
+    data() {
+        return {
+            scrollTop: 0,
+            scrollLeft: 0,
+            activeWorkflow: '',
+            activeProject: ''
+        };
+    },
     computed: {
         ...mapGetters('canvas', ['contentBounds']),
-        ...mapGetters('workflow', ['isWorkflowEmpty']),
-        ...mapState('nodeRepository', { isDraggingNodeFromRepository: 'isDraggingNode' })
+        ...mapGetters('workflow', ['isWorkflowEmpty', 'activeWorkflowId']),
+        ...mapState('nodeRepository', { isDraggingNodeFromRepository: 'isDraggingNode' }),
+        ...mapState('canvas', ['zoomFactor']),
+        ...mapState('application', ['activeProjectId'])
     },
     watch: {
         isWorkflowEmpty: {
@@ -41,7 +51,21 @@ export default {
             }
         }
     },
+    beforeDestroy() {
+        const zoomAndScroll = {
+            zoomFactor: this.zoomFactor,
+            scrollTop: this.scrollTop,
+            scrollLeft: this.scrollLeft,
+            workflow: this.activeWorkflow,
+            project: this.activeProject
+        };
+
+        this.setZoomAndScroll(zoomAndScroll);
+    },
     mounted() {
+        this.activeWorkflow = this.activeWorkflowId;
+        this.activeProject = this.activeProjectId;
+
         if (this.isWorkflowEmpty) {
             this.setNodeRepositoryActive();
         } else {
@@ -56,6 +80,7 @@ export default {
     },
     methods: {
         ...mapMutations('canvas', ['setInteractionsEnabled']),
+        ...mapMutations('application', ['setZoomAndScroll']),
         ...mapActions('canvas', ['fillScreen']),
         ...mapActions('panel', ['setNodeRepositoryActive', 'setWorkflowMetaActive']),
         ...mapActions('selection', ['deselectAllObjects']),
@@ -76,6 +101,10 @@ export default {
             if (!e.defaultPrevented) {
                 this.deselectAllObjects();
             }
+        },
+        handleScroll(e) {
+            this.scrollTop = e.target.scrollTop;
+            this.scrollLeft = e.target.scrollLeft;
         }
     }
 };
@@ -86,6 +115,7 @@ export default {
     id="kanvas"
     ref="kanvas"
     :class="{ 'indicate-node-drag': isWorkflowEmpty && isDraggingNodeFromRepository }"
+    @scroll.native.passive="handleScroll"
     @drop.native.stop="onDrop"
     @dragover.native.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
