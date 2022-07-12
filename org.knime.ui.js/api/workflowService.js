@@ -255,34 +255,18 @@ export const expandContainerNode = ({
 });
 
 /**
- * Copies workflow parts and serializes them
+ * Copies or cuts workflow parts and serializes them
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
+ * @param { String } cfg.command The command to execute, can be 'copy' or 'cut'
  * @param { Array } cfg.nodeIds The node ids to copy
  * @param { Array } cfg.annotationIds The annotation ids to copy
  * @returns { Promise } The serialized workflow parts
  */
-export const copyWorkflowParts = ({
-    projectId, workflowId, nodeIds = [], annotationIds = []
+export const copyOrCutWorkflowParts = ({
+    projectId, workflowId, command, nodeIds = [], annotationIds = []
 }) => workflowCommand({
-    command: 'copy',
-    args: { nodeIds, annotationIds },
-    projectId,
-    workflowId
-});
-
-/**
- * Cuts workflow parts and serializes them
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @param { Array } cfg.nodeIds The node ids to copy
- * @param { Array } cfg.annotationIds The annotation ids to copy
- * @returns { Promise } The serialized workflow parts
- */
-export const cutWorkflowParts = ({
-    projectId, workflowId, nodeIds = [], annotationIds = []
-}) => workflowCommand({
-    command: 'cut',
+    command,
     args: { nodeIds, annotationIds },
     projectId,
     workflowId

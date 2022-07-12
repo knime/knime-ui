@@ -388,9 +388,49 @@ describe('workflow store: Editing', () => {
             });
         });
 
-        // TODO: Write tests for copy, cut and paste actions:
-        // * `Copy` does nothing to the workflow state
-        // * `Cut` removes the selected nodes from the workflow
-        // * `Paste` adds new nodes to the workflow
+        it.each([
+            ['copy'],
+            ['cut']
+        ])('executes <%s> command on selected nodes', async (command) => {
+            let copyOrCutWorkflowParts = jest.fn();
+            let apiMocks = { copyOrCutWorkflowParts };
+            await loadStore({ apiMocks });
+
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'my project',
+                nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } }
+            });
+            store.dispatch('selection/selectAllNodes');
+            await Vue.nextTick();
+
+            store.dispatch('workflow/copyOrCutWorkflowParts', { methodType: command });
+            expect(copyOrCutWorkflowParts).toHaveBeenCalledWith({
+                projectId: 'my project',
+                workflowId: 'root',
+                command,
+                nodeIds: ['foo', 'bar'],
+                annotationIds: []
+            });
+        });
+
+        it('executes <paste> command', async () => {
+            let pasteWorkflowParts = jest.fn();
+            let apiMocks = { pasteWorkflowParts };
+            await loadStore({ apiMocks });
+            
+            store.commit('workflow/setActiveWorkflow', {
+                projectId: 'my project',
+                nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } },
+                workflowAnnotations: []
+            });
+          
+            store.dispatch('workflow/pasteWorkflowParts');
+            expect(pasteWorkflowParts).toHaveBeenCalledWith({
+                projectId: 'my project',
+                workflowId: 'root',
+                content: '{}',
+                position: null
+            });
+        });
     });
 });

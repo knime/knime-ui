@@ -1,5 +1,5 @@
 import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameContainerNode, collapseToContainer,
-    addContainerNodePort, expandContainerNode, removeContainerNodePort, copyWorkflowParts, cutWorkflowParts,
+    addContainerNodePort, expandContainerNode, removeContainerNodePort, copyOrCutWorkflowParts,
     pasteWorkflowParts } from '~api';
 
 /**
@@ -25,6 +25,21 @@ export const mutations = {
     
     setNameEditorNodeId(state, nodeId) {
         state.nameEditorNodeId = nodeId;
+    }
+};
+
+/**
+ * Helper function to query the Permission API
+ * @param {String} permissionName
+ * @returns {Object} The permission response
+ */
+const requestPermission = async (permissionName) => {
+    try {
+        // Ask for permission if Permission API is available
+        return await navigator.permissions.query({ name: permissionName });
+    } catch (error) {
+        // Just grant permission if Permission API is not available
+        return { state: 'granted' };
     }
 };
 
@@ -218,71 +233,52 @@ export const actions = {
     async copyOrCutWorkflowParts({ state, getters, rootGetters, dispatch }, { methodType }) {
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
         const selectedAnnotations = []; // Annotations cannot be selected yet
-        const params = {
+        if (methodType === 'cut') {
+            dispatch('selection/deselectAllObjects', null, { root: true });
+        }
+        const response = await copyOrCutWorkflowParts({
             projectId: state.activeWorkflow.projectId,
             workflowId: getters.activeWorkflowId,
+            command: methodType,
             nodeIds: selectedNodes,
             annotationIds: selectedAnnotations
-        };
-        let response;
-        if (methodType === 'copy') {
-            response = await copyWorkflowParts(params);
-        } else {
-            dispatch('selection/deselectAllObjects', null, { root: true });
-            response = await cutWorkflowParts(params);
-        }
-        const clipboardContent = JSON.parse(response.content);
-        consola.info('copyWorkflowParts', clipboardContent);
-        let permission;
+        });
+        // To make it testable without a response and without `navigator.clipboard`
         try {
-            // If Permission API is available
-            permission = await navigator.permissions.query({ name: 'clipboard-write' });
+            const clipboardContent = JSON.parse(response.content);
+            consola.info('Copied workflow parts', clipboardContent);
+            const permission = requestPermission('clipboard-write');
+            if (permission.state === 'denied') {
+                throw new Error('Permission to write to the clipbaord denied', permission);
+            }
+            navigator.clipboard.writeText(JSON.stringify(clipboardContent));
         } catch (error) {
-            // If Permission API is not available
-            permission = { state: 'granted' };
+            consola.error('Could not write workflow parts to clipboard:', error);
         }
-        if (permission.state === 'denied') {
-            throw new Error('Not allowed to write clipboard', permission);
-        }
-        navigator.clipboard.writeText(JSON.stringify(clipboardContent));
     },
     
     async pasteWorkflowParts({ state, getters }) {
-        let permission = {};
+        let clipboardContent = '{}';
+        // To make it testable without `navigator.clipboard`
         try {
-            // If Permission API is available
-            permission = await navigator.permissions.query({ name: 'clipboard-read' });
-        } catch (error) {
-            // If Permission API is not available
-            permission = { state: 'granted' };
-        }
-        if (permission.state === 'denied') {
-            throw new Error('Not allowed to read clipboard: ', permission);
-        }
-        const clipboardContent = await navigator.clipboard.readText();
-        try {
-            // TODO:
-            // * Maybe some more verification here before we send the clipbaord content to the backend?
-            // * Set an upper bound on the clipboard content size that can be sent to the backend?
-            //   -> This creates a text string of about 54 million characters for the "Buildings" workflow
-            //   -> Paste command takes about 18 seconds to finish on a local machine
-            // * NXT-1153: We need to pass a position parameter to the backend
+            const permission = requestPermission('clipboard-read');
+            if (permission.state === 'denied') {
+                throw new Error('Permission to read from the clipbaord denied', permission);
+            }
+            // TODO: NXT-1168 Put a limit on the clipboard content size
+            clipboardContent = await navigator.clipboard.readText();
             const verifiedContent = JSON.parse(clipboardContent);
             consola.info('pasteWorkflowParts', verifiedContent);
-            let position;
-            // Handle empty workflow case
-            if (getters.isWorkflowEmpty) {
-                position = { x: 0, y: 0 };
-            }
-            pasteWorkflowParts({
-                projectId: state.activeWorkflow.projectId,
-                workflowId: getters.activeWorkflowId,
-                content: JSON.stringify(verifiedContent),
-                position
-            });
         } catch (error) {
-            consola.warn(`This is not a JSON object: <${clipboardContent.substring(0, 63)}>`);
+            consola.error('Could not read from clipboard:', error);
         }
+        // TODO: NXT-1153 Set the `position` parameter here to handle special cases
+        pasteWorkflowParts({
+            projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            content: clipboardContent,
+            position: getters.isWorkflowEmpty ? { x: 0, y: 0 } : null
+        });
     }
 };
 

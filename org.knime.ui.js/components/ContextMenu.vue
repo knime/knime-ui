@@ -83,8 +83,10 @@ export default {
                 openView: isView,
                 editName: isMetanodeOrComponent,
                 
-                // Add or delete nodes
+                // Something selected
                 deleteSelected: somethingSelected,
+
+                // Copy & paste
                 copy: somethingSelected,
                 cut: somethingSelected,
                 paste: !somethingSelected,
