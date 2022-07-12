@@ -80,10 +80,10 @@ describe('DraggablePortWithTooltip', () => {
             }
         };
 
-        doShallowMount = (extraOpts = {}) => {
+        doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
             let mocks = { $store };
-            wrapper = shallowMount(DraggablePortWithTooltip, { propsData, mocks, provide, ...extraOpts });
+            wrapper = shallowMount(DraggablePortWithTooltip, { propsData, mocks, provide });
         };
     });
 
@@ -238,6 +238,7 @@ describe('DraggablePortWithTooltip', () => {
 
                 // Start dragging
                 wrapper.trigger('pointerdown', { pointerId: -1, x, y, button: 0 });
+                wrapper.trigger('pointermove', { pointerId: -1, x, y, button: 0 });
             };
 
             dragAboveTarget = (targetElement, [x, y] = [0, 0], enableDropTarget = true) => {
@@ -597,13 +598,10 @@ describe('DraggablePortWithTooltip', () => {
             doShallowMount();
 
             const portComponent = wrapper.findComponent(PortWithTooltip);
+            expect(portComponent.classes()).toContain('hoverable-port');
 
             await portComponent.trigger('click');
-
-            const outlinedPort = wrapper.findAllComponents(Port).at(0);
-            
-            expect(portComponent.classes()).toContain('non-interactive');
-            expect(outlinedPort.classes()).toContain('non-interactive');
+            expect(portComponent.classes()).not.toContain('hoverable-port');
         });
         
         it('should dispatch an action to remove port when the delete action button is clicked', async () => {

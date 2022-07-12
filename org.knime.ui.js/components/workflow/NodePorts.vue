@@ -46,6 +46,11 @@ export default {
             default: null
         },
 
+        isEditable: {
+            type: Boolean,
+            default: false
+        },
+
         /** Interaction state of Node.vue that is passed through */
         hover: {
             type: Boolean,
@@ -58,17 +63,7 @@ export default {
         isSingleSelected: {
             type: Boolean,
             default: false
-        },
-        isEditable: {
-            type: Boolean,
-            default: false
         }
-    },
-    data() {
-        return {
-            selectedNodePort: null,
-            unwatchIsDragging: null
-        };
     },
     computed: {
         ...mapGetters('workflow', ['isDragging']),
@@ -121,12 +116,16 @@ export default {
     },
     methods: {
         canSelectPort(port) {
-            return (
-                // skip hidden variable ports on components (mickey mouse)
-                (this.isComponent && port.index !== 0) ||
-                // allow for all metanode ports
-                this.isMetanode
-            );
+            switch (this.nodeKind) {
+                case 'component':
+                    // skip hidden variable ports on components (mickey mouse)
+                    return port.index !== 0;
+                case 'metanode':
+                    // allow for all metanode ports
+                    return true;
+                default:
+                    return false;
+            }
         },
         // default flow variable ports (Mickey Mouse ears) are only shown if connected, selected, or on hover
         portAnimationClasses(port) {

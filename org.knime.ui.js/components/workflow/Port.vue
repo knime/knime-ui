@@ -57,14 +57,14 @@ export default {
         outlineX() {
             let offset = 0;
             
-            // trafic light ports and table ports need to offset the outline to
-            // make the port look centered
+            // trafic light ports and table ports need to offset the outline by 1px to make the port look centered.
             if (this.trafficLight) {
-                offset--;
+                offset -= 1;
             }
 
+            // the outline for a selected triangle port is shifted by 1px to the left to make the port look centered.
             if (this.portKind === 'table') {
-                offset--;
+                offset -= 1;
             }
 
             return offset;
@@ -147,16 +147,6 @@ export default {
     pointer-events: fill;
     fill: none;
     stroke: none;
-  }
-
-  & .scale {
-    pointer-events: none;
-    transition: transform 0.1s linear;
-  }
-
-  &:hover .scale {
-    transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
-    transform: scale(1.2);
   }
 }
 
