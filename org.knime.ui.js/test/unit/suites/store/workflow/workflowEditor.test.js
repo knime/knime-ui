@@ -388,48 +388,94 @@ describe('workflow store: Editing', () => {
             });
         });
 
-        it.each([
-            ['copy'],
-            ['cut']
-        ])('executes <%s> command on selected nodes', async (command) => {
-            let copyOrCutWorkflowParts = jest.fn();
-            let apiMocks = { copyOrCutWorkflowParts };
-            await loadStore({ apiMocks });
-
-            store.commit('workflow/setActiveWorkflow', {
-                projectId: 'my project',
-                nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } }
+        describe('tests copy, cut and paste actions...', () => {
+            it.each([
+                ['copy', 'granted'],
+                ['copy', 'prompt'],
+                ['cut', 'denied'],
+                ['cut', 'error']
+            ])('executes <%s> command with "clipboard-write" permission <%s>', async (command, status) => {
+                const permission = {
+                    granted: () => ({ state: 'granted' }),
+                    prompt: () => ({ state: 'prompt' }),
+                    denied: () => ({ state: 'denied' }),
+                    error: () => {
+                        throw new Error('This is an error');
+                    }
+                };
+                Object.assign(navigator, { permissions: { query: permission[status] } });
+                jest.spyOn(navigator.permissions, 'query');
+                Object.assign(navigator, { clipboard: { writeText: () => ({ }) } });
+                jest.spyOn(navigator.clipboard, 'writeText');
+                let copyOrCutWorkflowParts = jest.fn().mockReturnValue({ content: '{}' });
+                let apiMocks = { copyOrCutWorkflowParts };
+                await loadStore({ apiMocks });
+    
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'my project',
+                    nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } }
+                });
+                store.dispatch('selection/selectAllNodes');
+                await Vue.nextTick();
+                await store.dispatch('workflow/copyOrCutWorkflowParts', { methodType: command });
+    
+                if (status === 'denied') {
+                    expect(window.alert).toHaveBeenCalledWith(
+                        'Sorry, <clipboard-write> permission could not be granted.\n\n' +
+                        '* If you are on Firefox, you might enable it by setting ' +
+                        '"dom.events.testing.asyncClipboard = true" in "about:config"\n\n' +
+                        '* If you are on Chrome, you might previously have denied clipboard access'
+                    );
+                } else {
+                    expect(copyOrCutWorkflowParts).toHaveBeenCalledWith({
+                        projectId: 'my project',
+                        workflowId: 'root',
+                        command,
+                        nodeIds: ['foo', 'bar'],
+                        annotationIds: []
+                    });
+                    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('{}');
+                }
             });
-            store.dispatch('selection/selectAllNodes');
-            await Vue.nextTick();
-
-            store.dispatch('workflow/copyOrCutWorkflowParts', { methodType: command });
-            expect(copyOrCutWorkflowParts).toHaveBeenCalledWith({
-                projectId: 'my project',
-                workflowId: 'root',
-                command,
-                nodeIds: ['foo', 'bar'],
-                annotationIds: []
-            });
-        });
-
-        it('executes <paste> command', async () => {
-            let pasteWorkflowParts = jest.fn();
-            let apiMocks = { pasteWorkflowParts };
-            await loadStore({ apiMocks });
-            
-            store.commit('workflow/setActiveWorkflow', {
-                projectId: 'my project',
-                nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } },
-                workflowAnnotations: []
-            });
-          
-            store.dispatch('workflow/pasteWorkflowParts');
-            expect(pasteWorkflowParts).toHaveBeenCalledWith({
-                projectId: 'my project',
-                workflowId: 'root',
-                content: '{}',
-                position: null
+    
+            it.each([
+                ['granted'],
+                ['denied']
+            ])('executes <paste> command with "clipboard-read" permission <%s>', async (status) => {
+                const permission = {
+                    granted: () => ({ state: 'granted' }),
+                    denied: () => ({ state: 'denied' })
+                };
+                Object.assign(navigator, { permissions: { query: permission[status] } });
+                jest.spyOn(navigator.permissions, 'query');
+                Object.assign(navigator, { clipboard: { readText: () => '{}' } });
+                jest.spyOn(navigator.clipboard, 'readText');
+                let pasteWorkflowParts = jest.fn();
+                let apiMocks = { pasteWorkflowParts };
+                await loadStore({ apiMocks });
+                
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'my project',
+                    nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } },
+                    workflowAnnotations: []
+                });
+                await store.dispatch('workflow/pasteWorkflowParts');
+    
+                if (status === 'denied') {
+                    expect(window.alert).toHaveBeenCalledWith(
+                        'Sorry, <clipboard-read> permission could not be granted.\n\n' +
+                        '* If you are on Firefox, you might enable it by setting ' +
+                        '"dom.events.testing.asyncClipboard = true" in "about:config"\n\n' +
+                        '* If you are on Chrome, you might previously have denied clipboard access'
+                    );
+                } else {
+                    expect(pasteWorkflowParts).toHaveBeenCalledWith({
+                        projectId: 'my project',
+                        workflowId: 'root',
+                        content: '{}',
+                        position: null
+                    });
+                }
             });
         });
     });
