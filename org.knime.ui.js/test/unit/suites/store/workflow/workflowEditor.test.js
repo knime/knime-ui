@@ -440,11 +440,15 @@ describe('workflow store: Editing', () => {
     
             it.each([
                 ['granted'],
-                ['denied']
+                ['denied'],
+                ['error']
             ])('executes <paste> command with "clipboard-read" permission <%s>', async (status) => {
                 const permission = {
                     granted: () => ({ state: 'granted' }),
-                    denied: () => ({ state: 'denied' })
+                    denied: () => ({ state: 'denied' }),
+                    error: () => {
+                        throw new Error('This is an error');
+                    }
                 };
                 Object.assign(navigator, { permissions: { query: permission[status] } });
                 jest.spyOn(navigator.permissions, 'query');
