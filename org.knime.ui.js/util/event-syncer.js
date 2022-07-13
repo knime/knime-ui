@@ -1,5 +1,5 @@
 // map from snapshotId -> [promise, resolve]
-const stalledPromises = {};
+let stalledPromises = {};
 let lastPatchId = -Infinity;
 
 export const waitForPatch = (snapshotId) => {
@@ -44,37 +44,7 @@ export const notifyPatch = (snapshotId) => {
     resolve();
 };
 
-
-import mitt from 'mitt';
-
-const waitableEventName = 'workflow-changed-rpc-event';
-
-const $bus = mitt();
-
-const receivedEventsStack = new Map();
-
-const deleteEvent = (id) => {
-    receivedEventsStack.delete(id);
+export const clearStalledPromises = () => {
+    stalledPromises = {};
+    lastPatchId = -Infinity;
 };
-
-$bus.on(waitableEventName, (payload) => {
-    if (payload.snapshotId) {
-        receivedEventsStack.set(payload.snapshotId, payload);
-    }
-});
-
-export const notifyEvent = (payload) => {
-    $bus.emit(waitableEventName, payload);
-};
-
-export const waitForEvent = (id) => new Promise(resolve => {
-    if (receivedEventsStack.has(id)) {
-        resolve(receivedEventsStack.get(id));
-    } else {
-        $bus.on(waitableEventName, (payload) => {
-            const receivedEvent = receivedEventsStack.get(id);
-            resolve(receivedEvent);
-            $bus.off(waitableEventName);
-        });
-    }
-});
