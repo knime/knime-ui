@@ -6,6 +6,16 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
+/**
+ * Helper function to retrieve error message used in copy & paste tests
+ * @param {String} permissionName
+ * @returns {String} Error message text
+ */
+const getErrorMessage = (permissionName) => `Sorry, <${permissionName}> permission could not be granted.\n\n` +
+    '* If you are on Firefox, you might enable it by setting ' +
+    '"dom.events.testing.asyncClipboard = true" in "about:config"\n\n' +
+    '* If you are on Chrome, you might previously have denied clipboard access';
+
 describe('workflow store: Editing', () => {
     let store, localVue, loadStore, moveObjectsMock, deleteObjectsMock;
 
@@ -403,6 +413,7 @@ describe('workflow store: Editing', () => {
                         throw new Error('This is an error');
                     }
                 };
+                const errorMessage = getErrorMessage('clipboard-write');
                 Object.assign(navigator, { permissions: { query: permission[status] } });
                 jest.spyOn(navigator.permissions, 'query');
                 Object.assign(navigator, { clipboard: { writeText: () => ({ }) } });
@@ -420,12 +431,7 @@ describe('workflow store: Editing', () => {
                 await store.dispatch('workflow/copyOrCutWorkflowParts', { methodType: command });
     
                 if (status === 'denied') {
-                    expect(window.alert).toHaveBeenCalledWith(
-                        'Sorry, <clipboard-write> permission could not be granted.\n\n' +
-                        '* If you are on Firefox, you might enable it by setting ' +
-                        '"dom.events.testing.asyncClipboard = true" in "about:config"\n\n' +
-                        '* If you are on Chrome, you might previously have denied clipboard access'
-                    );
+                    expect(window.alert).toHaveBeenCalledWith(errorMessage);
                 } else {
                     expect(copyOrCutWorkflowParts).toHaveBeenCalledWith({
                         projectId: 'my project',
@@ -450,6 +456,7 @@ describe('workflow store: Editing', () => {
                         throw new Error('This is an error');
                     }
                 };
+                const errorMessage = getErrorMessage('clipboard-read');
                 Object.assign(navigator, { permissions: { query: permission[status] } });
                 jest.spyOn(navigator.permissions, 'query');
                 Object.assign(navigator, { clipboard: { readText: () => '{}' } });
@@ -458,6 +465,7 @@ describe('workflow store: Editing', () => {
                 let apiMocks = { pasteWorkflowParts };
                 await loadStore({ apiMocks });
                 
+                // Test case with non-empty workflow
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'my project',
                     nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } },
@@ -466,18 +474,32 @@ describe('workflow store: Editing', () => {
                 await store.dispatch('workflow/pasteWorkflowParts');
     
                 if (status === 'denied') {
-                    expect(window.alert).toHaveBeenCalledWith(
-                        'Sorry, <clipboard-read> permission could not be granted.\n\n' +
-                        '* If you are on Firefox, you might enable it by setting ' +
-                        '"dom.events.testing.asyncClipboard = true" in "about:config"\n\n' +
-                        '* If you are on Chrome, you might previously have denied clipboard access'
-                    );
+                    expect(window.alert).toHaveBeenCalledWith(errorMessage);
                 } else {
                     expect(pasteWorkflowParts).toHaveBeenCalledWith({
                         projectId: 'my project',
                         workflowId: 'root',
                         content: '{}',
                         position: null
+                    });
+                }
+
+                // Test case with empty workflow
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'my project',
+                    nodes: {},
+                    workflowAnnotations: []
+                });
+                await store.dispatch('workflow/pasteWorkflowParts');
+    
+                if (status === 'denied') {
+                    expect(window.alert).toHaveBeenCalledWith(errorMessage);
+                } else {
+                    expect(pasteWorkflowParts).toHaveBeenCalledWith({
+                        projectId: 'my project',
+                        workflowId: 'root',
+                        content: '{}',
+                        position: { x: 0, y: 0 }
                     });
                 }
             });
