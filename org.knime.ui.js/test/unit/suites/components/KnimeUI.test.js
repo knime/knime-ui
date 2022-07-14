@@ -133,32 +133,42 @@ describe('KnimeUI.vue', () => {
         expect(destroyApplication).toHaveBeenCalled();
     });
 
-    it('sets the clipboard support flag correctly', async () => {
-        await doShallowMountWithAsyncData();
-        expect(setHasClipboardSupport).toHaveBeenCalledWith({}, true);
+    describe('Clipboard support', () => {
+        it.each([
+            ['granted', true],
+            ['prompt', true],
+            ['denied', false]
+        ])(
+            'when clipboard permission state is %s, sets the clipboard support flag to %s',
+            async (state, expectedValue) => {
+                Object.assign(navigator, { permissions: { query: () => ({ state }) } });
+                jest.spyOn(navigator.permissions, 'query');
+                await doShallowMountWithAsyncData();
+                expect(setHasClipboardSupport).toHaveBeenCalledWith({}, expectedValue);
+            }
+        );
 
-        Object.assign(navigator, { permissions: { query: () => ({ state: 'prompt' }) } });
-        jest.spyOn(navigator.permissions, 'query');
-        await doShallowMountWithAsyncData();
-        expect(setHasClipboardSupport).toHaveBeenCalledWith({}, true);
+        it('should set the clipboard support flag to false when permission request throws', async () => {
+            Object.assign(navigator, { permissions: { query: () => {
+                throw new Error('This is an error');
+            } } });
 
-        Object.assign(navigator, { permissions: { query: () => ({ state: 'denied' }) } });
-        jest.spyOn(navigator.permissions, 'query');
-        await doShallowMountWithAsyncData();
-        expect(setHasClipboardSupport).toHaveBeenCalledWith({}, false);
+            jest.spyOn(navigator.permissions, 'query');
+            Object.assign(navigator, { clipboard: {} });
+            
+            await doShallowMountWithAsyncData();
+            expect(setHasClipboardSupport).toHaveBeenCalledWith({}, false);
+        });
 
-        Object.assign(navigator, { permissions: { query: () => {
-            throw new Error('This is an error');
-        } } });
-        jest.spyOn(navigator.permissions, 'query');
-        Object.assign(navigator, { clipboard: { notReadText: () => 'This is not what we need' } });
-        jest.spyOn(navigator.clipboard, 'notReadText');
-        await doShallowMountWithAsyncData();
-        expect(setHasClipboardSupport).toHaveBeenCalledWith({}, false);
+        it('checks clipboard support for Firefox', async () => {
+            Object.assign(navigator, { permissions: { query: () => {
+                throw new Error('This is an error');
+            } } });
+            Object.assign(navigator, { clipboard: { readText: () => '{}' } });
+            jest.spyOn(navigator.clipboard, 'readText');
 
-        Object.assign(navigator, { clipboard: { readText: () => '{}' } });
-        jest.spyOn(navigator.clipboard, 'readText');
-        await doShallowMountWithAsyncData();
-        expect(setHasClipboardSupport).toHaveBeenCalledWith({}, true);
+            await doShallowMountWithAsyncData();
+            expect(setHasClipboardSupport).toHaveBeenCalledWith({}, true);
+        });
     });
 });
