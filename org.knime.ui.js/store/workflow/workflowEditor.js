@@ -28,38 +28,6 @@ export const mutations = {
     }
 };
 
-/**
- * Helper function to grant permission to access the Clipboard API
- * @param {String} permissionName
- * @returns {Boolean} True if it has permission, false otherwise
- */
-const hasClipboardPermission = async (permissionName) => {
-    try {
-        // Ask for permission if Permission API is available
-        const permission = await navigator.permissions.query({ name: permissionName });
-        if (permission.state === 'granted' || permission.state === 'prompt') {
-            return true;
-        }
-    } catch (error) {
-        // Check if the Clipboard API is available anyways
-        if (permissionName === 'clipboard-read') {
-            if ('readText' in navigator.clipboard) {
-                return true;
-            }
-        } else if (permissionName === 'clipboard-write') {
-            if ('writeText' in navigator.clipboard) {
-                return true;
-            }
-        }
-    }
-    const message = `Sorry, <${permissionName}> permission could not be granted.\n\n` +
-        '* If you are on Firefox, you might enable it by setting ' +
-        '"dom.events.testing.asyncClipboard = true" in "about:config"\n\n' +
-        '* If you are on Chrome, you might previously have denied clipboard access';
-    window.alert(message);
-    return false;
-};
-
 export const actions = {
     /* See docs in API */
     undo({ state, getters }) {
@@ -248,46 +216,42 @@ export const actions = {
     },
 
     async copyOrCutWorkflowParts({ state, getters, rootGetters, dispatch }, { methodType }) {
-        if (await hasClipboardPermission('clipboard-write')) {
-            const selectedNodes = rootGetters['selection/selectedNodeIds'];
-            const selectedAnnotations = []; // Annotations cannot be selected yet
-            if (methodType === 'cut') {
-                dispatch('selection/deselectAllObjects', null, { root: true });
-            }
-            const response = await copyOrCutWorkflowParts({
-                projectId: state.activeWorkflow.projectId,
-                workflowId: getters.activeWorkflowId,
-                command: methodType,
-                nodeIds: selectedNodes,
-                annotationIds: selectedAnnotations
-            });
-            const clipboardContent = JSON.parse(response.content);
-            consola.info('Copied workflow parts', clipboardContent);
-            try {
-                navigator.clipboard.writeText(JSON.stringify(clipboardContent));
-            } catch (error) {
-                consola.info('Could not write to clipboard. Maybe the user did not permit it?');
-            }
+        const selectedNodes = rootGetters['selection/selectedNodeIds'];
+        const selectedAnnotations = []; // Annotations cannot be selected yet
+        if (methodType === 'cut') {
+            dispatch('selection/deselectAllObjects', null, { root: true });
+        }
+        const response = await copyOrCutWorkflowParts({
+            projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            command: methodType,
+            nodeIds: selectedNodes,
+            annotationIds: selectedAnnotations
+        });
+        const clipboardContent = JSON.parse(response.content);
+        consola.info('Copied workflow parts', clipboardContent);
+        try {
+            navigator.clipboard.writeText(JSON.stringify(clipboardContent));
+        } catch (error) {
+            consola.info('Could not write to clipboard. Maybe the user did not permit it?');
         }
     },
     
     async pasteWorkflowParts({ state, getters }) {
-        if (await hasClipboardPermission('clipboard-read')) {
-            try {
-                // TODO: NXT-1168 Put a limit on the clipboard content size
-                const clipboardContent = await navigator.clipboard.readText();
-                const verifiedContent = JSON.parse(clipboardContent);
-                consola.info('Pasted workflow parts', verifiedContent);
-                // TODO: NXT-1153 Set the `position` parameter here to handle special cases
-                pasteWorkflowParts({
-                    projectId: state.activeWorkflow.projectId,
-                    workflowId: getters.activeWorkflowId,
-                    content: JSON.stringify(verifiedContent),
-                    position: getters.isWorkflowEmpty ? { x: 0, y: 0 } : null
-                });
-            } catch (error) {
-                consola.info('Could not read form clipboard. Maybe the user did not permit it?');
-            }
+        try {
+            // TODO: NXT-1168 Put a limit on the clipboard content size
+            const clipboardContent = await navigator.clipboard.readText();
+            const verifiedContent = JSON.parse(clipboardContent);
+            consola.info('Pasted workflow parts', verifiedContent);
+            // TODO: NXT-1153 Set the `position` parameter here to handle special cases
+            pasteWorkflowParts({
+                projectId: state.activeWorkflow.projectId,
+                workflowId: getters.activeWorkflowId,
+                content: JSON.stringify(verifiedContent),
+                position: getters.isWorkflowEmpty ? { x: 0, y: 0 } : null
+            });
+        } catch (error) {
+            consola.info('Could not read form clipboard. Maybe the user did not permit it?');
         }
     }
 };

@@ -61,6 +61,22 @@ export default {
             workflow: 'activeWorkflow'
         })
     },
+    async mounted() {
+        let hasClipboardSupport = false;
+        try {
+            // Ask for permission if Permission API is available
+            const permission = await navigator.permissions.query({ name: 'clipboard-read' });
+            if (permission.state === 'granted' || permission.state === 'prompt') {
+                hasClipboardSupport = true;
+            }
+        } catch (error) {
+            // Check if the Clipboard API is available anyways
+            if ('readText' in navigator.clipboard) {
+                hasClipboardSupport = true;
+            }
+        }
+        this.$store.commit('application/setHasClipboardSupport', hasClipboardSupport);
+    },
     async beforeDestroy() {
         await this.destroyApplication();
     },

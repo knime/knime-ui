@@ -191,7 +191,8 @@ export default {
         execute:
             ({ $store }) => $store.dispatch('workflow/copyOrCutWorkflowParts', { methodType: 'copy' }),
         condition:
-            ({ $store }) => Object.keys($store.getters['selection/selectedNodes']).length !== 0
+            ({ $store }) => Object.keys($store.getters['selection/selectedNodes']).length !== 0 &&
+            $store.state.application.hasClipboardSupport
     },
     cut: {
         text: 'Cut',
@@ -201,7 +202,7 @@ export default {
             ({ $store }) => $store.dispatch('workflow/copyOrCutWorkflowParts', { methodType: 'cut' }),
         condition:
             ({ $store }) => Object.keys($store.getters['selection/selectedNodes']).length !== 0 &&
-            $store.getters['workflow/isWritable']
+            $store.getters['workflow/isWritable'] && $store.state.application.hasClipboardSupport
     },
     paste: {
         text: 'Paste',
@@ -210,6 +211,6 @@ export default {
         execute:
             ({ $store }) => $store.dispatch('workflow/pasteWorkflowParts'),
         condition:
-            ({ $store }) => $store.getters['workflow/isWritable']
+            ({ $store }) => $store.getters['workflow/isWritable'] && $store.state.application.hasClipboardSupport
     }
 };

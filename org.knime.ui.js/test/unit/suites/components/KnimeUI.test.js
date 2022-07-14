@@ -18,11 +18,15 @@ describe('KnimeUI.vue', () => {
         localVue.use(Vuex);
     });
 
-    let $store, doShallowMountWithAsyncData, initializeApplication, wrapper, storeConfig, mocks, destroyApplication;
+    let $store, doShallowMountWithAsyncData, initializeApplication, wrapper, storeConfig, mocks, destroyApplication,
+        setHasClipboardSupport;
 
     beforeEach(() => {
         initializeApplication = jest.fn().mockResolvedValue();
         destroyApplication = jest.fn();
+        setHasClipboardSupport = jest.fn();
+        Object.assign(navigator, { permissions: { query: () => ({ state: 'granted' }) } });
+        jest.spyOn(navigator.permissions, 'query');
 
         document.fonts = {
             load: jest.fn()
@@ -30,6 +34,9 @@ describe('KnimeUI.vue', () => {
 
         storeConfig = {
             application: {
+                mutations: {
+                    setHasClipboardSupport
+                },
                 actions: {
                     initializeApplication,
                     destroyApplication
@@ -124,5 +131,34 @@ describe('KnimeUI.vue', () => {
         await wrapper.destroy();
 
         expect(destroyApplication).toHaveBeenCalled();
+    });
+
+    it('sets the clipboard support flag correctly', async () => {
+        await doShallowMountWithAsyncData();
+        expect(setHasClipboardSupport).toHaveBeenCalledWith({}, true);
+
+        Object.assign(navigator, { permissions: { query: () => ({ state: 'prompt' }) } });
+        jest.spyOn(navigator.permissions, 'query');
+        await doShallowMountWithAsyncData();
+        expect(setHasClipboardSupport).toHaveBeenCalledWith({}, true);
+
+        Object.assign(navigator, { permissions: { query: () => ({ state: 'denied' }) } });
+        jest.spyOn(navigator.permissions, 'query');
+        await doShallowMountWithAsyncData();
+        expect(setHasClipboardSupport).toHaveBeenCalledWith({}, false);
+
+        Object.assign(navigator, { permissions: { query: () => {
+            throw new Error('This is an error');
+        } } });
+        jest.spyOn(navigator.permissions, 'query');
+        Object.assign(navigator, { clipboard: { notReadText: () => 'This is not what we need' } });
+        jest.spyOn(navigator.clipboard, 'notReadText');
+        await doShallowMountWithAsyncData();
+        expect(setHasClipboardSupport).toHaveBeenCalledWith({}, false);
+
+        Object.assign(navigator, { clipboard: { readText: () => '{}' } });
+        jest.spyOn(navigator.clipboard, 'readText');
+        await doShallowMountWithAsyncData();
+        expect(setHasClipboardSupport).toHaveBeenCalledWith({}, true);
     });
 });

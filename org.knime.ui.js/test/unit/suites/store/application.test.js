@@ -60,7 +60,8 @@ describe('application store', () => {
             activeProjectId: null,
             savedUserState: {},
             availablePortTypes: {},
-            suggestedPortTypes: []
+            suggestedPortTypes: [],
+            hasClipboardSupport: false
         });
     });
 
@@ -99,6 +100,12 @@ describe('application store', () => {
             store.commit('application/setSuggestedPortTypes', ['type1', 'type2']);
             expect(store.state.application.suggestedPortTypes)
                 .toStrictEqual(['type1', 'type2']);
+        });
+
+        it('sets the clipboard support flag', () => {
+            store.commit('application/setHasClipboardSupport', true);
+            expect(store.state.application.hasClipboardSupport)
+                .toBe(true);
         });
     });
 

@@ -1,6 +1,5 @@
 import workflowCommands from '~/commands/workflowCommands';
 
-
 describe('workflowCommands', () => {
     let mockDispatch, $store;
 
@@ -9,6 +8,9 @@ describe('workflowCommands', () => {
         $store = {
             dispatch: mockDispatch,
             state: {
+                application: {
+                    hasClipboardSupport: true
+                },
                 workflow: {
                     activeWorkflow: {
                         allowedActions: {},
@@ -351,6 +353,8 @@ describe('workflowCommands', () => {
             expect(workflowCommands.copy.condition({ $store })).toBeFalsy();
             $store.getters['selection/selectedNodes'] = [{ allowedActions: {} }];
             expect(workflowCommands.copy.condition({ $store })).toBe(true);
+            $store.state.application.hasClipboardSupport = false;
+            expect(workflowCommands.copy.condition({ $store })).toBeFalsy();
         });
 
         describe('cut', () => {
@@ -373,12 +377,21 @@ describe('workflowCommands', () => {
                 $store.getters['workflow/isWritable'] = true;
                 expect(workflowCommands.cut.condition({ $store })).toBe(true);
             });
+
+            test('nodes selected, writeable but no clipboard permission -> disabled', () => {
+                $store.state.application.hasClipboardSupport = false;
+                $store.getters['selection/selectedNodes'] = [{ allowedActions: {} }];
+                $store.getters['workflow/isWritable'] = true;
+                expect(workflowCommands.cut.condition({ $store })).toBeFalsy();
+            });
         });
 
         test('paste', () => {
             expect(workflowCommands.paste.condition({ $store })).toBeFalsy();
             $store.getters['workflow/isWritable'] = true;
             expect(workflowCommands.paste.condition({ $store })).toBe(true);
+            $store.state.application.hasClipboardSupport = false;
+            expect(workflowCommands.paste.condition({ $store })).toBeFalsy();
         });
     });
 });

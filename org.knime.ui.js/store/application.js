@@ -15,7 +15,10 @@ export const state = () => ({
     availablePortTypes: {},
     
     // A list provided by the backend that says which ports should be suggested to the user in the port type menu.
-    suggestedPortTypes: []
+    suggestedPortTypes: [],
+
+    /* Indicates whether the browser has support (enabled) for the Clipboard API or not */
+    hasClipboardSupport: false
 });
 
 export const mutations = {
@@ -38,6 +41,9 @@ export const mutations = {
     },
     setSuggestedPortTypes(state, portTypesIds) {
         state.suggestedPortTypes = portTypesIds;
+    },
+    setHasClipboardSupport(state, hasClipboardSupport) {
+        state.hasClipboardSupport = hasClipboardSupport;
     }
 };
 

@@ -6,16 +6,6 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-/**
- * Helper function to retrieve error message used in copy & paste tests
- * @param {String} permissionName
- * @returns {String} Error message text
- */
-const getErrorMessage = (permissionName) => `Sorry, <${permissionName}> permission could not be granted.\n\n` +
-    '* If you are on Firefox, you might enable it by setting ' +
-    '"dom.events.testing.asyncClipboard = true" in "about:config"\n\n' +
-    '* If you are on Chrome, you might previously have denied clipboard access';
-
 describe('workflow store: Editing', () => {
     let store, localVue, loadStore, moveObjectsMock, deleteObjectsMock;
 
@@ -44,6 +34,7 @@ describe('workflow store: Editing', () => {
             }), { virtual: true });
 
             store = mockVuexStore({
+                application: await import('~/store/application'),
                 workflow: await import('~/store/workflow'),
                 selection: await import('~/store/selection')
             });
@@ -400,28 +391,16 @@ describe('workflow store: Editing', () => {
 
         describe('tests copy, cut and paste actions...', () => {
             it.each([
-                ['copy', 'granted'],
-                ['copy', 'prompt'],
-                ['cut', 'denied'],
-                ['cut', 'error']
-            ])('executes <%s> command with "clipboard-write" permission <%s>', async (command, status) => {
-                const permission = {
-                    granted: () => ({ state: 'granted' }),
-                    prompt: () => ({ state: 'prompt' }),
-                    denied: () => ({ state: 'denied' }),
-                    error: () => {
-                        throw new Error('This is an error');
-                    }
-                };
-                const errorMessage = getErrorMessage('clipboard-write');
-                Object.assign(navigator, { permissions: { query: permission[status] } });
-                jest.spyOn(navigator.permissions, 'query');
+                ['copy'],
+                ['cut']
+            ])('executes <%s> command', async (command) => {
                 Object.assign(navigator, { clipboard: { writeText: () => ({ }) } });
                 jest.spyOn(navigator.clipboard, 'writeText');
                 let copyOrCutWorkflowParts = jest.fn().mockReturnValue({ content: '{}' });
                 let apiMocks = { copyOrCutWorkflowParts };
                 await loadStore({ apiMocks });
     
+                store.commit('application/setHasClipboardSupport', true);
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'my project',
                     nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } }
@@ -430,35 +409,17 @@ describe('workflow store: Editing', () => {
                 await Vue.nextTick();
                 await store.dispatch('workflow/copyOrCutWorkflowParts', { methodType: command });
     
-                if (status === 'denied') {
-                    expect(window.alert).toHaveBeenCalledWith(errorMessage);
-                } else {
-                    expect(copyOrCutWorkflowParts).toHaveBeenCalledWith({
-                        projectId: 'my project',
-                        workflowId: 'root',
-                        command,
-                        nodeIds: ['foo', 'bar'],
-                        annotationIds: []
-                    });
-                    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('{}');
-                }
+                expect(copyOrCutWorkflowParts).toHaveBeenCalledWith({
+                    projectId: 'my project',
+                    workflowId: 'root',
+                    command,
+                    nodeIds: ['foo', 'bar'],
+                    annotationIds: []
+                });
+                expect(navigator.clipboard.writeText).toHaveBeenCalledWith('{}');
             });
     
-            it.each([
-                ['granted'],
-                ['denied'],
-                ['error']
-            ])('executes <paste> command with "clipboard-read" permission <%s>', async (status) => {
-                const permission = {
-                    granted: () => ({ state: 'granted' }),
-                    denied: () => ({ state: 'denied' }),
-                    error: () => {
-                        throw new Error('This is an error');
-                    }
-                };
-                const errorMessage = getErrorMessage('clipboard-read');
-                Object.assign(navigator, { permissions: { query: permission[status] } });
-                jest.spyOn(navigator.permissions, 'query');
+            it('executes <paste> command', async () => {
                 Object.assign(navigator, { clipboard: { readText: () => '{}' } });
                 jest.spyOn(navigator.clipboard, 'readText');
                 let pasteWorkflowParts = jest.fn();
@@ -473,16 +434,12 @@ describe('workflow store: Editing', () => {
                 });
                 await store.dispatch('workflow/pasteWorkflowParts');
     
-                if (status === 'denied') {
-                    expect(window.alert).toHaveBeenCalledWith(errorMessage);
-                } else {
-                    expect(pasteWorkflowParts).toHaveBeenCalledWith({
-                        projectId: 'my project',
-                        workflowId: 'root',
-                        content: '{}',
-                        position: null
-                    });
-                }
+                expect(pasteWorkflowParts).toHaveBeenCalledWith({
+                    projectId: 'my project',
+                    workflowId: 'root',
+                    content: '{}',
+                    position: null
+                });
 
                 // Test case with empty workflow
                 store.commit('workflow/setActiveWorkflow', {
@@ -492,16 +449,12 @@ describe('workflow store: Editing', () => {
                 });
                 await store.dispatch('workflow/pasteWorkflowParts');
     
-                if (status === 'denied') {
-                    expect(window.alert).toHaveBeenCalledWith(errorMessage);
-                } else {
-                    expect(pasteWorkflowParts).toHaveBeenCalledWith({
-                        projectId: 'my project',
-                        workflowId: 'root',
-                        content: '{}',
-                        position: { x: 0, y: 0 }
-                    });
-                }
+                expect(pasteWorkflowParts).toHaveBeenCalledWith({
+                    projectId: 'my project',
+                    workflowId: 'root',
+                    content: '{}',
+                    position: { x: 0, y: 0 }
+                });
             });
         });
     });
