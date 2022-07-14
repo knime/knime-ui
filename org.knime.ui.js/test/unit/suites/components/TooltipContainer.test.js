@@ -30,7 +30,9 @@ describe('TooltipContainer', () => {
             },
             workflow: {
                 mutations: {
-                    setTooltip: (state, tooltip) => { state.tooltip = tooltip; }
+                    setTooltip: (state, tooltip) => {
+                        state.tooltip = tooltip;
+                    }
                 },
                 state: {
                     tooltip

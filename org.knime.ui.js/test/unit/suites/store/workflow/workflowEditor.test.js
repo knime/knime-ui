@@ -87,6 +87,19 @@ describe('workflow store: Editing', () => {
             );
         });
 
+        it('can remove ContainerNode Ports', async () => {
+            let apiMocks = { removeContainerNodePort: jest.fn() };
+            await loadStore({ apiMocks });
+
+            const payload = { nodeId: 'node x', side: 'input', typeId: 'porty', portIndex: 1 };
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.dispatch(`workflow/removeContainerNodePort`, payload);
+
+            expect(apiMocks.removeContainerNodePort).toHaveBeenCalledWith(
+                { ...payload, projectId: 'foo', workflowId: 'root' }
+            );
+        });
+
         it('moves actual nodes', async () => {
             await loadStore();
             store.commit('workflow/setActiveWorkflow', {

@@ -50,17 +50,13 @@ describe('NodeDescription', () => {
                     }]
                 },
                 actions: {
-                    getNodeDescription: getNodeDescriptionMock
+                    getNodeDescription: getNodeDescriptionMock,
+                    closeDescriptionPanel: closeDescriptionPanelMock
                 },
                 getters: {
                     selectedNodeIsVisible() {
                         return selectedNodeIsVisible;
                     }
-                }
-            },
-            panel: {
-                actions: {
-                    closeDescriptionPanel: closeDescriptionPanelMock
                 }
             }
         };

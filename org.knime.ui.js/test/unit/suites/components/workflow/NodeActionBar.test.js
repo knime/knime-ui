@@ -109,7 +109,9 @@ describe('NodeActionBar', () => {
         let buttons = wrapper.findAllComponents(ActionButton);
 
         // fires action event
-        buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
+        buttons.wrappers.forEach(button => {
+            button.vm.$emit('click');
+        });
         expect(storeConfig.workflow.actions.openNodeConfiguration).toHaveBeenCalled();
         expect(storeConfig.workflow.actions.executeNodes).toHaveBeenCalled();
         expect(storeConfig.workflow.actions.cancelNodeExecution).toHaveBeenCalled();
@@ -123,7 +125,9 @@ describe('NodeActionBar', () => {
 
             // fires action event
             let buttons = wrapper.findAllComponents(ActionButton);
-            buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
+            buttons.wrappers.forEach(button => {
+                button.vm.$emit('click');
+            });
 
             expect(storeConfig.workflow.actions.pauseLoopExecution).toHaveBeenCalled();
             expect(storeConfig.workflow.actions.stepLoopExecution).toHaveBeenCalled();
@@ -133,7 +137,9 @@ describe('NodeActionBar', () => {
             doMount({ canStep: true, canPause: false, canResume: true });
 
             let buttons = wrapper.findAllComponents(ActionButton);
-            buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
+            buttons.wrappers.forEach(button => {
+                button.vm.$emit('click');
+            });
             expect(storeConfig.workflow.actions.resumeLoopExecution).toHaveBeenCalled();
             expect(storeConfig.workflow.actions.stepLoopExecution).toHaveBeenCalled();
         });
@@ -143,7 +149,9 @@ describe('NodeActionBar', () => {
             doMount({ canStep: true, canPause: true, canResume: true });
 
             let buttons = wrapper.findAllComponents(ActionButton);
-            buttons.wrappers.forEach(button => { button.vm.$emit('click'); });
+            buttons.wrappers.forEach(button => {
+                button.vm.$emit('click');
+            });
             expect(storeConfig.workflow.actions.pauseLoopExecution).toHaveBeenCalled();
             expect(storeConfig.workflow.actions.stepLoopExecution).toHaveBeenCalled();
             expect(storeConfig.workflow.actions.resumeLoopExecution).not.toHaveBeenCalled();

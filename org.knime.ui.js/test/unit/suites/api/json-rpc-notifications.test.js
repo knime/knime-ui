@@ -1,5 +1,7 @@
 import { registerEventHandlers } from '~/api/json-rpc-notifications';
 
+const origErrorLogger = window.consola.error;
+
 describe('JsonRpcNotifications', () => {
     let eventHandlers;
 
@@ -25,6 +27,14 @@ describe('JsonRpcNotifications', () => {
     });
 
     describe('error handling', () => {
+        beforeAll(() => {
+            window.consola.error = jest.fn();
+        });
+
+        afterAll(() => {
+            window.consola.error = origErrorLogger;
+        });
+
         it('throws an error for invalid arguments', () => {
             let call1 = () => window.jsonrpcNotification(1);
             expect(call1).toThrow(expect.any(TypeError));

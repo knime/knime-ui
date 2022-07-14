@@ -23,21 +23,22 @@ export default {
         SearchResults
     },
     computed: {
-        ...mapState('nodeRepository', ['tags', 'nodes', 'nodesPerCategory']),
-        ...mapState('panel', ['activeDescriptionPanel']),
-        ...mapGetters('nodeRepository', {
-            showSearchResults: 'searchIsActive'
-        }),
+        ...mapState('nodeRepository', ['tags', 'nodes', 'nodesPerCategory', 'isDescriptionPanelOpen']),
+        ...mapGetters('nodeRepository', { showSearchResults: 'searchIsActive' }),
 
         /* Search and Filter */
         selectedTags: {
-            get() { return this.$store.state.nodeRepository.selectedTags; },
+            get() {
+                return this.$store.state.nodeRepository.selectedTags;
+            },
             set(value) {
                 this.$store.dispatch('nodeRepository/setSelectedTags', value);
             }
         },
         searchQuery: {
-            get() { return this.$store.state.nodeRepository.query; },
+            get() {
+                return this.$store.state.nodeRepository.query;
+            },
             set: debounce(function (value) {
                 this.$store.dispatch('nodeRepository/updateQuery', value); // eslint-disable-line no-invalid-this
             },
@@ -54,7 +55,7 @@ export default {
     },
     watch: {
         // deselect node on panel close
-        activeDescriptionPanel(val) {
+        isDescriptionPanelOpen(val) {
             if (val === false) {
                 setTimeout(() => {
                     this.setSelectedNode(null);
@@ -64,7 +65,7 @@ export default {
     },
     mounted() {
         if (!this.nodesPerCategory.length) {
-            this.$store.dispatch('nodeRepository/getAllNodes', false);
+            this.$store.dispatch('nodeRepository/getAllNodes', { append: false });
         }
     },
     methods: {
@@ -105,7 +106,7 @@ export default {
     <SearchResults v-if="showSearchResults" />
     <CategoryResults v-else />
     <portal to="extension-panel">
-      <NodeDescription v-if="activeDescriptionPanel" />
+      <NodeDescription v-if="isDescriptionPanelOpen" />
     </portal>
   </div>
 </template>

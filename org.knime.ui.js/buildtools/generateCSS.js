@@ -11,8 +11,14 @@ const colorNames = ['warning', 'error', 'darkeningMask', 'notificationBackground
     'selection.activeBackground'];
 
 // shapes.js -> shapes.css (postfix shape, someVariableName will become `--some-variable-name-shape`)
-const shapeNames = ['selectedNodeBorderRadius', 'selectedNodeStrokeWidth', 'nodeNamePadding', 'nodeNameFontSize',
-    'nodeNameLineHeight', 'nodeNameMaxLines'];
+const shapeNames = [
+    'selectedNodeBorderRadius',
+    'selectedNodeStrokeWidth',
+    'nodeNamePadding',
+    'nodeNameFontSize',
+    'nodeNameLineHeight',
+    'nodeNameMaxLines'
+];
 // --
 
 const camelToSnake = str => str.replace(/(.?)([A-Z])/g,

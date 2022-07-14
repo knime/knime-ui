@@ -8,6 +8,7 @@ const srcDir = path.resolve(__dirname);
 const commonsDir = path.resolve(srcDir, 'webapps-common');
 
 const config = {
+    telemetry: false,
     alias: {
         'webapps-common': commonsDir
     },
@@ -30,7 +31,6 @@ const config = {
         '~/plugins/constants.js',
         '~/plugins/directive-move.js',
         '~/plugins/events.js',
-        '~/plugins/equo-comm.js',
         '~/plugins/commands.js'
     ],
     modules: ['portal-vue/nuxt'],

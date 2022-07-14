@@ -62,6 +62,12 @@ import org.knime.gateway.impl.webui.service.DefaultEventService;
  */
 public class KnimeBrowserLocationListener implements LocationListener {
 
+    private final KnimeBrowserView m_browserView;
+
+    KnimeBrowserLocationListener(final KnimeBrowserView browserView) {
+        m_browserView = browserView;
+    }
+
 	@Override
 	public void changing(final LocationEvent event) {
 		// Any change of the location (i.e. URL) will be intercepted and the URL
@@ -83,10 +89,13 @@ public class KnimeBrowserLocationListener implements LocationListener {
 		}
 	}
 
-	@Override
-	public void changed(final LocationEvent event) {
-		//
-	}
+    @Override
+    public void changed(final LocationEvent event) {
+        if (isAppPage(event.location) || isDevPage(event.location)) {
+            // inject the communication (message transport) logic
+            m_browserView.initializeJSBrowserCommunication();
+        }
+    }
 
 	private static boolean isAppPage(final String url) {
 		return url.startsWith(KnimeBrowserView.BASE_URL);

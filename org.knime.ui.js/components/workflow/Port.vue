@@ -14,12 +14,14 @@ export default {
             type: Object,
             required: true,
             validator: port => (typeof port.inactive === 'boolean' || !port.inactive) && typeof port.typeId === 'string'
+        },
+        isSelected: {
+            type: Boolean,
+            default: false
         }
     },
     computed: {
-        ...mapState('application', {
-            portTypes: 'availablePortTypes'
-        }),
+        ...mapState('application', { portTypes: 'availablePortTypes' }),
         portKind() {
             // port kind has to be fetched from port type map
             return this.portTypes[this.port.typeId].kind;
@@ -51,6 +53,21 @@ export default {
                 HALTED: 'green',
                 EXECUTED: 'green'
             }[this.port.nodeState];
+        },
+        outlineX() {
+            let offset = 0;
+            
+            // trafic light ports and table ports need to offset the outline by 1px to make the port look centered.
+            if (this.trafficLight) {
+                offset -= 1;
+            }
+
+            // the outline for a selected triangle port is shifted by 1px to the left to make the port look centered.
+            if (this.portKind === 'table') {
+                offset -= 1;
+            }
+
+            return offset;
         }
     }
 };
@@ -58,6 +75,12 @@ export default {
 
 <template>
   <g class="port">
+    <circle
+      v-if="isSelected"
+      class="port-outline"
+      :cx="outlineX"
+      r="9.5"
+    />
     <rect
       :x="-$shapes.portSize / 2"
       :y="-$shapes.portSize / 2 - 1"
@@ -125,16 +148,10 @@ export default {
     fill: none;
     stroke: none;
   }
-
-  & .scale {
-    pointer-events: none;
-    transition: transform 0.1s linear;
-  }
-
-  &:hover .scale {
-    transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
-    transform: scale(1.2);
-  }
 }
 
+.port-outline {
+  fill: white;
+  stroke: var(--knime-cornflower-dark);
+}
 </style>

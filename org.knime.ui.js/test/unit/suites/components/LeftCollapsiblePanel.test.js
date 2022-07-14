@@ -18,11 +18,12 @@ describe('LeftCollapsiblePanel.vue', () => {
     beforeEach(() => {
         $store = mockVuexStore({ panel: panelStoreConfig });
 
-        doShallowMount = () => {
+        doShallowMount = (customProps = {}) => {
             wrapper = shallowMount(LeftCollapsiblePanel, {
                 propsData: {
                     title: 'hover-title',
-                    width: '200px'
+                    width: '200px',
+                    ...customProps
                 },
                 mocks: {
                     $store
@@ -33,34 +34,40 @@ describe('LeftCollapsiblePanel.vue', () => {
 
     it('is initially closed', () => {
         doShallowMount();
-        expect(wrapper.vm.expanded).toBe(false);
-        expect(wrapper.find('.container').attributes().style).toBe('width: 0px;');
+
+        expect(wrapper.find('.container').attributes('style')).toBe('width: 0px;');
     });
 
-    it('is opened via store', () => {
+    it('is opened via props', async () => {
         doShallowMount();
-        expect(wrapper.vm.expanded).toBe(false);
-        wrapper.vm.$store.dispatch('panel/toggleExpanded');
-        expect(wrapper.vm.expanded).toBe(true);
+        
+        expect(wrapper.find('.container').attributes('style')).toMatch('width: 0px');
+        
+        await wrapper.setProps({ expanded: true });
+        expect(wrapper.find('.container').attributes('style')).toMatch('width: 200px');
     });
 
-    it('is opened via button', () => {
+    it('width matches prop', () => {
+        doShallowMount({ width: '400px', expanded: true });
+        
+        expect(wrapper.find('.container').attributes('style')).toMatch('width: 400px');
+    });
+
+    it('emits "toggle-expand" event when clicking on button', () => {
         doShallowMount();
-        expect(wrapper.vm.expanded).toBe(false);
+        
         wrapper.find('button').trigger('click');
-        expect(wrapper.vm.expanded).toBe(true);
+        expect(wrapper.emitted('toggle-expand')).toBeDefined();
     });
 
-    it('disables button if description panel is active', async () => {
-        doShallowMount();
-        wrapper.vm.$store.dispatch('panel/openDescriptionPanel');
-        expect(wrapper.vm.activeDescriptionPanel).toBe(true);
+    it('disables button if "disabled" prop is true', () => {
+        doShallowMount({ disabled: true });
+
         const button = wrapper.find('button');
-        await Vue.nextTick();
         expect(button.element.disabled).toBe(true);
     });
 
-    it('correctly sets data at mount', async () => {
+    it('correctly container transitions at mount', async () => {
         const waitRAF = () => new Promise(resolve => requestAnimationFrame(resolve));
         doShallowMount();
         await Vue.nextTick();
@@ -70,20 +77,22 @@ describe('LeftCollapsiblePanel.vue', () => {
     });
 
     describe('open panel', () => {
-        beforeEach(() => {
-            wrapper.vm.$store.dispatch('panel/toggleExpanded');
-        });
-
         it('doesn’t display a hover title', () => {
+            doShallowMount({ expanded: true });
             expect(wrapper.find('button').attributes().title).toBeUndefined();
         });
 
         it('icon is not flipped', () => {
+            doShallowMount({ expanded: true });
             expect(wrapper.findComponent(SwitchIcon).props().style).toBeUndefined();
         });
     });
 
     describe('closed panel', () => {
+        beforeEach(() => {
+            doShallowMount();
+        });
+        
         it('collapses panel', () => {
             expect(wrapper.find('.container').attributes().style).toBe('width: 0px;');
         });
@@ -94,12 +103,6 @@ describe('LeftCollapsiblePanel.vue', () => {
 
         it('flips icon', () => {
             expect(wrapper.findComponent(SwitchIcon).attributes().style).toBe('transform: scaleX(-1);');
-        });
-
-        it('opens again', async () => {
-            wrapper.find('button').trigger('click');
-            await Vue.nextTick();
-            expect(wrapper.find('.container').attributes().style).toBe('width: 200px;');
         });
     });
 });

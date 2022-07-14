@@ -30,8 +30,7 @@ export default {
         };
     },
     computed: {
-        ...mapState('nodeRepository', ['selectedNode']),
-        ...mapState('panel', ['activeDescriptionPanel']),
+        ...mapState('nodeRepository', ['selectedNode', 'isDescriptionPanelOpen']),
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapGetters('workflow', ['isWritable']),
         ...mapGetters('canvas', ['toCanvasCoordinates']),
@@ -41,12 +40,13 @@ export default {
         }
     },
     methods: {
-        ...mapActions('panel', ['openDescriptionPanel', 'closeDescriptionPanel']),
         ...mapMutations('nodeRepository', ['setSelectedNode', 'setDraggingNode']),
+        ...mapActions('nodeRepository', ['openDescriptionPanel', 'closeDescriptionPanel']),
         ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
+        
         onDragStart(e) {
             // close description panel
-            this.shouldSelectOnAbort = this.isSelected && this.activeDescriptionPanel;
+            this.shouldSelectOnAbort = this.isSelected && this.isDescriptionPanelOpen;
             this.closeDescriptionPanel();
             this.setDraggingNode(true);
 
@@ -85,7 +85,9 @@ export default {
             }
 
             // ending with dropEffect none indicates that dragging has been aborted
-            if (e.dataTransfer.dropEffect === 'none') { this.onDragAbort(); }
+            if (e.dataTransfer.dropEffect === 'none') {
+                this.onDragAbort();
+            }
         },
         onDragAbort() {
             // if drag is aborted and node was selected before, select it again
@@ -98,7 +100,7 @@ export default {
             if (!this.isSelected) {
                 this.setSelectedNode(this.nodeTemplate);
             }
-            if (!this.activeDescriptionPanel) {
+            if (!this.isDescriptionPanelOpen) {
                 this.openDescriptionPanel();
             }
         },

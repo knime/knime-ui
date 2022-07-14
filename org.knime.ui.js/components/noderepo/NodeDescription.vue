@@ -35,8 +35,7 @@ export default {
         this.$root.$off('escape-pressed', this.onEscape);
     },
     methods: {
-        ...mapActions('panel', ['closeDescriptionPanel']),
-        ...mapActions('nodeRepository', ['getNodeDescription']),
+        ...mapActions('nodeRepository', ['getNodeDescription', 'closeDescriptionPanel']),
         onEscape() {
             this.closeDescriptionPanel();
         }

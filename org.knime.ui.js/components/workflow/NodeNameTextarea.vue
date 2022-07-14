@@ -1,7 +1,7 @@
 <script>
 import NodeNameText from '~/components/workflow/NodeNameText';
 
-const forbiddenCharacters = /[*?#:“<>%~|/\\]/g;
+const forbiddenCharacters = /[*?#:"<>%~|/\\]/g;
 
 /**
  * Inline editor for the node name. Emits 'save' and 'cancel' events. Implements v-model pattern. On input it might

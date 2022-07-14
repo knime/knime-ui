@@ -156,5 +156,14 @@ describe('Port', () => {
             expect(d).not.toContain('h');
             expect(transform).toBeUndefined();
         });
+        
+        describe('Selection', () => {
+            it('should display the port-outline when selected', async () => {
+                doShallowMount();
+                await wrapper.setProps({ isSelected: true });
+
+                expect(wrapper.find('.port-outline').exists()).toBe(true);
+            });
+        });
     });
 });

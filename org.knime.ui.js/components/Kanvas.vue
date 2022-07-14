@@ -17,7 +17,9 @@ export default {
         ...mapState('canvas', ['suggestPanning', 'zoomFactor', 'interactionsEnabled'])
     },
     watch: {
-        contentBounds(...args) { this.contentBoundsChanged(args); }
+        contentBounds(...args) {
+            this.contentBoundsChanged(args);
+        }
     },
     mounted() {
         // Start Container Observers
@@ -66,7 +68,9 @@ export default {
         */
         onMouseWheel: throttle(function (e) {
             /* eslint-disable no-invalid-this */
-            if (!this.interactionsEnabled) { return; }
+            if (!this.interactionsEnabled) {
+                return;
+            }
 
             // delta is -1, 0 or 1 depending on scroll direction.
             let delta = Math.sign(-e.deltaY);
@@ -84,7 +88,9 @@ export default {
             Panning
         */
         beginPan(e) {
-            if (!this.interactionsEnabled) { return; }
+            if (!this.interactionsEnabled) {
+                return;
+            }
 
             this.isPanning = true;
             this.panningOffset = [e.screenX, e.screenY];

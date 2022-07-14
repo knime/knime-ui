@@ -43,6 +43,11 @@ describe('application store', () => {
                         saveMe: 'canvas'
                     })
                 }
+            },
+            selection: {
+                mutations: {
+                    clearSelection: jest.fn()
+                }
             }
         };
         store = mockVuexStore(storeConfig);
@@ -110,7 +115,7 @@ describe('application store', () => {
             store.dispatch('application/destroyApplication');
 
             expect(removeEventListener).toHaveBeenCalled();
-            expect(dispatchSpy).toHaveBeenCalledWith('workflow/unloadActiveWorkflow', { clearWorkflow: true });
+            expect(dispatchSpy).toHaveBeenCalledWith('application/unloadActiveWorkflow', { clearWorkflow: true });
         });
         
         it('replaces application state', async () => {
@@ -124,7 +129,6 @@ describe('application store', () => {
             ]);
         });
     });
-
 
     describe('Workflow Lifecycle', () => {
         it('loads root workflow successfully', async () => {
@@ -175,6 +179,7 @@ describe('application store', () => {
                 snapshotId: 'snap'
             });
             expect(store.state.workflow.activeWorkflow).toBe(null);
+            expect(storeConfig.selection.mutations.clearSelection).toHaveBeenCalled();
         });
 
         it('does not unload if there is no active workflow', async () => {
