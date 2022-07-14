@@ -2,7 +2,9 @@ import { shallowMount, mount } from '@vue/test-utils';
 import Button from '~/webapps-common/ui/components/Button';
 import Error from '~/components/Error';
 import Vue from 'vue';
-import { copyText } from '~/webapps-common/util/copyText.js'; // copyText is already mocked
+// copyText is already mocked
+import { copyText } from '~/webapps-common/util/copyText.js';
+import FunctionButton from 'webapps-common/ui/components/FunctionButton';
 
 jest.mock('~/webapps-common/util/copyText.js', () => ({
     copyText: jest.fn()
@@ -63,6 +65,18 @@ describe('Error.vue', () => {
         reloadButton.trigger('click');
 
         expect(window.location.reload).toHaveBeenCalled();
+    });
+
+    it('switch to java app', () => {
+        const wrapper = mount(Error);
+
+        delete window.switchToJavaUI;
+        window.switchToJavaUI = jest.fn();
+
+        let switchButton = wrapper.findAllComponents(FunctionButton).at(0);
+        switchButton.trigger('click');
+
+        expect(window.switchToJavaUI).toHaveBeenCalled();
     });
 
     it('shows copy success', async () => {

@@ -119,16 +119,6 @@ export default {
             Copy error
           </span>
         </Button>
-        <Button
-          with-border
-          on-dark
-          @click="switchToJavaUI"
-        >
-          <span class="success">
-            <CheckIcon />
-            Switch to KNIME AP
-          </span>
-        </Button>
       </div>
 
       <!-- eslint-disable vue/no-textarea-mustache -->
@@ -167,6 +157,22 @@ export default {
   flex-direction: column;
   justify-content: space-around;
 
+  & .switch-classic {
+    height: 40px;
+    width: 40px;
+    border: 1px solid var(--knime-dove-gray);
+    position: fixed;
+    top: 18px;
+    right: 15px;
+
+    & svg {
+      width: 26px;
+      height: 26px;
+      stroke: var(--knime-white);
+      stroke-width: calc(32px / 26); /* get 1px stroke width */
+    }
+  }
+
   & .header {
     color: white;
     text-align: center;
@@ -179,7 +185,8 @@ export default {
     }
 
     & .message {
-      margin-top: 10px;
+      margin: 10px auto;
+      max-width: 690px;
       font-size: 20px;
     }
 
@@ -246,7 +253,6 @@ export default {
     }
   }
 
-
   & .stack {
     font-family: 'Roboto Mono', sans-serif;
     padding: 28px;
@@ -256,23 +262,6 @@ export default {
     resize: none;
     white-space: pre;
     min-height: 50%;
-  
-  }
-
-  & .switch-classic {
-    height: 40px;
-    width: 40px;
-    border: 1px solid var(--knime-dove-gray);
-    position: fixed;
-    top: 18px;
-    right: 15px;
-
-    & svg {
-      width: 26px;
-      height: 26px;
-      stroke: var(--knime-white);
-      stroke-width: calc(32px / 26); /* get 1px stroke width */
-    }
   }
 }
 </style>
