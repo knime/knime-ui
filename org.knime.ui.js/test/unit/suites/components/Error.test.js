@@ -2,8 +2,7 @@ import { shallowMount, mount } from '@vue/test-utils';
 import Button from '~/webapps-common/ui/components/Button';
 import Error from '~/components/Error';
 import Vue from 'vue';
-// copyText is already mocked
-import { copyText } from '~/webapps-common/util/copyText.js';
+import { copyText } from '~/webapps-common/util/copyText.js'; // copyText is already mocked
 import FunctionButton from 'webapps-common/ui/components/FunctionButton';
 
 jest.mock('~/webapps-common/util/copyText.js', () => ({
