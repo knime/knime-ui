@@ -6,8 +6,7 @@ import { mixin as clickaway } from 'vue-clickaway2';
 import PortWithTooltip from '~/components/workflow/PortWithTooltip';
 import Port from '~/components/workflow/Port';
 import Connector from '~/components/workflow/Connector';
-import ActionButton from '~/components/workflow/ActionButton';
-import DeleteIcon from '~/assets/delete.svg?inline';
+import NodePortActions from './NodePortActions.vue';
 
 import { circleDetection } from '~/util/compatibleConnections';
 
@@ -16,8 +15,7 @@ export default {
         PortWithTooltip,
         Port,
         Connector,
-        ActionButton,
-        DeleteIcon
+        NodePortActions
     },
     mixins: [clickaway],
     inject: ['anchorPoint'],
@@ -70,13 +68,6 @@ export default {
         indicateConnectorReplacement() {
             return this.direction === 'in' && Boolean(this.port.connectedVia.length) &&
             (this.targeted || Boolean(this.dragConnector));
-        },
-        selectedPortPosition() {
-            const [x, y] = this.relativePosition;
-            return [
-                this.anchorPoint.x + x,
-                this.anchorPoint.y + y
-            ];
         }
     },
     watch: {
@@ -318,26 +309,15 @@ export default {
     />
 
     <portal to="selected-port">
-      <g
+      <NodePortActions
         v-if="isSelected"
-        :key="`${nodeId}-${port.index}`"
-        :transform="`translate(${selectedPortPosition})`"
-      >
-        <Port
-          :port="port"
-          class="selected-port"
-          is-selected
-        />
-    
-        <ActionButton
-          :x="relativePosition[0] - (direction === 'in' ? 22 : 10)"
-          :disabled="!port.canRemove"
-          title="Delete port"
-          @click="onDelete"
-        >
-          <DeleteIcon />
-        </ActionButton>
-      </g>
+        :key="`${nodeId}-${port.index}-${direction}`"
+        :port="port"
+        :anchor-point="anchorPoint"
+        :relative-position="relativePosition"
+        :direction="direction"
+        @action:delete="onDelete"
+      />
     </portal>
 
     <portal

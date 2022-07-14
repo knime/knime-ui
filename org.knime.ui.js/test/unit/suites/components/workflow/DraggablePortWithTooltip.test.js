@@ -8,7 +8,7 @@ import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithToo
 import PortWithTooltip from '~/components/workflow/PortWithTooltip';
 import Port from '~/components/workflow/Port';
 import Connector from '~/components/workflow/Connector';
-import ActionButton from '~/components/workflow/ActionButton';
+import NodePortActions from '~/components/workflow/NodePortActions';
 
 import { circleDetection } from '~/util/compatibleConnections';
 
@@ -218,6 +218,7 @@ describe('DraggablePortWithTooltip', () => {
 
     describe('Drag Connector', () => {
         let startDragging, dragAboveTarget, KanvasMock, dropOnTarget;
+        document.elementFromPoint = jest.fn();
 
         beforeEach(() => {
             // Set up
@@ -389,7 +390,7 @@ describe('DraggablePortWithTooltip', () => {
                 // mimic a click event being sent along with the pointer(down/up) events
                 wrapper.findComponent(PortWithTooltip).vm.$emit('select');
 
-                expect(wrapper.findComponent(ActionButton).exists()).toBe(false);
+                expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
             });
 
             test('move onto element', () => {
@@ -558,19 +559,19 @@ describe('DraggablePortWithTooltip', () => {
         });
     });
 
-    describe('Port selection and deletion', () => {
+    describe('Port actions', () => {
         beforeEach(() => {
             propsData.canSelect = true;
         });
 
-        it('should render the delete action button when the port is selected', async () => {
+        it('should render the actions when the port is selected', async () => {
             doShallowMount();
 
-            expect(wrapper.findComponent(ActionButton).exists()).toBe(false);
+            expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
             
             await wrapper.findComponent(PortWithTooltip).trigger('click');
             
-            expect(wrapper.findComponent(ActionButton).exists()).toBe(true);
+            expect(wrapper.findComponent(NodePortActions).exists()).toBe(true);
         });
 
         it('should now allow selection of port if `canSelect` prop is false', async () => {
@@ -580,7 +581,7 @@ describe('DraggablePortWithTooltip', () => {
 
             await wrapper.findComponent(PortWithTooltip).trigger('click');
 
-            expect(wrapper.findComponent(ActionButton).exists()).toBe(false);
+            expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
         });
 
         it('should unselect the port if the user starts dragging node', async () => {
@@ -591,7 +592,7 @@ describe('DraggablePortWithTooltip', () => {
             $store.state.workflow.isDragging = true;
             await wrapper.vm.$nextTick();
 
-            expect(wrapper.findComponent(ActionButton).exists()).toBe(false);
+            expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
         });
 
         it('should make the port non-interactive if selected', async () => {
@@ -609,7 +610,7 @@ describe('DraggablePortWithTooltip', () => {
 
             await wrapper.findComponent(PortWithTooltip).trigger('click');
 
-            wrapper.findComponent(ActionButton).vm.$emit('click');
+            wrapper.findComponent(NodePortActions).vm.$emit('action:delete');
 
             expect(storeConfig.workflow.actions.removeContainerNodePort).toHaveBeenCalledWith(
                 expect.any(Object), // Vuex context
@@ -620,18 +621,6 @@ describe('DraggablePortWithTooltip', () => {
                     portIndex: propsData.port.index
                 })
             );
-        });
-
-        it('should disable the delete action button if the port cannot be removed', async () => {
-            doShallowMount();
-
-            await wrapper.setProps({ port: { ...propsData.port, canRemove: false } });
-
-            await wrapper.findComponent(PortWithTooltip).trigger('click');
-
-            const actionButton = wrapper.findComponent(ActionButton);
-
-            expect(actionButton.props('disabled')).toBe(true);
         });
     });
 });
