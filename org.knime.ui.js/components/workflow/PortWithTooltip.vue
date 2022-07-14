@@ -40,7 +40,11 @@ export default {
         }
     },
     render(createElement) {
-        return createElement(Port, { props: this.$props, attrs: this.$attrs }, []);
+        return createElement(Port, {
+            props: this.$props,
+            attrs: this.$attrs,
+            on: this.$listeners
+        });
     }
 };
 </script>

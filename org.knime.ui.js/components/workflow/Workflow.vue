@@ -37,6 +37,16 @@ export default {
                 }
             }
             return [...unselected, ...selected];
+        },
+        selectedPortTransition() {
+            // returns a functional component that is used as transition prop on <portal>. This way the transition
+            // behaves as without portal, see https://portal-vue.linusb.org/api/portal-target.html#transition
+            return {
+                functional: true,
+                render(h, context) {
+                    return h('transition', { props: { name: 'fade' } }, context.children);
+                }
+            };
         }
     },
     methods: {
@@ -49,7 +59,7 @@ export default {
 </script>
 
 <template>
-  <g>
+  <g class="workflow">
     <!-- Workflow Annotation Layer. Background -->
     <WorkflowAnnotation
       v-for="annotation of workflow.workflowAnnotations"
@@ -117,7 +127,58 @@ export default {
 
     <portal-target
       tag="g"
+      name="selected-port"
+      :transition="selectedPortTransition"
+    />
+
+    <portal-target
+      tag="g"
       name="drag-connector"
     />
   </g>
 </template>
+
+<style lang="postcss" scoped>
+/*
+  This targets the action button of the selected port. This workarond is required in order to make the transition
+  work, for SVG elements coming into and out of a portal (html element work with the provided vue-portal API)
+*/
+.workflow {
+  --selected-port-transition-time: 150ms;
+}
+
+>>> .action-button {
+  transition: all var(--selected-port-transition-time) ease-in;
+  transform: scale(1);
+}
+
+>>> .selected-port {
+  transition: opacity var(--selected-port-transition-time) ease-out;
+  opacity: 1;
+}
+
+.fade-enter {
+  & >>> .action-button {
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  & >>> .selected-port {
+    opacity: 0;
+  }
+}
+
+.fade-leave-to {
+  & >>> .action-button {
+    transform: scale(0);
+  }
+
+  & >>> .selected-port {
+    opacity: 0;
+  }
+}
+
+.fade-leave-active {
+  transition: opacity var(--selected-port-transition-time) ease-out;
+}
+</style>
