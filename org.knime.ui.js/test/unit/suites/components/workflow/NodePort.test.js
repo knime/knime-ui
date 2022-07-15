@@ -4,7 +4,7 @@ import Vuex from 'vuex';
 import { createLocalVue, shallowMount, createWrapper } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 
-import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
+import NodePort from '~/components/workflow/NodePort';
 import Port from '~/components/workflow/Port';
 import Connector from '~/components/workflow/Connector';
 import NodePortActions from '~/components/workflow/NodePortActions';
@@ -24,7 +24,7 @@ jest.mock('~/util/compatibleConnections', () => ({
     circleDetection: jest.fn().mockReturnValue([])
 }));
 
-describe('DraggablePortWithTooltip', () => {
+describe('NodePort', () => {
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
@@ -93,7 +93,7 @@ describe('DraggablePortWithTooltip', () => {
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
             let mocks = { $store, $shapes, $colors };
-            wrapper = shallowMount(DraggablePortWithTooltip, { propsData, mocks, provide });
+            wrapper = shallowMount(NodePort, { propsData, mocks, provide });
         };
     });
 

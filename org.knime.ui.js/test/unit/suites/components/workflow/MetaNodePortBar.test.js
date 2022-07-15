@@ -9,7 +9,7 @@ import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
 import MetaNodePortBar from '~/components/workflow/MetaNodePortBar';
-import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
+import NodePort from '~/components/workflow/NodePort';
 
 describe('MetaNodePortBar.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, $store;
@@ -97,7 +97,7 @@ describe('MetaNodePortBar.vue', () => {
             }];
             doShallowMount();
 
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+            let ports = wrapper.findAllComponents(NodePort);
             let [port0, port1] = ports.wrappers;
 
             expect(ports.length).toBe(2);
@@ -135,7 +135,7 @@ describe('MetaNodePortBar.vue', () => {
             }];
             doShallowMount();
 
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+            let ports = wrapper.findAllComponents(NodePort);
             let [port0, port1] = ports.wrappers;
 
             expect(port0.props('targeted')).toBeFalsy();

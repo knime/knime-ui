@@ -12,7 +12,7 @@ import NodeTorso from '~/components/workflow/NodeTorso';
 import NodeState from '~/components/workflow/NodeState';
 import NodeAnnotation from '~/components/workflow/NodeAnnotation';
 import NodeActionBar from '~/components/workflow/NodeActionBar';
-import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
+import NodePort from '~/components/workflow/NodePort';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
 
 import '~/plugins/directive-move';
@@ -261,7 +261,7 @@ describe('Node', () => {
         });
 
         it('renders port with direction and nodeId', () => {
-            const ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
+            const ports = wrapper.findAllComponents(NodePort).wrappers;
 
             ports.forEach(port => {
                 expect(port.props('nodeId')).toBe(commonNode.id);

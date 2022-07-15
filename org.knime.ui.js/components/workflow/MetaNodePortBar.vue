@@ -1,12 +1,12 @@
 <script>
-import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
+import NodePort from '~/components/workflow/NodePort';
 import { portBar, snapConnector } from '~/mixins';
 
 /**
  * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
  */
 export default {
-    components: { DraggablePortWithTooltip },
+    components: { NodePort },
     mixins: [portBar, snapConnector],
     provide() {
         return {
@@ -97,7 +97,7 @@ export default {
       :x="barPosition"
       :fill="$colors.named.Yellow"
     />
-    <DraggablePortWithTooltip
+    <NodePort
       v-for="port of ports"
       :key="port.index"
       :relative-position="portPositions[portDirection][port.index]"

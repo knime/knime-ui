@@ -33,19 +33,17 @@ export default {
             validator: value => typeof value.x === 'number' && typeof value.y === 'number'
         }
     },
-    data() {
-        return {
-            actions: [
+    computed: {
+        actions() {
+            return [
                 {
                     id: 'delete',
                     title: 'Delete port',
-                    isDisabled: (port) => !port.canRemove,
+                    isDisabled: !this.port.canRemove,
                     eventName: 'action:delete'
                 }
-            ]
-        };
-    },
-    computed: {
+            ];
+        },
         selectedPortPosition() {
             const [x, y] = this.relativePosition;
             return [
@@ -83,6 +81,10 @@ export default {
 
 <template>
   <g :transform="`translate(${selectedPortPosition})`">
+    <!--
+        Capture mouse events on the rect to prevent them from being sent to the node
+        while the port actions are visible
+     -->
     <rect
       v-bind="selectedPortHoverAreaDimensions"
       fill="transparent"
@@ -103,7 +105,7 @@ export default {
       :id="action.id"
       :key="action.id"
       :x="portActionButtonPosition(index + 1)"
-      :disabled="action.isDisabled(port)"
+      :disabled="action.isDisabled"
       :title="action.title"
       @click="$emit(action.eventName)"
     >
