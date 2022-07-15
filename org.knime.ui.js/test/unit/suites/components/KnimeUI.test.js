@@ -1,3 +1,5 @@
+import { clear as clearUserAgent, mockUserAgent } from 'jest-useragent-mock';
+
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
@@ -161,6 +163,7 @@ describe('KnimeUI.vue', () => {
         });
 
         it('checks clipboard support for Firefox', async () => {
+            mockUserAgent('Firefox');
             Object.assign(navigator, { permissions: { query: () => {
                 throw new Error('This is an error');
             } } });
@@ -169,6 +172,13 @@ describe('KnimeUI.vue', () => {
 
             await doShallowMountWithAsyncData();
             expect(setHasClipboardSupport).toHaveBeenCalledWith({}, true);
+        });
+
+        it('checks clipboard support for Safari', async () => {
+            mockUserAgent('Webkit Safari');
+            await doShallowMountWithAsyncData();
+
+            expect(setHasClipboardSupport).not.toHaveBeenCalled();
         });
     });
 });

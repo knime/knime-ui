@@ -84,6 +84,12 @@ export default {
 
         async checkClipboardSupport() {
             let hasClipboardSupport = false;
+            
+            // TODO: NXT-1176 Disable completely for Safari
+            if (navigator.userAgent.indexOf('Safari') !== -1) {
+                return;
+            }
+
             try {
                 // Ask for permission if Permission API is available
                 const permission = await navigator.permissions.query({ name: 'clipboard-read' });
