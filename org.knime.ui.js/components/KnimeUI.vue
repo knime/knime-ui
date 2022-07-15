@@ -1,5 +1,5 @@
 <script>
-import { mapActions, mapState } from 'vuex';
+import { mapActions, mapState, mapGetters } from 'vuex';
 
 import AppHeader from '~/components/AppHeader';
 import Sidebar from '~/components/Sidebar';
@@ -59,10 +59,26 @@ export default {
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
-        })
+        }),
+        ...mapState('application', ['activeProjectId']),
+        ...mapGetters('workflow', ['activeWorkflowId'])
+    },
+    mounted() {
+        this.unsubscribeAction = this.$store.subscribeAction({
+            after: async (action) => {
+                if (action.type === 'application/switchWorkflow') {
+                    await this.$nextTick();
+                    this.restoreUserState({
+                        workflowId: this.activeWorkflowId,
+                        projectId: this.activeProjectId
+                    });
+                }
+            }
+        });
     },
     async beforeDestroy() {
         await this.destroyApplication();
+        this.unsubscribeAction();
     },
     errorCaptured({ message, stack }, vm, vueInfo) {
         consola.error(message, vueInfo, stack);
@@ -77,7 +93,7 @@ export default {
         return false;
     },
     methods: {
-        ...mapActions('application', ['initializeApplication', 'destroyApplication']),
+        ...mapActions('application', ['initializeApplication', 'destroyApplication', 'restoreUserState']),
         onCloseError() {
             if (process.env.isDev) { // eslint-disable-line no-process-env
                 this.error = null;

@@ -16,7 +16,7 @@ export const state = () => ({
     
     // A list provided by the backend that says which ports should be suggested to the user in the port type menu.
     suggestedPortTypes: [],
-    zoomAndScroll: []
+    savedStates: []
 });
 
 export const mutations = {
@@ -40,9 +40,10 @@ export const mutations = {
     setSuggestedPortTypes(state, portTypesIds) {
         state.suggestedPortTypes = portTypesIds;
     },
-    setZoomAndScroll(state, zoomAndScroll) {
-        state.zoomAndScroll = [...state.zoomAndScroll.filter((zoom) => zoom.workflow !== zoomAndScroll.workflow ||
-            zoom.project !== zoomAndScroll.project), { ...zoomAndScroll }];
+    setSavedStates(state, savedStates) {
+        state.savedStates =
+        [...state.savedStates.filter((savedState) => savedState.workflow !== savedStates.workflow ||
+            savedState.project !== savedStates.project), { ...savedStates }];
     }
 };
 
@@ -111,9 +112,6 @@ export const actions = {
             let { projectId, workflowId } = newWorkflow;
             commit('setActiveProjectId', projectId);
             await dispatch('loadWorkflow', { projectId, workflowId });
-
-            // restore scroll and zoom if saved before
-            dispatch('restoreUserState', newWorkflow);
         }
     },
     async loadWorkflow({ commit, rootGetters }, { projectId, workflowId = 'root' }) {
@@ -156,27 +154,15 @@ export const actions = {
             commit('workflow/setActiveWorkflow', null, { root: true });
         }
     },
-    saveUserState({ state, commit, rootState, rootGetters }) {
-        // TODO: NXT-929 re-implement saving the user state
-
-        // // deep clone without observers
-        // stateToSave = JSON.parse(JSON.stringify(stateToSave));
-
-        // commit('saveUserState', {
-        //     projectId: state.activeProjectId,
-        //     workflowId: rootGetters['workflow/activeWorkflowId'],
-        //     stateToSave
-        // });
-    },
     restoreUserState({ state, commit, rootGetters }, workflow) {
-        let { projectId, workflowId } = workflow;
-        const savedStates = state.zoomAndScroll;
+        const { projectId, workflowId } = workflow;
+        const savedStates = state.savedStates;
 
-        const savedStateWorkflow = savedStates.find((savedState) => workflowId === savedState.workflow &&
+        const savedState = savedStates.find((savedState) => workflowId === savedState.workflow &&
         projectId === savedState.project);
 
-        if (savedStateWorkflow) {
-            commit('canvas/restoreState', savedStateWorkflow, { root: true });
+        if (savedState) {
+            commit('canvas/restoreState', savedState, { root: true });
         }
     }
 };

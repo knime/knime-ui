@@ -60,7 +60,8 @@ describe('application store', () => {
             activeProjectId: null,
             savedUserState: {},
             availablePortTypes: {},
-            suggestedPortTypes: []
+            suggestedPortTypes: [],
+            savedStates: []
         });
     });
 
@@ -99,6 +100,23 @@ describe('application store', () => {
             store.commit('application/setSuggestedPortTypes', ['type1', 'type2']);
             expect(store.state.application.suggestedPortTypes)
                 .toStrictEqual(['type1', 'type2']);
+        });
+
+        it('sets saved states', () => {
+            store.commit('application/setSavedStates',
+                { zoomFactor: 1,
+                    scrollTop: 100,
+                    scrollLeft: 100,
+                    workflow: 'workflow1',
+                    project: 'project1' });
+
+            expect(store.state.application.savedStates).toStrictEqual(
+                [{ zoomFactor: 1,
+                    scrollTop: 100,
+                    scrollLeft: 100,
+                    workflow: 'workflow1',
+                    project: 'project1' }]
+            );
         });
     });
 
@@ -272,7 +290,6 @@ describe('application store', () => {
 
             await store.dispatch('application/switchWorkflow', null);
 
-            expect(dispatchSpy).toHaveBeenCalledWith('application/saveUserState', undefined);
             expect(dispatchSpy).toHaveBeenCalledWith('application/unloadActiveWorkflow', { clearWorkflow: true });
             expect(store.state.application.activeProjectId).toBe(null);
 
@@ -290,7 +307,6 @@ describe('application store', () => {
 
             expect(dispatchSpy).toHaveBeenCalledWith('application/loadWorkflow',
                 { projectId: '1', workflowId: 'root' });
-            expect(dispatchSpy).toHaveBeenCalledWith('application/restoreUserState', undefined);
             expect(store.state.application.activeProjectId).toBe('1');
         });
     });
@@ -308,35 +324,15 @@ describe('application store', () => {
         });
     });
 
-    it('saves user state', async () => {
-        // TODO: NXT-929 re-implement saving the user state
-        
-        // await store.dispatch('application/replaceApplicationState', {
-        //     openedWorkflows: [{ projectId: '1', name: 'p1' }]
-        // });
-        // expect(store.state.application.savedUserState).toStrictEqual({
-        //     '1': {}
-        // });
-        // store.dispatch('application/saveUserState');
+    it('restores ui state', () => {
+        store.commit('application/setSavedStates',
+            { zoomFactor: 1,
+                scrollTop: 100,
+                scrollLeft: 100,
+                workflow: 'workflow1',
+                project: 'project1' });
 
-        // expect(store.state.application.savedUserState).toStrictEqual({
-        //     '1': {
-        //         undefined: {
-        //             canvas: { saveMe: 'canvas' }
-        //         }
-        //     }
-        // });
-    });
-
-    it('restores ui state', async () => {
-        // TODO: NXT-929 re-implement saving the user state
-        
-        // await store.dispatch('application/replaceApplicationState', {
-        //     openedWorkflows: [{ projectId: '1', name: 'p1' }]
-        // });
-        // expect(storeConfig.canvas.mutations.restoreState).toHaveBeenCalled();
-
-        // await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root' });
-        // expect(storeConfig.canvas.mutations.restoreState).toHaveBeenCalled();
+        store.dispatch('application/restoreUserState', { projectId: 'project1', workflowId: 'workflow1' });
+        expect(storeConfig.canvas.mutations.restoreState).toHaveBeenCalled();
     });
 });

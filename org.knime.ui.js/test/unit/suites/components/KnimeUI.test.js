@@ -18,11 +18,14 @@ describe('KnimeUI.vue', () => {
         localVue.use(Vuex);
     });
 
-    let $store, doShallowMountWithAsyncData, initializeApplication, wrapper, storeConfig, mocks, destroyApplication;
+    let $store, doShallowMountWithAsyncData, initializeApplication, wrapper, storeConfig, mocks, destroyApplication,
+        restoreUserState, switchWorkflow;
 
     beforeEach(() => {
         initializeApplication = jest.fn().mockResolvedValue();
         destroyApplication = jest.fn();
+        restoreUserState = jest.fn();
+        switchWorkflow = jest.fn();
 
         document.fonts = {
             load: jest.fn()
@@ -30,14 +33,24 @@ describe('KnimeUI.vue', () => {
 
         storeConfig = {
             application: {
+                state: {
+                    activeProjectId: 'project1'
+                },
                 actions: {
                     initializeApplication,
-                    destroyApplication
+                    destroyApplication,
+                    restoreUserState,
+                    switchWorkflow
                 }
             },
             workflow: {
                 state: {
                     activeWorkflow: null
+                },
+                getters: {
+                    activeWorkflowId() {
+                        return 'workflow1';
+                    }
                 }
             }
         };
@@ -117,6 +130,14 @@ describe('KnimeUI.vue', () => {
         expect(document.fonts.load).toHaveBeenCalledWith('400 1em Roboto Condensed');
         expect(document.fonts.load).toHaveBeenCalledWith('700 1em Roboto Condensed');
         expect(document.fonts.load).toHaveBeenCalledWith('400 1em Roboto Mono');
+    });
+
+    it('calls restoreUserState on mounted after switchWorkflow was called', async () => {
+        await doShallowMountWithAsyncData();
+        await $store.dispatch('application/switchWorkflow');
+        await Vue.nextTick();
+
+        expect(restoreUserState).toHaveBeenCalled();
     });
 
     it('destroys application', async () => {

@@ -52,7 +52,7 @@ export default {
         }
     },
     beforeDestroy() {
-        const zoomAndScroll = {
+        const savedState = {
             zoomFactor: this.zoomFactor,
             scrollTop: this.scrollTop,
             scrollLeft: this.scrollLeft,
@@ -60,7 +60,7 @@ export default {
             project: this.activeProject
         };
 
-        this.setZoomAndScroll(zoomAndScroll);
+        this.setSavedStates(savedState);
     },
     mounted() {
         this.activeWorkflow = this.activeWorkflowId;
@@ -80,7 +80,7 @@ export default {
     },
     methods: {
         ...mapMutations('canvas', ['setInteractionsEnabled']),
-        ...mapMutations('application', ['setZoomAndScroll']),
+        ...mapMutations('application', ['setSavedStates']),
         ...mapActions('canvas', ['fillScreen']),
         ...mapActions('panel', ['setNodeRepositoryActive', 'setWorkflowMetaActive']),
         ...mapActions('selection', ['deselectAllObjects']),

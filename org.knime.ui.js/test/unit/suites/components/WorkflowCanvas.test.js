@@ -22,6 +22,9 @@ describe('Kanvas', () => {
         isWorkflowEmpty = false;
         storeConfig = {
             canvas: {
+                state: {
+                    zoomFactor: 1
+                },
                 getters: {
                     contentBounds: () => ({
                         left: 5,
@@ -46,6 +49,9 @@ describe('Kanvas', () => {
                 getters: {
                     isWorkflowEmpty() {
                         return isWorkflowEmpty;
+                    },
+                    activeWorkflowId() {
+                        return 'workflow1';
                     }
                 }
             },
@@ -58,6 +64,14 @@ describe('Kanvas', () => {
                 actions: {
                     setNodeRepositoryActive: jest.fn(),
                     setWorkflowMetaActive: jest.fn()
+                }
+            },
+            application: {
+                state: {
+                    activeProjectId: 'project1'
+                },
+                mutations: {
+                    setSavedStates: jest.fn()
                 }
             }
         };
@@ -178,6 +192,36 @@ describe('Kanvas', () => {
         await Vue.nextTick();
 
         expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
+    });
+
+    it('passes correct values to the store before destroy', async () => {
+        doShallowMount();
+        await wrapper.destroy();
+
+        expect(storeConfig.application.mutations.setSavedStates).toHaveBeenCalledWith(expect.anything(), {
+            zoomFactor: 1,
+            scrollTop: 0,
+            scrollLeft: 0,
+            workflow: 'workflow1',
+            project: 'project1'
+        });
+    });
+
+    it('saves scroll positions on scroll', async () => {
+        doShallowMount();
+        wrapper.element.scrollTop = 50;
+        wrapper.element.scrollLeft = 50;
+        wrapper.findComponent(Kanvas).trigger('scroll');
+
+        await wrapper.destroy();
+
+        expect(storeConfig.application.mutations.setSavedStates).toHaveBeenCalledWith(expect.anything(), {
+            zoomFactor: 1,
+            scrollTop: 50,
+            scrollLeft: 50,
+            workflow: 'workflow1',
+            project: 'project1'
+        });
     });
 
     describe('clearing selected objects', () => {
