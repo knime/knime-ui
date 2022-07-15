@@ -407,7 +407,7 @@ describe('workflow store: Editing', () => {
                 });
                 store.dispatch('selection/selectAllNodes');
                 await Vue.nextTick();
-                await store.dispatch('workflow/copyOrCutWorkflowParts', { methodType: command });
+                await store.dispatch('workflow/copyOrCutWorkflowParts', { command });
     
                 expect(copyOrCutWorkflowParts).toHaveBeenCalledWith({
                     projectId: 'my project',

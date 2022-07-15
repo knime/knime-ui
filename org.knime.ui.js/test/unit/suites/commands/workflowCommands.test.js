@@ -93,13 +93,13 @@ describe('workflowCommands', () => {
         test('copy', () => {
             workflowCommands.copy.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/copyOrCutWorkflowParts',
-                { methodType: 'copy' });
+                { command: 'copy' });
         });
 
         test('cut', () => {
             workflowCommands.cut.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/copyOrCutWorkflowParts',
-                { methodType: 'cut' });
+                { command: 'cut' });
         });
 
         test('paste', () => {

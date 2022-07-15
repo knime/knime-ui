@@ -215,16 +215,20 @@ export const actions = {
         removeContainerNodePort({ projectId, workflowId, nodeId, side, typeId, portIndex });
     },
 
-    async copyOrCutWorkflowParts({ state, getters, rootGetters, dispatch }, { methodType }) {
+    async copyOrCutWorkflowParts({ state, getters, rootGetters, dispatch }, { command }) {
+        if (!['copy', 'cut'].includes(command)) {
+            throw new Error("command has to be 'copy' or 'cut'");
+        }
+
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
         const selectedAnnotations = []; // Annotations cannot be selected yet
-        if (methodType === 'cut') {
+        if (command === 'cut') {
             dispatch('selection/deselectAllObjects', null, { root: true });
         }
         const response = await copyOrCutWorkflowParts({
             projectId: state.activeWorkflow.projectId,
             workflowId: getters.activeWorkflowId,
-            command: methodType,
+            command,
             nodeIds: selectedNodes,
             annotationIds: selectedAnnotations
         });

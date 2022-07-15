@@ -189,7 +189,7 @@ export default {
         title: 'Copy selection',
         hotkey: ['Ctrl', 'C'],
         execute:
-            ({ $store }) => $store.dispatch('workflow/copyOrCutWorkflowParts', { methodType: 'copy' }),
+            ({ $store }) => $store.dispatch('workflow/copyOrCutWorkflowParts', { command: 'copy' }),
         condition:
             ({ $store }) => Object.keys($store.getters['selection/selectedNodes']).length !== 0 &&
             $store.state.application.hasClipboardSupport
@@ -199,7 +199,7 @@ export default {
         title: 'Cut selection',
         hotkey: ['Ctrl', 'X'],
         execute:
-            ({ $store }) => $store.dispatch('workflow/copyOrCutWorkflowParts', { methodType: 'cut' }),
+            ({ $store }) => $store.dispatch('workflow/copyOrCutWorkflowParts', { command: 'cut' }),
         condition:
             ({ $store }) => Object.keys($store.getters['selection/selectedNodes']).length !== 0 &&
             $store.getters['workflow/isWritable'] && $store.state.application.hasClipboardSupport
