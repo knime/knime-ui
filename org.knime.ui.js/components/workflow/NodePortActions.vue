@@ -91,6 +91,7 @@ export default {
       @click.stop
     />
 
+    <!-- 'fake' selected port -->
     <Port
       :port="port"
       class="selected-port"

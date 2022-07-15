@@ -2,8 +2,8 @@
 import { mapState, mapGetters } from 'vuex';
 import throttle from 'raf-throttle';
 import { mixin as clickaway } from 'vue-clickaway2';
+import { tooltip } from '~/mixins';
 
-import PortWithTooltip from '~/components/workflow/PortWithTooltip';
 import Port from '~/components/workflow/Port';
 import Connector from '~/components/workflow/Connector';
 import NodePortActions from './NodePortActions.vue';
@@ -12,12 +12,11 @@ import { circleDetection } from '~/util/compatibleConnections';
 
 export default {
     components: {
-        PortWithTooltip,
         Port,
         Connector,
         NodePortActions
     },
-    mixins: [clickaway],
+    mixins: [clickaway, tooltip],
     inject: ['anchorPoint'],
     props: {
         /** direction of the port and the connector coming out of it: in-coming or out-going */
@@ -68,6 +67,32 @@ export default {
         indicateConnectorReplacement() {
             return this.direction === 'in' && Boolean(this.port.connectedVia.length) &&
             (this.targeted || Boolean(this.dragConnector));
+        },
+        portTemplate() {
+            let template = this.availablePortTypes[this.port.typeId];
+            if (!template) {
+                throw new Error(`port template ${this.port.typeId} not available in application`);
+            }
+            return template;
+        },
+        
+        // implemented as required by the tooltip mixin
+        tooltip() {
+            // table ports have less space than other ports, because the triangular shape naturally creates a gap
+            const gap = this.portTemplate.kind === 'table' ? 6 : 8; // eslint-disable-line no-magic-numbers
+            const { portSize } = this.$shapes;
+            return {
+                position: {
+                    x: this.relativePosition[0],
+                    y: this.relativePosition[1] - portSize / 2
+                },
+                gap,
+                anchorPoint: this.anchorPoint,
+                title: this.port.name,
+                text: this.port.info,
+                orientation: 'top',
+                hoverable: false
+            };
         }
     },
     watch: {
@@ -111,7 +136,7 @@ export default {
             this.kanvasElement = document.getElementById('kanvas');
 
             // set up connector
-            let portKind = this.availablePortTypes[this.port.typeId].kind;
+            let portKind = this.portTemplate.kind;
             let connector = {
                 id: 'drag-connector',
                 allowedActions: {
@@ -301,9 +326,9 @@ export default {
     @pointermove.stop="onPointerMove"
     @lostpointercapture.stop="onLostPointerCapture"
   >
-    <PortWithTooltip
+    <!-- regular port shown on the workflow -->
+    <Port
       :port="port"
-      :tooltip-position="relativePosition"
       :class="{ 'hoverable-port': !isSelected }"
       @click.native="onClick"
     />
@@ -328,8 +353,10 @@ export default {
         v-bind="dragConnector"
         class="non-interactive"
       />
+      <!-- 'fake' port for dragging -->
       <Port
         class="non-interactive"
+        data-test-id="drag-connector-port"
         :port="port"
         :transform="`translate(${dragConnector.absolutePoint})`"
       />
