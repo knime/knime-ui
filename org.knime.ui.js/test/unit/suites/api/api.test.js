@@ -1,7 +1,10 @@
 /* eslint-disable consistent-return */
 import * as api from '~/api';
+import { waitForPatch } from '~/util/event-syncer';
 
 const origErrorLogger = window.consola.error;
+
+jest.mock('~/util/event-syncer');
 
 describe('API', () => {
     beforeEach(() => {
@@ -245,6 +248,68 @@ describe('API', () => {
     });
 
     describe('Workflow Service', () => {
+        it('does not wait for patch if command does not have snapshot id', async () => {
+            window.jsonrpc.mockReturnValueOnce({
+                jsonrpc: '2.0',
+                result: {},
+                id: -1
+            });
+
+            await api.collapseToContainer({ projectId: '123', workflowId: '12' });
+            
+            expect(waitForPatch).not.toHaveBeenCalled();
+            expect(window.jsonrpc).toHaveBeenCalled();
+        });
+
+        it('commands with snapshot id wait for patches with corresponding snapshot id to resolve', async () => {
+            let isFirstPatchResolved = false;
+            let isSecondPatchResolved = false;
+            const firstSnapshotId = 1;
+            const secondSnapshotId = 2;
+            
+            waitForPatch.mockImplementation(
+                // eslint-disable-next-line max-nested-callbacks
+                (params) => new Promise(resolve => setTimeout(() => {
+                    if (params === firstSnapshotId) {
+                        isFirstPatchResolved = true;
+                    }
+
+                    if (params === secondSnapshotId) {
+                        isSecondPatchResolved = true;
+                    }
+                    resolve('patch complete');
+                }, 100))
+            );
+
+            window.jsonrpc
+                .mockReturnValueOnce({
+                    jsonrpc: '2.0',
+                    result: { snapshotId: firstSnapshotId },
+                    id: -1
+                })
+                .mockReturnValueOnce({
+                    jsonrpc: '2.0',
+                    result: { snapshotId: secondSnapshotId },
+                    id: -1
+                });
+
+            const firstCommandCall = api.collapseToContainer({ projectId: '123', workflowId: '12' });
+            const secondCommandCall = api.collapseToContainer({ projectId: '123', workflowId: '12' });
+
+            expect(isFirstPatchResolved).toBe(false);
+            expect(isSecondPatchResolved).toBe(false);
+            
+            await firstCommandCall;
+            
+            expect(isFirstPatchResolved).toBe(true);
+            expect(isSecondPatchResolved).toBe(false);
+            
+            await secondCommandCall;
+            
+            expect(isSecondPatchResolved).toBe(true);
+            expect(window.jsonrpc).toHaveBeenCalledTimes(2);
+        });
+
         it('deletes objects (empty)', async () => {
             await api.deleteObjects({ projectId: '123', workflowId: '12' });
             expect(window.jsonrpc).toHaveBeenCalledWith({

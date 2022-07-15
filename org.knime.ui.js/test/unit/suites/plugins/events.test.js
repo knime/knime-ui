@@ -1,5 +1,9 @@
 /* eslint-disable new-cap */
 import eventsPlugin from '~/plugins/events';
+import { registeredHandlers } from '~/api/json-rpc-notifications';
+import { notifyPatch } from '~/util/event-syncer';
+
+jest.mock('~/util/event-syncer');
 
 jest.mock('~/api/json-rpc-notifications', () => {
     let registeredHandlers = {};
@@ -14,7 +18,6 @@ jest.mock('~/api/json-rpc-notifications', () => {
         registeredHandlers
     };
 });
-import { registeredHandlers } from '~/api/json-rpc-notifications';
 
 describe('Event Plugin', () => {
     let storeMock;
@@ -40,6 +43,10 @@ describe('Event Plugin', () => {
     });
 
     describe('events', () => {
+        afterEach(() => {
+            notifyPatch.mockClear();
+        });
+        
         it('handles WorkflowChangedEvents', () => {
             registeredHandlers.WorkflowChangedEvent(
                 { patch: { ops: [{ dummy: true, path: '/foo/bar' }] } }
@@ -49,6 +56,23 @@ describe('Event Plugin', () => {
                 'workflow/patch.apply',
                 [{ dummy: true, path: '/activeWorkflow/foo/bar' }]
             );
+        });
+
+        it('should call `notifyPatch` for patches with snapshotId', () => {
+            const snapshotId = 1;
+            registeredHandlers.WorkflowChangedEvent(
+                { patch: { ops: [{ dummy: true, path: '/foo/bar' }] }, snapshotId }
+            );
+
+            expect(notifyPatch).toHaveBeenCalledWith(snapshotId);
+        });
+
+        it('should not call `notifyPatch` for patches without snapshotId', () => {
+            registeredHandlers.WorkflowChangedEvent(
+                { patch: { ops: [{ dummy: true, path: '/foo/bar' }] } }
+            );
+
+            expect(notifyPatch).not.toHaveBeenCalled();
         });
 
         it('handles AppStateChangedEvents', () => {

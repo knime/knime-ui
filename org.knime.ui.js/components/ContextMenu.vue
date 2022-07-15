@@ -86,6 +86,11 @@ export default {
                 // Something selected
                 deleteSelected: somethingSelected,
 
+                // Copy & paste
+                copy: somethingSelected,
+                cut: somethingSelected,
+                paste: !somethingSelected,
+
                 // Workflow
                 executeAll: !somethingSelected,
                 cancelAll: !somethingSelected,

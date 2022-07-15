@@ -1,3 +1,5 @@
+import { mockUserAgent } from 'jest-useragent-mock';
+
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
@@ -18,11 +20,15 @@ describe('KnimeUI.vue', () => {
         localVue.use(Vuex);
     });
 
-    let $store, doShallowMountWithAsyncData, initializeApplication, wrapper, storeConfig, mocks, destroyApplication;
+    let $store, doShallowMountWithAsyncData, initializeApplication, wrapper, storeConfig, mocks, destroyApplication,
+        setHasClipboardSupport;
 
     beforeEach(() => {
         initializeApplication = jest.fn().mockResolvedValue();
         destroyApplication = jest.fn();
+        setHasClipboardSupport = jest.fn();
+        Object.assign(navigator, { permissions: { query: () => ({ state: 'granted' }) } });
+        jest.spyOn(navigator.permissions, 'query');
 
         document.fonts = {
             load: jest.fn()
@@ -30,6 +36,9 @@ describe('KnimeUI.vue', () => {
 
         storeConfig = {
             application: {
+                mutations: {
+                    setHasClipboardSupport
+                },
                 actions: {
                     initializeApplication,
                     destroyApplication
@@ -124,5 +133,45 @@ describe('KnimeUI.vue', () => {
         await wrapper.destroy();
 
         expect(destroyApplication).toHaveBeenCalled();
+    });
+
+    describe('Clipboard support', () => {
+        it.each([
+            ['granted', true],
+            ['prompt', true],
+            ['denied', false]
+        ])(
+            'when clipboard permission state is %s, sets the clipboard support flag to %s',
+            async (state, expectedValue) => {
+                Object.assign(navigator, { permissions: { query: () => ({ state }) } });
+                jest.spyOn(navigator.permissions, 'query');
+                await doShallowMountWithAsyncData();
+                expect(setHasClipboardSupport).toHaveBeenCalledWith({}, expectedValue);
+            }
+        );
+
+        it('should set the clipboard support flag to false when permission request throws', async () => {
+            Object.assign(navigator, { permissions: { query: () => {
+                throw new Error('This is an error');
+            } } });
+
+            jest.spyOn(navigator.permissions, 'query');
+            Object.assign(navigator, { clipboard: {} });
+            
+            await doShallowMountWithAsyncData();
+            expect(setHasClipboardSupport).toHaveBeenCalledWith({}, false);
+        });
+
+        it('checks clipboard support for Firefox', async () => {
+            mockUserAgent('Firefox');
+            Object.assign(navigator, { permissions: { query: () => {
+                throw new Error('This is an error');
+            } } });
+            Object.assign(navigator, { clipboard: { readText: () => '{}' } });
+            jest.spyOn(navigator.clipboard, 'readText');
+
+            await doShallowMountWithAsyncData();
+            expect(setHasClipboardSupport).toHaveBeenCalledWith({}, true);
+        });
     });
 });
