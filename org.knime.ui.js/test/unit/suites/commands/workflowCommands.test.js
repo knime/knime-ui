@@ -1,6 +1,5 @@
 import workflowCommands from '~/commands/workflowCommands';
 
-
 describe('workflowCommands', () => {
     let mockDispatch, $store;
 
@@ -9,6 +8,9 @@ describe('workflowCommands', () => {
         $store = {
             dispatch: mockDispatch,
             state: {
+                application: {
+                    hasClipboardSupport: true
+                },
                 workflow: {
                     activeWorkflow: {
                         allowedActions: {},
@@ -86,6 +88,23 @@ describe('workflowCommands', () => {
         test('open layout editor', () => {
             workflowCommands.openLayoutEditor.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('workflow/openLayoutEditor');
+        });
+
+        test('copy', () => {
+            workflowCommands.copy.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/copyOrCutWorkflowParts',
+                { command: 'copy' });
+        });
+
+        test('cut', () => {
+            workflowCommands.cut.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/copyOrCutWorkflowParts',
+                { command: 'cut' });
+        });
+
+        test('paste', () => {
+            workflowCommands.paste.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/pasteWorkflowParts');
         });
     });
 
@@ -328,6 +347,51 @@ describe('workflowCommands', () => {
                 $store.getters['workflow/isWritable'] = true;
                 expect(workflowCommands.openLayoutEditor.condition({ $store })).toBe(true);
             });
+        });
+
+        test('copy', () => {
+            expect(workflowCommands.copy.condition({ $store })).toBeFalsy();
+            $store.getters['selection/selectedNodes'] = [{ allowedActions: {} }];
+            expect(workflowCommands.copy.condition({ $store })).toBe(true);
+            $store.state.application.hasClipboardSupport = false;
+            expect(workflowCommands.copy.condition({ $store })).toBeFalsy();
+        });
+
+        describe('cut', () => {
+            test('nothing selected, not writeable -> disabled', () => {
+                expect(workflowCommands.cut.condition({ $store })).toBeFalsy();
+            });
+
+            test('nodes selected, not writeable -> disabled', () => {
+                $store.getters['selection/selectedNodes'] = [{ allowedActions: {} }];
+                expect(workflowCommands.cut.condition({ $store })).toBeFalsy();
+            });
+
+            test('nothing selected, writeable -> disabled', () => {
+                $store.getters['workflow/isWritable'] = true;
+                expect(workflowCommands.cut.condition({ $store })).toBeFalsy();
+            });
+
+            test('nodes selected, writeable -> enabled', () => {
+                $store.getters['selection/selectedNodes'] = [{ allowedActions: {} }];
+                $store.getters['workflow/isWritable'] = true;
+                expect(workflowCommands.cut.condition({ $store })).toBe(true);
+            });
+
+            test('nodes selected, writeable but no clipboard permission -> disabled', () => {
+                $store.state.application.hasClipboardSupport = false;
+                $store.getters['selection/selectedNodes'] = [{ allowedActions: {} }];
+                $store.getters['workflow/isWritable'] = true;
+                expect(workflowCommands.cut.condition({ $store })).toBeFalsy();
+            });
+        });
+
+        test('paste', () => {
+            expect(workflowCommands.paste.condition({ $store })).toBeFalsy();
+            $store.getters['workflow/isWritable'] = true;
+            expect(workflowCommands.paste.condition({ $store })).toBe(true);
+            $store.state.application.hasClipboardSupport = false;
+            expect(workflowCommands.paste.condition({ $store })).toBeFalsy();
         });
     });
 });

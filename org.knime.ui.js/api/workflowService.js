@@ -1,3 +1,4 @@
+import { waitForPatch } from '~/util/event-syncer';
 import rpc from './json-rpc-adapter.js';
 
 /**
@@ -35,11 +36,16 @@ export const loadWorkflow = async ({ projectId, workflowId = 'root', includeInfo
  */
 const workflowCommand = async ({ projectId, workflowId, command, args }) => {
     try {
-        let rpcArgs = {
-            kind: command,
-            ...args
-        };
-        return await rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
+        let rpcArgs = { kind: command, ...args };
+        let response = await rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
+        
+        if (!response || !response.snapshotId) {
+            return response;
+        }
+
+        await waitForPatch(response.snapshotId);
+
+        return response;
     } catch (e) {
         consola.error(e);
         throw new Error(`Couldn't execute ${command}(${JSON.stringify(args)})`);
@@ -220,6 +226,25 @@ export const addContainerNodePort = ({
 });
 
 /**
+ * Removes a port from a container node
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param { String } cfg.nodeId
+ * @param { String } cfg.portType
+ * @param { Number } cfg.portIndex
+ * @param { 'input' | 'output' } cfg.side
+ * @returns { Promise }
+ */
+export const removeContainerNodePort = ({
+    projectId, workflowId, nodeId, typeId, side, portIndex
+}) => workflowCommand({
+    command: 'remove_port',
+    args: { nodeId, portTypeId: typeId, side, portIndex },
+    projectId,
+    workflowId
+});
+
+/**
  * Expands a metanode or component
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
@@ -231,6 +256,41 @@ export const expandContainerNode = ({
 }) => workflowCommand({
     command: 'expand',
     args: { nodeId },
+    projectId,
+    workflowId
+});
+
+/**
+ * Copies or cuts workflow parts and serializes them
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param { String } cfg.command The command to execute, can be 'copy' or 'cut'
+ * @param { Array } cfg.nodeIds The node ids to copy
+ * @param { Array } cfg.annotationIds The annotation ids to copy
+ * @returns { Promise } The serialized workflow parts
+ */
+export const copyOrCutWorkflowParts = ({
+    projectId, workflowId, command, nodeIds = [], annotationIds = []
+}) => workflowCommand({
+    command,
+    args: { nodeIds, annotationIds },
+    projectId,
+    workflowId
+});
+
+/**
+ * Pastes workflow parts to the canvas
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param { Object } content Workflow parts to be pasted
+ * @param { Object } position Paste the workflow parts at this position
+ * @returns { void }
+ */
+export const pasteWorkflowParts = ({
+    projectId, workflowId, content = {}, position
+}) => workflowCommand({
+    command: 'paste',
+    args: { content, position },
     projectId,
     workflowId
 });

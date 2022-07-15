@@ -1,5 +1,6 @@
 /* eslint-disable no-magic-numbers */
-import { connectNodes, moveObjects, deleteObjects, addNode, collapseToContainer, expandContainerNode } from '~/api';
+import { connectNodes, moveObjects, deleteObjects, addNode, collapseToContainer, expandContainerNode,
+    copyOrCutWorkflowParts, pasteWorkflowParts } from '~/api';
 
 describe('workflow commands', () => {
     beforeEach(() => {
@@ -211,4 +212,70 @@ describe('workflow commands', () => {
     });
 
     // TODO: add test for open layout editor
+
+    describe('copy & paste', () => {
+        test.each([
+            ['copy'],
+            ['cut']
+        ])('%s', (command) => {
+            copyOrCutWorkflowParts({
+                projectId: 'project',
+                workflowId: 'workflow',
+                command,
+                nodeIds: ['root:1', 'root:2'],
+                annotationIds: ['ann:1', 'ann:2']
+            });
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'WorkflowService.executeWorkflowCommand',
+                params: [
+                    'project',
+                    'workflow',
+                    {
+                        kind: command,
+                        nodeIds: ['root:1', 'root:2'],
+                        annotationIds: ['ann:1', 'ann:2']
+                    }
+                ],
+                id: 0
+            });
+        });
+
+        test('paste', () => {
+            pasteWorkflowParts({
+                projectId: 'project',
+                workflowId: 'workflow',
+                content: {
+                    payload: {},
+                    payloadIdentifier: '',
+                    version: ''
+                },
+                position: {
+                    x: 128,
+                    y: 256
+                }
+            });
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'WorkflowService.executeWorkflowCommand',
+                params: [
+                    'project',
+                    'workflow',
+                    {
+                        kind: 'paste',
+                        content: {
+                            payload: {},
+                            payloadIdentifier: '',
+                            version: ''
+                        },
+                        position: {
+                            x: 128,
+                            y: 256
+                        }
+                    }
+                ],
+                id: 0
+            });
+        });
+    });
 });

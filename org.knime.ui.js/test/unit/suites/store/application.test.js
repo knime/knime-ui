@@ -61,7 +61,8 @@ describe('application store', () => {
             savedUserState: {},
             availablePortTypes: {},
             suggestedPortTypes: [],
-            savedStates: []
+            savedStates: [],
+            hasClipboardSupport: false
         });
     });
 
@@ -117,6 +118,12 @@ describe('application store', () => {
                     workflow: 'workflow1',
                     project: 'project1' }]
             );
+        });
+
+        it('sets the clipboard support flag', () => {
+            store.commit('application/setHasClipboardSupport', true);
+            expect(store.state.application.hasClipboardSupport)
+                .toBe(true);
         });
     });
 

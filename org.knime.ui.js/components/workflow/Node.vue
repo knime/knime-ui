@@ -267,9 +267,8 @@ export default {
         isEditable() {
             return this.isWritable && !this.link;
         },
-        isEditableContainerNode() {
-            // only non-linked metanodes and components have editable names
-            return this.isEditable && ['metanode', 'component'].includes(this.kind);
+        isContainerNode() {
+            return ['metanode', 'component'].includes(this.kind);
         },
         actionBarPosition() {
             return {
@@ -364,11 +363,6 @@ export default {
                 this.selectNode(this.id);
             }
         },
-        
-        // public
-        setSelectionPreview(preview) {
-            this.selectionPreview = preview === 'clear' ? null : preview;
-        },
 
         // implemented as required by snapConnector mixin
         isOutsideConnectorHoverRegion(x, y, targetPortDirection) {
@@ -385,6 +379,10 @@ export default {
             }
 
             return false;
+        },
+        // public
+        setSelectionPreview(preview) {
+            this.selectionPreview = preview === 'clear' ? null : preview;
         }
     }
 };
@@ -478,11 +476,11 @@ export default {
       <NodePorts
         ref="nodePorts"
         :node-id="id"
-        :is-metanode="kind === 'metanode'"
+        :node-kind="kind"
         :in-ports="inPorts"
         :out-ports="outPorts"
         :target-port="targetPort"
-        :can-add-ports="isEditableContainerNode"
+        :is-editable="isEditable"
         :hover="hover"
         :connector-hover="connectorHover"
         :is-single-selected="isSingleSelected"
@@ -493,7 +491,7 @@ export default {
         :node-id="id"
         :node-position="position"
         :value="name"
-        :editable="isEditableContainerNode"
+        :editable="isEditable && isContainerNode"
         @click.native.left="onLeftMouseClick"
         @contextmenu.prevent="onContextMenu"
         @width-change="nameDimensions.width = $event"

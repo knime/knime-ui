@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 jest.mock('~api', () => ({
     loadTable: jest.fn()
 }), { virtual: true });
@@ -10,9 +11,6 @@ import Body from '~/components/output/TablePortViewBody';
 import MissingValueIcon from '~/assets/missing-value.svg?inline';
 import { loadTable as loadTableMock } from '~api';
 
-// eslint-disable-next-line no-magic-numbers
-const tableRendered = () => new Promise(resolve => setTimeout(resolve, 600));
-
 jest.mock('lodash', () => ({
     throttle(func) {
         return function (...args) {
@@ -22,8 +20,14 @@ jest.mock('lodash', () => ({
     }
 }));
 
+const tableRenderedDelay = 600;
+
 describe('TablePortView.vue', () => {
     let wrapper, dummyTable, doMount, dataRowHeight;
+
+    beforeAll(() => {
+        jest.useFakeTimers();
+    });
 
     beforeEach(() => {
         wrapper = null;
@@ -104,9 +108,8 @@ describe('TablePortView.vue', () => {
         };
     });
 
-    afterEach(async () => {
+    afterEach(() => {
         loadTableMock.mockReset();
-        await tableRendered();
     });
 
     it('fetches successfully first 100 rows', async () => {
@@ -153,7 +156,7 @@ describe('TablePortView.vue', () => {
             height: dataRowHeight
         });
 
-        await tableRendered();
+        jest.advanceTimersByTime(tableRenderedDelay);
 
         expect(table.style.width).toBe('100px');
         expect(table.style.tableLayout).toBe('fixed');
@@ -173,7 +176,8 @@ describe('TablePortView.vue', () => {
             let table = wrapper.vm.$refs.table;
             Object.defineProperty(table, 'scrollHeight', { value: 0 });
 
-            await tableRendered();
+            jest.advanceTimersByTime(tableRenderedDelay);
+            await Vue.nextTick();
 
             expect(loadTableMock).toHaveBeenCalledWith({
                 projectId: 'project',
@@ -188,7 +192,7 @@ describe('TablePortView.vue', () => {
         it('doesnt on normal screens -> overflow scroll', async () => {
             await doMount(shallowMountWithAsyncData);
 
-            await tableRendered();
+            jest.advanceTimersByTime(tableRenderedDelay);
 
             expect(loadTableMock).toHaveBeenCalledTimes(1);
         });
@@ -228,7 +232,7 @@ describe('TablePortView.vue', () => {
                     height: windowHeight * dataRowHeight
                 });
 
-                await tableRendered();
+                jest.advanceTimersByTime(tableRenderedDelay);
 
                 // first test: threshold not reached
                 scroller.scrollTop = (noRows - triggerRows - windowHeight - 1) * dataRowHeight;
@@ -259,7 +263,7 @@ describe('TablePortView.vue', () => {
                     height: windowHeight * dataRowHeight
                 });
 
-                await tableRendered();
+                jest.advanceTimersByTime(tableRenderedDelay);
 
                 // first test: threshold not reached
                 scroller.scrollTop = (noRows - triggerRows - windowHeight - 1) * dataRowHeight;

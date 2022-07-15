@@ -12,7 +12,7 @@ import NodeTorso from '~/components/workflow/NodeTorso';
 import NodeState from '~/components/workflow/NodeState';
 import NodeAnnotation from '~/components/workflow/NodeAnnotation';
 import NodeActionBar from '~/components/workflow/NodeActionBar';
-import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
+import NodePort from '~/components/workflow/NodePort';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
 
 import '~/plugins/directive-move';
@@ -93,7 +93,8 @@ describe('Node', () => {
                     cancelNodeExecution: jest.fn(),
                     resetNodes: jest.fn(),
                     openNodeConfiguration: jest.fn(),
-                    openView: jest.fn()
+                    openView: jest.fn(),
+                    removeContainerNodePort: jest.fn()
                 },
                 getters: {
                     isWritable: () => true,
@@ -168,8 +169,8 @@ describe('Node', () => {
             expect(nodePorts.props('inPorts')).toStrictEqual(commonNode.inPorts);
             expect(nodePorts.props('outPorts')).toStrictEqual(commonNode.inPorts);
             expect(nodePorts.props('targetPort')).toBe(null);
-            expect(nodePorts.props('canAddPorts')).toBe(false);
-            expect(nodePorts.props('isMetanode')).toBe(false);
+            expect(nodePorts.props('isEditable')).toBe(true);
+            expect(nodePorts.props('nodeKind')).toBe(commonNode.kind);
             expect(nodePorts.props('hover')).toBe(false);
             expect(nodePorts.props('connectorHover')).toBe(false);
             expect(nodePorts.props('isSingleSelected')).toBe(false);
@@ -187,8 +188,8 @@ describe('Node', () => {
             doMount();
             let nodePorts = wrapper.findComponent(NodePortsMock);
 
-            expect(nodePorts.props('canAddPorts')).toBe(true);
-            expect(nodePorts.props('isMetanode')).toBe(true);
+            expect(nodePorts.props('isEditable')).toBe(true);
+            expect(nodePorts.props('nodeKind')).toBe('metanode');
         });
 
         it('renders ports for components', () => {
@@ -196,8 +197,8 @@ describe('Node', () => {
             doMount();
             let nodePorts = wrapper.findComponent(NodePortsMock);
 
-            expect(nodePorts.props('canAddPorts')).toBe(true);
-            expect(nodePorts.props('isMetanode')).toBe(false);
+            expect(nodePorts.props('isEditable')).toBe(true);
+            expect(nodePorts.props('nodeKind')).toBe('component');
         });
 
         it("doesn't render non-existent node annotation", () => {
@@ -260,7 +261,7 @@ describe('Node', () => {
         });
 
         it('renders port with direction and nodeId', () => {
-            const ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
+            const ports = wrapper.findAllComponents(NodePort).wrappers;
 
             ports.forEach(port => {
                 expect(port.props('nodeId')).toBe(commonNode.id);

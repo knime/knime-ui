@@ -1,6 +1,7 @@
 <script>
+import { mapGetters } from 'vuex';
 import { placeholderPosition, portPositions } from '~/util/portShift';
-import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
+import NodePort from '~/components/workflow/NodePort';
 import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder';
 
 /**
@@ -9,13 +10,19 @@ import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder';
  */
 export default {
     components: {
-        DraggablePortWithTooltip,
+        NodePort,
         AddPortPlaceholder
     },
     props: {
         nodeId: {
             type: String,
             required: true
+        },
+        
+        nodeKind: {
+            type: String,
+            required: true,
+            validator: kind => ['node', 'metanode', 'component'].includes(kind)
         },
         /**
          * Input ports. List of configuration objects passed-through to the `Port` component
@@ -32,22 +39,16 @@ export default {
             type: Array,
             required: true
         },
-
-        isMetanode: {
-            type: Boolean,
-            default: false
-        },
-
-        /** controls visibility of the AddPortPlaceholder */
-        canAddPorts: {
-            type: Boolean,
-            default: false
-        },
         
         /** object that contains information which port to highlight */
         targetPort: {
             type: Object,
             default: null
+        },
+
+        isEditable: {
+            type: Boolean,
+            default: false
         },
 
         /** Interaction state of Node.vue that is passed through */
@@ -65,6 +66,15 @@ export default {
         }
     },
     computed: {
+        ...mapGetters('workflow', ['isDragging']),
+
+        isMetanode() {
+            return this.nodeKind === 'metanode';
+        },
+
+        isComponent() {
+            return this.nodeKind === 'component';
+        },
         /**
          * @returns {object} the position of all inPorts and outPorts.
          * The position for each port is an array with two coordinates [x, y].
@@ -105,6 +115,18 @@ export default {
         }
     },
     methods: {
+        canSelectPort(port) {
+            switch (this.nodeKind) {
+                case 'component':
+                    // skip hidden variable ports on components (mickey mouse)
+                    return port.index !== 0;
+                case 'metanode':
+                    // allow for all metanode ports
+                    return true;
+                default:
+                    return false;
+            }
+        },
         // default flow variable ports (Mickey Mouse ears) are only shown if connected, selected, or on hover
         portAnimationClasses(port) {
             let isMickeyMousePort = !this.isMetanode && port.index === 0;
@@ -140,7 +162,7 @@ export default {
 
 <template>
   <g>
-    <DraggablePortWithTooltip
+    <NodePort
       v-for="port of inPorts"
       :key="`inport-${port.index}`"
       :class="['port', portAnimationClasses(port)]"
@@ -148,10 +170,11 @@ export default {
       :port="port"
       :node-id="nodeId"
       :targeted="targetPort && targetPort.side === 'in' && targetPort.index === port.index"
+      :can-select="canSelectPort(port)"
       direction="in"
     />
 
-    <DraggablePortWithTooltip
+    <NodePort
       v-for="port of outPorts"
       :key="`outport-${port.index}`"
       :class="['port', portAnimationClasses(port)]"
@@ -159,11 +182,12 @@ export default {
       :port="port"
       :node-id="nodeId"
       :targeted="targetPort && targetPort.side === 'out' && targetPort.index === port.index"
+      :can-select="canSelectPort(port)"
       direction="out"
     />
 
     <AddPortPlaceholder
-      v-if="canAddPorts"
+      v-if="isEditable && (isComponent || isMetanode)"
       :node-id="nodeId"
       :position="addPortPlaceholderPositions.in"
       :class="['add-port', {
@@ -177,7 +201,7 @@ export default {
     />
 
     <AddPortPlaceholder
-      v-if="canAddPorts"
+      v-if="isEditable && (isComponent || isMetanode)"
       :node-id="nodeId"
       :position="addPortPlaceholderPositions.out"
       :class="['add-port', {

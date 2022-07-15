@@ -34,6 +34,7 @@ describe('workflow store: Editing', () => {
             }), { virtual: true });
 
             store = mockVuexStore({
+                application: await import('~/store/application'),
                 workflow: await import('~/store/workflow'),
                 selection: await import('~/store/selection')
             });
@@ -84,6 +85,19 @@ describe('workflow store: Editing', () => {
 
             expect(apiMocks.addContainerNodePort).toHaveBeenCalledWith(
                 { nodeId: 'node x', projectId: 'foo', workflowId: 'root', side: 'input', typeId: 'porty' }
+            );
+        });
+
+        it('can remove ContainerNode Ports', async () => {
+            let apiMocks = { removeContainerNodePort: jest.fn() };
+            await loadStore({ apiMocks });
+
+            const payload = { nodeId: 'node x', side: 'input', typeId: 'porty', portIndex: 1 };
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.dispatch(`workflow/removeContainerNodePort`, payload);
+
+            expect(apiMocks.removeContainerNodePort).toHaveBeenCalledWith(
+                { ...payload, projectId: 'foo', workflowId: 'root' }
             );
         });
 
@@ -296,82 +310,238 @@ describe('workflow store: Editing', () => {
             });
         });
 
-        it('collapse to a container', async () => {
-            let collapseToContainer = jest.fn();
-            let apiMocks = { collapseToContainer };
-            await loadStore({ apiMocks });
-            store.commit('workflow/setActiveWorkflow', {
-                projectId: 'bar',
-                nodes: {
-                    foo: {
-                        id: 'foo',
-                        allowedActions: {
-                            canCancel: false,
-                            canCollapse: 'true',
-                            canDelete: true,
-                            canExecute: true,
-                            canOpenDialog: true,
-                            canReset: false
-                        }
-                    },
-                    bar: {
-                        id: 'bar',
-                        allowedActions: {
-                            canCancel: false,
-                            canCollapse: 'true',
-                            canDelete: true,
-                            canExecute: true,
-                            canOpenDialog: true,
-                            canReset: false
+        describe('Collapse', () => {
+            const loadStoreWithNodes = async ({ apiMocks }) => {
+                await loadStore({ apiMocks });
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'bar',
+                    nodes: {
+                        foo: {
+                            id: 'foo',
+                            allowedActions: {
+                                canCancel: false,
+                                canCollapse: 'true',
+                                canDelete: true,
+                                canExecute: true,
+                                canOpenDialog: true,
+                                canReset: false
+                            }
+                        },
+                        bar: {
+                            id: 'bar',
+                            allowedActions: {
+                                canCancel: false,
+                                canCollapse: 'true',
+                                canDelete: true,
+                                canExecute: true,
+                                canOpenDialog: true,
+                                canReset: false
+                            }
                         }
                     }
-                }
-            });
-            store.dispatch('selection/selectAllNodes');
+                });
+            };
 
-            store.dispatch('workflow/collapseToContainer', {
-                containerType: 'metanode'
+            it('collapses nodes to a container', async () => {
+                let collapseToContainer = jest.fn();
+                let apiMocks = { collapseToContainer };
+                await loadStoreWithNodes({ apiMocks });
+                store.dispatch('selection/selectAllNodes');
+    
+                store.dispatch('workflow/collapseToContainer', {
+                    containerType: 'metanode'
+                });
+    
+                expect(collapseToContainer).toHaveBeenCalledWith({
+                    projectId: 'bar',
+                    workflowId: 'root',
+                    nodeIds: ['foo', 'bar'],
+                    containerType: 'metanode',
+                    annotationIds: []
+                });
+            });
+    
+            it('selects the new container after collapsing nodes', async () => {
+                const newNodeId = 'new-container';
+                let collapseToContainer = jest.fn(() => ({ newNodeId }));
+                let apiMocks = { collapseToContainer };
+                await loadStoreWithNodes({ apiMocks });
+                store.dispatch('selection/selectAllNodes');
+    
+                await store.dispatch('workflow/collapseToContainer', {
+                    containerType: 'metanode'
+                });
+    
+                expect(store.state.selection.selectedNodes).toEqual({ [newNodeId]: true });
+                expect(store.state.workflow.nameEditorNodeId).toBe(newNodeId);
             });
 
-            expect(collapseToContainer).toHaveBeenCalledWith({
-                projectId: 'bar',
-                workflowId: 'root',
-                nodeIds: ['foo', 'bar'],
-                containerType: 'metanode',
-                annotationIds: []
+            it('does not select new container if user made a selection before collapse command finishes', async () => {
+                const newNodeId = 'new-container';
+                let collapseToContainer = jest.fn(() => ({ newNodeId }));
+                let apiMocks = { collapseToContainer };
+                await loadStoreWithNodes({ apiMocks });
+                store.dispatch('selection/selectAllNodes');
+    
+                const commandCall = store.dispatch('workflow/collapseToContainer', {
+                    containerType: 'metanode'
+                });
+
+                store.dispatch('selection/selectNode', 'foo');
+
+                await commandCall;
+    
+                expect(store.state.selection.selectedNodes).toStrictEqual({ foo: true });
+                expect(store.state.workflow.nameEditorNodeId).toBe(null);
             });
         });
 
-        it('expands a container node', async () => {
-            let expandContainerNode = jest.fn();
-            let apiMocks = { expandContainerNode };
-            await loadStore({ apiMocks });
-            store.commit('workflow/setActiveWorkflow', {
-                projectId: 'bar',
-                nodes: {
-                    foo: {
-                        id: 'foo',
-                        kind: 'metanode',
-                        allowedActions: {
-                            canCancel: false,
-                            canCollapse: 'true',
-                            canDelete: true,
-                            canExecute: true,
-                            canOpenDialog: true,
-                            canReset: false,
-                            canExpand: 'true'
+        describe('Expand', () => {
+            const loadStoreWithNodes = async ({ apiMocks }) => {
+                await loadStore({ apiMocks });
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'bar',
+                    nodes: {
+                        foo: {
+                            id: 'foo',
+                            kind: 'metanode',
+                            allowedActions: {
+                                canCancel: false,
+                                canCollapse: 'true',
+                                canDelete: true,
+                                canExecute: true,
+                                canOpenDialog: true,
+                                canReset: false,
+                                canExpand: 'true'
+                            }
+                        },
+                        barbaz: {
+                            id: 'barbaz',
+                            allowedActions: {
+                                canCancel: false,
+                                canCollapse: 'true',
+                                canDelete: true,
+                                canExecute: true,
+                                canOpenDialog: true,
+                                canReset: false
+                            }
                         }
                     }
-                }
+                });
+            };
+
+            it('expands a container node', async () => {
+                let expandContainerNode = jest.fn();
+                let apiMocks = { expandContainerNode };
+                await loadStoreWithNodes({ apiMocks });
+                store.dispatch('selection/selectNode', 'foo');
+    
+                store.dispatch('workflow/expandContainerNode');
+    
+                expect(expandContainerNode).toHaveBeenCalledWith({
+                    projectId: 'bar',
+                    workflowId: 'root',
+                    nodeId: 'foo'
+                });
             });
-            store.dispatch('selection/selectNode', 'foo');
 
-            store.dispatch('workflow/expandContainerNode');
+            it('selects the expanded nodes after the command finishes', async () => {
+                const expandedNodeIds = ['foo', 'bar'];
 
-            expect(expandContainerNode).toHaveBeenCalledWith({
-                projectId: 'bar',
-                workflowId: 'root',
-                nodeId: 'foo'
+                let expandContainerNode = jest.fn(() => ({ expandedNodeIds }));
+                let apiMocks = { expandContainerNode };
+                await loadStoreWithNodes({ apiMocks });
+                store.dispatch('selection/selectNode', 'foo');
+    
+                await store.dispatch('workflow/expandContainerNode');
+    
+                expect(store.state.selection.selectedNodes).toEqual({ foo: true, bar: true });
+            });
+
+            it('does not select the expanded nodes if user selected something before command ends', async () => {
+                const expandedNodeIds = ['bar', 'baz'];
+
+                let expandContainerNode = jest.fn(() => ({ expandedNodeIds }));
+                let apiMocks = { expandContainerNode };
+                await loadStoreWithNodes({ apiMocks });
+                store.dispatch('selection/selectNode', 'foo');
+    
+                const commandCall = store.dispatch('workflow/expandContainerNode');
+
+                await store.dispatch('selection/selectNode', 'barbaz');
+
+                await commandCall;
+    
+                expect(store.state.selection.selectedNodes).toStrictEqual({ barbaz: true });
+            });
+        });
+
+        describe('tests copy, cut and paste actions...', () => {
+            it.each([
+                ['copy'],
+                ['cut']
+            ])('executes <%s> command', async (command) => {
+                Object.assign(navigator, { clipboard: { writeText: () => ({ }) } });
+                jest.spyOn(navigator.clipboard, 'writeText');
+                let copyOrCutWorkflowParts = jest.fn().mockReturnValue({ content: '{}' });
+                let apiMocks = { copyOrCutWorkflowParts };
+                await loadStore({ apiMocks });
+    
+                store.commit('application/setHasClipboardSupport', true);
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'my project',
+                    nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } }
+                });
+                store.dispatch('selection/selectAllNodes');
+                await Vue.nextTick();
+                await store.dispatch('workflow/copyOrCutWorkflowParts', { command });
+    
+                expect(copyOrCutWorkflowParts).toHaveBeenCalledWith({
+                    projectId: 'my project',
+                    workflowId: 'root',
+                    command,
+                    nodeIds: ['foo', 'bar'],
+                    annotationIds: []
+                });
+                expect(navigator.clipboard.writeText).toHaveBeenCalledWith('{}');
+            });
+    
+            it('executes <paste> command', async () => {
+                Object.assign(navigator, { clipboard: { readText: () => '{}' } });
+                jest.spyOn(navigator.clipboard, 'readText');
+                let pasteWorkflowParts = jest.fn();
+                let apiMocks = { pasteWorkflowParts };
+                await loadStore({ apiMocks });
+                
+                // Test case with non-empty workflow
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'my project',
+                    nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } },
+                    workflowAnnotations: []
+                });
+                await store.dispatch('workflow/pasteWorkflowParts');
+    
+                expect(pasteWorkflowParts).toHaveBeenCalledWith({
+                    projectId: 'my project',
+                    workflowId: 'root',
+                    content: '{}',
+                    position: null
+                });
+
+                // Test case with empty workflow
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'my project',
+                    nodes: {},
+                    workflowAnnotations: []
+                });
+                await store.dispatch('workflow/pasteWorkflowParts');
+    
+                expect(pasteWorkflowParts).toHaveBeenCalledWith({
+                    projectId: 'my project',
+                    workflowId: 'root',
+                    content: '{}',
+                    position: { x: 0, y: 0 }
+                });
             });
         });
     });

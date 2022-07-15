@@ -16,7 +16,12 @@ export const state = () => ({
     
     // A list provided by the backend that says which ports should be suggested to the user in the port type menu.
     suggestedPortTypes: [],
-    savedStates: []
+
+    // A list of user's saved states
+    savedStates: [],
+
+    /* Indicates whether the browser has support (enabled) for the Clipboard API or not */
+    hasClipboardSupport: false
 });
 
 export const mutations = {
@@ -44,6 +49,9 @@ export const mutations = {
         state.savedStates =
         [...state.savedStates.filter((savedState) => savedState.workflow !== savedStates.workflow ||
             savedState.project !== savedStates.project), { ...savedStates }];
+    },
+    setHasClipboardSupport(state, hasClipboardSupport) {
+        state.hasClipboardSupport = hasClipboardSupport;
     }
 };
 

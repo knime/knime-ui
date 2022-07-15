@@ -64,6 +64,7 @@ export default {
         ...mapGetters('workflow', ['activeWorkflowId'])
     },
     mounted() {
+        this.checkClipboardSupport();
         this.unsubscribeAction = this.$store.subscribeAction({
             after: async (action) => {
                 if (action.type === 'application/switchWorkflow') {
@@ -94,6 +95,26 @@ export default {
     },
     methods: {
         ...mapActions('application', ['initializeApplication', 'destroyApplication', 'restoreUserState']),
+
+        async checkClipboardSupport() {
+            let hasClipboardSupport = false;
+
+            try {
+                // Ask for permission if Permission API is available
+                const permission = await navigator.permissions.query({ name: 'clipboard-read' });
+                if (permission.state === 'granted' || permission.state === 'prompt') {
+                    hasClipboardSupport = true;
+                }
+            } catch (error) {
+                // Check if the Clipboard API is available
+                // (on Firefox this is a property `readText` in navigator.clipboard)
+                if ('readText' in navigator.clipboard) {
+                    hasClipboardSupport = true;
+                }
+            }
+
+            this.$store.commit('application/setHasClipboardSupport', hasClipboardSupport);
+        },
         onCloseError() {
             if (process.env.isDev) { // eslint-disable-line no-process-env
                 this.error = null;
@@ -138,7 +159,7 @@ export default {
       
       <WorkflowEntryPage
         v-else
-        class="workflow-area"
+        class="workflow-empty"
       />
     </template>
     
@@ -193,6 +214,11 @@ main {
 
 .workflow-area {
   grid-area: workflow;
+}
+
+.workflow-empty {
+  grid-area: workflow;
+  grid-column-start: 1;
 }
 
 .loader {
