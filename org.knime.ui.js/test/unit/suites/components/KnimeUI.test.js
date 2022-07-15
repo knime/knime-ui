@@ -1,4 +1,4 @@
-import { clear as clearUserAgent, mockUserAgent } from 'jest-useragent-mock';
+import { mockUserAgent } from 'jest-useragent-mock';
 
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils';
@@ -172,13 +172,6 @@ describe('KnimeUI.vue', () => {
 
             await doShallowMountWithAsyncData();
             expect(setHasClipboardSupport).toHaveBeenCalledWith({}, true);
-        });
-
-        it('checks clipboard support for Safari', async () => {
-            mockUserAgent('Webkit Safari');
-            await doShallowMountWithAsyncData();
-
-            expect(setHasClipboardSupport).not.toHaveBeenCalled();
         });
     });
 });
