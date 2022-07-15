@@ -1,4 +1,5 @@
-import { registerEventHandlers } from '~/api/json-rpc-notifications';
+import { registerEventHandlers } from '~api';
+import { notifyPatch } from '~/util/event-syncer';
 
 export default ({ store: $store }) => {
     registerEventHandlers({
@@ -7,12 +8,16 @@ export default ({ store: $store }) => {
          * Sends a list of json-patch operations to update the frontend's state
          */
         // NXT-962: Unpack arguments from Object?
-        WorkflowChangedEvent({ patch: { ops } }) {
+        WorkflowChangedEvent({ patch: { ops }, snapshotId }) {
             // for all patch ops rewrite their path such that they are applied to 'activeWorkflow'
             ops.forEach(op => {
                 op.path = `/activeWorkflow${op.path}`;
             });
             $store.dispatch('workflow/patch.apply', ops);
+        
+            if (snapshotId) {
+                notifyPatch(snapshotId);
+            }
         },
         
         /*

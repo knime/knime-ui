@@ -81,53 +81,62 @@ export const actions = {
             destPort
         });
     },
-    async addNode({ state, getters }, { position, nodeFactory }) {
+    async addNode({ state, getters }, { position: [x, y], nodeFactory }) {
         await addNode({
             projectId: state.activeWorkflow.projectId,
             workflowId: getters.activeWorkflowId,
-            position: {
-                x: position[0],
-                y: position[1]
-            },
+            position: { x, y },
             nodeFactory
         });
     },
     async collapseToContainer({ state, getters, rootGetters, dispatch }, { containerType }) {
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
-        let canCollapse = true;
     
         if (rootGetters['selection/selectedNodes'].some(node => node.allowedActions.canCollapse === 'resetRequired')) {
-            canCollapse = window.confirm(`Creating this ${containerType} will reset executed nodes.`);
+            if (!window.confirm(`Creating this ${containerType} will reset executed nodes.`)) {
+                return;
+            }
         }
     
-        if (canCollapse) {
-            dispatch('selection/deselectAllObjects', null, { root: true });
+        // 1. deselect all objects
+        dispatch('selection/deselectAllObjects', null, { root: true });
     
-            await collapseToContainer({
-                containerType,
-                projectId: state.activeWorkflow.projectId,
-                workflowId: getters.activeWorkflowId,
-                nodeIds: selectedNodes,
-                annotationIds: []
-            });
+        // 2. send request
+        const { newNodeId } = await collapseToContainer({
+            containerType,
+            projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            nodeIds: selectedNodes,
+            annotationIds: []
+        });
+
+        // 3. select new container node, if user hasn't selected something else in the meantime
+        if (rootGetters['selection/isSelectionEmpty']) {
+            dispatch('selection/selectNode', newNodeId, { root: true });
+            dispatch('openNameEditor', newNodeId);
         }
     },
     async expandContainerNode({ state, getters, rootGetters, dispatch }) {
         const selectedNode = rootGetters['selection/singleSelectedNode'];
             
-        let shouldExpand = true;
         if (selectedNode.allowedActions.canExpand === 'resetRequired') {
-            shouldExpand = window.confirm(`Expanding this ${selectedNode.kind} will reset executed nodes.`);
+            if (!window.confirm(`Expanding this ${selectedNode.kind} will reset executed nodes.`)) {
+                return;
+            }
         }
+        // 1. deselect all objects
+        dispatch('selection/deselectAllObjects', null, { root: true });
     
-        if (shouldExpand) {
-            dispatch('selection/deselectAllObjects', null, { root: true });
-    
-            await expandContainerNode({
-                projectId: state.activeWorkflow.projectId,
-                workflowId: getters.activeWorkflowId,
-                nodeId: selectedNode.id
-            });
+        // 2. send request
+        const { expandedNodeIds } = await expandContainerNode({
+            projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            nodeId: selectedNode.id
+        });
+
+        // 3. select expanded nodes, if user hasn't selected something else in the meantime
+        if (rootGetters['selection/isSelectionEmpty']) {
+            dispatch('selection/selectNodes', expandedNodeIds, { root: true });
         }
     },
         

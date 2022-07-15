@@ -1,3 +1,4 @@
+import { waitForPatch } from '~/util/event-syncer';
 import rpc from './json-rpc-adapter.js';
 
 /**
@@ -35,11 +36,16 @@ export const loadWorkflow = async ({ projectId, workflowId = 'root', includeInfo
  */
 const workflowCommand = async ({ projectId, workflowId, command, args }) => {
     try {
-        let rpcArgs = {
-            kind: command,
-            ...args
-        };
-        return await rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
+        let rpcArgs = { kind: command, ...args };
+        let response = await rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
+        
+        if (!response || !response.snapshotId) {
+            return response;
+        }
+
+        await waitForPatch(response.snapshotId);
+
+        return response;
     } catch (e) {
         consola.error(e);
         throw new Error(`Couldn't execute ${command}(${JSON.stringify(args)})`);
