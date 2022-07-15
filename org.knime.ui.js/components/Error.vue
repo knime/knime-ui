@@ -5,6 +5,9 @@ import CopyIcon from '~/webapps-common/ui/assets/img/icons/copy.svg?inline';
 import CheckIcon from '~/webapps-common/ui/assets/img/icons/check.svg?inline';
 import WarningIcon from '~/webapps-common/ui/assets/img/icons/circle-warning.svg?inline';
 import { copyText } from '~/webapps-common/util/copyText.js';
+import SwitchIcon from '~/webapps-common/ui/assets/img/icons/perspective-switch.svg?inline';
+import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+
 
 /**
  * Error.vue
@@ -20,7 +23,9 @@ export default {
         ReloadIcon,
         CopyIcon,
         CheckIcon,
-        WarningIcon
+        WarningIcon,
+        SwitchIcon,
+        FunctionButton
     },
     props: {
         message: {
@@ -59,6 +64,9 @@ export default {
                 stack: this.stack
             }, null, 2));
             this.copied = true;
+        },
+        switchToJavaUI() {
+            window.switchToJavaUI();
         }
     }
 };
@@ -71,13 +79,20 @@ export default {
   >
     <div class="background" />
     <div class="content">
+      <FunctionButton
+        class="switch-classic"
+        @click="switchToJavaUI"
+      >
+        <SwitchIcon />
+      </FunctionButton>
       <div
         class="header"
         @click="$emit('close')"
       >
         <h2><WarningIcon /> Sorry, KNIME UI has stopped due to an error.</h2>
         <div class="message">
-          Most likely your work isn’t lost and hitting the reload button brings you back.
+          Hitting the reload button should bring you back to KNIME Modern UI, while you could also switch back
+          to KNIME Analytics Platform via the button on the top right.
         </div>
       </div>
       <div class="actions">
@@ -142,6 +157,22 @@ export default {
   flex-direction: column;
   justify-content: space-around;
 
+  & .switch-classic {
+    height: 40px;
+    width: 40px;
+    border: 1px solid var(--knime-dove-gray);
+    position: fixed;
+    top: 18px;
+    right: 15px;
+
+    & svg {
+      width: 26px;
+      height: 26px;
+      stroke: var(--knime-white);
+      stroke-width: calc(32px / 26); /* get 1px stroke width */
+    }
+  }
+
   & .header {
     color: white;
     text-align: center;
@@ -154,7 +185,8 @@ export default {
     }
 
     & .message {
-      margin-top: 10px;
+      margin: 10px auto;
+      max-width: 690px;
       font-size: 20px;
     }
 
