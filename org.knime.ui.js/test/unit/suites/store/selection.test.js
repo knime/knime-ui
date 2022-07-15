@@ -245,5 +245,13 @@ describe('workflow store', () => {
         test('test if connection is selected', () => {
             expect($store.getters['selection/isConnectionSelected']('root:2_3')).toBe(false);
         });
+
+        test('selection is empty', () => {
+            expect($store.getters['selection/isSelectionEmpty']).toBe(false);
+            
+            $store.commit('selection/clearSelection');
+            
+            expect($store.getters['selection/isSelectionEmpty']).toBe(true);
+        });
     });
 });
