@@ -42,8 +42,6 @@ export default {
     },
     data() {
         return {
-            // TODO: where do we put static data that needs to be accessed in the template?
-            invalidCharacters: /[*?#:"<>%~|/\\]/g,
             hideInvalidCharsTimeoutId: null,
             currentName: this.value,
             latestDimensions: {
@@ -62,6 +60,9 @@ export default {
                 x: left,
                 y: top
             };
+        },
+        invalidCharacters() {
+            return /[*?#:"<>%~|/\\]/g;
         },
         actionBarPosition() {
             return [
@@ -155,7 +156,7 @@ export default {
       :y="nodePosition.y"
     >
       <div class="invalid-chars-error">
-        Characters '{{ invalidCharacters.source }} are not allowed and were removed.
+        Characters <span class="chars">{{ invalidCharacters.source }}</span> are not allowed and were removed.
       </div>
     </foreignObject>
   </g>
@@ -174,5 +175,9 @@ export default {
   padding: 5px;
   color: var(--error-color);
   text-align: center;
+
+  & .chars {
+    font-family: 'Roboto Mono', sans-serif;
+  }
 }
 </style>

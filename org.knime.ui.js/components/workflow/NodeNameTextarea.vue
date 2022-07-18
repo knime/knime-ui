@@ -62,7 +62,7 @@ export default {
         },
         onKeyDown(event) {
             // prevent inserting invalid characters
-            if (this.invalidCharacters && this.invalidCharacters.source.includes(event.key.toLowerCase())) {
+            if (this.invalidCharacters && this.invalidCharacters.test(event.key)) {
                 this.$emit('invalid-input');
                 event.preventDefault();
             }
