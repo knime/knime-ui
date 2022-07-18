@@ -43,7 +43,7 @@ describe('workflow store: Execution', () => {
             let mock = jest.fn();
             let apiMocks = { changeNodeState: mock };
             await loadStore({ apiMocks });
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: {} });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
             store.dispatch(`workflow/${fn}`, ['x', 'y']);
 
             expect(mock).toHaveBeenCalledWith({
@@ -59,7 +59,7 @@ describe('workflow store: Execution', () => {
             let mock = jest.fn();
             let apiMocks = { changeLoopState: mock };
             await loadStore({ apiMocks });
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: {} });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
 
             store.dispatch(`workflow/${fn}`, 'node x');
 
@@ -72,7 +72,7 @@ describe('workflow store: Execution', () => {
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'foo',
-                info: {},
+                info: { containerId: 'root' },
                 nodes: {
                     'root:1': { id: 'root:1' },
                     'root:2': { id: 'root:2' }

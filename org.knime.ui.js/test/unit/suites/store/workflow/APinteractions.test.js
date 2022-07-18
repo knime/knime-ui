@@ -69,7 +69,7 @@ describe('workflow store: AP Interactions', () => {
             let openLayoutEditor = jest.fn();
             await loadStore({ apiMocks: { openLayoutEditor } });
 
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
             store.dispatch('workflow/openLayoutEditor', 'node x');
 
             expect(openLayoutEditor).toHaveBeenCalledWith({ projectId: 'foo', workflowId: 'root' });
