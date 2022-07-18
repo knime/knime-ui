@@ -42,11 +42,18 @@ export default {
             return this.nodeId === this.nameEditorNodeId;
         }
     },
+    watch: {
+        // use store state to ensure edit-start is emitted even if someone else (e. g. commands) started the edit
+        isEditing(newValue) {
+            if (newValue) {
+                this.$emit('edit-start');
+            }
+        }
+    },
     methods: {
         ...mapActions('workflow', ['renameContainerNode', 'openNameEditor', 'closeNameEditor']),
         onRequestEdit() {
             this.openNameEditor(this.nodeId);
-            this.$emit('edit-start');
         },
         onSave({ dimensionsOnClose, newName }) {
             this.renameContainerNode({ nodeId: this.nodeId, name: newName });
