@@ -4,6 +4,8 @@ import { mapGetters } from 'vuex';
 import NodeNameTextarea from '~/components/workflow/NodeNameTextarea';
 import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar';
 
+const invalidCharsErrorVisibleTime = 4000; // ms
+
 /**
  * Node Name Editor. Component wraps inline textarea and editor action bar (cancel, save). It overlays the whole
  * canvas (via the portal) with a rect that avoids changes to the canvas.
@@ -40,6 +42,9 @@ export default {
     },
     data() {
         return {
+            // TODO: where do we put static data that needs to be accessed in the template?
+            invalidCharacters: /[*?#:"<>%~|/\\]/g,
+            hideInvalidCharsTimeoutId: null,
             currentName: this.value,
             latestDimensions: {
                 width: null,
@@ -97,6 +102,14 @@ export default {
             // reset internal value
             this.currentName = this.value;
             this.$emit('cancel');
+        },
+        onInvalidInput() {
+            if (this.hideInvalidCharsTimeoutId) {
+                clearTimeout(this.hideInvalidCharsTimeoutId);
+            }
+            this.hideInvalidCharsTimeoutId = setTimeout(() => {
+                this.hideInvalidCharsTimeoutId = null;
+            }, invalidCharsErrorVisibleTime);
         }
     }
 };
@@ -112,7 +125,7 @@ export default {
       @click.stop.prevent
       @contextmenu.stop.prevent
     />
-    
+
     <!-- Save/Cancel actions -->
     <NodeNameEditorActionBar
       :transform="`translate(${actionBarPosition})`"
@@ -126,10 +139,40 @@ export default {
       :transform="`translate(${nodePosition.x}, ${nodePosition.y})`"
       :start-width="startWidth"
       :start-height="startHeight"
+      :invalid-characters="invalidCharacters"
       @width-change="handleDimensionChange('width', $event)"
       @height-change="handleDimensionChange('height', $event)"
       @save="onSave"
       @cancel="onCancel"
+      @invalid-input="onInvalidInput"
     />
+    <!-- Validation/Error Message TODO: move to own component?! -->
+    <foreignObject
+      v-if="Boolean(hideInvalidCharsTimeoutId)"
+      :width="Math.max(latestDimensions.width, $shapes.nodeWidthWithPadding)"
+      :height="70"
+      :x="nodePosition.x + $shapes.nodeSize/2 - Math.max(latestDimensions.width, $shapes.nodeWidthWithPadding)/2"
+      :y="nodePosition.y"
+    >
+      <div class="invalid-chars-error">
+        Characters '{{ invalidCharacters.source }} are not allowed and were removed.
+      </div>
+    </foreignObject>
   </g>
 </template>
+
+<style lang="postcss" scoped>
+.invalid-chars-error {
+  margin: auto;
+
+  /* full size but avoid blurring of the borders */
+  width: calc(100% - 4px);
+  border-radius: var(--selected-node-border-radius-shape);
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 10px;
+  backdrop-filter: blur(5px);
+  padding: 5px;
+  color: var(--error-color);
+  text-align: center;
+}
+</style>

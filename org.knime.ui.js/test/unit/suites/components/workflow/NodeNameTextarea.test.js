@@ -79,7 +79,7 @@ describe('NodeNameTextarea', () => {
     it('should focus textarea on mount', async () => {
         const wrapper = doShallowMount({ attachTo: document.body });
         const textareaElement = wrapper.find('textarea');
-        
+
         await wrapper.vm.$nextTick();
 
         expect(document.activeElement).toBe(textareaElement.element);
@@ -92,10 +92,10 @@ describe('NodeNameTextarea', () => {
 
         await wrapper.vm.$nextTick();
         expect(getHeight(wrapper.find('textarea').element)).toBe('0px');
-        
+
         const mockHeight = 200;
         Object.defineProperty(HTMLElement.prototype, 'scrollHeight', { value: mockHeight });
-        
+
         wrapper.find('textarea').setValue('MOCK TEXT');
         wrapper.find('textarea').trigger('input');
 
@@ -111,6 +111,8 @@ describe('NodeNameTextarea', () => {
         wrapper.find('textarea').setValue(emittedValue);
         wrapper.find('textarea').trigger('input');
 
+        expect(wrapper.emitted('invalidCharacter')).toBeDefined();
         expect(wrapper.emitted('input')[0][0]).toBe('New name!-test_12()');
     });
+    // TODO: also test keydown
 });
