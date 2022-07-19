@@ -1,7 +1,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import { placeholderPosition, portPositions } from '~/util/portShift';
-import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
+import NodePort from '~/components/workflow/NodePort';
 import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder';
 
 /**
@@ -10,7 +10,7 @@ import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder';
  */
 export default {
     components: {
-        DraggablePortWithTooltip,
+        NodePort,
         AddPortPlaceholder
     },
     props: {
@@ -162,7 +162,7 @@ export default {
 
 <template>
   <g>
-    <DraggablePortWithTooltip
+    <NodePort
       v-for="port of inPorts"
       :key="`inport-${port.index}`"
       :class="['port', portAnimationClasses(port)]"
@@ -174,7 +174,7 @@ export default {
       direction="in"
     />
 
-    <DraggablePortWithTooltip
+    <NodePort
       v-for="port of outPorts"
       :key="`outport-${port.index}`"
       :class="['port', portAnimationClasses(port)]"

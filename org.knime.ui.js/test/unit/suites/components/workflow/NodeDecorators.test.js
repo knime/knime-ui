@@ -72,7 +72,7 @@ describe('NodeDecorators.vue', () => {
         propsData = {
             ...nodeProps,
             link: 'linky',
-            executionInfo: 'something'
+            executionInfo: { mock: 'something' }
         };
         doMount();
 

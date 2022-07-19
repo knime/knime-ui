@@ -4,13 +4,15 @@ import Vuex from 'vuex';
 import { createLocalVue, shallowMount, createWrapper } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 
-import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
-import PortWithTooltip from '~/components/workflow/PortWithTooltip';
+import NodePort from '~/components/workflow/NodePort';
 import Port from '~/components/workflow/Port';
 import Connector from '~/components/workflow/Connector';
-import ActionButton from '~/components/workflow/ActionButton';
+import NodePortActions from '~/components/workflow/NodePortActions';
 
 import { circleDetection } from '~/util/compatibleConnections';
+
+import * as $shapes from '~/style/shapes';
+import * as $colors from '~/style/colors';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {
@@ -22,7 +24,7 @@ jest.mock('~/util/compatibleConnections', () => ({
     circleDetection: jest.fn().mockReturnValue([])
 }));
 
-describe('DraggablePortWithTooltip', () => {
+describe('NodePort', () => {
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
@@ -41,19 +43,24 @@ describe('DraggablePortWithTooltip', () => {
                 connectedVia: [],
                 typeId: 'table',
                 inactive: false,
-                index: 0
+                index: 0,
+                name: 'title',
+                info: 'text'
             }
         };
         isWritable = true;
         storeConfig = {
             workflow: {
-                actions: {
-                    connectNodes: jest.fn(),
-                    removeContainerNodePort: jest.fn()
-                },
                 state: {
                     activeWorkflow: 'workflowRef',
                     isDragging: false // mock value to make getter reactive
+                },
+                mutations: {
+                    setTooltip: jest.fn()
+                },
+                actions: {
+                    connectNodes: jest.fn(),
+                    removeContainerNodePort: jest.fn()
                 },
                 getters: {
                     isWritable() {
@@ -74,6 +81,9 @@ describe('DraggablePortWithTooltip', () => {
                     availablePortTypes: {
                         table: {
                             kind: 'table'
+                        },
+                        flowVariable: {
+                            kind: 'flowVariable'
                         }
                     }
                 }
@@ -82,8 +92,8 @@ describe('DraggablePortWithTooltip', () => {
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
-            let mocks = { $store };
-            wrapper = shallowMount(DraggablePortWithTooltip, { propsData, mocks, provide });
+            let mocks = { $store, $shapes, $colors };
+            wrapper = shallowMount(NodePort, { propsData, mocks, provide });
         };
     });
 
@@ -93,13 +103,65 @@ describe('DraggablePortWithTooltip', () => {
         expect(wrapper.attributes('class')).not.toMatch('targeted');
         expect(wrapper.attributes('transform')).toBe('translate(16,32)');
 
-        let port = wrapper.findComponent(PortWithTooltip);
+        let port = wrapper.findComponent(Port);
         expect(port.exists()).toBe(true);
         expect(port.props('port')).toStrictEqual(propsData.port);
-        expect(port.props('tooltipPosition')).toStrictEqual(propsData.relativePosition);
-
+        
         expect(wrapper.findComponent(Connector).exists()).toBe(false);
-        expect(wrapper.findComponent(Port).exists()).toBe(false);
+        expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
+    });
+
+    describe('Tooltips', () => {
+        beforeEach(() => {
+            jest.useFakeTimers();
+        });
+
+        it('shows tooltips on table ports', async () => {
+            doShallowMount();
+    
+            wrapper.trigger('mouseenter');
+            await Vue.nextTick();
+            jest.runAllTimers();
+    
+            expect(storeConfig.workflow.mutations.setTooltip).toHaveBeenCalledWith(expect.anything(), {
+                anchorPoint: { x: 123, y: 456 },
+                text: 'text',
+                title: 'title',
+                orientation: 'top',
+                position: {
+                    x: 16,
+                    y: 27.5
+                },
+                hoverable: false,
+                gap: 6
+            });
+    
+            wrapper.trigger('mouseleave');
+            await Vue.nextTick();
+            expect(storeConfig.workflow.mutations.setTooltip).toHaveBeenCalledWith(expect.anything(), null);
+        });
+    
+        it('shows tooltips for non-table ports', async () => {
+            propsData.port.typeId = 'flowVariable';
+    
+            doShallowMount();
+            wrapper.trigger('mouseenter');
+            jest.runAllTimers();
+            await Vue.nextTick();
+    
+            expect(storeConfig.workflow.mutations.setTooltip).toHaveBeenCalledWith(expect.anything(), {
+                anchorPoint: { x: 123, y: 456 },
+                text: 'text',
+                title: 'title',
+                orientation: 'top',
+                position: {
+                    x: 16,
+                    y: 27.5
+                },
+                hoverable: false,
+                gap: 8
+            });
+        });
     });
 
     describe('indicate in-coming connector replacement', () => {
@@ -218,6 +280,7 @@ describe('DraggablePortWithTooltip', () => {
 
     describe('Drag Connector', () => {
         let startDragging, dragAboveTarget, KanvasMock, dropOnTarget;
+        document.elementFromPoint = jest.fn();
 
         beforeEach(() => {
             // Set up
@@ -326,7 +389,7 @@ describe('DraggablePortWithTooltip', () => {
                     // port is moved to 'dragConnector'
                     // port doesn't receive pointer-events
 
-                    let port = wrapper.findComponent(Port);
+                    let port = wrapper.find('[data-test-id="drag-connector-port"]');
                     expect(port.attributes('transform')).toBe('translate(8,8)');
                     expect(port.attributes('class')).toMatch('non-interactive');
                 });
@@ -387,9 +450,9 @@ describe('DraggablePortWithTooltip', () => {
                 dropOnTarget();
 
                 // mimic a click event being sent along with the pointer(down/up) events
-                wrapper.findComponent(PortWithTooltip).vm.$emit('select');
+                wrapper.findComponent(Port).vm.$emit('select');
 
-                expect(wrapper.findComponent(ActionButton).exists()).toBe(false);
+                expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
             });
 
             test('move onto element', () => {
@@ -558,46 +621,44 @@ describe('DraggablePortWithTooltip', () => {
         });
     });
 
-    describe('Port selection and deletion', () => {
+    describe('Port actions', () => {
         beforeEach(() => {
             propsData.canSelect = true;
         });
 
-        it('should render the delete action button when the port is selected', async () => {
+        it('should render the actions when the port is selected', async () => {
             doShallowMount();
 
-            expect(wrapper.findComponent(ActionButton).exists()).toBe(false);
+            expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
+            await wrapper.findComponent(Port).trigger('click');
             
-            await wrapper.findComponent(PortWithTooltip).trigger('click');
-            
-            expect(wrapper.findComponent(ActionButton).exists()).toBe(true);
+            expect(wrapper.findComponent(NodePortActions).exists()).toBe(true);
         });
 
         it('should now allow selection of port if `canSelect` prop is false', async () => {
             doShallowMount();
 
             await wrapper.setProps({ canSelect: false });
+            await wrapper.findComponent(Port).trigger('click');
 
-            await wrapper.findComponent(PortWithTooltip).trigger('click');
-
-            expect(wrapper.findComponent(ActionButton).exists()).toBe(false);
+            expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
         });
 
         it('should unselect the port if the user starts dragging node', async () => {
             doShallowMount();
 
-            await wrapper.findComponent(PortWithTooltip).trigger('click');
+            await wrapper.findComponent(Port).trigger('click');
 
             $store.state.workflow.isDragging = true;
             await wrapper.vm.$nextTick();
 
-            expect(wrapper.findComponent(ActionButton).exists()).toBe(false);
+            expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
         });
 
         it('should make the port non-interactive if selected', async () => {
             doShallowMount();
 
-            const portComponent = wrapper.findComponent(PortWithTooltip);
+            const portComponent = wrapper.findComponent(Port);
             expect(portComponent.classes()).toContain('hoverable-port');
 
             await portComponent.trigger('click');
@@ -607,9 +668,9 @@ describe('DraggablePortWithTooltip', () => {
         it('should dispatch an action to remove port when the delete action button is clicked', async () => {
             doShallowMount();
 
-            await wrapper.findComponent(PortWithTooltip).trigger('click');
+            await wrapper.findComponent(Port).trigger('click');
 
-            wrapper.findComponent(ActionButton).vm.$emit('click');
+            wrapper.findComponent(NodePortActions).vm.$emit('action:delete');
 
             expect(storeConfig.workflow.actions.removeContainerNodePort).toHaveBeenCalledWith(
                 expect.any(Object), // Vuex context
@@ -620,18 +681,6 @@ describe('DraggablePortWithTooltip', () => {
                     portIndex: propsData.port.index
                 })
             );
-        });
-
-        it('should disable the delete action button if the port cannot be removed', async () => {
-            doShallowMount();
-
-            await wrapper.setProps({ port: { ...propsData.port, canRemove: false } });
-
-            await wrapper.findComponent(PortWithTooltip).trigger('click');
-
-            const actionButton = wrapper.findComponent(ActionButton);
-
-            expect(actionButton.props('disabled')).toBe(true);
         });
     });
 });

@@ -259,3 +259,38 @@ export const expandContainerNode = ({
     projectId,
     workflowId
 });
+
+/**
+ * Copies or cuts workflow parts and serializes them
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param { String } cfg.command The command to execute, can be 'copy' or 'cut'
+ * @param { Array } cfg.nodeIds The node ids to copy
+ * @param { Array } cfg.annotationIds The annotation ids to copy
+ * @returns { Promise } The serialized workflow parts
+ */
+export const copyOrCutWorkflowParts = ({
+    projectId, workflowId, command, nodeIds = [], annotationIds = []
+}) => workflowCommand({
+    command,
+    args: { nodeIds, annotationIds },
+    projectId,
+    workflowId
+});
+
+/**
+ * Pastes workflow parts to the canvas
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @param { Object } content Workflow parts to be pasted
+ * @param { Object } position Paste the workflow parts at this position
+ * @returns { void }
+ */
+export const pasteWorkflowParts = ({
+    projectId, workflowId, content = {}, position
+}) => workflowCommand({
+    command: 'paste',
+    args: { content, position },
+    projectId,
+    workflowId
+});

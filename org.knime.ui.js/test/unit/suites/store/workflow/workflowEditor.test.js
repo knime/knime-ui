@@ -34,6 +34,7 @@ describe('workflow store: Editing', () => {
             }), { virtual: true });
 
             store = mockVuexStore({
+                application: await import('~/store/application'),
                 workflow: await import('~/store/workflow'),
                 selection: await import('~/store/selection')
             });
@@ -472,6 +473,75 @@ describe('workflow store: Editing', () => {
                 await commandCall;
     
                 expect(store.state.selection.selectedNodes).toStrictEqual({ barbaz: true });
+            });
+        });
+
+        describe('tests copy, cut and paste actions...', () => {
+            it.each([
+                ['copy'],
+                ['cut']
+            ])('executes <%s> command', async (command) => {
+                Object.assign(navigator, { clipboard: { writeText: () => ({ }) } });
+                jest.spyOn(navigator.clipboard, 'writeText');
+                let copyOrCutWorkflowParts = jest.fn().mockReturnValue({ content: '{}' });
+                let apiMocks = { copyOrCutWorkflowParts };
+                await loadStore({ apiMocks });
+    
+                store.commit('application/setHasClipboardSupport', true);
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'my project',
+                    nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } }
+                });
+                store.dispatch('selection/selectAllNodes');
+                await Vue.nextTick();
+                await store.dispatch('workflow/copyOrCutWorkflowParts', { command });
+    
+                expect(copyOrCutWorkflowParts).toHaveBeenCalledWith({
+                    projectId: 'my project',
+                    workflowId: 'root',
+                    command,
+                    nodeIds: ['foo', 'bar'],
+                    annotationIds: []
+                });
+                expect(navigator.clipboard.writeText).toHaveBeenCalledWith('{}');
+            });
+    
+            it('executes <paste> command', async () => {
+                Object.assign(navigator, { clipboard: { readText: () => '{}' } });
+                jest.spyOn(navigator.clipboard, 'readText');
+                let pasteWorkflowParts = jest.fn();
+                let apiMocks = { pasteWorkflowParts };
+                await loadStore({ apiMocks });
+                
+                // Test case with non-empty workflow
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'my project',
+                    nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } },
+                    workflowAnnotations: []
+                });
+                await store.dispatch('workflow/pasteWorkflowParts');
+    
+                expect(pasteWorkflowParts).toHaveBeenCalledWith({
+                    projectId: 'my project',
+                    workflowId: 'root',
+                    content: '{}',
+                    position: null
+                });
+
+                // Test case with empty workflow
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'my project',
+                    nodes: {},
+                    workflowAnnotations: []
+                });
+                await store.dispatch('workflow/pasteWorkflowParts');
+    
+                expect(pasteWorkflowParts).toHaveBeenCalledWith({
+                    projectId: 'my project',
+                    workflowId: 'root',
+                    content: '{}',
+                    position: { x: 0, y: 0 }
+                });
             });
         });
     });

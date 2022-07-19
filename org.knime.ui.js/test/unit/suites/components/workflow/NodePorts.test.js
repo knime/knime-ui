@@ -4,7 +4,7 @@ import Vue from 'vue';
 
 import * as $shapes from '~/style/shapes';
 import NodePorts from '~/components/workflow/NodePorts';
-import DraggablePortWithTooltip from '~/components/workflow/DraggablePortWithTooltip';
+import NodePort from '~/components/workflow/NodePort';
 import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder';
 
 let wrapper, propsData, doMount;
@@ -54,7 +54,7 @@ describe('NodePorts.vue', () => {
             propsData.nodeKind = 'metanode';
             doMount();
 
-            const ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
+            const ports = wrapper.findAllComponents(NodePort).wrappers;
             const locations = ports.map(p => p.props().relativePosition);
             const portAttrs = ports.map(p => p.props().port.index);
 
@@ -76,7 +76,7 @@ describe('NodePorts.vue', () => {
             propsData.nodeKind = nodeKind;
             doMount();
 
-            const ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
+            const ports = wrapper.findAllComponents(NodePort).wrappers;
             const locations = ports.map(p => p.props().relativePosition);
             const portAttrs = ports.map(p => p.props().port.index);
 
@@ -105,7 +105,7 @@ describe('NodePorts.vue', () => {
     it('always shows ports other than mickey-mouse', () => {
         doMount();
 
-        let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+        let ports = wrapper.findAllComponents(NodePort);
         expect(ports.at(1).attributes().class).toBe('port');
         expect(ports.at(3).attributes().class).toBe('port');
         expect(ports.at(4).attributes().class).toBe('port');
@@ -119,7 +119,7 @@ describe('NodePorts.vue', () => {
         it('only first ports of %s are mickey mouse ports', () => {
             doMount();
 
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+            let ports = wrapper.findAllComponents(NodePort);
             expect(ports.at(0).attributes().class).toMatch('mickey-mouse');
             expect(ports.at(1).attributes().class).not.toMatch('mickey-mouse');
             expect(ports.at(2).attributes().class).toMatch('mickey-mouse');
@@ -131,7 +131,7 @@ describe('NodePorts.vue', () => {
             propsData.nodeKind = 'metanode';
             doMount();
 
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip).wrappers;
+            let ports = wrapper.findAllComponents(NodePort).wrappers;
             ports.forEach(port => {
                 expect(port.attributes().class).not.toMatch('mickey-mouse');
             });
@@ -140,7 +140,7 @@ describe('NodePorts.vue', () => {
         it('connected ports are displayed', () => {
             doMount();
 
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+            let ports = wrapper.findAllComponents(NodePort);
             expect(ports.at(0).attributes().class).toMatch('connected');
             expect(ports.at(1).attributes().class).not.toMatch('connected');
         });
@@ -149,7 +149,7 @@ describe('NodePorts.vue', () => {
             propsData.hover = true;
             doMount();
 
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+            let ports = wrapper.findAllComponents(NodePort);
 
             // flowVariable ports fades in
             expect(ports.at(0).classes()).toContain('node-hover');
@@ -160,7 +160,7 @@ describe('NodePorts.vue', () => {
             propsData.hover = false;
             doMount();
 
-            let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+            let ports = wrapper.findAllComponents(NodePort);
 
             // flowVariable ports fades out
             expect(ports.at(0).classes()).not.toContain('node-hover');
@@ -278,7 +278,7 @@ describe('NodePorts.vue', () => {
         propsData.targetPort = targetPort;
         doMount();
 
-        let ports = wrapper.findAllComponents(DraggablePortWithTooltip);
+        let ports = wrapper.findAllComponents(NodePort);
         const [inPort, outPort] = ports.wrappers;
         
         expect([

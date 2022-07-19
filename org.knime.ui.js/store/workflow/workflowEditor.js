@@ -1,5 +1,6 @@
 import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameContainerNode, collapseToContainer,
-    addContainerNodePort, expandContainerNode, removeContainerNodePort } from '~api';
+    addContainerNodePort, expandContainerNode, removeContainerNodePort, copyOrCutWorkflowParts,
+    pasteWorkflowParts } from '~api';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -221,6 +222,50 @@ export const actions = {
         let { activeWorkflowId: workflowId } = getters;
     
         removeContainerNodePort({ projectId, workflowId, nodeId, side, typeId, portIndex });
+    },
+
+    async copyOrCutWorkflowParts({ state, getters, rootGetters, dispatch }, { command }) {
+        if (!['copy', 'cut'].includes(command)) {
+            throw new Error("command has to be 'copy' or 'cut'");
+        }
+
+        const selectedNodes = rootGetters['selection/selectedNodeIds'];
+        const selectedAnnotations = []; // Annotations cannot be selected yet
+        if (command === 'cut') {
+            dispatch('selection/deselectAllObjects', null, { root: true });
+        }
+        const response = await copyOrCutWorkflowParts({
+            projectId: state.activeWorkflow.projectId,
+            workflowId: getters.activeWorkflowId,
+            command,
+            nodeIds: selectedNodes,
+            annotationIds: selectedAnnotations
+        });
+        const clipboardContent = JSON.parse(response.content);
+        consola.info('Copied workflow parts', clipboardContent);
+        try {
+            navigator.clipboard.writeText(JSON.stringify(clipboardContent));
+        } catch (error) {
+            consola.info('Could not write to clipboard. Maybe the user did not permit it?');
+        }
+    },
+    
+    async pasteWorkflowParts({ state, getters }) {
+        try {
+            // TODO: NXT-1168 Put a limit on the clipboard content size
+            const clipboardContent = await navigator.clipboard.readText();
+            const verifiedContent = JSON.parse(clipboardContent);
+            consola.info('Pasted workflow parts', verifiedContent);
+            // TODO: NXT-1153 Set the `position` parameter here to handle special cases
+            pasteWorkflowParts({
+                projectId: state.activeWorkflow.projectId,
+                workflowId: getters.activeWorkflowId,
+                content: JSON.stringify(verifiedContent),
+                position: getters.isWorkflowEmpty ? { x: 0, y: 0 } : null
+            });
+        } catch (error) {
+            consola.info('Could not read form clipboard. Maybe the user did not permit it?');
+        }
     }
 };
 
