@@ -2,11 +2,11 @@
   "decisions": {
     "1067329|nuxt>@nuxt/webpack>webpack>watchpack>watchpack-chokidar2>chokidar>glob-parent": {
       "decision": "ignore",
-      "madeAt": 1653988134618
+      "madeAt": 1658225204844
     },
     "1067329|nuxt>@nuxt/builder>@nuxt/webpack>webpack>watchpack>watchpack-chokidar2>chokidar>glob-parent": {
       "decision": "ignore",
-      "madeAt": 1653988134618
+      "madeAt": 1658225204844
     },
     "1070415|nuxt>@nuxt/webpack>cssnano>cssnano-preset-default>postcss-svgo>svgo>css-select>nth-check": {
       "decision": "ignore",
@@ -19,6 +19,35 @@
     "1070415|nuxt>@nuxt/builder>@nuxt/webpack>optimize-css-assets-webpack-plugin>cssnano>cssnano-preset-default>postcss-svgo>svgo>css-select>nth-check": {
       "decision": "ignore",
       "madeAt": 1653988145315
+    },
+    "1081522|nuxt>@nuxt/builder>chokidar>glob-parent": {
+      "decision": "ignore",
+      "madeAt": 1658225204844
+    },
+    "1081522|nuxt>@nuxt/cli>globby>fast-glob>glob-parent": {
+      "decision": "ignore",
+      "madeAt": 1658225204844
+    },
+    "1081522|nuxt>@nuxt/webpack>webpack>watchpack>chokidar>glob-parent": {
+      "decision": "ignore",
+      "madeAt": 1658225204844
+    },
+    "1081522|nuxt>@nuxt/builder>@nuxt/webpack>webpack>watchpack>chokidar>glob-parent": {
+      "decision": "ignore",
+      "madeAt": 1658225204845
+    },
+    "1081522|nuxt>@nuxt/webpack>webpack>watchpack>watchpack-chokidar2>chokidar>glob-parent": {
+      "decision": "ignore",
+      "madeAt": 1658225204845
+    },
+    "1081522|nuxt>@nuxt/builder>@nuxt/webpack>webpack>watchpack>watchpack-chokidar2>chokidar>glob-parent": {
+      "decision": "ignore",
+      "madeAt": 1658225204845
+    },
+    "1081004|nuxt>@nuxt/telemetry>git-url-parse>git-up>parse-url>parse-path": {
+      "decision": "ignore",
+      "madeAt": 1658225209662,
+      "expiresAt": 1660817197543
     }
   },
   "rules": {},
