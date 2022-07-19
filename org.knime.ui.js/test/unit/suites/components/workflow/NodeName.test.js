@@ -81,7 +81,7 @@ describe('NodeName', () => {
 
         it('should handle a name change request', () => {
             wrapper.findComponent(NodeNameText).vm.$emit('request-edit');
-            expect(wrapper.emitted('edit-start')).toBeDefined();
+            expect(storeConfig.workflow.actions.openNameEditor).toHaveBeenCalled();
         });
 
         it('should handle a name change requests triggered via the store (e.g. F2 key)', async () => {
