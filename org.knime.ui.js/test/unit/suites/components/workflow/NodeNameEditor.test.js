@@ -168,4 +168,34 @@ describe('NodeNameEditor', () => {
             dimensionsOnClose: { width: emittedWidth, height: emittedHeight }
         }));
     });
+
+    it('should show an error message for invalid characters input', async () => {
+        expect(wrapper.find('foreignObject').exists()).toBe(false);
+        await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalid-input');
+        expect(wrapper.find('foreignObject').exists()).toBe(true);
+        expect(wrapper.find('foreignObject').text()).toContain('are not allowed and were removed.');
+    });
+
+    it('hides error message after some time', async () => {
+        jest.useFakeTimers();
+        expect(wrapper.find('foreignObject').exists()).toBe(false);
+        await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalid-input');
+        expect(wrapper.find('foreignObject').exists()).toBe(true);
+        jest.runAllTimers();
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find('foreignObject').exists()).toBe(false);
+    });
+
+    it('clears active hide error message timer if another inlaid input occurs', async () => {
+        window.clearTimeout = jest.fn();
+        await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalid-input');
+        await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalid-input');
+        expect(window.clearTimeout).toBeCalled();
+    });
+
+    it('updates value of textarea on value prop change', async () => {
+        expect(wrapper.findComponent(NodeNameTextarea).props('value')).toBe('test');
+        await wrapper.setProps({ value: 'newValue' });
+        expect(wrapper.findComponent(NodeNameTextarea).props('value')).toBe('newValue');
+    });
 });
