@@ -104,15 +104,27 @@ describe('NodeNameTextarea', () => {
     });
 
     it('should not allow illegal characters', () => {
-        const wrapper = doShallowMount();
+        const wrapper = doShallowMount({ propsData: { value: '', invalidCharacters: /[*?#:"<>%~|/\\]/g } });
 
         const emittedValue = '*New name!*?-test_12(#)';
 
         wrapper.find('textarea').setValue(emittedValue);
         wrapper.find('textarea').trigger('input');
 
-        expect(wrapper.emitted('invalidCharacter')).toBeDefined();
+        expect(wrapper.emitted('invalid-input')).toBeDefined();
         expect(wrapper.emitted('input')[0][0]).toBe('New name!-test_12()');
     });
-    // TODO: also test keydown
+
+    it('should not allow illegal character on keydown', () => {
+        const wrapper = doShallowMount({ propsData: { value: '', invalidCharacters: /[*?#:"<>%~|/\\]/g } });
+
+        const event = {
+            key: '#',
+            preventDefault: jest.fn()
+        };
+        wrapper.find('textarea').trigger('keydown', event);
+
+        expect(wrapper.emitted('invalid-input')).toBeDefined();
+        expect(event.preventDefault).toBeCalled();
+    });
 });

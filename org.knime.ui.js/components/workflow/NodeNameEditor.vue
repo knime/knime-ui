@@ -147,7 +147,7 @@ export default {
       @cancel="onCancel"
       @invalid-input="onInvalidInput"
     />
-    <!-- Validation/Error Message TODO: move to own component?! -->
+    <!-- Validation/Error Message -->
     <foreignObject
       v-if="Boolean(hideInvalidCharsTimeoutId)"
       :width="Math.max(latestDimensions.width, $shapes.nodeWidthWithPadding)"
