@@ -69,6 +69,15 @@ export default {
                 this.nodePosition.x + this.$shapes.nodeSize / 2,
                 this.nodePosition.y - this.$shapes.nodeSelectionPadding[0] - this.latestDimensions.height
             ];
+        },
+        errorMessagePosition() {
+            const halfNodeSize = this.$shapes.nodeSize / 2;
+            // use node with padding as minimum
+            const currentWidthWithMinimum = Math.max(this.latestDimensions.width, this.$shapes.nodeWidthWithPadding);
+            return {
+                x: this.nodePosition.x + halfNodeSize - currentWidthWithMinimum / 2,
+                y: this.nodePosition.y
+            };
         }
     },
     watch: {
@@ -152,8 +161,8 @@ export default {
       v-if="Boolean(hideInvalidCharsTimeoutId)"
       :width="Math.max(latestDimensions.width, $shapes.nodeWidthWithPadding)"
       :height="70"
-      :x="nodePosition.x + $shapes.nodeSize/2 - Math.max(latestDimensions.width, $shapes.nodeWidthWithPadding)/2"
-      :y="nodePosition.y"
+      :x="errorMessagePosition.x"
+      :y="errorMessagePosition.y"
     >
       <div class="invalid-chars-error">
         Characters <span class="chars">{{ invalidCharacters.source }}</span> are not allowed and were removed.
