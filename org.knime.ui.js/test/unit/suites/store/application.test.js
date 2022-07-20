@@ -14,7 +14,7 @@ describe('application store', () => {
         fetchApplicationState = jest.fn().mockReturnValue(applicationState);
         addEventListener = jest.fn();
         removeEventListener = jest.fn();
-        loadWorkflow = jest.fn().mockResolvedValue({});
+        loadWorkflow = jest.fn().mockResolvedValue({ workflow: { info: { containerId: '' } } });
 
         jest.doMock('~api', () => ({
             __esModule: true,

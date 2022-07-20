@@ -128,7 +128,7 @@ export const actions = {
             let snapshotId = project.snapshotId;
             commit('workflow/setActiveSnapshotId', snapshotId, { root: true });
 
-            let workflowId = rootState.workflow.activeWorkflow?.info?.containerId || null;
+            let workflowId = rootState.workflow.activeWorkflow?.info.containerId || null;
             addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
         } else {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
