@@ -84,7 +84,9 @@ describe('Connector.vue', () => {
                     },
                     selection: {
                         getters: {
-                            isConnectionSelected: () => jest.fn()
+                            isConnectionSelected: () => jest.fn(),
+                            singleSelectedNode: () => jest.fn(),
+                            isNodeSelected: () => jest.fn()
                         },
                         actions: {
                             selectConnection: jest.fn(),

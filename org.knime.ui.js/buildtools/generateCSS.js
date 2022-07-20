@@ -14,6 +14,9 @@ const colorNames = ['warning', 'error', 'darkeningMask', 'notificationBackground
 const shapeNames = [
     'selectedNodeBorderRadius',
     'selectedNodeStrokeWidth',
+    'selectedConnectorWidth',
+    'connectorWidth',
+    'highlightedConnectorWidth',
     'nodeNamePadding',
     'nodeNameFontSize',
     'nodeNameLineHeight',
