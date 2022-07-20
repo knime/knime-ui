@@ -477,12 +477,20 @@ describe('workflow store: Editing', () => {
         });
 
         describe('tests copy, cut and paste actions...', () => {
+            const mockClipboardMethod = ({ name, mockHandler }) => {
+                Object.assign(navigator, { clipboard: { [name]: mockHandler } });
+                jest.spyOn(navigator.clipboard, name);
+            };
+
+            afterEach(() => {
+                jest.clearAllMocks();
+            });
+
             it.each([
                 ['copy'],
                 ['cut']
             ])('executes <%s> command', async (command) => {
-                Object.assign(navigator, { clipboard: { writeText: () => ({ }) } });
-                jest.spyOn(navigator.clipboard, 'writeText');
+                mockClipboardMethod({ name: 'writeText', mockHandler: () => ({}) });
                 let copyOrCutWorkflowParts = jest.fn().mockReturnValue({ content: '{}' });
                 let apiMocks = { copyOrCutWorkflowParts };
                 await loadStore({ apiMocks });
@@ -506,14 +514,12 @@ describe('workflow store: Editing', () => {
                 expect(navigator.clipboard.writeText).toHaveBeenCalledWith('{}');
             });
     
-            it('executes <paste> command', async () => {
-                Object.assign(navigator, { clipboard: { readText: () => '{}' } });
-                jest.spyOn(navigator.clipboard, 'readText');
+            it('executes <paste> command for a non-empty workflow', async () => {
+                mockClipboardMethod({ name: 'readText', mockHandler: () => '{}' });
                 let pasteWorkflowParts = jest.fn();
                 let apiMocks = { pasteWorkflowParts };
                 await loadStore({ apiMocks });
                 
-                // Test case with non-empty workflow
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'my project',
                     nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } },
@@ -527,8 +533,14 @@ describe('workflow store: Editing', () => {
                     content: '{}',
                     position: null
                 });
+            });
 
-                // Test case with empty workflow
+            it('executes <paste> command for an empty workflow', async () => {
+                mockClipboardMethod({ name: 'readText', mockHandler: () => '{}' });
+                let pasteWorkflowParts = jest.fn();
+                let apiMocks = { pasteWorkflowParts };
+                await loadStore({ apiMocks });
+
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'my project',
                     nodes: {},
@@ -542,6 +554,24 @@ describe('workflow store: Editing', () => {
                     content: '{}',
                     position: { x: 0, y: 0 }
                 });
+            });
+
+            it('selects the pasted nodes', async () => {
+                mockClipboardMethod({ name: 'readText', mockHandler: () => '{}' });
+                let pasteWorkflowParts = jest.fn(() => ({ nodeIds: ['baz'] }));
+                let apiMocks = { pasteWorkflowParts };
+                await loadStore({ apiMocks });
+
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'my project',
+                    nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } },
+                    workflowAnnotations: []
+                });
+                await store.dispatch('workflow/pasteWorkflowParts');
+
+                expect(store.state.selection.selectedNodes.foo).toBeFalsy();
+                expect(store.state.selection.selectedNodes.bar).toBeFalsy();
+                expect(store.state.selection.selectedNodes.baz).toBe(true);
             });
         });
     });

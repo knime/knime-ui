@@ -250,19 +250,22 @@ export const actions = {
         }
     },
     
-    async pasteWorkflowParts({ state, getters }) {
+    async pasteWorkflowParts({ state, getters, dispatch }) {
         try {
             // TODO: NXT-1168 Put a limit on the clipboard content size
             const clipboardContent = await navigator.clipboard.readText();
             const verifiedContent = JSON.parse(clipboardContent);
             consola.info('Pasted workflow parts', verifiedContent);
             // TODO: NXT-1153 Set the `position` parameter here to handle special cases
-            pasteWorkflowParts({
+            const { nodeIds } = await pasteWorkflowParts({
                 projectId: state.activeWorkflow.projectId,
                 workflowId: getters.activeWorkflowId,
                 content: JSON.stringify(verifiedContent),
                 position: getters.isWorkflowEmpty ? { x: 0, y: 0 } : null
             });
+
+            dispatch('selection/deselectAllObjects', null, { root: true });
+            dispatch('selection/selectNodes', nodeIds, { root: true });
         } catch (error) {
             consola.info('Could not read form clipboard. Maybe the user did not permit it?');
         }
