@@ -30,14 +30,16 @@ export const mutations = {
 
 export const actions = {
     /* See docs in API */
-    undo({ state, getters }) {
-        let { activeWorkflowId } = getters;
-        undo({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
+    undo({ state }) {
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflow: { info: { containerId } } } = state;
+        undo({ projectId, workflowId: containerId });
     },
     /* See docs in API */
-    redo({ state, getters }) {
-        let { activeWorkflowId } = getters;
-        redo({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
+    redo({ state }) {
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflow: { info: { containerId } } } = state;
+        redo({ projectId, workflowId: containerId });
     },
 
     /**
@@ -49,9 +51,9 @@ export const actions = {
      * @param {Object} params.startPos - start position {x: , y: } of the move event
      * @returns {void} - nothing to return
      */
-    async moveObjects({ state, getters, commit, rootGetters }, { projectId }) {
+    async moveObjects({ state, commit, rootGetters }, { projectId }) {
         let translation;
-        let selectedNodes = rootGetters['selection/selectedNodeIds'];
+        const selectedNodes = rootGetters['selection/selectedNodeIds'];
         // calculate the translation either relative to the position or the outline position
         translation = {
             x: state.movePreviewDelta.x,
@@ -60,7 +62,7 @@ export const actions = {
         try {
             await moveObjects({
                 projectId,
-                workflowId: getters.activeWorkflowId,
+                workflowId: state.activeWorkflow.info.containerId,
                 nodeIds: selectedNodes,
                 translation,
                 annotationIds: []
@@ -71,28 +73,35 @@ export const actions = {
         }
     },
 
-    async connectNodes({ state, getters }, { sourceNode, destNode, sourcePort, destPort }) {
+    async connectNodes({ state }, { sourceNode, destNode, sourcePort, destPort }) {
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflow: { info: { containerId } } } = state;
         await connectNodes({
-            projectId: state.activeWorkflow.projectId,
-            workflowId: getters.activeWorkflowId,
+            projectId,
+            workflowId: containerId,
             sourceNode,
             sourcePort,
             destNode,
             destPort
         });
     },
-    async addNode({ state, getters }, { position: [x, y], nodeFactory }) {
+    async addNode({ state }, { position: [x, y], nodeFactory }) {
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflow: { info: { containerId } } } = state;
         await addNode({
-            projectId: state.activeWorkflow.projectId,
-            workflowId: getters.activeWorkflowId,
+            projectId,
+            workflowId: containerId,
             position: { x, y },
             nodeFactory
         });
     },
-    async collapseToContainer({ state, getters, rootGetters, dispatch }, { containerType }) {
-        const selectedNodes = rootGetters['selection/selectedNodeIds'];
+    async collapseToContainer({ state, rootGetters, dispatch }, { containerType }) {
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflow: { info: { containerId } } } = state;
+        const selectedNodeIds = rootGetters['selection/selectedNodeIds'];
+        const selectedNodes = rootGetters['selection/selectedNodes'];
     
-        if (rootGetters['selection/selectedNodes'].some(node => node.allowedActions.canCollapse === 'resetRequired')) {
+        if (selectedNodes.some(node => node.allowedActions.canCollapse === 'resetRequired')) {
             if (!window.confirm(`Creating this ${containerType} will reset executed nodes.`)) {
                 return;
             }
@@ -104,9 +113,9 @@ export const actions = {
         // 2. send request
         const { newNodeId } = await collapseToContainer({
             containerType,
-            projectId: state.activeWorkflow.projectId,
-            workflowId: getters.activeWorkflowId,
-            nodeIds: selectedNodes,
+            projectId,
+            workflowId: containerId,
+            nodeIds: selectedNodeIds,
             annotationIds: []
         });
 
@@ -116,7 +125,9 @@ export const actions = {
             dispatch('openNameEditor', newNodeId);
         }
     },
-    async expandContainerNode({ state, getters, rootGetters, dispatch }) {
+    async expandContainerNode({ state, rootGetters, dispatch }) {
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflow: { info: { containerId } } } = state;
         const selectedNode = rootGetters['selection/singleSelectedNode'];
             
         if (selectedNode.allowedActions.canExpand === 'resetRequired') {
@@ -129,8 +140,8 @@ export const actions = {
     
         // 2. send request
         const { expandedNodeIds } = await expandContainerNode({
-            projectId: state.activeWorkflow.projectId,
-            workflowId: getters.activeWorkflowId,
+            projectId,
+            workflowId: containerId,
             nodeId: selectedNode.id
         });
 
@@ -139,20 +150,16 @@ export const actions = {
             dispatch('selection/selectNodes', expandedNodeIds, { root: true });
         }
     },
-        
+
     /**
      * Deletes all selected objects and displays an error message for the objects, that cannot be deleted.
      * If the objects can be deleted a deselect event is fired.
      * @param {Object} context - store context
      * @returns {void} - nothing to return
      */
-    deleteSelectedObjects({
-        state: { activeWorkflow },
-        getters: { activeWorkflowId },
-        rootState,
-        rootGetters,
-        dispatch
-    }) {
+    deleteSelectedObjects({ state, rootGetters, dispatch }) {
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflow: { info: { containerId } } } = state;
         const selectedNodes = rootGetters['selection/selectedNodes'];
         const selectedConnections = rootGetters['selection/selectedConnections'];
         const deletableNodeIds = selectedNodes.filter(node => node.allowedActions.canDelete).map(node => node.id);
@@ -166,8 +173,8 @@ export const actions = {
 
         if (deletableNodeIds.length || deletableConnectionIds.length) {
             deleteObjects({
-                projectId: activeWorkflow.projectId,
-                workflowId: activeWorkflowId,
+                projectId,
+                workflowId: containerId,
                 nodeIds: deletableNodeIds.length ? deletableNodeIds : [],
                 connectionIds: deletableConnectionIds ? deletableConnectionIds : []
             });
@@ -193,14 +200,14 @@ export const actions = {
      * @param {string} params.name - new new
      * @returns {void} - nothing to return
      */
-    renameContainerNode({ state, getters }, { nodeId, name }) {
+    renameContainerNode({ state }, { nodeId, name }) {
         const { activeWorkflow: { projectId } } = state;
-        const { activeWorkflowId } = getters;
+        const { activeWorkflow: { info: { containerId } } } = state;
         renameContainerNode({
             nodeId,
             name,
             projectId,
-            workflowId: activeWorkflowId
+            workflowId: containerId
         });
     },
     openNameEditor({ commit }, nodeId) {
@@ -210,33 +217,33 @@ export const actions = {
         commit('setNameEditorNodeId', null);
     },
 
-    addContainerNodePort({ state, getters }, { nodeId, side, typeId }) {
-        let { activeWorkflow: { projectId } } = state;
-        let { activeWorkflowId: workflowId } = getters;
-    
-        addContainerNodePort({ projectId, workflowId, nodeId, side, typeId });
+    addContainerNodePort({ state }, { nodeId, side, typeId }) {
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflow: { info: { containerId } } } = state;
+        addContainerNodePort({ projectId, workflowId: containerId, nodeId, side, typeId });
     },
 
     removeContainerNodePort({ state, getters }, { nodeId, side, typeId, portIndex }) {
-        let { activeWorkflow: { projectId } } = state;
-        let { activeWorkflowId: workflowId } = getters;
-    
-        removeContainerNodePort({ projectId, workflowId, nodeId, side, typeId, portIndex });
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflow: { info: { containerId } } } = state;
+        removeContainerNodePort({ projectId, workflowId: containerId, nodeId, side, typeId, portIndex });
     },
 
-    async copyOrCutWorkflowParts({ state, getters, rootGetters, dispatch }, { command }) {
+    async copyOrCutWorkflowParts({ state, rootGetters, dispatch }, { command }) {
         if (!['copy', 'cut'].includes(command)) {
             throw new Error("command has to be 'copy' or 'cut'");
         }
 
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflow: { info: { containerId } } } = state;
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
         const selectedAnnotations = []; // Annotations cannot be selected yet
         if (command === 'cut') {
             dispatch('selection/deselectAllObjects', null, { root: true });
         }
         const response = await copyOrCutWorkflowParts({
-            projectId: state.activeWorkflow.projectId,
-            workflowId: getters.activeWorkflowId,
+            projectId,
+            workflowId: containerId,
             command,
             nodeIds: selectedNodes,
             annotationIds: selectedAnnotations
@@ -251,6 +258,9 @@ export const actions = {
     },
     
     async pasteWorkflowParts({ state, getters, dispatch }) {
+        const { activeWorkflow: { projectId } } = state;
+        const { activeWorkflow: { info: { containerId } } } = state;
+        const { isWorkflowEmpty } = getters;
         try {
             // TODO: NXT-1168 Put a limit on the clipboard content size
             const clipboardContent = await navigator.clipboard.readText();
@@ -258,10 +268,10 @@ export const actions = {
             consola.info('Pasted workflow parts', verifiedContent);
             // TODO: NXT-1153 Set the `position` parameter here to handle special cases
             const { nodeIds } = await pasteWorkflowParts({
-                projectId: state.activeWorkflow.projectId,
-                workflowId: getters.activeWorkflowId,
+                projectId,
+                workflowId: containerId,
                 content: JSON.stringify(verifiedContent),
-                position: getters.isWorkflowEmpty ? { x: 0, y: 0 } : null
+                position: isWorkflowEmpty ? { x: 0, y: 0 } : null
             });
 
             dispatch('selection/deselectAllObjects', null, { root: true });

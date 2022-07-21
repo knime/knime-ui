@@ -76,7 +76,7 @@ describe('workflow store', () => {
             let mock = jest.fn();
             let apiMocks = { [action]: mock };
             await loadStore({ apiMocks });
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
 
             store.dispatch(`workflow/${action}`);
 

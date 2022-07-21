@@ -41,8 +41,9 @@ export const actions = {
     
     /* See docs in API */
     openLayoutEditor({ state, getters }) {
-        let { activeWorkflowId } = getters;
-        openLayoutEditor({ projectId: state.activeWorkflow.projectId, workflowId: activeWorkflowId });
+        let { activeWorkflow: { projectId } } = state;
+        let { activeWorkflow: { info: { containerId } } } = state;
+        openLayoutEditor({ projectId, workflowId: containerId });
     }
 };
 

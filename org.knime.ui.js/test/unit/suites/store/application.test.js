@@ -14,7 +14,7 @@ describe('application store', () => {
         fetchApplicationState = jest.fn().mockReturnValue(applicationState);
         addEventListener = jest.fn();
         removeEventListener = jest.fn();
-        loadWorkflow = jest.fn().mockResolvedValue({});
+        loadWorkflow = jest.fn().mockResolvedValue({ workflow: { info: { containerId: '' } } });
 
         jest.doMock('~api', () => ({
             __esModule: true,
@@ -139,13 +139,17 @@ describe('application store', () => {
 
     describe('Workflow Lifecycle', () => {
         it('loads root workflow successfully', async () => {
-            loadWorkflow.mockResolvedValue({ dummy: true, workflow: { info: {}, nodes: [] }, snapshotId: 'snap' });
+            loadWorkflow.mockResolvedValue({
+                dummy: true,
+                workflow: { info: { containerId: 'root' }, nodes: [] },
+                snapshotId: 'snap'
+            });
             
             await store.dispatch('application/loadWorkflow', { projectId: 'wf1' });
 
             expect(loadWorkflow).toHaveBeenCalledWith({ workflowId: 'root', projectId: 'wf1' });
             expect(store.state.workflow.activeWorkflow).toStrictEqual({
-                info: {},
+                info: { containerId: 'root' },
                 nodes: [],
                 projectId: 'wf1'
             });
@@ -158,13 +162,13 @@ describe('application store', () => {
         });
 
         it('loads inner workflow successfully', async () => {
-            loadWorkflow.mockResolvedValue({ workflow: { dummy: true, info: {}, nodes: [] } });
+            loadWorkflow.mockResolvedValue({ workflow: { dummy: true, info: { containerId: 'root' }, nodes: [] } });
             await store.dispatch('application/loadWorkflow', { projectId: 'wf2', workflowId: 'root:0:123' });
 
             expect(loadWorkflow).toHaveBeenCalledWith({ workflowId: 'root:0:123', projectId: 'wf2' });
             expect(store.state.workflow.activeWorkflow).toStrictEqual({
                 dummy: true,
-                info: {},
+                info: { containerId: 'root' },
                 nodes: [],
                 projectId: 'wf2'
             });
@@ -175,7 +179,10 @@ describe('application store', () => {
         });
 
         it('unloads workflow when another one is loaded', async () => {
-            loadWorkflow.mockResolvedValue({ workflow: { dummy: true, info: {}, nodes: [] }, snapshotId: 'snap' });
+            loadWorkflow.mockResolvedValue({
+                workflow: { dummy: true, info: { containerId: 'root' }, nodes: [] },
+                snapshotId: 'snap'
+            });
             await store.dispatch('application/loadWorkflow', { projectId: 'wf1', workflowId: 'root:0:12' });
 
             await store.dispatch('application/unloadActiveWorkflow', { clearWorkflow: true });
