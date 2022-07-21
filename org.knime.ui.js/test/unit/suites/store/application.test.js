@@ -139,9 +139,11 @@ describe('application store', () => {
 
     describe('Workflow Lifecycle', () => {
         it('loads root workflow successfully', async () => {
-            loadWorkflow.mockResolvedValue({ dummy: true,
+            loadWorkflow.mockResolvedValue({
+                dummy: true,
                 workflow: { info: { containerId: 'root' }, nodes: [] },
-                snapshotId: 'snap' });
+                snapshotId: 'snap'
+            });
             
             await store.dispatch('application/loadWorkflow', { projectId: 'wf1' });
 
@@ -177,10 +179,10 @@ describe('application store', () => {
         });
 
         it('unloads workflow when another one is loaded', async () => {
-            loadWorkflow.mockResolvedValue({ workflow: { dummy: true,
-                info: { containerId: 'root' },
-                nodes: [] },
-            snapshotId: 'snap' });
+            loadWorkflow.mockResolvedValue({
+                workflow: { dummy: true, info: { containerId: 'root' }, nodes: [] },
+                snapshotId: 'snap'
+            });
             await store.dispatch('application/loadWorkflow', { projectId: 'wf1', workflowId: 'root:0:12' });
 
             await store.dispatch('application/unloadActiveWorkflow', { clearWorkflow: true });
