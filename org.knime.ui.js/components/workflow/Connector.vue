@@ -3,7 +3,6 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import { portBar, connectorPosition } from '~/mixins';
 import connectorPath from '~/util/connectorPath';
 import gsap from 'gsap';
-import { connectorWidth, highlightedConnectorWidth, selectedConnectorWidth } from '@/style/shapes';
 
 /**
  * A curved line, connecting one node's output with another node's input port.
@@ -70,20 +69,19 @@ export default {
             return connectorPath(x1 - this.xOffset, y1, x2, y2);
         },
         xOffset() {
-            // make sure the connection always starts visually behind the triangle
-            let xOffset = this.$shapes.connectorWidth;
-            // of offset for the round flow connections
+            // no offset for the round flow connections
             if (this.flowVariableConnection) {
-                xOffset = 0;
-            } else {
-                if (this.isHighlighted) {
-                    xOffset = this.$shapes.highlightedConnectorWidth;
-                }
-                if (this.isSelected || this.hover) {
-                    xOffset = this.$shapes.selectedConnectorWidth;
-                }
+                return 0;
             }
-            return xOffset;
+
+            // makes sure the connection always starts visually behind the triangle
+            if (this.isHighlighted) {
+                return this.$shapes.highlightedConnectorWidth;
+            }
+            if (this.isSelected || this.hover) {
+                return this.$shapes.selectedConnectorWidth;
+            }
+            return this.$shapes.connectorWidth;
         },
         isSelected() {
             return this.isConnectionSelected(this.id) && !this.isDragging;
