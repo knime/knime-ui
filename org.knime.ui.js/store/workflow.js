@@ -60,14 +60,6 @@ export const getters = {
     ...workflowEditor.getters,
     ...APinteractions.getters,
     
-    // NXT-962: make this getter obsolete and always include the workflowId in the data
-    activeWorkflowId({ activeWorkflow }) {
-        if (!activeWorkflow) {
-            return null;
-        }
-        return activeWorkflow?.info?.containerId || 'root';
-    },
-
     /* Workflow is empty if it doesn't contain nodes */
     isWorkflowEmpty({ activeWorkflow }) {
         let hasNodes = Boolean(Object.keys(activeWorkflow?.nodes).length);

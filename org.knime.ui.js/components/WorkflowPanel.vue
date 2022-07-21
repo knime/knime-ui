@@ -21,15 +21,15 @@ export default {
     },
     computed: {
         ...mapState('workflow', {
-            workflow: 'activeWorkflow'
+            workflow: 'activeWorkflow',
+            activeWorkflowId: state => state.activeWorkflow.info.containerId
         }),
         ...mapGetters('workflow', [
             'isLinked',
             'isInsideLinked',
             'insideLinkedType',
             'isWritable',
-            'isStreaming',
-            'activeWorkflowId'
+            'isStreaming'
         ]),
         ...mapGetters('canvas', ['screenToCanvasCoordinates'])
     },

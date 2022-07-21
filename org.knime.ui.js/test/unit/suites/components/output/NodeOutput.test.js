@@ -51,11 +51,13 @@ describe('NodeOutput.vue', () => {
             state: {
                 activeWorkflow: {
                     nodes: dummyNodes,
-                    state: {}
+                    state: {},
+                    info: {
+                        containerId: 'workflowId'
+                    }
                 }
             },
             getters: {
-                activeWorkflowId: jest.fn().mockReturnValue('workflowId'),
                 isDragging: jest.fn().mockReturnValue(false)
             },
             actions: {
