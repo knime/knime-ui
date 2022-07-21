@@ -21,12 +21,11 @@ describe('KnimeUI.vue', () => {
     });
 
     let $store, doShallowMountWithAsyncData, initializeApplication, wrapper, storeConfig, mocks, destroyApplication,
-        switchWorkflow, setHasClipboardSupport;
+        setHasClipboardSupport;
 
     beforeEach(() => {
         initializeApplication = jest.fn().mockResolvedValue();
         destroyApplication = jest.fn();
-        switchWorkflow = jest.fn();
         setHasClipboardSupport = jest.fn();
         Object.assign(navigator, { permissions: { query: () => ({ state: 'granted' }) } });
         jest.spyOn(navigator.permissions, 'query');
@@ -42,8 +41,7 @@ describe('KnimeUI.vue', () => {
                 },
                 actions: {
                     initializeApplication,
-                    destroyApplication,
-                    switchWorkflow
+                    destroyApplication
                 }
             },
             workflow: {

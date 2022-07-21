@@ -113,6 +113,7 @@ export const actions = {
 
             await Vue.nextTick();
             await Vue.nextTick();
+            // restore scroll and zoom if saved before
             dispatch('restoreUserState', newWorkflow);
         }
     },
