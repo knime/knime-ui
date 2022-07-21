@@ -257,18 +257,6 @@ export const actions = {
 
 export const getters = {
     /*
-        returns state that should be remembered and restored
-        upon switching workflows
-    */
-    toSave({ zoomFactor, getScrollContainerElement }) {
-        let el = getScrollContainerElement();
-        return {
-            zoomFactor,
-            scrollLeft: el.scrollLeft,
-            scrollTop: el.scrollTop
-        };
-    },
-    /*
         extends the workflowBounds such that the origin is always drawn
         space added to top and left, used to include the origin will be appended right and bottom as well,
         to center the workflow

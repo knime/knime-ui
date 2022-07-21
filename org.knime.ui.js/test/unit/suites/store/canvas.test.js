@@ -213,17 +213,6 @@ describe('canvas store', () => {
                 expect(scrollContainer.scrollTop).toBe(100);
             });
 
-            it('returns state to save', () => {
-                scrollContainer.scrollLeft = 50;
-                scrollContainer.scrollTop = 100;
-                store.state.canvas.zoomFactor = 2;
-                expect(store.getters['canvas/toSave']).toStrictEqual({
-                    zoomFactor: 2,
-                    scrollLeft: 50,
-                    scrollTop: 100
-                });
-            });
-
             it('has no saved state', () => {
                 store.commit('canvas/restoreState', null);
                 expect(store.state.canvas.zoomFactor).toBe(defaultZoomFactor);

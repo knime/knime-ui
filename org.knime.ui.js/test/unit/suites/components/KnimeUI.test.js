@@ -21,12 +21,11 @@ describe('KnimeUI.vue', () => {
     });
 
     let $store, doShallowMountWithAsyncData, initializeApplication, wrapper, storeConfig, mocks, destroyApplication,
-        restoreUserState, switchWorkflow, setHasClipboardSupport;
+        switchWorkflow, setHasClipboardSupport;
 
     beforeEach(() => {
         initializeApplication = jest.fn().mockResolvedValue();
         destroyApplication = jest.fn();
-        restoreUserState = jest.fn();
         switchWorkflow = jest.fn();
         setHasClipboardSupport = jest.fn();
         Object.assign(navigator, { permissions: { query: () => ({ state: 'granted' }) } });
@@ -38,27 +37,18 @@ describe('KnimeUI.vue', () => {
 
         storeConfig = {
             application: {
-                state: {
-                    activeProjectId: 'project1'
-                },
                 mutations: {
                     setHasClipboardSupport
                 },
                 actions: {
                     initializeApplication,
                     destroyApplication,
-                    restoreUserState,
                     switchWorkflow
                 }
             },
             workflow: {
                 state: {
                     activeWorkflow: null
-                },
-                getters: {
-                    activeWorkflowId() {
-                        return 'workflow1';
-                    }
                 }
             }
         };
@@ -140,14 +130,6 @@ describe('KnimeUI.vue', () => {
         expect(document.fonts.load).toHaveBeenCalledWith('400 1em Roboto Mono');
     });
 
-    it('calls restoreUserState on mounted after switchWorkflow was called', async () => {
-        await doShallowMountWithAsyncData();
-        await $store.dispatch('application/switchWorkflow');
-        await Vue.nextTick();
-
-        expect(restoreUserState).toHaveBeenCalled();
-    });
-
     it('destroys application', async () => {
         await doShallowMountWithAsyncData();
         await wrapper.destroy();
@@ -166,7 +148,7 @@ describe('KnimeUI.vue', () => {
                 Object.assign(navigator, { permissions: { query: () => ({ state }) } });
                 jest.spyOn(navigator.permissions, 'query');
                 await doShallowMountWithAsyncData();
-                expect(setHasClipboardSupport).toHaveBeenCalledWith({ activeProjectId: 'project1' }, expectedValue);
+                expect(setHasClipboardSupport).toHaveBeenCalledWith({}, expectedValue);
             }
         );
 
@@ -179,7 +161,7 @@ describe('KnimeUI.vue', () => {
             Object.assign(navigator, { clipboard: {} });
             
             await doShallowMountWithAsyncData();
-            expect(setHasClipboardSupport).toHaveBeenCalledWith({ activeProjectId: 'project1' }, false);
+            expect(setHasClipboardSupport).toHaveBeenCalledWith({}, false);
         });
 
         it('checks clipboard support for Firefox', async () => {
@@ -191,7 +173,7 @@ describe('KnimeUI.vue', () => {
             jest.spyOn(navigator.clipboard, 'readText');
 
             await doShallowMountWithAsyncData();
-            expect(setHasClipboardSupport).toHaveBeenCalledWith({ activeProjectId: 'project1' }, true);
+            expect(setHasClipboardSupport).toHaveBeenCalledWith({}, true);
         });
     });
 });

@@ -1,3 +1,4 @@
+import Vue from 'vue';
 import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '~api';
 import Fuse from 'fuse.js';
 
@@ -7,9 +8,6 @@ import Fuse from 'fuse.js';
 export const state = () => ({
     openProjects: [],
     activeProjectId: null,
-
-    /* Map of projectId -> workflowId -> savedState */
-    savedUserState: {},
 
     /* Map of port type id to port type */
     availablePortTypes: {},
@@ -30,14 +28,6 @@ export const mutations = {
     },
     setOpenProjects(state, projects) {
         state.openProjects = projects.map(({ projectId, name }) => ({ projectId, name }));
-
-        // add entry to savedUserState for each project
-        state.openProjects.forEach(({ projectId }) => {
-            state.savedUserState[projectId] = {};
-        });
-    },
-    saveUserState(state, { projectId, workflowId, stateToSave }) {
-        state.savedUserState[projectId][workflowId] = stateToSave;
     },
     setAvailablePortTypes(state, availablePortTypes) {
         state.availablePortTypes = availablePortTypes;
@@ -108,8 +98,6 @@ export const actions = {
     async switchWorkflow({ commit, dispatch, rootGetters }, newWorkflow) {
         // save user state like scroll and zoom
         if (rootGetters['workflow/activeWorkflowId']) {
-            dispatch('saveUserState');
-
             // unload current workflow
             dispatch('unloadActiveWorkflow', { clearWorkflow: !newWorkflow });
             commit('setActiveProjectId', null);
@@ -120,6 +108,10 @@ export const actions = {
             let { projectId, workflowId } = newWorkflow;
             commit('setActiveProjectId', projectId);
             await dispatch('loadWorkflow', { projectId, workflowId });
+
+            await Vue.nextTick();
+            await Vue.nextTick();
+            dispatch('restoreUserState', newWorkflow);
         }
     },
     async loadWorkflow({ commit, rootGetters }, { projectId, workflowId = 'root' }) {

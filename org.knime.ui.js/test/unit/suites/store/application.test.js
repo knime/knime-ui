@@ -58,7 +58,6 @@ describe('application store', () => {
         expect(store.state.application).toStrictEqual({
             openProjects: [],
             activeProjectId: null,
-            savedUserState: {},
             availablePortTypes: {},
             suggestedPortTypes: [],
             savedStates: [],
@@ -80,15 +79,6 @@ describe('application store', () => {
                 [{ projectId: 'foo', name: 'bar' },
                     { projectId: 'bee', name: 'gee' }]
             );
-        });
-
-        it('allows setting savedState', () => {
-            store.commit('application/setOpenProjects', [{ projectId: 'p1' }]);
-            store.commit('application/saveUserState', { projectId: 'p1', workflowId: 'root', stateToSave: 'SAFE' });
-
-            let savedState = store.state.application.savedUserState;
-
-            expect(savedState.p1.root).toBe('SAFE');
         });
 
         it('sets the available port types', () => {
@@ -315,6 +305,8 @@ describe('application store', () => {
             expect(dispatchSpy).toHaveBeenCalledWith('application/loadWorkflow',
                 { projectId: '1', workflowId: 'root' });
             expect(store.state.application.activeProjectId).toBe('1');
+            expect(dispatchSpy).toHaveBeenCalledWith('application/restoreUserState',
+                { projectId: '1', workflowId: 'root' });
         });
     });
 
