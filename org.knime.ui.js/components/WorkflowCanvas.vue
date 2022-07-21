@@ -22,16 +22,17 @@ export default {
         return {
             scrollTop: 0,
             scrollLeft: 0,
-            activeWorkflow: '',
+            activeWorkflowId: '',
             activeProject: ''
         };
     },
     computed: {
         ...mapGetters('canvas', ['contentBounds']),
-        ...mapGetters('workflow', ['isWorkflowEmpty', 'activeWorkflowId']),
+        ...mapGetters('workflow', ['isWorkflowEmpty']),
         ...mapState('nodeRepository', { isDraggingNodeFromRepository: 'isDraggingNode' }),
         ...mapState('canvas', ['zoomFactor']),
-        ...mapState('application', ['activeProjectId'])
+        ...mapState('application', ['activeProjectId']),
+        ...mapState('workflow', ['activeWorkflow'])
     },
     watch: {
         isWorkflowEmpty: {
@@ -56,14 +57,14 @@ export default {
             zoomFactor: this.zoomFactor,
             scrollTop: this.scrollTop,
             scrollLeft: this.scrollLeft,
-            workflow: this.activeWorkflow,
+            workflow: this.activeWorkflowId,
             project: this.activeProject
         };
 
         this.setSavedStates(savedState);
     },
     mounted() {
-        this.activeWorkflow = this.activeWorkflowId;
+        this.activeWorkflowId = this.activeWorkflow.info.containerId;
         this.activeProject = this.activeProjectId;
 
         if (this.isWorkflowEmpty) {

@@ -46,12 +46,16 @@ describe('Kanvas', () => {
                 }
             },
             workflow: {
+                state: {
+                    activeWorkflow: {
+                        info: {
+                            containerId: 'workflow1'
+                        }
+                    }
+                },
                 getters: {
                     isWorkflowEmpty() {
                         return isWorkflowEmpty;
-                    },
-                    activeWorkflowId() {
-                        return 'workflow1';
                     }
                 }
             },
