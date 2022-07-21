@@ -80,7 +80,7 @@ describe('workflow store: Editing', () => {
             let apiMocks = { addContainerNodePort: jest.fn() };
             await loadStore({ apiMocks });
 
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
             store.dispatch(`workflow/addContainerNodePort`, { nodeId: 'node x', side: 'input', typeId: 'porty' });
 
             expect(apiMocks.addContainerNodePort).toHaveBeenCalledWith(
@@ -93,7 +93,7 @@ describe('workflow store: Editing', () => {
             await loadStore({ apiMocks });
 
             const payload = { nodeId: 'node x', side: 'input', typeId: 'porty', portIndex: 1 };
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
             store.dispatch(`workflow/removeContainerNodePort`, payload);
 
             expect(apiMocks.removeContainerNodePort).toHaveBeenCalledWith(
@@ -291,7 +291,7 @@ describe('workflow store: Editing', () => {
             let connectNodes = jest.fn();
             let apiMocks = { connectNodes };
             await loadStore({ apiMocks });
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
 
             store.dispatch('workflow/connectNodes', {
                 sourceNode: 'source:1',
@@ -315,6 +315,9 @@ describe('workflow store: Editing', () => {
                 await loadStore({ apiMocks });
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'bar',
+                    info: {
+                        containerId: 'root'
+                    },
                     nodes: {
                         foo: {
                             id: 'foo',
@@ -401,6 +404,9 @@ describe('workflow store: Editing', () => {
                 await loadStore({ apiMocks });
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'bar',
+                    info: {
+                        containerId: 'root'
+                    },
                     nodes: {
                         foo: {
                             id: 'foo',
@@ -490,6 +496,7 @@ describe('workflow store: Editing', () => {
                 store.commit('application/setHasClipboardSupport', true);
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'my project',
+                    info: { containerId: 'root' },
                     nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } }
                 });
                 store.dispatch('selection/selectAllNodes');
@@ -516,6 +523,7 @@ describe('workflow store: Editing', () => {
                 // Test case with non-empty workflow
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'my project',
+                    info: { containerId: 'root' },
                     nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } },
                     workflowAnnotations: []
                 });
@@ -531,6 +539,7 @@ describe('workflow store: Editing', () => {
                 // Test case with empty workflow
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'my project',
+                    info: { containerId: 'root' },
                     nodes: {},
                     workflowAnnotations: []
                 });

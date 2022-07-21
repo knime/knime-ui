@@ -95,9 +95,11 @@ export const actions = {
      *   W O R K F L O W   L I F E C Y C L E
      */
 
-    async switchWorkflow({ commit, dispatch, rootGetters }, newWorkflow) {
+    async switchWorkflow({ commit, dispatch, rootState }, newWorkflow) {
         // save user state like scroll and zoom
-        if (rootGetters['workflow/activeWorkflowId']) {
+        if (rootState.workflow?.activeWorkflow) {
+            dispatch('saveUserState');
+
             // unload current workflow
             dispatch('unloadActiveWorkflow', { clearWorkflow: !newWorkflow });
             commit('setActiveProjectId', null);
@@ -114,7 +116,7 @@ export const actions = {
             dispatch('restoreUserState', newWorkflow);
         }
     },
-    async loadWorkflow({ commit, rootGetters }, { projectId, workflowId = 'root' }) {
+    async loadWorkflow({ commit, rootState }, { projectId, workflowId = 'root' }) {
         const project = await loadWorkflow({ projectId, workflowId });
         if (project) {
             commit('workflow/setActiveWorkflow', {
@@ -125,14 +127,13 @@ export const actions = {
             let snapshotId = project.snapshotId;
             commit('workflow/setActiveSnapshotId', snapshotId, { root: true });
 
-            // NXT-962: make this getter obsolete and always include the workflowId in the data
-            let workflowId = rootGetters['workflow/activeWorkflowId'];
+            let workflowId = rootState.workflow.activeWorkflow?.info.containerId || null;
             addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
         } else {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    unloadActiveWorkflow({ commit, rootGetters, rootState }, { clearWorkflow }) {
+    unloadActiveWorkflow({ commit, rootState }, { clearWorkflow }) {
         let activeWorkflow = rootState.workflow.activeWorkflow;
 
         // nothing to do (no tabs open)
@@ -143,7 +144,7 @@ export const actions = {
         // clean up
         let { projectId } = activeWorkflow;
         let { activeSnapshotId: snapshotId } = rootState.workflow;
-        let workflowId = rootGetters['workflow/activeWorkflowId'];
+        let workflowId = rootState.workflow.activeWorkflow.info.containerId;
 
         removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
        

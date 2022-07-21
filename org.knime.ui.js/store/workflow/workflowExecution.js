@@ -9,23 +9,23 @@ export const state = { };
 export const mutations = {};
 
 export const actions = {
-    changeNodeState({ state, getters, rootGetters }, { action, nodes }) {
+    changeNodeState({ state, rootGetters }, { action, nodes }) {
         let { activeWorkflow: { projectId } } = state;
-        let { activeWorkflowId } = getters;
+        let { activeWorkflow: { info: { containerId } } } = state;
 
         if (Array.isArray(nodes)) {
             // act upon a list of nodes
-            changeNodeState({ projectId, nodeIds: nodes, action, workflowId: activeWorkflowId });
+            changeNodeState({ projectId, nodeIds: nodes, action, workflowId: containerId });
         } else if (nodes === 'all') {
             // act upon entire workflow
-            changeNodeState({ projectId, action, workflowId: activeWorkflowId });
+            changeNodeState({ projectId, action, workflowId: containerId });
         } else if (nodes === 'selected') {
             // act upon selected nodes
             changeNodeState({
                 projectId,
                 nodeIds: rootGetters['selection/selectedNodeIds'],
                 action,
-                workflowId: activeWorkflowId
+                workflowId: containerId
             });
         } else {
             throw new TypeError("'nodes' has to be of type 'all' | 'selected' | Array<nodeId>]");
@@ -33,11 +33,11 @@ export const actions = {
     },
     changeLoopState({ state, getters }, { action, nodeId }) {
         let { activeWorkflow: { projectId } } = state;
-        let { activeWorkflowId: workflowId } = getters;
+        let { activeWorkflow: { info: { containerId } } } = state;
 
         changeLoopState({
             projectId,
-            workflowId,
+            workflowId: containerId,
             nodeId,
             action
         });

@@ -55,6 +55,7 @@ import java.util.function.Supplier;
 
 import javax.inject.Inject;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.di.extensions.EventTopic;
@@ -157,9 +158,13 @@ public final class PerspectiveSwitchAddon {
         });
         KnimeBrowserView.addActivatedCallback(KnimeBrowserView::setUrl);
         switchToWebUITheme();
-        // fixes a drag'n'drop issue on windows; doesn't have an effect on linux or mac
-        // (see NXTEXT-137)
-        System.setProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP, "false");
+        if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
+            // Fixes a drag'n'drop issue on Windows, see NXT-1151.
+            // Doesn't have an effect on Linux.
+            // Must be 'true' on Mac (see AP-19241).
+            // Possibly to be removed via AP-19243.
+            System.setProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP, "false");
+        }
     }
 
     private void onSwitchToJavaUI() {
@@ -173,7 +178,10 @@ public final class PerspectiveSwitchAddon {
         // is write protected)
         EclipseUIStateUtil.getOpenWorkflowEditors(m_modelService, m_app)
             .forEach(WorkflowEditor::updateEditorBackgroundColor);
-        System.clearProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
+
+        if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
+            System.clearProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
+        }
     }
 
     private void callOnKnimeBrowserView(final Consumer<KnimeBrowserView> call) {
