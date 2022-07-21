@@ -110,7 +110,7 @@ describe('Connector.vue', () => {
         it('draws a path between table ports', () => {
             connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
-            expect(connectorPath).toHaveBeenCalledWith(38.5, 7.5, 7.5, 40.5);
+            expect(connectorPath).toHaveBeenCalledWith(37.5, 7.5, 7.5, 40.5);
             expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
@@ -118,7 +118,7 @@ describe('Connector.vue', () => {
             connectorPath.mockReturnValueOnce('that path');
             portMock.type = 'foo';
             doShallowMount();
-            expect(connectorPath).toHaveBeenCalledWith(38.5, 7.5, 7.5, 40.5);
+            expect(connectorPath).toHaveBeenCalledWith(37.5, 7.5, 7.5, 40.5);
             expect(wrapper.find('path').attributes().d).toBe('that path');
         });
     });
@@ -149,7 +149,9 @@ describe('Connector.vue', () => {
                 },
                 selection: {
                     getters: {
-                        isConnectionSelected: () => jest.fn()
+                        isConnectionSelected: () => jest.fn(),
+                        singleSelectedNode: () => jest.fn(),
+                        isNodeSelected: () => jest.fn()
                     },
                     actions: {
                         selectConnection: jest.fn(),
@@ -164,6 +166,10 @@ describe('Connector.vue', () => {
                 mocks = { $shapes, $colors, $store };
                 wrapper = shallowMount(Connector, { propsData, mocks });
             };
+        });
+
+        afterEach(() => {
+            connectorPath.mockReset();
         });
 
         it('draws grab cursor by default', () => {
@@ -251,7 +257,9 @@ describe('Connector.vue', () => {
                 },
                 selection: {
                     getters: {
-                        isConnectionSelected: () => jest.fn()
+                        isConnectionSelected: () => jest.fn(),
+                        singleSelectedNode: () => jest.fn(),
+                        isNodeSelected: () => jest.fn()
                     }
                 }
             });
@@ -301,7 +309,7 @@ describe('Connector.vue', () => {
             connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
 
-            expect(connectorPath).toHaveBeenCalledWith(32, -4.5, 7.5, 40.5);
+            expect(connectorPath).toHaveBeenCalledWith(31, -4.5, 7.5, 40.5);
             expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
@@ -310,11 +318,18 @@ describe('Connector.vue', () => {
             connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
 
-            expect(connectorPath).toHaveBeenCalledWith(32, -4.5, 7.5, 40.5);
+            expect(connectorPath).toHaveBeenCalledWith(31, -4.5, 7.5, 40.5);
             expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
-        it('applies styles for flow variable ports', () => {
+        it('does not add any style classes for regular connections', () => {
+            doShallowMount();
+            const classes = wrapper.findAll('path').at(1).classes();
+            expect(classes.includes('highlighted')).toBe(false);
+            expect(classes.includes('flow-variable')).toBe(false);
+        });
+
+        it('adds class for flow variable ports', () => {
             mocks = { $shapes, $colors, $store };
             wrapper = shallowMount(Connector, {
                 propsData: {
@@ -324,16 +339,26 @@ describe('Connector.vue', () => {
                 mocks
             });
 
-            const { 'stroke-width': strokeWidth, stroke } = wrapper.findAll('path').at(1).attributes();
-            expect(parseFloat(strokeWidth)).toBe($shapes.connectorWidth);
-            expect(stroke).toBe($colors.connectorColors.flowVariable);
+            const classes = wrapper.findAll('path').at(1).classes();
+            expect(classes.includes('flow-variable')).toBe(true);
         });
 
-        it('applies styles for other ports', () => {
+        it('highlights connection if source node is selected', () => {
+            storeConfig.selection.getters.singleSelectedNode = () => jest.fn().mockReturnValue('root:1');
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn()
+                .mockImplementation(node => node === 'root:1');
             doShallowMount();
-            const { 'stroke-width': strokeWidth, stroke } = wrapper.findAll('path').at(1).attributes();
-            expect(parseFloat(strokeWidth)).toBe($shapes.connectorWidth);
-            expect(stroke).toBe($colors.connectorColors.default);
+            const classes = wrapper.findAll('path').at(1).classes();
+            expect(classes.includes('highlighted')).toBe(true);
+        });
+
+        it('highlights connection if destination node is selected', () => {
+            storeConfig.selection.getters.singleSelectedNode = () => jest.fn().mockReturnValue('root:2');
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn()
+                .mockImplementation(node => node === 'root:2');
+            doShallowMount();
+            const classes = wrapper.findAll('path').at(1).classes();
+            expect(classes.includes('highlighted')).toBe(true);
         });
     });
 
@@ -382,7 +407,9 @@ describe('Connector.vue', () => {
                     },
                     selection: {
                         getters: {
-                            isConnectionSelected: () => jest.fn()
+                            isConnectionSelected: () => jest.fn(),
+                            singleSelectedNode: () => jest.fn(),
+                            isNodeSelected: () => jest.fn()
                         }
                     }
                 });
@@ -391,11 +418,15 @@ describe('Connector.vue', () => {
             };
         });
 
+        afterEach(() => {
+            connectorPath.mockReset();
+        });
+
         it('draws a path between table ports', () => {
             connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
 
-            expect(connectorPath).toHaveBeenCalledWith(104.5, 651, 697.5, 960);
+            expect(connectorPath).toHaveBeenCalledWith(103.5, 651, 697.5, 960);
             expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
@@ -404,7 +435,7 @@ describe('Connector.vue', () => {
             connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
 
-            expect(connectorPath).toHaveBeenCalledWith(104.5, 651, 697.5, 960);
+            expect(connectorPath).toHaveBeenCalledWith(103.5, 651, 697.5, 960);
             expect(wrapper.find('path').attributes().d).toBe('that path');
         });
     });
@@ -435,7 +466,9 @@ describe('Connector.vue', () => {
                 },
                 selection: {
                     getters: {
-                        isConnectionSelected: () => jest.fn()
+                        isConnectionSelected: () => jest.fn(),
+                        singleSelectedNode: () => jest.fn(),
+                        isNodeSelected: () => jest.fn()
                     }
                 }
             };
@@ -445,6 +478,10 @@ describe('Connector.vue', () => {
                 mocks = { $shapes, $colors, $store };
                 wrapper = shallowMount(Connector, { propsData, mocks });
             };
+        });
+
+        afterEach(() => {
+            connectorPath.mockReset();
         });
 
         it('draw connector forward', () => {
@@ -460,7 +497,7 @@ describe('Connector.vue', () => {
             connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
 
-            expect(connectorPath).toHaveBeenCalledWith(36.5, 16, 32, 16);
+            expect(connectorPath).toHaveBeenCalledWith(35.5, 16, 32, 16);
             expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
@@ -477,7 +514,7 @@ describe('Connector.vue', () => {
             connectorPath.mockReturnValueOnce('that path');
             doShallowMount();
 
-            expect(connectorPath).toHaveBeenCalledWith(0, 16, 27.5, 16);
+            expect(connectorPath).toHaveBeenCalledWith(-1, 16, 27.5, 16);
             expect(wrapper.find('path').attributes().d).toBe('that path');
         });
     });
@@ -510,7 +547,9 @@ describe('Connector.vue', () => {
                 },
                 selection: {
                     getters: {
-                        isConnectionSelected: () => jest.fn()
+                        isConnectionSelected: () => jest.fn(),
+                        singleSelectedNode: () => jest.fn(),
+                        isNodeSelected: () => jest.fn()
                     },
                     actions: {
                         selectConnection: jest.fn(),
@@ -610,6 +649,105 @@ describe('Connector.vue', () => {
             await Vue.nextTick();
 
             expect(wrapper.vm.suggestDelete).toBeTruthy();
+        });
+    });
+
+    describe('add x offset for triangle ports', () => {
+        let doShallowMount;
+
+        beforeEach(() => {
+            storeConfig = {
+                workflow: {
+                    ...workflowStoreConfig,
+                    state: {
+                        activeWorkflow: {
+                            nodes: {
+                                'root:1': { position: { x: 0, y: 0 }, outPorts: [portMock, portMock] },
+                                'root:2': { position: { x: 32, y: 0 }, inPorts: [portMock, portMock] }
+                            }
+                        }
+                    },
+                    getters: {
+                        isWritable() {
+                            return true;
+                        },
+                        isDragging() {
+                            return false;
+                        }
+                    }
+                },
+                selection: {
+                    getters: {
+                        isConnectionSelected: () => jest.fn(),
+                        singleSelectedNode: () => jest.fn(),
+                        isNodeSelected: () => jest.fn()
+                    }
+                }
+            };
+
+            doShallowMount = () => {
+                $store = mockVuexStore(storeConfig);
+                mocks = { $shapes, $colors, $store };
+                wrapper = shallowMount(Connector, { propsData, mocks });
+            };
+        });
+
+        afterEach(() => {
+            connectorPath.mockReset();
+        });
+
+        it('sets no x offset for flow variable ports', () => {
+            connectorPath.mockReturnValueOnce('that path');
+            propsData.flowVariableConnection = true;
+            doShallowMount();
+
+            expect(connectorPath).toHaveBeenCalledWith(32, -4.5, 27.5, 16);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
+        });
+
+        it('sets x offset to -1 for regular connections', () => {
+            connectorPath.mockReturnValueOnce('that path');
+            doShallowMount();
+
+            expect(connectorPath).toHaveBeenCalledWith(31, -4.5, 27.5, 16);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
+        });
+
+        it('sets x offset to -2 for highlighted connections', () => {
+            storeConfig.selection.getters.singleSelectedNode = () => jest.fn().mockReturnValue('root:1');
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn()
+                .mockImplementation(node => node === 'root:1');
+            connectorPath.mockReturnValueOnce('that path');
+            doShallowMount();
+
+            expect(connectorPath).toHaveBeenCalledWith(30, -4.5, 27.5, 16);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
+        });
+
+        it('sets x offset to -3 for hovered connections', async () => {
+            connectorPath.mockReturnValue('that path');
+            doShallowMount();
+
+            // non hover
+            expect(connectorPath).toHaveBeenCalledWith(31, -4.5, 27.5, 16);
+
+            wrapper.find('path.hover-area').trigger('mouseenter');
+            await Vue.nextTick();
+
+            // hover
+            expect(connectorPath).toHaveBeenCalledTimes(2);
+            expect(connectorPath).toHaveBeenLastCalledWith(29, -4.5, 27.5, 16);
+
+            expect(wrapper.find('path').attributes().d).toBe('that path');
+        });
+
+        it('sets x offset to -3 for selected connections', () => {
+            storeConfig.selection.getters.isConnectionSelected = () => jest.fn().mockReturnValue(true);
+            connectorPath.mockReturnValueOnce('that path');
+            doShallowMount();
+
+            expect(connectorPath).toHaveBeenCalledWith(29, -4.5, 27.5, 16);
+            expect(wrapper.find('path').attributes().d).toBe('that path');
         });
     });
 });
