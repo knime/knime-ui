@@ -1,8 +1,9 @@
 <script>
-import { mixin as clickaway } from 'vue-clickaway2';
 import { mapState, mapGetters } from 'vuex';
-import throttle from 'raf-throttle';
 
+import { mixin as clickaway } from 'vue-clickaway2';
+import { escapeStack } from '~/mixins/escapeStack';
+import throttle from 'raf-throttle';
 /*
  * The FloatingMenu component is a container that can be sticked to a position on the canvas,
  * but is shown on top of the whole application.
@@ -20,7 +21,14 @@ import throttle from 'raf-throttle';
  */
 
 export default {
-    mixins: [clickaway],
+    mixins: [
+        clickaway,
+        escapeStack({
+            onEscape() {
+                this.$emit('menu-close');
+            }
+        })
+    ],
     props: {
         /**
          * Whether the menu should be prevented from moving out of sight
@@ -170,7 +178,6 @@ export default {
       top: `${absolutePosition.top}px`
     }"
     @focusout.stop="onFocusOut"
-    @keydown.esc.stop.prevent="$emit('menu-close')"
     @keydown.tab.stop.prevent
   >
     <slot />

@@ -2,6 +2,7 @@
 import Port from '~/components/workflow/Port';
 import ActionButton from '~/components/workflow/ActionButton';
 import DeleteIcon from '~/assets/delete.svg?inline';
+import { escapeStack } from '~/mixins/escapeStack';
 
 export const portActionButtonSize = 20;
 const portActionsGapSize = 5;
@@ -12,6 +13,13 @@ export default {
         ActionButton,
         DeleteIcon
     },
+    mixins: [
+        escapeStack({
+            onEscape() {
+                this.$emit('close');
+            }
+        })
+    ],
     props: {
         port: {
             type: Object,

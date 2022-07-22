@@ -1,10 +1,12 @@
 <script>
 import { mapState, mapActions, mapGetters } from 'vuex';
+
 import CloseIcon from '~/assets/cancel.svg?inline';
 import Description from '~/webapps-common/ui/components/Description';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
-
 import ExternalResourcesList from '~/components/common/ExternalResourcesList';
+
+import { escapeStack } from '~/mixins/escapeStack';
 
 export default {
     components: {
@@ -13,6 +15,13 @@ export default {
         NodeFeatureList,
         ExternalResourcesList
     },
+    mixins: [
+        escapeStack({
+            onEscape() {
+                this.closeDescriptionPanel();
+            }
+        })
+    ],
     computed: {
         ...mapState('nodeRepository', ['selectedNode', 'nodeDescriptionObject']),
         ...mapGetters('nodeRepository', ['selectedNodeIsVisible'])
@@ -28,17 +37,8 @@ export default {
             }
         }
     },
-    mounted() {
-        this.$root.$on('escape-pressed', this.onEscape);
-    },
-    beforeDestroy() {
-        this.$root.$off('escape-pressed', this.onEscape);
-    },
     methods: {
-        ...mapActions('nodeRepository', ['getNodeDescription', 'closeDescriptionPanel']),
-        onEscape() {
-            this.closeDescriptionPanel();
-        }
+        ...mapActions('nodeRepository', ['getNodeDescription', 'closeDescriptionPanel'])
     }
 };
 </script>
