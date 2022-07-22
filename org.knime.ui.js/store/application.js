@@ -1,5 +1,5 @@
 import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '~api';
-import Fuse from 'fuse.js';
+import { makeTypeSearch } from '~/util/fuzzyPortTypeSearch';
 
 /*
  * This store provides global application logic
@@ -180,22 +180,9 @@ export const actions = {
 };
 
 export const getters = {
-    portTypeSearch({ availablePortTypes }) {
-        let searchItems = Object.entries(availablePortTypes)
-            .filter(([_, { hidden }]) => !hidden) // don't index hidden port types
-            .map(([typeId, { name }]) => ({
-                typeId,
-                name
-            }));
-
-        let fuzzySearch = new Fuse(searchItems, {
-            keys: ['name'],
-            shouldSort: true,
-            isCaseSensitive: false,
-            minMatchCharLength: 0
-        });
-
-        return fuzzySearch;
+    searchAllPortTypes({ availablePortTypes }) {
+        let allTypeIds = Object.keys(availablePortTypes);
+        return makeTypeSearch({ typeIds: allTypeIds, installedPortTypes: availablePortTypes });
     },
     
     activeProjectName({ openProjects, activeProjectId }) {

@@ -1,6 +1,11 @@
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
+import { makeTypeSearch as makeTypeSearchMock } from '~/util/fuzzyPortTypeSearch';
+
+jest.mock('~/util/fuzzyPortTypeSearch', () => ({
+    makeTypeSearch: jest.fn().mockReturnValue('searchFunction')
+}));
 
 describe('application store', () => {
     let store, storeConfig, fetchApplicationState, localVue, addEventListener, removeEventListener, dispatchSpy,
@@ -221,14 +226,13 @@ describe('application store', () => {
             }
         };
         store.commit('application/setAvailablePortTypes', portTypes);
+        
+        expect(store.getters['application/searchAllPortTypes']).toBe('searchFunction');
 
-        let portTypeSearch = store.getters['application/portTypeSearch'];
-        expect(portTypeSearch.search('flow').map(result => result.item))
-            .toStrictEqual([{ typeId: 'FlowVariable', name: 'Flow Variable' }]);
-        expect(portTypeSearch.search('data').map(result => result.item))
-            .toStrictEqual([{ typeId: 'BufferedTable', name: 'Data' }]);
-        expect(portTypeSearch.search('hidden').map(result => result.item))
-            .toStrictEqual([]);
+        expect(makeTypeSearchMock).toHaveBeenCalledWith({
+            typeIds: ['BufferedTable', 'FlowVariable', 'Hidden'],
+            installedPortTypes: portTypes
+        });
     });
 
     describe('set active workflow', () => {
