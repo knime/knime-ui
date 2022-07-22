@@ -257,7 +257,7 @@ export const actions = {
         }
     },
     
-    async pasteWorkflowParts({ state, getters }) {
+    async pasteWorkflowParts({ state, getters, dispatch }) {
         const { activeWorkflow: { projectId } } = state;
         const { activeWorkflow: { info: { containerId } } } = state;
         const { isWorkflowEmpty } = getters;
@@ -267,12 +267,15 @@ export const actions = {
             const verifiedContent = JSON.parse(clipboardContent);
             consola.info('Pasted workflow parts', verifiedContent);
             // TODO: NXT-1153 Set the `position` parameter here to handle special cases
-            pasteWorkflowParts({
+            const { nodeIds } = await pasteWorkflowParts({
                 projectId,
                 workflowId: containerId,
                 content: JSON.stringify(verifiedContent),
                 position: isWorkflowEmpty ? { x: 0, y: 0 } : null
             });
+
+            dispatch('selection/deselectAllObjects', null, { root: true });
+            dispatch('selection/selectNodes', nodeIds, { root: true });
         } catch (error) {
             consola.info('Could not read form clipboard. Maybe the user did not permit it?');
         }
