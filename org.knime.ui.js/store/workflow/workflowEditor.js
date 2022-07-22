@@ -1,6 +1,6 @@
 import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameContainerNode, collapseToContainer,
-    addContainerNodePort, expandContainerNode, removeContainerNodePort, copyOrCutWorkflowParts,
-    pasteWorkflowParts } from '~api';
+    addContainerNodePort, addDynamicNodePort, removeContainerNodePort, removeDynamicNodePort, expandContainerNode,
+    copyOrCutWorkflowParts, pasteWorkflowParts } from '~api';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -28,19 +28,43 @@ export const mutations = {
     }
 };
 
+/* automatically includes projectId and workflowId */
+export const wrapAPI = (apiCall) =>
+    // eslint-disable-next-line semi, implicit-arrow-linebreak
+    function ({ state: { activeWorkflow } }, apiArgs = {}) {
+        let projectId = activeWorkflow.projectId;
+        let workflowId = activeWorkflow.info.containerId;
+
+        return apiCall({ projectId, workflowId, ...apiArgs });
+    };
+
 export const actions = {
-    /* See docs in API */
-    undo({ state }) {
-        const { activeWorkflow: { projectId } } = state;
-        const { activeWorkflow: { info: { containerId } } } = state;
-        undo({ projectId, workflowId: containerId });
+    openNameEditor({ commit }, nodeId) {
+        commit('setNameEditorNodeId', nodeId);
     },
-    /* See docs in API */
-    redo({ state }) {
-        const { activeWorkflow: { projectId } } = state;
-        const { activeWorkflow: { info: { containerId } } } = state;
-        redo({ projectId, workflowId: containerId });
+    closeNameEditor({ commit }) {
+        commit('setNameEditorNodeId', null);
     },
+
+    /* See docs in API */
+    undo:
+        wrapAPI(undo),
+    redo:
+        wrapAPI(redo),
+    connectNodes:
+        wrapAPI(connectNodes),
+    addNode:
+        wrapAPI(addNode),
+    addContainerNodePort:
+        wrapAPI(addContainerNodePort),
+    removeContainerNodePort:
+        wrapAPI(removeContainerNodePort),
+    addDynamicNodePort:
+        wrapAPI(addDynamicNodePort),
+    removeDynamicNodePort:
+        wrapAPI(removeDynamicNodePort),
+    renameContainerNode:
+        wrapAPI(renameContainerNode),
 
     /**
      * Calls the API to save the position of the nodes after the move is over
@@ -73,28 +97,6 @@ export const actions = {
         }
     },
 
-    async connectNodes({ state }, { sourceNode, destNode, sourcePort, destPort }) {
-        const { activeWorkflow: { projectId } } = state;
-        const { activeWorkflow: { info: { containerId } } } = state;
-        await connectNodes({
-            projectId,
-            workflowId: containerId,
-            sourceNode,
-            sourcePort,
-            destNode,
-            destPort
-        });
-    },
-    async addNode({ state }, { position: [x, y], nodeFactory }) {
-        const { activeWorkflow: { projectId } } = state;
-        const { activeWorkflow: { info: { containerId } } } = state;
-        await addNode({
-            projectId,
-            workflowId: containerId,
-            position: { x, y },
-            nodeFactory
-        });
-    },
     async collapseToContainer({ state, rootGetters, dispatch }, { containerType }) {
         const { activeWorkflow: { projectId } } = state;
         const { activeWorkflow: { info: { containerId } } } = state;
@@ -193,42 +195,6 @@ export const actions = {
         }
     },
 
-    /**
-     * Renames a container (metanode or component).
-     * @param {Object} context - store context
-     * @param {string} params.nodeId - container node id
-     * @param {string} params.name - new new
-     * @returns {void} - nothing to return
-     */
-    renameContainerNode({ state }, { nodeId, name }) {
-        const { activeWorkflow: { projectId } } = state;
-        const { activeWorkflow: { info: { containerId } } } = state;
-        renameContainerNode({
-            nodeId,
-            name,
-            projectId,
-            workflowId: containerId
-        });
-    },
-    openNameEditor({ commit }, nodeId) {
-        commit('setNameEditorNodeId', nodeId);
-    },
-    closeNameEditor({ commit }) {
-        commit('setNameEditorNodeId', null);
-    },
-
-    addContainerNodePort({ state }, { nodeId, side, typeId }) {
-        const { activeWorkflow: { projectId } } = state;
-        const { activeWorkflow: { info: { containerId } } } = state;
-        addContainerNodePort({ projectId, workflowId: containerId, nodeId, side, typeId });
-    },
-
-    removeContainerNodePort({ state, getters }, { nodeId, side, typeId, portIndex }) {
-        const { activeWorkflow: { projectId } } = state;
-        const { activeWorkflow: { info: { containerId } } } = state;
-        removeContainerNodePort({ projectId, workflowId: containerId, nodeId, side, typeId, portIndex });
-    },
-
     async copyOrCutWorkflowParts({ state, rootGetters, dispatch }, { command }) {
         if (!['copy', 'cut'].includes(command)) {
             throw new Error("command has to be 'copy' or 'cut'");
@@ -283,6 +249,7 @@ export const actions = {
 };
 
 export const getters = {
+    // TODO: this getter takes to much computation time while moving and is wrong
     isDragging({ movePreviewDelta }) {
         return movePreviewDelta.x !== 0 || movePreviewDelta.y !== 0;
     }

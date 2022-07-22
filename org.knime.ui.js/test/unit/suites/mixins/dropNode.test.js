@@ -102,10 +102,10 @@ describe('Drop Node Mixin', () => {
 
         expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), {
             nodeFactory: { className: 'sampleClassName' },
-            position: [
-                -10 + dummyEvent.clientX - $shapes.nodeSize / 2,
-                -10 + dummyEvent.clientY - $shapes.nodeSize / 2
-            ]
+            position: {
+                x: -10 + dummyEvent.clientX - $shapes.nodeSize / 2,
+                y: -10 + dummyEvent.clientY - $shapes.nodeSize / 2
+            }
         });
 
         expect(Event.prototype.preventDefault).toHaveBeenCalledTimes(1);

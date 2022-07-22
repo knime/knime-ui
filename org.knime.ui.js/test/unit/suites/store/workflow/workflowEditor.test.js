@@ -6,6 +6,8 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
+import { wrapAPI } from '~/store/workflow/workflowEditor';
+
 describe('workflow store: Editing', () => {
     let store, localVue, loadStore, moveObjectsMock, deleteObjectsMock;
 
@@ -76,6 +78,34 @@ describe('workflow store: Editing', () => {
     });
 
     describe('actions', () => {
+        test('wrap api call: automatically include projectId and workflowId', () => {
+            let apiCall = jest.fn();
+
+            let wrappedCall = wrapAPI(apiCall);
+
+            let vuexContext = {
+                state: {
+                    activeWorkflow: {
+                        projectId: 'p1',
+                        info: { containerId: 'w1' }
+                    }
+                }
+            };
+
+            wrappedCall(vuexContext);
+            expect(apiCall).toHaveBeenCalledWith({
+                projectId: 'p1',
+                workflowId: 'w1'
+            });
+
+            wrappedCall(vuexContext, { arg1: 'value' });
+            expect(apiCall).toHaveBeenCalledWith({
+                projectId: 'p1',
+                workflowId: 'w1',
+                arg1: 'value'
+            });
+        });
+
         it('can add ContainerNode Ports', async () => {
             let apiMocks = { addContainerNodePort: jest.fn() };
             await loadStore({ apiMocks });
