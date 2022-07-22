@@ -1,11 +1,10 @@
 <script>
 import NodeNameText from '~/components/workflow/NodeNameText';
 
-const forbiddenCharacters = /[*?#:"<>%~|/\\]/g;
 
 /**
- * Inline editor for the node name. Emits 'save' and 'cancel' events. Implements v-model pattern. On input it might
- * emit 'invalidCharacter' if the input matches given 'pattern' prop.
+ * Inline editor for the node name. Emits 'save' and 'cancel' events. Implements v-model pattern. On input, it might
+ * emit 'invalidCharacter' if the input matches forbiddenCharacters.
  */
 export default {
     components: { NodeNameText },
@@ -23,6 +22,10 @@ export default {
         startHeight: {
             type: Number,
             default: null
+        },
+        invalidCharacters: {
+            type: RegExp,
+            default: null
         }
     },
     mounted() {
@@ -39,13 +42,16 @@ export default {
         onInput(event, sizeChangeCallback) {
             let value = event.target.value;
             value = value.replace(/(\r\n|\n|\r)/gm, ''); // remove all new lines
-            
+
             // remove invalid characters here as well, they could have been sneaked in via paste or drop
-            value = value.replace(forbiddenCharacters, '');
+            if (this.invalidCharacters && this.invalidCharacters.test(value)) {
+                this.$emit('invalid-input');
+                value = value.replace(this.invalidCharacters, '');
+            }
 
             this.$refs.textarea.value = value;
             this.$refs.ghost.innerText = value;
-            
+
             // trigger callback to update size on the autosize wrapper
             sizeChangeCallback();
 
@@ -56,8 +62,8 @@ export default {
         },
         onKeyDown(event) {
             // prevent inserting invalid characters
-            if (this.pattern && this.pattern.source.includes(event.key.toLowerCase())) {
-                this.$emit('invalidCharacter');
+            if (this.invalidCharacters && this.invalidCharacters.test(event.key)) {
+                this.$emit('invalid-input');
                 event.preventDefault();
             }
         },
@@ -80,7 +86,7 @@ export default {
                 this.$shapes.maxNodeNameWidth
             );
             textarea.style.width = `${width}px`;
-            
+
             // height
             textarea.style.height = 'auto';
             textarea.style.height = `${textarea.scrollHeight}px`;

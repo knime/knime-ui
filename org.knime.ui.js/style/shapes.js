@@ -28,6 +28,8 @@ export const nodeSelectionPadding = [nodeSelectionPaddingTop, nodeSelectionPaddi
 
 export const maxNodeNameWidth = (nodeSelectionPaddingLeft + nodeSize + nodeSelectionPaddingRight) * 1.7; // 170px
 
+export const nodeWidthWithPadding = nodeSelectionPaddingLeft + nodeSelectionPaddingRight + nodeSize;
+
 export const nodeNameEditorMinWidth = 10;
 
 // Margins including 3 NodeActionButtons. If more that 3 Buttons are present,
