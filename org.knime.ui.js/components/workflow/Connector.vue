@@ -78,12 +78,12 @@ export default {
             if (this.isHighlighted) {
                 return this.$shapes.highlightedConnectorWidth;
             }
-            if (this.isSelected || this.hover) {
+            if (this.applySelectedStyle || this.hover) {
                 return this.$shapes.selectedConnectorWidth;
             }
             return this.$shapes.connectorWidth;
         },
-        isSelected() {
+        applySelectedStyle() {
             return this.isConnectionSelected(this.id) && !this.isDragging;
         },
         isHighlighted() {
@@ -177,7 +177,7 @@ export default {
         'read-only': !isWorkflowWritable,
         highlighted: isHighlighted,
         dashed: streaming,
-        selected: isConnectionSelected(id) && !isDragging
+        selected: applySelectedStyle
       }"
       fill="none"
     />
