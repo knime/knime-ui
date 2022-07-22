@@ -227,7 +227,7 @@ path:not(.hover-area) {
     stroke: var(--knime-coral);
 
     &.selected {
-      stroke: green;
+      stroke: var(--knime-cornflower);
     }
 
     &.highlighted {
