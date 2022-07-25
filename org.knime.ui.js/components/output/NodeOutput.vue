@@ -6,6 +6,7 @@ import PortTabs from '~/components/output/PortTabs';
 import Button from '~/webapps-common/ui/components/Button';
 import PlayIcon from '~/assets/execute.svg?inline';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
+import { getPortView } from '~api';
 
 const needsExecutionMessage = 'To show the output table, please execute the selected node.';
 const outputAvailableAfterExecutionMessage = 'Output is available after execution.';
@@ -26,7 +27,9 @@ export default {
     data() {
         return {
             selectedPortIndex: null,
-            portViewerState: null
+            portViewerState: null,
+            componentId: null,
+            initialData: null
         };
     },
     computed: {
@@ -145,6 +148,11 @@ export default {
             };
         },
 
+        // Combines node and port to be able to watch those at the same time
+        selectedNodeAndPort() {
+            return { node: this.selectedNode, port: this.selectedPort };
+        },
+
         // ========================== UI ===========================
         // A port view can be in one of the following states ['loading', 'error' & message, 'ready']
         isViewerReady() {
@@ -185,21 +193,26 @@ export default {
                 this.portViewerState = null;
             }
         },
-        selectedNode: {
-            handler(newNode, oldNode) {
-                consola.trace('Selected Node changed to', newNode?.id);
-                if (!this.nodeHasProblem) {
-                    this.selectPort();
+        selectedNodeAndPort: {
+            handler(newNodeAndPort, oldNodeAndPort) {
+                this.portViewerState = null;
+                this.componentId = null;
+                const oldNodeId = oldNodeAndPort?.node?.id;
+                const newNodeId = newNodeAndPort?.node?.id;
+                let newPortSelected = false;
+                if (oldNodeId !== newNodeId && !this.nodeHasProblem) {
+                    consola.trace('Selected Node changed to', newNodeId);
+                    // TODO temporary hack to be fixed with NXT-632
+                    // prevents the port view being loaded twice because the 'selectPort' function will
+                    // possibly cause this watcher to be called again
+                    newPortSelected = this.selectPort();
+                }
+                if (!newPortSelected && !this.nodeHasProblem && !this.portHasProblem) {
+                    this.loadPortView();
                 }
             },
             // also set the selected port if a node is already selected before NodeOutput is created
             immediate: true
-        },
-
-        // if the selected port changes, the port viewer is replaced and the portViewerState has to be cleared
-        selectedPortIndex(newPortIndex, oldPortIndex) {
-            consola.trace('Selected Port changed to', newPortIndex);
-            this.portViewerState = null;
         }
     },
     methods: {
@@ -213,14 +226,43 @@ export default {
                 // for metanodes: 0, node with one port (flowVariables): 0, node with multiple ports: 1 (not flowVariables)
                 let defaultSelectedPort = node.kind === 'metanode' || node.outPorts.length === 1 ? '0' : '1';
                 this.selectedPortIndex = defaultSelectedPort;
+                return true;
+            }
+            return false;
+        },
+        async loadPortView() {
+            this.portViewerState = { state: 'loading' };
+
+            let { projectId, workflowId, nodeId, portIndex } = this.portIdentifier;
+            try {
+                const portView = await getPortView(projectId, workflowId, nodeId, portIndex);
+
+                let resourceInfo = portView.resourceInfo;
+                let resourceType = resourceInfo.type;
+
+                if (resourceType === 'VUE_COMPONENT_REFERENCE') {
+                    this.componentId = resourceInfo.id;
+                    this.initialData = JSON.parse(portView.initialData).result;
+                    this.portViewerState = { state: 'ready' };
+                } else if (resourceType === 'VUE_COMPONENT_LIB') {
+                // TODO NXT-632
+                // let resourceLocation = resourceInfo.baseUrl + resourceInfo.path;
+                // check if component library needs to be loaded or if it was already loaded before
+                // if (!window[componentId]) {
+                //    await loadComponentLibrary(window, resourceLocation, componentId);
+                // }
+                // register the component locally
+                // this.$options.components[componentId] = window[componentId];
+                // this.componentId = componentId;
+                // this.componentLoaded = true;
+                // ... create knime service and inject
+                }
+            } catch (e) {
+                this.portViewerState = { state: 'error', message: e };
             }
         },
         executeNode() {
             this.$store.dispatch('workflow/executeNodes', [this.selectedNode.id]);
-        },
-        onViewerUpdate(state) {
-            consola.trace('port viewer state changed', state);
-            this.portViewerState = state;
         },
         // Get port type from port
         getPortType(port) {
@@ -273,12 +315,12 @@ export default {
     </div>
     <!-- Port Viewer -->
     <component
-      :is="selectedPortKind === 'flowVariable' ? 'FlowVariablePortView' : 'TablePortView'"
-      v-if="!portHasProblem"
+      :is="componentId"
+      v-if="!portHasProblem && componentId"
       v-show="isViewerReady"
       v-bind="portIdentifier"
+      :initial-data="initialData"
       class="port-view"
-      @update="onViewerUpdate"
     />
   </div>
 </template>
