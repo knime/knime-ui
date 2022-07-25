@@ -85,7 +85,8 @@ describe('Connector.vue', () => {
                     selection: {
                         getters: {
                             isConnectionSelected: () => jest.fn(),
-                            singleSelectedNode: () => jest.fn(),
+                            singleSelectedNode: jest.fn(),
+                            selectedConnections: jest.fn().mockReturnValue([]),
                             isNodeSelected: () => jest.fn()
                         },
                         actions: {
@@ -150,7 +151,8 @@ describe('Connector.vue', () => {
                 selection: {
                     getters: {
                         isConnectionSelected: () => jest.fn(),
-                        singleSelectedNode: () => jest.fn(),
+                        singleSelectedNode: jest.fn(),
+                        selectedConnections: jest.fn().mockReturnValue([]),
                         isNodeSelected: () => jest.fn()
                     },
                     actions: {
@@ -258,7 +260,8 @@ describe('Connector.vue', () => {
                 selection: {
                     getters: {
                         isConnectionSelected: () => jest.fn(),
-                        singleSelectedNode: () => jest.fn(),
+                        singleSelectedNode: jest.fn(),
+                        selectedConnections: jest.fn().mockReturnValue([]),
                         isNodeSelected: () => jest.fn()
                     }
                 }
@@ -360,6 +363,16 @@ describe('Connector.vue', () => {
             const classes = wrapper.findAll('path').at(1).classes();
             expect(classes.includes('highlighted')).toBe(true);
         });
+
+        it('does not highlight connections if a connection is selected', () => {
+            storeConfig.selection.getters.singleSelectedNode = jest.fn().mockReturnValue('root:2');
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn()
+                .mockImplementation(node => node === 'root:2');
+            storeConfig.selection.getters.selectedConnections = jest.fn().mockReturnValueOnce(['conn']);
+            doShallowMount();
+            const classes = wrapper.findAll('path').at(1).classes();
+            expect(classes.includes('highlighted')).toBe(false);
+        });
     });
 
     describe('attached to port bars inside metanode', () => {
@@ -408,7 +421,8 @@ describe('Connector.vue', () => {
                     selection: {
                         getters: {
                             isConnectionSelected: () => jest.fn(),
-                            singleSelectedNode: () => jest.fn(),
+                            singleSelectedNode: jest.fn(),
+                            selectedConnections: jest.fn().mockReturnValue([]),
                             isNodeSelected: () => jest.fn()
                         }
                     }
@@ -467,7 +481,8 @@ describe('Connector.vue', () => {
                 selection: {
                     getters: {
                         isConnectionSelected: () => jest.fn(),
-                        singleSelectedNode: () => jest.fn(),
+                        singleSelectedNode: jest.fn(),
+                        selectedConnections: jest.fn().mockReturnValue([]),
                         isNodeSelected: () => jest.fn()
                     }
                 }
@@ -548,7 +563,8 @@ describe('Connector.vue', () => {
                 selection: {
                     getters: {
                         isConnectionSelected: () => jest.fn(),
-                        singleSelectedNode: () => jest.fn(),
+                        singleSelectedNode: jest.fn(),
+                        selectedConnections: jest.fn().mockReturnValue([]),
                         isNodeSelected: () => jest.fn()
                     },
                     actions: {

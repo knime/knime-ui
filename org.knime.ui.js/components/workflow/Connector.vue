@@ -51,7 +51,8 @@ export default {
             isWorkflowWritable: 'isWritable',
             isDragging: 'isDragging'
         }),
-        ...mapGetters('selection', ['isConnectionSelected', 'isNodeSelected', 'singleSelectedNode']),
+        ...mapGetters('selection', ['isConnectionSelected', 'isNodeSelected',
+            'singleSelectedNode', 'selectedConnections']),
         path() {
             let { start: [x1, y1], end: [x2, y2] } = this;
             // Update position of source or destination node is being moved
@@ -68,12 +69,9 @@ export default {
 
             return connectorPath(x1, y1, x2, y2);
         },
-        applySelectedStyle() {
-            return this.isConnectionSelected(this.id) && !this.isDragging;
-        },
         isHighlighted() {
-            // if only one node is selected highlight the connections from and to that node
-            return Boolean(this.singleSelectedNode) &&
+            // if only one node and no connections are selected, highlight the connections from and to that node
+            return (Boolean(this.singleSelectedNode) && this.selectedConnections.length === 0) &&
                 (this.isNodeSelected(this.sourceNode) || this.isNodeSelected(this.destNode));
         }
     },
@@ -162,7 +160,7 @@ export default {
         'read-only': !isWorkflowWritable,
         highlighted: isHighlighted,
         dashed: streaming,
-        selected: applySelectedStyle
+        selected: isConnectionSelected(id) && !isDragging
       }"
       fill="none"
     />
