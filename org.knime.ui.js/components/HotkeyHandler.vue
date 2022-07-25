@@ -2,7 +2,6 @@
 import { mapMutations, mapState } from 'vuex';
 import { escapePressed } from '~/mixins/escapeStack';
 
-
 const blacklistTagNames = /^(input|textarea|select)$/i;
 
 /**
@@ -70,7 +69,6 @@ export default {
                 }
                 return;
             }
-
 
             // This currently only looks for the first command that matches the hotkey
             let command = this.$commands.findByHotkey(e);

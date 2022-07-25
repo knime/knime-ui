@@ -5,6 +5,8 @@ import portIcon from '~/components/output/PortIconRenderer';
 import MenuItems from '~/webapps-common/ui/components/MenuItems';
 import SearchBar from '~/components/noderepo/SearchBar.vue';
 
+import { makeTypeSearch } from '~/util/fuzzyPortTypeSearch';
+
 /**
  * ContextMenu offers actions for the Kanvas based on the selected nodes.
  */
@@ -28,6 +30,11 @@ export default {
             type: String,
             required: true,
             validator: side => ['input', 'output'].includes(side)
+        },
+        /** A list of addable type ids or null, if all are allowed */
+        addablePortTypes: {
+            type: Array,
+            default: null
         }
     },
     data: () => ({
@@ -36,7 +43,7 @@ export default {
     computed: {
         ...mapState('canvas', ['zoomFactor']),
         ...mapState('application', ['availablePortTypes', 'suggestedPortTypes']),
-        ...mapGetters('application', ['portTypeSearch']),
+        ...mapGetters('application', ['searchAllPortTypes']),
         headerMargin() {
             // the x-position of the header text has to be adjusted for the growing/shrinking add-port-button
             let distanceToPort = this.$shapes.portSize * Math.pow(this.zoomFactor, 0.8); // eslint-disable-line no-magic-numbers
@@ -59,12 +66,18 @@ export default {
                 name: this.availablePortTypes[typeId].name
             }));
         },
+        /* port search function */
+        searchPorts() {
+            return this.addablePortTypes
+                ? makeTypeSearch({ typeIds: this.addablePortTypes, installedPortTypes: this.availablePortTypes })
+                : this.searchAllPortTypes;
+        },
         searchResults() {
-            if (this.searchValue === '') {
+            if (!this.addablePortTypes && this.searchValue === '') {
+                // if all types are allowed and the search value is empty, show suggested port types
                 return this.suggestedSearchResults;
             } else {
-                return this.portTypeSearch.search(this.searchValue, { limit: this.suggestedPortTypes.length })
-                    .map(result => result.item);
+                return this.searchPorts(this.searchValue, { limit: this.suggestedPortTypes.length });
             }
         },
         menuItems() {
