@@ -66,22 +66,7 @@ export default {
                 }
             }
 
-            return connectorPath(x1 - this.xOffset, y1, x2, y2);
-        },
-        xOffset() {
-            // no offset for the round flow connections
-            if (this.flowVariableConnection) {
-                return 0;
-            }
-
-            // makes sure the connection always starts visually behind the triangle
-            if (this.isHighlighted) {
-                return this.$shapes.highlightedConnectorWidth;
-            }
-            if (this.applySelectedStyle || this.hover) {
-                return this.$shapes.selectedConnectorWidth;
-            }
-            return this.$shapes.connectorWidth;
+            return connectorPath(x1, y1, x2, y2);
         },
         applySelectedStyle() {
             return this.isConnectionSelected(this.id) && !this.isDragging;
