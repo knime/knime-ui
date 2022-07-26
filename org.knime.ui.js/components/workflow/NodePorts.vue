@@ -129,8 +129,8 @@ export default {
             if (this.portGroups) {
                 let portGroups = Object.values(this.portGroups);
                 return {
-                    input: portGroups.some(({ allowedActions }) => allowedActions.canAddInPort),
-                    output: portGroups.some(({ allowedActions }) => allowedActions.canAddOutPort)
+                    input: portGroups.some(portGroup => portGroup.canAddInPort),
+                    output: portGroups.some(portGroup => portGroup.canAddOutPort)
                 };
             }
             
@@ -142,7 +142,7 @@ export default {
             if (!this.portGroups) return null;
             
             return Object.entries(this.portGroups)
-                .find(([name, { allowedActions: { canAddInPort, canAddOutPort } }]) => canAddInPort || canAddOutPort);
+                .find(([name, { canAddInPort, canAddOutPort }]) => canAddInPort || canAddOutPort);
         },
 
         /* either null if all ports can be added or a list of typeIds */

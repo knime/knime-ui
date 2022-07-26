@@ -180,8 +180,7 @@ describe('NodePorts.vue', () => {
             propsData.portGroups = {
                 group1: {
                     inputRange: [1, 1],
-                    outputRange: [1, 2],
-                    allowedActions: {}
+                    outputRange: [1, 2]
                 }
             };
             doMount();
@@ -433,10 +432,8 @@ describe('NodePorts.vue', () => {
             propsData.nodeKind = 'node';
             propsData.portGroups = {
                 group1: {
-                    allowedActions: {
-                        canAddInPort: true,
-                        canAddOutPort: true
-                    },
+                    canAddInPort: true,
+                    canAddOutPort: true,
                     supportedPortTypes: ['type1']
                 }
             };
@@ -471,10 +468,8 @@ describe('NodePorts.vue', () => {
             propsData.nodeKind = 'node';
             propsData.portGroups = {
                 group1: {
-                    allowedActions: {
-                        canAddInPort: true,
-                        canAddOutPort: true
-                    },
+                    canAddInPort: true,
+                    canAddOutPort: true,
                     supportedPortTypes: ['type1']
                 }
             };
@@ -516,9 +511,7 @@ describe('NodePorts.vue', () => {
             propsData.outPorts[1].portGroup = 'group1';
 
             propsData.portGroups = {
-                group1: {
-                    allowedActions: {}
-                }
+                group1: { }
             };
             doMount();
 
