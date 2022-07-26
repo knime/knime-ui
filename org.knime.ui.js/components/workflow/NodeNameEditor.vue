@@ -165,7 +165,7 @@ export default {
       :y="errorMessagePosition.y"
     >
       <div class="invalid-chars-error">
-        Characters <span class="chars">{{ invalidCharacters.source }}</span> are not allowed and were removed.
+        Characters <span class="chars">{{ invalidCharacters.source }}</span> are not allowed and have been removed.
       </div>
     </foreignObject>
   </g>
