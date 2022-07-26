@@ -228,7 +228,7 @@ describe('application store', () => {
         store.commit('application/setAvailablePortTypes', portTypes);
         
         expect(store.getters['application/searchAllPortTypes']).toBe('searchFunction');
-
+        
         expect(makeTypeSearchMock).toHaveBeenCalledWith({
             typeIds: ['BufferedTable', 'FlowVariable', 'Hidden'],
             installedPortTypes: portTypes
@@ -240,15 +240,26 @@ describe('application store', () => {
             const state = {
                 openedWorkflows: [
                     { projectId: 'foo', name: 'bar' },
-                    { projectId: 'bee', name: 'gee', activeWorkflow: {} }
+                    {
+                        projectId: 'bee',
+                        name: 'gee',
+                        activeWorkflow: {
+                            workflow: {
+                                info: { containerId: 'root' }
+                            },
+                            snapshotId: '0'
+                        }
+                    }
                 ]
             };
             await store.dispatch('application/replaceApplicationState', state);
 
-            expect(dispatchSpy).toHaveBeenCalledWith(
-                'application/switchWorkflow',
-                { workflowId: 'root', projectId: 'bee' }
-            );
+            expect(dispatchSpy).toHaveBeenCalledWith('application/setWorkflow',
+                {
+                    projectId: 'bee',
+                    workflow: { info: { containerId: 'root' } },
+                    snapshotId: '0'
+                });
         });
 
         it('uses first in row if not provided by backend', async () => {
@@ -260,10 +271,11 @@ describe('application store', () => {
             };
             await store.dispatch('application/replaceApplicationState', state);
 
-            expect(dispatchSpy).toHaveBeenCalledWith(
-                'application/switchWorkflow',
-                { workflowId: 'root', projectId: 'foo' }
-            );
+            expect(dispatchSpy).toHaveBeenCalledWith('application/loadWorkflow',
+                {
+                    workflowId: 'root',
+                    projectId: 'foo'
+                });
         });
 
         it('does not set active project if there are no open workflows', async () => {

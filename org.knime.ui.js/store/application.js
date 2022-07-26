@@ -80,17 +80,25 @@ export const actions = {
             return;
         }
 
-        // either choose the project that has been marked as active, or the first one
-        let activeWorkflow = openProjects.find(item => item.activeWorkflow);
-        if (!activeWorkflow) {
+        let activeProject = openProjects.find(item => item.activeWorkflow);
+        if (activeProject) {
+            // active project is attached to the list of tabs
+            dispatch('setWorkflow', {
+                projectId: activeProject.projectId,
+                workflow: activeProject.activeWorkflow.workflow,
+                snapshotId: activeProject.activeWorkflow.snapshotId
+            });
+        } else {
             consola.info('No active workflow provided');
-            activeWorkflow = openProjects[0];
-        }
 
-        await dispatch('switchWorkflow', {
-            workflowId: 'root',
-            projectId: activeWorkflow.projectId
-        });
+            // chose root workflow of first tab
+            activeProject = openProjects[0];
+            await dispatch('loadWorkflow', {
+                projectId: activeProject.projectId,
+                // ATTENTION: we can only open tabs, that have root workflows (no standalone metanodes or components)
+                workflowId: 'root'
+            });
+        }
     },
 
     /*
@@ -110,29 +118,37 @@ export const actions = {
         // only continue if the new workflow exists
         if (newWorkflow) {
             let { projectId, workflowId } = newWorkflow;
-            commit('setActiveProjectId', projectId);
             await dispatch('loadWorkflow', { projectId, workflowId });
-
+            
             // restore scroll and zoom if saved before
             dispatch('restoreUserState');
         }
     },
-    async loadWorkflow({ commit, rootState }, { projectId, workflowId = 'root' }) {
+    async loadWorkflow({ commit, rootState, dispatch }, { projectId, workflowId = 'root' }) {
         const project = await loadWorkflow({ projectId, workflowId });
         if (project) {
-            commit('workflow/setActiveWorkflow', {
-                ...project.workflow,
-                projectId
-            }, { root: true });
-
-            let snapshotId = project.snapshotId;
-            commit('workflow/setActiveSnapshotId', snapshotId, { root: true });
-
-            let workflowId = rootState.workflow.activeWorkflow?.info.containerId || null;
-            addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+            dispatch('setWorkflow', {
+                projectId,
+                workflow: project.workflow,
+                snapshotId: project.snapshotId
+            });
         } else {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
+    },
+    setWorkflow({ commit }, { workflow, projectId, snapshotId }) {
+        commit('setActiveProjectId', projectId);
+        commit('workflow/setActiveWorkflow', {
+            ...workflow,
+            projectId
+        }, { root: true });
+
+        commit('workflow/setActiveSnapshotId', snapshotId, { root: true });
+
+        
+        // TODO: remove this 'root' fallback after mocks have been adjusted
+        let workflowId = workflow.info.containerId || 'root';
+        addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
     },
     unloadActiveWorkflow({ commit, rootState }, { clearWorkflow }) {
         let activeWorkflow = rootState.workflow.activeWorkflow;
@@ -189,6 +205,6 @@ export const getters = {
         if (!activeProjectId) {
             return null;
         }
-        return openProjects.find(project => project.projectId === activeProjectId).name;
+        return openProjects.find(project => project.projectId === activeProjectId)?.name;
     }
 };
