@@ -173,7 +173,7 @@ describe('NodeNameEditor', () => {
         expect(wrapper.find('foreignObject').exists()).toBe(false);
         await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalid-input');
         expect(wrapper.find('foreignObject').exists()).toBe(true);
-        expect(wrapper.find('foreignObject').text()).toContain('are not allowed and were removed.');
+        expect(wrapper.find('foreignObject').text()).toContain('are not allowed and have been removed.');
     });
 
     it('hides error message after some time', async () => {
