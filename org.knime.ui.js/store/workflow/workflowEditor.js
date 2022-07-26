@@ -1,6 +1,5 @@
 import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameContainerNode, collapseToContainer,
-    addContainerNodePort, addDynamicNodePort, removeContainerNodePort, removeDynamicNodePort, expandContainerNode,
-    copyOrCutWorkflowParts, pasteWorkflowParts } from '~api';
+    addNodePort, removeNodePort, expandContainerNode, copyOrCutWorkflowParts, pasteWorkflowParts } from '~api';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -55,14 +54,10 @@ export const actions = {
         wrapAPI(connectNodes),
     addNode:
         wrapAPI(addNode),
-    addContainerNodePort:
-        wrapAPI(addContainerNodePort),
-    removeContainerNodePort:
-        wrapAPI(removeContainerNodePort),
-    addDynamicNodePort:
-        wrapAPI(addDynamicNodePort),
-    removeDynamicNodePort:
-        wrapAPI(removeDynamicNodePort),
+    addNodePort:
+        wrapAPI(addNodePort),
+    removeNodePort:
+        wrapAPI(removeNodePort),
     renameContainerNode:
         wrapAPI(renameContainerNode),
 

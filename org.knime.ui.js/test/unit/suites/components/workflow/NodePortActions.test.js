@@ -52,7 +52,7 @@ describe('NodePortActions.vue', () => {
         doShallowMount();
 
         wrapper.findComponent(ActionButton).vm.$emit('click');
-        expect(wrapper.emitted('action:delete')).toBeDefined();
+        expect(wrapper.emitted('action:remove')).toBeDefined();
     });
 
     it('should position the wrapper and actions properly', () => {

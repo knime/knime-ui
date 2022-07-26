@@ -106,27 +106,33 @@ describe('workflow store: Editing', () => {
             });
         });
 
-        it('can add ContainerNode Ports', async () => {
-            let apiMocks = { addContainerNodePort: jest.fn() };
+        it('can add Node Ports', async () => {
+            let apiMocks = { addNodePort: jest.fn() };
             await loadStore({ apiMocks });
 
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
-            store.dispatch(`workflow/addContainerNodePort`, { nodeId: 'node x', side: 'input', typeId: 'porty' });
+            store.dispatch(`workflow/addNodePort`,
+                { nodeId: 'node x', side: 'input', typeId: 'porty', portGroup: 'group' });
 
-            expect(apiMocks.addContainerNodePort).toHaveBeenCalledWith(
-                { nodeId: 'node x', projectId: 'foo', workflowId: 'root', side: 'input', typeId: 'porty' }
-            );
+            expect(apiMocks.addNodePort).toHaveBeenCalledWith({
+                nodeId: 'node x',
+                projectId: 'foo',
+                workflowId: 'root',
+                side: 'input',
+                typeId: 'porty',
+                portGroup: 'group'
+            });
         });
 
-        it('can remove ContainerNode Ports', async () => {
-            let apiMocks = { removeContainerNodePort: jest.fn() };
+        it('can remove Node Ports', async () => {
+            let apiMocks = { removeNodePort: jest.fn() };
             await loadStore({ apiMocks });
 
-            const payload = { nodeId: 'node x', side: 'input', typeId: 'porty', portIndex: 1 };
+            const payload = { nodeId: 'node x', side: 'input', typeId: 'porty', portIndex: 1, portGroup: 'group' };
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
-            store.dispatch(`workflow/removeContainerNodePort`, payload);
+            store.dispatch(`workflow/removeNodePort`, payload);
 
-            expect(apiMocks.removeContainerNodePort).toHaveBeenCalledWith(
+            expect(apiMocks.removeNodePort).toHaveBeenCalledWith(
                 { ...payload, projectId: 'foo', workflowId: 'root' }
             );
         });

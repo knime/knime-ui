@@ -1,5 +1,5 @@
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 import { placeholderPosition, portPositions } from '~/util/portShift';
 import NodePort from '~/components/workflow/NodePort';
 import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder';
@@ -39,6 +39,11 @@ export default {
             type: Array,
             required: true
         },
+
+        portGroups: {
+            type: Object,
+            default: null
+        },
         
         /** object that contains information which port to highlight */
         targetPort: {
@@ -65,13 +70,15 @@ export default {
             default: false
         }
     },
+    data: () => ({
+        selectedPort: null
+    }),
     computed: {
-        ...mapGetters('workflow', ['isDragging']),
+        ...mapGetters('workflow', ['isDragging', 'isWritable']),
 
         isMetanode() {
             return this.nodeKind === 'metanode';
         },
-
         isComponent() {
             return this.nodeKind === 'component';
         },
@@ -92,10 +99,10 @@ export default {
         },
         addPortPlaceholderPositions() {
             return {
-                in: placeholderPosition(
+                input: placeholderPosition(
                     { portCount: this.inPorts.length, isMetanode: this.isMetanode }
                 ),
-                out: placeholderPosition(
+                output: placeholderPosition(
                     { portCount: this.outPorts.length, isMetanode: this.isMetanode, isOutport: true }
                 )
             };
@@ -112,20 +119,71 @@ export default {
             let lastOutPortY = lastOutPort?.[1] || 0;
 
             return Math.max(lastInPortY, lastOutPortY) + this.$shapes.portSize / 2;
+        },
+        /* eslint-disable brace-style, curly */
+        canAddPort() {
+            if (!this.isWritable) return { input: false, output: false };
+            
+            if (this.isComponent || this.isMetanode) return { input: true, output: true };
+
+            if (this.portGroups) {
+                let portGroups = Object.values(this.portGroups);
+                return {
+                    input: portGroups.some(({ allowedActions }) => allowedActions.canAddInPort),
+                    output: portGroups.some(({ allowedActions }) => allowedActions.canAddOutPort)
+                };
+            }
+            
+            // Native node without port groups
+            return { input: false, output: false };
+        },
+        selectedPortGroup() {
+            // TODO: temporary until multiple port groups can be handled
+            if (!this.portGroups) return null;
+            
+            return Object.entries(this.portGroups)
+                .find(([name, { allowedActions: { canAddInPort, canAddOutPort } }]) => canAddInPort || canAddOutPort);
+        },
+
+        /* either null if all ports can be added or a list of typeIds */
+        addablePortTypes() {
+            if (this.isComponent || this.isMetanode) {
+                return null;
+            }
+
+            return this.selectedPortGroup?.[1].supportedPortTypes;
+        }
+    },
+    watch: {
+        isDragging(isDragging, wasDragging) {
+            if (isDragging && !wasDragging) {
+                this.selectedPort = null;
+            }
         }
     },
     methods: {
-        canSelectPort(port) {
-            switch (this.nodeKind) {
-                case 'component':
-                    // skip hidden variable ports on components (mickey mouse)
-                    return port.index !== 0;
-                case 'metanode':
-                    // allow for all metanode ports
-                    return true;
-                default:
-                    return false;
+        ...mapActions('workflow', ['addNodePort', 'removeNodePort']),
+        onPortClick({ index, portGroup: groupName }, side) {
+            let selectPort = () => {
+                this.selectedPort = `${side}-${index}`;
+            };
+
+            if (this.nodeKind === 'component' && index !== 0)
+                // all but hidden ports on components (mickey mouse) can be selected
+                selectPort();
+            else if (this.nodeKind === 'metanode')
+                selectPort();
+            else if (groupName) {
+                // native node and port is part of a port group
+                let portGroup = this.portGroups[groupName];
+                let [, upperBound] = portGroup[`${side}Range`];
+
+                // select last port of group
+                this.selectedPort = `${side}-${upperBound}`;
             }
+        },
+        onDeselectPort() {
+            this.selectedPort = null;
         },
         // default flow variable ports (Mickey Mouse ears) are only shown if connected, selected, or on hover
         portAnimationClasses(port) {
@@ -141,6 +199,23 @@ export default {
                 'connected': port.connectedVia.length, // eslint-disable-line quote-props
                 'node-hover': this.hover
             };
+        },
+        addPort({ side, typeId }) {
+            this.addNodePort({
+                nodeId: this.nodeId,
+                side,
+                typeId,
+                portGroup: this.selectedPortGroup?.[0] // is null for composite nodes
+            });
+        },
+        removePort({ side, portGroup, index }) {
+            this.removeNodePort({
+                nodeId: this.nodeId,
+                side,
+                index,
+                portGroup
+            });
+            this.selectedPort = null;
         },
         onPortTypeMenuOpen(e) {
             // show add-port button
@@ -166,53 +241,51 @@ export default {
       v-for="port of inPorts"
       :key="`inport-${port.index}`"
       :class="['port', portAnimationClasses(port)]"
-      :relative-position="portPositions.in[port.index]"
-      :port="port"
-      :node-id="nodeId"
-      :targeted="targetPort && targetPort.side === 'in' && targetPort.index === port.index"
-      :can-select="canSelectPort(port)"
       direction="in"
+      :node-id="nodeId"
+      :port="port"
+      :relative-position="portPositions.in[port.index]"
+      :selected="selectedPort === `input-${port.index}`"
+      :targeted="targetPort && targetPort.side === 'in' && targetPort.index === port.index"
+      @click="onPortClick(port, 'input')"
+      @deselect="onDeselectPort"
+      @remove="removePort({ side: 'input', index: port.index, portGroup: port.portGroup })"
     />
 
     <NodePort
       v-for="port of outPorts"
       :key="`outport-${port.index}`"
       :class="['port', portAnimationClasses(port)]"
-      :relative-position="portPositions.out[port.index]"
-      :port="port"
-      :node-id="nodeId"
-      :targeted="targetPort && targetPort.side === 'out' && targetPort.index === port.index"
-      :can-select="canSelectPort(port)"
       direction="out"
+      :node-id="nodeId"
+      :port="port"
+      :relative-position="portPositions.out[port.index]"
+      :selected="selectedPort === `output-${port.index}`"
+      :targeted="targetPort && targetPort.side === 'out' && targetPort.index === port.index"
+      @click="onPortClick(port, 'output')"
+      @deselect="onDeselectPort"
+      @remove="removePort({ side: 'output', index: port.index, portGroup: port.portGroup })"
     />
 
-    <AddPortPlaceholder
-      v-if="isEditable && (isComponent || isMetanode)"
-      :node-id="nodeId"
-      :position="addPortPlaceholderPositions.in"
-      :class="['add-port', {
-        'node-hover': hover,
-        'connector-hover': connectorHover,
-        'node-selected': isSingleSelected,
-      }]"
-      side="input"
-      @open-port-type-menu.native="onPortTypeMenuOpen($event)"
-      @close-port-type-menu.native="onPortTypeMenuClose($event)"
-    />
 
-    <AddPortPlaceholder
-      v-if="isEditable && (isComponent || isMetanode)"
-      :node-id="nodeId"
-      :position="addPortPlaceholderPositions.out"
-      :class="['add-port', {
-        'node-hover': hover,
-        'connector-hover': connectorHover,
-        'node-selected': isSingleSelected,
-      }]"
-      side="output"
-      @open-port-type-menu.native="onPortTypeMenuOpen($event)"
-      @close-port-type-menu.native="onPortTypeMenuClose($event)"
-    />
+    <template v-for="side in ['input', 'output']">
+      <AddPortPlaceholder
+        v-if="canAddPort[side]"
+        :key="side"
+        :side="side"
+        :node-id="nodeId"
+        :position="addPortPlaceholderPositions[side]"
+        :addable-port-types="addablePortTypes"
+        :class="['add-port', {
+          'node-hover': hover,
+          'connector-hover': connectorHover,
+          'node-selected': isSingleSelected,
+        }]"
+        @add-port="addPort({ side, typeId: $event })"
+        @open-port-type-menu.native="onPortTypeMenuOpen($event)"
+        @close-port-type-menu.native="onPortTypeMenuClose($event)"
+      />
+    </template>
   </g>
 </template>
 

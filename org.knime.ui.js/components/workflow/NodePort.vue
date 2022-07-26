@@ -43,7 +43,7 @@ export default {
             type: Boolean,
             default: false
         },
-        canSelect: {
+        selected: {
             type: Boolean,
             default: false
         }
@@ -51,7 +51,6 @@ export default {
     data: () => ({
         dragConnector: null,
         didMove: false,
-        isSelected: false,
         pointerDown: false
     }),
     computed: {
@@ -102,20 +101,6 @@ export default {
             incomingConnector.dispatchEvent(new CustomEvent('indicate-replacement', { detail: {
                 state: indicateReplacement
             } }));
-        },
-        isSelected(isSelected, wasSelected) {
-            if (!wasSelected && isSelected && !this.unwatchIsDragging) {
-                // deselect port if the user starts to drag a node
-                let unwatch = this.$watch('isDragging', () => {
-                    this.isSelected = false;
-                });
-                this.unwatchIsDragging = () => {
-                    unwatch();
-                    this.unwatchIsDragging = null;
-                };
-            } else if (wasSelected && !isSelected) {
-                this.unwatchIsDragging();
-            }
         }
     },
     methods: {
@@ -293,24 +278,16 @@ export default {
             this.$root.$emit('connector-end');
         },
         onClick() {
-            if (this.canSelect && !this.didMove) {
-                this.isSelected = true;
+            if (this.didMove) {
+                return;
             }
-        },
-        onClickAway() {
-            this.isSelected = false;
-        },
-        onDelete() {
-            this.isSelected = false;
 
-            const side = this.direction === 'in' ? 'input' : 'output';
-            
-            this.$store.dispatch('workflow/removeContainerNodePort', {
-                nodeId: this.nodeId,
-                side,
-                typeId: this.port.typeId,
-                portIndex: this.port.index
-            });
+            this.$emit('click');
+        },
+        onClose() {
+            if (this.selected) {
+                this.$emit('deselect');
+            }
         }
     }
 };
@@ -318,7 +295,7 @@ export default {
 
 <template>
   <g
-    v-on-clickaway="() => onClickAway()"
+    v-on-clickaway="() => onClose()"
     :transform="`translate(${relativePosition})`"
     :class="{ 'targeted': targeted }"
     @pointerdown="onPointerDown"
@@ -329,19 +306,20 @@ export default {
     <!-- regular port shown on the workflow -->
     <Port
       :port="port"
-      :class="{ 'hoverable-port': !isSelected }"
+      :class="{ 'hoverable-port': !selected }"
       @click.native="onClick"
     />
 
     <portal to="selected-port">
       <NodePortActions
-        v-if="isSelected"
+        v-if="selected"
         :key="`${nodeId}-${port.index}-${direction}`"
         :port="port"
         :anchor-point="anchorPoint"
         :relative-position="relativePosition"
         :direction="direction"
-        @action:delete="onDelete"
+        @action:remove="$emit('remove')"
+        @close="onClose"
       />
     </portal>
 

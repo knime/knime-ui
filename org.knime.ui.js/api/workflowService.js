@@ -212,7 +212,7 @@ export const collapseToContainer = ({
 });
 
 /**
- * Adds a port to a container node
+ * Adds a port to a node
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
  * @param { String } cfg.nodeId
@@ -220,61 +220,28 @@ export const collapseToContainer = ({
  * @param { 'input' | 'output' } cfg.side
  * @returns { Promise }
  */
-export const addContainerNodePort = ({ projectId, workflowId, nodeId, typeId, side }) => {
+export const addNodePort = ({ projectId, workflowId, nodeId, side, portGroup, typeId }) => {
     return workflowCommand({
         command: 'add_port',
-        args: { nodeId, portTypeId: typeId, side },
+        args: { nodeId, side, portGroup, portTypeId: typeId },
         projectId,
         workflowId
     });
 };
 
 /**
- * Adds a port to a container node
+ * Removes a port from a node
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
  * @param { String } cfg.nodeId
- * @param { String } cfg.portType
  * @param { 'input' | 'output' } cfg.side
+ * @param { Number } cfg.index
+ * @param { String } cfg.portGroup
  * @returns { Promise }
  */
-export const addDynamicNodePort = ({ projectId, workflowId, nodeId, side, portGroup, typeId }) => workflowCommand({
-    command: 'add_port',
-    args: { nodeId, side, portGroup, portTypeId: typeId },
-    projectId,
-    workflowId
-});
-
-/**
- * Removes a port from a container node
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @param { String } cfg.nodeId
- * @param { String } cfg.portType
- * @param { Number } cfg.portIndex
- * @param { 'input' | 'output' } cfg.side
- * @returns { Promise }
- */
-export const removeContainerNodePort = ({ projectId, workflowId, nodeId, side, index }) => workflowCommand({
+export const removeNodePort = ({ projectId, workflowId, nodeId, side, index, portGroup }) => workflowCommand({
     command: 'remove_port',
-    args: { nodeId, side, portIndex: index },
-    projectId,
-    workflowId
-});
-
-/**
- * Removes a port from a container node
- * @param { String } cfg.projectId
- * @param { String } cfg.workflowId
- * @param { String } cfg.nodeId
- * @param { String } cfg.portType
- * @param { Number } cfg.portIndex
- * @param { 'input' | 'output' } cfg.side
- * @returns { Promise }
- */
-export const removeDynamicNodePort = ({ projectId, workflowId, nodeId, side, portGroup }) => workflowCommand({
-    command: 'remove_port',
-    args: { nodeId, side, portGroup },
+    args: { nodeId, side, portIndex: index, portGroup },
     projectId,
     workflowId
 });
