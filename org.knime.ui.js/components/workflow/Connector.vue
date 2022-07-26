@@ -212,10 +212,6 @@ path:not(.hover-area) {
     &.selected {
       stroke: var(--knime-cornflower);
     }
-
-    &.highlighted {
-      stroke: var(--knime-coral-dark);
-    }
   }
 }
 

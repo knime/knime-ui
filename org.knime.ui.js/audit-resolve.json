@@ -40,6 +40,14 @@
       "decision": "ignore",
       "madeAt": 1658496043578,
       "expiresAt": 1661088015170
+    },
+    "1081699|nuxt>@nuxt/webpack>html-webpack-plugin>html-minifier-terser>terser": {
+      "decision": "ignore",
+      "madeAt": 1658822501010
+    },
+    "1081699|nuxt>@nuxt/builder>@nuxt/webpack>html-webpack-plugin>html-minifier-terser>terser": {
+      "decision": "ignore",
+      "madeAt": 1658822501010
     }
   },
   "rules": {},
