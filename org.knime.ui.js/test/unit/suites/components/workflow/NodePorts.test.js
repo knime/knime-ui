@@ -143,6 +143,18 @@ describe('NodePorts.vue', () => {
             expect(allPorts.every(port => port.props('selected') === false)).toBeTruthy();
         });
 
+        test('ports cant be selected on a write-protected workflow', async () => {
+            propsData.nodeKind = 'metanode';
+            storeConfig.workflow.getters.isWritable = () => false;
+            doMount();
+
+            let firstPort = wrapper.findAllComponents(NodePort).at(0);
+            firstPort.vm.$emit('click');
+            await Vue.nextTick();
+
+            expect(firstPort.props('selected')).toBe(false);
+        });
+
         test('Metanode', async () => {
             propsData.nodeKind = 'metanode';
             doMount();

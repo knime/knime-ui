@@ -164,6 +164,10 @@ export default {
     methods: {
         ...mapActions('workflow', ['addNodePort', 'removeNodePort']),
         onPortClick({ index, portGroup: groupName }, side) {
+            if (!this.isWritable) {
+                return;
+            }
+
             let selectPort = () => {
                 this.selectedPort = `${side}-${index}`;
             };
