@@ -18,17 +18,11 @@ export default {
         KanvasFilters
     },
     mixins: [dropNode],
-    data() {
-        return {
-            scrollTop: 0,
-            scrollLeft: 0,
-            activeWorkflowId: '',
-            activeProject: ''
-        };
-    },
     computed: {
+        ...mapGetters('application', ['workflowCanvasState']),
         ...mapGetters('canvas', ['contentBounds']),
         ...mapGetters('workflow', ['isWorkflowEmpty']),
+
         ...mapState('nodeRepository', { isDraggingNodeFromRepository: 'isDraggingNode' }),
         ...mapState('canvas', ['zoomFactor']),
         ...mapState('application', ['activeProjectId']),
@@ -52,21 +46,7 @@ export default {
             }
         }
     },
-    beforeDestroy() {
-        const savedState = {
-            zoomFactor: this.zoomFactor,
-            scrollTop: this.scrollTop,
-            scrollLeft: this.scrollLeft,
-            workflow: this.activeWorkflowId,
-            project: this.activeProject
-        };
-
-        this.setSavedStates(savedState);
-    },
     mounted() {
-        this.activeWorkflowId = this.activeWorkflow.info.containerId;
-        this.activeProject = this.activeProjectId;
-
         if (this.isWorkflowEmpty) {
             this.setNodeRepositoryActive();
         } else {
@@ -75,16 +55,19 @@ export default {
 
         this.$nextTick(() => {
             // put canvas into fillScreen view after loading the workflow
-            // TODO: To be changed in NXT-929
-            this.fillScreen();
+            // if there isn't a saved canvas state for it
+            if (!this.workflowCanvasState) {
+                this.fillScreen();
+            }
         });
     },
     methods: {
         ...mapMutations('canvas', ['setInteractionsEnabled']),
-        ...mapMutations('application', ['setSavedStates']),
+        
         ...mapActions('canvas', ['fillScreen']),
         ...mapActions('panel', ['setNodeRepositoryActive', 'setWorkflowMetaActive']),
         ...mapActions('selection', ['deselectAllObjects']),
+
         onNodeSelectionPreview($event) {
             this.$refs.workflow.applyNodeSelectionPreview($event);
         },
@@ -102,10 +85,6 @@ export default {
             if (!e.defaultPrevented) {
                 this.deselectAllObjects();
             }
-        },
-        handleScroll(e) {
-            this.scrollTop = e.target.scrollTop;
-            this.scrollLeft = e.target.scrollLeft;
         }
     }
 };
@@ -116,7 +95,6 @@ export default {
     id="kanvas"
     ref="kanvas"
     :class="{ 'indicate-node-drag': isWorkflowEmpty && isDraggingNodeFromRepository }"
-    @scroll.native.passive="handleScroll"
     @drop.native.stop="onDrop"
     @dragover.native.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"

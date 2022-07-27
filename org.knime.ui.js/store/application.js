@@ -15,8 +15,7 @@ export const state = () => ({
     // A list provided by the backend that says which ports should be suggested to the user in the port type menu.
     suggestedPortTypes: [],
 
-    // A list of user's saved states
-    savedStates: [],
+    savedCanvasStates: [],
 
     /* Indicates whether the browser has support (enabled) for the Clipboard API or not */
     hasClipboardSupport: false
@@ -35,10 +34,16 @@ export const mutations = {
     setSuggestedPortTypes(state, portTypesIds) {
         state.suggestedPortTypes = portTypesIds;
     },
-    setSavedStates(state, savedStates) {
-        state.savedStates =
-        [...state.savedStates.filter((savedState) => savedState.workflow !== savedStates.workflow ||
-            savedState.project !== savedStates.project), { ...savedStates }];
+    setSavedCanvasStates(state, newStates) {
+        const filterByWorkflowAndProject =
+            (savedState) => ({ workflow, project }) =>
+                // eslint-disable-next-line implicit-arrow-linebreak
+                savedState.workflow !== workflow ||
+                savedState.project !== project;
+        
+        state.savedCanvasStates = state.savedCanvasStates
+            .filter(filterByWorkflowAndProject(newStates))
+            .concat(newStates);
     },
     setHasClipboardSupport(state, hasClipboardSupport) {
         state.hasClipboardSupport = hasClipboardSupport;
@@ -98,7 +103,7 @@ export const actions = {
     async switchWorkflow({ commit, dispatch, rootState }, newWorkflow) {
         // save user state like scroll and zoom
         if (rootState.workflow?.activeWorkflow) {
-            dispatch('saveUserState');
+            dispatch('saveCanvasState');
 
             // unload current workflow
             dispatch('unloadActiveWorkflow', { clearWorkflow: !newWorkflow });
@@ -112,9 +117,9 @@ export const actions = {
             await dispatch('loadWorkflow', { projectId, workflowId });
 
             await Vue.nextTick();
-            await Vue.nextTick();
+
             // restore scroll and zoom if saved before
-            dispatch('restoreUserState', newWorkflow);
+            dispatch('restoreCanvasState');
         }
     },
     async loadWorkflow({ commit, rootState }, { projectId, workflowId = 'root' }) {
@@ -156,15 +161,18 @@ export const actions = {
             commit('workflow/setActiveWorkflow', null, { root: true });
         }
     },
-    restoreUserState({ state, commit, rootGetters }, workflow) {
-        const { projectId, workflowId } = workflow;
-        const savedStates = state.savedStates;
+    saveCanvasState({ state, rootGetters, commit, rootState }) {
+        const { info: { containerId: workflow }, projectId: project } = rootState.workflow?.activeWorkflow;
 
-        const savedState = savedStates.find((savedState) => workflowId === savedState.workflow &&
-        projectId === savedState.project);
+        const scrollState = rootGetters['canvas/getCanvasScrollState']();
 
-        if (savedState) {
-            commit('canvas/restoreState', savedState, { root: true });
+        commit('setSavedCanvasStates', { ...scrollState, project, workflow });
+    },
+    restoreCanvasState({ state, dispatch, rootGetters, getters, rootState }) {
+        const { workflowCanvasState } = getters;
+        
+        if (workflowCanvasState) {
+            dispatch('canvas/restoreScrollState', workflowCanvasState, { root: true });
         }
     }
 };
@@ -193,5 +201,14 @@ export const getters = {
             return null;
         }
         return openProjects.find(project => project.projectId === activeProjectId).name;
+    },
+
+    workflowCanvasState({ savedCanvasStates }, _, { workflow }) {
+        const { info: { containerId: workflowId }, projectId } = workflow?.activeWorkflow;
+        const savedState = savedCanvasStates.find(
+            (savedState) => workflowId === savedState.workflow && projectId === savedState.project
+        );
+
+        return savedState;
     }
 };
