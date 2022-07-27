@@ -11,6 +11,8 @@ describe('application store', () => {
     };
 
     beforeAll(() => {
+        window.btoa = (value) => value;
+
         fetchApplicationState = jest.fn().mockReturnValue(applicationState);
         addEventListener = jest.fn();
         removeEventListener = jest.fn();
@@ -35,13 +37,11 @@ describe('application store', () => {
             application: await import('~/store/application'),
             workflow: await import('~/store/workflow'),
             canvas: {
-                mutations: {
-                    restoreState: jest.fn()
-                },
                 getters: {
-                    toSave: () => ({
-                        saveMe: 'canvas'
-                    })
+                    getCanvasScrollState: jest.fn(() => () => ({ mockCanvasState: true }))
+                },
+                actions: {
+                    restoreScrollState: jest.fn()
                 }
             },
             selection: {
@@ -60,7 +60,7 @@ describe('application store', () => {
             activeProjectId: null,
             availablePortTypes: {},
             suggestedPortTypes: [],
-            savedStates: [],
+            savedCanvasStates: {},
             hasClipboardSupport: false
         });
     });
@@ -91,23 +91,6 @@ describe('application store', () => {
             store.commit('application/setSuggestedPortTypes', ['type1', 'type2']);
             expect(store.state.application.suggestedPortTypes)
                 .toStrictEqual(['type1', 'type2']);
-        });
-
-        it('sets saved states', () => {
-            store.commit('application/setSavedStates',
-                { zoomFactor: 1,
-                    scrollTop: 100,
-                    scrollLeft: 100,
-                    workflow: 'workflow1',
-                    project: 'project1' });
-
-            expect(store.state.application.savedStates).toStrictEqual(
-                [{ zoomFactor: 1,
-                    scrollTop: 100,
-                    scrollLeft: 100,
-                    workflow: 'workflow1',
-                    project: 'project1' }]
-            );
         });
 
         it('sets the clipboard support flag', () => {
@@ -303,17 +286,17 @@ describe('application store', () => {
         test('switch from nothing to workflow', async () => {
             store.state.workflow.activeWorkflow = null;
 
-            await store.dispatch('application/switchWorkflow',
-                { projectId: '1', workflowId: 'root' });
+            await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root' });
 
-            expect(dispatchSpy).not.toHaveBeenCalledWith('application/saveUserState', undefined);
+            expect(dispatchSpy).not.toHaveBeenCalledWith('application/saveCanvasState', undefined);
             expect(dispatchSpy).not.toHaveBeenCalledWith('workflow/unloadActiveWorkflow', expect.anything());
 
-            expect(dispatchSpy).toHaveBeenCalledWith('application/loadWorkflow',
-                { projectId: '1', workflowId: 'root' });
+            expect(dispatchSpy).toHaveBeenCalledWith(
+                'application/loadWorkflow',
+                { projectId: '1', workflowId: 'root' }
+            );
             expect(store.state.application.activeProjectId).toBe('1');
-            expect(dispatchSpy).toHaveBeenCalledWith('application/restoreUserState',
-                { projectId: '1', workflowId: 'root' });
+            expect(dispatchSpy).toHaveBeenCalledWith('application/restoreCanvasState', undefined);
         });
     });
 
@@ -330,15 +313,65 @@ describe('application store', () => {
         });
     });
 
-    it('restores ui state', () => {
-        store.commit('application/setSavedStates',
-            { zoomFactor: 1,
+    describe('Saved Canvas States', () => {
+        beforeEach(() => {
+            store.state.workflow.activeWorkflow = {
+                info: { containerId: 'workflow1' },
+                projectId: 'project1'
+            };
+        });
+
+        it('sets saved states', () => {
+            store.commit('application/setSavedCanvasStates', {
+                zoomFactor: 1,
                 scrollTop: 100,
                 scrollLeft: 100,
                 workflow: 'workflow1',
-                project: 'project1' });
+                project: 'project1'
+            });
 
-        store.dispatch('application/restoreUserState', { projectId: 'project1', workflowId: 'workflow1' });
-        expect(storeConfig.canvas.mutations.restoreState).toHaveBeenCalled();
+            expect(store.state.application.savedCanvasStates).toStrictEqual({
+                'workflow1--project1': {
+                    zoomFactor: 1,
+                    scrollTop: 100,
+                    scrollLeft: 100,
+                    workflow: 'workflow1',
+                    project: 'project1'
+                }
+            });
+        });
+        
+        it('saves the canvas state', () => {
+            expect(store.state.application.savedCanvasStates).toEqual({});
+            store.dispatch('application/saveCanvasState');
+            
+            expect(storeConfig.canvas.getters.getCanvasScrollState).toHaveBeenCalled();
+            expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(1);
+            expect(store.state.application.savedCanvasStates['workflow1--project1']).toBeTruthy();
+        });
+    
+        it('restores canvas state', () => {
+            store.commit('application/setSavedCanvasStates', {
+                zoomFactor: 1,
+                scrollTop: 100,
+                scrollLeft: 100,
+                scrollHeight: 1000,
+                scrollWidth: 1000,
+                workflow: 'workflow1',
+                project: 'project1'
+            });
+    
+            store.dispatch('application/restoreCanvasState');
+            expect(storeConfig.canvas.actions.restoreScrollState).toHaveBeenCalledWith(
+                expect.any(Object),
+                expect.objectContaining({
+                    zoomFactor: 1,
+                    scrollTop: 100,
+                    scrollLeft: 100,
+                    scrollHeight: 1000,
+                    scrollWidth: 1000
+                })
+            );
+        });
     });
 });

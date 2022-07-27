@@ -2,6 +2,8 @@ import Vue from 'vue';
 import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '~api';
 import Fuse from 'fuse.js';
 
+const getCanvasStateKey = ({ workflow, project }) => `${window.btoa(workflow)}--${window.btoa(project)}`;
+
 /*
  * This store provides global application logic
  */
@@ -15,7 +17,7 @@ export const state = () => ({
     // A list provided by the backend that says which ports should be suggested to the user in the port type menu.
     suggestedPortTypes: [],
 
-    savedCanvasStates: [],
+    savedCanvasStates: {},
 
     /* Indicates whether the browser has support (enabled) for the Clipboard API or not */
     hasClipboardSupport: false
@@ -35,15 +37,13 @@ export const mutations = {
         state.suggestedPortTypes = portTypesIds;
     },
     setSavedCanvasStates(state, newStates) {
-        const filterByWorkflowAndProject =
-            (savedState) => ({ workflow, project }) =>
-                // eslint-disable-next-line implicit-arrow-linebreak
-                savedState.workflow !== workflow ||
-                savedState.project !== project;
-        
-        state.savedCanvasStates = state.savedCanvasStates
-            .filter(filterByWorkflowAndProject(newStates))
-            .concat(newStates);
+        const { workflow, project } = newStates;
+        const newStateKey = getCanvasStateKey({ workflow, project });
+
+        state.savedCanvasStates = {
+            ...state.savedCanvasStates,
+            [newStateKey]: newStates
+        };
     },
     setHasClipboardSupport(state, hasClipboardSupport) {
         state.hasClipboardSupport = hasClipboardSupport;
@@ -205,10 +205,8 @@ export const getters = {
 
     workflowCanvasState({ savedCanvasStates }, _, { workflow }) {
         const { info: { containerId: workflowId }, projectId } = workflow?.activeWorkflow;
-        const savedState = savedCanvasStates.find(
-            (savedState) => workflowId === savedState.workflow && projectId === savedState.project
-        );
 
-        return savedState;
+        const savedStateKey = getCanvasStateKey({ workflow: workflowId, project: projectId });
+        return savedCanvasStates[savedStateKey];
     }
 };

@@ -76,6 +76,9 @@ describe('Kanvas', () => {
                 },
                 mutations: {
                     setSavedStates: jest.fn()
+                },
+                getters: {
+                    workflowCanvasState: () => null
                 }
             }
         };
@@ -198,34 +201,15 @@ describe('Kanvas', () => {
         expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
     });
 
-    it('passes correct values to the store before destroy', async () => {
-        doShallowMount();
-        await wrapper.destroy();
+    it('does not zoom to fit after mounting if a canvas state exists for this worflow', async () => {
+        storeConfig.application.getters.workflowCanvasState = () => ({});
+        $store = mockVuexStore(storeConfig);
 
-        expect(storeConfig.application.mutations.setSavedStates).toHaveBeenCalledWith(expect.anything(), {
-            zoomFactor: 1,
-            scrollTop: 0,
-            scrollLeft: 0,
-            workflow: 'workflow1',
-            project: 'project1'
-        });
-    });
+        mocks = { $store };
+        shallowMount(WorkflowCanvas, { mocks });
+        await Vue.nextTick();
 
-    it('saves scroll positions on scroll', async () => {
-        doShallowMount();
-        wrapper.element.scrollTop = 50;
-        wrapper.element.scrollLeft = 50;
-        wrapper.findComponent(Kanvas).trigger('scroll');
-
-        await wrapper.destroy();
-
-        expect(storeConfig.application.mutations.setSavedStates).toHaveBeenCalledWith(expect.anything(), {
-            zoomFactor: 1,
-            scrollTop: 50,
-            scrollLeft: 50,
-            workflow: 'workflow1',
-            project: 'project1'
-        });
+        expect(storeConfig.canvas.actions.fillScreen).not.toHaveBeenCalled();
     });
 
     describe('clearing selected objects', () => {
