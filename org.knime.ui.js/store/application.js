@@ -117,6 +117,7 @@ export const actions = {
             await dispatch('loadWorkflow', { projectId, workflowId });
 
             await Vue.nextTick();
+            await Vue.nextTick();
 
             // restore scroll and zoom if saved before
             dispatch('restoreCanvasState');
@@ -161,14 +162,14 @@ export const actions = {
             commit('workflow/setActiveWorkflow', null, { root: true });
         }
     },
-    saveCanvasState({ state, rootGetters, commit, rootState }) {
+    saveCanvasState({ rootGetters, commit, rootState }) {
         const { info: { containerId: workflow }, projectId: project } = rootState.workflow?.activeWorkflow;
 
         const scrollState = rootGetters['canvas/getCanvasScrollState']();
 
         commit('setSavedCanvasStates', { ...scrollState, project, workflow });
     },
-    restoreCanvasState({ state, dispatch, rootGetters, getters, rootState }) {
+    restoreCanvasState({ dispatch, getters }) {
         const { workflowCanvasState } = getters;
         
         if (workflowCanvasState) {

@@ -22,7 +22,6 @@ export default {
         ...mapGetters('application', ['workflowCanvasState']),
         ...mapGetters('canvas', ['contentBounds']),
         ...mapGetters('workflow', ['isWorkflowEmpty']),
-
         ...mapState('nodeRepository', { isDraggingNodeFromRepository: 'isDraggingNode' }),
         ...mapState('canvas', ['zoomFactor']),
         ...mapState('application', ['activeProjectId']),
@@ -63,11 +62,9 @@ export default {
     },
     methods: {
         ...mapMutations('canvas', ['setInteractionsEnabled']),
-        
         ...mapActions('canvas', ['fillScreen']),
         ...mapActions('panel', ['setNodeRepositoryActive', 'setWorkflowMetaActive']),
         ...mapActions('selection', ['deselectAllObjects']),
-
         onNodeSelectionPreview($event) {
             this.$refs.workflow.applyNodeSelectionPreview($event);
         },
