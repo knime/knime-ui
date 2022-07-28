@@ -22,7 +22,7 @@ module.exports = {
     transformIgnorePatterns: [
         '/node_modules/'
     ],
-    reporters: ['default', ['jest-junit', { outputDirectory: './coverage' }]],
+    reporters: ['default', ['jest-junit', { outputDirectory: './coverage', reportTestSuiteErrors: true }]],
     coverageReporters: ['lcov', 'text'],
     // keep in sync with sonar-project.properties!
     collectCoverageFrom: [

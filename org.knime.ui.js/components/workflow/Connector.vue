@@ -39,7 +39,8 @@ export default {
         }
     },
     data: () => ({
-        suggestDelete: false
+        suggestDelete: false,
+        hover: false
     }),
     computed: {
         ...mapState('workflow', {
@@ -50,7 +51,8 @@ export default {
             isWorkflowWritable: 'isWritable',
             isDragging: 'isDragging'
         }),
-        ...mapGetters('selection', ['isConnectionSelected', 'isNodeSelected']),
+        ...mapGetters('selection', ['isConnectionSelected', 'isNodeSelected',
+            'singleSelectedNode', 'selectedConnections']),
         path() {
             let { start: [x1, y1], end: [x2, y2] } = this;
             // Update position of source or destination node is being moved
@@ -67,11 +69,10 @@ export default {
 
             return connectorPath(x1, y1, x2, y2);
         },
-        strokeColor() {
-            if (this.flowVariableConnection) {
-                return this.$colors.connectorColors.flowVariable;
-            }
-            return this.$colors.connectorColors.default;
+        isHighlighted() {
+            // if only one node and no connections are selected, highlight the connections from and to that node
+            return (Boolean(this.singleSelectedNode) && this.selectedConnections.length === 0) &&
+                (this.isNodeSelected(this.sourceNode) || this.isNodeSelected(this.destNode));
         }
     },
     watch: {
@@ -146,17 +147,18 @@ export default {
     <path
       :d="path"
       class="hover-area"
+      @mouseenter="hover = true"
+      @mouseleave="hover = false"
       @click.left="onMouseClick"
       @contextmenu.prevent="onMouseClick"
     />
     <path
       ref="visiblePath"
       :d="path"
-      :stroke="strokeColor"
-      :stroke-width="$shapes.connectorWidth"
       :class="{
         'flow-variable': flowVariableConnection,
         'read-only': !isWorkflowWritable,
+        highlighted: isHighlighted,
         dashed: streaming,
         selected: isConnectionSelected(id) && !isDragging
       }"
@@ -178,7 +180,7 @@ export default {
 
 path:not(.hover-area) {
   pointer-events: none;
-  stroke-width: 1;
+  stroke-width: var(--connector-width-shape);
   stroke: var(--knime-stone-gray);
   transition:
     stroke-width 0.1s ease-in,
@@ -189,8 +191,13 @@ path:not(.hover-area) {
   }
 
   &.selected {
-    stroke-width: 3;
+    stroke-width: var(--selected-connector-width-shape);
     stroke: var(--knime-cornflower);
+  }
+
+  &.highlighted {
+    stroke-width: var(--highlighted-connector-width-shape);
+    stroke: var(--knime-masala);
   }
 
   &.dashed {
@@ -214,7 +221,7 @@ path:not(.hover-area) {
   fill: none;
 
   &:hover + path {
-    stroke-width: 3;
+    stroke-width: var(--selected-connector-width-shape);
   }
 }
 </style>

@@ -28,6 +28,8 @@ export const nodeSelectionPadding = [nodeSelectionPaddingTop, nodeSelectionPaddi
 
 export const maxNodeNameWidth = (nodeSelectionPaddingLeft + nodeSize + nodeSelectionPaddingRight) * 1.7; // 170px
 
+export const nodeWidthWithPadding = nodeSelectionPaddingLeft + nodeSelectionPaddingRight + nodeSize;
+
 export const nodeNameEditorMinWidth = 10;
 
 // Margins including 3 NodeActionButtons. If more that 3 Buttons are present,
@@ -40,7 +42,9 @@ export const nodeActionBarButtonSpread = 25;
 export const componentBackgroundPortion = 0.75;
 export const nodeSelectionBarHeight = 12;
 
-export const connectorWidth = 2;
+export const connectorWidth = 1;
+export const highlightedConnectorWidth = 2;
+export const selectedConnectorWidth = 3;
 
 export const workflowAnnotationPadding = 3;
 export const nodeAnnotationPadding = 2;

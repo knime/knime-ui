@@ -84,7 +84,10 @@ describe('Connector.vue', () => {
                     },
                     selection: {
                         getters: {
-                            isConnectionSelected: () => jest.fn()
+                            isConnectionSelected: () => jest.fn(),
+                            singleSelectedNode: jest.fn(),
+                            selectedConnections: jest.fn().mockReturnValue([]),
+                            isNodeSelected: () => jest.fn()
                         },
                         actions: {
                             selectConnection: jest.fn(),
@@ -147,7 +150,10 @@ describe('Connector.vue', () => {
                 },
                 selection: {
                     getters: {
-                        isConnectionSelected: () => jest.fn()
+                        isConnectionSelected: () => jest.fn(),
+                        singleSelectedNode: jest.fn(),
+                        selectedConnections: jest.fn().mockReturnValue([]),
+                        isNodeSelected: () => jest.fn()
                     },
                     actions: {
                         selectConnection: jest.fn(),
@@ -162,6 +168,10 @@ describe('Connector.vue', () => {
                 mocks = { $shapes, $colors, $store };
                 wrapper = shallowMount(Connector, { propsData, mocks });
             };
+        });
+
+        afterEach(() => {
+            connectorPath.mockReset();
         });
 
         it('draws grab cursor by default', () => {
@@ -249,7 +259,10 @@ describe('Connector.vue', () => {
                 },
                 selection: {
                     getters: {
-                        isConnectionSelected: () => jest.fn()
+                        isConnectionSelected: () => jest.fn(),
+                        singleSelectedNode: jest.fn(),
+                        selectedConnections: jest.fn().mockReturnValue([]),
+                        isNodeSelected: () => jest.fn()
                     }
                 }
             });
@@ -312,7 +325,14 @@ describe('Connector.vue', () => {
             expect(wrapper.find('path').attributes().d).toBe('that path');
         });
 
-        it('applies styles for flow variable ports', () => {
+        it('does not add any style classes for regular connections', () => {
+            doShallowMount();
+            const classes = wrapper.findAll('path').at(1).classes();
+            expect(classes.includes('highlighted')).toBe(false);
+            expect(classes.includes('flow-variable')).toBe(false);
+        });
+
+        it('adds class for flow variable ports', () => {
             mocks = { $shapes, $colors, $store };
             wrapper = shallowMount(Connector, {
                 propsData: {
@@ -322,16 +342,36 @@ describe('Connector.vue', () => {
                 mocks
             });
 
-            const { 'stroke-width': strokeWidth, stroke } = wrapper.findAll('path').at(1).attributes();
-            expect(parseFloat(strokeWidth)).toBe($shapes.connectorWidth);
-            expect(stroke).toBe($colors.connectorColors.flowVariable);
+            const classes = wrapper.findAll('path').at(1).classes();
+            expect(classes.includes('flow-variable')).toBe(true);
         });
 
-        it('applies styles for other ports', () => {
+        it('highlights connection if source node is selected', () => {
+            storeConfig.selection.getters.singleSelectedNode = () => jest.fn().mockReturnValue('root:1');
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn()
+                .mockImplementation(node => node === 'root:1');
             doShallowMount();
-            const { 'stroke-width': strokeWidth, stroke } = wrapper.findAll('path').at(1).attributes();
-            expect(parseFloat(strokeWidth)).toBe($shapes.connectorWidth);
-            expect(stroke).toBe($colors.connectorColors.default);
+            const classes = wrapper.findAll('path').at(1).classes();
+            expect(classes.includes('highlighted')).toBe(true);
+        });
+
+        it('highlights connection if destination node is selected', () => {
+            storeConfig.selection.getters.singleSelectedNode = () => jest.fn().mockReturnValue('root:2');
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn()
+                .mockImplementation(node => node === 'root:2');
+            doShallowMount();
+            const classes = wrapper.findAll('path').at(1).classes();
+            expect(classes.includes('highlighted')).toBe(true);
+        });
+
+        it('does not highlight connections if a connection is selected', () => {
+            storeConfig.selection.getters.singleSelectedNode = jest.fn().mockReturnValue('root:2');
+            storeConfig.selection.getters.isNodeSelected = () => jest.fn()
+                .mockImplementation(node => node === 'root:2');
+            storeConfig.selection.getters.selectedConnections = jest.fn().mockReturnValueOnce(['conn']);
+            doShallowMount();
+            const classes = wrapper.findAll('path').at(1).classes();
+            expect(classes.includes('highlighted')).toBe(false);
         });
     });
 
@@ -380,13 +420,20 @@ describe('Connector.vue', () => {
                     },
                     selection: {
                         getters: {
-                            isConnectionSelected: () => jest.fn()
+                            isConnectionSelected: () => jest.fn(),
+                            singleSelectedNode: jest.fn(),
+                            selectedConnections: jest.fn().mockReturnValue([]),
+                            isNodeSelected: () => jest.fn()
                         }
                     }
                 });
                 mocks = { $shapes, $colors, $store };
                 wrapper = shallowMount(Connector, { propsData, mocks });
             };
+        });
+
+        afterEach(() => {
+            connectorPath.mockReset();
         });
 
         it('draws a path between table ports', () => {
@@ -433,7 +480,10 @@ describe('Connector.vue', () => {
                 },
                 selection: {
                     getters: {
-                        isConnectionSelected: () => jest.fn()
+                        isConnectionSelected: () => jest.fn(),
+                        singleSelectedNode: jest.fn(),
+                        selectedConnections: jest.fn().mockReturnValue([]),
+                        isNodeSelected: () => jest.fn()
                     }
                 }
             };
@@ -443,6 +493,10 @@ describe('Connector.vue', () => {
                 mocks = { $shapes, $colors, $store };
                 wrapper = shallowMount(Connector, { propsData, mocks });
             };
+        });
+
+        afterEach(() => {
+            connectorPath.mockReset();
         });
 
         it('draw connector forward', () => {
@@ -508,7 +562,10 @@ describe('Connector.vue', () => {
                 },
                 selection: {
                     getters: {
-                        isConnectionSelected: () => jest.fn()
+                        isConnectionSelected: () => jest.fn(),
+                        singleSelectedNode: jest.fn(),
+                        selectedConnections: jest.fn().mockReturnValue([]),
+                        isNodeSelected: () => jest.fn()
                     },
                     actions: {
                         selectConnection: jest.fn(),
