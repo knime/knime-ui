@@ -31,7 +31,7 @@ export default {
         table: null,
         isLazyLoading: false
     }),
-    async fetch() {
+    async created() {
         this.$emit('update', { state: 'loading' });
         try {
             const firstRows = 100; // batch size for initial load
@@ -52,6 +52,27 @@ export default {
             this.$emit('update', { state: 'error', message: "Couldn't load table" });
         }
     },
+    // async fetch() {
+    //     this.$emit('update', { state: 'loading' });
+    //     try {
+    //         const firstRows = 100; // batch size for initial load
+    //         let { projectId, workflowId, nodeId, portIndex } = this;
+    //         let table = await loadTable({ projectId, workflowId, nodeId, portIndex, batchSize: firstRows });
+
+    //         // number of rows unknown. Easier for comparison
+    //         if (table.totalNumRows === -1) {
+    //             table.totalNumRows = Infinity;
+    //         }
+
+    //         this.table = table;
+
+    //         // show table
+    //         this.$emit('update', { state: 'ready' });
+    //     } catch (e) {
+    //         consola.error(e);
+    //         this.$emit('update', { state: 'error', message: "Couldn't load table" });
+    //     }
+    // },
     computed: {
         canLoadMoreRows() {
             const { table } = this;

@@ -14,7 +14,7 @@ export default {
     data: () => ({
         table: null
     }),
-    async fetch() {
+    async created() {
         this.$emit('update', { state: 'loading' });
         try {
             let { projectId, workflowId, nodeId, portIndex } = this;
