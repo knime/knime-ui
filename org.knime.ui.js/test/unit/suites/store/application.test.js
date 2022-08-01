@@ -16,6 +16,8 @@ describe('application store', () => {
     };
 
     beforeAll(() => {
+        window.btoa = (value) => value;
+
         fetchApplicationState = jest.fn().mockReturnValue(applicationState);
         addEventListener = jest.fn();
         removeEventListener = jest.fn();
@@ -40,13 +42,11 @@ describe('application store', () => {
             application: await import('~/store/application'),
             workflow: await import('~/store/workflow'),
             canvas: {
-                mutations: {
-                    restoreState: jest.fn()
-                },
                 getters: {
-                    toSave: () => ({
-                        saveMe: 'canvas'
-                    })
+                    getCanvasScrollState: jest.fn(() => () => ({ mockCanvasState: true }))
+                },
+                actions: {
+                    restoreScrollState: jest.fn()
                 }
             },
             selection: {
@@ -63,9 +63,9 @@ describe('application store', () => {
         expect(store.state.application).toStrictEqual({
             openProjects: [],
             activeProjectId: null,
-            savedUserState: {},
             availablePortTypes: {},
             suggestedPortTypes: [],
+            savedCanvasStates: {},
             hasClipboardSupport: false
         });
     });
@@ -84,15 +84,6 @@ describe('application store', () => {
                 [{ projectId: 'foo', name: 'bar' },
                     { projectId: 'bee', name: 'gee' }]
             );
-        });
-
-        it('allows setting savedState', () => {
-            store.commit('application/setOpenProjects', [{ projectId: 'p1' }]);
-            store.commit('application/saveUserState', { projectId: 'p1', workflowId: 'root', stateToSave: 'SAFE' });
-
-            let savedState = store.state.application.savedUserState;
-
-            expect(savedState.p1.root).toBe('SAFE');
         });
 
         it('sets the available port types', () => {
@@ -302,7 +293,6 @@ describe('application store', () => {
 
             await store.dispatch('application/switchWorkflow', null);
 
-            expect(dispatchSpy).toHaveBeenCalledWith('application/saveUserState', undefined);
             expect(dispatchSpy).toHaveBeenCalledWith('application/unloadActiveWorkflow', { clearWorkflow: true });
             expect(store.state.application.activeProjectId).toBe(null);
 
@@ -312,16 +302,17 @@ describe('application store', () => {
         test('switch from nothing to workflow', async () => {
             store.state.workflow.activeWorkflow = null;
 
-            await store.dispatch('application/switchWorkflow',
-                { projectId: '1', workflowId: 'root' });
+            await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root' });
 
-            expect(dispatchSpy).not.toHaveBeenCalledWith('application/saveUserState', undefined);
+            expect(dispatchSpy).not.toHaveBeenCalledWith('application/saveCanvasState', undefined);
             expect(dispatchSpy).not.toHaveBeenCalledWith('workflow/unloadActiveWorkflow', expect.anything());
 
-            expect(dispatchSpy).toHaveBeenCalledWith('application/loadWorkflow',
-                { projectId: '1', workflowId: 'root' });
-            expect(dispatchSpy).toHaveBeenCalledWith('application/restoreUserState', undefined);
+            expect(dispatchSpy).toHaveBeenCalledWith(
+                'application/loadWorkflow',
+                { projectId: '1', workflowId: 'root' }
+            );
             expect(store.state.application.activeProjectId).toBe('1');
+            expect(dispatchSpy).toHaveBeenCalledWith('application/restoreCanvasState', undefined);
         });
     });
 
@@ -338,35 +329,65 @@ describe('application store', () => {
         });
     });
 
-    it('saves user state', async () => {
-        // TODO: NXT-929 re-implement saving the user state
+    describe('Saved Canvas States', () => {
+        beforeEach(() => {
+            store.state.workflow.activeWorkflow = {
+                info: { containerId: 'workflow1' },
+                projectId: 'project1'
+            };
+        });
+
+        it('sets saved states', () => {
+            store.commit('application/setSavedCanvasStates', {
+                zoomFactor: 1,
+                scrollTop: 100,
+                scrollLeft: 100,
+                workflow: 'workflow1',
+                project: 'project1'
+            });
+
+            expect(store.state.application.savedCanvasStates).toStrictEqual({
+                'workflow1--project1': {
+                    zoomFactor: 1,
+                    scrollTop: 100,
+                    scrollLeft: 100,
+                    workflow: 'workflow1',
+                    project: 'project1'
+                }
+            });
+        });
         
-        // await store.dispatch('application/replaceApplicationState', {
-        //     openedWorkflows: [{ projectId: '1', name: 'p1' }]
-        // });
-        // expect(store.state.application.savedUserState).toStrictEqual({
-        //     '1': {}
-        // });
-        // store.dispatch('application/saveUserState');
-
-        // expect(store.state.application.savedUserState).toStrictEqual({
-        //     '1': {
-        //         undefined: {
-        //             canvas: { saveMe: 'canvas' }
-        //         }
-        //     }
-        // });
-    });
-
-    it('restores ui state', async () => {
-        // TODO: NXT-929 re-implement saving the user state
-        
-        // await store.dispatch('application/replaceApplicationState', {
-        //     openedWorkflows: [{ projectId: '1', name: 'p1' }]
-        // });
-        // expect(storeConfig.canvas.mutations.restoreState).toHaveBeenCalled();
-
-        // await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root' });
-        // expect(storeConfig.canvas.mutations.restoreState).toHaveBeenCalled();
+        it('saves the canvas state', () => {
+            expect(store.state.application.savedCanvasStates).toEqual({});
+            store.dispatch('application/saveCanvasState');
+            
+            expect(storeConfig.canvas.getters.getCanvasScrollState).toHaveBeenCalled();
+            expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(1);
+            expect(store.state.application.savedCanvasStates['workflow1--project1']).toBeTruthy();
+        });
+    
+        it('restores canvas state', () => {
+            store.commit('application/setSavedCanvasStates', {
+                zoomFactor: 1,
+                scrollTop: 100,
+                scrollLeft: 100,
+                scrollHeight: 1000,
+                scrollWidth: 1000,
+                workflow: 'workflow1',
+                project: 'project1'
+            });
+    
+            store.dispatch('application/restoreCanvasState');
+            expect(storeConfig.canvas.actions.restoreScrollState).toHaveBeenCalledWith(
+                expect.any(Object),
+                expect.objectContaining({
+                    zoomFactor: 1,
+                    scrollTop: 100,
+                    scrollLeft: 100,
+                    scrollHeight: 1000,
+                    scrollWidth: 1000
+                })
+            );
+        });
     });
 });

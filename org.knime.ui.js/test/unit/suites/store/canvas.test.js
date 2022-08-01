@@ -200,35 +200,50 @@ describe('canvas store', () => {
             });
         });
 
-        describe('restore state', () => {
-            it('restores saved state', () => {
-                store.commit('canvas/restoreState', {
+        describe('scroll state', () => {
+            it('returns the canvas scroll state', () => {
+                store.dispatch('canvas/initScrollContainerElement', {
+                    ...scrollContainer,
+                    scrollLeft: 200,
+                    scrollTop: 200,
+                    scrollHeight: 1000,
+                    scrollWidth: 1000
+                });
+                store.commit('canvas/setFactor', 3);
+
+                const getCanvasScrollState = store.getters['canvas/getCanvasScrollState'];
+                expect(getCanvasScrollState()).toEqual({
+                    zoomFactor: 3,
+                    scrollLeft: 200,
+                    scrollTop: 200,
+                    scrollHeight: 1000,
+                    scrollWidth: 1000
+                });
+            });
+
+            it('restores saved scroll state', async () => {
+                store.dispatch('canvas/initScrollContainerElement', {
+                    ...scrollContainer,
+                    scrollHeight: 1000,
+                    scrollWidth: 1000
+                });
+    
+                await store.dispatch('canvas/restoreScrollState', {
                     zoomFactor: 2,
                     scrollLeft: 200,
-                    scrollTop: 100
+                    scrollWidth: 500,
+                    scrollTop: 100,
+                    scrollHeight: 500
                 });
                 expect(store.state.canvas.zoomFactor).toBe(2);
-
-                expect(scrollContainer.scrollLeft).toBe(200);
-                expect(scrollContainer.scrollTop).toBe(100);
-            });
-
-            it('returns state to save', () => {
-                scrollContainer.scrollLeft = 50;
-                scrollContainer.scrollTop = 100;
-                store.state.canvas.zoomFactor = 2;
-                expect(store.getters['canvas/toSave']).toStrictEqual({
-                    zoomFactor: 2,
-                    scrollLeft: 50,
-                    scrollTop: 100
-                });
-            });
-
-            it('has no saved state', () => {
-                store.commit('canvas/restoreState', null);
-                expect(store.state.canvas.zoomFactor).toBe(defaultZoomFactor);
-                expect(scrollContainer.scrollLeft).toBe(0);
-                expect(scrollContainer.scrollTop).toBe(0);
+    
+                // proportion:
+                // 200(scrollLeft) is to 500(scrollWidth) as 400(expected) is to 1000(currentScrollWidth)
+                expect(scrollContainer.scrollLeft).toBe(400);
+                
+                // proportion:
+                // 100(scrollTop) is to 500(scrollHeight) as 200(expected) is to 1000(currentScrollHeight)
+                expect(scrollContainer.scrollTop).toBe(200);
             });
         });
 

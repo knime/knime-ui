@@ -1,5 +1,8 @@
+import Vue from 'vue';
 import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '~api';
 import { makeTypeSearch } from '~/util/fuzzyPortTypeSearch';
+
+const getCanvasStateKey = ({ workflow, project }) => `${window.btoa(workflow)}--${window.btoa(project)}`;
 
 /*
  * This store provides global application logic
@@ -8,14 +11,13 @@ export const state = () => ({
     openProjects: [],
     activeProjectId: null,
 
-    /* Map of projectId -> workflowId -> savedState */
-    savedUserState: {},
-
     /* Map of port type id to port type */
     availablePortTypes: {},
     
     // A list provided by the backend that says which ports should be suggested to the user in the port type menu.
     suggestedPortTypes: [],
+
+    savedCanvasStates: {},
 
     /* Indicates whether the browser has support (enabled) for the Clipboard API or not */
     hasClipboardSupport: false
@@ -27,20 +29,21 @@ export const mutations = {
     },
     setOpenProjects(state, projects) {
         state.openProjects = projects.map(({ projectId, name }) => ({ projectId, name }));
-
-        // add entry to savedUserState for each project
-        state.openProjects.forEach(({ projectId }) => {
-            state.savedUserState[projectId] = {};
-        });
-    },
-    saveUserState(state, { projectId, workflowId, stateToSave }) {
-        state.savedUserState[projectId][workflowId] = stateToSave;
     },
     setAvailablePortTypes(state, availablePortTypes) {
         state.availablePortTypes = availablePortTypes;
     },
     setSuggestedPortTypes(state, portTypesIds) {
         state.suggestedPortTypes = portTypesIds;
+    },
+    setSavedCanvasStates(state, newStates) {
+        const { workflow, project } = newStates;
+        const newStateKey = getCanvasStateKey({ workflow, project });
+
+        state.savedCanvasStates = {
+            ...state.savedCanvasStates,
+            [newStateKey]: newStates
+        };
     },
     setHasClipboardSupport(state, hasClipboardSupport) {
         state.hasClipboardSupport = hasClipboardSupport;
@@ -108,7 +111,7 @@ export const actions = {
     async switchWorkflow({ commit, dispatch, rootState }, newWorkflow) {
         // save user state like scroll and zoom
         if (rootState.workflow?.activeWorkflow) {
-            dispatch('saveUserState');
+            dispatch('saveCanvasState');
 
             // unload current workflow
             dispatch('unloadActiveWorkflow', { clearWorkflow: !newWorkflow });
@@ -119,9 +122,12 @@ export const actions = {
         if (newWorkflow) {
             let { projectId, workflowId } = newWorkflow;
             await dispatch('loadWorkflow', { projectId, workflowId });
-            
+
+            await Vue.nextTick();
+            await Vue.nextTick();
+
             // restore scroll and zoom if saved before
-            dispatch('restoreUserState');
+            dispatch('restoreCanvasState');
         }
     },
     async loadWorkflow({ commit, rootState, dispatch }, { projectId, workflowId = 'root' }) {
@@ -172,26 +178,19 @@ export const actions = {
             commit('workflow/setActiveWorkflow', null, { root: true });
         }
     },
-    saveUserState({ state, commit, rootState, rootGetters }) {
-        // TODO: NXT-929 re-implement saving the user state
+    saveCanvasState({ rootGetters, commit, rootState }) {
+        const { info: { containerId: workflow }, projectId: project } = rootState.workflow?.activeWorkflow;
 
-        // // deep clone without observers
-        // stateToSave = JSON.parse(JSON.stringify(stateToSave));
+        const scrollState = rootGetters['canvas/getCanvasScrollState']();
 
-        // commit('saveUserState', {
-        //     projectId: state.activeProjectId,
-        //     workflowId: rootGetters['workflow/activeWorkflowId'],
-        //     stateToSave
-        // });
+        commit('setSavedCanvasStates', { ...scrollState, project, workflow });
     },
-    restoreUserState({ state: { savedUserState, activeProjectId }, commit, rootGetters }) {
-        // TODO: NXT-929 re-implement saving the user state
+    restoreCanvasState({ dispatch, getters }) {
+        const { workflowCanvasState } = getters;
         
-        // const workflowId = rootGetters['workflow/activeWorkflowId'];
-
-        // // is undefined if opened for the first time
-        // const savedState = savedUserState[activeProjectId][workflowId];
-        // commit('canvas/restoreState', savedState?.canvas, { root: true });
+        if (workflowCanvasState) {
+            dispatch('canvas/restoreScrollState', workflowCanvasState, { root: true });
+        }
     }
 };
 
@@ -205,6 +204,13 @@ export const getters = {
         if (!activeProjectId) {
             return null;
         }
-        return openProjects.find(project => project.projectId === activeProjectId)?.name;
+        return openProjects.find(project => project.projectId === activeProjectId).name;
+    },
+
+    workflowCanvasState({ savedCanvasStates }, _, { workflow }) {
+        const { info: { containerId: workflowId }, projectId } = workflow?.activeWorkflow;
+
+        const savedStateKey = getCanvasStateKey({ workflow: workflowId, project: projectId });
+        return savedCanvasStates[savedStateKey];
     }
 };

@@ -45,17 +45,6 @@ export const mutations = {
         no need to restore savedContainerScroll, it will be overwritten when setting containerScroll
         don't restore containerSize, it might have changed
     */
-    restoreState(state, savedState) {
-        if (!savedState) {
-            return;
-        }
-        let { zoomFactor, scrollLeft, scrollTop } = savedState;
-        state.zoomFactor = zoomFactor;
-
-        let el = state.getScrollContainerElement();
-        el.scrollLeft = scrollLeft;
-        el.scrollTop = scrollTop;
-    },
     /*
      * suggestPanning is set when the Alt-key is pressed and displays a different cursor
      */
@@ -252,20 +241,44 @@ export const actions = {
 
         kanvas.scrollLeft += deltaX;
         kanvas.scrollTop += deltaY;
+    },
+
+    async restoreScrollState({ state, commit }, savedState) {
+        const { zoomFactor, scrollLeft, scrollTop, scrollWidth, scrollHeight } = savedState;
+        commit('setFactor', zoomFactor);
+        await Vue.nextTick();
+
+        const kanvas = state.getScrollContainerElement();
+        
+        const widthRatioBefore = scrollLeft / scrollWidth;
+        const widthRatioAfter = kanvas.scrollWidth * widthRatioBefore;
+        
+        const heightRatioBefore = scrollTop / scrollHeight;
+        const heightRatioAfter = kanvas.scrollHeight * heightRatioBefore;
+        
+        kanvas.scrollTo({
+            top: heightRatioAfter,
+            left: widthRatioAfter,
+            behavior: 'auto'
+        });
     }
 };
 
 export const getters = {
-    /*
-        returns state that should be remembered and restored
-        upon switching workflows
-    */
-    toSave({ zoomFactor, getScrollContainerElement }) {
-        let el = getScrollContainerElement();
-        return {
-            zoomFactor,
-            scrollLeft: el.scrollLeft,
-            scrollTop: el.scrollTop
+    getCanvasScrollState(state, getters) {
+        const kanvas = state.getScrollContainerElement();
+
+        return () => {
+            const { zoomFactor } = state;
+            const { scrollLeft, scrollTop, scrollWidth, scrollHeight } = kanvas;
+
+            return {
+                scrollLeft,
+                scrollTop,
+                scrollWidth,
+                scrollHeight,
+                zoomFactor
+            };
         };
     },
     /*

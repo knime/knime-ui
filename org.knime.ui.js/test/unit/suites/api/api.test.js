@@ -218,6 +218,54 @@ describe('API', () => {
             });
         });
 
+        it('fetch port view info', async () => {
+            await api.getPortView(
+                'workflow',
+                'root:1',
+                'root:1:2',
+                // eslint-disable-next-line no-magic-numbers
+                10
+            );
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'NodeService.getPortView',
+                params: [
+                    'workflow',
+                    'root:1',
+                    'root:1:2',
+                    // eslint-disable-next-line no-magic-numbers
+                    10
+                ],
+                id: 0
+            });
+        });
+
+        it('call port data service', async () => {
+            await api.callPortDataService(
+                'workflow',
+                'root:1',
+                'root:1:2',
+                // eslint-disable-next-line no-magic-numbers
+                10,
+                'data',
+                'request'
+            );
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'NodeService.callPortDataService',
+                params: [
+                    'workflow',
+                    'root:1',
+                    'root:1:2',
+                    // eslint-disable-next-line no-magic-numbers
+                    10,
+                    'data',
+                    'request'
+                ],
+                id: 0
+            });
+        });
+
 
         describe('error handling', () => {
             beforeAll(() => {
@@ -403,7 +451,7 @@ describe('API', () => {
 
     describe('Port RPCs', () => {
         describe('loadTable', () => {
-            it('calls jsonrpc', async () => {
+            it.skip('calls jsonrpc', async () => {
                 window.jsonrpc.mockReturnValueOnce({
                     jsonrpc: '2.0',
                     id: -1,
@@ -424,39 +472,11 @@ describe('API', () => {
                 let expectedNestedRPC = '{"jsonrpc":"2.0","id":0,"method":"getTable","params":[100,450]}';
                 expect(window.jsonrpc).toHaveBeenCalledWith({
                     jsonrpc: '2.0',
-                    method: 'NodeService.doPortRpc',
+                    method: 'NodeService.callPortDataService',
                     params: ['foo', 'root', 'root:123', 2, expectedNestedRPC],
                     id: 0
                 });
                 expect(table).toBe('nested result');
-            });
-        });
-
-        describe('loadFlowVariables', () => {
-            it('calls jsonrpc', async () => {
-                window.jsonrpc.mockReturnValueOnce({
-                    jsonrpc: '2.0',
-                    id: -1,
-                    result: JSON.stringify({
-                        jsonrpc: '2.0',
-                        result: 'dummy',
-                        id: -2
-                    })
-                });
-                let flowVariables = await api.loadFlowVariables({
-                    projectId: 'foo',
-                    workflowId: 'root',
-                    nodeId: 'root:123',
-                    portIndex: 2
-                });
-                let expectedNestedRPC = '{"jsonrpc":"2.0","id":0,"method":"getFlowVariables"}';
-                expect(window.jsonrpc).toHaveBeenCalledWith({
-                    jsonrpc: '2.0',
-                    method: 'NodeService.doPortRpc',
-                    params: ['foo', 'root', 'root:123', 2, expectedNestedRPC],
-                    id: 0
-                });
-                expect(flowVariables).toBe('dummy');
             });
         });
 
@@ -483,15 +503,6 @@ describe('API', () => {
                     return new Error('Error not thrown');
                 } catch (e) {
                     expect(e.message).toContain('Couldn\'t load table');
-                }
-            });
-
-            it('handles errors on loadFlowVariables', async () => {
-                try {
-                    await api.loadFlowVariables({});
-                    return new Error('Error not thrown');
-                } catch (e) {
-                    expect(e.message).toContain('Couldn\'t load flow variables');
                 }
             });
 

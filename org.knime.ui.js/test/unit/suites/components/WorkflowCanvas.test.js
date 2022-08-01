@@ -22,6 +22,9 @@ describe('Kanvas', () => {
         isWorkflowEmpty = false;
         storeConfig = {
             canvas: {
+                state: {
+                    zoomFactor: 1
+                },
                 getters: {
                     contentBounds: () => ({
                         left: 5,
@@ -43,6 +46,13 @@ describe('Kanvas', () => {
                 }
             },
             workflow: {
+                state: {
+                    activeWorkflow: {
+                        info: {
+                            containerId: 'workflow1'
+                        }
+                    }
+                },
                 getters: {
                     isWorkflowEmpty() {
                         return isWorkflowEmpty;
@@ -58,6 +68,17 @@ describe('Kanvas', () => {
                 actions: {
                     setNodeRepositoryActive: jest.fn(),
                     setWorkflowMetaActive: jest.fn()
+                }
+            },
+            application: {
+                state: {
+                    activeProjectId: 'project1'
+                },
+                mutations: {
+                    setSavedStates: jest.fn()
+                },
+                getters: {
+                    workflowCanvasState: () => null
                 }
             }
         };
@@ -178,6 +199,17 @@ describe('Kanvas', () => {
         await Vue.nextTick();
 
         expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
+    });
+
+    it('does not zoom to fit after mounting if a canvas state exists for this worflow', async () => {
+        storeConfig.application.getters.workflowCanvasState = () => ({});
+        $store = mockVuexStore(storeConfig);
+
+        mocks = { $store };
+        shallowMount(WorkflowCanvas, { mocks });
+        await Vue.nextTick();
+
+        expect(storeConfig.canvas.actions.fillScreen).not.toHaveBeenCalled();
     });
 
     describe('clearing selected objects', () => {

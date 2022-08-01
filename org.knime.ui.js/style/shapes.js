@@ -42,7 +42,9 @@ export const nodeActionBarButtonSpread = 25;
 export const componentBackgroundPortion = 0.75;
 export const nodeSelectionBarHeight = 12;
 
-export const connectorWidth = 2;
+export const connectorWidth = 1;
+export const highlightedConnectorWidth = 2;
+export const selectedConnectorWidth = 3;
 
 export const workflowAnnotationPadding = 3;
 export const nodeAnnotationPadding = 2;

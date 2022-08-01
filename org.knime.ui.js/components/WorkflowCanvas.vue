@@ -19,9 +19,13 @@ export default {
     },
     mixins: [dropNode],
     computed: {
+        ...mapGetters('application', ['workflowCanvasState']),
         ...mapGetters('canvas', ['contentBounds']),
         ...mapGetters('workflow', ['isWorkflowEmpty']),
-        ...mapState('nodeRepository', { isDraggingNodeFromRepository: 'isDraggingNode' })
+        ...mapState('nodeRepository', { isDraggingNodeFromRepository: 'isDraggingNode' }),
+        ...mapState('canvas', ['zoomFactor']),
+        ...mapState('application', ['activeProjectId']),
+        ...mapState('workflow', ['activeWorkflow'])
     },
     watch: {
         isWorkflowEmpty: {
@@ -50,8 +54,10 @@ export default {
 
         this.$nextTick(() => {
             // put canvas into fillScreen view after loading the workflow
-            // TODO: To be changed in NXT-929
-            this.fillScreen();
+            // if there isn't a saved canvas state for it
+            if (!this.workflowCanvasState) {
+                this.fillScreen();
+            }
         });
     },
     methods: {
