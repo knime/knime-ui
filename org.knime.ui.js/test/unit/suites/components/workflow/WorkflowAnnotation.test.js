@@ -31,7 +31,7 @@ describe('Workflow Annotation', () => {
         });
 
         it('styles', () => {
-            expect(wrapper.find('foreignObject').attributes()).toStrictEqual({
+            expect(wrapper.attributes()).toStrictEqual({
                 height: '50',
                 width: '100',
                 x: '1',

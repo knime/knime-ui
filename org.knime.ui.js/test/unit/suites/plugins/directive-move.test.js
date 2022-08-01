@@ -1,11 +1,14 @@
-import { mount } from '@vue/test-utils';
-import '~/plugins/directive-move';
 import Vue from 'vue';
+import { mount } from '@vue/test-utils';
+import { directiveMove } from '~/plugins/directive-move';
 
 describe('directive-move', () => {
     window.addEventListener = jest.fn();
     let vm, onMove, onMoveStart, onMoveEnd, dummyTarget;
 
+    beforeAll(() => {
+        Vue.directive(directiveMove.name, directiveMove.options)
+    })
 
     beforeEach(() => {
         vm = null;

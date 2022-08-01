@@ -66,15 +66,15 @@ describe('AutoSizeForeignObject.vue', () => {
         };
     });
 
-    it('should respect yOffset', () => {
+    it('should respect yOffset', async () => {
         doShallowMount();
 
-        expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+        expect(wrapper.attributes()).toEqual(expect.objectContaining({
             y: '0'
         }));
 
         doShallowMount({ yOffset: 12 });
-        expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+        expect(wrapper.attributes()).toEqual(expect.objectContaining({
             y: '12'
         }));
     });
@@ -88,7 +88,7 @@ describe('AutoSizeForeignObject.vue', () => {
         await flushTaskQueue();
 
         expect(errorMock).toBeCalled();
-        expect(wrapper.find('foreignObject').attributes()).toEqual(
+        expect(wrapper.attributes()).toEqual(
             expect.objectContaining({ height: '1' })
         );
         errorMock.mockRestore();
@@ -127,7 +127,7 @@ describe('AutoSizeForeignObject.vue', () => {
         // Schedule callback to run after next task in order to let the component render the template
         // otherwise we'd have to call $nextTick twice for this case, which is not very clean
         await flushTaskQueue();
-        expect(wrapper.find('foreignObject').attributes()).toEqual(
+        expect(wrapper.attributes()).toEqual(
             expect.objectContaining({
                 height: expectedHeight.toString(),
                 width: expectedWidth.toString(),
@@ -139,7 +139,7 @@ describe('AutoSizeForeignObject.vue', () => {
     it('should adjust dimensions on mount', async () => {
         doShallowMount();
         await flushTaskQueue();
-        expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+        expect(wrapper.attributes()).toEqual(expect.objectContaining({
             height: mockRectHeight.toString(),
             width: mockRectWidth.toString(),
             x: ((propsData.parentWidth - mockRectWidth) / 2).toString()
@@ -151,7 +151,7 @@ describe('AutoSizeForeignObject.vue', () => {
         
         await flushTaskQueue();
 
-        expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+        expect(wrapper.attributes()).toEqual(expect.objectContaining({
             height: mockRectHeight.toString(),
             width: mockRectWidth.toString(),
             x: ((propsData.parentWidth - mockRectWidth) / 2).toString()
@@ -170,7 +170,7 @@ describe('AutoSizeForeignObject.vue', () => {
 
         await flushTaskQueue();
 
-        expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+        expect(wrapper.attributes()).toEqual(expect.objectContaining({
             height: newWidth.toString(),
             width: newHeight.toString()
         }));
@@ -204,7 +204,7 @@ describe('AutoSizeForeignObject.vue', () => {
         await flushTaskQueue();
 
         // width and height values should be the same
-        expect(localWrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+        expect(localWrapper.attributes()).toEqual(expect.objectContaining({
             height: mockRectHeight.toString(),
             width: mockRectWidth.toString()
         }));
@@ -217,7 +217,7 @@ describe('AutoSizeForeignObject.vue', () => {
 
         await wrapper.vm.$nextTick();
 
-        expect(wrapper.find('foreignObject').attributes()).toEqual(
+        expect(wrapper.attributes()).toEqual(
             expect.objectContaining({
                 height: startHeight.toString(),
                 width: startWidth.toString()
@@ -233,7 +233,7 @@ describe('AutoSizeForeignObject.vue', () => {
 
         await flushTaskQueue();
 
-        expect(wrapper.find('foreignObject').attributes()).toEqual(expect.objectContaining({
+        expect(wrapper.attributes()).toEqual(expect.objectContaining({
             y: expectedY.toString()
         }));
     });

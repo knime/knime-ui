@@ -1,6 +1,6 @@
-import { createLocalVue } from '@vue/test-utils';
-import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { mockVuexStore } from '~/test/unit/test-utils';
 
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
 import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg?inline';
@@ -38,12 +38,9 @@ describe('WorkflowBreadcrumb.vue', () => {
             };
             store = mockVuexStore(storeConfig);
 
-            wrapper = await shallowMountWithAsyncData(
+            wrapper = await shallowMount(
                 WorkflowBreadcrumb,
-                { store },
-                {
-                    mocks: { $store: store }
-                }
+                { mocks: { $store: store } }
             );
         };
     });

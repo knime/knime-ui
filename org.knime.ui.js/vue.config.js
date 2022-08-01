@@ -1,8 +1,6 @@
 const { defineConfig } = require('@vue/cli-service');
 
 const path = require('path');
-// const srcDir = path.resolve(__dirname);
-// const commonsDir = path.join(knime_ui_dir, 'webapps-common');
 
 module.exports = defineConfig({
     transpileDependencies: true,

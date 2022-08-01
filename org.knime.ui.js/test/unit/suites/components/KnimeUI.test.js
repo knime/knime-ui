@@ -1,6 +1,6 @@
 import { mockUserAgent } from 'jest-useragent-mock';
 
-import { createLocalVue } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
@@ -54,7 +54,7 @@ describe('KnimeUI.vue', () => {
         $store = mockVuexStore(storeConfig);
         mocks = { $store };
         doShallowMountWithAsyncData = async () => {
-            wrapper = await shallowMountWithAsyncData(KnimeUI, { mocks });
+            wrapper = await shallowMount(KnimeUI, { mocks });
         };
     });
 

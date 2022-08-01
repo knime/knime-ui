@@ -7,6 +7,7 @@ import Vue from 'vue';
 import { shallowMountWithAsyncData } from '~/test/unit/test-utils';
 import FlowVariablePortView from '~/components/output/FlowVariablePortView';
 import { loadFlowVariables as loadFlowVariablesMock } from '~api';
+import { shallowMount } from '@vue/test-utils';
 
 describe('FlowVariablePortView.vue', () => {
     let wrapper;
@@ -16,7 +17,7 @@ describe('FlowVariablePortView.vue', () => {
     });
 
     let doShallowMountWithAsyncData = async () => {
-        wrapper = await shallowMountWithAsyncData(FlowVariablePortView, {
+        wrapper = await shallowMount(FlowVariablePortView, {
             propsData: {
                 projectId: 'project',
                 workflowId: 'workflow',

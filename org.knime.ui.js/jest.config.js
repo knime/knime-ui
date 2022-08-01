@@ -22,23 +22,23 @@ module.exports = {
     transformIgnorePatterns: [
         '/node_modules/'
     ],
-    reporters: ['default', ['jest-junit', { outputDirectory: './coverage', reportTestSuiteErrors: true }]],
-    coverageReporters: ['lcov', 'text'],
-    // keep in sync with sonar-project.properties!
-    collectCoverageFrom: [
-        '<rootDir>/**/*.{js,vue}',
-        '!config.js',
-        '!**/*.config.js',
-        '!.eslintrc*.js',
-        '!**/.eslintrc*.js',
-        '!.stylelintrc.js'
-    ],
-    coveragePathIgnorePatterns: [
-        '^<rootDir>/(.nuxt|coverage|dist|test|target|node_modules|bin|webapps-common|buildtools|.history)/'
-    ],
-    watchPathIgnorePatterns: [
-        '^<rootDir>/(.nuxt|coverage|dist|target|node_modules|bin|webapps-common|.history)/'
-    ],
+    // reporters: ['default', ['jest-junit', { outputDirectory: './coverage', reportTestSuiteErrors: true }]],
+    // coverageReporters: ['lcov', 'text'],
+    // // keep in sync with sonar-project.properties!
+    // collectCoverageFrom: [
+    //     '<rootDir>/**/*.{js,vue}',
+    //     '!config.js',
+    //     '!**/*.config.js',
+    //     '!.eslintrc*.js',
+    //     '!**/.eslintrc*.js',
+    //     '!.stylelintrc.js'
+    // ],
+    // coveragePathIgnorePatterns: [
+    //     '^<rootDir>/(.nuxt|coverage|dist|test|target|node_modules|bin|webapps-common|buildtools|.history)/'
+    // ],
+    // watchPathIgnorePatterns: [
+    //     '^<rootDir>/(.nuxt|coverage|dist|target|node_modules|bin|webapps-common|.history)/'
+    // ],
     testEnvironment: 'jsdom',
     testURL: 'http://test.example/',
     testMatch: [
