@@ -244,7 +244,7 @@ export const actions = {
 };
 
 export const getters = {
-    // TODO: this getter takes to much computation time while moving and is wrong
+    // TODO: this getter is wrong and seems to take too much computation time while moving compared to before
     isDragging({ movePreviewDelta }) {
         return movePreviewDelta.x !== 0 || movePreviewDelta.y !== 0;
     }

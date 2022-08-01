@@ -187,7 +187,7 @@ export default {
 <style lang="postcss" scoped>
 .port-fade-enter-active,
 .port-fade-leave-active {
-  transition: opacity 120ms ease;
+  transition: opacity 100ms ease;
 }
 
 .port-fade-enter {

@@ -186,9 +186,9 @@ describe('NodePorts.vue', () => {
 
         test('Select last port of group for Dynamic Native Nodes', async () => {
             propsData.nodeKind = 'node';
-            propsData.inPorts[1].portGroup = 'group1';
-            propsData.outPorts[1].portGroup = 'group1';
-            propsData.outPorts[2].portGroup = 'group1';
+            propsData.inPorts[1].portGroupId = 'group1';
+            propsData.outPorts[1].portGroupId = 'group1';
+            propsData.outPorts[2].portGroupId = 'group1';
             propsData.portGroups = {
                 group1: {
                     inputRange: [1, 1],
@@ -446,7 +446,7 @@ describe('NodePorts.vue', () => {
                 group1: {
                     canAddInPort: true,
                     canAddOutPort: true,
-                    supportedPortTypes: ['type1']
+                    supportedPortTypeIds: ['type1']
                 }
             };
             doMount();
@@ -482,7 +482,7 @@ describe('NodePorts.vue', () => {
                 group1: {
                     canAddInPort: true,
                     canAddOutPort: true,
-                    supportedPortTypes: ['type1']
+                    supportedPortTypeIds: ['type1']
                 }
             };
             doMount();
@@ -519,8 +519,8 @@ describe('NodePorts.vue', () => {
 
         test.each(['input', 'output'])('remove dynamic ports on %s side', (side) => {
             propsData.nodeKind = 'node';
-            propsData.inPorts[1].portGroup = 'group1';
-            propsData.outPorts[1].portGroup = 'group1';
+            propsData.inPorts[1].portGroupId = 'group1';
+            propsData.outPorts[1].portGroupId = 'group1';
 
             propsData.portGroups = {
                 group1: { }

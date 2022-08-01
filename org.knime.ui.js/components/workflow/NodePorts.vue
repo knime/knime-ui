@@ -151,7 +151,7 @@ export default {
                 return null;
             }
 
-            return this.selectedPortGroup?.[1].supportedPortTypes;
+            return this.selectedPortGroup?.[1].supportedPortTypeIds;
         }
     },
     watch: {
@@ -163,7 +163,7 @@ export default {
     },
     methods: {
         ...mapActions('workflow', ['addNodePort', 'removeNodePort']),
-        onPortClick({ index, portGroup: groupName }, side) {
+        onPortClick({ index, portGroupId }, side) {
             if (!this.isWritable) {
                 return;
             }
@@ -177,9 +177,9 @@ export default {
                 selectPort();
             else if (this.nodeKind === 'metanode')
                 selectPort();
-            else if (groupName) {
+            else if (portGroupId) {
                 // native node and port is part of a port group
-                let portGroup = this.portGroups[groupName];
+                let portGroup = this.portGroups[portGroupId];
                 let [, upperBound] = portGroup[`${side}Range`];
 
                 // select last port of group
@@ -204,6 +204,9 @@ export default {
                 'node-hover': this.hover
             };
         },
+        isPortTargeted({ index }, side) {
+            return this.targetPort?.side === side && this.targetPort.index === index;
+        },
         addPort({ side, typeId }) {
             this.addNodePort({
                 nodeId: this.nodeId,
@@ -212,12 +215,12 @@ export default {
                 portGroup: this.selectedPortGroup?.[0] // is null for composite nodes
             });
         },
-        removePort({ side, portGroup, index }) {
+        removePort({ portGroupId, index }, side) {
             this.removeNodePort({
                 nodeId: this.nodeId,
                 side,
                 index,
-                portGroup
+                portGroup: portGroupId
             });
             this.selectedPort = null;
         },
@@ -243,34 +246,33 @@ export default {
   <g>
     <NodePort
       v-for="port of inPorts"
-      :key="`inport-${port.index}`"
+      :key="`input-${port.index}`"
       :class="['port', portAnimationClasses(port)]"
       direction="in"
       :node-id="nodeId"
       :port="port"
       :relative-position="portPositions.in[port.index]"
       :selected="selectedPort === `input-${port.index}`"
-      :targeted="targetPort && targetPort.side === 'in' && targetPort.index === port.index"
+      :targeted="isPortTargeted(port, 'in')"
       @click="onPortClick(port, 'input')"
+      @remove="removePort(port, 'input')"
       @deselect="onDeselectPort"
-      @remove="removePort({ side: 'input', index: port.index, portGroup: port.portGroup })"
     />
 
     <NodePort
       v-for="port of outPorts"
-      :key="`outport-${port.index}`"
+      :key="`output-${port.index}`"
       :class="['port', portAnimationClasses(port)]"
       direction="out"
       :node-id="nodeId"
       :port="port"
       :relative-position="portPositions.out[port.index]"
       :selected="selectedPort === `output-${port.index}`"
-      :targeted="targetPort && targetPort.side === 'out' && targetPort.index === port.index"
+      :targeted="isPortTargeted(port, 'out')"
       @click="onPortClick(port, 'output')"
+      @remove="removePort(port, 'output')"
       @deselect="onDeselectPort"
-      @remove="removePort({ side: 'output', index: port.index, portGroup: port.portGroup })"
     />
-
 
     <template v-for="side in ['input', 'output']">
       <AddPortPlaceholder

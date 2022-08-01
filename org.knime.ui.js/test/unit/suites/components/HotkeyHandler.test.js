@@ -1,5 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { createLocalVue, shallowMount, createWrapper } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
