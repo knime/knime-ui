@@ -7,7 +7,7 @@ import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
-import SelectionRectangle from '~/components/SelectionRectangle';
+import SelectionRectangle from '~/components/SelectionRectangle.vue';
 import { findNodesInsideOfRectangle as findNodesInsideOfRectangleMock } from '~/util/rectangleSelection';
 
 jest.mock('raf-throttle', () => function (func) {

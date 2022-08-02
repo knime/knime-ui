@@ -3,7 +3,7 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import * as $shapes from '~/style/shapes';
 import Vuex from 'vuex';
 
-import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
+import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject.vue';
 
 const mockBoundingRect = ({ x, y, width, height }) => {
     const mockFn = jest.fn(() => ({ x, y, width, height }));

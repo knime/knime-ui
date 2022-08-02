@@ -3,7 +3,7 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
-import ConnectorLabel from '~/components/workflow/ConnectorLabel';
+import ConnectorLabel from '~/components/workflow/ConnectorLabel.vue';
 
 jest.mock('~api', () => {
 }, { virtual: true });

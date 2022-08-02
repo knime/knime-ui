@@ -1,7 +1,7 @@
 <script>
 import { mapGetters } from 'vuex';
-import FloatingMenu from '~/components/FloatingMenu';
-import MenuItems from '~/webapps-common/ui/components/MenuItems';
+import FloatingMenu from '~/components/FloatingMenu.vue';
+import MenuItems from '~/webapps-common/ui/components/MenuItems.vue';
 
 /**
  * ContextMenu offers actions for the Kanvas based on the selected nodes.

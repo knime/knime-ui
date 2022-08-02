@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import LinkDecorator from '~/components/workflow/LinkDecorator';
+import LinkDecorator from '~/components/workflow/LinkDecorator.vue';
 
 import * as $colors from '~/style/colors';
 

@@ -3,7 +3,7 @@ import { createLocalVue, shallowMount, createWrapper } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
-import HotkeyHandler from '~/components/HotkeyHandler';
+import HotkeyHandler from '~/components/HotkeyHandler.vue';
 
 const expectEventHandled = () => {
     expect(KeyboardEvent.prototype.preventDefault).toHaveBeenCalled();

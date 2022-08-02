@@ -1,8 +1,8 @@
 import { shallowMount } from '@vue/test-utils';
 import * as $shapes from '~/style/shapes';
 
-import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation';
-import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
+import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation.vue';
+import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText.vue';
 
 describe('Workflow Annotation', () => {
     let propsData, mocks, doShallowMount, wrapper;

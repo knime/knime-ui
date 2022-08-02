@@ -3,15 +3,15 @@ import { mount, createLocalVue } from '@vue/test-utils';
 
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 
-import WorkflowMetadata from '~/components/workflowMetadata/WorkflowMetadata';
-import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer';
-import ExternalResourcesList from '~/components/common/ExternalResourcesList';
-import LinkList from '~/webapps-common/ui/components/LinkList';
-import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
-import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
-import Description from '~/webapps-common/ui/components/Description';
-import TagList from '~/webapps-common/ui/components/TagList';
-import Tag from '~/webapps-common/ui/components/Tag';
+import WorkflowMetadata from '~/components/workflowMetadata/WorkflowMetadata.vue';
+import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer.vue';
+import ExternalResourcesList from '~/components/common/ExternalResourcesList.vue';
+import LinkList from '~/webapps-common/ui/components/LinkList.vue';
+import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList.vue';
+import NodePreview from '~/webapps-common/ui/components/node/NodePreview.vue';
+import Description from '~/webapps-common/ui/components/Description.vue';
+import TagList from '~/webapps-common/ui/components/TagList.vue';
+import Tag from '~/webapps-common/ui/components/Tag.vue';
 
 import WorkflowMetadataTitle from '~/components/workflowMetadata/WorkflowMetadataTitle.vue';
 import WorkflowMetadataDescription from '~/components/workflowMetadata/WorkflowMetadataDescription.vue';

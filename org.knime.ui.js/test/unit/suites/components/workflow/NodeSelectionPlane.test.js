@@ -1,6 +1,6 @@
 import Vuex from 'vuex';
 
-import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
+import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane.vue';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 
 import * as $shapes from '~/style/shapes';

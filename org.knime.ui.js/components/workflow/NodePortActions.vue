@@ -1,6 +1,6 @@
 <script>
-import Port from '~/components/workflow/Port';
-import ActionButton from '~/components/workflow/ActionButton';
+import Port from '~/components/workflow/Port.vue';
+import ActionButton from '~/components/workflow/ActionButton.vue';
 import DeleteIcon from '~/assets/delete.svg?inline';
 
 export const portActionButtonSize = 20;

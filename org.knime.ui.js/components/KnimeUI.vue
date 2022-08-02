@@ -1,16 +1,16 @@
 <script>
 import { mapActions, mapState } from 'vuex';
 
-import AppHeader from '~/components/AppHeader';
-import Sidebar from '~/components/Sidebar';
-import WorkflowToolbar from '~/components/WorkflowToolbar';
-import TooltipContainer from '~/components/TooltipContainer';
-import Error from '~/components/Error';
-import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
-import HotkeyHandler from '~/components/HotkeyHandler';
-import WorkflowPanel from '~/components/WorkflowPanel';
-import NodeOutput from '~/components/output/NodeOutput';
-import Splitter from '~/components/Splitter';
+import AppHeader from '~/components/AppHeader.vue';
+import Sidebar from '~/components/Sidebar.vue';
+import WorkflowToolbar from '~/components/WorkflowToolbar.vue';
+import TooltipContainer from '~/components/TooltipContainer.vue';
+import Error from '~/components/Error.vue';
+import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage.vue';
+import HotkeyHandler from '~/components/HotkeyHandler.vue';
+import WorkflowPanel from '~/components/WorkflowPanel.vue';
+import NodeOutput from '~/components/output/NodeOutput.vue';
+import Splitter from '~/components/Splitter.vue';
 
 /**
  * Main page and entry point of KNIME Next

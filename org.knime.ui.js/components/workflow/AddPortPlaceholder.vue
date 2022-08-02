@@ -1,7 +1,7 @@
 <script>
 import { mapGetters, mapActions } from 'vuex';
 
-import Port from '~/components/workflow/Port';
+import Port from '~/components/workflow/Port.vue';
 
 export const addPortPlaceholderPath = (() => {
     let cx = 0;

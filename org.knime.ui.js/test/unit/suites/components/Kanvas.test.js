@@ -4,7 +4,7 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import Kanvas, { RESIZE_DEBOUNCE } from '~/components/Kanvas';
+import Kanvas, { RESIZE_DEBOUNCE } from '~/components/Kanvas.vue';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {

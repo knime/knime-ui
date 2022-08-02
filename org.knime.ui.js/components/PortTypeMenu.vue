@@ -1,8 +1,8 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import FloatingMenu from '~/components/FloatingMenu';
+import FloatingMenu from '~/components/FloatingMenu.vue';
 import portIcon from '~/components/output/PortIconRenderer';
-import MenuItems from '~/webapps-common/ui/components/MenuItems';
+import MenuItems from '~/webapps-common/ui/components/MenuItems.vue';
 import SearchBar from '~/components/noderepo/SearchBar.vue';
 
 /**

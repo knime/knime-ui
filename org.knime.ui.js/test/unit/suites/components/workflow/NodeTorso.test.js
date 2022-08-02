@@ -1,10 +1,10 @@
 import Vuex from 'vuex';
 
-import NodeTorso from '~/components/workflow/NodeTorso';
-import NodeTorsoMissing from '~/components/workflow/NodeTorsoMissing';
-import NodeTorsoUnknown from '~/components/workflow/NodeTorsoUnknown';
-import NodeTorsoMetanode from '~/components/workflow/NodeTorsoMetanode';
-import NodeTorsoNormal from '~/webapps-common/ui/components/node/NodeTorsoNormal';
+import NodeTorso from '~/components/workflow/NodeTorso.vue';
+import NodeTorsoMissing from '~/components/workflow/NodeTorsoMissing.vue';
+import NodeTorsoUnknown from '~/components/workflow/NodeTorsoUnknown.vue';
+import NodeTorsoMetanode from '~/components/workflow/NodeTorsoMetanode.vue';
+import NodeTorsoNormal from '~/webapps-common/ui/components/node/NodeTorsoNormal.vue';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 

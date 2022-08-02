@@ -4,7 +4,7 @@ import Vue from 'vue';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import * as $shapes from '~/style/shapes';
 
-import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer';
+import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer.vue';
 
 import '~/plugins/directive-move';
 

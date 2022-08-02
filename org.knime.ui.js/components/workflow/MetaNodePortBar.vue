@@ -1,5 +1,5 @@
 <script>
-import NodePort from '~/components/workflow/NodePort';
+import NodePort from '~/components/workflow/NodePort.vue';
 import { portBar, snapConnector } from '~/mixins';
 
 /**

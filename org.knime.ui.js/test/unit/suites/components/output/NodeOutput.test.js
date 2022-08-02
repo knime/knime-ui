@@ -5,12 +5,12 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 
 import * as $shapes from '~/style/shapes';
-import NodeOutput from '~/components/output/NodeOutput';
-import PortTabs from '~/components/output/PortTabs';
-import FlowVariablePortView from '~/components/output/FlowVariablePortView';
-import TablePortView from '~/components/output/TablePortView';
+import NodeOutput from '~/components/output/NodeOutput.vue';
+import PortTabs from '~/components/output/PortTabs.vue';
+import FlowVariablePortView from '~/components/output/FlowVariablePortView.vue';
+import TablePortView from '~/components/output/TablePortView.vue';
 
-import Button from '~/webapps-common/ui/components/Button';
+import Button from '~/webapps-common/ui/components/Button.vue';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 
 describe('NodeOutput.vue', () => {

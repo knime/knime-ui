@@ -2,8 +2,8 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
-import Port from '~/components/workflow/Port';
-import PortIcon from '~/webapps-common/ui/components/node/PortIcon';
+import Port from '~/components/workflow/Port.vue';
+import PortIcon from '~/webapps-common/ui/components/node/PortIcon.vue';
 
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';

@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import TablePortViewHeader from '~/components/output/TablePortViewHeader';
+import TablePortViewHeader from '~/components/output/TablePortViewHeader.vue';
 
 describe('TablePortViewHeader.vue', () => {
     let propsData, doShallowMount, wrapper;

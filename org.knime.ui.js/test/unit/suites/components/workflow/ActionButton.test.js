@@ -1,6 +1,6 @@
 import { mount, shallowMount } from '@vue/test-utils';
 
-import ActionButton from '~/components/workflow/ActionButton';
+import ActionButton from '~/components/workflow/ActionButton.vue';
 
 describe('ActionButton', () => {
     it('renders action button with slot icon', () => {

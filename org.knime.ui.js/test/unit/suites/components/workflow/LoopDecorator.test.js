@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import LoopDecorator from '~/components/workflow/LoopDecorator';
+import LoopDecorator from '~/components/workflow/LoopDecorator.vue';
 
 import * as $colors from '~/style/colors';
 

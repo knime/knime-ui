@@ -4,9 +4,9 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import ContextMenu from '~/components/ContextMenu';
-import FloatingMenu from '~/components/FloatingMenu';
-import MenuItems from '~/webapps-common/ui/components/MenuItems';
+import ContextMenu from '~/components/ContextMenu.vue';
+import FloatingMenu from '~/components/FloatingMenu.vue';
+import MenuItems from '~/webapps-common/ui/components/MenuItems.vue';
 
 describe('ContextMenu.vue', () => {
     let storeConfig, propsData, mocks, doMount, wrapper, $store, $commands;

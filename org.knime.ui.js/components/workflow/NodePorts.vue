@@ -1,8 +1,8 @@
 <script>
 import { mapGetters } from 'vuex';
 import { placeholderPosition, portPositions } from '~/util/portShift';
-import NodePort from '~/components/workflow/NodePort';
-import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder';
+import NodePort from '~/components/workflow/NodePort.vue';
+import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder.vue';
 
 /**
  * This component renders and handles interactions with a Node's Ports

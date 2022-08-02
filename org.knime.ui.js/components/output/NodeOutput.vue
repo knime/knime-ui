@@ -1,9 +1,9 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import TablePortView from '~/components/output/TablePortView';
-import FlowVariablePortView from '~/components/output/FlowVariablePortView';
-import PortTabs from '~/components/output/PortTabs';
-import Button from '~/webapps-common/ui/components/Button';
+import TablePortView from '~/components/output/TablePortView.vue';
+import FlowVariablePortView from '~/components/output/FlowVariablePortView.vue';
+import PortTabs from '~/components/output/PortTabs.vue';
+import Button from '~/webapps-common/ui/components/Button.vue';
 import PlayIcon from '~/assets/execute.svg?inline';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 

@@ -1,6 +1,6 @@
 import { mount, shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
-import Splitter from '~/components/Splitter';
+import Splitter from '~/components/Splitter.vue';
 
 describe('Splitter.vue', () => {
     let wrapper, startMove, localStorageGetItemSpy, localStorageSetItemSpy;

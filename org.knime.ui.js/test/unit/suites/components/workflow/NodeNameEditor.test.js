@@ -5,9 +5,9 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 
 import * as $shapes from '~/style/shapes';
 
-import NodeNameEditor from '~/components/workflow/NodeNameEditor';
-import NodeNameTextarea from '~/components/workflow/NodeNameTextarea';
-import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar';
+import NodeNameEditor from '~/components/workflow/NodeNameEditor.vue';
+import NodeNameTextarea from '~/components/workflow/NodeNameTextarea.vue';
+import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar.vue';
 
 describe('NodeNameEditor', () => {
     const propsData = {

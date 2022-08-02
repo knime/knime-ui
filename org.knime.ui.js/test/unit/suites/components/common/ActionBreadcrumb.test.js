@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 
-import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
-import Breadcrumb from 'webapps-common/ui/components/Breadcrumb';
+import ActionBreadcrumb from '~/components/common/ActionBreadcrumb.vue';
+import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 
 describe('ActionBreadcrumb.vue', () => {
     let wrapper, doShallowMount, props;

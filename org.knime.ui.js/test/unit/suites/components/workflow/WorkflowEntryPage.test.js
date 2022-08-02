@@ -1,7 +1,7 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import Vuex from 'vuex';
-import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
-import OpenSourceCreditsModal from '~/components/OpenSourceCreditsModal';
+import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage.vue';
+import OpenSourceCreditsModal from '~/components/OpenSourceCreditsModal.vue';
 
 
 describe('WorkflowEntryPage', () => {

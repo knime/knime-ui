@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
-import Modal from '~/webapps-common/ui/components/Modal';
-import Button from '~/webapps-common/ui/components/Button';
-import OpenSourceCreditsModal from '~/components/OpenSourceCreditsModal';
+import Modal from '~/webapps-common/ui/components/Modal.vue';
+import Button from '~/webapps-common/ui/components/Button.vue';
+import OpenSourceCreditsModal from '~/components/OpenSourceCreditsModal.vue';
 
 describe('OpenSourceCreditsModal', () => {
     let doMount, wrapper;

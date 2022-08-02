@@ -1,7 +1,7 @@
 <script>
 import SaveIcon from '~/assets/ok.svg?inline';
 import CancelIcon from '~/assets/cancel.svg?inline';
-import ActionButton from '~/components/workflow/ActionButton';
+import ActionButton from '~/components/workflow/ActionButton.vue';
 
 /**
  * ActionBar that is displayed when the NodeNameEditor is in edit state.

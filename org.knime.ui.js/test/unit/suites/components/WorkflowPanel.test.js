@@ -4,9 +4,9 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import WorkflowPanel from '~/components/WorkflowPanel';
-import ContextMenu from '~/components/ContextMenu';
-import PortTypeMenu from '~/components/PortTypeMenu';
+import WorkflowPanel from '~/components/WorkflowPanel.vue';
+import ContextMenu from '~/components/ContextMenu.vue';
+import PortTypeMenu from '~/components/PortTypeMenu.vue';
 
 
 describe('WorkflowPanel', () => {

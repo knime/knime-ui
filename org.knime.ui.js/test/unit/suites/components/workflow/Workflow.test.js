@@ -5,12 +5,12 @@ import Vuex from 'vuex';
 
 import * as $shapes from '~/style/shapes';
 
-import Workflow from '~/components/workflow/Workflow';
-import Node from '~/components/workflow/Node';
-import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer';
-import Connector from '~/components/workflow/Connector';
-import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation';
-import MetaNodePortBars from '~/components/workflow/MetaNodePortBars';
+import Workflow from '~/components/workflow/Workflow.vue';
+import Node from '~/components/workflow/Node.vue';
+import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer.vue';
+import Connector from '~/components/workflow/Connector.vue';
+import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation.vue';
+import MetaNodePortBars from '~/components/workflow/MetaNodePortBars.vue';
 
 const mockNode = ({ id, position }) => ({
     name: '',

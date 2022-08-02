@@ -1,6 +1,6 @@
 <script>
-import Header from './TablePortViewHeader';
-import Body from './TablePortViewBody';
+import Header from './TablePortViewHeader.vue';
+import Body from './TablePortViewBody.vue';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 import { throttle } from 'lodash';
 import { loadTable } from '~api';

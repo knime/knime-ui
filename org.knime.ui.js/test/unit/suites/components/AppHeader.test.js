@@ -3,8 +3,8 @@ import { shallowMount, createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 
-import AppHeader from '~/components/AppHeader';
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+import AppHeader from '~/components/AppHeader.vue';
+import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import CloseIcon from '~/assets/cancel.svg?inline';
 
 describe('AppHeader.vue', () => {

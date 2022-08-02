@@ -4,11 +4,11 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import WorkflowCanvas from '~/components/WorkflowCanvas';
-import Workflow from '~/components/workflow/Workflow';
-import SelectionRectangle from '~/components/SelectionRectangle';
-import Kanvas from '~/components/Kanvas';
-import WorkflowEmpty from '~/components/workflow/WorkflowEmpty';
+import WorkflowCanvas from '~/components/WorkflowCanvas.vue';
+import Workflow from '~/components/workflow/Workflow.vue';
+import SelectionRectangle from '~/components/SelectionRectangle.vue';
+import Kanvas from '~/components/Kanvas.vue';
+import WorkflowEmpty from '~/components/workflow/WorkflowEmpty.vue';
 
 describe('Kanvas', () => {
     let mocks, doShallowMount, wrapper, $store, storeConfig, isWorkflowEmpty;

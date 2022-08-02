@@ -1,10 +1,10 @@
 import { shallowMount } from '@vue/test-utils';
 
-import NodeDecorators from '~/components/workflow/NodeDecorators';
+import NodeDecorators from '~/components/workflow/NodeDecorators.vue';
 
-import LinkDecorator from '~/components/workflow/LinkDecorator';
-import StreamingDecorator from '~/components/workflow/StreamingDecorator';
-import LoopDecorator from '~/components/workflow/LoopDecorator';
+import LinkDecorator from '~/components/workflow/LinkDecorator.vue';
+import StreamingDecorator from '~/components/workflow/StreamingDecorator.vue';
+import LoopDecorator from '~/components/workflow/LoopDecorator.vue';
 
 let wrapper, propsData, doMount;
 

@@ -13,7 +13,7 @@ import * as $colors from '~/style/colors';
 import * as portShift from '~/util/portShift';
 import connectorPath from '~/util/connectorPath';
 
-import Connector from '~/components/workflow/Connector';
+import Connector from '~/components/workflow/Connector.vue';
 
 import gsap from 'gsap';
 

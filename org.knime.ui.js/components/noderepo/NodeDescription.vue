@@ -1,10 +1,10 @@
 <script>
 import { mapState, mapActions, mapGetters } from 'vuex';
 import CloseIcon from '~/assets/cancel.svg?inline';
-import Description from '~/webapps-common/ui/components/Description';
-import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
+import Description from '~/webapps-common/ui/components/Description.vue';
+import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList.vue';
 
-import ExternalResourcesList from '~/components/common/ExternalResourcesList';
+import ExternalResourcesList from '~/components/common/ExternalResourcesList.vue';
 
 export default {
     components: {

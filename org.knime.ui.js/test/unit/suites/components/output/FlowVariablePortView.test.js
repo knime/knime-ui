@@ -4,7 +4,7 @@ jest.mock('~api', () => ({
 }), { virtual: true });
 
 import Vue from 'vue';
-import FlowVariablePortView from '~/components/output/FlowVariablePortView';
+import FlowVariablePortView from '~/components/output/FlowVariablePortView.vue';
 import { loadFlowVariables as loadFlowVariablesMock } from '~api';
 import { shallowMount } from '@vue/test-utils';
 

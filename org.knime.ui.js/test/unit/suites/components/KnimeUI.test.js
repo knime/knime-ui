@@ -5,14 +5,14 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import KnimeUI from '~/components/KnimeUI';
-import AppHeader from '~/components/AppHeader';
-import Sidebar from '~/components/Sidebar';
-import WorkflowToolbar from '~/components/WorkflowToolbar';
-import TooltipContainer from '~/components/TooltipContainer';
-import Error from '~/components/Error';
-import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
-import HotkeyHandler from '~/components/HotkeyHandler';
+import KnimeUI from '~/components/KnimeUI.vue';
+import AppHeader from '~/components/AppHeader.vue';
+import Sidebar from '~/components/Sidebar.vue';
+import WorkflowToolbar from '~/components/WorkflowToolbar.vue';
+import TooltipContainer from '~/components/TooltipContainer.vue';
+import Error from '~/components/Error.vue';
+import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage.vue';
+import HotkeyHandler from '~/components/HotkeyHandler.vue';
 
 describe('KnimeUI.vue', () => {
     beforeAll(() => {

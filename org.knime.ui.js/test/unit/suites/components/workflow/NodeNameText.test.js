@@ -2,8 +2,8 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import * as $shapes from '~/style/shapes';
 import Vuex from 'vuex';
 
-import NodeNameText from '~/components/workflow/NodeNameText';
-import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
+import NodeNameText from '~/components/workflow/NodeNameText.vue';
+import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject.vue';
 
 
 describe('NodeNameText.vue', () => {

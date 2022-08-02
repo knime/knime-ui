@@ -1,12 +1,12 @@
 <script>
 import { mapState, mapGetters, mapMutations } from 'vuex';
 
-import ActionBreadcrumb from '~/components/common/ActionBreadcrumb';
-import SearchBar from '~/components/noderepo/SearchBar';
-import CloseableTagList from '~/components/noderepo/CloseableTagList';
-import CategoryResults from '~/components/noderepo/CategoryResults';
-import SearchResults from '~/components/noderepo/SearchResults';
-import NodeDescription from '~/components/noderepo/NodeDescription';
+import ActionBreadcrumb from '~/components/common/ActionBreadcrumb.vue';
+import SearchBar from '~/components/noderepo/SearchBar.vue';
+import CloseableTagList from '~/components/noderepo/CloseableTagList.vue';
+import CategoryResults from '~/components/noderepo/CategoryResults.vue';
+import SearchResults from '~/components/noderepo/SearchResults.vue';
+import NodeDescription from '~/components/noderepo/NodeDescription.vue';
 
 import { debounce } from 'lodash';
 

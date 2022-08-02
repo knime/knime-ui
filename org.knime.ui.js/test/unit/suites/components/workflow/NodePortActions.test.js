@@ -2,8 +2,8 @@
 import { shallowMount } from '@vue/test-utils';
 
 import NodePortActions from '~/components/workflow/NodePortActions.vue';
-import ActionButton from '~/components/workflow/ActionButton';
-import Port from '~/components/workflow/Port';
+import ActionButton from '~/components/workflow/ActionButton.vue';
+import Port from '~/components/workflow/Port.vue';
 
 const propsData = {
     direction: 'in',

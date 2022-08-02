@@ -4,8 +4,8 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 
 import * as $shapes from '~/style/shapes';
 
-import NodeActionBar from '~/components/workflow/NodeActionBar';
-import ActionButton from '~/components/workflow/ActionButton';
+import NodeActionBar from '~/components/workflow/NodeActionBar.vue';
+import ActionButton from '~/components/workflow/ActionButton.vue';
 
 describe('NodeActionBar', () => {
     let mocks, doMount, storeConfig, $commands, propsData, wrapper;
