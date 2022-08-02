@@ -5,7 +5,7 @@ const path = require('path');
 module.exports = defineConfig({
     transpileDependencies: true,
     devServer: {
-        port: 3000
+        port: process.env.VUE_APP_PORT || 3000
     },
     pages: {
         index: {
