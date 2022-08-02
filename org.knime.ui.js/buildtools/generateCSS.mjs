@@ -1,14 +1,23 @@
 /* eslint-disable no-console */
 import fs from 'fs';
-import path from 'path';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-import * as colors from '../style/colors';
-import * as shapes from '../style/shapes';
+import * as colors from '../style/colors.mjs';
+import * as shapes from '../style/shapes.mjs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // -- define the names of the variables that will end up in the css file
 // colors.js -> colors.css (postfix color, someVariableName will become `--some-variable-name-color`)
-const colorNames = ['warning', 'error', 'darkeningMask', 'notificationBackground', 'selection.activeBorder',
-    'selection.activeBackground'];
+const colorNames = [
+    'warning', 
+    'error', 
+    'darkeningMask', 
+    'notificationBackground', 
+    'selection.activeBorder',
+    'selection.activeBackground'
+];
 
 // shapes.js -> shapes.css (postfix shape, someVariableName will become `--some-variable-name-shape`)
 const shapeNames = [
@@ -24,8 +33,10 @@ const shapeNames = [
 ];
 // --
 
-const camelToSnake = str => str.replace(/(.?)([A-Z])/g,
-    (_, before, letter) => `${before}${before ? '-' : ''}${letter.toLowerCase()}`);
+const camelToSnake = str => str.replace(
+    /(.?)([A-Z])/g,
+    (_, before, letter) => `${before}${before ? '-' : ''}${letter.toLowerCase()}`
+);
 
 const dotToDash = str => str.replace(/\./g, '-');
 
@@ -49,7 +60,7 @@ const generateCssData = (names, data, postfix, sourceFile) => {
  * Generate colors.css and shapes.css from the above color names from colors.js
  * @returns {void}
  */
-export default function () {
+function generate() {
     let colorsPath = path.join(__dirname, '..', 'assets', 'colors.css');
     console.info('Generating assets/colors.css');
     fs.writeFileSync(colorsPath, generateCssData(colorNames, colors, 'color', 'style/colors.js'));
@@ -58,3 +69,5 @@ export default function () {
     console.info('Generating assets/shapes.css');
     fs.writeFileSync(shapesPath, generateCssData(shapeNames, shapes, 'shape', 'style/shapes.js'));
 }
+
+generate();

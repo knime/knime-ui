@@ -6,14 +6,15 @@
   "scripts": {
     "dev": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "postinstall": "npm run opensourcecredits -- --no-overwrite",
+    "postinstall": "npm run opensourcecredits -- --no-overwrite && npm run generate-css",
     "audit": "check-audit --production",
     "audit:ci": "check-audit --production --json > target/audit.json || true",
     "audit:resolve": "resolve-audit --production",
     "test:unit": "jest",
     "coverage": "jest --coverage",
     "coverage:watch": "npm run test:unit -- --coverage --watch",
-    "opensourcecredits": "npm run --prefix webapps-common opensourcecredits"
+    "opensourcecredits": "npm run --prefix webapps-common opensourcecredits",
+    "generate-css": "node ./buildtools/generateCSS.mjs"
   },
   "dependencies": {
     "@fontsource/roboto": "4.5.3",
