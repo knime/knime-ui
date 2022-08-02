@@ -7,8 +7,8 @@ describe('directive-move', () => {
     let vm, onMove, onMoveStart, onMoveEnd, dummyTarget;
 
     beforeAll(() => {
-        Vue.directive(directiveMove.name, directiveMove.options)
-    })
+        Vue.directive(directiveMove.name, directiveMove.options);
+    });
 
     beforeEach(() => {
         vm = null;

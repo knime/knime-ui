@@ -66,7 +66,7 @@ describe('AutoSizeForeignObject.vue', () => {
         };
     });
 
-    it('should respect yOffset', async () => {
+    it('should respect yOffset', () => {
         doShallowMount();
 
         expect(wrapper.attributes()).toEqual(expect.objectContaining({

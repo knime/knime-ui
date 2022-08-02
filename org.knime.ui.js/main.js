@@ -16,7 +16,7 @@ const app = new Vue({
     render: h => h(KnimeUI)
 }).$mount('#app');
 
-// map all nuxt-links to router links, 
-// since nuxt-link inherits from RouterLink and we don't need use nuxt 
-const RouterLink = app.$options.components['RouterLink'];
-Vue.component('nuxt-link', RouterLink);
+// map all nuxt-links to router links,
+// since nuxt-link inherits from RouterLink and we don't need use nuxt
+const RouterLink = app.$options.components.RouterLink;
+Vue.component('NuxtLink', RouterLink);

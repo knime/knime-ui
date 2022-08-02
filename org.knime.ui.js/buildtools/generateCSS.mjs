@@ -11,10 +11,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 // -- define the names of the variables that will end up in the css file
 // colors.js -> colors.css (postfix color, someVariableName will become `--some-variable-name-color`)
 const colorNames = [
-    'warning', 
-    'error', 
-    'darkeningMask', 
-    'notificationBackground', 
+    'warning',
+    'error',
+    'darkeningMask',
+    'notificationBackground',
     'selection.activeBorder',
     'selection.activeBackground'
 ];

@@ -1,4 +1,3 @@
-import consola from 'consola';
 import PortalVue from 'portal-vue';
 
 import commands from './commands';

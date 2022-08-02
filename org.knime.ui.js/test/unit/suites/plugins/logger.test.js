@@ -1,4 +1,4 @@
-import { initLogger } from "~/plugins/logger";
+import { initLogger } from '~/plugins/logger';
 
 describe('logger', () => {
     let originalConsola;

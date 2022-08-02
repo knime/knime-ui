@@ -1,7 +1,7 @@
 import { mockUserAgent } from 'jest-useragent-mock';
 
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils';
+import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
