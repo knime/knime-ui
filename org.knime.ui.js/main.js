@@ -4,14 +4,19 @@ import router from './router';
 import store from './store';
 import { initPlugins } from './plugins';
 
-initPlugins(Vue);
-
-import './assets/index.css';
+import '@/assets/index.css';
 
 Vue.config.productionTip = false;
 
-new Vue({
+initPlugins(Vue);
+
+const app = new Vue({
     router,
     store,
     render: h => h(KnimeUI)
 }).$mount('#app');
+
+// map all nuxt-links to router links, 
+// since nuxt-link inherits from RouterLink and we don't need use nuxt 
+const RouterLink = app.$options.components['RouterLink'];
+Vue.component('nuxt-link', RouterLink);

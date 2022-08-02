@@ -1,26 +1,28 @@
-const noop = function () {
-    // In production, we disable all logging by providing a no-op function.
-    // In dev mode, this is overwritten, see nuxt plugin in internal project.
-};
-
-let methods = [
-    'debug',
-    'error',
-    'fatal',
-    'info',
-    'log',
-    'ready',
-    'silent',
-    'start',
-    'success',
-    'trace',
-    'verbose',
-    'warn'
-];
-
-if (!Reflect.has(window, 'consola')) { // this line is required for dev mode
-    window.consola = methods.reduce((consola, method) => {
-        consola[method] = noop;
-        return consola;
-    }, {});
+export const initLogger = () => {
+    const noop = function () {
+        // In production, we disable all logging by providing a no-op function.
+        // In dev mode, this is overwritten, see nuxt plugin in internal project.
+    };
+    
+    let methods = [
+        'debug',
+        'error',
+        'fatal',
+        'info',
+        'log',
+        'ready',
+        'silent',
+        'start',
+        'success',
+        'trace',
+        'verbose',
+        'warn'
+    ];
+    
+    if (!Reflect.has(window, 'consola')) { // this line is required for dev mode
+        window.consola = methods.reduce((consola, method) => {
+            consola[method] = noop;
+            return consola;
+        }, {});
+    }
 }

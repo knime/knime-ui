@@ -17,16 +17,11 @@ module.exports = defineConfig({
             alias: {
                 '~api': path.join(__dirname, 'api', 'index.js'),
                 '@': path.join(__dirname),
-                '~': path.join(__dirname),
-                '~assets': path.join(__dirname, 'assets')
-            // consola: path.join(__dirname, 'devtools', 'consolaImportError.js'),
-            // This is required for Vue directives etc. which modify the imported Vue object
-            // vue: path.join(__dirname, 'node_modules', 'vue', 'dist', 'vue.js')
+                '~': path.join(__dirname),                
+                // This is required for Vue directives etc. which modify the imported Vue object
+                // vue: path.join(__dirname, 'node_modules', 'vue', 'dist', 'vue.js')
             }
         }
-    },
-    css: {
-        extract: false
     },
 
     chainWebpack: (config) => {

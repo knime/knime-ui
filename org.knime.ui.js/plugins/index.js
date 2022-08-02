@@ -1,16 +1,13 @@
+import consola from 'consola';
+import PortalVue from 'portal-vue';
+
 import commands from './commands';
 import constants from './constants';
 import { directiveMove } from './directive-move';
 import events from './events';
-// import logger from 'knime-ui/plugins/logger';
-
-import consola from 'consola';
 
 import store from '../store';
-
-import PortalVue from 'portal-vue';
-
-// import internalLogger from './logger';
+import { initLogger } from './logger';
 
 const wrapPlugin = plugin => ({
     install(Vue) {
@@ -23,11 +20,6 @@ const wrapPlugin = plugin => ({
         plugin(context, inject);
     }
 });
-// window.consola = console;
-window.consola = consola.create({
-    level: 'Trace'
-});
-window.consola = consola;
 
 export const initPlugins = (vueInstance) => {
     vueInstance.use(PortalVue);
@@ -35,4 +27,5 @@ export const initPlugins = (vueInstance) => {
     vueInstance.use(wrapPlugin(constants));
     vueInstance.use(wrapPlugin(events));
     vueInstance.directive(directiveMove.name, directiveMove.options);
+    initLogger();
 };

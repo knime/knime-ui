@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "test:unit": "jest"
+    "test:unit": "jest",
+    "opensourcecredits": "npm run --prefix webapps-common opensourcecredits"
   },
   "dependencies": {
     "@fontsource/roboto": "4.5.3",
@@ -56,6 +57,6 @@
   },
   "private": true,
   "volta": {
-    "node": "14.19.0"
+    "node": "14.20.0"
   }
 }
