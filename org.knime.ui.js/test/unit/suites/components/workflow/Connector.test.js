@@ -17,7 +17,6 @@ import Connector from '~/components/workflow/Connector.vue';
 
 import gsap from 'gsap';
 
-jest.mock('~api', () => { }, { virtual: true });
 jest.mock('~/util/connectorPath', () => jest.fn());
 jest.mock('gsap', () => ({
     to: jest.fn()

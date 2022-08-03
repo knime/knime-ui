@@ -1,5 +1,4 @@
 <script>
-import { loadFlowVariables } from '~api';
 /**
  * FlowVariable table container that contains a FlowVariablePortViewHeader and a FlowVariablePortViewBody
  */
@@ -9,25 +8,8 @@ export default {
         projectId: { type: String, required: true },
         workflowId: { type: String, required: true },
         nodeId: { type: String, required: true },
-        portIndex: { type: Number, required: true }
-    },
-    data: () => ({
-        table: null
-    }),
-    async created() {
-        this.$emit('update', { state: 'loading' });
-        try {
-            let { projectId, workflowId, nodeId, portIndex } = this;
-            let table = await loadFlowVariables({ projectId, workflowId, nodeId, portIndex });
-
-            this.table = table;
-
-            // show table
-            this.$emit('update', { state: 'ready' });
-        } catch (e) {
-            consola.error(e);
-            this.$emit('update', { state: 'error', message: "Couldn't load flow variables" });
-        }
+        portIndex: { type: Number, required: true },
+        initialData: { type: Array, required: true }
     }
 };
 </script>
@@ -35,10 +17,10 @@ export default {
 <template>
   <div class="scroll-container">
     <div
-      v-if="table"
+      v-if="initialData"
       class="counts"
     >
-      <span class="count">Count: {{ table.length }}</span>
+      <span class="count">Count: {{ initialData.length }}</span>
     </div>
     <table>
       <thead>
@@ -51,7 +33,7 @@ export default {
       </thead>
       <tbody>
         <tr
-          v-for="flowVariable of table"
+          v-for="flowVariable of initialData"
           :key="`flowVariable-${flowVariable.name}`"
         >
           <td>{{ flowVariable.ownerNodeId }}</td>

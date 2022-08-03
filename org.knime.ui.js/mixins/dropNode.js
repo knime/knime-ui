@@ -13,8 +13,8 @@ export const dropNode = {
         onDrop(e) {
             if (this.isWritable) {
                 const nodeFactory = JSON.parse(e.dataTransfer.getData(KnimeMIME));
-                const position = this.getDestinationPosition(e);
-                this.addNode({ position, nodeFactory });
+                const [x, y] = this.getDestinationPosition(e);
+                this.addNode({ position: { x, y }, nodeFactory });
             }
 
             // Default action when dropping links is to open them in your browser.

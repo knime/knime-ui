@@ -6,6 +6,8 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
+import { wrapAPI } from '~/store/workflow/workflowEditor';
+
 describe('workflow store: Editing', () => {
     let store, localVue, loadStore, moveObjectsMock, deleteObjectsMock;
 
@@ -76,27 +78,61 @@ describe('workflow store: Editing', () => {
     });
 
     describe('actions', () => {
-        it('can add ContainerNode Ports', async () => {
-            let apiMocks = { addContainerNodePort: jest.fn() };
-            await loadStore({ apiMocks });
+        test('wrap api call: automatically include projectId and workflowId', () => {
+            let apiCall = jest.fn();
 
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
-            store.dispatch(`workflow/addContainerNodePort`, { nodeId: 'node x', side: 'input', typeId: 'porty' });
+            let wrappedCall = wrapAPI(apiCall);
 
-            expect(apiMocks.addContainerNodePort).toHaveBeenCalledWith(
-                { nodeId: 'node x', projectId: 'foo', workflowId: 'root', side: 'input', typeId: 'porty' }
-            );
+            let vuexContext = {
+                state: {
+                    activeWorkflow: {
+                        projectId: 'p1',
+                        info: { containerId: 'w1' }
+                    }
+                }
+            };
+
+            wrappedCall(vuexContext);
+            expect(apiCall).toHaveBeenCalledWith({
+                projectId: 'p1',
+                workflowId: 'w1'
+            });
+
+            wrappedCall(vuexContext, { arg1: 'value' });
+            expect(apiCall).toHaveBeenCalledWith({
+                projectId: 'p1',
+                workflowId: 'w1',
+                arg1: 'value'
+            });
         });
 
-        it('can remove ContainerNode Ports', async () => {
-            let apiMocks = { removeContainerNodePort: jest.fn() };
+        it('can add Node Ports', async () => {
+            let apiMocks = { addNodePort: jest.fn() };
             await loadStore({ apiMocks });
 
-            const payload = { nodeId: 'node x', side: 'input', typeId: 'porty', portIndex: 1 };
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
-            store.dispatch(`workflow/removeContainerNodePort`, payload);
+            store.dispatch(`workflow/addNodePort`,
+                { nodeId: 'node x', side: 'input', typeId: 'porty', portGroup: 'group' });
 
-            expect(apiMocks.removeContainerNodePort).toHaveBeenCalledWith(
+            expect(apiMocks.addNodePort).toHaveBeenCalledWith({
+                nodeId: 'node x',
+                projectId: 'foo',
+                workflowId: 'root',
+                side: 'input',
+                typeId: 'porty',
+                portGroup: 'group'
+            });
+        });
+
+        it('can remove Node Ports', async () => {
+            let apiMocks = { removeNodePort: jest.fn() };
+            await loadStore({ apiMocks });
+
+            const payload = { nodeId: 'node x', side: 'input', typeId: 'porty', portIndex: 1, portGroup: 'group' };
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
+            store.dispatch(`workflow/removeNodePort`, payload);
+
+            expect(apiMocks.removeNodePort).toHaveBeenCalledWith(
                 { ...payload, projectId: 'foo', workflowId: 'root' }
             );
         });

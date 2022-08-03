@@ -27,6 +27,9 @@ const commonNode = {
 
     inPorts: [],
     outPorts: [],
+    portGroups: {
+        group1: {}
+    },
 
     position: { x: 500, y: 200 },
     annotation: {
@@ -174,6 +177,7 @@ describe('Node', () => {
             expect(nodePorts.props('hover')).toBe(false);
             expect(nodePorts.props('connectorHover')).toBe(false);
             expect(nodePorts.props('isSingleSelected')).toBe(false);
+            expect(nodePorts.props('portGroups')).toStrictEqual({ group1: {} });
         });
 
         it('renders decorators', () => {

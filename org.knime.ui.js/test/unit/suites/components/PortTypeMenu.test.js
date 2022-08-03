@@ -12,8 +12,19 @@ import SearchBar from '~/components/noderepo/SearchBar.vue';
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
+import { makeTypeSearch as makeTypeSearchMock, searchMock } from '~/util/fuzzyPortTypeSearch';
+jest.mock('~/util/fuzzyPortTypeSearch', () => {
+    let searchMock = jest.fn().mockReturnValue([]);
+    
+    return {
+        makeTypeSearch: jest.fn().mockReturnValue(searchMock),
+        searchMock
+    };
+});
+
+
 describe('PortTypeMenu.vue', () => {
-    let storeConfig, propsData, mocks, doMount, wrapper, $store, portTypeSearchMock, FloatingMenuStub;
+    let storeConfig, propsData, mocks, doMount, wrapper, $store, searchAllPortTypesMock, FloatingMenuStub;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -27,10 +38,11 @@ describe('PortTypeMenu.vue', () => {
                 x: 10,
                 y: 10
             },
-            side: 'output'
+            side: 'output',
+            addablePortTypes: null
         };
 
-        portTypeSearchMock = jest.fn().mockReturnValue([]);
+        searchAllPortTypesMock = jest.fn().mockReturnValue([]);
 
         storeConfig = {
             canvas: {
@@ -50,7 +62,7 @@ describe('PortTypeMenu.vue', () => {
                     suggestedPortTypes: ['flowVariable', 'table']
                 },
                 getters: {
-                    portTypeSearch: () => ({ search: portTypeSearchMock })
+                    searchAllPortTypes: () => searchAllPortTypesMock
                 }
             }
         };
@@ -194,49 +206,86 @@ describe('PortTypeMenu.vue', () => {
         });
 
         describe('search results', () => {
-            test('empty search request => show recommended items', async () => {
-                doMount();
-                wrapper.setData({ searchValue: '' });
-                await Vue.nextTick();
+            describe('all port types allowed', () => {
+                beforeEach(() => {
+                    propsData.allowedPortTypes = null;
+                });
 
-                expect(wrapper.findComponent(MenuItems).props('items')).toStrictEqual([
-                    {
-                        icon: expect.anything(),
-                        port: { typeId: 'flowVariable' },
-                        text: 'Flow Variable'
-                    },
-                    {
-                        icon: expect.anything(),
-                        port: { typeId: 'table' },
-                        text: 'Table'
-                    }
-                ]);
+                test('empty search request => show recommended items', async () => {
+                    doMount();
+                    wrapper.setData({ searchValue: '' });
+                    await Vue.nextTick();
+
+                    expect(wrapper.findComponent(MenuItems).props('items')).toStrictEqual([
+                        {
+                            icon: expect.anything(),
+                            port: { typeId: 'flowVariable' },
+                            text: 'Flow Variable'
+                        },
+                        {
+                            icon: expect.anything(),
+                            port: { typeId: 'table' },
+                            text: 'Table'
+                        }
+                    ]);
+                });
+
+                it('does a fuzzy search', async () => {
+                    searchAllPortTypesMock.mockReturnValue([
+                        { name: 'Flow Variable', typeId: 'flowVariable' }
+                    ]);
+
+                    doMount();
+                    wrapper.setData({ searchValue: 'flow' });
+                    await Vue.nextTick();
+                
+                    // Test that the search function was called correctly
+                    expect(searchAllPortTypesMock).toBeCalledWith('flow', { limit: 2 });
+                
+                    // Test that the results are rendered properly
+                    expect(wrapper.findComponent(MenuItems).props('items')).toStrictEqual([
+                        {
+                            icon: expect.anything(),
+                            port: { typeId: 'flowVariable' },
+                            text: 'Flow Variable'
+                        }
+                    ]);
+                });
             });
 
-            it('does a fuzzy search', async () => {
-                portTypeSearchMock.mockReturnValue([
-                    { item: { name: 'Flow Variable', typeId: 'flowVariable' } }
-                ]);
+            describe('some port types allowed', () => {
+                beforeEach(() => {
+                    propsData.addablePortTypes = ['table', 'flowVariable'];
+                });
 
-                doMount();
-                wrapper.setData({ searchValue: 'flow' });
-                await Vue.nextTick();
-                
-                // Test that the search function was called correctly
-                expect(portTypeSearchMock).toBeCalledWith('flow', { limit: 2 });
-                
-                // Test that the results are rendered properly
-                expect(wrapper.findComponent(MenuItems).props('items')).toStrictEqual([
-                    {
-                        icon: expect.anything(),
-                        port: { typeId: 'flowVariable' },
-                        text: 'Flow Variable'
-                    }
-                ]);
+                it('uses port type search factory', async () => {
+                    doMount();
+
+                    wrapper.setData({ searchValue: 'flow' });
+                    await Vue.nextTick();
+
+                    expect(makeTypeSearchMock).toBeCalledWith({
+                        typeIds: ['table', 'flowVariable'],
+                        installedPortTypes: {
+                            flowVariable: { name: 'Flow Variable', color: 'red' },
+                            table: { name: 'Table', color: 'black' }
+                        }
+                    });
+
+                    expect(searchMock).toBeCalledWith('flow', { limit: 2 });
+                });
+
+                it('empty search input is being forwarded', async () => {
+                    doMount();
+                    wrapper.setData({ searchValue: 'flow' });
+                    await Vue.nextTick();
+
+                    expect(searchMock).toBeCalledWith('', { limit: 2 });
+                });
             });
 
             it('renders placeholder if nothing found', async () => {
-                portTypeSearchMock.mockReturnValue([]);
+                searchAllPortTypesMock.mockReturnValue([]);
                 doMount();
 
                 wrapper.setData({ searchValue: 'doesntexist' });

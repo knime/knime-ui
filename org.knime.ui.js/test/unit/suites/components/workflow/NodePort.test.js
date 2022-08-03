@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable no-magic-numbers */
 import Vue from 'vue';
 import Vuex from 'vuex';
@@ -46,7 +47,8 @@ describe('NodePort', () => {
                 index: 0,
                 name: 'title',
                 info: 'text'
-            }
+            },
+            selected: false
         };
         isWritable = true;
         storeConfig = {
@@ -109,6 +111,8 @@ describe('NodePort', () => {
         
         expect(wrapper.findComponent(Connector).exists()).toBe(false);
         expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
+
+        expect(wrapper.findComponent(Port).classes()).toContain('hoverable-port');
     });
 
     describe('Tooltips', () => {
@@ -530,6 +534,13 @@ describe('NodePort', () => {
             expect(wrapper.element.releasePointerCapture).toHaveBeenCalledWith(-1);
         });
 
+        test('clicking a port after a connector was drawn doesnt emit to parent', async () => {
+            startDragging();
+            await wrapper.findComponent(Port).trigger('click');
+            
+            expect(wrapper.emitted('click')).toBeFalsy();
+        });
+
         describe('Stop Dragging', () => {
             test('dispatches drop event (direction = in)', () => {
                 startDragging();
@@ -623,64 +634,47 @@ describe('NodePort', () => {
 
     describe('Port actions', () => {
         beforeEach(() => {
-            propsData.canSelect = true;
+            propsData.selected = true;
         });
 
-        it('should render the actions when the port is selected', async () => {
+        it('should render the actions when the port is selected', () => {
             doShallowMount();
 
-            expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
-            await wrapper.findComponent(Port).trigger('click');
-            
             expect(wrapper.findComponent(NodePortActions).exists()).toBe(true);
         });
 
-        it('should now allow selection of port if `canSelect` prop is false', async () => {
+        test('closing PortActionMenu leads to deselection', () => {
             doShallowMount();
 
-            await wrapper.setProps({ canSelect: false });
-            await wrapper.findComponent(Port).trigger('click');
+        
+            expect(wrapper.emitted('deselect')).toBeFalsy();
+            wrapper.findComponent(NodePortActions).vm.$emit('close');
 
-            expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
+            expect(wrapper.emitted('deselect')).toBeTruthy();
         });
 
-        it('should unselect the port if the user starts dragging node', async () => {
+        test('clicking an unselected port emits to parent', () => {
             doShallowMount();
 
-            await wrapper.findComponent(Port).trigger('click');
-
-            $store.state.workflow.isDragging = true;
-            await wrapper.vm.$nextTick();
-
-            expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
+            expect(wrapper.emitted('click')).toBeFalsy();
+            
+            wrapper.findComponent(Port).trigger('click');
+            expect(wrapper.emitted('click')).toBeTruthy();
         });
 
-        it('should make the port non-interactive if selected', async () => {
+        it('should make the port non-interactive if selected', () => {
             doShallowMount();
 
-            const portComponent = wrapper.findComponent(Port);
-            expect(portComponent.classes()).toContain('hoverable-port');
-
-            await portComponent.trigger('click');
-            expect(portComponent.classes()).not.toContain('hoverable-port');
+            expect(wrapper.findComponent(Port).classes()).not.toContain('hoverable-port');
         });
         
-        it('should dispatch an action to remove port when the delete action button is clicked', async () => {
+        it('should dispatch an action to remove port when the delete action button is clicked', () => {
             doShallowMount();
 
-            await wrapper.findComponent(Port).trigger('click');
+            expect(wrapper.emitted('remove')).toBeFalsy();
 
-            wrapper.findComponent(NodePortActions).vm.$emit('action:delete');
-
-            expect(storeConfig.workflow.actions.removeContainerNodePort).toHaveBeenCalledWith(
-                expect.any(Object), // Vuex context
-                expect.objectContaining({
-                    nodeId: propsData.nodeId,
-                    side: 'input',
-                    typeId: propsData.port.typeId,
-                    portIndex: propsData.port.index
-                })
-            );
+            wrapper.findComponent(NodePortActions).vm.$emit('action:remove');
+            expect(wrapper.emitted('remove')).toBeTruthy();
         });
     });
 });

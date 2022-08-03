@@ -1,5 +1,6 @@
 <script>
 import { mapMutations, mapState } from 'vuex';
+import { escapePressed } from '~/mixins/escapeStack';
 
 const blacklistTagNames = /^(input|textarea|select)$/i;
 
@@ -50,6 +51,11 @@ export default {
                 return;
             }
 
+            // Close one item on the escape stack
+            if (e.key === 'Escape') {
+                escapePressed();
+            }
+
             // getAttribute?.() is conditionally called, because the jest-dom doesn't provide this function while testing.
             if (blacklistTagNames.test(e.target.tagName) || e.target.getAttribute?.('contenteditable') === 'true') {
                 return;
@@ -62,11 +68,6 @@ export default {
                     e.preventDefault();
                 }
                 return;
-            }
-
-            // Used in the NodeDescriptionPanel. If further use cases arise, think about a more general solution
-            if (e.key === 'Escape') {
-                this.$root.$emit('escape-pressed');
             }
 
             // This currently only looks for the first command that matches the hotkey

@@ -29,7 +29,6 @@ export const actions = {
     },
     
     /* See docs in API */
-    // TODO: rename to openNodeConfiguration
     openNodeConfiguration({ state }, nodeId) {
         openNodeDialog({ projectId: state.activeWorkflow.projectId, nodeId });
     },

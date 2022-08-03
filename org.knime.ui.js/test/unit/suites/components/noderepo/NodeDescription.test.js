@@ -7,6 +7,15 @@ import ExternalResourcesList from '~/components/common/ExternalResourcesList.vue
 import Description from '~/webapps-common/ui/components/Description.vue';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList.vue';
 
+import { escapeStack as escapeStackMock } from '~/mixins/escapeStack';
+jest.mock('~/mixins/escapeStack', () => {
+    function escapeStack({ onEscape }) { // eslint-disable-line func-style
+        escapeStack.onEscape = onEscape;
+        return { /* empty mixin */ };
+    }
+    return { escapeStack };
+});
+
 describe('NodeDescription', () => {
     let mocks, doMount, wrapper, storeConfig, $store, closeDescriptionPanelMock,
         getNodeDescriptionMock, selectedNodeIsVisible;
@@ -108,11 +117,7 @@ describe('NodeDescription', () => {
     it('closes on escape', () => {
         // adds event handler on mount
         doMount();
-        wrapper.vm.$root.$emit('escape-pressed');
-
-        // removes event handler before destroying
-        wrapper.destroy();
-        wrapper.vm.$root.$emit('escape-pressed');
+        escapeStackMock.onEscape.call(wrapper.vm);
 
         expect(closeDescriptionPanelMock).toHaveBeenCalledTimes(1);
     });

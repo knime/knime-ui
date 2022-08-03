@@ -1,3 +1,4 @@
+// TODO entire file to be removed with NXT-632
 <script>
 import Header from './TablePortViewHeader.vue';
 import Body from './TablePortViewBody.vue';
@@ -21,7 +22,8 @@ export default {
         projectId: { type: String, required: true },
         nodeId: { type: String, required: true },
         workflowId: { type: String, required: true },
-        portIndex: { type: Number, required: true }
+        portIndex: { type: Number, required: true },
+        initialData: { type: Object, required: true }
     },
     data: () => ({
         /**
@@ -71,26 +73,13 @@ export default {
             }
         }
     },
-    async created() {
-        this.$emit('update', { state: 'loading' });
-        try {
-            const firstRows = 100; // batch size for initial load
-            let { projectId, workflowId, nodeId, portIndex } = this;
-            let table = await loadTable({ projectId, workflowId, nodeId, portIndex, batchSize: firstRows });
-
-            // number of rows unknown. Easier for comparison
-            if (table.totalNumRows === -1) {
-                table.totalNumRows = Infinity;
-            }
-
-            this.table = table;
-
-            // show table
-            this.$emit('update', { state: 'ready' });
-        } catch (e) {
-            consola.error(e);
-            this.$emit('update', { state: 'error', message: "Couldn't load table" });
+    mounted() {
+        let table = this.initialData;
+        // number of rows unknown. Easier for comparison
+        if (table.totalNumRows === -1) {
+            table.totalNumRows = Infinity;
         }
+        this.table = table;
     },
     methods: {
         newTableLoaded(newTable, counter = 0) {

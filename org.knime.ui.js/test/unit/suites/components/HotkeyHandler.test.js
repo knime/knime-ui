@@ -1,9 +1,14 @@
 /* eslint-disable no-magic-numbers */
-import { createLocalVue, shallowMount, createWrapper } from '@vue/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 import HotkeyHandler from '~/components/HotkeyHandler.vue';
+import { escapePressed as escapePressedMock } from '~/mixins/escapeStack';
+
+jest.mock('~/mixins/escapeStack', () => ({
+    escapePressed: jest.fn()
+}));
 
 const expectEventHandled = () => {
     expect(KeyboardEvent.prototype.preventDefault).toHaveBeenCalled();
@@ -39,6 +44,8 @@ describe('HotKeys', () => {
 
         KeyboardEvent.prototype.preventDefault = jest.fn();
         KeyboardEvent.prototype.stopPropagation = jest.fn();
+
+        escapePressedMock.mockClear();
 
         storeConfig = {
             workflow: {
@@ -121,8 +128,7 @@ describe('HotKeys', () => {
         doShallowMount();
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
             
-        let rootWrapper = createWrapper(wrapper.vm.$root);
-        expect(rootWrapper.emitted('escape-pressed')).toBeTruthy();
+        expect(escapePressedMock).toHaveBeenCalled();
     });
 
     test('command found and is enabled', () => {

@@ -22,32 +22,36 @@ export const tooltip = {
     watch: {
         // takes care of removing the tooltip watcher even if the tooltip got closed from any other component (set null)
         '$store.state.workflow.tooltip'(value) {
-            if (value === null && this.removeTooltipWatcher) {
-                this.removeTooltipWatcher();
-                this.removeTooltipWatcher = null;
+            if (value === null) {
+                this.removeTooltipWatcher?.();
             }
         }
     },
     methods: {
         onTooltipMouseEnter(e) {
-            if (this.removeTooltipWatcher) {
-                this.removeTooltipWatcher();
-            }
-
+            this.removeTooltipWatcher?.();
+            
             if (this.tooltip === undefined) { // eslint-disable-line no-undefined
                 consola.error('Tooltip mixin is used without providing a tooltip property');
                 return;
             }
-
+            
             // wait for entryDelay to set tooltip
-            this.tooltipTimeout = setTimeout(() => {
-                // add watcher to component's "tooltip" property
-                this.removeTooltipWatcher = this.$watch(
-                    'tooltip',
-                    (value) => this.$store.commit('workflow/setTooltip', value),
-                    { immediate: true }
-                );
-            }, entryDelay);
+            this.tooltipTimeout = setTimeout(this.showTooltip, entryDelay);
+        },
+        showTooltip() {
+            // add watcher to component's "tooltip" property
+            let removeWatcher = this.$watch(
+                'tooltip',
+                (value) => this.$store.commit('workflow/setTooltip', value),
+                { immediate: true }
+            );
+
+            // provide method to remove the "tooltip" watcher
+            this.removeTooltipWatcher = () => {
+                removeWatcher();
+                this.removeTooltipWatcher = null;
+            };
         },
         onTooltipMouseLeave({ relatedTarget }) {
             consola.trace('mouse left to:', relatedTarget?.tagName, relatedTarget?.id,

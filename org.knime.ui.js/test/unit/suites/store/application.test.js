@@ -1,6 +1,11 @@
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
+import { makeTypeSearch as makeTypeSearchMock } from '~/util/fuzzyPortTypeSearch';
+
+jest.mock('~/util/fuzzyPortTypeSearch', () => ({
+    makeTypeSearch: jest.fn().mockReturnValue('searchFunction')
+}));
 
 describe('application store', () => {
     let store, storeConfig, fetchApplicationState, localVue, addEventListener, removeEventListener, dispatchSpy,
@@ -212,14 +217,13 @@ describe('application store', () => {
             }
         };
         store.commit('application/setAvailablePortTypes', portTypes);
-
-        let portTypeSearch = store.getters['application/portTypeSearch'];
-        expect(portTypeSearch.search('flow').map(result => result.item))
-            .toStrictEqual([{ typeId: 'FlowVariable', name: 'Flow Variable' }]);
-        expect(portTypeSearch.search('data').map(result => result.item))
-            .toStrictEqual([{ typeId: 'BufferedTable', name: 'Data' }]);
-        expect(portTypeSearch.search('hidden').map(result => result.item))
-            .toStrictEqual([]);
+        
+        expect(store.getters['application/searchAllPortTypes']).toBe('searchFunction');
+        
+        expect(makeTypeSearchMock).toHaveBeenCalledWith({
+            typeIds: ['BufferedTable', 'FlowVariable', 'Hidden'],
+            installedPortTypes: portTypes
+        });
     });
 
     describe('set active workflow', () => {
@@ -227,15 +231,26 @@ describe('application store', () => {
             const state = {
                 openedWorkflows: [
                     { projectId: 'foo', name: 'bar' },
-                    { projectId: 'bee', name: 'gee', activeWorkflow: {} }
+                    {
+                        projectId: 'bee',
+                        name: 'gee',
+                        activeWorkflow: {
+                            workflow: {
+                                info: { containerId: 'root' }
+                            },
+                            snapshotId: '0'
+                        }
+                    }
                 ]
             };
             await store.dispatch('application/replaceApplicationState', state);
 
-            expect(dispatchSpy).toHaveBeenCalledWith(
-                'application/switchWorkflow',
-                { workflowId: 'root', projectId: 'bee' }
-            );
+            expect(dispatchSpy).toHaveBeenCalledWith('application/setWorkflow',
+                {
+                    projectId: 'bee',
+                    workflow: { info: { containerId: 'root' } },
+                    snapshotId: '0'
+                });
         });
 
         it('uses first in row if not provided by backend', async () => {
@@ -247,10 +262,11 @@ describe('application store', () => {
             };
             await store.dispatch('application/replaceApplicationState', state);
 
-            expect(dispatchSpy).toHaveBeenCalledWith(
-                'application/switchWorkflow',
-                { workflowId: 'root', projectId: 'foo' }
-            );
+            expect(dispatchSpy).toHaveBeenCalledWith('application/loadWorkflow',
+                {
+                    workflowId: 'root',
+                    projectId: 'foo'
+                });
         });
 
         it('does not set active project if there are no open workflows', async () => {

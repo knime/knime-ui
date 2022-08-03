@@ -1,73 +1,34 @@
-/* eslint-disable no-magic-numbers */
-jest.mock('~api', () => ({
-    loadFlowVariables: jest.fn()
-}), { virtual: true });
-
 import Vue from 'vue';
 import FlowVariablePortView from '~/components/output/FlowVariablePortView.vue';
-import { loadFlowVariables as loadFlowVariablesMock } from '~api';
 import { shallowMount } from '@vue/test-utils';
 
 describe('FlowVariablePortView.vue', () => {
     let wrapper;
-
-    afterEach(() => {
-        loadFlowVariablesMock.mockReset();
-    });
-
     let doShallowMountWithAsyncData = async () => {
         wrapper = await shallowMount(FlowVariablePortView, {
             propsData: {
                 projectId: 'project',
                 workflowId: 'workflow',
                 nodeId: 'node',
-                portIndex: 0
+                portIndex: 0,
+                initialData: [
+                    {
+                        ownerNodeId: 'testOwner',
+                        type: 'StringValue',
+                        name: 'testFlowVariable1',
+                        value: 'test1'
+                    },
+                    {
+                        type: 'IntValue',
+                        name: 'testFlowVariable2',
+                        value: 'test2'
+                    }
+                ]
             }
         });
     };
 
-    it('fetches successfully', async () => {
-        loadFlowVariablesMock.mockResolvedValue();
-        await doShallowMountWithAsyncData();
-
-        await Vue.nextTick();
-
-        expect(wrapper.emitted().update[0]).toStrictEqual([{ state: 'loading' }]);
-        expect(loadFlowVariablesMock).toHaveBeenCalledWith({
-            projectId: 'project',
-            workflowId: 'workflow',
-            nodeId: 'node',
-            portIndex: 0
-        });
-        expect(wrapper.emitted().update[1]).toStrictEqual([{ state: 'ready' }]);
-    });
-
-    test('fetch fails', async () => {
-        loadFlowVariablesMock.mockRejectedValue();
-
-        await doShallowMountWithAsyncData();
-        await Vue.nextTick();
-
-        expect(wrapper.emitted().update[0]).toStrictEqual([{ state: 'loading' }]);
-        expect(wrapper.emitted().update[1]).toStrictEqual([
-            { state: 'error', message: "Couldn't load flow variables" }
-        ]);
-    });
-
     it('displays flowVariable table', async () => {
-        loadFlowVariablesMock.mockResolvedValue([
-            {
-                ownerNodeId: 'testOwner',
-                type: 'StringValue',
-                name: 'testFlowVariable1',
-                value: 'test1'
-            },
-            {
-                type: 'IntValue',
-                name: 'testFlowVariable2',
-                value: 'test2'
-            }
-        ]);
         await doShallowMountWithAsyncData();
         await Vue.nextTick();
 

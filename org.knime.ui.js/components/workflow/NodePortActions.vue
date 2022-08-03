@@ -1,6 +1,7 @@
 <script>
 import Port from '~/components/workflow/Port.vue';
 import ActionButton from '~/components/workflow/ActionButton.vue';
+import { escapeStack } from '~/mixins';
 import DeleteIcon from '~/assets/delete.svg?inline';
 
 export const portActionButtonSize = 20;
@@ -12,6 +13,13 @@ export default {
         ActionButton,
         DeleteIcon
     },
+    mixins: [
+        escapeStack({
+            onEscape() {
+                this.$emit('close');
+            }
+        })
+    ],
     props: {
         port: {
             type: Object,
@@ -37,10 +45,10 @@ export default {
         actions() {
             return [
                 {
-                    id: 'delete',
-                    title: 'Delete port',
+                    id: 'remove',
+                    title: 'Remove port',
                     isDisabled: !this.port.canRemove,
-                    eventName: 'action:delete'
+                    eventName: 'action:remove'
                 }
             ];
         },
@@ -51,7 +59,7 @@ export default {
                 this.anchorPoint.y + y
             ];
         },
-        selectedPortHoverAreaDimensions() {
+        hoverArea() {
             const totalActions = this.actions.length;
 
             // reverse the rect
@@ -71,7 +79,7 @@ export default {
         }
     },
     methods: {
-        portActionButtonPosition(actionIndex) {
+        buttonX(actionIndex) {
             const delta = this.direction === 'in' ? -1 : 1;
             return (portActionButtonSize + portActionsGapSize) * actionIndex * delta;
         }
@@ -86,7 +94,7 @@ export default {
         while the port actions are visible
      -->
     <rect
-      v-bind="selectedPortHoverAreaDimensions"
+      v-bind="hoverArea"
       fill="transparent"
       @mouseenter.stop
       @mouseleave.stop
@@ -104,7 +112,7 @@ export default {
       v-for="(action, index) in actions"
       :id="action.id"
       :key="action.id"
-      :x="portActionButtonPosition(index + 1)"
+      :x="buttonX(index + 1)"
       :disabled="action.isDisabled"
       :title="action.title"
       @click="$emit(action.eventName)"

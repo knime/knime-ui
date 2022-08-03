@@ -1,30 +1,41 @@
 /* eslint-disable no-magic-numbers */
 import { shallowMount } from '@vue/test-utils';
 
-import NodePortActions from '~/components/workflow/NodePortActions.vue';
+import NodePortActions, { portActionButtonSize } from '~/components/workflow/NodePortActions.vue';
 import ActionButton from '~/components/workflow/ActionButton.vue';
 import Port from '~/components/workflow/Port.vue';
 
-const propsData = {
-    direction: 'in',
-    relativePosition: [16, 32],
-    anchorPoint: { x: 1600, y: 1600 },
-    port: {
-        canRemove: true,
-        connectedVia: [],
-        typeId: 'table',
-        inactive: false,
-        index: 0
+import { escapeStack as escapeStackMock } from '~/mixins/escapeStack';
+jest.mock('~/mixins/escapeStack', () => {
+    function escapeStack({ onEscape }) { // eslint-disable-line func-style
+        escapeStack.onEscape = onEscape;
+        return { /* empty mixin */ };
     }
-};
-
-const portActionButtonSize = 20;
+    return { escapeStack };
+});
 
 describe('NodePortActions.vue', () => {
-    let wrapper;
-    const doShallowMount = () => {
-        wrapper = shallowMount(NodePortActions, { propsData });
-    };
+    let propsData, wrapper, doShallowMount;
+
+    beforeEach(() => {
+        propsData = {
+            direction: 'in',
+            relativePosition: [16, 32],
+            anchorPoint: { x: 1600, y: 1600 },
+            port: {
+                canRemove: true,
+                connectedVia: [],
+                typeId: 'table',
+                inactive: false,
+                index: 0
+            }
+        };
+
+        doShallowMount = () => {
+            wrapper = shallowMount(NodePortActions, { propsData });
+        };
+    });
+    
     
     it('should render properly', () => {
         doShallowMount();
@@ -41,7 +52,7 @@ describe('NodePortActions.vue', () => {
         doShallowMount();
 
         wrapper.findComponent(ActionButton).vm.$emit('click');
-        expect(wrapper.emitted('action:delete')).toBeDefined();
+        expect(wrapper.emitted('action:remove')).toBeDefined();
     });
 
     it('should position the wrapper and actions properly', () => {
@@ -106,5 +117,13 @@ describe('NodePortActions.vue', () => {
         const actionButton = wrapper.findComponent(ActionButton);
 
         expect(actionButton.props('disabled')).toBe(true);
+    });
+
+    it('should close on escape', () => {
+        doShallowMount();
+
+        expect(wrapper.emitted('close')).toBeFalsy();
+        escapeStackMock.onEscape.call(wrapper.vm);
+        expect(wrapper.emitted('close')).toBeTruthy();
     });
 });

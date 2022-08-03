@@ -52,6 +52,8 @@ const workflowCommand = async ({ projectId, workflowId, command, args }) => {
     }
 };
 
+// Disable arrow-body-style for workflow commands to be more flexible
+/* eslint-disable arrow-body-style */
 
 /**
  * @param { Object } cfg The configuration object
@@ -143,17 +145,19 @@ export const moveObjects = ({
  * @param { String } cfg.destPort   index of inPort
  * @returns { Promise } Promise
  */
-export const connectNodes = ({ projectId, workflowId, sourceNode, sourcePort, destNode, destPort }) => workflowCommand({
-    command: 'connect',
-    args: {
-        sourceNodeId: sourceNode,
-        sourcePortIdx: sourcePort,
-        destinationNodeId: destNode,
-        destinationPortIdx: destPort
-    },
-    projectId,
-    workflowId
-});
+export const connectNodes = ({ projectId, workflowId, sourceNode, sourcePort, destNode, destPort }) => {
+    return workflowCommand({
+        command: 'connect',
+        args: {
+            sourceNodeId: sourceNode,
+            sourcePortIdx: sourcePort,
+            destinationNodeId: destNode,
+            destinationPortIdx: destPort
+        },
+        projectId,
+        workflowId
+    });
+};
 
 
 /**
@@ -208,7 +212,7 @@ export const collapseToContainer = ({
 });
 
 /**
- * Adds a port to a container node
+ * Adds a port to a node
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
  * @param { String } cfg.nodeId
@@ -216,30 +220,28 @@ export const collapseToContainer = ({
  * @param { 'input' | 'output' } cfg.side
  * @returns { Promise }
  */
-export const addContainerNodePort = ({
-    projectId, workflowId, nodeId, typeId, side
-}) => workflowCommand({
-    command: 'add_port',
-    args: { nodeId, portTypeId: typeId, side },
-    projectId,
-    workflowId
-});
+export const addNodePort = ({ projectId, workflowId, nodeId, side, portGroup, typeId }) => {
+    return workflowCommand({
+        command: 'add_port',
+        args: { nodeId, side, portGroup, portTypeId: typeId },
+        projectId,
+        workflowId
+    });
+};
 
 /**
- * Removes a port from a container node
+ * Removes a port from a node
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
  * @param { String } cfg.nodeId
- * @param { String } cfg.portType
- * @param { Number } cfg.portIndex
  * @param { 'input' | 'output' } cfg.side
+ * @param { Number } cfg.index
+ * @param { String } cfg.portGroup
  * @returns { Promise }
  */
-export const removeContainerNodePort = ({
-    projectId, workflowId, nodeId, typeId, side, portIndex
-}) => workflowCommand({
+export const removeNodePort = ({ projectId, workflowId, nodeId, side, index, portGroup }) => workflowCommand({
     command: 'remove_port',
-    args: { nodeId, portTypeId: typeId, side, portIndex },
+    args: { nodeId, side, portIndex: index, portGroup },
     projectId,
     workflowId
 });
@@ -251,9 +253,7 @@ export const removeContainerNodePort = ({
  * @param { String } cfg.nodeId
  * @returns {Promise}
  */
-export const expandContainerNode = ({
-    projectId, workflowId, nodeId
-}) => workflowCommand({
+export const expandContainerNode = ({ projectId, workflowId, nodeId }) => workflowCommand({
     command: 'expand',
     args: { nodeId },
     projectId,
@@ -264,19 +264,19 @@ export const expandContainerNode = ({
  * Copies or cuts workflow parts and serializes them
  * @param { String } cfg.projectId
  * @param { String } cfg.workflowId
- * @param { String } cfg.command The command to execute, can be 'copy' or 'cut'
+ * @param { 'copy' | 'cut' } cfg.command The command to execute, can be 'copy' or 'cut'
  * @param { Array } cfg.nodeIds The node ids to copy
  * @param { Array } cfg.annotationIds The annotation ids to copy
  * @returns { Promise } The serialized workflow parts
  */
-export const copyOrCutWorkflowParts = ({
-    projectId, workflowId, command, nodeIds = [], annotationIds = []
-}) => workflowCommand({
-    command,
-    args: { nodeIds, annotationIds },
-    projectId,
-    workflowId
-});
+export const copyOrCutWorkflowParts = ({ projectId, workflowId, command, nodeIds = [], annotationIds = [] }) => {
+    return workflowCommand({
+        command,
+        args: { nodeIds, annotationIds },
+        projectId,
+        workflowId
+    });
+};
 
 /**
  * Pastes workflow parts to the canvas

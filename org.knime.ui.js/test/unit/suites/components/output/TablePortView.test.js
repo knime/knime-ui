@@ -1,10 +1,11 @@
+// TODO entire file to be removed with NXT-632
 /* eslint-disable no-magic-numbers */
 jest.mock('~api', () => ({
     loadTable: jest.fn()
 }), { virtual: true });
 
 import Vue from 'vue';
-import { shallowMountWithAsyncData, mountWithAsyncData as deepMountWithAsyncData } from '~/test/unit/test-utils';
+import { shallowMount, mount } from '@vue/test-utils';
 import TablePortView from '~/components/output/TablePortView.vue';
 import Header from '~/components/output/TablePortViewHeader.vue';
 import Body from '~/components/output/TablePortViewBody.vue';
@@ -22,7 +23,7 @@ jest.mock('lodash', () => ({
 
 const tableRenderedDelay = 600;
 
-describe.skip('TablePortView.vue', () => {
+describe('TablePortView.vue', () => {
     let wrapper, dummyTable, doMount, dataRowHeight;
 
     beforeAll(() => {
@@ -75,13 +76,13 @@ describe.skip('TablePortView.vue', () => {
             } else {
                 loadTableMock.mockRejectedValue();
             }
-
             wrapper = await mountMethod(TablePortView, {
                 propsData: {
                     projectId: 'project',
                     workflowId: 'workflow',
                     nodeId: 'node',
-                    portIndex: 0
+                    portIndex: 0,
+                    initialData: dummyTable
                 },
                 stubs: {
                     MissingValueIcon
@@ -99,12 +100,12 @@ describe.skip('TablePortView.vue', () => {
                 Object.defineProperty(table, 'scrollHeight', { value: 100, configurable: true });
             }
 
-            // if (mountMethod === shallowMountWithAsyncData) {
-            //     // if shallowMountWithAsyncData disable fixLayout
-            //     wrapper.vm.fixLayout = jest.fn();
-            //     // set dataRowHeight manually
-            //     wrapper.setData({ dataRowHeight });
-            // }
+            if (mountMethod === shallowMount) {
+                // if shallowMount disable fixLayout
+                wrapper.vm.fixLayout = jest.fn();
+                // set dataRowHeight manually
+                wrapper.setData({ dataRowHeight });
+            }
         };
     });
 
@@ -113,34 +114,17 @@ describe.skip('TablePortView.vue', () => {
     });
 
     it('fetches successfully first 100 rows', async () => {
-        await doMount(shallowMountWithAsyncData);
+        await doMount(shallowMount);
         await Vue.nextTick();
 
-        expect(wrapper.emitted().update[0]).toStrictEqual([{ state: 'loading' }]);
-        expect(loadTableMock).toHaveBeenCalledWith({
-            projectId: 'project',
-            workflowId: 'workflow',
-            nodeId: 'node',
-            portIndex: 0,
-            batchSize: 100
-        });
-        expect(wrapper.emitted().update[1]).toStrictEqual([{ state: 'ready' }]);
         expect(wrapper.findComponent(Body).props().rows).toStrictEqual(dummyTable.rows);
         expect(wrapper.findComponent(Header).props().columns).toStrictEqual(dummyTable.spec.columns);
         expect(wrapper.findComponent(Header).props().cellTypes).toStrictEqual(dummyTable.spec.cellTypes);
     });
 
-    test('fetch fails', async () => {
-        dummyTable = null; // causes loadTableMock to reject
-        await doMount(shallowMountWithAsyncData);
-        await Vue.nextTick();
-
-        expect(wrapper.emitted().update[0]).toStrictEqual([{ state: 'loading' }]);
-        expect(wrapper.emitted().update[1]).toStrictEqual([{ state: 'error', message: "Couldn't load table" }]);
-    });
 
     test('fixes layout after initial loading', async () => {
-        await doMount(deepMountWithAsyncData);
+        await doMount(mount);
 
         let table = wrapper.vm.$refs.table;
         // for fixing layout
@@ -170,7 +154,7 @@ describe.skip('TablePortView.vue', () => {
 
     describe('automatically loads more rows', () => {
         test('on veeeery long screens -> no overflow', async () => {
-            await doMount(shallowMountWithAsyncData);
+            await doMount(shallowMount);
 
             // set scrollHeight to zero BEFORE timeout executes
             let table = wrapper.vm.$refs.table;
@@ -189,29 +173,29 @@ describe.skip('TablePortView.vue', () => {
             });
         });
 
-        it('doesnt on normal screens -> overflow scroll', async () => {
-            await doMount(shallowMountWithAsyncData);
+        it.skip('doesnt on normal screens -> overflow scroll', async () => {
+            await doMount(shallowMount);
 
             jest.advanceTimersByTime(tableRenderedDelay);
 
-            expect(loadTableMock).toHaveBeenCalledTimes(1);
+            expect(loadTableMock).toHaveBeenCalledTimes();
         });
     });
 
     describe('scrolling', () => {
         test('cant load more rows', async () => {
             loadTableMock.mockResolvedValue({ ...dummyTable, totalNumRows: 0 });
-            await doMount(shallowMountWithAsyncData);
+            await doMount(shallowMount);
             await Vue.nextTick();
             wrapper.vm.$refs.scroller.dispatchEvent(new CustomEvent('scroll'));
-            expect(loadTableMock).toHaveBeenCalledTimes(1);
+            expect(loadTableMock).toHaveBeenCalledTimes(0);
         });
 
         test('already lazy loading', async () => {
-            await doMount(shallowMountWithAsyncData);
+            await doMount(shallowMount);
             wrapper.setData({ isLazyLoading: true });
             wrapper.vm.$refs.scroller.dispatchEvent(new CustomEvent('scroll'));
-            expect(loadTableMock).toHaveBeenCalledTimes(1);
+            expect(loadTableMock).toHaveBeenCalledTimes(0);
         });
 
         describe('scrolling causes lazy loading', () => {
@@ -222,7 +206,7 @@ describe.skip('TablePortView.vue', () => {
                 const triggerRows = 50;
 
                 dummyTable.rows.length = noRows;
-                await doMount(shallowMountWithAsyncData);
+                await doMount(shallowMount);
 
                 let { table, scroller } = wrapper.vm.$refs;
                 table.getBoundingClientRect = jest.fn().mockReturnValue({
@@ -238,14 +222,14 @@ describe.skip('TablePortView.vue', () => {
                 scroller.scrollTop = (noRows - triggerRows - windowHeight - 1) * dataRowHeight;
                 scroller.dispatchEvent(new CustomEvent('scroll'));
                 await Vue.nextTick();
-                expect(loadTableMock).toHaveBeenCalledTimes(1);
+                expect(loadTableMock).toHaveBeenCalledTimes(0);
 
                 // second test: threshold reached
                 scroller.scrollTop = (noRows - triggerRows - windowHeight) * dataRowHeight;
                 scroller.dispatchEvent(new CustomEvent('scroll'));
                 await Vue.nextTick();
                 expect(wrapper.find('tfoot').exists()).toBe(true);
-                expect(loadTableMock).toHaveBeenCalledTimes(2);
+                expect(loadTableMock).toHaveBeenCalledTimes(1);
             });
 
             test('200 items, 150 threshold', async () => {
@@ -253,7 +237,7 @@ describe.skip('TablePortView.vue', () => {
                 const triggerRows = 150;
 
                 dummyTable.rows.length = noRows;
-                await doMount(shallowMountWithAsyncData);
+                await doMount(shallowMount);
 
                 let { table, scroller } = wrapper.vm.$refs;
                 table.getBoundingClientRect = jest.fn().mockReturnValue({
@@ -269,14 +253,14 @@ describe.skip('TablePortView.vue', () => {
                 scroller.scrollTop = (noRows - triggerRows - windowHeight - 1) * dataRowHeight;
                 scroller.dispatchEvent(new CustomEvent('scroll'));
                 await Vue.nextTick();
-                expect(loadTableMock).toHaveBeenCalledTimes(1);
+                expect(loadTableMock).toHaveBeenCalledTimes(0);
 
                 // second test: threshold reached
                 scroller.scrollTop = (noRows - triggerRows - windowHeight) * dataRowHeight;
                 scroller.dispatchEvent(new CustomEvent('scroll'));
                 await Vue.nextTick();
                 expect(wrapper.find('tfoot').exists()).toBe(true);
-                expect(loadTableMock).toHaveBeenCalledTimes(2);
+                expect(loadTableMock).toHaveBeenCalledTimes(1);
             });
         });
     });

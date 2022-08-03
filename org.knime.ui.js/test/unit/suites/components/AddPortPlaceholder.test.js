@@ -1,7 +1,5 @@
 /* eslint-disable no-magic-numbers */
-import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
-import Vuex from 'vuex';
+import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 
 import * as $shapes from '~/style/shapes';
@@ -11,35 +9,22 @@ import Port from '~/components/workflow/Port.vue';
 import AddPortPlaceholder, { addPortPlaceholderPath } from '~/components/workflow/AddPortPlaceholder.vue';
 
 describe('PortTypeMenu.vue', () => {
-    let storeConfig, propsData, mocks, doMount, wrapper, provide, $store;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let propsData, mocks, doMount, wrapper, provide;
 
     beforeEach(() => {
         wrapper = null;
         propsData = {
             position: [10, 10],
             side: 'output',
-            nodeId: 'node-id'
+            nodeId: 'node-id',
+            addablePortTypes: ['type1', 'type2']
         };
         provide = {
             anchorPoint: { x: 10, y: 10 }
         };
 
-        storeConfig = {
-            workflow: {
-                actions: {
-                    addContainerNodePort: jest.fn()
-                }
-            }
-        };
-
         doMount = () => {
-            $store = mockVuexStore(storeConfig);
-            mocks = { $store, $shapes, $colors };
+            mocks = { $shapes, $colors };
 
             wrapper = shallowMount(AddPortPlaceholder, { propsData, mocks, provide });
         };
@@ -58,6 +43,14 @@ describe('PortTypeMenu.vue', () => {
 
             expect(addPortButton.classes()).not.toContain('active');
             expect(addPortButton.find('path').attributes('d')).toBe(addPortPlaceholderPath);
+        });
+
+        test('adds port directly, if only one option is given', () => {
+            propsData.addablePortTypes = ['table'];
+            doMount();
+
+            wrapper.find('.add-port-icon').trigger('click');
+            expect(wrapper.emitted('add-port')).toStrictEqual([['table']]);
         });
 
         describe('with open menu', () => {
@@ -82,7 +75,8 @@ describe('PortTypeMenu.vue', () => {
                     id: 'node-id-output',
                     props: {
                         position: { x: 20, y: 20 },
-                        side: 'output'
+                        side: 'output',
+                        addablePortTypes: ['type1', 'type2']
                     },
                     events: {
                         'item-active': expect.any(Function),
@@ -171,18 +165,11 @@ describe('PortTypeMenu.vue', () => {
                 expect(wrapper.vm.transitionEnabled).toBe(true);
             });
             
-            test.each(['input', 'output'])('click on item calls api for %s port', async (side) => {
-                wrapper.setProps({ side });
-                await Vue.nextTick();
-
+            test('click on item emits event', () => {
                 let port = { typeId: 'table' };
                 callbacks['item-click']({ port });
                 
-                expect(storeConfig.workflow.actions.addContainerNodePort).toHaveBeenCalledWith(expect.anything(), {
-                    side,
-                    nodeId: 'node-id',
-                    typeId: 'table'
-                });
+                expect(wrapper.emitted('add-port')).toStrictEqual([['table']]);
             });
         });
     });

@@ -159,6 +159,12 @@ export default {
             default: () => ({
                 allowedActions: {}
             })
+        },
+
+        /** Passed through to NodePorts */
+        portGroups: {
+            type: Object,
+            default: null
         }
     },
     data() {
@@ -481,6 +487,7 @@ export default {
         :out-ports="outPorts"
         :target-port="targetPort"
         :is-editable="isEditable"
+        :port-groups="portGroups"
         :hover="hover"
         :connector-hover="connectorHover"
         :is-single-selected="isSingleSelected"

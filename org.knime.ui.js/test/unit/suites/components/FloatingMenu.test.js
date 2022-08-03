@@ -13,6 +13,15 @@ jest.mock('raf-throttle', () => function (func) {
     };
 });
 
+import { escapeStack as escapeStackMock } from '~/mixins/escapeStack';
+jest.mock('~/mixins/escapeStack', () => {
+    function escapeStack({ onEscape }) { // eslint-disable-line func-style
+        escapeStack.onEscape = onEscape;
+        return { /* empty mixin */ };
+    }
+    return { escapeStack };
+});
+
 describe('FloatingMenu.vue', () => {
     let propsData, doMount, wrapper, $store, storeConfig, contentWidth, contentHeight, screenFromCanvasCoordinatesMock,
         mockResizeObserver;
@@ -109,7 +118,8 @@ describe('FloatingMenu.vue', () => {
         it('closes menu on escape key', () => {
             doMount();
 
-            wrapper.trigger('keydown.esc');
+            escapeStackMock.onEscape.call(wrapper.vm);
+            
             expect(wrapper.emitted('menu-close')).toBeDefined();
         });
 

@@ -1,5 +1,4 @@
 <script>
-import { mapGetters, mapActions } from 'vuex';
 
 import Port from '~/components/workflow/Port.vue';
 
@@ -32,6 +31,10 @@ export default {
         nodeId: {
             type: String,
             required: true
+        },
+        addablePortTypes: {
+            type: Array,
+            default: null
         }
     },
     data: () => ({
@@ -45,13 +48,12 @@ export default {
         previewPort: null
     }),
     computed: {
-        ...mapGetters('canvas', ['screenFromCanvasCoordinates']),
         addPortPlaceholderPath: () => addPortPlaceholderPath
     },
     watch: {
-        isMenuOpen(value) {
+        isMenuOpen(shouldOpen) {
             // use isMenuOpen as source of truth and react upon change
-            if (value) {
+            if (shouldOpen) {
                 this.openMenu();
             } else {
                 this.closeMenu();
@@ -59,7 +61,6 @@ export default {
         }
     },
     methods: {
-        ...mapActions('workflow', ['addContainerNodePort']),
         openMenu() {
             // find the position in coordinates relative to the origin
             let position = {
@@ -75,7 +76,8 @@ export default {
                         id: `${this.nodeId}-${this.side}`,
                         props: {
                             position,
-                            side: this.side
+                            side: this.side,
+                            addablePortTypes: this.addablePortTypes
                         },
                         events: {
                             'item-active': this.onItemActive,
@@ -98,6 +100,12 @@ export default {
             ));
         },
         onClick() {
+            if (Array.isArray(this.addablePortTypes) && this.addablePortTypes.length === 1) {
+                let [typeId] = this.addablePortTypes;
+                this.$emit('add-port', typeId);
+                return;
+            }
+
             // toggle the menu
             this.isMenuOpen = !this.isMenuOpen;
         },
@@ -117,12 +125,9 @@ export default {
             // directly switch back to add-port icon
             this.transitionEnabled = false;
             this.previewPort = null;
+
+            this.$emit('add-port', item.port.typeId);
             
-            this.addContainerNodePort({
-                side: this.side,
-                nodeId: this.nodeId,
-                typeId: item.port.typeId
-            });
             this.$nextTick(() => {
                 this.transitionEnabled = true;
             });
@@ -182,7 +187,7 @@ export default {
 <style lang="postcss" scoped>
 .port-fade-enter-active,
 .port-fade-leave-active {
-  transition: opacity 120ms ease;
+  transition: opacity 100ms ease;
 }
 
 .port-fade-enter {
