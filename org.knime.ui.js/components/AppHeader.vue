@@ -1,6 +1,6 @@
 <script>
 import { mapGetters, mapActions } from 'vuex';
-import KnimeIcon from 'webapps-common/ui/assets/img/KNIME_Triangle.svg';
+import KnimeIcon from '~/webapps-common/ui/assets/img/KNIME_Triangle.svg?inline';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/perspective-switch.svg?inline';
 import CloseIcon from '~/assets/cancel.svg?inline';

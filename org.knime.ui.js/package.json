@@ -5,8 +5,8 @@
   "author": "KNIME AG",
   "scripts": {
     "dev": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "postinstall": "npm run opensourcecredits -- --no-overwrite && npm run generate-css",
+    "build": "npm run generate-css && vue-cli-service build",
+    "postinstall": "npm run opensourcecredits -- --no-overwrite",
     "lint": "npm run lint:js && npm run lint:css && npm run lint:json",
     "lint:ci": "eslint --ext .js,.ts,.json . -f json -o target/eslint.json || true; stylelint '**/*.css' -f json -o target/stylelint.json || true",
     "lint:js": "eslint --ext .js,.mjs,.vue .",

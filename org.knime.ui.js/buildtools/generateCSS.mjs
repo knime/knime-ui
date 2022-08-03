@@ -60,6 +60,7 @@ const generateCssData = (names, data, postfix, sourceFile) => {
  * Generate colors.css and shapes.css from the above color names from colors.js
  * @returns {void}
  */
+// eslint-disable-next-line func-style
 function generate() {
     let colorsPath = path.join(__dirname, '..', 'assets', 'colors.css');
     console.info('Generating assets/colors.css');

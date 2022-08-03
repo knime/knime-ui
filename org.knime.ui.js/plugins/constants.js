@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import * as colors from '~/style/colors';
 import * as shapes from '~/style/shapes';
 

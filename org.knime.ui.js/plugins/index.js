@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import PortalVue from 'portal-vue';
 
 import commands from './commands';
