@@ -6,7 +6,7 @@ import * as $shapes from '~/style/shapes';
 
 import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer.vue';
 
-import '~/plugins/directive-move';
+import { directiveMove } from '~/plugins/directive-move';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {
@@ -29,6 +29,7 @@ describe('MoveableNodeContainer', () => {
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
+        Vue.directive(directiveMove.name, directiveMove.options);
     });
 
     beforeEach(() => {
