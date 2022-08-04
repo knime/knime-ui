@@ -20,6 +20,7 @@ export const actions = {
     /* Tell the backend to unload this workflow from memory */
     closeWorkflow({ dispatch, state }) {
         let { activeWorkflow: { projectId } } = state;
+        dispatch('application/removeCanvasState', {}, { root: true });
         closeWorkflow({ projectId });
     },
     

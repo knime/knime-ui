@@ -191,6 +191,11 @@ export const actions = {
         if (workflowCanvasState) {
             dispatch('canvas/restoreScrollState', workflowCanvasState, { root: true });
         }
+    },
+    removeCanvasState({ rootState, state }) {
+        const { info: { containerId: workflow }, projectId: project } = rootState.workflow?.activeWorkflow;
+        const stateKey = getCanvasStateKey({ workflow, project });
+        delete state.savedCanvasStates[stateKey];
     }
 };
 
