@@ -1,4 +1,4 @@
-import rpc from './json-rpc-adapter.js';
+import rpc from './json-rpc-adapter';
 
 /**
  * Do Action on nodes or an entire workflow.

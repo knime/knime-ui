@@ -2,12 +2,12 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
-import * as application from './application.js';
-import * as canvas from './canvas.js';
-import * as nodeRepository from './nodeRepository.js';
-import * as panel from './panel.js';
-import * as selection from './selection.js';
-import * as workflow from './workflow.js';
+import * as application from './application';
+import * as canvas from './canvas';
+import * as nodeRepository from './nodeRepository';
+import * as panel from './panel';
+import * as selection from './selection';
+import * as workflow from './workflow';
 
 Vue.use(Vuex);
 
