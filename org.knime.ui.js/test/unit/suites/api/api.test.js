@@ -219,13 +219,13 @@ describe('API', () => {
         });
 
         it('fetch port view info', async () => {
-            await api.getPortView(
-                'workflow',
-                'root:1',
-                'root:1:2',
-                // eslint-disable-next-line no-magic-numbers
-                10
-            );
+            await api.getPortView({
+                projectId: 'workflow',
+                workflowId: 'root:1',
+                nodeId: 'root:1:2',
+                portIndex: 10
+            });
+            
             expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
                 method: 'NodeService.getPortView',

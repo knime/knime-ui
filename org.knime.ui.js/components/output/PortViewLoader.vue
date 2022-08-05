@@ -3,37 +3,7 @@ import { KnimeService } from '~/knime-ui-extension-service';
 
 import { getPortView, callPortDataService } from '~api';
 import FlowVariablePortView from '~/components/output/FlowVariablePortView.vue';
-
-const loadComponentLibrary = async (window, resourceLocation, componentName) => {
-    if (window[componentName]) {
-        return Promise.resolve();
-    }
-    
-    // Load and mount component library
-    await new Promise((resolve, reject) => {
-        const script = window.document.createElement('script');
-        script.async = true;
-        
-        script.addEventListener('load', () => {
-            resolve(script);
-        });
-        
-        script.addEventListener('error', () => {
-            reject(new Error(`Script loading of "${resourceLocation}" failed`));
-            window.document.head.removeChild(script);
-        });
-        
-        script.src = resourceLocation;
-        window.document.head.appendChild(script);
-    });
-    // Lib build defines component on `window` using the name defined during build.
-    // This name should match the componentId (this.extensionConfig.resourceInfo.id).
-    const Component = window[componentName];
-    if (!Component) {
-        throw new Error(`Component loading failed. Script invalid.`);
-    }
-    return Promise.resolve();
-};
+import { loadComponentLibrary } from '~/util/loadComponentLibrary';
 
 export default {
     components: {
@@ -107,7 +77,7 @@ export default {
     mounted() {
         this.loadPortView();
         ['selectedNode', 'selectedPortIndex'].forEach(prop => {
-            this.$watch(prop, () => {
+            this.$watch(prop, (next) => {
                 this.loadPortView();
             });
         });
@@ -116,7 +86,8 @@ export default {
     methods: {
         initKnimeService(config) {
             const notificationCB = () => {
-                console.log('TBD');
+                // TODO: implement follow-up ticket for selection/hightlighting in the knime-ui-table
+                consola.warn('TBD');
             };
 
             const knimeService = new KnimeService(config, this.loadPortData, notificationCB);
@@ -130,7 +101,7 @@ export default {
             
             try {
                 const { projectId, workflowId, nodeId, portIndex } = this.portIdentifier;
-                const portView = await getPortView(projectId, workflowId, nodeId, portIndex);
+                const portView = await getPortView({ projectId, workflowId, nodeId, portIndex });
                 
                 await this.renderDynamicPortView(portView);
                 this.setPortViewerState({ state: 'ready' });
@@ -184,7 +155,7 @@ export default {
         vueComponentReferenceRenderer(portViewData) {
             const { resourceInfo, initialData } = portViewData;
             const { id } = resourceInfo;
-    
+            
             return {
                 initialData: JSON.parse(initialData).result,
                 componentId: id
@@ -216,7 +187,7 @@ export default {
 <template>
   <component
     :is="componentId"
-    v-if="componentId && initialData && knimeService"
+    v-if="componentId && initialData"
     v-bind="portIdentifier"
     :initial-data="initialData"
   />

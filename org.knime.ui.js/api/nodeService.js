@@ -61,7 +61,7 @@ export const getNodeDescription = async ({ className, settings }) => {
  * @param {Number} portIndex
  * @returns {Object}
  */
-export const getPortView = async (projectId, workflowId, nodeId, portIndex) => {
+export const getPortView = async ({ projectId, workflowId, nodeId, portIndex }) => {
     try {
         return await rpc('NodeService.getPortView', projectId, workflowId, nodeId, portIndex);
     } catch (e) {
