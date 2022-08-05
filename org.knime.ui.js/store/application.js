@@ -2,7 +2,11 @@ import Vue from 'vue';
 import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '~api';
 import { makeTypeSearch } from '~/util/fuzzyPortTypeSearch';
 
-const getCanvasStateKey = ({ workflow, project }) => `${window.btoa(workflow)}--${window.btoa(project)}`;
+// const getCanvasStateKey = ({ workflow, project }) => `${window.btoa(project)}--${window.btoa(workflow)}`;
+// const getCanvasStateKey = (input) => window.btoa(input);
+const getCanvasStateKey = (input) => window.btoa(input);
+
+const getRootWorkflowId = (workflowId) => workflowId.split(':')[0];
 
 /*
  * This store provides global application logic
@@ -37,13 +41,68 @@ export const mutations = {
         state.suggestedPortTypes = portTypesIds;
     },
     setSavedCanvasStates(state, newStates) {
+        const { savedCanvasStates } = state;
         const { workflow, project } = newStates;
-        const newStateKey = getCanvasStateKey({ workflow, project });
+        const [rootWorkflowId] = getRootWorkflowId(workflow);
 
-        state.savedCanvasStates = {
-            ...state.savedCanvasStates,
-            [newStateKey]: newStates
-        };
+        const isRootWorkflow = rootWorkflowId === workflow;
+        const emptyParentState = { children: {} };
+        
+        if (isRootWorkflow) {
+            const newStateKey = getCanvasStateKey(`${project}--${workflow}`);
+
+            // gets a reference of an existing parent state or create new one
+            const parentState = savedCanvasStates[newStateKey] || emptyParentState;
+
+            state.savedCanvasStates = {
+                // keep all the root states
+                ...savedCanvasStates,
+                // update parent state with the newStates
+                [newStateKey]: {
+                    ...parentState,
+                    ...newStates
+                }
+            };
+        } else {
+            const parentStateKey = getCanvasStateKey(`${project}--${rootWorkflowId}`);
+            const newStateKey = getCanvasStateKey(`${workflow}`);
+            
+            // In case we directly access a child the parent would not exist, so we default to an empty one
+            const parentState = savedCanvasStates[parentStateKey] || emptyParentState;
+
+            // (savedCanvasStates[parentStateKey] || emptyParentState).children[newStateKey] = newStates;
+
+            state.savedCanvasStates = {
+                // keep all the root states
+                ...savedCanvasStates,
+                [parentStateKey]: {
+                    // keep the parent state
+                    ...parentState,
+                    children: {
+                        // update the children with the newStates
+                        ...parentState.children,
+                        [newStateKey]: newStates
+                    }
+                }
+            };
+        }
+        // const newStateKey = getCanvasStateKey(`${project}--${workflow}`);
+        // const newStateKey = getCanvasStateKey({ workflow, project });
+        // const projectKey = newStateKey.substring(0, newStateKey.lastIndexOf('--'));
+        // const parentIndex = Object.keys(state.savedCanvasStates).filter(project => project.startsWith(projectKey));
+        // let parentProject = state.savedCanvasStates[parentIndex];
+        
+        // if (parentProject) {
+        //     if (!(newStateKey in state.savedCanvasStates)) {
+        //         state.savedCanvasStates[parentIndex] = { ...parentProject,
+        //             children: { ...parentProject.children, [newStateKey]: newStates } };
+
+        // } else {
+        //     state.savedCanvasStates = {
+        //         ...state.savedCanvasStates,
+        //         [newStateKey]: newStates
+        //     };
+        // }
     },
     setHasClipboardSupport(state, hasClipboardSupport) {
         state.hasClipboardSupport = hasClipboardSupport;
@@ -194,7 +253,9 @@ export const actions = {
     },
     removeCanvasState({ rootState, state }) {
         const { info: { containerId: workflow }, projectId: project } = rootState.workflow?.activeWorkflow;
-        const stateKey = getCanvasStateKey({ workflow, project });
+        const [rootWorkflowId] = getRootWorkflowId(workflow);
+
+        const stateKey = getCanvasStateKey(`${project}--${rootWorkflowId}`);
         delete state.savedCanvasStates[stateKey];
     }
 };
@@ -215,7 +276,18 @@ export const getters = {
     workflowCanvasState({ savedCanvasStates }, _, { workflow }) {
         const { info: { containerId: workflowId }, projectId } = workflow?.activeWorkflow;
 
-        const savedStateKey = getCanvasStateKey({ workflow: workflowId, project: projectId });
-        return savedCanvasStates[savedStateKey];
+        const [rootWorkflowId] = getRootWorkflowId(workflowId);
+        const isRootWorkflow = rootWorkflowId === workflowId;
+
+        const parentStateKey = getCanvasStateKey(`${projectId}--${rootWorkflowId}`);
+
+        if (isRootWorkflow) {
+            // read parent state
+            return savedCanvasStates[parentStateKey];
+        } else {
+            // read child state
+            const savedStateKey = getCanvasStateKey(workflowId);
+            return savedCanvasStates[parentStateKey]?.children[savedStateKey];
+        }
     }
 };
