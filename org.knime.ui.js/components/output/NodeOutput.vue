@@ -1,218 +1,145 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import TablePortView from '~/components/output/TablePortView.vue';
-import FlowVariablePortView from '~/components/output/FlowVariablePortView.vue';
 import PortTabs from '~/components/output/PortTabs.vue';
 import Button from '~/webapps-common/ui/components/Button.vue';
 import PlayIcon from '~/assets/execute.svg?inline';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
-import { getPortView } from '~api';
+import { runNodeValidationChecks, runPortValidationChecks } from './output-validator';
 
-const needsExecutionMessage = 'To show the output table, please execute the selected node.';
-const outputAvailableAfterExecutionMessage = 'Output is available after execution.';
+import PortViewLoader from './PortViewLoader.vue';
+
 
 /**
  * Node output panel, displaying output port selection bar and port view if possible.
+ * Port view will be rendered dynamically based on the port type
  */
-
 export default {
     components: {
         PortTabs,
-        TablePortView,
-        FlowVariablePortView,
         Button,
         ReloadIcon,
-        PlayIcon
+        PlayIcon,
+        PortViewLoader
     },
     data() {
         return {
             selectedPortIndex: null,
-            portViewerState: null,
-            componentId: null,
-            initialData: null
+            portViewerState: null
         };
     },
     computed: {
         ...mapState('application', { projectId: 'activeProjectId', portTypes: 'availablePortTypes' }),
         ...mapState('workflow', { workflowId: state => state.activeWorkflow.info.containerId }),
         ...mapGetters('workflow', { isDragging: 'isDragging' }),
-        
-        // ========================== Sanity Check ============================
-        // The following properties execute from top to bottom
-        
-        // Watch selected nodes
-        selectedNodes() {
-            return this.$store.getters['selection/selectedNodes'];
-        },
+        ...mapGetters('selection', ['selectedNodes']),
 
-        // Step 1: make sure only one node is selected
-        selectionHasProblem() {
-            if (this.selectedNodes.length === 0) {
-                return 'To show the node output, please select a configured or executed node.';
-            } else if (this.selectedNodes.length > 1) {
-                return 'To show the node output, please select only one node.';
-            }
-            return false;
-        },
-        
-        // If Step 1 is successful, return selected node
-        selectedNode() {
-            return this.selectionHasProblem ? null : this.selectedNodes[0];
-        },
-
-        // Step 2: check whether the node's ports can be displayed in principal
-        // This property is $watched and the selected port is updated upon change
-        nodeHasProblem() {
-            let node = this.selectedNode;
-            if (!node) {
-                return 'No node selected';
-            }
-
-            if (this.isDragging && !this.isViewerReady) {
-                return 'Node output will be loaded after moving is completed';
-            }
-
-            if (!node.outPorts.length) {
-                return 'The selected node has no output ports.';
-            }
-
-            // check if node has at least one supported port
-            if (!node.outPorts.some(port => this.supportsPort(port))) {
-                return 'The selected node has no supported output port.';
-            }
+        nodeErrors() {
+            const { error } = runNodeValidationChecks({
+                selectedNodes: this.selectedNodes,
+                isDragging: this.isDragging,
+                portTypes: this.portTypes
+            });
             
-            let state = node.state?.executionState;
-            if (state === 'IDLE') {
-                return 'Please first configure the selected node.';
-            }
-
-            return false;
-        },
-
-        // If Step 2 is successful, return selected port
-        selectedPort() {
-            return this.nodeHasProblem ? null : this.selectedNode.outPorts[this.selectedPortIndex];
-        },
-
-        // Return port kind only if a port was selected, otherwise return 'null'
-        selectedPortKind() {
-            const port = this.selectedPort;
-            return port ? this.getPortType(port).kind : null;
-        },
-
-        // Step 3: check whether the selected port can be displayed
-        portHasProblem() {
-            let port = this.selectedPort;
-            if (!port) {
-                return 'No port selected';
-            }
-                            
-            if (!this.supportsPort(port)) {
-                return 'The data at the output port is not supported by any viewer.';
-            }
-
-            if (port.inactive) {
-                return 'This output port is inactive and therefore no data table is available.';
-            }
-
-            // only flow-variables can be shown if node hasn't yet executed
-            if (this.selectedPortKind !== 'flowVariable') {
-                if (this.selectedNode.allowedActions.canExecute) {
-                    return needsExecutionMessage;
-                }
-                let state = this.selectedNode.state.executionState;
-                if (state === 'QUEUED' || state === 'EXECUTING') {
-                    return outputAvailableAfterExecutionMessage;
-                }
-            }
-            
-            return false;
-        },
-
-        // If Step 3 is successful, return necessary data for the port views
-        portIdentifier() {
-            if (this.portHasProblem) {
+            if (!error) {
                 return null;
             }
 
-            const { projectId, workflowId, selectedNode: { id: nodeId }, selectedPortIndex, selectedPort } = this;
-
-            return {
-                projectId,
-                workflowId,
-                nodeId,
-                portIndex: Number(selectedPortIndex),
-                // using UNIQUE keys for all possible ports in knime-ui ensures that a new port view instance is created upon switching ports
-                // port object version changes whenever a port state has updated. "ABA"-Changes on the port will always trigger a re-render.
-                key: [projectId, workflowId, nodeId, selectedPortIndex, selectedPort.portObjectVersion].join('/')
-            };
+            return error;
         },
 
-        // Combines node and port to be able to watch those at the same time
-        selectedNodeAndPort() {
-            return { node: this.selectedNode, port: this.selectedPort };
+        hasNodeErrors() {
+            return Boolean(this.nodeErrors);
         },
 
-        // ========================== UI ===========================
-        // A port view can be in one of the following states ['loading', 'error' & message, 'ready']
-        isViewerReady() {
-            return this.portViewerState?.state === 'ready';
+        selectedNode() {
+            if (this.selectedNodes.length === 1) {
+                const [selectedNode] = this.selectedNodes;
+                return selectedNode;
+            }
+
+            return null;
         },
-        isViewerLoading() {
-            return this.portViewerState?.state === 'loading';
+        
+        portErrors() {
+            if (!this.hasNodeErrors) {
+                const { error } = runPortValidationChecks({
+                    selectedNode: this.selectedNode,
+                    portTypes: this.portTypes,
+                    selectedPortIndex: this.selectedPortIndex
+                });
+                
+                if (!error) {
+                    return null;
+                }
+    
+                return error;
+            }
+            
+            return true;
         },
+
+        hasPortErrors() {
+            return Boolean(this.portErrors);
+        },
+
+        selectedPort() {
+            if (!this.hasNodeErrors) {
+                return this.selectedNode.outPorts[this.selectedPortIndex];
+            }
+
+            return null;
+        },
+
+        validationErrors() {
+            const validationError = this.nodeErrors || this.portErrors || null;
+            return validationError;
+        },
+
+        hasValidationErrors() {
+            return Boolean(this.validationErrors);
+        },
+
         placeholderText() {
-            let { portViewerState } = this;
-            return this.selectionHasProblem || this.nodeHasProblem || this.portHasProblem ||
-                // same loading placeholder for all port views
-                (this.isViewerLoading && 'Loading data') ||
-                // custom error message per port view
-                (portViewerState?.state === 'error' && portViewerState.message);
+            if (this.hasValidationErrors) {
+                return this.validationErrors.message;
+            }
+
+            const { state, message } = this.portViewerState || {};
+
+            if (state === 'loading') {
+                return 'Loading data';
+            }
+
+            if (state === 'error') {
+                return message;
+            }
+
+            return null;
         },
-        showExecuteButton() {
-            return this.placeholderText === needsExecutionMessage;
-        },
+
         showLoader() {
-            return this.placeholderText === outputAvailableAfterExecutionMessage || this.isViewerLoading;
+            const { code } = this.hasValidationErrors ? this.validationErrors : {};
+            const { state } = this.portViewerState || {};
+            return state === 'loading' || code === 'NODE_BUSY';
+        },
+        
+        showExecuteButton() {
+            const { code } = this.hasValidationErrors ? this.validationErrors : {};
+            return code === 'NODE_UNEXECUTED';
         }
     },
     watch: {
-        // When the selected node or its state changes, the selected port has to be updated
-        
-        nodeHasProblem(hasProblem) {
-            if (!hasProblem) {
-                // if the selected node can be used, select port
-                this.selectPort();
-            } else if (hasProblem) {
-                // if the node can't be used, set selected port to null
-                this.selectedPortIndex = null;
-            }
-        },
-        portHasProblem(hasProblem) {
-            if (hasProblem) {
-                this.portViewerState = null;
-            }
-        },
-        selectedNodeAndPort: {
-            handler(newNodeAndPort, oldNodeAndPort) {
-                this.portViewerState = null;
-                this.componentId = null;
-                const oldNodeId = oldNodeAndPort?.node?.id;
-                const newNodeId = newNodeAndPort?.node?.id;
-                let newPortSelected = false;
-                if (oldNodeId !== newNodeId && !this.nodeHasProblem) {
-                    consola.trace('Selected Node changed to', newNodeId);
-                    // TODO temporary hack to be fixed with NXT-632
-                    // prevents the port view being loaded twice because the 'selectPort' function will
-                    // possibly cause this watcher to be called again
-                    newPortSelected = this.selectPort();
-                }
-                if (!newPortSelected && !this.nodeHasProblem && !this.portHasProblem) {
-                    this.loadPortView();
+        nodeErrors: {
+            handler() {
+                if (this.hasNodeErrors) {
+                    this.selectedPortIndex = null;
+                    this.portViewerState = null;
+                } else {
+                    this.selectPort();
                 }
             },
-            // also set the selected port if a node is already selected before NodeOutput is created
-            immediate: true
+            immediate: true,
+            deep: true
         }
     },
     methods: {
@@ -230,52 +157,8 @@ export default {
             }
             return false;
         },
-        async loadPortView() {
-            this.portViewerState = { state: 'loading' };
-
-            let { projectId, workflowId, nodeId, portIndex } = this.portIdentifier;
-            try {
-                const portView = await getPortView(projectId, workflowId, nodeId, portIndex);
-
-                let resourceInfo = portView.resourceInfo;
-                let resourceType = resourceInfo.type;
-
-                if (resourceType === 'VUE_COMPONENT_REFERENCE') {
-                    this.componentId = resourceInfo.id;
-                    this.initialData = JSON.parse(portView.initialData).result;
-                    this.portViewerState = { state: 'ready' };
-                } else if (resourceType === 'VUE_COMPONENT_LIB') {
-                // TODO NXT-632
-                // let resourceLocation = resourceInfo.baseUrl + resourceInfo.path;
-                // check if component library needs to be loaded or if it was already loaded before
-                // if (!window[componentId]) {
-                //    await loadComponentLibrary(window, resourceLocation, componentId);
-                // }
-                // register the component locally
-                // this.$options.components[componentId] = window[componentId];
-                // this.componentId = componentId;
-                // this.componentLoaded = true;
-                // ... create knime service and inject
-                }
-            } catch (e) {
-                this.portViewerState = { state: 'error', message: e };
-            }
-        },
         executeNode() {
             this.$store.dispatch('workflow/executeNodes', [this.selectedNode.id]);
-        },
-        // Get port type from port
-        getPortType(port) {
-            return this.portTypes[port.typeId];
-        },
-        // Check if port is supported
-        supportsPort(port) {
-            try {
-                const portKind = this.getPortType(port).kind;
-                return portKind === 'table' || portKind === 'flowVariable';
-            } catch {
-                return false;
-            }
         }
     }
 };
@@ -288,20 +171,21 @@ export default {
       v-if="selectedNode && selectedNode.outPorts.length"
       v-model="selectedPortIndex"
       :node="selectedNode"
-      :disabled="Boolean(nodeHasProblem)"
+      :disabled="hasNodeErrors"
     />
+    
     <!-- Error Message and Placeholder -->
     <div
       v-if="placeholderText"
-      :class="['placeholder', {isViewerLoading}]"
+      :class="['placeholder', { isViewerLoading: portViewerState && portViewerState.state === 'loading' }]"
     >
       <span>
         <ReloadIcon
           v-if="showLoader"
           class="loading-icon"
         />
-        {{ placeholderText }}</span>
-      <!--Button v-if="needsConfiguration"></Button--> <!-- TODO: implement NXT-21 -->
+        {{ placeholderText }}
+      </span>
       <Button
         v-if="showExecuteButton"
         class="action-button"
@@ -313,14 +197,16 @@ export default {
         Execute
       </Button>
     </div>
+    
     <!-- Port Viewer -->
-    <component
-      :is="componentId"
-      v-if="!portHasProblem && componentId"
-      v-show="isViewerReady"
-      v-bind="portIdentifier"
-      :initial-data="initialData"
+    <PortViewLoader
+      v-if="!hasNodeErrors && !hasPortErrors"
+      :project-id="projectId"
+      :workflow-id="workflowId"
+      :selected-node="selectedNode"
+      :selected-port-index="Number(selectedPortIndex)"
       class="port-view"
+      @viewer-state="portViewerState = $event"
     />
   </div>
 </template>
@@ -349,6 +235,7 @@ export default {
 
 .port-view {
   flex-shrink: 1;
+  overflow-y: auto;
 }
 
 .placeholder {

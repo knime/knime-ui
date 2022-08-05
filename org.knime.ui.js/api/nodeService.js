@@ -83,10 +83,12 @@ export const getPortView = async (projectId, workflowId, nodeId, portIndex) => {
  * @returns {String}
  */
 export const callPortDataService =
-    async (projectId, workflowId, nodeId, portIndex, serviceType, request) => {
+    async ({ projectId, workflowId, nodeId, portIndex, serviceType, request }) => {
         try {
-            return await rpc('NodeService.callPortDataService',
-                projectId, workflowId, nodeId, portIndex, serviceType, request);
+            return await rpc(
+                'NodeService.callPortDataService',
+                projectId, workflowId, nodeId, portIndex, serviceType, request
+            );
         } catch (e) {
             consola.error(e);
             throw new Error(`Could not call port data service for node ${nodeId} at port index ${portIndex}`);

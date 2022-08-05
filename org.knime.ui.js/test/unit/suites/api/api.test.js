@@ -241,15 +241,14 @@ describe('API', () => {
         });
 
         it('call port data service', async () => {
-            await api.callPortDataService(
-                'workflow',
-                'root:1',
-                'root:1:2',
-                // eslint-disable-next-line no-magic-numbers
-                10,
-                'data',
-                'request'
-            );
+            await api.callPortDataService({
+                projectId: 'workflow',
+                workflowId: 'root:1',
+                nodeId: 'root:1:2',
+                portIndex: 10,
+                serviceType: 'data',
+                request: 'request'
+            });
             expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
                 method: 'NodeService.callPortDataService',
