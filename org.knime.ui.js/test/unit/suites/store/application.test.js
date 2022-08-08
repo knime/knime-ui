@@ -347,12 +347,37 @@ describe('application store', () => {
             });
 
             expect(store.state.application.savedCanvasStates).toStrictEqual({
-                'workflow1--project1': {
-                    zoomFactor: 1,
-                    scrollTop: 100,
+                'project1--workflow1': {
+                    children: {},
+                    project: 'project1',
                     scrollLeft: 100,
+                    scrollTop: 100,
                     workflow: 'workflow1',
-                    project: 'project1'
+                    zoomFactor: 1
+                }
+            });
+        });
+
+        it('sets children in saved state', () => {
+            store.commit('application/setSavedCanvasStates', {
+                zoomFactor: 1,
+                scrollTop: 100,
+                scrollLeft: 100,
+                workflow: 'workflow1:214',
+                project: 'project1'
+            });
+
+            expect(store.state.application.savedCanvasStates).toStrictEqual({
+                'project1--workflow1': {
+                    children: {
+                        'workflow1:214': {
+                            project: 'project1',
+                            scrollLeft: 100,
+                            scrollTop: 100,
+                            workflow: 'workflow1:214',
+                            zoomFactor: 1
+                        }
+                    }
                 }
             });
         });
@@ -363,7 +388,7 @@ describe('application store', () => {
             
             expect(storeConfig.canvas.getters.getCanvasScrollState).toHaveBeenCalled();
             expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(1);
-            expect(store.state.application.savedCanvasStates['workflow1--project1']).toBeTruthy();
+            expect(store.state.application.savedCanvasStates['project1--workflow1']).toBeTruthy();
         });
     
         it('restores canvas state', () => {
@@ -388,6 +413,44 @@ describe('application store', () => {
                     scrollWidth: 1000
                 })
             );
+        });
+
+        it('restores canvas state of a child', () => {
+            store.state.workflow.activeWorkflow = {
+                info: { containerId: 'workflow1:214' },
+                projectId: 'project1'
+            };
+
+            store.commit('application/setSavedCanvasStates', {
+                zoomFactor: 1,
+                scrollTop: 80,
+                scrollLeft: 80,
+                scrollHeight: 800,
+                scrollWidth: 800,
+                workflow: 'workflow1:214',
+                project: 'project1'
+            });
+    
+            store.dispatch('application/restoreCanvasState');
+            expect(storeConfig.canvas.actions.restoreScrollState).toHaveBeenCalledWith(
+                expect.any(Object),
+                expect.objectContaining({
+                    zoomFactor: 1,
+                    scrollTop: 80,
+                    scrollLeft: 80,
+                    scrollHeight: 800,
+                    scrollWidth: 800
+                })
+            );
+        });
+
+        it('removes canvas state', () => {
+            store.dispatch('application/saveCanvasState');
+            expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(1);
+            expect(store.state.application.savedCanvasStates['project1--workflow1']).toBeTruthy();
+
+            store.dispatch('application/removeCanvasState');
+            expect(store.state.application.savedCanvasStates).toEqual({});
         });
     });
 });
