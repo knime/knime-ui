@@ -3,4 +3,4 @@
 	url = ../webapps-common
 [submodule "org.knime.ui.js/knime-ui-extension-service"]
 	path = org.knime.ui.js/knime-ui-extension-service
-	url = git@bitbucket.org:KNIME/knime-ui-extension-service.git
+	url = ../knime-ui-extension-service.git
