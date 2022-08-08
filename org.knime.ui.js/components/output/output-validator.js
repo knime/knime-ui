@@ -117,7 +117,8 @@ const validateOuputPorts = ({ portTypes }, next) => context => {
  */
 const validatePortSelection = ({ selectedNode, selectedPortIndex }, next) => (context) => {
     const selectedPort = selectedNode.outPorts[selectedPortIndex];
-    if (!selectedPort || !selectedPortIndex) {
+    // eslint-disable-next-line no-undefined
+    if (!selectedPort || selectedPortIndex === undefined || selectedPortIndex === null) {
         return {
             error: {
                 type: 'PORT',
