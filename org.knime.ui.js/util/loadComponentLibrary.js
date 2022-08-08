@@ -20,8 +20,9 @@ export const loadComponentLibrary = async (window, resourceLocation, componentNa
         script.src = resourceLocation;
         window.document.head.appendChild(script);
     });
+    
     // Lib build defines component on `window` using the name defined during build.
-    // This name should match the componentId (this.extensionConfig.resourceInfo.id).
+    // This name should match the componentId
     const Component = window[componentName];
     if (!Component) {
         throw new Error(`Component loading failed. Script invalid.`);

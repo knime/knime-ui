@@ -77,7 +77,7 @@ export default {
     mounted() {
         this.loadPortView();
         ['selectedNode', 'selectedPortIndex'].forEach(prop => {
-            this.$watch(prop, (next) => {
+            this.$watch(prop, () => {
                 this.loadPortView();
             });
         });
@@ -86,8 +86,8 @@ export default {
     methods: {
         initKnimeService(config) {
             const notificationCB = () => {
-                // TODO: implement follow-up ticket for selection/hightlighting in the knime-ui-table
-                consola.warn('TBD');
+                // TODO: NXT-1211 implement follow-up ticket for selection/hightlighting in the knime-ui-table
+                consola.warn('Notifications not yet implemented');
             };
 
             const knimeService = new KnimeService(config, this.loadPortData, notificationCB);
@@ -168,11 +168,12 @@ export default {
             const resourceLocation = `${resourceInfo.baseUrl}${resourceInfo.path}`;
             
             // check if component library needs to be loaded or if it was already loaded before
-            if (!window[componentId]) {
+            if (!this.$options.components[componentId]) {
                 await loadComponentLibrary(window, resourceLocation, componentId);
             
                 // register the component locally
                 this.$options.components[componentId] = window[componentId];
+                window[componentId] = null;
             }
             
             // create knime service and update provide/inject

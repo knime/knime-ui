@@ -91,8 +91,7 @@ export default {
         },
 
         validationErrors() {
-            const validationError = this.nodeErrors || this.portErrors || null;
-            return validationError;
+            return this.nodeErrors || this.portErrors || null;
         },
 
         hasValidationErrors() {
