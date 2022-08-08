@@ -85,26 +85,41 @@ table {
     white-space: nowrap;
     text-overflow: ellipsis;
   }
-}
 
-th {
-  background: var(--knime-porcelain);
-  height: 42px;
-  position: sticky;
-  top: 0;
+  & >>> th {
+    background: var(--knime-porcelain);
+    height: 42px;
+    position: sticky;
+    top: 0;
 
-  &:not(:last-child) {
-    /* border-right: 1px solid var(--knime-white); does not work with position: sticky */
-    &::after {
-      content: "";
-      display: block;
-      position: absolute;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      width: 1px;
-      background: var(--knime-white);
+    &:not(:last-child) {
+      /* border-right: 1px solid var(--knime-white); does not work with position: sticky */
+      &::after {
+        content: "";
+        display: block;
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: var(--knime-white);
+      }
     }
+  }
+
+  & >>> td {
+    white-space: pre;
+    max-width: 50vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border: none;
+    height: 26px;
+    line-height: 26px;
+    font-size: 14px;
+  }
+
+  & >>> tr:not(:last-child) {
+    border-bottom: 1px solid var(--knime-porcelain);
   }
 }
 
@@ -120,20 +135,5 @@ span {
   font-weight: 700;
   font-size: 14px;
   line-height: 16px;
-}
-
-td {
-  white-space: pre;
-  max-width: 50vw;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border: none;
-  height: 26px;
-  line-height: 26px;
-  font-size: 14px;
-}
-
-tr:not(:last-child) {
-  border-bottom: 1px solid var(--knime-porcelain);
 }
 </style>
