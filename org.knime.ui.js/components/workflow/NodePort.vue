@@ -4,8 +4,8 @@ import throttle from 'raf-throttle';
 import { mixin as clickaway } from 'vue-clickaway2';
 import { tooltip } from '~/mixins';
 
-import Port from '~/components/workflow/Port';
-import Connector from '~/components/workflow/Connector';
+import Port from '~/components/workflow/Port.vue';
+import Connector from '~/components/workflow/Connector.vue';
 import NodePortActions from './NodePortActions.vue';
 
 import { circleDetection } from '~/util/compatibleConnections';

@@ -1,6 +1,6 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import Tooltip from '~/components/Tooltip';
+import Tooltip from '~/components/Tooltip.vue';
 
 /**
  * Controller for knime-ui tooltips

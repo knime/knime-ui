@@ -2,8 +2,8 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 import CloseableTagList, { maxNumberOfInitialTags, minNumberOfInitialTags }
-    from '~/components/noderepo/CloseableTagList';
-import SelectableTagList from '~/components/common/SelectableTagList';
+    from '~/components/noderepo/CloseableTagList.vue';
+import SelectableTagList from '~/components/common/SelectableTagList.vue';
 
 jest.mock('vue-clickaway2', () => ({
     mixin: {}

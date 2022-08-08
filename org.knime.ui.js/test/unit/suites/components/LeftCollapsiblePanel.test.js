@@ -3,7 +3,7 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vue from 'vue';
 import vuex from 'vuex';
 import * as panelStoreConfig from '~/store/panel';
-import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
+import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel.vue';
 import SwitchIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
 
 describe('LeftCollapsiblePanel.vue', () => {

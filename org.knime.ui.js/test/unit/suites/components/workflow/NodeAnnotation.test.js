@@ -1,9 +1,9 @@
 import { shallowMount } from '@vue/test-utils';
 import * as $shapes from '~/style/shapes';
 
-import NodeAnnotation from '~/components/workflow/NodeAnnotation';
-import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
-import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
+import NodeAnnotation from '~/components/workflow/NodeAnnotation.vue';
+import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText.vue';
+import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject.vue';
 
 describe('Node Annotation', () => {
     let propsData, mocks, doShallowMount, wrapper;

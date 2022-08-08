@@ -1,6 +1,6 @@
 <script>
 
-import Port from '~/components/workflow/Port';
+import Port from '~/components/workflow/Port.vue';
 
 export const addPortPlaceholderPath = (() => {
     let cx = 0;

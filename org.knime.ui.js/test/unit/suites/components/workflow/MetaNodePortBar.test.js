@@ -8,8 +8,8 @@ import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
-import MetaNodePortBar from '~/components/workflow/MetaNodePortBar';
-import NodePort from '~/components/workflow/NodePort';
+import MetaNodePortBar from '~/components/workflow/MetaNodePortBar.vue';
+import NodePort from '~/components/workflow/NodePort.vue';
 
 describe('MetaNodePortBar.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, $store;

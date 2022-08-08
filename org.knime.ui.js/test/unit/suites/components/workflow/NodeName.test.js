@@ -3,9 +3,9 @@ import Vuex from 'vuex';
 import Vue from 'vue';
 import { mockVuexStore } from '~/test/unit/test-utils';
 
-import NodeName from '~/components/workflow/NodeName';
-import NodeNameText from '~/components/workflow/NodeNameText';
-import NodeNameEditor from '~/components/workflow/NodeNameEditor';
+import NodeName from '~/components/workflow/NodeName.vue';
+import NodeNameText from '~/components/workflow/NodeNameText.vue';
+import NodeNameEditor from '~/components/workflow/NodeNameEditor.vue';
 
 describe('NodeName', () => {
     const defaultProps = {

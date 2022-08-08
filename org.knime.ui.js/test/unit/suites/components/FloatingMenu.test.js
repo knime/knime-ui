@@ -4,7 +4,7 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vue from 'vue';
 import Vuex from 'vuex';
 
-import FloatingMenu from '~/components/FloatingMenu';
+import FloatingMenu from '~/components/FloatingMenu.vue';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {

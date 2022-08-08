@@ -1,9 +1,9 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
 import StreamingIcon from '~/webapps-common/ui/assets/img/icons/nodes-connect.svg?inline';
-import ContextMenu from '~/components/ContextMenu';
-import WorkflowCanvas from '~/components/WorkflowCanvas';
-import PortTypeMenu from '~/components/PortTypeMenu';
+import ContextMenu from '~/components/ContextMenu.vue';
+import WorkflowCanvas from '~/components/WorkflowCanvas.vue';
+import PortTypeMenu from '~/components/PortTypeMenu.vue';
 
 export default {
     components: {

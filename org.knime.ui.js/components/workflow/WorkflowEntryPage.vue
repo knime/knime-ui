@@ -1,7 +1,7 @@
 <script>
 import CirclePlusIcon from '~/webapps-common/ui/assets/img/icons/circle-plus.svg?inline';
 import FolderWorkflowIcon from '~/webapps-common/ui/assets/img/icons/folder-workflow.svg?inline';
-import OpenSourceCreditsModal from '../OpenSourceCreditsModal';
+import OpenSourceCreditsModal from '../OpenSourceCreditsModal.vue';
 
 export default {
     components: {
@@ -44,7 +44,7 @@ main {
   justify-content: center;
   align-items: center;
   background-color: var(--knime-white);
-  background-image: url('~assets/workflow-entry-page-background.webp');
+  background-image: url('@/assets/workflow-entry-page-background.webp');
   background-repeat: no-repeat;
   background-position: bottom right;
   background-size: 100%;

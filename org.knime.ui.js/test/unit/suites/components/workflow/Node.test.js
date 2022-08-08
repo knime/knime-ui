@@ -5,21 +5,21 @@ import Vuex from 'vuex';
 import Vue from 'vue';
 import { mockVuexStore } from '~/test/unit/test-utils';
 
-import Node from '~/components/workflow/Node';
-import NodePorts from '~/components/workflow/NodePorts';
-import NodeDecorators from '~/components/workflow/NodeDecorators';
-import NodeTorso from '~/components/workflow/NodeTorso';
-import NodeState from '~/components/workflow/NodeState';
-import NodeAnnotation from '~/components/workflow/NodeAnnotation';
-import NodeActionBar from '~/components/workflow/NodeActionBar';
-import NodePort from '~/components/workflow/NodePort';
-import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
+import Node from '~/components/workflow/Node.vue';
+import NodePorts from '~/components/workflow/NodePorts.vue';
+import NodeDecorators from '~/components/workflow/NodeDecorators.vue';
+import NodeTorso from '~/components/workflow/NodeTorso.vue';
+import NodeState from '~/components/workflow/NodeState.vue';
+import NodeAnnotation from '~/components/workflow/NodeAnnotation.vue';
+import NodeActionBar from '~/components/workflow/NodeActionBar.vue';
+import NodePort from '~/components/workflow/NodePort.vue';
+import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane.vue';
 
 import '~/plugins/directive-move';
 
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
-import NodeName from '~/components/workflow/NodeName';
+import NodeName from '~/components/workflow/NodeName.vue';
 
 const commonNode = {
     id: 'root:1',

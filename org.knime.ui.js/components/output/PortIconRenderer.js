@@ -1,4 +1,4 @@
-import Port from '~/components/workflow/Port';
+import Port from '~/components/workflow/Port.vue';
 
 /**
  * Higher order component that wraps a `Port` output in an svg element.

@@ -2,9 +2,9 @@ import { shallowMount } from '@vue/test-utils';
 
 import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
 import LensIcon from '~/webapps-common/ui/assets/img/icons/lens.svg?inline';
-import FunctionButton from '~/webapps-common/ui/components/FunctionButton';
+import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 
-import SearchBar from '~/components/noderepo/SearchBar';
+import SearchBar from '~/components/noderepo/SearchBar.vue';
 
 describe('SearchBar', () => {
     let doShallowMount, wrapper, propsData;

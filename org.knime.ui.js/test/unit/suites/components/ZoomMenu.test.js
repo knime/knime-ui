@@ -3,8 +3,8 @@ import { createLocalVue, mount as deepMount, shallowMount } from '@vue/test-util
 import Vuex from 'vuex';
 import { mockVuexStore } from '~/test/unit/test-utils';
 
-import ZoomMenu from '~/components/ZoomMenu';
-import SubMenu from '~/webapps-common/ui/components/SubMenu';
+import ZoomMenu from '~/components/ZoomMenu.vue';
+import SubMenu from '~/webapps-common/ui/components/SubMenu.vue';
 
 describe('ZoomMenu', () => {
     let propsData, doMount, $store, $commands, zoomFactor, wrapper, storeConfig;

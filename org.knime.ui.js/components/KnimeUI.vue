@@ -1,16 +1,16 @@
 <script>
 import { mapActions, mapState } from 'vuex';
 
-import AppHeader from '~/components/AppHeader';
-import Sidebar from '~/components/Sidebar';
-import WorkflowToolbar from '~/components/WorkflowToolbar';
-import TooltipContainer from '~/components/TooltipContainer';
-import Error from '~/components/Error';
-import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
-import HotkeyHandler from '~/components/HotkeyHandler';
-import WorkflowPanel from '~/components/WorkflowPanel';
-import NodeOutput from '~/components/output/NodeOutput';
-import Splitter from '~/components/Splitter';
+import AppHeader from '~/components/AppHeader.vue';
+import Sidebar from '~/components/Sidebar.vue';
+import WorkflowToolbar from '~/components/WorkflowToolbar.vue';
+import TooltipContainer from '~/components/TooltipContainer.vue';
+import Error from '~/components/Error.vue';
+import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage.vue';
+import HotkeyHandler from '~/components/HotkeyHandler.vue';
+import WorkflowPanel from '~/components/WorkflowPanel.vue';
+import NodeOutput from '~/components/output/NodeOutput.vue';
+import Splitter from '~/components/Splitter.vue';
 
 /**
  * Main page and entry point of KNIME Next
@@ -36,30 +36,14 @@ export default {
             error: null
         };
     },
-    async fetch() {
-        try {
-            await Promise.all([
-                this.initializeApplication(),
-
-                // These fonts will be pre-loaded at application startup with the given font-weights,
-                // to prevent text-jumping
-                document.fonts.load('400 1em Roboto'),
-                document.fonts.load('400 1em Roboto Mono'),
-                document.fonts.load('400 1em Roboto Condensed'),
-                document.fonts.load('700 1em Roboto Condensed')
-            ]);
-
-            // render the application
-            this.loaded = true;
-        } catch ({ message, stack }) {
-            // errors in the fetch hook are not captured by errorCaptured
-            this.error = { message, stack };
-        }
-    },
+    
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
         })
+    },
+    async beforeMount() {
+        await this.setup();
     },
     mounted() {
         this.checkClipboardSupport();
@@ -82,6 +66,26 @@ export default {
     methods: {
         ...mapActions('application', ['initializeApplication', 'destroyApplication']),
 
+        async setup() {
+            try {
+                await Promise.all([
+                    this.initializeApplication(),
+
+                    // These fonts will be pre-loaded at application startup with the given font-weights,
+                    // to prevent text-jumping
+                    document.fonts.load('400 1em Roboto'),
+                    document.fonts.load('400 1em Roboto Mono'),
+                    document.fonts.load('400 1em Roboto Condensed'),
+                    document.fonts.load('700 1em Roboto Condensed')
+                ]);
+
+                // render the application
+                this.loaded = true;
+            } catch ({ message, stack }) {
+                // errors in the fetch hook are not captured by errorCaptured
+                this.error = { message, stack };
+            }
+        },
         async checkClipboardSupport() {
             let hasClipboardSupport = false;
 

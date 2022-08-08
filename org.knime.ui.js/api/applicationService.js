@@ -1,4 +1,4 @@
-import rpc from './json-rpc-adapter.js';
+import rpc from './json-rpc-adapter';
 
 /**
  * Fetch "application state", that is: opened tabs etc.

@@ -1,7 +1,7 @@
 <script>
-import LinkDecorator from '~/components/workflow/LinkDecorator';
-import StreamingDecorator from '~/components/workflow/StreamingDecorator';
-import LoopDecorator from '~/components/workflow/LoopDecorator';
+import LinkDecorator from '~/components/workflow/LinkDecorator.vue';
+import StreamingDecorator from '~/components/workflow/StreamingDecorator.vue';
+import LoopDecorator from '~/components/workflow/LoopDecorator.vue';
 
 /** A component used to render all different decorators a node can show */
 export default {

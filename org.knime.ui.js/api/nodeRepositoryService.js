@@ -1,4 +1,4 @@
-import rpc from './json-rpc-adapter.js';
+import rpc from './json-rpc-adapter';
 
 /**
  * Get repository nodes grouped by tags via RPC.

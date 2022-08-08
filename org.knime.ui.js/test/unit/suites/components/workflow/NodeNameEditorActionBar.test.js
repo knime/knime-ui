@@ -1,8 +1,8 @@
 import { shallowMount } from '@vue/test-utils';
 import * as $shapes from '~/style/shapes';
 
-import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar';
-import ActionButton from '~/components/workflow/ActionButton';
+import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar.vue';
+import ActionButton from '~/components/workflow/ActionButton.vue';
 
 describe('NodeNameEditorActionBar', () => {
     let mocks, doShallowMount, wrapper;

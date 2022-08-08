@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 
-import NodeCategory from '~/components/noderepo/NodeCategory';
-import NodeList from '~/components/noderepo/NodeList';
+import NodeCategory from '~/components/noderepo/NodeCategory.vue';
+import NodeList from '~/components/noderepo/NodeList.vue';
 
 describe('NodeCategory', () => {
     let doShallowMount, wrapper, propsData;

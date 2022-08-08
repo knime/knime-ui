@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-import MetaNodePortBar from '~/components/workflow/MetaNodePortBar';
+import MetaNodePortBar from '~/components/workflow/MetaNodePortBar.vue';
 import { portBar } from '~/mixins';
 
 /**

@@ -1,5 +1,5 @@
 import { waitForPatch } from '~/util/event-syncer';
-import rpc from './json-rpc-adapter.js';
+import rpc from './json-rpc-adapter';
 
 /**
  * Load a specific workflow.

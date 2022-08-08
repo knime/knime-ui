@@ -4,8 +4,8 @@ import Vuex from 'vuex';
 
 import * as $shapes from '~/style/shapes';
 
-import MetaNodePortBars from '~/components/workflow/MetaNodePortBars';
-import MetaNodePortBar from '~/components/workflow/MetaNodePortBar';
+import MetaNodePortBars from '~/components/workflow/MetaNodePortBars.vue';
+import MetaNodePortBar from '~/components/workflow/MetaNodePortBar.vue';
 
 describe('MetaNodePortBars.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, activeWorkflow;

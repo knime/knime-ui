@@ -3,8 +3,8 @@ import Vuex from 'vuex';
 import Vue from 'vue';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
-import NodeTemplate, { WORKFLOW_ADD_START_MIN } from '~/components/noderepo/NodeTemplate';
-import NodePreview from '~/webapps-common/ui/components/node/NodePreview';
+import NodeTemplate, { WORKFLOW_ADD_START_MIN } from '~/components/noderepo/NodeTemplate.vue';
+import NodePreview from '~/webapps-common/ui/components/node/NodePreview.vue';
 import { KnimeMIME } from '~/mixins/dropNode';
 import { nodeSize } from '~/style/shapes';
 

@@ -15,8 +15,6 @@
  * respectively, depending on the event type.
  */
 
-import Vue from 'vue';
-
 let stateMap;
 // Default threshold which needs to be exceeded before the move event is fired
 const defaultThreshold = 5;
@@ -165,8 +163,11 @@ const componentUpdated = (el, { value }) => {
     }
 };
 
-Vue.directive('move', {
-    inserted,
-    unbind,
-    componentUpdated
-});
+export const directiveMove = {
+    name: 'move',
+    options: {
+        inserted,
+        unbind,
+        componentUpdated
+    }
+};

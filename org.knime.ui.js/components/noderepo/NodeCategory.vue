@@ -1,5 +1,5 @@
 <script>
-import NodeList from './NodeList';
+import NodeList from './NodeList.vue';
 
 const CATEGORY_LIMIT = 6;
 

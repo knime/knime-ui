@@ -1,5 +1,5 @@
 <script>
-import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
+import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText.vue';
 /**
  * A workflow annotation, a rectangular box containing text.
  */

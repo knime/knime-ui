@@ -3,10 +3,10 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
-import WorkflowToolbar from '~/components/WorkflowToolbar';
-import ToolbarCommandButton from '~/components/ToolbarCommandButton';
-import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb';
-import ZoomMenu from '~/components/ZoomMenu';
+import WorkflowToolbar from '~/components/WorkflowToolbar.vue';
+import ToolbarCommandButton from '~/components/ToolbarCommandButton.vue';
+import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb.vue';
+import ZoomMenu from '~/components/ZoomMenu.vue';
 
 describe('WorkflowToolbar.vue', () => {
     let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper,

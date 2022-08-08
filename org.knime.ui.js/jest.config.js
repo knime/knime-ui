@@ -9,11 +9,13 @@ module.exports = {
         '^vue$': 'vue/dist/vue.common.js'
     },
     moduleFileExtensions: [
+        'mjs',
         'js',
         'vue',
         'json'
     ],
     transform: {
+        '\\.mjs$': 'babel-jest',
         '\\.js$': 'babel-jest',
         '\\.vue$': 'vue-jest',
         '\\.(css|styl|less|sass|scss|ttf|woff|woff2)(\\?|$)': 'jest-transform-stub',

@@ -2,10 +2,10 @@ import { createLocalVue, mount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vue from 'vue';
 import Vuex from 'vuex';
-import NodeDescription from '~/components/noderepo/NodeDescription';
-import ExternalResourcesList from '~/components/common/ExternalResourcesList';
-import Description from '~/webapps-common/ui/components/Description';
-import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList';
+import NodeDescription from '~/components/noderepo/NodeDescription.vue';
+import ExternalResourcesList from '~/components/common/ExternalResourcesList.vue';
+import Description from '~/webapps-common/ui/components/Description.vue';
+import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList.vue';
 
 import { escapeStack as escapeStackMock } from '~/mixins/escapeStack';
 jest.mock('~/mixins/escapeStack', () => {

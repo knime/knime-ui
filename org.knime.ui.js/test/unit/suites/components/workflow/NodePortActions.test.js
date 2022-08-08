@@ -2,8 +2,8 @@
 import { shallowMount } from '@vue/test-utils';
 
 import NodePortActions, { portActionButtonSize } from '~/components/workflow/NodePortActions.vue';
-import ActionButton from '~/components/workflow/ActionButton';
-import Port from '~/components/workflow/Port';
+import ActionButton from '~/components/workflow/ActionButton.vue';
+import Port from '~/components/workflow/Port.vue';
 
 import { escapeStack as escapeStackMock } from '~/mixins/escapeStack';
 jest.mock('~/mixins/escapeStack', () => {

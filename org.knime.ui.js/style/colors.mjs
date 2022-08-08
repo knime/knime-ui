@@ -1,6 +1,6 @@
-import knimeColors from 'webapps-common/ui/colors/knimeColors';
-import nodeColors from 'webapps-common/ui/colors/nodeColors';
-import portColorsCommon from 'webapps-common/ui/colors/portColors';
+import knimeColors from 'webapps-common/ui/colors/knimeColors.js';
+import nodeColors from 'webapps-common/ui/colors/nodeColors.js';
+import portColorsCommon from 'webapps-common/ui/colors/portColors.js';
 
 const applyAlphaHSL = (hsl, alpha) => `${hsl.slice(0, -1)}, ${alpha})`;
 

@@ -2,9 +2,9 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
-import CategoryResults from '~/components/noderepo/CategoryResults';
+import CategoryResults from '~/components/noderepo/CategoryResults.vue';
 import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer.vue';
-import NodeCategory from '~/components/noderepo/NodeCategory';
+import NodeCategory from '~/components/noderepo/NodeCategory.vue';
 
 describe('CategoryResults', () => {
     let doShallowMount, wrapper, $store, storeState, getAllNodesMock, setSelectedTagsMock,
