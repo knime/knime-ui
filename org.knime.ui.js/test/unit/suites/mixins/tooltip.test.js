@@ -55,6 +55,22 @@ describe('Tooltip Mixin', () => {
         expect(spy).toHaveBeenCalledWith('mouseleave', wrapper.vm.onTooltipMouseLeave);
     });
 
+    describe('destruction closes tooltip', () => {
+        test('tooltip is not open', () => {
+            wrapper.destroy();
+            expect(setTooltipMock).not.toHaveBeenCalled();
+        });
+
+        test('tootlip is open', async () => {
+            wrapper.trigger('mouseenter');
+
+            await Vue.nextTick();
+            wrapper.destroy();
+
+            expect(setTooltipMock).toHaveBeenCalledWith(expect.anything(), null);
+        });
+    });
+
     it('sets tooltip after timeout', () => {
         wrapper.setData({ tooltip: 'hello there' });
         wrapper.trigger('mouseenter');
@@ -63,7 +79,7 @@ describe('Tooltip Mixin', () => {
         expect(setTooltipMock).toHaveBeenCalledWith(expect.anything(), 'hello there');
     });
 
-    it('clears tooltip timeout before when leaving', () => {
+    it('clears tooltip timeout when aborting', () => {
         // dont execute callback
         window.setTimeout = jest.fn().mockReturnValue(0);
         window.clearTimeout = jest.fn();

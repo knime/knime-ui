@@ -18,6 +18,10 @@ export const tooltip = {
     beforeDestroy() {
         this.$el.removeEventListener('mouseenter', this.onTooltipMouseEnter);
         this.$el.removeEventListener('mouseleave', this.onTooltipMouseLeave);
+        
+        if (this.removeTooltipWatcher) {
+            this.$store.commit('workflow/setTooltip', null);
+        }
     },
     watch: {
         // takes care of removing the tooltip watcher even if the tooltip got closed from any other component (set null)
