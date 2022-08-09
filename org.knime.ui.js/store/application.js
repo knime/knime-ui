@@ -3,7 +3,6 @@ import { fetchApplicationState, addEventListener, removeEventListener, loadWorkf
 import { makeTypeSearch } from '~/util/fuzzyPortTypeSearch';
 
 const getCanvasStateKey = (input) => window.btoa(input);
-const getRootWorkflowId = (workflowId) => workflowId.split(':');
 
 /*
  * This store provides global application logic
@@ -40,8 +39,7 @@ export const mutations = {
     setSavedCanvasStates(state, newStates) {
         const { savedCanvasStates } = state;
         const { workflow, project } = newStates;
-        const [rootWorkflowId] = getRootWorkflowId(workflow);
-
+        const rootWorkflowId = workflow.split(':')[0];
         const isRootWorkflow = rootWorkflowId === workflow;
         const emptyParentState = { children: {} };
         
@@ -64,8 +62,6 @@ export const mutations = {
             const newStateKey = getCanvasStateKey(`${workflow}`);
             // in case we directly access a child the parent would not exist, so we default to an empty one
             const parentState = savedCanvasStates[parentStateKey] || emptyParentState;
-
-            // (savedCanvasStates[parentStateKey] || emptyParentState).children[newStateKey] = newStates;
 
             state.savedCanvasStates = {
                 // keep all the root states
@@ -231,7 +227,7 @@ export const actions = {
     },
     removeCanvasState({ rootState, state }) {
         const { info: { containerId: workflow }, projectId: project } = rootState.workflow?.activeWorkflow;
-        const [rootWorkflowId] = getRootWorkflowId(workflow);
+        const rootWorkflowId = workflow.split(':')[0];
         const stateKey = getCanvasStateKey(`${project}--${rootWorkflowId}`);
 
         delete state.savedCanvasStates[stateKey];
@@ -253,7 +249,7 @@ export const getters = {
 
     workflowCanvasState({ savedCanvasStates }, _, { workflow }) {
         const { info: { containerId: workflowId }, projectId } = workflow?.activeWorkflow;
-        const [rootWorkflowId] = getRootWorkflowId(workflowId);
+        const rootWorkflowId = workflowId.split(':')[0];
         const isRootWorkflow = rootWorkflowId === workflowId;
         const parentStateKey = getCanvasStateKey(`${projectId}--${rootWorkflowId}`);
 
