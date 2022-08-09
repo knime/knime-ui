@@ -3,6 +3,7 @@ import { fetchApplicationState, addEventListener, removeEventListener, loadWorkf
 import { makeTypeSearch } from '~/util/fuzzyPortTypeSearch';
 
 const getCanvasStateKey = (input) => window.btoa(input);
+const getRootWorkflowId = (workflowId) => workflowId.split(':')[0];
 
 /*
  * This store provides global application logic
@@ -39,7 +40,7 @@ export const mutations = {
     setSavedCanvasStates(state, newStates) {
         const { savedCanvasStates } = state;
         const { workflow, project } = newStates;
-        const rootWorkflowId = workflow.split(':')[0];
+        const rootWorkflowId = getRootWorkflowId(workflow);
         const isRootWorkflow = rootWorkflowId === workflow;
         const emptyParentState = { children: {} };
         
@@ -227,7 +228,7 @@ export const actions = {
     },
     removeCanvasState({ rootState, state }) {
         const { info: { containerId: workflow }, projectId: project } = rootState.workflow?.activeWorkflow;
-        const rootWorkflowId = workflow.split(':')[0];
+        const rootWorkflowId = getRootWorkflowId(workflow);
         const stateKey = getCanvasStateKey(`${project}--${rootWorkflowId}`);
 
         delete state.savedCanvasStates[stateKey];
@@ -249,7 +250,7 @@ export const getters = {
 
     workflowCanvasState({ savedCanvasStates }, _, { workflow }) {
         const { info: { containerId: workflowId }, projectId } = workflow?.activeWorkflow;
-        const rootWorkflowId = workflowId.split(':')[0];
+        const rootWorkflowId = getRootWorkflowId(workflowId);
         const isRootWorkflow = rootWorkflowId === workflowId;
         const parentStateKey = getCanvasStateKey(`${projectId}--${rootWorkflowId}`);
 
