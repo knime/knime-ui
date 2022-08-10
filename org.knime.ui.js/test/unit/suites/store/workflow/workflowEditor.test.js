@@ -40,7 +40,16 @@ describe('workflow store: Editing', () => {
                 workflow: await import('~/store/workflow'),
                 selection: await import('~/store/selection'),
                 canvas: {
-                    
+                    getters: {
+                        getVisibleFrame() {
+                            return () => ({
+                                left: -500,
+                                top: -500,
+                                width: 1000,
+                                height: 1000
+                            });
+                        }
+                    }
                 }
             });
         };
