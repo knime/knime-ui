@@ -2,11 +2,10 @@
 /* eslint-disable max-lines */
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
-import * as $shapes from '~/style/shapes';
 import Vuex from 'vuex';
 
 describe('workflow store', () => {
-    let store, localVue, loadStore, addEventListenerMock, removeEventListenerMock;
+    let store, localVue, loadStore, addEventListenerMock, removeEventListenerMock, workflowObjectsBoundsMock;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -31,6 +30,13 @@ describe('workflow store', () => {
                 removeEventListener: removeEventListenerMock,
                 ...apiMocks
             }), { virtual: true });
+
+            jest.doMock('~/util/workflowObjectBounds', () => ({
+                __esModule: true,
+                default: jest.fn().mockReturnValue('bounds')
+            }));
+
+            workflowObjectsBoundsMock = (await import('~/util/workflowObjectBounds')).default;
 
             store = mockVuexStore({
                 workflow: await import('~/store/workflow'),
@@ -194,141 +200,26 @@ describe('workflow store', () => {
             expect(store.getters['workflow/isWorkflowEmpty']).toBe(false);
         });
 
-        describe('workflowBounds', () => {
-            const {
-                nodeSize, nodeStatusMarginTop, nodeStatusHeight, nodeNameMargin,
-                nodeNameLineHeight
-            } = $shapes;
+        test('workflowBounds', async () => {
+            await loadStore();
+            let workflow = {
+                projectId: 'foo',
+                nodes: [],
+                workflowAnnotations: ['something']
+            };
+            store.commit('workflow/setActiveWorkflow', workflow);
 
-            it('calculates dimensions of empty workflow', async () => {
-                await loadStore();
-                store.commit('workflow/setActiveWorkflow', {
-                    projectId: 'foo',
-                    nodes: {},
-                    workflowAnnotations: []
-                });
+            // workflowObjectsBoundsMock.mockReturnValue('bounds');
 
-                expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    bottom: 0
-                });
-            });
+            let getit = store.getters['workflow/workflowBounds'];
+            expect(getit).toBe('bounds');
 
-            it('calculates dimensions of workflow containing one node away from the top left corner', async () => {
-                await loadStore();
-                store.commit('workflow/setActiveWorkflow', {
-                    projectId: 'foo',
-                    nodes: {
-                        'root:0': {
-                            position: { x: 200, y: 200 }
-                        }
-                    },
-                    workflowAnnotations: []
-                });
+            // expect(workflowObjectsBoundsMock()).toBe('bounds');
 
-                expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                    left: 150,
-                    right: 250 + nodeSize,
-                    top: 200 - nodeNameMargin - nodeNameLineHeight,
-                    bottom: 200 + nodeSize + nodeStatusMarginTop + nodeStatusHeight
-                });
-            });
-
-            it('calculates dimensions of workflow containing annotations only', async () => {
-                await loadStore();
-                store.commit('workflow/setActiveWorkflow', {
-                    projectId: 'foo',
-                    nodes: {},
-                    workflowAnnotations: [{
-                        id: 'root:1',
-                        bounds: {
-                            x: -10,
-                            y: -10,
-                            width: 20,
-                            height: 20
-                        }
-                    }, {
-                        id: 'root:2',
-                        bounds: {
-                            x: 0,
-                            y: 0,
-                            width: 20,
-                            height: 20
-                        }
-                    }, {
-                        id: 'root:3',
-                        bounds: {
-                            x: -5,
-                            y: -5,
-                            width: 20,
-                            height: 20
-                        }
-                    }]
-                });
-
-                expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                    left: -10,
-                    right: 20,
-                    top: -10,
-                    bottom: 20
-                });
-            });
-
-            it('calculates dimensions of workflow containing overlapping node + annotation', async () => {
-                await loadStore();
-                store.commit('workflow/setActiveWorkflow', {
-                    projectId: 'foo',
-                    nodes: { 'root:0': { position: { x: 10, y: 10 } } },
-                    workflowAnnotations: [{
-                        id: 'root:1',
-                        bounds: {
-                            x: 26,
-                            y: 26,
-                            width: 26,
-                            height: 26
-                        }
-                    }]
-                });
-
-                expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                    left: -40,
-                    right: 92,
-                    top: -11,
-                    bottom: 62
-                });
-            });
-
-            it('calculates dimensions of workflow containing multiple nodes', async () => {
-                await loadStore();
-                store.commit('workflow/setActiveWorkflow', {
-                    projectId: 'foo',
-                    nodes: {
-                        'root:0': { position: { x: 10, y: 10 } },
-                        'root:1': { position: { x: -10, y: -10 } },
-                        'root:2': { position: { x: 20, y: 20 } }
-                    }
-                });
-
-                expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                    left: -60,
-                    right: 102,
-                    top: -31,
-                    bottom: 72
-                });
-            });
-
-            it('calculates dimensions of not active workflow', async () => {
-                await loadStore();
-
-                expect(store.getters['workflow/workflowBounds']).toStrictEqual({
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    bottom: 0
-                });
-            });
+            // expect(store.getters['workflow/workflowBounds']).toBe('bounds');
+            // console.log(workflowObjectsBoundsMock);
+            // expect(getit == workflowObjectsBoundsMock).toBe(true);
+            expect(workflowObjectsBoundsMock).toHaveBeenCalled();
         });
 
         describe('node getters', () => {
