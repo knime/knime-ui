@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 
-import Tooltip from '~/components/Tooltip';
+import Tooltip from '~/components/Tooltip.vue';
 import * as $shapes from '~/style/shapes';
 
 describe('Tooltip', () => {

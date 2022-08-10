@@ -3,7 +3,7 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
-import ConnectorLabel from '~/components/workflow/ConnectorLabel';
+import ConnectorLabel from '~/components/workflow/ConnectorLabel.vue';
 
 jest.mock('~api', () => {
 }, { virtual: true });
@@ -77,7 +77,7 @@ describe('ConnectorLabel.vue', () => {
             propsData.label = '10';
             doMount();
 
-            const initialPosition = wrapper.find('foreignObject').attributes().transform;
+            const initialPosition = wrapper.attributes().transform;
             expect(initialPosition).toBe('translate(-480.25,-33.25)');
 
             isNodeSelectedMock.mockReturnValue(nodeId => ({ 'root:1': true, 'root:2': true }[nodeId]));
@@ -87,7 +87,7 @@ describe('ConnectorLabel.vue', () => {
             });
             await Vue.nextTick();
 
-            const endPosition = wrapper.find('foreignObject').attributes().transform;
+            const endPosition = wrapper.attributes().transform;
 
             expect(endPosition).toContain('translate');
             expect(endPosition).not.toBe('translate(-480.25,-33.25)');
@@ -97,7 +97,7 @@ describe('ConnectorLabel.vue', () => {
             propsData.label = '10';
             doMount();
 
-            const initialPosition = wrapper.find('foreignObject').attributes().transform;
+            const initialPosition = wrapper.attributes().transform;
             expect(initialPosition).toBe('translate(-480.25,-33.25)');
 
             isNodeSelectedMock.mockReturnValue(false);
@@ -107,7 +107,7 @@ describe('ConnectorLabel.vue', () => {
             });
             await Vue.nextTick();
 
-            const endPosition = wrapper.find('foreignObject').attributes().transform;
+            const endPosition = wrapper.attributes().transform;
 
             expect(endPosition).toContain('translate');
             expect(endPosition).toBe('translate(-480.25,-33.25)');

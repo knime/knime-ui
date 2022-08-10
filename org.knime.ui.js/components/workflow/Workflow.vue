@@ -1,11 +1,11 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import Node from '~/components/workflow/Node';
-import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer';
-import Connector from '~/components/workflow/Connector';
-import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation';
-import MetaNodePortBars from '~/components/workflow/MetaNodePortBars';
-import ConnectorLabel from '~/components/workflow/ConnectorLabel';
+import Node from '~/components/workflow/Node.vue';
+import MoveableNodeContainer from '~/components/workflow/MoveableNodeContainer.vue';
+import Connector from '~/components/workflow/Connector.vue';
+import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation.vue';
+import MetaNodePortBars from '~/components/workflow/MetaNodePortBars.vue';
+import ConnectorLabel from '~/components/workflow/ConnectorLabel.vue';
 import { dropNode } from '~/mixins';
 
 export default {

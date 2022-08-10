@@ -4,14 +4,14 @@
 
 import { mapActions, mapState, mapGetters } from 'vuex';
 
-import NodePorts from './NodePorts';
+import NodePorts from './NodePorts.vue';
 import NodeDecorators from './NodeDecorators.vue';
-import NodeState from '~/components/workflow/NodeState';
-import NodeTorso from '~/components/workflow/NodeTorso';
-import NodeAnnotation from '~/components/workflow/NodeAnnotation';
-import NodeActionBar from '~/components/workflow/NodeActionBar';
-import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane';
-import NodeName from '~/components/workflow/NodeName';
+import NodeState from '~/components/workflow/NodeState.vue';
+import NodeTorso from '~/components/workflow/NodeTorso.vue';
+import NodeAnnotation from '~/components/workflow/NodeAnnotation.vue';
+import NodeActionBar from '~/components/workflow/NodeActionBar.vue';
+import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane.vue';
+import NodeName from '~/components/workflow/NodeName.vue';
 
 import { snapConnector } from '~/mixins';
 

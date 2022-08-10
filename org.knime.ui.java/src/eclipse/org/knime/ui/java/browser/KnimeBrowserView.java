@@ -84,7 +84,7 @@ public class KnimeBrowserView {
 
     private static final String APP_PAGE = BASE_URL + "/index.html";
 
-    private static final String BASE_PATH = "dist/inlined";
+    private static final String BASE_PATH = "dist";
 
     private Browser m_browser;
 

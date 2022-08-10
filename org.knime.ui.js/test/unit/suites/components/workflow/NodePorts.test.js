@@ -5,9 +5,9 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 
 import * as $shapes from '~/style/shapes';
-import NodePorts from '~/components/workflow/NodePorts';
-import NodePort from '~/components/workflow/NodePort';
-import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder';
+import NodePorts from '~/components/workflow/NodePorts.vue';
+import NodePort from '~/components/workflow/NodePort.vue';
+import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder.vue';
 
 
 const mockPort = ({ index, connectedVia = [] }) => ({

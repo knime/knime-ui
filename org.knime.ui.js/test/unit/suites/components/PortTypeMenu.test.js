@@ -4,10 +4,10 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import PortTypeMenu from '~/components/PortTypeMenu';
-import FloatingMenu from '~/components/FloatingMenu';
-import MenuItems from '~/webapps-common/ui/components/MenuItems';
-import SearchBar from '~/components/noderepo/SearchBar';
+import PortTypeMenu from '~/components/PortTypeMenu.vue';
+import FloatingMenu from '~/components/FloatingMenu.vue';
+import MenuItems from '~/webapps-common/ui/components/MenuItems.vue';
+import SearchBar from '~/components/noderepo/SearchBar.vue';
 
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';

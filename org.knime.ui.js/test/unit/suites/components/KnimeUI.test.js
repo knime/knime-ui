@@ -1,18 +1,18 @@
 import { mockUserAgent } from 'jest-useragent-mock';
 
-import { createLocalVue } from '@vue/test-utils';
-import { mockVuexStore, shallowMountWithAsyncData } from '~/test/unit/test-utils';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import KnimeUI from '~/components/KnimeUI';
-import AppHeader from '~/components/AppHeader';
-import Sidebar from '~/components/Sidebar';
-import WorkflowToolbar from '~/components/WorkflowToolbar';
-import TooltipContainer from '~/components/TooltipContainer';
-import Error from '~/components/Error';
-import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage';
-import HotkeyHandler from '~/components/HotkeyHandler';
+import KnimeUI from '~/components/KnimeUI.vue';
+import AppHeader from '~/components/AppHeader.vue';
+import Sidebar from '~/components/Sidebar.vue';
+import WorkflowToolbar from '~/components/WorkflowToolbar.vue';
+import TooltipContainer from '~/components/TooltipContainer.vue';
+import Error from '~/components/Error.vue';
+import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage.vue';
+import HotkeyHandler from '~/components/HotkeyHandler.vue';
 
 describe('KnimeUI.vue', () => {
     beforeAll(() => {
@@ -54,7 +54,7 @@ describe('KnimeUI.vue', () => {
         $store = mockVuexStore(storeConfig);
         mocks = { $store };
         doShallowMountWithAsyncData = async () => {
-            wrapper = await shallowMountWithAsyncData(KnimeUI, { mocks });
+            wrapper = await shallowMount(KnimeUI, { mocks });
         };
     });
 

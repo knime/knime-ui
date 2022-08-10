@@ -4,7 +4,7 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import NodeState from '~/components/workflow/NodeState';
+import NodeState from '~/components/workflow/NodeState.vue';
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 import muteConsole from '~/webapps-common/util/test-utils/muteConsole';

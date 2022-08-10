@@ -1,5 +1,5 @@
 <script>
-import Breadcrumb from '~/webapps-common/ui/components/Breadcrumb';
+import Breadcrumb from '~/webapps-common/ui/components/Breadcrumb.vue';
 
 /**
  * Wraps the webapps-common Breadcrumb and works with IDs and click events instead of nuxt-links.

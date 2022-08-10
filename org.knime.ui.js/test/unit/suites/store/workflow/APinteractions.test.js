@@ -5,7 +5,7 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 
 describe('workflow store: AP Interactions', () => {
-    let store, localVue, loadStore;
+    let store, localVue, loadStore, dispatchSpy;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -28,8 +28,10 @@ describe('workflow store: AP Interactions', () => {
             }), { virtual: true });
 
             store = mockVuexStore({
-                workflow: await import('~/store/workflow')
+                workflow: await import('~/store/workflow'),
+                application: await import('~/store/application')
             });
+            dispatchSpy = jest.spyOn(store, 'dispatch');
         };
     });
 
@@ -91,11 +93,12 @@ describe('workflow store: AP Interactions', () => {
             let closeWorkflow = jest.fn();
             let apiMocks = { closeWorkflow };
             await loadStore({ apiMocks });
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
 
             store.dispatch('workflow/closeWorkflow');
 
             expect(closeWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
+            expect(dispatchSpy).toHaveBeenCalledWith('application/removeCanvasState', {});
         });
     });
 });

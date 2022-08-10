@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 
-import NodeTorsoMetanode from '~/components/workflow/NodeTorsoMetanode';
+import NodeTorsoMetanode from '~/components/workflow/NodeTorsoMetanode.vue';
 import * as $colors from '~/style/colors';
 
 describe('State of Metanode', () => {

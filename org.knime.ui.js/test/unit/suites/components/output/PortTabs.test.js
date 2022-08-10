@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
-import PortTabs, { portIconSize } from '~/components/output/PortTabs';
-import TabBar from '~/webapps-common/ui/components/TabBar';
+import PortTabs, { portIconSize } from '~/components/output/PortTabs.vue';
+import TabBar from '~/webapps-common/ui/components/TabBar.vue';
 import Vue from 'vue';
 import FlowVarTabIcon from '~/assets/flow-variables.svg?inline';
 

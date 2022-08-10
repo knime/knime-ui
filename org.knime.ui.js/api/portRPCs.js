@@ -1,5 +1,5 @@
 // TODO entire file to be removed with NXT-632
-import { callPortDataService } from './nodeService.js';
+import { callPortDataService } from './nodeService';
 
 const toJsonRpcString = (method, params = []) => JSON.stringify({
     jsonrpc: '2.0',

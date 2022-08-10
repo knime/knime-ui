@@ -1,5 +1,5 @@
 <script>
-import NodeNameText from '~/components/workflow/NodeNameText';
+import NodeNameText from '~/components/workflow/NodeNameText.vue';
 
 
 /**

@@ -5,8 +5,8 @@ import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 import * as $colors from '~/style/colors';
 
-import Port from '~/components/workflow/Port';
-import AddPortPlaceholder, { addPortPlaceholderPath } from '~/components/workflow/AddPortPlaceholder';
+import Port from '~/components/workflow/Port.vue';
+import AddPortPlaceholder, { addPortPlaceholderPath } from '~/components/workflow/AddPortPlaceholder.vue';
 
 describe('PortTypeMenu.vue', () => {
     let propsData, mocks, doMount, wrapper, provide;

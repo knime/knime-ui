@@ -3,7 +3,7 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
-import HotkeyHandler from '~/components/HotkeyHandler';
+import HotkeyHandler from '~/components/HotkeyHandler.vue';
 import { escapePressed as escapePressedMock } from '~/mixins/escapeStack';
 
 jest.mock('~/mixins/escapeStack', () => ({

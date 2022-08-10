@@ -2,7 +2,7 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
-import WorkflowEmpty from '~/components/workflow/WorkflowEmpty';
+import WorkflowEmpty from '~/components/workflow/WorkflowEmpty.vue';
 
 describe('WorkflowEmpty', () => {
     let mocks, doShallowMount, wrapper, $store, storeConfig, containerSize;

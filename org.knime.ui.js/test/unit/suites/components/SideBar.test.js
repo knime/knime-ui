@@ -6,13 +6,13 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import * as panelStoreConfig from '~/store/panel';
 import * as nodeRepositoryStoreConfig from '~/store/nodeRepository';
 
-import Sidebar from '~/components/Sidebar';
+import Sidebar from '~/components/Sidebar.vue';
 
 import InfoIcon from '~/webapps-common/ui/assets/img/icons/circle-info.svg?inline';
 import PlusIcon from '~/webapps-common/ui/assets/img/icons/circle-plus.svg?inline';
 
-import NodeRepository from '~/components/noderepo/NodeRepository';
-import WorkflowMetadata from '~/components/workflowMetadata/WorkflowMetadata';
+import NodeRepository from '~/components/noderepo/NodeRepository.vue';
+import WorkflowMetadata from '~/components/workflowMetadata/WorkflowMetadata.vue';
 
 Vue.config.ignoredElements = ['portal-target'];
 

@@ -3,9 +3,9 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import SearchResults from '~/components/noderepo/SearchResults';
+import SearchResults from '~/components/noderepo/SearchResults.vue';
 import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer.vue';
-import NodeList from '~/components/noderepo/NodeList';
+import NodeList from '~/components/noderepo/NodeList.vue';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 
 describe('SearchResults', () => {

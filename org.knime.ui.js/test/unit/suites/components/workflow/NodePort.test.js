@@ -5,10 +5,10 @@ import Vuex from 'vuex';
 import { createLocalVue, shallowMount, createWrapper } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 
-import NodePort from '~/components/workflow/NodePort';
-import Port from '~/components/workflow/Port';
-import Connector from '~/components/workflow/Connector';
-import NodePortActions from '~/components/workflow/NodePortActions';
+import NodePort from '~/components/workflow/NodePort.vue';
+import Port from '~/components/workflow/Port.vue';
+import Connector from '~/components/workflow/Connector.vue';
+import NodePortActions from '~/components/workflow/NodePortActions.vue';
 
 import { circleDetection } from '~/util/compatibleConnections';
 

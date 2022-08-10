@@ -4,8 +4,8 @@ import Vuex from 'vuex';
 import Vue from 'vue';
 import * as $shapes from '~/style/shapes';
 
-import Tooltip from '~/components/Tooltip';
-import TooltipContainer from '~/components/TooltipContainer';
+import Tooltip from '~/components/Tooltip.vue';
+import TooltipContainer from '~/components/TooltipContainer.vue';
 
 describe('TooltipContainer', () => {
     let doShallowMount, wrapper, $store, storeConfig, tooltip, kanvasElement, screenFromCanvasCoordinatesMock;

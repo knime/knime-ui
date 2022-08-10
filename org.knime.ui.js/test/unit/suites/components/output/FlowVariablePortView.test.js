@@ -1,6 +1,6 @@
 import Vue from 'vue';
+import FlowVariablePortView from '~/components/output/FlowVariablePortView.vue';
 import { shallowMount } from '@vue/test-utils';
-import FlowVariablePortView from '~/components/output/FlowVariablePortView';
 
 describe('FlowVariablePortView.vue', () => {
     let wrapper;

@@ -1,6 +1,6 @@
 <script>
-import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText';
-import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject';
+import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText.vue';
+import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject.vue';
 /**
  * A node annotation, a rectangular box containing text.
  */

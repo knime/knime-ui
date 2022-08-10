@@ -6,9 +6,9 @@ jest.mock('~api', () => ({
 
 import Vue from 'vue';
 import { shallowMount, mount } from '@vue/test-utils';
-import TablePortView from '~/components/output/TablePortView';
-import Header from '~/components/output/TablePortViewHeader';
-import Body from '~/components/output/TablePortViewBody';
+import TablePortView from '~/components/output/TablePortView.vue';
+import Header from '~/components/output/TablePortViewHeader.vue';
+import Body from '~/components/output/TablePortViewBody.vue';
 import MissingValueIcon from '~/assets/missing-value.svg?inline';
 import { loadTable as loadTableMock } from '~api';
 

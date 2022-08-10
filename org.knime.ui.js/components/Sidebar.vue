@@ -3,9 +3,9 @@ import { mapState, mapGetters, mapActions } from 'vuex';
 import InfoIcon from '~/webapps-common/ui/assets/img/icons/circle-info.svg?inline';
 import PlusIcon from '~/webapps-common/ui/assets/img/icons/circle-plus.svg?inline';
 
-import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel';
-import WorkflowMetadata from '~/components/workflowMetadata/WorkflowMetadata';
-import NodeRepository from '~/components/noderepo/NodeRepository';
+import LeftCollapsiblePanel from '~/components/LeftCollapsiblePanel.vue';
+import WorkflowMetadata from '~/components/workflowMetadata/WorkflowMetadata.vue';
+import NodeRepository from '~/components/noderepo/NodeRepository.vue';
 
 export default {
     components: {

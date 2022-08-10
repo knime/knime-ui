@@ -1,8 +1,8 @@
 <script>
 import { mapGetters } from 'vuex';
 
-import NodeNameTextarea from '~/components/workflow/NodeNameTextarea';
-import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar';
+import NodeNameTextarea from '~/components/workflow/NodeNameTextarea.vue';
+import NodeNameEditorActionBar from '~/components/workflow/NodeNameEditorActionBar.vue';
 
 const invalidCharsErrorVisibleTime = 4000; // ms
 

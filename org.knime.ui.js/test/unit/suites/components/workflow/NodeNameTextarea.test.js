@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import * as $shapes from '~/style/shapes';
 
-import NodeNameTextarea from '~/components/workflow/NodeNameTextarea';
+import NodeNameTextarea from '~/components/workflow/NodeNameTextarea.vue';
 
 describe('NodeNameTextarea', () => {
     const mockSizeChangeFn = jest.fn();
