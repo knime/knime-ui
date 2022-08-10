@@ -113,15 +113,15 @@ export default {
             const halfNodeSize = this.$shapes.nodeSize / 2;
             const { clientWidth, clientHeight, scrollLeft, scrollTop } = document.getElementById('kanvas');
             const positionX = Math.max(clientWidth * WORKFLOW_ADD_START_PERCENT_X, WORKFLOW_ADD_START_MIN);
-            let position = this.toCanvasCoordinates([
+            const position = this.toCanvasCoordinates([
                 positionX + scrollLeft - halfNodeSize,
                 clientHeight * WORKFLOW_ADD_START_PERCENT_Y + scrollTop - halfNodeSize
             ]);
 
-            position = findFreeSpaceOnCanvas(position, this.workflow.nodes);
+            const [x, y] = findFreeSpaceOnCanvas(position, this.workflow.nodes);
 
             const nodeFactory = this.nodeTemplate.nodeFactory;
-            this.addNodeToWorkflow({ position, nodeFactory });
+            this.addNodeToWorkflow({ position: { x, y }, nodeFactory });
         },
         onDrag(e) {
             if (!this.isWritable) {
