@@ -38,7 +38,10 @@ describe('workflow store: Editing', () => {
             store = mockVuexStore({
                 application: await import('~/store/application'),
                 workflow: await import('~/store/workflow'),
-                selection: await import('~/store/selection')
+                selection: await import('~/store/selection'),
+                canvas: {
+                    
+                }
             });
         };
     });
@@ -518,11 +521,21 @@ describe('workflow store: Editing', () => {
             });
         });
 
-        describe('tests copy, cut and paste actions...', () => {
-            const mockClipboardMethod = ({ name, mockHandler }) => {
-                Object.assign(navigator, { clipboard: { [name]: mockHandler } });
-                jest.spyOn(navigator.clipboard, name);
-            };
+        describe('Copy, Cut and Paste', () => {
+            let clipboardObject;
+
+            beforeEach(() => {
+                Object.assign(navigator, {
+                    clipboard: {
+                        writeText: jest.fn().mockImplementation(text => {
+                            clipboardObject = JSON.parse(text);
+                        }),
+                        readText: jest.fn().mockImplementation(() => clipboardObject
+                            ? JSON.stringify(clipboardObject)
+                            : '')
+                    }
+                });
+            });
 
             afterEach(() => {
                 jest.clearAllMocks();
@@ -532,8 +545,14 @@ describe('workflow store: Editing', () => {
                 ['copy'],
                 ['cut']
             ])('executes <%s> command', async (command) => {
-                mockClipboardMethod({ name: 'writeText', mockHandler: () => ({}) });
-                let copyOrCutWorkflowParts = jest.fn().mockReturnValue({ content: '{}' });
+                let stringifiedPayload = JSON.stringify({
+                    payloadIdentifier: 'p-id-1',
+                    otherData: 'is here'
+                });
+
+                let copyOrCutWorkflowParts = jest.fn().mockReturnValue({
+                    content: stringifiedPayload
+                });
                 let apiMocks = { copyOrCutWorkflowParts };
                 await loadStore({ apiMocks });
     
@@ -541,8 +560,18 @@ describe('workflow store: Editing', () => {
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'my project',
                     info: { containerId: 'root' },
-                    nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } }
+                    nodes: {
+                        foo: {
+                            id: 'foo',
+                            position: { x: 0, y: 0 }
+                        },
+                        bar: {
+                            id: 'bar',
+                            position: { x: 50, y: 50 }
+                        }
+                    }
                 });
+
                 store.dispatch('selection/selectAllNodes');
                 await Vue.nextTick();
                 await store.dispatch('workflow/copyOrCutWorkflowParts', { command });
@@ -554,11 +583,24 @@ describe('workflow store: Editing', () => {
                     nodeIds: ['foo', 'bar'],
                     annotationIds: []
                 });
-                expect(navigator.clipboard.writeText).toHaveBeenCalledWith('{}');
+
+                expect(clipboardObject).toStrictEqual({
+                    payloadIdentifier: 'p-id-1',
+                    projectId: 'my project',
+                    workflowId: 'root',
+                    data: stringifiedPayload,
+                    objectBounds: {
+                        left: 0,
+                        top: 0,
+                        right: 50 + 32,
+                        bottom: 50 + 32,
+                        width: 50 + 32,
+                        height: 50 + 32
+                    }
+                });
             });
     
             it('executes <paste> command for a non-empty workflow', async () => {
-                mockClipboardMethod({ name: 'readText', mockHandler: () => '{}' });
                 let pasteWorkflowParts = jest.fn();
                 let apiMocks = { pasteWorkflowParts };
                 await loadStore({ apiMocks });
@@ -580,7 +622,6 @@ describe('workflow store: Editing', () => {
             });
 
             it('executes <paste> command for an empty workflow', async () => {
-                mockClipboardMethod({ name: 'readText', mockHandler: () => '{}' });
                 let pasteWorkflowParts = jest.fn();
                 let apiMocks = { pasteWorkflowParts };
                 await loadStore({ apiMocks });
@@ -602,7 +643,6 @@ describe('workflow store: Editing', () => {
             });
 
             it('selects the pasted nodes', async () => {
-                mockClipboardMethod({ name: 'readText', mockHandler: () => '{}' });
                 let pasteWorkflowParts = jest.fn(() => ({ nodeIds: ['baz'] }));
                 let apiMocks = { pasteWorkflowParts };
                 await loadStore({ apiMocks });
