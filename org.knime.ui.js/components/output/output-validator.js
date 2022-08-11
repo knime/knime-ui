@@ -1,22 +1,26 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable func-style */
 /**
- * Returns the port type of a given port and a dictionary of available port types
- * @param {{ portTypes, port }} param
+ * Returns the PortType of a given port
+ * @param {Object} payload
+ * @param {Object} payload.portTypes a dictionary of PortType objects
+ * @param {Object} payload.port a Port object
  * @returns {String}
  */
 const getPortType = ({ portTypes, port }) => portTypes[port.typeId];
 
 /**
- * Determines whether a given port is "supported". Supported ports are only those whose kind is
- * 'table' or 'flowVariable'. To determine the types, the dictionary of all available port type ids is needed
- * @param {*} param
+ * Determines whether a given port is "supported". Supported ports are only those whose PortType has a view
+ * To determine the PortType, the dictionary of all available PortTypes is needed
+ * @param {Object} payload
+ * @param {Object} payload.portTypes a dictionary of PortType objects
+ * @param {Object} payload.port a Port object
  * @returns {Boolean}
  */
 const supportsPort = ({ portTypes, port }) => {
     try {
-        const { kind: portKind } = getPortType({ portTypes, port });
-        return portKind === 'table' || portKind === 'flowVariable';
+        const { hasView } = getPortType({ portTypes, port });
+        return hasView;
     } catch {
         return false;
     }
@@ -153,7 +157,7 @@ const validatePortSupport = ({ portTypes }, next) => (context) => {
             error: {
                 type: 'PORT',
                 code: 'PORT_INACTIVE',
-                message: 'This output port is inactive and therefore no data table is available.'
+                message: 'This output port is inactive and therefore no output data is available for display.'
             }
         };
     }
@@ -200,7 +204,7 @@ const validateNodeExecutionState = ({ portTypes, selectedNode }, next) => contex
                 error: {
                     type: 'NODE',
                     code: 'NODE_UNEXECUTED',
-                    message: 'To show the output table, please execute the selected node.'
+                    message: 'To show the output, please execute the selected node.'
                 }
             };
         }
@@ -243,6 +247,17 @@ const buildMiddleware = (...middlewares) => (env) => (req) => {
     return chain(req);
 };
 
+/**
+ * Runs a set of validations that qualify whether a port from a node is able
+ * to show its output
+ * @param {Object} payload
+ * @param {Object} payload.selectedNode the node that is currently selected
+ * @param {Object} payload.portTypes dictionary of Port Types. Can be used to get more information on the port based
+ * on its typeId property
+ * @param {number} payload.selectedPortIndex index of the selected port
+ * @returns {Object} object containing an `error` property. If not null then it means the port is invalid. Additionally
+ * more details about the error can be read from that `error` object
+ */
 export const runPortValidationChecks = ({ selectedNode, portTypes, selectedPortIndex }) => {
     const validationMiddleware = buildMiddleware(
         validatePortSelection,
@@ -255,7 +270,17 @@ export const runPortValidationChecks = ({ selectedNode, portTypes, selectedPortI
     return Object.freeze(result);
 };
 
-
+/**
+ * Runs a set of validations that qualify whether a node from a given group is able
+ * to show its output
+ * @param {Object} payload
+ * @param {Object} payload.selectedNodes the group of nodes that are currently selected
+ * @param {number} payload.isDragging whether there's a drag operation taking place
+ * @param {Object} payload.portTypes dictionary of Port Types. Can be used to get more information on the port based
+ * on its typeId property
+ * @returns {Object} object containing an `error` property. If not null then it means the node is invalid. Additionally
+ * more details about the error can be read from that `error` object
+ */
 export const runNodeValidationChecks = ({ selectedNodes, isDragging, portTypes }) => {
     const validationMiddleware = buildMiddleware(
         validateDragging,

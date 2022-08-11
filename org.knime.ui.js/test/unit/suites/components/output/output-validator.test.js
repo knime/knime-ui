@@ -4,11 +4,13 @@ describe('output-validator.js', () => {
     const portTypes = {
         'table-port-type': {
             kind: 'table',
-            name: 'Data'
+            name: 'Data',
+            hasView: true
         },
         'flow-variable-port-type': {
             kind: 'flowVariable',
-            name: 'Flow Variable'
+            name: 'Flow Variable',
+            hasView: true
         }
     };
 
@@ -185,7 +187,7 @@ describe('output-validator.js', () => {
                 error: {
                     type: 'PORT',
                     code: 'PORT_INACTIVE',
-                    message: 'This output port is inactive and therefore no data table is available.'
+                    message: 'This output port is inactive and therefore no output data is available for display.'
                 }
             });
         });
@@ -209,7 +211,7 @@ describe('output-validator.js', () => {
                     error: {
                         type: 'NODE',
                         code: 'NODE_UNEXECUTED',
-                        message: 'To show the output table, please execute the selected node.'
+                        message: 'To show the output, please execute the selected node.'
                     }
                 });
             });

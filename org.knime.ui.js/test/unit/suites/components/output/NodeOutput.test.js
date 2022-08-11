@@ -80,11 +80,13 @@ describe('NodeOutput.vue', () => {
                 availablePortTypes: {
                     [TABLE]: {
                         kind: 'table',
-                        name: 'Data'
+                        name: 'Data',
+                        hasView: true
                     },
                     [FLOW_VARIABLE]: {
                         kind: 'flowVariable',
-                        name: 'Flow Variable'
+                        name: 'Flow Variable',
+                        hasView: true
                     }
                 }
             }
@@ -119,7 +121,6 @@ describe('NodeOutput.vue', () => {
 
         afterEach(() => {
             expect(wrapper.findComponent(PortTabs).exists()).toBe(false);
-            // expect(wrapper.findComponent(TablePortView).exists()).toBe(false);
             expect(wrapper.findComponent(FlowVariablePortView).exists()).toBe(false);
             expect(wrapper.find('.loading-icon').exists()).toBe(false);
             expect(wrapper.find('.action-button').exists()).toBe(false);
@@ -157,7 +158,6 @@ describe('NodeOutput.vue', () => {
         });
 
         afterEach(() => {
-            // expect(wrapper.findComponent(TablePortView).exists()).toBe(false);
             expect(wrapper.findComponent(FlowVariablePortView).exists()).toBe(false);
             expect(wrapper.find('.loading-icon').exists()).toBe(false);
             expect(wrapper.find('.action-button').exists()).toBe(false);
@@ -192,7 +192,7 @@ describe('NodeOutput.vue', () => {
             doShallowMount();
 
             expect(wrapper.find('.placeholder').text()).toBe(
-                'This output port is inactive and therefore no data table is available.'
+                'This output port is inactive and therefore no output data is available for display.'
             );
             expect(wrapper.find('.port-view').exists()).toBe(false);
             expect(wrapper.find('.action-button').exists()).toBe(false);
@@ -213,7 +213,7 @@ describe('NodeOutput.vue', () => {
             doShallowMount();
 
             expect(wrapper.find('.placeholder').text())
-                .toMatch('To show the output table, please execute the selected node.');
+                .toMatch('To show the output, please execute the selected node.');
             expect(wrapper.find('.port-view').exists()).toBe(false);
 
             let executeButton = wrapper.findComponent(Button);
@@ -245,7 +245,6 @@ describe('NodeOutput.vue', () => {
         });
 
         afterEach(() => {
-            // expect(wrapper.findComponent(TablePortView).exists()).toBe(false);
             expect(wrapper.findComponent(PortTabs).props().disabled).toBe(false);
         });
     });
