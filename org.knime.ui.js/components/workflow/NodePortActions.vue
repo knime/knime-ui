@@ -2,7 +2,7 @@
 import Port from '~/components/workflow/Port.vue';
 import ActionButton from '~/components/workflow/ActionButton.vue';
 import { escapeStack } from '~/mixins';
-import DeleteIcon from '~/assets/delete.svg?inline';
+import DeleteIcon from '~/assets/delete.svg';
 
 export const portActionButtonSize = 20;
 const portActionsGapSize = 5;

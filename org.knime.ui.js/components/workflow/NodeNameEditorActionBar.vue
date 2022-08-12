@@ -1,6 +1,6 @@
 <script>
-import SaveIcon from '~/assets/ok.svg?inline';
-import CancelIcon from '~/assets/cancel.svg?inline';
+import SaveIcon from '~/assets/ok.svg';
+import CancelIcon from '~/assets/cancel.svg';
 import ActionButton from '~/components/workflow/ActionButton.vue';
 
 /**

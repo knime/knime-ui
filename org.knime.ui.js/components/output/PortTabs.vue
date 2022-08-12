@@ -1,5 +1,5 @@
 <script>
-import FlowVarTabIcon from '~/assets/flow-variables.svg?inline';
+import FlowVarTabIcon from '~/assets/flow-variables.svg';
 import portIcon from './PortIconRenderer';
 import TabBar from '~/webapps-common/ui/components/TabBar.vue';
 

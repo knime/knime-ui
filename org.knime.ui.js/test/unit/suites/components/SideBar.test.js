@@ -8,8 +8,8 @@ import * as nodeRepositoryStoreConfig from '~/store/nodeRepository';
 
 import Sidebar from '~/components/Sidebar.vue';
 
-import InfoIcon from '~/webapps-common/ui/assets/img/icons/circle-info.svg?inline';
-import PlusIcon from '~/webapps-common/ui/assets/img/icons/circle-plus.svg?inline';
+import InfoIcon from '~/webapps-common/ui/assets/img/icons/circle-info.svg';
+import PlusIcon from '~/webapps-common/ui/assets/img/icons/circle-plus.svg';
 
 import NodeRepository from '~/components/noderepo/NodeRepository.vue';
 import WorkflowMetadata from '~/components/workflowMetadata/WorkflowMetadata.vue';

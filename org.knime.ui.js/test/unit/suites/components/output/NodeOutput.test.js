@@ -14,7 +14,7 @@ import FlowVariablePortView from '~/components/output/FlowVariablePortView.vue';
 import PortViewLoader from '~/components/output/PortViewLoader.vue';
 
 import Button from '~/webapps-common/ui/components/Button.vue';
-import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
+import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg';
 
 describe('NodeOutput.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, dummyNodes, workflow, application, selectedNodeIds;

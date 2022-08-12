@@ -1,14 +1,14 @@
-import ExecuteAllIcon from '~/assets/execute-all.svg?inline';
-import CancelAllIcon from '~/assets/cancel.svg?inline';
-import ResetAllIcon from '~/assets/reset-all.svg?inline';
+import ExecuteAllIcon from '~/assets/execute-all.svg';
+import CancelAllIcon from '~/assets/cancel.svg';
+import ResetAllIcon from '~/assets/reset-all.svg';
 
-import ExecuteSelectedIcon from '~/assets/execute-selected.svg?inline';
-import CancelSelectedIcon from '~/assets/cancel-selected.svg?inline';
-import ResetSelectedIcon from '~/assets/reset-selected.svg?inline';
+import ExecuteSelectedIcon from '~/assets/execute-selected.svg';
+import CancelSelectedIcon from '~/assets/cancel-selected.svg';
+import ResetSelectedIcon from '~/assets/reset-selected.svg';
 
-import ResumeLoopIcon from '~/assets/resume-execution.svg?inline';
-import PauseLoopIcon from '~/assets/pause-execution.svg?inline';
-import StepLoopIcon from '~/assets/step-execution.svg?inline';
+import ResumeLoopIcon from '~/assets/resume-execution.svg';
+import PauseLoopIcon from '~/assets/pause-execution.svg';
+import StepLoopIcon from '~/assets/step-execution.svg';
 
 export default {
     executeAll: {

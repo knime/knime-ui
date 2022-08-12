@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 
 import ToolbarCommandButton from '~/components/ToolbarCommandButton.vue';
 import ToolbarButton from '~/components/ToolbarButton.vue';
-import IconComponent from '~/assets/redo.svg?inline';
+import IconComponent from '~/assets/redo.svg';
 
 describe('ToolbarCommandButton.vue', () => {
     let wrapper, doShallowMount, propsData, command, $commands;

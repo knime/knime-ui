@@ -3,8 +3,8 @@
 import { mapState, mapGetters } from 'vuex';
 import PortTabs from '~/components/output/PortTabs.vue';
 import Button from '~/webapps-common/ui/components/Button.vue';
-import PlayIcon from '~/assets/execute.svg?inline';
-import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
+import PlayIcon from '~/assets/execute.svg';
+import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg';
 import { runNodeValidationChecks, runPortValidationChecks } from './output-validator';
 
 import PortViewLoader from './PortViewLoader.vue';

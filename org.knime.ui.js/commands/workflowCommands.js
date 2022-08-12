@@ -1,14 +1,14 @@
 import executionCommands from './executionCommands';
 
-import RedoIcon from '~/assets/redo.svg?inline';
-import UndoIcon from '~/assets/undo.svg?inline';
-import DeleteIcon from '~/assets/delete.svg?inline';
-import OpenViewIcon from '~/assets/open-view.svg?inline';
-import OpenDialogIcon from '~/assets/configure-node.svg?inline';
-import SaveIcon from '~/assets/save.svg?inline';
-import CreateMetanode from '~/assets/create-metanode.svg?inline';
-import CreateComponent from '~/assets/create-component.svg?inline';
-import LayoutIcon from '~/assets/layout.svg?inline';
+import RedoIcon from '~/assets/redo.svg';
+import UndoIcon from '~/assets/undo.svg';
+import DeleteIcon from '~/assets/delete.svg';
+import OpenViewIcon from '~/assets/open-view.svg';
+import OpenDialogIcon from '~/assets/configure-node.svg';
+import SaveIcon from '~/assets/save.svg';
+import CreateMetanode from '~/assets/create-metanode.svg';
+import CreateComponent from '~/assets/create-component.svg';
+import LayoutIcon from '~/assets/layout.svg';
 
 export default {
     ...executionCommands,

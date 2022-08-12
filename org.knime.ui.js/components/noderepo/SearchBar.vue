@@ -1,6 +1,6 @@
 <script>
-import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg?inline';
-import LensIcon from '~/webapps-common/ui/assets/img/icons/lens.svg?inline';
+import CloseIcon from '~/webapps-common/ui/assets/img/icons/close.svg';
+import LensIcon from '~/webapps-common/ui/assets/img/icons/lens.svg';
 
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 

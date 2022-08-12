@@ -5,7 +5,7 @@ import Vuex from 'vuex';
 
 import AppHeader from '~/components/AppHeader.vue';
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
-import CloseIcon from '~/assets/cancel.svg?inline';
+import CloseIcon from '~/assets/cancel.svg';
 
 describe('AppHeader.vue', () => {
     let propsData, mocks, doShallowMount, wrapper, storeConfig, $store;

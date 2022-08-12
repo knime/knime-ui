@@ -1,5 +1,5 @@
 <script>
-import SwitchIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg?inline';
+import SwitchIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg';
 
 export default {
     components: {

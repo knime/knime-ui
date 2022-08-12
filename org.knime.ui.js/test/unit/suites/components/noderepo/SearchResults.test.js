@@ -6,7 +6,7 @@ import Vue from 'vue';
 import SearchResults from '~/components/noderepo/SearchResults.vue';
 import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer.vue';
 import NodeList from '~/components/noderepo/NodeList.vue';
-import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
+import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg';
 
 describe('SearchResults', () => {
     let doShallowMount, wrapper, $store, storeState, searchNodesNextPageMock, setSearchScrollPositionMock;
