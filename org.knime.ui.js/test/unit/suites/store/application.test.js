@@ -293,6 +293,7 @@ describe('application store', () => {
 
             await store.dispatch('application/switchWorkflow', null);
 
+            expect(dispatchSpy).not.toHaveBeenCalledWith('application/saveCanvasState');
             expect(dispatchSpy).toHaveBeenCalledWith('application/unloadActiveWorkflow', { clearWorkflow: true });
             expect(store.state.application.activeProjectId).toBe(null);
 
@@ -304,8 +305,8 @@ describe('application store', () => {
 
             await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root' });
 
-            expect(dispatchSpy).not.toHaveBeenCalledWith('application/saveCanvasState', undefined);
-            expect(dispatchSpy).not.toHaveBeenCalledWith('workflow/unloadActiveWorkflow', expect.anything());
+            expect(dispatchSpy).not.toHaveBeenCalledWith('application/saveCanvasState');
+            expect(dispatchSpy).not.toHaveBeenCalledWith('workflow/unloadActiveWorkflow');
 
             expect(dispatchSpy).toHaveBeenCalledWith(
                 'application/loadWorkflow',

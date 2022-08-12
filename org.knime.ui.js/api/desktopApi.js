@@ -92,13 +92,11 @@ export const openWorkflow = () => {
  */
 export const closeWorkflow = ({ projectId }) => {
     try {
-        // returns falsy on success
-        let error = window.closeWorkflow(projectId);
-        if (error) {
-            throw new Error(error);
-        }
+        // returns true on success
+        return window.closeWorkflow(projectId);
     } catch (e) {
         consola.error(`Could not close workflow`, e);
+        return false;
     }
 };
 

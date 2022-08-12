@@ -18,10 +18,13 @@ export const actions = {
     },
 
     /* Tell the backend to unload this workflow from memory */
-    closeWorkflow({ dispatch, state }) {
+    async closeWorkflow({ dispatch, state }) {
         let { activeWorkflow: { projectId } } = state;
-        dispatch('application/removeCanvasState', {}, { root: true });
-        closeWorkflow({ projectId });
+        const didClose = await closeWorkflow({ projectId });
+        
+        if (didClose) {
+            dispatch('application/removeCanvasState', {}, { root: true });
+        }
     },
     
     /* Some nodes generate views from their data. A Classic UI dialog opens to present this view */
