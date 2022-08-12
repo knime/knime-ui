@@ -48,6 +48,8 @@
  */
 package org.knime.ui.java.browser;
 
+import static org.knime.js.cef.middleware.CEFMiddlewareService.isCEFMiddlewareResource;
+
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.program.Program;
@@ -74,8 +76,9 @@ public class KnimeBrowserLocationListener implements LocationListener {
 		// opened in the external browser.
 		// Except if the new location URL is the actual APP page, the EMPTY page,
 		// or a localhost-URL (for development)
-		if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
-			// let the location change happen without further ado
+        if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)
+            || isCEFMiddlewareResource(event.location)) {
+            // let the location change happen without further ado
 		    // except ...
 		    // - remove all event listeners because the webapp is newly loaded and will register
 		    //   required listeners (again) - might be a refresh

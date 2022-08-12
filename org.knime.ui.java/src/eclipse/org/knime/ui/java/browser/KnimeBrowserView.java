@@ -4,7 +4,6 @@ import static org.knime.ui.java.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -32,13 +31,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.knime.core.node.NodeLogger;
-import org.knime.core.webui.node.PageResourceManager;
-import org.knime.core.webui.node.port.PortViewManager;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.json.util.ObjectMapperUtil;
+import org.knime.js.cef.middleware.CEFMiddlewareService;
+import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
 import org.knime.ui.java.UIPlugin;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
@@ -193,38 +192,8 @@ public class KnimeBrowserView {
                 return new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
             }
         });
-        addPageResourceHandler(middlewareService, PortViewManager.getInstance());
-    }
 
-    // NOTE: duplicated code - org.knime.js.cef.CEFMiddlewareService.addPageResourceHandler
-    private static void addPageResourceHandler(final IMiddlewareService middlewareService,
-        final PageResourceManager<?> pageResourceManager) {
-        var domainName = pageResourceManager.getDomainName();
-        if (middlewareService.getResourceHandlers().containsKey(HTTP + domainName)) {
-            return;
-        }
-        middlewareService.addResourceHandler(HTTP, domainName, (request, headers) -> { // NOSONAR
-            var urlString = request.getUrl();
-            return pageResourceManager.getPageResourceFromUrl(urlString).map(resource -> {
-                try {
-                    return resource.getInputStream();
-                } catch (IOException e) {
-                    return createErrorResponse(
-                        "Problem resolving resource for '" + urlString + "'. See log for mor details.", e);
-                }
-            }).orElseGet(() -> createErrorResponse(
-                "No resource found for '" + urlString + "'. Most likely an implementation error.", null));
-        });
-    }
-
-    private static InputStream createErrorResponse(final String message, final Exception exception) {
-        var logger = NodeLogger.getLogger(KnimeBrowserView.class);
-        if (exception == null) {
-            logger.error(message);
-        } else {
-            logger.error(message, exception);
-        }
-        return new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
+        CEFMiddlewareService.initializePageAndPageBuilderResourceHandlers("Port View", PageResourceHandler.PORT_VIEW);
     }
 
     private static EventConsumer initializeJavaBrowserCommunication(final String jsonRpcActionId,
