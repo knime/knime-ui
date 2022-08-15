@@ -23,7 +23,6 @@ module.exports = defineConfig({
             }
         }
     },
-
     chainWebpack: (config) => {
         /* our SVG rule in webapps-common isn't compatible with VueCLI 5 / Webpack 5 */
         const svgRule = config.module.rule('svg');
