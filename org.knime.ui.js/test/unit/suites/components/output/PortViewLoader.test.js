@@ -103,11 +103,11 @@ describe('PortViewLoader.vue', () => {
         setupGetPortViewMock(RESOURCE_TYPES.VUE_COMPONENT_REFERENCE, 'FlowVariablePortView', []);
         const wrapper = doMount();
 
-        expect(wrapper.emitted('viewer-state')[0][0]).toEqual({ state: 'loading' });
+        expect(wrapper.emitted('state-change')[0][0]).toEqual({ state: 'loading' });
         
         await flushPromise();
 
-        expect(wrapper.emitted('viewer-state')[1][0]).toEqual({ state: 'ready' });
+        expect(wrapper.emitted('state-change')[1][0]).toEqual({ state: 'ready' });
     });
 
     it('should load views for component reference', async () => {
@@ -151,7 +151,7 @@ describe('PortViewLoader.vue', () => {
 
         await flushPromise();
 
-        expect(wrapper.emitted('viewer-state')[1][0]).toEqual({ state: 'error', message: error });
+        expect(wrapper.emitted('state-change')[1][0]).toEqual({ state: 'error', message: error });
         expect(wrapper.isEmpty()).toBe(true);
     });
     

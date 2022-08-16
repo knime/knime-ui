@@ -11,9 +11,8 @@ export default {
     },
 
     provide() {
-        const getKnimeService = () => this.knimeService;
-        getKnimeService.bind(this);
-        return { getKnimeService };
+        // "getKnimeService" is required by the loaded port view
+        return { getKnimeService: () => this.getKnimeService() };
     },
 
     props: {
@@ -37,65 +36,55 @@ export default {
 
     data() {
         return {
-            portViewerState: null,
             componentName: null,
             initialData: null,
-            knimeService: null
+            getKnimeService: null
         };
     },
 
     computed: {
-        selectedPort() {
-            return this.selectedNode.outPorts[this.selectedPortIndex];
-        },
-
-        portIdentifier() {
-            const { id: nodeId } = this.selectedNode;
-
+        uniquePortKey() {
             // using UNIQUE keys for all possible ports in knime-ui ensures that a new port view instance
             // is created upon switching ports
             // port object version changes whenever a port state has updated.
             // "ABA"-Changes on the port will always trigger a re-render.
-            const uniquePortKey = [
+           
+            let selectedPort = this.selectedNode.outPorts[this.selectedPortIndex];
+            return [
                 this.projectId,
                 this.workflowId,
-                nodeId,
+                this.selectedNode.id,
                 this.selectedPortIndex,
-                this.selectedPort.portObjectVersion
+                selectedPort.portObjectVersion // TODO: is the solution with the port object version still relevant?
             ].join('/');
+        },
 
+        portIdentifier() {
             return {
                 projectId: this.projectId,
                 workflowId: this.workflowId,
-                nodeId,
-                portIndex: Number(this.selectedPortIndex),
-                key: uniquePortKey
+                nodeId: this.selectedNode.id,
+                portIndex: Number(this.selectedPortIndex)
             };
+        }
+    },
+
+    watch: {
+        selectedNode() {
+            this.loadPortView();
+        },
+        selectedPortIndex() {
+            this.loadPortView();
         }
     },
 
     mounted() {
         this.loadPortView();
-        ['selectedNode', 'selectedPortIndex'].forEach(prop => {
-            this.$watch(prop, () => {
-                this.loadPortView();
-            });
-        });
     },
 
     methods: {
-        initKnimeService(config) {
-            const notificationCB = () => {
-                // TODO: NXT-1211 implement follow-up ticket for selection/hightlighting in the knime-ui-table
-                consola.warn('Notifications not yet implemented');
-            };
-
-            const knimeService = new KnimeService(config, this.loadPortData, notificationCB);
-            this.knimeService = knimeService;
-        },
-
         async loadPortView() {
-            this.setPortViewerState({ state: 'loading' });
+            this.$emit('state-change', { state: 'loading' });
             this.initialData = null;
             this.componentName = null;
             
@@ -104,40 +93,28 @@ export default {
                 const portView = await getPortView({ projectId, workflowId, nodeId, portIndex });
                 
                 await this.renderDynamicPortView(portView);
-                this.setPortViewerState({ state: 'ready' });
+                this.$emit('state-change', { state: 'ready' });
             } catch (e) {
-                this.setPortViewerState({ state: 'error', message: e });
+                this.$emit('state-change', { state: 'error', message: e });
             }
         },
 
-        async loadPortData(_, serviceType, request) {
-            const { projectId, workflowId, nodeId, portIndex } = this.portIdentifier;
-            
-            const response = await callPortDataService({
-                projectId,
-                workflowId,
-                nodeId,
-                portIndex,
-                serviceType,
-                request
-            });
-
-            return { result: JSON.parse(response) };
-        },
-        // Renders a port view dyanmically based on the resource type
-        // return by the getPortView API call. Resources can be (for now) either
-        // local component references or remote component library scripts fetched
-        // over the network
+        /*
+         * Renders a port view dynamically based on the resource type returned by the getPortView API call.
+         * Resources can be (for now) either
+         * local component references or remote component library scripts fetched
+         * over the network
+        */
         async renderDynamicPortView(portViewData) {
             const { resourceInfo: { type: resourceType } } = portViewData;
             
-            const missingRenderer = () => {
-                throw new Error('Unsupported port view type');
-            };
-
             const portViewRendererMapper = {
                 VUE_COMPONENT_REFERENCE: this.vueComponentReferenceRenderer,
                 VUE_COMPONENT_LIB: this.vueComponentLibRenderer
+            };
+
+            const missingRenderer = () => {
+                throw new Error('Unsupported port view type');
             };
 
             const rendererFn = portViewRendererMapper[resourceType] || missingRenderer;
@@ -147,11 +124,9 @@ export default {
             this.initialData = initialData;
         },
 
-        setPortViewerState(state) {
-            this.portViewerState = state;
-            this.$emit('state-change', this.portViewerState);
-        },
-
+        /*
+         * Returns component name and initial data for a local component
+         */
         vueComponentReferenceRenderer(portViewData) {
             const { resourceInfo, initialData } = portViewData;
             const { id } = resourceInfo;
@@ -162,6 +137,9 @@ export default {
             };
         },
 
+        /*
+         * Fetches and registers a dynamic component and returns its name and initial data
+         */
         async vueComponentLibRenderer(portViewData) {
             const { resourceInfo, initialData } = portViewData;
             const { id: componentName } = resourceInfo;
@@ -180,6 +158,31 @@ export default {
             this.initKnimeService(portViewData);
 
             return { componentName, initialData: JSON.parse(initialData).result };
+        },
+
+        /* Required by dynamically loaded view components */
+        initKnimeService(config) {
+            const knimeService = new KnimeService(
+                config,
+                
+                // Data Service Callback
+                async (_, serviceType, request) => {
+                    const { projectId, workflowId, nodeId, portIndex } = this.portIdentifier;
+            
+                    const response = await callPortDataService({
+                        projectId, workflowId, nodeId, portIndex, serviceType, request
+                    });
+
+                    return { result: JSON.parse(response) };
+                },
+                
+                // Notification Callback
+                () => {
+                    // TODO: NXT-1211 implement follow-up ticket for selection/hightlighting in the knime-ui-table
+                    consola.warn('Notifications not yet implemented');
+                }
+            );
+            this.getKnimeService = () => knimeService;
         }
     }
 };
@@ -189,6 +192,7 @@ export default {
   <component
     :is="componentName"
     v-if="componentName && initialData"
+    :key="uniquePortKey"
     v-bind="portIdentifier"
     :initial-data="initialData"
   />
