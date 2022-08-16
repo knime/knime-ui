@@ -193,8 +193,10 @@ describe('NodeTemplate', () => {
             wrapper.find('.node').trigger('dblclick');
             await Vue.nextTick();
 
-            expect(addNodeMock)
-                .toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ position: [560, 200] }));
+            expect(addNodeMock).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ position: { x: 560, y: 200 } })
+            );
         });
 
         it('does nothing on double click if workflow it not writeable', async () => {
@@ -219,8 +221,10 @@ describe('NodeTemplate', () => {
             wrapper.find('.node').trigger('dblclick');
             await Vue.nextTick();
 
-            expect(addNodeMock)
-                .toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ position: [649.6, 200] }));
+            expect(addNodeMock).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ position: { x: 649.6, y: 200 } })
+            );
         });
 
         it('avoids to insert behind overlay panel by using min x position', async () => {
@@ -238,8 +242,10 @@ describe('NodeTemplate', () => {
             const { scrollLeft } = getElementByIdMock();
             const [x] = toCanvasCoordinatesMock([WORKFLOW_ADD_START_MIN + scrollLeft - (nodeSize / 2), 0]);
 
-            expect(addNodeMock)
-                .toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ position: [x, 4] }));
+            expect(addNodeMock).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({ position: { x, y: 4 } })
+            );
         });
     });
 
