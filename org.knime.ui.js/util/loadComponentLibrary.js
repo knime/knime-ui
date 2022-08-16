@@ -1,4 +1,14 @@
-export const loadComponentLibrary = async (window, resourceLocation, componentName) => {
+/**
+ * Loads a component from an url and registers it
+ * Requires the component to be built in library mode
+ *
+ * @param { Object } param.window window reference
+ * @param { String } param.resourceLocation url to load component from
+ * @param { String } param.componentName name of component
+ * @returns { Promise }
+ */
+export const loadComponentLibrary = async ({ window, resourceLocation, componentName }) => {
+    // resolve, if component has already been loaded
     if (window[componentName]) {
         return Promise.resolve();
     }
@@ -22,10 +32,11 @@ export const loadComponentLibrary = async (window, resourceLocation, componentNa
     });
     
     // Lib build defines component on `window` using the name defined during build.
-    // This name should match the componentId
-    const Component = window[componentName];
-    if (!Component) {
+    // This name has to match the componentName
+    const component = window[componentName];
+    if (!component) {
         throw new Error(`Component loading failed. Script invalid.`);
     }
+
     return Promise.resolve();
 };

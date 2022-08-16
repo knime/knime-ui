@@ -20,7 +20,11 @@ describe('loadComponentLibrary', () => {
                 }
             });
         
-        await loadComponentLibrary(window, mockResourceLocation, mockComponentId);
+        await loadComponentLibrary({
+            window,
+            resourceLocation: mockResourceLocation,
+            componentName: mockComponentId
+        });
         
         const scriptEl = window.document.head.querySelector('script');
         expect(scriptEl).not.toBeNull();
@@ -51,7 +55,11 @@ describe('loadComponentLibrary', () => {
                 }
             });
         
-        await expect(loadComponentLibrary(window, mockResourceLocation, mockComponentId))
+        await expect(loadComponentLibrary({
+            window,
+            resourceLocation: mockResourceLocation,
+            componentName: mockComponentId
+        }))
             .rejects
             .toThrow(`Script loading of "${mockResourceLocation}" failed`);
     });

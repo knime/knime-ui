@@ -38,7 +38,7 @@ export default {
     data() {
         return {
             portViewerState: null,
-            componentId: null,
+            componentName: null,
             initialData: null,
             knimeService: null
         };
@@ -97,7 +97,7 @@ export default {
         async loadPortView() {
             this.setPortViewerState({ state: 'loading' });
             this.initialData = null;
-            this.componentId = null;
+            this.componentName = null;
             
             try {
                 const { projectId, workflowId, nodeId, portIndex } = this.portIdentifier;
@@ -141,15 +141,15 @@ export default {
             };
 
             const rendererFn = portViewRendererMapper[resourceType] || missingRenderer;
-            const { componentId, initialData } = await rendererFn(portViewData);
+            const { componentName, initialData } = await rendererFn(portViewData);
 
-            this.componentId = componentId;
+            this.componentName = componentName;
             this.initialData = initialData;
         },
 
         setPortViewerState(state) {
             this.portViewerState = state;
-            this.$emit('viewer-state', this.portViewerState);
+            this.$emit('state-change', this.portViewerState);
         },
 
         vueComponentReferenceRenderer(portViewData) {
@@ -158,28 +158,28 @@ export default {
             
             return {
                 initialData: JSON.parse(initialData).result,
-                componentId: id
+                componentName: id
             };
         },
 
         async vueComponentLibRenderer(portViewData) {
             const { resourceInfo, initialData } = portViewData;
-            const { id: componentId } = resourceInfo;
+            const { id: componentName } = resourceInfo;
             const resourceLocation = `${resourceInfo.baseUrl}${resourceInfo.path}`;
             
             // check if component library needs to be loaded or if it was already loaded before
-            if (!this.$options.components[componentId]) {
-                await loadComponentLibrary(window, resourceLocation, componentId);
-            
+            if (!this.$options.components[componentName]) {
+                await loadComponentLibrary({ window, resourceLocation, componentName });
+
                 // register the component locally
-                this.$options.components[componentId] = window[componentId];
-                window[componentId] = null;
+                this.$options.components[componentName] = window[componentName];
+                delete window[componentName];
             }
             
             // create knime service and update provide/inject
             this.initKnimeService(portViewData);
 
-            return { componentId, initialData: JSON.parse(initialData).result };
+            return { componentName, initialData: JSON.parse(initialData).result };
         }
     }
 };
@@ -187,8 +187,8 @@ export default {
 
 <template>
   <component
-    :is="componentId"
-    v-if="componentId && initialData"
+    :is="componentName"
+    v-if="componentName && initialData"
     v-bind="portIdentifier"
     :initial-data="initialData"
   />
