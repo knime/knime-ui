@@ -1,5 +1,6 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable func-style */
+
 /**
  * Returns the PortType of a given port
  * @param {Object} payload
@@ -89,7 +90,7 @@ const validateSelection = ({ selectedNodes }, next) => context => {
  * - The selected node has output ports
  * - The selected node has at least one supported port
  */
-const validateOuputPorts = ({ portTypes }, next) => context => {
+const validateOutputPorts = ({ portTypes }, next) => context => {
     const { selectedNode } = context;
     const hasOutputPorts = selectedNode.outPorts.length > 0;
     if (!hasOutputPorts) {
@@ -285,7 +286,7 @@ export const runNodeValidationChecks = ({ selectedNodes, isDragging, portTypes }
     const validationMiddleware = buildMiddleware(
         validateDragging,
         validateSelection,
-        validateOuputPorts,
+        validateOutputPorts,
         validateNodeConfigurationState
     );
 
