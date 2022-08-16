@@ -1,3 +1,4 @@
+<!-- eslint-disable brace-style -->
 <script>
 import { mapState, mapGetters } from 'vuex';
 import PortTabs from '~/components/output/PortTabs.vue';
@@ -31,133 +32,107 @@ export default {
         ...mapState('application', { projectId: 'activeProjectId', portTypes: 'availablePortTypes' }),
         ...mapState('workflow', { workflowId: state => state.activeWorkflow.info.containerId }),
         ...mapGetters('workflow', { isDragging: 'isDragging' }),
-        ...mapGetters('selection', ['selectedNodes']),
+        ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode']),
 
+        // ========================== Conditions before loading view ============================
+        // The following properties execute from top to bottom
+        
         nodeErrors() {
             const { error } = runNodeValidationChecks({
                 selectedNodes: this.selectedNodes,
                 isDragging: this.isDragging,
                 portTypes: this.portTypes
             });
-            
-            if (!error) {
-                return null;
-            }
 
             return error;
         },
-
-        hasNodeErrors() {
-            return Boolean(this.nodeErrors);
-        },
-
-        selectedNode() {
-            if (this.selectedNodes.length === 1) {
-                const [selectedNode] = this.selectedNodes;
-                return selectedNode;
-            }
-
-            return null;
-        },
         
         portErrors() {
-            if (!this.hasNodeErrors) {
-                const { error } = runPortValidationChecks({
-                    selectedNode: this.selectedNode,
-                    portTypes: this.portTypes,
-                    selectedPortIndex: this.selectedPortIndex
-                });
-                
-                if (!error) {
-                    return null;
-                }
-    
-                return error;
-            }
-            
-            return true;
-        },
+            if (this.nodeErrors) { return true; }
 
-        hasPortErrors() {
-            return Boolean(this.portErrors);
+            const { error } = runPortValidationChecks({
+                selectedNode: this.singleSelectedNode,
+                portTypes: this.portTypes,
+                selectedPortIndex: this.selectedPortIndex
+            });
+            return error;
         },
 
         selectedPort() {
-            if (!this.hasNodeErrors) {
-                return this.selectedNode.outPorts[this.selectedPortIndex];
-            }
+            if (this.nodeErrors) { return null; }
 
-            return null;
+            return this.singleSelectedNode.outPorts[this.selectedPortIndex];
         },
 
         validationErrors() {
             return this.nodeErrors || this.portErrors || null;
         },
 
-        hasValidationErrors() {
-            return Boolean(this.validationErrors);
-        },
-
+        /* Return validation error message or the current state of the port view */
         placeholderText() {
-            if (this.hasValidationErrors) {
+            if (this.validationErrors) {
                 return this.validationErrors.message;
             }
 
-            const { state, message } = this.portViewerState || {};
-
-            if (state === 'loading') {
-                return 'Loading data';
+            switch (this.portViewerState?.state) {
+                case 'loading':
+                    return 'Loading data';
+                case 'error':
+                    return this.portViewerState.message;
+                default:
+                    return null;
             }
-
-            if (state === 'error') {
-                return message;
-            }
-
-            return null;
         },
 
         showLoader() {
-            const { code } = this.hasValidationErrors ? this.validationErrors : {};
-            const { state } = this.portViewerState || {};
-            return state === 'loading' || code === 'NODE_BUSY';
+            return this.portViewerState?.state === 'loading' ||
+                   this.validationErrors?.code === 'NODE_BUSY';
         },
         
         showExecuteButton() {
-            const { code } = this.hasValidationErrors ? this.validationErrors : {};
-            return code === 'NODE_UNEXECUTED';
+            return this.validationErrors?.code === 'NODE_UNEXECUTED';
         }
     },
     watch: {
         nodeErrors: {
-            handler() {
-                if (this.hasNodeErrors) {
+            handler(nodeErrors) {
+                if (nodeErrors) {
                     this.selectedPortIndex = null;
                     this.portViewerState = null;
                 } else {
                     this.selectPort();
                 }
             },
+
+            // also set the selected port if a node is already selected before NodeOutput is created
             immediate: true,
             deep: true
         }
     },
     methods: {
-        // when switching between nodes, best effort is made to ensure that the selected port number remains constant
+        // When switching between nodes, best effort is made to ensure that the selected port number remains constant
         // If another node is selected that doesn't have the previously selected port, (eg. no flow variables)
         // then a default for that kind of node is used and the previously selected port is overwritten
         selectPort() {
-            let node = this.selectedNode;
-            // check if the currently selected port exists on that node, otherwise set a default
-            if (!node.outPorts[this.selectedPortIndex]) {
-                // for metanodes: 0, node with one port (flowVariables): 0, node with multiple ports: 1 (not flowVariables)
-                let defaultSelectedPort = node.kind === 'metanode' || node.outPorts.length === 1 ? '0' : '1';
-                this.selectedPortIndex = defaultSelectedPort;
-                return true;
+            let { outPorts, kind: nodeKind } = this.singleSelectedNode;
+  
+            // check if the currently selected port exists on that node
+            if (outPorts[this.selectedPortIndex]) {
+                // keep selected port index;
+                return;
             }
-            return false;
+
+            if (nodeKind === 'metanode') {
+                // chose the first node of a metanode
+                this.selectedPortIndex = '0';
+            } else {
+                // node is component or native node
+                // select mickey-mouse port, if it is the only one, otherwise the first regular port
+                this.selectedPortIndex = outPorts.length > 1 ? '1' : '0';
+            }
         },
         executeNode() {
-            this.$store.dispatch('workflow/executeNodes', [this.selectedNode.id]);
+            this.$store.dispatch('workflow/executeNodes', [this.singleSelectedNode.id]);
         }
     }
 };
@@ -167,10 +142,10 @@ export default {
   <div class="output-container">
     <!-- Node -->
     <PortTabs
-      v-if="selectedNode && selectedNode.outPorts.length"
+      v-if="singleSelectedNode && singleSelectedNode.outPorts.length"
       v-model="selectedPortIndex"
-      :node="selectedNode"
-      :disabled="hasNodeErrors"
+      :node="singleSelectedNode"
+      :disabled="Boolean(nodeErrors)"
     />
     
     <!-- Error Message and Placeholder -->
@@ -199,13 +174,13 @@ export default {
     
     <!-- Port Viewer -->
     <PortViewLoader
-      v-if="!hasNodeErrors && !hasPortErrors"
+      v-if="!nodeErrors && !portErrors"
       :project-id="projectId"
       :workflow-id="workflowId"
-      :selected-node="selectedNode"
+      :selected-node="singleSelectedNode"
       :selected-port-index="Number(selectedPortIndex)"
       class="port-view"
-      @viewer-state="portViewerState = $event"
+      @state-change="portViewerState = $event"
     />
   </div>
 </template>

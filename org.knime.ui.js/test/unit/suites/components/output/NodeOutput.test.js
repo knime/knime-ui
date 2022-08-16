@@ -5,6 +5,8 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vue from 'vue';
 import Vuex from 'vuex';
 
+import * as selectionStore from '~/store/selection';
+
 import * as $shapes from '~/style/shapes';
 import NodeOutput from '~/components/output/NodeOutput.vue';
 import PortTabs from '~/components/output/PortTabs.vue';
@@ -15,7 +17,7 @@ import Button from '~/webapps-common/ui/components/Button.vue';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg?inline';
 
 describe('NodeOutput.vue', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store, dummyNodes, workflow, application;
+    let propsData, mocks, doShallowMount, wrapper, $store, dummyNodes, workflow, application, selectedNodeIds;
     const FLOW_VARIABLE = 'FV';
     const TABLE = 'TA';
     
@@ -31,7 +33,6 @@ describe('NodeOutput.vue', () => {
         dummyNodes = {
             node1: {
                 id: 'node1',
-                selected: true,
                 outPorts: ['dummy'],
                 isLoaded: false,
                 state: {
@@ -42,6 +43,7 @@ describe('NodeOutput.vue', () => {
                 }
             }
         };
+        selectedNodeIds = ['node1'];
 
         workflow = {
             mutations: {
@@ -63,14 +65,6 @@ describe('NodeOutput.vue', () => {
             },
             actions: {
                 executeNodes: jest.fn()
-            }
-        };
-
-        let selection = {
-            getters: {
-                selectedNodes(state, getters, rootState, rootGetter) {
-                    return Object.values(rootState.workflow.activeWorkflow.nodes).filter(node => node.selected);
-                }
             }
         };
 
@@ -96,8 +90,9 @@ describe('NodeOutput.vue', () => {
             $store = mockVuexStore({
                 workflow,
                 application,
-                selection
+                selection: selectionStore
             });
+            $store.commit('selection/addNodesToSelection', selectedNodeIds);
 
             mocks = { $store, $shapes };
             wrapper = shallowMount(NodeOutput, { propsData, mocks });
@@ -106,16 +101,19 @@ describe('NodeOutput.vue', () => {
 
     describe('selection check', () => {
         it('renders placeholder if no node is selected', () => {
-            dummyNodes.node1.selected = false;
+            selectedNodeIds = [];
             doShallowMount();
+
             expect(wrapper.find('.placeholder').text()).toBe(
                 'To show the node output, please select a configured or executed node.'
             );
         });
 
         it('renders placeholder if more than one node is selected', () => {
-            dummyNodes.node2 = JSON.parse(JSON.stringify(dummyNodes.node1));
+            selectedNodeIds = ['node1', 'node2'];
+            dummyNodes.node2 = { ...dummyNodes.node1, id: 'node2' };
             doShallowMount();
+
             expect(wrapper.find('.placeholder').text()).toBe('To show the node output, please select only one node.');
         });
 
@@ -259,7 +257,7 @@ describe('NodeOutput.vue', () => {
             doShallowMount();
             const portView = wrapper.findComponent(PortViewLoader);
             
-            portView.vm.$emit('viewer-state', { state: 'loading' });
+            portView.vm.$emit('state-change', { state: 'loading' });
 
             await Vue.nextTick();
             expect(wrapper.find('.placeholder').text()).toBe('Loading data');
@@ -304,19 +302,14 @@ describe('NodeOutput.vue', () => {
         it('selected node changes -> default port is selected', async () => {
             dummyNodes.node1.state.executionState = 'EXECUTED';
             dummyNodes.node1.outPorts[0] = { typeId: TABLE };
-            dummyNodes.node1.selected = false;
-
+            selectedNodeIds = [];
             doShallowMount();
+
             expect(wrapper.vm.selectedPortIndex).toBe(null);
             expect(wrapper.findComponent(PortViewLoader).exists()).toBe(false);
 
-            $store.commit('workflow/update', ({ activeWorkflow }) => {
-                activeWorkflow.nodes.node1.selected = true;
-            });
-
+            $store.commit('selection/addNodesToSelection', ['node1']);
             await Vue.nextTick();
-
-            expect(wrapper.vm.selectedPortIndex).toBe('0');
 
             expect(wrapper.findComponent(PortViewLoader).exists()).toBe(true);
         });
@@ -326,7 +319,7 @@ describe('NodeOutput.vue', () => {
 
             beforeEach(() => {
                 nodeWithPort = {
-                    ...JSON.parse(JSON.stringify(dummyNodes.node1)),
+                    ...dummyNodes.node1,
                     id: 1,
                     kind: 'node',
                     outPorts: [{ typeId: FLOW_VARIABLE }, { typeId: TABLE }],
@@ -334,19 +327,19 @@ describe('NodeOutput.vue', () => {
                 };
 
                 nodeWithManyPorts = {
-                    ...JSON.parse(JSON.stringify(nodeWithPort)),
+                    ...nodeWithPort,
                     id: 2,
                     outPorts: [{ typeId: FLOW_VARIABLE }, { typeId: TABLE }, { typeId: TABLE }]
                 };
 
                 nodeWithoutPort = {
-                    ...JSON.parse(JSON.stringify(nodeWithPort)),
+                    ...nodeWithPort,
                     id: 3,
                     outPorts: [{ typeId: FLOW_VARIABLE }]
                 };
 
                 metanode = {
-                    ...JSON.parse(JSON.stringify(nodeWithPort)),
+                    ...nodeWithPort,
                     id: 4,
                     kind: 'metanode'
                 };
@@ -359,8 +352,11 @@ describe('NodeOutput.vue', () => {
                 ['component without port', () => ({ ...nodeWithoutPort, kind: 'component' }), '0'],
                 ['metanode', () => metanode, '0']
             ])('default ports %s', (_, nodeGetter, defaultPort) => {
-                dummyNodes.node1 = nodeGetter();
+                let node = nodeGetter();
+                dummyNodes[node.id] = node;
+                selectedNodeIds = [node.id];
                 doShallowMount();
+                
                 expect(wrapper.vm.selectedPortIndex).toBe(defaultPort);
             });
 
@@ -371,21 +367,22 @@ describe('NodeOutput.vue', () => {
                 ['flowVariable to flowVariable (keep port)', () => nodeWithPort, () => nodeWithPort, '0', '0'],
                 ['metanodes first to nodes flow variable (keep port)', () => metanode, () => nodeWithPort, '0', '0']
             ])('switch from %s', async (_, getNode1, getNode2, fromPort, toPort) => {
-                dummyNodes.node1 = getNode1();
-                dummyNodes.node2 = {
-                    ...JSON.parse(JSON.stringify(getNode2())),
-                    selected: false
-                };
+                let selectedNode = getNode1();
+                dummyNodes[selectedNode.id] = selectedNode;
+                selectedNodeIds = [selectedNode.id];
+
+                let otherNode = getNode2();
+                dummyNodes[otherNode.id] = otherNode;
                 doShallowMount();
+
+                // start from the right port
                 wrapper.setData({ selectedPortIndex: fromPort });
-
-
-                $store.commit('workflow/update', ({ activeWorkflow }) => {
-                    activeWorkflow.nodes.node1.selected = false;
-                    activeWorkflow.nodes.node2.selected = true;
-                });
                 await Vue.nextTick();
-                await Vue.nextTick();
+
+                // select other node
+                $store.commit('selection/clearSelection');
+                $store.commit('selection/addNodesToSelection', [otherNode.id]);
+
                 await Vue.nextTick();
 
                 expect(wrapper.vm.selectedPortIndex).toBe(toPort);
