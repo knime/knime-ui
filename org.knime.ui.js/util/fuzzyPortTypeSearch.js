@@ -28,6 +28,6 @@ export const makeTypeSearch = ({ typeIds, showHidden = false, installedPortTypes
             ? allPortTypes
             : searchEngine.search(input, options).map(result => result.item);
 
-        return results;
+        return results.sort((a, b) => a.name.localeCompare(b.name));
     };
 };

@@ -136,22 +136,24 @@ export default {
         @keydown.down.exact.native="onSearchBarDown"
         @keydown.up.exact.native="onSearchBarUp"
       />
-      <MenuItems
-        v-if="searchResults.length"
-        ref="searchResults"
-        :items="menuItems"
-        class="search-results"
-        aria-label="Port Type Menu"
-        @item-click="onMenuItemClick"
-        @item-active="$emit('item-active', $event)"
-        @top-reached="onSearchResultsWrapAround"
-        @bottom-reached="onSearchResultsWrapAround"
-      />
-      <div
-        v-else
-        class="placeholder"
-      >
-        No port matching
+      <div class="scroll-container">
+        <MenuItems
+          v-if="searchResults.length"
+          ref="searchResults"
+          :items="menuItems"
+          class="search-results"
+          aria-label="Port Type Menu"
+          @item-click="onMenuItemClick"
+          @item-active="$emit('item-active', $event)"
+          @top-reached="onSearchResultsWrapAround"
+          @bottom-reached="onSearchResultsWrapAround"
+        />
+        <div
+          v-else
+          class="placeholder"
+        >
+          No port matching
+        </div>
       </div>
     </div>
   </FloatingMenu>
@@ -182,6 +184,13 @@ export default {
   border: 1px solid var(--knime-masala);
   background-color: white;
   box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
+}
+
+.scroll-container {
+  overflow-x: hidden;
+  text-align: left;
+  height: 100%;
+  max-height: 170px;
 }
 
 .placeholder {
