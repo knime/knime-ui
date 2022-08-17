@@ -1,7 +1,7 @@
 import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameContainerNode, collapseToContainer,
     addNodePort, removeNodePort, expandContainerNode, copyOrCutWorkflowParts, pasteWorkflowParts } from '~api';
 import workflowObjectBounds from '~/util/workflowObjectBounds';
-import { pastePartsAt } from '~/util/pasteToWorkflowPosition';
+import { pastePartsAt } from '~/util/pasteToWorkflow';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -29,8 +29,8 @@ export const mutations = {
         state.nameEditorNodeId = nodeId;
     },
 
-    setCopyPaste(state, payloadIdentifier) {
-        state.copyPaste = payloadIdentifier;
+    setCopyPaste(state, copyPasteState) {
+        state.copyPaste = copyPasteState;
     },
     setLastPasteBounds(state, bounds) {
         if (!state.copyPaste) {

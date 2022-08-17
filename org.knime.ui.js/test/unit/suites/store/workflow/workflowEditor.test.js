@@ -9,7 +9,7 @@ import Vue from 'vue';
 import { wrapAPI } from '~/store/workflow/workflowEditor';
 
 describe('workflow store: Editing', () => {
-    let store, localVue, loadStore, moveObjectsMock, deleteObjectsMock;
+    let store, localVue, loadStore, moveObjectsMock, deleteObjectsMock, pastePartsAtMock;
 
     beforeAll(() => {
         localVue = createLocalVue();
@@ -34,6 +34,12 @@ describe('workflow store: Editing', () => {
                 moveObjects: moveObjectsMock,
                 deleteObjects: deleteObjectsMock
             }), { virtual: true });
+
+            pastePartsAtMock = jest.fn();
+            jest.doMock('~/util/pasteToWorkflow', () => ({
+                __esModule: true,
+                pastePartsAt: pastePartsAtMock
+            }));
 
             store = mockVuexStore({
                 application: await import('~/store/application'),
@@ -608,65 +614,96 @@ describe('workflow store: Editing', () => {
                     }
                 });
             });
-    
-            it('executes <paste> command for a non-empty workflow', async () => {
-                let pasteWorkflowParts = jest.fn();
-                let apiMocks = { pasteWorkflowParts };
-                await loadStore({ apiMocks });
+
+            describe('executes paste command', () => {
+                let workflow, doAfterPasteMock, pasteWorkflowParts;
+
+                beforeEach(async () => {
+                    // register "pasteWorkflowParts" API function
+                    pasteWorkflowParts = jest.fn().mockReturnValue({
+                        nodeIds: ['bar']
+                    });
+                    let apiMocks = { pasteWorkflowParts };
+                    await loadStore({ apiMocks });
                 
-                store.commit('workflow/setActiveWorkflow', {
-                    projectId: 'my project',
-                    info: { containerId: 'root' },
-                    nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } },
-                    workflowAnnotations: []
-                });
-                await store.dispatch('workflow/pasteWorkflowParts');
-    
-                expect(pasteWorkflowParts).toHaveBeenCalledWith({
-                    projectId: 'my project',
-                    workflowId: 'root',
-                    content: '{}',
-                    position: null
-                });
-            });
+                    // set up workflow
+                    workflow = {
+                        projectId: 'my project',
+                        info: { containerId: 'root' },
+                        nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } },
+                        workflowAnnotations: []
+                    };
+                    store.commit('workflow/setActiveWorkflow', workflow);
 
-            it('executes <paste> command for an empty workflow', async () => {
-                let pasteWorkflowParts = jest.fn();
-                let apiMocks = { pasteWorkflowParts };
-                await loadStore({ apiMocks });
+                    // mock current clipboard content
+                    clipboardObject = {
+                        objectBounds: {
+                            width: 100,
+                            height: 100
+                        },
+                        data: 'parts'
+                    };
 
-                store.commit('workflow/setActiveWorkflow', {
-                    projectId: 'my project',
-                    info: { containerId: 'root' },
-                    nodes: {},
-                    workflowAnnotations: []
+                    // mock strategy result
+                    doAfterPasteMock = jest.fn();
+                    pastePartsAtMock.mockReturnValue({
+                        position: { x: 5, y: 5 },
+                        doAfterPaste: doAfterPasteMock
+                    });
+
+                    // mock previous copy paste state
+                    store.commit('workflow/setCopyPaste', {
+                        dummy: null
+                    });
+
+                    // Start pasting
+                    await store.dispatch('workflow/pasteWorkflowParts');
                 });
-                await store.dispatch('workflow/pasteWorkflowParts');
-    
-                expect(pasteWorkflowParts).toHaveBeenCalledWith({
-                    projectId: 'my project',
-                    workflowId: 'root',
-                    content: '{}',
-                    position: { x: 0, y: 0 }
+
+                it('calls partePartsAt', () => {
+                    expect(pastePartsAtMock).toHaveBeenCalledWith({
+                        visibleFrame: {
+                            height: 1000,
+                            width: 1000,
+                            left: -500,
+                            top: -500
+                        },
+                        clipboardContent: clipboardObject,
+                        isWorkflowEmpty: false,
+                        workflow,
+                        copyPaste: expect.objectContaining({ dummy: null })
+                    });
                 });
-            });
 
-            it('selects the pasted nodes', async () => {
-                let pasteWorkflowParts = jest.fn(() => ({ nodeIds: ['baz'] }));
-                let apiMocks = { pasteWorkflowParts };
-                await loadStore({ apiMocks });
-
-                store.commit('workflow/setActiveWorkflow', {
-                    projectId: 'my project',
-                    info: { containerId: 'root' },
-                    nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } },
-                    workflowAnnotations: []
+                it('stores pastes boundary', () => {
+                    expect(store.state.workflow.copyPaste).toStrictEqual({
+                        dummy: null,
+                        lastPasteBounds: {
+                            left: 5,
+                            top: 5,
+                            width: 100,
+                            height: 100
+                        }
+                    });
                 });
-                await store.dispatch('workflow/pasteWorkflowParts');
 
-                expect(store.state.selection.selectedNodes.foo).toBeFalsy();
-                expect(store.state.selection.selectedNodes.bar).toBeFalsy();
-                expect(store.state.selection.selectedNodes.baz).toBe(true);
+                it('calls paste API function', () => {
+                    expect(pasteWorkflowParts).toHaveBeenCalledWith({
+                        projectId: 'my project',
+                        workflowId: 'root',
+                        content: 'parts',
+                        position: { x: 5, y: 5 }
+                    });
+                });
+
+                it('calls after paste hook', () => {
+                    expect(doAfterPasteMock).toHaveBeenCalled();
+                });
+
+                it('selects nodes afterwards', () => {
+                    expect(store.state.selection.selectedNodes.foo).toBeFalsy();
+                    expect(store.state.selection.selectedNodes.bar).toBe(true);
+                });
             });
         });
     });
