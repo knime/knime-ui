@@ -98,7 +98,7 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
             m_appStateProvider.updateAppState();
         }
 
-        return null;
+        return wasClosed;
     }
 
 }

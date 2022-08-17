@@ -31,6 +31,7 @@
     "focus-trap-vue": "0.0.6",
     "fuse.js": "6.5.3",
     "gsap": "3.8.0",
+    "knime-ui-extension-service": "file:knime-ui-extension-service",
     "lodash": "4.17.21",
     "portal-vue": "2.1.7",
     "postcss-preset-env": "7.5.0",

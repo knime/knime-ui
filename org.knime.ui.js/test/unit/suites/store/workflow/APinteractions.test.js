@@ -90,15 +90,25 @@ describe('workflow store: AP Interactions', () => {
         });
 
         it('closes the workflow via the API', async () => {
-            let closeWorkflow = jest.fn();
+            let closeWorkflow = jest.fn(() => true);
             let apiMocks = { closeWorkflow };
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
 
-            store.dispatch('workflow/closeWorkflow');
-
+            await store.dispatch('workflow/closeWorkflow');
             expect(closeWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
             expect(dispatchSpy).toHaveBeenCalledWith('application/removeCanvasState', {});
+        });
+
+        it('does not remove canvas state if closeWorkflow is cancelled', async () => {
+            let closeWorkflow = jest.fn(() => false);
+            let apiMocks = { closeWorkflow };
+            await loadStore({ apiMocks });
+            store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
+
+            await store.dispatch('workflow/closeWorkflow');
+            expect(closeWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
+            expect(dispatchSpy).not.toHaveBeenCalledWith('application/removeCanvasState', {});
         });
     });
 });

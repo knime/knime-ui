@@ -143,9 +143,12 @@ export const actions = {
      */
 
     async switchWorkflow({ commit, dispatch, rootState }, newWorkflow) {
-        // save user state like scroll and zoom
         if (rootState.workflow?.activeWorkflow) {
-            dispatch('saveCanvasState');
+            // if entering new workflow a new workflow, we save user state like scroll and zoom
+            // otherwise it means we've closed a workflow and we don't need to save anything
+            if (newWorkflow) {
+                dispatch('saveCanvasState');
+            }
 
             // unload current workflow
             dispatch('unloadActiveWorkflow', { clearWorkflow: !newWorkflow });

@@ -1,4 +1,4 @@
-import { initLogger } from '~/plugins/logger';
+import { silentLogger } from '~/plugins/logger';
 
 describe('logger', () => {
     let originalConsola;
@@ -13,7 +13,7 @@ describe('logger', () => {
     });
 
     it('defines a logger', () => {
-        initLogger();
+        silentLogger();
         [
             'debug',
             'error',
