@@ -228,7 +228,7 @@ describe('API', () => {
             
             expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
-                method: 'NodeService.getPortView',
+                method: 'PortService.getPortView',
                 params: [
                     'workflow',
                     'root:1',
@@ -251,7 +251,7 @@ describe('API', () => {
             });
             expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
-                method: 'NodeService.callPortDataService',
+                method: 'PortService.callPortDataService',
                 params: [
                     'workflow',
                     'root:1',
