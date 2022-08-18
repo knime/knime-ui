@@ -15,7 +15,8 @@ const fuseOptions = {
 export const makeTypeSearch = ({ typeIds, showHidden = false, installedPortTypes }) => {
     let allPortTypes = typeIds
         .map(typeId => ({ ...installedPortTypes[typeId], typeId }))
-        .filter(portType => showHidden || !portType.hidden);
+        .filter(portType => showHidden || !portType.hidden)
+        .sort((a, b) => a.name.localeCompare(b.name));
 
     let searchEngine = new Fuse(allPortTypes, {
         keys: ['name'],
@@ -28,6 +29,6 @@ export const makeTypeSearch = ({ typeIds, showHidden = false, installedPortTypes
             ? allPortTypes
             : searchEngine.search(input, options).map(result => result.item);
 
-        return results.sort((a, b) => a.name.localeCompare(b.name));
+        return results;
     };
 };
