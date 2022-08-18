@@ -219,13 +219,13 @@ describe('API', () => {
         });
 
         it('fetch port view info', async () => {
-            await api.getPortView(
-                'workflow',
-                'root:1',
-                'root:1:2',
-                // eslint-disable-next-line no-magic-numbers
-                10
-            );
+            await api.getPortView({
+                projectId: 'workflow',
+                workflowId: 'root:1',
+                nodeId: 'root:1:2',
+                portIndex: 10
+            });
+            
             expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
                 method: 'NodeService.getPortView',
@@ -241,15 +241,14 @@ describe('API', () => {
         });
 
         it('call port data service', async () => {
-            await api.callPortDataService(
-                'workflow',
-                'root:1',
-                'root:1:2',
-                // eslint-disable-next-line no-magic-numbers
-                10,
-                'data',
-                'request'
-            );
+            await api.callPortDataService({
+                projectId: 'workflow',
+                workflowId: 'root:1',
+                nodeId: 'root:1:2',
+                portIndex: 10,
+                serviceType: 'data',
+                request: 'request'
+            });
             expect(window.jsonrpc).toHaveBeenCalledWith({
                 jsonrpc: '2.0',
                 method: 'NodeService.callPortDataService',
@@ -444,90 +443,6 @@ describe('API', () => {
                 } catch (e) {
                     expect(e.message).toContain('foo');
                     expect(e.message).toContain('bar');
-                }
-            });
-        });
-    });
-
-    describe('Port RPCs', () => {
-        describe('loadTable', () => {
-            it.skip('calls jsonrpc', async () => {
-                window.jsonrpc.mockReturnValueOnce({
-                    jsonrpc: '2.0',
-                    id: -1,
-                    result: {
-                        jsonrpc: '2.0',
-                        result: 'nested result',
-                        id: -2
-                    }
-                });
-                let table = await api.loadTable({
-                    projectId: 'foo',
-                    workflowId: 'root',
-                    nodeId: 'root:123',
-                    portIndex: 2,
-                    offset: 100,
-                    batchSize: 450
-                });
-                let expectedNestedRPC = '{"jsonrpc":"2.0","id":0,"method":"getTable","params":[100,450]}';
-                expect(window.jsonrpc).toHaveBeenCalledWith({
-                    jsonrpc: '2.0',
-                    method: 'NodeService.callPortDataService',
-                    params: ['foo', 'root', 'root:123', 2, expectedNestedRPC],
-                    id: 0
-                });
-                expect(table).toBe('nested result');
-            });
-        });
-
-        describe('error handling', () => {
-            beforeAll(() => {
-                window.consola.error = jest.fn();
-            });
-            
-            beforeEach(() => {
-                window.jsonrpc.mockReturnValueOnce({
-                    jsonrpc: '2.0',
-                    error: 'There has been an error',
-                    id: -1
-                });
-            });
-
-            afterAll(() => {
-                window.consola.error = origErrorLogger;
-            });
-
-            it('handles errors on loadTable', async () => {
-                try {
-                    await api.loadTable({});
-                    return new Error('Error not thrown');
-                } catch (e) {
-                    expect(e.message).toContain('Couldn\'t load table');
-                }
-            });
-
-            it('handles nested errors on loadTable', async () => {
-                window.jsonrpc.mockReset();
-                window.jsonrpc.mockReturnValueOnce({
-                    jsonrpc: '2.0',
-                    id: -1,
-                    result: JSON.stringify({
-                        jsonrpc: '2.0',
-                        error: 'foo'
-                    })
-                });
-                let portIndex = 2;
-                let projectId = 'projectId';
-                let nodeId = Math.random();
-
-                try {
-                    await api.loadTable({ projectId, nodeId, portIndex, batchSize: 400 });
-                    return new Error('Error not thrown');
-                } catch (e) {
-                    expect(e.message).toBe(
-                        `Couldn't load table data (start: 0, length: 400) from port` +
-                        ` ${portIndex} of node "${nodeId}" in project ${projectId}`
-                    );
                 }
             });
         });

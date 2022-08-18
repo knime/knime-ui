@@ -5,5 +5,6 @@ module.exports = {
     },
     env: {
         node: true
-    }
+    },
+    ignorePatterns: ['knime-ui-extension-service/']
 };

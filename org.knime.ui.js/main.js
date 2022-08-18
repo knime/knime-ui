@@ -28,3 +28,7 @@ const app = new Vue({
 // since nuxt-link inherits from RouterLink and we don't need use nuxt
 const RouterLink = app.$options.components.RouterLink;
 Vue.component('NuxtLink', RouterLink);
+
+// required for dynamically loaded components which will access the Vue instance
+// off of the window object
+window.Vue = Vue;
