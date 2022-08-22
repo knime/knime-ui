@@ -5,10 +5,10 @@ describe('Port Type Search', () => {
     
     beforeEach(() => {
         let installedPortTypes = {
-            a: { name: 'A-Type', hidden: true },
+            d: { name: 'D-Type' },
             b: { name: 'B-Type' },
             c: { name: 'C-Type' },
-            d: { name: 'D-Type' }
+            a: { name: 'A-Type', hidden: true }
         };
 
         searchType = makeTypeSearch({
@@ -18,7 +18,7 @@ describe('Port Type Search', () => {
         });
     });
 
-    test('empty search input displays all entries', () => {
+    test('empty search input displays all entries that are also sorted', () => {
         expect(searchType('')).toStrictEqual([
             { name: 'B-Type', typeId: 'b' },
             { name: 'C-Type', typeId: 'c' },

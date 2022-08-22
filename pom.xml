@@ -83,6 +83,16 @@
             <url>${knime.reporting.p2}</url>
             <layout>p2</layout>
         </repository>
+        <repository>
+            <id>p2-knime-base-views</id>
+            <url>${knime.base.views.p2}</url>
+            <layout>p2</layout>
+        </repository>
+        <repository>
+            <id>p2-knime-cef</id>
+            <url>${knime.cef.p2}</url>
+            <layout>p2</layout>
+        </repository>
     </repositories>
 
 	<build>
