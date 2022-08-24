@@ -1,5 +1,7 @@
 import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameContainerNode, collapseToContainer,
     addNodePort, removeNodePort, expandContainerNode, copyOrCutWorkflowParts, pasteWorkflowParts } from '~api';
+import workflowObjectBounds from '~/util/workflowObjectBounds';
+import { pastePartsAt } from '~/util/pasteToWorkflow';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -8,7 +10,8 @@ import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameCo
 
 export const state = {
     movePreviewDelta: { x: 0, y: 0 },
-    nameEditorNodeId: null
+    nameEditorNodeId: null,
+    copyPaste: null
 };
 
 export const mutations = {
@@ -24,6 +27,17 @@ export const mutations = {
     
     setNameEditorNodeId(state, nodeId) {
         state.nameEditorNodeId = nodeId;
+    },
+
+    setCopyPaste(state, copyPasteState) {
+        state.copyPaste = copyPasteState;
+    },
+    setLastPasteBounds(state, bounds) {
+        if (!state.copyPaste) {
+            state.copyPaste = {};
+        }
+
+        state.copyPaste.lastPasteBounds = bounds;
     }
 };
 
@@ -122,6 +136,7 @@ export const actions = {
             dispatch('openNameEditor', newNodeId);
         }
     },
+
     async expandContainerNode({ state, rootGetters, dispatch }) {
         const { activeWorkflow: { projectId } } = state;
         const { activeWorkflow: { info: { containerId } } } = state;
@@ -190,7 +205,7 @@ export const actions = {
         }
     },
 
-    async copyOrCutWorkflowParts({ state, rootGetters, dispatch }, { command }) {
+    async copyOrCutWorkflowParts({ state, rootGetters, dispatch, commit }, { command }) {
         if (!['copy', 'cut'].includes(command)) {
             throw new Error("command has to be 'copy' or 'cut'");
         }
@@ -199,9 +214,17 @@ export const actions = {
         const { activeWorkflow: { info: { containerId } } } = state;
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
         const selectedAnnotations = []; // Annotations cannot be selected yet
+        
+        if (rootGetters['selection/isSelectionEmpty']) {
+            return;
+        }
+        
+        let objectBounds = workflowObjectBounds({ nodes: rootGetters['selection/selectedNodes'] });
+
         if (command === 'cut') {
             dispatch('selection/deselectAllObjects', null, { root: true });
         }
+        
         const response = await copyOrCutWorkflowParts({
             projectId,
             workflowId: containerId,
@@ -209,37 +232,74 @@ export const actions = {
             nodeIds: selectedNodes,
             annotationIds: selectedAnnotations
         });
-        const clipboardContent = JSON.parse(response.content);
-        consola.info('Copied workflow parts', clipboardContent);
+        const payload = JSON.parse(response.content);
+
+        const clipboardContent = {
+            payloadIdentifier: payload.payloadIdentifier,
+            projectId,
+            workflowId: containerId,
+            data: response.content,
+            objectBounds
+        };
+        
         try {
             navigator.clipboard.writeText(JSON.stringify(clipboardContent));
+            
+            commit('setCopyPaste', {
+                payloadIdentifier: clipboardContent.payloadIdentifier
+            });
+            
+            consola.info('Copied workflow parts', clipboardContent);
         } catch (error) {
-            consola.info('Could not write to clipboard. Maybe the user did not permit it?');
+            consola.info('Could not write to clipboard.');
         }
     },
     
-    async pasteWorkflowParts({ state, getters, dispatch }) {
-        const { activeWorkflow: { projectId } } = state;
-        const { activeWorkflow: { info: { containerId } } } = state;
-        const { isWorkflowEmpty } = getters;
+    async pasteWorkflowParts({
+        state: { activeWorkflow, copyPaste },
+        getters: { isWorkflowEmpty },
+        dispatch, rootGetters, commit, rootState
+    }) {
+        let clipboardContent;
         try {
             // TODO: NXT-1168 Put a limit on the clipboard content size
-            const clipboardContent = await navigator.clipboard.readText();
-            const verifiedContent = JSON.parse(clipboardContent);
-            consola.info('Pasted workflow parts', verifiedContent);
-            // TODO: NXT-1153 Set the `position` parameter here to handle special cases
-            const { nodeIds } = await pasteWorkflowParts({
-                projectId,
-                workflowId: containerId,
-                content: JSON.stringify(verifiedContent),
-                position: isWorkflowEmpty ? { x: 0, y: 0 } : null
-            });
-
-            dispatch('selection/deselectAllObjects', null, { root: true });
-            dispatch('selection/selectNodes', nodeIds, { root: true });
-        } catch (error) {
+            const clipboardText = await navigator.clipboard.readText();
+            clipboardContent = JSON.parse(clipboardText);
+            consola.info('Pasted workflow parts');
+        } catch (e) {
             consola.info('Could not read form clipboard. Maybe the user did not permit it?');
+            return;
         }
+
+        // 1. Decide where to paste
+        let { position, doAfterPaste } = pastePartsAt({
+            visibleFrame: rootGetters['canvas/getVisibleFrame'](),
+            clipboardContent,
+            isWorkflowEmpty,
+            workflow: activeWorkflow,
+            copyPaste
+        });
+
+        // 2. Remember decision
+        commit('setLastPasteBounds', {
+            left: position.x,
+            top: position.y,
+            width: clipboardContent.objectBounds.width,
+            height: clipboardContent.objectBounds.height
+        });
+
+        // 3. Do actual pasting
+        const { nodeIds } = await pasteWorkflowParts({
+            projectId: activeWorkflow.projectId,
+            workflowId: activeWorkflow.info.containerId,
+            content: clipboardContent.data,
+            position
+        });
+
+        // 4. Execute hook and select pasted content
+        doAfterPaste?.();
+        dispatch('selection/deselectAllObjects', null, { root: true });
+        dispatch('selection/selectNodes', nodeIds, { root: true });
     }
 };
 

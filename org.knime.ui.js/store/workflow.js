@@ -5,7 +5,7 @@ import * as workflowEditor from './workflow/workflowEditor';
 import * as APinteractions from './workflow/APinteractions';
 import * as workflowExecution from './workflow/workflowExecution';
 
-import * as $shapes from '~/style/shapes';
+import workflowObjectBounds from '~/util/workflowObjectBounds';
 
 /**
  * The workflow store holds a workflow graph and the associated tooltips.
@@ -96,131 +96,7 @@ export const getters = {
 
     /* returns the upper-left bound [xMin, yMin] and the lower-right bound [xMax, yMax] of the workflow */
     workflowBounds({ activeWorkflow }) {
-        if (!activeWorkflow) {
-            return {
-                left: 0,
-                top: 0,
-                right: 0,
-                bottom: 0
-            };
-        }
-
-        const { nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPorts } = activeWorkflow;
-        const {
-            nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight, portSize,
-            defaultMetanodeBarPosition, defaultMetaNodeBarHeight, metaNodeBarWidth, horizontalNodePadding
-        } = $shapes;
-
-        let left = Infinity;
-        let top = Infinity;
-        let right = -Infinity;
-        let bottom = -Infinity;
-
-        Object.values(nodes).forEach(({ position: { x, y } }) => {
-            const nodeTop = y - nodeNameMargin - nodeNameLineHeight;
-            const nodeBottom = y + nodeSize + nodeStatusMarginTop + nodeStatusHeight;
-            const nodeLeft = x - horizontalNodePadding;
-            const nodeRight = x + nodeSize + horizontalNodePadding;
-
-            if (nodeLeft < left) {
-                left = nodeLeft;
-            }
-            if (nodeTop < top) {
-                top = nodeTop;
-            }
-
-            if (nodeRight > right) {
-                right = nodeRight;
-            }
-            if (nodeBottom > bottom) {
-                bottom = nodeBottom;
-            }
-        });
-        workflowAnnotations.forEach(({ bounds: { x, y, height, width } }) => {
-            if (x < left) {
-                left = x;
-            }
-            if (y < top) {
-                top = y;
-            }
-
-            if (x + width > right) {
-                right = x + width;
-            }
-            if (y + height > bottom) {
-                bottom = y + height;
-            }
-        });
-
-        // there are neither nodes nor workflows annotations
-        if (left === Infinity) {
-            left = 0;
-            top = 0;
-            right = 0;
-            bottom = 0;
-        }
-
-        // Consider horizontal position of metanode input / output bars.
-        // The logic is as follows:
-        // - if a user has moved an input / output bar, then its x-position is taken as saved.
-        // - else
-        //   - input bar
-        //     - if the workflow contents extend to a negative coordinate, render the bar left of the workflow contents
-        //     - else render it at 0.
-        //   - output bar
-        //     - if the view is wide enough, the output bar is rendered at a fixed position
-        //     - else (horizontal overflow), the output bar is drawn to the right of the workflow contents.
-        //
-        // The vertical dimensions are always equal to the workflow dimensions, unless the workflow is empty,
-        // in which case they get a default height.
-
-        let defaultBarPosition = defaultMetanodeBarPosition;
-        if (metaInPorts?.ports?.length) {
-            let leftBorder, rightBorder;
-            if (metaInPorts.xPos) {
-                leftBorder = metaInPorts.xPos - metaNodeBarWidth;
-                rightBorder = metaInPorts.xPos + portSize;
-            } else {
-                leftBorder = Math.min(0, left) - metaNodeBarWidth;
-                rightBorder = leftBorder + metaNodeBarWidth + portSize;
-            }
-            if (leftBorder < left) {
-                left = leftBorder;
-            }
-            if (rightBorder > right) {
-                right = rightBorder;
-            }
-        }
-
-        if (metaOutPorts?.ports?.length) {
-            let leftBorder, rightBorder;
-            if (metaOutPorts.xPos) {
-                leftBorder = metaOutPorts.xPos - portSize;
-                rightBorder = metaOutPorts.xPos + metaNodeBarWidth;
-            } else {
-                leftBorder = left + defaultBarPosition - portSize;
-                rightBorder = leftBorder + metaNodeBarWidth + portSize;
-            }
-            if (leftBorder < left) {
-                left = leftBorder;
-            }
-            if (rightBorder > right) {
-                right = rightBorder;
-            }
-        }
-
-        if (metaInPorts?.ports?.length || metaOutPorts?.ports?.length) {
-            if (bottom < Math.min(0, top) + defaultMetaNodeBarHeight) {
-                bottom = Math.min(0, top) + defaultMetaNodeBarHeight;
-            }
-        }
-
-        return {
-            left,
-            top,
-            right,
-            bottom
-        };
+        return workflowObjectBounds(activeWorkflow || {}, { padding: true });
     },
 
     getNodeIcon: ({ activeWorkflow }) => nodeId => {

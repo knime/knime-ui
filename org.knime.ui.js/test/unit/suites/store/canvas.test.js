@@ -37,7 +37,9 @@ describe('canvas store', () => {
                 x: 10,
                 y: 10,
                 width: 300,
-                height: 300
+                height: 300,
+                bottom: 310,
+                right: 310
             }),
             scrollTo: jest.fn().mockImplementation(({ top, left, behavior }) => {
                 scrollContainer.scrollLeft = left;
@@ -559,6 +561,23 @@ describe('canvas store', () => {
 
                 expect(store.getters['canvas/screenToCanvasCoordinates']([300, 300]))
                     .toStrictEqual([0, 0]);
+            });
+        });
+
+        test('visible frame', () => {
+            store.dispatch('canvas/initScrollContainerElement', {
+                ...scrollContainer,
+                offsetLeft: 10,
+                offsetTop: 10
+            });
+
+            expect(store.getters['canvas/getVisibleFrame']()).toStrictEqual({
+                left: -320,
+                top: -320,
+                right: -20,
+                bottom: -20,
+                width: 300,
+                height: 300
             });
         });
     });

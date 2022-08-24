@@ -239,9 +239,9 @@ describe('workflow store', () => {
                 ...baseWorkflow,
                 ...additionalProps
             });
-            expect({
-                workflowBounds: store.getters['workflow/workflowBounds']
-            }).toStrictEqual(expected);
+            expect(store.getters['workflow/workflowBounds']).toEqual(
+                expect.objectContaining(expected.workflowBounds)
+            );
         });
     });
 });

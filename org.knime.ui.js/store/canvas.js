@@ -429,5 +429,27 @@ export const getters = {
             y: yFactor,
             x: xFactor
         };
+    },
+
+    /*
+        returns the currently visible area of the workflow
+    */
+    getVisibleFrame({ getScrollContainerElement }, { screenToCanvasCoordinates }) {
+        return () => {
+            let container = getScrollContainerElement();
+            let screenBounds = container.getBoundingClientRect();
+            
+            let [left, top] = screenToCanvasCoordinates([screenBounds.x, screenBounds.y]);
+            let [right, bottom] = screenToCanvasCoordinates([screenBounds.right, screenBounds.bottom]);
+
+            return {
+                left,
+                top,
+                right,
+                bottom,
+                width: right - left,
+                height: bottom - top
+            };
+        };
     }
 };

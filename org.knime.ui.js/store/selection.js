@@ -12,7 +12,7 @@ export const state = () => ({
      */
     selectedNodes: {},
     /**
-    * @type {Object.<string, boolean>}
+     * @type {Object.<string, boolean>}
      */
     selectedConnections: {}
 });
@@ -117,10 +117,8 @@ export const getters = {
             return [];
         }
         return Object.keys(state.selectedNodes)
-            .map(
-                (nodeId) => rootState.workflow.activeWorkflow.nodes[nodeId] ||
-                consola.error(`Selected node '${nodeId}' not found in activeWorkflow`)
-            ).filter(Boolean);
+            .map((nodeId) => rootState.workflow.activeWorkflow.nodes[nodeId])
+            .filter(Boolean);
     },
 
     // Returns an array of all selected node ids.
@@ -146,8 +144,7 @@ export const getters = {
         }
 
         return Object.keys(state.selectedConnections)
-            .map(id => activeWorkflow.connections[id] ||
-                consola.error(`Selected connection '${id}' not found in activeWorkflow`))
+            .map(id => activeWorkflow.connections[id])
             .filter(Boolean); // after deleting a selected connection, it will be undefined
     },
 

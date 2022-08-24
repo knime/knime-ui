@@ -199,19 +199,6 @@ describe('workflow store', () => {
             expect($store.getters['selection/selectedNodes']).toStrictEqual([]);
         });
 
-        test('error for selected nodes which are not part of the workflow', () => {
-            let consolaError = jest.spyOn(global.consola, 'error').mockImplementation();
-            $store.commit('selection/addNodesToSelection', ['non-existent']);
-
-            expect($store.getters['selection/selectedNodes']).toStrictEqual(expect.objectContaining([
-                { id: 'root:1' },
-                { id: 'root:2' }
-            ]));
-            expect(consolaError).toHaveBeenCalledTimes(2);
-
-            consolaError.mockRestore();
-        });
-
         test('get all selected connections', () => {
             expect($store.getters['selection/selectedConnections']).toStrictEqual([
                 { allowedActions: { canDelete: true }, id: 'root:2_1' },
@@ -223,19 +210,6 @@ describe('workflow store', () => {
             storeConfig.workflow.state.activeWorkflow = null;
             $store = mockVuexStore(storeConfig);
             expect($store.getters['selection/selectedConnections']).toStrictEqual([]);
-        });
-
-        test('error for selected connections which are not part of the workflow', () => {
-            let consolaError = jest.spyOn(global.consola, 'error').mockImplementation();
-            $store.commit('selection/addConnectionsToSelection', ['non-existent']);
-
-            expect($store.getters['selection/selectedConnections']).toStrictEqual(expect.objectContaining([
-                { allowedActions: { canDelete: true }, id: 'root:2_1' },
-                { allowedActions: { canDelete: true }, id: 'root:2_2' }
-            ]));
-            expect(consolaError).toHaveBeenCalledTimes(2);
-
-            consolaError.mockRestore();
         });
 
         test('test if connection is selected', () => {
