@@ -616,7 +616,7 @@ describe('workflow store: Editing', () => {
             });
 
             describe('executes paste command', () => {
-                let workflow, doAfterPasteMock, pasteWorkflowParts;
+                let workflow, doAfterPasteMock, pasteWorkflowParts, startPaste;
 
                 beforeEach(async () => {
                     // register "pasteWorkflowParts" API function
@@ -657,10 +657,12 @@ describe('workflow store: Editing', () => {
                     });
 
                     // Start pasting
-                    await store.dispatch('workflow/pasteWorkflowParts');
+                    startPaste = (payload = {}) => store.dispatch('workflow/pasteWorkflowParts', payload);
                 });
 
-                it('calls partePartsAt', () => {
+                it('calls partePartsAt', async () => {
+                    await startPaste();
+
                     expect(pastePartsAtMock).toHaveBeenCalledWith({
                         visibleFrame: {
                             height: 1000,
@@ -675,7 +677,22 @@ describe('workflow store: Editing', () => {
                     });
                 });
 
-                it('stores pastes boundary', () => {
+                it('pastes at given position', async () => {
+                    await startPaste({ position: { x: 100, y: 100 } });
+
+                    expect(pastePartsAtMock).not.toHaveBeenCalled();
+                    
+                    expect(pasteWorkflowParts).toHaveBeenCalledWith({
+                        projectId: 'my project',
+                        workflowId: 'root',
+                        content: 'parts',
+                        position: { x: 100, y: 100 }
+                    });
+                });
+
+                it('stores pastes boundary', async () => {
+                    await startPaste();
+
                     expect(store.state.workflow.copyPaste).toStrictEqual({
                         dummy: null,
                         lastPasteBounds: {
@@ -687,7 +704,9 @@ describe('workflow store: Editing', () => {
                     });
                 });
 
-                it('calls paste API function', () => {
+                it('calls paste API function', async () => {
+                    await startPaste();
+
                     expect(pasteWorkflowParts).toHaveBeenCalledWith({
                         projectId: 'my project',
                         workflowId: 'root',
@@ -696,11 +715,15 @@ describe('workflow store: Editing', () => {
                     });
                 });
 
-                it('calls after paste hook', () => {
+                it('calls after paste hook', async () => {
+                    await startPaste();
+
                     expect(doAfterPasteMock).toHaveBeenCalled();
                 });
 
-                it('selects nodes afterwards', () => {
+                it('selects nodes afterwards', async () => {
+                    await startPaste();
+
                     expect(store.state.selection.selectedNodes.foo).toBeFalsy();
                     expect(store.state.selection.selectedNodes.bar).toBe(true);
                 });

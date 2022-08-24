@@ -103,9 +103,12 @@ describe('Commands Plugin', () => {
         test('dispatch name to command', () => {
             let command = $commands.get('crazyHotkey');
 
-            $commands.dispatch('crazyHotkey');
+            $commands.dispatch('crazyHotkey', { mockExtraPayload: true });
 
-            expect(command.execute).toHaveBeenCalledWith({ $store: context.store });
+            expect(command.execute).toHaveBeenCalledWith({
+                $store: context.store,
+                eventDetail: { mockExtraPayload: true }
+            });
         });
 
         test('dispatch and isEnabled throw for unknown command', () => {

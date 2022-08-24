@@ -209,7 +209,18 @@ export default {
         title: 'Paste from clipboard',
         hotkey: ['Ctrl', 'V'],
         execute:
-            ({ $store }) => $store.dispatch('workflow/pasteWorkflowParts'),
+            ({ $store, eventDetail }) => {
+                let customPosition = null;
+
+                if (eventDetail) {
+                    const { clientX, clientY } = eventDetail;
+                    
+                    const [x, y] = $store.getters['canvas/screenToCanvasCoordinates']([clientX, clientY]);
+                    customPosition = { x, y };
+                }
+
+                $store.dispatch('workflow/pasteWorkflowParts', { position: customPosition });
+            },
         condition:
             ({ $store }) => $store.getters['workflow/isWritable'] && $store.state.application.hasClipboardSupport
     }

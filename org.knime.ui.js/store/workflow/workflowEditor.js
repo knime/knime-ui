@@ -259,8 +259,9 @@ export const actions = {
         state: { activeWorkflow, copyPaste },
         getters: { isWorkflowEmpty },
         dispatch, rootGetters, commit, rootState
-    }) {
+    }, { position: customPosition = null } = {}) {
         let clipboardContent;
+        
         try {
             // TODO: NXT-1168 Put a limit on the clipboard content size
             const clipboardText = await navigator.clipboard.readText();
@@ -272,13 +273,15 @@ export const actions = {
         }
 
         // 1. Decide where to paste
-        let { position, doAfterPaste } = pastePartsAt({
-            visibleFrame: rootGetters['canvas/getVisibleFrame'](),
-            clipboardContent,
-            isWorkflowEmpty,
-            workflow: activeWorkflow,
-            copyPaste
-        });
+        const { position, doAfterPaste } = customPosition
+            ? { position: customPosition, doAfterPaste: null }
+            : pastePartsAt({
+                visibleFrame: rootGetters['canvas/getVisibleFrame'](),
+                clipboardContent,
+                isWorkflowEmpty,
+                workflow: activeWorkflow,
+                copyPaste
+            });
 
         // 2. Remember decision
         commit('setLastPasteBounds', {

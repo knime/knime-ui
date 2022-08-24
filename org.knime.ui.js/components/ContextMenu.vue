@@ -53,9 +53,9 @@ export default {
         }
     },
     methods: {
-        onItemClick(e, command) {
+        onItemClick(event, command) {
             this.$emit('menu-close');
-            this.$commands.dispatch(command.name);
+            this.$commands.dispatch(command.name, event);
         },
         setMenuItems() {
             const somethingSelected = this.selectedNodes.length || this.selectedConnections.length;

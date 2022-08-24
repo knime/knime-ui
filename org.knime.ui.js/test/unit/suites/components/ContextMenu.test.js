@@ -128,10 +128,11 @@ describe('ContextMenu.vue', () => {
         }]));
     });
 
-    it('fires correct action based on store data', () => {
+    it.only('fires correct action based on store data and passes optional event detail', () => {
         doMount();
-        wrapper.findComponent(MenuItems).vm.$emit('item-click', null, { name: 'command' });
-        expect($commands.dispatch).toHaveBeenCalledWith('command');
+        const mockEventDetails = { mock: true };
+        wrapper.findComponent(MenuItems).vm.$emit('item-click', mockEventDetails, { name: 'command' });
+        expect($commands.dispatch).toHaveBeenCalledWith('command', mockEventDetails);
     });
 
     it('closes menu after item has been clicked', () => {

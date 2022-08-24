@@ -104,7 +104,7 @@ describe('workflowCommands', () => {
 
         test('paste', () => {
             workflowCommands.paste.execute({ $store });
-            expect(mockDispatch).toHaveBeenCalledWith('workflow/pasteWorkflowParts');
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/pasteWorkflowParts', expect.anything());
         });
     });
 
