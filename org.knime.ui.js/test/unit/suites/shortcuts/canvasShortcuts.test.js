@@ -1,4 +1,4 @@
-import canvasCommands from '~/commands/canvasCommands';
+import canvasShortcuts from '@/shortcuts/canvasShortcuts';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {
@@ -7,7 +7,7 @@ jest.mock('raf-throttle', () => function (func) {
     };
 });
 
-describe('canvasCommands', () => {
+describe('canvasShortcuts', () => {
     let mockDispatch, $store;
 
     beforeEach(() => {
@@ -18,42 +18,42 @@ describe('canvasCommands', () => {
     });
 
     test('fitToScreen', () => {
-        canvasCommands.fitToScreen.execute({ $store });
+        canvasShortcuts.fitToScreen.execute({ $store });
         expect(mockDispatch).toHaveBeenCalledWith('canvas/fitToScreen');
     });
 
     test('fillScreen', () => {
-        canvasCommands.fillScreen.execute({ $store });
+        canvasShortcuts.fillScreen.execute({ $store });
         expect(mockDispatch).toHaveBeenCalledWith('canvas/fillScreen');
     });
 
     test('zoomIn', () => {
-        canvasCommands.zoomIn.execute({ $store });
+        canvasShortcuts.zoomIn.execute({ $store });
         expect(mockDispatch).toHaveBeenCalledWith('canvas/zoomCentered', { delta: 1 });
     });
 
     test('zoomOut', () => {
-        canvasCommands.zoomOut.execute({ $store });
+        canvasShortcuts.zoomOut.execute({ $store });
         expect(mockDispatch).toHaveBeenCalledWith('canvas/zoomCentered', { delta: -1 });
     });
 
     test('zoomTo75', () => {
-        canvasCommands.zoomTo75.execute({ $store });
+        canvasShortcuts.zoomTo75.execute({ $store });
         expect(mockDispatch).toHaveBeenCalledWith('canvas/zoomCentered', { factor: 0.75 });
     });
 
     test('zoomTo100', () => {
-        canvasCommands.zoomTo100.execute({ $store });
+        canvasShortcuts.zoomTo100.execute({ $store });
         expect(mockDispatch).toHaveBeenCalledWith('canvas/zoomCentered', { factor: 1 });
     });
 
     test('zoomTo125', () => {
-        canvasCommands.zoomTo125.execute({ $store });
+        canvasShortcuts.zoomTo125.execute({ $store });
         expect(mockDispatch).toHaveBeenCalledWith('canvas/zoomCentered', { factor: 1.25 });
     });
 
     test('zoomTo150', () => {
-        canvasCommands.zoomTo150.execute({ $store });
+        canvasShortcuts.zoomTo150.execute({ $store });
         expect(mockDispatch).toHaveBeenCalledWith('canvas/zoomCentered', { factor: 1.5 });
     });
 });

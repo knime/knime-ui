@@ -20,7 +20,7 @@ const expectEventNotHandled = () => {
 };
 
 describe('HotKeys', () => {
-    let doShallowMount, wrapper, $store, storeConfig, $commands;
+    let doShallowMount, wrapper, $store, storeConfig, $shortcuts;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -33,7 +33,7 @@ describe('HotKeys', () => {
     });
 
     beforeEach(() => {
-        $commands = {
+        $shortcuts = {
             findByHotkey: jest.fn(),
             isEnabled: jest.fn(),
             dispatch: jest.fn()
@@ -67,7 +67,7 @@ describe('HotKeys', () => {
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
-            wrapper = shallowMount(HotkeyHandler, { mocks: { $store, $commands } });
+            wrapper = shallowMount(HotkeyHandler, { mocks: { $store, $shortcuts } });
         };
     });
 
@@ -131,27 +131,27 @@ describe('HotKeys', () => {
         expect(escapePressedMock).toHaveBeenCalled();
     });
 
-    test('command found and is enabled', () => {
-        $commands.findByHotkey.mockReturnValue('command');
-        $commands.isEnabled.mockReturnValue(true);
+    test('shortcut found and is enabled', () => {
+        $shortcuts.findByHotkey.mockReturnValue('shortcut');
+        $shortcuts.isEnabled.mockReturnValue(true);
         doShallowMount();
 
         // random key combination
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', ctrlKey: true }));
 
-        expect($commands.isEnabled).toHaveBeenCalledWith('command');
-        expect($commands.dispatch).toHaveBeenCalledWith('command');
+        expect($shortcuts.isEnabled).toHaveBeenCalledWith('shortcut');
+        expect($shortcuts.dispatch).toHaveBeenCalledWith('shortcut');
         expectEventHandled();
     });
 
-    test('no matching command found', () => {
-        $commands.findByHotkey.mockReturnValue(null);
+    test('no matching shortcut found', () => {
+        $shortcuts.findByHotkey.mockReturnValue(null);
         doShallowMount();
 
         // random key combination
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', ctrlKey: true }));
 
-        expect($commands.dispatch).not.toHaveBeenCalled();
+        expect($shortcuts.dispatch).not.toHaveBeenCalled();
         expectEventNotHandled();
     });
 
@@ -162,16 +162,16 @@ describe('HotKeys', () => {
         expectEventNotHandled();
     });
 
-    test('command found but is not enabled', () => {
-        $commands.findByHotkey.mockReturnValue('command');
-        $commands.isEnabled.mockReturnValue(false);
+    test('shortcut found but is not enabled', () => {
+        $shortcuts.findByHotkey.mockReturnValue('shortcut');
+        $shortcuts.isEnabled.mockReturnValue(false);
         doShallowMount();
 
         // random key combination
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', ctrlKey: true }));
 
-        expect($commands.isEnabled).toHaveBeenCalledWith('command');
-        expect($commands.dispatch).not.toHaveBeenCalledWith('command');
+        expect($shortcuts.isEnabled).toHaveBeenCalledWith('shortcut');
+        expect($shortcuts.dispatch).not.toHaveBeenCalledWith('shortcut');
         expectEventHandled();
     });
 });

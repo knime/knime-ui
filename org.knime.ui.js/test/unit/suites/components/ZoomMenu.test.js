@@ -7,7 +7,7 @@ import ZoomMenu from '~/components/ZoomMenu.vue';
 import SubMenu from '~/webapps-common/ui/components/SubMenu.vue';
 
 describe('ZoomMenu', () => {
-    let propsData, doMount, $store, $commands, zoomFactor, wrapper, storeConfig;
+    let propsData, doMount, $store, $shortcuts, zoomFactor, wrapper, storeConfig;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -18,8 +18,8 @@ describe('ZoomMenu', () => {
         zoomFactor = 1;
         propsData = { };
 
-        $commands = {
-            get: jest.fn().mockImplementation(command => ({ name: command })),
+        $shortcuts = {
+            get: jest.fn().mockImplementation(shortcut => ({ name: shortcut })),
             dispatch: jest.fn()
         };
 
@@ -40,7 +40,7 @@ describe('ZoomMenu', () => {
             };
 
             $store = mockVuexStore(storeConfig);
-            wrapper = mountMethod(ZoomMenu, { propsData, mocks: { $store, $commands } });
+            wrapper = mountMethod(ZoomMenu, { propsData, mocks: { $store, $shortcuts } });
         };
     });
 
@@ -127,9 +127,9 @@ describe('ZoomMenu', () => {
         zoomFactor = 0.63;
         doMount(shallowMount);
 
-        wrapper.findComponent(SubMenu).vm.$emit('item-click', null, { name: 'command' });
+        wrapper.findComponent(SubMenu).vm.$emit('item-click', null, { name: 'shortcut' });
 
-        expect($commands.dispatch).toHaveBeenCalledWith('command');
+        expect($shortcuts.dispatch).toHaveBeenCalledWith('shortcut');
     });
 
     it('zooms in and out on mousewheel', async () => {

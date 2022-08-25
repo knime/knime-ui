@@ -1,22 +1,22 @@
 import { shallowMount } from '@vue/test-utils';
 
-import ToolbarCommandButton from '~/components/ToolbarCommandButton.vue';
+import ToolbarShortcutButton from '~/components/ToolbarShortcutButton.vue';
 import ToolbarButton from '~/components/ToolbarButton.vue';
 import IconComponent from '~/assets/redo.svg';
 
-describe('ToolbarCommandButton.vue', () => {
-    let wrapper, doShallowMount, propsData, command, $commands;
+describe('ToolbarShortcutButton.vue', () => {
+    let wrapper, doShallowMount, propsData, shortcut, $shortcuts;
 
     beforeEach(() => {
-        command = {
+        shortcut = {
             icon: IconComponent,
             title: 'save workflow',
             text: 'save',
             hotkeyText: 'Ctrl S'
         };
 
-        $commands = {
-            get: jest.fn().mockImplementation(() => command),
+        $shortcuts = {
+            get: jest.fn().mockImplementation(() => shortcut),
             isEnabled: jest.fn().mockReturnValue(true),
             dispatch: jest.fn()
         };
@@ -26,14 +26,14 @@ describe('ToolbarCommandButton.vue', () => {
         };
 
         doShallowMount = () => {
-            wrapper = shallowMount(ToolbarCommandButton, { propsData, mocks: { $commands } });
+            wrapper = shallowMount(ToolbarShortcutButton, { propsData, mocks: { $shortcuts } });
         };
     });
 
     describe('renders button', () => {
-        test('fetches command', () => {
+        test('fetches shortcut', () => {
             doShallowMount();
-            expect($commands.get).toHaveBeenCalledWith('save');
+            expect($shortcuts.get).toHaveBeenCalledWith('save');
         });
 
         test('renders full info', () => {
@@ -49,7 +49,7 @@ describe('ToolbarCommandButton.vue', () => {
         });
 
         test('renders only with title', () => {
-            command = {
+            shortcut = {
                 title: 'save workflow'
             };
             doShallowMount();
@@ -63,20 +63,20 @@ describe('ToolbarCommandButton.vue', () => {
         });
 
         test('renders disabled', () => {
-            $commands.isEnabled.mockReturnValue(false);
+            $shortcuts.isEnabled.mockReturnValue(false);
             doShallowMount();
 
-            expect($commands.isEnabled).toHaveBeenCalledWith('save');
+            expect($shortcuts.isEnabled).toHaveBeenCalledWith('save');
 
             let toolbarButton = wrapper.getComponent(ToolbarButton);
             expect(toolbarButton.attributes('disabled')).toBeTruthy();
         });
 
-        test('dispatches command', () => {
+        test('dispatches shortcut handler', () => {
             doShallowMount();
 
             wrapper.trigger('click');
-            expect($commands.dispatch).toHaveBeenCalledWith('save');
+            expect($shortcuts.dispatch).toHaveBeenCalledWith('save');
         });
     });
 });

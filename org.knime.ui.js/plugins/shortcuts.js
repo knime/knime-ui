@@ -1,4 +1,4 @@
-import commands from '~/commands';
+import shortcuts from '@/shortcuts';
 
 // The user agent tells whether this code is currently run on a mac
 const isMac = navigator?.userAgent?.toLowerCase()?.includes('mac');
@@ -19,27 +19,27 @@ const formatHotkeys = hotkeys => {
     }
 };
 
-// Command setup:
+// Shortcut setup:
 // - add string representation of hotkeys
-// - add command name
-Object.entries(commands).forEach(([name, command]) => {
-    command.name = name;
+// - add shortcut name
+Object.entries(shortcuts).forEach(([name, shortcut]) => {
+    shortcut.name = name;
 
-    if (command.hotkey) {
-        command.hotkeyText = formatHotkeys(command.hotkey);
+    if (shortcut.hotkey) {
+        shortcut.hotkeyText = formatHotkeys(shortcut.hotkey);
     }
 });
-Object.freeze(commands);
+Object.freeze(shortcuts);
 
 // define nuxt plugin
 export default (context, inject) => {
-    // get the whole command by name
-    const get = commandName => ({ ...commands[commandName] });
+    // get the whole shortcut by name
+    const get = shortcutName => ({ ...shortcuts[shortcutName] });
 
-    // find the name of the matching command
-    // currently only the first match is returned, assuming no two commands share the same hotkey
+    // find the name of the matching shortcut
+    // currently only the first match is returned, assuming no two shortcuts share the same hotkey
     const findByHotkey = ({ key, metaKey, ctrlKey, shiftKey, altKey }) => {
-        for (let [commandName, { hotkey }] of Object.entries(commands)) {
+        for (let [shortcutName, { hotkey }] of Object.entries(shortcuts)) {
             if (!hotkey) {
                 continue;
             }
@@ -58,39 +58,39 @@ export default (context, inject) => {
                 (isMac && character === 'Delete' && key === 'Backspace');
 
             if (ctrlMatches && shiftMatches && altMatches && keysMatch) {
-                consola.trace('Shortcut', hotkey, commandName);
-                return commandName;
+                consola.trace('Shortcut', hotkey, shortcutName);
+                return shortcutName;
             }
         }
         return null;
     };
 
-    // find out whether a specific command is currently enabled
-    const isEnabled = (commandName) => {
-        let command = commands[commandName];
-        if (!command) {
-            throw new Error(`Command ${commandName} doesn't exist`);
+    // find out whether a specific shortcut is currently enabled
+    const isEnabled = (shortcutName) => {
+        let shortcut = shortcuts[shortcutName];
+        if (!shortcut) {
+            throw new Error(`Shortcut ${shortcutName} doesn't exist`);
         }
 
-        if (!command.condition) {
+        if (!shortcut.condition) {
             return true;
         }
 
-        return command.condition({ $store: context.store });
+        return shortcut.condition({ $store: context.store });
     };
 
-    // execute a command
-    const dispatch = (commandName, eventDetail = null) => {
-        let command = commands[commandName];
-        if (!command) {
-            throw new Error(`Command ${commandName} doesn't exist`);
+    // execute a shortcut
+    const dispatch = (shortcutName, eventDetail = null) => {
+        let shortcut = shortcuts[shortcutName];
+        if (!shortcut) {
+            throw new Error(`Shortcut ${shortcutName} doesn't exist`);
         }
 
-        command.execute({ $store: context.store, eventDetail });
+        shortcut.execute({ $store: context.store, eventDetail });
     };
 
-    // inject $commands into components
-    inject('commands', {
+    // inject $shortcuts into components
+    inject('shortcuts', {
         isEnabled,
         dispatch,
         findByHotkey,

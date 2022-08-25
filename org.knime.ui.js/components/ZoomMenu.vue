@@ -32,7 +32,7 @@ export default {
                 'zoomTo100',
                 'zoomTo125',
                 'zoomTo150'
-            ].map(action => this.$commands.get(action));
+            ].map(action => this.$shortcuts.get(action));
         }
     },
     methods: {
@@ -58,7 +58,7 @@ export default {
             e.target.value = this.zoomInputValue;
         },
         onZoomItemClick(e, item) {
-            this.$commands.dispatch(item.name);
+            this.$shortcuts.dispatch(item.name);
             this.$refs.zoomInput.blur();
         },
         onWheel(e) {

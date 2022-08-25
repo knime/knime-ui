@@ -6,7 +6,7 @@ const blacklistTagNames = /^(input|textarea|select)$/i;
 
 /**
  * This Component handles keyboard shortcuts by listening to keydown/up-Events
- * on document and dispatching commands and store actions.
+ * on document and dispatching the corresponding shortcut handler.
  */
 export default {
     computed: {
@@ -70,15 +70,15 @@ export default {
                 return;
             }
 
-            // This currently only looks for the first command that matches the hotkey
-            let command = this.$commands.findByHotkey(e);
+            // This currently only looks for the first shortcut that matches the hotkey
+            let shortcut = this.$shortcuts.findByHotkey(e);
             
-            if (command) {
-                if (this.$commands.isEnabled(command)) {
-                    this.$commands.dispatch(command);
+            if (shortcut) {
+                if (this.$shortcuts.isEnabled(shortcut)) {
+                    this.$shortcuts.dispatch(shortcut);
                 }
             
-                // prevent default actions for shortcuts of enabled and disabled commands
+                // prevent default actions for shortcuts of enabled and disabled shortcuts
                 e.stopPropagation();
                 e.preventDefault();
             }

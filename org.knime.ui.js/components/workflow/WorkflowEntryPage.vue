@@ -15,7 +15,7 @@ export default {
 <template>
   <main>
     <div class="button-tiles">
-      <button @click="$commands.dispatch('createWorkflow')">
+      <button @click="$shortcuts.dispatch('createWorkflow')">
         <div class="icon">
           <CirclePlusIcon />
         </div>
@@ -23,7 +23,7 @@ export default {
           Create workflow
         </div>
       </button>
-      <button @click="$commands.dispatch('openWorkflow')">
+      <button @click="$shortcuts.dispatch('openWorkflow')">
         <div class="icon">
           <FolderWorkflowIcon />
         </div>

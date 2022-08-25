@@ -5,7 +5,7 @@ import OpenSourceCreditsModal from '~/components/OpenSourceCreditsModal.vue';
 
 
 describe('WorkflowEntryPage', () => {
-    let mocks, doShallowMount, wrapper, $commands;
+    let mocks, doShallowMount, wrapper, $shortcuts;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -15,11 +15,11 @@ describe('WorkflowEntryPage', () => {
     beforeEach(() => {
         wrapper = null;
 
-        $commands = {
+        $shortcuts = {
             dispatch: jest.fn()
         };
 
-        mocks = { $commands };
+        mocks = { $shortcuts };
         doShallowMount = () => {
             wrapper = shallowMount(WorkflowEntryPage, { mocks });
         };
@@ -37,19 +37,19 @@ describe('WorkflowEntryPage', () => {
         expect(wrapper.findComponent(OpenSourceCreditsModal).exists()).toBe(true);
     });
 
-    it('dispatches command openWorkflow', () => {
+    it('dispatches shortcut handler to openWorkflow', () => {
         doShallowMount();
 
         const buttons = wrapper.findAll('button');
         buttons.at(1).trigger('click');
-        expect($commands.dispatch).toHaveBeenCalledWith('openWorkflow');
+        expect($shortcuts.dispatch).toHaveBeenCalledWith('openWorkflow');
     });
 
-    it('dispatches command createWorkflow', () => {
+    it('dispatches shortcut handler to createWorkflow', () => {
         doShallowMount();
 
         const buttons = wrapper.findAll('button');
         buttons.at(0).trigger('click');
-        expect($commands.dispatch).toHaveBeenCalledWith('createWorkflow');
+        expect($shortcuts.dispatch).toHaveBeenCalledWith('createWorkflow');
     });
 });

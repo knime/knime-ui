@@ -1,5 +1,5 @@
 /* eslint-disable max-nested-callbacks */
-jest.mock('~/commands/workflowCommands', () => ({
+jest.mock('~/shortcuts/workflowShortcuts', () => ({
     __esModule: true,
     default: {
         save: {},
@@ -7,7 +7,7 @@ jest.mock('~/commands/workflowCommands', () => ({
     }
 }));
 
-jest.mock('~/commands/canvasCommands', () => ({
+jest.mock('~/shortcuts/canvasShortcuts', () => ({
     __esModule: true,
     default: {
         fitToScreen: {},
@@ -15,16 +15,16 @@ jest.mock('~/commands/canvasCommands', () => ({
     }
 }));
 
-import commands, { conditionGroup } from '~/commands';
-import workflowCommandsMock from '~/commands/workflowCommands';
-import canvasCommandsMock from '~/commands/canvasCommands';
+import shortcuts, { conditionGroup } from '@/shortcuts';
+import workflowShortcutssMock from '@/shortcuts/workflowShortcuts';
+import canvasShortcutsMock from '@/shortcuts/canvasShortcuts';
 
-describe('Commands', () => {
+describe('Shortcuts', () => {
     describe('condition group', () => {
-        let commands;
+        let shortcuts;
 
         beforeEach(() => {
-            commands = {
+            shortcuts = {
                 noCondition: { name: 'c1' },
                 // eslint-disable-next-line no-magic-numbers
                 withCondition: { name: 'c2', condition: jest.fn().mockImplementation(({ age }) => age >= 18) }
@@ -32,19 +32,19 @@ describe('Commands', () => {
         });
 
         test('group condition true', () => {
-            let group = conditionGroup(() => true, commands);
+            let group = conditionGroup(() => true, shortcuts);
             expect(group.noCondition.condition({ age: 10 })).toBe(true);
             expect(group.withCondition.condition({ age: 10 })).toBe(false);
         });
 
         test('group condition false', () => {
-            let group = conditionGroup(() => false, commands);
+            let group = conditionGroup(() => false, shortcuts);
             expect(group.noCondition.condition({ age: 10 })).toBe(false);
             expect(group.withCondition.condition({ age: 10 })).toBe(false);
         });
     });
 
-    describe('exported commands with condition groups', () => {
+    describe('exported shortcuts with condition groups', () => {
         let $store;
 
         beforeEach(() => {
@@ -60,40 +60,43 @@ describe('Commands', () => {
             };
         });
 
-        test('adds workflow commands if workflow is present', () => {
-            let workflowCommands = Object.keys(workflowCommandsMock).reduce((res, key) => {
-                res[key] = commands[key];
+        test('adds workflow shortcuts if workflow is present', () => {
+            const workflowShortcuts = Object.keys(workflowShortcutssMock).reduce((res, key) => {
+                res[key] = shortcuts[key];
                 return res;
             }, {});
-            let resultWithoutWorkflow = Object.keys(workflowCommands).filter(
-                c => workflowCommands[c].condition({ $store })
+            const resultWithoutWorkflow = Object.keys(workflowShortcuts).filter(
+                c => workflowShortcuts[c].condition({ $store })
             );
             expect(resultWithoutWorkflow).not.toStrictEqual(expect.arrayContaining(['save', 'undo']));
 
             $store.state.workflow.activeWorkflow = {};
-            let resultWithWorkflow = Object.keys(workflowCommands).filter(
-                c => workflowCommands[c].condition({ $store })
+            const resultWithWorkflow = Object.keys(workflowShortcuts).filter(
+                c => workflowShortcuts[c].condition({ $store })
             );
             expect(resultWithWorkflow).toStrictEqual(expect.arrayContaining(['save', 'undo']));
         });
 
-        test('adds canvas commands if interactions are enabled', () => {
-            let canvasCommands = Object.keys(canvasCommandsMock).reduce((res, key) => {
-                res[key] = commands[key];
+        test('adds canvas shortcuts if interactions are enabled', () => {
+            const canvasShortcuts = Object.keys(canvasShortcutsMock).reduce((res, key) => {
+                res[key] = shortcuts[key];
                 return res;
             }, {});
 
             // we need workflow and interactions
             $store.state.workflow.activeWorkflow = {};
 
-            let resultNoInteractions = Object.keys(canvasCommands).filter(
-                c => canvasCommands[c].condition({ $store })
+            const resultNoInteractions = Object.keys(canvasShortcuts).filter(
+                c => canvasShortcuts[c].condition({ $store })
             );
             expect(resultNoInteractions).not.toStrictEqual(expect.arrayContaining(['fitToScreen', 'zoomTo100']));
 
             $store.state.canvas.interactionsEnabled = true;
 
-            let resultInteractions = Object.keys(canvasCommands).filter(c => canvasCommands[c].condition({ $store }));
+            const resultInteractions = Object
+                .keys(canvasShortcuts)
+                .filter(c => canvasShortcuts[c].condition({ $store }));
+                
             expect(resultInteractions).toStrictEqual(expect.arrayContaining(['fitToScreen', 'zoomTo100']));
         });
     });

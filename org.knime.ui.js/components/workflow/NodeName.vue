@@ -43,7 +43,7 @@ export default {
         }
     },
     watch: {
-        // use store state to ensure edit-start is emitted even if someone else (e. g. commands) started the edit
+        // use store state to ensure edit-start is emitted even if someone else (e.g. shortcuts) started the edit
         isEditing(newValue) {
             if (newValue) {
                 this.$emit('edit-start');

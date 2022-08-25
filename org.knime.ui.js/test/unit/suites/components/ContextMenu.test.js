@@ -9,7 +9,7 @@ import FloatingMenu from '~/components/FloatingMenu.vue';
 import MenuItems from '~/webapps-common/ui/components/MenuItems.vue';
 
 describe('ContextMenu.vue', () => {
-    let storeConfig, propsData, mocks, doMount, wrapper, $store, $commands;
+    let storeConfig, propsData, mocks, doMount, wrapper, $store, $shortcuts;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -38,7 +38,7 @@ describe('ContextMenu.vue', () => {
             }
         };
 
-        $commands = {
+        $shortcuts = {
             dispatch: jest.fn(),
             get: jest.fn().mockImplementation(name => ({
                 text: 'text',
@@ -50,7 +50,7 @@ describe('ContextMenu.vue', () => {
 
         doMount = () => {
             $store = mockVuexStore(storeConfig);
-            mocks = { $store, $commands };
+            mocks = { $store, $shortcuts };
             wrapper = shallowMount(ContextMenu, { propsData, mocks });
         };
     });
@@ -119,7 +119,7 @@ describe('ContextMenu.vue', () => {
         await Vue.nextTick();
 
         let menuItems = wrapper.getComponent(MenuItems).props('items');
-        expect($commands.isEnabled).toHaveBeenCalledWith('executeAll');
+        expect($shortcuts.isEnabled).toHaveBeenCalledWith('executeAll');
         expect(menuItems).toEqual(expect.arrayContaining([{
             text: 'text',
             hotkeyText: 'hotkeyText',
@@ -128,18 +128,18 @@ describe('ContextMenu.vue', () => {
         }]));
     });
 
-    it.only('fires correct action based on store data and passes optional event detail', () => {
+    it('fires correct action based on store data and passes optional event detail', () => {
         doMount();
         const mockEventDetails = { mock: true };
-        wrapper.findComponent(MenuItems).vm.$emit('item-click', mockEventDetails, { name: 'command' });
-        expect($commands.dispatch).toHaveBeenCalledWith('command', mockEventDetails);
+        wrapper.findComponent(MenuItems).vm.$emit('item-click', mockEventDetails, { name: 'shortcut' });
+        expect($shortcuts.dispatch).toHaveBeenCalledWith('shortcut', mockEventDetails);
     });
 
     it('closes menu after item has been clicked', () => {
         doMount();
         
         expect(wrapper.emitted('menu-close')).toBeFalsy();
-        wrapper.findComponent(MenuItems).vm.$emit('item-click', null, { name: 'command' });
+        wrapper.findComponent(MenuItems).vm.$emit('item-click', null, { name: 'shortcut' });
         expect(wrapper.emitted('menu-close')).toBeTruthy();
     });
 

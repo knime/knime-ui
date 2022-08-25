@@ -259,7 +259,7 @@ export const actions = {
         state: { activeWorkflow, copyPaste },
         getters: { isWorkflowEmpty },
         dispatch, rootGetters, commit, rootState
-    }, { position: customPosition = null } = {}) {
+    }, { position: customPosition } = {}) {
         let clipboardContent;
         
         try {

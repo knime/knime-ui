@@ -72,56 +72,56 @@ export default {
                     isEnabled: this.canOpenDialog,
                     icon: OpenDialogIcon,
                     handler: () => this.openNodeConfiguration(this.nodeId),
-                    hotkeyText: this.$commands.get('configureNode').hotkeyText
+                    hotkeyText: this.$shortcuts.get('configureNode').hotkeyText
                 },
                 pauseLoopExecution: {
                     title: 'Pause',
                     isEnabled: true,
                     icon: PauseIcon,
                     handler: () => this.pauseLoopExecution(this.nodeId),
-                    hotkeyText: this.$commands.get('pauseLoopExecution').hotkeyText
+                    hotkeyText: this.$shortcuts.get('pauseLoopExecution').hotkeyText
                 },
                 resumeLoopExecution: {
                     title: 'Resume',
                     isEnabled: true,
                     icon: ResumeIcon,
                     handler: () => this.resumeLoopExecution(this.nodeId),
-                    hotkeyText: this.$commands.get('resumeLoopExecution').hotkeyText
+                    hotkeyText: this.$shortcuts.get('resumeLoopExecution').hotkeyText
                 },
                 execute: {
                     title: 'Execute',
                     isEnabled: this.canExecute,
                     icon: ExecuteIcon,
                     handler: () => this.executeNodes([this.nodeId]),
-                    hotkeyText: this.$commands.get('executeSelected').hotkeyText
+                    hotkeyText: this.$shortcuts.get('executeSelected').hotkeyText
                 },
                 stepLoopExecution: {
                     title: 'Step',
                     isEnabled: this.canStep,
                     icon: StepIcon,
                     handler: () => this.stepLoopExecution(this.nodeId),
-                    hotkeyText: this.$commands.get('stepLoopExecution').hotkeyText
+                    hotkeyText: this.$shortcuts.get('stepLoopExecution').hotkeyText
                 },
                 cancelExecution: {
                     title: 'Cancel',
                     isEnabled: this.canCancel,
                     icon: CancelIcon,
                     handler: () => this.cancelNodeExecution([this.nodeId]),
-                    hotkeyText: this.$commands.get('cancelSelected').hotkeyText
+                    hotkeyText: this.$shortcuts.get('cancelSelected').hotkeyText
                 },
                 reset: {
                     title: 'Reset',
                     isEnabled: this.canReset,
                     icon: ResetIcon,
                     handler: () => this.resetNodes([this.nodeId]),
-                    hotkeyText: this.$commands.get('resetSelected').hotkeyText
+                    hotkeyText: this.$shortcuts.get('resetSelected').hotkeyText
                 },
                 openView: {
                     title: 'Open View',
                     isEnabled: this.canOpenView,
                     icon: OpenViewIcon,
                     handler: () => this.openView(this.nodeId),
-                    hotkeyText: this.$commands.get('openView').hotkeyText
+                    hotkeyText: this.$shortcuts.get('openView').hotkeyText
                 }
             };
         },

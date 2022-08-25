@@ -1,4 +1,4 @@
-import executionCommands from './executionCommands';
+import executionShortcuts from './executionShortcuts';
 
 import RedoIcon from '~/assets/redo.svg';
 import UndoIcon from '~/assets/undo.svg';
@@ -11,7 +11,7 @@ import CreateComponent from '~/assets/create-component.svg';
 import LayoutIcon from '~/assets/layout.svg';
 
 export default {
-    ...executionCommands,
+    ...executionShortcuts,
     save: {
         title: 'Save workflow',
         hotkey: ['Ctrl', 'S'],

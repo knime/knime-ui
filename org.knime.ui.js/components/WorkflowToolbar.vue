@@ -2,7 +2,7 @@
 import { mapState, mapGetters } from 'vuex';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb.vue';
 import ZoomMenu from '~/components/ZoomMenu.vue';
-import ToolbarCommandButton from '~/components/ToolbarCommandButton.vue';
+import ToolbarShortcutButton from '~/components/ToolbarShortcutButton.vue';
 
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
@@ -11,7 +11,7 @@ export default {
     components: {
         WorkflowBreadcrumb,
         ZoomMenu,
-        ToolbarCommandButton
+        ToolbarShortcutButton
     },
     computed: {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
@@ -20,7 +20,7 @@ export default {
         hasBreadcrumb() {
             return this.workflow?.parents?.length > 0;
         },
-        toolbarCommands() {
+        toolbarButtons() {
             const isInsideComponent = this.workflow?.info.containerType === 'component';
           
             if (!this.workflow) {
@@ -64,18 +64,18 @@ export default {
       name="button-list"
     >
       <!--
-        setting :key="the list of all visible commands",
-        re-renders the whole list in a new div whenever commands appear or disappear,
+        setting :key="the list of all visible buttons",
+        re-renders the whole list in a new div whenever buttons appear or disappear,
         such that those two lists can be faded
       -->
       <div
-        :key="toolbarCommands.join()"
+        :key="toolbarButtons.join()"
         class="button-list"
       >
-        <ToolbarCommandButton
-          v-for="command in toolbarCommands"
-          :key="command"
-          :name="command"
+        <ToolbarShortcutButton
+          v-for="button in toolbarButtons"
+          :key="button"
+          :name="button"
         />
       </div>
     </transition-group>

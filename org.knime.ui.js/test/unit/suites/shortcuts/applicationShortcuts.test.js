@@ -4,23 +4,23 @@ jest.mock('~api', () => ({
     createWorkflow: jest.fn()
 }));
 
-import applicationCommands from '~/commands/applicationCommands';
+import applicationShortcuts from '@/shortcuts/applicationShortcuts';
 import { openWorkflow as mockOpenWorkflow, createWorkflow as mockCreateWorkflow } from '~api';
 
-describe('applicationCommands', () => {
+describe('applicationShortcuts', () => {
     test('openWorkflow', () => {
-        applicationCommands.openWorkflow.execute();
+        applicationShortcuts.openWorkflow.execute();
         expect(mockOpenWorkflow).toHaveBeenCalledTimes(1);
     });
 
     test('createWorkflow', () => {
-        applicationCommands.createWorkflow.execute();
+        applicationShortcuts.createWorkflow.execute();
         expect(mockCreateWorkflow).toHaveBeenCalledTimes(1);
     });
 
     test('closeWorkflow', () => {
         let mockDispatch = jest.fn();
-        applicationCommands.closeWorkflow.execute({ $store: { dispatch: mockDispatch } });
+        applicationShortcuts.closeWorkflow.execute({ $store: { dispatch: mockDispatch } });
         expect(mockDispatch).toHaveBeenCalledWith('workflow/closeWorkflow');
     });
 });

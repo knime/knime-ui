@@ -8,7 +8,7 @@ import NodeActionBar from '~/components/workflow/NodeActionBar.vue';
 import ActionButton from '~/components/workflow/ActionButton.vue';
 
 describe('NodeActionBar', () => {
-    let mocks, doMount, storeConfig, $commands, propsData, wrapper;
+    let mocks, doMount, storeConfig, $shortcuts, propsData, wrapper;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -38,13 +38,13 @@ describe('NodeActionBar', () => {
                 }
             }
         };
-        $commands = {
+        $shortcuts = {
             get: jest.fn(() => ({}))
         };
         doMount = (allowedActions = {}) => {
             let $store = mockVuexStore(storeConfig);
 
-            mocks = { $shapes, $commands, $store };
+            mocks = { $shapes, $shortcuts, $store };
 
             wrapper = shallowMount(NodeActionBar, {
                 propsData: {
@@ -166,7 +166,7 @@ describe('NodeActionBar', () => {
 
     it('should add the hotkey binding to the action tooltip when node is selected', () => {
         storeConfig.selection.getters.isNodeSelected = () => () => true;
-        $commands.get = jest.fn((name) => ({ hotkeyText: 'MOCK HOTKEY TEXT' }));
+        $shortcuts.get = jest.fn((name) => ({ hotkeyText: 'MOCK HOTKEY TEXT' }));
 
         doMount({ canReset: true });
 

@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 import PortalVue from 'portal-vue';
 
-import commands from './commands';
+import shortcuts from './shortcuts';
 import constants from './constants';
 import { directiveMove } from './directive-move';
 import events from './events';
@@ -20,7 +20,7 @@ export const initPlugins = (vueInstance, store) => {
     });
 
     vueInstance.use(PortalVue);
-    vueInstance.use(wrapPlugin(commands));
+    vueInstance.use(wrapPlugin(shortcuts));
     vueInstance.use(wrapPlugin(constants));
     vueInstance.use(wrapPlugin(events));
     vueInstance.directive(directiveMove.name, directiveMove.options);

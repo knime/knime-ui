@@ -22,20 +22,20 @@ export default {
         }
     },
     data: () => ({
-        visibleCommands: []
+        visibleItems: []
     }),
     computed: {
         ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode', 'selectedConnections']),
 
-        // map visible command names to menu items
+        // map visible items to menu items and add shortcut information
         menuItems() {
-            return this.visibleCommands
-                .map(name => this.$commands.get(name))
+            return this.visibleItems
+                .map(name => this.$shortcuts.get(name))
                 .map(({ text, hotkeyText, name }) => ({
                     text,
                     hotkeyText,
                     name,
-                    disabled: !this.$commands.isEnabled(name)
+                    disabled: !this.$shortcuts.isEnabled(name)
                 }));
         }
     },
@@ -53,9 +53,9 @@ export default {
         }
     },
     methods: {
-        onItemClick(event, command) {
+        onItemClick(event, shortcut) {
             this.$emit('menu-close');
-            this.$commands.dispatch(command.name, event);
+            this.$shortcuts.dispatch(shortcut.name, event);
         },
         setMenuItems() {
             const somethingSelected = this.selectedNodes.length || this.selectedConnections.length;
@@ -102,8 +102,8 @@ export default {
                 expandComponent: isComponent
             };
 
-            // Array of name of commands
-            this.visibleCommands = Object
+            // Array of name of shortcuts
+            this.visibleItems = Object
                 .entries(allMenuItems)
                 .filter(([name, visible]) => visible)
                 .map(([name, visible]) => name);

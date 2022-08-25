@@ -1,9 +1,9 @@
 import { clear as clearUserAgent, mockUserAgent } from 'jest-useragent-mock';
 
-describe('Commands Plugin', () => {
-    let loadPlugin, $commands, context, userAgent;
+describe('Shortcuts Plugin', () => {
+    let loadPlugin, $shortcuts, context, userAgent;
     const mockInject = (key, value) => {
-        $commands = value;
+        $shortcuts = value;
     };
 
     beforeEach(() => {
@@ -12,7 +12,7 @@ describe('Commands Plugin', () => {
         };
 
         loadPlugin = async () => {
-            jest.mock('~/commands', () => ({
+            jest.mock('~/shortcuts', () => ({
                 crazyHotkey: {
                     hotkey: ['Ctrl', 'Alt', 'Shift', 'Delete'],
                     execute: jest.fn(),
@@ -23,9 +23,9 @@ describe('Commands Plugin', () => {
                 }
             }));
             mockUserAgent(userAgent);
-            let { default: commandPlugin } = await import('~/plugins/commands');
+            const { default: shortcutPlugin } = await import('@/plugins/shortcuts');
 
-            commandPlugin(context, mockInject);
+            shortcutPlugin(context, mockInject);
         };
     });
 
@@ -41,13 +41,13 @@ describe('Commands Plugin', () => {
         });
 
         test('hotkeyText on mac', () => {
-            expect($commands.get('crazyHotkey').hotkeyText).toBe('⌘ ⌥ ⇧ ⌫');
+            expect($shortcuts.get('crazyHotkey').hotkeyText).toBe('⌘ ⌥ ⇧ ⌫');
         });
 
         describe('hotkeys', () => {
             test('doesnt find Ctrl-A with [Ctrl-Key]', () => {
                 expect(
-                    $commands.findByHotkey({
+                    $shortcuts.findByHotkey({
                         ctrlKey: true,
                         key: 'a'
                     })
@@ -56,7 +56,7 @@ describe('Commands Plugin', () => {
 
             test('find Ctrl-A with [Meta-Key]', () => {
                 expect(
-                    $commands.findByHotkey({
+                    $shortcuts.findByHotkey({
                         metaKey: true,
                         key: 'a'
                     })
@@ -64,7 +64,7 @@ describe('Commands Plugin', () => {
             });
 
             test('Delete equals Backspace', () => {
-                expect($commands.findByHotkey({
+                expect($shortcuts.findByHotkey({
                     metaKey: true,
                     shiftKey: true,
                     altKey: true,
@@ -81,44 +81,44 @@ describe('Commands Plugin', () => {
         });
 
         test('hotkeyText formatted', () => {
-            expect($commands.get('crazyHotkey').hotkeyText).toBe('Ctrl Alt Shift Delete');
+            expect($shortcuts.get('crazyHotkey').hotkeyText).toBe('Ctrl Alt Shift Delete');
         });
 
-        test('adds name to command', () => {
-            expect($commands.get('crazyHotkey').name).toBe('crazyHotkey');
+        test('adds name to shortcut', () => {
+            expect($shortcuts.get('crazyHotkey').name).toBe('crazyHotkey');
         });
 
         test.each([true, false])('isEnabled: %s', (value) => {
-            let command = $commands.get('crazyHotkey');
-            command.condition.mockReturnValue(value);
+            let shortcut = $shortcuts.get('crazyHotkey');
+            shortcut.condition.mockReturnValue(value);
 
-            expect($commands.isEnabled('crazyHotkey')).toBe(value);
-            expect(command.condition).toHaveBeenCalledWith({ $store: context.store });
+            expect($shortcuts.isEnabled('crazyHotkey')).toBe(value);
+            expect(shortcut.condition).toHaveBeenCalledWith({ $store: context.store });
         });
 
-        test('command without condition is enabled', () => {
-            expect($commands.isEnabled('selectAll')).toBe(true);
+        test('shortcut without condition is enabled', () => {
+            expect($shortcuts.isEnabled('selectAll')).toBe(true);
         });
 
-        test('dispatch name to command', () => {
-            let command = $commands.get('crazyHotkey');
+        test('dispatch name to shortcut', () => {
+            let shortcut = $shortcuts.get('crazyHotkey');
 
-            $commands.dispatch('crazyHotkey', { mockExtraPayload: true });
+            $shortcuts.dispatch('crazyHotkey', { mockExtraPayload: true });
 
-            expect(command.execute).toHaveBeenCalledWith({
+            expect(shortcut.execute).toHaveBeenCalledWith({
                 $store: context.store,
                 eventDetail: { mockExtraPayload: true }
             });
         });
 
-        test('dispatch and isEnabled throw for unknown command', () => {
-            expect(() => $commands.isEnabled('unknown')).toThrow();
-            expect(() => $commands.dispatch('unknown')).toThrow();
+        test('dispatch and isEnabled throw for unknown shortcut', () => {
+            expect(() => $shortcuts.isEnabled('unknown')).toThrow();
+            expect(() => $shortcuts.dispatch('unknown')).toThrow();
         });
 
         describe('hotkeys', () => {
             test('find with all modifiers', () => {
-                expect($commands.findByHotkey({
+                expect($shortcuts.findByHotkey({
                     ctrlKey: true,
                     shiftKey: true,
                     altKey: true,
@@ -128,7 +128,7 @@ describe('Commands Plugin', () => {
 
             test('find Ctrl-A with [Ctrl-Key]', () => {
                 expect(
-                    $commands.findByHotkey({
+                    $shortcuts.findByHotkey({
                         ctrlKey: true,
                         key: 'a'
                     })
@@ -137,7 +137,7 @@ describe('Commands Plugin', () => {
 
             test('doesnt find Ctrl-A with [Meta-Key]', () => {
                 expect(
-                    $commands.findByHotkey({
+                    $shortcuts.findByHotkey({
                         metaKey: true,
                         key: 'a'
                     })

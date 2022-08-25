@@ -12,15 +12,15 @@ export default {
         }
     },
     computed: {
-        command() {
-            return this.$commands.get(this.name);
+        shortcut() {
+            return this.$shortcuts.get(this.name);
         },
         title() {
-            const { title, hotkeyText } = this.command;
+            const { title, hotkeyText } = this.shortcut;
             return [title, hotkeyText].filter(Boolean).join(' – ');
         },
         enabled() {
-            return this.$commands.isEnabled(this.name);
+            return this.$shortcuts.isEnabled(this.name);
         }
     }
 };
@@ -28,16 +28,16 @@ export default {
 
 <template>
   <ToolbarButton
-    :class="['toolbar-button', { 'with-text': command.text }]"
+    :class="['toolbar-button', { 'with-text': shortcut.text }]"
     :disabled="!enabled"
     :title="title"
-    @click.native="$commands.dispatch(name)"
+    @click.native="$shortcuts.dispatch(name)"
   >
     <Component
-      :is="command.icon"
-      v-if="command.icon"
+      :is="shortcut.icon"
+      v-if="shortcut.icon"
     />
-    {{ command.text }}
+    {{ shortcut.text }}
   </ToolbarButton>
 </template>
 

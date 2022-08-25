@@ -1,4 +1,4 @@
-export const selectionCommands = {
+export const selectionShortcuts = {
     selectAllNodes: {
         hotkey: ['Ctrl', 'A'],
         execute: ({ $store }) => $store.dispatch('selection/selectAllNodes')
@@ -9,7 +9,7 @@ export const selectionCommands = {
     }
 };
 
-export const sidePanelCommands = {
+export const sidePanelShortcuts = {
     toggleSidePanel: {
         hotkey: ['Ctrl', 'P'],
         execute: ({ $store }) => $store.dispatch('panel/toggleExpanded')

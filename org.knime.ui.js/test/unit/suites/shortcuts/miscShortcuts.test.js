@@ -1,6 +1,6 @@
-import { sidePanelCommands, selectionCommands } from '~/commands/variousCommands';
+import { sidePanelShortcuts, selectionShortcuts } from '@/shortcuts/miscShortcuts';
 
-describe('variousCommands', () => {
+describe('miscShortcuts', () => {
     let mockDispatch, $store;
 
     beforeEach(() => {
@@ -10,21 +10,21 @@ describe('variousCommands', () => {
         };
     });
 
-    describe('sidePanelCommands', () => {
+    describe('sidePanelShortcuts', () => {
         test('execute toggleSidePanel', () => {
-            sidePanelCommands.toggleSidePanel.execute({ $store });
+            sidePanelShortcuts.toggleSidePanel.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('panel/toggleExpanded');
         });
     });
 
-    describe('selectionCommands', () => {
+    describe('selectionShortcuts', () => {
         test('execute selectAllNodes', () => {
-            selectionCommands.selectAllNodes.execute({ $store });
+            selectionShortcuts.selectAllNodes.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('selection/selectAllNodes');
         });
 
         test('execute deselectAll', () => {
-            selectionCommands.deselectAll.execute({ $store });
+            selectionShortcuts.deselectAll.execute({ $store });
             expect(mockDispatch).toHaveBeenCalledWith('selection/deselectAllObjects');
         });
     });

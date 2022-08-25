@@ -209,9 +209,9 @@ describe('SelectionRectangle', () => {
             pointerMove({ clientX: 0, clientY: 0 });
             await Vue.nextTick();
 
-            let selectionPreviewCommands = wrapper.emitted('node-selection-preview');
+            const selectionPreviewEvents = wrapper.emitted('node-selection-preview');
             // skip first two events that select those nodes
-            expect(selectionPreviewCommands.slice(2)).toStrictEqual([
+            expect(selectionPreviewEvents.slice(2)).toStrictEqual([
                 [{
                     nodeId: 'inside-1',
                     type: 'clear'

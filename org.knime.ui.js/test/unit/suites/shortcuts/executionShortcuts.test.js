@@ -1,6 +1,6 @@
-import executionCommands from '~/commands/executionCommands';
+import executionShortcuts from '@/shortcuts/executionShortcuts';
 
-describe('executionCommands', () => {
+describe('executionShortcuts', () => {
     let mockDispatch, $store;
 
     beforeEach(() => {
@@ -24,34 +24,34 @@ describe('executionCommands', () => {
     describe('execute', () => {
         describe('all', () => {
             test('executeAll', () => {
-                executionCommands.executeAll.execute({ $store });
+                executionShortcuts.executeAll.execute({ $store });
                 expect(mockDispatch).toHaveBeenCalledWith('workflow/executeNodes', 'all');
             });
 
             test('cancelAll', () => {
-                executionCommands.cancelAll.execute({ $store });
+                executionShortcuts.cancelAll.execute({ $store });
                 expect(mockDispatch).toHaveBeenCalledWith('workflow/cancelNodeExecution', 'all');
             });
 
             test('resetAll', () => {
-                executionCommands.resetAll.execute({ $store });
+                executionShortcuts.resetAll.execute({ $store });
                 expect(mockDispatch).toHaveBeenCalledWith('workflow/resetNodes', 'all');
             });
         });
 
         describe('selection', () => {
             test('executeSelected', () => {
-                executionCommands.executeSelected.execute({ $store });
+                executionShortcuts.executeSelected.execute({ $store });
                 expect(mockDispatch).toHaveBeenCalledWith('workflow/executeNodes', 'selected');
             });
 
             test('cancelSelected', () => {
-                executionCommands.cancelSelected.execute({ $store });
+                executionShortcuts.cancelSelected.execute({ $store });
                 expect(mockDispatch).toHaveBeenCalledWith('workflow/cancelNodeExecution', 'selected');
             });
 
             test('resetSelected', () => {
-                executionCommands.resetSelected.execute({ $store });
+                executionShortcuts.resetSelected.execute({ $store });
                 expect(mockDispatch).toHaveBeenCalledWith('workflow/resetNodes', 'selected');
             });
         });
@@ -62,17 +62,17 @@ describe('executionCommands', () => {
             });
 
             test('resumeLoopExecution', () => {
-                executionCommands.resumeLoopExecution.execute({ $store });
+                executionShortcuts.resumeLoopExecution.execute({ $store });
                 expect(mockDispatch).toHaveBeenCalledWith('workflow/resumeLoopExecution', 'root:3');
             });
 
             test('pauseLoopExecution', () => {
-                executionCommands.pauseLoopExecution.execute({ $store });
+                executionShortcuts.pauseLoopExecution.execute({ $store });
                 expect(mockDispatch).toHaveBeenCalledWith('workflow/pauseLoopExecution', 'root:3');
             });
 
             test('stepLoopExecution', () => {
-                executionCommands.stepLoopExecution.execute({ $store });
+                executionShortcuts.stepLoopExecution.execute({ $store });
                 expect(mockDispatch).toHaveBeenCalledWith('workflow/stepLoopExecution', 'root:3');
             });
         });
@@ -81,53 +81,53 @@ describe('executionCommands', () => {
     describe('condition', () => {
         describe('all', () => {
             test('executeAll', () => {
-                expect(executionCommands.executeAll.condition({ $store })).toBeFalsy();
+                expect(executionShortcuts.executeAll.condition({ $store })).toBeFalsy();
                 $store.state.workflow.activeWorkflow.allowedActions.canExecute = true;
-                expect(executionCommands.executeAll.condition({ $store })).toBe(true);
+                expect(executionShortcuts.executeAll.condition({ $store })).toBe(true);
             });
 
             test('cancelAll', () => {
-                expect(executionCommands.cancelAll.condition({ $store })).toBeFalsy();
+                expect(executionShortcuts.cancelAll.condition({ $store })).toBeFalsy();
                 $store.state.workflow.activeWorkflow.allowedActions.canCancel = true;
-                expect(executionCommands.cancelAll.condition({ $store })).toBe(true);
+                expect(executionShortcuts.cancelAll.condition({ $store })).toBe(true);
             });
 
             test('resetAll', () => {
-                expect(executionCommands.resetAll.condition({ $store })).toBeFalsy();
+                expect(executionShortcuts.resetAll.condition({ $store })).toBeFalsy();
                 $store.state.workflow.activeWorkflow.allowedActions.canReset = true;
-                expect(executionCommands.resetAll.condition({ $store })).toBe(true);
+                expect(executionShortcuts.resetAll.condition({ $store })).toBe(true);
             });
         });
 
         describe('selection', () => {
             test('executeSelected', () => {
-                expect(executionCommands.executeSelected.condition({ $store })).toBeFalsy();
+                expect(executionShortcuts.executeSelected.condition({ $store })).toBeFalsy();
                 $store.getters['selection/selectedNodes'] = [{
                     allowedActions: { canExecute: true }
                 }];
-                expect(executionCommands.executeSelected.condition({ $store })).toBe(true);
+                expect(executionShortcuts.executeSelected.condition({ $store })).toBe(true);
             });
 
             test('cancelSelected', () => {
-                expect(executionCommands.cancelSelected.condition({ $store })).toBeFalsy();
+                expect(executionShortcuts.cancelSelected.condition({ $store })).toBeFalsy();
                 $store.getters['selection/selectedNodes'] = [{
                     allowedActions: { canCancel: true }
                 }];
-                expect(executionCommands.cancelSelected.condition({ $store })).toBe(true);
+                expect(executionShortcuts.cancelSelected.condition({ $store })).toBe(true);
             });
 
             test('resetSelected', () => {
-                expect(executionCommands.resetSelected.condition({ $store })).toBeFalsy();
+                expect(executionShortcuts.resetSelected.condition({ $store })).toBeFalsy();
                 $store.getters['selection/selectedNodes'] = [{
                     allowedActions: { canReset: true }
                 }];
-                expect(executionCommands.resetSelected.condition({ $store })).toBe(true);
+                expect(executionShortcuts.resetSelected.condition({ $store })).toBe(true);
             });
         });
 
         describe('single selection', () => {
             test('resumeLoopExecution', () => {
-                expect(executionCommands.resumeLoopExecution.condition({ $store })).toBeFalsy();
+                expect(executionShortcuts.resumeLoopExecution.condition({ $store })).toBeFalsy();
                 $store.getters['selection/singleSelectedNode'] = {
                     loopInfo: {
                         allowedActions: {
@@ -135,11 +135,11 @@ describe('executionCommands', () => {
                         }
                     }
                 };
-                expect(executionCommands.resumeLoopExecution.condition({ $store })).toBe(true);
+                expect(executionShortcuts.resumeLoopExecution.condition({ $store })).toBe(true);
             });
 
             test('pauseLoopExecution', () => {
-                expect(executionCommands.pauseLoopExecution.condition({ $store })).toBeFalsy();
+                expect(executionShortcuts.pauseLoopExecution.condition({ $store })).toBeFalsy();
                 $store.getters['selection/singleSelectedNode'] = {
                     loopInfo: {
                         allowedActions: {
@@ -147,12 +147,12 @@ describe('executionCommands', () => {
                         }
                     }
                 };
-                expect(executionCommands.pauseLoopExecution.condition({ $store })).toBe(true);
+                expect(executionShortcuts.pauseLoopExecution.condition({ $store })).toBe(true);
             });
 
 
             test('stepLoopExecution', () => {
-                expect(executionCommands.stepLoopExecution.condition({ $store })).toBeFalsy();
+                expect(executionShortcuts.stepLoopExecution.condition({ $store })).toBeFalsy();
                 $store.getters['selection/singleSelectedNode'] = {
                     loopInfo: {
                         allowedActions: {
@@ -160,7 +160,7 @@ describe('executionCommands', () => {
                         }
                     }
                 };
-                expect(executionCommands.stepLoopExecution.condition({ $store })).toBe(true);
+                expect(executionShortcuts.stepLoopExecution.condition({ $store })).toBe(true);
             });
         });
     });

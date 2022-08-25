@@ -4,13 +4,13 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
 import WorkflowToolbar from '~/components/WorkflowToolbar.vue';
-import ToolbarCommandButton from '~/components/ToolbarCommandButton.vue';
+import ToolbarShortcutButton from '~/components/ToolbarShortcutButton.vue';
 import WorkflowBreadcrumb from '~/components/WorkflowBreadcrumb.vue';
 import ZoomMenu from '~/components/ZoomMenu.vue';
 
 describe('WorkflowToolbar.vue', () => {
     let workflow, storeConfig, propsData, mocks, doShallowMount, wrapper,
-        $store, $commands, selectedNodes, selectedConnections;
+        $store, $shortcuts, selectedNodes, selectedConnections;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -49,7 +49,7 @@ describe('WorkflowToolbar.vue', () => {
             }
         };
 
-        $commands = {
+        $shortcuts = {
             isEnabled: jest.fn().mockReturnValue(true)
         };
 
@@ -72,24 +72,24 @@ describe('WorkflowToolbar.vue', () => {
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
-            mocks = { $store, $commands };
+            mocks = { $store, $shortcuts };
             wrapper = shallowMount(WorkflowToolbar, { propsData, mocks });
         };
     });
 
-    describe('Toolbar Command', () => {
-        test('Command buttons match computed items', () => {
+    describe('Toolbar Shortcut', () => {
+        test('Shortcut buttons match computed items', () => {
             doShallowMount();
 
-            let commandButtons = wrapper.findAllComponents(ToolbarCommandButton).wrappers;
-            expect(commandButtons.map(button => button.props('name'))).toStrictEqual(wrapper.vm.toolbarCommands);
+            let shortcutButtons = wrapper.findAllComponents(ToolbarShortcutButton).wrappers;
+            expect(shortcutButtons.map(button => button.props('name'))).toStrictEqual(wrapper.vm.toolbarButtons);
         });
 
-        it('hides toolbar command buttons if no workflow is open', () => {
+        it('hides toolbar shortcut buttons if no workflow is open', () => {
             storeConfig.workflow.state.activeWorkflow = null;
             doShallowMount();
 
-            expect(wrapper.findComponent(ToolbarCommandButton).exists()).toBe(false);
+            expect(wrapper.findComponent(ToolbarShortcutButton).exists()).toBe(false);
         });
     });
 
@@ -140,14 +140,18 @@ describe('WorkflowToolbar.vue', () => {
         it('shows nothing if no workflow is active', () => {
             storeConfig.workflow.state.activeWorkflow = null;
             doShallowMount();
-            let toolbarCommands = wrapper.findAllComponents(ToolbarCommandButton).wrappers.map(tb => tb.props('name'));
-            expect(toolbarCommands).toStrictEqual([]);
+            const toolbarShortcuts = wrapper.findAllComponents(ToolbarShortcutButton)
+                .wrappers
+                .map(tb => tb.props('name'));
+            expect(toolbarShortcuts).toStrictEqual([]);
         });
 
         it('shows menu items if no node is selected and not inside a component', () => {
             doShallowMount();
-            let toolbarCommands = wrapper.findAllComponents(ToolbarCommandButton).wrappers.map(tb => tb.props('name'));
-            expect(toolbarCommands).toStrictEqual([
+            const toolbarShortcuts = wrapper.findAllComponents(ToolbarShortcutButton)
+                .wrappers
+                .map(tb => tb.props('name'));
+            expect(toolbarShortcuts).toStrictEqual([
                 'save',
                 'undo',
                 'redo',
@@ -160,8 +164,10 @@ describe('WorkflowToolbar.vue', () => {
         it('shows layout editor button if inside a component', () => {
             storeConfig.workflow.state.activeWorkflow.info.containerType = 'component';
             doShallowMount();
-            let toolbarCommands = wrapper.findAllComponents(ToolbarCommandButton).wrappers.map(tb => tb.props('name'));
-            expect(toolbarCommands).toContain('openLayoutEditor');
+            const toolbarShortcuts = wrapper.findAllComponents(ToolbarShortcutButton)
+                .wrappers
+                .map(tb => tb.props('name'));
+            expect(toolbarShortcuts).toContain('openLayoutEditor');
         });
 
         it('shows correct menu items if one node is selected', () => {
@@ -171,8 +177,10 @@ describe('WorkflowToolbar.vue', () => {
             };
             storeConfig.selection.getters.selectedNodes = () => [node];
             doShallowMount();
-            let toolbarCommands = wrapper.findAllComponents(ToolbarCommandButton).wrappers.map(tb => tb.props('name'));
-            expect(toolbarCommands).toStrictEqual([
+            const toolbarShortcuts = wrapper.findAllComponents(ToolbarShortcutButton)
+                .wrappers
+                .map(tb => tb.props('name'));
+            expect(toolbarShortcuts).toStrictEqual([
                 'save',
                 'undo',
                 'redo',
@@ -191,8 +199,10 @@ describe('WorkflowToolbar.vue', () => {
             };
             storeConfig.selection.getters.selectedNodes = () => [node, { ...node, id: 'root:1' }];
             doShallowMount();
-            let toolbarCommands = wrapper.findAllComponents(ToolbarCommandButton).wrappers.map(tb => tb.props('name'));
-            expect(toolbarCommands).toStrictEqual([
+            const toolbarShortcuts = wrapper.findAllComponents(ToolbarShortcutButton)
+                .wrappers
+                .map(tb => tb.props('name'));
+            expect(toolbarShortcuts).toStrictEqual([
                 'save',
                 'undo',
                 'redo',
