@@ -439,7 +439,7 @@ export default {
       @contextmenu.prevent="onContextMenu"
       @connector-enter.stop="onConnectorEnter"
       @connector-leave.stop="onConnectorLeave"
-      @connector-move.stop="onConnectorMove"
+      @connector-move.stop="onConnectorMove($event, { inPorts, outPorts })"
       @connector-drop.stop="onConnectorDrop"
     >
       <!-- Elements for which a click selects node -->

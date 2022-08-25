@@ -18,7 +18,8 @@ const portShift = (portIndex, portCount, isMetanode, isOutPort) => {
 
     if (isMetanode) {
         // Metanodes don't have Mickey Mouse ears, so all ports are attached to the side, not to the top
-        // This little trick shifts them correctly
+        // Increasing these values skips the calculations made specifically for Mickey Mouse ports which are
+        // always index 0
         portIndex++;
         portCount++;
     }
@@ -29,6 +30,8 @@ const portShift = (portIndex, portCount, isMetanode, isOutPort) => {
     }
 
     // consider ports on the side
+    // if only 1 side port (+1 flow variable -> therefore portCount is 2)
+    // then position port vertically centered
     const middleY = nodeSize / 2;
     if (portCount === 2) {
         return [x, middleY];
@@ -37,7 +40,8 @@ const portShift = (portIndex, portCount, isMetanode, isOutPort) => {
     const middleIndex = 2;
     const portMargin = 1.5;
 
-    // leave the middle port free (index: 2 -> 3)
+    // if only 2 side ports (+1 flow variable -> therefore portCount is 3)
+    // leave the middle port free for the second side port by increasing the index (index: 2 -> 3)
     if (portCount === 3 && portIndex === 2) {
         portIndex = 3;
     }

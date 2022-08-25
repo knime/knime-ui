@@ -92,7 +92,8 @@ export const snapConnector = {
             }
 
             this.connectorHover = true;
-            // enable this element as a drop target
+            // Preventing the event's default will signal that this element is to be considered
+            // as a drop target for a connection
             e.preventDefault();
         },
         onConnectorLeave() {
@@ -101,7 +102,7 @@ export const snapConnector = {
             this.connectorHover = false;
             this.targetPort = null;
         },
-        onConnectorMove(e) {
+        onConnectorMove(e, ports) {
             consola.trace('connector-move');
             let { y: mouseY, x: mouseX, targetPortDirection } = e.detail;
 
@@ -139,7 +140,16 @@ export const snapConnector = {
                 snapPortIndex = partitionIndex;
             }
 
-            if (this.targetPort?.index !== snapPortIndex) {
+            let [relPortX, relPortY] = portPositions[snapPortIndex];
+            let absolutePortPosition = [relPortX + this.position.x, relPortY + this.position.y];
+
+            // position connector end
+            const didSnap = e.detail.onSnapCallback({
+                targetPort: ports[`${targetPortDirection}Ports`][snapPortIndex],
+                snapSuggestion: absolutePortPosition
+            });
+
+            if (didSnap && this.targetPort?.index !== snapPortIndex) {
                 // set the target port's side and index
                 // for performance: only replace observed object if targeted port changes
                 this.targetPort = {
@@ -147,12 +157,6 @@ export const snapConnector = {
                     index: snapPortIndex
                 };
             }
-
-            let [relPortX, relPortY] = portPositions[snapPortIndex];
-            let absolutePortPosition = [relPortX + this.position.x, relPortY + this.position.y];
-
-            // position connector end
-            e.detail.overwritePosition(absolutePortPosition);
         },
         onConnectorDrop(e) {
             if (isNaN(this.targetPort?.index)) {
@@ -177,18 +181,10 @@ export const snapConnector = {
                     destPort
                 };
 
-            // TODO NXT-571: Is this check still needed?
-            let alreadyConnected = Object
-                .values(this.$store.state.workflow.activeWorkflow.connections)
-                .some(connector => newConnector.sourceNode === connector.sourceNode &&
-                    newConnector.sourcePort === connector.sourcePort &&
-                    newConnector.destNode === connector.destNode &&
-                    newConnector.destPort === connector.destPort);
-
-            if (alreadyConnected) {
-                e.preventDefault();
-            } else {
+            if (e.detail.isCompatible) {
                 this.connectNodes(newConnector);
+            } else {
+                e.preventDefault();
             }
         }
     }

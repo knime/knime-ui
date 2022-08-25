@@ -10,6 +10,57 @@ import NodePortActions from './NodePortActions.vue';
 
 import { circleDetection } from '~/util/compatibleConnections';
 
+const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) => {
+    const isPortFree = toPort.connectedVia.length === 0;
+    
+    if (isPortFree) {
+        return true;
+    }
+
+    if (targetPortDirection === 'in') {
+        // In ports can only have 1 connection at a time
+        const [connectionId] = toPort.connectedVia;
+
+        // can be connected if the existing connection is deleteable
+        return connections[connectionId].allowedActions.canDelete;
+    }
+
+    return true;
+};
+
+const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {
+    const fromPortObjectInfo = availablePortTypes[fromPort.typeId];
+    const toPortObjectInfo = availablePortTypes[toPort.typeId];
+    const { compatibleTypes } = toPortObjectInfo;
+    const { kind: fromPortKind } = fromPortObjectInfo;
+    const { kind: toPortKind } = toPortObjectInfo;
+
+    // 'generic' and 'table' port kinds are not compatible, so we check either direction
+    if (
+        (fromPortKind === 'generic' && toPortKind === 'table') ||
+        (fromPortKind === 'table' && toPortKind === 'generic')
+    ) {
+        return false;
+    }
+
+    // generic ports accept any type of connection
+    if (fromPortKind === 'generic' || toPortKind === 'generic') {
+        return true;
+    }
+
+    // if port types ids don't match then they can't be connected
+    if (fromPort.typeId !== toPort.typeId) {
+        return false;
+    }
+
+    // if compatible types exist, check if they contain each other
+    if (compatibleTypes) {
+        return compatibleTypes.includes(fromPort.typeId);
+    }
+
+    return true;
+};
+
 export default {
     components: {
         Port,
@@ -51,12 +102,14 @@ export default {
     data: () => ({
         dragConnector: null,
         didMove: false,
-        pointerDown: false
+        pointerDown: false,
+        didDragToCompatibleTarget: false
     }),
     computed: {
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapGetters('workflow', ['isWritable', 'isDragging']),
         ...mapState('application', ['availablePortTypes']),
+        ...mapState('workflow', { connections: state => state.activeWorkflow.connections }),
         /*
          * only in-Ports replace their current connector if a new one is connected
          * only in-Ports that are connected need to indicate connector replacement
@@ -64,8 +117,11 @@ export default {
          * indicate, if this port is the starting point of a new connector
         */
         indicateConnectorReplacement() {
-            return this.direction === 'in' && Boolean(this.port.connectedVia.length) &&
-            (this.targeted || Boolean(this.dragConnector));
+            return (
+                this.direction === 'in' &&
+                Boolean(this.port.connectedVia.length) &&
+                (this.targeted || Boolean(this.dragConnector))
+            );
         },
         portTemplate() {
             let template = this.availablePortTypes[this.port.typeId];
@@ -112,34 +168,15 @@ export default {
             e.stopPropagation();
             
             this.pointerDown = true;
+            e.target.setPointerCapture(e.pointerId);
         },
         initialPointerMove(e) {
             this.didMove = true;
 
-            e.target.setPointerCapture(e.pointerId);
-
             this.kanvasElement = document.getElementById('kanvas');
 
             // set up connector
-            let portKind = this.portTemplate.kind;
-            let connector = {
-                id: 'drag-connector',
-                allowedActions: {
-                    canDelete: false
-                },
-                flowVariableConnection: portKind === 'flowVariable',
-                absolutePoint: this.screenToCanvasCoordinates([e.x, e.y])
-            };
-
-            if (this.direction === 'out') {
-                connector.sourceNode = this.nodeId;
-                connector.sourcePort = this.port.index;
-            } else {
-                connector.destNode = this.nodeId;
-                connector.destPort = this.port.index;
-            }
-
-            this.dragConnector = connector;
+            this.dragConnector = this.createConnectorFromEvent(e);
 
             // find compatible nodes
             let compatibleNodes = circleDetection({
@@ -151,7 +188,8 @@ export default {
             // signal start of connecting phase
             this.$root.$emit('connector-start', {
                 compatibleNodes,
-                nodeId: this.nodeId
+                nodeId: this.nodeId,
+                startPort: this.port
             });
         },
         onPointerMove: throttle(function (e) {
@@ -165,18 +203,45 @@ export default {
             }
             
             // find HTML-Element below cursor
-            let hitTarget = document.elementFromPoint(e.x, e.y);
+            const hitTarget = document.elementFromPoint(e.x, e.y);
 
+            const [absoluteX, absoluteY] = this.screenToCanvasCoordinates([e.x, e.y]);
+            const setDragConnectorCoords = (x, y) => {
+                this.dragConnector.absolutePoint = [x, y];
+            };
+            setDragConnectorCoords(absoluteX, absoluteY);
+            
+            const targetPortDirection = this.direction === 'out' ? 'in' : 'out';
             // create move event
-            let [absoluteX, absoluteY] = this.screenToCanvasCoordinates([e.x, e.y]);
-            let moveEvent = new CustomEvent('connector-move', {
+            const moveEvent = new CustomEvent('connector-move', {
                 detail: {
                     x: absoluteX,
                     y: absoluteY,
-                    targetPortDirection: this.direction === 'out' ? 'in' : 'out',
-                    overwritePosition: ([x, y]) => {
-                        absoluteX = x;
-                        absoluteY = y;
+                    targetPortDirection,
+                    onSnapCallback: ({ snapSuggestion, targetPort }) => {
+                        const [x, y] = snapSuggestion;
+                        const isSupportedConnection = checkConnectionSupport({
+                            toPort: this.port,
+                            connections: this.connections,
+                            targetPortDirection
+                        });
+
+                        const isCompatiblePort = checkPortCompatibility({
+                            fromPort: this.port,
+                            toPort: targetPort,
+                            availablePortTypes: this.availablePortTypes
+                        });
+
+                        this.didDragToCompatibleTarget = isSupportedConnection && isCompatiblePort;
+                        
+                        // setting the drag connector coordinates will cause the connector to snap
+                        // We prevent that if it's not a compatible target
+                        if (this.didDragToCompatibleTarget) {
+                            setDragConnectorCoords(x, y);
+                        }
+
+                        // The callback should return whether a snapped connection was made to a compatible target
+                        return this.didDragToCompatibleTarget;
                     }
                 },
                 bubbles: true
@@ -197,9 +262,7 @@ export default {
                 if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
                     this.lastHitTarget.element.dispatchEvent(
                         new CustomEvent('connector-leave', {
-                            detail: {
-                                relatedTarget: hitTarget
-                            },
+                            detail: { relatedTarget: hitTarget },
                             bubbles: true
                         })
                     );
@@ -218,7 +281,7 @@ export default {
                     );
 
                     // cancelling signals, that hit target allows dropping a connector
-                    let allowsDrop = !notCancelled;
+                    const allowsDrop = !notCancelled;
 
                     if (allowsDrop) {
                         // send first move event right away
@@ -232,7 +295,13 @@ export default {
                 }
             }
 
-            this.dragConnector.absolutePoint = [absoluteX, absoluteY];
+            if (this.lastHitTarget) {
+                // if a hitTarget was found then remember its compatibility
+                this.lastHitTarget = {
+                    ...this.lastHitTarget,
+                    isCompatible: this.didDragToCompatibleTarget
+                };
+            }
             /* eslint-enable no-invalid-this */
         }),
         onPointerUp(e) {
@@ -240,7 +309,6 @@ export default {
             
             if (!this.dragConnector) {
                 return;
-                // TODO: maybe get rid of didMove and handle normal click here?
             }
 
             e.stopPropagation();
@@ -256,7 +324,10 @@ export default {
                                 sourceNode,
                                 sourcePort,
                                 destNode,
-                                destPort
+                                destPort,
+                                // when connection is dropped we pass in whether the last hit target was compatible.
+                                // incompatible targets will be ignored and will not be connected to
+                                isCompatible: this.lastHitTarget.isCompatible
                             },
                             bubbles: true,
                             cancelable: true
@@ -288,6 +359,21 @@ export default {
             if (this.selected) {
                 this.$emit('deselect');
             }
+        },
+        createConnectorFromEvent(e) {
+            const { kind: portKind } = this.portTemplate;
+
+            const relatedNode = this.direction === 'out' ? 'sourceNode' : 'destNode';
+            const relatedPort = this.direction === 'out' ? 'sourcePort' : 'destPort';
+
+            return {
+                id: 'drag-connector',
+                allowedActions: { canDelete: false },
+                flowVariableConnection: portKind === 'flowVariable',
+                absolutePoint: this.screenToCanvasCoordinates([e.x, e.y]),
+                [relatedNode]: this.nodeId,
+                [relatedPort]: this.port.index
+            };
         }
     }
 };
