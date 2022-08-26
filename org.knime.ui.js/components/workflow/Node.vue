@@ -12,15 +12,13 @@ import NodeAnnotation from '~/components/workflow/NodeAnnotation.vue';
 import NodeActionBar from '~/components/workflow/NodeActionBar.vue';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane.vue';
 import NodeName from '~/components/workflow/NodeName.vue';
-
-import { snapConnector } from '~/mixins';
+import NodeConnectorDetection from '~/components/workflow/NodeConnectorDetection.vue';
+import NodeHoverContainer from '~/components/workflow/NodeHoverContainer.vue';
 
 /**
  * A workflow node, including title, ports, node state indicator (traffic lights), selection frame and node annotation.
  * Must be embedded in an `<svg>` element.
  * Requires the `portal-vue` module.
- *
- * It needs to be the direct parent of <NodePorts> and is tightly coupled by direct access
  * */
 export default {
     components: {
@@ -31,9 +29,10 @@ export default {
         NodeName,
         NodePorts,
         NodeSelectionPlane,
-        NodeDecorators
+        NodeDecorators,
+        NodeConnectorDetection,
+        NodeHoverContainer
     },
-    mixins: [snapConnector],
     provide() {
         return {
             // Provide position as anchorPoint for tooltips
@@ -169,12 +168,13 @@ export default {
     },
     data() {
         return {
-            hover: false,
+            isHovering: false,
             selectionPreview: null,
             nameDimensions: {
                 width: 0,
                 height: 20
-            }
+            },
+            portPositions: { in: [], out: [] }
         };
     },
     computed: {
@@ -201,54 +201,6 @@ export default {
             return {
                 ...this.allowedActions,
                 ...this.loopInfo.allowedActions
-            };
-        },
-        /**
-         * Calculates the width of the hover area of the node.
-         * The size increases when the node is hovered and either a dialog button or the view button is available,
-         * so that all the action buttons are reachable.
-         * @return {object} the size and position of the hover area of the node
-         */
-        hoverSize() {
-            let hoverBounds = {
-                top: -this.$shapes.nodeHoverMargin[0],
-                left: -this.$shapes.nodeHoverMargin[1],
-                bottom: this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[2],
-                right: this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[3]
-            };
-            
-            // adjust upper hover bounds to node name
-            hoverBounds.top -= this.nameDimensions.height;
-
-            if (this.hover) {
-                // buttons are shown as disabled if false, hidden if null
-                let extraHorizontalSpace = 0;
-
-                if ('canOpenDialog' in this.allowedActions) {
-                    extraHorizontalSpace += this.$shapes.nodeActionBarButtonSpread;
-                }
-                if ('canOpenView' in this.allowedActions) {
-                    extraHorizontalSpace += this.$shapes.nodeActionBarButtonSpread;
-                }
-
-                hoverBounds.left -= extraHorizontalSpace / 2;
-                hoverBounds.right += extraHorizontalSpace / 2;
-            }
-            if (this.connectorHover || this.hover) {
-                // enlarge hover area to include all ports
-
-                let portBarBottom = this.$refs.nodePorts.portBarBottom;
-                let margin = this.$shapes.nodeHoverPortBottomMargin;
-                
-                // if portBarBottom + margin is larger, then extend hover bounds
-                hoverBounds.bottom = Math.max(portBarBottom + margin, hoverBounds.bottom);
-            }
-
-            return {
-                y: hoverBounds.top,
-                x: hoverBounds.left,
-                width: hoverBounds.right - hoverBounds.left,
-                height: hoverBounds.bottom - hoverBounds.top
             };
         },
         isSelected() {
@@ -281,10 +233,6 @@ export default {
                 x: this.position.x + this.$shapes.nodeSize / 2,
                 y: this.position.y - this.$shapes.nodeSelectionPadding[0] - this.nameDimensions.height
             };
-        },
-        // provided as required by snapConnector mixin
-        portPositions() {
-            return this.$refs.nodePorts.portPositions;
         }
     },
     methods: {
@@ -301,7 +249,7 @@ export default {
             }
 
             // disable hover state if the mouse leaves the hover area of the node
-            this.hover = false;
+            this.isHovering = false;
         },
 
         onLeftDoubleClick(e) {
@@ -370,22 +318,6 @@ export default {
             }
         },
 
-        // implemented as required by snapConnector mixin
-        isOutsideConnectorHoverRegion(x, y, targetPortDirection) {
-            const upperBound = -20;
-
-            if (y < upperBound) {
-                return true;
-            }
-            if (targetPortDirection === 'in' && x > this.$shapes.nodeSize) {
-                return true;
-            }
-            if (targetPortDirection === 'out' && x < 0) {
-                return true;
-            }
-
-            return false;
-        },
         // public
         setSelectionPreview(preview) {
             this.selectionPreview = preview === 'clear' ? null : preview;
@@ -395,120 +327,144 @@ export default {
 </script>
 
 <template>
-  <g :class="{'connection-forbidden': connectionForbidden && !isConnectionSource}">
-    <!-- NodeActionBar portalled to the front-most layer -->
-    <portal
-      to="node-actions"
+  <NodeConnectorDetection
+    :id="id"
+    :position="position"
+    :port-positions="portPositions"
+  >
+    <template
+      #default="{
+        connectionForbidden,
+        isConnectionSource,
+        targetPort,
+        connectorHover,
+        on: {
+          onConnectorEnter,
+          onConnectorLeave,
+          onConnectorMove,
+          onConnectorDrop
+        }
+      }"
     >
-      <NodeActionBar
-        v-if="!insideStreamingComponent && hover && !isDragging"
-        ref="actionbar"
-        v-bind="allNodeActions"
-        :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y})`"
-        :node-id="id"
-        @mouseleave.native="onLeaveHoverArea"
-      />
-    </portal>
+      <g :class="{ 'connection-forbidden': connectionForbidden && !isConnectionSource }">
+        <!-- NodeActionBar portalled to the front-most layer -->
+        <portal to="node-actions">
+          <NodeActionBar
+            v-if="!insideStreamingComponent && isHovering && !isDragging"
+            ref="actionbar"
+            v-bind="allNodeActions"
+            :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y})`"
+            :node-id="id"
+            @mouseleave.native="onLeaveHoverArea"
+          />
+        </portal>
 
-    <!-- Node Selection Plane. Portalled to the back -->
-    <portal
-      to="node-select"
-    >
-      <NodeSelectionPlane
-        v-show="showSelectionPlane"
-        :position="position"
-        :width="selectionWidth"
-        :extra-height="nameDimensions.height"
-        :kind="kind"
-      />
-    </portal>
+        <!-- Node Selection Plane. Portalled to the back -->
+        <portal to="node-select">
+          <NodeSelectionPlane
+            v-show="showSelectionPlane"
+            :position="position"
+            :width="selectionWidth"
+            :extra-height="nameDimensions.height"
+            :kind="kind"
+          />
+        </portal>
 
-    <!-- Annotation needs to be behind ports -->
-    <NodeAnnotation
-      v-if="annotation && annotation.text"
-      v-bind="annotation"
-      :y-offset="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
-    />
-
-    <!-- Elements for which mouse hover triggers hover state -->
-    <g
-      ref="hoverContainer"
-      class="hover-container"
-      @mouseleave="onLeaveHoverArea"
-      @mouseenter="hover = true"
-      @contextmenu.prevent="onContextMenu"
-      @connector-enter.stop="onConnectorEnter"
-      @connector-leave.stop="onConnectorLeave"
-      @connector-move.stop="onConnectorMove($event, { inPorts, outPorts })"
-      @connector-drop.stop="onConnectorDrop"
-    >
-      <!-- Elements for which a click selects node -->
-      <g
-        ref="mouseClickable"
-        class="mouse-clickable"
-        tabindex="0"
-        @click.left="onLeftMouseClick"
-      >
-        <!-- Hover Area, larger than the node torso -->
-        <rect
-          class="hover-area"
-          :width="hoverSize.width"
-          :height="hoverSize.height"
-          :x="hoverSize.x"
-          :y="hoverSize.y"
-        />
-        <NodeTorso
-          :type="type"
-          :kind="kind"
-          :icon="icon"
-          :execution-state="state && state.executionState"
-          :class="['node-torso', { hover }]"
-          :filter="hover && 'url(#node-torso-shadow)'"
-          @dblclick.left.native="onLeftDoubleClick"
+        <!-- Annotation needs to be behind ports -->
+        <NodeAnnotation
+          v-if="annotation && annotation.text"
+          v-bind="annotation"
+          :y-offset="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
         />
 
-        <NodeDecorators v-bind="$props" />
+        <!-- Elements for which mouse hover triggers hover state -->
+        <NodeHoverContainer
+          class="hover-container"
+          :hover="isHovering"
+          :node-name-dimensions="nameDimensions"
+          :is-connector-hovering="connectorHover"
+          :allowed-actions="allowedActions"
+          :port-positions="portPositions"
+          @contextmenu.prevent="onContextMenu"
+          @connector-enter="onConnectorEnter"
+          @connector-leave="onConnectorLeave"
+          @connector-move="onConnectorMove($event, { inPorts, outPorts })"
+          @connector-drop="onConnectorDrop"
+          @enter-hover-area="isHovering = true"
+          @leave-hover-area="onLeaveHoverArea"
+        >
+          <template #default="{ hoverSize }">
+            <!-- Elements for which a click selects node -->
+            <g
+              ref="mouseClickable"
+              class="mouse-clickable"
+              tabindex="0"
+              @click.left="onLeftMouseClick"
+            >
+              <!-- Hover Area, larger than the node torso -->
+              <rect
+                class="hover-area"
+                :width="hoverSize.width"
+                :height="hoverSize.height"
+                :x="hoverSize.x"
+                :y="hoverSize.y"
+              />
+              <NodeTorso
+                :type="type"
+                :kind="kind"
+                :icon="icon"
+                :execution-state="state && state.executionState"
+                :class="['node-torso', { hover: isHovering }]"
+                :filter="isHovering && 'url(#node-torso-shadow)'"
+                @dblclick.left.native="onLeftDoubleClick"
+              />
 
-        <NodeState
-          v-if="kind !== 'metanode'"
-          v-bind="state"
-          :class="['node-state', { hover }]"
-          :loop-status="loopInfo.status"
-          :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`"
-        />
+              <NodeDecorators v-bind="$props" />
+
+              <NodeState
+                v-if="kind !== 'metanode'"
+                v-bind="state"
+                :class="['node-state', { hover: isHovering }]"
+                :loop-status="loopInfo.status"
+                :transform="`translate(0, ${$shapes.nodeSize + $shapes.nodeStatusMarginTop})`"
+              />
+            </g>
+
+            <!-- Node Ports -->
+            <NodePorts
+              :node-id="id"
+              :node-kind="kind"
+              :in-ports="inPorts"
+              :out-ports="outPorts"
+              :target-port="targetPort"
+              :is-editable="isEditable"
+              :port-groups="portGroups"
+              :hover="isHovering"
+              :connector-hover="connectorHover"
+              :is-single-selected="isSingleSelected"
+              @update-port-positions="portPositions = $event"
+            />
+
+            <!-- Node name / title -->
+            <NodeName
+              :node-id="id"
+              :node-position="position"
+              :value="name"
+              :editable="isEditable && isContainerNode"
+              @click.native.left="onLeftMouseClick"
+              @contextmenu.prevent="onContextMenu"
+              @width-change="nameDimensions.width = $event"
+              @height-change="nameDimensions.height = $event"
+              @edit-start="isHovering = false"
+              @connector-enter.native.stop="onConnectorEnter"
+              @connector-leave.native.stop="onConnectorLeave"
+            />
+          </template>
+        </NodeHoverContainer>
+        <!-- </g> -->
       </g>
-
-      <!-- Node Ports -->
-      <NodePorts
-        ref="nodePorts"
-        :node-id="id"
-        :node-kind="kind"
-        :in-ports="inPorts"
-        :out-ports="outPorts"
-        :target-port="targetPort"
-        :is-editable="isEditable"
-        :port-groups="portGroups"
-        :hover="hover"
-        :connector-hover="connectorHover"
-        :is-single-selected="isSingleSelected"
-      />
-
-      <!-- Node name / title -->
-      <NodeName
-        :node-id="id"
-        :node-position="position"
-        :value="name"
-        :editable="isEditable && isContainerNode"
-        @click.native.left="onLeftMouseClick"
-        @contextmenu.prevent="onContextMenu"
-        @width-change="nameDimensions.width = $event"
-        @height-change="nameDimensions.height = $event"
-        @edit-start="hover = false"
-        @connector-enter.native.stop="onConnectorEnter"
-        @connector-leave.native.stop="onConnectorLeave"
-      />
-    </g>
-  </g>
+    </template>
+  </NodeConnectorDetection>
 </template>
 
 <style lang="postcss" scoped>

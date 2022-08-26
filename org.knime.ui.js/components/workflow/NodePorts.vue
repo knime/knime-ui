@@ -89,36 +89,29 @@ export default {
          */
         portPositions() {
             return {
-                in: portPositions(
-                    { portCount: this.inPorts.length, isMetanode: this.isMetanode }
-                ),
-                out: portPositions(
-                    { portCount: this.outPorts.length, isMetanode: this.isMetanode, isOutports: true }
-                )
+                in: portPositions({
+                    portCount: this.inPorts.length,
+                    isMetanode: this.isMetanode
+                }),
+                out: portPositions({
+                    portCount: this.outPorts.length,
+                    isMetanode: this.isMetanode,
+                    isOutports: true
+                })
             };
         },
         addPortPlaceholderPositions() {
             return {
-                input: placeholderPosition(
-                    { portCount: this.inPorts.length, isMetanode: this.isMetanode }
-                ),
-                output: placeholderPosition(
-                    { portCount: this.outPorts.length, isMetanode: this.isMetanode, isOutport: true }
-                )
+                input: placeholderPosition({
+                    portCount: this.inPorts.length,
+                    isMetanode: this.isMetanode
+                }),
+                output: placeholderPosition({
+                    portCount: this.outPorts.length,
+                    isMetanode: this.isMetanode,
+                    isOutport: true
+                })
             };
-        },
-        /* accessed by parent Node.vue */
-        portBarBottom() {
-            let portPositions = this.portPositions;
-
-            let lastInPort = portPositions.in[portPositions.in.length - 1];
-            let lastOutPort = portPositions.out[portPositions.out.length - 1];
-
-            // take y-position of last port in the list or default to 0 for an empty list
-            let lastInPortY = lastInPort?.[1] || 0;
-            let lastOutPortY = lastOutPort?.[1] || 0;
-
-            return Math.max(lastInPortY, lastOutPortY) + this.$shapes.portSize / 2;
         },
         /* eslint-disable brace-style, curly */
         canAddPort() {
@@ -158,6 +151,12 @@ export default {
         isDragging(isDragging, wasDragging) {
             if (isDragging && !wasDragging) {
                 this.selectedPort = null;
+            }
+        },
+        portPositions: {
+            immediate: true,
+            handler(portPositions) {
+                this.$emit('update-port-positions', portPositions);
             }
         }
     },

@@ -1,0 +1,106 @@
+<script>
+
+/**
+ * Calculates the size of the Node hover area based on different criteria.
+ * Also detects conector events and emits the corresponding event up to the parent
+ */
+export default {
+    props: {
+        hover: {
+            type: Boolean,
+            default: false
+        },
+        nodeNameDimensions: {
+            type: Object,
+            required: true
+        },
+        portPositions: {
+            type: Object,
+            required: true
+        },
+        isConnectorHovering: {
+            type: Boolean,
+            default: false
+        },
+        allowedActions: {
+            type: Object,
+            default: () => ({})
+        }
+    },
+
+    computed: {
+        portBarBottom() {
+            const portPositions = this.portPositions;
+            const lastInPort = portPositions.in[portPositions.in.length - 1];
+            const lastOutPort = portPositions.out[portPositions.out.length - 1];
+
+            // take y-position of last port in the list or default to 0 for an empty list
+            const lastInPortY = lastInPort?.[1] || 0;
+            const lastOutPortY = lastOutPort?.[1] || 0;
+
+            return Math.max(lastInPortY, lastOutPortY) + this.$shapes.portSize / 2;
+        },
+        /**
+         * Calculates the width of the hover area of the node.
+         * The size increases when the node is hovered and either a dialog button or the view button is available,
+         * so that all the action buttons are reachable.
+         * @return {object} the size and position of the hover area of the node
+         */
+        hoverSize() {
+            let hoverBounds = {
+                top: -this.$shapes.nodeHoverMargin[0],
+                left: -this.$shapes.nodeHoverMargin[1],
+                bottom: this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[2],
+                right: this.$shapes.nodeSize + this.$shapes.nodeHoverMargin[3]
+            };
+            
+            // adjust upper hover bounds to node name
+            hoverBounds.top -= this.nodeNameDimensions.height;
+
+            if (this.hover) {
+                // buttons are shown as disabled if false, hidden if null
+                let extraHorizontalSpace = 0;
+
+                if ('canOpenDialog' in this.allowedActions) {
+                    extraHorizontalSpace += this.$shapes.nodeActionBarButtonSpread;
+                }
+                if ('canOpenView' in this.allowedActions) {
+                    extraHorizontalSpace += this.$shapes.nodeActionBarButtonSpread;
+                }
+
+                hoverBounds.left -= extraHorizontalSpace / 2;
+                hoverBounds.right += extraHorizontalSpace / 2;
+            }
+            if (this.isConnectorHovering || this.hover) {
+                // enlarge hover area to include all ports
+
+                const margin = this.$shapes.nodeHoverPortBottomMargin;
+                
+                // if portBarBottom + margin is larger, then extend hover bounds
+                hoverBounds.bottom = Math.max(this.portBarBottom + margin, hoverBounds.bottom);
+            }
+
+            return {
+                y: hoverBounds.top,
+                x: hoverBounds.left,
+                width: hoverBounds.right - hoverBounds.left,
+                height: hoverBounds.bottom - hoverBounds.top
+            };
+        }
+    }
+};
+</script>
+
+<template>
+  <g
+    @mouseenter="$emit('enter-hover-area', $event)"
+    @mouseleave="$emit('leave-hover-area', $event)"
+    @contextmenu="$emit('contextmenu', $event)"
+    @connector-enter.stop="$emit('connector-enter', $event)"
+    @connector-leave.stop="$emit('connector-leave', $event)"
+    @connector-move.stop="$emit('connector-move', $event)"
+    @connector-drop.stop="$emit('connector-drop', $event)"
+  >
+    <slot :hover-size="hoverSize" />
+  </g>
+</template>

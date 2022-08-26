@@ -10,7 +10,8 @@ export const circleDetection =
         // make a set of all nodeIds
         let compatibleNodes = new Set(Object.keys(nodes));
 
-        // if the start node is a metanode port then skip bfs
+        // if the start node is a metanode then it means we're inside one, and any node
+        // can be connected to the metanode port bar, so we skip bfs
         if (workflowInfo.containerType === 'metanode' && workflowInfo.containerId === startNode) {
             return compatibleNodes;
         }
