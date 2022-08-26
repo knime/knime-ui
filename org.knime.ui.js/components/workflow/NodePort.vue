@@ -48,17 +48,13 @@ const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {
         return true;
     }
 
-    // if port types ids don't match then they can't be connected
-    if (fromPort.typeId !== toPort.typeId) {
-        return false;
-    }
-
     // if compatible types exist, check if they contain each other
     if (compatibleTypes) {
         return compatibleTypes.includes(fromPort.typeId);
     }
 
-    return true;
+    // lastly, if port types ids don't match then they can't be connected
+    return fromPort.typeId === toPort.typeId;
 };
 
 export default {
@@ -218,8 +214,8 @@ export default {
                     x: absoluteX,
                     y: absoluteY,
                     targetPortDirection,
-                    onSnapCallback: ({ snapSuggestion, targetPort }) => {
-                        const [x, y] = snapSuggestion;
+                    onSnapCallback: ({ snapPosition, targetPort }) => {
+                        const [x, y] = snapPosition;
                         const isSupportedConnection = checkConnectionSupport({
                             toPort: this.port,
                             connections: this.connections,

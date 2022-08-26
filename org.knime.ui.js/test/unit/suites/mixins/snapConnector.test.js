@@ -49,7 +49,7 @@ describe('Snap Connector Mixin', () => {
                 <div
                     @connector-enter.stop="onConnectorEnter"
                     @connector-leave.stop="onConnectorLeave"
-                    @connector-move.stop="onConnectorMove"
+                    @connector-move.stop="onConnectorMove($event, mockPorts)"
                     @connector-drop.stop="onConnectorDrop"
                 />`,
                 mixins: [snapConnector],
@@ -66,23 +66,14 @@ describe('Snap Connector Mixin', () => {
                 workflow: {
                     actions: {
                         connectNodes: connectNodesMock
-                    },
-                    state: {
-                        activeWorkflow: {
-                            connections: {
-                                // eslint-disable-next-line quote-props
-                                'existing': {
-                                    sourceNode: 'existing:1',
-                                    destNode: 'existing:2',
-                                    sourcePort: 0,
-                                    destPort: 0
-                                }
-                            }
-                        }
                     }
                 }
             });
-            wrapper = shallowMount(snapContainerComponent, { mocks: { $store } });
+            const mockPorts = {
+                inPorts: [...Array(3).keys()].map((_, idx) => ({ id: `port-${idx + 1}` })),
+                outPorts: [...Array(3).keys()].map((_, idx) => ({ id: `port-${idx + 1}` }))
+            };
+            wrapper = shallowMount(snapContainerComponent, { mocks: { $store, mockPorts } });
         };
     });
 
@@ -229,17 +220,17 @@ describe('Snap Connector Mixin', () => {
 
             doMount();
 
-            let overwritePositionMock = jest.fn();
+            let snapCallbackMock = jest.fn();
             wrapper.trigger('connector-move', {
                 detail: {
                     y: -1,
                     x: -1,
                     targetPortDirection,
-                    overwritePosition: overwritePositionMock
+                    onSnapCallback: snapCallbackMock
                 }
             });
 
-            expect(overwritePositionMock).not.toHaveBeenCalled();
+            expect(snapCallbackMock).not.toHaveBeenCalled();
             expect(wrapper.vm.targetPort).toBeFalsy();
         });
 
@@ -251,17 +242,21 @@ describe('Snap Connector Mixin', () => {
 
             doMount();
 
-            let overwritePositionMock = jest.fn();
+            let snapCallbackMockMock = jest.fn(() => true);
             wrapper.trigger('connector-move', {
                 detail: {
                     y: -1,
                     x: -1,
                     targetPortDirection,
-                    overwritePosition: overwritePositionMock
+                    onSnapCallback: snapCallbackMockMock
                 }
             });
 
-            expect(overwritePositionMock).toHaveBeenCalledWith([portX + 5, 0 + 5]);
+            expect(snapCallbackMockMock).toHaveBeenCalledWith({
+                snapPosition: [portX + 5, 0 + 5],
+                targetPort: { id: 'port-1' }
+            });
+
             expect(wrapper.vm.targetPort).toStrictEqual({
                 side: targetPortDirection,
                 index: 0
@@ -277,17 +272,17 @@ describe('Snap Connector Mixin', () => {
 
             doMount();
 
-            let overwritePositionMock = jest.fn();
+            let snapCallbackMock = jest.fn();
             wrapper.trigger('connector-move', {
                 detail: {
                     y: -1,
                     x: -1,
                     targetPortDirection,
-                    overwritePosition: overwritePositionMock
+                    onSnapCallback: snapCallbackMock
                 }
             });
 
-            expect(overwritePositionMock).not.toHaveBeenCalled();
+            expect(snapCallbackMock).not.toHaveBeenCalled();
             expect(wrapper.vm.targetPort).toBeFalsy();
         });
 
@@ -296,85 +291,100 @@ describe('Snap Connector Mixin', () => {
             doMount();
 
             // above first port => port 0
-            let overwritePositionMock = jest.fn();
+            let snapCallbackMock = jest.fn(() => true);
             wrapper.trigger('connector-move', {
                 detail: {
                     y: -10,
                     x: -1,
                     targetPortDirection,
-                    overwritePosition: overwritePositionMock
+                    onSnapCallback: snapCallbackMock
                 }
             });
 
-            expect(overwritePositionMock).toHaveBeenCalledWith([portX, -5]);
+            expect(snapCallbackMock).toHaveBeenCalledWith({
+                snapPosition: [portX, -5],
+                targetPort: { id: 'port-1' }
+            });
             expect(wrapper.vm.targetPort).toStrictEqual({
                 side: targetPortDirection,
                 index: 0
             });
 
             // above / still at first boundary => port 0
-            overwritePositionMock = jest.fn();
+            snapCallbackMock = jest.fn(() => true);
             wrapper.trigger('connector-move', {
                 detail: {
                     y: 0,
                     x: -1,
                     targetPortDirection,
-                    overwritePosition: overwritePositionMock
+                    onSnapCallback: snapCallbackMock
                 }
             });
 
-            expect(overwritePositionMock).toHaveBeenCalledWith([portX, -5]);
+            expect(snapCallbackMock).toHaveBeenCalledWith({
+                snapPosition: [portX, -5],
+                targetPort: { id: 'port-1' }
+            });
             expect(wrapper.vm.targetPort).toStrictEqual({
                 side: targetPortDirection,
                 index: 0
             });
 
             // below first boundary => port 1
-            overwritePositionMock = jest.fn();
+            snapCallbackMock = jest.fn(() => true);
             wrapper.trigger('connector-move', {
                 detail: {
                     y: 1,
                     x: -1,
                     targetPortDirection,
-                    overwritePosition: overwritePositionMock
+                    onSnapCallback: snapCallbackMock
                 }
             });
 
-            expect(overwritePositionMock).toHaveBeenCalledWith([portX, 5]);
+            expect(snapCallbackMock).toHaveBeenCalledWith({
+                snapPosition: [portX, 5],
+                targetPort: { id: 'port-2' }
+            });
             expect(wrapper.vm.targetPort).toStrictEqual({
                 side: targetPortDirection,
                 index: 1
             });
 
             // above / still at second boundary => port 1
-            overwritePositionMock = jest.fn();
+            snapCallbackMock = jest.fn(() => true);
             wrapper.trigger('connector-move', {
                 detail: {
                     y: 10,
                     x: -1,
                     targetPortDirection,
-                    overwritePosition: overwritePositionMock
+                    onSnapCallback: snapCallbackMock
                 }
             });
 
-            expect(overwritePositionMock).toHaveBeenCalledWith([portX, 5]);
+            expect(snapCallbackMock).toHaveBeenCalledWith({
+                snapPosition: [portX, 5],
+                targetPort: { id: 'port-2' }
+            });
             expect(wrapper.vm.targetPort).toStrictEqual({
                 side: targetPortDirection,
                 index: 1
             });
 
             // below last boundary => port 2
-            overwritePositionMock = jest.fn();
+            snapCallbackMock = jest.fn(() => true);
             wrapper.trigger('connector-move', {
                 detail: {
                     y: 11,
                     x: -1,
                     targetPortDirection,
-                    overwritePosition: overwritePositionMock
+                    onSnapCallback: snapCallbackMock
                 }
             });
 
-            expect(overwritePositionMock).toHaveBeenCalledWith([portX, 15]);
+            expect(snapCallbackMock).toHaveBeenCalledWith({
+                snapPosition: [portX, 15],
+                targetPort: { id: 'port-3' }
+            });
             expect(wrapper.vm.targetPort).toStrictEqual({
                 side: targetPortDirection,
                 index: 2
@@ -404,7 +414,8 @@ describe('Snap Connector Mixin', () => {
             wrapper.trigger('connector-drop', {
                 detail: {
                     sourceNode: 'source',
-                    sourcePort: 0
+                    sourcePort: 0,
+                    isCompatible: true
                 }
             });
             expect(connectNodesMock).toHaveBeenCalledWith(expect.anything(), {
@@ -425,7 +436,8 @@ describe('Snap Connector Mixin', () => {
             wrapper.trigger('connector-drop', {
                 detail: {
                     destNode: 'destination',
-                    destPort: 0
+                    destPort: 0,
+                    isCompatible: true
                 }
             });
             expect(connectNodesMock).toHaveBeenCalledWith(expect.anything(), {

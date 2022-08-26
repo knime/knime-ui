@@ -119,6 +119,7 @@ export const snapConnector = {
 
             let snapPartitions = this.snapPartitions[targetPortDirection];
             let portPositions = this.portPositions[targetPortDirection];
+            
 
             // no port, no snap, assumes partitions don't change while dragging connector
             if (!snapPartitions) {
@@ -146,7 +147,7 @@ export const snapConnector = {
             // position connector end
             const didSnap = e.detail.onSnapCallback({
                 targetPort: ports[`${targetPortDirection}Ports`][snapPortIndex],
-                snapSuggestion: absolutePortPosition
+                snapPosition: absolutePortPosition
             });
 
             if (didSnap && this.targetPort?.index !== snapPortIndex) {

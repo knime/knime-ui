@@ -86,6 +86,16 @@ describe('NodePort', () => {
                         },
                         flowVariable: {
                             kind: 'flowVariable'
+                        },
+                        generic: {
+                            kind: 'generic'
+                        },
+                        other: {
+                            kind: 'other'
+                        },
+                        specific: {
+                            kind: 'specific',
+                            compatibleTypes: ['flowVariable']
                         }
                     }
                 }
@@ -373,7 +383,8 @@ describe('NodePort', () => {
                 expect(rootWrapper.emitted('connector-start')).toStrictEqual([
                     [{
                         compatibleNodes: [],
-                        nodeId: 'node:1'
+                        nodeId: 'node:1',
+                        startPort: propsData.port
                     }]
                 ]);
             });
@@ -471,7 +482,7 @@ describe('NodePort', () => {
                     x: 0,
                     y: 0,
                     targetPortDirection: 'out',
-                    overwritePosition: expect.any(Function)
+                    onSnapCallback: expect.any(Function)
                 });
             });
 
@@ -513,17 +524,86 @@ describe('NodePort', () => {
                 expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([2, 2]);
             });
 
-            test('overwrite connector position', () => {
+            test('set connector position when snapping', () => {
                 startDragging([0, 0]);
 
                 let hitTarget = document.createElement('div');
                 hitTarget.addEventListener('connector-move', (e) => {
-                    e.detail.overwritePosition([-1, -1]);
+                    e.detail.onSnapCallback({ snapPosition: [-1, -1], targetPort: propsData.port });
                 });
 
                 dragAboveTarget(hitTarget, [0, 0]);
 
                 expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
+            });
+
+            describe('Snap to compatible ports', () => {
+                test.each([
+                    ['from TABLE to GENERIC', { sourceTypeId: 'table', targetTypeId: 'generic' }],
+                    ['from GENERIC to TABLE', { sourceTypeId: 'generic', targetTypeId: 'table' }],
+                    ['different types', { sourceTypeId: 'other', targetTypeId: 'flowVariable' }]
+                ])('cannot connect %s', async (_, { sourceTypeId, targetTypeId }) => {
+                    const targetPort = {
+                        ...propsData.port,
+                        typeId: targetTypeId
+                    };
+                    startDragging([0, 0]);
+                    await wrapper.setProps({ port: { ...propsData.port, typeId: sourceTypeId } });
+    
+                    let hitTarget = document.createElement('div');
+                    hitTarget.addEventListener('connector-move', (e) => {
+                        e.detail.onSnapCallback({ snapPosition: [-1, -1], targetPort });
+                    });
+    
+                    dragAboveTarget(hitTarget, [0, 0]);
+    
+                    expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([0, 0]);
+                });
+
+                test.each([
+                    [
+                        'generic can connect to any type (except table)',
+                        { sourceTypeId: 'other', targetTypeId: 'generic' }
+                    ],
+                    [
+                        'any type can connect to generic (except table)',
+                        { sourceTypeId: 'generic', targetTypeId: 'other' }
+                    ]
+                ])('%s', async (_, { sourceTypeId, targetTypeId }) => {
+                    const targetPort = {
+                        ...propsData.port,
+                        typeId: targetTypeId
+                    };
+                    startDragging([0, 0]);
+                    await wrapper.setProps({ port: { ...propsData.port, typeId: sourceTypeId } });
+
+                    let hitTarget = document.createElement('div');
+                    hitTarget.addEventListener('connector-move', (e) => {
+                        e.detail.onSnapCallback({ snapPosition: [-1, -1], targetPort });
+                    });
+
+                    dragAboveTarget(hitTarget, [0, 0]);
+
+                    expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
+                });
+
+                test('check compatibleTypes when provided', async () => {
+                    const targetPort = {
+                        ...propsData.port,
+                        typeId: 'specific'
+                    };
+                    startDragging([0, 0]);
+                    await wrapper.setProps({ port: { ...propsData.port, typeId: 'flowVariable' } });
+
+                    let hitTarget = document.createElement('div');
+                    hitTarget.addEventListener('connector-move', (e) => {
+                        e.detail.onSnapCallback({ snapPosition: [-1, -1], targetPort });
+                    });
+
+                    dragAboveTarget(hitTarget, [0, 0]);
+
+                    expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
+                });
             });
         });
 
@@ -549,12 +629,12 @@ describe('NodePort', () => {
                 dragAboveTarget(hitTarget);
                 dropOnTarget();
 
-                expect(hitTarget._connectorDropEvent.detail).toStrictEqual({
+                expect(hitTarget._connectorDropEvent.detail).toEqual(expect.objectContaining({
                     destNode: 'node:1',
                     destPort: 0,
                     sourceNode: undefined,
                     sourcePort: undefined
-                });
+                }));
 
                 let rootWrapper = createWrapper(wrapper.vm.$root);
                 expect(rootWrapper.emitted('connector-dropped')).toBeTruthy();
@@ -574,12 +654,12 @@ describe('NodePort', () => {
                 dragAboveTarget(hitTarget);
                 dropOnTarget();
 
-                expect(hitTarget._connectorDropEvent.detail).toStrictEqual({
+                expect(hitTarget._connectorDropEvent.detail).toEqual(expect.objectContaining({
                     sourceNode: 'node:1',
                     sourcePort: 0,
                     destNode: undefined,
                     destPort: undefined
-                });
+                }));
 
                 let rootWrapper = createWrapper(wrapper.vm.$root);
                 expect(rootWrapper.emitted('connector-dropped')).toBeTruthy();

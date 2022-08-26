@@ -560,16 +560,16 @@ describe('NodePorts.vue', () => {
         ]).toStrictEqual(result);
     });
 
-    it('portBarBottom', async () => {
-        doMount();
+    // it('portBarBottom', async () => {
+    //     doMount();
 
-        expect(wrapper.vm.portBarBottom).toBe(31);
+    //     expect(wrapper.vm.portBarBottom).toBe(31);
         
-        // reduce number of outports to 1
-        let newOutPorts = [propsData.outPorts[0]];
-        wrapper.setProps({ outPorts: newOutPorts });
-        await Vue.nextTick();
+    //     // reduce number of outports to 1
+    //     let newOutPorts = [propsData.outPorts[0]];
+    //     wrapper.setProps({ outPorts: newOutPorts });
+    //     await Vue.nextTick();
 
-        expect(wrapper.vm.portBarBottom).toBe(20.5);
-    });
+    //     expect(wrapper.vm.portBarBottom).toBe(20.5);
+    // });
 });
