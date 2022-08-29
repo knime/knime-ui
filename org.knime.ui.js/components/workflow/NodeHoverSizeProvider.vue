@@ -6,7 +6,7 @@
  */
 export default {
     props: {
-        hover: {
+        isHovering: {
             type: Boolean,
             default: false
         },
@@ -57,7 +57,7 @@ export default {
             // adjust upper hover bounds to node name
             hoverBounds.top -= this.nodeNameDimensions.height;
 
-            if (this.hover) {
+            if (this.isHovering) {
                 // buttons are shown as disabled if false, hidden if null
                 let extraHorizontalSpace = 0;
 
@@ -71,7 +71,8 @@ export default {
                 hoverBounds.left -= extraHorizontalSpace / 2;
                 hoverBounds.right += extraHorizontalSpace / 2;
             }
-            if (this.isConnectorHovering || this.hover) {
+
+            if (this.isConnectorHovering || this.isHovering) {
                 // enlarge hover area to include all ports
 
                 const margin = this.$shapes.nodeHoverPortBottomMargin;
@@ -92,15 +93,7 @@ export default {
 </script>
 
 <template>
-  <g
-    @mouseenter="$emit('enter-hover-area', $event)"
-    @mouseleave="$emit('leave-hover-area', $event)"
-    @contextmenu="$emit('contextmenu', $event)"
-    @connector-enter.stop="$emit('connector-enter', $event)"
-    @connector-leave.stop="$emit('connector-leave', $event)"
-    @connector-move.stop="$emit('connector-move', $event)"
-    @connector-drop.stop="$emit('connector-drop', $event)"
-  >
+  <g>
     <slot :hover-size="hoverSize" />
   </g>
 </template>

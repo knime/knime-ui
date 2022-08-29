@@ -604,6 +604,32 @@ describe('NodePort', () => {
 
                     expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
                 });
+
+                test('cannot snap to a port with an existing and non-deletable connection', async () => {
+                    propsData.direction = 'out';
+                    
+                    storeConfig.workflow.state.activeWorkflow = {
+                        connections: {
+                            'mock:connection': {
+                                allowedActions: { canDelete: false }
+                            }
+                        }
+                    };
+                    
+                    const port = { ...propsData.port, typeId: 'other', connectedVia: ['mock:connection'] };
+
+                    startDragging([0, 0]);
+
+                    await wrapper.setProps({ port: { ...propsData.port, ...port } });
+
+                    let hitTarget = document.createElement('div');
+                    hitTarget.addEventListener('connector-move', (e) => {
+                        e.detail.onSnapCallback({ snapPosition: [-1, -1], targetPort: port });
+                    });
+                    dragAboveTarget(hitTarget, [0, 0]);
+
+                    expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([0, 0]);
+                });
             });
         });
 

@@ -14,7 +14,6 @@ import NodeAnnotation from '~/components/workflow/NodeAnnotation.vue';
 import NodeActionBar from '~/components/workflow/NodeActionBar.vue';
 import NodePort from '~/components/workflow/NodePort.vue';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane.vue';
-import NodeHoverContainer from '~/components/workflow/NodeHoverContainer.vue';
 import NodeConnectorDetection from '~/components/workflow/NodeConnectorDetection.vue';
 import NodeName from '~/components/workflow/NodeName.vue';
 
@@ -374,7 +373,7 @@ describe('Node', () => {
         it('renders NodeActionBar at correct position', async () => {
             doMount();
 
-            wrapper.findComponent(NodeHoverContainer).vm.$emit('enter-hover-area');
+            wrapper.find('.hover-container').trigger('mouseenter');
             await Vue.nextTick();
             
             expect(wrapper.findComponent(NodeActionBar).props()).toStrictEqual({
@@ -394,7 +393,7 @@ describe('Node', () => {
         it('click to select', async () => {
             doMount();
 
-            await wrapper.find('g g g').trigger('click', { button: 0 });
+            await wrapper.find('.mouse-clickable').trigger('click', { button: 0 });
 
             expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
@@ -407,7 +406,7 @@ describe('Node', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
             doMount();
 
-            await wrapper.find('g g g').trigger('click', { button: 0, shiftKey: true });
+            await wrapper.find('.mouse-clickable').trigger('click', { button: 0, shiftKey: true });
 
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
@@ -419,7 +418,7 @@ describe('Node', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
             doMount();
 
-            await wrapper.find('g g g').trigger('click', { button: 0, shiftKey: true });
+            await wrapper.find('.mouse-clickable').trigger('click', { button: 0, shiftKey: true });
             expect(storeConfig.selection.actions.deselectNode).toHaveBeenCalledWith(
                 expect.anything(),
                 expect.stringMatching('root:1')
@@ -428,7 +427,7 @@ describe('Node', () => {
 
         it('ctrl-click doest influence selection', async () => {
             doMount();
-            await wrapper.find('g g g').trigger('mousedown', { button: 0, ctrlKey: true });
+            await wrapper.find('.mouse-clickable').trigger('mousedown', { button: 0, ctrlKey: true });
             expect(storeConfig.selection.actions.selectNode).not.toHaveBeenCalled();
         });
 
@@ -436,7 +435,7 @@ describe('Node', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
             doMount();
 
-            await wrapper.find('g g g').trigger('contextmenu', { shiftKey: true });
+            await wrapper.find('.mouse-clickable').trigger('contextmenu', { shiftKey: true });
 
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
@@ -448,7 +447,7 @@ describe('Node', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
             doMount();
 
-            await wrapper.find('g g g').trigger('contextmenu', { shiftKey: true });
+            await wrapper.find('.mouse-clickable').trigger('contextmenu', { shiftKey: true });
             expect(storeConfig.selection.actions.deselectNode).toHaveBeenCalledTimes(0);
         });
 
@@ -456,7 +455,7 @@ describe('Node', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(false);
             doMount();
 
-            await wrapper.find('g g g').trigger('contextmenu');
+            await wrapper.find('.mouse-clickable').trigger('contextmenu');
 
             expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
@@ -477,9 +476,8 @@ describe('Node', () => {
         const triggerHover = (wrapper, hover) => {
             const eventName = hover ? 'enter' : 'leave';
             wrapper
-                .findComponent(NodeHoverContainer)
-                .vm
-                .$emit(`${eventName}-hover-area`, {});
+                .find('.hover-container')
+                .trigger(`mouse${eventName}`);
         };
 
         beforeEach(() => {
@@ -605,7 +603,7 @@ describe('Node', () => {
         });
 
         it('forwards connector hover state to children', async () => {
-            wrapper.findComponent(NodeHoverContainer).vm.$emit('connector-enter', { preventDefault: jest.fn() });
+            wrapper.find('.hover-container').trigger('connector-enter', { preventDefault: jest.fn() });
 
             await Vue.nextTick();
 
@@ -621,11 +619,11 @@ describe('Node', () => {
             wrapper.findComponent(NodePorts).vm.$emit('update-port-positions', mockPortPositions);
 
             // connector enters
-            wrapper.findComponent(NodeHoverContainer).vm.$emit('connector-enter', { preventDefault: jest.fn() });
+            wrapper.find('.hover-container').trigger('connector-enter', { preventDefault: jest.fn() });
             await Vue.nextTick();
             
             // connector moves
-            wrapper.findComponent(NodeHoverContainer).vm.$emit('connector-move', {
+            wrapper.find('.hover-container').trigger('connector-move', {
                 detail: {
                     x: commonNode.position.x + 10,
                     y: commonNode.position.y + 10,
@@ -657,7 +655,7 @@ describe('Node', () => {
             });
 
             const moveConnectorTo = (x, y, direction = 'in') => {
-                wrapper.findComponent(NodeHoverContainer).vm.$emit('connector-move', {
+                wrapper.find('.hover-container').trigger('connector-move', {
                     detail: {
                         x: commonNode.position.x + x,
                         y: commonNode.position.y + y,

@@ -25,7 +25,7 @@ const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) =>
         return connections[connectionId].allowedActions.canDelete;
     }
 
-    return true;
+    return false;
 };
 
 const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {

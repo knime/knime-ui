@@ -559,17 +559,4 @@ describe('NodePorts.vue', () => {
             outPort.props('targeted')
         ]).toStrictEqual(result);
     });
-
-    // it('portBarBottom', async () => {
-    //     doMount();
-
-    //     expect(wrapper.vm.portBarBottom).toBe(31);
-        
-    //     // reduce number of outports to 1
-    //     let newOutPorts = [propsData.outPorts[0]];
-    //     wrapper.setProps({ outPorts: newOutPorts });
-    //     await Vue.nextTick();
-
-    //     expect(wrapper.vm.portBarBottom).toBe(20.5);
-    // });
 });
