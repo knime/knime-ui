@@ -4,8 +4,8 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~/style/shapes.mjs';
+import * as $colors from '~/style/colors.mjs';
 
 import SelectionRectangle from '~/components/SelectionRectangle.vue';
 import { findNodesInsideOfRectangle as findNodesInsideOfRectangleMock } from '~/util/rectangleSelection';

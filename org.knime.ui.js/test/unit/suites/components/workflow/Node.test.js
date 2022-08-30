@@ -19,8 +19,8 @@ import NodeName from '~/components/workflow/NodeName.vue';
 
 import '~/plugins/directive-move';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~/style/shapes.mjs';
+import * as $colors from '~/style/colors.mjs';
 
 const commonNode = {
     id: 'root:1',

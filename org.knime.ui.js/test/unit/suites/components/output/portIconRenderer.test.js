@@ -3,8 +3,8 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
 import portIconRenderer from '~/components/output/PortIconRenderer';
-import * as $colors from '~/style/colors';
-import * as $shapes from '~/style/shapes';
+import * as $colors from '~/style/colors.mjs';
+import * as $shapes from '~/style/shapes.mjs';
 
 describe('PortIconRenderer', () => {
     beforeAll(() => {

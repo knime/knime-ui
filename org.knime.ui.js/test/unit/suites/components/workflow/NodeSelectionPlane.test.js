@@ -3,8 +3,8 @@ import Vuex from 'vuex';
 import NodeSelectionPlane from '~/components/workflow/NodeSelectionPlane.vue';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~/style/shapes.mjs';
+import * as $colors from '~/style/colors.mjs';
 
 describe('NodeSlectionPlane.vue', () => {
     let propsData, commonPlane;

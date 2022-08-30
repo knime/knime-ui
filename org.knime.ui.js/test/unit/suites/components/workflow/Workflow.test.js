@@ -3,7 +3,7 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~/style/shapes.mjs';
 
 import Workflow from '~/components/workflow/Workflow.vue';
 import Node from '~/components/workflow/Node.vue';

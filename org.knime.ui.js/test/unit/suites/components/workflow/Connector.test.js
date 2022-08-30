@@ -7,8 +7,8 @@ import Vue from 'vue';
 
 import * as workflowStoreConfig from '~/store/workflow';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~/style/shapes.mjs';
+import * as $colors from '~/style/colors.mjs';
 
 import * as portShift from '~/util/portShift';
 import connectorPath from '~/util/connectorPath';

@@ -6,7 +6,7 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 import NodeTemplate, { WORKFLOW_ADD_START_MIN } from '~/components/noderepo/NodeTemplate.vue';
 import NodePreview from '~/webapps-common/ui/components/node/NodePreview.vue';
 import { KnimeMIME } from '~/mixins/dropNode';
-import { nodeSize } from '~/style/shapes';
+import { nodeSize } from '~/style/shapes.mjs';
 
 describe('NodeTemplate', () => {
     let propsData, doMount, wrapper, testEvent, isWritable, mocks, openDescriptionPanelMock, closeDescriptionPanelMock,

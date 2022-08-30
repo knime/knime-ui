@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import LinkDecorator from '~/components/workflow/LinkDecorator.vue';
 
-import * as $colors from '~/style/colors';
+import * as $colors from '~/style/colors.mjs';
 
 describe('LinkDecorator.vue', () => {
     let doShallowMount = (backgroundType) => shallowMount(LinkDecorator, {

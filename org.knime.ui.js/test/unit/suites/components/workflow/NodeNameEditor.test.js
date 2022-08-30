@@ -3,7 +3,7 @@ import Vuex from 'vuex';
 
 import { mockVuexStore } from '~/test/unit/test-utils';
 
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~/style/shapes.mjs';
 
 import NodeNameEditor from '~/components/workflow/NodeNameEditor.vue';
 import NodeNameTextarea from '~/components/workflow/NodeNameTextarea.vue';

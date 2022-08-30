@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import { shallowMount } from '@vue/test-utils';
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~/style/shapes.mjs';
 import NodeHoverSizeProvider from '~/components/workflow/NodeHoverSizeProvider.vue';
 
 describe('NodeHoverSizeProvider', () => {

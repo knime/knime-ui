@@ -1,5 +1,5 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~/style/shapes.mjs';
 import Vuex from 'vuex';
 
 import NodeNameText from '~/components/workflow/NodeNameText.vue';

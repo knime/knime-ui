@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import findFreeSpaceOnCanvas, { NODE_POSITION_SPACE_FACTOR, findFreeSpace, nodePadding }
     from '~/util/findFreeSpaceOnCanvas';
-import { nodeSize } from '~/style/shapes';
+import { nodeSize } from '~/style/shapes.mjs';
 
 describe('findFreeSpaceOnCanvas', () => {
     describe('Algorithm 1', () => {

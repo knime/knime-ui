@@ -9,8 +9,8 @@ import FloatingMenu from '~/components/FloatingMenu.vue';
 import MenuItems from '~/webapps-common/ui/components/MenuItems.vue';
 import SearchBar from '~/components/noderepo/SearchBar.vue';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~/style/shapes.mjs';
+import * as $colors from '~/style/colors.mjs';
 
 import { makeTypeSearch as makeTypeSearchMock, searchMock } from '~/util/fuzzyPortTypeSearch';
 jest.mock('~/util/fuzzyPortTypeSearch', () => {

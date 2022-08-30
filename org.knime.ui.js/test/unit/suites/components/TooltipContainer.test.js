@@ -2,7 +2,7 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 import Vuex from 'vuex';
 import Vue from 'vue';
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~/style/shapes.mjs';
 
 import Tooltip from '~/components/Tooltip.vue';
 import TooltipContainer from '~/components/TooltipContainer.vue';

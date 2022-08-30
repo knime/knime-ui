@@ -5,8 +5,8 @@ import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 import Vue from 'vue';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~/style/shapes.mjs';
+import * as $colors from '~/style/colors.mjs';
 
 import MetaNodePortBar from '~/components/workflow/MetaNodePortBar.vue';
 import NodePort from '~/components/workflow/NodePort.vue';

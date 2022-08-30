@@ -5,8 +5,8 @@ import Vuex from 'vuex';
 import Vue from 'vue';
 
 import NodeState from '~/components/workflow/NodeState.vue';
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~/style/shapes.mjs';
+import * as $colors from '~/style/colors.mjs';
 import muteConsole from '~/webapps-common/util/test-utils/muteConsole';
 
 describe('NodeState.vue', () => {

@@ -5,8 +5,8 @@ import Vuex from 'vuex';
 import Port from '~/components/workflow/Port.vue';
 import PortIcon from '~/webapps-common/ui/components/node/PortIcon.vue';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~/style/shapes.mjs';
+import * as $colors from '~/style/colors.mjs';
 
 describe('Port', () => {
     beforeAll(() => {

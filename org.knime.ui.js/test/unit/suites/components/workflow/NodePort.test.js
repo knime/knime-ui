@@ -12,8 +12,8 @@ import NodePortActions from '~/components/workflow/NodePortActions.vue';
 
 import { circleDetection } from '~/util/compatibleConnections';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~/style/shapes.mjs';
+import * as $colors from '~/style/colors.mjs';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {

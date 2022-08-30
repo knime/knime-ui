@@ -1,6 +1,6 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~/style/shapes.mjs';
 import Vuex from 'vuex';
 
 import AutoSizeForeignObject from '~/components/common/AutoSizeForeignObject.vue';

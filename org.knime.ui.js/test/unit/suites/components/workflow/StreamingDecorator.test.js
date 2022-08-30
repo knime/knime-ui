@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import StreamingDecorator from '~/components/workflow/StreamingDecorator.vue';
 
-import * as $colors from '~/style/colors';
+import * as $colors from '~/style/colors.mjs';
 
 describe('StreamingDecorator.vue', () => {
     let doShallowMount = (executionInfo, backgroundType) => shallowMount(StreamingDecorator, {

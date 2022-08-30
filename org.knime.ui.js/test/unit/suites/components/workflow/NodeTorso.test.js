@@ -8,8 +8,8 @@ import NodeTorsoNormal from '~/webapps-common/ui/components/node/NodeTorsoNormal
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~/style/shapes.mjs';
+import * as $colors from '~/style/colors.mjs';
 
 describe('NodeTorso.vue', () => {
     beforeAll(() => {

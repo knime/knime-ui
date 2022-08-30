@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 
 import Tooltip from '~/components/Tooltip.vue';
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~/style/shapes.mjs';
 
 describe('Tooltip', () => {
     let mocks, doShallowMount, propsData, wrapper;

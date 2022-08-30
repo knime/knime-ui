@@ -7,7 +7,7 @@ import Vuex from 'vuex';
 
 import * as selectionStore from '~/store/selection';
 
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~/style/shapes.mjs';
 import NodeOutput from '~/components/output/NodeOutput.vue';
 import PortTabs from '~/components/output/PortTabs.vue';
 import FlowVariablePortView from '~/components/output/FlowVariablePortView.vue';

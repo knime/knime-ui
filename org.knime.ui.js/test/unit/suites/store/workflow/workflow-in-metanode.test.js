@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils';
-import { defaultMetaNodeBarHeight, defaultMetanodeBarPosition, metaNodeBarWidth, portSize } from '~/style/shapes';
+import { defaultMetaNodeBarHeight, defaultMetanodeBarPosition, metaNodeBarWidth, portSize } from '~/style/shapes.mjs';
 import Vuex from 'vuex';
 import * as canvasStoreConfig from '~/store/canvas';
 

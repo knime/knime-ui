@@ -2,8 +2,8 @@
 import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 
-import * as $shapes from '~/style/shapes';
-import * as $colors from '~/style/colors';
+import * as $shapes from '~/style/shapes.mjs';
+import * as $colors from '~/style/colors.mjs';
 
 import Port from '~/components/workflow/Port.vue';
 import AddPortPlaceholder, { addPortPlaceholderPath } from '~/components/workflow/AddPortPlaceholder.vue';

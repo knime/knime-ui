@@ -2,7 +2,7 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '~/test/unit/test-utils/mockVuexStore';
 import Vuex from 'vuex';
 
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~/style/shapes.mjs';
 
 import MetaNodePortBars from '~/components/workflow/MetaNodePortBars.vue';
 import MetaNodePortBar from '~/components/workflow/MetaNodePortBar.vue';

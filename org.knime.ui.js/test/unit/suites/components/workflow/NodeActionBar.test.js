@@ -2,7 +2,7 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import Vuex from 'vuex';
 import { mockVuexStore } from '~/test/unit/test-utils';
 
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~/style/shapes.mjs';
 
 import NodeActionBar from '~/components/workflow/NodeActionBar.vue';
 import ActionButton from '~/components/workflow/ActionButton.vue';

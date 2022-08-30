@@ -4,7 +4,7 @@ import { mockVuexStore } from '~/test/unit/test-utils';
 import Vue from 'vue';
 import Vuex from 'vuex';
 
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~/style/shapes.mjs';
 import NodePorts from '~/components/workflow/NodePorts.vue';
 import NodePort from '~/components/workflow/NodePort.vue';
 import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder.vue';

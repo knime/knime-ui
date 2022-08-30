@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~/style/shapes.mjs';
 
 import WorkflowAnnotation from '~/components/workflow/WorkflowAnnotation.vue';
 import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText.vue';

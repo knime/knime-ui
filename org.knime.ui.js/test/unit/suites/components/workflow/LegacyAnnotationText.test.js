@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import { shallowMount } from '@vue/test-utils';
 import LegacyAnnotationText from '~/components/workflow/LegacyAnnotationText.vue';
-import * as $shapes from '~/style/shapes';
+import * as $shapes from '~/style/shapes.mjs';
 
 describe('LegacyAnnotationText.vue', () => {
     it('renders empty text', () => {
