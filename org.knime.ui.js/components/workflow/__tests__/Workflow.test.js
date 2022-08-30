@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import * as $shapes from '@/style/shapes.mjs';
 

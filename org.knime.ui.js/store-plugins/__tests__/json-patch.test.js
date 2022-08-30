@@ -1,7 +1,7 @@
 import Vuex from 'vuex';
 import { createLocalVue } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import { mutations, actions } from '../json-patch';
 

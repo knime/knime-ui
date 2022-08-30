@@ -1,6 +1,6 @@
 import Vuex from 'vuex';
 import { createLocalVue, mount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import * as $colors from '@/style/colors.mjs';
 import * as $shapes from '@/style/shapes.mjs';

@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import Vuex from 'vuex';
 import { shallowMount, createLocalVue } from '@vue/test-utils';
-import { mockVuexStore } from '~/test/unit/test-utils';
+import { mockVuexStore } from '@/test/test-utils';
 
 import FunctionButton from '~/webapps-common/ui/components/FunctionButton.vue';
 import CloseIcon from '~/assets/cancel.svg';

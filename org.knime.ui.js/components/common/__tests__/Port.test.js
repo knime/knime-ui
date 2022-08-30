@@ -1,6 +1,6 @@
 import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import PortIcon from '~/webapps-common/ui/components/node/PortIcon.vue';
 import Port from '../Port.vue';

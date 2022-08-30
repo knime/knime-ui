@@ -10,7 +10,7 @@ module.exports = {
         '\\.js$': 'babel-jest',
         '\\.vue$': '@vue/vue2-jest',
         '\\.(css|styl|less|sass|scss|ttf|woff|woff2)(\\?|$)': 'jest-transform-stub',
-        '\\.svg': '<rootDir>/test/unit/jest-transform-svgs'
+        '\\.svg': '<rootDir>/test/jest-transform-svgs'
     },
     transformIgnorePatterns: [
         '/node_modules/'
@@ -38,5 +38,5 @@ module.exports = {
     testMatch: [
         '<rootDir>/**/__tests__/*.test.js'
     ],
-    setupFiles: ['<rootDir>/test/unit/jest-setup', 'jest-useragent-mock']
+    setupFiles: ['<rootDir>/test/jest-setup', 'jest-useragent-mock']
 };

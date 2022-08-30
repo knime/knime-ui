@@ -4,7 +4,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import { createLocalVue, mount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/unit/test-utils';
+import { mockVuexStore } from '@/test/test-utils';
 
 import NodeAnnotation from '@/components/workflow/annotations/NodeAnnotation.vue';
 import NodePorts from '@/components/workflow/ports/NodePorts.vue';

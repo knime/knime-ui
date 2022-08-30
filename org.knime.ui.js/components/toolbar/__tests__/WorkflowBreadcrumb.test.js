@@ -1,6 +1,6 @@
 import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/unit/test-utils';
+import { mockVuexStore } from '@/test/test-utils';
 
 import ComponentIcon from '~/webapps-common/ui/assets/img/icons/node-workflow.svg';
 import MetaNodeIcon from '~/webapps-common/ui/assets/img/icons/metanode.svg';

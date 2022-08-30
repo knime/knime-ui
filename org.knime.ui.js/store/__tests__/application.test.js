@@ -1,7 +1,7 @@
 import Vuex from 'vuex';
 import { createLocalVue } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/unit/test-utils';
+import { mockVuexStore } from '@/test/test-utils';
 import { makeTypeSearch as makeTypeSearchMock } from '@/util/fuzzyPortTypeSearch';
 
 jest.mock('@/util/fuzzyPortTypeSearch', () => ({

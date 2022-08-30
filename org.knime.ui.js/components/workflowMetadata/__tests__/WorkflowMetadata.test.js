@@ -1,7 +1,7 @@
 import Vuex from 'vuex';
 import { mount, createLocalVue } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import LinkList from '~/webapps-common/ui/components/LinkList.vue';
 import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList.vue';

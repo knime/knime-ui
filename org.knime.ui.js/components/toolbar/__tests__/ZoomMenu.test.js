@@ -2,7 +2,7 @@
 import Vuex from 'vuex';
 import { createLocalVue, mount as deepMount, shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/unit/test-utils';
+import { mockVuexStore } from '@/test/test-utils';
 import SubMenu from '~/webapps-common/ui/components/SubMenu.vue';
 
 import ZoomMenu from '../ZoomMenu.vue';

@@ -3,7 +3,7 @@
 import Vuex from 'vuex';
 import { createLocalVue } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/unit/test-utils';
+import { mockVuexStore } from '@/test/test-utils';
 
 describe('workflow store', () => {
     let store, localVue, loadStore, addEventListenerMock, removeEventListenerMock, workflowObjectsBoundsMock;

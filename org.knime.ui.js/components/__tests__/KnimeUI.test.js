@@ -3,7 +3,7 @@ import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockUserAgent } from 'jest-useragent-mock';
 
-import { mockVuexStore } from '@/test/unit/test-utils';
+import { mockVuexStore } from '@/test/test-utils';
 
 import AppHeader from '@/components/application/AppHeader.vue';
 import TooltipContainer from '@/components/application/TooltipContainer.vue';

@@ -3,7 +3,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import { createLocalVue, shallowMount, createWrapper } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/unit/test-utils/mockVuexStore';
+import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import Port from '@/components/common/Port.vue';
 import Connector from '@/components/workflow/connectors/Connector.vue';

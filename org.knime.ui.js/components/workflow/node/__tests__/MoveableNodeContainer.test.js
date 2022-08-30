@@ -2,7 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 
-import { mockVuexStore } from '@/test/unit/test-utils';
+import { mockVuexStore } from '@/test/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
 import { directiveMove } from '@/plugins/directive-move';
