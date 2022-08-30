@@ -3,8 +3,8 @@ import fs from 'fs';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-import * as colors from '../style/colors.mjs';
-import * as shapes from '../style/shapes.mjs';
+import * as colors from '../src/style/colors.mjs';
+import * as shapes from '../src/style/shapes.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -62,11 +62,11 @@ const generateCssData = (names, data, postfix, sourceFile) => {
  */
 // eslint-disable-next-line func-style
 function generate() {
-    let colorsPath = path.join(__dirname, '..', 'assets', 'colors.css');
+    let colorsPath = path.join(__dirname, '..', 'src', 'assets', 'colors.css');
     console.info('Generating assets/colors.css');
     fs.writeFileSync(colorsPath, generateCssData(colorNames, colors, 'color', 'style/colors.js'));
 
-    let shapesPath = path.join(__dirname, '..', 'assets', 'shapes.css');
+    let shapesPath = path.join(__dirname, '..', 'src', 'assets', 'shapes.css');
     console.info('Generating assets/shapes.css');
     fs.writeFileSync(shapesPath, generateCssData(shapeNames, shapes, 'shape', 'style/shapes.js'));
 }
