@@ -7,7 +7,7 @@ import { silentLogger } from './plugins/logger';
 import { initStore } from './store';
 import { initPlugins } from './plugins';
 
-import '@/assets/index.css';
+import './assets/index.css';
 
 // Setup for production
 silentLogger();
