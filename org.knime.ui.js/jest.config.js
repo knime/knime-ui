@@ -36,7 +36,7 @@ module.exports = {
     testEnvironment: 'jsdom',
     testURL: 'http://test.example/',
     testMatch: [
-        '<rootDir>/test/unit/**/*.test.js'
+        '<rootDir>/**/__tests__/*.test.js'
     ],
     setupFiles: ['<rootDir>/test/unit/jest-setup', 'jest-useragent-mock']
 };

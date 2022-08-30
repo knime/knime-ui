@@ -6,5 +6,14 @@ module.exports = {
     env: {
         node: true
     },
-    ignorePatterns: ['knime-ui-extension-service/']
+    ignorePatterns: ['knime-ui-extension-service/'],
+    overrides: [
+        {
+            files: ['./**/__tests__/*.test.js'],
+            extends: ['./webapps-common/lint/.eslintrc-jest.js'],
+            env: {
+                node: true
+            }
+        }
+    ]
 };

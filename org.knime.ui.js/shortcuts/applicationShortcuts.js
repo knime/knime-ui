@@ -1,4 +1,4 @@
-import { openWorkflow, createWorkflow } from '~api';
+import { openWorkflow, createWorkflow } from '@/api';
 
 export default {
     openWorkflow: {
