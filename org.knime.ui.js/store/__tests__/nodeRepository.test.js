@@ -71,7 +71,7 @@ describe('Node Repository store', () => {
     beforeEach(async () => {
         jest.clearAllMocks();
 
-        jest.doMock('@/api', () => ({
+        jest.doMock('@api', () => ({
             __esModule: true,
             searchNodes: searchNodesMock,
             getNodesGroupedByTags: getNodesGroupedByTagsMock,

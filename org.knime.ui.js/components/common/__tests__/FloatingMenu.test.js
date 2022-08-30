@@ -13,8 +13,8 @@ jest.mock('raf-throttle', () => function (func) {
     };
 });
 
-import { escapeStack as escapeStackMock } from '~/mixins/escapeStack';
-jest.mock('~/mixins/escapeStack', () => {
+import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
+jest.mock('@/mixins/escapeStack', () => {
     function escapeStack({ onEscape }) { // eslint-disable-line func-style
         escapeStack.onEscape = onEscape;
         return { /* empty mixin */ };

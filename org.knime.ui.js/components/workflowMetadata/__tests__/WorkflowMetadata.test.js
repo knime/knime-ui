@@ -3,12 +3,12 @@ import { mount, createLocalVue } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
-import LinkList from '~/webapps-common/ui/components/LinkList.vue';
-import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList.vue';
-import NodePreview from '~/webapps-common/ui/components/node/NodePreview.vue';
-import Description from '~/webapps-common/ui/components/Description.vue';
-import TagList from '~/webapps-common/ui/components/TagList.vue';
-import Tag from '~/webapps-common/ui/components/Tag.vue';
+import LinkList from '@/webapps-common/ui/components/LinkList.vue';
+import NodeFeatureList from '@/webapps-common/ui/components/node/NodeFeatureList.vue';
+import NodePreview from '@/webapps-common/ui/components/node/NodePreview.vue';
+import Description from '@/webapps-common/ui/components/Description.vue';
+import TagList from '@/webapps-common/ui/components/TagList.vue';
+import Tag from '@/webapps-common/ui/components/Tag.vue';
 
 import ScrollViewContainer from '@/components/noderepo/ScrollViewContainer.vue';
 import ExternalResourcesList from '@/components/common/ExternalResourcesList.vue';

@@ -1,4 +1,4 @@
-import { registerEventHandlers } from '~/api/json-rpc-notifications';
+import { registerEventHandlers } from '../json-rpc-notifications';
 
 const origErrorLogger = window.consola.error;
 

@@ -1,13 +1,13 @@
 <script>
 import { mapGetters, mapMutations, mapActions, mapState } from 'vuex';
 
-import Workflow from '~/components/workflow/Workflow.vue';
+import Workflow from '@/components/workflow/Workflow.vue';
 import Kanvas from '@/components/workflow/kanvas/Kanvas.vue';
 import SelectionRectangle from '@/components/workflow/SelectionRectangle.vue';
-import WorkflowEmpty from '~/components/workflow/WorkflowEmpty.vue';
+import WorkflowEmpty from '@/components/workflow/WorkflowEmpty.vue';
 import KanvasFilters from '@/components/workflow/kanvas/KanvasFilters.vue';
 
-import { dropNode } from '~/mixins';
+import { dropNode } from '@/mixins';
 
 export default {
     components: {

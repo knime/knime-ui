@@ -1,8 +1,8 @@
 <script>
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
-import NodePreview from '~/webapps-common/ui/components/node/NodePreview.vue';
-import { KnimeMIME } from '~/mixins/dropNode';
-import findFreeSpaceOnCanvas from '~/util/findFreeSpaceOnCanvas';
+import NodePreview from '@/webapps-common/ui/components/node/NodePreview.vue';
+import { KnimeMIME } from '@/mixins/dropNode';
+import findFreeSpaceOnCanvas from '@/util/findFreeSpaceOnCanvas';
 
 const WORKFLOW_ADD_START_PERCENT_X = 0.3; // 0, 0 means top left corner
 const WORKFLOW_ADD_START_PERCENT_Y = 0.2; // 0.5, 0.5 means center of canvas

@@ -2,9 +2,9 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
 
-import Button from '~/webapps-common/ui/components/Button.vue';
-import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg';
-import PlayIcon from '~/assets/execute.svg';
+import Button from '@/webapps-common/ui/components/Button.vue';
+import ReloadIcon from '@/webapps-common/ui/assets/img/icons/reload.svg';
+import PlayIcon from '@/assets/execute.svg';
 
 import { runNodeValidationChecks, runPortValidationChecks } from './output-validator';
 import PortTabs from './PortTabs.vue';

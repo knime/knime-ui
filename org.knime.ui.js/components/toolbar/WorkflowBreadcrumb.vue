@@ -1,10 +1,10 @@
 <script>
 import { mapState } from 'vuex';
-import ActionBreadcrumb from '~/components/common/ActionBreadcrumb.vue';
-import ComponentIcon from '~/webapps-common/ui/assets/img/icons/node-workflow.svg';
-import MetaNodeIcon from '~/webapps-common/ui/assets/img/icons/metanode.svg';
-import LinkedComponentIcon from '~/webapps-common/ui/assets/img/icons/linked-component.svg';
-import LinkedMetanodeIcon from '~/webapps-common/ui/assets/img/icons/linked-metanode.svg';
+import ActionBreadcrumb from '@/components/common/ActionBreadcrumb.vue';
+import ComponentIcon from '@/webapps-common/ui/assets/img/icons/node-workflow.svg';
+import MetaNodeIcon from '@/webapps-common/ui/assets/img/icons/metanode.svg';
+import LinkedComponentIcon from '@/webapps-common/ui/assets/img/icons/linked-component.svg';
+import LinkedMetanodeIcon from '@/webapps-common/ui/assets/img/icons/linked-metanode.svg';
 
 /**
  * A breadcrumb for navigating through the component / metanode hierarchy inside a workflow

@@ -8,7 +8,7 @@ import { escapePressed as escapePressedMock } from '@/mixins/escapeStack';
 
 import HotkeyHandler from '../HotkeyHandler.vue';
 
-jest.mock('~/mixins/escapeStack', () => ({
+jest.mock('@/mixins/escapeStack', () => ({
     escapePressed: jest.fn()
 }));
 

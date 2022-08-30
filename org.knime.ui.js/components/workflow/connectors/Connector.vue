@@ -2,8 +2,8 @@
 import gsap from 'gsap';
 import { mapState, mapGetters, mapActions } from 'vuex';
 
-import { portBar, connectorPosition } from '~/mixins';
-import connectorPath from '~/util/connectorPath';
+import { portBar, connectorPosition } from '@/mixins';
+import connectorPath from '@/util/connectorPath';
 
 /**
  * A curved line, connecting one node's output with another node's input port.

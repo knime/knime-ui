@@ -2,7 +2,7 @@
 import { mapState, mapGetters } from 'vuex';
 import throttle from 'raf-throttle';
 import { mixin as clickaway } from 'vue-clickaway2';
-import { tooltip } from '~/mixins';
+import { tooltip } from '@/mixins';
 
 import { circleDetection } from '@/util/compatibleConnections';
 import Port from '@/components/common/Port.vue';

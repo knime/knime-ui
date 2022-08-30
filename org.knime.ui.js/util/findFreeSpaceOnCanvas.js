@@ -1,4 +1,4 @@
-import { nodeSize } from '~/style/shapes.mjs';
+import { nodeSize } from '@/style/shapes.mjs';
 import { areaCoverage } from './geometry';
 
 const NODE_POSITION_EQUALS_DELTA = 10; // px

@@ -1,4 +1,4 @@
-import * as $shapes from '~/style/shapes.mjs';
+import * as $shapes from '@/style/shapes.mjs';
 
 const {
     nodeSize, nodeNameMargin, nodeStatusMarginTop, nodeStatusHeight, nodeNameLineHeight, portSize,

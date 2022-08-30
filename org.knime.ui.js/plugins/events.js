@@ -1,5 +1,5 @@
-import { registerEventHandlers } from '~api';
-import { notifyPatch } from '~/util/event-syncer';
+import { registerEventHandlers } from '@api';
+import { notifyPatch } from '@/util/event-syncer';
 
 export default ({ store: $store }) => {
     registerEventHandlers({

@@ -1,12 +1,12 @@
 /* eslint-disable new-cap */
-import { registeredHandlers } from '@/api/json-rpc-notifications';
+import { registeredHandlers } from '@api/json-rpc-notifications';
 import { notifyPatch } from '@/util/event-syncer';
 
 import eventsPlugin from '../events';
 
 jest.mock('@/util/event-syncer');
 
-jest.mock('@/api/json-rpc-notifications', () => {
+jest.mock('@api/json-rpc-notifications', () => {
     let registeredHandlers = {};
     const registerEventHandlers = (handlers) => {
         Object.entries(handlers).forEach(([key, value]) => {

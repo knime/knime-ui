@@ -1,5 +1,5 @@
 <script>
-import { snapConnector } from '~/mixins';
+import { snapConnector } from '@/mixins';
 
 /**
  * Renderless component that provides all the computed/data/methods that the snapConnector mixin requires.

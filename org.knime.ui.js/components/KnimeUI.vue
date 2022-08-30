@@ -10,7 +10,7 @@ import Sidebar from '@/components/sidebar/Sidebar.vue';
 import WorkflowToolbar from '@/components/toolbar/WorkflowToolbar.vue';
 import NodeOutput from '@/components/output/NodeOutput.vue';
 
-import WorkflowEntryPage from '~/components/workflow/WorkflowEntryPage.vue';
+import WorkflowEntryPage from '@/components/workflow/WorkflowEntryPage.vue';
 import WorkflowPanel from '@/components/workflow/WorkflowPanel.vue';
 
 /**

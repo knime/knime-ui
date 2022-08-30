@@ -20,12 +20,12 @@ describe('workflow store', () => {
 
         loadStore = async ({ apiMocks = {} } = {}) => {
             /**
-             * We have to import the workflow-store dynamically to apply our @/api mocks.
+             * We have to import the workflow-store dynamically to apply our @api mocks.
              * Because the module is cached after it is required for the first time,
              * a reset is needed
              */
             jest.resetModules();
-            jest.doMock('@/api', () => ({
+            jest.doMock('@api', () => ({
                 __esModule: true,
                 addEventListener: addEventListenerMock,
                 removeEventListener: removeEventListenerMock,

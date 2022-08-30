@@ -1,5 +1,5 @@
 import { mapState } from 'vuex';
-import portShift from '~/util/portShift';
+import portShift from '@/util/portShift';
 
 export const connectorPosition = {
     props: {

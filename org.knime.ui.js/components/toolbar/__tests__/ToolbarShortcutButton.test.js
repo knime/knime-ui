@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 
-import IconComponent from '~/assets/redo.svg';
+import IconComponent from '@/assets/redo.svg';
 import ToolbarShortcutButton from '../ToolbarShortcutButton.vue';
 import ToolbarButton from '../ToolbarButton.vue';
 

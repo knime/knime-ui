@@ -1,6 +1,6 @@
 import Vue from 'vue';
-import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '~api';
-import { makeTypeSearch } from '~/util/fuzzyPortTypeSearch';
+import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '@api';
+import { makeTypeSearch } from '@/util/fuzzyPortTypeSearch';
 
 const getCanvasStateKey = (input) => window.btoa(input);
 const getRootWorkflowId = (workflowId) => workflowId.split(':')[0];

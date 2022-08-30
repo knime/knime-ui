@@ -1,5 +1,5 @@
 <script>
-import TagList from '~/webapps-common/ui/components/TagList.vue';
+import TagList from '@/webapps-common/ui/components/TagList.vue';
 import MetadataPlaceholder from './MetadataPlaceholder.vue';
 
 export default {

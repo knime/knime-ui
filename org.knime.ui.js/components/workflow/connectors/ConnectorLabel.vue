@@ -1,6 +1,6 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import { connectorPosition } from '~/mixins';
+import { connectorPosition } from '@/mixins';
 
 /**
  * A label displaying the amount of processed rows on the middle of two set points.

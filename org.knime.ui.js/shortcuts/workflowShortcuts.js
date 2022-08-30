@@ -1,14 +1,14 @@
 import executionShortcuts from './executionShortcuts';
 
-import RedoIcon from '~/assets/redo.svg';
-import UndoIcon from '~/assets/undo.svg';
-import DeleteIcon from '~/assets/delete.svg';
-import OpenViewIcon from '~/assets/open-view.svg';
-import OpenDialogIcon from '~/assets/configure-node.svg';
-import SaveIcon from '~/assets/save.svg';
-import CreateMetanode from '~/assets/create-metanode.svg';
-import CreateComponent from '~/assets/create-component.svg';
-import LayoutIcon from '~/assets/layout.svg';
+import RedoIcon from '@/assets/redo.svg';
+import UndoIcon from '@/assets/undo.svg';
+import DeleteIcon from '@/assets/delete.svg';
+import OpenViewIcon from '@/assets/open-view.svg';
+import OpenDialogIcon from '@/assets/configure-node.svg';
+import SaveIcon from '@/assets/save.svg';
+import CreateMetanode from '@/assets/create-metanode.svg';
+import CreateComponent from '@/assets/create-component.svg';
+import LayoutIcon from '@/assets/layout.svg';
 
 export default {
     ...executionShortcuts,

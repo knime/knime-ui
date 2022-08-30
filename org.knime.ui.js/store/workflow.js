@@ -5,7 +5,7 @@ import * as workflowEditor from './workflow/workflowEditor';
 import * as APinteractions from './workflow/APinteractions';
 import * as workflowExecution from './workflow/workflowExecution';
 
-import workflowObjectBounds from '~/util/workflowObjectBounds';
+import workflowObjectBounds from '@/util/workflowObjectBounds';
 
 /**
  * The workflow store holds a workflow graph and the associated tooltips.

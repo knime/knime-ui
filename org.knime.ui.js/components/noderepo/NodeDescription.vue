@@ -1,9 +1,9 @@
 <script>
 import { mapState, mapActions, mapGetters } from 'vuex';
 
-import CloseIcon from '~/assets/cancel.svg';
-import Description from '~/webapps-common/ui/components/Description.vue';
-import NodeFeatureList from '~/webapps-common/ui/components/node/NodeFeatureList.vue';
+import CloseIcon from '@/assets/cancel.svg';
+import Description from '@/webapps-common/ui/components/Description.vue';
+import NodeFeatureList from '@/webapps-common/ui/components/node/NodeFeatureList.vue';
 
 import { escapeStack } from '@/mixins/escapeStack';
 import ExternalResourcesList from '@/components/common/ExternalResourcesList.vue';

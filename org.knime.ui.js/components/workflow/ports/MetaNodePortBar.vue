@@ -1,5 +1,5 @@
 <script>
-import { portBar, snapConnector } from '~/mixins';
+import { portBar, snapConnector } from '@/mixins';
 import NodePort from './NodePort.vue';
 
 /**

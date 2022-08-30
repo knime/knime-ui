@@ -1,7 +1,7 @@
-import { openWorkflow as mockOpenWorkflow, createWorkflow as mockCreateWorkflow } from '@/api';
+import { openWorkflow as mockOpenWorkflow, createWorkflow as mockCreateWorkflow } from '@api';
 import applicationShortcuts from '../applicationShortcuts';
 
-jest.mock('@/api', () => ({
+jest.mock('@api', () => ({
     __esModule: true,
     openWorkflow: jest.fn(),
     createWorkflow: jest.fn()

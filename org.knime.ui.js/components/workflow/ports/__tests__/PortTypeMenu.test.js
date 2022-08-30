@@ -5,7 +5,7 @@ import { createLocalVue, mount as deepMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
-import MenuItems from '~/webapps-common/ui/components/MenuItems.vue';
+import MenuItems from '@/webapps-common/ui/components/MenuItems.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import SearchBar from '@/components/common/SearchBar.vue';
 

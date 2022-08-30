@@ -3,7 +3,7 @@ import { mapState, mapGetters } from 'vuex';
 import throttle from 'raf-throttle';
 import { mixin as clickaway } from 'vue-clickaway2';
 
-import { escapeStack } from '~/mixins/escapeStack';
+import { escapeStack } from '@/mixins/escapeStack';
 /*
  * The FloatingMenu component is a container that can be sticked to a position on the canvas,
  * but is shown on top of the whole application.

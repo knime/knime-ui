@@ -1,5 +1,5 @@
-import { areaCoverage } from '~/util/geometry';
-import { findFreeSpace } from '~/util/findFreeSpaceOnCanvas';
+import { areaCoverage } from '@/util/geometry';
+import { findFreeSpace } from '@/util/findFreeSpaceOnCanvas';
 
 const visibilityThreshold = 0.7;
 

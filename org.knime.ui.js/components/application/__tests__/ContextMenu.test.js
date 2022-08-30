@@ -4,7 +4,7 @@ import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
-import MenuItems from '~/webapps-common/ui/components/MenuItems.vue';
+import MenuItems from '@/webapps-common/ui/components/MenuItems.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import ContextMenu from '../ContextMenu.vue';
 

@@ -1,14 +1,14 @@
 <script>
 import { mapActions, mapGetters } from 'vuex';
 
-import ExecuteIcon from '~/assets/execute.svg';
-import ResumeIcon from '~/assets/resume-execution.svg';
-import ResetIcon from '~/assets/reset-all.svg';
-import CancelIcon from '~/assets/cancel.svg';
-import PauseIcon from '~/assets/pause-execution.svg';
-import StepIcon from '~/assets/step-execution.svg';
-import OpenViewIcon from '~/assets/open-view.svg';
-import OpenDialogIcon from '~/assets/configure-node.svg';
+import ExecuteIcon from '@/assets/execute.svg';
+import ResumeIcon from '@/assets/resume-execution.svg';
+import ResetIcon from '@/assets/reset-all.svg';
+import CancelIcon from '@/assets/cancel.svg';
+import PauseIcon from '@/assets/pause-execution.svg';
+import StepIcon from '@/assets/step-execution.svg';
+import OpenViewIcon from '@/assets/open-view.svg';
+import OpenDialogIcon from '@/assets/configure-node.svg';
 
 import ActionButton from '@/components/common/ActionButton.vue';
 

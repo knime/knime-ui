@@ -1,6 +1,6 @@
 <script>
 import { mapMutations, mapState } from 'vuex';
-import { escapePressed } from '~/mixins/escapeStack';
+import { escapePressed } from '@/mixins/escapeStack';
 
 const blacklistTagNames = /^(input|textarea|select)$/i;
 

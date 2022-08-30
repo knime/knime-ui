@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import { connectNodes, moveObjects, deleteObjects, addNode, collapseToContainer, expandContainerNode,
-    copyOrCutWorkflowParts, pasteWorkflowParts } from '~/api';
+    copyOrCutWorkflowParts, pasteWorkflowParts } from '@api';
 
 describe('workflow commands', () => {
     beforeEach(() => {

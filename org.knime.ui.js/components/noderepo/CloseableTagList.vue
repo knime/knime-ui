@@ -1,6 +1,6 @@
 <script>
 import { mixin as clickaway } from 'vue-clickaway2';
-import ClosePopoverIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg';
+import ClosePopoverIcon from '@/webapps-common/ui/assets/img/icons/arrow-prev.svg';
 
 import SelectableTagList from '@/components/common/SelectableTagList.vue';
 

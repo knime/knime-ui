@@ -1,10 +1,10 @@
 /* eslint-disable consistent-return */
-import * as api from '~/api';
-import { waitForPatch } from '~/util/event-syncer';
+import * as api from '@api';
+import { waitForPatch } from '@/util/event-syncer';
 
 const origErrorLogger = window.consola.error;
 
-jest.mock('~/util/event-syncer');
+jest.mock('@/util/event-syncer');
 
 describe('API', () => {
     beforeEach(() => {

@@ -1,7 +1,7 @@
 <script>
 import { mapState, mapActions, mapMutations } from 'vuex';
 
-import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg';
+import ReloadIcon from '@/webapps-common/ui/assets/img/icons/reload.svg';
 import ScrollViewContainer from './ScrollViewContainer.vue';
 import NodeList from './NodeList.vue';
 

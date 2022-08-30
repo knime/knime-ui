@@ -24,7 +24,7 @@ describe('application store', () => {
         removeEventListener = jest.fn();
         loadWorkflow = jest.fn().mockResolvedValue({ workflow: { info: { containerId: '' } } });
 
-        jest.doMock('@/api', () => ({
+        jest.doMock('@api', () => ({
             __esModule: true,
             addEventListener,
             removeEventListener,

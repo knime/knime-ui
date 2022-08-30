@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-import { portBar } from '~/mixins';
+import { portBar } from '@/mixins';
 import MetaNodePortBar from './MetaNodePortBar.vue';
 
 /**

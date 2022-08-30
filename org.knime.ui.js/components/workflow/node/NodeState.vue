@@ -1,5 +1,5 @@
 <script>
-import { tooltip } from '~/mixins';
+import { tooltip } from '@/mixins';
 
 export default {
     mixins: [tooltip],

@@ -1,4 +1,4 @@
-import { searchNodes, getNodesGroupedByTags, getNodeDescription } from '~api';
+import { searchNodes, getNodesGroupedByTags, getNodeDescription } from '@api';
 import { mapNodePorts } from '../util/portDataMapper';
 
 /**

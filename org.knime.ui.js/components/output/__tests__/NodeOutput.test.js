@@ -7,8 +7,8 @@ import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import * as selectionStore from '@/store/selection';
 
-import Button from '~/webapps-common/ui/components/Button.vue';
-import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg';
+import Button from '@/webapps-common/ui/components/Button.vue';
+import ReloadIcon from '@/webapps-common/ui/assets/img/icons/reload.svg';
 
 import * as $shapes from '@/style/shapes.mjs';
 

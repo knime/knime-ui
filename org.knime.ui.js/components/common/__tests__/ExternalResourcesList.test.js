@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 
-import LinkList from '~/webapps-common/ui/components/LinkList.vue';
+import LinkList from '@/webapps-common/ui/components/LinkList.vue';
 import ExternalResourcesList from '../ExternalResourcesList.vue';
 
 const links = [

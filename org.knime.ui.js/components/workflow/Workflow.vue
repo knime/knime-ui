@@ -6,7 +6,7 @@ import Connector from '@/components/workflow/connectors/Connector.vue';
 import WorkflowAnnotation from '@/components/workflow/annotations/WorkflowAnnotation.vue';
 import MetaNodePortBars from '@/components/workflow/ports/MetaNodePortBars.vue';
 import ConnectorLabel from '@/components/workflow/connectors/ConnectorLabel.vue';
-import { dropNode } from '~/mixins';
+import { dropNode } from '@/mixins';
 
 export default {
     components: {

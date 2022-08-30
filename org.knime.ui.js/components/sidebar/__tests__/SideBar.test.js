@@ -6,8 +6,8 @@ import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 import * as panelStoreConfig from '@/store/panel';
 import * as nodeRepositoryStoreConfig from '@/store/nodeRepository';
 
-import InfoIcon from '~/webapps-common/ui/assets/img/icons/circle-info.svg';
-import PlusIcon from '~/webapps-common/ui/assets/img/icons/circle-plus.svg';
+import InfoIcon from '@/webapps-common/ui/assets/img/icons/circle-info.svg';
+import PlusIcon from '@/webapps-common/ui/assets/img/icons/circle-plus.svg';
 
 import NodeRepository from '@/components/noderepo/NodeRepository.vue';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';

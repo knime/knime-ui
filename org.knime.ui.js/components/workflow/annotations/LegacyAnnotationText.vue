@@ -1,5 +1,5 @@
 <script>
-import { applyStyleRanges } from '~/util/styleRanges';
+import { applyStyleRanges } from '@/util/styleRanges';
 
 export default {
     props: {

@@ -1,13 +1,13 @@
 import Vue from 'vue';
 
 import { shallowMount, mount } from '@vue/test-utils';
-import Button from '~/webapps-common/ui/components/Button.vue';
-import { copyText } from '~/webapps-common/util/copyText';
+import Button from '@/webapps-common/ui/components/Button.vue';
+import { copyText } from '@/webapps-common/util/copyText';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 
 import Error from '../Error.vue';
 
-jest.mock('~/webapps-common/util/copyText.js', () => ({
+jest.mock('@/webapps-common/util/copyText.js', () => ({
     copyText: jest.fn()
 }));
 

@@ -1,4 +1,4 @@
-import { waitForPatch } from '~/util/event-syncer';
+import { waitForPatch } from '@/util/event-syncer';
 import rpc from './json-rpc-adapter';
 
 /**

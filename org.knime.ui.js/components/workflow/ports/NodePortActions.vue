@@ -1,7 +1,7 @@
 <script>
-import { escapeStack } from '~/mixins';
+import { escapeStack } from '@/mixins';
 
-import DeleteIcon from '~/assets/delete.svg';
+import DeleteIcon from '@/assets/delete.svg';
 import ActionButton from '@/components/common/ActionButton.vue';
 import Port from '@/components/common/Port.vue';
 

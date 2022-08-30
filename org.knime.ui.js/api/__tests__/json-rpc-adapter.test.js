@@ -1,4 +1,4 @@
-import rpc from '~/api/json-rpc-adapter';
+import rpc from '../json-rpc-adapter';
 
 describe('JSON-RPC adapter', () => {
     beforeEach(() => {
