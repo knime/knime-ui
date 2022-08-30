@@ -1,9 +1,9 @@
 <script>
 import { KnimeService } from '~/knime-ui-extension-service';
 
-import { getPortView, callPortDataService } from '~api';
-import FlowVariablePortView from '~/components/output/FlowVariablePortView.vue';
-import { loadComponentLibrary } from '~/util/loadComponentLibrary';
+import { getPortView, callPortDataService } from '@/api';
+import { loadComponentLibrary } from '@/util/loadComponentLibrary';
+import FlowVariablePortView from './FlowVariablePortView.vue';
 
 export default {
     components: {

@@ -1,6 +1,6 @@
 <script>
-import Tag from '~/webapps-common/ui/components/Tag.vue';
 import { difference } from 'lodash';
+import Tag from '~/webapps-common/ui/components/Tag.vue';
 
 export const defaultInitialTagCount = 5;
 

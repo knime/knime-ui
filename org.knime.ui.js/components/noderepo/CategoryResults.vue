@@ -1,7 +1,7 @@
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex';
 
-import ScrollViewContainer from '~/components/noderepo/ScrollViewContainer.vue';
+import ScrollViewContainer from './ScrollViewContainer.vue';
 import NodeCategory from './NodeCategory.vue';
 
 export default {

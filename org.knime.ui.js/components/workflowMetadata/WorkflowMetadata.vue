@@ -1,8 +1,8 @@
 <script>
 import { mapState } from 'vuex';
 
-import { mapPortTypes } from '~/util/portDataMapper';
-import ExternalResourcesList from '~/components/common/ExternalResourcesList.vue';
+import { mapPortTypes } from '@/util/portDataMapper';
+import ExternalResourcesList from '@/components/common/ExternalResourcesList.vue';
 
 import WorkflowMetadataTitle from './WorkflowMetadataTitle.vue';
 import WorkflowMetadataLastEdit from './WorkflowMetadataLastEdit.vue';

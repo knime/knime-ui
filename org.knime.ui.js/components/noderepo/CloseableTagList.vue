@@ -1,7 +1,8 @@
 <script>
-import SelectableTagList from '~/components/common/SelectableTagList.vue';
-import ClosePopoverIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg';
 import { mixin as clickaway } from 'vue-clickaway2';
+import ClosePopoverIcon from '~/webapps-common/ui/assets/img/icons/arrow-prev.svg';
+
+import SelectableTagList from '@/components/common/SelectableTagList.vue';
 
 const maxLengthOfTagInChars = 31;
 const maxLinesOfTags = 2;

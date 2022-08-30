@@ -1,7 +1,7 @@
 <script>
 import CirclePlusIcon from '~/webapps-common/ui/assets/img/icons/circle-plus.svg';
 import FolderWorkflowIcon from '~/webapps-common/ui/assets/img/icons/folder-workflow.svg';
-import OpenSourceCreditsModal from '../OpenSourceCreditsModal.vue';
+import OpenSourceCreditsModal from './OpenSourceCreditsModal.vue';
 
 export default {
     components: {

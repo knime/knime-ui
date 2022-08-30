@@ -1,14 +1,13 @@
 <script>
 import { mapState, mapGetters, mapMutations } from 'vuex';
-
-import ActionBreadcrumb from '~/components/common/ActionBreadcrumb.vue';
-import SearchBar from '~/components/noderepo/SearchBar.vue';
-import CloseableTagList from '~/components/noderepo/CloseableTagList.vue';
-import CategoryResults from '~/components/noderepo/CategoryResults.vue';
-import SearchResults from '~/components/noderepo/SearchResults.vue';
-import NodeDescription from '~/components/noderepo/NodeDescription.vue';
-
 import { debounce } from 'lodash';
+
+import ActionBreadcrumb from '@/components/common/ActionBreadcrumb.vue';
+import SearchBar from '@/components/common/SearchBar.vue';
+import CloseableTagList from './CloseableTagList.vue';
+import CategoryResults from './CategoryResults.vue';
+import SearchResults from './SearchResults.vue';
+import NodeDescription from './NodeDescription.vue';
 
 const SEARCH_COOLDOWN = 150; // ms
 const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in SideMenu

@@ -1,7 +1,8 @@
 <script>
 import FlowVarTabIcon from '~/assets/flow-variables.svg';
-import portIcon from './PortIconRenderer';
 import TabBar from '~/webapps-common/ui/components/TabBar.vue';
+
+import portIcon from '@/components/common/PortIconRenderer';
 
 /**
  * Tab Bar that displays output ports of a given node.

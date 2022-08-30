@@ -1,14 +1,14 @@
 <!-- eslint-disable brace-style -->
 <script>
 import { mapState, mapGetters } from 'vuex';
-import PortTabs from '~/components/output/PortTabs.vue';
+
 import Button from '~/webapps-common/ui/components/Button.vue';
-import PlayIcon from '~/assets/execute.svg';
 import ReloadIcon from '~/webapps-common/ui/assets/img/icons/reload.svg';
+import PlayIcon from '~/assets/execute.svg';
+
 import { runNodeValidationChecks, runPortValidationChecks } from './output-validator';
-
+import PortTabs from './PortTabs.vue';
 import PortViewLoader from './PortViewLoader.vue';
-
 
 /**
  * Node output panel, displaying output port selection bar and port view if possible.
