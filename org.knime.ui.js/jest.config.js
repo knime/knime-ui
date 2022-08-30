@@ -1,17 +1,17 @@
 module.exports = {
     preset: '@vue/cli-plugin-unit-jest',
     moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/$1',
-        '@api': '<rootDir>/api/index.js',
-        '^@webapps-common(.*)$': '<rootDir>/webapps-common/$1',
-        '^@knime-ui-extension-service(.*)$': '<rootDir>/knime-ui-extension-service/$1'
+        '@api': '<rootDir>/src/api/index.js'
     },
+    modulePathIgnorePatterns: [
+        '<rootDir>/knime-ui-extension-service'
+    ],
     transform: {
         '\\.mjs$': 'babel-jest',
         '\\.js$': 'babel-jest',
         '\\.vue$': '@vue/vue2-jest',
         '\\.(css|styl|less|sass|scss|ttf|woff|woff2)(\\?|$)': 'jest-transform-stub',
-        '\\.svg': '<rootDir>/test/jest-transform-svgs'
+        '\\.svg': '<rootDir>/src/test/jest-transform-svgs'
     },
     transformIgnorePatterns: [
         '/node_modules/'
@@ -39,5 +39,5 @@ module.exports = {
     testMatch: [
         '<rootDir>/**/__tests__/*.test.js'
     ],
-    setupFiles: ['<rootDir>/test/jest-setup', 'jest-useragent-mock']
+    setupFiles: ['<rootDir>/src/test/jest-setup', 'jest-useragent-mock']
 };
