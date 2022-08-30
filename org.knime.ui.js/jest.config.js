@@ -1,20 +1,14 @@
 module.exports = {
+    preset: '@vue/cli-plugin-unit-jest',
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
         '^~/(.*)$': '<rootDir>/$1',
-        '~api': '<rootDir>/api/index.js',
-        '^vue$': 'vue/dist/vue.common.js'
+        '~api': '<rootDir>/api/index.js'
     },
-    moduleFileExtensions: [
-        'mjs',
-        'js',
-        'vue',
-        'json'
-    ],
     transform: {
         '\\.mjs$': 'babel-jest',
         '\\.js$': 'babel-jest',
-        '\\.vue$': 'vue-jest',
+        '\\.vue$': '@vue/vue2-jest',
         '\\.(css|styl|less|sass|scss|ttf|woff|woff2)(\\?|$)': 'jest-transform-stub',
         '\\.svg': '<rootDir>/test/unit/jest-transform-svgs'
     },
@@ -44,10 +38,5 @@ module.exports = {
     testMatch: [
         '<rootDir>/test/unit/**/*.test.js'
     ],
-    setupFiles: ['<rootDir>/test/unit/jest-setup', 'jest-useragent-mock'],
-    globals: {
-        'vue-jest': {
-            hideStyleWarn: true
-        }
-    }
+    setupFiles: ['<rootDir>/test/unit/jest-setup', 'jest-useragent-mock']
 };

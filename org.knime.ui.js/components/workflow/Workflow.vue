@@ -42,9 +42,8 @@ export default {
             // returns a functional component that is used as transition prop on <portal>. This way the transition
             // behaves as without portal, see https://portal-vue.linusb.org/api/portal-target.html#transition
             return {
-                functional: true,
-                render(h, context) {
-                    return h('transition', { props: { name: 'fade' } }, context.children);
+                render(h) {
+                    return h('transition', { props: { name: 'fade' } }, this.$slots.default);
                 }
             };
         }

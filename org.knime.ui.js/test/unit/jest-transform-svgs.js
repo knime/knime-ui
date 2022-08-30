@@ -1,15 +1,12 @@
-// from https://github.com/visualfanatic/vue-svg-loader/issues/38#issuecomment-407657015
-const vueJest = require('vue-jest/lib/template-compiler');
+// from https://github.com/damianstasik/vue-svg-loader/issues/38#issuecomment-1135337194
+const VueTemplateCompiler = require('vue-template-compiler');
 
-module.exports = {
-    process(content, filename) {
-        const { render } = vueJest({
-            content,
-            attrs: {
-                functional: false
-            }
-        });
+module.exports.process = (svgSource, filename) => {
+    const result = VueTemplateCompiler.compileToFunctions(
+        `${svgSource}`
+    );
 
-        return `module.exports = { render: ${render} }`;
-    }
+    return {
+        code: `module.exports = { render: ${result.render} }`
+    };
 };
