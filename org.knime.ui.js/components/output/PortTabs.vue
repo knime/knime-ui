@@ -1,6 +1,6 @@
 <script>
 import FlowVarTabIcon from '@/assets/flow-variables.svg';
-import TabBar from '@/webapps-common/ui/components/TabBar.vue';
+import TabBar from 'webapps-common/ui/components/TabBar.vue';
 
 import portIcon from '@/components/common/PortIconRenderer';
 

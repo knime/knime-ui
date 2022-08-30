@@ -2,7 +2,9 @@ module.exports = {
     preset: '@vue/cli-plugin-unit-jest',
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/$1',
-        '@api': '<rootDir>/api/index.js'
+        '@api': '<rootDir>/api/index.js',
+        '^@webapps-common(.*)$': '<rootDir>/webapps-common/$1',
+        '^@knime-ui-extension-service(.*)$': '<rootDir>/knime-ui-extension-service/$1'
     },
     transform: {
         '\\.mjs$': 'babel-jest',

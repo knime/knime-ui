@@ -1,6 +1,6 @@
 <script>
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex';
-import NodePreview from '@/webapps-common/ui/components/node/NodePreview.vue';
+import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import { KnimeMIME } from '@/mixins/dropNode';
 import findFreeSpaceOnCanvas from '@/util/findFreeSpaceOnCanvas';
 

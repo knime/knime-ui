@@ -1,5 +1,5 @@
 <script>
-import NodePreview from '@/webapps-common/ui/components/node/NodePreview.vue';
+import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import MetadataPlaceholder from './MetadataPlaceholder.vue';
 
 export default {

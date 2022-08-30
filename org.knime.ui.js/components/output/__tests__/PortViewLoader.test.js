@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import { createLocalVue, mount } from '@vue/test-utils';
 
-import { KnimeService } from '@/knime-ui-extension-service';
+import { KnimeService } from 'knime-ui-extension-service';
 import { getPortView as getPortViewMock } from '@api';
 import { loadComponentLibrary } from '@/util/loadComponentLibrary';
 
@@ -14,7 +14,7 @@ jest.mock('@/util/loadComponentLibrary', () => ({
     loadComponentLibrary: jest.fn()
 }));
 
-jest.mock('@/knime-ui-extension-service', () => ({
+jest.mock('knime-ui-extension-service', () => ({
     KnimeService: jest.fn()
 }));
 

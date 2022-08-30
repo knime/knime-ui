@@ -1,4 +1,4 @@
-import { rectangleIntersection, areaCoverage } from '../geometry.js';
+import { rectangleIntersection, areaCoverage } from '../geometry';
 
 describe('Geometry', () => {
     describe('rectangle intersection', () => {

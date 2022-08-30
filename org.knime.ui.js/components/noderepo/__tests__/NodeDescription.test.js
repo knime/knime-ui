@@ -3,8 +3,8 @@ import Vuex from 'vuex';
 import { createLocalVue, mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
-import Description from '@/webapps-common/ui/components/Description.vue';
-import NodeFeatureList from '@/webapps-common/ui/components/node/NodeFeatureList.vue';
+import Description from 'webapps-common/ui/components/Description.vue';
+import NodeFeatureList from 'webapps-common/ui/components/node/NodeFeatureList.vue';
 
 import ExternalResourcesList from '@/components/common/ExternalResourcesList.vue';
 import NodeDescription from '../NodeDescription.vue';

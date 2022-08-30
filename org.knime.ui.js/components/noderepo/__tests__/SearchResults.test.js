@@ -3,7 +3,7 @@ import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
-import ReloadIcon from '@/webapps-common/ui/assets/img/icons/reload.svg';
+import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
 import SearchResults from '../SearchResults.vue';
 import ScrollViewContainer from '../ScrollViewContainer.vue';
 import NodeList from '../NodeList.vue';

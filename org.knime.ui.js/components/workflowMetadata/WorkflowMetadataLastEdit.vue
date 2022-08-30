@@ -1,5 +1,5 @@
 <script>
-import { formatDateString } from '@/webapps-common/util/format';
+import { formatDateString } from 'webapps-common/util/format';
 
 
 export default {

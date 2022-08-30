@@ -1,7 +1,7 @@
 <script>
 import { mapGetters } from 'vuex';
 
-import MenuItems from '@/webapps-common/ui/components/MenuItems.vue';
+import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 
 /**

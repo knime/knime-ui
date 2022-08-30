@@ -1,6 +1,6 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
-import MenuItems from '@/webapps-common/ui/components/MenuItems.vue';
+import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 
 import { makeTypeSearch } from '@/util/fuzzyPortTypeSearch';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';

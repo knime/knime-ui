@@ -7,6 +7,17 @@ module.exports = {
         node: true
     },
     ignorePatterns: ['knime-ui-extension-service/'],
+    settings: {
+        'import/resolver': {
+            alias: {
+                map: [
+                    ['@', '.'],
+                    ['webapps-common', './webapps-common']
+                ],
+                extensions: ['.vue', '.js', '.config.js']
+            }
+        }
+    },
     overrides: [
         {
             files: ['./**/__tests__/*.test.js'],

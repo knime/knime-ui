@@ -16,6 +16,8 @@ module.exports = defineConfig({
         resolve: {
             alias: {
                 '@api': path.join(__dirname, 'api', 'index.js'),
+                'webapps-common': path.join(__dirname, 'webapps-common'),
+                'knime-ui-extension-service': path.join(__dirname, 'knime-ui-extension-service'),
                 '@': path.join(__dirname)
             }
         }

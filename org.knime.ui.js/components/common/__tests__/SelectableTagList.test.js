@@ -1,5 +1,5 @@
 import { shallowMount, mount } from '@vue/test-utils';
-import Tag from '@/webapps-common/ui/components/Tag.vue';
+import Tag from 'webapps-common/ui/components/Tag.vue';
 import SelectableTagList, { defaultInitialTagCount } from '../SelectableTagList.vue';
 
 const sevenTags = ['tag:1', 'tag:2', 'tag:3', 'tag:4', 'tag:5', 'tag:6', 'tag:7'];

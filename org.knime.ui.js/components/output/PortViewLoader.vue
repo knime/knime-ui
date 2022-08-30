@@ -1,5 +1,5 @@
 <script>
-import { KnimeService } from '@/knime-ui-extension-service';
+import { KnimeService } from 'knime-ui-extension-service';
 
 import { getPortView, callPortDataService } from '@api';
 import { loadComponentLibrary } from '@/util/loadComponentLibrary';

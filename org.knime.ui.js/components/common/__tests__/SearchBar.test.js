@@ -1,8 +1,8 @@
 import { shallowMount } from '@vue/test-utils';
 
-import CloseIcon from '@/webapps-common/ui/assets/img/icons/close.svg';
-import LensIcon from '@/webapps-common/ui/assets/img/icons/lens.svg';
-import FunctionButton from '@/webapps-common/ui/components/FunctionButton.vue';
+import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
+import LensIcon from 'webapps-common/ui/assets/img/icons/lens.svg';
+import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 
 import SearchBar from '../SearchBar.vue';
 

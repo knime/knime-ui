@@ -3,7 +3,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
-import NodePreview from '@/webapps-common/ui/components/node/NodePreview.vue';
+import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 
 import { KnimeMIME } from '@/mixins/dropNode';
 import { nodeSize } from '@/style/shapes.mjs';

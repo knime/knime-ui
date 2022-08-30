@@ -1,3 +1,4 @@
+/* eslint-disable import/extensions */
 import knimeColors from 'webapps-common/ui/colors/knimeColors.js';
 import nodeColors from 'webapps-common/ui/colors/nodeColors.js';
 import portColorsCommon from 'webapps-common/ui/colors/portColors.js';

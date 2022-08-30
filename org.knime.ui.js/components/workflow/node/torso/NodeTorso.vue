@@ -1,7 +1,7 @@
 <script>
 import { mapGetters } from 'vuex';
 
-import NodeTorsoNormal from '@/webapps-common/ui/components/node/NodeTorsoNormal.vue';
+import NodeTorsoNormal from 'webapps-common/ui/components/node/NodeTorsoNormal.vue';
 import NodeTorsoMissing from './NodeTorsoMissing.vue';
 import NodeTorsoUnknown from './NodeTorsoUnknown.vue';
 import NodeTorsoMetanode from './NodeTorsoMetanode.vue';
