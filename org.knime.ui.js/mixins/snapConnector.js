@@ -1,4 +1,4 @@
-import { mapActions } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 
 /**
  * This mixin used for components that have ports to allow the user to snap and drop connectors
@@ -30,6 +30,7 @@ export const snapConnector = {
         isConnectionSource: false
     }),
     computed: {
+        ...mapState('application', ['availablePortTypes']),
         /**
          * Divides the height of the component into partitions
          * that divide the space between ports by half
@@ -64,6 +65,24 @@ export const snapConnector = {
                 partitions.out = makePartitions(this.portPositions.out.map(([, y]) => y));
             }
             return partitions;
+        },
+        selectedPortGroup() {
+            // TODO: move to helper or store ??!!
+            // TODO: temporary until multiple port groups can be handled
+            if (!this.portGroups) {
+                return null;
+            }
+
+            return Object.entries(this.portGroups)
+                .find(([name, { canAddInPort, canAddOutPort }]) => canAddInPort || canAddOutPort);
+        },
+        addablePortTypes() {
+            if (['metanode', 'component'].includes(this.nodeKind)) {
+                return Object.keys(this.availablePortTypes);
+            }
+
+            // TODO: are those typeIds a object or array?
+            return this.selectedPortGroup?.[1].supportedPortTypeIds;
         }
     },
     mounted() {
@@ -71,7 +90,7 @@ export const snapConnector = {
         this.$root.$on('connector-end', this.onConnectorEnd);
     },
     methods: {
-        ...mapActions('workflow', ['connectNodes']),
+        ...mapActions('workflow', ['connectNodes', 'addNodePort']),
         onConnectorStart({ compatibleNodes, nodeId }) {
             if (this.containerId) {
                 // metanodes can always be connected to
@@ -119,7 +138,7 @@ export const snapConnector = {
 
             let snapPartitions = this.snapPartitions[targetPortDirection];
             let portPositions = this.portPositions[targetPortDirection];
-            
+
 
             // no port, no snap, assumes partitions don't change while dragging connector
             if (!snapPartitions) {
@@ -144,9 +163,19 @@ export const snapConnector = {
             let [relPortX, relPortY] = portPositions[snapPortIndex];
             let absolutePortPosition = [relPortX + this.position.x, relPortY + this.position.y];
 
+            const possibleTargetPorts = ports[`${targetPortDirection}Ports`];
+            let targetPortData;
+            // if the port index is bigger than our port list this is most likely a placeholder port
+            if (possibleTargetPorts.length > snapPortIndex) {
+                targetPortData = possibleTargetPorts[snapPortIndex];
+            } else {
+                targetPortData = { isPlaceHolderPort: true };
+            }
+
             // position connector end
-            const didSnap = e.detail.onSnapCallback({
-                targetPort: ports[`${targetPortDirection}Ports`][snapPortIndex],
+            const { didSnap, suggestedTypeId } = e.detail.onSnapCallback({
+                targetPort: targetPortData,
+                addablePortTypes: this.addablePortTypes,
                 snapPosition: absolutePortPosition
             });
 
@@ -157,7 +186,34 @@ export const snapConnector = {
                     side: targetPortDirection,
                     index: snapPortIndex
                 };
+                if (targetPortData.isPlaceHolderPort) {
+                    this.targetPort.isPlaceHolderPort = true;
+                    this.targetPort.typeId = suggestedTypeId;
+                }
             }
+        },
+        addPort({ side, typeId }) {
+            this.addNodePort({
+                nodeId: this.id,
+                side: side === 'in' ? 'input' : 'output',
+                typeId,
+                portGroup: this.selectedPortGroup?.[0] // is null for composite nodes
+            });
+        },
+        createConnectorObject({ startNode, startPort }) {
+            return this.targetPort.side === 'in'
+                ? {
+                    sourceNode: startNode,
+                    sourcePort: startPort,
+                    destNode: this.id || this.containerId, // either node or metanode
+                    destPort: this.targetPort.index
+                }
+                : {
+                    sourceNode: this.id || this.containerId, // either node or metanode
+                    sourcePort: this.targetPort.index,
+                    destNode: startNode,
+                    destPort: startPort
+                };
         },
         onConnectorDrop(e) {
             if (isNaN(this.targetPort?.index)) {
@@ -166,24 +222,14 @@ export const snapConnector = {
                 return;
             }
 
-            let { destNode, destPort, sourceNode, sourcePort } = e.detail;
-
-            let newConnector = this.targetPort.side === 'in'
-                ? {
-                    sourceNode,
-                    sourcePort,
-                    destNode: this.id || this.containerId, // either node or metanode
-                    destPort: this.targetPort.index
-                }
-                : {
-                    sourceNode: this.id || this.containerId, // either node or metanode
-                    sourcePort: this.targetPort.index,
-                    destNode,
-                    destPort
-                };
-
             if (e.detail.isCompatible) {
-                this.connectNodes(newConnector);
+                // create the port if this was a placeholder port
+                if (this.targetPort.isPlaceHolderPort) {
+                    this.addPort(this.targetPort);
+                    // TODO: set this.targetPort.index to the newly added index - its currently just based on the
+                    //       hope that the backend already finished to add the port (and it has the index+1)
+                }
+                this.connectNodes(this.createConnectorObject(e.detail));
             } else {
                 e.preventDefault();
             }

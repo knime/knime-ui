@@ -12,7 +12,7 @@ import { circleDetection } from '~/util/compatibleConnections';
 
 const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) => {
     const isPortFree = toPort.connectedVia.length === 0;
-    
+
     if (isPortFree) {
         return true;
     }
@@ -93,9 +93,14 @@ export default {
         selected: {
             type: Boolean,
             default: false
+        },
+        disableDrag: {
+            type: Boolean,
+            default: false
         }
     },
     data: () => ({
+        // represents the <Connector> line that can be dragged to other ports
         dragConnector: null,
         didMove: false,
         pointerDown: false,
@@ -120,13 +125,16 @@ export default {
             );
         },
         portTemplate() {
+            if (this.port.isPlaceHolderPort) {
+                return {};
+            }
             let template = this.availablePortTypes[this.port.typeId];
             if (!template) {
                 throw new Error(`port template ${this.port.typeId} not available in application`);
             }
             return template;
         },
-        
+
         // implemented as required by the tooltip mixin
         tooltip() {
             // table ports have less space than other ports, because the triangular shape naturally creates a gap
@@ -158,11 +166,11 @@ export default {
     methods: {
         /* ======== Drag Connector ======== */
         onPointerDown(e) {
-            if (!this.isWritable || e.button !== 0 || e.shiftKey || e.ctrlKey) {
+            if (!this.isWritable || e.button !== 0 || e.shiftKey || e.ctrlKey || this.disableDrag) {
                 return;
             }
             e.stopPropagation();
-            
+
             this.pointerDown = true;
             e.target.setPointerCapture(e.pointerId);
         },
@@ -197,7 +205,7 @@ export default {
             if (!this.dragConnector) {
                 return;
             }
-            
+
             // find HTML-Element below cursor
             const hitTarget = document.elementFromPoint(e.x, e.y);
 
@@ -206,7 +214,7 @@ export default {
                 this.dragConnector.absolutePoint = [x, y];
             };
             setDragConnectorCoords(absoluteX, absoluteY);
-            
+
             const targetPortDirection = this.direction === 'out' ? 'in' : 'out';
             // create move event
             const moveEvent = new CustomEvent('connector-move', {
@@ -214,22 +222,38 @@ export default {
                     x: absoluteX,
                     y: absoluteY,
                     targetPortDirection,
-                    onSnapCallback: ({ snapPosition, targetPort }) => {
+                    onSnapCallback: ({ snapPosition, targetPort, addablePortTypes }) => {
                         const [x, y] = snapPosition;
-                        const isSupportedConnection = checkConnectionSupport({
-                            toPort: this.port,
-                            connections: this.connections,
-                            targetPortDirection
-                        });
+                        let suggestedTypeId;
 
-                        const isCompatiblePort = checkPortCompatibility({
-                            fromPort: this.port,
-                            toPort: targetPort,
-                            availablePortTypes: this.availablePortTypes
-                        });
+                        if (targetPort.isPlaceHolderPort) {
+                            if (addablePortTypes.includes(this.port.typeId)) {
+                                suggestedTypeId = this.port.typeId;
+                            } else {
+                                suggestedTypeId = addablePortTypes.find(typeId => checkPortCompatibility({
+                                    fromPort: this.port,
+                                    toPort: { typeId },
+                                    availablePortTypes: this.availablePortTypes
+                                }));
+                            }
 
-                        this.didDragToCompatibleTarget = isSupportedConnection && isCompatiblePort;
-                        
+                            this.didDragToCompatibleTarget = Boolean(suggestedTypeId);
+                        } else {
+                            const isSupportedConnection = checkConnectionSupport({
+                                toPort: this.port,
+                                connections: this.connections,
+                                targetPortDirection
+                            });
+
+                            const isCompatiblePort = checkPortCompatibility({
+                                fromPort: this.port,
+                                toPort: targetPort,
+                                availablePortTypes: this.availablePortTypes
+                            });
+
+                            this.didDragToCompatibleTarget = isSupportedConnection && isCompatiblePort;
+                        }
+
                         // setting the drag connector coordinates will cause the connector to snap
                         // We prevent that if it's not a compatible target
                         if (this.didDragToCompatibleTarget) {
@@ -237,7 +261,11 @@ export default {
                         }
 
                         // The callback should return whether a snapped connection was made to a compatible target
-                        return this.didDragToCompatibleTarget;
+                        let result = { didSnap: this.didDragToCompatibleTarget };
+                        if (targetPort.isPlaceHolderPort) {
+                            result.suggestedTypeId = suggestedTypeId;
+                        }
+                        return result;
                     }
                 },
                 bubbles: true
@@ -302,7 +330,7 @@ export default {
         }),
         onPointerUp(e) {
             this.pointerDown = false;
-            
+
             if (!this.dragConnector) {
                 return;
             }
@@ -310,17 +338,13 @@ export default {
             e.stopPropagation();
             e.target.releasePointerCapture(e.pointerId);
 
-            let { sourceNode, sourcePort, destNode, destPort } = this.dragConnector;
-
             if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
                 let dropped = this.lastHitTarget.element.dispatchEvent(
                     new CustomEvent(
                         'connector-drop', {
                             detail: {
-                                sourceNode,
-                                sourcePort,
-                                destNode,
-                                destPort,
+                                startNode: this.nodeId,
+                                startPort: this.port.index,
                                 // when connection is dropped we pass in whether the last hit target was compatible.
                                 // incompatible targets will be ignored and will not be connected to
                                 isCompatible: this.lastHitTarget.isCompatible
@@ -386,11 +410,13 @@ export default {
     @lostpointercapture.stop="onLostPointerCapture"
   >
     <!-- regular port shown on the workflow -->
-    <Port
-      :port="port"
-      :class="{ 'hoverable-port': !selected }"
-      @click.native="onClick"
-    />
+    <slot>
+      <Port
+        :port="port"
+        :class="{ 'hoverable-port': !selected }"
+        @click.native="onClick"
+      />
+    </slot>
 
     <portal to="selected-port">
       <NodePortActions

@@ -38,7 +38,7 @@ const workflowCommand = async ({ projectId, workflowId, command, args }) => {
     try {
         let rpcArgs = { kind: command, ...args };
         let response = await rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
-        
+
         if (!response || !response.snapshotId) {
             return response;
         }

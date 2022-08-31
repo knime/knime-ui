@@ -38,6 +38,23 @@ export default {
             type: Object,
             required: true,
             validator: value => Array.isArray(value.in) && Array.isArray(value.out)
+        },
+        /**
+         *  portGroups required for adding ports via drag and drop on (+) port placeholders
+         *  -- Required by snapConnector mixin
+         */
+        portGroups: {
+            type: Object,
+            default: null
+        },
+        /**
+         * nodeKind is required to check for portGroups or use all available types in snapConnector
+         * -- Required by snapConnector mixin
+         */
+        nodeKind: {
+            type: String,
+            required: true,
+            validator: kind => ['node', 'metanode', 'component'].includes(kind)
         }
     },
 

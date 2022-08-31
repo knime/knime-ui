@@ -6,7 +6,6 @@ import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder.vue';
 
 /**
  * This component renders and handles interactions with a Node's Ports
- * It needs to be a direct child of <Node> because is coupled by direct access to portBarBottom
  */
 export default {
     components: {
@@ -18,7 +17,7 @@ export default {
             type: String,
             required: true
         },
-        
+
         nodeKind: {
             type: String,
             required: true,
@@ -44,7 +43,7 @@ export default {
             type: Object,
             default: null
         },
-        
+
         /** object that contains information which port to highlight */
         targetPort: {
             type: Object,
@@ -101,22 +100,28 @@ export default {
             };
         },
         addPortPlaceholderPositions() {
+            // only set placeholder positions if the placeholder will be visible (i.e. we can add a port)
+            // this is required for the snapConnector to add a snap region
             return {
-                input: placeholderPosition({
-                    portCount: this.inPorts.length,
-                    isMetanode: this.isMetanode
-                }),
-                output: placeholderPosition({
-                    portCount: this.outPorts.length,
-                    isMetanode: this.isMetanode,
-                    isOutport: true
-                })
+                input: this.canAddPort.input
+                    ? placeholderPosition({
+                        portCount: this.inPorts.length,
+                        isMetanode: this.isMetanode
+                    })
+                    : null,
+                output: this.canAddPort.output
+                    ? placeholderPosition({
+                        portCount: this.outPorts.length,
+                        isMetanode: this.isMetanode,
+                        isOutport: true
+                    })
+                    : null
             };
         },
         /* eslint-disable brace-style, curly */
         canAddPort() {
             if (!this.isWritable) return { input: false, output: false };
-            
+
             if (this.isComponent || this.isMetanode) return { input: true, output: true };
 
             if (this.portGroups) {
@@ -126,14 +131,14 @@ export default {
                     output: portGroups.some(portGroup => portGroup.canAddOutPort)
                 };
             }
-            
+
             // Native node without port groups
             return { input: false, output: false };
         },
         selectedPortGroup() {
             // TODO: temporary until multiple port groups can be handled
             if (!this.portGroups) return null;
-            
+
             return Object.entries(this.portGroups)
                 .find(([name, { canAddInPort, canAddOutPort }]) => canAddInPort || canAddOutPort);
         },
@@ -157,6 +162,12 @@ export default {
             immediate: true,
             handler(portPositions) {
                 this.$emit('update-port-positions', portPositions);
+            }
+        },
+        addPortPlaceholderPositions: {
+            immediate: true,
+            handler(addPortPlaceholderPositions) {
+                this.$emit('update-add-port-placeholder-positions', addPortPlaceholderPositions);
             }
         }
     },
@@ -205,6 +216,12 @@ export default {
         },
         isPortTargeted({ index }, side) {
             return this.targetPort?.side === side && this.targetPort.index === index;
+        },
+        isPlaceholderPortTargeted(side) {
+            // TODO: reduce the 'input' vs 'in' stuff this is ridiculous! Even for ports is can be different (targetPort vs backend port data!)
+            return side === 'input'
+                ? this.isPortTargeted({ index: this.inPorts.length }, 'in')
+                : this.isPortTargeted({ index: this.outPorts.length }, 'out');
         },
         addPort({ side, typeId }) {
             this.addNodePort({
@@ -278,6 +295,9 @@ export default {
         v-if="canAddPort[side]"
         :key="side"
         :side="side"
+        :index="side === 'input' ? inPorts.length : outPorts.length"
+        :targeted="isPlaceholderPortTargeted(side)"
+        :target-port="targetPort"
         :node-id="nodeId"
         :position="addPortPlaceholderPositions[side]"
         :addable-port-types="addablePortTypes"

@@ -1,5 +1,6 @@
 <script>
 
+import NodePort from '~/components/workflow/NodePort.vue';
 import Port from '~/components/workflow/Port.vue';
 
 export const addPortPlaceholderPath = (() => {
@@ -15,6 +16,7 @@ export const addPortPlaceholderPath = (() => {
 
 export default {
     components: {
+        NodePort,
         Port
     },
     inject: ['anchorPoint'],
@@ -28,12 +30,27 @@ export default {
             required: true,
             validator: side => ['input', 'output'].includes(side)
         },
+        // the fake index of this NodePort to be able to snap to
+        index: {
+            type: Number,
+            required: true
+        },
         nodeId: {
             type: String,
             required: true
         },
         addablePortTypes: {
             type: Array,
+            default: null
+        },
+        // if true, the port will highlight itself
+        targeted: {
+            type: Boolean,
+            default: false
+        },
+        /** object that contains information which port to highlight */
+        targetPort: {
+            type: Object,
             default: null
         }
     },
@@ -48,7 +65,15 @@ export default {
         previewPort: null
     }),
     computed: {
-        addPortPlaceholderPath: () => addPortPlaceholderPath
+        addPortPlaceholderPath: () => addPortPlaceholderPath,
+        fakeNodePort() {
+            return {
+                index: this.index,
+                typeId: this.targeted ? this.targetPort.typeId : '__placeholder__',
+                connectedVia: [],
+                isPlaceHolderPort: true
+            };
+        }
     },
     watch: {
         isMenuOpen(shouldOpen) {
@@ -127,7 +152,7 @@ export default {
             this.previewPort = null;
 
             this.$emit('add-port', item.port.typeId);
-            
+
             this.$nextTick(() => {
                 this.transitionEnabled = true;
             });
@@ -144,42 +169,51 @@ export default {
         :key="previewPort.typeId"
         :port="previewPort"
       />
-      <g
+      <NodePort
         v-else
-        :class="['add-port-icon',{
-          'active': isMenuOpen
-        }]"
-        @click="onClick"
+        :key="`placeholder-${side}`"
+        :disable-drag="true"
+        :node-id="nodeId"
+        :direction="side === 'input' ? 'in' : 'out'"
+        :port="fakeNodePort"
       >
-        <circle
-          r="6.5"
-          fill="white"
-          stroke="none"
-        />
-        <path
-          :d="addPortPlaceholderPath"
-          stroke-width="1"
-          stroke="#000"
-          fill="none"
-          stroke-dasharray="1"
-        />
-        <line
-          y1="0"
-          y2="0"
-          x1="-3.5"
-          x2="3.5"
-          stroke="#000"
-          stroke-width="1"
-        />
-        <line
-          x1="0"
-          x2="0"
-          y1="-3.5"
-          y2="3.5"
-          stroke="#000"
-          stroke-width="1"
-        />
-      </g>
+        <g
+          v-if="!targeted"
+          :class="['add-port-icon', {
+            'active': isMenuOpen
+          }]"
+          @click="onClick"
+        >
+          <circle
+            r="6.5"
+            fill="white"
+            stroke="none"
+          />
+          <path
+            :d="addPortPlaceholderPath"
+            stroke-width="1"
+            stroke="#000"
+            fill="none"
+            stroke-dasharray="1"
+          />
+          <line
+            y1="0"
+            y2="0"
+            x1="-3.5"
+            x2="3.5"
+            stroke="#000"
+            stroke-width="1"
+          />
+          <line
+            x1="0"
+            x2="0"
+            y1="-3.5"
+            y2="3.5"
+            stroke="#000"
+            stroke-width="1"
+          />
+        </g>
+      </NodePort>
     </transition>
   </g>
 </template>

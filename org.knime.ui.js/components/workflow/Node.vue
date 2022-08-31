@@ -174,7 +174,8 @@ export default {
                 width: 0,
                 height: 20
             },
-            portPositions: { in: [], out: [] }
+            portPositions: { in: [], out: [] },
+            addPortPlaceholderPositions: { in: [], out: [] }
         };
     },
     computed: {
@@ -214,7 +215,7 @@ export default {
             if (this.selectionPreview === null) {
                 return this.isSelected && !this.isDragging;
             }
-            
+
             // preview can override selected state (think: deselect with shift)
             if (this.isSelected && this.selectionPreview === 'hide') {
                 return false;
@@ -239,7 +240,7 @@ export default {
         ...mapActions('workflow', ['openNodeConfiguration']),
         ...mapActions('application', ['switchWorkflow']),
         ...mapActions('selection', ['selectNode', 'deselectAllObjects', 'deselectNode']),
-        
+
         onLeaveHoverArea(e) {
             if (this.$refs.actionbar?.$el?.contains(e.relatedTarget)) {
                 // Used to test for elements that are logically contained inside this node
@@ -301,7 +302,7 @@ export default {
             if (this.isDragging) {
                 return;
             }
-            
+
             if (e.ctrlKey || e.metaKey) {
                 // user tries to open component or metanode
                 e.stopPropagation();
@@ -330,7 +331,12 @@ export default {
   <NodeConnectorDetection
     :id="id"
     :position="position"
-    :port-positions="portPositions"
+    :port-groups="portGroups"
+    :node-kind="kind"
+    :port-positions="{
+      in: [ ...portPositions.in, addPortPlaceholderPositions.input ].filter(Boolean),
+      out: [ ...portPositions.out, addPortPlaceholderPositions.output].filter(Boolean)
+    }"
   >
     <template
       #default="{
@@ -445,6 +451,7 @@ export default {
                 :connector-hover="connectorHover"
                 :is-single-selected="isSingleSelected"
                 @update-port-positions="portPositions = $event"
+                @update-add-port-placeholder-positions="addPortPlaceholderPositions = $event"
               />
 
               <!-- Node name / title -->
