@@ -10,7 +10,7 @@ import Description from 'webapps-common/ui/components/Description.vue';
 import TagList from 'webapps-common/ui/components/TagList.vue';
 import Tag from 'webapps-common/ui/components/Tag.vue';
 
-import ScrollViewContainer from '@/components/noderepo/ScrollViewContainer.vue';
+import ScrollViewContainer from '@/components/nodeRepository/ScrollViewContainer.vue';
 import ExternalResourcesList from '@/components/common/ExternalResourcesList.vue';
 
 import WorkflowMetadata from '../WorkflowMetadata.vue';

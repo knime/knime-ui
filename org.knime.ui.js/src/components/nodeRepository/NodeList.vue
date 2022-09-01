@@ -1,6 +1,6 @@
 <script>
 import Button from 'webapps-common/ui/components/Button.vue';
-import NodeTemplate from '@/components/noderepo/NodeTemplate.vue';
+import NodeTemplate from '@/components/nodeRepository/NodeTemplate.vue';
 
 export default {
     components: {

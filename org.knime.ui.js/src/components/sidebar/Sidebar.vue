@@ -4,7 +4,7 @@ import InfoIcon from 'webapps-common/ui/assets/img/icons/circle-info.svg';
 import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
 
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
-import NodeRepository from '@/components/noderepo/NodeRepository.vue';
+import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
 import LeftCollapsiblePanel from './LeftCollapsiblePanel.vue';
 
 export default {

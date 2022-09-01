@@ -9,7 +9,7 @@ import * as nodeRepositoryStoreConfig from '@/store/nodeRepository';
 import InfoIcon from 'webapps-common/ui/assets/img/icons/circle-info.svg';
 import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
 
-import NodeRepository from '@/components/noderepo/NodeRepository.vue';
+import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import Sidebar from '../Sidebar.vue';
 
