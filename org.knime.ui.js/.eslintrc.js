@@ -6,7 +6,6 @@ module.exports = {
     env: {
         node: true
     },
-    ignorePatterns: ['knime-ui-extension-service/'],
     settings: {
         'import/resolver': {
             alias: {
@@ -18,12 +17,6 @@ module.exports = {
         }
     },
     overrides: [
-        {
-            files: ['./**/*.js', './**/*.mjs', './**/*.vue'],
-            rules: {
-                'import/extensions': ['error', { vue: 'always', json: 'always', mjs: 'always', svg: 'always' }]
-            }
-        },
         {
             files: ['./**/__tests__/*.test.js'],
             extends: ['./webapps-common/lint/.eslintrc-jest.js'],
