@@ -183,7 +183,7 @@ export const snapConnector = {
                 // set the target port's side and index
                 // for performance: only replace observed object if targeted port changes
                 this.targetPort = {
-                    side: targetPortDirection,
+                    side: targetPortDirection, // TODO: this is in/out instead of 'input'/'output' that is used by ports
                     index: snapPortIndex
                 };
                 if (targetPortData.isPlaceHolderPort) {

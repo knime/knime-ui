@@ -169,6 +169,7 @@ export default {
         :key="previewPort.typeId"
         :port="previewPort"
       />
+      <!-- TODO: should we really use a fake Node Port? It helps with the snapping as well as the preview -->
       <NodePort
         v-else
         :key="`placeholder-${side}`"

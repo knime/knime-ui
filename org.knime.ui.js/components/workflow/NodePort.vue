@@ -226,6 +226,7 @@ export default {
                         const [x, y] = snapPosition;
                         let suggestedTypeId;
 
+                        // TODO: move this to 2 helper functions and decouple both cases
                         if (targetPort.isPlaceHolderPort) {
                             if (addablePortTypes.includes(this.port.typeId)) {
                                 suggestedTypeId = this.port.typeId;
