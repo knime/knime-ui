@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapMutations } from 'vuex';
 import FloatingMenu from '~/components/FloatingMenu.vue';
 import portIcon from '~/components/output/PortIconRenderer';
 import MenuItems from '~/webapps-common/ui/components/MenuItems.vue';
@@ -35,6 +35,10 @@ export default {
         addablePortTypes: {
             type: Array,
             default: null
+        },
+        portGroups: {
+            type: Object,
+            default: null
         }
     },
     data: () => ({
@@ -42,6 +46,7 @@ export default {
     }),
     computed: {
         ...mapState('canvas', ['zoomFactor']),
+        ...mapState('workflow', ['portGroup']),
         ...mapState('application', ['availablePortTypes', 'suggestedPortTypes']),
         ...mapGetters('application', ['searchAllPortTypes']),
         headerMargin() {
@@ -80,21 +85,40 @@ export default {
                 return this.searchPorts(this.searchValue, { limit: this.suggestedPortTypes.length });
             }
         },
+        selectedPortGroups() {
+            if (this.portGroups) {
+                return Object.entries(this.portGroups).filter(group => group[1].supportedPortTypeIds.length > 0);
+            }
+            return null;
+        },
         menuItems() {
-            return this.searchResults.map(({ typeId, name }) => ({
+            const menuItems = this.searchResults.map(({ typeId, name }) => ({
                 port: { typeId },
                 text: name,
                 icon: portIcon({ typeId })
             }));
+
+            if (this.selectedPortGroups && this.selectedPortGroups.length > 1) {
+                return this.selectedPortGroups.map(group => ({ text: group[0] }));
+            } else if (this.selectedPortGroups && this.selectedPortGroups.length === 1) {
+                this.setPortGroup(this.selectedPortGroups[0][0]);
+            }
+
+            return menuItems;
         }
     },
     mounted() {
         this.$refs.searchBar.focus();
     },
     methods: {
+        ...mapMutations('workflow', ['setPortGroup']),
         onMenuItemClick(e, item) {
-            this.$emit('item-click', item);
-            this.$emit('menu-close', item);
+            if (item.port) {
+                this.$emit('item-click', item);
+                this.$emit('menu-close', item);
+            } else {
+                this.setPortGroup(item.text);
+            }
         },
         onSearchBarDown() {
             this.$refs.searchResults.focusFirst();

@@ -27,7 +27,10 @@ export const state = () => ({
 
     // TODO: NXT-1143 find a better place for the tooltip logic
     // maybe use an event that bubbles to the top (workflow canvas?)
-    tooltip: null
+    tooltip: null,
+
+    // Better place for selected port group
+    portGroup: null
 });
 
 export const mutations = {
@@ -45,6 +48,9 @@ export const mutations = {
 
     setTooltip(state, tooltip) {
         Vue.set(state, 'tooltip', tooltip);
+    },
+    setPortGroup(state, portGroup) {
+        state.portGroup = portGroup;
     }
 };
 

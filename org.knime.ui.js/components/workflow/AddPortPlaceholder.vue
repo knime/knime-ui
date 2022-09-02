@@ -35,6 +35,10 @@ export default {
         addablePortTypes: {
             type: Array,
             default: null
+        },
+        portGroups: {
+            type: Object,
+            default: null
         }
     },
     data: () => ({
@@ -77,7 +81,8 @@ export default {
                         props: {
                             position,
                             side: this.side,
-                            addablePortTypes: this.addablePortTypes
+                            addablePortTypes: this.addablePortTypes,
+                            portGroups: this.portGroups
                         },
                         events: {
                             'item-active': this.onItemActive,

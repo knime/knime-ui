@@ -1,5 +1,5 @@
 <script>
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters, mapActions, mapState } from 'vuex';
 import { placeholderPosition, portPositions } from '~/util/portShift';
 import NodePort from '~/components/workflow/NodePort.vue';
 import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder.vue';
@@ -74,6 +74,7 @@ export default {
         selectedPort: null
     }),
     computed: {
+        ...mapState('workflow', ['portGroup']),
         ...mapGetters('workflow', ['isDragging', 'isWritable']),
 
         isMetanode() {
@@ -138,11 +139,11 @@ export default {
             return { input: false, output: false };
         },
         selectedPortGroup() {
-            // TODO: temporary until multiple port groups can be handled
-            if (!this.portGroups) return null;
-            
-            return Object.entries(this.portGroups)
-                .find(([name, { canAddInPort, canAddOutPort }]) => canAddInPort || canAddOutPort);
+            if (this.portGroup) {
+                return Object.entries(this.portGroups).find(item => item[0] === `${this.portGroup}`);
+            }
+
+            return null;
         },
 
         /* either null if all ports can be added or a list of typeIds */
@@ -281,6 +282,7 @@ export default {
         :side="side"
         :node-id="nodeId"
         :position="addPortPlaceholderPositions[side]"
+        :port-groups="portGroups"
         :addable-port-types="addablePortTypes"
         :class="['add-port', {
           'node-hover': hover,
