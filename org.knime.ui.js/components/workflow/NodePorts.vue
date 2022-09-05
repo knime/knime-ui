@@ -137,22 +137,6 @@ export default {
             
             // Native node without port groups
             return { input: false, output: false };
-        },
-        selectedPortGroup() {
-            if (this.portGroup) {
-                return Object.entries(this.portGroups).find(item => item[0] === `${this.portGroup}`);
-            }
-
-            return null;
-        },
-
-        /* either null if all ports can be added or a list of typeIds */
-        addablePortTypes() {
-            if (this.isComponent || this.isMetanode) {
-                return null;
-            }
-
-            return this.selectedPortGroup?.[1].supportedPortTypeIds;
         }
     },
     watch: {
@@ -208,12 +192,12 @@ export default {
         isPortTargeted({ index }, side) {
             return this.targetPort?.side === side && this.targetPort.index === index;
         },
-        addPort({ side, typeId }) {
+        addPort({ side, typeId, portGroup }) {
             this.addNodePort({
                 nodeId: this.nodeId,
                 side,
                 typeId,
-                portGroup: this.selectedPortGroup?.[0] // is null for composite nodes
+                portGroup
             });
         },
         removePort({ portGroupId, index }, side) {
@@ -283,13 +267,12 @@ export default {
         :node-id="nodeId"
         :position="addPortPlaceholderPositions[side]"
         :port-groups="portGroups"
-        :addable-port-types="addablePortTypes"
         :class="['add-port', {
           'node-hover': hover,
           'connector-hover': connectorHover,
           'node-selected': isSingleSelected,
         }]"
-        @add-port="addPort({ side, typeId: $event })"
+        @add-port="addPort({ side, typeId: $event.typeId, portGroup: $event.portGroup })"
         @open-port-type-menu.native="onPortTypeMenuOpen($event)"
         @close-port-type-menu.native="onPortTypeMenuClose($event)"
       />

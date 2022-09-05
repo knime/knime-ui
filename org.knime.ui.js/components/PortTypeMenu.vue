@@ -1,11 +1,13 @@
 <script>
-import { mapState, mapGetters, mapMutations } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
 import FloatingMenu from '~/components/FloatingMenu.vue';
 import portIcon from '~/components/output/PortIconRenderer';
 import MenuItems from '~/webapps-common/ui/components/MenuItems.vue';
 import SearchBar from '~/components/noderepo/SearchBar.vue';
 
 import { makeTypeSearch } from '~/util/fuzzyPortTypeSearch';
+
+const isSingleTypePortGroup = (portGroups, groupName) => portGroups[groupName].supportedPortTypeIds.length === 1;
 
 /**
  * ContextMenu offers actions for the Kanvas based on the selected nodes.
@@ -31,22 +33,17 @@ export default {
             required: true,
             validator: side => ['input', 'output'].includes(side)
         },
-        /** A list of addable type ids or null, if all are allowed */
-        addablePortTypes: {
-            type: Array,
-            default: null
-        },
         portGroups: {
             type: Object,
             default: null
         }
     },
     data: () => ({
-        searchValue: ''
+        searchValue: '',
+        selectedPortGroup: null
     }),
     computed: {
         ...mapState('canvas', ['zoomFactor']),
-        ...mapState('workflow', ['portGroup']),
         ...mapState('application', ['availablePortTypes', 'suggestedPortTypes']),
         ...mapGetters('application', ['searchAllPortTypes']),
         headerMargin() {
@@ -65,67 +62,98 @@ export default {
                 x: this.position.x
             };
         },
-        suggestedSearchResults() {
+
+        suggestedPorts() {
             return this.suggestedPortTypes.map(typeId => ({
                 typeId,
                 name: this.availablePortTypes[typeId].name
             }));
         },
-        /* port search function */
-        searchPorts() {
+
+        searchPortsFunction() {
             return this.addablePortTypes
                 ? makeTypeSearch({ typeIds: this.addablePortTypes, installedPortTypes: this.availablePortTypes })
                 : this.searchAllPortTypes;
         },
+
         searchResults() {
             if (!this.addablePortTypes && this.searchValue === '') {
                 // if all types are allowed and the search value is empty, show suggested port types
-                return this.suggestedSearchResults;
+                return this.suggestedPorts;
             } else {
-                return this.searchPorts(this.searchValue, { limit: this.suggestedPortTypes.length });
+                return this.searchPortsFunction(this.searchValue, { limit: this.suggestedPortTypes.length });
             }
         },
-        selectedPortGroups() {
-            if (this.portGroups) {
-                return Object.entries(this.portGroups).filter(group => group[1].supportedPortTypeIds.length > 0);
-            }
-            return null;
-        },
+        
         menuItems() {
+            if (this.portGroups && !this.selectedPortGroup) {
+                return Object.keys(this.portGroups).map((groupName) => ({ text: groupName }));
+            }
+
             const menuItems = this.searchResults.map(({ typeId, name }) => ({
                 port: { typeId },
                 text: name,
                 icon: portIcon({ typeId })
             }));
 
-            if (this.selectedPortGroups && this.selectedPortGroups.length > 1) {
-                return this.selectedPortGroups.map(group => ({ text: group[0] }));
-            } else if (this.selectedPortGroups && this.selectedPortGroups.length === 1) {
-                this.setPortGroup(this.selectedPortGroups[0][0]);
+            return menuItems;
+        },
+
+        addablePortTypes() {
+            if (!this.portGroups || !this.selectedPortGroup) {
+                return null;
             }
 
-            return menuItems;
+            return this.portGroups[this.selectedPortGroup].supportedPortTypeIds;
+        }
+    },
+    watch: {
+        portGroups: {
+            immediate: true,
+            handler() {
+                const portGroupsNames = Object.keys(this.portGroups || {});
+                // automatically select the first port group when there's only 1
+                if (portGroupsNames.length === 1) {
+                    this.selectedPortGroup = portGroupsNames[0];
+                }
+            }
         }
     },
     mounted() {
         this.$refs.searchBar.focus();
     },
     methods: {
-        ...mapMutations('workflow', ['setPortGroup']),
+        emitPortClick({ typeId, portGroup }) {
+            this.$emit('item-click', { typeId, portGroup });
+            this.$emit('menu-close', { typeId, portGroup });
+        },
+
         onMenuItemClick(e, item) {
             if (item.port) {
-                this.$emit('item-click', item);
-                this.$emit('menu-close', item);
+                const { typeId } = item.port;
+                this.emitPortClick({ typeId, portGroup: this.selectedPortGroup });
             } else {
-                this.setPortGroup(item.text);
+                // when clicking on a portgroup
+                // grab the first typeId of the matching group (group's name is the item.text property)
+                // if there's only 1 type inside
+                if (isSingleTypePortGroup(this.portGroups, item.text)) {
+                    const [typeId] = this.portGroups[item.text].supportedPortTypeIds;
+                    this.emitPortClick({ typeId, portGroup: item.text });
+                    return;
+                }
+            
+                this.selectedPortGroup = item.text;
             }
         },
+        
         onSearchBarDown() {
             this.$refs.searchResults.focusFirst();
         },
+
         onSearchBarUp() {
             this.$refs.searchResults.focusLast();
         },
+        
         onSearchResultsWrapAround(e) {
             e.preventDefault();
             this.$refs.searchBar.focus();

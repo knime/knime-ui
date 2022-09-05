@@ -1,5 +1,4 @@
 <script>
-
 import Port from '~/components/workflow/Port.vue';
 
 export const addPortPlaceholderPath = (() => {
@@ -32,10 +31,6 @@ export default {
             type: String,
             required: true
         },
-        addablePortTypes: {
-            type: Array,
-            default: null
-        },
         portGroups: {
             type: Object,
             default: null
@@ -52,7 +47,19 @@ export default {
         previewPort: null
     }),
     computed: {
-        addPortPlaceholderPath: () => addPortPlaceholderPath
+        addPortPlaceholderPath: () => addPortPlaceholderPath,
+
+        validPortGroups() {
+            if (!this.portGroups) {
+                return null;
+            }
+            
+            return Object
+                .entries(this.portGroups)
+                .filter(([_, group]) => group.canAddInPort || group.canAddOutPort)
+                // map back to an object structure after filtering to match the api object shape
+                .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+        }
     },
     watch: {
         isMenuOpen(shouldOpen) {
@@ -81,8 +88,7 @@ export default {
                         props: {
                             position,
                             side: this.side,
-                            addablePortTypes: this.addablePortTypes,
-                            portGroups: this.portGroups
+                            portGroups: this.validPortGroups
                         },
                         events: {
                             'item-active': this.onItemActive,
@@ -105,10 +111,16 @@ export default {
             ));
         },
         onClick() {
-            if (Array.isArray(this.addablePortTypes) && this.addablePortTypes.length === 1) {
-                let [typeId] = this.addablePortTypes;
-                this.$emit('add-port', typeId);
-                return;
+            const portGroups = Object.values(this.portGroups || {});
+            
+            if (portGroups.length === 1) {
+                const { supportedPortTypeIds } = portGroups[0];
+
+                if (supportedPortTypeIds.length === 1) {
+                    let [typeId] = supportedPortTypeIds;
+                    this.$emit('add-port', { typeId, portGroup: Object.keys(this.portGroups)[0] });
+                    return;
+                }
             }
 
             // toggle the menu
@@ -126,12 +138,13 @@ export default {
         onItemActive(item) {
             this.previewPort = item?.port;
         },
-        onItemClick(item) {
+
+        onItemClick({ typeId, portGroup }) {
             // directly switch back to add-port icon
             this.transitionEnabled = false;
             this.previewPort = null;
 
-            this.$emit('add-port', item.port.typeId);
+            this.$emit('add-port', { typeId, portGroup });
             
             this.$nextTick(() => {
                 this.transitionEnabled = true;
