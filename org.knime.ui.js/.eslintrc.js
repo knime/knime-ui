@@ -1,5 +1,7 @@
+require('@rushstack/eslint-patch/modern-module-resolution');
+
 module.exports = {
-    extends: ['./webapps-common/lint/.eslintrc-vue.js'],
+    extends: ['@knime/eslint-config/vue'],
     globals: {
         consola: false
     },
@@ -11,18 +13,14 @@ module.exports = {
             alias: {
                 map: [
                     ['@', './src']
-                ],
-                extensions: ['.vue', '.js', '.config.js']
+                ]
             }
         }
     },
     overrides: [
         {
             files: ['./**/__tests__/*.test.js'],
-            extends: ['./webapps-common/lint/.eslintrc-jest.js'],
-            env: {
-                node: true
-            }
+            extends: ['./webapps-common/lint/.eslintrc-jest.js']
         }
     ]
 };
