@@ -46,7 +46,7 @@ describe('PortTypeMenu.vue', () => {
         });
 
         test('adds port directly, if only one option is given', () => {
-            propsData.portGroups = { input: { supportedPortTypeIds: ['table'] } };
+            propsData.portGroups = { input: { supportedPortTypeIds: ['table'], canAddInPort: true } };
             doMount();
 
             wrapper.find('.add-port-icon').trigger('click');

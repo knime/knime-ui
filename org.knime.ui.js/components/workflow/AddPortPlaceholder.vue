@@ -111,14 +111,14 @@ export default {
             ));
         },
         onClick() {
-            const portGroups = Object.values(this.portGroups || {});
+            const portGroups = Object.values(this.validPortGroups || {});
             
             if (portGroups.length === 1) {
                 const { supportedPortTypeIds } = portGroups[0];
 
                 if (supportedPortTypeIds.length === 1) {
                     let [typeId] = supportedPortTypeIds;
-                    this.$emit('add-port', { typeId, portGroup: Object.keys(this.portGroups)[0] });
+                    this.$emit('add-port', { typeId, portGroup: Object.keys(this.validPortGroups)[0] });
                     return;
                 }
             }
