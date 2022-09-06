@@ -1,5 +1,5 @@
 <script>
-import { mapGetters, mapActions, mapState } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 import { placeholderPosition, portPositions } from '~/util/portShift';
 import NodePort from '~/components/workflow/NodePort.vue';
 import AddPortPlaceholder from '~/components/workflow/AddPortPlaceholder.vue';
@@ -74,7 +74,6 @@ export default {
         selectedPort: null
     }),
     computed: {
-        ...mapState('workflow', ['portGroup']),
         ...mapGetters('workflow', ['isDragging', 'isWritable']),
 
         isMetanode() {

@@ -17,7 +17,7 @@ describe('PortTypeMenu.vue', () => {
             position: [10, 10],
             side: 'output',
             nodeId: 'node-id',
-            addablePortTypes: ['type1', 'type2']
+            portGroups: { input: { supportedPortTypeIds: ['type1', 'type2'] } }
         };
         provide = {
             anchorPoint: { x: 10, y: 10 }
@@ -46,11 +46,11 @@ describe('PortTypeMenu.vue', () => {
         });
 
         test('adds port directly, if only one option is given', () => {
-            propsData.addablePortTypes = ['table'];
+            propsData.portGroups = { input: { supportedPortTypeIds: ['table'] } };
             doMount();
 
             wrapper.find('.add-port-icon').trigger('click');
-            expect(wrapper.emitted('add-port')).toStrictEqual([['table']]);
+            expect(wrapper.emitted('add-port')).toStrictEqual([[{ portGroup: 'input', typeId: 'table' }]]);
         });
 
         describe('with open menu', () => {
@@ -76,7 +76,7 @@ describe('PortTypeMenu.vue', () => {
                     props: {
                         position: { x: 20, y: 20 },
                         side: 'output',
-                        addablePortTypes: ['type1', 'type2']
+                        portGroups: {}
                     },
                     events: {
                         'item-active': expect.any(Function),
@@ -166,10 +166,9 @@ describe('PortTypeMenu.vue', () => {
             });
             
             test('click on item emits event', () => {
-                let port = { typeId: 'table' };
-                callbacks['item-click']({ port });
+                callbacks['item-click']({ typeId: 'table' });
                 
-                expect(wrapper.emitted('add-port')).toStrictEqual([['table']]);
+                expect(wrapper.emitted('add-port')).toStrictEqual([[{ typeId: 'table', portGroup: undefined }]]);
             });
         });
     });

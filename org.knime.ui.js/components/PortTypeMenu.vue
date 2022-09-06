@@ -133,7 +133,7 @@ export default {
                 const { typeId } = item.port;
                 this.emitPortClick({ typeId, portGroup: this.selectedPortGroup });
             } else {
-                // when clicking on a portgroup
+                // when clicking on a port group
                 // grab the first typeId of the matching group (group's name is the item.text property)
                 // if there's only 1 type inside
                 if (isSingleTypePortGroup(this.portGroups, item.text)) {

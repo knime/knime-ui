@@ -429,48 +429,19 @@ describe('NodePorts.vue', () => {
             expect(wrapper.findAllComponents(AddPortPlaceholder).length).toBe(0);
         });
 
-        it.each(['metanode', 'component'])('can add ports for %s', (nodeKind) => {
-            propsData.nodeKind = nodeKind;
-            doMount();
-
-            expect(wrapper.findAllComponents(AddPortPlaceholder).length).toBe(2);
-            [...wrapper.findAllComponents(AddPortPlaceholder).wrappers].forEach(addPort => {
-                // All types can be added
-                expect(addPort.props('addablePortTypes')).toBe(null);
-            });
-        });
-
-        it('can add ports to portGroup', () => {
-            propsData.nodeKind = 'node';
-            propsData.portGroups = {
-                group1: {
-                    canAddInPort: true,
-                    canAddOutPort: true,
-                    supportedPortTypeIds: ['type1']
-                }
-            };
-            doMount();
-
-            expect(wrapper.findAllComponents(AddPortPlaceholder).length).toBe(2);
-            [...wrapper.findAllComponents(AddPortPlaceholder).wrappers].forEach(addPort => {
-                // All types can be added
-                expect(addPort.props('addablePortTypes')).toStrictEqual(['type1']);
-            });
-        });
-
         describe.each(['metanode', 'component'])('add ports for %s', (nodeKind) => {
             test.each(['input', 'output'])('on %s side', (side) => {
                 propsData.nodeKind = nodeKind;
                 doMount();
 
                 let addPortButton = wrapper.findAllComponents(AddPortPlaceholder).at(side === 'input' ? 0 : 1);
-                addPortButton.vm.$emit('add-port', 'type1');
+                addPortButton.vm.$emit('add-port', { typeId: 'type1', portGroup: 'table' });
                 
                 expect(storeConfig.workflow.actions.addNodePort).toHaveBeenCalledWith(expect.anything(), {
                     nodeId: 'root:1',
                     side,
                     typeId: 'type1',
-                    portGroup: undefined
+                    portGroup: 'table'
                 });
             });
         });
@@ -488,7 +459,7 @@ describe('NodePorts.vue', () => {
             doMount();
 
             let addPortButton = wrapper.findAllComponents(AddPortPlaceholder).at(side === 'input' ? 0 : 1);
-            addPortButton.vm.$emit('add-port', 'type1');
+            addPortButton.vm.$emit('add-port', { typeId: 'type1', portGroup: 'group1' });
                 
             expect(storeConfig.workflow.actions.addNodePort).toHaveBeenCalledWith(expect.anything(), {
                 nodeId: 'root:1',

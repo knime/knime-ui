@@ -39,7 +39,7 @@ describe('PortTypeMenu.vue', () => {
                 y: 10
             },
             side: 'output',
-            addablePortTypes: null
+            portGroups: null
         };
 
         searchAllPortTypesMock = jest.fn().mockReturnValue([]);
@@ -116,7 +116,7 @@ describe('PortTypeMenu.vue', () => {
                 expect(header.text()).toBe('Add Input Port');
             });
 
-            it('moves header for bigger zoom levens', () => {
+            it('moves header for bigger zoom levels', () => {
                 storeConfig.canvas.state.zoomFactor = 2;
                 doMount();
 
@@ -255,13 +255,14 @@ describe('PortTypeMenu.vue', () => {
 
             describe('some port types allowed', () => {
                 beforeEach(() => {
-                    propsData.addablePortTypes = ['table', 'flowVariable'];
+                    propsData.portGroups = { input: { supportedPortTypeIds: ['table', 'flowVariable'] } };
                 });
 
                 it('uses port type search factory', async () => {
                     doMount();
 
                     wrapper.setData({ searchValue: 'flow' });
+                    wrapper.setData({ selectedPortGroup: 'input' });
                     await Vue.nextTick();
 
                     expect(makeTypeSearchMock).toBeCalledWith({
@@ -303,9 +304,9 @@ describe('PortTypeMenu.vue', () => {
 
             it('re-emits item click and menu-close', () => {
                 doMount();
-                wrapper.findComponent(MenuItems).vm.$emit('item-click', null, 0);
-                expect(wrapper.emitted('item-click')).toStrictEqual([[0]]);
-                expect(wrapper.emitted('menu-close')).toStrictEqual([[0]]);
+                wrapper.findComponent(MenuItems).vm.$emit('item-click', null, { port: { typeId: '1' } });
+                expect(wrapper.emitted('item-click')).toStrictEqual([[{ typeId: '1', portGroup: null }]]);
+                expect(wrapper.emitted('menu-close')).toStrictEqual([[{ typeId: '1', portGroup: null }]]);
             });
 
             test.each(['top-reached', 'bottom-reached'])('keyboard-navigation top reached', async () => {
