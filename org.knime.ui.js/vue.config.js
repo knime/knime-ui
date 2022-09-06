@@ -7,19 +7,12 @@ module.exports = defineConfig({
     devServer: {
         port: process.env.VUE_APP_PORT || 3000
     },
-    pages: {
-        index: {
-            entry: './main.js'
-        }
-    },
     configureWebpack: {
         resolve: {
             alias: {
-                '~api': path.join(__dirname, 'api', 'index.js'),
-                '@': path.join(__dirname),
-                '~': path.join(__dirname)
-                // This is required for Vue directives etc. which modify the imported Vue object
-                // vue: path.join(__dirname, 'node_modules', 'vue', 'dist', 'vue.js')
+                '@api': path.join(__dirname, 'src', 'api', 'index.js'),
+                'webapps-common': path.join(__dirname, 'webapps-common'),
+                'knime-ui-extension-service': path.join(__dirname, 'knime-ui-extension-service')
             }
         }
     },

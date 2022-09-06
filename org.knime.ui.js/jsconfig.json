@@ -8,8 +8,11 @@
       "@/*": [
         "*"
       ],
-      "~/*": [
-        "*"
+      "webappscommon/*": [
+        "webapps-common/*"
+      ],
+      "knime-ui-extension-service/*": [
+        "knime-ui-extension-service/*"
       ]
     },
     "lib": [

@@ -1,10 +1,26 @@
+require('@rushstack/eslint-patch/modern-module-resolution');
+
 module.exports = {
-    extends: ['./webapps-common/lint/.eslintrc-vue.js'],
+    extends: ['@knime/eslint-config/vue'],
     globals: {
         consola: false
     },
     env: {
         node: true
     },
-    ignorePatterns: ['knime-ui-extension-service/']
+    settings: {
+        'import/resolver': {
+            alias: {
+                map: [
+                    ['@', './src']
+                ]
+            }
+        }
+    },
+    overrides: [
+        {
+            files: ['./**/__tests__/*.test.js'],
+            extends: ['@knime/eslint-config/jest']
+        }
+    ]
 };

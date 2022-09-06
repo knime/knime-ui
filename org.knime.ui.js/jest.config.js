@@ -1,22 +1,17 @@
 module.exports = {
+    preset: '@vue/cli-plugin-unit-jest',
     moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/src/$1',
-        '^~/(.*)$': '<rootDir>/$1',
-        '~api': '<rootDir>/api/index.js',
-        '^vue$': 'vue/dist/vue.common.js'
+        '@api': '<rootDir>/src/api/index.js'
     },
-    moduleFileExtensions: [
-        'mjs',
-        'js',
-        'vue',
-        'json'
+    modulePathIgnorePatterns: [
+        '<rootDir>/knime-ui-extension-service'
     ],
     transform: {
         '\\.mjs$': 'babel-jest',
         '\\.js$': 'babel-jest',
-        '\\.vue$': 'vue-jest',
+        '\\.vue$': '@vue/vue2-jest',
         '\\.(css|styl|less|sass|scss|ttf|woff|woff2)(\\?|$)': 'jest-transform-stub',
-        '\\.svg': '<rootDir>/test/unit/jest-transform-svgs'
+        '\\.svg': '<rootDir>/src/test/jest-transform-svgs'
     },
     transformIgnorePatterns: [
         '/node_modules/'
@@ -42,12 +37,7 @@ module.exports = {
     testEnvironment: 'jsdom',
     testURL: 'http://test.example/',
     testMatch: [
-        '<rootDir>/test/unit/**/*.test.js'
+        '<rootDir>/**/__tests__/*.test.js'
     ],
-    setupFiles: ['<rootDir>/test/unit/jest-setup', 'jest-useragent-mock'],
-    globals: {
-        'vue-jest': {
-            hideStyleWarn: true
-        }
-    }
+    setupFiles: ['<rootDir>/src/test/jest-setup', 'jest-useragent-mock']
 };
