@@ -20,7 +20,7 @@ module.exports = {
     overrides: [
         {
             files: ['./**/__tests__/*.test.js'],
-            extends: ['./webapps-common/lint/.eslintrc-jest.js']
+            extends: ['@knime/eslint-config/jest']
         }
     ]
 };
