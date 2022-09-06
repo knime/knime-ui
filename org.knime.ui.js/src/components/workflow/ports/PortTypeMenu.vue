@@ -1,6 +1,7 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
+import ReturnIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 
 import { makeTypeSearch } from '@/util/fuzzyPortTypeSearch';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
@@ -17,7 +18,8 @@ export default {
     components: {
         FloatingMenu,
         MenuItems,
-        SearchBar
+        SearchBar,
+        ReturnIcon
     },
     props: {
         /**
@@ -181,6 +183,13 @@ export default {
       Add {{ side === 'input' ? 'Input' : 'Output' }} Port
     </div>
     <div
+      v-if="selectedPortGroup && Object.keys(portGroups).length > 1"
+      class="return-button"
+      @click="selectedPortGroup = null"
+    >
+      <ReturnIcon />
+    </div>
+    <div
       class="search"
     >
       <SearchBar
@@ -232,6 +241,29 @@ export default {
   &.output {
     text-align: left;
     margin-left: var(--margin);
+  }
+}
+
+.return-button {
+  display: flex;
+  padding: 6px;
+  border: 1px solid var(--knime-masala);
+  border-bottom: 0;
+  background-color: white;
+  box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
+  --icon-size: 14;
+
+  &:hover {
+    cursor: pointer;
+    outline: none;
+    background-color: var(--theme-dropdown-background-color-hover);
+  }
+
+  & svg {
+    stroke: var(--knime-masala);
+    width: calc(var(--icon-size) * 1px);
+    height: calc(var(--icon-size) * 1px);
+    stroke-width: calc(32px / var(--icon-size));
   }
 }
 
@@ -295,7 +327,6 @@ export default {
   & >>> svg * {
     pointer-events: none !important;
   }
-
 
   & >>> li button {
     padding: 6px 6px;
