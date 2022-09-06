@@ -87,7 +87,10 @@ export default {
         
         menuItems() {
             if (this.portGroups && !this.selectedPortGroup) {
-                return Object.keys(this.portGroups).map((groupName) => ({ text: groupName }));
+                const correctPortSide = Object.entries(this.portGroups)
+                    .filter(group => this.side === 'input' ? group[1].canAddInPort : group[1].canAddOutPort);
+
+                return correctPortSide.map((groupName) => ({ text: groupName[0] }));
             }
 
             const menuItems = this.searchResults.map(({ typeId, name }) => ({
