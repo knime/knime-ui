@@ -1,8 +1,14 @@
 module.exports = {
-    preset: '@vue/cli-plugin-unit-jest',
     moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
         '@api': '<rootDir>/src/api/index.js'
     },
+    moduleFileExtensions: [
+        'mjs',
+        'js',
+        'vue',
+        'json'
+    ],
     modulePathIgnorePatterns: [
         '<rootDir>/knime-ui-extension-service'
     ],

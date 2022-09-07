@@ -1,7 +1,7 @@
 /* eslint-disable import/extensions */
-import knimeColors from 'webapps-common/ui/colors/knimeColors.js';
-import nodeColors from 'webapps-common/ui/colors/nodeColors.js';
-import portColorsCommon from 'webapps-common/ui/colors/portColors.js';
+import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
+import * as nodeColors from 'webapps-common/ui/colors/nodeColors.mjs';
+import * as portColorsCommon from 'webapps-common/ui/colors/portColors.mjs';
 
 const applyAlphaHSL = (hsl, alpha) => `${hsl.slice(0, -1)}, ${alpha})`;
 
