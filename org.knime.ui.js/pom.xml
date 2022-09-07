@@ -20,9 +20,8 @@
         <sonar.javascript.lcov.reportPaths>coverage/lcov.info</sonar.javascript.lcov.reportPaths>
         <sonar.css.stylelint.reportPaths>target/stylelint.json</sonar.css.stylelint.reportPaths>
         <sonar.eslint.reportPaths>target/eslint.json</sonar.eslint.reportPaths>
-        <node.version>v14.6.0</node.version>
-        <npm.version>6.14.5</npm.version>
-        <resourcedir>dist/inlined</resourcedir>
+        <node.version>v14.20.0</node.version>
+        <npm.version>6.14.17</npm.version>
 		<revision>4.7.0</revision>
     </properties>
 
@@ -149,26 +148,4 @@
 
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>ci-build</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.github.eirslett</groupId>
-                        <artifactId>frontend-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>npm install</id>
-                                <configuration>
-                                    <arguments>ci</arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
