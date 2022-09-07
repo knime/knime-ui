@@ -79,8 +79,9 @@ export default {
                 y: this.anchorPoint.y + this.position[1]
             };
 
-            // Tell the WorkflowPanel to render a PortTypeMenu with specified props and events
-            // This works like a custom teleport and can probably be replaced by Vue3's teleport
+            // Because of an issue with Vue Portal (https://github.com/LinusBorg/portal-vue/issues/290)
+            // We have to make this work like a custom teleport (can probably be replaced by Vue3's teleport)
+            // by telling the WorkflowPanel to render a PortTypeMenu with specified props and events
             this.$el.dispatchEvent(new CustomEvent(
                 'open-port-type-menu', {
                     detail: {

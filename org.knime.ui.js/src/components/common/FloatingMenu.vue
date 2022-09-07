@@ -158,7 +158,7 @@ export default {
             this.absolutePosition = { left, top };
         },
         onFocusOut(e) {
-            if (!this.$el.contains(e.relatedTarget)) {
+            if (e.relatedTarget && !this.$el.contains(e.relatedTarget)) {
                 this.$emit('menu-close');
             }
         },

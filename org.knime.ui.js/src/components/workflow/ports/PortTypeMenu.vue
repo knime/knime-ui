@@ -8,7 +8,7 @@ import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import portIcon from '@/components/common/PortIconRenderer';
 import SearchBar from '@/components/common/SearchBar.vue';
 
-const isSingleTypePortGroup = (portGroups, groupName) => portGroups[groupName].supportedPortTypeIds.length === 1;
+const isPortGroupWithSinglePort = (portGroups, groupName) => portGroups[groupName].supportedPortTypeIds.length === 1;
 
 /**
  * ContextMenu offers actions for the Kanvas based on the selected nodes.
@@ -48,14 +48,16 @@ export default {
         ...mapState('canvas', ['zoomFactor']),
         ...mapState('application', ['availablePortTypes', 'suggestedPortTypes']),
         ...mapGetters('application', ['searchAllPortTypes']),
+
         headerMargin() {
             // the x-position of the header text has to be adjusted for the growing/shrinking add-port-button
-            let distanceToPort = this.$shapes.portSize * Math.pow(this.zoomFactor, 0.8); // eslint-disable-line no-magic-numbers
+            const distanceToPort = this.$shapes.portSize * Math.pow(this.zoomFactor, 0.8); // eslint-disable-line no-magic-numbers
             return `${distanceToPort + 1}px`;
         },
+        
         adjustedPosition() {
             // for zoom > 100%, the y-position of the menu has to be adjusted for the growing add-port-button
-            let verticalShift = this.zoomFactor > 1
+            const verticalShift = this.zoomFactor > 1
                 ? this.$shapes.portSize / 2 * Math.log(this.zoomFactor) / 1.2 // eslint-disable-line no-magic-numbers
                 : 0;
 
@@ -110,6 +112,18 @@ export default {
             }
 
             return this.portGroups[this.selectedPortGroup].supportedPortTypeIds;
+        },
+
+        shouldDisplaySearchBar() {
+            return this.portGroups ? Boolean(this.selectedPortGroup) : true;
+        },
+
+        headerText() {
+            if (this.portGroups && !this.selectedPortGroup) {
+                return 'Select port group';
+            }
+
+            return `Add ${this.side === 'input' ? 'Input' : 'Output'} Port`;
         }
     },
     watch: {
@@ -125,7 +139,7 @@ export default {
         }
     },
     mounted() {
-        this.$refs.searchBar.focus();
+        this.$refs.searchBar?.focus();
     },
     methods: {
         emitPortClick({ typeId, portGroup }) {
@@ -141,7 +155,7 @@ export default {
                 // when clicking on a port group
                 // grab the first typeId of the matching group (group's name is the item.text property)
                 // if there's only 1 type inside
-                if (isSingleTypePortGroup(this.portGroups, item.text)) {
+                if (isPortGroupWithSinglePort(this.portGroups, item.text)) {
                     const [typeId] = this.portGroups[item.text].supportedPortTypeIds;
                     this.emitPortClick({ typeId, portGroup: item.text });
                     return;
@@ -161,7 +175,7 @@ export default {
         
         onSearchResultsWrapAround(e) {
             e.preventDefault();
-            this.$refs.searchBar.focus();
+            this.$refs.searchBar?.focus();
         }
     }
 };
@@ -176,12 +190,11 @@ export default {
   >
     <div
       :class="['header', side]"
-      :style="{
-        '--margin': headerMargin
-      }"
+      :style="{ '--margin': headerMargin }"
     >
-      Add {{ side === 'input' ? 'Input' : 'Output' }} Port
+      {{ headerText }}
     </div>
+
     <div
       v-if="selectedPortGroup && Object.keys(portGroups).length > 1"
       class="return-button"
@@ -189,10 +202,10 @@ export default {
     >
       <ReturnIcon />
     </div>
-    <div
-      class="search"
-    >
+
+    <div class="search">
       <SearchBar
+        v-if="shouldDisplaySearchBar"
         ref="searchBar"
         v-model="searchValue"
         placeholder="Search port type"
@@ -200,6 +213,7 @@ export default {
         @keydown.down.exact.native="onSearchBarDown"
         @keydown.up.exact.native="onSearchBarUp"
       />
+
       <div class="scroll-container">
         <MenuItems
           v-if="searchResults.length"

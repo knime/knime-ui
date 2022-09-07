@@ -125,7 +125,7 @@ describe('FloatingMenu.vue', () => {
 
         it('closes menu when focus leaves the component', () => {
             doMount();
-            wrapper.trigger('focusout');
+            wrapper.trigger('focusout', { relatedTarget: document.createElement('div') });
 
             expect(wrapper.emitted('menu-close')).toBeDefined();
         });
