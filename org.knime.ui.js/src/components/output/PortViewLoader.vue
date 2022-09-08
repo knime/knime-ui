@@ -111,58 +111,52 @@ export default {
          * over the network
         */
         async renderDynamicPortView(portViewData) {
-            const { resourceInfo: { type: resourceType } } = portViewData;
-            
-            const portViewRendererMapper = {
-                VUE_COMPONENT_REFERENCE: this.vueComponentReferenceRenderer,
-                VUE_COMPONENT_LIB: this.vueComponentLibRenderer
-            };
+            // set up component, if dynamically loaded
+            if (portViewData.resourceInfo.type === 'VUE_COMPONENT_LIB') {
+                await this.setupDynamicComponent(portViewData);
+            }
 
-            const missingRenderer = () => {
-                throw new Error('Unsupported port view type');
-            };
+            // set initial data and component
+            this.initialData = JSON.parse(portViewData.initialData).result;
+            this.componentName = portViewData.resourceInfo.id;
 
-            const rendererFn = portViewRendererMapper[resourceType] || missingRenderer;
-            const { componentName, initialData } = await rendererFn(portViewData);
-
-            this.componentName = componentName;
-            this.initialData = initialData;
+            if (!this.isComponentRegistered(this.componentName)) {
+                throw new Error(`Component ${this.componentName} hasn't been loaded properly`);
+            }
         },
 
-        /*
-         * Returns component name and initial data for a local component
-         */
-        vueComponentReferenceRenderer(portViewData) {
-            const { resourceInfo, initialData } = portViewData;
-            const { id } = resourceInfo;
-            
-            return {
-                initialData: JSON.parse(initialData).result,
-                componentName: id
-            };
+        isComponentRegistered(componentName) {
+            return Boolean(this.$options.components[componentName]);
+        },
+
+        registerComponent(componentName, component) {
+            // register the component locally
+            this.$options.components[componentName] = component;
         },
 
         /*
          * Fetches and registers a dynamic component and returns its name and initial data
          */
-        async vueComponentLibRenderer(portViewData) {
-            const { resourceInfo, initialData } = portViewData;
+        async setupDynamicComponent(portViewData) {
+            const { resourceInfo } = portViewData;
             const { id: componentName } = resourceInfo;
-            const resourceLocation = `${resourceInfo.baseUrl}${resourceInfo.path}`;
+            // TODO: NXT-1217 Remove this unnecessary store getter once the issue in the ticket
+            // can be solved in a better way
+            const resourceLocation = this.$store.getters['api/uiExtResourceLocation']({ resourceInfo });
             
             // check if component library needs to be loaded or if it was already loaded before
-            if (!this.$options.components[componentName]) {
+            if (!this.isComponentRegistered(componentName)) {
                 await loadComponentLibrary({ window, resourceLocation, componentName });
 
                 // register the component locally
-                this.$options.components[componentName] = window[componentName];
+                this.registerComponent(componentName, window[componentName]);
+
+                // clean up window object
                 delete window[componentName];
             }
             
             // create knime service and update provide/inject
             this.initKnimeService(portViewData);
-
-            return { componentName, initialData: JSON.parse(initialData).result };
         },
 
         /* Required by dynamically loaded view components */

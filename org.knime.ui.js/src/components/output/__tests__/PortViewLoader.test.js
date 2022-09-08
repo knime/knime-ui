@@ -1,6 +1,8 @@
 import Vue from 'vue';
+import Vuex from 'vuex';
 import { createLocalVue, mount } from '@vue/test-utils';
 
+import { mockVuexStore } from '@/test/test-utils';
 import { KnimeService } from 'knime-ui-extension-service';
 import { getPortView as getPortViewMock } from '@api';
 import { loadComponentLibrary } from '@/util/loadComponentLibrary';
@@ -124,17 +126,27 @@ describe('PortViewLoader.vue', () => {
         const mockComponentId = 'mock-component';
         
         const localVue = createLocalVue();
+        localVue.use(Vuex);
         const MockComponent = localVue.component('MockComponent', { template: '<div></div>' });
 
         loadComponentLibrary.mockImplementation(() => {
             window[mockComponentId] = MockComponent;
         });
 
+        const $store = mockVuexStore({
+            api: {
+                getters: {
+                    uiExtResourceLocation: () => () => ''
+                }
+            }
+        });
+
         setupGetPortViewMock(RESOURCE_TYPES.VUE_COMPONENT_LIB, mockComponentId, {});
 
         const wrapper = mount(PortViewLoader, {
             propsData,
-            localVue
+            localVue,
+            mocks: { $store }
         });
         
         await flushPromise();
