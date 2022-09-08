@@ -46,7 +46,6 @@
     "@babel/core": "7.12.16",
     "@knime/eslint-config": "^7.0.1",
     "@types/jest": "27.5.2",
-    "@vitejs/plugin-vue": "^3.1.0",
     "@vue/cli-plugin-babel": "5.0.8",
     "@vue/test-utils": "1.2.2",
     "@vue/vue2-jest": "27.0.0",
@@ -69,7 +68,6 @@
     "vite": "^3.1.0",
     "vite-plugin-vue2": "^2.0.2",
     "vite-plugin-vue2-svg": "^0.3.0",
-    "vue-svg-loader": "0.17.0-beta.2",
     "vue-template-compiler": "2.6.14"
   },
   "engines": {

@@ -2,10 +2,13 @@
 const { preset, plugins, order } = require('webapps-common/webpack/webpack.postcss.config.js');
 
 module.exports = {
-
-    plugins: Object.assign({}, plugins, {
-        'postcss-preset-env': preset
-    }),
+    plugins: {
+        ...plugins,
+        'postcss-preset-env': preset,
+        'postcss-url': {
+            url: 'copy'
+        }
+    },
 
     order
 };
