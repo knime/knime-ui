@@ -157,9 +157,9 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-cursor: grabbing;
-
 .dragging {
+  cursor: grabbing;
+
   & >>> .port {
     pointer-events: none;
   }
