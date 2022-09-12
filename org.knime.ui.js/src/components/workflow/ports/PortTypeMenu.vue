@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState } from 'vuex';
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 import ReturnIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 
@@ -41,18 +41,25 @@ export default {
         }
     },
     data: () => ({
-        searchValue: '',
+        searchQuery: '',
         selectedPortGroup: null
     }),
     computed: {
         ...mapState('canvas', ['zoomFactor']),
         ...mapState('application', ['availablePortTypes', 'suggestedPortTypes']),
-        ...mapGetters('application', ['searchAllPortTypes']),
 
         headerMargin() {
             // the x-position of the header text has to be adjusted for the growing/shrinking add-port-button
             const distanceToPort = this.$shapes.portSize * Math.pow(this.zoomFactor, 0.8); // eslint-disable-line no-magic-numbers
             return `${distanceToPort + 1}px`;
+        },
+
+        headerText() {
+            if (this.portGroups && !this.selectedPortGroup) {
+                return 'Select port group';
+            }
+
+            return `Add ${this.side === 'input' ? 'Input' : 'Output'} Port`;
         },
         
         adjustedPosition() {
@@ -67,34 +74,31 @@ export default {
             };
         },
 
-        suggestedPorts() {
-            return this.suggestedPortTypes.map(typeId => ({
-                typeId,
-                name: this.availablePortTypes[typeId].name
-            }));
-        },
-
         searchPortsFunction() {
-            return this.addablePortTypes
-                ? makeTypeSearch({ typeIds: this.addablePortTypes, installedPortTypes: this.availablePortTypes })
-                : this.searchAllPortTypes;
+            const searchTypeIds = this.portTypesInSelectedGroup
+                ? this.portTypesInSelectedGroup
+                : Object.keys(this.availablePortTypes);
+            
+            const suggestedTypeIds = this.portTypesInSelectedGroup
+                ? this.suggestedPortTypes.filter(typeId => this.portTypesInSelectedGroup.includes(typeId))
+                : this.suggestedPortTypes;
+
+            return makeTypeSearch({
+                typeIds: searchTypeIds,
+                availablePortTypes: this.availablePortTypes,
+                suggestedTypeIds
+            });
         },
 
         searchResults() {
-            if (!this.addablePortTypes && this.searchValue === '') {
-                // if all types are allowed and the search value is empty, show suggested port types
-                return this.suggestedPorts;
-            } else {
-                return this.searchPortsFunction(this.searchValue, { limit: this.suggestedPortTypes.length });
-            }
+            return this.searchPortsFunction(this.searchQuery);
         },
         
         menuItems() {
             if (this.portGroups && !this.selectedPortGroup) {
-                const correctPortSide = Object.entries(this.portGroups)
-                    .filter(group => this.side === 'input' ? group[1].canAddInPort : group[1].canAddOutPort);
-
-                return correctPortSide.map((groupName) => ({ text: groupName[0] }));
+                return Object.entries(this.portGroups)
+                    .filter(([_, group]) => this.side === 'input' ? group.canAddInPort : group.canAddOutPort)
+                    .map(([groupName]) => ({ text: groupName }));
             }
 
             const menuItems = this.searchResults.map(({ typeId, name }) => ({
@@ -106,7 +110,7 @@ export default {
             return menuItems;
         },
 
-        addablePortTypes() {
+        portTypesInSelectedGroup() {
             if (!this.portGroups || !this.selectedPortGroup) {
                 return null;
             }
@@ -116,14 +120,6 @@ export default {
 
         shouldDisplaySearchBar() {
             return this.portGroups ? Boolean(this.selectedPortGroup) : true;
-        },
-
-        headerText() {
-            if (this.portGroups && !this.selectedPortGroup) {
-                return 'Select port group';
-            }
-
-            return `Add ${this.side === 'input' ? 'Input' : 'Output'} Port`;
         }
     },
     watch: {
@@ -207,7 +203,7 @@ export default {
       <SearchBar
         v-if="shouldDisplaySearchBar"
         ref="searchBar"
-        v-model="searchValue"
+        v-model="searchQuery"
         placeholder="Search port type"
         class="search-bar"
         @keydown.down.exact.native="onSearchBarDown"

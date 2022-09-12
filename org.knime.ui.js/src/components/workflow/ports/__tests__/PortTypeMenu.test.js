@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { createLocalVue, mount as deepMount } from '@vue/test-utils';
+import { createLocalVue, mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
@@ -14,18 +14,8 @@ import * as $colors from '@/style/colors.mjs';
 
 import PortTypeMenu from '../PortTypeMenu.vue';
 
-import { makeTypeSearch as makeTypeSearchMock, searchMock } from '@/util/fuzzyPortTypeSearch';
-jest.mock('@/util/fuzzyPortTypeSearch', () => {
-    let searchMock = jest.fn().mockReturnValue([]);
-    
-    return {
-        makeTypeSearch: jest.fn().mockReturnValue(searchMock),
-        searchMock
-    };
-});
-
 describe('PortTypeMenu.vue', () => {
-    let storeConfig, propsData, mocks, doMount, wrapper, $store, searchAllPortTypesMock, FloatingMenuStub;
+    let storeConfig, propsData, mocks, doMount, wrapper, $store, FloatingMenuStub;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -43,27 +33,21 @@ describe('PortTypeMenu.vue', () => {
             portGroups: null
         };
 
-        searchAllPortTypesMock = jest.fn().mockReturnValue([]);
-
         storeConfig = {
             canvas: {
                 state: {
                     zoomFactor: 1
-                },
-                getters: {
-                    screenFromCanvasCoordinates: () => position => position
                 }
             },
             application: {
                 state: {
                     availablePortTypes: {
                         flowVariable: { name: 'Flow Variable', color: 'red' },
-                        table: { name: 'Table', color: 'black' }
+                        table: { name: 'Table', color: 'black' },
+                        'suggested-1': { name: 'Suggested 1', color: 'green' },
+                        'suggested-2': { name: 'Suggested 2', color: 'brown' }
                     },
-                    suggestedPortTypes: ['flowVariable', 'table']
-                },
-                getters: {
-                    searchAllPortTypes: () => searchAllPortTypesMock
+                    suggestedPortTypes: ['suggested-1', 'suggested-2']
                 }
             }
         };
@@ -73,13 +57,13 @@ describe('PortTypeMenu.vue', () => {
             props: FloatingMenu.props
         };
 
-        doMount = () => {
+        doMount = (customProps = {}) => {
             $store = mockVuexStore(storeConfig);
             mocks = { $store, $shapes, $colors };
             
             // attachTo document body so that focus works
-            wrapper = deepMount(PortTypeMenu, {
-                propsData,
+            wrapper = mount(PortTypeMenu, {
+                propsData: { ...propsData, ...customProps },
                 mocks,
                 attachTo: document.body,
                 stubs: {
@@ -176,20 +160,10 @@ describe('PortTypeMenu.vue', () => {
                 expect(document.activeElement).toBe(searchBar);
             });
 
-            test('v-model', async () => {
-                doMount();
-                let searchBar = wrapper.findComponent(SearchBar);
-
-                searchBar.find('input').element.value = 'table';
-                searchBar.find('input').trigger('input');
-                await Vue.nextTick();
-
-                expect(wrapper.vm.searchValue).toBe('table');
-            });
-
             test('keyboard navigation: down', () => {
                 doMount();
                 let focusFirstMock = jest.fn();
+
                 wrapper.findComponent(MenuItems).vm.focusFirst = focusFirstMock;
                 wrapper.findComponent(SearchBar).trigger('keydown.down');
                 
@@ -206,15 +180,112 @@ describe('PortTypeMenu.vue', () => {
             });
         });
 
-        describe('search results', () => {
-            describe('all port types allowed', () => {
-                beforeEach(() => {
-                    propsData.allowedPortTypes = null;
+        describe('Search results', () => {
+            const doSearch = async (wrapper, query = '') => {
+                wrapper.findComponent(SearchBar).vm.$emit('input', query);
+                await Vue.nextTick();
+            };
+
+            describe('No specified Port Groups -> all types allowed)', () => {
+                it('shows all ports on empty search request', async () => {
+                    doMount();
+                    await doSearch(wrapper, '');
+
+                    expect(wrapper.findComponent(MenuItems).props('items')).toStrictEqual([
+                        {
+                            icon: expect.anything(),
+                            port: { typeId: 'suggested-1' },
+                            text: 'Suggested 1'
+                        },
+                        {
+                            icon: expect.anything(),
+                            port: { typeId: 'suggested-2' },
+                            text: 'Suggested 2'
+                        },
+                        {
+                            icon: expect.anything(),
+                            port: { typeId: 'flowVariable' },
+                            text: 'Flow Variable'
+                        },
+                        {
+                            icon: expect.anything(),
+                            port: { typeId: 'table' },
+                            text: 'Table'
+                        }
+                    ]);
                 });
 
-                test('empty search request => show recommended items', async () => {
+                it('does a fuzzy search', async () => {
                     doMount();
-                    wrapper.setData({ searchValue: '' });
+                    await doSearch(wrapper, 'flow');
+                
+                    // Test that the results are rendered properly
+                    expect(wrapper.findComponent(MenuItems).props('items')).toStrictEqual([
+                        {
+                            icon: expect.anything(),
+                            port: { typeId: 'flowVariable' },
+                            text: 'Flow Variable'
+                        }
+                    ]);
+                });
+            });
+
+            describe('With specified Port Groups -> only some types allowed)', () => {
+                beforeEach(() => {
+                    propsData.portGroups = {
+                        input: { supportedPortTypeIds: ['table', 'flowVariable'] }
+                    };
+                });
+
+                it.each([
+                    ['input'],
+                    ['output']
+                ])(
+                    'should display the port groups in the menu so that the user selects one first (%s ports)',
+                    (side) => {
+                        const canAddPort = side === 'input' ? 'canAddInPort' : 'canAddOutPort';
+                        const portGroups = {
+                            group1: { supportedPortTypeIds: ['table', 'flowVariable'], [canAddPort]: true },
+                            group2: { supportedPortTypeIds: ['table', 'flowVariable'], [canAddPort]: true }
+                        };
+
+                        doMount({ portGroups, side });
+                    
+                        expect(wrapper.findComponent(MenuItems).props('items')).toEqual(
+                            Object.keys(portGroups).map(key => ({ text: key }))
+                        );
+                    }
+                );
+                
+                it('should automatically select the port group when only 1 is given', () => {
+                    const portGroups = {
+                        group1: { supportedPortTypeIds: ['table', 'flowVariable'], canAddOutPort: true }
+                    };
+                    doMount({ portGroups });
+                    expect(wrapper.findComponent(MenuItems).props('items')).toStrictEqual([
+                        {
+                            icon: expect.anything(),
+                            port: { typeId: 'flowVariable' },
+                            text: 'Flow Variable'
+                        },
+                        {
+                            icon: expect.anything(),
+                            port: { typeId: 'table' },
+                            text: 'Table'
+                        }
+                    ]);
+                });
+
+                it('should display the available ports in the group after the group has been selected', async () => {
+                    const portGroups = {
+                        group1: { supportedPortTypeIds: ['table', 'flowVariable'], canAddOutPort: true },
+                        group2: { supportedPortTypeIds: ['table', 'flowVariable'], canAddOutPort: true }
+                    };
+
+                    doMount({ portGroups });
+                    
+                    // select a group
+                    wrapper.findComponent(MenuItems).vm.$emit('item-click', {}, { text: 'group1' });
                     await Vue.nextTick();
 
                     expect(wrapper.findComponent(MenuItems).props('items')).toStrictEqual([
@@ -231,67 +302,57 @@ describe('PortTypeMenu.vue', () => {
                     ]);
                 });
 
-                it('does a fuzzy search', async () => {
-                    searchAllPortTypesMock.mockReturnValue([
-                        { name: 'Flow Variable', typeId: 'flowVariable' }
-                    ]);
+                it('should not display the search bar when displaying the port groups', () => {
+                    const portGroups = {
+                        group1: { supportedPortTypeIds: ['table', 'flowVariable'], canAddOutPort: true },
+                        group2: { supportedPortTypeIds: ['table', 'flowVariable'], canAddOutPort: true }
+                    };
 
-                    doMount();
-                    wrapper.setData({ searchValue: 'flow' });
-                    await Vue.nextTick();
-                
-                    // Test that the search function was called correctly
-                    expect(searchAllPortTypesMock).toBeCalledWith('flow', { limit: 2 });
-                
-                    // Test that the results are rendered properly
-                    expect(wrapper.findComponent(MenuItems).props('items')).toStrictEqual([
-                        {
-                            icon: expect.anything(),
-                            port: { typeId: 'flowVariable' },
-                            text: 'Flow Variable'
-                        }
-                    ]);
-                });
-            });
-
-            describe('some port types allowed', () => {
-                beforeEach(() => {
-                    propsData.portGroups = { input: { supportedPortTypeIds: ['table', 'flowVariable'] } };
+                    doMount({ portGroups });
+                    expect(wrapper.findComponent(SearchBar).exists()).toBe(false);
                 });
 
-                it('uses port type search factory', async () => {
-                    doMount();
+                it('should unselect the port group when clicking on the "back" button', async () => {
+                    const portGroups = {
+                        group1: { supportedPortTypeIds: ['table', 'flowVariable'], canAddOutPort: true },
+                        group2: { supportedPortTypeIds: ['table', 'flowVariable'], canAddOutPort: true }
+                    };
 
-                    wrapper.setData({ searchValue: 'flow' });
-                    wrapper.setData({ selectedPortGroup: 'input' });
+                    doMount({ portGroups });
+
+                    // select a group
+                    wrapper.findComponent(MenuItems).vm.$emit('item-click', {}, { text: 'group1' });
+                    await Vue.nextTick();
+                    
+                    // go back
+                    wrapper.find('.return-button').trigger('click');
                     await Vue.nextTick();
 
-                    expect(makeTypeSearchMock).toBeCalledWith({
-                        typeIds: ['table', 'flowVariable'],
-                        installedPortTypes: {
-                            flowVariable: { name: 'Flow Variable', color: 'red' },
-                            table: { name: 'Table', color: 'black' }
-                        }
-                    });
-
-                    expect(searchMock).toBeCalledWith('flow', { limit: 2 });
+                    expect(wrapper.findComponent(MenuItems).props('items')).toEqual(
+                        [{ text: 'group1' }, { text: 'group2' }]
+                    );
                 });
 
-                it('empty search input is being forwarded', async () => {
-                    doMount();
-                    wrapper.setData({ searchValue: 'flow' });
+                it("should automatically select the port if it's the only one inside the selected group", async () => {
+                    const portGroups = {
+                        group1: { supportedPortTypeIds: ['table'], canAddOutPort: true },
+                        group2: { supportedPortTypeIds: ['flowVariable'], canAddOutPort: true }
+                    };
+                    doMount({ portGroups });
+
+                    // select a group
+                    wrapper.findComponent(MenuItems).vm.$emit('item-click', {}, { text: 'group1' });
                     await Vue.nextTick();
 
-                    expect(searchMock).toBeCalledWith('', { limit: 2 });
+                    expect(wrapper.emitted('item-click')[0][0]).toEqual({ typeId: 'table', portGroup: 'group1' });
+                    expect(wrapper.emitted('menu-close')).toBeDefined();
                 });
             });
 
             it('renders placeholder if nothing found', async () => {
-                searchAllPortTypesMock.mockReturnValue([]);
                 doMount();
 
-                wrapper.setData({ searchValue: 'doesntexist' });
-                await Vue.nextTick();
+                await doSearch(wrapper, 'doesntexist');
 
                 expect(wrapper.findComponent(MenuItems).exists()).toBe(false);
                 expect(wrapper.find('.placeholder').text()).toBe('No port matching');

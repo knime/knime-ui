@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '@api';
-import { makeTypeSearch } from '@/util/fuzzyPortTypeSearch';
 
 const getCanvasStateKey = (input) => window.btoa(input);
 const getRootWorkflowId = (workflowId) => workflowId.split(':')[0];
@@ -239,11 +238,6 @@ export const actions = {
 };
 
 export const getters = {
-    searchAllPortTypes({ availablePortTypes }) {
-        let allTypeIds = Object.keys(availablePortTypes);
-        return makeTypeSearch({ typeIds: allTypeIds, installedPortTypes: availablePortTypes });
-    },
-    
     activeProjectName({ openProjects, activeProjectId }) {
         if (!activeProjectId) {
             return null;

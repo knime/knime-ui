@@ -2,7 +2,6 @@ import Vuex from 'vuex';
 import { createLocalVue } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
-import { makeTypeSearch as makeTypeSearchMock } from '@/util/fuzzyPortTypeSearch';
 
 jest.mock('@/util/fuzzyPortTypeSearch', () => ({
     makeTypeSearch: jest.fn().mockReturnValue('searchFunction')
@@ -198,32 +197,6 @@ describe('application store', () => {
             await store.dispatch('application/unloadActiveWorkflow', { clearWorkflow: false });
 
             expect(removeEventListener).not.toHaveBeenCalled();
-        });
-    });
-
-    test('set up port search', () => {
-        let portTypes = {
-            BufferedTable: {
-                kind: 'table',
-                name: 'Data'
-            },
-            FlowVariable: {
-                kind: 'flowVariable',
-                name: 'Flow Variable'
-            },
-            Hidden: {
-                kind: 'hidden',
-                name: 'Hidden Port',
-                hidden: true
-            }
-        };
-        store.commit('application/setAvailablePortTypes', portTypes);
-        
-        expect(store.getters['application/searchAllPortTypes']).toBe('searchFunction');
-        
-        expect(makeTypeSearchMock).toHaveBeenCalledWith({
-            typeIds: ['BufferedTable', 'FlowVariable', 'Hidden'],
-            installedPortTypes: portTypes
         });
     });
 

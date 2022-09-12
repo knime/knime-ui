@@ -1,38 +1,53 @@
+/* eslint-disable no-magic-numbers */
 import { makeTypeSearch } from '../fuzzyPortTypeSearch';
 
 describe('Port Type Search', () => {
-    let searchType;
-    
-    beforeEach(() => {
-        let installedPortTypes = {
-            d: { name: 'D-Type' },
-            b: { name: 'B-Type' },
-            c: { name: 'C-Type' },
-            a: { name: 'A-Type', hidden: true }
-        };
+    const suggestedTypeIds = ['suggested-1', 'suggested-2'];
+    const availablePortTypes = {
+        d: { name: 'D-Type' },
+        b: { name: 'B-Type' },
+        c: { name: 'C-Type' },
+        a: { name: 'A-Type', hidden: true },
+        'suggested-1': { name: 'Suggested 1' },
+        'suggested-2': { name: 'Suggested 2' }
+    };
 
-        searchType = makeTypeSearch({
-            typeIds: ['a', 'b', 'c', 'd'],
-            showHidden: false,
-            installedPortTypes
-        });
+    const doSearch = (query, { suggestedTypeIds } = {}) => makeTypeSearch({
+        typeIds: ['a', 'b', 'c', 'd'],
+        showHidden: false,
+        availablePortTypes,
+        suggestedTypeIds
+    })(query);
+
+    it('should display all port types for an empty search', () => {
+        expect(doSearch('').length).toBe(3);
     });
 
-    test('empty search input displays all entries that are also sorted', () => {
-        expect(searchType('')).toStrictEqual([
+    it('should sort all non-suggested port types alphabetically', () => {
+        expect(doSearch('')).toStrictEqual([
             { name: 'B-Type', typeId: 'b' },
             { name: 'C-Type', typeId: 'c' },
             { name: 'D-Type', typeId: 'd' }
         ]);
     });
 
-    test('search input shows matches', () => {
-        expect(searchType('b')).toStrictEqual([
+    it('shoul search and match entries based on input query', () => {
+        expect(doSearch('b')).toStrictEqual([
             { name: 'B-Type', typeId: 'b' }
         ]);
     });
 
-    test('hidden ports cant be searched', () => {
-        expect(searchType('a')).toStrictEqual([]);
+    it('should not search hidden ports', () => {
+        expect(doSearch('a')).toStrictEqual([]);
+    });
+
+    it('should place suggested ports at the top of the search results', () => {
+        expect(doSearch('', { suggestedTypeIds })).toStrictEqual([
+            { name: 'Suggested 1', typeId: 'suggested-1' },
+            { name: 'Suggested 2', typeId: 'suggested-2' },
+            { name: 'B-Type', typeId: 'b' },
+            { name: 'C-Type', typeId: 'c' },
+            { name: 'D-Type', typeId: 'd' }
+        ]);
     });
 });
