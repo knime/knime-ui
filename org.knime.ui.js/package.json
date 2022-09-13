@@ -27,6 +27,7 @@
     "@fontsource/roboto-condensed": "4.5.4",
     "@fontsource/roboto-mono": "4.5.3",
     "consola": "2.15.3",
+    "core-js": "^3.25.1",
     "focus-trap": "6.0.1",
     "focus-trap-vue": "0.0.6",
     "fuse.js": "6.5.3",
