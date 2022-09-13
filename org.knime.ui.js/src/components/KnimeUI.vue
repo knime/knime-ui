@@ -31,6 +31,7 @@ export default {
         NodeOutput,
         Splitter
     },
+
     data() {
         return {
             loaded: false,
@@ -41,29 +42,31 @@ export default {
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow'
-        })
+        }),
+
+        isInsideAP() {
+            // When the `window.isInsideAP` property is set, the app is being run in development mode
+            // via knime-ui-internal, so the API will be mocked and therefore the browser functions will exist
+            // and we can't use them to determine the value
+            // eslint-disable-next-line no-undefined
+            return window.isInsideAP === undefined
+                ? Boolean(window.switchToJavaUI)
+                : window.isInsideAP;
+        }
     },
+
     async beforeMount() {
         await this.setup();
     },
+    
     mounted() {
         this.checkClipboardSupport();
     },
+
     async beforeDestroy() {
         await this.destroyApplication();
     },
-    errorCaptured({ message, stack }, vm, vueInfo) {
-        consola.error(message, vueInfo, stack);
 
-        this.error = {
-            message,
-            stack,
-            vueInfo
-        };
-
-        // stop propagation
-        return false;
-    },
     methods: {
         ...mapActions('application', ['initializeApplication', 'destroyApplication']),
 
@@ -83,11 +86,16 @@ export default {
                 // render the application
                 this.loaded = true;
             } catch ({ message, stack }) {
-                // errors in the fetch hook are not captured by errorCaptured
                 this.error = { message, stack };
             }
         },
+
         async checkClipboardSupport() {
+            if (this.isInsideAP) {
+                this.$store.commit('application/setHasClipboardSupport', true);
+                return;
+            }
+
             let hasClipboardSupport = false;
 
             try {
@@ -106,6 +114,7 @@ export default {
 
             this.$store.commit('application/setHasClipboardSupport', hasClipboardSupport);
         },
+
         onCloseError() {
             if (process.env.isDev) { // eslint-disable-line no-process-env
                 this.error = null;
