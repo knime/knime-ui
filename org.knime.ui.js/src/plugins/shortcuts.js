@@ -31,7 +31,7 @@ Object.entries(shortcuts).forEach(([name, shortcut]) => {
 });
 Object.freeze(shortcuts);
 
-// define nuxt plugin
+// define plugin
 export default (context, inject) => {
     // get the whole shortcut by name
     const get = shortcutName => ({ ...shortcuts[shortcutName] });

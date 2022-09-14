@@ -1,7 +1,7 @@
 export const silentLogger = () => {
     const noop = function () {
         // In production, we disable all logging by providing a no-op function.
-        // In dev mode, this is overwritten, see nuxt plugin in internal project.
+        // In dev mode, this is overwritten, see plugin in internal project.
     };
     
     let methods = [

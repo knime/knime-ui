@@ -111,7 +111,6 @@ See `json-rpc-notification.js` for details.
 
 [vue.js]: https://v2.vuejs.org/
 [node]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/905281540/Node.js+Installation
-[nuxt.js docs]: https://nuxtjs.org/guide/commands
 [jest]: https://jestjs.io/en
 [lcov]: https://github.com/linux-test-project/lcov
 [clover]: http://openclover.org/

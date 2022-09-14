@@ -34,11 +34,11 @@ module.exports = {
         '!.stylelintrc.js'
     ],
     coveragePathIgnorePatterns: [
-        '^<rootDir>/(.nuxt|coverage|dist|test|target|node_modules|bin|webapps-common|' +
+        '^<rootDir>/(coverage|dist|test|target|node_modules|bin|webapps-common|' +
                     'buildtools|knime-ui-extension-service|.history)/'
     ],
     watchPathIgnorePatterns: [
-        '^<rootDir>/(.nuxt|coverage|dist|target|node_modules|bin|webapps-common|knime-ui-extension-service|.history)/'
+        '^<rootDir>/(coverage|dist|target|node_modules|bin|webapps-common|knime-ui-extension-service|.history)/'
     ],
     testEnvironment: 'jsdom',
     testURL: 'http://test.example/',

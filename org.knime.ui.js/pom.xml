@@ -137,9 +137,6 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <directory>.nuxt</directory>
-                        </fileset>
-                        <fileset>
                             <directory>dist</directory>
                         </fileset>
                     </filesets>
