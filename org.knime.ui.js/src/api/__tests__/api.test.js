@@ -233,7 +233,6 @@ describe('API', () => {
                     'workflow',
                     'root:1',
                     'root:1:2',
-                    // eslint-disable-next-line no-magic-numbers
                     10
                 ],
                 id: 0
@@ -256,7 +255,6 @@ describe('API', () => {
                     'workflow',
                     'root:1',
                     'root:1:2',
-                    // eslint-disable-next-line no-magic-numbers
                     10,
                     'data',
                     'request'

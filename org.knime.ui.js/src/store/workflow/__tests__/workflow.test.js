@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 /* eslint-disable max-lines */
 import Vuex from 'vuex';
 import { createLocalVue } from '@vue/test-utils';

@@ -26,7 +26,6 @@ describe('Shortcuts', () => {
         beforeEach(() => {
             shortcuts = {
                 noCondition: { name: 'c1' },
-                // eslint-disable-next-line no-magic-numbers
                 withCondition: { name: 'c2', condition: jest.fn().mockImplementation(({ age }) => age >= 18) }
             };
         });

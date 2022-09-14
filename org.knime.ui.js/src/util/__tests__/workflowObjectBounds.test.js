@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import * as $shapes from '@/style/shapes.mjs';
 
 import workflowObjectBounds from '../workflowObjectBounds';

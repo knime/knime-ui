@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 

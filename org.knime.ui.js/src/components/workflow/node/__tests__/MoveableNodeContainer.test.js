@@ -214,7 +214,7 @@ describe('MoveableNodeContainer', () => {
 
             wrapper.vm.onMoveEnd();
             
-            jest.advanceTimersByTime(5000); /* eslint-disable-line no-magic-numbers */
+            jest.advanceTimersByTime(5000);
             await Vue.nextTick();
 
             jest.runOnlyPendingTimers();

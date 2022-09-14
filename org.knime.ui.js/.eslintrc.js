@@ -20,7 +20,10 @@ module.exports = {
     overrides: [
         {
             files: ['./**/__tests__/*.test.js'],
-            extends: ['@knime/eslint-config/jest']
+            extends: ['@knime/eslint-config/jest'],
+            rules: {
+                'no-magic-numbers': 0
+            }
         }
     ]
 };

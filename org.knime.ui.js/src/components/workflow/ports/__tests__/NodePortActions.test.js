@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import { shallowMount } from '@vue/test-utils';
 
 import ActionButton from '@/components/common/ActionButton.vue';

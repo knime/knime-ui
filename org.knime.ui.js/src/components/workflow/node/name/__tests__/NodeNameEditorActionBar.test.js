@@ -19,7 +19,7 @@ describe('NodeNameEditorActionBar', () => {
 
     it('renders', () => {
         let buttons = wrapper.findAllComponents(ActionButton);
-        /* eslint-disable no-magic-numbers */
+        
         expect(buttons.at(0).props()).toStrictEqual(
             expect.objectContaining({ x: -12.5, disabled: false, primary: true })
         );

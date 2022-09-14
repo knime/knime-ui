@@ -1,5 +1,5 @@
 /* eslint-disable max-lines */
-/* eslint-disable no-magic-numbers */
+
 import Vue from 'vue';
 import Vuex from 'vuex';
 import { createLocalVue, shallowMount, createWrapper } from '@vue/test-utils';

@@ -191,9 +191,7 @@ describe('AutoSizeForeignObject.vue', () => {
         mockBoundingRect({
             x: mockRectX,
             y: mockRectY,
-            // eslint-disable-next-line no-magic-numbers
             width: mockRectWidth - 0.5,
-            // eslint-disable-next-line no-magic-numbers
             height: mockRectHeight + 0.1
         });
 

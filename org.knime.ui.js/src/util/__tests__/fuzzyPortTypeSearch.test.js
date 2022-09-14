@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import { makeTypeSearch } from '../fuzzyPortTypeSearch';
 
 describe('Port Type Search', () => {

@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import Vuex from 'vuex';
 import { shallowMount, createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';

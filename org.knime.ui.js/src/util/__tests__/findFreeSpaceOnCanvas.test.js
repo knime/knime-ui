@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import { nodeSize } from '@/style/shapes.mjs';
 
 import findFreeSpaceOnCanvas, { NODE_POSITION_SPACE_FACTOR, findFreeSpace, nodePadding }

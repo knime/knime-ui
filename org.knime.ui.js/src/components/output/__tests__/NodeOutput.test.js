@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 /* eslint-disable max-params */
 import Vue from 'vue';
 import Vuex from 'vuex';

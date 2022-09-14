@@ -1,5 +1,5 @@
 /* eslint-disable max-nested-callbacks */
-/* eslint-disable no-magic-numbers */
+
 import portShift, { portPositions, placeholderPosition } from '../portShift';
 
 // nodeSize: 32

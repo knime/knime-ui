@@ -1,4 +1,3 @@
-/* eslint-disable no-magic-numbers */
 import Vue from 'vue';
 import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
@@ -290,7 +289,6 @@ describe('NodeTemplate', () => {
             expect(clonedNodePreview.style.width).toBe('70px');
             expect(clonedNodePreview.style.height).toBe('70px');
 
-            // eslint-disable-next-line no-magic-numbers
             expect(testEvent.dataTransfer.setDragImage).toHaveBeenCalledWith(wrapper.vm.dragGhost, 35, 35);
         });
 

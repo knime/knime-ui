@@ -60,11 +60,10 @@ describe('NodeActionBar', () => {
         doMount();
 
         let buttons = wrapper.findAllComponents(ActionButton);
-        /* eslint-disable no-magic-numbers */
+        
         expect(buttons.at(0).props()).toStrictEqual(expect.objectContaining({ x: -25, disabled: true }));
         expect(buttons.at(1).props()).toStrictEqual(expect.objectContaining({ x: 0, disabled: true }));
         expect(buttons.at(2).props()).toStrictEqual(expect.objectContaining({ x: 25, disabled: true }));
-        /* eslint-enable no-magic-numbers */
     });
 
     it('renders disabled action buttons with openNodeConfiguration and without openView', () => {
@@ -72,12 +71,11 @@ describe('NodeActionBar', () => {
         doMount();
 
         let buttons = wrapper.findAllComponents(ActionButton);
-        /* eslint-disable no-magic-numbers */
+        
         expect(buttons.at(0).props()).toStrictEqual(expect.objectContaining({ x: -37.5, disabled: true }));
         expect(buttons.at(1).props()).toStrictEqual(expect.objectContaining({ x: -12.5, disabled: true }));
         expect(buttons.at(2).props()).toStrictEqual(expect.objectContaining({ x: 12.5, disabled: true }));
         expect(buttons.at(3).props()).toStrictEqual(expect.objectContaining({ x: 37.5, disabled: true }));
-        /* eslint-enable no-magic-numbers */
     });
 
     it('renders disabled action buttons with openNodeConfiguration and openView', () => {
@@ -86,13 +84,12 @@ describe('NodeActionBar', () => {
         doMount();
 
         let buttons = wrapper.findAllComponents(ActionButton);
-        /* eslint-disable no-magic-numbers */
+        
         expect(buttons.at(0).props()).toStrictEqual(expect.objectContaining({ x: -50, disabled: true }));
         expect(buttons.at(1).props()).toStrictEqual(expect.objectContaining({ x: -25, disabled: true }));
         expect(buttons.at(2).props()).toStrictEqual(expect.objectContaining({ x: 0, disabled: true }));
         expect(buttons.at(3).props()).toStrictEqual(expect.objectContaining({ x: 25, disabled: true }));
         expect(buttons.at(4).props()).toStrictEqual(expect.objectContaining({ x: 50, disabled: true }));
-        /* eslint-enable no-magic-numbers */
     });
 
     it('renders enabled action buttons', () => {

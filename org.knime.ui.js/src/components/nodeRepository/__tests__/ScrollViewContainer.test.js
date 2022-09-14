@@ -65,7 +65,6 @@ describe('ScrollViewContainer', () => {
                 'scrollHeight',
                 {
                     get() {
-                        // eslint-disable-next-line no-magic-numbers
                         return 400;
                     },
                     configurable: true
