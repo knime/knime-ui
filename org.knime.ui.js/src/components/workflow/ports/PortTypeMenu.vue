@@ -104,7 +104,8 @@ export default {
             const menuItems = this.searchResults.map(({ typeId, name }) => ({
                 port: { typeId },
                 text: name,
-                icon: portIcon({ typeId })
+                icon: portIcon({ typeId }),
+                title: name.length > 20 ? name : null
             }));
 
             return menuItems;
