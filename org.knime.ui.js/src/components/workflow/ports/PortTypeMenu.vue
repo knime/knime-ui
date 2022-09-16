@@ -9,6 +9,7 @@ import portIcon from '@/components/common/PortIconRenderer';
 import SearchBar from '@/components/common/SearchBar.vue';
 
 const isPortGroupWithSinglePort = (portGroups, groupName) => portGroups[groupName].supportedPortTypeIds.length === 1;
+const portNameSizeThreshold = 20;
 
 /**
  * ContextMenu offers actions for the Kanvas based on the selected nodes.
@@ -105,7 +106,7 @@ export default {
                 port: { typeId },
                 text: name,
                 icon: portIcon({ typeId }),
-                title: name.length > 20 ? name : null
+                title: name.length > portNameSizeThreshold ? name : null
             }));
 
             return menuItems;
