@@ -1,10 +1,8 @@
-const { preset, plugins, order } = require('webapps-common/webpack/webpack.postcss.config.js');
+// eslint-disable-next-line import/extensions
+const { preset } = require('webapps-common/webpack/webpack.postcss.config.js');
 
 module.exports = {
-
-    plugins: Object.assign({}, plugins, {
+    plugins: {
         'postcss-preset-env': preset
-    }),
-
-    order
+    }
 };

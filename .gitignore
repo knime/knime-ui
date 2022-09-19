@@ -98,7 +98,7 @@ sw.*
 .history/
 
 # Maven Frontend Plugin
-node/
+/node/
 
 # Maven
 **/.flattened-pom.xml

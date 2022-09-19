@@ -1,16 +1,23 @@
 module.exports = {
-    preset: '@vue/cli-plugin-unit-jest',
     moduleNameMapper: {
-        '^@/(.*)$': '<rootDir>/$1',
-        '^~/(.*)$': '<rootDir>/$1',
-        '~api': '<rootDir>/api/index.js'
+        '^@/(.*)$': '<rootDir>/src/$1',
+        '@api': '<rootDir>/src/api/index.js'
     },
+    moduleFileExtensions: [
+        'mjs',
+        'js',
+        'vue',
+        'json'
+    ],
+    modulePathIgnorePatterns: [
+        '<rootDir>/knime-ui-extension-service'
+    ],
     transform: {
         '\\.mjs$': 'babel-jest',
         '\\.js$': 'babel-jest',
         '\\.vue$': '@vue/vue2-jest',
         '\\.(css|styl|less|sass|scss|ttf|woff|woff2)(\\?|$)': 'jest-transform-stub',
-        '\\.svg': '<rootDir>/test/unit/jest-transform-svgs'
+        '\\.svg': '<rootDir>/src/test/jest-transform-svgs'
     },
     transformIgnorePatterns: [
         '/node_modules/'
@@ -27,16 +34,16 @@ module.exports = {
         '!.stylelintrc.js'
     ],
     coveragePathIgnorePatterns: [
-        '^<rootDir>/(.nuxt|coverage|dist|test|target|node_modules|bin|webapps-common|' +
+        '^<rootDir>/(coverage|dist|test|target|node_modules|bin|webapps-common|' +
                     'buildtools|knime-ui-extension-service|.history)/'
     ],
     watchPathIgnorePatterns: [
-        '^<rootDir>/(.nuxt|coverage|dist|target|node_modules|bin|webapps-common|knime-ui-extension-service|.history)/'
+        '^<rootDir>/(coverage|dist|target|node_modules|bin|webapps-common|knime-ui-extension-service|.history)/'
     ],
     testEnvironment: 'jsdom',
     testURL: 'http://test.example/',
     testMatch: [
-        '<rootDir>/test/unit/**/*.test.js'
+        '<rootDir>/**/__tests__/*.test.js'
     ],
-    setupFiles: ['<rootDir>/test/unit/jest-setup', 'jest-useragent-mock']
+    setupFiles: ['<rootDir>/src/test/jest-setup', 'jest-useragent-mock']
 };

@@ -1,7 +1,7 @@
 # org.knime.ui.js 
 
 This project contains the web frontend for the KNIME Analytics Platform.
-The frontend is based on the [Nuxt.js] JavaScript framework.
+The frontend is based on the [Vue.js] JavaScript framework.
 
 ## Development
 
@@ -21,7 +21,7 @@ git submodule update --init
 npm install
 ```
 
-and then use the following commands. For detailed explanations see [Nuxt.js docs]:
+and then use the following commands:
 
 ### Launch development server
 
@@ -65,8 +65,8 @@ dependencies that are used in production. Run it by calling
 npm audit --production
 ```
 
-In some cases security issues can not be addressed right away or do not pose a direct threat (e.g. build dependencies
-of nuxt). To deal with these run
+In some cases security issues can not be addressed right away or do not pose a direct threat (e.g. build dependencies). 
+To deal with these run
 
 ```sh
 npx resolve-audit --production
@@ -109,9 +109,8 @@ In turn, this app provides a global function called `jsonrpcNotification` that c
 See `json-rpc-notification.js` for details.
 
 
-[nuxt.js]: https://nuxtjs.org/
+[vue.js]: https://v2.vuejs.org/
 [node]: https://knime-com.atlassian.net/wiki/spaces/SPECS/pages/905281540/Node.js+Installation
-[nuxt.js docs]: https://nuxtjs.org/guide/commands
 [jest]: https://jestjs.io/en
 [lcov]: https://github.com/linux-test-project/lcov
 [clover]: http://openclover.org/

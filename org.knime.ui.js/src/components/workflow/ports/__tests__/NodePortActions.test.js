@@ -1,0 +1,129 @@
+import { shallowMount } from '@vue/test-utils';
+
+import ActionButton from '@/components/common/ActionButton.vue';
+import Port from '@/components/common/Port.vue';
+
+import NodePortActions, { portActionButtonSize } from '../NodePortActions.vue';
+
+import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
+jest.mock('@/mixins/escapeStack', () => {
+    function escapeStack({ onEscape }) { // eslint-disable-line func-style
+        escapeStack.onEscape = onEscape;
+        return { /* empty mixin */ };
+    }
+    return { escapeStack };
+});
+
+describe('NodePortActions.vue', () => {
+    let propsData, wrapper, doShallowMount;
+
+    beforeEach(() => {
+        propsData = {
+            direction: 'in',
+            relativePosition: [16, 32],
+            anchorPoint: { x: 1600, y: 1600 },
+            port: {
+                canRemove: true,
+                connectedVia: [],
+                typeId: 'table',
+                inactive: false,
+                index: 0
+            }
+        };
+
+        doShallowMount = () => {
+            wrapper = shallowMount(NodePortActions, { propsData });
+        };
+    });
+    
+    
+    it('should render properly', () => {
+        doShallowMount();
+        
+        expect(wrapper.findComponent(ActionButton).exists()).toBe(true);
+        expect(wrapper.findComponent(Port).exists()).toBe(true);
+        
+        // class is used in a css selector to target the animation of the element
+        // as it shows up in a portal
+        expect(wrapper.findComponent(Port).classes()).toContain('selected-port');
+    });
+    
+    it('should emit the action event', () => {
+        doShallowMount();
+
+        wrapper.findComponent(ActionButton).vm.$emit('click');
+        expect(wrapper.emitted('action:remove')).toBeDefined();
+    });
+
+    it('should position the wrapper and actions properly', () => {
+        doShallowMount();
+
+        const { anchorPoint, relativePosition } = propsData;
+
+        const expectedWrapperTranslate = [
+            anchorPoint.x + relativePosition[0],
+            anchorPoint.y + relativePosition[1]
+        ];
+
+        const expectedActionButtonXOffset = 25 * (propsData.direction === 'in' ? -1 : 1);
+
+        expect(wrapper.attributes('transform')).toBe(`translate(${expectedWrapperTranslate})`);
+        expect(wrapper.findComponent(ActionButton).props('x')).toBe(expectedActionButtonXOffset);
+    });
+
+    it.each([
+        ['in', portActionButtonSize],
+        ['out', 0]
+    ])('should set the proper hover area dimensions for %sPorts', async (direction, xOffset) => {
+        doShallowMount();
+        await wrapper.setProps({ direction });
+
+        const objPropertiesToString = (obj) => Object
+            .entries(obj)
+            .map(([key, value]) => [key, value.toString()])
+            .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+
+        const hoverAreaDimensions = {
+            x: -(portActionButtonSize / 2) - xOffset,
+            y: -(portActionButtonSize / 2),
+            width: portActionButtonSize * 2,
+            height: portActionButtonSize
+        };
+
+        expect(wrapper.find('rect').attributes()).toEqual(
+            expect.objectContaining(objPropertiesToString(hoverAreaDimensions))
+        );
+    });
+
+    it('should capture events on the area between actions', () => {
+        const mockStopPropagation = jest.fn();
+
+        MouseEvent.prototype.stopPropagation = mockStopPropagation;
+
+        doShallowMount();
+
+        wrapper.find('rect').trigger('click');
+        wrapper.find('rect').trigger('mouseenter');
+        wrapper.find('rect').trigger('mouseleave');
+
+        expect(mockStopPropagation).toHaveBeenCalledTimes(3);
+    });
+
+    it('should disable the delete action button if the port cannot be removed', async () => {
+        doShallowMount();
+
+        await wrapper.setProps({ port: { ...propsData.port, canRemove: false } });
+
+        const actionButton = wrapper.findComponent(ActionButton);
+
+        expect(actionButton.props('disabled')).toBe(true);
+    });
+
+    it('should close on escape', () => {
+        doShallowMount();
+
+        expect(wrapper.emitted('close')).toBeFalsy();
+        escapeStackMock.onEscape.call(wrapper.vm);
+        expect(wrapper.emitted('close')).toBeTruthy();
+    });
+});
