@@ -74,10 +74,10 @@ import org.knime.core.node.port.PortType;
 import org.knime.core.node.port.PortTypeRegistry;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
-import org.knime.core.node.workflow.WorkflowContext;
 import org.knime.core.node.workflow.WorkflowLoadHelper;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor.WorkflowLoadResult;
+import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LoadVersion;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
@@ -300,15 +300,9 @@ public final class EclipseUIStateUtil {
         return java.util.Optional.ofNullable(ref.get());
     }
 
-    static WorkflowManager loadWorkflow(final File workflowDir) throws IOException, InvalidSettingsException,
+    static WorkflowManager loadTempWorkflow(final File wfDir) throws IOException, InvalidSettingsException,
         CanceledExecutionException, UnsupportedWorkflowVersionException, LockFailedException {
-        WorkflowLoadHelper loadHelper = new WorkflowLoadHelper() {
-            @Override
-            public WorkflowContext getWorkflowContext() {
-                var fac = new WorkflowContext.Factory(workflowDir);
-                return fac.createContext();
-            }
-
+        WorkflowLoadHelper loadHelper = new WorkflowLoadHelper(WorkflowContextV2.forTemporaryWorkflow(wfDir.toPath(), null)) {
             @Override
             public UnknownKNIMEVersionLoadPolicy getUnknownKNIMEVersionLoadPolicy(
                 final LoadVersion workflowKNIMEVersion, final Version createdByKNIMEVersion,
@@ -317,7 +311,7 @@ public final class EclipseUIStateUtil {
             }
         };
 
-        WorkflowLoadResult loadRes = WorkflowManager.loadProject(workflowDir, new ExecutionMonitor(), loadHelper);
+        WorkflowLoadResult loadRes = WorkflowManager.loadProject(wfDir, new ExecutionMonitor(), loadHelper);
         return loadRes.getWorkflowManager();
     }
 }
