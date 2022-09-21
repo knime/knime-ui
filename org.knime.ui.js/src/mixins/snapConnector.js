@@ -65,24 +65,6 @@ export const snapConnector = {
                 partitions.out = makePartitions(this.portPositions.out.map(([, y]) => y));
             }
             return partitions;
-        },
-        selectedPortGroup() {
-            // TODO: move to helper or store ??!!
-            // TODO: temporary until multiple port groups can be handled
-            if (!this.portGroups) {
-                return null;
-            }
-
-            return Object.entries(this.portGroups)
-                .find(([name, { canAddInPort, canAddOutPort }]) => canAddInPort || canAddOutPort);
-        },
-        addablePortTypes() {
-            if (['metanode', 'component'].includes(this.nodeKind)) {
-                return Object.keys(this.availablePortTypes);
-            }
-
-            // TODO: are those typeIds a object or array?
-            return this.selectedPortGroup?.[1].supportedPortTypeIds;
         }
     },
     mounted() {
@@ -173,9 +155,9 @@ export const snapConnector = {
             }
 
             // position connector end
-            const { didSnap, suggestedTypeId } = e.detail.onSnapCallback({
+            const { didSnap, createPortFromPlaceholder } = e.detail.onSnapCallback({
                 targetPort: targetPortData,
-                addablePortTypes: this.addablePortTypes,
+                portGroups: this.portGroups,
                 snapPosition: absolutePortPosition
             });
 
@@ -186,18 +168,19 @@ export const snapConnector = {
                     side: targetPortDirection, // TODO: this is in/out instead of 'input'/'output' that is used by ports
                     index: snapPortIndex
                 };
-                if (targetPortData.isPlaceHolderPort) {
+                if (createPortFromPlaceholder) {
                     this.targetPort.isPlaceHolderPort = true;
-                    this.targetPort.typeId = suggestedTypeId;
+                    this.targetPort.typeId = createPortFromPlaceholder.typeId;
+                    this.targetPort.portGroup = createPortFromPlaceholder.portGroup;
                 }
             }
         },
-        addPort({ side, typeId }) {
+        addPort({ side, typeId, portGroup }) {
             this.addNodePort({
                 nodeId: this.id,
                 side: side === 'in' ? 'input' : 'output',
                 typeId,
-                portGroup: this.selectedPortGroup?.[0] // is null for composite nodes
+                portGroup
             });
         },
         createConnectorObject({ startNode, startPort }) {

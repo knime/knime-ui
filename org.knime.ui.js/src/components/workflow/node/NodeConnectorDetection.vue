@@ -46,15 +46,6 @@ export default {
         portGroups: {
             type: Object,
             default: null
-        },
-        /**
-         * nodeKind is required to check for portGroups or use all available types in snapConnector
-         * -- Required by snapConnector mixin
-         */
-        nodeKind: {
-            type: String,
-            required: true,
-            validator: kind => ['node', 'metanode', 'component'].includes(kind)
         }
     },
 

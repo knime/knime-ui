@@ -66,14 +66,6 @@ export default {
     }),
     computed: {
         addPortPlaceholderPath: () => addPortPlaceholderPath,
-        fakeNodePort() {
-            return {
-                index: this.index,
-                typeId: this.targeted ? this.targetPort.typeId : '__placeholder__',
-                connectedVia: [],
-                isPlaceHolderPort: true
-            };
-        },
         validPortGroups() {
             if (!this.portGroups) {
                 return null;

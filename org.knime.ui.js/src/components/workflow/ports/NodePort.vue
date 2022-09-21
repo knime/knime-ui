@@ -56,6 +56,57 @@ const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {
     return fromPort.typeId === toPort.typeId;
 };
 
+const checkCompatiblePortCanBeAdded = ({
+    fromPort,
+    availablePortTypes,
+    portGroups
+}) => {
+    let suggestedTypeId;
+    // TODO: NXT-1242 let the user choose the portGroup
+    let selectedPortGroup = portGroups?.[0];
+    let addablePortTypes = selectedPortGroup ? selectedPortGroup.supportedPortTypeIds : Object.keys(availablePortTypes);
+
+    if (addablePortTypes.includes(fromPort.typeId)) {
+        suggestedTypeId = fromPort.typeId;
+    } else {
+        suggestedTypeId = addablePortTypes.find(typeId => checkPortCompatibility({
+            fromPort,
+            toPort: { typeId },
+            availablePortTypes
+        }));
+    }
+
+    return {
+        didSnap: Boolean(suggestedTypeId),
+        createPortFromPlaceholder: {
+            typeId: suggestedTypeId,
+            portGroup: selectedPortGroup
+        }
+    };
+};
+
+const checkCompatibleConnectionAndPort = ({
+    fromPort,
+    toPort,
+    availablePortTypes,
+    targetPortDirection,
+    connections
+}) => {
+    const isSupportedConnection = checkConnectionSupport({
+        toPort,
+        connections,
+        targetPortDirection
+    });
+
+    const isCompatiblePort = checkPortCompatibility({
+        fromPort,
+        toPort,
+        availablePortTypes
+    });
+
+    return { didSnap: isSupportedConnection && isCompatiblePort };
+};
+
 export default {
     components: {
         Port,
@@ -221,38 +272,24 @@ export default {
                     x: absoluteX,
                     y: absoluteY,
                     targetPortDirection,
-                    onSnapCallback: ({ snapPosition, targetPort, addablePortTypes }) => {
+                    onSnapCallback: ({ snapPosition, targetPort, portGroups }) => {
                         const [x, y] = snapPosition;
-                        let suggestedTypeId;
 
-                        // TODO: move this to 2 helper functions and decouple both cases
-                        if (targetPort.isPlaceHolderPort) {
-                            if (addablePortTypes.includes(this.port.typeId)) {
-                                suggestedTypeId = this.port.typeId;
-                            } else {
-                                suggestedTypeId = addablePortTypes.find(typeId => checkPortCompatibility({
-                                    fromPort: this.port,
-                                    toPort: { typeId },
-                                    availablePortTypes: this.availablePortTypes
-                                }));
-                            }
-
-                            this.didDragToCompatibleTarget = Boolean(suggestedTypeId);
-                        } else {
-                            const isSupportedConnection = checkConnectionSupport({
-                                toPort: this.port,
-                                connections: this.connections,
-                                targetPortDirection
-                            });
-
-                            const isCompatiblePort = checkPortCompatibility({
+                        let result = targetPort.isPlaceHolderPort
+                            ? checkCompatiblePortCanBeAdded({
+                                fromPort: this.port,
+                                availablePortTypes: this.availablePortTypes,
+                                portGroups
+                            })
+                            : checkCompatibleConnectionAndPort({
                                 fromPort: this.port,
                                 toPort: targetPort,
-                                availablePortTypes: this.availablePortTypes
+                                availablePortTypes: this.availablePortTypes,
+                                targetPortDirection,
+                                connections: this.connections
                             });
 
-                            this.didDragToCompatibleTarget = isSupportedConnection && isCompatiblePort;
-                        }
+                        this.didDragToCompatibleTarget = result.didSnap;
 
                         // setting the drag connector coordinates will cause the connector to snap
                         // We prevent that if it's not a compatible target
@@ -261,10 +298,7 @@ export default {
                         }
 
                         // The callback should return whether a snapped connection was made to a compatible target
-                        let result = { didSnap: this.didDragToCompatibleTarget };
-                        if (targetPort.isPlaceHolderPort) {
-                            result.suggestedTypeId = suggestedTypeId;
-                        }
+                        // and needs to provide data for the to be added port for placeholder snaps
                         return result;
                     }
                 },

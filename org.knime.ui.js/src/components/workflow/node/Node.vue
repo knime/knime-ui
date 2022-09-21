@@ -333,7 +333,6 @@ export default {
     :id="id"
     :position="position"
     :port-groups="portGroups"
-    :node-kind="kind"
     :port-positions="portPositions"
   >
     <template
