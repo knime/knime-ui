@@ -176,8 +176,7 @@ export default {
                 width: 0,
                 height: 20
             },
-            portPositions: { in: [], out: [] },
-            addPortPlaceholderPositions: { in: [], out: [] }
+            portPositions: { in: [], out: [] }
         };
     },
     computed: {
@@ -335,10 +334,7 @@ export default {
     :position="position"
     :port-groups="portGroups"
     :node-kind="kind"
-    :port-positions="{
-      in: [ ...portPositions.in, addPortPlaceholderPositions.input ].filter(Boolean),
-      out: [ ...portPositions.out, addPortPlaceholderPositions.output].filter(Boolean)
-    }"
+    :port-positions="portPositions"
   >
     <template
       #default="{
@@ -453,7 +449,6 @@ export default {
                 :connector-hover="connectorHover"
                 :is-single-selected="isSingleSelected"
                 @update-port-positions="portPositions = $event"
-                @update-add-port-placeholder-positions="addPortPlaceholderPositions = $event"
               />
 
               <!-- Node name / title -->

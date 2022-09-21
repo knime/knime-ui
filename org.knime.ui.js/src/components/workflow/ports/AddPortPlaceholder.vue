@@ -1,4 +1,5 @@
 <script>
+// import NodeConnectorDetection from '@/components/workflow/ports/NodeConnectorDetection.vue';
 import NodePort from '@/components/workflow/ports/NodePort.vue';
 import Port from '@/components/common/Port.vue';
 
@@ -187,52 +188,42 @@ export default {
         :key="previewPort.typeId"
         :port="previewPort"
       />
-      <!-- TODO: should we really use a fake Node Port? It helps with the snapping as well as the preview -->
-      <NodePort
-        v-else
-        :key="`placeholder-${side}`"
-        :disable-drag="true"
-        :node-id="nodeId"
-        :direction="side === 'input' ? 'in' : 'out'"
-        :port="fakeNodePort"
+      <g
+        v-if="!targeted"
+        :class="['add-port-icon', {
+          'active': isMenuOpen
+        }]"
+        @click="onClick"
       >
-        <g
-          v-if="!targeted"
-          :class="['add-port-icon', {
-            'active': isMenuOpen
-          }]"
-          @click="onClick"
-        >
-          <circle
-            r="6.5"
-            fill="white"
-            stroke="none"
-          />
-          <path
-            :d="addPortPlaceholderPath"
-            stroke-width="1"
-            stroke="#000"
-            fill="none"
-            stroke-dasharray="1"
-          />
-          <line
-            y1="0"
-            y2="0"
-            x1="-3.5"
-            x2="3.5"
-            stroke="#000"
-            stroke-width="1"
-          />
-          <line
-            x1="0"
-            x2="0"
-            y1="-3.5"
-            y2="3.5"
-            stroke="#000"
-            stroke-width="1"
-          />
-        </g>
-      </NodePort>
+        <circle
+          r="6.5"
+          fill="white"
+          stroke="none"
+        />
+        <path
+          :d="addPortPlaceholderPath"
+          stroke-width="1"
+          stroke="#000"
+          fill="none"
+          stroke-dasharray="1"
+        />
+        <line
+          y1="0"
+          y2="0"
+          x1="-3.5"
+          x2="3.5"
+          stroke="#000"
+          stroke-width="1"
+        />
+        <line
+          x1="0"
+          x2="0"
+          y1="-3.5"
+          y2="3.5"
+          stroke="#000"
+          stroke-width="1"
+        />
+      </g>
     </transition>
   </g>
 </template>

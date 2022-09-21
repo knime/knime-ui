@@ -88,7 +88,7 @@ export default {
          * Format as required by snapConnector mixin
          */
         portPositions() {
-            return {
+            let positions = {
                 in: portPositions({
                     portCount: this.inPorts.length,
                     isMetanode: this.isMetanode
@@ -99,24 +99,27 @@ export default {
                     isOutports: true
                 })
             };
+
+            if (this.canAddPort.input) {
+                positions.in.push(placeholderPosition({
+                    portCount: this.inPorts.length,
+                    isMetanode: this.isMetanode
+                }));
+            }
+
+            if (this.canAddPort.output) {
+                positions.out.push(placeholderPosition({
+                    portCount: this.outPorts.length,
+                    isMetanode: this.isMetanode,
+                    isOutport: true
+                }));
+            }
+            return positions;
         },
-        addPortPlaceholderPositions() {
-            // only set placeholder positions if the placeholder will be visible (i.e. we can add a port)
-            // this is required for the snapConnector to add a snap region
+        placeholderPositions() {
             return {
-                input: this.canAddPort.input
-                    ? placeholderPosition({
-                        portCount: this.inPorts.length,
-                        isMetanode: this.isMetanode
-                    })
-                    : null,
-                output: this.canAddPort.output
-                    ? placeholderPosition({
-                        portCount: this.outPorts.length,
-                        isMetanode: this.isMetanode,
-                        isOutport: true
-                    })
-                    : null
+                input: this.portPositions.in[this.portPositions.in.length - 1],
+                output: this.portPositions.out[this.portPositions.out.length - 1]
             };
         },
         /* eslint-disable brace-style, curly */
@@ -149,12 +152,6 @@ export default {
                 this.$emit('update-port-positions', portPositions);
             }
         },
-        addPortPlaceholderPositions: {
-            immediate: true,
-            handler(addPortPlaceholderPositions) {
-                this.$emit('update-add-port-placeholder-positions', addPortPlaceholderPositions);
-            }
-        }
     },
     methods: {
         ...mapActions('workflow', ['addNodePort', 'removeNodePort']),
@@ -284,7 +281,7 @@ export default {
         :targeted="isPlaceholderPortTargeted(side)"
         :target-port="targetPort"
         :node-id="nodeId"
-        :position="addPortPlaceholderPositions[side]"
+        :position="placeholderPositions[side]"
         :port-groups="portGroups"
         :class="['add-port', {
           'node-hover': hover,

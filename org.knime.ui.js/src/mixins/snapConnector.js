@@ -166,7 +166,7 @@ export const snapConnector = {
             const possibleTargetPorts = ports[`${targetPortDirection}Ports`];
             let targetPortData;
             // if the port index is bigger than our port list this is most likely a placeholder port
-            if (possibleTargetPorts.length > snapPortIndex) {
+            if (snapPortIndex < possibleTargetPorts.length) {
                 targetPortData = possibleTargetPorts[snapPortIndex];
             } else {
                 targetPortData = { isPlaceHolderPort: true };
