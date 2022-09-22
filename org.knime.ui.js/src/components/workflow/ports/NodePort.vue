@@ -233,7 +233,7 @@ export default {
             this.dragConnector = this.createConnectorFromEvent(e);
 
             // find compatible nodes
-            let compatibleNodes = circleDetection({
+            const validConnectionTargets = circleDetection({
                 downstreamConnection: this.direction === 'out',
                 startNode: this.nodeId,
                 workflow: this.$store.state.workflow.activeWorkflow
@@ -241,8 +241,8 @@ export default {
 
             // signal start of connecting phase
             this.$root.$emit('connector-start', {
-                compatibleNodes,
-                nodeId: this.nodeId,
+                validConnectionTargets,
+                startNodeId: this.nodeId,
                 startPort: this.port
             });
         },

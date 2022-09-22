@@ -85,7 +85,6 @@ export default {
         /**
          * @returns {object} the position of all inPorts and outPorts.
          * The position for each port is an array with two coordinates [x, y].
-         * Format as required by snapConnector mixin
          */
         portPositions() {
             let positions = {

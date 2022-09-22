@@ -1,38 +1,64 @@
-import { mapActions, mapState } from 'vuex';
+<script>
+import { mapActions } from 'vuex';
 
 /**
- * This mixin used for components that have ports to allow the user to snap and drop connectors
+ * Renderless component that provides all the computed/data/methods necessary for the connector snapping logic.
+ * Exposes through the default slot information that may be required on the parent to use said behavior.
  *
- * Requires component to implement the following interface:
- *
- * Interface snapConnector {
- *   portPositions: {
- *      in?: Array<[x, y]>
- *      out?: Array<[x, y]>
- *   },
- *   position: {x, y},
- *   isOutsideConnectorHoverRegion?: (mouseX, mouseY, 'in' | 'out') -> Boolean,
- * }
- *
- * Requires component to register the following event handlers
- *
- *   @connector-enter -> onConnectorEnter
- *   @connector-leave -> onConnectorLeave
- *   @connector-move  -> onConnectorMove
- *   @connector-drop  -> onConnectorDrop
- *
+ * A connection can happen to "valid" and "compatible" ports. `Valid` ports are defined as ports that can be connected to
+ * without causing an invalid workflow state (e.g. cycle connections), and `Compatible` connections are defined as
+ * ports of the same type (or compatible types) that can be connected together
  */
-export const snapConnector = {
-    data: () => ({
-        connectorHover: false, // connector is hovering above component
-        targetPort: null, // the port the connector is snapped to, or null
-        connectionForbidden: false,
-        isConnectionSource: false
-    }),
-    computed: {
-        ...mapState('application', ['availablePortTypes']),
+export default {
+    props: {
         /**
-         * Divides the height of the component into partitions
+         * Id of the port container. Will be used to identify the different connector events
+         */
+        id: {
+            type: [String, null],
+            required: true
+        },
+
+        disableValidTargetCheck: {
+            type: Boolean,
+            default: false
+        },
+
+        disableHoverBoundaryCheck: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * The root position of port container. It's an object with an x and a y property
+         */
+        position: {
+            type: Object,
+            required: true,
+            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
+        },
+
+        /**
+         * The positions of each of the ports on the port container
+         */
+        portPositions: {
+            type: Object,
+            required: true,
+            validator: value => Array.isArray(value.in) && Array.isArray(value.out)
+        }
+    },
+
+    data: () => ({
+        connectorHover: false, // connector is hovering above container
+        targetPort: null, // the port the connector has snapped to, or null
+        isConnectionSource: false,
+        connectionForbidden: false, // whether connection can be made (e.g.: target is valid)
+        validConnectionTargets: null // list of valid connection targets
+    }),
+
+    computed: {
+        /**
+         * Divides the height of the container into partitions
          * that divide the space between ports by half
          * @returns {{
          *   in: (Array<Number> | undefined),
@@ -42,7 +68,7 @@ export const snapConnector = {
          * List is undefined if no port exists
          */
         snapPartitions() {
-            let makePartitions = positions => {
+            const makePartitions = positions => {
                 if (!positions.length) {
                     return null;
                 }
@@ -67,24 +93,31 @@ export const snapConnector = {
             return partitions;
         }
     },
+
     mounted() {
         this.$root.$on('connector-start', this.onConnectorStart);
         this.$root.$on('connector-end', this.onConnectorEnd);
     },
+
     methods: {
         ...mapActions('workflow', ['connectNodes', 'addNodePort']),
-        onConnectorStart({ compatibleNodes, nodeId }) {
-            if (this.containerId) {
-                // metanodes can always be connected to
+        onConnectorStart({ validConnectionTargets, startNodeId }) {
+            // Don't set the `connectionForbidden` state when the checks are disabled for all "valid" targets
+            // e.g.: Metanode portbar ports can always be connected to (provided they're "compatible")
+            if (this.disableValidTargetCheck) {
                 return;
             }
 
-            this.connectionForbidden = !compatibleNodes.has(this.id);
-            this.isConnectionSource = this.id === nodeId;
+            this.validConnectionTargets = validConnectionTargets;
+            this.connectionForbidden = !validConnectionTargets.has(this.id);
+            this.isConnectionSource = this.id === startNodeId;
         },
         onConnectorEnd() {
             this.connectionForbidden = false;
             this.isConnectionSource = false;
+            this.connectorHover = false;
+            this.targetPort = null;
+            this.validConnectionTargets = null;
         },
         onConnectorEnter(e) {
             consola.trace('connector-enter');
@@ -107,28 +140,30 @@ export const snapConnector = {
             consola.trace('connector-move');
             let { y: mouseY, x: mouseX, targetPortDirection } = e.detail;
 
-            // find mouse position relative to components position on workflow
-            let relativeY = mouseY - this.position.y;
-            let relativeX = mouseX - this.position.x;
+            // find mouse position relative to container position on workflow
+            const relativeX = mouseX - this.position.x;
+            const relativeY = mouseY - this.position.y;
 
             // component can abort snapping
-            if (this.isOutsideConnectorHoverRegion &&
-                this.isOutsideConnectorHoverRegion(relativeX, relativeY, targetPortDirection)) {
+            if (
+                !this.disableHoverBoundaryCheck &&
+                this.isOutsideConnectorHoverRegion(relativeX, relativeY, targetPortDirection)
+            ) {
                 this.targetPort = null;
                 return;
             }
 
-            let snapPartitions = this.snapPartitions[targetPortDirection];
-            let portPositions = this.portPositions[targetPortDirection];
+            const snapPartitions = this.snapPartitions[targetPortDirection];
 
+            const portPositions = this.portPositions[targetPortDirection];
 
-            // no port, no snap, assumes partitions don't change while dragging connector
+            // no port, no snap. assumes partitions don't change while dragging connector
             if (!snapPartitions) {
                 return;
             }
 
             // find index of port to snap to
-            let partitionIndex = snapPartitions.findIndex(boundary => relativeY <= boundary);
+            const partitionIndex = snapPartitions.findIndex(boundary => relativeY <= boundary);
             let snapPortIndex;
 
             if (snapPartitions.length === 0) {
@@ -142,8 +177,8 @@ export const snapConnector = {
                 snapPortIndex = partitionIndex;
             }
 
-            let [relPortX, relPortY] = portPositions[snapPortIndex];
-            let absolutePortPosition = [relPortX + this.position.x, relPortY + this.position.y];
+            const [relPortX, relPortY] = portPositions[snapPortIndex];
+            const absolutePortPosition = [relPortX + this.position.x, relPortY + this.position.y];
 
             const possibleTargetPorts = ports[`${targetPortDirection}Ports`];
             let targetPortData;
@@ -154,7 +189,9 @@ export const snapConnector = {
                 targetPortData = { isPlaceHolderPort: true };
             }
 
-            // position connector end
+            // Position connector's end. A move event will provide an `onSnapCallback`
+            // which will determine whether the snapping can happen for the given target
+            // for placeholder snaps it will also return the data required to add the port
             const { didSnap, createPortFromPlaceholder } = e.detail.onSnapCallback({
                 targetPort: targetPortData,
                 portGroups: this.portGroups,
@@ -165,9 +202,10 @@ export const snapConnector = {
                 // set the target port's side and index
                 // for performance: only replace observed object if targeted port changes
                 this.targetPort = {
-                    side: targetPortDirection, // TODO: this is in/out instead of 'input'/'output' that is used by ports
+                    side: targetPortDirection,
                     index: snapPortIndex
                 };
+                // add data to targetPort if we need to create that port before we connect to it
                 if (createPortFromPlaceholder) {
                     this.targetPort.isPlaceHolderPort = true;
                     this.targetPort.typeId = createPortFromPlaceholder.typeId;
@@ -216,6 +254,38 @@ export const snapConnector = {
             } else {
                 e.preventDefault();
             }
+        },
+        isOutsideConnectorHoverRegion(x, y, targetPortDirection) {
+            const upperBound = -20;
+
+            if (
+                y < upperBound ||
+                (targetPortDirection === 'in' && x > this.$shapes.nodeSize) ||
+                (targetPortDirection === 'out' && x < 0)
+            ) {
+                return true;
+            }
+
+            return false;
         }
+    },
+
+    render() {
+        return this.$scopedSlots.default({
+            targetPort: this.targetPort,
+            connectorHover: this.connectorHover,
+            connectionForbidden: this.connectionForbidden,
+            isConnectionSource: this.isConnectionSource,
+
+            on: {
+                onConnectorStart: this.onConnectorStart,
+                onConnectorEnd: this.onConnectorEnd,
+                onConnectorEnter: this.onConnectorEnter,
+                onConnectorLeave: this.onConnectorLeave,
+                onConnectorMove: this.onConnectorMove,
+                onConnectorDrop: this.onConnectorDrop
+            }
+        });
     }
 };
+</script>

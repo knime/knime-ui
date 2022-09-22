@@ -6,6 +6,7 @@ import { mapActions, mapState, mapGetters } from 'vuex';
 
 import NodePorts from '@/components/workflow/ports/NodePorts.vue';
 import NodeAnnotation from '@/components/workflow/annotations/NodeAnnotation.vue';
+import ConnectorSnappingProvider from '@/components/workflow/connectors/ConnectorSnappingProvider.vue';
 
 import NodeTorso from './torso/NodeTorso.vue';
 import NodeDecorators from './decorators/NodeDecorators.vue';
@@ -14,7 +15,6 @@ import NodeName from './name/NodeName.vue';
 import NodeActionBar from './NodeActionBar.vue';
 import NodeState from './NodeState.vue';
 import NodeSelectionPlane from './NodeSelectionPlane.vue';
-import NodeConnectorDetection from './NodeConnectorDetection.vue';
 import NodeHoverSizeProvider from './NodeHoverSizeProvider.vue';
 
 /**
@@ -32,7 +32,7 @@ export default {
         NodePorts,
         NodeSelectionPlane,
         NodeDecorators,
-        NodeConnectorDetection,
+        ConnectorSnappingProvider,
         NodeHoverSizeProvider
     },
     provide() {
@@ -329,7 +329,7 @@ export default {
 </script>
 
 <template>
-  <NodeConnectorDetection
+  <ConnectorSnappingProvider
     :id="id"
     :position="position"
     :port-groups="portGroups"
@@ -469,7 +469,7 @@ export default {
         </g>
       </g>
     </template>
-  </NodeConnectorDetection>
+  </ConnectorSnappingProvider>
 </template>
 
 <style lang="postcss" scoped>

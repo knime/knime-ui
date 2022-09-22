@@ -1,17 +1,18 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { createLocalVue, mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import * as $shapes from '@/style/shapes.mjs';
 import * as $colors from '@/style/colors.mjs';
 
+import NodeConnectorDetection from '@/components/workflow/connectors/ConnectorSnappingProvider.vue';
 import NodePort from '../NodePort.vue';
 import MetaNodePortBar from '../MetaNodePortBar.vue';
 
 describe('MetaNodePortBar.vue', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store;
+    let propsData, mocks, doMount, wrapper, $store;
     const x = 222;
     const y = 123;
     const height = 549;
@@ -45,8 +46,8 @@ describe('MetaNodePortBar.vue', () => {
         });
 
         mocks = { $store, $shapes, $colors };
-        doShallowMount = () => {
-            wrapper = shallowMount(MetaNodePortBar, { propsData, mocks });
+        doMount = () => {
+            wrapper = mount(MetaNodePortBar, { propsData, mocks, stubs: { NodePort: true } });
         };
     });
 
@@ -56,7 +57,7 @@ describe('MetaNodePortBar.vue', () => {
         });
 
         it('renders a bar', () => {
-            doShallowMount();
+            doMount();
 
             // global positioning
             expect(wrapper.find('g').attributes('transform')).toEqual(`translate(${x}, ${y})`);
@@ -94,7 +95,7 @@ describe('MetaNodePortBar.vue', () => {
                 index: 1,
                 type: 'type1'
             }];
-            doShallowMount();
+            doMount();
 
             let ports = wrapper.findAllComponents(NodePort);
             let [port0, port1] = ports.wrappers;
@@ -132,7 +133,7 @@ describe('MetaNodePortBar.vue', () => {
                 index: 1,
                 type: 'type1'
             }];
-            doShallowMount();
+            doMount();
 
             let ports = wrapper.findAllComponents(NodePort);
             let [port0, port1] = ports.wrappers;
@@ -141,7 +142,7 @@ describe('MetaNodePortBar.vue', () => {
             expect(port1.props('targeted')).toBeFalsy();
 
             // set target port 0
-            wrapper.setData({
+            wrapper.findComponent(NodeConnectorDetection).setData({
                 targetPort: {
                     index: 0
                 }
@@ -151,7 +152,7 @@ describe('MetaNodePortBar.vue', () => {
             expect(port1.props('targeted')).toBeFalsy();
 
             // set target port 1
-            wrapper.setData({
+            wrapper.findComponent(NodeConnectorDetection).setData({
                 targetPort: {
                     index: 1
                 }

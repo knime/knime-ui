@@ -9,6 +9,7 @@ import { mockVuexStore } from '@/test/test-utils';
 import NodeAnnotation from '@/components/workflow/annotations/NodeAnnotation.vue';
 import NodePorts from '@/components/workflow/ports/NodePorts.vue';
 import NodePort from '@/components/workflow/ports/NodePort.vue';
+import ConnectorSnappingProvider from '@/components/workflow/connectors/ConnectorSnappingProvider.vue';
 
 import NodeTorso from '../torso/NodeTorso.vue';
 import NodeName from '../name/NodeName.vue';
@@ -16,7 +17,6 @@ import NodeDecorators from '../decorators/NodeDecorators.vue';
 
 import NodeActionBar from '../NodeActionBar.vue';
 import NodeState from '../NodeState.vue';
-import NodeConnectorDetection from '../NodeConnectorDetection.vue';
 import NodeSelectionPlane from '../NodeSelectionPlane.vue';
 import Node from '../Node.vue';
 
@@ -594,15 +594,15 @@ describe('Node', () => {
             doMount();
         });
 
-        it('gets portPositions from NodePorts.vue and passes them to NodeConnectorDetection.vue', async () => {
+        it('gets portPositions from NodePorts.vue and passes them to ConnectorSnappingProvider.vue', async () => {
             const mockPortPositions = { in: ['test'], out: ['mock'] };
 
             wrapper.findComponent(NodePorts).vm.$emit('update-port-positions', mockPortPositions);
 
             await Vue.nextTick();
 
-            const nodeConnectorDetection = wrapper.findComponent(NodeConnectorDetection);
-            expect(nodeConnectorDetection.props('portPositions')).toEqual(mockPortPositions);
+            const connectorSnappingProvider = wrapper.findComponent(ConnectorSnappingProvider);
+            expect(connectorSnappingProvider.props('portPositions')).toEqual(mockPortPositions);
         });
 
         it('forwards connector hover state to children', async () => {
@@ -715,7 +715,7 @@ describe('Node', () => {
         });
 
         describe('marks illegal connector drop target', () => {
-            const getNodeConnectorDetectionStub = ({
+            const getConnectorSnappingProviderStub = ({
                 connectorHover = false,
                 targetPort = null,
                 connectionForbidden = false,
@@ -731,7 +731,7 @@ describe('Node', () => {
                 };
 
                 return {
-                    NodeConnectorDetection: {
+                    ConnectorSnappingProvider: {
                         render() {
                             return this.$scopedSlots.default({
                                 targetPort,
@@ -751,8 +751,7 @@ describe('Node', () => {
             });
 
             test('illegal', async () => {
-                doMount(getNodeConnectorDetectionStub({ connectionForbidden: true }));
-                
+                doMount(getConnectorSnappingProviderStub({ connectionForbidden: true }));
                 
                 await Vue.nextTick();
 
@@ -760,7 +759,7 @@ describe('Node', () => {
             });
 
             test('illegal but connection source', async () => {
-                doMount(getNodeConnectorDetectionStub({ connectionForbidden: true, isConnectionSource: true }));
+                doMount(getConnectorSnappingProviderStub({ connectionForbidden: true, isConnectionSource: true }));
 
                 await Vue.nextTick();
 

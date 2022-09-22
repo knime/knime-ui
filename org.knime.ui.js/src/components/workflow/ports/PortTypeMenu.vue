@@ -9,6 +9,7 @@ import portIcon from '@/components/common/PortIconRenderer';
 import SearchBar from '@/components/common/SearchBar.vue';
 
 const isPortGroupWithSinglePort = (portGroups, groupName) => portGroups[groupName].supportedPortTypeIds.length === 1;
+const portNameSizeThreshold = 20;
 
 export default {
     components: {
@@ -100,7 +101,8 @@ export default {
             const menuItems = this.searchResults.map(({ typeId, name }) => ({
                 port: { typeId },
                 text: name,
-                icon: portIcon({ typeId })
+                icon: portIcon({ typeId }),
+                title: name.length > portNameSizeThreshold ? name : null
             }));
 
             return menuItems;
@@ -232,9 +234,7 @@ export default {
 <style lang="postcss" scoped>
 
 .header {
-  font-family: "Roboto Condensed", sans-serif;
-  font-weight: 500;
-  font-size: 14px;
+  font-size: 13px;
   margin-top: -7px;
   backdrop-filter: blur(2px);
   pointer-events: none;
@@ -280,21 +280,22 @@ export default {
 }
 
 .scroll-container {
+  overflow-y: scroll;
   overflow-x: hidden;
   text-align: left;
   height: 100%;
-  max-height: 170px;
+  max-height: 160px;
 }
 
 .placeholder {
   font-style: italic;
   text-align: center;
   padding: 6px 6px;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .search-bar {
-  font-size: 14px;
+  font-size: 13px;
   border: none;
   border-bottom: 1px solid var(--knime-stone-gray);
 
@@ -322,12 +323,21 @@ export default {
   margin: 0;
 
   & >>> .label {
-    font-size: 14px;
+    font-size: 13px;
+    max-width: 160px;
+
+    & .text {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      font-weight: 400;
+    }
   }
 
   & >>> svg { /* stylelint-disable-line no-descending-specificity */
-    height: 14px !important;
-    width: 14px !important;
+    height: 11px !important;
+    width: 11px !important;
+    margin-top: 2px;
   }
 
   & >>> svg * {

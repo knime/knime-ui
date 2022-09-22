@@ -194,22 +194,26 @@ describe('PortTypeMenu.vue', () => {
                         {
                             icon: expect.anything(),
                             port: { typeId: 'suggested-1' },
-                            text: 'Suggested 1'
+                            text: 'Suggested 1',
+                            title: null
                         },
                         {
                             icon: expect.anything(),
                             port: { typeId: 'suggested-2' },
-                            text: 'Suggested 2'
+                            text: 'Suggested 2',
+                            title: null
                         },
                         {
                             icon: expect.anything(),
                             port: { typeId: 'flowVariable' },
-                            text: 'Flow Variable'
+                            text: 'Flow Variable',
+                            title: null
                         },
                         {
                             icon: expect.anything(),
                             port: { typeId: 'table' },
-                            text: 'Table'
+                            text: 'Table',
+                            title: null
                         }
                     ]);
                 });
@@ -223,7 +227,8 @@ describe('PortTypeMenu.vue', () => {
                         {
                             icon: expect.anything(),
                             port: { typeId: 'flowVariable' },
-                            text: 'Flow Variable'
+                            text: 'Flow Variable',
+                            title: null
                         }
                     ]);
                 });
@@ -265,12 +270,14 @@ describe('PortTypeMenu.vue', () => {
                         {
                             icon: expect.anything(),
                             port: { typeId: 'flowVariable' },
-                            text: 'Flow Variable'
+                            text: 'Flow Variable',
+                            title: null
                         },
                         {
                             icon: expect.anything(),
                             port: { typeId: 'table' },
-                            text: 'Table'
+                            text: 'Table',
+                            title: null
                         }
                     ]);
                 });
@@ -291,12 +298,14 @@ describe('PortTypeMenu.vue', () => {
                         {
                             icon: expect.anything(),
                             port: { typeId: 'flowVariable' },
-                            text: 'Flow Variable'
+                            text: 'Flow Variable',
+                            title: null
                         },
                         {
                             icon: expect.anything(),
                             port: { typeId: 'table' },
-                            text: 'Table'
+                            text: 'Table',
+                            title: null
                         }
                     ]);
                 });
@@ -386,6 +395,16 @@ describe('PortTypeMenu.vue', () => {
                 expect(wrapper.findComponent(MenuItems).attributes('aria-label')).toBe('Port Type Menu');
                 expect(wrapper.findComponent(MenuItems).classes()).toContain('search-results');
             });
+        });
+
+        it('should add title for ports with long names', () => {
+            const longName = 'A port that has an extremely long and verbose name which the user likely will not see';
+            storeConfig.application.state.availablePortTypes.long = {
+                name: longName,
+                color: 'black'
+            };
+            doMount();
+            expect(wrapper.find(`li[title="${longName}"]`).exists()).toBe(true);
         });
     });
 });

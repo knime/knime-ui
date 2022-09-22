@@ -383,8 +383,8 @@ describe('NodePort', () => {
                 let rootWrapper = createWrapper(wrapper.vm.$root);
                 expect(rootWrapper.emitted('connector-start')).toStrictEqual([
                     [{
-                        compatibleNodes: [],
-                        nodeId: 'node:1',
+                        validConnectionTargets: [],
+                        startNodeId: 'node:1',
                         startPort: propsData.port
                     }]
                 ]);
