@@ -1,13 +1,14 @@
 <script>
-import { portBar, snapConnector } from '@/mixins';
+import { portBar } from '@/mixins';
+import NodeConnectorDetection from '@/components/workflow/connectors/ConnectorSnappingProvider.vue';
 import NodePort from './NodePort.vue';
 
 /**
  * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
  */
 export default {
-    components: { NodePort },
-    mixins: [portBar, snapConnector],
+    components: { NodePort, NodeConnectorDetection },
+    mixins: [portBar],
     provide() {
         return {
             // Provide position as anchorPoint for tooltips
@@ -53,22 +54,25 @@ export default {
         portDirection() {
             return this.type === 'out' ? 'in' : 'out';
         },
-        // horizontal center of ports
-        portPositionX() {
-            let delta = this.$shapes.portSize / 2;
-            return this.type === 'out' ? -delta : delta;
-        },
+        
         portPositions() {
+            const delta = this.$shapes.portSize / 2;
+            // horizontal center of ports
+            const positionX = this.type === 'out' ? -delta : delta;
+
             // x-coordinate is absolute
             // y-coordinate is relative to PortBar
-            // format as required by snapConnector mixin
+            const mappedPorts = this.ports.map(port => [
+                positionX,
+                this.portBarItemYPos(port.index, this.ports)
+            ]);
+            
             return {
-                [this.portDirection]: this.ports.map(port => [
-                    this.portPositionX,
-                    this.portBarItemYPos(port.index, this.ports)
-                ])
+                in: this.portDirection === 'in' ? mappedPorts : [],
+                out: this.portDirection === 'out' ? mappedPorts : []
             };
         },
+
         barPosition() {
             return this.type === 'out' ? 0 : -this.$shapes.metaNodeBarWidth;
         }
@@ -77,36 +81,61 @@ export default {
 </script>
 
 <template>
-  <g
-    :transform="`translate(${position.x}, ${position.y})`"
-    @connector-enter.stop="onConnectorEnter"
-    @connector-leave.stop="onConnectorLeave"
-    @connector-move.stop="onConnectorMove"
-    @connector-drop.stop="onConnectorDrop"
+  <NodeConnectorDetection
+    :id="containerId"
+    :disable-valid-target-check="true"
+    :position="position"
+    :port-positions="portPositions"
   >
-    <rect
-      class="hover-area"
-      :width="$shapes.metaNodeBarWidth + $shapes.metaNodeBarHorizontalPadding * 2"
-      :height="portBarHeight"
-      :x="barPosition - $shapes.metaNodeBarHorizontalPadding"
-    />
-    <rect
-      class="port-bar"
-      :width="$shapes.metaNodeBarWidth"
-      :height="portBarHeight"
-      :x="barPosition"
-      :fill="$colors.named.Yellow"
-    />
-    <NodePort
-      v-for="port of ports"
-      :key="port.index"
-      :relative-position="portPositions[portDirection][port.index]"
-      :port="port"
-      :direction="portDirection"
-      :node-id="containerId"
-      :targeted="targetPort && targetPort.index === port.index"
-    />
-  </g>
+    <template
+      #default="{
+        targetPort,
+        on: {
+          onConnectorEnter,
+          onConnectorLeave,
+          onConnectorMove,
+          onConnectorDrop
+        }
+      }"
+    >
+      <g
+        :transform="`translate(${position.x}, ${position.y})`"
+        @connector-enter.stop="onConnectorEnter"
+        @connector-leave.stop="onConnectorLeave"
+        @connector-move.stop="onConnectorMove(
+          $event,
+          {
+            inPorts: portDirection === 'in' ? ports : [],
+            outPorts: portDirection === 'out' ? ports : [],
+          }
+        )"
+        @connector-drop.stop="onConnectorDrop"
+      >
+        <rect
+          class="hover-area"
+          :width="$shapes.metaNodeBarWidth + $shapes.metaNodeBarHorizontalPadding * 2"
+          :height="portBarHeight"
+          :x="barPosition - $shapes.metaNodeBarHorizontalPadding"
+        />
+        <rect
+          class="port-bar"
+          :width="$shapes.metaNodeBarWidth"
+          :height="portBarHeight"
+          :x="barPosition"
+          :fill="$colors.named.Yellow"
+        />
+        <NodePort
+          v-for="port of ports"
+          :key="port.index"
+          :relative-position="portPositions[portDirection][port.index]"
+          :port="port"
+          :direction="portDirection"
+          :node-id="containerId"
+          :targeted="targetPort && targetPort.index === port.index"
+        />
+      </g>
+    </template>
+  </NodeConnectorDetection>
 </template>
 
 <style lang="postcss" scoped>
