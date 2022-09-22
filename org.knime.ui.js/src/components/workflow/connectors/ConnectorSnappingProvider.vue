@@ -212,9 +212,7 @@ export default {
                 };
                 // add data to targetPort if we need to create that port before we connect to it
                 if (createPortFromPlaceholder) {
-                    this.targetPort.isPlaceHolderPort = true;
-                    this.targetPort.typeId = createPortFromPlaceholder.typeId;
-                    this.targetPort.portGroup = createPortFromPlaceholder.portGroup;
+                    this.targetPort = { ...this.targetPort, ...createPortFromPlaceholder, isPlaceHolderPort: true };
                 }
             }
         },
@@ -249,11 +247,9 @@ export default {
             }
 
             if (e.detail.isCompatible) {
-                // create the port if this was a placeholder port
+                // create the port if the targetPort is marked as a placeholder port
                 if (this.targetPort.isPlaceHolderPort) {
                     this.addPort(this.targetPort);
-                    // TODO: set this.targetPort.index to the newly added index - its currently just based on the
-                    //       hope that the backend already finished to add the port (and it has the index+1)
                 }
                 this.connectNodes(this.createConnectorObject(e.detail));
             } else {
