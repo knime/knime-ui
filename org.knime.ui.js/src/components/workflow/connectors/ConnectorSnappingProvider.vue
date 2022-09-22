@@ -45,6 +45,11 @@ export default {
             type: Object,
             required: true,
             validator: value => Array.isArray(value.in) && Array.isArray(value.out)
+        },
+
+        portGroups: {
+            type: Object,
+            default: null
         }
     },
 
@@ -194,7 +199,7 @@ export default {
             // for placeholder snaps it will also return the data required to add the port
             const { didSnap, createPortFromPlaceholder } = e.detail.onSnapCallback({
                 targetPort: targetPortData,
-                portGroups: this.portGroups,
+                targetPortGroups: this.portGroups,
                 snapPosition: absolutePortPosition
             });
 

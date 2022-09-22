@@ -14,7 +14,6 @@ export const addPortPlaceholderPath = (() => {
 
 export default {
     components: {
-        NodePort,
         Port
     },
     inject: ['anchorPoint'],

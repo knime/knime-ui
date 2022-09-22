@@ -59,11 +59,11 @@ const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {
 const checkCompatiblePortCanBeAdded = ({
     fromPort,
     availablePortTypes,
-    portGroups
+    targetPortGroups
 }) => {
     let suggestedTypeId;
     // TODO: NXT-1242 let the user choose the portGroup
-    let selectedPortGroup = portGroups?.[0];
+    let selectedPortGroup = targetPortGroups && Object.values(targetPortGroups)[0];
     let addablePortTypes = selectedPortGroup ? selectedPortGroup.supportedPortTypeIds : Object.keys(availablePortTypes);
 
     if (addablePortTypes.includes(fromPort.typeId)) {
@@ -272,14 +272,14 @@ export default {
                     x: absoluteX,
                     y: absoluteY,
                     targetPortDirection,
-                    onSnapCallback: ({ snapPosition, targetPort, portGroups }) => {
+                    onSnapCallback: ({ snapPosition, targetPort, targetPortGroups }) => {
                         const [x, y] = snapPosition;
 
                         let result = targetPort.isPlaceHolderPort
                             ? checkCompatiblePortCanBeAdded({
                                 fromPort: this.port,
                                 availablePortTypes: this.availablePortTypes,
-                                portGroups
+                                targetPortGroups
                             })
                             : checkCompatibleConnectionAndPort({
                                 fromPort: this.port,
