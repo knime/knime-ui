@@ -1,6 +1,4 @@
 <script>
-// import NodeConnectorDetection from '@/components/workflow/ports/NodeConnectorDetection.vue';
-import NodePort from '@/components/workflow/ports/NodePort.vue';
 import Port from '@/components/common/Port.vue';
 
 export const addPortPlaceholderPath = (() => {

@@ -151,7 +151,7 @@ export default {
             handler(portPositions) {
                 this.$emit('update-port-positions', portPositions);
             }
-        },
+        }
     },
     methods: {
         ...mapActions('workflow', ['addNodePort', 'removeNodePort']),
