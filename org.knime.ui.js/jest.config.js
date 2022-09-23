@@ -24,6 +24,7 @@ module.exports = {
     ],
     reporters: ['default', ['jest-junit', { outputDirectory: './coverage', reportTestSuiteErrors: true }]],
     coverageReporters: ['lcov', 'text'],
+    coverageProvider: 'v8',
     // keep in sync with sonar-project.properties!
     collectCoverageFrom: [
         '<rootDir>/**/*.{js,vue}',
@@ -41,7 +42,9 @@ module.exports = {
         '^<rootDir>/(coverage|dist|target|node_modules|bin|webapps-common|knime-ui-extension-service|.history)/'
     ],
     testEnvironment: 'jsdom',
-    testURL: 'http://test.example/',
+    testEnvironmentOptions: {
+        url: 'http://test.example/'
+    },
     testMatch: [
         '<rootDir>/**/__tests__/*.test.js'
     ],

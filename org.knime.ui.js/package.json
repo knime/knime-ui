@@ -28,8 +28,6 @@
     "@fontsource/roboto-mono": "4.5.3",
     "consola": "2.15.3",
     "core-js": "^3.25.1",
-    "focus-trap": "6.0.1",
-    "focus-trap-vue": "0.0.6",
     "fuse.js": "6.5.3",
     "gsap": "3.8.0",
     "knime-ui-extension-service": "file:knime-ui-extension-service",
@@ -43,17 +41,15 @@
     "webapps-common": "file:webapps-common"
   },
   "devDependencies": {
-    "@babel/core": "7.12.16",
     "@knime/eslint-config": "^7.0.1",
-    "@types/jest": "27.5.2",
+    "@types/jest": "^28.1.8",
     "@vue/cli-plugin-babel": "5.0.8",
     "@vue/test-utils": "1.2.2",
-    "@vue/vue2-jest": "27.0.0",
-    "babel-core": "^7.0.0-bridge.0",
-    "babel-jest": "27.5.1",
+    "@vue/vue2-jest": "^28.1.0",
     "eslint": "7.32.0",
     "file-loader": "^6.2.0",
-    "jest": "27.5.1",
+    "jest": "^28.1.3",
+    "jest-environment-jsdom": "^29.0.3",
     "jest-junit": "14.0.0",
     "jest-transform-stub": "2.0.0",
     "jest-useragent-mock": "0.1.1",
@@ -62,7 +58,6 @@
     "postcss-import": "14.1.0",
     "postcss-preset-env": "7.8.1",
     "postcss-url": "10.1.3",
-    "stylelint": "13.13.1",
     "stylelint-config-standard": "20.0.0",
     "url-loader": "^4.1.1",
     "vite": "^3.1.0",
@@ -71,11 +66,10 @@
     "vue-template-compiler": "2.6.14"
   },
   "engines": {
-    "node": "14.x",
-    "npm": "6.x"
+    "node": "18.x"
   },
   "private": true,
   "volta": {
-    "node": "14.20.0"
+    "node": "18.8.0"
   }
 }
