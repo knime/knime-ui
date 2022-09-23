@@ -1,13 +1,13 @@
 <script>
 import { portBar } from '@/mixins';
-import NodeConnectorDetection from '@/components/workflow/connectors/ConnectorSnappingProvider.vue';
+import ConnectorSnappingProvider from '@/components/workflow/connectors/ConnectorSnappingProvider.vue';
 import NodePort from './NodePort.vue';
 
 /**
  * A vertical bar holding ports. This is displayed in a metanode workflow to show the metanode's input / output ports.
  */
 export default {
-    components: { NodePort, NodeConnectorDetection },
+    components: { NodePort, ConnectorSnappingProvider },
     mixins: [portBar],
     provide() {
         return {
@@ -81,7 +81,7 @@ export default {
 </script>
 
 <template>
-  <NodeConnectorDetection
+  <ConnectorSnappingProvider
     :id="containerId"
     :disable-valid-target-check="true"
     :position="position"
@@ -135,7 +135,7 @@ export default {
         />
       </g>
     </template>
-  </NodeConnectorDetection>
+  </ConnectorSnappingProvider>
 </template>
 
 <style lang="postcss" scoped>
