@@ -59,28 +59,49 @@ const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {
 const checkCompatiblePortCanBeAdded = ({
     fromPort,
     availablePortTypes,
-    targetPortGroups
+    targetPortGroups,
+    targetPortDirection
 }) => {
-    let suggestedTypeId;
-    // TODO: NXT-1242 let the user choose the portGroup
-    let selectedPortGroup = targetPortGroups && Object.values(targetPortGroups)[0];
-    let addablePortTypes = selectedPortGroup ? selectedPortGroup.supportedPortTypeIds : Object.keys(availablePortTypes);
+    let suggestedTypeId,
+        portGroup;
 
-    if (addablePortTypes.includes(fromPort.typeId)) {
+    const portGroupEntries = Object.entries(targetPortGroups);
+    const portGroupsForTargetDirection = targetPortDirection === 'in'
+        ? portGroupEntries.filter(([_, portGroup]) => portGroup.canAddInPort)
+        : portGroupEntries.filter(([_, portGroup]) => portGroup.canAddOutPort);
+
+    const addablePortTypesGrouped = targetPortGroups
+        ? portGroupsForTargetDirection.map(([groupName, portGroup]) => [groupName, portGroup.supportedPortTypeIds])
+        : [null, Object.keys(availablePortTypes)];
+
+    const directMatches = addablePortTypesGrouped.filter(
+        ([_, supportedTypeIds]) => supportedTypeIds.includes(fromPort.typeId)
+    );
+
+    // just use the first direct match
+    // TODO: NXT-1242 let the user choose the portGroup
+    if (directMatches.length > 0) {
         suggestedTypeId = fromPort.typeId;
+        [[portGroup]] = directMatches;
     } else {
-        suggestedTypeId = addablePortTypes.find(typeId => checkPortCompatibility({
-            fromPort,
-            toPort: { typeId },
-            availablePortTypes
-        }));
+        const compatibleMatches = addablePortTypesGrouped.map(
+            ([group, supportedTypeIds]) => [group, supportedTypeIds.filter(typeId => checkPortCompatibility({
+                fromPort,
+                toPort: { typeId },
+                availablePortTypes
+            }))]
+        );
+        // TODO: NXT-1242 let the user choose the compatible match if its more then one
+        if (compatibleMatches.length > 0) {
+            [[portGroup, [suggestedTypeId]]] = compatibleMatches;
+        }
     }
 
     return {
         didSnap: Boolean(suggestedTypeId),
         createPortFromPlaceholder: {
             typeId: suggestedTypeId,
-            portGroup: selectedPortGroup
+            portGroup
         }
     };
 };
