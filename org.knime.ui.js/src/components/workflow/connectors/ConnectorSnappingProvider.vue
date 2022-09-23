@@ -233,15 +233,11 @@ export default {
         isOutsideConnectorHoverRegion(x, y, targetPortDirection) {
             const upperBound = -20;
 
-            if (
+            return (
                 y < upperBound ||
                 (targetPortDirection === 'in' && x > this.$shapes.nodeSize) ||
                 (targetPortDirection === 'out' && x < 0)
-            ) {
-                return true;
-            }
-
-            return false;
+            );
         }
     },
 
