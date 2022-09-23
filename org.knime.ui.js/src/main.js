@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 import Vue from 'vue';
 import KnimeUI from './components/KnimeUI.vue';
 import router from './router';

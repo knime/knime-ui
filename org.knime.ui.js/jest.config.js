@@ -1,3 +1,30 @@
+const coverageIgnoreFolders = [
+    'coverage',
+    'dist',
+    'src/test',
+    'target',
+    'node_modules',
+    'bin',
+    'webapps-common',
+    'buildtools',
+    'knime-ui-extension-service',
+    '.history'
+];
+
+const coverageIgnoreFiles = [
+    // jest's coverage provider 'v8' uses node's V8 builtin code coverage
+    // https://jestjs.io/docs/configuration#coverageprovider-string
+    // and this uses different ignore comments than istanbul reporters
+    // https://jestjs.io/docs/configuration#collectcoverage-boolean
+    // However, for some reason these ignore comments don't seem to work properly
+    // so we ignore specific files in here for now
+    'src/main.js',
+    'src/router/index.js',
+    'src/plugins/index.js',
+    'src/plugins/constants.js',
+    'src/store/index.js'
+];
+
 module.exports = {
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
@@ -35,8 +62,8 @@ module.exports = {
         '!.stylelintrc.js'
     ],
     coveragePathIgnorePatterns: [
-        '^<rootDir>/(coverage|dist|test|target|node_modules|bin|webapps-common|' +
-                    'buildtools|knime-ui-extension-service|.history)/'
+        `^<rootDir>/(${coverageIgnoreFolders.join('|')})/`,
+        `<rootDir>/(${coverageIgnoreFiles.join('|')})`
     ],
     watchPathIgnorePatterns: [
         '^<rootDir>/(coverage|dist|target|node_modules|bin|webapps-common|knime-ui-extension-service|.history)/'

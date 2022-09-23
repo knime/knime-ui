@@ -17,7 +17,7 @@
     "audit:ci": "check-audit --production --json > target/audit.json || true",
     "audit:resolve": "resolve-audit --production",
     "test:unit": "jest",
-    "coverage": "npm run test:unit -- --coverage",
+    "coverage": "npm run test:unit -- --coverage --no-cache",
     "coverage:watch": "npm run test:unit -- --coverage --watch",
     "opensourcecredits": "npm run --prefix webapps-common opensourcecredits",
     "generate-css": "node ./buildtools/generateCSS.mjs"
@@ -27,7 +27,6 @@
     "@fontsource/roboto-condensed": "4.5.4",
     "@fontsource/roboto-mono": "4.5.3",
     "consola": "2.15.3",
-    "core-js": "^3.25.1",
     "fuse.js": "6.5.3",
     "gsap": "3.8.0",
     "knime-ui-extension-service": "file:knime-ui-extension-service",
