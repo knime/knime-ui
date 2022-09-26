@@ -99,6 +99,7 @@ export default {
                 })
             };
 
+            // add placeholder positions to enable the drop to a placeholder
             if (this.canAddPort.input) {
                 positions.in.push(placeholderPosition({
                     portCount: this.inPorts.length,
@@ -115,7 +116,8 @@ export default {
             }
             return positions;
         },
-        placeholderPositions() {
+        addPortPlaceholderPositions() {
+            // the last position is the one of the placeholder
             return {
                 input: this.portPositions.in[this.portPositions.in.length - 1],
                 output: this.portPositions.out[this.portPositions.out.length - 1]
@@ -279,7 +281,7 @@ export default {
         :targeted="isPlaceholderPortTargeted(side)"
         :target-port="targetPort"
         :node-id="nodeId"
-        :position="placeholderPositions[side]"
+        :position="addPortPlaceholderPositions[side]"
         :port-groups="portGroups"
         :class="['add-port', {
           'node-hover': hover,
