@@ -75,7 +75,7 @@ const groupAddablePortTypesByPortGroup = ({
     return portGroupsForTargetDirection.map(([groupName, portGroup]) => [groupName, portGroup.supportedPortTypeIds]);
 };
 
-const findPlaceholderPortTypeIdThatCanBeAdded = ({
+const findTypeIdFromPlaceholderPort = ({
     fromPort,
     availablePortTypes,
     targetPortGroups,
@@ -306,7 +306,7 @@ export default {
                         const [x, y] = snapPosition;
 
                         let result = targetPort.isPlaceHolderPort
-                            ? findPlaceholderPortTypeIdThatCanBeAdded({
+                            ? findTypeIdFromPlaceholderPort({
                                 fromPort: this.port,
                                 availablePortTypes: this.availablePortTypes,
                                 targetPortDirection,
