@@ -276,7 +276,6 @@ export default {
         v-if="canAddPort[side]"
         :key="side"
         :side="side"
-        :index="side === 'input' ? inPorts.length : outPorts.length"
         :targeted="isPlaceholderPortTargeted(side)"
         :target-port="targetPort"
         :node-id="nodeId"

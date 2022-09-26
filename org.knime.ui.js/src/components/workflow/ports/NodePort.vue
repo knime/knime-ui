@@ -56,7 +56,26 @@ const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {
     return fromPort.typeId === toPort.typeId;
 };
 
-const checkCompatiblePortCanBeAdded = ({
+// creates an array of [group, supportedPortTypes] entries even for metanodes and components (where the group is null)
+const groupAddablePortTypesByPortGroup = ({
+    targetPortGroups,
+    availablePortTypes,
+    targetPortDirection
+}) => {
+    // use all port types for metanodes and components (we assume them if portGroups is null!)
+    if (!targetPortGroups) {
+        return [[null, Object.keys(availablePortTypes)]]; // end here
+    }
+
+    // unwrap compatible port type by portGroup
+    const portGroupEntries = Object.entries(targetPortGroups);
+    const filterProp = targetPortDirection === 'in' ? 'canAddInPort' : 'canAddOutPort';
+    const portGroupsForTargetDirection = portGroupEntries.filter(([_, portGroup]) => portGroup[filterProp]);
+
+    return portGroupsForTargetDirection.map(([groupName, portGroup]) => [groupName, portGroup.supportedPortTypeIds]);
+};
+
+const findPlaceholderPortTypeIdThatCanBeAdded = ({
     fromPort,
     availablePortTypes,
     targetPortGroups,
@@ -65,32 +84,29 @@ const checkCompatiblePortCanBeAdded = ({
     let suggestedTypeId,
         portGroup;
 
-    const portGroupEntries = Object.entries(targetPortGroups);
-    const portGroupsForTargetDirection = targetPortDirection === 'in'
-        ? portGroupEntries.filter(([_, portGroup]) => portGroup.canAddInPort)
-        : portGroupEntries.filter(([_, portGroup]) => portGroup.canAddOutPort);
+    const addablePortTypesGrouped = groupAddablePortTypesByPortGroup({
+        availablePortTypes,
+        targetPortGroups,
+        targetPortDirection
+    });
 
-    const addablePortTypesGrouped = targetPortGroups
-        ? portGroupsForTargetDirection.map(([groupName, portGroup]) => [groupName, portGroup.supportedPortTypeIds])
-        : [null, Object.keys(availablePortTypes)];
+    const directMatches = addablePortTypesGrouped.filter(([_, supportedIds]) => supportedIds.includes(fromPort.typeId));
 
-    const directMatches = addablePortTypesGrouped.filter(
-        ([_, supportedTypeIds]) => supportedTypeIds.includes(fromPort.typeId)
-    );
-
-    // just use the first direct match
     // TODO: NXT-1242 let the user choose the portGroup
+    // for now just use the first direct match
     if (directMatches.length > 0) {
         suggestedTypeId = fromPort.typeId;
         [[portGroup]] = directMatches;
     } else {
-        const compatibleMatches = addablePortTypesGrouped.map(
-            ([group, supportedTypeIds]) => [group, supportedTypeIds.filter(typeId => checkPortCompatibility({
+        const compatibleMatches = addablePortTypesGrouped.map(([group, supportedTypeIds]) => {
+            const compatibleTypeIds = supportedTypeIds.filter(typeId => checkPortCompatibility({
                 fromPort,
                 toPort: { typeId },
                 availablePortTypes
-            }))]
-        );
+            }));
+            return compatibleTypeIds.length ? [group, compatibleTypeIds] : null;
+        }).filter(Boolean);
+
         // TODO: NXT-1242 let the user choose the compatible match if its more then one
         if (compatibleMatches.length > 0) {
             [[portGroup, [suggestedTypeId]]] = compatibleMatches;
@@ -164,10 +180,6 @@ export default {
         selected: {
             type: Boolean,
             default: false
-        },
-        disableDrag: {
-            type: Boolean,
-            default: false
         }
     },
     data: () => ({
@@ -196,9 +208,6 @@ export default {
             );
         },
         portTemplate() {
-            if (this.port.isPlaceHolderPort) {
-                return {};
-            }
             let template = this.availablePortTypes[this.port.typeId];
             if (!template) {
                 throw new Error(`port template ${this.port.typeId} not available in application`);
@@ -237,7 +246,7 @@ export default {
     methods: {
         /* ======== Drag Connector ======== */
         onPointerDown(e) {
-            if (!this.isWritable || e.button !== 0 || e.shiftKey || e.ctrlKey || this.disableDrag) {
+            if (!this.isWritable || e.button !== 0 || e.shiftKey || e.ctrlKey) {
                 return;
             }
             e.stopPropagation();
@@ -297,9 +306,10 @@ export default {
                         const [x, y] = snapPosition;
 
                         let result = targetPort.isPlaceHolderPort
-                            ? checkCompatiblePortCanBeAdded({
+                            ? findPlaceholderPortTypeIdThatCanBeAdded({
                                 fromPort: this.port,
                                 availablePortTypes: this.availablePortTypes,
+                                targetPortDirection,
                                 targetPortGroups
                             })
                             : checkCompatibleConnectionAndPort({
@@ -465,13 +475,11 @@ export default {
     @lostpointercapture.stop="onLostPointerCapture"
   >
     <!-- regular port shown on the workflow -->
-    <slot>
-      <Port
-        :port="port"
-        :class="{ 'hoverable-port': !selected }"
-        @click.native="onClick"
-      />
-    </slot>
+    <Port
+      :port="port"
+      :class="{ 'hoverable-port': !selected }"
+      @click.native="onClick"
+    />
 
     <portal to="selected-port">
       <NodePortActions

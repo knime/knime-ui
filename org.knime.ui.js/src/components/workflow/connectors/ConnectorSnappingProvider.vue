@@ -217,7 +217,7 @@ export default {
             }
         },
         addPort({ side, typeId, portGroup }) {
-            this.addNodePort({
+            return this.addNodePort({
                 nodeId: this.id,
                 side: side === 'in' ? 'input' : 'output',
                 typeId,
@@ -229,27 +229,32 @@ export default {
                 ? {
                     sourceNode: startNode,
                     sourcePort: startPort,
-                    destNode: this.id || this.containerId, // either node or metanode
+                    destNode: this.id,
                     destPort: this.targetPort.index
                 }
                 : {
-                    sourceNode: this.id || this.containerId, // either node or metanode
+                    sourceNode: this.id,
                     sourcePort: this.targetPort.index,
                     destNode: startNode,
                     destPort: startPort
                 };
         },
-        onConnectorDrop(e) {
+        async onConnectorDrop(e) {
             if (isNaN(this.targetPort?.index)) {
                 // dropped on component, but no port is targeted
                 e.preventDefault();
                 return;
             }
 
+            // A drop event defines whether the target is compatible for connection. Regardless of validity,
+            // a connection target can be compatible or incompatible; e.g.: A port that doesn't create a connection
+            // circle would be "valid" but if it has a different type than the initial port then it's "incompatible"
             if (e.detail.isCompatible) {
                 // create the port if the targetPort is marked as a placeholder port
                 if (this.targetPort.isPlaceHolderPort) {
-                    this.addPort(this.targetPort);
+                    const addPortResult = await this.addPort(this.targetPort);
+                    // TODO: get index from backend (special case: Excel Writer)
+                    consola.log('addPortResult', addPortResult);
                 }
                 this.connectNodes(this.createConnectorObject(e.detail));
             } else {
