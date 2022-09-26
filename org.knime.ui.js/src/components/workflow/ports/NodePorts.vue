@@ -201,7 +201,6 @@ export default {
             return this.targetPort?.side === side && this.targetPort.index === index;
         },
         isPlaceholderPortTargeted(side) {
-            // TODO: reduce the 'input' vs 'in' stuff this is ridiculous! Even for ports is can be different (targetPort vs backend port data!)
             return side === 'input'
                 ? this.isPortTargeted({ index: this.inPorts.length }, 'in')
                 : this.isPortTargeted({ index: this.outPorts.length }, 'out');
