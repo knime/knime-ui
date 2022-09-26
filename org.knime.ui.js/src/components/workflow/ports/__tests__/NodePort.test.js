@@ -119,7 +119,7 @@ describe('NodePort', () => {
         let port = wrapper.findComponent(Port);
         expect(port.exists()).toBe(true);
         expect(port.props('port')).toStrictEqual(propsData.port);
-        
+
         expect(wrapper.findComponent(Connector).exists()).toBe(false);
         expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
 
@@ -133,11 +133,11 @@ describe('NodePort', () => {
 
         it('shows tooltips on table ports', async () => {
             doShallowMount();
-    
+
             wrapper.trigger('mouseenter');
             await Vue.nextTick();
             jest.runAllTimers();
-    
+
             expect(storeConfig.workflow.mutations.setTooltip).toHaveBeenCalledWith(expect.anything(), {
                 anchorPoint: { x: 123, y: 456 },
                 text: 'text',
@@ -150,20 +150,20 @@ describe('NodePort', () => {
                 hoverable: false,
                 gap: 6
             });
-    
+
             wrapper.trigger('mouseleave');
             await Vue.nextTick();
             expect(storeConfig.workflow.mutations.setTooltip).toHaveBeenCalledWith(expect.anything(), null);
         });
-    
+
         it('shows tooltips for non-table ports', async () => {
             propsData.port.typeId = 'flowVariable';
-    
+
             doShallowMount();
             wrapper.trigger('mouseenter');
             jest.runAllTimers();
             await Vue.nextTick();
-    
+
             expect(storeConfig.workflow.mutations.setTooltip).toHaveBeenCalledWith(expect.anything(), {
                 anchorPoint: { x: 123, y: 456 },
                 text: 'text',
@@ -550,14 +550,14 @@ describe('NodePort', () => {
                     };
                     startDragging([0, 0]);
                     await wrapper.setProps({ port: { ...propsData.port, typeId: sourceTypeId } });
-    
+
                     let hitTarget = document.createElement('div');
                     hitTarget.addEventListener('connector-move', (e) => {
                         e.detail.onSnapCallback({ snapPosition: [-1, -1], targetPort });
                     });
-    
+
                     dragAboveTarget(hitTarget, [0, 0]);
-    
+
                     expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([0, 0]);
                 });
 
@@ -608,7 +608,7 @@ describe('NodePort', () => {
 
                 test('cannot snap to a port with an existing and non-deletable connection', async () => {
                     propsData.direction = 'out';
-                    
+
                     storeConfig.workflow.state.activeWorkflow = {
                         connections: {
                             'mock:connection': {
@@ -616,7 +616,7 @@ describe('NodePort', () => {
                             }
                         }
                     };
-                    
+
                     const port = { ...propsData.port, typeId: 'other', connectedVia: ['mock:connection'] };
 
                     startDragging([0, 0]);
@@ -644,7 +644,7 @@ describe('NodePort', () => {
         test('clicking a port after a connector was drawn doesnt emit to parent', async () => {
             startDragging();
             await wrapper.findComponent(Port).trigger('click');
-            
+
             expect(wrapper.emitted('click')).toBeFalsy();
         });
 
@@ -657,10 +657,8 @@ describe('NodePort', () => {
                 dropOnTarget();
 
                 expect(hitTarget._connectorDropEvent.detail).toEqual(expect.objectContaining({
-                    destNode: 'node:1',
-                    destPort: 0,
-                    sourceNode: undefined,
-                    sourcePort: undefined
+                    startNode: 'node:1',
+                    startPort: 0
                 }));
 
                 let rootWrapper = createWrapper(wrapper.vm.$root);
@@ -682,10 +680,8 @@ describe('NodePort', () => {
                 dropOnTarget();
 
                 expect(hitTarget._connectorDropEvent.detail).toEqual(expect.objectContaining({
-                    sourceNode: 'node:1',
-                    sourcePort: 0,
-                    destNode: undefined,
-                    destPort: undefined
+                    startNode: 'node:1',
+                    startPort: 0
                 }));
 
                 let rootWrapper = createWrapper(wrapper.vm.$root);
@@ -753,7 +749,7 @@ describe('NodePort', () => {
         test('closing PortActionMenu leads to deselection', () => {
             doShallowMount();
 
-        
+
             expect(wrapper.emitted('deselect')).toBeFalsy();
             wrapper.findComponent(NodePortActions).vm.$emit('close');
 
@@ -764,7 +760,7 @@ describe('NodePort', () => {
             doShallowMount();
 
             expect(wrapper.emitted('click')).toBeFalsy();
-            
+
             wrapper.findComponent(Port).trigger('click');
             expect(wrapper.emitted('click')).toBeTruthy();
         });
@@ -774,7 +770,7 @@ describe('NodePort', () => {
 
             expect(wrapper.findComponent(Port).classes()).not.toContain('hoverable-port');
         });
-        
+
         it('should dispatch an action to remove port when the delete action button is clicked', () => {
             doShallowMount();
 
