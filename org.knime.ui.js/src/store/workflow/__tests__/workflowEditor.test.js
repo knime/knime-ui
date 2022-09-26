@@ -399,7 +399,7 @@ describe('workflow store: Editing', () => {
             };
 
             it('collapses nodes to a container', async () => {
-                let collapseToContainer = jest.fn();
+                let collapseToContainer = jest.fn(() => ({ newNodeId: '' }));
                 let apiMocks = { collapseToContainer };
                 await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectAllNodes');
@@ -490,7 +490,7 @@ describe('workflow store: Editing', () => {
             };
 
             it('expands a container node', async () => {
-                let expandContainerNode = jest.fn();
+                let expandContainerNode = jest.fn(() => ({ expandedNodeIds: [] }));
                 let apiMocks = { expandContainerNode };
                 await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectNode', 'foo');

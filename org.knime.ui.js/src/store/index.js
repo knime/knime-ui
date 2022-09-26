@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 import Vuex from 'vuex';
 
 import * as application from './application';

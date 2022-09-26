@@ -14,7 +14,10 @@ export default ({ mode }) => {
         plugins: [vue(), createSvgPlugin()],
     
         server: {
-            port: process.env.VITE_APP_PORT || 3000
+            port: process.env.VITE_APP_PORT || 3000,
+            watch: {
+                ignored: ['**/coverage/**']
+            }
         },
     
         resolve: {

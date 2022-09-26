@@ -1,4 +1,3 @@
-/* istanbul ignore file */
 import PortalVue from 'portal-vue';
 
 import shortcuts from './shortcuts';
