@@ -6,7 +6,8 @@ import Button from 'webapps-common/ui/components/Button.vue';
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
 import PlayIcon from '@/assets/execute.svg';
 
-import { runNodeValidationChecks, runPortValidationChecks } from './output-validator';
+import { runNodeValidationChecks,
+    runPortValidationChecks } from './output-validator';
 import PortTabs from './PortTabs.vue';
 import PortViewLoader from './PortViewLoader.vue';
 
@@ -29,14 +30,19 @@ export default {
         };
     },
     computed: {
-        ...mapState('application', { projectId: 'activeProjectId', portTypes: 'availablePortTypes' }),
-        ...mapState('workflow', { workflowId: state => state.activeWorkflow.info.containerId }),
+        ...mapState('application', {
+            projectId: 'activeProjectId',
+            portTypes: 'availablePortTypes'
+        }),
+        ...mapState('workflow', {
+            workflowId: (state) => state.activeWorkflow.info.containerId
+        }),
         ...mapGetters('workflow', { isDragging: 'isDragging' }),
         ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode']),
 
         // ========================== Conditions before loading view ============================
         // The following properties execute from top to bottom
-        
+
         nodeErrors() {
             const { error } = runNodeValidationChecks({
                 selectedNodes: this.selectedNodes,
@@ -46,9 +52,11 @@ export default {
 
             return error;
         },
-        
+
         portErrors() {
-            if (this.nodeErrors) { return true; }
+            if (this.nodeErrors) {
+                return true;
+            }
 
             const { error } = runPortValidationChecks({
                 selectedNode: this.singleSelectedNode,
@@ -59,7 +67,9 @@ export default {
         },
 
         selectedPort() {
-            if (this.nodeErrors) { return null; }
+            if (this.nodeErrors) {
+                return null;
+            }
 
             return this.singleSelectedNode.outPorts[this.selectedPortIndex];
         },
@@ -85,10 +95,12 @@ export default {
         },
 
         showLoader() {
-            return this.portViewerState?.state === 'loading' ||
-                   this.validationErrors?.code === 'NODE_BUSY';
+            return (
+                this.portViewerState?.state === 'loading' ||
+        this.validationErrors?.code === 'NODE_BUSY'
+            );
         },
-        
+
         showExecuteButton() {
             return this.validationErrors?.code === 'NODE_UNEXECUTED';
         }
@@ -110,12 +122,12 @@ export default {
         }
     },
     methods: {
-        // When switching between nodes, best effort is made to ensure that the selected port number remains constant
-        // If another node is selected that doesn't have the previously selected port, (eg. no flow variables)
-        // then a default for that kind of node is used and the previously selected port is overwritten
+    // When switching between nodes, best effort is made to ensure that the selected port number remains constant
+    // If another node is selected that doesn't have the previously selected port, (eg. no flow variables)
+    // then a default for that kind of node is used and the previously selected port is overwritten
         selectPort() {
             let { outPorts, kind: nodeKind } = this.singleSelectedNode;
-  
+
             // check if the currently selected port exists on that node
             if (outPorts[this.selectedPortIndex]) {
                 // keep selected port index;
@@ -132,7 +144,9 @@ export default {
             }
         },
         executeNode() {
-            this.$store.dispatch('workflow/executeNodes', [this.singleSelectedNode.id]);
+            this.$store.dispatch('workflow/executeNodes', [
+                this.singleSelectedNode.id
+            ]);
         }
     }
 };
@@ -147,11 +161,17 @@ export default {
       :node="singleSelectedNode"
       :disabled="Boolean(nodeErrors)"
     />
-    
+
     <!-- Error Message and Placeholder -->
     <div
       v-if="placeholderText"
-      :class="['placeholder', { isViewerLoading: portViewerState && portViewerState.state === 'loading' }]"
+      :class="[
+        'placeholder',
+        {
+          'is-viewer-loading':
+            portViewerState && portViewerState.state === 'loading',
+        },
+      ]"
     >
       <span>
         <ReloadIcon
@@ -171,7 +191,7 @@ export default {
         Execute
       </Button>
     </div>
-    
+
     <!-- Port Viewer -->
     <PortViewLoader
       v-if="!nodeErrors && !portErrors"
@@ -197,16 +217,6 @@ export default {
   to { opacity: 1; }
 }
 
-.output-container {
-  height: 100%;
-  padding: 10px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  contain: strict;
-}
-
 .port-view {
   flex-shrink: 1;
   overflow-y: auto;
@@ -219,7 +229,7 @@ export default {
   justify-content: center;
   align-items: center;
 
-  &.isViewerLoading {
+  & .is-viewer-loading {
     /* Wait for a short amount of time before rendering loading placeholder
        to prevent flickering when the table loads very quickly */
     animation: show 100ms ease-in 150ms;
@@ -241,6 +251,25 @@ export default {
       stroke: var(--knime-masala);
       vertical-align: -6px;
       margin-right: 10px;
+    }
+  }
+}
+
+.output-container {
+  height: 100%;
+  padding: 10px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  contain: strict;
+
+  & >>> .tab-bar {
+    padding-top: 0;
+
+    & span {
+      font-size: 13px;
+      line-height: 61px;
     }
   }
 }

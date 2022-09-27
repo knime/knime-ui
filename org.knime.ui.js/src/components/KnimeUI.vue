@@ -175,12 +175,11 @@ export default {
   --side-bar-width: 40px;
 
   display: grid;
-  grid-template-columns: min-content auto;
-  grid-template-rows: min-content min-content auto;
-  grid-template-areas:
-    "header header"
-    "toolbar toolbar"
-    "sidebar workflow";
+  grid-template:
+    "header header" min-content
+    "toolbar toolbar" min-content
+    "sidebar workflow" auto
+    / min-content auto;
   height: 100vh;
   background: var(--knime-white);
   color: var(--knime-masala);

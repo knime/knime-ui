@@ -8,7 +8,7 @@ import portIcon from '@/components/common/PortIconRenderer';
  * Tab Bar that displays output ports of a given node.
  * Can be used like a form element, since it emits an `input` event
  * */
-export const portIconSize = 12;
+export const portIconSize = 9;
 
 export default {
     components: {
@@ -101,6 +101,7 @@ export default {
 >>> svg,
 >>> svg * {
   pointer-events: none !important;
+  width: 14px;
 }
 
 /* Flow variable icon */

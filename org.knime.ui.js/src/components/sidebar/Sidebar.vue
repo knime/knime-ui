@@ -96,7 +96,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 .sidebar-wrapper {
   display: flex;
   height: 100%;
