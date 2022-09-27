@@ -102,7 +102,7 @@ describe('ConnectorSnappingProvider.vue', () => {
         wrapper.find('#slotted-component').trigger('connector-enter');
         await Vue.nextTick();
     };
-    
+
     const connectorMove = async ({
         wrapper,
         ports = mockPorts,
@@ -114,12 +114,12 @@ describe('ConnectorSnappingProvider.vue', () => {
         }, ports);
         await Vue.nextTick();
     };
-    
+
     const connectorLeave = async ({ wrapper }) => {
         wrapper.find('#slotted-component').trigger('connector-leave');
         await Vue.nextTick();
     };
-    
+
     const connectorEnd = async ({ wrapper }) => {
         wrapper.vm.$root.$emit('connector-end');
         await Vue.nextTick();
@@ -133,12 +133,12 @@ describe('ConnectorSnappingProvider.vue', () => {
         it('should set the connector hover state for valid target', async () => {
             const myId = 'target';
             const wrapper = doMount({ id: myId });
-            
+
             // start connection to a valid target
             await startConnection({ wrapper, startNodeId: 'start', validConnectionTargets: [myId] });
 
             expect(getSlottedStubProp({ wrapper, propName: 'connectorHover' })).toBeFalsy();
-            
+
             // hover state is set when connector enters
             await connectorEnter({ wrapper });
             expect(getSlottedStubProp({ wrapper, propName: 'connectorHover' })).toBe(true);
@@ -152,7 +152,7 @@ describe('ConnectorSnappingProvider.vue', () => {
         it('should ignore connector enter for invalid targets', async () => {
             const myId = 'target';
             const wrapper = doMount({ id: myId });
-            
+
             // start connection to an invalid target
             await startConnection({
                 wrapper,
@@ -172,26 +172,26 @@ describe('ConnectorSnappingProvider.vue', () => {
         it('should not allow connection to self', async () => {
             const myId = 'self';
             const wrapper = doMount({ id: myId });
-    
+
             await startConnection({ wrapper, startNodeId: myId });
 
             expect(getSlottedStubProp({ wrapper, propName: 'connectionForbidden' })).toBe(true);
             expect(getSlottedStubProp({ wrapper, propName: 'isConnectionSource' })).toBe(true);
         });
-    
+
         it('should skip checking for valid targets when the prop is set', async () => {
             const myId = 'my-id';
             const wrapper = doMount({ id: myId, disableValidTargetCheck: true });
-    
+
             await startConnection({ wrapper, startNodeId: 'start', validConnectionTargets: ['other-id'] });
-    
+
             expect(getSlottedStubProp({ wrapper, propName: 'connectionForbidden' })).toBeFalsy();
         });
-    
+
         it('should reset the state when the connector-end event is received', async () => {
             const myId = 'my-id';
             const wrapper = doMount({ id: myId });
-            
+
             await startConnection({ wrapper, startNodeId: 'start', validConnectionTargets: [myId] });
             await connectorEnter({ wrapper });
             await connectorEnd({ wrapper });
@@ -204,7 +204,7 @@ describe('ConnectorSnappingProvider.vue', () => {
     });
 
     describe('Snapping', () => {
-        const onSnapCallback = jest.fn(() => true);
+        const onSnapCallback = jest.fn(() => ({ didSnap: true }));
 
         it('should not snap when no portPositions are given', async () => {
             const wrapper = doMount({ portPositions: { in: [], out: [] } });
@@ -229,7 +229,8 @@ describe('ConnectorSnappingProvider.vue', () => {
             expect(getSlottedStubProp({ wrapper, propName: 'targetPort' })).toStrictEqual({ index: 1, side: 'in' });
             expect(onSnapCallback).toHaveBeenCalledWith({
                 targetPort: mockPorts.inPorts[1],
-                snapPosition: [5, 10]
+                snapPosition: [5, 10],
+                targetPortGroups: null
             });
         });
 
@@ -257,9 +258,9 @@ describe('ConnectorSnappingProvider.vue', () => {
                         in: [[0, 0]],
                         out: [[30, 0]]
                     } });
-    
+
                     await connectorMove({ wrapper, eventDetails: { ...mouseCoords, targetPortDirection } });
-    
+
                     expect(onSnapCallback).not.toHaveBeenCalled();
                     expect(getSlottedStubProp({ wrapper, propName: 'targetPort' })).toBeNull();
                 }
@@ -278,21 +279,22 @@ describe('ConnectorSnappingProvider.vue', () => {
                 const wrapper = doMount({ position, portPositions });
 
                 const [x, y] = portPositions[targetPortDirection][0];
-    
+
                 await connectorMove({
                     wrapper,
                     onSnapCallback,
                     eventDetails: { ...mouseCoords, targetPortDirection }
                 });
-    
+
                 expect(getSlottedStubProp({ wrapper, propName: 'targetPort' })).toStrictEqual({
                     index: 0,
                     side: targetPortDirection
                 });
-                
+
                 expect(onSnapCallback).toHaveBeenCalledWith({
                     snapPosition: [x + position.x, y + position.y],
-                    targetPort: { id: 'port-1' }
+                    targetPort: { id: 'port-1' },
+                    targetPortGroups: null
                 });
             });
 
@@ -303,7 +305,7 @@ describe('ConnectorSnappingProvider.vue', () => {
                 it(`should snap to first ${targetPortDirection}-port`, async () => {
                     const position = { x: 0, y: 0 };
                     const wrapper = doMount({ position, disableHoverBoundaryCheck: true });
-                    
+
                     const expectedIndex = 0;
                     // above first port => port 0
                     await connectorMove({
@@ -316,7 +318,8 @@ describe('ConnectorSnappingProvider.vue', () => {
 
                     expect(onSnapCallback).toHaveBeenCalledWith({
                         snapPosition: [snapX, snapY],
-                        targetPort: { id: 'port-1' }
+                        targetPort: { id: 'port-1' },
+                        targetPortGroups: null
                     });
 
                     expect(getSlottedStubProp({ wrapper, propName: 'targetPort' })).toStrictEqual({
@@ -330,10 +333,11 @@ describe('ConnectorSnappingProvider.vue', () => {
                         eventDetails: { x: -1, y: 0, targetPortDirection },
                         onSnapCallback
                     });
-    
+
                     expect(onSnapCallback).toHaveBeenCalledWith({
                         snapPosition: [snapX, snapY],
-                        targetPort: { id: 'port-1' }
+                        targetPort: { id: 'port-1' },
+                        targetPortGroups: null
                     });
 
                     expect(getSlottedStubProp({ wrapper, propName: 'targetPort' })).toStrictEqual({
@@ -345,7 +349,7 @@ describe('ConnectorSnappingProvider.vue', () => {
                 it(`should snap to second ${targetPortDirection}-port`, async () => {
                     const position = { x: 0, y: 0 };
                     const wrapper = doMount({ position, disableHoverBoundaryCheck: true });
-                    
+
                     const expectedIndex = 1;
                     const [snapX, snapY] = portPositions[targetPortDirection][expectedIndex];
 
@@ -355,27 +359,29 @@ describe('ConnectorSnappingProvider.vue', () => {
                         eventDetails: { x: -1, y: 1, targetPortDirection },
                         onSnapCallback
                     });
-    
+
                     expect(onSnapCallback).toHaveBeenCalledWith({
                         snapPosition: [snapX, snapY],
-                        targetPort: { id: 'port-2' }
+                        targetPort: { id: 'port-2' },
+                        targetPortGroups: null
                     });
 
                     expect(getSlottedStubProp({ wrapper, propName: 'targetPort' })).toStrictEqual({
                         side: targetPortDirection,
                         index: expectedIndex
                     });
-    
+
                     // above / still at second boundary => port 1
                     await connectorMove({
                         wrapper,
                         eventDetails: { x: -1, y: 10, targetPortDirection },
                         onSnapCallback
                     });
-    
+
                     expect(onSnapCallback).toHaveBeenCalledWith({
                         snapPosition: [snapX, snapY],
-                        targetPort: { id: 'port-2' }
+                        targetPort: { id: 'port-2' },
+                        targetPortGroups: null
                     });
                     expect(getSlottedStubProp({ wrapper, propName: 'targetPort' })).toStrictEqual({
                         side: targetPortDirection,
@@ -386,20 +392,21 @@ describe('ConnectorSnappingProvider.vue', () => {
                 it(`should snap to third ${targetPortDirection}-port`, async () => {
                     const position = { x: 0, y: 0 };
                     const wrapper = doMount({ position, disableHoverBoundaryCheck: true });
-                    
+
                     const expectedIndex = 2;
                     const [snapX, snapY] = portPositions[targetPortDirection][expectedIndex];
-    
+
                     // below last boundary => port 2
                     await connectorMove({
                         wrapper,
                         eventDetails: { x: -1, y: 11, targetPortDirection },
                         onSnapCallback
                     });
-    
+
                     expect(onSnapCallback).toHaveBeenCalledWith({
                         snapPosition: [snapX, snapY],
-                        targetPort: { id: 'port-3' }
+                        targetPort: { id: 'port-3' },
+                        targetPortGroups: null
                     });
 
                     expect(getSlottedStubProp({ wrapper, propName: 'targetPort' })).toStrictEqual({
