@@ -5,6 +5,9 @@ import { getPortView, callPortDataService } from '@api';
 import { loadComponentLibrary } from '@/util/loadComponentLibrary';
 import FlowVariablePortView from './FlowVariablePortView.vue';
 
+/**
+ * Dynamically loads a component that will render a Port's output view
+ */
 export default {
     components: {
         FlowVariablePortView
@@ -119,19 +122,6 @@ export default {
             // set initial data and component
             this.initialData = JSON.parse(portViewData.initialData).result;
             this.componentName = portViewData.resourceInfo.id;
-
-            if (!this.isComponentRegistered(this.componentName)) {
-                throw new Error(`Component ${this.componentName} hasn't been loaded properly`);
-            }
-        },
-
-        isComponentRegistered(componentName) {
-            return Boolean(this.$options.components[componentName]);
-        },
-
-        registerComponent(componentName, component) {
-            // register the component locally
-            this.$options.components[componentName] = component;
         },
 
         /*
@@ -143,17 +133,12 @@ export default {
             // TODO: NXT-1217 Remove this unnecessary store getter once the issue in the ticket
             // can be solved in a better way
             const resourceLocation = this.$store.getters['api/uiExtResourceLocation']({ resourceInfo });
-            
-            // check if component library needs to be loaded or if it was already loaded before
-            if (!this.isComponentRegistered(componentName)) {
-                await loadComponentLibrary({ window, resourceLocation, componentName });
-
-                // register the component locally
-                this.registerComponent(componentName, window[componentName]);
-
-                // clean up window object
-                delete window[componentName];
-            }
+        
+            await loadComponentLibrary({
+                window,
+                resourceLocation,
+                componentName
+            });
             
             // create knime service and update provide/inject
             this.initKnimeService(portViewData);

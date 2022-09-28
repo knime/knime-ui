@@ -51,3 +51,66 @@ export const getNodeDescription = async ({ className, settings }) => {
         throw new Error('Could not fetch node description');
     }
 };
+
+/**
+ * Calls the 'getNodeView' endpoint (see API documentation).
+ *
+ * @param {String} projectId
+ * @param {String} workflowId
+ * @param {String} nodeId
+ * @returns {Object}
+ */
+export const getNodeView = async (projectId, workflowId, nodeId) => {
+    try {
+        return await rpc('NodeService.getNodeView', projectId, workflowId, nodeId);
+    } catch (e) {
+        consola.error(e);
+        throw new Error(`Could not fetch node view for node ${nodeId}`);
+    }
+};
+
+/**
+ * Calls the 'updateDataPointSelection' endpoint (see API documentation).
+ */
+export const updateDataPointSelection = async (projectId) => {
+    // TODO
+};
+
+/**
+ * Calls the 'getNodeDialog' endpoint (see API documentation).
+ *
+ * @param {String} projectId
+ * @param {String} workflowId
+ * @param {String} nodeId
+ * @returns {Object}
+ */
+export const getNodeDialog = async (projectId, workflowId, nodeId) => {
+    try {
+        return await rpc('NodeService.getNodeDialog', projectId, workflowId, nodeId);
+    } catch (e) {
+        consola.error(e);
+        throw new Error(`Could not fetch node dialog for node ${nodeId}`);
+    }
+};
+
+/**
+ * Calls the 'callNodeDataService' endpoint (see API documentation).
+ *
+ * @param {String} projectId
+ * @param {String} workflowId
+ * @param {String} nodeId
+ * @param {String} extensionType
+ * @param {String} serviceType
+ * @param {String} request
+ * @returns {String}
+ */
+export const callNodeDataService =
+    async (projectId, workflowId, nodeId, extensionType, serviceType, request) => {
+        try {
+            return await rpc('NodeService.callNodeDataService',
+                projectId, workflowId, nodeId, extensionType, serviceType, request);
+        } catch (e) {
+            consola.error(e);
+            throw new Error(`Could not call node data service for node ${nodeId}`);
+        }
+    };
