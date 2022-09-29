@@ -240,8 +240,8 @@ export default {
                 };
         },
         async onConnectorDrop(e) {
+            // dropped on component, but no port is targeted
             if (isNaN(this.targetPort?.index)) {
-                // dropped on component, but no port is targeted
                 e.preventDefault();
                 return;
             }
@@ -249,17 +249,20 @@ export default {
             // A drop event defines whether the target is compatible for connection. Regardless of validity,
             // a connection target can be compatible or incompatible; e.g.: A port that doesn't create a connection
             // circle would be "valid" but if it has a different type than the initial port then it's "incompatible"
-            if (e.detail.isCompatible) {
-                // create the port if the targetPort is marked as a placeholder port
-                if (this.targetPort.isPlaceHolderPort) {
-                    const addPortResult = await this.addPort(this.targetPort);
-                    // TODO: get index from backend (special case: Excel Writer)
-                    consola.log('addPortResult', addPortResult);
-                }
-                this.connectNodes(this.createConnectorObject(e.detail));
-            } else {
+            if (!e.detail.isCompatible) {
                 e.preventDefault();
+                return; // end here
             }
+
+            // create the port if the targetPort is marked as a placeholder port
+            if (this.targetPort.isPlaceHolderPort) {
+                const { newPortIdx } = await this.addPort(this.targetPort);
+                // update target port index
+                this.targetPort.index = newPortIdx;
+                this.targetPort.isPlaceHolderPort = false;
+            }
+
+            this.connectNodes(this.createConnectorObject(e.detail));
         },
         isOutsideConnectorHoverRegion(x, y, targetPortDirection) {
             const upperBound = -20;

@@ -538,6 +538,45 @@ describe('NodePort', () => {
                 expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
             });
 
+            describe('Snap to placeholder ports', () => {
+                test('table can connect to placeholder port of metanode/component', async () => {
+                    const targetPortGroups = null; // null = metanode or component
+                    const targetPort = { isPlaceHolderPort: true };
+
+                    startDragging([0, 0]);
+                    // start port
+                    await wrapper.setProps({
+                        port: {
+                            ...propsData.port,
+                            typeId: 'table'
+                        }
+                    });
+
+                    let hitTarget = document.createElement('div');
+                    let snapCallbackResult;
+                    hitTarget.addEventListener('connector-move', (e) => {
+                        snapCallbackResult = e.detail.onSnapCallback({
+                            snapPosition: [-1, -1],
+                            targetPortGroups,
+                            targetPort
+                        });
+                    });
+
+                    dragAboveTarget(hitTarget, [0, 0]);
+
+                    expect(snapCallbackResult).toMatchObject({
+                        didSnap: true,
+                        createPortFromPlaceholder: {
+                            portGroup: null,
+                            typeId: 'table'
+                        }
+                    });
+
+                    // absolutePoint should be the snapPosition if it did snap
+                    expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
+                });
+            });
+
             describe('Snap to compatible ports', () => {
                 test.each([
                     ['from TABLE to GENERIC', { sourceTypeId: 'table', targetTypeId: 'generic' }],

@@ -9,6 +9,7 @@ import ConnectorSnappingProvider from '../ConnectorSnappingProvider.vue';
 describe('ConnectorSnappingProvider.vue', () => {
     Event.prototype.preventDefault = jest.fn();
     const connectNodesMock = jest.fn();
+    const addNodePortMock = jest.fn();
     const mockPorts = {
         inPorts: [...Array(3).keys()].map((_, idx) => ({ id: `port-${idx + 1}` })),
         outPorts: [...Array(3).keys()].map((_, idx) => ({ id: `port-${idx + 1}` }))
@@ -18,12 +19,14 @@ describe('ConnectorSnappingProvider.vue', () => {
         in: [
             [0, -5],
             [0, 5],
-            [0, 15]
+            [0, 15],
+            [0, 20] // (+) placeholder
         ],
         out: [
             [30, -5],
             [30, 5],
-            [30, 15]
+            [30, 15],
+            [30, 20] // (+) placeholder
         ]
     };
 
@@ -58,7 +61,8 @@ describe('ConnectorSnappingProvider.vue', () => {
         const $store = mockVuexStore({
             workflow: {
                 actions: {
-                    connectNodes: connectNodesMock
+                    connectNodes: connectNodesMock,
+                    addNodePort: addNodePortMock
                 }
             }
         });
@@ -100,6 +104,11 @@ describe('ConnectorSnappingProvider.vue', () => {
 
     const connectorEnter = async ({ wrapper }) => {
         wrapper.find('#slotted-component').trigger('connector-enter');
+        await Vue.nextTick();
+    };
+
+    const connectorDrop = async ({ wrapper, eventDetails }) => {
+        wrapper.find('#slotted-component').trigger('connector-drop', { detail: eventDetails });
         await Vue.nextTick();
     };
 
@@ -200,6 +209,258 @@ describe('ConnectorSnappingProvider.vue', () => {
             expect(getSlottedStubProp({ wrapper, propName: 'isConnectionSource' })).toBeFalsy();
             expect(getSlottedStubProp({ wrapper, propName: 'targetPort' })).toBeFalsy();
             expect(getSlottedStubProp({ wrapper, propName: 'connectionForbidden' })).toBeFalsy();
+        });
+    });
+
+    describe('Placeholder ports', () => {
+        const onSnapCallback = jest.fn(() => ({
+            didSnap: true,
+            createPortFromPlaceholder: {
+                typeId: 'TYPE_ID',
+                portGroup: null
+            }
+        }));
+
+        const portGroups = {
+            'My Port Group': {
+                canAddInPort: true,
+                canAddOutPort: false,
+                supportedPortTypeIds: ['TYPE_ID']
+            }
+        };
+
+        describe('Input', () => {
+            it('snaps to input placeholder port ', async () => {
+                const wrapper = doMount({ portGroups });
+
+                await connectorMove({
+                    wrapper,
+                    eventDetails: {
+                        x: 0,
+                        y: 24,
+                        targetPortDirection: 'in'
+                    },
+                    onSnapCallback
+                });
+
+                // snaps to the placeholder port
+                expect(onSnapCallback).toHaveBeenCalledWith({
+                    targetPort: { isPlaceHolderPort: true },
+                    snapPosition: [5, 25],
+                    targetPortGroups: portGroups
+                });
+
+                // sets the proper data to target port that enables us to create this port on drop
+                expect(getSlottedStubProp({
+                    wrapper,
+                    propName: 'targetPort'
+                })).toStrictEqual({
+                    index: 3,
+                    isPlaceHolderPort: true,
+                    portGroup: null,
+                    side: 'in',
+                    typeId: 'TYPE_ID'
+                });
+            });
+
+            it('adds input port on drop on a placeholder port ', async () => {
+                const wrapper = doMount({ portGroups });
+
+                await connectorMove({
+                    wrapper,
+                    eventDetails: {
+                        x: 0,
+                        y: 24,
+                        targetPortDirection: 'in'
+                    },
+                    onSnapCallback
+                });
+
+                // sets the proper data to target port that enables us to create this port on drop
+                expect(getSlottedStubProp({
+                    wrapper,
+                    propName: 'targetPort'
+                })).toStrictEqual({
+                    index: 3,
+                    isPlaceHolderPort: true,
+                    portGroup: null,
+                    side: 'in',
+                    typeId: 'TYPE_ID'
+                });
+
+                addNodePortMock.mockReturnValueOnce({ newPortIdx: 3 });
+
+                await connectorDrop({
+                    wrapper,
+                    eventDetails: {
+                        isCompatible: true,
+                        startNode: 'START_NODE_ID',
+                        startPort: 1
+                    }
+                });
+
+                expect(addNodePortMock).toHaveBeenCalledWith(expect.anything(), {
+                    nodeId: 'root',
+                    portGroup: null,
+                    side: 'input',
+                    typeId: 'TYPE_ID'
+                });
+
+                expect(connectNodesMock).toHaveBeenCalledWith(expect.anything(), {
+                    destNode: 'root',
+                    destPort: 3,
+                    sourceNode: 'START_NODE_ID',
+                    sourcePort: 1
+                });
+            });
+        });
+
+        describe('Output', () => {
+            it('snaps to output placeholder port ', async () => {
+                const wrapper = doMount({ portGroups });
+
+                await connectorMove({
+                    wrapper,
+                    eventDetails: {
+                        x: 30,
+                        y: 24,
+                        targetPortDirection: 'out'
+                    },
+                    onSnapCallback
+                });
+
+                // snaps to the placeholder port
+                expect(onSnapCallback).toHaveBeenCalledWith({
+                    targetPort: { isPlaceHolderPort: true },
+                    snapPosition: [35, 25],
+                    targetPortGroups: portGroups
+                });
+
+                // sets the proper data to target port that enables us to create this port on drop
+                expect(getSlottedStubProp({
+                    wrapper,
+                    propName: 'targetPort'
+                })).toStrictEqual({
+                    index: 3,
+                    isPlaceHolderPort: true,
+                    portGroup: null,
+                    side: 'out',
+                    typeId: 'TYPE_ID'
+                });
+            });
+
+            it('adds output port on drop on a placeholder port ', async () => {
+                const wrapper = doMount({ portGroups });
+
+                await connectorMove({
+                    wrapper,
+                    eventDetails: {
+                        x: 30,
+                        y: 24,
+                        targetPortDirection: 'out'
+                    },
+                    onSnapCallback
+                });
+
+                // sets the proper data to target port that enables us to create this port on drop
+                expect(getSlottedStubProp({
+                    wrapper,
+                    propName: 'targetPort'
+                })).toStrictEqual({
+                    index: 3,
+                    isPlaceHolderPort: true,
+                    portGroup: null,
+                    side: 'out',
+                    typeId: 'TYPE_ID'
+                });
+
+                addNodePortMock.mockReturnValueOnce({ newPortIdx: 3 });
+
+                await connectorDrop({
+                    wrapper,
+                    eventDetails: {
+                        isCompatible: true,
+                        startNode: 'START_NODE_ID',
+                        startPort: 1
+                    }
+                });
+
+                expect(addNodePortMock).toHaveBeenCalledWith(expect.anything(), {
+                    nodeId: 'root',
+                    portGroup: null,
+                    side: 'output',
+                    typeId: 'TYPE_ID'
+                });
+
+                expect(connectNodesMock).toHaveBeenCalledWith(expect.anything(), {
+                    destNode: 'START_NODE_ID',
+                    destPort: 1,
+                    sourceNode: 'root',
+                    sourcePort: 3
+                });
+            });
+        });
+
+        describe('Incompatible and incomplete states', () => {
+            beforeEach(() => {
+                addNodePortMock.mockReset();
+                connectNodesMock.mockReset();
+            });
+
+            it('does not create a connection if not snapped to a port', async () => {
+                const wrapper = doMount({ portGroups });
+
+                await connectorDrop({
+                    wrapper,
+                    eventDetails: {
+                        isCompatible: true,
+                        startNode: 'START_NODE_ID',
+                        startPort: 1
+                    }
+                });
+
+                expect(connectNodesMock).toHaveBeenCalledTimes(0);
+            });
+
+            it('does not add port or connection for incompatible targets', async () => {
+                const wrapper = doMount({ portGroups });
+
+                await connectorMove({
+                    wrapper,
+                    eventDetails: {
+                        x: 30,
+                        y: 24,
+                        targetPortDirection: 'out'
+                    },
+                    onSnapCallback
+                });
+
+                // sets the proper data to target port that enables us to create this port on drop
+                expect(getSlottedStubProp({
+                    wrapper,
+                    propName: 'targetPort'
+                })).toStrictEqual({
+                    index: 3,
+                    isPlaceHolderPort: true,
+                    portGroup: null,
+                    side: 'out',
+                    typeId: 'TYPE_ID'
+                });
+
+                addNodePortMock.mockReturnValueOnce({ newPortIdx: 3 });
+
+                await connectorDrop({
+                    wrapper,
+                    eventDetails: {
+                        isCompatible: false,
+                        startNode: 'START_NODE_ID',
+                        startPort: 1
+                    }
+                });
+
+                expect(addNodePortMock).toHaveBeenCalledTimes(0);
+                expect(connectNodesMock).toHaveBeenCalledTimes(0);
+            });
         });
     });
 
