@@ -538,8 +538,8 @@ describe('NodePort', () => {
                 expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
             });
 
-            describe('Snap to placeholder ports', () => {
-                test('table can connect to placeholder port of metanode/component', async () => {
+            describe('Placeholder ports', () => {
+                test('table snaps to placeholder port of metanode/component', async () => {
                     const targetPortGroups = null; // null = metanode or component
                     const targetPort = { isPlaceHolderPort: true };
 
@@ -569,6 +569,94 @@ describe('NodePort', () => {
                         createPortFromPlaceholder: {
                             portGroup: null,
                             typeId: 'table'
+                        }
+                    });
+
+                    // absolutePoint should be the snapPosition if it did snap
+                    expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
+                });
+
+                test('table snaps to native node output placeholder', async () => {
+                    const targetPortGroups = {
+                        'My Port Group': {
+                            canAddInPort: false,
+                            canAddOutPort: true,
+                            supportedPortTypeIds: ['generic', 'table']
+                        }
+                    };
+                    const targetPort = { isPlaceHolderPort: true };
+
+                    startDragging([0, 0]);
+                    // start port
+                    await wrapper.setProps({
+                        direction: 'in',
+                        port: {
+                            ...propsData.port,
+                            typeId: 'table'
+                        }
+                    });
+
+                    let hitTarget = document.createElement('div');
+                    let snapCallbackResult;
+                    hitTarget.addEventListener('connector-move', (e) => {
+                        snapCallbackResult = e.detail.onSnapCallback({
+                            snapPosition: [-1, -1],
+                            targetPortGroups,
+                            targetPort
+                        });
+                    });
+
+                    dragAboveTarget(hitTarget, [0, 0]);
+
+                    expect(snapCallbackResult).toMatchObject({
+                        didSnap: true,
+                        createPortFromPlaceholder: {
+                            portGroup: 'My Port Group',
+                            typeId: 'table'
+                        }
+                    });
+
+                    // absolutePoint should be the snapPosition if it did snap
+                    expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
+                });
+
+                test('snaps to native node with a compatible type output placeholder', async () => {
+                    const targetPortGroups = {
+                        'My Port Group': {
+                            canAddInPort: true,
+                            canAddOutPort: false,
+                            supportedPortTypeIds: ['specific', 'generic']
+                        }
+                    };
+                    const targetPort = { isPlaceHolderPort: true };
+
+                    startDragging([0, 0]);
+                    // start port
+                    await wrapper.setProps({
+                        direction: 'out',
+                        port: {
+                            ...propsData.port,
+                            typeId: 'flowVariable'
+                        }
+                    });
+
+                    let hitTarget = document.createElement('div');
+                    let snapCallbackResult;
+                    hitTarget.addEventListener('connector-move', (e) => {
+                        snapCallbackResult = e.detail.onSnapCallback({
+                            snapPosition: [-1, -1],
+                            targetPortGroups,
+                            targetPort
+                        });
+                    });
+
+                    dragAboveTarget(hitTarget, [0, 0]);
+
+                    expect(snapCallbackResult).toMatchObject({
+                        didSnap: true,
+                        createPortFromPlaceholder: {
+                            portGroup: 'My Port Group',
+                            typeId: 'specific'
                         }
                     });
 
