@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import Vue from 'vue';
 import Vuex from 'vuex';
 import { createLocalVue, mount } from '@vue/test-utils';
