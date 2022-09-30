@@ -30,12 +30,13 @@ export default {
     },
     computed: {
         ...mapState('application', { projectId: 'activeProjectId', portTypes: 'availablePortTypes' }),
-        ...mapState('workflow', { workflowId: (state) => state.activeWorkflow.info.containerId }),
+        ...mapState('workflow', { workflowId: state => state.activeWorkflow.info.containerId }),
         ...mapGetters('workflow', { isDragging: 'isDragging' }),
         ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode']),
 
         // ========================== Conditions before loading view ============================
         // The following properties execute from top to bottom
+
         nodeErrors() {
             const { error } = runNodeValidationChecks({
                 selectedNodes: this.selectedNodes,
@@ -45,6 +46,7 @@ export default {
 
             return error;
         },
+
         portErrors() {
             if (this.nodeErrors) { return true; }
 
@@ -55,14 +57,17 @@ export default {
             });
             return error;
         },
+
         selectedPort() {
             if (this.nodeErrors) { return null; }
 
             return this.singleSelectedNode.outPorts[this.selectedPortIndex];
         },
+
         validationErrors() {
             return this.nodeErrors || this.portErrors || null;
         },
+
         /* Return validation error message or the current state of the port view */
         placeholderText() {
             if (this.validationErrors) {
@@ -78,10 +83,12 @@ export default {
                     return null;
             }
         },
+
         showLoader() {
             return this.portViewerState?.state === 'loading' ||
-            this.validationErrors?.code === 'NODE_BUSY';
+                   this.validationErrors?.code === 'NODE_BUSY';
         },
+
         showExecuteButton() {
             return this.validationErrors?.code === 'NODE_UNEXECUTED';
         }
@@ -140,7 +147,6 @@ export default {
       :node="singleSelectedNode"
       :disabled="Boolean(nodeErrors)"
     />
-
     <!-- Error Message and Placeholder -->
     <div
       v-if="placeholderText"
@@ -164,7 +170,6 @@ export default {
         Execute
       </Button>
     </div>
-
     <!-- Port Viewer -->
     <PortViewLoader
       v-if="!nodeErrors && !portErrors"
