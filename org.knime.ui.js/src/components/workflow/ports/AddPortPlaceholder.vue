@@ -53,7 +53,7 @@ export default {
             if (!this.portGroups) {
                 return null;
             }
-            
+
             return Object
                 .entries(this.portGroups)
                 .filter(([_, group]) => group.canAddInPort || group.canAddOutPort)
@@ -113,7 +113,7 @@ export default {
         },
         onClick() {
             const portGroups = Object.values(this.validPortGroups || {});
-            
+
             if (portGroups.length === 1) {
                 const { supportedPortTypeIds } = portGroups[0];
 
@@ -146,7 +146,7 @@ export default {
             this.previewPort = null;
 
             this.$emit('add-port', { typeId, portGroup });
-            
+
             this.$nextTick(() => {
                 this.transitionEnabled = true;
             });

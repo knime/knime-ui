@@ -45,7 +45,9 @@ export default {
     class="node-search"
   >
     <div class="lens-icon">
-      <LensIcon />
+      <slot name="lens-icon">
+        <LensIcon />
+      </slot>
     </div>
     <input
       ref="searchInput"

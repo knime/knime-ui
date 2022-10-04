@@ -8,10 +8,11 @@ import { circleDetection } from '@/util/compatibleConnections';
 import Port from '@/components/common/Port.vue';
 import Connector from '@/components/workflow/connectors/Connector.vue';
 import NodePortActions from './NodePortActions.vue';
+import QuickAddNodeGhost from '@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue';
 
 const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) => {
     const isPortFree = toPort.connectedVia.length === 0;
-    
+
     if (isPortFree) {
         return true;
     }
@@ -60,6 +61,7 @@ export default {
     components: {
         Port,
         Connector,
+        QuickAddNodeGhost,
         NodePortActions
     },
     mixins: [clickaway, tooltip],
@@ -98,7 +100,9 @@ export default {
         dragConnector: null,
         didMove: false,
         pointerDown: false,
-        didDragToCompatibleTarget: false
+        didDragToCompatibleTarget: false,
+        suggestAddNodeTimer: null,
+        showSuggestAddNode: false
     }),
     computed: {
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
@@ -125,7 +129,7 @@ export default {
             }
             return template;
         },
-        
+
         // implemented as required by the tooltip mixin
         tooltip() {
             // table ports have less space than other ports, because the triangular shape naturally creates a gap
@@ -161,7 +165,7 @@ export default {
                 return;
             }
             e.stopPropagation();
-            
+
             this.pointerDown = true;
             e.target.setPointerCapture(e.pointerId);
         },
@@ -196,7 +200,7 @@ export default {
             if (!this.dragConnector) {
                 return;
             }
-            
+
             // find HTML-Element below cursor
             const hitTarget = document.elementFromPoint(e.x, e.y);
 
@@ -205,7 +209,7 @@ export default {
                 this.dragConnector.absolutePoint = [x, y];
             };
             setDragConnectorCoords(absoluteX, absoluteY);
-            
+
             const targetPortDirection = this.direction === 'out' ? 'in' : 'out';
             // create move event
             const moveEvent = new CustomEvent('connector-move', {
@@ -228,7 +232,7 @@ export default {
                         });
 
                         this.didDragToCompatibleTarget = isSupportedConnection && isCompatiblePort;
-                        
+
                         // setting the drag connector coordinates will cause the connector to snap
                         // We prevent that if it's not a compatible target
                         if (this.didDragToCompatibleTarget) {
@@ -297,11 +301,13 @@ export default {
                     isCompatible: this.didDragToCompatibleTarget
                 };
             }
+
+            this.updateSuggestQuickAddNodeTimer();
             /* eslint-enable no-invalid-this */
         }),
         onPointerUp(e) {
             this.pointerDown = false;
-            
+
             if (!this.dragConnector) {
                 return;
             }
@@ -335,6 +341,11 @@ export default {
             }
         },
         onLostPointerCapture(e) {
+            if (this.showSuggestAddNode) {
+                this.openQuickAddNodeMenu();
+                this.showSuggestAddNode = false;
+                return;
+            }
             this.pointerDown = false;
             this.dragConnector = null;
             this.didMove = false;
@@ -353,6 +364,62 @@ export default {
         onClose() {
             if (this.selected) {
                 this.$emit('deselect');
+            }
+        },
+        onRequestCloseAddMenu() {
+            this.onLostPointerCapture();
+            this.closeQuickAddNodeMenu();
+        },
+        openQuickAddNodeMenu() {
+            // find the position in coordinates relative to the origin
+            let position = {
+                x: this.dragConnector.absolutePoint[0],
+                y: this.dragConnector.absolutePoint[1]
+            };
+
+            // Because of an issue with Vue Portal (https://github.com/LinusBorg/portal-vue/issues/290)
+            // We have to make this work like a custom teleport (can probably be replaced by Vue3's teleport)
+            // by telling the WorkflowPanel to render a PortTypeMenu with specified props and events
+            this.$el.dispatchEvent(new CustomEvent(
+                'open-quick-add-node-menu', {
+                    detail: {
+                        id: `${this.nodeId}-${this.direction}`,
+                        props: {
+                            position,
+                            direction: this.direction,
+                            port: this.port,
+                            nodeId: this.nodeId
+                        },
+                        events: {
+                            'item-active': () => {},
+                            'item-click': () => {},
+                            'menu-close': this.onRequestCloseAddMenu
+                        }
+                    },
+                    bubbles: true
+                }
+            ));
+        },
+        closeQuickAddNodeMenu() {
+            this.$el.dispatchEvent(new CustomEvent(
+                'close-quick-add-node-menu', {
+                    detail: {
+                        id: `${this.nodeId}-${this.direction}`
+                    },
+                    bubbles: true
+                }
+            ));
+        },
+        updateSuggestQuickAddNodeTimer(allowDrop) {
+            // show suggest new node ghost if user stops moving for some time
+            if (this.showSuggestAddNode) {
+                clearTimeout(this.suggestAddNodeTimer);
+                this.showSuggestAddNode = false;
+            } else {
+                clearTimeout(this.suggestAddNodeTimer);
+                this.suggestAddNodeTimer = setTimeout(() => {
+                    this.showSuggestAddNode = true;
+                }, 600);
             }
         },
         createConnectorFromEvent(e) {
@@ -418,6 +485,12 @@ export default {
         data-test-id="drag-connector-port"
         :port="port"
         :transform="`translate(${dragConnector.absolutePoint})`"
+      />
+      <QuickAddNodeGhost
+        v-if="showSuggestAddNode"
+        class="non-interactive"
+        :direction="direction"
+        :position="dragConnector.absolutePoint"
       />
     </portal>
   </g>
