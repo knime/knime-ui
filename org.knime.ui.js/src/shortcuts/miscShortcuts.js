@@ -12,6 +12,6 @@ export const selectionShortcuts = {
 export const sidePanelShortcuts = {
     toggleSidePanel: {
         hotkey: ['Ctrl', 'P'],
-        execute: ({ $store }) => $store.dispatch('panel/toggleExpanded')
+        execute: ({ $store }) => $store.commit('panel/toggleExpanded')
     }
 };
