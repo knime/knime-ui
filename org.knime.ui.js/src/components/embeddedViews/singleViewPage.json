@@ -22,7 +22,7 @@
                                         "minHeight": null,
                                         "maxWidth": null,
                                         "maxHeight": null,
-                                        "nodeID": "SINGLE",
+                                        "nodeID": "ROOT",
                                         "resizeInterval": null,
                                         "resizeTolerance": 5,
                                         "autoResize": true,
@@ -52,81 +52,7 @@
         "webNodes": {},
         "version": "4.7.0.qualifier",
         "nodeViews": {
-            "SINGLE": {
-                "nodeInfo": {
-                    "canExecute": null,
-                    "nodeName": "Table View",
-                    "nodeErrorMessage": null,
-                    "nodeWarnMessage": null,
-                    "nodeAnnotation": "",
-                    "nodeState": "executed"
-                },
-                "initialSelection": [],
-                "projectId": "01_Example_for_Learning_a_Decision_Tree(2) 3",
-                "workflowId": "root",
-                "resourceInfo": {
-                    "id": "view_org.knime.base.views.node.tableview.TableViewNodeFactory",
-                    "type": "VUE_COMPONENT_LIB",
-                    "path": "view_org.knime.base.views.node.tableview.TableViewNodeFactory/TableView.umd.min.js",
-                    "debugUrl": null,
-                    "baseUrl": "http://org.knime.core.ui.view/"
-                },
-                "nodeId": "root:16",
-                "initialData": {
-                    "result": {
-                        "table": {
-                            "rows": [
-                                [
-                                    "Row0",
-                                    "1"
-                                ]
-                            ],
-                            "columnDataTypeIds": [
-                                "1349017927"
-                            ],
-                            "columnContentTypes": [
-                                "txt"
-                            ]
-                        },
-                        "settings": {
-                            "pageSize": 10,
-                            "displayedColumns": [
-                                "column1"
-                            ],
-                            "showRowKeys": true,
-                            "showColumnDataType": true,
-                            "showRowIndices": false,
-                            "enableSortingByHeader": true,
-                            "title": "Table View",
-                            "enablePagination": true,
-                            "enableGlobalSearch": true,
-                            "enableColumnSearch": true
-                        },
-                        "rowCount": 1,
-                        "dataTypes": {
-                            "1349017927": {
-                                "name": "String",
-                                "renderers": [
-                                    {
-                                        "name": "Multi-line String",
-                                        "id": "org.knime.core.data.renderer.MultiLineStringValueRenderer$Factory"
-                                    },
-                                    {
-                                        "name": "String",
-                                        "id": "org.knime.core.data.renderer.StringValueRenderer$Factory"
-                                    }
-                                ]
-                            }
-                        },
-                        "columnDomainValues": {
-                            "column1": [
-                                "1"
-                            ]
-                        }
-                    }
-                },
-                "extensionType": "view"
-            }
+            "ROOT": {}
         }
     }
 }

@@ -50,14 +50,15 @@ export const loadScript = ({ window, url }) => new Promise((resolve, reject) => 
  */
 export const loadComponentLibrary = async ({
     window,
+    vueInstance,
     resourceLocation,
     componentName,
     onLoad = null
 }) => {
-    const vueInstance = window.Vue;
+    const activeVueInstance = vueInstance || window.Vue;
     // resolve immediately if component has already been loaded
-    if (isComponentRegistered({ vueInstance, componentName })) {
-        return Promise.resolve(vueInstance.component(componentName));
+    if (isComponentRegistered({ vueInstance: activeVueInstance, componentName })) {
+        return Promise.resolve(activeVueInstance.component(componentName));
     }
     
     // Load and mount component library script
@@ -72,9 +73,9 @@ export const loadComponentLibrary = async ({
 
     onLoad?.({ component });
     
-    registerComponent({ vueInstance, componentName, component });
+    registerComponent({ vueInstance: activeVueInstance, componentName, component });
     // clean up Window object
     delete window[componentName];
 
-    return Promise.resolve(component);
+    return Promise.resolve(activeVueInstance.component(componentName));
 };

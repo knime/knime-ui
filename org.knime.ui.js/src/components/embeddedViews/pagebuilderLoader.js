@@ -1,30 +1,23 @@
-import { loadComponentLibrary, isComponentRegistered } from '@/util/loadComponentLibrary';
+import { loadComponentLibrary } from '@/util/loadComponentLibrary';
 
 const pageBuilderResources = [
     {
-        name: 'knime-pagebuilder',
-        componentName: 'PageBuilder',
+        componentName: 'knime-pagebuilder',
         url: '/org/knime/core/knime-pagebuilder2.js'
     }
 ];
 
-const resolvePageBuilderResource = async ({ resource, vueInstance, store }) => {
+const resolvePageBuilderResource = async ({ window, store, resource }) => {
     const getResource = async () => {
-        const RESOURCE_ROOT = 'http://org.knime.js.pagebuilder';
-        const { name } = resource;
-        // abort if resource was already loaded and registered by a previous route
-        if (isComponentRegistered({ vueInstance, name })) {
-            // Promise can resolve right away if no loading needed
-            return true;
-        }
-    
-        const resourceLocation = `${RESOURCE_ROOT}${resource.url}`;
-
         try {
+            const RESOURCE_ROOT = 'http://org.knime.js.pagebuilder';
+            const { componentName } = resource;
+            const resourceLocation = `${RESOURCE_ROOT}${resource.url}`;
+
             await loadComponentLibrary({
                 window,
                 resourceLocation,
-                componentName: name,
+                componentName,
                 onLoad: ({ component }) => {
                     // PageBuilder needs to register with global store
                     if (typeof component.initStore === 'function') {
@@ -52,9 +45,9 @@ const resolvePageBuilderResource = async ({ resource, vueInstance, store }) => {
     });
 };
 
-export const loadPageBuilder = async (store, vueInstance) => {
+export const loadPageBuilder = async ({ window, store }) => {
     await Promise.all(
-        pageBuilderResources.map(resource => resolvePageBuilderResource({ resource, store, vueInstance }))
+        pageBuilderResources.map(resource => resolvePageBuilderResource({ window, resource, store }))
     );
-    return vueInstance.component('knime-pagebuilder');
+    return window.Vue.component('knime-pagebuilder');
 };

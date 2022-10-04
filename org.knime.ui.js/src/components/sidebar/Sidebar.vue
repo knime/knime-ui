@@ -1,11 +1,14 @@
 <script>
 import { mapState, mapActions, mapMutations } from 'vuex';
 import InfoIcon from 'webapps-common/ui/assets/img/icons/circle-info.svg';
+import NodeCogIcon from 'webapps-common/ui/assets/img/icons/node-cog.svg';
 import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
 
 import { TABS } from '@/store/panel';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
+import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
+
 import LeftCollapsiblePanel from './LeftCollapsiblePanel.vue';
 
 export default {
@@ -15,6 +18,7 @@ export default {
         LeftCollapsiblePanel,
         WorkflowMetadata,
         NodeRepository,
+        NodeDialogWrapper
     },
     data() {
         return {
@@ -51,6 +55,13 @@ export default {
                     isExpanded: this.expanded,
                     onClick: () => this.clickItem(TABS.NODE_REPOSITORY)
                 },
+                {
+                    title: 'Node dialog',
+                    icon: NodeCogIcon,
+                    isActive: this.isTabActive(TABS.NODE_DIALOG),
+                    isExpanded: this.expanded,
+                    onClick: () => this.clickItem(TABS.NODE_DIALOG)
+                }
             ];
         }
     },
@@ -109,6 +120,11 @@ export default {
         <WorkflowMetadata
           v-show="isTabActive(TABS.WORKFLOW_METADATA)"
           key="workflow-metadata"
+        />
+
+        <NodeDialogWrapper
+          v-show="isTabActive(TABS.NODE_DIALOG)"
+          key="node-dialog"
         />
       </transition-group>
     </LeftCollapsiblePanel>

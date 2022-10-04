@@ -1,12 +1,7 @@
 <script>
-/* eslint-disable object-curly-newline  */
-import {
-    buildMiddleware,
-    validateNodeConfigurationState,
-    validateNodeExecutionState
-} from './output-validator';
+import NodeViewLoader from '@/components/embeddedViews/NodeViewLoader.vue';
 
-import EmbeddedView from '../embeddedViews/EmbeddedView.vue';
+import { buildMiddleware, validateNodeConfigurationState, validateNodeExecutionState } from './output-validator';
 
 /**
  * Runs a set of validations that qualify whether a node from a given group is able
@@ -37,7 +32,7 @@ export const runNodeValidationChecks = ({ selectedNode, portTypes }) => {
  */
 export default {
     components: {
-        EmbeddedView
+        NodeViewLoader
     },
 
     props: {
@@ -130,7 +125,7 @@ export default {
 </script>
 
 <template>
-  <EmbeddedView
+  <NodeViewLoader
     v-if="!nodeErrors"
     kind="node-view"
     @state-change="onNodeViewStateChange"

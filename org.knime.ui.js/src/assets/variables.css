@@ -1,3 +1,8 @@
 @import "webapps-common/ui/css/variables";
 @import "./colors";
 @import "./shapes";
+
+* {
+    --app-header-height: 80px;
+    --app-toolbar-height: 50px;
+}

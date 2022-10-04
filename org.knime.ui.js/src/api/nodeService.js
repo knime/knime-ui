@@ -105,10 +105,12 @@ export const getNodeDialog = async (projectId, workflowId, nodeId) => {
  * @returns {String}
  */
 export const callNodeDataService =
-    async (projectId, workflowId, nodeId, extensionType, serviceType, request) => {
+    async ({ projectId, workflowId, nodeId, extensionType, serviceType, request }) => {
         try {
-            return await rpc('NodeService.callNodeDataService',
-                projectId, workflowId, nodeId, extensionType, serviceType, request);
+            return await rpc(
+                'NodeService.callNodeDataService',
+                projectId, workflowId, nodeId, extensionType, serviceType, request
+            );
         } catch (e) {
             consola.error(e);
             throw new Error(`Could not call node data service for node ${nodeId}`);
