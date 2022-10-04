@@ -105,9 +105,9 @@ export default {
                 return;
             }
 
-            // if we're moving to a node which has a view and we're already at the view tab
-            // skip automatic port selection
-            if (this.singleSelectedNode.hasView && this.isViewTabSelected) {
+            // if we're moving to a node which has a view skip automatic port selection
+            if (this.singleSelectedNode.hasView) {
+                this.selectedTab = 'view';
                 return;
             }
 

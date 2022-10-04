@@ -1,5 +1,7 @@
 <script>
 /* eslint-disable object-curly-newline  */
+import PortViewLoader from '@/components/embeddedViews/PortViewLoader.vue';
+
 import {
     buildMiddleware,
     validateNodeConfigurationState,
@@ -8,8 +10,6 @@ import {
     validatePortSelection,
     validatePortSupport
 } from './output-validator';
-
-import PortViewLoader from './PortViewLoader.vue';
 
 /**
  * Runs a set of validations that qualify whether a node is able

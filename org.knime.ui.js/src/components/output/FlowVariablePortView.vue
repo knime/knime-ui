@@ -5,11 +5,10 @@
 
 export default {
     props: {
-        projectId: { type: String, required: true },
-        workflowId: { type: String, required: true },
-        nodeId: { type: String, required: true },
-        portIndex: { type: Number, required: true },
-        initialData: { type: Array, required: true }
+        initialData: {
+            type: Array,
+            required: true
+        }
     }
 };
 </script>
