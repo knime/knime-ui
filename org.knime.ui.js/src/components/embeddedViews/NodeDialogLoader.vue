@@ -43,16 +43,18 @@ export default {
     created() {
         // TODO: remove hack. Overwrite internally used function by UI Ext's NodeDialog.min.js
         if (!window.closeCEFWindow) {
-            window.closeCEFWindow = () => {
-                this.$store.commit('panel/closePanel');
-            };
+            window.closeCEFWindow = () => {};
         }
     },
 
     methods: {
         async viewConfigLoaderFn() {
             try {
-                const nodeDialogView = await getNodeDialog(this.projectId, this.workflowId, this.selectedNode.id);
+                const nodeDialogView = await getNodeDialog({
+                    projectId: this.projectId,
+                    workflowId: this.workflowId,
+                    nodeId: this.selectedNode.id
+                });
                 
                 return nodeDialogView;
             } catch (error) {
@@ -61,10 +63,8 @@ export default {
         },
 
         resourceLocationResolver({ resourceInfo }) {
-            // TODO: NXT-1217 Remove this unnecessary store getter once the issue in the ticket
-            // can be solved in a better way
-            // return this.$store.getters['api/uiExtResourceLocation']({ resourceInfo });
-            return 'http://localhost:3333/NodeDialog.umd.min.js';
+            const { baseUrl, path } = resourceInfo;
+            return `${baseUrl}${path}`;
         },
 
         /* Required by dynamically loaded view components */
@@ -74,7 +74,6 @@ export default {
                 
                 // Data Service Callback
                 async (nodeService, serviceType, request) => {
-                    // let result;
                     if (nodeService === 'NodeService.callNodeDataService') {
                         await callNodeDataService({
                             projectId: this.projectId,
@@ -85,10 +84,6 @@ export default {
                             request
                         });
                     }
-                    // else if (nodeService === 'NodeService.updateDataPointSelection') {
-                    //     result = 'TODO';
-                    // }
-                    // return { result: JSON.parse(result) };
                 },
                 
                 // Notification Callback

@@ -30,7 +30,7 @@ export default {
 <template>
   <div class="node-dialog-wrapper">
     <NodeDialogLoader
-      v-if="selectedNode"
+      v-if="selectedNode && selectedNode.hasDialog"
       :project-id="projectId"
       :workflow-id="workflowId"
       :selected-node="selectedNode"

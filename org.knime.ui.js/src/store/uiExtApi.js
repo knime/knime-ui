@@ -10,6 +10,7 @@ export const actions = {
     async callService({ state }, { extensionConfig, nodeService, serviceRequest, requestParams }) {
         const { projectId, workflowId, nodeId, extensionType } = extensionConfig;
         let result;
+
         if (nodeService === 'NodeService.callNodeDataService') {
             result = await callNodeDataService({
                 projectId,
@@ -20,6 +21,7 @@ export const actions = {
                 request: requestParams
             });
         } else if (nodeService === 'NodeService.updateDataPointSelection') {
+            // TODO: implement update selection. Also, is this needed for our use case?
             result = '{ "TODO": "TODO" }';
         }
         return { result: JSON.parse(result) };

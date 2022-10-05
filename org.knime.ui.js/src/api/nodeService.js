@@ -60,7 +60,7 @@ export const getNodeDescription = async ({ className, settings }) => {
  * @param {String} nodeId
  * @returns {Object}
  */
-export const getNodeView = async (projectId, workflowId, nodeId) => {
+export const getNodeView = async ({ projectId, workflowId, nodeId }) => {
     try {
         return await rpc('NodeService.getNodeView', projectId, workflowId, nodeId);
     } catch (e) {
@@ -73,7 +73,7 @@ export const getNodeView = async (projectId, workflowId, nodeId) => {
  * Calls the 'updateDataPointSelection' endpoint (see API documentation).
  */
 export const updateDataPointSelection = async (projectId) => {
-    // TODO
+    // TODO: implement update selection. Also, is this needed for our use case?
 };
 
 /**
@@ -84,7 +84,7 @@ export const updateDataPointSelection = async (projectId) => {
  * @param {String} nodeId
  * @returns {Object}
  */
-export const getNodeDialog = async (projectId, workflowId, nodeId) => {
+export const getNodeDialog = async ({ projectId, workflowId, nodeId }) => {
     try {
         return await rpc('NodeService.getNodeDialog', projectId, workflowId, nodeId);
     } catch (e) {

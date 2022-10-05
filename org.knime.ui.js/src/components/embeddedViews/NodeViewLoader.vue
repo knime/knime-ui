@@ -64,7 +64,11 @@ export default {
                     return;
                 }
 
-                const nodeView = await getNodeView(this.projectId, this.workflowId, this.selectedNode.id);
+                const nodeView = await getNodeView({
+                    projectId: this.projectId,
+                    workflowId: this.workflowId,
+                    nodeId: this.selectedNode.id
+                });
 
                 const page = JSON.parse(JSON.stringify(singleViewPage));
                 page.wizardPageContent.nodeViews.ROOT = nodeView;
