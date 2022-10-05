@@ -156,7 +156,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 .node {
   width: 100px;
   height: 78px;
@@ -173,6 +172,7 @@ export default {
   & label {
     max-height: 26px;
     max-width: 90px;
+    /* stylelint-disable-next-line value-no-vendor-prefix */
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -205,7 +205,7 @@ export default {
     cursor: pointer;
 
     & .node-preview {
-      filter: url(#node-torso-shadow);
+      filter: url("#node-torso-shadow");
     }
   }
 }

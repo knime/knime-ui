@@ -232,7 +232,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 .header {
   font-size: 13px;
   margin-top: -7px;
@@ -290,7 +289,7 @@ export default {
 .placeholder {
   font-style: italic;
   text-align: center;
-  padding: 6px 6px;
+  padding: 6px;
   font-size: 13px;
 }
 
@@ -345,7 +344,7 @@ export default {
   }
 
   & >>> li button {
-    padding: 6px 6px;
+    padding: 6px;
   }
 
   & >>> li .item-icon {

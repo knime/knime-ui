@@ -115,7 +115,7 @@ header {
   /* smalish dark spacer */
 
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: -4px;
     width: 100%;

@@ -176,7 +176,7 @@ export default {
   & .header {
     color: white;
     text-align: center;
-    font-family: 'Roboto Condensed', sans-serif;
+    font-family: "Roboto Condensed", sans-serif;
 
     & h2 {
       font-size: 38px;
@@ -210,7 +210,7 @@ export default {
     }
 
     & > .button {
-      padding: 12px 16px 12px 16px;
+      padding: 12px 16px;
       height: 43px;
     }
 
@@ -254,7 +254,7 @@ export default {
   }
 
   & .stack {
-    font-family: 'Roboto Mono', sans-serif;
+    font-family: "Roboto Mono", sans-serif;
     padding: 28px;
     background-color: white;
     border-radius: 4px;
