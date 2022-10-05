@@ -53,7 +53,6 @@ describe('Kanvas', () => {
                 state: {
                     getScrollContainerElement: null,
                     zoomFactor: 1,
-                    suggestPanning: false,
                     // mock implementation of contentBounds for testing watcher
                     __contentBounds: { left: 0, top: 0 },
                     interactionsEnabled: true
@@ -147,16 +146,23 @@ describe('Kanvas', () => {
     });
 
     describe('Panning', () => {
-        it('Suggests Panning', async () => {
+        it('pre pans', async () => {
             doShallowMount();
 
-            $store.state.canvas.suggestPanning = true;
-            await Vue.nextTick();
-            expect(wrapper.element.className).toMatch('panning');
+            expect(wrapper.element.style.cursor).not.toBe('move');
 
-            $store.state.canvas.suggestPanning = false;
-            await Vue.nextTick();
-            expect(wrapper.element.className).not.toMatch('panning');
+            await wrapper.trigger('keypress.space');
+            expect(wrapper.element.style.cursor).toBe('move');
+        });
+
+        it('stops pre pan', async () => {
+            doShallowMount();
+
+            await wrapper.trigger('keypress.space');
+            expect(wrapper.element.style.cursor).toBe('move');
+
+            await wrapper.trigger('keyup.space');
+            expect(wrapper.element.style.cursor).not.toBe('move');
         });
 
         it('pans', async () => {

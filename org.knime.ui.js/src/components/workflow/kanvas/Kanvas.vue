@@ -9,12 +9,13 @@ export default {
     data() {
         return {
             /* Truthy if currently panning. Stores mouse origin */
-            isPanning: null
+            isPanning: null,
+            prePanning: null
         };
     },
     computed: {
         ...mapGetters('canvas', ['canvasSize', 'viewBox', 'contentBounds']),
-        ...mapState('canvas', ['suggestPanning', 'zoomFactor', 'interactionsEnabled'])
+        ...mapState('canvas', ['zoomFactor', 'interactionsEnabled'])
     },
     watch: {
         contentBounds(...args) {
@@ -92,9 +93,11 @@ export default {
                 return;
             }
 
-            this.isPanning = true;
-            this.panningOffset = [e.screenX, e.screenY];
-            this.$el.setPointerCapture(e.pointerId);
+            if (this.prePanning || e.button === 1) {
+                this.isPanning = true;
+                this.panningOffset = [e.screenX, e.screenY];
+                this.$el.setPointerCapture(e.pointerId);
+            }
         },
         movePan: throttle(function (e) {
             /* eslint-disable no-invalid-this */
@@ -106,6 +109,10 @@ export default {
             }
             /* eslint-enable no-invalid-this */
         }),
+        stopPrePan(e) {
+            this.prePanning = false;
+            this.isPanning = false;
+        },
         stopPan(e) {
             if (this.isPanning) {
                 this.isPanning = false;
@@ -122,14 +129,16 @@ export default {
   <div
     tabindex="0"
     :class="['scroll-container', {
-      'panning': isPanning || suggestPanning,
+      'panning': isPanning,
       'disabled': !interactionsEnabled
     }]"
+    :style="prePanning ? {'cursor': 'move'} : null"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
+    @keypress.space.prevent="prePanning = true"
+    @keyup.space="stopPrePan"
     @pointerdown.middle="beginPan"
     @pointerup.middle="stopPan"
-    @pointerdown.left.alt="beginPan"
     @pointerup.left="stopPan"
     @pointermove="movePan"
   >
@@ -139,7 +148,7 @@ export default {
       :height="canvasSize.height"
       :viewBox="viewBox.string"
       @pointerdown.left.shift.exact.stop="$emit('selection-pointerdown', $event)"
-      @pointerdown.left.exact.stop="$emit('selection-pointerdown', $event)"
+      @pointerdown.left.stop="prePanning ? beginPan($event) : $emit('selection-pointerdown', $event)"
       @pointerup.left.stop="$emit('selection-pointerup', $event)"
       @pointermove="$emit('selection-pointermove', $event)"
       @lostpointercapture="$emit('selection-lostpointercapture', $event)"
