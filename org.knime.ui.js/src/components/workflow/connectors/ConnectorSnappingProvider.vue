@@ -187,7 +187,9 @@ export default {
 
             const possibleTargetPorts = ports[`${targetPortDirection}Ports`];
             let targetPortData;
-            // if the port index is bigger than our port list this is most likely a placeholder port
+
+            // If the snapPortIndex is smaller than the port list then a regular port is being targeted,
+            // otherwise it’s most likely the placeholder port that is being targeted
             if (snapPortIndex < possibleTargetPorts.length) {
                 targetPortData = possibleTargetPorts[snapPortIndex];
             } else {
