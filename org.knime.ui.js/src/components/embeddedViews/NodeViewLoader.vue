@@ -97,7 +97,7 @@ export default {
 .page-builder {
   & >>> .node-view {
     & .view-container {
-        height: unset;
+      height: unset;
     }
   }
 }

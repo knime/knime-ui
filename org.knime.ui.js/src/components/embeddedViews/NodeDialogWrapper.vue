@@ -50,6 +50,7 @@ export default {
 <style lang="postcss" scoped>
 .node-dialog-wrapper {
   height: 100%;
+
   & >>> .dialog {
     height: calc(100vh - var(--app-header-height) - var(--app-toolbar-height));
     padding-top: 0;
@@ -61,7 +62,7 @@ export default {
   height: 100%;
   align-items: center;
   justify-content: center;
-  
+
   & .placeholder {
     padding: 0 15px;
     text-align: center;

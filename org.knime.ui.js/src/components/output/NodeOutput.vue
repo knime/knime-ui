@@ -151,7 +151,7 @@ export default {
     <!-- Error Message / Placeholder message -->
     <div
       v-if="outputState"
-      :class="['placeholder', { isViewerLoading: outputState.loading }]"
+      :class="['placeholder', { 'is-viewer-loading': outputState.loading }]"
     >
       <span>
         <ReloadIcon
@@ -207,16 +207,6 @@ export default {
 @keyframes show {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-.output-container {
-  height: 100%;
-  padding: 10px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  contain: strict;
 }
 
 .output {
