@@ -70,7 +70,7 @@ export default {
                 // add the flow variables but skip for metanodes which don't have any
                 .concat(isMetanode
                     ? null
-                    : { value: '0', label: 'Flow variables', icon: FlowVarTabIcon })
+                    : { value: '0', label: 'Flow Variables', icon: FlowVarTabIcon })
                 .filter(Boolean);
         }
     }

@@ -105,7 +105,7 @@ export default {
     :init-knime-service="initKnimeService"
     :view-config-loader-fn="viewConfigLoaderFn"
     :resource-location-resolver="resourceLocationResolver"
-    v-on="$listeners"
+    @state-change="$emit('state-change', $event)"
   />
 </template>
 

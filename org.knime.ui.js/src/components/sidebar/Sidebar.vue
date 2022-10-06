@@ -76,7 +76,7 @@ export default {
         clickItem(tabName) {
             const isAlreadyActive = this.isTabActive(tabName);
             if (isAlreadyActive && this.expanded) {
-                this.close();
+                this.closePanel();
             } else {
                 this.setActiveTab(tabName);
             }

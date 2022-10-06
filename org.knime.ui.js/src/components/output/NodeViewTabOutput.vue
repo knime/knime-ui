@@ -68,10 +68,6 @@ export default {
             });
 
             return error;
-        },
-
-        validationErrors() {
-            return this.nodeErrors || null;
         }
     },
 
@@ -88,14 +84,14 @@ export default {
          *      }
          *  }
          */
-        validationErrors: {
+        nodeErrors: {
             immediate: true,
             handler() {
-                if (this.validationErrors) {
+                if (this.nodeErrors) {
                     this.$emit('output-state-change', {
-                        loading: this.validationErrors.code === 'NODE_BUSY',
-                        message: this.validationErrors.message,
-                        error: this.validationErrors
+                        loading: this.nodeErrors.code === 'NODE_BUSY',
+                        message: this.nodeErrors.message,
+                        error: this.nodeErrors
                     });
                 }
             }

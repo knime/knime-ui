@@ -39,7 +39,6 @@ export default {
     data() {
         return {
             selectedTab: '',
-            portViewerState: null,
             outputState: null
         };
     },
@@ -50,7 +49,16 @@ export default {
         ...mapGetters('workflow', { isDragging: 'isDragging' }),
 
         canSelectTabs() {
-            return !this.outputState?.error || this.outputState?.error?.type === 'NODE';
+            // allow selecting tabs when:
+            return (
+                // doesn't have errors in the output state
+                !this.outputState?.error ||
+                // or when it doesn't have these specific error types
+                (
+                    this.outputState?.error?.code !== 'NO_SUPPORTED_PORTS' &&
+                    this.outputState?.error?.code !== 'NODE_DRAGGING'
+                )
+            );
         },
 
         isViewTabSelected() {
@@ -77,18 +85,21 @@ export default {
     },
     watch: {
         validationErrors: {
-            handler(validationErrors) {
+            handler(validationErrors, prev) {
                 if (validationErrors) {
-                    this.outputState = { message: this.validationErrors.message };
+                    this.outputState = {
+                        message: this.validationErrors.message,
+                        error: validationErrors
+                    };
                 } else {
                     this.selectPort();
                 }
             },
             // trigger the port selection as soon as the component mounts, based on the validation results
             immediate: true,
-            // watcher won't trigger when the value hasn't been assigned a new value, and that is the
-            // case because the computed property has cached it. But we deep watch to select the port
-            // and update the output state everytime the validations retrigger
+            // watcher won't trigger when the value hasn't been assigned a new value (e.g it stays the same),
+            // and that is the case because the computed property has cached it. But we deep watch to select the port
+            // and update the output state every time the validations retrigger
             deep: true
         }
     },
@@ -122,6 +133,11 @@ export default {
         },
         executeNode() {
             this.$store.dispatch('workflow/executeNodes', [this.singleSelectedNode.id]);
+        },
+        test(e, from) {
+            console.log('from', from);
+            console.log('e', e);
+            this.outputState = e;
         }
     }
 };
