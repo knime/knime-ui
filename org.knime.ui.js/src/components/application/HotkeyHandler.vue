@@ -20,13 +20,13 @@ export default {
     watch: {
         suggestPanning(newValue) {
             if (newValue) {
-                // listen to blur events while waiting for alt key to be released
+                // listen to blur events while waiting for space bar to be released
                 this.windowBlurListener = () => {
                     this.setSuggestPanning(false);
                 };
                 window.addEventListener('blur', this.windowBlurListener, { once: true });
             } else {
-                // remove manually when alt key has been released
+                // remove manually when space bar has been released
                 window.removeEventListener('blur', this.windowBlurListener);
                 this.windowBlurListener = null;
             }
@@ -35,11 +35,13 @@ export default {
     mounted() {
         // Start Key Listener
         document.addEventListener('keydown', this.onKeydown);
+        document.addEventListener('keypress', this.onKeypress);
         document.addEventListener('keyup', this.onKeyup);
     },
     beforeDestroy() {
         // Stop Key listener
         document.removeEventListener('keydown', this.onKeydown);
+        document.removeEventListener('keypress', this.onKeypress);
         document.removeEventListener('keyup', this.onKeyup);
         window.removeEventListener('blur', this.windowBlurListener);
     },
@@ -61,15 +63,6 @@ export default {
                 return;
             }
 
-            if (e.key === 'Alt') {
-                if (this.isWorkflowPresent) {
-                    this.setSuggestPanning(true);
-                    e.stopPropagation();
-                    e.preventDefault();
-                }
-                return;
-            }
-
             // This currently only looks for the first shortcut that matches the hotkey
             let shortcut = this.$shortcuts.findByHotkey(e);
             
@@ -83,12 +76,21 @@ export default {
                 e.preventDefault();
             }
         },
+        onKeypress(e) {
+            if (e.code === 'Space') {
+                if (this.isWorkflowPresent) {
+                    this.setSuggestPanning(true);
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
+            }
+        },
         onKeyup(e) {
             if (blacklistTagNames.test(e.target.tagName)) {
                 return;
             }
 
-            if (e.key === 'Alt') {
+            if (e.code === 'Space') {
                 this.setSuggestPanning(false);
             }
         }

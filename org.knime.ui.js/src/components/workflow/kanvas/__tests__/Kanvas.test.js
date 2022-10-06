@@ -53,6 +53,7 @@ describe('Kanvas', () => {
                 state: {
                     getScrollContainerElement: null,
                     zoomFactor: 1,
+                    suggestPanning: false,
                     // mock implementation of contentBounds for testing watcher
                     __contentBounds: { left: 0, top: 0 },
                     interactionsEnabled: true
@@ -74,7 +75,8 @@ describe('Kanvas', () => {
                     )
                 },
                 mutations: {
-                    clearScrollContainerElement: jest.fn()
+                    clearScrollContainerElement: jest.fn(),
+                    setSuggestPanning: jest.fn()
                 }
             },
             workflow: {
@@ -146,23 +148,24 @@ describe('Kanvas', () => {
     });
 
     describe('Panning', () => {
-        it('pre pans', async () => {
+        it('suggests panning', async () => {
             doShallowMount();
 
             expect(wrapper.element.style.cursor).not.toBe('move');
 
-            await wrapper.trigger('keypress.space');
+            $store.state.canvas.suggestPanning = true;
+            await Vue.nextTick();
             expect(wrapper.element.style.cursor).toBe('move');
         });
 
-        it('stops pre pan', async () => {
+        it('stops suggesting panning', async () => {
             doShallowMount();
 
             await wrapper.trigger('keypress.space');
-            expect(wrapper.element.style.cursor).toBe('move');
+            expect(storeConfig.canvas.mutations.setSuggestPanning).toBeCalledWith(expect.anything(), true);
 
             await wrapper.trigger('keyup.space');
-            expect(wrapper.element.style.cursor).not.toBe('move');
+            expect(storeConfig.canvas.mutations.setSuggestPanning).toBeCalledWith(expect.anything(), false);
         });
 
         it('pans', async () => {

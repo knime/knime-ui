@@ -9,13 +9,12 @@ export default {
     data() {
         return {
             /* Truthy if currently panning. Stores mouse origin */
-            isPanning: null,
-            prePanning: null
+            isPanning: null
         };
     },
     computed: {
         ...mapGetters('canvas', ['canvasSize', 'viewBox', 'contentBounds']),
-        ...mapState('canvas', ['zoomFactor', 'interactionsEnabled'])
+        ...mapState('canvas', ['suggestPanning', 'zoomFactor', 'interactionsEnabled'])
     },
     watch: {
         contentBounds(...args) {
@@ -38,7 +37,7 @@ export default {
     methods: {
         ...mapActions('canvas', ['initScrollContainerElement', 'updateContainerSize', 'zoomAroundPointer',
             'contentBoundsChanged']),
-        ...mapMutations('canvas', ['clearScrollContainerElement']),
+        ...mapMutations('canvas', ['clearScrollContainerElement', 'setSuggestPanning']),
 
         initResizeObserver() {
             // updating the container size and recalculating the canvas is debounced.
@@ -93,7 +92,7 @@ export default {
                 return;
             }
 
-            if (this.prePanning || e.button === 1) {
+            if (this.suggestPanning || e.button === 1) {
                 this.isPanning = true;
                 this.panningOffset = [e.screenX, e.screenY];
                 this.$el.setPointerCapture(e.pointerId);
@@ -109,8 +108,8 @@ export default {
             }
             /* eslint-enable no-invalid-this */
         }),
-        stopPrePan(e) {
-            this.prePanning = false;
+        stopSuggestingPanning(e) {
+            this.setSuggestPanning(false);
             this.isPanning = false;
         },
         stopPan(e) {
@@ -132,11 +131,11 @@ export default {
       'panning': isPanning,
       'disabled': !interactionsEnabled
     }]"
-    :style="prePanning ? {'cursor': 'move'} : null"
+    :style="suggestPanning ? {'cursor': 'move'} : null"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
-    @keypress.space.prevent="prePanning = true"
-    @keyup.space="stopPrePan"
+    @keypress.space.prevent="setSuggestPanning(true)"
+    @keyup.space="stopSuggestingPanning"
     @pointerdown.middle="beginPan"
     @pointerup.middle="stopPan"
     @pointerup.left="stopPan"
@@ -148,7 +147,7 @@ export default {
       :height="canvasSize.height"
       :viewBox="viewBox.string"
       @pointerdown.left.shift.exact.stop="$emit('selection-pointerdown', $event)"
-      @pointerdown.left.stop="prePanning ? beginPan($event) : $emit('selection-pointerdown', $event)"
+      @pointerdown.left.exact.stop="suggestPanning ? beginPan($event) : $emit('selection-pointerdown', $event)"
       @pointerup.left.stop="$emit('selection-pointerup', $event)"
       @pointermove="$emit('selection-pointermove', $event)"
       @lostpointercapture="$emit('selection-lostpointercapture', $event)"
