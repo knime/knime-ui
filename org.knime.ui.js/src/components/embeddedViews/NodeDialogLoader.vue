@@ -29,7 +29,7 @@ export default {
 
     computed: {
         renderKey() {
-            if (this.selectedNode?.hasDialog && this.selectedNode?.hasView) {
+            if (this.selectedNode?.hasDialog) {
                 return [
                     this.projectId,
                     this.workflowId,

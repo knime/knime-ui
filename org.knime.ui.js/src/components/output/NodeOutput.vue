@@ -85,7 +85,7 @@ export default {
     },
     watch: {
         validationErrors: {
-            handler(validationErrors, prev) {
+            handler(validationErrors) {
                 if (validationErrors) {
                     this.outputState = {
                         message: this.validationErrors.message,
@@ -133,11 +133,6 @@ export default {
         },
         executeNode() {
             this.$store.dispatch('workflow/executeNodes', [this.singleSelectedNode.id]);
-        },
-        test(e, from) {
-            console.log('from', from);
-            console.log('e', e);
-            this.outputState = e;
         }
     }
 };

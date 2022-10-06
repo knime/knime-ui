@@ -5,7 +5,7 @@ const mockComponent = { template: '<div/>' };
 const mockResourceLocation = 'http://example.com/';
 
 const getMockVueInstance = () => {
-    let registeredComponents = new Map();
+    const registeredComponents = new Map();
     return {
         component: (componentName, component) => {
             if (componentName && !component) {

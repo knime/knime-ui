@@ -12,7 +12,11 @@ import HotkeyHandler from '@/components/application/HotkeyHandler.vue';
 import Sidebar from '@/components/sidebar/Sidebar.vue';
 import WorkflowToolbar from '@/components/toolbar/WorkflowToolbar.vue';
 import WorkflowEntryPage from '@/components/workflow/WorkflowEntryPage.vue';
+import { loadPageBuilder as loadPageBuilderMock } from '@/components/embeddedViews/pagebuilderLoader';
+
 import KnimeUI from '../KnimeUI.vue';
+
+jest.mock('@/components/embeddedViews/pagebuilderLoader');
 
 describe('KnimeUI.vue', () => {
     beforeAll(() => {
@@ -20,7 +24,7 @@ describe('KnimeUI.vue', () => {
         localVue.use(Vuex);
     });
 
-    let $store, doShallowMountWithAsyncData, initializeApplication, wrapper, storeConfig, mocks, destroyApplication,
+    let $store, doShallowMount, initializeApplication, wrapper, storeConfig, mocks, destroyApplication,
         setHasClipboardSupport;
 
     beforeEach(() => {
@@ -53,13 +57,18 @@ describe('KnimeUI.vue', () => {
 
         $store = mockVuexStore(storeConfig);
         mocks = { $store };
-        doShallowMountWithAsyncData = async () => {
+        doShallowMount = async () => {
             wrapper = await shallowMount(KnimeUI, { mocks });
         };
     });
 
+    it('loads the pagebuilder on mount', () => {
+        doShallowMount();
+        expect(loadPageBuilderMock).toHaveBeenCalled();
+    });
+
     it('renders before loading', async () => {
-        await doShallowMountWithAsyncData();
+        await doShallowMount();
         expect(wrapper.findComponent(AppHeader).exists()).toBe(true);
         expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(true);
         expect(wrapper.findComponent(TooltipContainer).exists()).toBe(true);
@@ -72,7 +81,7 @@ describe('KnimeUI.vue', () => {
         initializeApplication.mockImplementation(() => {
             throw new TypeError('error');
         });
-        await doShallowMountWithAsyncData();
+        await doShallowMount();
         await Vue.nextTick();
 
         let errorComponent = wrapper.findComponent(Error);
@@ -92,7 +101,7 @@ describe('KnimeUI.vue', () => {
             parents: []
         };
         document.fonts.load.mockResolvedValue('dummy');
-        await doShallowMountWithAsyncData();
+        await doShallowMount();
 
         // await fetch hook
         await Vue.nextTick();
@@ -105,7 +114,7 @@ describe('KnimeUI.vue', () => {
 
     it('renders after loading without a workflow', async () => {
         document.fonts.load.mockResolvedValue('dummy');
-        await doShallowMountWithAsyncData();
+        await doShallowMount();
 
         // await fetch hook
         await Vue.nextTick();
@@ -119,7 +128,7 @@ describe('KnimeUI.vue', () => {
 
     it('initiates', async () => {
         document.fonts.load.mockResolvedValue('dummy');
-        await doShallowMountWithAsyncData();
+        await doShallowMount();
 
         expect(initializeApplication).toHaveBeenCalled();
         expect(document.fonts.load).toHaveBeenCalledWith('400 1em Roboto');
@@ -129,7 +138,7 @@ describe('KnimeUI.vue', () => {
     });
 
     it('destroys application', async () => {
-        await doShallowMountWithAsyncData();
+        await doShallowMount();
         await wrapper.destroy();
 
         expect(destroyApplication).toHaveBeenCalled();
@@ -145,7 +154,7 @@ describe('KnimeUI.vue', () => {
             async (state, expectedValue) => {
                 Object.assign(navigator, { permissions: { query: () => ({ state }) } });
                 jest.spyOn(navigator.permissions, 'query');
-                await doShallowMountWithAsyncData();
+                await doShallowMount();
                 expect(setHasClipboardSupport).toHaveBeenCalledWith({}, expectedValue);
             }
         );
@@ -158,7 +167,7 @@ describe('KnimeUI.vue', () => {
             jest.spyOn(navigator.permissions, 'query');
             Object.assign(navigator, { clipboard: {} });
             
-            await doShallowMountWithAsyncData();
+            await doShallowMount();
             expect(setHasClipboardSupport).toHaveBeenCalledWith({}, false);
         });
 
@@ -170,7 +179,7 @@ describe('KnimeUI.vue', () => {
             Object.assign(navigator, { clipboard: { readText: () => '{}' } });
             jest.spyOn(navigator.clipboard, 'readText');
 
-            await doShallowMountWithAsyncData();
+            await doShallowMount();
             expect(setHasClipboardSupport).toHaveBeenCalledWith({}, true);
         });
     });
