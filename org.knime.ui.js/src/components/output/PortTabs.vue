@@ -1,5 +1,5 @@
 <script>
-import FlowVarTabIcon from '@/assets/flow-variables.svg';
+import FlowVarTabIcon from 'webapps-common/ui/assets/img/icons/both-flow-variables.svg';
 import TabBar from 'webapps-common/ui/components/TabBar.vue';
 
 import portIcon from '@/components/common/PortIconRenderer';
@@ -105,8 +105,14 @@ export default {
 }
 
 /* Flow variable icon */
->>> circle[r="2.5"] {
+>>> circle[r="3"] {
   fill: var(--knime-coral);
+  stroke: var(--knime-coral);
+  stroke-width: calc(32px / 14);
+}
+
+>>> path {
+  stroke-width: calc(32px / 14);
 }
 
 /* Flow variable icon disabled */
@@ -121,11 +127,16 @@ export default {
     fill: var(--knime-silver-sand);
     stroke: var(--knime-silver-sand);
   }
+  
+  & path {
+    stroke: var(--knime-silver-sand);
+  }
 }
 
 /* Flow variable icon active/hover */
->>> input:not(:disabled):checked + span circle[r="2.5"],
->>> input:not(:disabled) + span:hover circle[r="2.5"] {
+>>> input:not(:disabled):checked + span circle[r="3"],
+>>> input:not(:disabled) + span:hover circle[r="3"] {
   fill: var(--knime-coral-dark);
+  stroke: var(--knime-coral-dark);
 }
 </style>
