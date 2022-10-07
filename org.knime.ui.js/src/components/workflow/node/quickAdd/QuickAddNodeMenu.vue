@@ -1,24 +1,23 @@
 <script>
+import { mapActions, mapGetters, mapState } from 'vuex';
+import { flatten } from 'lodash';
+
 import SearchBar from '@/components/common/SearchBar.vue';
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 
-import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
-
-import { mapActions, mapGetters, mapState } from 'vuex';
-import { flatten } from 'lodash';
+import Fuse from 'fuse.js';
 
 const MAX_NODES = 12;
 
 export default {
     components: {
         SearchBar,
-        PlusIcon,
         NodePreview,
         FloatingMenu
     },
     props: {
-        /** direction of the port and the connector coming out of it: in-coming or out-going */
+        /** direction of the start port where the connector was dragged away from */
         direction: {
             type: String,
             required: true,
@@ -46,17 +45,24 @@ export default {
     computed: {
         ...mapState('nodeRepository', ['nodesPerCategory']),
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
+        ...mapState('canvas', ['zoomFactor']),
         ...mapGetters('workflow', ['isWritable']),
         nodes() {
+            // TODO: replace this with the suggested nodes API call (NXT-1206)
+            const filterPorts = (ports) => {
+                let flowVarType = 'org.knime.core.node.port.flowvariable.FlowVariablePortObject';
+                return ports.filter(p => p.typeId !== flowVarType);
+            };
             let result = flatten(this.nodesPerCategory.map(category => category.nodes));
             // filter nodes by in/out ports; ignore flow vars
             if (this.port.side === 'in') {
-                result = result.filter(n => this.filterPorts(n.outPorts).length > 0);
+                result = result.filter(n => filterPorts(n.outPorts).length > 0);
             } else {
-                result = result.filter(n => this.filterPorts(n.inPorts).length > 0);
+                result = result.filter(n => filterPorts(n.inPorts).length > 0);
             }
             if (this.searchQuery && this.searchQuery !== '') {
-                result = result.filter(x => this.search(x.name, this.searchQuery));
+                // TODO: move makeSearch to own computed to not generate serach every time
+                result = this.makeSearch(result)(this.searchQuery);
             }
             return result.slice(0, MAX_NODES);
         },
@@ -64,98 +70,51 @@ export default {
             let pos = { ...this.position };
             const halfPort = this.$shapes.portSize / 2;
 
-            // make -> arrow fully visible
+            // x: align with the arrow (position seems to be the center of the port)
             if (this.direction === 'out') {
                 pos.x += halfPort;
             } else {
                 pos.x -= halfPort;
             }
-            // move down to the plus
-            pos.y -= 36;
-
             return pos;
+        },
+        ghostSizeZoomed() {
+            return this.$shapes.addNodeGhostSize * this.zoomFactor;
         }
     },
     mounted() {
-        this.$refs.innerDiv?.focus();
         // we currently just get some nodes, this should be done via a new endpoint
         if (!this.nodesPerCategory.length) {
             this.$store.dispatch('nodeRepository/getAllNodes', { append: false });
         }
     },
     methods: {
-        ...mapActions('workflow', {
-            addNodeToWorkflow: 'addNode',
-            connectNodes: 'connectNodes'
-        }),
-        async addNode(nodeTemplate) {
+        ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
+        async addNode({ nodeFactory }) {
             if (!this.isWritable) {
                 return; // end here
             }
-            let position = this.position;
-            const nodeFactory = nodeTemplate.nodeFactory;
-            // TODO: NXT-1205 use backend to provide nodeId of just added node
-            let nodeIdsBefore = Object.keys(this.workflow.nodes);
+
+            // add node
+            const { position } = this;
             await this.addNodeToWorkflow({
                 position,
-                nodeFactory
+                nodeFactory,
+                sourceNodeId: this.nodeId,
+                sourcePortIdx: this.port.index
             });
-            setTimeout(() => {
-                let nodeIdsAfter = Object.keys(this.workflow.nodes);
-                let newNodeId = nodeIdsAfter.filter(x => !nodeIdsBefore.includes(x))[0];
-                this.autoConnectNodes(newNodeId);
-                this.$emit('menu-close');
-            }, 200);
+
+            this.$emit('menu-close');
         },
-        filterPorts(ports) {
-            let flowVarType = 'org.knime.core.node.port.flowvariable.FlowVariablePortObject';
-            return ports.filter(p => p.typeId !== flowVarType);
-        },
-        autoConnectNodes(newNodeId) {
-            let node = this.workflow.nodes[newNodeId];
-            // TODO: improve this; find out compatible ports?
-            let flowVarType = 'org.knime.core.node.port.flowvariable.FlowVariablePortObject';
-            let inPort = this.filterPorts(node.inPorts)[0];
-            let outPort = this.filterPorts(node.outPorts)[0];
-            // we moved from an in port (so [new node]>--->[present node])
-            if (this.port.side === 'in') {
-                if (!outPort) {
-                    return;
-                }
-                this.connectNodes({
-                    sourceNode: newNodeId,
-                    sourcePort: outPort.index,
-                    destNode: this.nodeId,
-                    destPort: this.port.index
-                });
-            } else {
-                // we moved from an out port (so [present node]>---->[new node])
-                if (!inPort) {
-                    return;
-                }
-                this.connectNodes({
-                    sourceNode: this.nodeId,
-                    sourcePort: this.port.index,
-                    destNode: newNodeId,
-                    destPort: inPort.index
-                });
-            }
-        },
-        search(haystack, needle) {
-            // TODO: use Fuse search (see fuzzyPortTypeSearch)
-            let hay = haystack.toLowerCase();
-            let i = 0;
-            let n = -1;
-            let l;
-            needle = needle.toLowerCase();
-            // eslint-disable-next-line no-cond-assign
-            for (; l = needle[i++];) {
-                // eslint-disable-next-line no-bitwise
-                if (!~(n = hay.indexOf(l, n + 1))) {
-                    return false;
-                }
-            }
-            return true;
+        makeSearch(nodes) {
+            const searchEngine = new Fuse(nodes, {
+                keys: ['name'],
+                shouldSort: true,
+                isCaseSensitive: false,
+                minMatchCharLength: 0
+            });
+
+            return (input, options) => searchEngine.search(input, options).map(result => result.item);
         }
     }
 };
@@ -166,28 +125,30 @@ export default {
     class="quick-add-node"
     :canvas-position="canvasPosition"
     :anchor="direction === 'in' ? 'top-right' : 'top-left'"
+    :style="`--ghost-size: ${ghostSizeZoomed}; --extra-margin: ${Math.log(ghostSizeZoomed) / 1.1}`"
     aria-label="Quick add node"
     prevent-overflow
+    tabindex="0"
     @menu-close="$emit('menu-close')"
   >
-    <div
-      ref="innerDiv"
-      tabindex="0"
+    <section
+      class="header"
     >
+      <h3>&nbsp;<!--<span>Add node</span>--></h3>
+    </section>
+    <div class="wrapper">
       <SearchBar
+        ref="searchBar"
         v-model="searchQuery"
-        placeholder="Filter Nodes"
+        placeholder="Filter recommended nodes"
         class="search-bar"
-      >
-        <template #lens-icon>
-          <PlusIcon />
-        </template>
-      </SearchBar>
-      <div
+        focus-on-mount
+      />
+      <hr>
+      <section
         class="results"
       >
         <div class="content">
-          <h3>Recommended</h3>
           <ul class="nodes">
             <li
               v-for="node in nodes"
@@ -211,53 +172,64 @@ export default {
             </li>
           </ul>
         </div>
-      </div>
+      </section>
     </div>
   </FloatingMenu>
 </template>
 
 <style lang="postcss" scoped>
 .quick-add-node {
-  width: 360px;
-  box-shadow: 0 1px 6px 0 var(--knime-gray-dark-semi);
-  background: var(--knime-gray-ultra-light);
-  padding: 0.5em;
+  width: 330px;
+  margin-top: calc(var(--ghost-size) / 2 * 1px - 20px + var(--extra-margin) * 1px + 3px);
+
+  & .wrapper {
+    box-shadow: 0 1px 6px 0 var(--knime-gray-dark-semi);
+    background: var(--knime-gray-ultra-light);
+    padding: 0.5em 0;
+  }
 
   &:focus {
     outline: none;
   }
 
+  & hr {
+    border: none;
+    border-top: 1px solid var(--knime-silver-sand)
+  }
+
+  & .header {
+    padding: 0;
+    margin-bottom: 3px;
+    pointer-events: none;
+
+    & h3 {
+      font-family: "Roboto Condensed", sans-serif;
+      font-weight: normal;
+      font-size: 15px;
+      margin: 0 0 0 calc(var(--ghost-size) * 1px + 8px);
+
+      & span {
+        display: inline-block;
+        backdrop-filter: blur(2px);
+      }
+    }
+  }
+
   & .results {
     overflow-y: auto;
     max-height: calc(100% - 50px);
+    padding-top: 0.5em;
 
     & .content {
       padding: 0 10px 15px;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-
-      & h3 {
-        font-family: "Roboto Condensed", sans-serif;
-        font-weight: normal;
-        font-size: 16px;
-        margin: 0 10px;
-      }
     }
   }
 
   & .search-bar {
-    margin: 10px 10px 25px;
-
-    & >>> .lens-icon {
-      background: #e6f5e7;
-      border: 1px dashed var(--knime-stone-gray);
-      margin: -1px 3px -1px -1px;
-
-      & svg {
-        fill: white;
-      }
-    }
+    margin: 5px 10px;
   }
 
   & .nodes {

@@ -22,6 +22,15 @@ export default {
         placeholder: {
             type: String,
             default: null
+        },
+        focusOnMount: {
+            type: Boolean,
+            default: false
+        }
+    },
+    mounted() {
+        if (this.focusOnMount) {
+            this.focus();
         }
     },
     methods: {
@@ -32,7 +41,7 @@ export default {
         },
         // publicly accessible
         focus() {
-            this.$refs.searchInput.focus();
+            this.$refs.searchInput?.focus();
         }
     }
 

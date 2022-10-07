@@ -38,7 +38,7 @@ const workflowCommand = async ({ projectId, workflowId, command, args }) => {
     try {
         let rpcArgs = { kind: command, ...args };
         let response = await rpc(`WorkflowService.executeWorkflowCommand`, projectId, workflowId, rpcArgs);
-        
+
         if (!response || !response.snapshotId) {
             return response;
         }
@@ -64,10 +64,15 @@ const workflowCommand = async ({ projectId, workflowId, command, args }) => {
  * @returns { Promise } Promise
  */
 export const addNode = ({
-    position, nodeFactory, projectId, workflowId
+    position,
+    nodeFactory,
+    projectId,
+    workflowId,
+    sourceNodeId = null,
+    sourcePortIdx = null
 }) => workflowCommand({
     command: 'add_node',
-    args: { position, nodeFactory },
+    args: { position, nodeFactory, sourceNodeId, sourcePortIdx },
     projectId,
     workflowId
 });

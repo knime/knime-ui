@@ -10,6 +10,8 @@ import Connector from '@/components/workflow/connectors/Connector.vue';
 import NodePortActions from './NodePortActions.vue';
 import QuickAddNodeGhost from '@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue';
 
+const SHOW_ADD_NODE_GHOST_DELAY = 300; // ms
+
 const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) => {
     const isPortFree = toPort.connectedVia.length === 0;
 
@@ -101,8 +103,8 @@ export default {
         didMove: false,
         pointerDown: false,
         didDragToCompatibleTarget: false,
-        suggestAddNodeTimer: null,
-        showSuggestAddNode: false
+        addNodeGhostTimer: null,
+        showAddNodeGhost: false
     }),
     computed: {
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
@@ -250,7 +252,8 @@ export default {
 
             if (isSameTarget && !this.lastHitTarget.allowsDrop) {
                 // same hitTarget as before, but doesn't allow drop
-                // Do-Nothing
+                // Do-Nothing; just reset state (important for add node ghost)
+                this.didDragToCompatibleTarget = false;
             } else if (isSameTarget) {
                 // same hitTarget as before and allows connector drop
                 hitTarget.dispatchEvent(moveEvent);
@@ -302,7 +305,10 @@ export default {
                 };
             }
 
-            this.updateSuggestQuickAddNodeTimer();
+            // show add node ghost for output ports
+            if (this.direction === 'out') {
+                this.showAddNodeGhost = !this.didDragToCompatibleTarget;
+            }
             /* eslint-enable no-invalid-this */
         }),
         onPointerUp(e) {
@@ -341,14 +347,14 @@ export default {
             }
         },
         onLostPointerCapture(e) {
-            if (this.showSuggestAddNode) {
-                this.openQuickAddNodeMenu();
-                this.showSuggestAddNode = false;
-                return;
-            }
             this.pointerDown = false;
-            this.dragConnector = null;
             this.didMove = false;
+            if (this.showAddNodeGhost) {
+                this.openQuickAddNodeMenu();
+            } else {
+                // clear drag connector now; otherwise this happens on close of the menu
+                this.dragConnector = null;
+            }
             if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
                 this.lastHitTarget.element.dispatchEvent(new CustomEvent('connector-leave', { bubbles: true }));
             }
@@ -365,10 +371,6 @@ export default {
             if (this.selected) {
                 this.$emit('deselect');
             }
-        },
-        onRequestCloseAddMenu() {
-            this.onLostPointerCapture();
-            this.closeQuickAddNodeMenu();
         },
         openQuickAddNodeMenu() {
             // find the position in coordinates relative to the origin
@@ -391,9 +393,7 @@ export default {
                             nodeId: this.nodeId
                         },
                         events: {
-                            'item-active': () => {},
-                            'item-click': () => {},
-                            'menu-close': this.onRequestCloseAddMenu
+                            'menu-close': this.closeQuickAddNodeMenu
                         }
                     },
                     bubbles: true
@@ -401,6 +401,7 @@ export default {
             ));
         },
         closeQuickAddNodeMenu() {
+            // close the menu
             this.$el.dispatchEvent(new CustomEvent(
                 'close-quick-add-node-menu', {
                     detail: {
@@ -409,17 +410,21 @@ export default {
                     bubbles: true
                 }
             ));
+            // remove the ghost
+            this.showAddNodeGhost = false;
+            // clear the drag connector
+            this.dragConnector = null;
         },
-        updateSuggestQuickAddNodeTimer(allowDrop) {
+        updateSuggestQuickAddNodeTimer(didSnap) {
             // show suggest new node ghost if user stops moving for some time
-            if (this.showSuggestAddNode) {
-                clearTimeout(this.suggestAddNodeTimer);
-                this.showSuggestAddNode = false;
+            if (this.showAddNodeGhost || didSnap) {
+                clearTimeout(this.addNodeGhostTimer);
+                this.showAddNodeGhost = false;
             } else {
-                clearTimeout(this.suggestAddNodeTimer);
-                this.suggestAddNodeTimer = setTimeout(() => {
-                    this.showSuggestAddNode = true;
-                }, 600);
+                clearTimeout(this.addNodeGhostTimer);
+                this.addNodeGhostTimer = setTimeout(() => {
+                    this.showAddNodeGhost = true;
+                }, SHOW_ADD_NODE_GHOST_DELAY);
             }
         },
         createConnectorFromEvent(e) {
@@ -487,7 +492,7 @@ export default {
         :transform="`translate(${dragConnector.absolutePoint})`"
       />
       <QuickAddNodeGhost
-        v-if="showSuggestAddNode"
+        v-if="showAddNodeGhost"
         class="non-interactive"
         :direction="direction"
         :position="dragConnector.absolutePoint"
