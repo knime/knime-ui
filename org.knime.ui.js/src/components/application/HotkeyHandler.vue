@@ -77,7 +77,11 @@ export default {
             }
         },
         onKeypress(e) {
-            if (e.code === 'Space' && (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT')) {
+            if (blacklistTagNames.test(e.target.tagName)) {
+                return;
+            }
+
+            if (e.code === 'Space') {
                 if (this.isWorkflowPresent) {
                     this.setSuggestPanning(true);
                     e.stopPropagation();

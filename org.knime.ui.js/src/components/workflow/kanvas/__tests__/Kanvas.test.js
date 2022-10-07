@@ -151,11 +151,11 @@ describe('Kanvas', () => {
         it('suggests panning', async () => {
             doShallowMount();
 
-            expect(wrapper.element.style.cursor).not.toBe('move');
+            expect(wrapper.element.className).not.toMatch('panning');
 
             $store.state.canvas.suggestPanning = true;
             await Vue.nextTick();
-            expect(wrapper.element.style.cursor).toBe('move');
+            expect(wrapper.element.className).toMatch('panning');
         });
 
         it('stops suggesting panning', async () => {

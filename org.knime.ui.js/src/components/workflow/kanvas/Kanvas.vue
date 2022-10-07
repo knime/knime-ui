@@ -4,6 +4,7 @@ import { debounce } from 'lodash';
 import throttle from 'raf-throttle';
 
 export const RESIZE_DEBOUNCE = 100;
+const blacklistTagNames = /^(input|textarea|select)$/i;
 
 export default {
     data() {
@@ -88,11 +89,13 @@ export default {
             Panning
         */
         suggestPan(e) {
-            if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
-                e.preventDefault();
-                e.stopPropagation();
-                this.setSuggestPanning(true);
+            if (blacklistTagNames.test(e.target.tagName)) {
+                return;
             }
+
+            e.preventDefault();
+            e.stopPropagation();
+            this.setSuggestPanning(true);
         },
         beginPan(e) {
             if (!this.interactionsEnabled) {
@@ -135,15 +138,15 @@ export default {
   <div
     tabindex="0"
     :class="['scroll-container', {
-      'panning': isPanning,
+      'panning': isPanning || suggestPanning,
       'disabled': !interactionsEnabled
     }]"
-    :style="suggestPanning ? {'cursor': 'move'} : null"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
     @keypress.space="suggestPan"
     @keyup.space="stopSuggestingPanning"
     @pointerdown.middle="beginPan"
+    @pointerdown.left="beginPan"
     @pointerup.middle="stopPan"
     @pointerup.left="stopPan"
     @pointermove="movePan"
@@ -154,7 +157,7 @@ export default {
       :height="canvasSize.height"
       :viewBox="viewBox.string"
       @pointerdown.left.shift.exact.stop="$emit('selection-pointerdown', $event)"
-      @pointerdown.left.exact.stop="suggestPanning ? beginPan($event) : $emit('selection-pointerdown', $event)"
+      @pointerdown.left.exact.stop="$emit('selection-pointerdown', $event)"
       @pointerup.left.stop="$emit('selection-pointerup', $event)"
       @pointermove="$emit('selection-pointermove', $event)"
       @lostpointercapture="$emit('selection-lostpointercapture', $event)"
