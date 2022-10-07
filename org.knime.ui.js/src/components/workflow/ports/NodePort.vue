@@ -103,7 +103,6 @@ export default {
         didMove: false,
         pointerDown: false,
         didDragToCompatibleTarget: false,
-        addNodeGhostTimer: null,
         showAddNodeGhost: false
     }),
     computed: {
@@ -414,18 +413,6 @@ export default {
             this.showAddNodeGhost = false;
             // clear the drag connector
             this.dragConnector = null;
-        },
-        updateSuggestQuickAddNodeTimer(didSnap) {
-            // show suggest new node ghost if user stops moving for some time
-            if (this.showAddNodeGhost || didSnap) {
-                clearTimeout(this.addNodeGhostTimer);
-                this.showAddNodeGhost = false;
-            } else {
-                clearTimeout(this.addNodeGhostTimer);
-                this.addNodeGhostTimer = setTimeout(() => {
-                    this.showAddNodeGhost = true;
-                }, SHOW_ADD_NODE_GHOST_DELAY);
-            }
         },
         createConnectorFromEvent(e) {
             const { kind: portKind } = this.portTemplate;
