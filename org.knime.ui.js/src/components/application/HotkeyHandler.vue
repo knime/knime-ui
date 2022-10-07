@@ -77,7 +77,7 @@ export default {
             }
         },
         onKeypress(e) {
-            if (e.code === 'Space') {
+            if (e.code === 'Space' && (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT')) {
                 if (this.isWorkflowPresent) {
                     this.setSuggestPanning(true);
                     e.stopPropagation();

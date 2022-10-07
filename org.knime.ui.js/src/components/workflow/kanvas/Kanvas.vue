@@ -87,6 +87,13 @@ export default {
         /*
             Panning
         */
+        suggestPan(e) {
+            if (e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
+                e.preventDefault();
+                e.stopPropagation();
+                this.setSuggestPanning(true);
+            }
+        },
         beginPan(e) {
             if (!this.interactionsEnabled) {
                 return;
@@ -134,7 +141,7 @@ export default {
     :style="suggestPanning ? {'cursor': 'move'} : null"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
-    @keypress.space.prevent="setSuggestPanning(true)"
+    @keypress.space="suggestPan"
     @keyup.space="stopSuggestingPanning"
     @pointerdown.middle="beginPan"
     @pointerup.middle="stopPan"
