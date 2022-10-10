@@ -1,5 +1,5 @@
 <script>
-import { mixin as clickaway } from 'vue-clickaway2';
+import { mixin as VueClickAway } from "vue3-click-away";
 import ClosePopoverIcon from 'webapps-common/ui/assets/img/icons/arrow-prev.svg';
 
 import SelectableTagList from '@/components/common/SelectableTagList.vue';
@@ -19,7 +19,7 @@ export default {
         SelectableTagList,
         ClosePopoverIcon
     },
-    mixins: [clickaway],
+    mixins: [VueClickAway],
     props: {
         /**
          * List of tags (Strings) to display. Not including selected ones.
@@ -73,7 +73,7 @@ export default {
 
 <template>
   <div
-    v-on-clickaway="onClickAway"
+    v-click-away="onClickAway"
     class="closeable-tags"
   >
     <div class="popout">

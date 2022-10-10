@@ -1,7 +1,7 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
 import throttle from 'raf-throttle';
-import { mixin as clickaway } from 'vue-clickaway2';
+import { mixin as VueClickAway } from "vue3-click-away";
 
 import { escapeStack } from '@/mixins/escapeStack';
 /*
@@ -22,7 +22,7 @@ import { escapeStack } from '@/mixins/escapeStack';
 
 export default {
     mixins: [
-        clickaway,
+        VueClickAway,
         escapeStack({
             onEscape() {
                 this.$emit('menu-close');
@@ -171,7 +171,7 @@ export default {
 
 <template>
   <div
-    v-on-clickaway="() => $emit('menu-close')"
+    v-click-away="() => $emit('menu-close')"
     class="floating-menu"
     :style="{
       left: `${absolutePosition.left}px`,

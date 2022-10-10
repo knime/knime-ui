@@ -1,7 +1,7 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
 import throttle from 'raf-throttle';
-import { mixin as clickaway } from 'vue-clickaway2';
+import { mixin as VueClickAway } from 'vue3-click-away';
 import { tooltip } from '@/mixins';
 
 import { circleDetection } from '@/util/compatibleConnections';
@@ -62,7 +62,7 @@ export default {
         Connector,
         NodePortActions
     },
-    mixins: [clickaway, tooltip],
+    mixins: [VueClickAway, tooltip],
     inject: ['anchorPoint'],
     props: {
         /** direction of the port and the connector coming out of it: in-coming or out-going */
@@ -376,7 +376,7 @@ export default {
 
 <template>
   <g
-    v-on-clickaway="() => onClose()"
+    v-click-away="() => onClose()"
     :transform="`translate(${relativePosition})`"
     :class="{ 'targeted': targeted }"
     @pointerdown="onPointerDown"
