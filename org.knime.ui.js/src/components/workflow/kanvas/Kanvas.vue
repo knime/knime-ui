@@ -138,12 +138,12 @@ export default {
       :width="canvasSize.width"
       :height="canvasSize.height"
       :viewBox="viewBox.string"
-      @pointerdown.left.shift.exact.stop="$emit('selection-pointerdown', $event)"
-      @pointerdown.left.exact.stop="$emit('selection-pointerdown', $event)"
-      @pointerup.left.stop="$emit('selection-pointerup', $event)"
-      @pointermove="$emit('selection-pointermove', $event)"
-      @lostpointercapture="$emit('selection-lostpointercapture', $event)"
-      @contextmenu="$emit('contextmenu', $event)"
+      @pointerdown.left.shift.exact.stop="$bus.emit('selection-pointerdown', $event)"
+      @pointerdown.left.exact.stop="$bus.emit('selection-pointerdown', $event)"
+      @pointerup.left.stop="$bus.emit('selection-pointerup', $event)"
+      @pointermove="$bus.emit('selection-pointermove', $event)"
+      @lostpointercapture="$bus.emit('selection-lostpointercapture', $event)"
+      @contextmenu="$bus.emit('contextmenu', $event)"
     >
       <slot />
     </svg>

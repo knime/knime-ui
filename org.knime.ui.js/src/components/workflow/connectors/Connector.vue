@@ -126,9 +126,9 @@ export default {
             }
 
             if (state) {
-                this.$root.$on('connector-dropped', this.onConnectorDropped);
+                this.$bus.on('connector-dropped', this.onConnectorDropped);
             } else {
-                this.$root.$off('connector-dropped', this.onConnectorDropped);
+                this.$bus.off('connector-dropped', this.onConnectorDropped);
             }
         },
         onConnectorDropped() {

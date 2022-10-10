@@ -181,7 +181,7 @@ export default {
             });
 
             // signal start of connecting phase
-            this.$root.$emit('connector-start', {
+            this.$bus.emit('connector-start', {
                 validConnectionTargets,
                 startNodeId: this.nodeId,
                 startPort: this.port
@@ -330,7 +330,7 @@ export default {
                     )
                 );
                 if (dropped) {
-                    this.$root.$emit('connector-dropped');
+                    this.$bus.emit('connector-dropped');
                 }
             }
         },
@@ -341,7 +341,7 @@ export default {
             if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
                 this.lastHitTarget.element.dispatchEvent(new CustomEvent('connector-leave', { bubbles: true }));
             }
-            this.$root.$emit('connector-end');
+            this.$bus.emit('connector-end');
         },
         onClick() {
             if (this.didMove) {

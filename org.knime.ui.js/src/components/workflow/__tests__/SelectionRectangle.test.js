@@ -315,7 +315,7 @@ describe('SelectionRectangle', () => {
     });
 
     describe('non actions', () => {
-        it('unregisters events on beforeDestroy', () => {
+        it('unregisters events on beforeUnmount', () => {
             doShallowMount();
             wrapper.vm.$parent.$off = jest.fn();
             wrapper.destroy();

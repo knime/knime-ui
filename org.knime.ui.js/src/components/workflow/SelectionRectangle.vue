@@ -45,16 +45,16 @@ export default {
         }
     },
     created() {
-        this.$parent.$on('selection-pointerdown', this.startRectangleSelection);
-        this.$parent.$on('selection-pointerup', this.stopRectangleSelection);
-        this.$parent.$on('selection-pointermove', this.updateRectangleSelection);
-        this.$parent.$on('selection-lostpointercapture', this.stopRectangleSelection);
+        this.$bus.on('selection-pointerdown', this.startRectangleSelection);
+        this.$bus.on('selection-pointerup', this.stopRectangleSelection);
+        this.$bus.on('selection-pointermove', this.updateRectangleSelection);
+        this.$bus.on('selection-lostpointercapture', this.stopRectangleSelection);
     },
-    beforeDestroy() {
-        this.$parent.$off('selection-pointerdown', this.startRectangleSelection);
-        this.$parent.$off('selection-pointerup', this.stopRectangleSelection);
-        this.$parent.$off('selection-pointermove', this.updateRectangleSelection);
-        this.$parent.$off('selection-lostpointercapture', this.stopRectangleSelection);
+    beforeUnmount() {
+        this.$bus.off('selection-pointerdown', this.startRectangleSelection);
+        this.$bus.off('selection-pointerup', this.stopRectangleSelection);
+        this.$bus.off('selection-pointermove', this.updateRectangleSelection);
+        this.$bus.off('selection-lostpointercapture', this.stopRectangleSelection);
     },
     methods: {
         ...mapActions('selection', ['selectNodes', 'deselectNodes', 'deselectAllObjects']),

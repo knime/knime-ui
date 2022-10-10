@@ -10,6 +10,9 @@ import { mapActions } from 'vuex';
  * ports of the same type (or compatible types) that can be connected together
  */
 export default {
+    compatConfig: {
+        MODE: 3
+    },
     props: {
         /**
          * Id of the port container. Will be used to identify the different connector events
@@ -95,8 +98,8 @@ export default {
     },
 
     mounted() {
-        this.$root.$on('connector-start', this.onConnectorStart);
-        this.$root.$on('connector-end', this.onConnectorEnd);
+        this.$bus.on('connector-start', this.onConnectorStart);
+        this.$bus.on('connector-end', this.onConnectorEnd);
     },
     
     methods: {
@@ -242,7 +245,7 @@ export default {
     },
 
     render() {
-        return this.$scopedSlots.default({
+        return this.$slots.default({
             targetPort: this.targetPort,
             connectorHover: this.connectorHover,
             connectionForbidden: this.connectionForbidden,

@@ -31,6 +31,7 @@
     "gsap": "3.8.0",
     "knime-ui-extension-service": "file:knime-ui-extension-service",
     "lodash": "4.17.21",
+    "mitt": "^3.0.0",
     "raf-throttle": "2.0.5",
     "vue3-click-away": "^1.2.4",
     "webapps-common": "file:webapps-common"
