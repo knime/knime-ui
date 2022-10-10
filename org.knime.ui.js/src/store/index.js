@@ -1,4 +1,4 @@
-import Vuex from 'vuex';
+import { createStore } from 'vuex'
 
 import * as application from './application';
 import * as canvas from './canvas';
@@ -10,10 +10,8 @@ import * as api from './uiExtApi';
 
 
 // eslint-disable-next-line arrow-body-style
-export const initStore = Vue => {
-    Vue.use(Vuex);
-    
-    return new Vuex.Store({
+export const initStore = () => {
+    return createStore({
         modules: {
             application: { namespaced: true, ...application },
             canvas: { namespaced: true, ...canvas },
@@ -25,5 +23,5 @@ export const initStore = Vue => {
             // can be solved in a better way
             api: { namespaced: true, ...api }
         }
-    });
+    })
 };

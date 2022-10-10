@@ -1,7 +1,7 @@
 import { registerEventHandlers } from '@api';
 import { notifyPatch } from '@/util/event-syncer';
 
-export default ({ store: $store }) => {
+export default (app, store) => {
     registerEventHandlers({
         /*
          * Is triggered by the backend, whenever a change to the workflow has been made/requested
@@ -13,7 +13,7 @@ export default ({ store: $store }) => {
             ops.forEach(op => {
                 op.path = `/activeWorkflow${op.path}`;
             });
-            $store.dispatch('workflow/patch.apply', ops);
+            store.dispatch('workflow/patch.apply', ops);
         
             if (snapshotId) {
                 notifyPatch(snapshotId);
@@ -26,7 +26,7 @@ export default ({ store: $store }) => {
          */
         // NXT-962: Unpack arguments from Object?
         AppStateChangedEvent({ appState }) {
-            $store.dispatch('application/replaceApplicationState', appState);
+            store.dispatch('application/replaceApplicationState', appState);
         }
     });
 };

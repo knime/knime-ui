@@ -1,26 +1,23 @@
-import PortalVue from 'portal-vue';
-
 import shortcuts from './shortcuts';
 import constants from './constants';
 import { directiveMove } from './directive-move';
 import events from './events';
 
-export const initPlugins = (vueInstance, store) => {
+import Portal from '@/components/common/Portal.vue';
+import PortalTarget from '@/components/common/PortalTarget.vue';
+
+export const initPlugins = (app, store) => {
     const wrapPlugin = (plugin) => ({
-        install(Vue) {
-            let context = { store };
-    
-            let inject = (name, content) => {
-                Vue.prototype[`$${name}`] = content;
-            };
-    
-            plugin(context, inject);
+        install(app) {
+            plugin(app, store);
         }
     });
 
-    vueInstance.use(PortalVue);
-    vueInstance.use(wrapPlugin(shortcuts));
-    vueInstance.use(wrapPlugin(constants));
-    vueInstance.use(wrapPlugin(events));
-    vueInstance.directive(directiveMove.name, directiveMove.options);
+    app.use(wrapPlugin(shortcuts));
+    app.use(wrapPlugin(constants));
+    app.use(wrapPlugin(events));
+    app.directive(directiveMove.name, directiveMove.options);
+    
+    app.component('Portal', Portal);
+    app.component('PortalTarget', PortalTarget);
 };

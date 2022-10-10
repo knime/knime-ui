@@ -32,7 +32,7 @@ Object.entries(shortcuts).forEach(([name, shortcut]) => {
 Object.freeze(shortcuts);
 
 // define plugin
-export default (context, inject) => {
+export default (app, store) => {
     // get the whole shortcut by name
     const get = shortcutName => ({ ...shortcuts[shortcutName] });
 
@@ -76,7 +76,7 @@ export default (context, inject) => {
             return true;
         }
 
-        return shortcut.condition({ $store: context.store });
+        return shortcut.condition({ $store: store });
     };
 
     // execute a shortcut
@@ -86,14 +86,14 @@ export default (context, inject) => {
             throw new Error(`Shortcut ${shortcutName} doesn't exist`);
         }
 
-        shortcut.execute({ $store: context.store, eventDetail });
+        shortcut.execute({ $store: store, eventDetail });
     };
 
-    // inject $shortcuts into components
-    inject('shortcuts', {
+    // define global $shortcuts property
+    app.config.globalProperties.$shortcuts = {
         isEnabled,
         dispatch,
         findByHotkey,
         get
-    });
+    };
 };
