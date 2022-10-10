@@ -19,7 +19,7 @@ export const escapeStack = ({ onEscape }) => ({
         // Rendering the component automatically pushes it onto the stack
         stack.push([this, { onEscape }]);
     },
-    beforeDestroy() {
+    beforeUnmount() {
         // Destroying the component removes it from the stack
         stack = stack.filter(([component]) => component !== this);
     }

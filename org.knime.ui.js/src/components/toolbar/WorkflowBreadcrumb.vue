@@ -68,7 +68,7 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
->>> ul {
+:deep(ul) {
   user-select: none;
 }
 

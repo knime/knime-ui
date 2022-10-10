@@ -43,12 +43,12 @@ export default {
 .modal {
   --modal-width: 960px;
 
-  & >>> .inner {
+  & :deep(.inner) {
     top: 48%;
     height: 85%;
   }
 
-  & >>> .notice {
+  & :deep(.notice) {
     overflow-x: hidden;
     overflow-y: auto;
     height: 100%;

@@ -1,7 +1,7 @@
 <script>
 import { mapState, mapGetters } from 'vuex';
 import throttle from 'raf-throttle';
-import { mixin as VueClickAway } from "vue3-click-away";
+import { mixin as VueClickAway } from 'vue3-click-away';
 
 import { escapeStack } from '@/mixins/escapeStack';
 /*
@@ -86,7 +86,7 @@ export default {
         };
         this.resizeObserver.observe(this.$el);
     },
-    beforeDestroy() {
+    beforeUnmount() {
         // if kanvas currently exists (workflow is open) remove scroll event listener
         let kanvas = document.getElementById('kanvas');
         kanvas?.removeEventListener('scroll', this.onCanvasScroll);

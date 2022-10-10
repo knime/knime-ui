@@ -126,7 +126,7 @@ button {
   bottom: 0;
   right: 0;
 
-  & >>> .primary {
+  & :deep(.primary) {
     color: var(--knime-masala);
     font-size: 12px;
     background-color: transparent;

@@ -144,33 +144,33 @@ export default {
   --selected-port-transition-time: 150ms;
 }
 
->>> .action-button {
+:deep(.action-button) {
   transition: all var(--selected-port-transition-time) ease-in;
   transform: scale(1);
 }
 
->>> .selected-port {
+:deep(.selected-port) {
   transition: opacity var(--selected-port-transition-time) ease-out;
   opacity: 1;
 }
 
 .fade-enter {
-  & >>> .action-button {
+  & :deep(.action-button) {
     opacity: 0;
     transform: scale(0);
   }
 
-  & >>> .selected-port {
+  & :deep(.selected-port) {
     opacity: 0;
   }
 }
 
 .fade-leave-to {
-  & >>> .action-button {
+  & :deep(.action-button) {
     transform: scale(0);
   }
 
-  & >>> .selected-port {
+  & :deep(.selected-port) {
     opacity: 0;
   }
 }

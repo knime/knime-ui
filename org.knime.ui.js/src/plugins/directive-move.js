@@ -113,7 +113,7 @@ const createMousemoveHandler = (state) => (e) => {
     }
 };
 
-const inserted = (el, { value }) => {
+const mounted = (el, { value }) => {
     // Only insert when the object is writable
     if (value.isProtected) {
         return;
@@ -137,7 +137,7 @@ const inserted = (el, { value }) => {
     state.mousemove = createMousemoveHandler(state);
 };
 
-const unbind = (el, { value }) => {
+const unmounted = (el, { value }) => {
     // Only insert when the object is writable
     if (value.isProtected) {
         return;
@@ -152,7 +152,7 @@ const unbind = (el, { value }) => {
 
 // reapply the pointer capture when the component changes
 // this is necessary, as otherwise the capture is lost on rerender of the view
-const componentUpdated = (el, { value }) => {
+const updated = (el, { value }) => {
     // Only insert when the object is writable
     if (value.isProtected) {
         return;
@@ -166,8 +166,8 @@ const componentUpdated = (el, { value }) => {
 export const directiveMove = {
     name: 'move',
     options: {
-        inserted,
-        unbind,
-        componentUpdated
+        mounted,
+        unmounted,
+        updated
     }
 };

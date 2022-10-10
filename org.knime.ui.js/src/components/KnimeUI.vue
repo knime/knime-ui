@@ -63,7 +63,7 @@ export default {
         this.checkClipboardSupport();
     },
 
-    async beforeDestroy() {
+    async beforeUnmount() {
         await this.destroyApplication();
     },
 

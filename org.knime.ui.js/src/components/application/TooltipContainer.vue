@@ -11,6 +11,9 @@ import Tooltip from './Tooltip.vue';
  * Prevents native browser zooming by catching Ctrl-Wheel events
  */
 export default {
+    compatConfig: {
+        MODE: 3
+    },
     components: {
         Tooltip
     },
@@ -39,7 +42,7 @@ export default {
             }
         }
     },
-    beforeDestroy() {
+    beforeUnmount() {
         // clean up event listeners
         this.closeTooltip();
     },
@@ -95,8 +98,8 @@ export default {
         :orientation="tooltip.orientation"
         :hoverable="tooltip.hoverable"
         :type="tooltip.type"
-        @mouseleave.native="onMouseLeave"
-        @wheel.ctrl.native.prevent
+        @mouseleave="onMouseLeave"
+        @wheel.ctrl.prevent
       />
     </transition>
   </div>

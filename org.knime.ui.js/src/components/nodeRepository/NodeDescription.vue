@@ -190,29 +190,29 @@ export default {
     margin-top: 6px;
     margin-bottom: 40px;
 
-    & >>> .shadow-wrapper::after,
-    & >>> .shadow-wrapper::before {
+    & :deep(.shadow-wrapper::after),
+    & :deep(.shadow-wrapper::before) {
       display: none;
     }
 
     /* Style refinement for Feature List; Ports, Options, Views  */
 
-    & >>> h5 {
+    & :deep(h5) {
       font-size: 16px;
     }
 
-    & >>> h6 {
+    & :deep(h6) {
       font-size: 16px;
       margin-bottom: 0;
     }
 
-    & >>> .description {
+    & :deep(.description) {
       font-size: 13px;
     }
 
     /* Style refinement for Options */
 
-    & >>> .options .panel {
+    & :deep(.options .panel) {
       padding-left: 10px;
       padding-right: 10px;
       margin-left: 25px;
@@ -229,7 +229,7 @@ export default {
     }
 
     /* Style refinement for Views */
-    & >>> .views-list {
+    & :deep(.views-list) {
       & .content {
         margin-top: 5px;
         margin-left: 30px;
@@ -241,7 +241,7 @@ export default {
     }
 
     /* Style refinement for Ports */
-    & >>> .ports-list {
+    & :deep(.ports-list) {
       & .content {
         & ol {
           margin-left: 28px;
@@ -256,16 +256,16 @@ export default {
   }
 
   /* Style refinement for Code */
-  & >>> tt,
-  & >>> pre,
-  & >>> code,
-  & >>> samp {
+  & :deep(tt),
+  & :deep(pre),
+  & :deep(code),
+  & :deep(samp) {
     font-size: 13px;
     line-height: 24px;
   }
 
   /* Style refinement for Tables */
-  & >>> table {
+  & :deep(table) {
     width: 100%;
     font-size: 12px;
     border-spacing: 5px 0;

@@ -9,6 +9,9 @@ const blacklistTagNames = /^(input|textarea|select)$/i;
  * on document and dispatching the corresponding shortcut handler.
  */
 export default {
+    compatConfig: {
+        RENDER_FUNCTION: false
+    },
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
         ...mapState('canvas', ['suggestPanning']),
@@ -37,7 +40,7 @@ export default {
         document.addEventListener('keydown', this.onKeydown);
         document.addEventListener('keyup', this.onKeyup);
     },
-    beforeDestroy() {
+    beforeUnmount() {
         // Stop Key listener
         document.removeEventListener('keydown', this.onKeydown);
         document.removeEventListener('keyup', this.onKeyup);

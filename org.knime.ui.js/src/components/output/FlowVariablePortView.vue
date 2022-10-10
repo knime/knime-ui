@@ -76,8 +76,8 @@ table {
   font-family: "Roboto Condensed", sans-serif;
   contain: strict;
 
-  & >>> th,
-  & >>> td {
+  & :deep(th),
+  & :deep(td) {
     padding: 0 6px;
     text-align: left;
     max-width: 1000px;
@@ -86,7 +86,7 @@ table {
     text-overflow: ellipsis;
   }
 
-  & >>> th {
+  & :deep(th) {
     background: var(--knime-porcelain);
     height: 42px;
     position: sticky;
@@ -107,7 +107,7 @@ table {
     }
   }
 
-  & >>> td {
+  & :deep(td) {
     white-space: pre;
     max-width: 50vw;
     overflow: hidden;
@@ -118,7 +118,7 @@ table {
     font-size: 14px;
   }
 
-  & >>> tr:not(:last-child) {
+  & :deep(tr:not(:last-child)) {
     border-bottom: 1px solid var(--knime-porcelain);
   }
 }

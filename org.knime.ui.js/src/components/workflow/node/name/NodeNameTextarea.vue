@@ -167,7 +167,7 @@ export default {
   outline: 1px solid var(--knime-silver-sand);
 
   /* FF does not support background of <foreignObject> */
-  & >>> .wrapper {
+  & :deep(.wrapper) {
     background-color: var(--knime-white);
   }
 

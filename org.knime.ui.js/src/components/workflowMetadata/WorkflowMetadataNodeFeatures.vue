@@ -31,22 +31,22 @@ export default {
 .node-feature-list {
   margin-bottom: 40px;
 
-  & >>> .shadow-wrapper::after,
-  & >>> .shadow-wrapper::before {
+  & :deep(.shadow-wrapper::after),
+  & :deep(.shadow-wrapper::before) {
     display: none;
   }
 
-  & >>> h6 {
+  & :deep(h6) {
     font-size: 16px;
     margin-bottom: 0;
   }
 
-  & >>> .description {
+  & :deep(.description) {
     font-size: 16px;
   }
 
   /* Style refinement for Options */
-  & >>> .options .panel {
+  & :deep(.options .panel) {
     padding-left: 0;
     margin-left: 52px;
 
@@ -60,7 +60,7 @@ export default {
   }
 
   /* Style refinement for Views */
-  & >>> .views-list {
+  & :deep(.views-list) {
     & .content {
       margin-top: 5px;
       margin-left: 30px;
@@ -72,7 +72,7 @@ export default {
   }
 
   /* Style refinement for Ports */
-  & >>> .ports-list {
+  & :deep(.ports-list) {
     & .content {
       & ol {
         margin-left: 28px;

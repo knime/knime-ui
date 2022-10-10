@@ -27,8 +27,8 @@ describe('Escape Stack', () => {
     test('add and remove components', () => {
         component1.beforeMount();
         component2.beforeMount();
-        component1.beforeDestroy();
-        component2.beforeDestroy();
+        component1.beforeUnmount();
+        component2.beforeUnmount();
 
         escapePressed();
         expect(escapeOrder).toBe('');
@@ -48,7 +48,7 @@ describe('Escape Stack', () => {
         component1.beforeMount();
         component2.beforeMount();
 
-        component2.beforeDestroy();
+        component2.beforeUnmount();
 
         escapePressed();
         escapePressed();

@@ -147,7 +147,7 @@ nav {
   flex: 0 0 auto;
   border-right: 1px solid var(--knime-silver-sand);
 
-  & >>> .container {
+  & :deep(.container) {
     /* prevent scrollbar jump when switching between tabs in the LeftCollapsiblePanel */
     overflow-y: hidden;
   }

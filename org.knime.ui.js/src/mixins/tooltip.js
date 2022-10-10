@@ -15,7 +15,7 @@ export const tooltip = {
         this.$el.addEventListener('mouseenter', this.onTooltipMouseEnter);
         this.$el.addEventListener('mouseleave', this.onTooltipMouseLeave);
     },
-    beforeDestroy() {
+    beforeUnmount() {
         this.$el.removeEventListener('mouseenter', this.onTooltipMouseEnter);
         this.$el.removeEventListener('mouseleave', this.onTooltipMouseLeave);
         

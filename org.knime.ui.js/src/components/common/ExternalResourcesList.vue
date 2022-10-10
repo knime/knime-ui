@@ -60,7 +60,7 @@ export default {
     margin-bottom: -6px;
     line-height: 18px;
 
-    & >>> svg {
+    & :deep(svg) {
       top: 2px;
     }
   }

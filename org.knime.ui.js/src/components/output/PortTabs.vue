@@ -87,7 +87,7 @@ export default {
     content: none;
   }
 
-  & >>> .carousel {
+  & :deep(.carousel) {
     padding: 0;
 
     &::before,
@@ -98,25 +98,25 @@ export default {
   }
 }
 
->>> svg,
->>> svg * {
+:deep(svg),
+:deep(svg *) {
   pointer-events: none !important;
   width: 14px;
 }
 
 /* Flow variable icon */
->>> circle[r="3"] {
+:deep(circle[r="3"]) {
   fill: var(--knime-coral);
   stroke: var(--knime-coral);
   stroke-width: calc(32px / 14);
 }
 
->>> path {
+:deep(path) {
   stroke-width: calc(32px / 14);
 }
 
 /* Flow variable icon disabled */
->>> input:disabled + span {
+:deep(input:disabled + span) {
   & circle {
     fill: var(--knime-coral-light);
     stroke: var(--knime-coral-light);
@@ -134,8 +134,8 @@ export default {
 }
 
 /* Flow variable icon active/hover */
->>> input:not(:disabled):checked + span circle[r="3"],
->>> input:not(:disabled) + span:hover circle[r="3"] {
+:deep(input:not(:disabled):checked + span circle[r="3"]),
+:deep(input:not(:disabled) + span:hover circle[r="3"]) {
   fill: var(--knime-coral-dark);
   stroke: var(--knime-coral-dark);
 }

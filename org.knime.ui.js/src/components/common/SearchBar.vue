@@ -94,7 +94,7 @@ export default {
 
     margin-right: calc(var(--icon-size) / 2 * 1px);
 
-    & >>> svg {
+    & :deep(svg) {
       width: calc(var(--icon-size) * 1px);
       height: calc(var(--icon-size) * 1px);
       stroke-width: calc(32px / var(--icon-size));

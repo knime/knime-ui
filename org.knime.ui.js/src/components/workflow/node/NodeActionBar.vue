@@ -14,7 +14,6 @@ import ActionButton from '@/components/common/ActionButton.vue';
 
 /**
  *  Displays a bar of action buttons above nodes
- *  Emits Event `action(actionName)`
  */
 export default {
     components: {

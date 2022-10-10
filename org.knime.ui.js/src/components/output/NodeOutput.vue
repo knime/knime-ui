@@ -242,7 +242,7 @@ export default {
   flex-direction: column;
   contain: strict;
 
-  & >>> .tab-bar {
+  & :deep(.tab-bar) {
     padding-top: 0;
 
     & span {
@@ -255,7 +255,7 @@ export default {
 .action-button {
   margin-top: 20px;
 
-  & >>> svg {
+  & :deep(svg) {
     border-radius: 12px;
     background: var(--knime-white);
     border: 1px solid var(--knime-masala);

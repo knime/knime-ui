@@ -160,7 +160,7 @@ export default {
 .dragging {
   cursor: grabbing;
 
-  & >>> .port {
+  & :deep(.port) {
     pointer-events: none;
   }
 }

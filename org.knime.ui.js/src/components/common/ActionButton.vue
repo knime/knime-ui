@@ -72,7 +72,7 @@ export default {
     }
   }
 
-  & >>> svg {
+  & :deep(svg) {
     stroke-width: calc(32px / 20);
     stroke: var(--knime-masala);
     pointer-events: none;
@@ -84,7 +84,7 @@ export default {
       stroke: var(--knime-silver-sand);
     }
 
-    & >>> svg {
+    & :deep(svg) {
       stroke: var(--knime-silver-sand);
     }
   }
@@ -97,7 +97,7 @@ export default {
       stroke: var(--knime-masala);
     }
 
-    &:hover >>> svg {
+    &:hover :deep(svg) {
       stroke: var(--knime-white);
     }
 
@@ -107,7 +107,7 @@ export default {
       stroke: var(--knime-black);
     }
 
-    &:active >>> svg {
+    &:active :deep(svg) {
       stroke: var(--knime-white);
     }
 

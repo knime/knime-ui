@@ -302,7 +302,7 @@ export default {
   border: none;
   border-bottom: 1px solid var(--knime-stone-gray);
 
-  & >>> .lens-icon {
+  & :deep(.lens-icon) {
     --icon-size: 14;
 
     margin-left: 0;
@@ -313,7 +313,7 @@ export default {
     }
   }
 
-  & >>> .clear-search {
+  & :deep(.clear-search) {
     --icon-size: 12;
 
     padding: 3px;
@@ -325,7 +325,7 @@ export default {
 .search-results {
   margin: 0;
 
-  & >>> .label {
+  & :deep(.label) {
     font-size: 13px;
     max-width: 160px;
 
@@ -337,21 +337,21 @@ export default {
     }
   }
 
-  & >>> svg { /* stylelint-disable-line no-descending-specificity */
+  & :deep(svg) { /* stylelint-disable-line no-descending-specificity */
     height: 11px !important;
     width: 11px !important;
     margin-top: 2px;
   }
 
-  & >>> svg * {
+  & :deep(svg *) {
     pointer-events: none !important;
   }
 
-  & >>> li button {
+  & :deep(li button) {
     padding: 6px;
   }
 
-  & >>> li .item-icon {
+  & :deep(li .item-icon) {
     margin-right: 9px;
   }
 }

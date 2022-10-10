@@ -391,7 +391,7 @@ export default {
       @click.native="onClick"
     />
 
-    <Portal to="selected-port']">
+    <Portal to="selected-port">
       <NodePortActions
         v-if="selected"
         :key="`${nodeId}-${port.index}-${direction}`"
@@ -427,23 +427,23 @@ export default {
 .non-interactive {
   pointer-events: none;
 
-  & >>> .hover-area {
+  & :deep(.hover-area) {
     /* overwrite hover-area of ports */
     pointer-events: none !important;
   }
 }
 
-.targeted >>> .scale {
+.targeted :deep(.scale) {
   transform: scale(1.4);
 }
 
 .hoverable-port {
-  & >>> .scale {
+  & :deep(.scale) {
     pointer-events: none;
     transition: transform 0.1s linear;
   }
 
-  &:hover >>> .scale {
+  &:hover :deep(.scale) {
     transition: transform 0.17s cubic-bezier(0.8, 2, 1, 2.5);
     transform: scale(1.2);
   }

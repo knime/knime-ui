@@ -123,13 +123,13 @@ export default {
 </template>
 
 <style scoped>
-#kanvas >>> svg {
+#kanvas :deep(svg) {
   color: var(--knime-masala);
   background-color: white;
   transition: background-color 150ms;
 }
 
-#kanvas.indicate-node-drag >>> svg {
+#kanvas.indicate-node-drag :deep(svg) {
   background-color: var(--knime-gray-ultra-light);
 }
 

@@ -1,5 +1,5 @@
 <script>
-import { mixin as VueClickAway } from "vue3-click-away";
+import { mixin as VueClickAway } from 'vue3-click-away';
 import ClosePopoverIcon from 'webapps-common/ui/assets/img/icons/arrow-prev.svg';
 
 import SelectableTagList from '@/components/common/SelectableTagList.vue';
@@ -113,7 +113,7 @@ export default {
     padding: 0 20px 13px;
 
     /* limit tag length to a maximum */
-    & >>> .tag.clickable {
+    & :deep(.tag.clickable) {
       max-width: 250px;
       overflow: hidden;
       text-overflow: ellipsis;

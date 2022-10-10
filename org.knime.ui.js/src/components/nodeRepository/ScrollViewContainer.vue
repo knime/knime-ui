@@ -19,7 +19,7 @@ export default {
     mounted() {
         this.$refs.scroller.scrollTop = this.initialPosition;
     },
-    beforeDestroy() {
+    beforeUnmount() {
         this.$emit('save-position', this.scrollPosition);
     },
     methods: {

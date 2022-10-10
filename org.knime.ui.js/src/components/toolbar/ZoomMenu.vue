@@ -96,7 +96,7 @@ export default {
   margin-left: auto;
   z-index: 5;
 
-  & >>> .submenu-toggle {
+  & :deep(.submenu-toggle) {
     padding: 0 13px 0 0;
     align-items: center;
 
@@ -135,7 +135,7 @@ export default {
   }
 
   /* TODO: NXT-841 add a app specific definition of --theme-button-function-foreground-color */
-  & >>> .function-button:not(.active) svg {
+  & :deep(.function-button:not(.active) svg) {
     stroke: var(--knime-masala);
   }
 }

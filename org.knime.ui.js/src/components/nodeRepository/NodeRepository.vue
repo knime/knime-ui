@@ -151,13 +151,13 @@ export default {
     font-weight: 400;
     margin: 8px 0 0;
 
-    & >>> span,
-    & >>> a {
+    & :deep(span),
+    & :deep(a) {
       line-height: 36px;
       padding: 0;
     }
 
-    & >>> svg.arrow {
+    & :deep(svg.arrow) {
       margin-top: 6px;
     }
   }

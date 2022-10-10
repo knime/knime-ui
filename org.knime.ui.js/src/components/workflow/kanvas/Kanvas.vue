@@ -27,7 +27,7 @@ export default {
         this.initResizeObserver();
         this.$el.focus();
     },
-    beforeDestroy() {
+    beforeUnmount() {
         // Stop Resize Observer
         this.stopResizeObserver();
 
@@ -175,7 +175,7 @@ svg {
   cursor: move;
 
   & svg,
-  & svg >>> * {
+  & svg :deep(*) {
     pointer-events: none !important;
   }
 }
