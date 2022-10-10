@@ -87,11 +87,11 @@ export default {
       </transition-group>
     </LeftCollapsiblePanel>
 
-    <portal-target
-      slim
+    <PortalTarget
+      tag="div"
       name="extension-panel"
-      :transition="extensionPanelTransition"
     />
+    <!-- :transition="extensionPanelTransition" -->
   </div>
 </template>
 

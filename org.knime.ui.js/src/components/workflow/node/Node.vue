@@ -350,7 +350,7 @@ export default {
     >
       <g :class="{ 'connection-forbidden': connectionForbidden && !isConnectionSource }">
         <!-- NodeActionBar portalled to the front-most layer -->
-        <portal to="node-actions">
+        <Portal to="node-actions">
           <NodeActionBar
             v-if="!insideStreamingComponent && isHovering && !isDragging"
             ref="actionbar"
@@ -359,10 +359,10 @@ export default {
             :node-id="id"
             @mouseleave.native="onLeaveHoverArea"
           />
-        </portal>
+        </Portal>
 
         <!-- Node Selection Plane. Portalled to the back -->
-        <portal to="node-select">
+        <Portal to="node-select">
           <NodeSelectionPlane
             v-show="showSelectionPlane"
             :position="position"
@@ -370,7 +370,7 @@ export default {
             :extra-height="nameDimensions.height"
             :kind="kind"
           />
-        </portal>
+        </Portal>
 
         <!-- Annotation needs to be behind ports -->
         <NodeAnnotation

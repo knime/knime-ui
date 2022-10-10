@@ -67,8 +67,7 @@ export default {
     />
 
     <!-- Node Selection Plane Layer -->
-    <portal-target
-      multiple
+    <PortalTarget
       tag="g"
       name="node-select"
     />
@@ -106,14 +105,13 @@ export default {
     </MoveableNodeContainer>
 
     <!-- Editor Layer; only one editor is open at a time -->
-    <portal-target
+    <PortalTarget
       tag="g"
       name="node-name-editor"
     />
 
     <!-- Quick Actions Layer: Buttons for Hovered & Selected Nodes and their ids -->
-    <portal-target
-      multiple
+    <PortalTarget
       tag="g"
       name="node-actions"
     />
@@ -124,13 +122,13 @@ export default {
       v-bind="connector"
     />
 
-    <portal-target
+    <PortalTarget
       tag="g"
       name="selected-port"
-      :transition="selectedPortTransition"
     />
-
-    <portal-target
+    <!-- :transition="selectedPortTransition" -->
+    
+    <PortalTarget
       tag="g"
       name="drag-connector"
     />

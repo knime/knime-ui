@@ -31,20 +31,13 @@
     "gsap": "3.8.0",
     "knime-ui-extension-service": "file:knime-ui-extension-service",
     "lodash": "4.17.21",
-    "portal-vue": "2.1.7",
     "raf-throttle": "2.0.5",
-    "vue": "2.6.14",
-    "vue-clickaway2": "2.3.2",
-    "vue-router": "3.5.1",
-    "vuex": "3.6.2",
+    "vue3-click-away": "^1.2.4",
     "webapps-common": "file:webapps-common"
   },
   "devDependencies": {
     "@knime/eslint-config": "^7.0.1",
     "@types/jest": "^28.1.8",
-    "@vue/cli-plugin-babel": "5.0.8",
-    "@vue/test-utils": "1.2.2",
-    "@vue/vue2-jest": "^28.1.0",
     "eslint": "7.32.0",
     "file-loader": "^6.2.0",
     "jest": "^28.1.3",
@@ -62,10 +55,7 @@
     "stylelint-config-recommended-vue": "^1.4.0",
     "stylelint-config-standard": "20.0.0",
     "url-loader": "^4.1.1",
-    "vite": "^3.1.0",
-    "vite-plugin-vue2": "^2.0.2",
-    "vite-plugin-vue2-svg": "^0.3.0",
-    "vue-template-compiler": "2.6.14"
+    "vite": "^3.1.0"
   },
   "engines": {
     "node": "18.x"

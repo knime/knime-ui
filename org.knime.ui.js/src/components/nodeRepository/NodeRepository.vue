@@ -104,9 +104,9 @@ export default {
     </div>
     <SearchResults v-if="showSearchResults" />
     <CategoryResults v-else />
-    <portal to="extension-panel">
+    <Portal to="extension-panel">
       <NodeDescription v-if="isDescriptionPanelOpen" />
-    </portal>
+    </Portal>
   </div>
 </template>
 

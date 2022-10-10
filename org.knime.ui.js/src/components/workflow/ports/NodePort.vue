@@ -391,7 +391,7 @@ export default {
       @click.native="onClick"
     />
 
-    <portal to="selected-port">
+    <Portal to="selected-port']">
       <NodePortActions
         v-if="selected"
         :key="`${nodeId}-${port.index}-${direction}`"
@@ -402,9 +402,9 @@ export default {
         @action:remove="$emit('remove')"
         @close="onClose"
       />
-    </portal>
+    </Portal>
 
-    <portal
+    <Portal
       v-if="dragConnector"
       to="drag-connector"
     >
@@ -419,7 +419,7 @@ export default {
         :port="port"
         :transform="`translate(${dragConnector.absolutePoint})`"
       />
-    </portal>
+    </Portal>
   </g>
 </template>
 

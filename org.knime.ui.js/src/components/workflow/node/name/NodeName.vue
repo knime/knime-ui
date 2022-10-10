@@ -75,7 +75,7 @@ export default {
 <template>
   <g>
     <template v-if="isEditing">
-      <portal to="node-name-editor">
+      <Portal to="node-name-editor">
         <NodeNameEditor
           :node-id="nodeId"
           :node-position="nodePosition"
@@ -87,7 +87,7 @@ export default {
           @save="onSave"
           @cancel="onCancel"
         />
-      </portal>
+      </Portal>
     </template>
 
     <template v-else>
