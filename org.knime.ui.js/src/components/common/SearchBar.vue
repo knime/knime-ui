@@ -9,13 +9,16 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
  * Implements the v-model pattern.
  */
 export default {
+    compatConfig: {
+        COMPONENT_V_MODEL: false
+    },
     components: {
         FunctionButton,
         CloseIcon,
         LensIcon
     },
     props: {
-        value: {
+        modelValue: {
             type: String,
             default: ''
         },
@@ -24,10 +27,11 @@ export default {
             default: null
         }
     },
+    emits: ['clear', 'update:modelValue'],
     methods: {
         clearSearch() {
             this.$emit('clear');
-            this.$emit('input', '');
+            this.$emit('update:modelValue', '');
             this.$refs.searchInput.focus();
         },
         // publicly accessible
@@ -49,10 +53,10 @@ export default {
     </div>
     <input
       ref="searchInput"
-      :value="value"
+      :value="modelValue"
       :placeholder="placeholder"
       type="text"
-      @input="$emit('input', $event.target.value)"
+      @input="$emit('update:modelValue', $event.target.value)"
     >
     <FunctionButton
       class="clear-search"

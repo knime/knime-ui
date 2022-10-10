@@ -22,7 +22,7 @@ export default {
             type: Object,
             default: () => ({})
         },
-        value: {
+        modelValue: {
             type: String,
             default: null
         },
@@ -31,6 +31,7 @@ export default {
             default: false
         }
     },
+    emits: ['update:modelValue'],
     computed: {
         possibleTabValues() {
             if (!this.node || !this.node.outPorts.length) {
@@ -70,10 +71,10 @@ export default {
 <template>
   <TabBar
     name="output-port"
-    :value="value"
+    :value="modelValue"
     :disabled="disabled"
     :possible-values="possibleTabValues"
-    @update:value="$emit('input', $event)"
+    @update:value="$emit('update:modelValue', $event)"
   />
 </template>
 

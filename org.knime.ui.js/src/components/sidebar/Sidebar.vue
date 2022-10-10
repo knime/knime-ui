@@ -74,7 +74,10 @@ export default {
       :disabled="isDescriptionPanelOpen && isNodeRepositoryActive"
       @toggle-expand="toggleExpanded"
     >
-      <transition-group name="tab-transition">
+      <transition-group
+        name="tab-transition"
+        tag="span"
+      >
         <NodeRepository
           v-show="isNodeRepositoryActive"
           key="node-repository"
