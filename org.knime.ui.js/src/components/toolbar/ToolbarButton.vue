@@ -6,6 +6,13 @@
 </template>
 
 <style lang="postcss" scoped>
+:slotted(.icon) {
+  width: calc(var(--icon-size) * 1px);
+  height: calc(var(--icon-size) * 1px);
+  stroke-width: calc(32px / var(--icon-size));
+  stroke: var(--knime-masala);
+}
+
 button {
   --icon-size: 30; /* +2*1px border */
 
@@ -24,13 +31,6 @@ button {
     font-size: 13px;
     padding-right: 9px;
     padding-left: 2px;
-  }
-
-  & svg {
-    width: calc(var(--icon-size) * 1px);
-    height: calc(var(--icon-size) * 1px);
-    stroke-width: calc(32px / var(--icon-size));
-    stroke: var(--knime-masala);
   }
 
   &:disabled {

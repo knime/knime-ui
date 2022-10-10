@@ -36,6 +36,7 @@ export default {
     <Component
       :is="shortcut.icon"
       v-if="shortcut.icon"
+      class="icon"
     />
     {{ shortcut.text }}
   </ToolbarButton>

@@ -110,9 +110,9 @@ export default {
     <g v-if="trafficLight">
       <template
         v-for="(active, index) of trafficLight"
+        :key="index"
       >
         <circle
-          :key="`${index}-bg`"
           :cx="6 + 10 * index"
           cy="6"
           r="4"
@@ -120,7 +120,6 @@ export default {
           :fill="active ? $colors.trafficLight[['red', 'yellow', 'green'][index]] : $colors.trafficLight.inactive"
         />
         <circle
-          :key="`${index}-border`"
           :cx="6 + 10 * index"
           cy="6"
           r="3.5"

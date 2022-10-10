@@ -37,15 +37,17 @@ export default {
     @save-position="onSaveScrollPosition"
   >
     <div class="content">
-      <template v-for="({ tag, nodes }) in nodesPerCategory">
+      <template
+        v-for="({ tag, nodes }) in nodesPerCategory"
+        :key="`tag-${tag}`"
+      >
         <NodeCategory
-          :key="`tag-${tag}`"
           class="category"
           :tag="tag"
           :nodes="nodes"
           @select-tag="onSelectTag"
         />
-        <hr :key="tag">
+        <hr>
       </template>
     </div>
   </ScrollViewContainer>
