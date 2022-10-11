@@ -22,6 +22,7 @@ export default {
             validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         }
     },
+    emits: ['menuClose'],
     data: () => ({
         visibleItems: []
     }),
@@ -55,7 +56,7 @@ export default {
     },
     methods: {
         onItemClick(event, shortcut) {
-            this.$emit('menu-close');
+            this.$emit('menuClose');
             this.$shortcuts.dispatch(shortcut.name, event);
         },
         setMenuItems() {
@@ -119,7 +120,7 @@ export default {
     :canvas-position="position"
     aria-label="Context Menu"
     prevent-overflow
-    @menu-close="$emit('menu-close')"
+    @menu-close="$emit('menuClose')"
   >
     <MenuItems
       ref="menuItems"

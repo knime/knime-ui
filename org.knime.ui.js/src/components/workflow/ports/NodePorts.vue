@@ -71,6 +71,7 @@ export default {
             default: false
         }
     },
+    emits: ['updatePortPositions'],
     data: () => ({
         selectedPort: null
     }),
@@ -140,7 +141,7 @@ export default {
         portPositions: {
             immediate: true,
             handler(portPositions) {
-                this.$emit('update-port-positions', portPositions);
+                this.$emit('updatePortPositions', portPositions);
             }
         }
     },
@@ -271,8 +272,8 @@ export default {
           'node-selected': isSingleSelected,
         }]"
         @add-port="addPort({ side, typeId: $event.typeId, portGroup: $event.portGroup })"
-        @open-port-type-menu.native="onPortTypeMenuOpen($event)"
-        @close-port-type-menu.native="onPortTypeMenuClose($event)"
+        @open-port-type-menu="onPortTypeMenuOpen($event)"
+        @close-port-type-menu="onPortTypeMenuClose($event)"
       />
     </template>
   </g>

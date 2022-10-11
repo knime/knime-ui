@@ -43,7 +43,7 @@ export default {
             default: false
         }
     },
-    emits: ['update:modelValue', 'show-more'],
+    emits: ['update:modelValue', 'showMore'],
     computed: {
         sortedTags() {
             // the tags should keep their "natural" order but the selected ones need to be at the head of the list
@@ -85,7 +85,7 @@ export default {
             }
         },
         onShowMore() {
-            this.$emit('show-more');
+            this.$emit('showMore');
         }
     }
 };

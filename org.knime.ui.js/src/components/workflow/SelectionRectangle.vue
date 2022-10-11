@@ -13,6 +13,7 @@ import { findNodesInsideOfRectangle } from '@/util/rectangleSelection';
  * define what is rendered, but that's too slow in this case.
  */
 export default {
+    emits: ['nodeSelectionPreview'],
     data: () => ({
         startPos: {
             x: 0,
@@ -105,7 +106,7 @@ export default {
 
                 // clear "preview state" of now selected elements
                 [...this.nodeIdsToSelectOnEnd, ...this.nodeIdsToDeselectOnEnd].forEach(nodeId => {
-                    this.$emit('node-selection-preview', { type: 'clear', nodeId });
+                    this.$emit('nodeSelectionPreview', { type: 'clear', nodeId });
                 });
 
                 this.nodeIdsToSelectOnEnd = [];
@@ -141,10 +142,10 @@ export default {
             inside.forEach(nodeId => {
                 // support for shift (remove selection on selected ones)
                 if (this.selectedNodeIdsAtStart?.includes(nodeId)) {
-                    this.$emit('node-selection-preview', { type: 'hide', nodeId });
+                    this.$emit('nodeSelectionPreview', { type: 'hide', nodeId });
                     deselectNodes.push(nodeId);
                 } else {
-                    this.$emit('node-selection-preview', { type: 'show', nodeId });
+                    this.$emit('nodeSelectionPreview', { type: 'show', nodeId });
                     selectNodes.push(nodeId);
                 }
             });
@@ -154,7 +155,7 @@ export default {
             // to clear its selected state
             outside.forEach(nodeId => {
                 if (this.nodeIdsInsidePreviousSelection?.includes(nodeId)) {
-                    this.$emit('node-selection-preview', { type: 'clear', nodeId });
+                    this.$emit('nodeSelectionPreview', { type: 'clear', nodeId });
                 }
             });
 

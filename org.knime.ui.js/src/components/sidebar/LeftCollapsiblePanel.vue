@@ -31,6 +31,7 @@ export default {
             default: null
         }
     },
+    emits: ['toggleExpand'],
     data: () => ({
         showContainerTransition: false
     }),
@@ -61,7 +62,7 @@ export default {
     <button
       :title="expanded ? null : title"
       :disabled="disabled"
-      @click="$emit('toggle-expand')"
+      @click="$emit('toggleExpand')"
     >
       <SwitchIcon :style="{ transform: expanded ? null : 'scaleX(-1)' }" />
     </button>

@@ -25,7 +25,7 @@ export default {
         VueClickAway,
         escapeStack({
             onEscape() {
-                this.$emit('menu-close');
+                this.$emit('menuClose');
             }
         })
     ],
@@ -55,6 +55,7 @@ export default {
             validator: (anchor) => ['top-left', 'top-right'].includes(anchor)
         }
     },
+    emits: ['menuClose'],
     data: () => ({
         absolutePosition: { left: 0, top: 0 }
     }),
@@ -128,7 +129,7 @@ export default {
               
             // close menu if outside threshold
             if (distanceToCanvas > distanceThreshold) {
-                this.$emit('menu-close');
+                this.$emit('menuClose');
                 return;
             }
 
@@ -159,7 +160,7 @@ export default {
         },
         onFocusOut(e) {
             if (e.relatedTarget && !this.$el.contains(e.relatedTarget)) {
-                this.$emit('menu-close');
+                this.$emit('menuClose');
             }
         },
         onCanvasScroll: throttle(function () {
@@ -171,7 +172,7 @@ export default {
 
 <template>
   <div
-    v-click-away="() => $emit('menu-close')"
+    v-click-away="() => $emit('menuClose')"
     class="floating-menu"
     :style="{
       left: `${absolutePosition.left}px`,

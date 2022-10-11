@@ -16,7 +16,8 @@ export default {
             type: Boolean,
             default: false
         }
-    }
+    },
+    emits: ['showMore']
 };
 </script>
 
@@ -35,7 +36,7 @@ export default {
       compact
       with-border
       class="show-more"
-      @click="$emit('show-more')"
+      @click="$emit('showMore')"
     >
       <slot name="more-button" />
     </Button>

@@ -41,6 +41,7 @@ export default {
             default: null
         }
     },
+    emits: ['itemClick', 'itemActive', 'menuClose'],
     data: () => ({
         searchQuery: '',
         selectedPortGroup: null
@@ -141,8 +142,8 @@ export default {
     },
     methods: {
         emitPortClick({ typeId, portGroup }) {
-            this.$emit('item-click', { typeId, portGroup });
-            this.$emit('menu-close', { typeId, portGroup });
+            this.$emit('itemClick', { typeId, portGroup });
+            this.$emit('menuClose', { typeId, portGroup });
         },
 
         onMenuItemClick(e, item) {
@@ -184,7 +185,7 @@ export default {
     ref="floatingMenu"
     :anchor="side === 'input' ? 'top-right' : 'top-left'"
     :canvas-position="adjustedPosition"
-    @menu-close="$emit('menu-close')"
+    @menu-close="$emit('menuClose')"
   >
     <div
       :class="['header', side]"
@@ -208,8 +209,8 @@ export default {
         v-model="searchQuery"
         placeholder="Search port type"
         class="search-bar"
-        @keydown.down.exact.native="onSearchBarDown"
-        @keydown.up.exact.native="onSearchBarUp"
+        @keydown.down.exact="onSearchBarDown"
+        @keydown.up.exact="onSearchBarUp"
       />
 
       <div class="scroll-container">
@@ -220,7 +221,7 @@ export default {
           class="search-results"
           aria-label="Port Type Menu"
           @item-click="onMenuItemClick"
-          @item-active="$emit('item-active', $event)"
+          @item-active="$emit('itemActive', $event)"
           @top-reached="onSearchResultsWrapAround"
           @bottom-reached="onSearchResultsWrapAround"
         />

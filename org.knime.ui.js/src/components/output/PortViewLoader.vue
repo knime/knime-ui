@@ -34,6 +34,8 @@ export default {
         }
     },
 
+    emits: ['stateChange'],
+
     data() {
         return {
             componentName: null,
@@ -89,7 +91,7 @@ export default {
 
     methods: {
         async loadPortView() {
-            this.$emit('state-change', { state: 'loading' });
+            this.$emit('stateChange', { state: 'loading' });
             this.initialData = null;
             this.componentName = null;
             
@@ -98,9 +100,9 @@ export default {
                 const portView = await getPortView({ projectId, workflowId, nodeId, portIndex });
                 
                 await this.renderDynamicPortView(portView);
-                this.$emit('state-change', { state: 'ready' });
+                this.$emit('stateChange', { state: 'ready' });
             } catch (e) {
-                this.$emit('state-change', { state: 'error', message: e });
+                this.$emit('stateChange', { state: 'error', message: e });
             }
         },
 

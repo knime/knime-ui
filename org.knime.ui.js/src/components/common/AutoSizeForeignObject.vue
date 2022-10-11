@@ -63,6 +63,7 @@ export default {
             default: null
         }
     },
+    emits: ['widthChange', 'heightChange'],
     data() {
         return {
             width: this.maxWidth,
@@ -115,8 +116,7 @@ export default {
             this.width = this.maxWidth;
             
             // wait for re-render
-            await this.$nextTick();
-            await this.$nextTick();
+            await new Promise(r => setTimeout(r, 0));
 
             // 2. measure content's actual size
             const rect = this.$refs.wrapper?.getBoundingClientRect();
@@ -144,8 +144,8 @@ export default {
         },
 
         emitDimensions() {
-            this.$emit('width-change', this.width);
-            this.$emit('height-change', this.height);
+            this.$emit('widthChange', this.width);
+            this.$emit('heightChange', this.height);
         }
     }
 };

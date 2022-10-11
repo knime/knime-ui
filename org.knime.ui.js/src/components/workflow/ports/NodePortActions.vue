@@ -42,6 +42,7 @@ export default {
             validator: value => typeof value.x === 'number' && typeof value.y === 'number'
         }
     },
+    emits: ['close'],
     computed: {
         actions() {
             return [

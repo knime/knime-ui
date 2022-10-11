@@ -17,6 +17,7 @@ export default {
             default: () => []
         }
     },
+    emits: ['selectTag'],
     computed: {
         hasMoreNodes() {
             return this.nodes.length >= CATEGORY_LIMIT;
@@ -29,14 +30,14 @@ export default {
   <div class="category">
     <span
       class="category-title"
-      @click="$emit('select-tag', tag)"
+      @click="$emit('selectTag', tag)"
     >
       {{ tag }}
     </span>
     <NodeList
       :nodes="nodes"
       :has-more-nodes="hasMoreNodes"
-      @show-more="$emit('select-tag', tag)"
+      @show-more="$emit('selectTag', tag)"
     >
       <template #more-button>More {{ tag }} nodes</template>
     </NodeList>

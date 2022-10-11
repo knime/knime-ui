@@ -6,6 +6,7 @@ import throttle from 'raf-throttle';
 export const RESIZE_DEBOUNCE = 100;
 
 export default {
+    emits: ['containerSizeChanged'],
     data() {
         return {
             /* Truthy if currently panning. Stores mouse origin */
@@ -44,7 +45,7 @@ export default {
             const updateContainerSize = debounce(() => {
                 this.updateContainerSize();
                 this.$nextTick(() => {
-                    this.$emit('container-size-changed');
+                    this.$emit('containerSizeChanged');
                 });
             }, RESIZE_DEBOUNCE);
             

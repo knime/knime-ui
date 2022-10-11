@@ -357,7 +357,7 @@ export default {
             v-bind="allNodeActions"
             :transform="`translate(${actionBarPosition.x}, ${actionBarPosition.y})`"
             :node-id="id"
-            @mouseleave.native="onLeaveHoverArea"
+            @mouseleave="onLeaveHoverArea"
           />
         </Portal>
 
@@ -420,7 +420,7 @@ export default {
                   :execution-state="state && state.executionState"
                   :class="['node-torso', { hover: isHovering }]"
                   :filter="isHovering && 'url(#node-torso-shadow)'"
-                  @dblclick.left.native="onLeftDoubleClick"
+                  @dblclick.left="onLeftDoubleClick"
                 />
 
                 <NodeDecorators v-bind="$props" />
@@ -455,13 +455,13 @@ export default {
                 :node-position="position"
                 :value="name"
                 :editable="isEditable && isContainerNode"
-                @click.native.left="onLeftMouseClick"
+                @click.left="onLeftMouseClick"
                 @contextmenu.prevent="onContextMenu"
                 @width-change="nameDimensions.width = $event"
                 @height-change="nameDimensions.height = $event"
                 @edit-start="isHovering = false"
-                @connector-enter.native.stop="onConnectorEnter"
-                @connector-leave.native.stop="onConnectorLeave"
+                @connector-enter.stop="onConnectorEnter"
+                @connector-leave.stop="onConnectorLeave"
               />
             </template>
           </NodeHoverSizeProvider>

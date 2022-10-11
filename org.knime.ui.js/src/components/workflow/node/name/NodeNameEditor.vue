@@ -40,6 +40,7 @@ export default {
             default: null
         }
     },
+    emits: ['save', 'cancel', 'widthChange', 'heightChange'],
     data() {
         return {
             hideInvalidCharsTimeoutId: null,
@@ -92,7 +93,7 @@ export default {
             // can be reinitialized using them as a starting point
             this.latestDimensions = { ...this.latestDimensions, [dimensionName]: dimensionValue };
 
-            this.$emit(`${dimensionName}-change`, dimensionValue);
+            this.$emit(`${dimensionName}Change`, dimensionValue);
         },
         onSave() {
             // reset to old value on empty edits

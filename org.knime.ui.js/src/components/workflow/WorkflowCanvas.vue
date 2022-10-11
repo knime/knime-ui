@@ -92,8 +92,8 @@ export default {
     id="kanvas"
     ref="kanvas"
     :class="{ 'indicate-node-drag': isWorkflowEmpty && isDraggingNodeFromRepository }"
-    @drop.native.stop="onDrop"
-    @dragover.native.stop="onDragOver"
+    @drop.stop="onDrop"
+    @dragover.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
     @contextmenu="onContextMenu"
   >

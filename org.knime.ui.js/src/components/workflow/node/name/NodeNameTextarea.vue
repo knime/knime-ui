@@ -8,7 +8,7 @@ import NodeNameText from './NodeNameText.vue';
 export default {
     components: { NodeNameText },
     props: {
-        value: {
+        modelValue: {
             type: String,
             default: ''
         },
@@ -27,6 +27,7 @@ export default {
             default: null
         }
     },
+    emits: ['update:modelValue', 'save', 'cancel', 'widthChange', 'heightChange', 'invalidInput'],
     mounted() {
         this.$nextTick(() => {
             this.resizeTextarea();
@@ -44,7 +45,7 @@ export default {
 
             // remove invalid characters here as well, they could have been sneaked in via paste or drop
             if (this.invalidCharacters && this.invalidCharacters.test(value)) {
-                this.$emit('invalid-input');
+                this.$emit('invalidInput');
                 value = value.replace(this.invalidCharacters, '');
             }
 
@@ -57,12 +58,12 @@ export default {
             // apply the styles that resize the textarea according to the content
             this.resizeTextarea();
 
-            this.$emit('input', value);
+            this.$emit('update:modelValue', value);
         },
         onKeyDown(event) {
             // prevent inserting invalid characters
             if (this.invalidCharacters && this.invalidCharacters.test(event.key)) {
-                this.$emit('invalid-input');
+                this.$emit('invalidInput');
                 event.preventDefault();
             }
         },
@@ -100,8 +101,8 @@ export default {
     class="editor"
     :start-width="startWidth"
     :start-height="startHeight"
-    @width-change="$emit('width-change', $event)"
-    @height-change="$emit('height-change', $event)"
+    @width-change="$emit('widthChange', $event)"
+    @height-change="$emit('heightChange', $event)"
   >
     <template #default="{ on: { sizeChange } }">
       <span
@@ -109,13 +110,13 @@ export default {
         class="ghost"
         aria-hidden="true"
       >
-        {{ value }}
+        {{ modelValue }}
       </span>
       <textarea
         ref="textarea"
         rows="1"
         class="name-textarea native-context-menu"
-        :value="value"
+        :value="modelValue"
         @pointerdown.stop
         @input="onInput($event, sizeChange)"
         @keydown="onKeyDown"

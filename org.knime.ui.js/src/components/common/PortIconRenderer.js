@@ -10,13 +10,13 @@ import Port from '@/components/common/Port.vue';
  */
 export default (portConfig, iconSize) => ({
     render() {
-        let port = { ...portConfig };
+        const port = { ...portConfig };
         delete port.nodeState;
-        let g = createElement(Port, { port });
+        const g = createElement(Port, { port });
         
-        let portSize = this.$shapes.portSize;
+        const portSize = this.$shapes.portSize;
 
-        let attrs = {
+        const attrs = {
             viewBox: `-${portSize / 2} -${portSize / 2} ${portSize} ${portSize}`,
             style: iconSize && `width: ${iconSize}px`
         };

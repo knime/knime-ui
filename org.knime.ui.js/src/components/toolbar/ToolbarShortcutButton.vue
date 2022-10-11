@@ -31,7 +31,7 @@ export default {
     :class="['toolbar-button', { 'with-text': shortcut.text }]"
     :disabled="!enabled"
     :title="title"
-    @click.native="$shortcuts.dispatch(name)"
+    @click="$shortcuts.dispatch(name)"
   >
     <Component
       :is="shortcut.icon"

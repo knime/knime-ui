@@ -10,6 +10,7 @@ export default {
             default: 0
         }
     },
+    emits: ['savePosition', 'scrollBottom'],
     data() {
         return {
             scrollPosition: this.initialPosition,
@@ -20,7 +21,7 @@ export default {
         this.$refs.scroller.scrollTop = this.initialPosition;
     },
     beforeUnmount() {
-        this.$emit('save-position', this.scrollPosition);
+        this.$emit('savePosition', this.scrollPosition);
     },
     methods: {
         onScroll: throttle(function () {
@@ -43,7 +44,7 @@ export default {
                 this.lastScrollHeight = scrollHeight;
                 
                 consola.debug('ScrollViewContainer: reached bottom boundary');
-                this.$emit('scroll-bottom');
+                this.$emit('scrollBottom');
             }
             /* eslint-enable no-invalid-this */
         }, SCROLL_HANDLER_THROTTLE)

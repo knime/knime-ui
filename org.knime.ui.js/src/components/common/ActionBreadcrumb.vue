@@ -25,6 +25,7 @@ export default {
             default: () => []
         }
     },
+    emits: ['click'],
     computed: {
         breadcrumbItems() {
             return this.items.map(({ text, icon, id }) => {
@@ -57,7 +58,7 @@ export default {
   <Breadcrumb
     v-bind="$attrs"
     :items="breadcrumbItems"
-    v-on="$listeners"
-    @click.capture.prevent.stop.native="onClick"
+    v-on="$attrs"
+    @click.capture.prevent.stop="onClick"
   />
 </template>

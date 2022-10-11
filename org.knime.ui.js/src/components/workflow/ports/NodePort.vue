@@ -94,6 +94,7 @@ export default {
             default: false
         }
     },
+    emits: ['click', 'deselect', 'remove'],
     data: () => ({
         dragConnector: null,
         didMove: false,
@@ -388,7 +389,7 @@ export default {
     <Port
       :port="port"
       :class="{ 'hoverable-port': !selected }"
-      @click.native="onClick"
+      @click="onClick"
     />
 
     <Portal to="selected-port">

@@ -45,7 +45,8 @@ export default {
             type: Number,
             default: null
         }
-    }
+    },
+    emits: ['widthChange', 'heightChange', 'click', 'contextmenu', 'requestEdit', 'mouseenter', 'mouseleave']
 };
 </script>
 
@@ -58,15 +59,15 @@ export default {
     :y-offset="-$shapes.nodeNameMargin"
     :parent-width="$shapes.nodeSize"
     offset-by-height
-    @width-change="$emit('width-change', $event)"
-    @height-change="$emit('height-change', $event)"
+    @width-change="$emit('widthChange', $event)"
+    @height-change="$emit('heightChange', $event)"
   >
     <template #default="{ on }">
       <div
         class="node-name"
         @click.prevent="$emit('click', $event)"
         @contextmenu="$emit('contextmenu', $event)"
-        @dblclick.left.prevent.stop="editable ? $emit('request-edit') : null"
+        @dblclick.left.prevent.stop="editable ? $emit('requestEdit') : null"
         @mouseleave="$emit('mouseleave', $event)"
         @mouseenter="$emit('mouseenter', $event)"
       >

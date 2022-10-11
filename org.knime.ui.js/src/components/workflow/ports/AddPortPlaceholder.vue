@@ -36,6 +36,7 @@ export default {
             default: null
         }
     },
+    emits: ['addPort'],
     data: () => ({
         isMenuOpen: false,
         transitionEnabled: true,
@@ -119,7 +120,7 @@ export default {
 
                 if (supportedPortTypeIds.length === 1) {
                     let [typeId] = supportedPortTypeIds;
-                    this.$emit('add-port', { typeId, portGroup: Object.keys(this.validPortGroups)[0] });
+                    this.$emit('addPort', { typeId, portGroup: Object.keys(this.validPortGroups)[0] });
                     return;
                 }
             }
@@ -145,7 +146,7 @@ export default {
             this.transitionEnabled = false;
             this.previewPort = null;
 
-            this.$emit('add-port', { typeId, portGroup });
+            this.$emit('addPort', { typeId, portGroup });
             
             this.$nextTick(() => {
                 this.transitionEnabled = true;

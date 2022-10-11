@@ -28,6 +28,7 @@ export default {
             default: ''
         }
     },
+    emits: ['editStart', 'widthChange', 'heightChange', 'mouseleave', 'mouseenter', 'contextmenu'],
     data() {
         return {
             editorInitialDimensions: {
@@ -46,7 +47,7 @@ export default {
         // use store state to ensure edit-start is emitted even if someone else (e.g. shortcuts) started the edit
         isEditing(newValue) {
             if (newValue) {
-                this.$emit('edit-start');
+                this.$emit('editStart');
             }
         }
     },
@@ -82,8 +83,8 @@ export default {
           :value="value"
           :start-width="editorInitialDimensions.width"
           :start-height="editorInitialDimensions.height"
-          @width-change="$emit('width-change', $event)"
-          @height-change="$emit('height-change', $event)"
+          @width-change="$emit('widthChange', $event)"
+          @height-change="$emit('heightChange', $event)"
           @save="onSave"
           @cancel="onCancel"
         />
@@ -94,8 +95,8 @@ export default {
       <NodeNameText
         :editable="editable"
         :value="value"
-        @width-change="$emit('width-change', $event)"
-        @height-change="$emit('height-change', $event)"
+        @width-change="$emit('widthChange', $event)"
+        @height-change="$emit('heightChange', $event)"
         @request-edit="onRequestEdit"
         @mouseleave="$emit('mouseleave', $event)"
         @mouseenter="$emit('mouseenter', $event)"
