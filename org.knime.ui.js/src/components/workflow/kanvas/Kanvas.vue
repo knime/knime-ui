@@ -89,7 +89,6 @@ export default {
             Panning
         */
         suggestPan(e) {
-            console.log('e', e);
             if (blacklistTagNames.test(e.target.tagName)) {
                 return;
             }
