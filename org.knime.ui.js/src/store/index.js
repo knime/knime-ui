@@ -1,4 +1,4 @@
-import { createStore } from 'vuex'
+import { createStore } from 'vuex';
 
 import * as application from './application';
 import * as canvas from './canvas';
@@ -23,5 +23,5 @@ export const initStore = () => {
             // can be solved in a better way
             api: { namespaced: true, ...api }
         }
-    })
+    });
 };
