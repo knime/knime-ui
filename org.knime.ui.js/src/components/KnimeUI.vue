@@ -129,7 +129,6 @@ export default {
     <!-- if subsequent errors occur, stick with the first one -->
     <Error
       v-if="error"
-      v-once
       v-bind="error"
       @close="onCloseError"
     />

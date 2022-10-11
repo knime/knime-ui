@@ -1,6 +1,6 @@
 import { defineConfig, loadEnv } from 'vite';
-import { createVuePlugin as vue } from 'vite-plugin-vue2';
-import { createSvgPlugin } from 'vite-plugin-vue2-svg';
+import vue from '@vitejs/plugin-vue';
+import svgLoader from 'vite-svg-loader';
 
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -11,7 +11,7 @@ export default ({ mode }) => {
     process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
     
     return defineConfig({
-        plugins: [vue(), createSvgPlugin()],
+        plugins: [vue(), svgLoader()],
     
         server: {
             port: process.env.VITE_APP_PORT || 3000,
