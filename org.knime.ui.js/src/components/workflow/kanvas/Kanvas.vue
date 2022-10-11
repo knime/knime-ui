@@ -89,6 +89,7 @@ export default {
             Panning
         */
         suggestPan(e) {
+            console.log('e', e);
             if (blacklistTagNames.test(e.target.tagName)) {
                 return;
             }
@@ -143,7 +144,7 @@ export default {
     }]"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
-    @keypress.space="suggestPan"
+    @keypress.space.once="suggestPan"
     @keyup.space="stopSuggestingPanning"
     @pointerdown.middle="beginPan"
     @pointerdown.left="beginPan"
