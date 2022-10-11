@@ -1,5 +1,5 @@
 <script>
-import { mapGetters, mapActions } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import KnimeIcon from 'webapps-common/ui/assets/img/KNIME_Triangle.svg';
@@ -34,13 +34,7 @@ export default {
         };
     },
     computed: {
-        ...mapGetters('application', ['activeProjectName']),
-        truncatedProjectName() {
-            const maxCharFunction = maxCharSwitch.find(fn => fn(this.windowWidth));
-            const maxChars = maxCharFunction(this.windowWidth);
-            const name = this.activeProjectName;
-            return name.length > maxChars ? `${name.slice(0, maxChars)} …` : name;
-        }
+        ...mapState('application', ['openProjects', 'activeProjectId'])
     },
     created() {
         window.addEventListener('resize', this.onWindowResize);
@@ -48,11 +42,18 @@ export default {
     },
     methods: {
         ...mapActions('workflow', ['closeWorkflow']),
+        ...mapActions('application', ['switchWorkflow']),
         onWindowResize() {
             this.windowWidth = window.innerWidth;
         },
         switchToJavaUI() {
             window.switchToJavaUI();
+        },
+        truncatedProjectName(name) {
+            const maxCharFunction = maxCharSwitch.find(fn => fn(this.windowWidth));
+            const maxChars = maxCharFunction(this.windowWidth);
+
+            return name.length > maxChars ? `${name.slice(0, maxChars)} …` : name;
         }
     }
 };
@@ -60,25 +61,33 @@ export default {
 
 <template>
   <header>
-    <div id="knime-logo">
+    <div
+      id="knime-logo"
+      :class="[ activeProjectId === null ? 'active-logo' : null ]"
+      @click="switchWorkflow(null)"
+    >
       <KnimeIcon />
     </div>
     <div class="toolbar">
-      <!-- Closeable Project Name -->
-      <div
-        v-if="activeProjectName"
-        class="project-name"
+      <ul
+        v-if="openProjects.length > 1"
+        class="project-tabs"
       >
-        <span class="text">{{ truncatedProjectName }}</span>
-        <FunctionButton
-          class="icon"
-          @click="closeWorkflow"
+        <li
+          v-for="{ name, projectId } in openProjects"
+          :key="projectId"
+          :class="[ projectId === activeProjectId ? 'active' : null ]"
+          @click="switchWorkflow({ name, projectId })"
         >
-          <CloseIcon />
-        </FunctionButton>
-      </div>
-
-      <!-- Or Application Name -->
+          <span class="text">{{ truncatedProjectName(name) }}</span>
+          <FunctionButton
+            class="icon"
+            @click.stop="closeWorkflow"
+          >
+            <CloseIcon />
+          </FunctionButton>
+        </li>
+      </ul>
       <div
         v-else
         class="application-name"
@@ -107,12 +116,12 @@ export default {
 <style lang="postcss" scoped>
 header {
   display: flex;
-  height: 80px;
+  height: 53px;
   background-color: var(--knime-masala);
   border-bottom: 4px solid var(--knime-yellow);
   position: relative;
 
-  /* smalish dark spacer */
+  /* smallish dark spacer */
 
   &::after {
     content: "";
@@ -128,55 +137,6 @@ header {
     align-items: center;
     width: 100%;
     justify-content: space-between;
-
-    /* Application name or project name */
-    & .project-name,
-    & .application-name {
-      padding: 0 20px;
-      display: flex;
-      min-width: 0;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      overflow: hidden;
-
-      & .text {
-        color: var(--knime-white);
-        font-family: "Roboto Condensed", sans-serif;
-        font-size: 20px;
-        padding: 10px 0;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
-        min-width: 0;
-      }
-
-      /* Close workflow button */
-
-      & .icon {
-        border: 0;
-        border-radius: 20px;
-        flex-shrink: 0;
-        margin-left: 5px;
-        width: 32px;
-        height: 32px;
-        align-self: center;
-        align-items: center;
-
-        & svg {
-          height: 20px;
-          width: 20px;
-          stroke: var(--knime-white);
-          stroke-width: calc(32px / 30); /* get 1px stroke width */
-        }
-
-        &:hover,
-        &:focus {
-          cursor: pointer;
-          background-color: var(--knime-silver-sand-semi);
-          stroke: var(--knime-white);
-        }
-      }
-    }
 
     /* Feedback and Switch to classic ui buttons */
 
@@ -218,6 +178,106 @@ header {
         }
       }
     }
+
+    & .application-name {
+      padding: 0 20px;
+      display: flex;
+
+      & .text {
+        color: var(--knime-white);
+        font-family: "Roboto Condensed", sans-serif;
+        font-size: 20px;
+      }
+    }
+
+    & .project-tabs {
+      padding: 0;
+      height: 100%;
+      display: flex;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      list-style: none;
+
+      & li {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 1px;
+        padding-left: 10px;
+        padding-bottom: 1px;
+        text-align: center;
+        white-space: nowrap;
+        cursor: pointer;
+        user-select: none;
+        border-radius: 1px 1px 0 0;
+        background-color: var(--knime-black);
+        color: var(--knime-white);
+        max-width: 300px;
+
+        &:hover {
+          background-color: var(--knime-stone-dark);
+        }
+
+        & .text {
+          color: var(--knime-white);
+          font-family: "Roboto Condensed", sans-serif;
+          font-size: 20px;
+          padding: 10px 0;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          overflow: hidden;
+          min-width: 0;
+        }
+
+        /* Close workflow button */
+
+        & .icon {
+          border: 0;
+          border-radius: 20px;
+          flex-shrink: 0;
+          margin-left: 5px;
+          width: 32px;
+          height: 32px;
+          align-self: center;
+          align-items: center;
+
+          & svg {
+            height: 20px;
+            width: 20px;
+            stroke: var(--knime-white);
+            stroke-width: calc(32px / 30); /* get 1px stroke width */
+          }
+
+          &:hover,
+          &:focus {
+            cursor: pointer;
+            background-color: var(--knime-silver-sand-semi);
+            stroke: var(--knime-white);
+          }
+        }
+      }
+
+      & .active {
+        background-color: var(--knime-yellow);
+        color: var(--knime-black);
+        cursor: inherit;
+
+        & .text {
+          color: var(--knime-black);
+        }
+
+        & .icon svg {
+          stroke: var(--knime-black);
+        }
+
+        &:hover,
+        &:focus {
+          cursor: inherit;
+          background-color: var(--knime-yellow);
+        }
+      }
+    }
   }
 
   & #knime-logo {
@@ -227,10 +287,31 @@ header {
     width: var(--side-bar-width);
     background-color: var(--knime-black);
     text-align: center;
+    height: 100%;
 
     & svg {
       width: 26px;
       height: 26px;
+    }
+
+    &:hover,
+    &:focus {
+      cursor: pointer;
+      background-color: var(--knime-silver-sand-semi);
+    }
+  }
+
+  & #knime-logo.active-logo {
+    background-color: var(--knime-yellow);
+
+    & svg {
+      fill: var(--knime-black);
+    }
+
+    &:hover,
+    &:focus {
+      cursor: inherit;
+      background-color: var(--knime-yellow);
     }
   }
 }
