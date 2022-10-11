@@ -2,7 +2,7 @@
  * Canvas Store manages positioning, zooming, scrolling and
  * coordinate transformations for the Kanvas component.
  */
-import Vue from 'vue';
+import * as Vue from 'vue';
 
 export const zoomMultiplier = 1.09;
 export const defaultZoomFactor = 1;

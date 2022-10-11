@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import * as Vue from 'vue';
 
 /**
  * Store that holds selected objects (nodes, connections)
@@ -55,7 +55,9 @@ export const mutations = {
 
     //  Add connectionIds to selection.
     addConnectionsToSelection(state, connectionIds) {
-        connectionIds.forEach(id => Vue.set(state.selectedConnections, id, true));
+        connectionIds.forEach(id => {
+            state.selectedConnections[id] = true;
+        });
     },
 
     // Removes each connection of the provided connections object to the selected connection object.

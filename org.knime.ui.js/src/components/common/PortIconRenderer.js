@@ -1,3 +1,4 @@
+import { h as createElement } from 'vue';
 import Port from '@/components/common/Port.vue';
 
 /**
@@ -8,13 +9,10 @@ import Port from '@/components/common/Port.vue';
  * @returns {Object} A Vue component
  */
 export default (portConfig, iconSize) => ({
-    render(createElement) {
+    render() {
         let port = { ...portConfig };
         delete port.nodeState;
-        let g = createElement(Port, {
-            props: { port }
-        });
-        
+        let g = createElement(Port, { port });
         
         let portSize = this.$shapes.portSize;
 
@@ -22,6 +20,6 @@ export default (portConfig, iconSize) => ({
             viewBox: `-${portSize / 2} -${portSize / 2} ${portSize} ${portSize}`,
             style: iconSize && `width: ${iconSize}px`
         };
-        return createElement('svg', { attrs }, [g]);
+        return createElement('svg', { ...attrs }, [g]);
     }
 });

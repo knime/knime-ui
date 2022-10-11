@@ -1,5 +1,3 @@
-import Vue from 'vue';
-
 import { actions as jsonPatchActions, mutations as jsonPatchMutations } from '../store-plugins/json-patch';
 import * as workflowEditor from './workflow/workflowEditor';
 import * as APinteractions from './workflow/APinteractions';
@@ -44,7 +42,7 @@ export const mutations = {
     },
 
     setTooltip(state, tooltip) {
-        Vue.set(state, 'tooltip', tooltip);
+        state.tooltip = tooltip;
     }
 };
 

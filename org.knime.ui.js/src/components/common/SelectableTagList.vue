@@ -5,8 +5,8 @@ import Tag from 'webapps-common/ui/components/Tag.vue';
 export const defaultInitialTagCount = 5;
 
 /**
- * TagList where Tags can be selected. It has a `tags` prop with all tags and a `value` which contains the
- * selected tags. Implements the v-model pattern and thus emits @input with the new value (array of selected tags)
+ * TagList where Tags can be selected. It has a `tags` prop with all tags and a `modelValue` which contains the
+ * selected tags. Implements the v-model pattern and thus emits @modelValue with the new value (array of selected tags)
  */
 export default {
     components: {
@@ -31,7 +31,7 @@ export default {
         /**
          * List of selected tags as strings.
          */
-        value: {
+        modelValue: {
             type: Array,
             default: () => []
         },
@@ -43,14 +43,15 @@ export default {
             default: false
         }
     },
+    emits: ['update:modelValue', 'show-more'],
     computed: {
         sortedTags() {
             // the tags should keep their "natural" order but the selected ones need to be at the head of the list
             // transform to an object based list with text and selected attribute
             return [
-                ...this.value
+                ...this.modelValue
                     .map(text => ({ text, selected: true })),
-                ...difference(this.tags, this.value)
+                ...difference(this.tags, this.modelValue)
                     .map(text => ({ text, selected: false }))
             ];
         },
@@ -63,12 +64,12 @@ export default {
             return !this.showAll && this.tags.length > this.numberOfInitialTags;
         },
         allVisibleAreSelected() {
-            return !this.showAll && this.value.length > this.numberOfInitialTags;
+            return !this.showAll && this.modelValue.length > this.numberOfInitialTags;
         },
         moreDisplayText() {
             let hiddenTags = this.tags.length - this.numberOfInitialTags;
             if (this.allVisibleAreSelected) {
-                const selectedInvisibleTags = this.value.length - this.numberOfInitialTags;
+                const selectedInvisibleTags = this.modelValue.length - this.numberOfInitialTags;
                 return `+${selectedInvisibleTags}/${hiddenTags}`;
             } else {
                 return `+${hiddenTags}`;
@@ -78,9 +79,9 @@ export default {
     methods: {
         onClick(tag) {
             if (tag.selected) {
-                this.$emit('input', this.value.filter(x => x !== tag.text));
+                this.$emit('update:modelValue', this.modelValue.filter(x => x !== tag.text));
             } else {
-                this.$emit('input', [...this.value, tag.text]);
+                this.$emit('update:modelValue', [...this.modelValue, tag.text]);
             }
         },
         onShowMore() {
@@ -100,7 +101,7 @@ export default {
       :key="tag.text"
       clickable
       :class="{selected: tag.selected}"
-      @click.native.prevent="onClick(tag)"
+      @click.prevent="onClick(tag)"
     >
       {{ tag.text }}
       <slot name="icon" />
@@ -108,7 +109,7 @@ export default {
     <Tag
       v-if="hasMoreTags"
       class="more-tags clickable"
-      @click.native.prevent="onShowMore"
+      @click.prevent="onShowMore"
     >
       {{ moreDisplayText }}
     </Tag>

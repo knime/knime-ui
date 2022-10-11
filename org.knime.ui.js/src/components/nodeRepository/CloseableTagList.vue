@@ -31,11 +31,12 @@ export default {
         /**
          * List of selected tags (Strings) to display.
          */
-        value: {
+        modelValue: {
             type: Array,
             default: () => []
         }
     },
+    emits: ['update:modelValue'],
     data() {
         return {
             displayAll: false
@@ -60,9 +61,9 @@ export default {
         }
     },
     methods: {
-        onInput(value) {
+        onUpdateModelValue(value) {
             this.displayAll = false;
-            this.$emit('input', value);
+            this.$emit('update:modelValue', value);
         },
         onClickAway() {
             this.displayAll = false;
@@ -80,11 +81,11 @@ export default {
       <SelectableTagList
         ref="tagList"
         :number-of-initial-tags="numberOfInitialTags"
-        :value="value"
+        :model-value="modelValue"
         :tags="tags"
         :show-all="displayAll"
         @show-more="displayAll = true"
-        @input="onInput"
+        @update-model-value="onUpdateModelValue"
       />
       <button
         v-if="displayAll"

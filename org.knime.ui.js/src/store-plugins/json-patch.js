@@ -1,5 +1,3 @@
-import Vue from 'vue';
-
 /*
 * Provides JSON Patch (http://jsonpatch.com/) functionality for Vuex stores.
 * Differences to RFC 6902:
@@ -51,13 +49,13 @@ export const mutations = {
                 throw new TypeError(`Invalid array index "${key}"`);
             }
         } else {
-            Vue.set(target, key, value);
+            target[key] = value;
         }
     },
 
     'patch.replace'(state, { path, value }) {
         let [target, key] = resolvePointer(state, path);
-        Vue.set(target, key, value);
+        target[key] = value;
     },
 
     'patch.remove'(state, { path }) {
@@ -69,7 +67,7 @@ export const mutations = {
                 throw new TypeError(`Invalid array index "${key}"`);
             }
         } else {
-            Vue.delete(target, key);
+            delete target[key];
         }
     },
 
