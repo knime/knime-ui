@@ -348,7 +348,10 @@ export default {
         }
       }"
     >
-      <g :class="{ 'connection-forbidden': connectionForbidden && !isConnectionSource }">
+      <g
+        v-bind="$attrs"
+        :class="{ 'connection-forbidden': connectionForbidden && !isConnectionSource }"
+      >
         <!-- NodeActionBar portalled to the front-most layer -->
         <Portal to="node-actions">
           <NodeActionBar

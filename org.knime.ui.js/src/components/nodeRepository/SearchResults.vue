@@ -71,9 +71,7 @@ export default {
     @scroll-bottom="loadMoreSearchResults"
   >
     <div class="content">
-      <NodeList
-        :nodes="nodes"
-      />
+      <NodeList :nodes="nodes" />
       <ReloadIcon
         v-if="isLoading"
         class="loading-indicator"
