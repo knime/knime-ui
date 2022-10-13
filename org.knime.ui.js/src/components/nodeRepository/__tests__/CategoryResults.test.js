@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import CategoryResults from '../CategoryResults.vue';
@@ -9,11 +8,6 @@ import NodeCategory from '../NodeCategory.vue';
 describe('CategoryResults', () => {
     let doShallowMount, wrapper, $store, storeState, getAllNodesMock, setSelectedTagsMock,
         setCategoryScrollPositionMock;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
 
     beforeEach(() => {
         wrapper = null;
@@ -43,8 +37,7 @@ describe('CategoryResults', () => {
                     }
                 }
             });
-            let mocks = { $store };
-            wrapper = shallowMount(CategoryResults, { mocks });
+            wrapper = shallowMount(CategoryResults, { global: { plugins: [$store] } });
         };
     });
 

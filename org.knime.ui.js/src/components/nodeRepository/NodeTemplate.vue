@@ -77,11 +77,11 @@ export default {
         onDragEnd(e) {
             e.target.removeAttribute('style');
             this.setDraggingNode(false);
-
+          
             // remove cloned node preview
             if (this.dragGhost) {
                 document.body.removeChild(this.dragGhost);
-                delete this.dragGhost;
+                this.dragGhost = null;
             }
 
             // ending with dropEffect none indicates that dragging has been aborted

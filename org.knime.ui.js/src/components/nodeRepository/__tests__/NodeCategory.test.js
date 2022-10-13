@@ -4,11 +4,11 @@ import NodeCategory from '../NodeCategory.vue';
 import NodeList from '../NodeList.vue';
 
 describe('NodeCategory', () => {
-    let doShallowMount, wrapper, propsData;
+    let doShallowMount, wrapper, props;
 
     beforeEach(() => {
         wrapper = null;
-        propsData = {
+        props = {
             tag: 'tag',
             nodes: [
                 { id: 'node:1' },
@@ -19,7 +19,7 @@ describe('NodeCategory', () => {
             ]
         };
         doShallowMount = () => {
-            wrapper = shallowMount(NodeCategory, { propsData });
+            wrapper = shallowMount(NodeCategory, { props });
         };
     });
 
@@ -42,7 +42,7 @@ describe('NodeCategory', () => {
     });
 
     test('has more nodes', () => {
-        propsData.nodes.push({ id: 'node:6' });
+        props.nodes.push({ id: 'node:6' });
         doShallowMount();
 
         expect(wrapper.findComponent(NodeList).props('hasMoreNodes')).toBe(true);
@@ -53,14 +53,14 @@ describe('NodeCategory', () => {
             doShallowMount();
 
             await wrapper.find('.category-title').trigger('click');
-            expect(wrapper.emitted('select-tag')).toStrictEqual([['tag']]);
+            expect(wrapper.emitted('selectTag')).toStrictEqual([['tag']]);
         });
 
         test('tag can be selected through button', async () => {
             doShallowMount();
 
             await wrapper.findComponent(NodeList).vm.$emit('show-more');
-            expect(wrapper.emitted('select-tag')).toStrictEqual([['tag']]);
+            expect(wrapper.emitted('selectTag')).toStrictEqual([['tag']]);
         });
     });
 });

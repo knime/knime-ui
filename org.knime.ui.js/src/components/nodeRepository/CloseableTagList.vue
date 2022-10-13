@@ -85,7 +85,7 @@ export default {
         :tags="tags"
         :show-all="displayAll"
         @show-more="displayAll = true"
-        @update-model-value="onUpdateModelValue"
+        @update:model-value="onUpdateModelValue"
       />
       <button
         v-if="displayAll"

@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 
@@ -9,14 +8,9 @@ import { nodeSize } from '@/style/shapes.mjs';
 import NodeTemplate, { WORKFLOW_ADD_START_MIN } from '../NodeTemplate.vue';
 
 describe('NodeTemplate', () => {
-    let propsData, doMount, wrapper, testEvent, isWritable, mocks, openDescriptionPanelMock, closeDescriptionPanelMock,
+    let props, doMount, wrapper, testEvent, isWritable, openDescriptionPanelMock, closeDescriptionPanelMock,
         setSelectedNodeMock, $store, storeConfig, setDraggingNodeMock, addNodeMock, getElementByIdMock, activeWorkflow,
         toCanvasCoordinatesMock;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
 
     beforeEach(() => {
         isWritable = true;
@@ -42,7 +36,7 @@ describe('NodeTemplate', () => {
             }
         };
 
-        propsData = {
+        props = {
             nodeTemplate: {
                 name: 'node-name',
                 id: 'node-id',
@@ -119,8 +113,13 @@ describe('NodeTemplate', () => {
         $store = mockVuexStore(storeConfig);
 
         doMount = () => {
-            mocks = { $store, $shapes: { nodeSize: 32 } };
-            wrapper = shallowMount(NodeTemplate, { propsData, mocks });
+            wrapper = shallowMount(NodeTemplate, {
+                props,
+                global: {
+                    plugins: [$store],
+                    mocks: { $shapes: { nodeSize: 32 } }
+                }
+            });
         };
     });
 
@@ -353,7 +352,7 @@ describe('NodeTemplate', () => {
                 }
             });
 
-            expect(setSelectedNodeMock).toHaveBeenCalledWith(expect.anything(), propsData.nodeTemplate);
+            expect(setSelectedNodeMock).toHaveBeenCalledWith(expect.anything(), props.nodeTemplate);
             expect(openDescriptionPanelMock).toHaveBeenCalled();
         });
 

@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
@@ -10,11 +9,6 @@ import NodeList from '../NodeList.vue';
 
 describe('SearchResults', () => {
     let doShallowMount, wrapper, $store, storeState, searchNodesNextPageMock, setSearchScrollPositionMock;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
 
     beforeEach(() => {
         wrapper = null;
@@ -47,8 +41,7 @@ describe('SearchResults', () => {
                     }
                 }
             });
-            let mocks = { $store };
-            wrapper = shallowMount(SearchResults, { mocks });
+            wrapper = shallowMount(SearchResults, { global: { plugins: [$store] } });
         };
     });
 

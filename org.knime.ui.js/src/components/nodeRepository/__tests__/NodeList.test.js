@@ -4,32 +4,25 @@ import NodeTemplate from '../NodeTemplate.vue';
 import NodeList from '../NodeList.vue';
 
 describe('NodeList', () => {
-    let doShallowMount, wrapper, propsData;
+    const defaultProps = {
+        hasMoreNodes: false,
+        nodes: [{ id: 'node1' }, { id: 'node2' }]
+    };
 
-    beforeEach(() => {
-        wrapper = null;
-        propsData = {
-            hasMoreNodes: false,
-            nodes: [{ id: 'node1' }, { id: 'node2' }]
-        };
-        doShallowMount = () => {
-            wrapper = shallowMount(NodeList, { propsData });
-        };
-    });
+    const doShallowMount = (props = {}) => shallowMount(NodeList, { props: { ...defaultProps, ...props } });
 
     test('show-more button', async () => {
-        propsData.hasMoreNodes = true;
-        doShallowMount();
+        const wrapper = doShallowMount({ hasMoreNodes: true });
 
-        let showMoreButton = wrapper.find('.show-more');
+        const showMoreButton = wrapper.find('.show-more');
         expect(showMoreButton.isVisible()).toBe(true);
 
-        await showMoreButton.vm.$emit('click');
-        expect(wrapper.emitted('show-more')).toBeTruthy();
+        await showMoreButton.trigger('click');
+        expect(wrapper.emitted('showMore')).toBeTruthy();
     });
 
     test('renders nodes', () => {
-        doShallowMount();
+        const wrapper = doShallowMount();
         let nodeTemplates = wrapper.findAllComponents(NodeTemplate);
         expect(nodeTemplates.at(0).props('nodeTemplate')).toStrictEqual({ id: 'node1' });
         expect(nodeTemplates.at(1).props('nodeTemplate')).toStrictEqual({ id: 'node2' });

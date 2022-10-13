@@ -11,28 +11,16 @@ jest.mock('lodash', () => ({
 }));
 
 describe('ScrollViewContainer', () => {
-    let wrapper, doShallowMount, propsData;
-
-    beforeEach(() => {
-        propsData = {
-            // insert props and data values
-        };
-        doShallowMount = () => {
-            wrapper = shallowMount(ScrollViewContainer, {
-                propsData
-            });
-        };
-    });
+    const doShallowMount = (props = { initialPosition: 100 }) => shallowMount(ScrollViewContainer, { props });
 
     it('renders initial position by default', () => {
-        doShallowMount();
+        const wrapper = doShallowMount({ initialPosition: 0 });
         expect(wrapper.find('.scroll-container').exists()).toBe(true);
         expect(wrapper.vm.initialPosition).toBe(0);
     });
 
     it('renders with initial position', () => {
-        propsData.initialPosition = 100;
-        doShallowMount();
+        const wrapper = doShallowMount();
         
         expect(wrapper.find('.scroll-container').exists()).toBe(true);
         expect(wrapper.vm.initialPosition).toBe(100);
@@ -42,13 +30,12 @@ describe('ScrollViewContainer', () => {
     });
 
     it('emits position before destroy', () => {
-        propsData.initialPosition = 100;
-        doShallowMount();
+        const wrapper = doShallowMount();
         
-        wrapper.destroy();
+        wrapper.unmount();
         
-        expect(wrapper.emitted()['save-position'].length).toBe(1);
-        expect(wrapper.emitted()['save-position'][0][0]).toBe(100);
+        expect(wrapper.emitted('savePosition').length).toBe(1);
+        expect(wrapper.emitted('savePosition')[0][0]).toBe(100);
     });
 
     describe('scroll event', () => {
@@ -77,32 +64,29 @@ describe('ScrollViewContainer', () => {
         });
 
         it('scrolls, but is below threshold', () => {
-            propsData.initialPosition = 99;
-            doShallowMount();
+            const wrapper = doShallowMount({ initialPosition: 99 });
 
             wrapper.find('.scroll-container').trigger('scroll');
             
-            expect(wrapper.emitted('scroll-bottom')).toBe(undefined);
+            expect(wrapper.emitted('scrollBottom')).toBe(undefined);
         });
 
         it('scrolls, and is above threshold', () => {
-            propsData.initialPosition = 100;
-            doShallowMount();
+            const wrapper = doShallowMount();
 
             wrapper.find('.scroll-container').trigger('scroll');
             
-            expect(wrapper.emitted('scroll-bottom').length).toBe(1);
+            expect(wrapper.emitted('scrollBottom').length).toBe(1);
         });
 
         it('emit scroll event only once per update', () => {
-            propsData.initialPosition = 100;
-            doShallowMount();
+            const wrapper = doShallowMount();
 
             // scroll twice
             wrapper.find('.scroll-container').trigger('scroll');
             wrapper.find('.scroll-container').trigger('scroll');
             
-            expect(wrapper.emitted('scroll-bottom').length).toBe(1);
+            expect(wrapper.emitted('scrollBottom').length).toBe(1);
         });
     });
 });
