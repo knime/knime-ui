@@ -26,6 +26,8 @@ const coverageIgnoreFiles = [
 
 module.exports = {
     moduleNameMapper: {
+        // place the svg stub first so that it gets resolved before other `@` prefixed imports svg imports
+        '\\.svg$': '<rootDir>/src/test/svgStub.vue',
         '^@/(.*)$': '<rootDir>/src/$1',
         '@api': '<rootDir>/src/api/index.js'
     },
@@ -38,9 +40,8 @@ module.exports = {
     transform: {
         '\\.mjs$': 'babel-jest',
         '\\.js$': 'babel-jest',
-        '\\.vue$': '@vue/vue2-jest',
-        '\\.(css|styl|less|sass|scss|ttf|woff|woff2)(\\?|$)': 'jest-transform-stub',
-        '\\.svg': '<rootDir>/src/test/jest-transform-svgs'
+        '\\.vue$': '@vue/vue3-jest',
+        '\\.(css|styl|less|sass|scss|ttf|woff|woff2)(\\?|$)': 'jest-transform-stub'
     },
     transformIgnorePatterns: [
         '/node_modules/'
@@ -66,7 +67,10 @@ module.exports = {
     ],
     testEnvironment: 'jsdom',
     testEnvironmentOptions: {
-        url: 'http://test.example/'
+        url: 'http://test.example/',
+        // Needed to solve this issue:
+        // https://github.com/vuejs/vue-jest/issues/479#issuecomment-1163421581
+        customExportConditions: ['node', 'node-addons']
     },
     testMatch: [
         '<rootDir>/**/__tests__/*.test.js'
