@@ -29,12 +29,12 @@ const checkTagTexts = (wrappers, expectedTags, numInitialTags) => {
 describe('SelectableTagList.vue', () => {
     it('renders with empty tags', () => {
         const wrapper = shallowMount(SelectableTagList);
-        expect(wrapper.findAllComponents(Tag).exists()).toBe(false);
+        expect(wrapper.findComponent(Tag).exists()).toBe(false);
     });
 
     it('renders three tags', () => {
         const wrapper = shallowMount(SelectableTagList, {
-            propsData: { tags: threeTags }
+            props: { tags: threeTags }
         });
 
         let tagWrappers = wrapper.findAllComponents(Tag);
@@ -44,7 +44,7 @@ describe('SelectableTagList.vue', () => {
     describe('collapsed list', () => {
         it('does not render more than max number of tags', () => {
             const wrapper = shallowMount(SelectableTagList, {
-                propsData: { tags: sevenTags }
+                props: { tags: sevenTags }
             });
 
             let tagWrappers = wrapper.findAllComponents(Tag);
@@ -53,7 +53,7 @@ describe('SelectableTagList.vue', () => {
 
         it('honors max number of tags configurable', () => {
             const wrapper = shallowMount(SelectableTagList, {
-                propsData: { tags: sevenTags, numberOfInitialTags: 2 }
+                props: { tags: sevenTags, numberOfInitialTags: 2 }
             });
 
             let tagWrappers = wrapper.findAllComponents(Tag);
@@ -62,9 +62,9 @@ describe('SelectableTagList.vue', () => {
 
         it('shows number of tags on expand button', () => {
             const wrapper = shallowMount(SelectableTagList, {
-                propsData: {
+                props: {
                     tags: sevenTags,
-                    value: threeTags
+                    modelValue: threeTags
                 }
             });
 
@@ -75,17 +75,17 @@ describe('SelectableTagList.vue', () => {
     describe('expands list', () => {
         it('emits show-more', async () => {
             const wrapper = shallowMount(SelectableTagList, {
-                propsData: { tags: sevenTags }
+                props: { tags: sevenTags }
             });
 
             // last tag is expander button
             await wrapper.find('.more-tags').trigger('click');
-            expect(wrapper.emitted('show-more')).toBeTruthy();
+            expect(wrapper.emitted('showMore')).toBeTruthy();
         });
 
         it('displays all on show-all prop change', async () => {
             const wrapper = shallowMount(SelectableTagList, {
-                propsData: { tags: sevenTags }
+                props: { tags: sevenTags }
             });
 
             expect(wrapper.findAllComponents(Tag).length).toBe(defaultInitialTagCount + 1); // one is + sign
@@ -98,9 +98,9 @@ describe('SelectableTagList.vue', () => {
     describe('selection of tags', () => {
         it('shows number of selected tags separately', () => {
             const wrapper = shallowMount(SelectableTagList, {
-                propsData: {
+                props: {
                     tags: sevenTags,
-                    value: sevenTags
+                    modelValue: sevenTags
                 }
             });
 
@@ -109,30 +109,30 @@ describe('SelectableTagList.vue', () => {
 
         it('de-selects selected tag', async () => {
             const wrapper = mount(SelectableTagList, {
-                propsData: {
+                props: {
                     tags: sevenTags,
-                    value: ['tag:1', 'tag:2', 'tag:3']
+                    modelValue: ['tag:1', 'tag:2', 'tag:3']
                 }
             });
             let tagWrappers = wrapper.findAllComponents(Tag);
 
             // click selected tag
             await tagWrappers.at(0).trigger('click'); // tag1
-            expect(wrapper.emitted('input')[0][0]).toStrictEqual(['tag:2', 'tag:3']);
+            expect(wrapper.emitted('update:modelValue')[0][0]).toStrictEqual(['tag:2', 'tag:3']);
         });
 
         it('selects unselected tag on click', async () => {
             const wrapper = mount(SelectableTagList, {
-                propsData: {
+                props: {
                     tags: sevenTags,
-                    value: ['tag:1']
+                    modelValue: ['tag:1']
                 }
             });
             let tagWrappers = wrapper.findAllComponents(Tag);
 
             // click un-selected tag
             await tagWrappers.at(1).trigger('click');
-            expect(wrapper.emitted('input')[0][0]).toStrictEqual(['tag:1', 'tag:2']);
+            expect(wrapper.emitted('update:modelValue')[0][0]).toStrictEqual(['tag:1', 'tag:2']);
         });
     });
 });

@@ -8,9 +8,7 @@ describe('ActionBreadcrumb.vue', () => {
 
     beforeEach(() => {
         doShallowMount = () => {
-            wrapper = shallowMount(ActionBreadcrumb, {
-                propsData: props
-            });
+            wrapper = shallowMount(ActionBreadcrumb, { props });
         };
     });
 

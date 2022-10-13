@@ -24,6 +24,7 @@ export default {
     <hr>
     <LinkList
       v-if="links.length"
+      data-test-id="link-list"
       :links="links"
     />
     <!-- Use MetadataPlaceholder? -->

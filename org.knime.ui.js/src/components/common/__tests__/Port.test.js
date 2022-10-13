@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import PortIcon from 'webapps-common/ui/components/node/PortIcon.vue';
@@ -9,12 +8,7 @@ import * as $shapes from '@/style/shapes.mjs';
 import * as $colors from '@/style/colors.mjs';
 
 describe('Port', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
-    let wrapper, propsData, storeConfig, doShallowMount, $store;
+    let wrapper, props, storeConfig, doShallowMount, $store;
     const FLOW_VARIABLE = 'FV';
     const TABLE = 'TA';
     const OTHER = 'OT';
@@ -26,7 +20,7 @@ describe('Port', () => {
     ])('Port (%s)', (typeId, portKind, portColor) => {
         beforeEach(() => {
             wrapper = null;
-            propsData = {
+            props = {
                 port: {
                     optional: false,
                     inactive: false,
@@ -57,8 +51,10 @@ describe('Port', () => {
             };
             doShallowMount = () => {
                 $store = mockVuexStore(storeConfig);
-                let mocks = { $shapes, $colors, $store };
-                wrapper = shallowMount(Port, { propsData, mocks });
+                wrapper = shallowMount(Port, {
+                    props,
+                    global: { plugins: [$store], mocks: { $shapes, $colors } }
+                });
             };
         });
 
@@ -83,15 +79,15 @@ describe('Port', () => {
         });
 
         it('renders inactive port', () => {
-            propsData.port.inactive = true;
+            props.port.inactive = true;
             doShallowMount();
 
             expect(wrapper.findAll('path').length).toBe(2);
         });
 
         it('renders optional port', () => {
-            propsData.port.optional = true;
-            propsData.port.index = 1;
+            props.port.optional = true;
+            props.port.index = 1;
             doShallowMount();
 
             const { filled } = wrapper.findComponent(PortIcon).props();
@@ -100,8 +96,8 @@ describe('Port', () => {
 
         if (portKind === 'flowVariable') {
             it('always renders filled Mickey Mouse ears', () => {
-                propsData.port.optional = true;
-                propsData.port.index = 0;
+                props.port.optional = true;
+                props.port.index = 0;
                 doShallowMount();
 
                 const { filled } = wrapper.findComponent(PortIcon).props();
@@ -110,7 +106,7 @@ describe('Port', () => {
         }
 
         it.each(['IDLE'])('draws traffic light for state %s (red)', (state) => {
-            propsData.port.nodeState = state;
+            props.port.nodeState = state;
             doShallowMount();
 
             let { fill: bgColor } = wrapper.findAll('g g circle').at(1).attributes();
@@ -122,7 +118,7 @@ describe('Port', () => {
         });
 
         it.each(['CONFIGURED', 'QUEUED'])('draws traffic light for state %s (yellow)', (state) => {
-            propsData.port.nodeState = state;
+            props.port.nodeState = state;
             doShallowMount();
 
             let { fill: bgColor } = wrapper.findAll('g g circle').at(1).attributes();
@@ -134,7 +130,7 @@ describe('Port', () => {
         });
 
         it.each(['HALTED', 'EXECUTED'])('draws traffic light for state %s (green)', (state) => {
-            propsData.port.nodeState = state;
+            props.port.nodeState = state;
             doShallowMount();
 
             let { fill: bgColor } = wrapper.findAll('g g circle').at(1).attributes();
@@ -146,7 +142,7 @@ describe('Port', () => {
         });
 
         it.each(['EXECUTING'])('draws traffic light for state %s (blue)', (state) => {
-            propsData.port.nodeState = state;
+            props.port.nodeState = state;
             doShallowMount();
 
             let { fill: bgColor } = wrapper.findAll('g g circle').at(1).attributes();

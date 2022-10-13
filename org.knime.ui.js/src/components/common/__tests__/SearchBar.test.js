@@ -7,13 +7,13 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import SearchBar from '../SearchBar.vue';
 
 describe('SearchBar', () => {
-    let doShallowMount, wrapper, propsData;
+    let doShallowMount, wrapper, props;
 
     beforeEach(() => {
         wrapper = null;
 
         doShallowMount = () => {
-            wrapper = shallowMount(SearchBar, { propsData });
+            wrapper = shallowMount(SearchBar, { props });
         };
     });
 
@@ -26,7 +26,7 @@ describe('SearchBar', () => {
     });
 
     it('sets placeholder', () => {
-        propsData = {
+        props = {
             placeholder: 'type something'
         };
         doShallowMount();
@@ -51,7 +51,7 @@ describe('SearchBar', () => {
             const input = wrapper.find('input');
             input.setValue('some node');
 
-            expect(wrapper.emitted('input')).toStrictEqual([['some node']]);
+            expect(wrapper.emitted('update:modelValue')).toStrictEqual([['some node']]);
         });
 
         it('clears on clear button click', () => {
@@ -61,7 +61,7 @@ describe('SearchBar', () => {
             expect(closeButton.findComponent(CloseIcon).exists()).toBe(true);
 
             closeButton.vm.$emit('click');
-            expect(wrapper.emitted('input')).toStrictEqual([['']]);
+            expect(wrapper.emitted('update:modelValue')).toStrictEqual([['']]);
             expect(wrapper.emitted('clear')).toBeTruthy();
         });
     });

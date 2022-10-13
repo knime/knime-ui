@@ -42,7 +42,7 @@ describe('ActionButton', () => {
         let wrapper = shallowMount(ActionButton);
         for (let i = 1; i < 5; i++) {
             wrapper.find('g').trigger('click', { button: i });
-            expect(wrapper.emitted().click).toBeFalsy();
+            expect(wrapper.emitted('click')).toBeFalsy();
         }
     });
 

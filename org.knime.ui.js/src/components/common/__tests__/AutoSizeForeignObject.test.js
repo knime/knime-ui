@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 import * as $shapes from '@/style/shapes.mjs';
 
@@ -11,7 +10,7 @@ const mockBoundingRect = ({ x, y, width, height }) => {
 };
 
 describe('AutoSizeForeignObject.vue', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store;
+    let props, doShallowMount, wrapper, $store;
 
     const mockRectWidth = 232;
     const mockRectHeight = 129;
@@ -21,20 +20,11 @@ describe('AutoSizeForeignObject.vue', () => {
     // Wait for task queue to run until after next task in order to let
     // the component render the template otherwise we'd have to call $nextTick twice
     // for this component, which is not very clean
-    const flushTaskQueue = () => new Promise(resolve => {
-        setTimeout(() => {
-            resolve();
-        }, 0);
-    });
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    const flushTaskQueue = () => new Promise(r => setTimeout(r, 10));
 
     beforeEach(() => {
         wrapper = null;
-        propsData = {
+        props = {
             parentWidth: $shapes.nodeSize,
             resizeKey: ''
         };
@@ -55,13 +45,15 @@ describe('AutoSizeForeignObject.vue', () => {
         });
 
         doShallowMount = (customProps = {}) => {
-            mocks = { $store, $shapes };
             wrapper = shallowMount(AutoSizeForeignObject, {
-                propsData: {
-                    ...propsData,
+                props: {
+                    ...props,
                     ...customProps
                 },
-                mocks
+                global: {
+                    plugins: [$store],
+                    mocks: { $shapes }
+                }
             });
         };
     });
@@ -99,8 +91,8 @@ describe('AutoSizeForeignObject.vue', () => {
 
         await flushTaskQueue();
 
-        expect(wrapper.emitted('width-change')[0][0]).toBe(mockRectWidth);
-        expect(wrapper.emitted('height-change')[0][0]).toBe(mockRectHeight);
+        expect(wrapper.emitted('widthChange')[0][0]).toBe(mockRectWidth);
+        expect(wrapper.emitted('heightChange')[0][0]).toBe(mockRectHeight);
     });
 
     it('should correctly measure when zoomed', async () => {
@@ -113,7 +105,7 @@ describe('AutoSizeForeignObject.vue', () => {
         const expectedWidth = Math.ceil(mockRectWidth / mockZoomFactor);
         const expectedHeight = Math.ceil(mockRectHeight / mockZoomFactor);
 
-        const expectedX = (propsData.parentWidth - expectedWidth) / 2;
+        const expectedX = (props.parentWidth - expectedWidth) / 2;
         $store.state.canvas.zoomFactor = mockZoomFactor;
 
         mockBoundingRect({
@@ -142,7 +134,7 @@ describe('AutoSizeForeignObject.vue', () => {
         expect(wrapper.attributes()).toEqual(expect.objectContaining({
             height: mockRectHeight.toString(),
             width: mockRectWidth.toString(),
-            x: ((propsData.parentWidth - mockRectWidth) / 2).toString()
+            x: ((props.parentWidth - mockRectWidth) / 2).toString()
         }));
     });
 
@@ -154,7 +146,7 @@ describe('AutoSizeForeignObject.vue', () => {
         expect(wrapper.attributes()).toEqual(expect.objectContaining({
             height: mockRectHeight.toString(),
             width: mockRectWidth.toString(),
-            x: ((propsData.parentWidth - mockRectWidth) / 2).toString()
+            x: ((props.parentWidth - mockRectWidth) / 2).toString()
         }));
 
         const newWidth = 100;
@@ -179,10 +171,15 @@ describe('AutoSizeForeignObject.vue', () => {
     it('should ignore very small changes', async () => {
         // render and wait
         const localWrapper = shallowMount(AutoSizeForeignObject, {
-            propsData,
-            mocks: { $store, $shapes },
-            scopedSlots: {
-                default: '<span @mock-event="props.on.sizeChange" class="slot-content"></span>'
+            props,
+            global: {
+                plugins: [$store],
+                mocks: { $shapes }
+            },
+            slots: {
+                default: `<template #default="props">
+                    <span @mock-event="props.on.sizeChange" class="slot-content"></span>
+                </template>`
             }
         });
         await flushTaskQueue();

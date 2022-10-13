@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, mount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import * as $colors from '@/style/colors.mjs';
@@ -7,11 +6,6 @@ import * as $shapes from '@/style/shapes.mjs';
 import portIconRenderer from '../PortIconRenderer';
 
 describe('PortIconRenderer', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     let $store, doMount, storeConfig, wrapper, port, iconSize;
 
     beforeEach(() => {
@@ -33,9 +27,13 @@ describe('PortIconRenderer', () => {
         };
         doMount = () => {
             $store = mockVuexStore(storeConfig);
-            let mocks = { $shapes, $colors, $store };
             
-            wrapper = mount(portIconRenderer(port, iconSize), { mocks });
+            wrapper = mount(portIconRenderer(port, iconSize), {
+                global: {
+                    plugins: [$store],
+                    mocks: { $shapes, $colors }
+                }
+            });
         };
     });
 

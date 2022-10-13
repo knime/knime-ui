@@ -26,6 +26,7 @@ export default {
             default: false
         }
     },
+    emits: ['click'],
     methods: {
         onClick(e) {
             if (!this.disabled) {
