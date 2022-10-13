@@ -1,6 +1,3 @@
 [submodule "webapps-common"]
 	path = org.knime.ui.js/webapps-common
 	url = ../webapps-common
-[submodule "org.knime.ui.js/knime-ui-extension-service"]
-	path = org.knime.ui.js/knime-ui-extension-service
-	url = ../knime-ui-extension-service.git

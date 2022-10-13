@@ -24,8 +24,7 @@ export default ({ mode }) => {
             alias: {
                 '@': path.join(__dirname, 'src'),
                 '@api': path.join(__dirname, 'src', 'api', 'index.js'),
-                'webapps-common': path.join(__dirname, 'webapps-common'),
-                'knime-ui-extension-service': path.join(__dirname, 'knime-ui-extension-service')
+                'webapps-common': path.join(__dirname, 'webapps-common')
             }
         }
     });

@@ -7,7 +7,6 @@ const coverageIgnoreFolders = [
     'bin',
     'webapps-common',
     'buildtools',
-    'knime-ui-extension-service',
     '.history'
 ];
 
@@ -36,9 +35,6 @@ module.exports = {
         'vue',
         'json'
     ],
-    modulePathIgnorePatterns: [
-        '<rootDir>/knime-ui-extension-service'
-    ],
     transform: {
         '\\.mjs$': 'babel-jest',
         '\\.js$': 'babel-jest',
@@ -66,7 +62,7 @@ module.exports = {
         `<rootDir>/(${coverageIgnoreFiles.join('|')})`
     ],
     watchPathIgnorePatterns: [
-        '^<rootDir>/(coverage|dist|target|node_modules|bin|webapps-common|knime-ui-extension-service|.history)/'
+        '^<rootDir>/(coverage|dist|target|node_modules|bin|webapps-common|.history)/'
     ],
     testEnvironment: 'jsdom',
     testEnvironmentOptions: {
