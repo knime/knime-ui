@@ -1,4 +1,4 @@
-import Vuex from 'vuex';
+import { createStore } from 'vuex';
 
 const mockVuexStore = (moduleInput) => {
     let modules = Object.entries(moduleInput).reduce((modules, [moduleName, moduleConfig]) => {
@@ -18,7 +18,7 @@ const mockVuexStore = (moduleInput) => {
         storeConfig.state = () => storeConfig.state;
     }
 
-    return new Vuex.Store(storeConfig);
+    return createStore(storeConfig);
 };
 
 export {

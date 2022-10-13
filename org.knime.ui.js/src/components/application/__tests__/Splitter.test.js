@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import * as Vue from 'vue';
 import { mount, shallowMount } from '@vue/test-utils';
 import Splitter from '../Splitter.vue';
 
@@ -11,10 +11,10 @@ describe('Splitter.vue', () => {
     localStorageSetItemSpy = jest.spyOn(window.localStorage.__proto__, 'setItem');
 
     startMove = (wrapper) => {
-        const handle = wrapper.findComponent({ ref: 'handle' });
+        const handle = wrapper.find('.handle');
 
-        handle.element.setPointerCapture = jest.fn();
-        handle.element.releasePointerCapture = jest.fn();
+        handle.wrapperElement.setPointerCapture = jest.fn();
+        handle.wrapperElement.releasePointerCapture = jest.fn();
 
         handle.trigger('pointerdown', {
             clientY: 100,
@@ -25,7 +25,7 @@ describe('Splitter.vue', () => {
     describe('direction row', () => {
         beforeEach(() => {
             wrapper = mount(Splitter, {
-                propsData: {
+                props: {
                     direction: 'column',
                     id: 'test-column',
                     secondarySize: '45%'
@@ -38,23 +38,23 @@ describe('Splitter.vue', () => {
         });
 
         it('doesn’t display a hover title', () => {
-            expect(wrapper.findComponent({ ref: 'handle' }).attributes().title).toBeUndefined();
+            expect(wrapper.find('.handle').attributes().title).toBeUndefined();
         });
 
         it('adds active class on move', async () => {
             startMove(wrapper);
             await Vue.nextTick();
-            expect(wrapper.findComponent({ ref: 'handle' }).attributes().class).toContain('active');
+            expect(wrapper.find('.handle').attributes().class).toContain('active');
         });
 
         it('move changes height', async () => {
-            const handle = wrapper.findComponent({ ref: 'handle' });
-            const secondary = wrapper.findComponent({ ref: 'secondary' });
+            const handle = wrapper.find('.handle');
+            const secondary = wrapper.find('.secondary');
 
-            handle.element.setPointerCapture = jest.fn();
-            handle.element.releasePointerCapture = jest.fn();
+            handle.wrapperElement.setPointerCapture = jest.fn();
+            handle.wrapperElement.releasePointerCapture = jest.fn();
 
-            secondary.element.getBoundingClientRect = jest.fn(() => ({
+            secondary.wrapperElement.getBoundingClientRect = jest.fn(() => ({
                 y: 200,
                 height: 150
             }));
@@ -63,7 +63,7 @@ describe('Splitter.vue', () => {
                 clientY: 100,
                 pointerId: -1
             });
-            expect(handle.element.setPointerCapture).toHaveBeenCalledWith(-1);
+            expect(handle.wrapperElement.setPointerCapture).toHaveBeenCalledWith(-1);
 
             handle.trigger('pointermove', {
                 clientY: 120
@@ -74,17 +74,17 @@ describe('Splitter.vue', () => {
             handle.trigger('pointerup', {
                 pointerId: -1
             });
-            expect(handle.element.releasePointerCapture).toHaveBeenCalledWith(-1);
+            expect(handle.wrapperElement.releasePointerCapture).toHaveBeenCalledWith(-1);
         });
 
         it('saves to localStorage', async () => {
-            const handle = wrapper.findComponent({ ref: 'handle' });
-            const secondary = wrapper.findComponent({ ref: 'secondary' });
+            const handle = wrapper.find('.handle');
+            const secondary = wrapper.find('.secondary');
 
-            handle.element.setPointerCapture = jest.fn();
-            handle.element.releasePointerCapture = jest.fn();
+            handle.wrapperElement.setPointerCapture = jest.fn();
+            handle.wrapperElement.releasePointerCapture = jest.fn();
 
-            secondary.element.getBoundingClientRect = jest.fn(() => ({
+            secondary.wrapperElement.getBoundingClientRect = jest.fn(() => ({
                 y: 200,
                 height: 150
             }));
@@ -110,7 +110,7 @@ describe('Splitter.vue', () => {
             localStorageGetItemSpy.mockReturnValueOnce('444px');
 
             let wrapper2 = mount(Splitter, {
-                propsData: {
+                props: {
                     direction: 'column',
                     id: 'test-column2',
                     secondarySize: '45%'
@@ -119,7 +119,7 @@ describe('Splitter.vue', () => {
 
             expect(localStorageGetItemSpy).toHaveBeenCalled();
 
-            const secondary = wrapper2.findComponent({ ref: 'secondary' });
+            const secondary = wrapper2.find('.secondary');
             expect(secondary.attributes().style).toBe('height: 444px;');
         });
     });
@@ -127,7 +127,7 @@ describe('Splitter.vue', () => {
     describe('direction column', () => {
         beforeEach(() => {
             wrapper = shallowMount(Splitter, {
-                propsData: {
+                props: {
                     direction: 'row',
                     id: 'test-row'
                 }
@@ -140,23 +140,23 @@ describe('Splitter.vue', () => {
         });
 
         it('doesn’t display a hover title', () => {
-            expect(wrapper.findComponent({ ref: 'handle' }).attributes().title).toBeUndefined();
+            expect(wrapper.find('.handle').attributes().title).toBeUndefined();
         });
 
         it('adds active class on move', async () => {
             startMove(wrapper);
             await Vue.nextTick();
-            expect(wrapper.findComponent({ ref: 'handle' }).attributes().class).toContain('active');
+            expect(wrapper.find('.handle').attributes().class).toContain('active');
         });
 
         it('move changes width', async () => {
-            const handle = wrapper.findComponent({ ref: 'handle' });
-            const secondary = wrapper.findComponent({ ref: 'secondary' });
+            const handle = wrapper.find('.handle');
+            const secondary = wrapper.find('.secondary');
 
-            handle.element.setPointerCapture = jest.fn();
-            handle.element.releasePointerCapture = jest.fn();
+            handle.wrapperElement.setPointerCapture = jest.fn();
+            handle.wrapperElement.releasePointerCapture = jest.fn();
 
-            secondary.element.getBoundingClientRect = jest.fn(() => ({
+            secondary.wrapperElement.getBoundingClientRect = jest.fn(() => ({
                 x: 200,
                 width: 150
             }));
@@ -165,7 +165,7 @@ describe('Splitter.vue', () => {
                 clientX: 100,
                 pointerId: -1
             });
-            expect(handle.element.setPointerCapture).toHaveBeenCalledWith(-1);
+            expect(handle.wrapperElement.setPointerCapture).toHaveBeenCalledWith(-1);
 
             handle.trigger('pointermove', {
                 clientX: 120
@@ -176,7 +176,7 @@ describe('Splitter.vue', () => {
             handle.trigger('pointerup', {
                 pointerId: -1
             });
-            expect(handle.element.releasePointerCapture).toHaveBeenCalledWith(-1);
+            expect(handle.wrapperElement.releasePointerCapture).toHaveBeenCalledWith(-1);
         });
     });
 });

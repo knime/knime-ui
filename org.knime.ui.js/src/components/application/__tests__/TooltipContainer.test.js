@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 import * as $shapes from '@/style/shapes.mjs';
 
@@ -9,11 +8,6 @@ import TooltipContainer from '../TooltipContainer.vue';
 
 describe('TooltipContainer', () => {
     let doShallowMount, wrapper, $store, storeConfig, tooltip, kanvasElement, screenFromCanvasCoordinatesMock;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
 
     beforeEach(() => {
         wrapper = null;
@@ -56,8 +50,12 @@ describe('TooltipContainer', () => {
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
-            let mocks = { $shapes, $store };
-            wrapper = shallowMount(TooltipContainer, { mocks });
+            wrapper = shallowMount(TooltipContainer, {
+                global: {
+                    plugins: [$store],
+                    mocks: { $shapes }
+                }
+            });
             document.getElementById = (id) => id === 'kanvas' ? kanvasElement : null;
         };
     });
@@ -177,7 +175,7 @@ describe('TooltipContainer', () => {
 
         test('destruction of tooltipContainer removes scroll listener', () => {
             doShallowMount();
-            wrapper.destroy();
+            wrapper.unmount();
 
             expect(kanvasElement.removeEventListener).toHaveBeenCalledWith('scroll', wrapper.vm.onCanvasScroll);
         });

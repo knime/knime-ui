@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
@@ -8,12 +7,7 @@ import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import ContextMenu from '../ContextMenu.vue';
 
 describe('ContextMenu.vue', () => {
-    let storeConfig, propsData, mocks, doMount, wrapper, $store, $shortcuts;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let storeConfig, propsData, doMount, wrapper, $store, $shortcuts;
 
     beforeEach(() => {
         wrapper = null;
@@ -49,8 +43,13 @@ describe('ContextMenu.vue', () => {
 
         doMount = () => {
             $store = mockVuexStore(storeConfig);
-            mocks = { $store, $shortcuts };
-            wrapper = shallowMount(ContextMenu, { propsData, mocks });
+            wrapper = shallowMount(ContextMenu, {
+                propsData,
+                global: {
+                    plugins: [$store],
+                    mocks: { $shortcuts }
+                }
+            });
         };
     });
 
@@ -64,7 +63,7 @@ describe('ContextMenu.vue', () => {
         it('re-emits menu-close', () => {
             doMount();
             wrapper.findComponent(FloatingMenu).vm.$emit('menu-close');
-            expect(wrapper.emitted('menu-close')).toBeTruthy();
+            expect(wrapper.emitted('menuClose')).toBeTruthy();
         });
 
         it('focuses menu items on position change', async () => {
@@ -137,9 +136,9 @@ describe('ContextMenu.vue', () => {
     it('closes menu after item has been clicked', () => {
         doMount();
         
-        expect(wrapper.emitted('menu-close')).toBeFalsy();
+        expect(wrapper.emitted('menuClose')).toBeFalsy();
         wrapper.findComponent(MenuItems).vm.$emit('item-click', null, { name: 'shortcut' });
-        expect(wrapper.emitted('menu-close')).toBeTruthy();
+        expect(wrapper.emitted('menuClose')).toBeTruthy();
     });
 
     describe('Visibility of menu items', () => {

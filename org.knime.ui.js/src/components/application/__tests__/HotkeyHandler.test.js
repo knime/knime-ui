@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import { escapePressed as escapePressedMock } from '@/mixins/escapeStack';
@@ -23,13 +22,8 @@ const expectEventNotHandled = () => {
 describe('HotKeys', () => {
     let doShallowMount, wrapper, $store, storeConfig, $shortcuts;
 
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     afterEach(() => {
-        wrapper.destroy();
+        wrapper.unmount();
         jest.clearAllMocks();
     });
 
@@ -68,7 +62,12 @@ describe('HotKeys', () => {
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
-            wrapper = shallowMount(HotkeyHandler, { mocks: { $store, $shortcuts } });
+            wrapper = shallowMount(HotkeyHandler, {
+                global: {
+                    plugins: [$store],
+                    mocks: { $shortcuts }
+                }
+            });
         };
     });
 
@@ -81,7 +80,7 @@ describe('HotKeys', () => {
         expect(document.addEventListener).toHaveBeenNthCalledWith(1, 'keydown', wrapper.vm.onKeydown);
         expect(document.addEventListener).toHaveBeenNthCalledWith(2, 'keyup', wrapper.vm.onKeyup);
 
-        wrapper.destroy();
+        wrapper.unmount();
         expect(document.removeEventListener).toHaveBeenNthCalledWith(1, 'keydown', wrapper.vm.onKeydown);
         expect(document.removeEventListener).toHaveBeenNthCalledWith(2, 'keyup', wrapper.vm.onKeyup);
         expect(window.removeEventListener).toHaveBeenCalledWith('blur', wrapper.vm.windowBlurListener);

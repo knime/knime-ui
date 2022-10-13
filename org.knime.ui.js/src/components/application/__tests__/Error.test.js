@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import * as Vue from 'vue';
 
 import { shallowMount, mount } from '@vue/test-utils';
 import Button from 'webapps-common/ui/components/Button.vue';
@@ -14,7 +14,7 @@ jest.mock('webapps-common/util/copyText.js', () => ({
 describe('Error.vue', () => {
     it('renders default', () => {
         const wrapper = shallowMount(Error, {
-            propsData: {
+            props: {
                 message: 'one-liner',
                 stack: 'stacky',
                 vueInfo: 'error in watcher'
@@ -25,7 +25,7 @@ describe('Error.vue', () => {
 
     it('no vueInfo props', () => {
         const wrapper = shallowMount(Error, {
-            propsData: {
+            props: {
                 message: 'one-liner',
                 stack: 'stacky'
             }
@@ -35,15 +35,15 @@ describe('Error.vue', () => {
 
     it('copy to clipboard', async () => {
         const wrapper = mount(Error, {
-            propsData: {
+            props: {
                 message: 'one-liner',
                 stack: 'stacky',
                 vueInfo: 'error in watcher'
             }
         });
 
-        let copyButton = wrapper.findAllComponents(Button).at(1);
-        copyButton.trigger('click');
+        let copyButton = wrapper.findAllComponents(Button)[1];
+        copyButton.vm.$emit('click');
 
         await Vue.nextTick();
 
@@ -62,8 +62,8 @@ describe('Error.vue', () => {
         delete window.location;
         window.location = { reload: jest.fn() };
 
-        let reloadButton = wrapper.findAllComponents(Button).at(0);
-        reloadButton.trigger('click');
+        let reloadButton = wrapper.findAllComponents(Button)[0];
+        reloadButton.vm.$emit('click');
 
         expect(window.location.reload).toHaveBeenCalled();
     });
@@ -75,7 +75,7 @@ describe('Error.vue', () => {
         window.switchToJavaUI = jest.fn();
 
         let switchButton = wrapper.findAllComponents(FunctionButton).at(0);
-        switchButton.trigger('click');
+        switchButton.vm.$emit('click');
 
         expect(window.switchToJavaUI).toHaveBeenCalled();
     });

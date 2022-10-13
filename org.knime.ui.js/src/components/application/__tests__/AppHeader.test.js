@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { shallowMount, createLocalVue } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
@@ -7,12 +6,7 @@ import CloseIcon from '@/assets/cancel.svg';
 import AppHeader from '../AppHeader.vue';
 
 describe('AppHeader.vue', () => {
-    let propsData, mocks, doShallowMount, wrapper, storeConfig, $store;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let propsData, doShallowMount, wrapper, storeConfig, $store;
 
     beforeEach(() => {
         wrapper = null;
@@ -33,8 +27,7 @@ describe('AppHeader.vue', () => {
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
-            mocks = { $store };
-            wrapper = shallowMount(AppHeader, { propsData, mocks });
+            wrapper = shallowMount(AppHeader, { propsData, global: { plugins: [$store] } });
         };
     });
 
@@ -95,7 +88,7 @@ describe('AppHeader.vue', () => {
         it('allows switching to old UI', () => {
             window.switchToJavaUI = jest.fn();
             doShallowMount();
-            wrapper.find('.switch-classic').vm.$emit('click');
+            wrapper.find('.switch-classic').trigger('click');
             expect(window.switchToJavaUI).toHaveBeenCalled();
         });
 
