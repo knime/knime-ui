@@ -6,8 +6,8 @@ import StreamingDecorator from '../StreamingDecorator.vue';
 
 describe('StreamingDecorator.vue', () => {
     let doShallowMount = (executionInfo, backgroundType) => shallowMount(StreamingDecorator, {
-        propsData: { executionInfo, backgroundType },
-        mocks: { $colors }
+        props: { executionInfo, backgroundType },
+        global: { mocks: { $colors } }
     });
 
     describe('symbol', () => {

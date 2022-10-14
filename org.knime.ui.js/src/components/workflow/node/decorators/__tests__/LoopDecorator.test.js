@@ -5,9 +5,9 @@ import * as $colors from '@/style/colors.mjs';
 import LoopDecorator from '../LoopDecorator.vue';
 
 describe('LoopDecorator.vue', () => {
-    let doShallowMount = (loopStatus) => shallowMount(LoopDecorator, {
-        propsData: { loopStatus },
-        mocks: { $colors }
+    const doShallowMount = (loopStatus) => shallowMount(LoopDecorator, {
+        props: { loopStatus },
+        global: { mocks: { $colors } }
     });
 
     it('does not render decorator when loopStatus is missing', () => {

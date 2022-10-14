@@ -5,46 +5,31 @@ import LinkDecorator from '../LinkDecorator.vue';
 import StreamingDecorator from '../StreamingDecorator.vue';
 import LoopDecorator from '../LoopDecorator.vue';
 
-let wrapper, propsData, doMount;
-
 describe('NodeDecorators.vue', () => {
-    beforeEach(() => {
-        wrapper = null;
-        
-        propsData = {
-            type: 'Learner',
-            link: null,
-            kind: 'component',
-            executionInfo: null
-        };
-        
-        doMount = () => {
-            let mocks = { };
-            wrapper = shallowMount(NodeDecorators, {
-                propsData,
-                mocks
-            });
-        };
-    });
+    const defaultProps = {
+        type: 'Learner',
+        link: null,
+        kind: 'component',
+        executionInfo: null
+    };
+    const doMount = (props = defaultProps) => shallowMount(NodeDecorators, { props });
 
     it('has no Decorator by default', () => {
-        doMount();
+        const wrapper = doMount();
         expect(wrapper.findComponent(LinkDecorator).exists()).toBe(false);
         expect(wrapper.findComponent(StreamingDecorator).exists()).toBe(false);
         expect(wrapper.findComponent(LoopDecorator).exists()).toBe(false);
     });
 
     it('shows/hides LinkDecorator', () => {
-        propsData.link = 'linkylinky';
-        doMount();
+        const wrapper = doMount({ ...defaultProps, link: 'linkylinky' });
 
         let linkDecorator = wrapper.findComponent(LinkDecorator);
         expect(linkDecorator.attributes('transform')).toBe('translate(0, 21)');
     });
 
     it('shows/hides StreamingDecorator', () => {
-        propsData.executionInfo = { jobManager: 'sampleJobManager' };
-        doMount();
+        const wrapper = doMount({ ...defaultProps, executionInfo: { jobManager: 'sampleJobManager' } });
 
         let streamingDecorator = wrapper.findComponent(StreamingDecorator);
         expect(streamingDecorator.attributes('transform')).toBe('translate(21, 21)');
@@ -54,9 +39,7 @@ describe('NodeDecorators.vue', () => {
     });
 
     it.each(['LoopStart', 'LoopEnd'])('shows/hides LoopDecorator', (type) => {
-        propsData.type = type;
-        propsData.loopInfo = { status: 'ok' };
-        doMount();
+        const wrapper = doMount({ ...defaultProps, type, loopInfo: { status: 'ok' } });
 
         let loopDecorator = wrapper.findComponent(LoopDecorator);
         expect(loopDecorator.attributes('transform')).toBe('translate(20, 20)');
@@ -68,12 +51,11 @@ describe('NodeDecorators.vue', () => {
         [{ kind: 'component' }, 'Component'],
         [{ kind: 'metanode' }, 'Metanode']
     ])('provides background type', (nodeProps, expectedType) => {
-        propsData = {
+        const wrapper = doMount({
             ...nodeProps,
             link: 'linky',
             executionInfo: { mock: 'something' }
-        };
-        doMount();
+        });
 
         expect(wrapper.findComponent(LinkDecorator).props('backgroundType')).toBe(expectedType);
         expect(wrapper.findComponent(StreamingDecorator).props('backgroundType')).toBe(expectedType);

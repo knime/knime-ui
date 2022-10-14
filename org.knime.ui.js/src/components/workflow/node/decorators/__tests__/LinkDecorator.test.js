@@ -5,9 +5,9 @@ import * as $colors from '@/style/colors.mjs';
 import LinkDecorator from '../LinkDecorator.vue';
 
 describe('LinkDecorator.vue', () => {
-    let doShallowMount = (backgroundType) => shallowMount(LinkDecorator, {
-        propsData: { backgroundType },
-        mocks: { $colors }
+    const doShallowMount = (backgroundType) => shallowMount(LinkDecorator, {
+        props: { backgroundType },
+        global: { mocks: { $colors } }
     });
 
     it('draws background for known type', () => {
