@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
 import FlowVarTabIcon from 'webapps-common/ui/assets/img/icons/both-flow-variables.svg';
@@ -10,45 +10,35 @@ import PortTabs, { portIconSize } from '../PortTabs.vue';
 jest.mock('@/components/common/PortIconRenderer', () => jest.fn());
 
 describe('PortTabs.vue', () => {
-    let doMount, wrapper, propsData;
-
-    beforeEach(() => {
-        propsData = {};
-
-        doMount = () => {
-            wrapper = shallowMount(PortTabs, { propsData });
-        };
-    });
+    const doShallowMount = (props = {}) => shallowMount(PortTabs, { props });
     
     afterEach(() => {
         jest.clearAllMocks();
     });
 
-    it('passes "value" through', () => {
-        propsData = {
-            value: '5',
+    it('passes "modelValue" through', () => {
+        const wrapper = doShallowMount({
+            modelValue: '5',
             node: { outPorts: [] }
-        };
-        doMount();
-
-        expect(wrapper.findComponent(TabBar).props().value).toBe('5');
+        });
+        
+        expect(wrapper.findComponent(TabBar).props('modelValue')).toBe('5');
     });
 
-    it('emits an "input"-event if TabBar changes', async () => {
-        propsData = {
-            value: '5',
+    it('emits an "update:modelValue"-event if TabBar changes', async () => {
+        const wrapper = doShallowMount({
+            modelValue: '5',
             node: { outPorts: [] }
-        };
-        doMount();
+        });
 
         wrapper.findComponent(TabBar).vm.$emit('update:value', 1);
         await Vue.nextTick();
-        expect(wrapper.emitted().input[0]).toStrictEqual([1]);
+        expect(wrapper.emitted('update:modelValue')[0]).toStrictEqual([1]);
     });
 
     it('arranges tabs for metanode', () => {
         portIcon.mockReturnValueOnce('portIcon-fv').mockReturnValueOnce('portIcon-1');
-        propsData = {
+        const wrapper = doShallowMount({
             node: {
                 kind: 'metanode',
                 outPorts: [
@@ -61,10 +51,9 @@ describe('PortTabs.vue', () => {
                     }
                 ]
             }
-        };
-        doMount();
+        });
         
-        expect(wrapper.findComponent(TabBar).props().possibleValues).toStrictEqual([
+        expect(wrapper.findComponent(TabBar).props('possibleValues')).toStrictEqual([
             { value: '0', label: '0: flowVariable port', icon: 'portIcon-fv' },
             { value: '1', label: '1: triangle port', icon: 'portIcon-1' }
         ]);
@@ -73,7 +62,7 @@ describe('PortTabs.vue', () => {
 
     it('arranges tabs for normal node', () => {
         portIcon.mockReturnValueOnce('portIcon-1');
-        propsData = {
+        const wrapper = doShallowMount({
             node: {
                 kind: 'node',
                 outPorts: [
@@ -86,10 +75,9 @@ describe('PortTabs.vue', () => {
                     }
                 ]
             }
-        };
-        doMount();
+        });
 
-        expect(wrapper.findComponent(TabBar).props().possibleValues).toStrictEqual([
+        expect(wrapper.findComponent(TabBar).props('possibleValues')).toStrictEqual([
             { value: '1', label: '1: triangle port', icon: 'portIcon-1' },
             { value: '0', label: 'Flow Variables', icon: FlowVarTabIcon }
         ]);

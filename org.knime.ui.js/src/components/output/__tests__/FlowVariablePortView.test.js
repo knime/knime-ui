@@ -1,37 +1,34 @@
-import Vue from 'vue';
+import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import FlowVariablePortView from '../FlowVariablePortView.vue';
 
 describe('FlowVariablePortView.vue', () => {
-    let wrapper;
-    let doShallowMountWithAsyncData = async () => {
-        wrapper = await shallowMount(FlowVariablePortView, {
-            propsData: {
-                projectId: 'project',
-                workflowId: 'workflow',
-                nodeId: 'node',
-                portIndex: 0,
-                initialData: [
-                    {
-                        ownerNodeId: 'testOwner',
-                        type: 'StringValue',
-                        name: 'testFlowVariable1',
-                        value: 'test1'
-                    },
-                    {
-                        type: 'IntValue',
-                        name: 'testFlowVariable2',
-                        value: 'test2'
-                    }
-                ]
-            }
-        });
-    };
+    const doShallowMount = () => shallowMount(FlowVariablePortView, {
+        props: {
+            projectId: 'project',
+            workflowId: 'workflow',
+            nodeId: 'node',
+            portIndex: 0,
+            initialData: [
+                {
+                    ownerNodeId: 'testOwner',
+                    type: 'StringValue',
+                    name: 'testFlowVariable1',
+                    value: 'test1'
+                },
+                {
+                    type: 'IntValue',
+                    name: 'testFlowVariable2',
+                    value: 'test2'
+                }
+            ]
+        }
+    });
 
     it('displays flowVariable table', async () => {
-        await doShallowMountWithAsyncData();
+        const wrapper = doShallowMount();
         await Vue.nextTick();
-
+        
         let cells = wrapper.findAll('td');
         expect(cells.at(0).text()).toBe('testOwner');
         expect(cells.at(1).text()).toBe('StringValue');
@@ -42,14 +39,15 @@ describe('FlowVariablePortView.vue', () => {
         expect(cells.at(6).text()).toBe('testFlowVariable2');
         expect(cells.at(7).text()).toBe('test2');
     });
+    
+    it('renders header', () => {
+        const wrapper = doShallowMount();
 
-    it('renders header', async () => {
-        await doShallowMountWithAsyncData();
-
-        let cells = wrapper.findAll('th');
-        expect(cells.at(0).find('.title').text()).toBe('Owner ID');
-        expect(cells.at(1).find('.title').text()).toBe('Data Type');
-        expect(cells.at(2).find('.title').text()).toBe('Variable Name');
-        expect(cells.at(3).find('.title').text()).toBe('Value');
+        const cells = wrapper.findAll('th');
+        
+        expect(cells[0].text()).toBe('Owner ID');
+        expect(cells[1].text()).toBe('Data Type');
+        expect(cells[2].text()).toBe('Variable Name');
+        expect(cells[3].text()).toBe('Value');
     });
 });

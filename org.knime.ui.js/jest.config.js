@@ -26,7 +26,7 @@ const coverageIgnoreFiles = [
 
 module.exports = {
     moduleNameMapper: {
-        // place the svg stub first so that it gets resolved before other `@` prefixed imports svg imports
+        // place the svg stub first so that it gets resolved before other `@` prefixed svg imports
         '\\.svg$': '<rootDir>/src/test/svgStub.vue',
         '^@/(.*)$': '<rootDir>/src/$1',
         '@api': '<rootDir>/src/api/index.js'

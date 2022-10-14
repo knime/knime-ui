@@ -71,7 +71,7 @@ export default {
 <template>
   <TabBar
     name="output-port"
-    :value="modelValue"
+    :model-value="modelValue"
     :disabled="disabled"
     :possible-values="possibleTabValues"
     @update:value="$emit('update:modelValue', $event)"

@@ -1,9 +1,8 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, mount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
-import { KnimeService } from 'knime-ui-extension-service';
+import { KnimeService } from '@knime/ui-extension-service';
 import { getPortView as getPortViewMock } from '@api';
 import { loadComponentLibrary } from '@/util/loadComponentLibrary';
 
@@ -16,7 +15,7 @@ jest.mock('@/util/loadComponentLibrary', () => ({
     loadComponentLibrary: jest.fn()
 }));
 
-jest.mock('knime-ui-extension-service', () => ({
+jest.mock('@knime/ui-extension-service', () => ({
     KnimeService: jest.fn()
 }));
 
@@ -50,7 +49,7 @@ describe('PortViewLoader.vue', () => {
         }
     };
 
-    const propsData = {
+    const props = {
         projectId: 'project-id',
         workflowId: 'workflow-id',
         selectedNode: dummyNode,
@@ -61,16 +60,16 @@ describe('PortViewLoader.vue', () => {
         getPortViewMock.mockReset();
     });
 
-    const doMount = () => mount(PortViewLoader, { propsData });
+    const doMount = () => mount(PortViewLoader, { props });
     
     it('should load port view on mount', () => {
         doMount();
 
         expect(getPortViewMock).toBeCalledWith(expect.objectContaining({
-            projectId: propsData.projectId,
-            workflowId: propsData.workflowId,
-            nodeId: propsData.selectedNode.id,
-            portIndex: propsData.selectedPortIndex
+            projectId: props.projectId,
+            workflowId: props.workflowId,
+            nodeId: props.selectedNode.id,
+            portIndex: props.selectedPortIndex
         }));
     });
 
@@ -106,11 +105,11 @@ describe('PortViewLoader.vue', () => {
         setupGetPortViewMock(RESOURCE_TYPES.VUE_COMPONENT_REFERENCE, 'FlowVariablePortView', []);
         const wrapper = doMount();
 
-        expect(wrapper.emitted('state-change')[0][0]).toEqual({ state: 'loading' });
+        expect(wrapper.emitted('stateChange')[0][0]).toEqual({ state: 'loading' });
         
         await flushPromise();
 
-        expect(wrapper.emitted('state-change')[1][0]).toEqual({ state: 'ready' });
+        expect(wrapper.emitted('stateChange')[1][0]).toEqual({ state: 'ready' });
     });
 
     it('should load views for component reference', async () => {
@@ -125,9 +124,7 @@ describe('PortViewLoader.vue', () => {
     it('should load views for component libraries', async () => {
         const mockComponentId = 'mock-component';
         
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-        const MockComponent = localVue.component('MockComponent', { template: '<div></div>' });
+        const MockComponent = Vue.compile('<div></div>');
 
         loadComponentLibrary.mockImplementation(() => {
             window[mockComponentId] = MockComponent;
@@ -144,9 +141,11 @@ describe('PortViewLoader.vue', () => {
         setupGetPortViewMock(RESOURCE_TYPES.VUE_COMPONENT_LIB, mockComponentId, {});
 
         const wrapper = mount(PortViewLoader, {
-            propsData,
-            localVue,
-            mocks: { $store }
+            propsData: props,
+            global: {
+                plugins: [$store],
+                components: { MockComponent }
+            }
         });
         
         await flushPromise();
@@ -164,8 +163,8 @@ describe('PortViewLoader.vue', () => {
 
         await flushPromise();
 
-        expect(wrapper.emitted('state-change')[1][0]).toEqual({ state: 'error', message: error });
-        expect(wrapper.isEmpty()).toBe(true);
+        expect(wrapper.emitted('stateChange')[1][0]).toEqual({ state: 'error', message: error });
+        expect(wrapper.isVisible()).toBe(false);
     });
     
     it('passes properties to port view / sets unique key', async () => {
