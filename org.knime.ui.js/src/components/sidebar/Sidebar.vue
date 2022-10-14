@@ -18,16 +18,7 @@ export default {
     computed: {
         ...mapState('panel', ['activeTab', 'expanded']),
         ...mapState('nodeRepository', ['isDescriptionPanelOpen']),
-        ...mapGetters('panel', ['isWorkflowMetaActive', 'isNodeRepositoryActive']),
-        extensionPanelTransition() {
-            // returns a functional component that is used as transition prop on <portal>. This way the transition
-            // behaves as without portal, see https://portal-vue.linusb.org/api/portal-target.html#transition
-            return {
-                render(h) {
-                    return h('transition', { props: { name: 'extension-panel' } }, this.$slots.default);
-                }
-            };
-        }
+        ...mapGetters('panel', ['isWorkflowMetaActive', 'isNodeRepositoryActive'])
     },
     methods: {
         ...mapActions('panel', ['setWorkflowMetaActive', 'setNodeRepositoryActive', 'close', 'toggleExpanded']),
@@ -74,27 +65,26 @@ export default {
       :disabled="isDescriptionPanelOpen && isNodeRepositoryActive"
       @toggle-expand="toggleExpanded"
     >
-      <transition-group
-        name="tab-transition"
+      <TransitionGroup
+        name="tab"
         tag="span"
       >
         <NodeRepository
-          v-show="isNodeRepositoryActive"
+          v-if="isNodeRepositoryActive"
           key="node-repository"
         />
 
         <WorkflowMetadata
-          v-show="isWorkflowMetaActive"
+          v-if="isWorkflowMetaActive"
           key="workflow-metadata"
         />
-      </transition-group>
+      </TransitionGroup>
     </LeftCollapsiblePanel>
 
     <PortalTarget
       tag="div"
       name="extension-panel"
     />
-    <!-- :transition="extensionPanelTransition" -->
   </div>
 </template>
 
@@ -155,30 +145,16 @@ nav {
     overflow-y: hidden;
   }
 }
-
-.extension-panel-enter-active {
-  transition: all 50ms ease-in;
-}
-
-.extension-panel-leave-active {
-  transition: all 50ms ease-out;
-}
-
-.extension-panel-enter,
-.extension-panel-leave-to {
-  opacity: 0;
-}
-
-.tab-transition-enter-active {
+.tab-enter-active {
   transition: all 150ms ease-in;
 }
 
-.tab-transition-leave-active {
+.tab-leave-active {
   transition: all 150ms ease-out;
 }
 
-.tab-transition-enter,
-.tab-transition-leave-to {
+.tab-enter,
+.tab-leave-to {
   opacity: 0;
 }
 </style>

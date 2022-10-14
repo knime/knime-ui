@@ -47,9 +47,7 @@ export default {
   <div class="node-description">
     <div class="header">
       <h2>{{ selectedNodeIsVisible ? selectedNode.name : '&nbsp;' }}</h2>
-      <button
-        @click="closeDescriptionPanel"
-      >
+      <button @click="closeDescriptionPanel">
         <CloseIcon class="icon" />
       </button>
     </div>
@@ -58,8 +56,11 @@ export default {
 
     <div class="scroll-container">
       <div class="node-info">
-        <!-- The v-else should be active if the selected node is not visible, but the nodeDescriptionObject might still
-             have some data as the selection is not cleared. -->
+        <!--
+          The v-else should be active if the selected node is not visible,
+          but the nodeDescriptionObject might still
+          have some data as the selection is not cleared.
+        -->
         <template v-if="selectedNodeIsVisible">
           <template v-if="nodeDescriptionObject">
             <Description

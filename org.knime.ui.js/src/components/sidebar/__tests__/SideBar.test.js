@@ -1,6 +1,4 @@
-import Vue from 'vue';
-import vuex from 'vuex';
-import { shallowMount, createLocalVue } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 import * as panelStoreConfig from '@/store/panel';
@@ -13,15 +11,8 @@ import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import Sidebar from '../Sidebar.vue';
 
-Vue.config.ignoredElements = ['portal-target'];
-
 describe('Sidebar', () => {
     let store, workflow, wrapper, doShallowMount;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(vuex);
-    });
 
     beforeEach(() => {
         workflow = {
@@ -46,8 +37,9 @@ describe('Sidebar', () => {
         
         doShallowMount = () => {
             wrapper = shallowMount(Sidebar, {
-                mocks: {
-                    $store: store
+                global: {
+                    plugins: [store],
+                    stubs: { PortalTarget: true }
                 }
             });
         };
@@ -61,7 +53,7 @@ describe('Sidebar', () => {
 
         expect(wrapper.find('[title="Workflow metadata"]').classes('active')).toBe(true);
         expect(wrapper.find('[title="Node repository"]').classes('active')).toBe(false);
-        wrapper.findAll('li').wrappers.forEach(wp => {
+        wrapper.findAll('li').forEach(wp => {
             expect(wp.classes('expanded')).toBe(false);
         });
     });
@@ -122,6 +114,6 @@ describe('Sidebar', () => {
 
     it('has portal for extension panel', () => {
         doShallowMount();
-        expect(wrapper.find('portal-target[name="extension-panel"').exists()).toBe(true);
+        expect(wrapper.find('[name="extension-panel"').exists()).toBe(true);
     });
 });

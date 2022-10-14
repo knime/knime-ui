@@ -105,7 +105,9 @@ export default {
     <SearchResults v-if="showSearchResults" />
     <CategoryResults v-else />
     <Portal to="extension-panel">
-      <NodeDescription v-if="isDescriptionPanelOpen" />
+      <Transition name="fade">
+        <NodeDescription v-if="isDescriptionPanelOpen" />
+      </Transition>
     </Portal>
   </div>
 </template>
@@ -177,5 +179,15 @@ export default {
   }
 }
 
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 120ms ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 
 </style>
