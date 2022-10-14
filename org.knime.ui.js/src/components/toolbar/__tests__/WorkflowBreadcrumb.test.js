@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
 import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg';
@@ -12,11 +11,6 @@ import ActionBreadcrumb from '@/components/common/ActionBreadcrumb.vue';
 import WorkflowBreadcrumb from '../WorkflowBreadcrumb.vue';
 
 describe('WorkflowBreadcrumb.vue', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     let store, workflow, wrapper, doShallowMount, storeConfig;
 
     beforeEach(() => {
@@ -42,7 +36,7 @@ describe('WorkflowBreadcrumb.vue', () => {
 
             wrapper = await shallowMount(
                 WorkflowBreadcrumb,
-                { mocks: { $store: store } }
+                { global: { plugins: [store] } }
             );
         };
     });

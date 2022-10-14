@@ -5,7 +5,7 @@ import ToolbarShortcutButton from '../ToolbarShortcutButton.vue';
 import ToolbarButton from '../ToolbarButton.vue';
 
 describe('ToolbarShortcutButton.vue', () => {
-    let wrapper, doShallowMount, propsData, shortcut, $shortcuts;
+    let wrapper, doShallowMount, props, shortcut, $shortcuts;
 
     beforeEach(() => {
         shortcut = {
@@ -21,12 +21,12 @@ describe('ToolbarShortcutButton.vue', () => {
             dispatch: jest.fn()
         };
 
-        propsData = {
+        props = {
             name: 'save'
         };
 
         doShallowMount = () => {
-            wrapper = shallowMount(ToolbarShortcutButton, { propsData, mocks: { $shortcuts } });
+            wrapper = shallowMount(ToolbarShortcutButton, { props, global: { mocks: { $shortcuts } } });
         };
     });
 
@@ -43,7 +43,7 @@ describe('ToolbarShortcutButton.vue', () => {
             expect(toolbarButton.text()).toBe('save');
             expect(toolbarButton.classes()).toContain('with-text');
             expect(toolbarButton.attributes('title')).toBe('save workflow – Ctrl S');
-            expect(toolbarButton.attributes('disabled')).toBeFalsy();
+            expect(toolbarButton.attributes('disabled')).toBe('false');
 
             expect(wrapper.findComponent(IconComponent).exists()).toBe(true);
         });

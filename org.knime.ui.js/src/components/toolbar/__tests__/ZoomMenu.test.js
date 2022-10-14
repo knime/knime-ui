@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, mount as deepMount, shallowMount } from '@vue/test-utils';
+import { mount as deepMount, shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
@@ -7,16 +6,11 @@ import SubMenu from 'webapps-common/ui/components/SubMenu.vue';
 import ZoomMenu from '../ZoomMenu.vue';
 
 describe('ZoomMenu', () => {
-    let propsData, doMount, $store, $shortcuts, zoomFactor, wrapper, storeConfig;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let props, doMount, $store, $shortcuts, zoomFactor, wrapper, storeConfig;
 
     beforeEach(() => {
         zoomFactor = 1;
-        propsData = { };
+        props = { };
 
         $shortcuts = {
             get: jest.fn().mockImplementation(shortcut => ({ name: shortcut })),
@@ -40,7 +34,10 @@ describe('ZoomMenu', () => {
             };
 
             $store = mockVuexStore(storeConfig);
-            wrapper = mountMethod(ZoomMenu, { propsData, mocks: { $store, $shortcuts } });
+            wrapper = mountMethod(ZoomMenu, {
+                propsData: props,
+                global: { plugins: [$store], mocks: { $shortcuts } }
+            });
         };
     });
 
@@ -53,7 +50,7 @@ describe('ZoomMenu', () => {
     });
 
     it('can be disabled', () => {
-        propsData.disabled = true;
+        props.disabled = true;
         doMount(shallowMount);
 
         expect(wrapper.findComponent(SubMenu).props('disabled')).toBe(true);
@@ -106,7 +103,7 @@ describe('ZoomMenu', () => {
 
             let input = wrapper.find('.zoom-input');
             input.element.value = 'asdf';
-            await input.trigger('keydown', { keyCode: 13 });
+            await input.trigger('keydown.enter');
 
             expect(input.element.value).toBe('63%');
         });
