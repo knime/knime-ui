@@ -8,29 +8,25 @@ import NodeAnnotation from '../NodeAnnotation.vue';
 import LegacyAnnotationText from '../LegacyAnnotationText.vue';
 
 describe('Node Annotation', () => {
-    let propsData, mocks, doShallowMount, wrapper;
+    const defaultProps = {
+        textAlign: 'right',
+        text: 'hallo',
+        backgroundColor: 'rgb(255, 216, 0)',
+        styleRanges: [{ start: 0, length: 2, fontSize: 15 }],
+        yOffset: 33
+    };
 
-    beforeEach(() => {
-        wrapper = null;
-        propsData = {
-            textAlign: 'right',
-            text: 'hallo',
-            backgroundColor: 'rgb(255, 216, 0)',
-            styleRanges: [{ start: 0, length: 2, fontSize: 15 }],
-            yOffset: 33
-        };
-        doShallowMount = () => {
-            mocks = { $shapes, adjustDimensions: jest.fn() };
-            wrapper = shallowMount(NodeAnnotation, { propsData, mocks });
-        };
+    const defaultMocks = { $shapes, adjustDimensions: jest.fn() };
+
+    const doShallowMount = (props = {}, mocks = {}) => shallowMount(NodeAnnotation, {
+        props: { ...defaultProps, ...props },
+        global: { mocks: { ...defaultMocks, ...mocks } }
     });
 
     describe('render default', () => {
-        beforeEach(() => {
-            doShallowMount();
-        });
-
-        it('styles', () => {
+        it('applies the correct styles', () => {
+            const wrapper = doShallowMount();
+            
             expect(wrapper.findComponent(LegacyAnnotationText).attributes().style).toBe(
                 'text-align: right; ' +
                 'background-color: rgb(255, 216, 0); ' +
@@ -40,19 +36,20 @@ describe('Node Annotation', () => {
         });
 
         it('passes yOffset to AutoSizeForeignObject', () => {
-            expect(wrapper.findComponent(AutoSizeForeignObject).props('yOffset')).toBe(
-                $shapes.nodeSize + $shapes.nodeAnnotationMarginTop + propsData.yOffset
-            );
+            const wrapper = doShallowMount();
+            expect(wrapper.findComponent(AutoSizeForeignObject).props('yOffset'))
+                .toBe($shapes.nodeSize + $shapes.nodeAnnotationMarginTop + defaultProps.yOffset);
         });
-
+                
         it('passes props to LegacyAnnotationText', () => {
+            const wrapper = doShallowMount();
             expect(wrapper.findComponent(LegacyAnnotationText).props('text')).toBe('hallo');
-
+            
             expect(wrapper.findComponent(LegacyAnnotationText).props('styleRanges')).toEqual(
                 [{ start: 0, length: 2, fontSize: 15 }]
             );
         });
-
+        
         describe('Resize key', () => {
             it.each([
                 ['text', 'foo'],
@@ -60,6 +57,7 @@ describe('Node Annotation', () => {
                 ['defaultFontSize', 1],
                 ['styleRanges', []]
             ])('updates the resizeKey when the "%s" prop changes', async (propName, propValue) => {
+                const wrapper = doShallowMount();
                 const initialValue = wrapper.findComponent(AutoSizeForeignObject).props('resizeKey');
 
                 await wrapper.setProps({ [propName]: propValue });
@@ -70,10 +68,9 @@ describe('Node Annotation', () => {
     });
 
     it('honors annotationsFontSizePointToPixelFactor', () => {
-        let shapes = { ...$shapes, annotationsFontSizePointToPixelFactor: 2.5 };
-        propsData.defaultFontSize = 18;
-        mocks = { $shapes: shapes, adjustDimensions: jest.fn() };
-        wrapper = shallowMount(NodeAnnotation, { propsData, mocks });
+        const shapes = { ...$shapes, annotationsFontSizePointToPixelFactor: 2.5 };
+        const wrapper = doShallowMount({ defaultFontSize: 18 }, { $shapes: shapes });
+
         expect(wrapper.findComponent(LegacyAnnotationText).attributes('style')).toContain(
             'font-size: 45px;'
         );

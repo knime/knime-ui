@@ -6,11 +6,8 @@ import WorkflowAnnotation from '../WorkflowAnnotation.vue';
 import LegacyAnnotationText from '../LegacyAnnotationText.vue';
 
 describe('Workflow Annotation', () => {
-    let propsData, mocks, doShallowMount, wrapper;
-
-    beforeEach(() => {
-        wrapper = null;
-        propsData = {
+    const doShallowMount = (props = {}, mocks = {}) => {
+        const defaultProps = {
             textAlign: 'right',
             borderWidth: 4,
             borderColor: '#000',
@@ -20,18 +17,18 @@ describe('Workflow Annotation', () => {
             styleRanges: [{ start: 0, length: 2, fontSize: 14 }]
         };
 
-        doShallowMount = () => {
-            mocks = { $shapes };
-            wrapper = shallowMount(WorkflowAnnotation, { propsData, mocks });
-        };
-    });
+        const defaultMocks = { $shapes };
+
+        return shallowMount(WorkflowAnnotation, {
+            props: { ...defaultProps, ...props },
+            global: { mocks: { ...defaultMocks, ...mocks } }
+        });
+    };
 
     describe('render default', () => {
-        beforeEach(() => {
-            doShallowMount();
-        });
-
         it('styles', () => {
+            const wrapper = doShallowMount();
+
             expect(wrapper.attributes()).toStrictEqual({
                 height: '50',
                 width: '100',
@@ -51,6 +48,8 @@ describe('Workflow Annotation', () => {
         });
 
         it('passes props to LegacyAnnotationText', () => {
+            const wrapper = doShallowMount();
+
             expect(wrapper.findComponent(LegacyAnnotationText).props('text')).toBe('hallo');
 
             expect(wrapper.findComponent(LegacyAnnotationText).props('styleRanges')).toEqual(
@@ -60,9 +59,9 @@ describe('Workflow Annotation', () => {
     });
 
     it('honors annotationsFontSizePointToPixelFactor', () => {
-        let shapes = { ...$shapes, annotationsFontSizePointToPixelFactor: 2 };
-        propsData.defaultFontSize = 18;
-        wrapper = shallowMount(WorkflowAnnotation, { propsData, mocks: { $shapes: shapes } });
+        const shapes = { ...$shapes, annotationsFontSizePointToPixelFactor: 2 };
+        const wrapper = doShallowMount({ defaultFontSize: 18 }, { $shapes: shapes });
+
         expect(wrapper.findComponent(LegacyAnnotationText).attributes('style')).toContain(
             'font-size: 36px;'
         );
