@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
@@ -14,12 +13,11 @@ jest.mock('raf-throttle', () => function (func) {
 });
 
 describe('Kanvas', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store, storeConfig, isWorkflowEmpty, isDraggingNode;
+    let props, doShallowMount, wrapper, $store, storeConfig, isWorkflowEmpty, isDraggingNode;
 
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    const mockBus = {
+        emit: jest.fn()
+    };
 
     beforeEach(() => {
         let getBoundingClientRectMock = jest.fn();
@@ -44,7 +42,7 @@ describe('Kanvas', () => {
         };
 
         wrapper = null;
-        propsData = {};
+        props = {};
         isWorkflowEmpty = true;
         isDraggingNode = false;
 
@@ -94,9 +92,8 @@ describe('Kanvas', () => {
 
         $store = mockVuexStore(storeConfig);
 
-        mocks = { $store };
         doShallowMount = () => {
-            wrapper = shallowMount(Kanvas, { propsData, mocks });
+            wrapper = shallowMount(Kanvas, { props, global: { plugins: [$store], mocks: { $bus: mockBus } } });
         };
     });
 
@@ -121,28 +118,28 @@ describe('Kanvas', () => {
     });
 
     describe('selection on canvas', () => {
-        test('clicking on the canvas emits select-pointerdown', () => {
+        test('clicking on the canvas emits select-pointerdown to the event bus', () => {
             doShallowMount();
 
             wrapper.find('svg').trigger('pointerdown');
 
-            expect(wrapper.emitted('selection-pointerdown')).toBeTruthy();
+            expect(mockBus.emit).toHaveBeenCalledWith('selection-pointerdown', expect.anything());
         });
 
-        test('moving on the canvas emits select-pointermove', () => {
+        test('moving on the canvas emits select-pointermove to the event bus', () => {
             doShallowMount();
 
             wrapper.find('svg').trigger('pointermove');
 
-            expect(wrapper.emitted('selection-pointermove')).toBeTruthy();
+            expect(mockBus.emit).toHaveBeenCalledWith('selection-pointermove', expect.anything());
         });
 
-        test('releasing on the canvas emits select-pointerup', () => {
+        test('releasing on the canvas emits select-pointerup to the event bus', () => {
             doShallowMount();
 
             wrapper.find('svg').trigger('pointerup');
 
-            expect(wrapper.emitted('selection-pointerup')).toBeTruthy();
+            expect(mockBus.emit).toHaveBeenCalledWith('selection-pointerup', expect.anything());
         });
     });
 
@@ -222,14 +219,14 @@ describe('Kanvas', () => {
                 }, RESIZE_DEBOUNCE);
             });
 
-            expect(wrapper.emitted('container-size-changed')).toBeTruthy();
+            expect(wrapper.emitted('containerSizeChanged')).toBeTruthy();
             expect(storeConfig.canvas.actions.updateContainerSize).toHaveBeenCalledTimes(1);
         });
 
         it('stop resize observer', () => {
             doShallowMount();
             let resizeObserver = wrapper.vm.resizeObserver;
-            wrapper.destroy();
+            wrapper.unmount();
             expect(resizeObserver.disconnect).toHaveBeenCalled();
         });
     });
