@@ -131,11 +131,6 @@ export default {
     tabindex="0"
     @menu-close="$emit('menu-close')"
   >
-    <section
-      class="header"
-    >
-      <h3>&nbsp;<!--<span>Add node</span>--></h3>
-    </section>
     <div class="wrapper">
       <SearchBar
         ref="searchBar"
@@ -180,7 +175,7 @@ export default {
 <style lang="postcss" scoped>
 .quick-add-node {
   width: 330px;
-  margin-top: calc(var(--ghost-size) / 2 * 1px - 20px + var(--extra-margin) * 1px + 3px);
+  margin-top: calc(var(--ghost-size) / 2 * 1px  + var(--extra-margin) * 1px + 3px);
 
   & .wrapper {
     box-shadow: 0 1px 6px 0 var(--knime-gray-dark-semi);
@@ -195,24 +190,6 @@ export default {
   & hr {
     border: none;
     border-top: 1px solid var(--knime-silver-sand)
-  }
-
-  & .header {
-    padding: 0;
-    margin-bottom: 3px;
-    pointer-events: none;
-
-    & h3 {
-      font-family: "Roboto Condensed", sans-serif;
-      font-weight: normal;
-      font-size: 15px;
-      margin: 0 0 0 calc(var(--ghost-size) * 1px + 8px);
-
-      & span {
-        display: inline-block;
-        backdrop-filter: blur(2px);
-      }
-    }
   }
 
   & .results {
