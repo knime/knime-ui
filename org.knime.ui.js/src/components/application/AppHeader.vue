@@ -2,6 +2,7 @@
 import { mapActions, mapState } from 'vuex';
 
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
+import Carousel from 'webapps-common/ui/components/Carousel.vue';
 import KnimeIcon from 'webapps-common/ui/assets/img/KNIME_Triangle.svg';
 import SwitchIcon from 'webapps-common/ui/assets/img/icons/perspective-switch.svg';
 import CloseIcon from '@/assets/cancel.svg';
@@ -25,6 +26,7 @@ export default {
     components: {
         KnimeIcon,
         FunctionButton,
+        Carousel,
         SwitchIcon,
         CloseIcon
     },
@@ -73,20 +75,24 @@ export default {
         v-if="openProjects.length > 1"
         class="project-tabs"
       >
-        <li
-          v-for="{ name, projectId } in openProjects"
-          :key="projectId"
-          :class="[ projectId === activeProjectId ? 'active' : null ]"
-          @click="switchWorkflow({ name, projectId })"
-        >
-          <span class="text">{{ truncatedProjectName(name) }}</span>
-          <FunctionButton
-            class="icon"
-            @click.stop="closeWorkflow"
-          >
-            <CloseIcon />
-          </FunctionButton>
-        </li>
+        <Carousel>
+          <div class="wrapper">
+            <li
+              v-for="{ name, projectId } in openProjects"
+              :key="projectId"
+              :class="[ activeProjectId === projectId ? 'active' : null ]"
+              @click.stop="switchWorkflow({ name, projectId })"
+            >
+              <span class="text">{{ truncatedProjectName(name) }}</span>
+              <FunctionButton
+                class="icon"
+                @click.stop="closeWorkflow"
+              >
+                <CloseIcon />
+              </FunctionButton>
+            </li>
+          </div>
+        </Carousel>
       </ul>
       <div
         v-else
@@ -133,10 +139,12 @@ header {
   }
 
   & .toolbar {
-    display: flex;
-    align-items: center;
     width: 100%;
-    justify-content: space-between;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    align-content: center;
 
     /* Feedback and Switch to classic ui buttons */
 
@@ -144,6 +152,7 @@ header {
       display: flex;
       margin-right: 15px;
       flex-shrink: 0;
+      margin-left: 30px;
 
       & .feedback {
         margin-right: 10px;
@@ -192,89 +201,103 @@ header {
 
     & .project-tabs {
       padding: 0;
-      height: 100%;
-      display: flex;
       min-width: 0;
       white-space: nowrap;
-      overflow: hidden;
       list-style: none;
 
-      & li {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 1px;
-        padding-left: 10px;
-        padding-bottom: 1px;
-        text-align: center;
-        white-space: nowrap;
-        cursor: pointer;
-        user-select: none;
-        border-radius: 1px 1px 0 0;
-        background-color: var(--knime-black);
-        color: var(--knime-white);
-        max-width: 300px;
+      & >>> .shadow-wrapper::before {
+        background-image: none;
+      }
 
-        &:hover {
-          background-color: var(--knime-stone-dark);
-        }
+      & >>> .shadow-wrapper::after {
+        background-image: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-masala) 100%);
+      }
 
-        & .text {
-          color: var(--knime-white);
-          font-family: "Roboto Condensed", sans-serif;
-          font-size: 20px;
-          padding: 10px 0;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          overflow: hidden;
-          min-width: 0;
-        }
+      & .wrapper {
+        display: inline-flex;
+        padding-left: -20px;
+        margin-left: -24px;
+        margin-right: -20px;
 
-        /* Close workflow button */
-
-        & .icon {
-          border: 0;
-          border-radius: 20px;
-          flex-shrink: 0;
-          margin-left: 5px;
-          width: 32px;
-          height: 32px;
-          align-self: center;
+        & li {
+          height: 49px;
+          display: flex;
           align-items: center;
+          justify-content: center;
+          margin: 0 1px;
+          padding-left: 10px;
+          padding-bottom: 1px;
+          text-align: center;
+          white-space: nowrap;
+          cursor: pointer;
+          user-select: none;
+          border-radius: 1px 1px 0 0;
+          background-color: var(--knime-black);
+          color: var(--knime-white);
+          max-width: 300px;
 
-          & svg {
-            height: 20px;
-            width: 20px;
-            stroke: var(--knime-white);
-            stroke-width: calc(32px / 30); /* get 1px stroke width */
+          &:hover {
+            background-color: var(--knime-stone-dark);
+          }
+
+          & .text {
+            color: var(--knime-white);
+            font-family: "Roboto Condensed", sans-serif;
+            font-size: 20px;
+            padding: 10px 0;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            min-width: 0;
+          }
+
+          /* Close workflow button */
+
+          & .icon {
+            border: 0;
+            border-radius: 20px;
+            flex-shrink: 0;
+            margin-left: 5px;
+            width: 32px;
+            height: 32px;
+            align-self: center;
+            align-items: center;
+
+            & svg {
+              height: 20px;
+              width: 20px;
+              stroke: var(--knime-white);
+              stroke-width: calc(32px / 30); /* get 1px stroke width */
+            }
+
+            &:hover,
+            &:focus {
+              cursor: pointer;
+              background-color: var(--knime-silver-sand-semi);
+              stroke: var(--knime-white);
+            }
+          }
+        }
+
+        & .active {
+          background-color: var(--knime-yellow);
+          color: var(--knime-black);
+          cursor: inherit;
+          pointer-events: none;
+
+          & .text {
+            color: var(--knime-black);
+          }
+
+          & .icon svg {
+            stroke: var(--knime-black);
           }
 
           &:hover,
           &:focus {
-            cursor: pointer;
-            background-color: var(--knime-silver-sand-semi);
-            stroke: var(--knime-white);
+            cursor: inherit;
+            background-color: var(--knime-yellow);
           }
-        }
-      }
-
-      & .active {
-        background-color: var(--knime-yellow);
-        color: var(--knime-black);
-        cursor: inherit;
-
-        & .text {
-          color: var(--knime-black);
-        }
-
-        & .icon svg {
-          stroke: var(--knime-black);
-        }
-
-        &:hover,
-        &:focus {
-          cursor: inherit;
-          background-color: var(--knime-yellow);
         }
       }
     }
@@ -288,6 +311,7 @@ header {
     background-color: var(--knime-black);
     text-align: center;
     height: 100%;
+    margin-right: 24px;
 
     & svg {
       width: 26px;
