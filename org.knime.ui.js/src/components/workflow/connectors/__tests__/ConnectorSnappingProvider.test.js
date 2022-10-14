@@ -1,8 +1,9 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, mount } from '@vue/test-utils';
+import * as Vue from 'vue';
+
+import { mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 import * as $shapes from '@/style/shapes.mjs';
+import { $bus } from '@/plugins/event-bus';
 
 import ConnectorSnappingProvider from '../ConnectorSnappingProvider.vue';
 
@@ -27,7 +28,7 @@ describe('ConnectorSnappingProvider.vue', () => {
         ]
     };
 
-    const propsData = {
+    const defaultProps = {
         id: 'root',
         disableValidTargetCheck: false,
         position: {
@@ -37,23 +38,32 @@ describe('ConnectorSnappingProvider.vue', () => {
         portPositions
     };
 
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     const doMount = (customProps = {}) => {
         const componentInSlot = `<div
             id="slotted-component"
-            :connection-forbidden="props.connectionForbidden"
-            :isConnectionSource="props.isConnectionSource"
-            :targetPort="props.targetPort"
-            :connector-hover="props.connectorHover"
-            @connector-enter.stop="props.on.onConnectorEnter"
-            @connector-leave.stop="props.on.onConnectorLeave"
-            @connector-move.stop="props.on.onConnectorMove($event, mockPorts)"
-            @connector-drop.stop="props.on.onConnectorDrop"
+            :connection-forbidden="scope.connectionForbidden"
+            :isConnectionSource="scope.isConnectionSource"
+            :targetPort="scope.targetPort"
+            :connector-hover="scope.connectorHover"
+            @connector-enter.stop="scope.on.onConnectorEnter"
+            @connector-leave.stop="scope.on.onConnectorLeave"
+            @connector-move.stop="scope.on.onConnectorMove($event, mockPorts)"
+            @connector-drop.stop="scope.on.onConnectorDrop"
         ></div>`;
+
+        const getScopedComponent = {
+            name: 'SlottedChild',
+            template: componentInSlot,
+            props: {
+                scope: {
+                    type: Object,
+                    required: true
+                }
+            },
+            data() {
+                return { mockPorts };
+            }
+        };
 
         const $store = mockVuexStore({
             workflow: {
@@ -63,35 +73,29 @@ describe('ConnectorSnappingProvider.vue', () => {
             }
         });
 
-        const getScopedComponent = {
-            template: componentInSlot,
-            data() {
-                return { mockPorts };
-            }
-        };
-
         return mount(ConnectorSnappingProvider, {
-            propsData: { ...propsData, ...customProps },
-            mocks: { $store, mockPorts, $shapes },
-            scopedSlots: {
-                default: (props) => {
-                    const scoped = mount(getScopedComponent, { mocks: { props } });
-                    // `render` function needs VNode
-                    return scoped.vnode;
-                }
+            props: { ...defaultProps, ...customProps },
+            global: {
+                plugins: [$store],
+                mocks: { mockPorts, $shapes, $bus }
+            },
+            slots: {
+                default: (props) => Vue.h(getScopedComponent, { scope: props })
             }
         });
     };
 
+    const getSlottedChildComponent = (wrapper) => wrapper.findComponent({ name: 'SlottedChild' });
+
     // eslint-disable-next-line arrow-body-style
     const getSlottedStubProp = ({ wrapper, propName }) => {
-        // access VM of dummy slotted component and get value that was injected by
-        // ConnectorSnappingProvider from the slot props
-        return wrapper.find('#slotted-component').vm[propName];
+        // access the `scope` prop of the dummy slotted component and get value that was injected by
+        // ConnectorSnappingProvider via the slot props
+        return getSlottedChildComponent(wrapper).props('scope')[propName];
     };
 
     const startConnection = async ({ wrapper, startNodeId = '', validConnectionTargets = [] }) => {
-        wrapper.vm.$root.$emit('connector-start', {
+        $bus.emit('connector-start', {
             startNodeId,
             validConnectionTargets: new Set(validConnectionTargets)
         });
@@ -99,7 +103,7 @@ describe('ConnectorSnappingProvider.vue', () => {
     };
 
     const connectorEnter = async ({ wrapper }) => {
-        wrapper.find('#slotted-component').trigger('connector-enter');
+        getSlottedChildComponent(wrapper).trigger('connector-enter');
         await Vue.nextTick();
     };
     
@@ -109,19 +113,19 @@ describe('ConnectorSnappingProvider.vue', () => {
         eventDetails = { x: 0, y: 0, targetPortDirection: 'in' },
         onSnapCallback = jest.fn(() => true)
     }) => {
-        wrapper.find('#slotted-component').trigger('connector-move', {
+        getSlottedChildComponent(wrapper).trigger('connector-move', {
             detail: { ...eventDetails, onSnapCallback }
         }, ports);
         await Vue.nextTick();
     };
     
     const connectorLeave = async ({ wrapper }) => {
-        wrapper.find('#slotted-component').trigger('connector-leave');
+        getSlottedChildComponent(wrapper).trigger('connector-leave');
         await Vue.nextTick();
     };
     
     const connectorEnd = async ({ wrapper }) => {
-        wrapper.vm.$root.$emit('connector-end');
+        $bus.emit('connector-end');
         await Vue.nextTick();
     };
 

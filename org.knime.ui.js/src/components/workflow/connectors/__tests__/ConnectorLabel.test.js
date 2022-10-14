@@ -1,21 +1,15 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import ConnectorLabel from '../ConnectorLabel.vue';
 
 describe('ConnectorLabel.vue', () => {
-    let propsData, mocks, $store;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let props, $store;
 
     beforeEach(() => {
-        propsData = {
+        props = {
             sourceNode: 'root:1',
             destNode: 'root:2',
             sourcePort: 0,
@@ -59,20 +53,19 @@ describe('ConnectorLabel.vue', () => {
             });
 
             doMount = () => {
-                mocks = { $store };
-                wrapper = shallowMount(ConnectorLabel, { propsData, mocks });
+                wrapper = shallowMount(ConnectorLabel, { props, global: { plugins: [$store] } });
             };
         });
 
         it('checks that a streaming label is present', () => {
-            propsData.label = '10';
+            props.label = '10';
             doMount();
 
             expect(wrapper.find('.streaming-label').exists()).toBe(true);
         });
 
         it('moving node moves label', async () => {
-            propsData.label = '10';
+            props.label = '10';
             doMount();
 
             const initialPosition = wrapper.attributes().transform;
@@ -92,7 +85,7 @@ describe('ConnectorLabel.vue', () => {
         });
 
         it('dragging not connected node does not move label', async () => {
-            propsData.label = '10';
+            props.label = '10';
             doMount();
 
             const initialPosition = wrapper.attributes().transform;
