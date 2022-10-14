@@ -3,23 +3,23 @@ import vue from '@vitejs/plugin-vue';
 import svgLoader from 'vite-svg-loader';
 
 import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-export default ({ mode }) => {
+export default defineConfig(({ mode }) => {
     process.env = { ...process.env, ...loadEnv(mode, process.cwd()) };
     
-    return defineConfig({
+    return {
         plugins: [vue(), svgLoader()],
-    
+        
         server: {
-            port: process.env.VITE_APP_PORT || 3000,
+            port: Number(process.env.VITE_APP_PORT) || 3000,
             watch: {
                 ignored: ['**/coverage/**']
             }
         },
-    
+        
         resolve: {
             alias: {
                 '@': path.join(__dirname, 'src'),
@@ -27,5 +27,5 @@ export default ({ mode }) => {
                 'webapps-common': path.join(__dirname, 'webapps-common')
             }
         }
-    });
-};
+    };
+});

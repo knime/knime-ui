@@ -44,7 +44,8 @@ module.exports = {
         '\\.(css|styl|less|sass|scss|ttf|woff|woff2)(\\?|$)': 'jest-transform-stub'
     },
     transformIgnorePatterns: [
-        '/node_modules/'
+        // ignore node_module packages for transform except packages from the @knime scope
+        '/node_modules\/(?!@knime/*)(.*)'
     ],
     reporters: ['default', ['jest-junit', { outputDirectory: './coverage', reportTestSuiteErrors: true }]],
     coverageReporters: ['lcov', 'text'],
