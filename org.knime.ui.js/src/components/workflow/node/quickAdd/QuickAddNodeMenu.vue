@@ -1,6 +1,6 @@
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
-import { flatten } from 'lodash';
+import { getNodeRecommendations } from '@api';
 
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
@@ -35,7 +35,7 @@ export default {
     },
     data() {
         return {
-            searchQuery: ''
+            recommendedNodes: []
         };
     },
     computed: {
@@ -43,21 +43,6 @@ export default {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapState('canvas', ['zoomFactor']),
         ...mapGetters('workflow', ['isWritable']),
-        nodes() {
-            // TODO: replace this with the suggested nodes API call (NXT-1206)
-            const filterPorts = (ports) => {
-                let flowVarType = 'org.knime.core.node.port.flowvariable.FlowVariablePortObject';
-                return ports.filter(p => p.typeId !== flowVarType);
-            };
-            let result = flatten(this.nodesPerCategory.map(category => category.nodes));
-            // filter nodes by in/out ports; ignore flow vars
-            if (this.port.side === 'in') {
-                result = result.filter(n => filterPorts(n.outPorts).length > 0);
-            } else {
-                result = result.filter(n => filterPorts(n.inPorts).length > 0);
-            }
-            return result.slice(0, MAX_NODES);
-        },
         canvasPosition() {
             let pos = { ...this.position };
             const halfPort = this.$shapes.portSize / 2;
@@ -74,14 +59,24 @@ export default {
             return this.$shapes.addNodeGhostSize * this.zoomFactor;
         }
     },
-    mounted() {
-        // we currently just get some nodes, this should be done via a new endpoint
-        if (!this.nodesPerCategory.length) {
-            this.$store.dispatch('nodeRepository/getAllNodes', { append: false });
-        }
+    created() {
+        // this component is always destroyed for each node so we don't need to fetch data again when the nodeId changes
+        this.fetchRecommendedNodes();
     },
     methods: {
         ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
+        async fetchRecommendedNodes() {
+            const workflowId = this.workflow.info.containerId;
+            const projectId = this.workflow.projectId;
+
+            this.recommendedNodes = await getNodeRecommendations({
+                workflowId,
+                projectId,
+                nodeId: this.nodeId,
+                nodesLimit: MAX_NODES,
+                fullTemplateInfo: true
+            });
+        },
         async addNode({ nodeFactory }) {
             if (!this.isWritable) {
                 return; // end here
@@ -120,7 +115,7 @@ export default {
         <div class="content">
           <ul class="nodes">
             <li
-              v-for="node in nodes"
+              v-for="node in recommendedNodes"
               :key="node.id"
             >
               <div
@@ -149,9 +144,10 @@ export default {
 <style lang="postcss" scoped>
 .quick-add-node {
   width: 330px;
-  margin-top: calc(var(--ghost-size) / 2 * 1px  + var(--extra-margin) * 1px + 3px);
+  margin-top: calc(var(--ghost-size) / 2 * 1px + var(--extra-margin) * 1px + 3px);
 
   & .wrapper {
+    min-height: 357px;
     box-shadow: 0 1px 6px 0 var(--knime-gray-dark-semi);
     background: var(--knime-gray-ultra-light);
     padding: 0.5em 0;

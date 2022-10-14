@@ -44,10 +44,34 @@ export const changeLoopState = async ({ projectId, workflowId, nodeId, action })
 export const getNodeDescription = async ({ className, settings }) => {
     try {
         const node = await rpc('NodeService.getNodeDescription', { className, settings });
-  
+
         return node;
     } catch (e) {
         consola.error(e);
         throw new Error('Could not fetch node description');
+    }
+};
+
+export const getNodeRecommendations = async ({
+    projectId,
+    workflowId,
+    nodeId,
+    nodesLimit,
+    fullTemplateInfo
+}) => {
+    try {
+        // TODO: check if this is the correct RPC call
+        const recommendations = await rpc('NodeService.getNodeRecommendations', {
+            projectId,
+            workflowId,
+            nodeId,
+            nodesLimit,
+            fullTemplateInfo
+        });
+
+        return recommendations;
+    } catch (e) {
+        consola.error(e);
+        throw new Error('Could not fetch recommended nodes');
     }
 };

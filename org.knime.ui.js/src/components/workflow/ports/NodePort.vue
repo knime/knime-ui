@@ -10,8 +10,6 @@ import Connector from '@/components/workflow/connectors/Connector.vue';
 import NodePortActions from './NodePortActions.vue';
 import QuickAddNodeGhost from '@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue';
 
-const SHOW_ADD_NODE_GHOST_DELAY = 300; // ms
-
 const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) => {
     const isPortFree = toPort.connectedVia.length === 0;
 
