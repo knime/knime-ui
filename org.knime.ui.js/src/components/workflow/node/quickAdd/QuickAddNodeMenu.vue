@@ -2,17 +2,13 @@
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { flatten } from 'lodash';
 
-import SearchBar from '@/components/common/SearchBar.vue';
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
-
-import Fuse from 'fuse.js';
 
 const MAX_NODES = 12;
 
 export default {
     components: {
-        SearchBar,
         NodePreview,
         FloatingMenu
     },
@@ -60,10 +56,6 @@ export default {
             } else {
                 result = result.filter(n => filterPorts(n.inPorts).length > 0);
             }
-            if (this.searchQuery && this.searchQuery !== '') {
-                // TODO: move makeSearch to own computed to not generate serach every time
-                result = this.makeSearch(result)(this.searchQuery);
-            }
             return result.slice(0, MAX_NODES);
         },
         canvasPosition() {
@@ -105,16 +97,6 @@ export default {
             });
 
             this.$emit('menu-close');
-        },
-        makeSearch(nodes) {
-            const searchEngine = new Fuse(nodes, {
-                keys: ['name'],
-                shouldSort: true,
-                isCaseSensitive: false,
-                minMatchCharLength: 0
-            });
-
-            return (input, options) => searchEngine.search(input, options).map(result => result.item);
         }
     }
 };
@@ -132,14 +114,6 @@ export default {
     @menu-close="$emit('menu-close')"
   >
     <div class="wrapper">
-      <SearchBar
-        ref="searchBar"
-        v-model="searchQuery"
-        placeholder="Filter recommended nodes"
-        class="search-bar"
-        focus-on-mount
-      />
-      <hr>
       <section
         class="results"
       >
@@ -203,10 +177,6 @@ export default {
       flex-direction: column;
       align-items: flex-start;
     }
-  }
-
-  & .search-bar {
-    margin: 5px 10px;
   }
 
   & .nodes {
