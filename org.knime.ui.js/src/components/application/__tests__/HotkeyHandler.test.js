@@ -79,26 +79,28 @@ describe('HotKeys', () => {
         doShallowMount();
 
         expect(document.addEventListener).toHaveBeenNthCalledWith(1, 'keydown', wrapper.vm.onKeydown);
-        expect(document.addEventListener).toHaveBeenNthCalledWith(2, 'keyup', wrapper.vm.onKeyup);
+        expect(document.addEventListener).toHaveBeenNthCalledWith(2, 'keypress', wrapper.vm.onKeypress);
+        expect(document.addEventListener).toHaveBeenNthCalledWith(3, 'keyup', wrapper.vm.onKeyup);
 
         wrapper.destroy();
         expect(document.removeEventListener).toHaveBeenNthCalledWith(1, 'keydown', wrapper.vm.onKeydown);
-        expect(document.removeEventListener).toHaveBeenNthCalledWith(2, 'keyup', wrapper.vm.onKeyup);
+        expect(document.removeEventListener).toHaveBeenNthCalledWith(2, 'keypress', wrapper.vm.onKeypress);
+        expect(document.removeEventListener).toHaveBeenNthCalledWith(3, 'keyup', wrapper.vm.onKeyup);
         expect(window.removeEventListener).toHaveBeenCalledWith('blur', wrapper.vm.windowBlurListener);
     });
 
-    describe('Panning mode by holding [Alt]', () => {
+    describe('Panning mode by holding Space', () => {
         afterEach(() => expectEventHandled());
 
-        test('Alt: Set Panning mode', async () => {
+        test('Space: Set Panning mode', async () => {
             doShallowMount();
 
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt' }));
+            document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
             await Vue.nextTick();
             expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
             expectEventHandled();
 
-            document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Alt' }));
+            document.dispatchEvent(new KeyboardEvent('keyup', { code: 'Space' }));
             await Vue.nextTick();
             expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
 
@@ -108,10 +110,10 @@ describe('HotKeys', () => {
             expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledTimes(2);
         });
 
-        test('Alt: Cancel panning mode on focus loss', async () => {
+        test('Space: Cancel panning mode on focus loss', async () => {
             doShallowMount();
 
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Alt' }));
+            document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
             await Vue.nextTick();
             expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
 
