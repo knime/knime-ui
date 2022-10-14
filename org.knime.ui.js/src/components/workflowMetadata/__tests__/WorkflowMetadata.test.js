@@ -1,5 +1,5 @@
-import Vuex from 'vuex';
-import { mount, createLocalVue } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
@@ -19,11 +19,6 @@ import WorkflowMetadataDescription from '../WorkflowMetadataDescription.vue';
 
 describe('WorkflowMetadata.vue', () => {
     let store, workflow, wrapper, doMount, availablePortTypes;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
 
     beforeEach(() => {
         availablePortTypes = {};
@@ -56,8 +51,8 @@ describe('WorkflowMetadata.vue', () => {
             });
 
             wrapper = mount(WorkflowMetadata, {
-                mocks: {
-                    $store: store
+                global: {
+                    plugins: [store]
                 }
             });
         };
@@ -186,7 +181,7 @@ describe('WorkflowMetadata.vue', () => {
                 `</li><span>HELLO WORLD!</span>`,
                 `&lt;/li&gt;&lt;span&gt;HELLO WORLD!&lt;/span&gt;`
             ]
-        ])('sanitizes the node features options', (dangerousContent, expectedContent) => {
+        ])('sanitizes the node features options', async (dangerousContent, expectedContent) => {
             const nodeOptions = [
                 {
                     sectionDescription: dangerousContent,
@@ -202,6 +197,8 @@ describe('WorkflowMetadata.vue', () => {
                     options: nodeOptions
                 }
             });
+
+            await Vue.nextTick();
     
             const sectionDescription = wrapper.findComponent(NodeFeatureList).find('.options .section-description');
             const optionDescription = wrapper.findComponent(NodeFeatureList).find('.options .option-description');
@@ -209,7 +206,7 @@ describe('WorkflowMetadata.vue', () => {
             expect(optionDescription.element.innerHTML).toMatch(expectedContent);
         });
 
-        it('maps the port color and type to display them properly', () => {
+        it('maps the port color and type to display them properly', async () => {
             const mockFullyQualifiedPortName = 'mock-port-id';
             const mockPortMetadata = {
                 kind: 'MOCK-KIND',
@@ -226,6 +223,8 @@ describe('WorkflowMetadata.vue', () => {
                     outPorts: [{ typeId: mockFullyQualifiedPortName }]
                 }
             });
+
+            await Vue.nextTick();
 
             // a `rect` element is expected for an unrecognized a port kind
             expect(
