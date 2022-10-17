@@ -5,8 +5,8 @@ import NodeTorsoMetanode from '../NodeTorsoMetanode.vue';
 
 describe('State of Metanode', () => {
     const mount = (state) => shallowMount(NodeTorsoMetanode, {
-        propsData: { executionState: state },
-        mocks: { $colors }
+        props: { executionState: state },
+        global: { mocks: { $colors } }
     });
 
     it('IDLE: draws no status', () => {

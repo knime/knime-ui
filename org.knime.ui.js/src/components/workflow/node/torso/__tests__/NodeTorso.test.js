@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 
@@ -14,13 +13,8 @@ import NodeTorsoUnknown from '../NodeTorsoUnknown.vue';
 import NodeTorsoMetanode from '../NodeTorsoMetanode.vue';
 
 describe('NodeTorso.vue', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
-    let doShallowMount = (propsData, { writable = true } = {}) => {
-        let $store = mockVuexStore({
+    const doShallowMount = (props, { writable = true } = {}) => {
+        const $store = mockVuexStore({
             workflow: {
                 getters: {
                     isWritable() {
@@ -29,12 +23,15 @@ describe('NodeTorso.vue', () => {
                 }
             }
         });
+        
         return shallowMount(NodeTorso, {
-            propsData,
-            mocks: {
-                $shapes,
-                $colors,
-                $store
+            props,
+            global: {
+                mocks: {
+                    $shapes,
+                    $colors,
+                    $store
+                }
             }
         });
     };
