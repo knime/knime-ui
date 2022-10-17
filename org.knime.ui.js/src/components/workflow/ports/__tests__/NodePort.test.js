@@ -1,9 +1,9 @@
 /* eslint-disable max-lines */
-
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount, createWrapper } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+
+// import { $bus } from '@/plugins/event-bus';
 
 import Port from '@/components/common/Port.vue';
 import Connector from '@/components/workflow/connectors/Connector.vue';
@@ -27,16 +27,15 @@ jest.mock('@/util/compatibleConnections', () => ({
 }));
 
 describe('NodePort', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
-    let propsData, $store, doShallowMount, storeConfig, wrapper, isWritable;
+    let props, $store, doShallowMount, storeConfig, wrapper, isWritable;
     const provide = { anchorPoint: { x: 123, y: 456 } };
 
+    const mockBus = {
+        emit: jest.fn()
+    };
+
     beforeEach(() => {
-        propsData = {
+        props = {
             direction: 'in',
             nodeId: 'node:1',
             relativePosition: [16, 32],
@@ -105,9 +104,20 @@ describe('NodePort', () => {
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
-            let mocks = { $store, $shapes, $colors };
-            wrapper = shallowMount(NodePort, { propsData, mocks, provide });
+            
+            wrapper = shallowMount(NodePort, {
+                props,
+                global: {
+                    mocks: { $shapes, $colors, $bus: mockBus },
+                    provide,
+                    plugins: [$store]
+                }
+            });
         };
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
     it('renders base case', () => {
@@ -118,7 +128,7 @@ describe('NodePort', () => {
 
         let port = wrapper.findComponent(Port);
         expect(port.exists()).toBe(true);
-        expect(port.props('port')).toStrictEqual(propsData.port);
+        expect(port.props('port')).toStrictEqual(props.port);
         
         expect(wrapper.findComponent(Connector).exists()).toBe(false);
         expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
@@ -157,7 +167,7 @@ describe('NodePort', () => {
         });
     
         it('shows tooltips for non-table ports', async () => {
-            propsData.port.typeId = 'flowVariable';
+            props.port.typeId = 'flowVariable';
     
             doShallowMount();
             wrapper.trigger('mouseenter');
@@ -183,8 +193,8 @@ describe('NodePort', () => {
         let incomingConnector;
 
         beforeEach(() => {
-            propsData.direction = 'in';
-            propsData.port.connectedVia = ['incoming-connector'];
+            props.direction = 'in';
+            props.port.connectedVia = ['incoming-connector'];
             incomingConnector = document.createElement('div');
             incomingConnector.setAttribute('data-connector-id', 'incoming-connector');
             incomingConnector.addEventListener('indicate-replacement', (e) => {
@@ -241,7 +251,7 @@ describe('NodePort', () => {
         });
 
         test("doesn't do it for out-going ports", async () => {
-            propsData.direction = 'out';
+            props.direction = 'out';
             doShallowMount();
 
             wrapper.setProps({ targeted: true });
@@ -258,7 +268,7 @@ describe('NodePort', () => {
         });
 
         test("doesn't do it for unconnected ports", async () => {
-            propsData.port.connectedVia = [];
+            props.port.connectedVia = [];
             doShallowMount();
 
             wrapper.setProps({ targeted: true });
@@ -306,20 +316,20 @@ describe('NodePort', () => {
                 scrollTop: 16
             };
 
-            startDragging = ([x, y] = [0, 0]) => {
+            startDragging = async ([x, y] = [0, 0]) => {
                 doShallowMount();
 
                 document.getElementById = jest.fn().mockReturnValue(KanvasMock);
 
-                wrapper.element.setPointerCapture = jest.fn();
-                wrapper.element.releasePointerCapture = jest.fn();
+                wrapper.wrapperElement.setPointerCapture = jest.fn();
+                wrapper.wrapperElement.releasePointerCapture = jest.fn();
 
                 // Start dragging
-                wrapper.trigger('pointerdown', { pointerId: -1, x, y, button: 0 });
-                wrapper.trigger('pointermove', { pointerId: -1, x, y, button: 0 });
+                await wrapper.trigger('pointerdown', { pointerId: -1, x, y, button: 0 });
+                await wrapper.trigger('pointermove', { pointerId: -1, x, y, button: 0 });
             };
 
-            dragAboveTarget = (targetElement, [x, y] = [0, 0], enableDropTarget = true) => {
+            dragAboveTarget = async (targetElement, [x, y] = [0, 0], enableDropTarget = true) => {
                 document.elementFromPoint = jest.fn().mockReturnValueOnce(targetElement);
 
                 if (targetElement) {
@@ -340,7 +350,7 @@ describe('NodePort', () => {
                     });
                 }
 
-                wrapper.trigger('pointermove', { x, y });
+                await wrapper.trigger('pointermove', { x, y });
             };
 
             dropOnTarget = (targetElement, cancels = false) => {
@@ -365,14 +375,14 @@ describe('NodePort', () => {
                 expect(wrapper.element.setPointerCapture).not.toHaveBeenCalledWith(-1);
             });
 
-            it('saves KanvasElement', () => {
-                startDragging();
+            it('saves KanvasElement', async () => {
+                await startDragging();
                 expect(wrapper.vm.kanvasElement).toStrictEqual(KanvasMock);
             });
 
-            it.each(['out', 'in'])('does circle detection for %s-port', (portDirection) => {
-                propsData.direction = portDirection;
-                startDragging();
+            it.each(['out', 'in'])('does circle detection for %s-port', async (portDirection) => {
+                props.direction = portDirection;
+                await startDragging();
 
                 expect(circleDetection).toHaveBeenCalledWith({
                     downstreamConnection: portDirection === 'out',
@@ -380,26 +390,26 @@ describe('NodePort', () => {
                     workflow: 'workflowRef'
                 });
 
-                let rootWrapper = createWrapper(wrapper.vm.$root);
-                expect(rootWrapper.emitted('connector-start')).toStrictEqual([
-                    [{
-                        validConnectionTargets: [],
-                        startNodeId: 'node:1',
-                        startPort: propsData.port
-                    }]
-                ]);
+                expect(mockBus.emit).toHaveBeenCalledWith('connector-start', {
+                    validConnectionTargets: [],
+                    startNodeId: 'node:1',
+                    startPort: props.port
+                });
             });
 
             describe('Set internal variable dragConnector and position Drag-Connector and -Port', () => {
                 afterEach(async () => {
-                    dragAboveTarget(null, [8, 8]);
-                    await wrapper.vm.$nextTick();
+                    await dragAboveTarget(null, [8, 8]);
+                    await Vue.nextTick();
 
                     // connector is bound to 'dragConnector'
                     // connector doesn't receive pointer-events
 
                     let connector = wrapper.findComponent(Connector);
-                    expect(connector.props()).toMatchObject(wrapper.vm.dragConnector);
+                    expect(connector.props()).toEqual(expect.objectContaining({
+                        id: wrapper.vm.dragConnector.id,
+                        allowedActions: wrapper.vm.dragConnector.allowedActions
+                    }));
                     expect(connector.attributes('class')).toMatch('non-interactive');
 
                     // port is moved to 'dragConnector'
@@ -410,9 +420,9 @@ describe('NodePort', () => {
                     expect(port.attributes('class')).toMatch('non-interactive');
                 });
 
-                it('sets connector for out-port', () => {
-                    propsData.direction = 'out';
-                    startDragging([8, 8]);
+                it('sets connector for out-port', async () => {
+                    props.direction = 'out';
+                    await startDragging([8, 8]);
 
                     expect(wrapper.vm.dragConnector).toStrictEqual({
                         id: 'drag-connector',
@@ -428,9 +438,9 @@ describe('NodePort', () => {
                     expect(wrapper.vm.dragConnector.destPort).toBeFalsy();
                 });
 
-                it('sets connector for in-port', () => {
-                    propsData.direction = 'in';
-                    startDragging([8, 8]);
+                it('sets connector for in-port', async () => {
+                    props.direction = 'in';
+                    await startDragging([8, 8]);
 
                     expect(wrapper.vm.dragConnector).toStrictEqual({
                         id: 'drag-connector',
@@ -449,8 +459,8 @@ describe('NodePort', () => {
         });
 
         describe('Drag Move', () => {
-            test('move onto nothing', () => {
-                startDragging([0, 0]);
+            test('move onto nothing', async () => {
+                await startDragging([0, 0]);
                 expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([0, 0]);
 
                 dragAboveTarget(null, [2, 2]);
@@ -516,11 +526,11 @@ describe('NodePort', () => {
                 expect(hitTarget._connectorLeaveEvent).toBeTruthy();
             });
 
-            test('move sets connector and port', () => {
-                startDragging([0, 0]);
+            test('move sets connector and port', async () => {
+                await startDragging([0, 0]);
                 expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([0, 0]);
 
-                dragAboveTarget(null, [2, 2]);
+                await dragAboveTarget(null, [2, 2]);
 
                 expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([2, 2]);
             });
@@ -530,7 +540,7 @@ describe('NodePort', () => {
 
                 let hitTarget = document.createElement('div');
                 hitTarget.addEventListener('connector-move', (e) => {
-                    e.detail.onSnapCallback({ snapPosition: [-1, -1], targetPort: propsData.port });
+                    e.detail.onSnapCallback({ snapPosition: [-1, -1], targetPort: props.port });
                 });
 
                 dragAboveTarget(hitTarget, [0, 0]);
@@ -545,11 +555,11 @@ describe('NodePort', () => {
                     ['different types', { sourceTypeId: 'other', targetTypeId: 'flowVariable' }]
                 ])('cannot connect %s', async (_, { sourceTypeId, targetTypeId }) => {
                     const targetPort = {
-                        ...propsData.port,
+                        ...props.port,
                         typeId: targetTypeId
                     };
                     startDragging([0, 0]);
-                    await wrapper.setProps({ port: { ...propsData.port, typeId: sourceTypeId } });
+                    await wrapper.setProps({ port: { ...props.port, typeId: sourceTypeId } });
     
                     let hitTarget = document.createElement('div');
                     hitTarget.addEventListener('connector-move', (e) => {
@@ -572,11 +582,11 @@ describe('NodePort', () => {
                     ]
                 ])('%s', async (_, { sourceTypeId, targetTypeId }) => {
                     const targetPort = {
-                        ...propsData.port,
+                        ...props.port,
                         typeId: targetTypeId
                     };
                     startDragging([0, 0]);
-                    await wrapper.setProps({ port: { ...propsData.port, typeId: sourceTypeId } });
+                    await wrapper.setProps({ port: { ...props.port, typeId: sourceTypeId } });
 
                     let hitTarget = document.createElement('div');
                     hitTarget.addEventListener('connector-move', (e) => {
@@ -590,11 +600,11 @@ describe('NodePort', () => {
 
                 test('check compatibleTypes when provided', async () => {
                     const targetPort = {
-                        ...propsData.port,
+                        ...props.port,
                         typeId: 'specific'
                     };
                     startDragging([0, 0]);
-                    await wrapper.setProps({ port: { ...propsData.port, typeId: 'flowVariable' } });
+                    await wrapper.setProps({ port: { ...props.port, typeId: 'flowVariable' } });
 
                     let hitTarget = document.createElement('div');
                     hitTarget.addEventListener('connector-move', (e) => {
@@ -607,7 +617,7 @@ describe('NodePort', () => {
                 });
 
                 test('cannot snap to a port with an existing and non-deletable connection', async () => {
-                    propsData.direction = 'out';
+                    props.direction = 'out';
                     
                     storeConfig.workflow.state.activeWorkflow = {
                         connections: {
@@ -617,11 +627,11 @@ describe('NodePort', () => {
                         }
                     };
                     
-                    const port = { ...propsData.port, typeId: 'other', connectedVia: ['mock:connection'] };
+                    const port = { ...props.port, typeId: 'other', connectedVia: ['mock:connection'] };
 
                     startDragging([0, 0]);
 
-                    await wrapper.setProps({ port: { ...propsData.port, ...port } });
+                    await wrapper.setProps({ port: { ...props.port, ...port } });
 
                     let hitTarget = document.createElement('div');
                     hitTarget.addEventListener('connector-move', (e) => {
@@ -634,27 +644,27 @@ describe('NodePort', () => {
             });
         });
 
-        test('releases pointer', () => {
-            startDragging();
-            wrapper.trigger('pointerup', { pointerId: -1 });
+        test('releases pointer', async () => {
+            await startDragging();
+            await wrapper.trigger('pointerup', { pointerId: -1 });
 
-            expect(wrapper.element.releasePointerCapture).toHaveBeenCalledWith(-1);
+            expect(wrapper.wrapperElement.releasePointerCapture).toHaveBeenCalledWith(-1);
         });
 
         test('clicking a port after a connector was drawn doesnt emit to parent', async () => {
-            startDragging();
+            await startDragging();
             await wrapper.findComponent(Port).trigger('click');
             
             expect(wrapper.emitted('click')).toBeFalsy();
         });
 
         describe('Stop Dragging', () => {
-            test('dispatches drop event (direction = in)', () => {
-                startDragging();
+            test('dispatches drop event (direction = in)', async () => {
+                await startDragging();
 
                 let hitTarget = document.createElement('div');
-                dragAboveTarget(hitTarget);
-                dropOnTarget();
+                await dragAboveTarget(hitTarget);
+                await dropOnTarget();
 
                 expect(hitTarget._connectorDropEvent.detail).toEqual(expect.objectContaining({
                     destNode: 'node:1',
@@ -663,8 +673,8 @@ describe('NodePort', () => {
                     sourcePort: undefined
                 }));
 
-                let rootWrapper = createWrapper(wrapper.vm.$root);
-                expect(rootWrapper.emitted('connector-dropped')).toBeTruthy();
+                const lastDispatchedEvent = mockBus.emit.mock.calls.pop();
+                expect(lastDispatchedEvent).toEqual(['connector-dropped']);
             });
 
             it('does not release capture pointer', () => {
@@ -673,13 +683,13 @@ describe('NodePort', () => {
                 expect(wrapper.element.releasePointerCapture).not.toHaveBeenCalledWith(-1);
             });
 
-            test('dispatches drop event (direction = out)', () => {
-                propsData.direction = 'out';
-                startDragging();
+            test('dispatches drop event (direction = out)', async () => {
+                props.direction = 'out';
+                await startDragging();
 
                 let hitTarget = document.createElement('div');
-                dragAboveTarget(hitTarget);
-                dropOnTarget();
+                await dragAboveTarget(hitTarget);
+                await dropOnTarget();
 
                 expect(hitTarget._connectorDropEvent.detail).toEqual(expect.objectContaining({
                     sourceNode: 'node:1',
@@ -688,34 +698,34 @@ describe('NodePort', () => {
                     destPort: undefined
                 }));
 
-                let rootWrapper = createWrapper(wrapper.vm.$root);
-                expect(rootWrapper.emitted('connector-dropped')).toBeTruthy();
+                const lastDispatchedEvent = mockBus.emit.mock.calls.pop();
+                expect(lastDispatchedEvent).toEqual(['connector-dropped']);
             });
 
-            test('connector-drop can be cancelled', () => {
-                startDragging();
+            test('connector-drop can be cancelled', async () => {
+                await startDragging();
 
                 let hitTarget = document.createElement('div');
-                dragAboveTarget(hitTarget);
-                dropOnTarget(hitTarget, true);
+                await dragAboveTarget(hitTarget);
+                await dropOnTarget(hitTarget, true);
 
-                let rootWrapper = createWrapper(wrapper.vm.$root);
-                expect(rootWrapper.emitted('connector-dropped')).toBeFalsy();
+                const lastDispatchedEvent = mockBus.emit.mock.calls.pop();
+                expect(lastDispatchedEvent).not.toEqual(['connector-dropped']);
             });
 
-            test('lost pointer capture', () => {
-                startDragging();
+            test('lost pointer capture', async () => {
+                await startDragging();
 
                 let hitTarget = document.createElement('div');
-                dragAboveTarget(hitTarget);
+                await dragAboveTarget(hitTarget);
 
-                wrapper.trigger('lostpointercapture');
+                await wrapper.trigger('lostpointercapture');
 
                 expect(hitTarget._connectorLeaveEvent).toBeTruthy();
                 expect(wrapper.vm.dragConnector).toBeFalsy();
 
-                let rootWrapper = createWrapper(wrapper.vm.$root);
-                expect(rootWrapper.emitted('connector-end')).toBeTruthy();
+                const lastDispatchedEvent = mockBus.emit.mock.calls.pop();
+                expect(lastDispatchedEvent).toEqual(['connector-end']);
             });
         });
 
@@ -741,7 +751,7 @@ describe('NodePort', () => {
 
     describe('Port actions', () => {
         beforeEach(() => {
-            propsData.selected = true;
+            props.selected = true;
         });
 
         it('should render the actions when the port is selected', () => {

@@ -15,30 +15,25 @@ jest.mock('@/mixins/escapeStack', () => {
 });
 
 describe('NodePortActions.vue', () => {
-    let propsData, wrapper, doShallowMount;
+    const defaultProps = {
+        direction: 'in',
+        relativePosition: [16, 32],
+        anchorPoint: { x: 1600, y: 1600 },
+        port: {
+            canRemove: true,
+            connectedVia: [],
+            typeId: 'table',
+            inactive: false,
+            index: 0
+        }
+    };
 
-    beforeEach(() => {
-        propsData = {
-            direction: 'in',
-            relativePosition: [16, 32],
-            anchorPoint: { x: 1600, y: 1600 },
-            port: {
-                canRemove: true,
-                connectedVia: [],
-                typeId: 'table',
-                inactive: false,
-                index: 0
-            }
-        };
-
-        doShallowMount = () => {
-            wrapper = shallowMount(NodePortActions, { propsData });
-        };
+    const doShallowMount = (customProps = {}) => shallowMount(NodePortActions, {
+        props: { ...defaultProps, ...customProps }
     });
     
-    
     it('should render properly', () => {
-        doShallowMount();
+        const wrapper = doShallowMount();
         
         expect(wrapper.findComponent(ActionButton).exists()).toBe(true);
         expect(wrapper.findComponent(Port).exists()).toBe(true);
@@ -49,23 +44,23 @@ describe('NodePortActions.vue', () => {
     });
     
     it('should emit the action event', () => {
-        doShallowMount();
+        const wrapper = doShallowMount();
 
         wrapper.findComponent(ActionButton).vm.$emit('click');
         expect(wrapper.emitted('action:remove')).toBeDefined();
     });
 
     it('should position the wrapper and actions properly', () => {
-        doShallowMount();
+        const wrapper = doShallowMount();
 
-        const { anchorPoint, relativePosition } = propsData;
+        const { anchorPoint, relativePosition } = defaultProps;
 
         const expectedWrapperTranslate = [
             anchorPoint.x + relativePosition[0],
             anchorPoint.y + relativePosition[1]
         ];
 
-        const expectedActionButtonXOffset = 25 * (propsData.direction === 'in' ? -1 : 1);
+        const expectedActionButtonXOffset = 25 * (defaultProps.direction === 'in' ? -1 : 1);
 
         expect(wrapper.attributes('transform')).toBe(`translate(${expectedWrapperTranslate})`);
         expect(wrapper.findComponent(ActionButton).props('x')).toBe(expectedActionButtonXOffset);
@@ -75,7 +70,7 @@ describe('NodePortActions.vue', () => {
         ['in', portActionButtonSize],
         ['out', 0]
     ])('should set the proper hover area dimensions for %sPorts', async (direction, xOffset) => {
-        doShallowMount();
+        const wrapper = doShallowMount();
         await wrapper.setProps({ direction });
 
         const objPropertiesToString = (obj) => Object
@@ -100,7 +95,7 @@ describe('NodePortActions.vue', () => {
 
         MouseEvent.prototype.stopPropagation = mockStopPropagation;
 
-        doShallowMount();
+        const wrapper = doShallowMount();
 
         wrapper.find('rect').trigger('click');
         wrapper.find('rect').trigger('mouseenter');
@@ -110,9 +105,9 @@ describe('NodePortActions.vue', () => {
     });
 
     it('should disable the delete action button if the port cannot be removed', async () => {
-        doShallowMount();
+        const wrapper = doShallowMount();
 
-        await wrapper.setProps({ port: { ...propsData.port, canRemove: false } });
+        await wrapper.setProps({ port: { ...defaultProps.port, canRemove: false } });
 
         const actionButton = wrapper.findComponent(ActionButton);
 
@@ -120,7 +115,7 @@ describe('NodePortActions.vue', () => {
     });
 
     it('should close on escape', () => {
-        doShallowMount();
+        const wrapper = doShallowMount();
 
         expect(wrapper.emitted('close')).toBeFalsy();
         escapeStackMock.onEscape.call(wrapper.vm);

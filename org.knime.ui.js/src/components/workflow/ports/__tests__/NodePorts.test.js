@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { shallowMount, createLocalVue } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
@@ -18,17 +17,12 @@ const mockPort = ({ index, connectedVia = [] }) => ({
 });
 
 describe('NodePorts.vue', () => {
-    let wrapper, propsData, doMount, storeConfig, $store;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let wrapper, props, doMount, storeConfig, $store;
 
     beforeEach(() => {
         wrapper = null;
         
-        propsData = {
+        props = {
             inPorts: [
                 mockPort({ index: 0, connectedVia: ['inA'] }),
                 mockPort({ index: 1 })
@@ -67,20 +61,19 @@ describe('NodePorts.vue', () => {
         doMount = () => {
             $store = mockVuexStore(storeConfig);
 
-            let mocks = { $shapes, $store };
             wrapper = shallowMount(NodePorts, {
-                propsData,
-                mocks
+                props,
+                global: { mocks: { $shapes }, plugins: [$store] }
             });
         };
     });
 
     describe('Port positions', () => {
         it('for meta node', () => {
-            propsData.nodeKind = 'metanode';
+            props.nodeKind = 'metanode';
             doMount();
 
-            const ports = wrapper.findAllComponents(NodePort).wrappers;
+            const ports = wrapper.findAllComponents(NodePort);
             const locations = ports.map(p => p.props().relativePosition);
             const portAttrs = ports.map(p => p.props().port.index);
 
@@ -99,10 +92,10 @@ describe('NodePorts.vue', () => {
             ['component'],
             ['node']
         ])('for %s', (nodeKind) => {
-            propsData.nodeKind = nodeKind;
+            props.nodeKind = nodeKind;
             doMount();
 
-            const ports = wrapper.findAllComponents(NodePort).wrappers;
+            const ports = wrapper.findAllComponents(NodePort);
             const locations = ports.map(p => p.props().relativePosition);
             const portAttrs = ports.map(p => p.props().port.index);
 
@@ -118,8 +111,8 @@ describe('NodePorts.vue', () => {
         });
 
         it('placeholderPositions on component', () => {
-            propsData.isEditable = true;
-            propsData.nodeKind = 'component';
+            props.isEditable = true;
+            props.nodeKind = 'component';
             doMount();
 
             const addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
@@ -130,20 +123,20 @@ describe('NodePorts.vue', () => {
 
     describe('Port selection', () => {
         test('no port can be selected', async () => {
-            propsData.nodeKind = 'node';
-            propsData.portGroups = null;
+            props.nodeKind = 'node';
+            props.portGroups = null;
             doMount();
 
             let somePort = wrapper.findComponent(NodePort);
             somePort.vm.$emit('click');
             await Vue.nextTick();
 
-            let allPorts = wrapper.findAllComponents(NodePort).wrappers;
+            let allPorts = wrapper.findAllComponents(NodePort);
             expect(allPorts.every(port => port.props('selected') === false)).toBeTruthy();
         });
 
         test('ports cant be selected on a write-protected workflow', async () => {
-            propsData.nodeKind = 'metanode';
+            props.nodeKind = 'metanode';
             storeConfig.workflow.getters.isWritable = () => false;
             doMount();
 
@@ -155,7 +148,7 @@ describe('NodePorts.vue', () => {
         });
 
         test('Metanode', async () => {
-            propsData.nodeKind = 'metanode';
+            props.nodeKind = 'metanode';
             doMount();
 
             let firstPort = wrapper.findAllComponents(NodePort).at(0);
@@ -166,7 +159,7 @@ describe('NodePorts.vue', () => {
         });
 
         test('Component', async () => {
-            propsData.nodeKind = 'component';
+            props.nodeKind = 'component';
             doMount();
 
             // Flow Variable Port can't be selected
@@ -184,11 +177,11 @@ describe('NodePorts.vue', () => {
         });
 
         test('Select last port of group for Dynamic Native Nodes', async () => {
-            propsData.nodeKind = 'node';
-            propsData.inPorts[1].portGroupId = 'group1';
-            propsData.outPorts[1].portGroupId = 'group1';
-            propsData.outPorts[2].portGroupId = 'group1';
-            propsData.portGroups = {
+            props.nodeKind = 'node';
+            props.inPorts[1].portGroupId = 'group1';
+            props.outPorts[1].portGroupId = 'group1';
+            props.outPorts[2].portGroupId = 'group1';
+            props.portGroups = {
                 group1: {
                     inputRange: [1, 1],
                     outputRange: [1, 2]
@@ -212,7 +205,7 @@ describe('NodePorts.vue', () => {
         });
 
         test('port can deselect itself', async () => {
-            propsData.nodeKind = 'component';
+            props.nodeKind = 'component';
             doMount();
 
             let normalPort = wrapper.findAllComponents(NodePort).at(1);
@@ -228,7 +221,7 @@ describe('NodePorts.vue', () => {
         });
 
         test('port is deselected by selecting another', async () => {
-            propsData.nodeKind = 'component';
+            props.nodeKind = 'component';
             doMount();
             
             let normalPort = wrapper.findAllComponents(NodePort).at(1);
@@ -246,7 +239,7 @@ describe('NodePorts.vue', () => {
         });
 
         test('dragging a node deselects', async () => {
-            propsData.nodeKind = 'component';
+            props.nodeKind = 'component';
             doMount();
             
             let normalPort = wrapper.findAllComponents(NodePort).at(1);
@@ -256,7 +249,7 @@ describe('NodePorts.vue', () => {
             expect(normalPort.props('selected')).toBe(true);
 
             // set custom state, to re-evaluate "isDragging"-Getter
-            Vue.set($store.state.workflow, '__isDragging', true);
+            $store.state.workflow.__isDragging = true;
             await Vue.nextTick();
 
             expect(normalPort.props('selected')).toBe(false);
@@ -274,7 +267,7 @@ describe('NodePorts.vue', () => {
 
     describe('Mickey-Mouse ports', () => {
         beforeEach(() => {
-            propsData.isMetanode = false;
+            props.isMetanode = false;
         });
 
         it('only first ports of %s are mickey mouse ports', () => {
@@ -289,10 +282,10 @@ describe('NodePorts.vue', () => {
         });
 
         it('metanodes have no mickey-mouse ports', () => {
-            propsData.nodeKind = 'metanode';
+            props.nodeKind = 'metanode';
             doMount();
 
-            let ports = wrapper.findAllComponents(NodePort).wrappers;
+            let ports = wrapper.findAllComponents(NodePort);
             ports.forEach(port => {
                 expect(port.attributes().class).not.toMatch('mickey-mouse');
             });
@@ -307,7 +300,7 @@ describe('NodePorts.vue', () => {
         });
 
         it('hover fades-in mickey-mouse ports', () => {
-            propsData.hover = true;
+            props.hover = true;
             doMount();
 
             let ports = wrapper.findAllComponents(NodePort);
@@ -318,7 +311,7 @@ describe('NodePorts.vue', () => {
         });
 
         it('hover fades-out mickey-mouse ports', () => {
-            propsData.hover = false;
+            props.hover = false;
             doMount();
 
             let ports = wrapper.findAllComponents(NodePort);
@@ -331,7 +324,7 @@ describe('NodePorts.vue', () => {
 
     describe('Add-Port Placeholder', () => {
         beforeEach(() => {
-            propsData.nodeKind = 'component';
+            props.nodeKind = 'component';
         });
 
         it('render, setup, props', () => {
@@ -392,7 +385,7 @@ describe('NodePorts.vue', () => {
         });
 
         it('visible on hover', () => {
-            propsData.hover = true;
+            props.hover = true;
             doMount();
 
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
@@ -401,7 +394,7 @@ describe('NodePorts.vue', () => {
         });
 
         it('visible on connector-hover', () => {
-            propsData.connectorHover = true;
+            props.connectorHover = true;
             doMount();
 
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
@@ -410,7 +403,7 @@ describe('NodePorts.vue', () => {
         });
 
         it('visible if selected', () => {
-            propsData.isSingleSelected = true;
+            props.isSingleSelected = true;
             doMount();
 
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
@@ -421,7 +414,7 @@ describe('NodePorts.vue', () => {
 
     describe('Add and remove node ports', () => {
         it('cant add ports if not writable', () => {
-            propsData.nodeKind = 'component';
+            props.nodeKind = 'component';
             storeConfig.workflow.getters.isWritable = () => false;
             doMount();
 
@@ -430,7 +423,7 @@ describe('NodePorts.vue', () => {
 
         describe.each(['metanode', 'component'])('add ports for %s', (nodeKind) => {
             test.each(['input', 'output'])('on %s side', (side) => {
-                propsData.nodeKind = nodeKind;
+                props.nodeKind = nodeKind;
                 doMount();
 
                 let addPortButton = wrapper.findAllComponents(AddPortPlaceholder).at(side === 'input' ? 0 : 1);
@@ -447,8 +440,8 @@ describe('NodePorts.vue', () => {
 
        
         test.each(['input', 'output'])('add dynamic ports on %s side', (side) => {
-            propsData.nodeKind = 'node';
-            propsData.portGroups = {
+            props.nodeKind = 'node';
+            props.portGroups = {
                 group1: {
                     canAddInPort: true,
                     canAddOutPort: true,
@@ -470,9 +463,9 @@ describe('NodePorts.vue', () => {
 
         describe.each(['metanode', 'component'])('remove port on %s', (nodeKind) => {
             test.each(['input', 'output'])('from %s side', (side) => {
-                propsData.nodeKind = nodeKind;
-                propsData.inPorts.length = 2;
-                propsData.outPorts.length = 2;
+                props.nodeKind = nodeKind;
+                props.inPorts.length = 2;
+                props.outPorts.length = 2;
                 doMount();
                 
                 let port = wrapper.findAllComponents(NodePort).at(side === 'input' ? 1 : 3);
@@ -488,11 +481,11 @@ describe('NodePorts.vue', () => {
         });
 
         test.each(['input', 'output'])('remove dynamic ports on %s side', (side) => {
-            propsData.nodeKind = 'node';
-            propsData.inPorts[1].portGroupId = 'group1';
-            propsData.outPorts[1].portGroupId = 'group1';
+            props.nodeKind = 'node';
+            props.inPorts[1].portGroupId = 'group1';
+            props.outPorts[1].portGroupId = 'group1';
 
-            propsData.portGroups = {
+            props.portGroups = {
                 group1: { }
             };
             doMount();
@@ -516,13 +509,13 @@ describe('NodePorts.vue', () => {
         [{ index: 1, side: 'out' }, [false, false]]
     ])('target input port', (targetPort, result) => {
         // use only on port on each side
-        propsData.inPorts.length = 1;
-        propsData.outPorts.length = 1;
-        propsData.targetPort = targetPort;
+        props.inPorts.length = 1;
+        props.outPorts.length = 1;
+        props.targetPort = targetPort;
         doMount();
 
         let ports = wrapper.findAllComponents(NodePort);
-        const [inPort, outPort] = ports.wrappers;
+        const [inPort, outPort] = ports;
         
         expect([
             inPort.props('targeted'),

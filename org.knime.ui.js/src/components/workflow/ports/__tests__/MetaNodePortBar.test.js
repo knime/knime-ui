@@ -1,8 +1,9 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, mount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+
+import { $bus } from '@/plugins/event-bus';
 
 import * as $shapes from '@/style/shapes.mjs';
 import * as $colors from '@/style/colors.mjs';
@@ -12,19 +13,14 @@ import NodePort from '../NodePort.vue';
 import MetaNodePortBar from '../MetaNodePortBar.vue';
 
 describe('MetaNodePortBar.vue', () => {
-    let propsData, mocks, doMount, wrapper, $store;
+    let props, doMount, wrapper, $store;
     const x = 222;
     const y = 123;
     const height = 549;
 
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     beforeEach(() => {
         wrapper = null;
-        propsData = {
+        props = {
             position: { x, y },
             ports: [],
             containerId: 'metanode:1'
@@ -45,15 +41,21 @@ describe('MetaNodePortBar.vue', () => {
             }
         });
 
-        mocks = { $store, $shapes, $colors };
         doMount = () => {
-            wrapper = mount(MetaNodePortBar, { propsData, mocks, stubs: { NodePort: true } });
+            wrapper = mount(MetaNodePortBar, {
+                props,
+                global: {
+                    mocks: { $shapes, $colors, $bus },
+                    plugins: [$store],
+                    stubs: { NodePort: true }
+                }
+            });
         };
     });
 
     describe.each(['in', 'out'])('type "%s"', type => {
         beforeEach(() => {
-            propsData.type = type;
+            props.type = type;
         });
 
         it('renders a bar', () => {
@@ -88,7 +90,7 @@ describe('MetaNodePortBar.vue', () => {
         });
 
         it('renders ports', () => {
-            propsData.ports = [{
+            props.ports = [{
                 index: 0,
                 type: 'type0'
             }, {
@@ -98,12 +100,12 @@ describe('MetaNodePortBar.vue', () => {
             doMount();
 
             let ports = wrapper.findAllComponents(NodePort);
-            let [port0, port1] = ports.wrappers;
+            let [port0, port1] = ports;
 
             expect(ports.length).toBe(2);
 
             expect(port0.props()).toStrictEqual(expect.objectContaining({
-                port: propsData.ports[0],
+                port: props.ports[0],
                 direction: type === 'in' ? 'out' : 'in',
                 nodeId: 'metanode:1',
                 relativePosition: [
@@ -114,7 +116,7 @@ describe('MetaNodePortBar.vue', () => {
             }));
 
             expect(port1.props()).toStrictEqual(expect.objectContaining({
-                port: propsData.ports[1],
+                port: props.ports[1],
                 direction: type === 'in' ? 'out' : 'in',
                 nodeId: 'metanode:1',
                 relativePosition: [
@@ -126,7 +128,7 @@ describe('MetaNodePortBar.vue', () => {
         });
 
         it('sets target port', async () => {
-            propsData.ports = [{
+            props.ports = [{
                 index: 0,
                 type: 'type0'
             }, {
@@ -136,7 +138,7 @@ describe('MetaNodePortBar.vue', () => {
             doMount();
 
             let ports = wrapper.findAllComponents(NodePort);
-            let [port0, port1] = ports.wrappers;
+            let [port0, port1] = ports;
 
             expect(port0.props('targeted')).toBeFalsy();
             expect(port1.props('targeted')).toBeFalsy();

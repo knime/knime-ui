@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
@@ -8,11 +8,11 @@ import Port from '@/components/common/Port.vue';
 import AddPortPlaceholder, { addPortPlaceholderPath } from '../AddPortPlaceholder.vue';
 
 describe('PortTypeMenu.vue', () => {
-    let propsData, mocks, doMount, wrapper, provide;
+    let props, doMount, wrapper, provide;
 
     beforeEach(() => {
         wrapper = null;
-        propsData = {
+        props = {
             position: [10, 10],
             side: 'output',
             nodeId: 'node-id',
@@ -23,9 +23,10 @@ describe('PortTypeMenu.vue', () => {
         };
 
         doMount = () => {
-            mocks = { $shapes, $colors };
-
-            wrapper = shallowMount(AddPortPlaceholder, { propsData, mocks, provide });
+            wrapper = shallowMount(AddPortPlaceholder, {
+                props,
+                global: { mocks: { $shapes, $colors }, provide }
+            });
         };
     });
 
@@ -45,11 +46,11 @@ describe('PortTypeMenu.vue', () => {
         });
 
         test('adds port directly, if only one option is given', () => {
-            propsData.portGroups = { input: { supportedPortTypeIds: ['table'], canAddInPort: true } };
+            props.portGroups = { input: { supportedPortTypeIds: ['table'], canAddInPort: true } };
             doMount();
 
             wrapper.find('.add-port-icon').trigger('click');
-            expect(wrapper.emitted('add-port')).toStrictEqual([[{ portGroup: 'input', typeId: 'table' }]]);
+            expect(wrapper.emitted('addPort')).toStrictEqual([[{ portGroup: 'input', typeId: 'table' }]]);
         });
 
         describe('with open menu', () => {
@@ -167,7 +168,7 @@ describe('PortTypeMenu.vue', () => {
             test('click on item emits event', () => {
                 callbacks['item-click']({ typeId: 'table' });
                 
-                expect(wrapper.emitted('add-port')).toStrictEqual([[{ typeId: 'table', portGroup: undefined }]]);
+                expect(wrapper.emitted('addPort')).toStrictEqual([[{ typeId: 'table', portGroup: undefined }]]);
             });
         });
     });

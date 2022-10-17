@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
@@ -9,19 +8,14 @@ import MetaNodePortBars from '../MetaNodePortBars.vue';
 import MetaNodePortBar from '../MetaNodePortBar.vue';
 
 describe('MetaNodePortBars.vue', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store, activeWorkflow;
+    let props, doShallowMount, wrapper, $store, activeWorkflow;
     const top = 107;
     const extendedBoundsTop = 5;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
 
     beforeEach(() => {
         activeWorkflow = { info: { containerId: 'metanode' } };
         wrapper = null;
-        propsData = {};
+        props = {};
         $store = mockVuexStore({
             workflow: {
                 state: {
@@ -48,9 +42,14 @@ describe('MetaNodePortBars.vue', () => {
             }
         });
 
-        mocks = { $store, $shapes };
         doShallowMount = () => {
-            wrapper = shallowMount(MetaNodePortBars, { propsData, mocks });
+            wrapper = shallowMount(MetaNodePortBars, {
+                props,
+                global: {
+                    mocks: { $shapes },
+                    plugins: [$store]
+                }
+            });
         };
     });
 
