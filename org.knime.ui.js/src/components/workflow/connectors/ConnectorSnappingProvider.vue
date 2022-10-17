@@ -226,45 +226,56 @@ export default {
                 portGroup
             });
         },
-        createConnectorObject({ startNode, startPort }) {
-            return this.targetPort.side === 'in'
+        createConnectorObject({ startNode, startPort, targetNode, targetPort, side }) {
+            return side === 'in'
                 ? {
                     sourceNode: startNode,
                     sourcePort: startPort,
-                    destNode: this.id,
-                    destPort: this.targetPort.index
+                    destNode: targetNode,
+                    destPort: targetPort
                 }
                 : {
-                    sourceNode: this.id,
-                    sourcePort: this.targetPort.index,
+                    sourceNode: targetNode,
+                    sourcePort: targetPort,
                     destNode: startNode,
                     destPort: startPort
                 };
         },
-        async onConnectorDrop(e) {
+        async onConnectorDrop({ preventDefault, detail: { startNode, startPort, isCompatible } }) {
+            // copy over the target port as the async backend calls might come after it has been set to null by
+            // onConnectorEnd()
+            let targetPort = { ...this.targetPort };
+
             // dropped on component, but no port is targeted
-            if (isNaN(this.targetPort?.index)) {
-                e.preventDefault();
+            if (isNaN(targetPort?.index)) {
+                preventDefault();
                 return;
             }
 
             // A drop event defines whether the target is compatible for connection. Regardless of validity,
             // a connection target can be compatible or incompatible; e.g.: A port that doesn't create a connection
             // circle would be "valid" but if it has a different type than the initial port then it's "incompatible"
-            if (!e.detail.isCompatible) {
-                e.preventDefault();
+            if (!isCompatible) {
+                preventDefault();
                 return; // end here
             }
 
             // create the port if the targetPort is marked as a placeholder port
-            if (this.targetPort.isPlaceHolderPort) {
-                const { newPortIdx } = await this.addPort(this.targetPort);
-                // update target port index
-                this.targetPort.index = newPortIdx;
-                this.targetPort.isPlaceHolderPort = false;
+            if (targetPort.isPlaceHolderPort) {
+                const { newPortIdx } = await this.addPort(targetPort);
+                // update target port index: the backend might have added the port
+                // above the others while the placeholder is always the last one
+                targetPort.index = newPortIdx;
+                targetPort.isPlaceHolderPort = false;
             }
 
-            this.connectNodes(this.createConnectorObject(e.detail));
+            this.connectNodes(this.createConnectorObject({
+                startNode,
+                startPort,
+                targetPort: targetPort.index,
+                targetNode: this.id,
+                side: targetPort.side
+            }));
         },
         isOutsideConnectorHoverRegion(x, y, targetPortDirection) {
             const upperBound = -20;
