@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 
@@ -15,29 +14,31 @@ describe('NodeState.vue', () => {
     const provide = {
         anchorPoint: { x: 123, y: 456 }
     };
-    let propsData, mocks, wrapper, doShallowMount;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let props, wrapper, doShallowMount, $store;
 
     beforeEach(() => {
-        propsData = {
+        props = {
             executionState: null,
             progress: null,
             error: null,
             warning: null
         };
-        mocks = { $shapes, $colors };
+
         doShallowMount = () => {
-            wrapper = shallowMount(NodeState, { propsData, mocks, provide });
+            wrapper = shallowMount(NodeState, {
+                props,
+                global: {
+                    plugins: $store ? [$store] : [],
+                    mocks: { $shapes, $colors },
+                    provide
+                }
+            });
         };
     });
 
 
     const getTrafficLights = () => {
-        let lights = wrapper.findAll('g g circle').wrappers.map(el => {
+        let lights = wrapper.findAll('g g circle').map(el => {
             const { fill, stroke } = el.attributes();
             return { fill, stroke };
         });
@@ -89,7 +90,7 @@ describe('NodeState.vue', () => {
         ['any other state', []]
     ])('draws traffic lights for state %s', (state, style) => {
         if (state) {
-            propsData.executionState = state;
+            props.executionState = state;
         }
         muteConsole(doShallowMount);
         expect(getTrafficLights()).toStrictEqual(style);
@@ -104,21 +105,21 @@ describe('NodeState.vue', () => {
     });
 
     it('shows "queued"', () => {
-        propsData.executionState = 'QUEUED';
+        props.executionState = 'QUEUED';
         doShallowMount();
         expect(wrapper.text()).toBe('queued');
     });
 
     it('shows "paused"', () => {
-        propsData.executionState = 'QUEUED';
-        propsData.loopStatus = 'PAUSED';
+        props.executionState = 'QUEUED';
+        props.loopStatus = 'PAUSED';
         doShallowMount();
         expect(wrapper.text()).toBe('paused');
     });
 
     it('shows dancing ball', () => {
-        propsData.executionState = 'EXECUTING';
-        propsData.progress = null;
+        props.executionState = 'EXECUTING';
+        props.progress = null;
         doShallowMount();
 
         expect(wrapper.find('.progress-circle').exists()).toBe(true);
@@ -126,8 +127,8 @@ describe('NodeState.vue', () => {
     });
 
     it('shows progress percentage', () => {
-        propsData.executionState = 'EXECUTING';
-        propsData.progress = 0.5178;
+        props.executionState = 'EXECUTING';
+        props.progress = 0.5178;
         doShallowMount();
 
         expect(wrapper.find('.progress-circle').exists()).toBe(false);
@@ -136,8 +137,8 @@ describe('NodeState.vue', () => {
     });
 
     it('handles invalid progress percentage', () => {
-        propsData.executionState = 'EXECUTING';
-        propsData.progress = 1.234; // 123.4%
+        props.executionState = 'EXECUTING';
+        props.progress = 1.234; // 123.4%
         doShallowMount();
 
         expect(wrapper.find('.progress-circle').exists()).toBe(false);
@@ -146,8 +147,8 @@ describe('NodeState.vue', () => {
     });
 
     it('shows error indicator', () => {
-        propsData.error = 'error message';
-        propsData.warning = 'warning message';
+        props.error = 'error message';
+        props.warning = 'warning message';
         doShallowMount();
 
         expect(wrapper.find('.error').exists()).toBe(true);
@@ -155,7 +156,7 @@ describe('NodeState.vue', () => {
     });
 
     it('shows warning indicator', () => {
-        propsData.warning = 'warning message';
+        props.warning = 'warning message';
         doShallowMount();
 
         expect(wrapper.find('.warning').exists()).toBe(true);
@@ -166,7 +167,7 @@ describe('NodeState.vue', () => {
         let currentTooltip;
 
         beforeEach(() => {
-            let $store = mockVuexStore({
+            $store = mockVuexStore({
                 workflow: {
                     mutations: {
                         setTooltip(state, tooltip) {
@@ -175,7 +176,6 @@ describe('NodeState.vue', () => {
                     }
                 }
             });
-            mocks.$store = $store;
             jest.useFakeTimers();
         });
 
@@ -187,7 +187,7 @@ describe('NodeState.vue', () => {
         });
 
         it('shows tooltips on error', async () => {
-            propsData.error = 'this is an error';
+            props.error = 'this is an error';
             doShallowMount();
             
             wrapper.find('g').trigger('mouseenter');
@@ -212,7 +212,7 @@ describe('NodeState.vue', () => {
         });
 
         it('updates tooltips on data change', async () => {
-            propsData.progressMessage = 'Progress';
+            props.progressMessage = 'Progress';
             doShallowMount();
             
             wrapper.find('g').trigger('mouseenter');

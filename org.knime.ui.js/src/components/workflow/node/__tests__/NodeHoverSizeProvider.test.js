@@ -15,23 +15,25 @@ describe('NodeHoverSizeProvider', () => {
     };
 
     const doShallowMount = (customProps = {}) => shallowMount(NodeHoverSizeProvider, {
-        propsData: {
+        props: {
             isHovering: true,
             nodeNameDimensions,
             portPositions,
             ...customProps
         },
-        mocks: {
-            $shapes
+        global: {
+            mocks: { $shapes }
         },
-        scopedSlots: {
-            default: `<span 
-                class="slot-content"
-                :width="props.hoverSize.width" 
-                :height="props.hoverSize.height" 
-                :x="props.hoverSize.y" 
-                :y="props.hoverSize.x" 
-            ></span>`
+        slots: {
+            default: `<template #default="props">
+                <span 
+                    class="slot-content"
+                    :width="props.hoverSize.width" 
+                    :height="props.hoverSize.height" 
+                    :x="props.hoverSize.y" 
+                    :y="props.hoverSize.x" 
+                ></span>
+            </template>`
         }
     });
 

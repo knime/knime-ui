@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 
@@ -25,13 +24,7 @@ const commonNode = {
 };
 
 describe('MoveableNodeContainer', () => {
-    let propsData, doMount, wrapper, storeConfig, mocks;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-        Vue.directive(directiveMove.name, directiveMove.options);
-    });
+    let props, doMount, wrapper, storeConfig;
 
     beforeEach(() => {
         wrapper = null;
@@ -79,23 +72,26 @@ describe('MoveableNodeContainer', () => {
                 }
             }
         };
-        propsData = {
+        props = {
             // insert node before mounting
         };
 
-        mocks = {
-            $shapes
-        };
-
         doMount = () => {
-            mocks.$store = mockVuexStore(storeConfig);
-            wrapper = shallowMount(MoveableNodeContainer, { propsData, mocks });
+            const $store = mockVuexStore(storeConfig);
+            wrapper = shallowMount(MoveableNodeContainer, {
+                props,
+                global: {
+                    mocks: { $shapes },
+                    plugins: [$store],
+                    directives: { [directiveMove.name]: directiveMove.options }
+                }
+            });
         };
     });
 
     describe('moving', () => {
         beforeEach(() => {
-            propsData =
+            props =
             {
                 ...commonNode,
                 selected: true,
@@ -135,7 +131,7 @@ describe('MoveableNodeContainer', () => {
 
         it('does not deselect nodes when node is already selected', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
-            propsData.id = 'root:2';
+            props.id = 'root:2';
             doMount();
 
             let moveStartEvent = new CustomEvent('movestart', {

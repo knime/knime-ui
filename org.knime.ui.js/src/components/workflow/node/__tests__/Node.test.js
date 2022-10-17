@@ -1,11 +1,11 @@
 /* eslint-disable max-lines */
 
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, mount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 
+import { $bus } from '@/plugins/event-bus';
 import NodeAnnotation from '@/components/workflow/annotations/NodeAnnotation.vue';
 import NodePorts from '@/components/workflow/ports/NodePorts.vue';
 import NodePort from '@/components/workflow/ports/NodePort.vue';
@@ -83,12 +83,7 @@ const metaNode = {
 };
 
 describe('Node', () => {
-    let propsData, mocks, doMount, wrapper, storeConfig, $store;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let propsData, doMount, wrapper, storeConfig, $store;
 
     beforeEach(() => {
         wrapper = null;
@@ -149,19 +144,21 @@ describe('Node', () => {
                 isEnabled: jest.fn().mockReturnValue(false)
             };
             $store = mockVuexStore(storeConfig);
-            mocks = { $shapes, $colors, $store, $commands };
             wrapper = mount(Node, {
                 propsData,
-                mocks,
-                stubs: {
-                    NodeName: true,
-                    NodeDecorators: true,
-                    NodeActionBar: true,
-                    NodeSelectionPlane: true,
-                    NodeAnnotation: true,
-                    NodeTorso: true,
-                    NodePorts: true,
-                    ...customStubs
+                global: {
+                    mocks: { $shapes, $colors, $commands, $bus },
+                    plugins: [$store],
+                    stubs: {
+                        NodeName: true,
+                        NodeDecorators: true,
+                        NodeActionBar: true,
+                        NodeSelectionPlane: true,
+                        NodeAnnotation: true,
+                        NodeTorso: true,
+                        NodePorts: true,
+                        ...customStubs
+                    }
                 }
             });
         };
@@ -274,7 +271,7 @@ describe('Node', () => {
         });
 
         it('renders port with direction and nodeId', () => {
-            const ports = wrapper.findAllComponents(NodePort).wrappers;
+            const ports = wrapper.findAllComponents(NodePort);
 
             ports.forEach(port => {
                 expect(port.props('nodeId')).toBe(commonNode.id);
@@ -369,8 +366,9 @@ describe('Node', () => {
         it('has no shadow effect', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
             doMount();
-            expect(wrapper.findComponent(NodeTorso).attributes().filter).toBeFalsy();
-            expect(wrapper.findComponent(NodeState).attributes().filter).toBeFalsy();
+
+            expect(wrapper.findComponent(NodeTorso).attributes('filter')).toBe('false');
+            expect(wrapper.findComponent(NodeState).attributes('filter')).toBeUndefined();
         });
 
         it('renders NodeActionBar at correct position', async () => {
@@ -733,7 +731,7 @@ describe('Node', () => {
                 return {
                     ConnectorSnappingProvider: {
                         render() {
-                            return this.$scopedSlots.default({
+                            return this.$slots.default({
                                 targetPort,
                                 connectorHover,
                                 connectionForbidden,
@@ -755,7 +753,7 @@ describe('Node', () => {
                 
                 await Vue.nextTick();
 
-                expect(wrapper.classes('connection-forbidden')).toBe(true);
+                expect(wrapper.find('.connection-forbidden').exists()).toBe(true);
             });
 
             test('illegal but connection source', async () => {
@@ -796,7 +794,7 @@ describe('Node', () => {
         it('does not open component on double click', async () => {
             propsData = { ...componentNode };
             doMount();
-            jest.spyOn(mocks.$store, 'dispatch');
+            jest.spyOn($store, 'dispatch');
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
             expect(storeConfig.workflow.actions.loadWorkflow).not.toHaveBeenCalled();
@@ -805,7 +803,7 @@ describe('Node', () => {
         it('does not open native node on double click', async () => {
             propsData = { ...nativeNode };
             doMount();
-            jest.spyOn(mocks.$store, 'dispatch');
+            jest.spyOn($store, 'dispatch');
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
             expect(storeConfig.workflow.actions.loadWorkflow).not.toHaveBeenCalled();

@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
 import * as $colors from '@/style/colors.mjs';
@@ -7,9 +6,7 @@ import * as $colors from '@/style/colors.mjs';
 import NodeSelectionPlane from '../NodeSelectionPlane.vue';
 
 describe('NodeSlectionPlane.vue', () => {
-    let propsData, commonPlane;
-
-    commonPlane = {
+    const commonPlane = {
         width: 0,
         extraHeight: 20,
         position: {
@@ -19,25 +16,21 @@ describe('NodeSlectionPlane.vue', () => {
         kind: 'node'
     };
 
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
-    let doShallowMount = (propsData = {}) => shallowMount(NodeSelectionPlane, {
-        propsData,
-        mocks: {
-            $shapes,
-            $colors
+    const doShallowMount = (props = {}) => shallowMount(NodeSelectionPlane, {
+        props: {
+            ...commonPlane,
+            ...props
+        },
+        global: {
+            mocks: {
+                $shapes,
+                $colors
+            }
         }
     });
 
-    beforeEach(() => {
-        propsData = { ...commonPlane };
-    });
-
     it('sets position of the selection plane', () => {
-        let wrapper = doShallowMount(propsData);
+        const wrapper = doShallowMount();
         expect(wrapper.findComponent(NodeSelectionPlane).props()).toStrictEqual({
             width: 0,
             extraHeight: 20,
@@ -50,30 +43,27 @@ describe('NodeSlectionPlane.vue', () => {
     });
 
     it('renders component', () => {
-        let wrapper = doShallowMount(propsData);
+        const wrapper = doShallowMount();
         expect(wrapper.findComponent(NodeSelectionPlane).exists()).toBe(true);
     });
 
     it('checks node measures with status bar', () => {
-        let wrapper = doShallowMount(propsData);
+        let wrapper = doShallowMount();
         expect(wrapper.vm.nodeSelectionMeasures).toStrictEqual({ height: 97, width: 100, x: -34, y: -39 });
     });
 
     it('honors width setting if its bigger then the default width', () => {
-        propsData.width = 120;
-        let wrapper = doShallowMount(propsData);
+        let wrapper = doShallowMount({ width: 120 });
         expect(wrapper.vm.nodeSelectionMeasures).toStrictEqual({ height: 97, width: 120, x: -44, y: -39 });
     });
 
     it('honors extraHeight', () => {
-        propsData.extraHeight = 44;
-        let wrapper = doShallowMount(propsData);
+        let wrapper = doShallowMount({ extraHeight: 44 });
         expect(wrapper.vm.nodeSelectionMeasures).toStrictEqual({ height: 121, width: 100, x: -34, y: -63 });
     });
 
     it('checks node measures without status bar', () => {
-        propsData.kind = 'metanode';
-        let wrapper = doShallowMount(propsData);
+        let wrapper = doShallowMount({ kind: 'metanode' });
         expect(wrapper.vm.nodeSelectionMeasures).toStrictEqual({ height: 77, width: 100, x: -34, y: -39 });
     });
 });
