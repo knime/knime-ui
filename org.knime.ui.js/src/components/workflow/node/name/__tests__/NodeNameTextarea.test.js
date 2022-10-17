@@ -7,16 +7,18 @@ import NodeNameTextarea from '../NodeNameTextarea.vue';
 describe('NodeNameTextarea', () => {
     const mockSizeChangeFn = jest.fn();
 
-    const doShallowMount = (opts = { propsData: { value: '' } }) => {
+    const doShallowMount = (opts = { props: { value: '' } }) => {
         const wrapper = shallowMount(NodeNameTextarea, {
             ...opts,
-            mocks: {
-                $shapes,
-                mockSizeChangeFn
-            },
-            stubs: {
-                NodeNameText: {
-                    template: `<div id="node-name-stub"><slot :on="{ sizeChange: mockSizeChangeFn }"></slot></div>`
+            global: {
+                mocks: {
+                    $shapes,
+                    mockSizeChangeFn
+                },
+                stubs: {
+                    NodeNameText: {
+                        template: '<div id="node-name-stub"><slot :on="{ sizeChange: mockSizeChangeFn }"></slot></div>'
+                    }
                 }
             }
         });
@@ -25,9 +27,9 @@ describe('NodeNameTextarea', () => {
     };
 
     it('render with given value as text', () => {
-        const value = 'test';
-        const wrapper = doShallowMount({ propsData: { value } });
-        expect(wrapper.find('textarea').element.value).toBe(value);
+        const modelValue = 'test';
+        const wrapper = doShallowMount({ props: { modelValue } });
+        expect(wrapper.find('textarea').element.value).toBe(modelValue);
     });
 
     it('should call the size change callback provided by the slot of the NodeNameText', () => {
@@ -55,18 +57,18 @@ describe('NodeNameTextarea', () => {
     });
 
     it.each([
-        'width-change',
-        'height-change'
+        'widthChange',
+        'heightChange'
     ])('should emit a (%s) event', (eventName) => {
         const wrapper = doShallowMount();
 
         const emittedValue = 100;
-        wrapper.find('#node-name-stub').vm.$emit(eventName, emittedValue);
+        wrapper.findComponent('#node-name-stub').vm.$emit(eventName, emittedValue);
 
         expect(wrapper.emitted(eventName)[0][0]).toBe(emittedValue);
     });
 
-    it('should emit an input event when text changes', () => {
+    it('should emit an update:modelValue event when text changes', () => {
         const wrapper = doShallowMount();
 
         const emittedValue = 'mock text';
@@ -74,7 +76,7 @@ describe('NodeNameTextarea', () => {
         wrapper.find('textarea').setValue(emittedValue);
         wrapper.find('textarea').trigger('input');
 
-        expect(wrapper.emitted('input')[0][0]).toBe(emittedValue);
+        expect(wrapper.emitted('update:modelValue')[0][0]).toBe(emittedValue);
     });
 
     it('should focus textarea on mount', async () => {
@@ -105,19 +107,19 @@ describe('NodeNameTextarea', () => {
     });
 
     it('should not allow illegal characters', () => {
-        const wrapper = doShallowMount({ propsData: { value: '', invalidCharacters: /[*?#:"<>%~|/\\]/g } });
+        const wrapper = doShallowMount({ props: { value: '', invalidCharacters: /[*?#:"<>%~|/\\]/g } });
 
         const emittedValue = '*New name!*?-test_12(#)';
 
         wrapper.find('textarea').setValue(emittedValue);
         wrapper.find('textarea').trigger('input');
 
-        expect(wrapper.emitted('invalid-input')).toBeDefined();
-        expect(wrapper.emitted('input')[0][0]).toBe('New name!-test_12()');
+        expect(wrapper.emitted('invalidInput')).toBeDefined();
+        expect(wrapper.emitted('update:modelValue')[0][0]).toBe('New name!-test_12()');
     });
 
     it('should not allow illegal character on keydown', () => {
-        const wrapper = doShallowMount({ propsData: { value: '', invalidCharacters: /[*?#:"<>%~|/\\]/g } });
+        const wrapper = doShallowMount({ props: { value: '', invalidCharacters: /[*?#:"<>%~|/\\]/g } });
 
         const event = {
             key: '#',
@@ -125,7 +127,7 @@ describe('NodeNameTextarea', () => {
         };
         wrapper.find('textarea').trigger('keydown', event);
 
-        expect(wrapper.emitted('invalid-input')).toBeDefined();
+        expect(wrapper.emitted('invalidInput')).toBeDefined();
         expect(event.preventDefault).toBeCalled();
     });
 });

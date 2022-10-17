@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { shallowMount, createLocalVue } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
 import NodeName from '../NodeName.vue';
@@ -15,16 +14,11 @@ describe('NodeName', () => {
         value: 'Test Name'
     };
 
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
-    const doShallowMount = ({ propsData = {}, $store }) => {
+    const doShallowMount = ({ props = {}, $store }) => {
         const wrapper = shallowMount(NodeName, {
-            propsData: { ...defaultProps, ...propsData },
-            mocks: {
-                $store
+            props: { ...defaultProps, ...props },
+            global: {
+                plugins: [$store]
             }
         });
 
@@ -68,8 +62,8 @@ describe('NodeName', () => {
         });
 
         it.each([
-            ['width-change', 100],
-            ['height-change', 100],
+            ['widthChange', 100],
+            ['heightChange', 100],
             ['mouseenter', { mock: 'mock' }],
             ['mouseleave', { mock: 'mock' }],
             ['contextmenu', { mock: 'mock' }]
@@ -87,7 +81,7 @@ describe('NodeName', () => {
         it('should handle a name change requests triggered via the store (e.g. F2 key)', async () => {
             wrapper.vm.$store.state.workflow.nameEditorNodeId = wrapper.props('nodeId');
             await Vue.nextTick();
-            expect(wrapper.emitted('edit-start')).toBeDefined();
+            expect(wrapper.emitted('editStart')).toBeDefined();
         });
     });
 
@@ -119,7 +113,7 @@ describe('NodeName', () => {
         });
 
         it('should portal editor when visible', () => {
-            expect(wrapper.find('portal[to="node-name-editor"]').exists()).toBe(true);
+            expect(wrapper.findComponent({ name: 'Portal' }).exists()).toBe(true);
         });
 
         it('should forward props', () => {
@@ -133,8 +127,8 @@ describe('NodeName', () => {
         });
 
         it.each([
-            ['width-change', 100],
-            ['height-change', 100]
+            ['widthChange', 100],
+            ['heightChange', 100]
         ])('should emit a (%s) event', (eventName, payload) => {
             wrapper.findComponent(NodeNameEditor).vm.$emit(eventName, payload);
 

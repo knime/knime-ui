@@ -6,18 +6,10 @@ import ActionButton from '@/components/common/ActionButton.vue';
 import NodeNameEditorActionBar from '../NodeNameEditorActionBar.vue';
 
 describe('NodeNameEditorActionBar', () => {
-    let mocks, doShallowMount, wrapper;
-
-    beforeEach(() => {
-        wrapper = null;
-        doShallowMount = () => {
-            mocks = { $shapes };
-            wrapper = shallowMount(NodeNameEditorActionBar, { propsData: {}, mocks });
-        };
-        doShallowMount();
-    });
+    const doShallowMount = () => shallowMount(NodeNameEditorActionBar, { global: { mocks: { $shapes } } });
 
     it('renders', () => {
+        const wrapper = doShallowMount();
         let buttons = wrapper.findAllComponents(ActionButton);
         
         expect(buttons.at(0).props()).toStrictEqual(
@@ -27,16 +19,18 @@ describe('NodeNameEditorActionBar', () => {
             expect.objectContaining({ x: 12.5, disabled: false, primary: false })
         );
     });
-
+            
     it('emits @save event', () => {
+        const wrapper = doShallowMount();
         let buttons = wrapper.findAllComponents(ActionButton);
-
+        
         expect(wrapper.emitted().save).toBeUndefined();
         buttons.at(0).vm.$emit('click');
         expect(wrapper.emitted().save).toBeTruthy();
     });
-
+    
     it('emits @cancel event', () => {
+        const wrapper = doShallowMount();
         let buttons = wrapper.findAllComponents(ActionButton);
 
         expect(wrapper.emitted().close).toBeUndefined();

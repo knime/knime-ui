@@ -91,10 +91,7 @@ describe('NodeRepository', () => {
         doShallowMount = () => {
             wrapper = shallowMount(NodeRepository, {
                 global: {
-                    plugins: [$store],
-                    stubs: {
-                        Portal: true
-                    }
+                    plugins: [$store]
                 }
             });
         };

@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { shallowMount, createLocalVue } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 
@@ -10,16 +9,14 @@ import NodeNameTextarea from '../NodeNameTextarea.vue';
 import NodeNameEditorActionBar from '../NodeNameEditorActionBar.vue';
 
 describe('NodeNameEditor', () => {
-    const propsData = {
+    const props = {
         value: 'test',
         nodePosition: { x: 15, y: 13 },
         nodeId: 'root:1'
     };
 
-    let wrapper, storeConfig;
-
     const doShallowMount = () => {
-        storeConfig = {
+        const storeConfig = {
             canvas: {
                 getters: {
                     viewBox: () => ({ left: 0, top: 0 })
@@ -28,23 +25,18 @@ describe('NodeNameEditor', () => {
         };
         const $store = mockVuexStore(storeConfig);
         const wrapper = shallowMount(NodeNameEditor, {
-            propsData,
-            mocks: { $shapes, $store }
+            props,
+            global: {
+                plugins: [$store],
+                mocks: { $shapes }
+            }
         });
 
         return wrapper;
     };
 
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
-    beforeEach(() => {
-        wrapper = doShallowMount();
-    });
-
     it('should render the ActionBar and the Textarea', () => {
+        const wrapper = doShallowMount();
         expect(wrapper.findComponent(NodeNameTextarea).exists()).toBe(true);
         expect(wrapper.findComponent(NodeNameEditorActionBar).exists()).toBe(true);
     });
@@ -64,6 +56,7 @@ describe('NodeNameEditor', () => {
         });
 
         it('should block click events', () => {
+            const wrapper = doShallowMount();
             const rect = wrapper.find('rect');
 
             rect.trigger('click');
@@ -73,6 +66,7 @@ describe('NodeNameEditor', () => {
         });
 
         it('should block contextmenu events', () => {
+            const wrapper = doShallowMount();
             const rect = wrapper.find('rect');
 
             rect.trigger('contextmenu');
@@ -84,6 +78,7 @@ describe('NodeNameEditor', () => {
 
     describe('Action bar', () => {
         it('should be positioned based on the relevant prop', () => {
+            const wrapper = doShallowMount();
             const actionBar = wrapper.findComponent(NodeNameEditorActionBar);
             const expectedPosition = 'translate(31,-6)';
 
@@ -91,13 +86,15 @@ describe('NodeNameEditor', () => {
         });
 
         it('should emit save when clicking the save button', () => {
-            wrapper.findComponent(NodeNameTextarea).vm.$emit('input', 'new value');
+            const wrapper = doShallowMount();
+            wrapper.findComponent(NodeNameTextarea).vm.$emit('update:modelValue', 'new value');
             wrapper.findComponent(NodeNameEditorActionBar).vm.$emit('save');
 
             expect(wrapper.emitted('save')).toBeDefined();
         });
 
         it('should emit a cancel event when clicking the cancel button', () => {
+            const wrapper = doShallowMount();
             wrapper.findComponent(NodeNameEditorActionBar).vm.$emit('cancel');
 
             expect(wrapper.emitted('cancel')).toBeDefined();
@@ -106,38 +103,43 @@ describe('NodeNameEditor', () => {
 
     describe('Handle textarea events', () => {
         it.each([
-            'width-change',
-            'height-change'
+            'widthChange',
+            'heightChange'
         ])('should forward a (%s) event', (eventName) => {
+            const wrapper = doShallowMount();
             const emittedValue = 200;
             wrapper.findComponent(NodeNameTextarea).vm.$emit(eventName, emittedValue);
             expect(wrapper.emitted(eventName)[0][0]).toBe(emittedValue);
         });
 
         it('should emit a save event', () => {
-            wrapper.findComponent(NodeNameTextarea).vm.$emit('input', 'new value');
+            const wrapper = doShallowMount();
+            wrapper.findComponent(NodeNameTextarea).vm.$emit('update:modelValue', 'new value');
             wrapper.findComponent(NodeNameTextarea).vm.$emit('save');
 
             expect(wrapper.emitted('save')).toBeDefined();
         });
 
         it('should not emit a save event if the name did not change', () => {
-            wrapper.findComponent(NodeNameTextarea).vm.$emit('input', propsData.value);
+            const wrapper = doShallowMount();
+            wrapper.findComponent(NodeNameTextarea).vm.$emit('update:modelValue', props.value);
             wrapper.findComponent(NodeNameTextarea).vm.$emit('save');
 
             expect(wrapper.emitted('save')).toBeUndefined();
         });
 
         it('should emit a cancel event', () => {
+            const wrapper = doShallowMount();
             wrapper.findComponent(NodeNameTextarea).vm.$emit('cancel');
             expect(wrapper.emitted('cancel')).toBeDefined();
         });
     });
 
     it('should trim content before saving', () => {
+        const wrapper = doShallowMount();
         const emittedValue = '   this is the content    ';
 
-        wrapper.findComponent(NodeNameTextarea).vm.$emit('input', emittedValue);
+        wrapper.findComponent(NodeNameTextarea).vm.$emit('update:modelValue', emittedValue);
         wrapper.findComponent(NodeNameTextarea).vm.$emit('save');
 
         expect(wrapper.emitted('save')[0][0]).toEqual(expect.objectContaining({
@@ -146,9 +148,10 @@ describe('NodeNameEditor', () => {
     });
 
     it('should not save empty values', () => {
+        const wrapper = doShallowMount();
         const emittedValue = '    ';
 
-        wrapper.findComponent(NodeNameTextarea).vm.$emit('input', emittedValue);
+        wrapper.findComponent(NodeNameTextarea).vm.$emit('update:modelValue', emittedValue);
         wrapper.findComponent(NodeNameTextarea).vm.$emit('save');
 
         expect(wrapper.emitted('save')).toBeUndefined();
@@ -156,12 +159,13 @@ describe('NodeNameEditor', () => {
     });
 
     it('should emit the latest dimensions of the editor when saving', () => {
+        const wrapper = doShallowMount();
         const emittedWidth = 200;
         const emittedHeight = 100;
-        wrapper.findComponent(NodeNameTextarea).vm.$emit('width-change', emittedWidth);
-        wrapper.findComponent(NodeNameTextarea).vm.$emit('height-change', emittedHeight);
+        wrapper.findComponent(NodeNameTextarea).vm.$emit('widthChange', emittedWidth);
+        wrapper.findComponent(NodeNameTextarea).vm.$emit('heightChange', emittedHeight);
 
-        wrapper.findComponent(NodeNameTextarea).vm.$emit('input', 'new value');
+        wrapper.findComponent(NodeNameTextarea).vm.$emit('update:modelValue', 'new value');
         wrapper.findComponent(NodeNameTextarea).vm.$emit('save');
 
         expect(wrapper.emitted('save')[0][0]).toEqual(expect.objectContaining({
@@ -170,16 +174,18 @@ describe('NodeNameEditor', () => {
     });
 
     it('should show an error message for invalid characters input', async () => {
+        const wrapper = doShallowMount();
         expect(wrapper.find('foreignObject').exists()).toBe(false);
-        await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalid-input');
+        await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalidInput');
         expect(wrapper.find('foreignObject').exists()).toBe(true);
         expect(wrapper.find('foreignObject').text()).toContain('are not allowed and have been removed.');
     });
 
     it('hides error message after some time', async () => {
+        const wrapper = doShallowMount();
         jest.useFakeTimers();
         expect(wrapper.find('foreignObject').exists()).toBe(false);
-        await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalid-input');
+        await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalidInput');
         expect(wrapper.find('foreignObject').exists()).toBe(true);
         jest.runAllTimers();
         await wrapper.vm.$nextTick();
@@ -187,15 +193,17 @@ describe('NodeNameEditor', () => {
     });
 
     it('clears active hide error message timer if another inlaid input occurs', async () => {
+        const wrapper = doShallowMount();
         window.clearTimeout = jest.fn();
-        await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalid-input');
-        await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalid-input');
+        await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalidInput');
+        await wrapper.findComponent(NodeNameTextarea).vm.$emit('invalidInput');
         expect(window.clearTimeout).toBeCalled();
     });
 
     it('updates value of textarea on value prop change', async () => {
-        expect(wrapper.findComponent(NodeNameTextarea).props('value')).toBe('test');
+        const wrapper = doShallowMount();
+        expect(wrapper.findComponent(NodeNameTextarea).props('modelValue')).toBe('test');
         await wrapper.setProps({ value: 'newValue' });
-        expect(wrapper.findComponent(NodeNameTextarea).props('value')).toBe('newValue');
+        expect(wrapper.findComponent(NodeNameTextarea).props('modelValue')).toBe('newValue');
     });
 });

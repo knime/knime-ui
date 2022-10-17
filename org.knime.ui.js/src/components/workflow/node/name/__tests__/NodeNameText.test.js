@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
 
@@ -7,22 +6,15 @@ import AutoSizeForeignObject from '@/components/common/AutoSizeForeignObject.vue
 import NodeNameText from '../NodeNameText.vue';
 
 describe('NodeNameText.vue', () => {
-    const doShallowMount = (propsData = {}, opts = {}) => {
-        const wrapper = shallowMount(NodeNameText, {
-            propsData,
-            mocks: {
-                $shapes
-            },
-            ...opts
-        });
-
-        return wrapper;
-    };
+    const doShallowMount = (props = {}, opts = {}) => mount(NodeNameText, {
+        props,
+        global: {
+            mocks: { $shapes }
+        },
+        ...opts
+    });
 
     beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-
         Object.defineProperty(document, 'fonts', {
             value: { ready: Promise.resolve() }
         });
@@ -33,7 +25,7 @@ describe('NodeNameText.vue', () => {
 
         wrapper.find('.node-name').trigger('dblclick');
 
-        expect(wrapper.emitted('request-edit')).toBeDefined();
+        expect(wrapper.emitted('requestEdit')).toBeDefined();
     });
 
     it('should ignore double click if name is not editable', () => {
@@ -86,8 +78,8 @@ describe('NodeNameText.vue', () => {
     });
 
     it.each([
-        'width-change',
-        'height-change'
+        'widthChange',
+        'heightChange'
     ])('should emit a (%) event', (eventName) => {
         const wrapper = doShallowMount();
 

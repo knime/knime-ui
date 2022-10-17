@@ -38,8 +38,7 @@ describe('Sidebar', () => {
         doShallowMount = () => {
             wrapper = shallowMount(Sidebar, {
                 global: {
-                    plugins: [store],
-                    stubs: { PortalTarget: true }
+                    plugins: [store]
                 }
             });
         };
