@@ -10,13 +10,13 @@ import Connector from '@/components/workflow/connectors/Connector.vue';
 import NodePortActions from './NodePortActions.vue';
 
 const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) => {
-    const isPortFree = toPort.connectedVia.length === 0;
-
-    if (isPortFree) {
-        return true;
-    }
-
     if (targetPortDirection === 'in') {
+        const isPortFree = toPort.connectedVia.length === 0;
+    
+        if (isPortFree) {
+            return true;
+        }
+
         // In ports can only have 1 connection at a time
         const [connectionId] = toPort.connectedVia;
 
@@ -24,7 +24,7 @@ const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) =>
         return connections[connectionId].allowedActions.canDelete;
     }
 
-    return false;
+    return true;
 };
 
 const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {

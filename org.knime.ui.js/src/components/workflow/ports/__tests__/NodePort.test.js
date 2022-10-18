@@ -733,6 +733,25 @@ describe('NodePort', () => {
                     expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
                 });
 
+                test.each([
+                    ['input', 'output'],
+                    ['output', 'input']
+                ])('snaps to free port', async (fromPort, toPort) => {
+                    const targetPort = { ...propsData.port };
+
+                    startDragging([0, 0]);
+                    await wrapper.setProps({ direction: toPort === 'output' ? 'in' : 'out' });
+
+                    let hitTarget = document.createElement('div');
+                    hitTarget.addEventListener('connector-move', (e) => {
+                        e.detail.onSnapCallback({ snapPosition: [-1, -1], targetPort });
+                    });
+
+                    dragAboveTarget(hitTarget, [0, 0]);
+
+                    expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
+                });
+
                 test('cannot snap to a port with an existing and non-deletable connection', async () => {
                     propsData.direction = 'out';
 
