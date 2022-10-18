@@ -32,7 +32,8 @@ export default {
     },
     data() {
         return {
-            windowWidth: 0
+            windowWidth: 0,
+            isHoveredOver: null
         };
     },
     computed: {
@@ -81,10 +82,13 @@ export default {
               v-for="{ name, projectId } in openProjects"
               :key="projectId"
               :class="[ activeProjectId === projectId ? 'active' : null ]"
-              @click.stop="switchWorkflow({ name, projectId })"
+              @click.stop="activeProjectId === projectId ? null : switchWorkflow({ name, projectId })"
+              @mouseover="isHoveredOver = projectId"
+              @mouseleave="isHoveredOver = null"
             >
               <span class="text">{{ truncatedProjectName(name) }}</span>
               <FunctionButton
+                :class="[ isHoveredOver === projectId ? 'visible' : null ]"
                 class="icon"
                 @click.stop="closeWorkflow"
               >
@@ -195,7 +199,7 @@ header {
       & .text {
         color: var(--knime-white);
         font-family: "Roboto Condensed", sans-serif;
-        font-size: 20px;
+        font-size: 18px;
       }
     }
 
@@ -237,13 +241,13 @@ header {
           max-width: 300px;
 
           &:hover {
-            background-color: var(--knime-stone-dark);
+            background-color: var(--knime-masala);
           }
 
           & .text {
             color: var(--knime-white);
             font-family: "Roboto Condensed", sans-serif;
-            font-size: 20px;
+            font-size: 18px;
             padding: 10px 0;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -254,27 +258,27 @@ header {
           /* Close workflow button */
 
           & .icon {
-            border: 0;
-            border-radius: 20px;
-            flex-shrink: 0;
-            margin-left: 5px;
+            margin-left: -20px;
             width: 32px;
-            height: 32px;
             align-self: center;
             align-items: center;
+            border-radius: 0;
 
             & svg {
+              display: none;
+            }
+          }
+
+          & .visible {
+            height: 49px;
+            background: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-masala) 30%);
+
+            & svg {
+              display: block;
               height: 20px;
               width: 20px;
               stroke: var(--knime-white);
               stroke-width: calc(32px / 30); /* get 1px stroke width */
-            }
-
-            &:hover,
-            &:focus {
-              cursor: pointer;
-              background-color: var(--knime-silver-sand-semi);
-              stroke: var(--knime-white);
             }
           }
         }
@@ -283,14 +287,18 @@ header {
           background-color: var(--knime-yellow);
           color: var(--knime-black);
           cursor: inherit;
-          pointer-events: none;
 
           & .text {
             color: var(--knime-black);
           }
 
-          & .icon svg {
-            stroke: var(--knime-black);
+          & .visible {
+            height: 49px;
+            background: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-yellow) 30%);
+
+            & svg {
+              stroke: var(--knime-black);
+            }
           }
 
           &:hover,
@@ -311,7 +319,7 @@ header {
     background-color: var(--knime-black);
     text-align: center;
     height: 100%;
-    margin-right: 24px;
+    margin-right: 25px;
 
     & svg {
       width: 26px;
@@ -321,12 +329,13 @@ header {
     &:hover,
     &:focus {
       cursor: pointer;
-      background-color: var(--knime-silver-sand-semi);
+      background-color: var(--knime-masala);
     }
   }
 
   & #knime-logo.active-logo {
     background-color: var(--knime-yellow);
+    pointer-events: none;
 
     & svg {
       fill: var(--knime-black);
