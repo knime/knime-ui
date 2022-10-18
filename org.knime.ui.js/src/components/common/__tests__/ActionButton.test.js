@@ -14,7 +14,7 @@ describe('ActionButton', () => {
 
     it('renders disabled button with specified location', () => {
         let wrapper = shallowMount(ActionButton, {
-            propsData: {
+            props: {
                 disabled: true,
                 x: 50
             }
@@ -25,7 +25,7 @@ describe('ActionButton', () => {
 
     it('renders primary button', () => {
         let wrapper = shallowMount(ActionButton, {
-            propsData: {
+            props: {
                 primary: true
             }
         });
@@ -54,7 +54,7 @@ describe('ActionButton', () => {
 
     it('doesnt fire event when disabled', () => {
         let wrapper = shallowMount(ActionButton, {
-            propsData: {
+            props: {
                 disabled: true
             }
         });

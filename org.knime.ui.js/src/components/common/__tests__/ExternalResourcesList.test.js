@@ -26,7 +26,7 @@ describe('ExternalResourcesList.vue', () => {
 
     it('should render a placeholder when no links exist', () => {
         const wrapper = shallowMount(ExternalResourcesList, {
-            propsData: { ...props, links: [] }
+            props: { ...props, links: [] }
         });
 
         const linksListComponent = wrapper.findComponent(LinkList);

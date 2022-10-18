@@ -6,7 +6,7 @@ import CloseIcon from '@/assets/cancel.svg';
 import AppHeader from '../AppHeader.vue';
 
 describe('AppHeader.vue', () => {
-    let propsData, doShallowMount, wrapper, storeConfig, $store;
+    let props, doShallowMount, wrapper, storeConfig, $store;
 
     beforeEach(() => {
         wrapper = null;
@@ -27,7 +27,7 @@ describe('AppHeader.vue', () => {
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
-            wrapper = shallowMount(AppHeader, { propsData, global: { plugins: [$store] } });
+            wrapper = shallowMount(AppHeader, { props, global: { plugins: [$store] } });
         };
     });
 

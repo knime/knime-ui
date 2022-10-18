@@ -35,7 +35,7 @@ describe('ZoomMenu', () => {
 
             $store = mockVuexStore(storeConfig);
             wrapper = mountMethod(ZoomMenu, {
-                propsData: props,
+                props,
                 global: { plugins: [$store], mocks: { $shortcuts } }
             });
         };

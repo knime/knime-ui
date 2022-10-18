@@ -141,7 +141,7 @@ describe('PortViewLoader.vue', () => {
         setupGetPortViewMock(RESOURCE_TYPES.VUE_COMPONENT_LIB, mockComponentId, {});
 
         const wrapper = mount(PortViewLoader, {
-            propsData: props,
+            props,
             global: {
                 plugins: [$store],
                 components: { MockComponent }

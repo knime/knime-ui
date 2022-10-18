@@ -20,11 +20,8 @@ initPlugins(app, store);
 app.use(store);
 app.mount('#app');
 
-// map all nuxt-links to router links,
-// since nuxt-link inherits from RouterLink and we don't need use nuxt
-// const RouterLink = app.$options.components.RouterLink;
-// Vue.component('NuxtLink', RouterLink);
-
 // required for dynamically loaded components which will access the Vue instance
 // off of the window object
+// TODO: this is needed to dynamically loaded components. Bring back when external dependencies are migrated
+// e.g: TableView, NodeDialog, PageBuilder
 // window.Vue = Vue;

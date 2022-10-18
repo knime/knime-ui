@@ -7,11 +7,11 @@ import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import ContextMenu from '../ContextMenu.vue';
 
 describe('ContextMenu.vue', () => {
-    let storeConfig, propsData, doMount, wrapper, $store, $shortcuts;
+    let storeConfig, props, doMount, wrapper, $store, $shortcuts;
 
     beforeEach(() => {
         wrapper = null;
-        propsData = {
+        props = {
             position: {
                 x: 10,
                 y: 10
@@ -44,7 +44,7 @@ describe('ContextMenu.vue', () => {
         doMount = () => {
             $store = mockVuexStore(storeConfig);
             wrapper = shallowMount(ContextMenu, {
-                propsData,
+                props,
                 global: {
                     plugins: [$store],
                     mocks: { $shortcuts }

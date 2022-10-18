@@ -83,7 +83,7 @@ const metaNode = {
 };
 
 describe('Node', () => {
-    let propsData, doMount, wrapper, storeConfig, $store;
+    let props, doMount, wrapper, storeConfig, $store;
 
     beforeEach(() => {
         wrapper = null;
@@ -129,7 +129,7 @@ describe('Node', () => {
             }
         };
 
-        propsData = {
+        props = {
             // insert node before mounting
         };
 
@@ -145,7 +145,7 @@ describe('Node', () => {
             };
             $store = mockVuexStore(storeConfig);
             wrapper = mount(Node, {
-                propsData,
+                props,
                 global: {
                     mocks: { $shapes, $colors, $commands, $bus },
                     plugins: [$store],
@@ -166,7 +166,7 @@ describe('Node', () => {
 
     describe('features', () => {
         beforeEach(() => {
-            propsData = JSON.parse(JSON.stringify(commonNode));
+            props = JSON.parse(JSON.stringify(commonNode));
             doMount();
         });
 
@@ -190,11 +190,11 @@ describe('Node', () => {
             doMount();
 
             let decoratorProps = wrapper.findComponent(NodeDecorators).props();
-            expect(propsData).toMatchObject(decoratorProps);
+            expect(props).toMatchObject(decoratorProps);
         });
 
         it('renders ports for metanodes', () => {
-            propsData = { ...metaNode };
+            props = { ...metaNode };
             doMount();
             let nodePorts = wrapper.findComponent(NodePorts);
 
@@ -203,7 +203,7 @@ describe('Node', () => {
         });
 
         it('renders ports for components', () => {
-            propsData = { ...componentNode };
+            props = { ...componentNode };
             doMount();
             let nodePorts = wrapper.findComponent(NodePorts);
 
@@ -212,14 +212,14 @@ describe('Node', () => {
         });
 
         it("doesn't render non-existent node annotation", () => {
-            delete propsData.annotation;
+            delete props.annotation;
             doMount();
 
             expect(wrapper.findComponent(NodeAnnotation).exists()).toBe(false);
         });
 
         it("doesn't render empty node annotation", () => {
-            propsData.annotation.text = '';
+            props.annotation.text = '';
             doMount();
 
             expect(wrapper.findComponent(NodeAnnotation).exists()).toBe(false);
@@ -237,7 +237,7 @@ describe('Node', () => {
         });
 
         it('pushes Metanode annotation up', () => {
-            propsData = { ...metaNode };
+            props = { ...metaNode };
             doMount();
             expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
                 backgroundColor: 'rgb(255, 216, 0)',
@@ -265,7 +265,7 @@ describe('Node', () => {
         });
 
         it('renders metanode state', () => {
-            propsData = { ...metaNode };
+            props = { ...metaNode };
             doMount();
             expect(wrapper.findComponent(NodeTorso).props('executionState')).toBe('EXECUTED');
         });
@@ -284,7 +284,7 @@ describe('Node', () => {
     });
 
     it('opens the node config on double click', async () => {
-        propsData = {
+        props = {
             ...commonNode,
             allowedActions: {
                 canOpenDialog: true
@@ -298,7 +298,7 @@ describe('Node', () => {
 
     describe('Node selection preview', () => {
         beforeEach(() => {
-            propsData =
+            props =
                 {
                     ...commonNode,
                     state: {
@@ -344,7 +344,7 @@ describe('Node', () => {
 
     describe('Node selected', () => {
         beforeEach(() => {
-            propsData =
+            props =
             {
                 ...commonNode,
                 state: {
@@ -482,7 +482,7 @@ describe('Node', () => {
         };
 
         beforeEach(() => {
-            propsData = { ...commonNode };
+            props = { ...commonNode };
             doMount();
         });
 
@@ -588,7 +588,7 @@ describe('Node', () => {
 
     describe('Connector drag & drop', () => {
         beforeEach(() => {
-            propsData = { ...commonNode };
+            props = { ...commonNode };
             doMount();
         });
 
@@ -768,7 +768,7 @@ describe('Node', () => {
 
     describe('Opening containers', () => {
         it('opens metanode on double click', async () => {
-            propsData = { ...metaNode };
+            props = { ...metaNode };
             doMount();
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
@@ -779,7 +779,7 @@ describe('Node', () => {
         });
 
         it('opens component on control-double click', async () => {
-            propsData = { ...componentNode };
+            props = { ...componentNode };
             doMount();
             await wrapper.findComponent(NodeTorso).trigger('dblclick', {
                 ctrlKey: true
@@ -792,7 +792,7 @@ describe('Node', () => {
         });
 
         it('does not open component on double click', async () => {
-            propsData = { ...componentNode };
+            props = { ...componentNode };
             doMount();
             jest.spyOn($store, 'dispatch');
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
@@ -801,7 +801,7 @@ describe('Node', () => {
         });
 
         it('does not open native node on double click', async () => {
-            propsData = { ...nativeNode };
+            props = { ...nativeNode };
             doMount();
             jest.spyOn($store, 'dispatch');
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
@@ -812,7 +812,7 @@ describe('Node', () => {
 
     describe('Node name', () => {
         beforeEach(() => {
-            propsData = { ...commonNode };
+            props = { ...commonNode };
             doMount();
         });
 
