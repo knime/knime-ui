@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
@@ -11,12 +10,7 @@ import WorkflowEmpty from '../WorkflowEmpty.vue';
 import WorkflowCanvas from '../WorkflowCanvas.vue';
 
 describe('Kanvas', () => {
-    let mocks, doShallowMount, wrapper, $store, storeConfig, isWorkflowEmpty;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let doShallowMount, wrapper, $store, storeConfig, isWorkflowEmpty;
 
     beforeEach(() => {
         isWorkflowEmpty = false;
@@ -85,9 +79,8 @@ describe('Kanvas', () => {
 
         $store = mockVuexStore(storeConfig);
 
-        mocks = { $store };
         doShallowMount = () => {
-            wrapper = shallowMount(WorkflowCanvas, { mocks });
+            wrapper = shallowMount(WorkflowCanvas, { global: { plugins: [$store] } });
         };
     });
 
@@ -205,8 +198,7 @@ describe('Kanvas', () => {
         storeConfig.application.getters.workflowCanvasState = () => ({});
         $store = mockVuexStore(storeConfig);
 
-        mocks = { $store };
-        shallowMount(WorkflowCanvas, { mocks });
+        shallowMount(WorkflowCanvas, { global: { plugins: [$store] } });
         await Vue.nextTick();
 
         expect(storeConfig.canvas.actions.fillScreen).not.toHaveBeenCalled();

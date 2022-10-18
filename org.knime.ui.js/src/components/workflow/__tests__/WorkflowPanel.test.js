@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
@@ -10,16 +9,11 @@ import PortTypeMenu from '@/components/workflow/ports/PortTypeMenu.vue';
 import WorkflowPanel from '../WorkflowPanel.vue';
 
 describe('WorkflowPanel', () => {
-    let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, storeConfig;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let props, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, storeConfig;
 
     beforeEach(() => {
         wrapper = null;
-        propsData = {};
+        props = {};
         workflow = {
             info: {
                 containerType: 'project',
@@ -60,9 +54,8 @@ describe('WorkflowPanel', () => {
 
         $store = mockVuexStore(storeConfig);
 
-        mocks = { $store };
         doShallowMount = () => {
-            wrapper = shallowMount(WorkflowPanel, { propsData, mocks });
+            wrapper = shallowMount(WorkflowPanel, { props, global: { plugins: [$store] } });
         };
     });
 

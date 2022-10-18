@@ -1,8 +1,8 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
+import { $bus } from '@/plugins/event-bus';
 import * as $shapes from '@/style/shapes.mjs';
 import * as $colors from '@/style/colors.mjs';
 
@@ -20,22 +20,12 @@ jest.mock('@/util/rectangleSelection', () => ({
     findNodesInsideOfRectangle: jest.fn()
 }));
 
-const parentComponent = {
-    name: 'parentStub',
-    template: '<div></div>'
-};
-
 describe('SelectionRectangle', () => {
-    let wrapper, propsData, mocks, doShallowMount, $store, workflow, storeConfig,
+    let wrapper, props, doShallowMount, $store, workflow, storeConfig,
         pointerDown, pointerUp, pointerMove, pointerId;
 
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     beforeEach(() => {
-        propsData = {};
+        props = {};
         workflow = {
             nodes: {}
         };
@@ -70,16 +60,18 @@ describe('SelectionRectangle', () => {
 
         doShallowMount = () => {
             $store = mockVuexStore(storeConfig);
-            mocks = {
-                $store,
-                $shapes,
-                $colors
-            };
             wrapper = shallowMount(
                 SelectionRectangle, {
-                    propsData,
-                    mocks,
-                    parentComponent
+                    props,
+                    // parentComponent,
+                    global: {
+                        plugins: [$store],
+                        mocks: {
+                            $shapes,
+                            $colors,
+                            $bus
+                        }
+                    }
                 }
             );
 
@@ -93,7 +85,7 @@ describe('SelectionRectangle', () => {
             clientY,
             shiftKey
         }) => {
-            wrapper.vm.$parent.$emit('selection-pointerdown', {
+            $bus.emit('selection-pointerdown', {
                 pointerId: pointerId || 1,
                 clientX,
                 clientY,
@@ -114,7 +106,7 @@ describe('SelectionRectangle', () => {
             clientX,
             clientY
         }) => {
-            wrapper.vm.$parent.$emit('selection-pointermove', {
+            $bus.emit('selection-pointermove', {
                 pointerId: pointerId || 1,
                 clientX,
                 clientY,
@@ -131,7 +123,7 @@ describe('SelectionRectangle', () => {
             jest.useFakeTimers(); // implementation contains setTimout
 
             // stop also changes global dragging state
-            wrapper.vm.$parent.$emit('selection-pointerup', {
+            $bus.emit('selection-pointerup', {
                 pointerId: pointerId || 1,
                 target: {
                     releasePointerCapture: jest.fn()
@@ -190,7 +182,7 @@ describe('SelectionRectangle', () => {
         });
 
         it('shows selection preview for included nodes', () => {
-            expect(wrapper.emitted('node-selection-preview')).toStrictEqual([[{
+            expect(wrapper.emitted('nodeSelectionPreview')).toStrictEqual([[{
                 nodeId: 'inside-1',
                 type: 'show'
             }], [{
@@ -208,7 +200,7 @@ describe('SelectionRectangle', () => {
             pointerMove({ clientX: 0, clientY: 0 });
             await Vue.nextTick();
 
-            const selectionPreviewEvents = wrapper.emitted('node-selection-preview');
+            const selectionPreviewEvents = wrapper.emitted('nodeSelectionPreview');
             // skip first two events that select those nodes
             expect(selectionPreviewEvents.slice(2)).toStrictEqual([
                 [{
@@ -249,7 +241,7 @@ describe('SelectionRectangle', () => {
         });
 
         it('deselects already selected nodes with preview', () => {
-            expect(wrapper.emitted('node-selection-preview')).toStrictEqual([
+            expect(wrapper.emitted('nodeSelectionPreview')).toStrictEqual([
                 [{
                     nodeId: 'inside-1',
                     type: 'hide'
@@ -264,7 +256,7 @@ describe('SelectionRectangle', () => {
         it('pointerup clears selection preview', () => {
             pointerUp();
 
-            expect(wrapper.emitted('node-selection-preview').slice(2)).toStrictEqual([
+            expect(wrapper.emitted('nodeSelectionPreview').slice(2)).toStrictEqual([
                 [{
                     nodeId: 'inside-1',
                     type: 'clear'
@@ -296,7 +288,7 @@ describe('SelectionRectangle', () => {
             pointerMove({ clientX: 36, clientY: 36 });
             await Vue.nextTick();
 
-            expect(wrapper.emitted('node-selection-preview')).toStrictEqual([
+            expect(wrapper.emitted('nodeSelectionPreview')).toStrictEqual([
                 [{
                     nodeId: 'inside-1',
                     type: 'show'
@@ -316,10 +308,11 @@ describe('SelectionRectangle', () => {
 
     describe('non actions', () => {
         it('unregisters events on beforeUnmount', () => {
+            jest.spyOn($bus, 'off');
             doShallowMount();
             wrapper.vm.$parent.$off = jest.fn();
-            wrapper.destroy();
-            expect(wrapper.vm.$parent.$off).toHaveBeenCalledTimes(4);
+            wrapper.unmount();
+            expect($bus.off).toHaveBeenCalledTimes(4);
         });
 
         it('does nothing if move is called but selection is not active', async () => {
@@ -328,7 +321,7 @@ describe('SelectionRectangle', () => {
             pointerMove({ clientX: 300, clientY: 300 });
             await Vue.nextTick();
             pointerUp();
-            expect(wrapper.emitted('node-selection-preview')).toBeFalsy();
+            expect(wrapper.emitted('nodeSelectionPreview')).toBeFalsy();
             expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledTimes(0);
         });
 
@@ -340,7 +333,7 @@ describe('SelectionRectangle', () => {
             pointerMove({ clientX: 300, clientY: 300 });
             await Vue.nextTick();
             pointerUp();
-            expect(wrapper.emitted('node-selection-preview')).toBeFalsy();
+            expect(wrapper.emitted('nodeSelectionPreview')).toBeFalsy();
             expect(storeConfig.selection.actions.selectNodes).toHaveBeenCalledTimes(0);
         });
     });

@@ -13,8 +13,8 @@ describe('OpenSourceCreditsModal', () => {
 
         doMount = () => {
             wrapper = mount(OpenSourceCreditsModal, {
-                stubs: {
-                    FocusTrap: true
+                global: {
+                    stubs: { FocusTrap: true }
                 }
             });
         };
@@ -29,9 +29,10 @@ describe('OpenSourceCreditsModal', () => {
 
     it('activates modal when button is clicked', async () => {
         doMount();
-
-        expect(wrapper.vm.modalActive).toBe(false);
-        await wrapper.findComponent(Button).trigger('click');
-        expect(wrapper.findComponent(Modal).attributes().active).toBe('true');
+        
+        expect(wrapper.findComponent(Modal).props('active')).toBe(false);
+        await wrapper.findComponent(Button).vm.$emit('click');
+        
+        expect(wrapper.findComponent(Modal).props('active')).toBe(true);
     });
 });

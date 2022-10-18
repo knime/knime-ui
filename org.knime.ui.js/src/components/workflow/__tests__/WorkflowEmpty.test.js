@@ -1,49 +1,35 @@
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 import WorkflowEmpty from '../WorkflowEmpty.vue';
 
 describe('WorkflowEmpty', () => {
-    let mocks, doShallowMount, wrapper, $store, storeConfig, containerSize;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
-    beforeEach(() => {
-        containerSize = {
+    const doShallowMount = () => {
+        const containerSize = {
             width: 1000,
             height: 1000
         };
-
-        wrapper = null;
-
-        storeConfig = {
+    
+        const storeConfig = {
             canvas: {
                 state: {
                     containerSize
                 }
             }
         };
-
-        $store = mockVuexStore(storeConfig);
-
-        mocks = { $store };
-        doShallowMount = () => {
-            wrapper = shallowMount(WorkflowEmpty, { mocks });
-        };
-    });
+    
+        const $store = mockVuexStore(storeConfig);
+        return shallowMount(WorkflowEmpty, { global: { plugins: [$store] } });
+    };
 
     it('renders text', () => {
-        doShallowMount();
-
-        expect(wrapper.text()).toContain('Start building your workflow by dropping your nodes here.');
+        const wrapper = doShallowMount();
+        expect(wrapper.findAll('text')[0].text()).toMatch('Start building your workflow by');
+        expect(wrapper.findAll('text')[1].text()).toMatch('dropping your nodes here.');
     });
 
     it('calculates width and height of rect based on size of the viewBox', () => {
-        doShallowMount();
+        const wrapper = doShallowMount();
 
         let rectangleProps = wrapper.find('rect').attributes();
         expect(Number(rectangleProps.x)).toBe(-500 + 25);

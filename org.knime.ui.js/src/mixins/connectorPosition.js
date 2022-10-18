@@ -71,7 +71,7 @@ export const connectorPosition = {
          * @returns {Array} [x, y] coordinates
          */
         start() {
-            return (this.sourceNode && this.getEndPointCoordinates('source')) || this.absolutePoint;
+            return (this.sourceNode && this.getEndPointCoordinates('source')) || this.absolutePoint || [];
         },
         /**
          * The end coordinates of this connector
@@ -79,7 +79,7 @@ export const connectorPosition = {
          * @returns {Array} [x, y] coordinates
          */
         end() {
-            return (this.destNode && this.getEndPointCoordinates('dest')) || this.absolutePoint;
+            return (this.destNode && this.getEndPointCoordinates('dest')) || this.absolutePoint || [];
         },
         sourceNodeObject() {
             return this.$store.state.workflow.activeWorkflow.nodes[this.sourceNode];
