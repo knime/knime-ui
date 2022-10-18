@@ -119,7 +119,7 @@ describe('NodePort', () => {
         let port = wrapper.findComponent(Port);
         expect(port.exists()).toBe(true);
         expect(port.props('port')).toStrictEqual(propsData.port);
-        
+
         expect(wrapper.findComponent(Connector).exists()).toBe(false);
         expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
 
@@ -133,11 +133,11 @@ describe('NodePort', () => {
 
         it('shows tooltips on table ports', async () => {
             doShallowMount();
-    
+
             wrapper.trigger('mouseenter');
             await Vue.nextTick();
             jest.runAllTimers();
-    
+
             expect(storeConfig.workflow.mutations.setTooltip).toHaveBeenCalledWith(expect.anything(), {
                 anchorPoint: { x: 123, y: 456 },
                 text: 'text',
@@ -150,20 +150,20 @@ describe('NodePort', () => {
                 hoverable: false,
                 gap: 6
             });
-    
+
             wrapper.trigger('mouseleave');
             await Vue.nextTick();
             expect(storeConfig.workflow.mutations.setTooltip).toHaveBeenCalledWith(expect.anything(), null);
         });
-    
+
         it('shows tooltips for non-table ports', async () => {
             propsData.port.typeId = 'flowVariable';
-    
+
             doShallowMount();
             wrapper.trigger('mouseenter');
             jest.runAllTimers();
             await Vue.nextTick();
-    
+
             expect(storeConfig.workflow.mutations.setTooltip).toHaveBeenCalledWith(expect.anything(), {
                 anchorPoint: { x: 123, y: 456 },
                 text: 'text',
@@ -538,6 +538,133 @@ describe('NodePort', () => {
                 expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
             });
 
+            describe('Placeholder ports', () => {
+                test('table snaps to placeholder port of metanode/component', async () => {
+                    const targetPortGroups = null; // null = metanode or component
+                    const targetPort = { isPlaceHolderPort: true };
+
+                    startDragging([0, 0]);
+                    // start port
+                    await wrapper.setProps({
+                        port: {
+                            ...propsData.port,
+                            typeId: 'table'
+                        }
+                    });
+
+                    let hitTarget = document.createElement('div');
+                    let snapCallbackResult;
+                    hitTarget.addEventListener('connector-move', (e) => {
+                        snapCallbackResult = e.detail.onSnapCallback({
+                            snapPosition: [-1, -1],
+                            targetPortGroups,
+                            targetPort
+                        });
+                    });
+
+                    dragAboveTarget(hitTarget, [0, 0]);
+
+                    expect(snapCallbackResult).toMatchObject({
+                        didSnap: true,
+                        createPortFromPlaceholder: {
+                            portGroup: null,
+                            typeId: 'table'
+                        }
+                    });
+
+                    // absolutePoint should be the snapPosition if it did snap
+                    expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
+                });
+
+                test('table snaps to native node output placeholder', async () => {
+                    const targetPortGroups = {
+                        'My Port Group': {
+                            canAddInPort: false,
+                            canAddOutPort: true,
+                            supportedPortTypeIds: ['generic', 'table']
+                        }
+                    };
+                    const targetPort = { isPlaceHolderPort: true };
+
+                    startDragging([0, 0]);
+                    // start port
+                    await wrapper.setProps({
+                        direction: 'in',
+                        port: {
+                            ...propsData.port,
+                            typeId: 'table'
+                        }
+                    });
+
+                    let hitTarget = document.createElement('div');
+                    let snapCallbackResult;
+                    hitTarget.addEventListener('connector-move', (e) => {
+                        snapCallbackResult = e.detail.onSnapCallback({
+                            snapPosition: [-1, -1],
+                            targetPortGroups,
+                            targetPort
+                        });
+                    });
+
+                    dragAboveTarget(hitTarget, [0, 0]);
+
+                    expect(snapCallbackResult).toMatchObject({
+                        didSnap: true,
+                        createPortFromPlaceholder: {
+                            portGroup: 'My Port Group',
+                            typeId: 'table'
+                        }
+                    });
+
+                    // absolutePoint should be the snapPosition if it did snap
+                    expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
+                });
+
+                test('snaps to native node with a compatible type output placeholder', async () => {
+                    const targetPortGroups = {
+                        'My Port Group': {
+                            canAddInPort: true,
+                            canAddOutPort: false,
+                            supportedPortTypeIds: ['specific', 'generic']
+                        }
+                    };
+                    const targetPort = { isPlaceHolderPort: true };
+
+                    startDragging([0, 0]);
+                    // start port
+                    await wrapper.setProps({
+                        direction: 'out',
+                        port: {
+                            ...propsData.port,
+                            typeId: 'flowVariable'
+                        }
+                    });
+
+                    let hitTarget = document.createElement('div');
+                    let snapCallbackResult;
+                    hitTarget.addEventListener('connector-move', (e) => {
+                        snapCallbackResult = e.detail.onSnapCallback({
+                            snapPosition: [-1, -1],
+                            targetPortGroups,
+                            targetPort
+                        });
+                    });
+
+                    dragAboveTarget(hitTarget, [0, 0]);
+
+                    expect(snapCallbackResult).toMatchObject({
+                        didSnap: true,
+                        createPortFromPlaceholder: {
+                            portGroup: 'My Port Group',
+                            typeId: 'specific'
+                        }
+                    });
+
+                    // absolutePoint should be the snapPosition if it did snap
+                    expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
+                });
+            });
+
             describe('Snap to compatible ports', () => {
                 test.each([
                     ['from TABLE to GENERIC', { sourceTypeId: 'table', targetTypeId: 'generic' }],
@@ -550,14 +677,14 @@ describe('NodePort', () => {
                     };
                     startDragging([0, 0]);
                     await wrapper.setProps({ port: { ...propsData.port, typeId: sourceTypeId } });
-    
+
                     let hitTarget = document.createElement('div');
                     hitTarget.addEventListener('connector-move', (e) => {
                         e.detail.onSnapCallback({ snapPosition: [-1, -1], targetPort });
                     });
-    
+
                     dragAboveTarget(hitTarget, [0, 0]);
-    
+
                     expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([0, 0]);
                 });
 
@@ -606,9 +733,28 @@ describe('NodePort', () => {
                     expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
                 });
 
+                test.each([
+                    ['input', 'output'],
+                    ['output', 'input']
+                ])('snaps to free port', async (fromPort, toPort) => {
+                    const targetPort = { ...propsData.port };
+
+                    startDragging([0, 0]);
+                    await wrapper.setProps({ direction: toPort === 'output' ? 'in' : 'out' });
+
+                    let hitTarget = document.createElement('div');
+                    hitTarget.addEventListener('connector-move', (e) => {
+                        e.detail.onSnapCallback({ snapPosition: [-1, -1], targetPort });
+                    });
+
+                    dragAboveTarget(hitTarget, [0, 0]);
+
+                    expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([-1, -1]);
+                });
+
                 test('cannot snap to a port with an existing and non-deletable connection', async () => {
                     propsData.direction = 'out';
-                    
+
                     storeConfig.workflow.state.activeWorkflow = {
                         connections: {
                             'mock:connection': {
@@ -616,7 +762,7 @@ describe('NodePort', () => {
                             }
                         }
                     };
-                    
+
                     const port = { ...propsData.port, typeId: 'other', connectedVia: ['mock:connection'] };
 
                     startDragging([0, 0]);
@@ -644,7 +790,7 @@ describe('NodePort', () => {
         test('clicking a port after a connector was drawn doesnt emit to parent', async () => {
             startDragging();
             await wrapper.findComponent(Port).trigger('click');
-            
+
             expect(wrapper.emitted('click')).toBeFalsy();
         });
 
@@ -657,10 +803,8 @@ describe('NodePort', () => {
                 dropOnTarget();
 
                 expect(hitTarget._connectorDropEvent.detail).toEqual(expect.objectContaining({
-                    destNode: 'node:1',
-                    destPort: 0,
-                    sourceNode: undefined,
-                    sourcePort: undefined
+                    startNode: 'node:1',
+                    startPort: 0
                 }));
 
                 let rootWrapper = createWrapper(wrapper.vm.$root);
@@ -682,10 +826,8 @@ describe('NodePort', () => {
                 dropOnTarget();
 
                 expect(hitTarget._connectorDropEvent.detail).toEqual(expect.objectContaining({
-                    sourceNode: 'node:1',
-                    sourcePort: 0,
-                    destNode: undefined,
-                    destPort: undefined
+                    startNode: 'node:1',
+                    startPort: 0
                 }));
 
                 let rootWrapper = createWrapper(wrapper.vm.$root);
@@ -753,7 +895,7 @@ describe('NodePort', () => {
         test('closing PortActionMenu leads to deselection', () => {
             doShallowMount();
 
-        
+
             expect(wrapper.emitted('deselect')).toBeFalsy();
             wrapper.findComponent(NodePortActions).vm.$emit('close');
 
@@ -764,7 +906,7 @@ describe('NodePort', () => {
             doShallowMount();
 
             expect(wrapper.emitted('click')).toBeFalsy();
-            
+
             wrapper.findComponent(Port).trigger('click');
             expect(wrapper.emitted('click')).toBeTruthy();
         });
@@ -774,7 +916,7 @@ describe('NodePort', () => {
 
             expect(wrapper.findComponent(Port).classes()).not.toContain('hoverable-port');
         });
-        
+
         it('should dispatch an action to remove port when the delete action button is clicked', () => {
             doShallowMount();
 

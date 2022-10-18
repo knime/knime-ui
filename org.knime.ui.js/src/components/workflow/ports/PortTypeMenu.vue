@@ -11,10 +11,6 @@ import SearchBar from '@/components/common/SearchBar.vue';
 const isPortGroupWithSinglePort = (portGroups, groupName) => portGroups[groupName].supportedPortTypeIds.length === 1;
 const portNameSizeThreshold = 20;
 
-/**
- * ContextMenu offers actions for the Kanvas based on the selected nodes.
- */
-
 export default {
     components: {
         FloatingMenu,
@@ -62,7 +58,7 @@ export default {
 
             return `Add ${this.side === 'input' ? 'Input' : 'Output'} Port`;
         },
-        
+
         adjustedPosition() {
             // for zoom > 100%, the y-position of the menu has to be adjusted for the growing add-port-button
             const verticalShift = this.zoomFactor > 1
@@ -79,7 +75,7 @@ export default {
             const searchTypeIds = this.portTypesInSelectedGroup
                 ? this.portTypesInSelectedGroup
                 : Object.keys(this.availablePortTypes);
-            
+
             const suggestedTypeIds = this.portTypesInSelectedGroup
                 ? this.suggestedPortTypes.filter(typeId => this.portTypesInSelectedGroup.includes(typeId))
                 : this.suggestedPortTypes;
@@ -94,7 +90,7 @@ export default {
         searchResults() {
             return this.searchPortsFunction(this.searchQuery);
         },
-        
+
         menuItems() {
             if (this.portGroups && !this.selectedPortGroup) {
                 return Object.entries(this.portGroups)
@@ -158,11 +154,11 @@ export default {
                     this.emitPortClick({ typeId, portGroup: item.text });
                     return;
                 }
-            
+
                 this.selectedPortGroup = item.text;
             }
         },
-        
+
         onSearchBarDown() {
             this.$refs.searchResults.focusFirst();
         },
@@ -170,7 +166,7 @@ export default {
         onSearchBarUp() {
             this.$refs.searchResults.focusLast();
         },
-        
+
         onSearchResultsWrapAround(e) {
             e.preventDefault();
             this.$refs.searchBar?.focus();
