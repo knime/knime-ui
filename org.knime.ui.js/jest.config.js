@@ -45,7 +45,7 @@ module.exports = {
     },
     transformIgnorePatterns: [
         // ignore node_module packages for transform except packages from the @knime scope
-        '/node_modules\/(?!@knime/*)(.*)'
+        '/node_modules/(?!@knime/*)(.*)'
     ],
     reporters: ['default', ['jest-junit', { outputDirectory: './coverage', reportTestSuiteErrors: true }]],
     coverageReporters: ['lcov', 'text'],
