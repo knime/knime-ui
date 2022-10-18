@@ -73,7 +73,8 @@ describe('Kanvas', () => {
                     )
                 },
                 mutations: {
-                    clearScrollContainerElement: jest.fn()
+                    clearScrollContainerElement: jest.fn(),
+                    setSuggestPanning: jest.fn()
                 }
             },
             workflow: {
@@ -144,16 +145,24 @@ describe('Kanvas', () => {
     });
 
     describe('Panning', () => {
-        it('Suggests Panning', async () => {
+        it('suggests panning', async () => {
             doShallowMount();
+
+            expect(wrapper.element.className).not.toMatch('panning');
 
             $store.state.canvas.suggestPanning = true;
             await Vue.nextTick();
             expect(wrapper.element.className).toMatch('panning');
+        });
 
-            $store.state.canvas.suggestPanning = false;
-            await Vue.nextTick();
-            expect(wrapper.element.className).not.toMatch('panning');
+        it('stops suggesting panning', async () => {
+            doShallowMount();
+
+            await wrapper.trigger('keypress.space');
+            expect(storeConfig.canvas.mutations.setSuggestPanning).toBeCalledWith(expect.anything(), true);
+
+            await wrapper.trigger('keyup.space');
+            expect(storeConfig.canvas.mutations.setSuggestPanning).toBeCalledWith(expect.anything(), false);
         });
 
         it('pans', async () => {

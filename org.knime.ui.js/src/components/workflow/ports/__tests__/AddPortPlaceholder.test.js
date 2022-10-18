@@ -16,6 +16,8 @@ describe('PortTypeMenu.vue', () => {
             position: [10, 10],
             side: 'output',
             nodeId: 'node-id',
+            targeted: false,
+            targetPort: null,
             portGroups: { input: { supportedPortTypeIds: ['type1', 'type2'] } }
         };
         provide = {
@@ -38,7 +40,7 @@ describe('PortTypeMenu.vue', () => {
 
         test('Add Port Button', () => {
             doMount();
-            
+
             let addPortButton = wrapper.find('.add-port-icon');
 
             expect(addPortButton.classes()).not.toContain('active');
@@ -51,6 +53,17 @@ describe('PortTypeMenu.vue', () => {
 
             wrapper.find('.add-port-icon').trigger('click');
             expect(wrapper.emitted('addPort')).toStrictEqual([[{ portGroup: 'input', typeId: 'table' }]]);
+        });
+
+        it('uses targetPort as preview port if placeholder is targeted', async () => {
+            let targetPort = { typeId: 'targetTypeId' };
+            doMount();
+
+            expect(wrapper.find('.add-port-icon').exists()).toBe(true);
+            await wrapper.setProps({ targeted: true, targetPort });
+
+            expect(wrapper.find('.add-port-icon').exists()).toBe(false);
+            expect(wrapper.findComponent(Port).props('port')).toStrictEqual(targetPort);
         });
 
         describe('with open menu', () => {
@@ -68,7 +81,7 @@ describe('PortTypeMenu.vue', () => {
                 // test open-port-type-menu event
                 let dispatchCall = wrapper.element.dispatchEvent.mock.calls[0];
                 let [openEvent] = dispatchCall;
-                
+
                 expect(openEvent.bubbles).toBe(true);
                 expect(openEvent.type).toBe('open-port-type-menu');
                 expect(openEvent.detail).toStrictEqual({
@@ -87,12 +100,12 @@ describe('PortTypeMenu.vue', () => {
 
                 callbacks = openEvent.detail.events;
             });
-            
+
             const testCloseMenu = () => {
                 let callsToDispatch = wrapper.element.dispatchEvent.mock.calls;
                 let dispatchCall = callsToDispatch[callsToDispatch.length - 1];
                 let [closeEvent] = dispatchCall;
-                
+
                 expect(closeEvent.bubbles).toBe(true);
                 expect(closeEvent.type).toBe('close-port-type-menu');
                 expect(closeEvent.detail).toStrictEqual({
@@ -164,7 +177,7 @@ describe('PortTypeMenu.vue', () => {
                 await Vue.nextTick();
                 expect(wrapper.vm.transitionEnabled).toBe(true);
             });
-            
+
             test('click on item emits event', () => {
                 callbacks['item-click']({ typeId: 'table' });
                 

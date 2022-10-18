@@ -34,6 +34,16 @@ export default {
         portGroups: {
             type: Object,
             default: null
+        },
+        /** if true, the placeholder will be replaced with a preview of the targetPort */
+        targeted: {
+            type: Boolean,
+            default: false
+        },
+        /** object that contains information which port to highlight */
+        targetPort: {
+            type: Object,
+            default: null
         }
     },
     emits: ['addPort'],
@@ -42,24 +52,26 @@ export default {
         transitionEnabled: true,
 
         /*
-         * if defined, previewPort is the currently active port of the menu.
-         * If undefined, the add-port icon is rendered.
+         * if defined, selectedPort is the currently active port of the menu.
          */
-        previewPort: null
+        selectedPort: null
     }),
     computed: {
         addPortPlaceholderPath: () => addPortPlaceholderPath,
-
         validPortGroups() {
             if (!this.portGroups) {
                 return null;
             }
-            
+
             return Object
                 .entries(this.portGroups)
                 .filter(([_, group]) => group.canAddInPort || group.canAddOutPort)
                 // map back to an object structure after filtering to match the api object shape
                 .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+        },
+        previewPort() {
+            // show either the selected port of the menu or the targeted port for drag & drop to this placeholder
+            return this.targeted ? this.targetPort : this.selectedPort;
         }
     },
     watch: {
@@ -114,7 +126,7 @@ export default {
         },
         onClick() {
             const portGroups = Object.values(this.validPortGroups || {});
-            
+
             if (portGroups.length === 1) {
                 const { supportedPortTypeIds } = portGroups[0];
 
@@ -131,20 +143,20 @@ export default {
         onRequestClose(item) {
             if (!item) {
                 // If menu closes without selecting an item (eg. when pressing esc), reset preview
-                this.previewPort = null;
+                this.selectedPort = null;
             }
 
             this.isMenuOpen = false;
         },
 
         onItemActive(item) {
-            this.previewPort = item?.port;
+            this.selectedPort = item?.port;
         },
 
         onItemClick({ typeId, portGroup }) {
             // directly switch back to add-port icon
             this.transitionEnabled = false;
-            this.previewPort = null;
+            this.selectedPort = null;
 
             this.$emit('addPort', { typeId, portGroup });
             
@@ -164,9 +176,10 @@ export default {
         :key="previewPort.typeId"
         :port="previewPort"
       />
+      <!-- placeholder plus icon -->
       <g
         v-else
-        :class="['add-port-icon',{
+        :class="['add-port-icon', {
           'active': isMenuOpen
         }]"
         @click="onClick"

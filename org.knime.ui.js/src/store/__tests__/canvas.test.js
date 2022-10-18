@@ -74,7 +74,6 @@ describe('canvas store', () => {
     test('suggest panning', () => {
         store.commit('canvas/setSuggestPanning', true);
         expect(store.state.canvas.suggestPanning).toBe(true);
-
         store.commit('canvas/setSuggestPanning', false);
         expect(store.state.canvas.suggestPanning).toBe(false);
     });

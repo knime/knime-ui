@@ -128,7 +128,7 @@ export default {
     fill: var(--knime-silver-sand);
     stroke: var(--knime-silver-sand);
   }
-  
+
   & path {
     stroke: var(--knime-silver-sand);
   }

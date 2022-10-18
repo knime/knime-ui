@@ -4,6 +4,7 @@ import { debounce } from 'lodash';
 import throttle from 'raf-throttle';
 
 export const RESIZE_DEBOUNCE = 100;
+const blacklistTagNames = /^(input|textarea|select)$/i;
 
 export default {
     emits: ['containerSizeChanged'],
@@ -38,7 +39,7 @@ export default {
     methods: {
         ...mapActions('canvas', ['initScrollContainerElement', 'updateContainerSize', 'zoomAroundPointer',
             'contentBoundsChanged']),
-        ...mapMutations('canvas', ['clearScrollContainerElement']),
+        ...mapMutations('canvas', ['clearScrollContainerElement', 'setSuggestPanning']),
 
         initResizeObserver() {
             // updating the container size and recalculating the canvas is debounced.
@@ -88,14 +89,25 @@ export default {
         /*
             Panning
         */
+        suggestPan(e) {
+            if (blacklistTagNames.test(e.target.tagName)) {
+                return;
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
+            this.setSuggestPanning(true);
+        },
         beginPan(e) {
             if (!this.interactionsEnabled) {
                 return;
             }
 
-            this.isPanning = true;
-            this.panningOffset = [e.screenX, e.screenY];
-            this.$el.setPointerCapture(e.pointerId);
+            if (this.suggestPanning || e.button === 1) {
+                this.isPanning = true;
+                this.panningOffset = [e.screenX, e.screenY];
+                this.$el.setPointerCapture(e.pointerId);
+            }
         },
         movePan: throttle(function (e) {
             /* eslint-disable no-invalid-this */
@@ -107,6 +119,10 @@ export default {
             }
             /* eslint-enable no-invalid-this */
         }),
+        stopSuggestingPanning(e) {
+            this.setSuggestPanning(false);
+            this.isPanning = false;
+        },
         stopPan(e) {
             if (this.isPanning) {
                 this.isPanning = false;
@@ -128,9 +144,11 @@ export default {
     }]"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
+    @keypress.space.once="suggestPan"
+    @keyup.space="stopSuggestingPanning"
     @pointerdown.middle="beginPan"
+    @pointerdown.left="beginPan"
     @pointerup.middle="stopPan"
-    @pointerdown.left.alt="beginPan"
     @pointerup.left="stopPan"
     @pointermove="movePan"
   >
