@@ -1,16 +1,12 @@
 import { clear as clearUserAgent, mockUserAgent } from 'jest-useragent-mock';
 
 describe('Shortcuts Plugin', () => {
-    let loadPlugin, $shortcuts, context, userAgent;
-    const mockInject = (key, value) => {
-        $shortcuts = value;
-    };
+    let loadPlugin, $shortcuts, userAgent;
+   
+    const mockApp = { config: { globalProperties: {} } };
+    const mockStore = { isDummy: true };
 
     beforeEach(() => {
-        context = {
-            store: { /* new object */ }
-        };
-
         loadPlugin = async () => {
             jest.mock('@/shortcuts', () => ({
                 crazyHotkey: {
@@ -25,7 +21,8 @@ describe('Shortcuts Plugin', () => {
             mockUserAgent(userAgent);
             const { default: shortcutPlugin } = await import('@/plugins/shortcuts');
 
-            shortcutPlugin(context, mockInject);
+            shortcutPlugin(mockApp, mockStore);
+            $shortcuts = mockApp.config.globalProperties.$shortcuts;
         };
     });
 
@@ -93,7 +90,7 @@ describe('Shortcuts Plugin', () => {
             shortcut.condition.mockReturnValue(value);
 
             expect($shortcuts.isEnabled('crazyHotkey')).toBe(value);
-            expect(shortcut.condition).toHaveBeenCalledWith({ $store: context.store });
+            expect(shortcut.condition).toHaveBeenCalledWith({ $store: mockStore });
         });
 
         test('shortcut without condition is enabled', () => {
@@ -106,7 +103,7 @@ describe('Shortcuts Plugin', () => {
             $shortcuts.dispatch('crazyHotkey', { mockExtraPayload: true });
 
             expect(shortcut.execute).toHaveBeenCalledWith({
-                $store: context.store,
+                $store: mockStore,
                 eventDetail: { mockExtraPayload: true }
             });
         });

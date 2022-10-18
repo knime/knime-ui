@@ -27,7 +27,7 @@ describe('Event Plugin', () => {
         storeMock = {
             dispatch: jest.fn()
         };
-        eventsPlugin({ store: storeMock });
+        eventsPlugin(null, storeMock);
     });
 
     test('Fixed Events', () => {

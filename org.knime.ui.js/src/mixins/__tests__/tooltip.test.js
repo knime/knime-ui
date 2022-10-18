@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 
@@ -9,11 +8,6 @@ import { entryDelay, tooltip } from '../tooltip';
 let wrapper, setTooltipMock, setTimeoutMock;
 
 describe('Tooltip Mixin', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     beforeEach(() => {
         setTimeoutMock = jest.fn().mockImplementation(fn => {
             fn();
@@ -44,19 +38,19 @@ describe('Tooltip Mixin', () => {
         };
 
         let $store = mockVuexStore(storeConfig);
-        wrapper = shallowMount(Component, { mocks: { $store } });
+        wrapper = shallowMount(Component, { global: { plugins: [$store] } });
     });
 
     it('removes event handlers', () => {
         let spy = jest.spyOn(wrapper.element, 'removeEventListener');
-        wrapper.destroy();
+        wrapper.unmount();
         expect(spy).toHaveBeenCalledWith('mouseenter', wrapper.vm.onTooltipMouseEnter);
         expect(spy).toHaveBeenCalledWith('mouseleave', wrapper.vm.onTooltipMouseLeave);
     });
 
     describe('destruction closes tooltip', () => {
         test('tooltip is not open', () => {
-            wrapper.destroy();
+            wrapper.unmount();
             expect(setTooltipMock).not.toHaveBeenCalled();
         });
 
@@ -64,7 +58,7 @@ describe('Tooltip Mixin', () => {
             wrapper.trigger('mouseenter');
 
             await Vue.nextTick();
-            wrapper.destroy();
+            wrapper.unmount();
 
             expect(setTooltipMock).toHaveBeenCalledWith(expect.anything(), null);
         });

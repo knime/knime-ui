@@ -1,7 +1,7 @@
 import { registerEventHandlers } from '@api';
 import { notifyPatch } from '@/util/event-syncer';
 
-export default (app, store) => {
+export default (_, store) => {
     registerEventHandlers({
         /*
          * Is triggered by the backend, whenever a change to the workflow has been made/requested

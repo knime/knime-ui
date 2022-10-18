@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
@@ -8,11 +7,6 @@ import { dropNode, KnimeMIME } from '../dropNode';
 
 describe('Drop Node Mixin', () => {
     let doMount, wrapper, addNodeMock, dummyEvent, kanvasElement, isWritable;
-
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
 
     beforeEach(() => {
         isWritable = true;
@@ -67,7 +61,7 @@ describe('Drop Node Mixin', () => {
         document.getElementById = (id) => id === 'kanvas' ? kanvasElement : null;
         
         doMount = () => {
-            wrapper = shallowMount(dropNodeTarget, { mocks: { $store, $shapes } });
+            wrapper = shallowMount(dropNodeTarget, { global: { plugins: [$store], mocks: { $shapes } } });
         };
     });
 
