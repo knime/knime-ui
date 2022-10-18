@@ -1,5 +1,3 @@
-import * as Vue from 'vue';
-
 /**
  * Store that holds selected objects (nodes, connections)
  */
@@ -63,7 +61,7 @@ export const mutations = {
     // Removes each connection of the provided connections object to the selected connection object.
     removeConnectionsFromSelection(state, connectionIds) {
         connectionIds.forEach(id => {
-            Vue.delete(state.selectedConnections, id);
+            delete state.selectedConnections[id];
         });
     }
 };

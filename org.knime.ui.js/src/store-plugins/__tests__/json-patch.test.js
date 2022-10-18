@@ -1,17 +1,9 @@
-import Vuex from 'vuex';
-import { createLocalVue } from '@vue/test-utils';
-
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import { mutations, actions } from '../json-patch';
 
 describe('json-patch plugin', () => {
-    let localVue, store;
-
-    beforeAll(() => {
-        localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let store;
 
     beforeEach(() => {
         store = mockVuexStore({

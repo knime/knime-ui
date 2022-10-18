@@ -1,19 +1,11 @@
 /* eslint-disable max-lines */
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue } from '@vue/test-utils';
-
+import * as Vue from 'vue';
 import { mockVuexStore } from '@/test/test-utils';
 
 import { wrapAPI } from '../workflowEditor';
 
 describe('workflow store: Editing', () => {
-    let store, localVue, loadStore, moveObjectsMock, deleteObjectsMock, pastePartsAtMock;
-
-    beforeAll(() => {
-        localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let store, loadStore, moveObjectsMock, deleteObjectsMock, pastePartsAtMock;
 
     beforeEach(() => {
         store = null;

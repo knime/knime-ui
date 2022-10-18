@@ -1,6 +1,3 @@
-import Vuex from 'vuex';
-import { createLocalVue } from '@vue/test-utils';
-
 import { mockVuexStore } from '@/test/test-utils';
 
 const getNodesGroupedByTagsResponse = {
@@ -56,12 +53,9 @@ const getNodeDescriptionResponse = {
 };
 
 describe('Node Repository store', () => {
-    let store, localVue, searchNodesMock, getNodesGroupedByTagsMock, getNodeDescriptionMock, commitSpy, dispatchSpy;
+    let store, searchNodesMock, getNodesGroupedByTagsMock, getNodeDescriptionMock, commitSpy, dispatchSpy;
 
     beforeAll(() => {
-        localVue = createLocalVue();
-        localVue.use(Vuex);
-
         searchNodesMock = jest.fn().mockReturnValue(searchNodesResponse);
         getNodesGroupedByTagsMock = jest.fn().mockReturnValue(getNodesGroupedByTagsResponse);
         getNodeDescriptionMock = jest.fn().mockReturnValue(getNodeDescriptionResponse);

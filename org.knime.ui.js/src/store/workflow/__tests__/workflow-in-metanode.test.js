@@ -1,17 +1,10 @@
-import Vuex from 'vuex';
-import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
 import { defaultMetaNodeBarHeight, defaultMetanodeBarPosition, metaNodeBarWidth, portSize } from '@/style/shapes.mjs';
 import * as canvasStoreConfig from '@/store/canvas';
 
 describe('workflow store', () => {
-    let store, localVue, loadStore;
-
-    beforeAll(() => {
-        localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let store, loadStore;
 
     beforeEach(() => {
         loadStore = async ({ apiMocks = {}, nodes = {} } = {}) => {

@@ -1,6 +1,4 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { createLocalVue } from '@vue/test-utils';
+import * as Vue from 'vue';
 
 import { mockVuexStore } from '@/test/test-utils';
 
@@ -14,12 +12,7 @@ const round = n => {
 };
 
 describe('canvas store', () => {
-    let localVue, store, workflowBounds, scrollContainer, dispatchSpy, toCanvasCoordinatesSpy;
-
-    beforeAll(() => {
-        localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let store, workflowBounds, scrollContainer, dispatchSpy, toCanvasCoordinatesSpy;
 
     beforeEach(() => {
         workflowBounds = {

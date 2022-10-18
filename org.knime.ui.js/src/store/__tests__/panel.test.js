@@ -1,17 +1,9 @@
-import Vuex from 'vuex';
-import { createLocalVue } from '@vue/test-utils';
-
 import { mockVuexStore } from '@/test/test-utils';
 
 import * as panelStoreConfig from '../panel';
 
 describe('panel store', () => {
-    let store, localVue;
-
-    beforeAll(() => {
-        localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let store;
 
     beforeEach(() => {
         store = mockVuexStore({

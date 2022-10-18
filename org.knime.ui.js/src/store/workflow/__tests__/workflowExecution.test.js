@@ -1,16 +1,8 @@
 /* eslint-disable max-lines */
-import Vuex from 'vuex';
-import { createLocalVue } from '@vue/test-utils';
-
 import { mockVuexStore } from '@/test/test-utils';
 
 describe('workflow store: Execution', () => {
-    let store, localVue, loadStore;
-
-    beforeAll(() => {
-        localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let store, loadStore;
 
     beforeEach(() => {
         store = null;

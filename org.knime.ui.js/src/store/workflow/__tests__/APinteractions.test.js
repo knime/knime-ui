@@ -1,15 +1,8 @@
 /* eslint-disable max-lines */
-import Vuex from 'vuex';
-import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
 describe('workflow store: AP Interactions', () => {
-    let store, localVue, loadStore, dispatchSpy;
-
-    beforeAll(() => {
-        localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let store, loadStore, dispatchSpy;
 
     beforeEach(() => {
         store = null;

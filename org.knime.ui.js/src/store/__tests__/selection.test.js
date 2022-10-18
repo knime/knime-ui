@@ -1,17 +1,9 @@
-import Vuex from 'vuex';
-import { createLocalVue } from '@vue/test-utils';
-
 import { mockVuexStore } from '@/test/test-utils';
 
 import * as selectionStoreConfig from '../selection';
 
 describe('workflow store', () => {
-    let $store, storeConfig, localVue;
-
-    beforeAll(() => {
-        localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+    let $store, storeConfig;
 
     beforeEach(() => {
         storeConfig = {

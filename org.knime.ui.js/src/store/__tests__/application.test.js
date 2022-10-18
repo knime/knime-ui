@@ -1,6 +1,3 @@
-import Vuex from 'vuex';
-import { createLocalVue } from '@vue/test-utils';
-
 import { mockVuexStore } from '@/test/test-utils';
 
 jest.mock('@/util/fuzzyPortTypeSearch', () => ({
@@ -8,7 +5,7 @@ jest.mock('@/util/fuzzyPortTypeSearch', () => ({
 }));
 
 describe('application store', () => {
-    let store, storeConfig, fetchApplicationState, localVue, addEventListener, removeEventListener, dispatchSpy,
+    let store, storeConfig, fetchApplicationState, addEventListener, removeEventListener, dispatchSpy,
         loadWorkflow;
 
     const applicationState = {
@@ -30,9 +27,6 @@ describe('application store', () => {
             fetchApplicationState,
             loadWorkflow
         }), { virtual: true });
-
-        localVue = createLocalVue();
-        localVue.use(Vuex);
     });
 
     beforeEach(async () => {
