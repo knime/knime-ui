@@ -3,6 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
+import { TABS } from '@/store/panel';
 import Kanvas from '@/components/workflow/kanvas/Kanvas.vue';
 import Workflow from '../Workflow.vue';
 import SelectionRectangle from '../SelectionRectangle.vue';
@@ -59,9 +60,8 @@ describe('Kanvas', () => {
                 }
             },
             panel: {
-                actions: {
-                    setNodeRepositoryActive: jest.fn(),
-                    setWorkflowMetaActive: jest.fn()
+                mutations: {
+                    setActiveTab: jest.fn()
                 }
             },
             application: {
@@ -136,13 +136,19 @@ describe('Kanvas', () => {
 
             expect(storeConfig.canvas.mutations.setInteractionsEnabled).toHaveBeenCalledWith(expect.anything(), true);
             expect(storeConfig.canvas.actions.fillScreen).not.toHaveBeenCalled();
-            expect(storeConfig.panel.actions.setNodeRepositoryActive).not.toHaveBeenCalled();
+            expect(storeConfig.panel.mutations.setActiveTab).not.toHaveBeenCalledWith(
+                expect.any(Object),
+                TABS.NODE_REPOSITORY
+            );
         });
 
         it('sets workflow meta information as active', () => {
             doShallowMount();
 
-            expect(storeConfig.panel.actions.setWorkflowMetaActive).toHaveBeenCalled();
+            expect(storeConfig.panel.mutations.setActiveTab).toHaveBeenCalledWith(
+                expect.any(Object),
+                TABS.WORKFLOW_METADATA
+            );
         });
     });
 
@@ -177,13 +183,19 @@ describe('Kanvas', () => {
 
             expect(storeConfig.canvas.mutations.setInteractionsEnabled).toHaveBeenCalledWith(expect.anything(), false);
             expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
-            expect(storeConfig.panel.actions.setNodeRepositoryActive).toHaveBeenCalled();
+            expect(storeConfig.panel.mutations.setActiveTab).toHaveBeenCalledWith(
+                expect.any(Object),
+                TABS.NODE_REPOSITORY
+            );
         });
 
         it('sets node repository as active', () => {
             doShallowMount();
 
-            expect(storeConfig.panel.actions.setNodeRepositoryActive).toHaveBeenCalled();
+            expect(storeConfig.panel.mutations.setActiveTab).toHaveBeenCalledWith(
+                expect.any(Object),
+                TABS.NODE_REPOSITORY
+            );
         });
     });
 

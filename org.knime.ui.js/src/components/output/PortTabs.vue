@@ -1,18 +1,29 @@
 <script>
 import FlowVarTabIcon from 'webapps-common/ui/assets/img/icons/both-flow-variables.svg';
 import TabBar from 'webapps-common/ui/components/TabBar.vue';
+import Eye from 'webapps-common/ui/assets/img/icons/eye.svg';
 
 import portIcon from '@/components/common/PortIconRenderer';
 
-/**
- * Tab Bar that displays output ports of a given node.
- * Can be used like a form element, since it emits an `input` event
- * */
 export const portIconSize = 9;
 
+const portToPortTab = (port) => ({
+    value: String(port.index),
+    icon: portIcon(port, portIconSize),
+    label: `${port.index}: ${port.name}`
+});
+
+/**
+ * Tab Bar that displays output ports of a given node.
+ * Can be used like a form element
+ * */
 export default {
     components: {
         TabBar
+    },
+    model: {
+        prop: 'modelValue',
+        event: 'update:modelValue'
     },
     props: {
         /**
@@ -29,6 +40,10 @@ export default {
         disabled: {
             type: Boolean,
             default: false
+        },
+        hasViewTab: {
+            type: Boolean,
+            default: false
         }
     },
     emits: ['update:modelValue'],
@@ -39,30 +54,25 @@ export default {
             }
 
             let { outPorts, kind } = this.node;
-            let tabs = [];
-
-            if (kind !== 'metanode') {
-                // For normal nodes, the 0th port is the hidden flow variable port.
+       
+            const isMetanode = kind === 'metanode';
+            const ports = (isMetanode
                 // Metanodes don't have Mickey Mouse ears, so all ports are actual output ports.
-                outPorts = outPorts.slice(1);
-                tabs.push({
-                    value: '0',
-                    label: 'Flow Variables',
-                    icon: FlowVarTabIcon
-                });
-            }
-
-            // all remaining ports go before the flow variables
-            tabs.unshift(
-                ...outPorts.map(
-                    port => ({
-                        value: String(port.index),
-                        icon: portIcon(port, portIconSize),
-                        label: `${port.index}: ${port.name}`
-                    })
-                )
-            );
-            return tabs;
+                ? outPorts
+                // For normal nodes, the 0th port is the hidden flow variable port, so we remove it for now
+                // and later reposition it to the end
+                : outPorts.slice(1))
+                .map(portToPortTab);
+              
+            return []
+                .concat(this.hasViewTab ? { value: 'view', label: 'View', icon: Eye } : null)
+                // all ports go before the flow variables
+                .concat(ports)
+                // add the flow variables but skip for metanodes which don't have any
+                .concat(isMetanode
+                    ? null
+                    : { value: '0', label: 'Flow Variables', icon: FlowVarTabIcon })
+                .filter(Boolean);
         }
     }
 };

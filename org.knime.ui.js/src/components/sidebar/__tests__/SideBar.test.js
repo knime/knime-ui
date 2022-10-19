@@ -9,6 +9,7 @@ import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
 
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
+import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
 import Sidebar from '../Sidebar.vue';
 
 describe('Sidebar', () => {
@@ -73,7 +74,8 @@ describe('Sidebar', () => {
 
     it.each([
         ['Workflow metadata', WorkflowMetadata],
-        ['Node repository', NodeRepository]
+        ['Node repository', NodeRepository],
+        ['Node dialog', NodeDialogWrapper]
     ])('clicking on open tab should close it', async (tabName, renderedComponent) => {
         doShallowMount();
         await wrapper.find(`[title="${tabName}"]`).trigger('click');

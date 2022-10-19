@@ -4,7 +4,8 @@
 
 export const TABS = {
     WORKFLOW_METADATA: 'workflowMetadata',
-    NODE_REPOSITORY: 'nodeRepository'
+    NODE_REPOSITORY: 'nodeRepository',
+    NODE_DIALOG: 'nodeDialog'
 };
 
 export const state = () => ({
@@ -12,36 +13,15 @@ export const state = () => ({
     activeTab: TABS.WORKFLOW_METADATA
 });
 
-export const getters = {
-    isWorkflowMetaActive: state => state.activeTab === TABS.WORKFLOW_METADATA,
-    isNodeRepositoryActive: state => state.activeTab === TABS.NODE_REPOSITORY
-};
-
 export const mutations = {
-    setExpanded(state, value) {
-        state.expanded = value;
+    setActiveTab(state, activeTab) {
+        state.activeTab = activeTab;
+        state.expanded = true;
     },
-    setActiveTab(state, active) {
-        state.activeTab = active;
-    }
-};
-
-export const actions = {
-    toggleExpanded({ commit, state }) {
-        commit('setExpanded', !state.expanded);
+    toggleExpanded(state) {
+        state.expanded = !state.expanded;
     },
-
-    setWorkflowMetaActive({ commit, state }) {
-        commit('setActiveTab', TABS.WORKFLOW_METADATA);
-        commit('setExpanded', true);
-    },
-
-    setNodeRepositoryActive({ commit, state }) {
-        commit('setActiveTab', TABS.NODE_REPOSITORY);
-        commit('setExpanded', true);
-    },
-
-    close({ commit }) {
-        commit('setExpanded', false);
+    closePanel(state) {
+        state.expanded = false;
     }
 };

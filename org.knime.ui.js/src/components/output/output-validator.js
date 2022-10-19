@@ -29,21 +29,21 @@ const supportsPort = ({ portTypes, port }) => {
 
 // ========================== Validation Functions ============================     //
 //   The validation functions act as part of a middleware pipe. Each function       //
-//   executes a specific validation by looking at the `environment` and `context`   //
-//   parameters in order to determine the result. Each function can return early    //
+//   executes a specific validation by looking at the `environment` parameter       //
+//   in order to determine the result. Each function can return early               //
 //   by creating an error result, or they can call the `next` function so that      //
-//   the next function in the validation pipeline can execute. Additionally,        //
-//   each validation function can pass to the `next` fn a modified `context`        //
-//   so that the following checks in the pipeline can use the updated context       //
-//   in order to perform their logic                                                //
+//   the next function in the validation pipeline can execute. Each validation      //
+//   function must call `next`, either with a modified `context` or with the same   //
+//   one, so that the following checks in the pipeline can use that context         //
+//   in order to perform their logic. Early returns will cancel the middleware      //
 // ========================== Validation Functions ============================     //
 
 /**
  * Validation middleware function. Asserts that:
  * - Nodes are not being dragged
  */
-const validateDragging = ({ isDragging }, next) => context => {
-    if (isDragging) {
+export const validateDragging = (context, next) => {
+    if (context.isDragging) {
         return {
             error: {
                 type: 'NODE',
@@ -59,8 +59,15 @@ const validateDragging = ({ isDragging }, next) => context => {
 /**
  * Validation middleware function. Asserts that:
  * - The selection contains a single node
+ *
+ * Adds the `selectedNode` to the context
  */
-const validateSelection = ({ selectedNodes }, next) => context => {
+export const validateSelection = (context, next) => {
+    const { selectedNodes } = context;
+    if (!selectedNodes) {
+        return next(context);
+    }
+
     if (selectedNodes.length === 0) {
         return {
             error: {
@@ -90,8 +97,12 @@ const validateSelection = ({ selectedNodes }, next) => context => {
  * - The selected node has output ports
  * - The selected node has at least one supported port
  */
-const validateOutputPorts = ({ portTypes }, next) => context => {
-    const { selectedNode } = context;
+export const validateOutputPorts = (context, next) => {
+    const { selectedNode, portTypes } = context;
+    if (!selectedNode || !portTypes) {
+        return next(context);
+    }
+
     const hasOutputPorts = selectedNode.outPorts.length > 0;
     if (!hasOutputPorts) {
         return {
@@ -120,7 +131,13 @@ const validateOutputPorts = ({ portTypes }, next) => context => {
  * Validation middleware function. Asserts that:
  * - A port is selected
  */
-const validatePortSelection = ({ selectedNode, selectedPortIndex }, next) => (context) => {
+export const validatePortSelection = (context, next) => {
+    const { selectedNode, selectedPortIndex } = context;
+
+    if (!selectedNode) {
+        return next(context);
+    }
+
     const selectedPort = selectedNode.outPorts[selectedPortIndex];
     // eslint-disable-next-line no-undefined
     if (!selectedPort || selectedPortIndex === undefined || selectedPortIndex === null) {
@@ -141,8 +158,12 @@ const validatePortSelection = ({ selectedNode, selectedPortIndex }, next) => (co
  * - The selected port has a supported viewer
  * - The selected port is not inactive
  */
-const validatePortSupport = ({ portTypes }, next) => (context) => {
-    const { selectedPort } = context;
+export const validatePortSupport = (context, next) => {
+    const { selectedPort, portTypes } = context;
+    if (!selectedPort || !portTypes) {
+        return next(context);
+    }
+
     if (!supportsPort({ portTypes, port: selectedPort })) {
         return {
             error: {
@@ -171,8 +192,12 @@ const validatePortSupport = ({ portTypes }, next) => (context) => {
  * Validation middleware function. Asserts that:
  * - The selected node is configured
  */
-const validateNodeConfigurationState = (_, next) => context => {
+export const validateNodeConfigurationState = (context, next) => {
     const { selectedNode } = context;
+    if (!selectedNode) {
+        return next(context);
+    }
+    
     const isNodeIdle = selectedNode.state?.executionState === 'IDLE';
     
     if (isNodeIdle) {
@@ -193,13 +218,10 @@ const validateNodeConfigurationState = (_, next) => context => {
  * - The selected node is executed
  * - The selected node is not in a busy state (QUEUE || EXECUTING)
  */
-const validateNodeExecutionState = ({ portTypes, selectedNode }, next) => context => {
-    const { selectedPort } = context;
-    const { kind: portKind } = getPortType({ portTypes, port: selectedPort });
-    const isNotFlowVariable = portKind !== 'flowVariable';
+export const validateNodeExecutionState = (context, next) => {
+    const { selectedPort, selectedNode, portTypes } = context;
 
-    // only flowVariable ports can be shown if the node hasn't executed
-    if (isNotFlowVariable) {
+    const validate = () => {
         if (selectedNode.allowedActions.canExecute) {
             return {
                 error: {
@@ -220,6 +242,20 @@ const validateNodeExecutionState = ({ portTypes, selectedNode }, next) => contex
                 }
             };
         }
+
+        return next(context);
+    };
+
+    if (!selectedPort) {
+        return validate();
+    }
+
+    const { kind: portKind } = getPortType({ portTypes, port: selectedPort });
+    const isNotFlowVariable = portKind !== 'flowVariable';
+
+    // only flowVariable ports can be shown if the node hasn't executed
+    if (isNotFlowVariable) {
+        return validate();
     }
 
     return next(context);
@@ -228,69 +264,26 @@ const validateNodeExecutionState = ({ portTypes, selectedNode }, next) => contex
 /**
  * Builds a middleware pipeline. Receives as parameters:
  * - An array of middleware functions
- * - An `environment` object, which contains properties
- *  over which the different validations will be run
- * - A `context` object, which will be built and enhanced
- *  as the functions in the pipeline run
+ * - An `context` object, which contains properties
+ *  over which the different validations will be run.
  *
- * Returns a function to start the pipeline. This function will receive
- * the initial context and will return the context's value after
- * all the validation middlewares have executed (or performed an early exit)
+ * Returns a function to start the pipeline. This function will return
+ * the context's value after all the validation middlewares
+ * have executed, or it will return a different value if any function performed an early exit
  */
-const buildMiddleware = (...middlewares) => (env) => (req) => {
+export const buildMiddleware = (...middlewares) => (env) => {
+    // convert a simple function into a middleware function
+    // by partially applying environment and next before calling the given function along with the context
+    const toMiddlewareFn = (fn) => (environment, next) => (context) => fn({ ...environment, ...context }, next);
+
     const runFinal = (context) => context;
 
-    const chain = middlewares.reduceRight(
-        (next, middleware) => middleware(env, next),
-        runFinal
-    );
-    
-    return chain(req);
-};
+    const runChain = middlewares
+        .map(toMiddlewareFn)
+        .reduceRight(
+            (next, middleware) => middleware(env, next),
+            runFinal
+        );
 
-/**
- * Runs a set of validations that qualify whether a port from a node is able
- * to show its output
- * @param {Object} payload
- * @param {Object} payload.selectedNode the node that is currently selected
- * @param {Object} payload.portTypes dictionary of Port Types. Can be used to get more information on the port based
- * on its typeId property
- * @param {number} payload.selectedPortIndex index of the selected port
- * @returns {Object} object containing an `error` property. If not null then it means the port is invalid. Additionally
- * more details about the error can be read from that `error` object
- */
-export const runPortValidationChecks = ({ selectedNode, portTypes, selectedPortIndex }) => {
-    const validationMiddleware = buildMiddleware(
-        validatePortSelection,
-        validatePortSupport,
-        validateNodeExecutionState
-    );
-
-    const result = validationMiddleware({ selectedNode, portTypes, selectedPortIndex })({ error: null });
-
-    return Object.freeze(result);
-};
-
-/**
- * Runs a set of validations that qualify whether a node from a given group is able
- * to show its output
- * @param {Object} payload
- * @param {Object} payload.selectedNodes the group of nodes that are currently selected
- * @param {number} payload.isDragging whether there's a drag operation taking place
- * @param {Object} payload.portTypes dictionary of Port Types. Can be used to get more information on the port based
- * on its typeId property
- * @returns {Object} object containing an `error` property. If not null then it means the node is invalid. Additionally
- * more details about the error can be read from that `error` object
- */
-export const runNodeValidationChecks = ({ selectedNodes, isDragging, portTypes }) => {
-    const validationMiddleware = buildMiddleware(
-        validateDragging,
-        validateSelection,
-        validateOutputPorts,
-        validateNodeConfigurationState
-    );
-
-    const result = validationMiddleware({ selectedNodes, isDragging, portTypes })({ error: null });
-
-    return Object.freeze(result);
+    return runChain;
 };

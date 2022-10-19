@@ -1,6 +1,6 @@
 <script>
 import { mapGetters, mapMutations, mapActions, mapState } from 'vuex';
-
+import { TABS } from '@/store/panel';
 import Workflow from '@/components/workflow/Workflow.vue';
 import Kanvas from '@/components/workflow/kanvas/Kanvas.vue';
 import SelectionRectangle from '@/components/workflow/SelectionRectangle.vue';
@@ -36,7 +36,7 @@ export default {
                 
                 if (isWorkflowEmpty) {
                     // call to action: move nodes onto workflow
-                    this.setNodeRepositoryActive();
+                    this.setActiveTab(TABS.NODE_REPOSITORY);
                     
                     // for an empty workflow "fillScreen" zooms to 100% and moves the origin (0,0) to the center
                     await this.$nextTick();
@@ -47,9 +47,9 @@ export default {
     },
     mounted() {
         if (this.isWorkflowEmpty) {
-            this.setNodeRepositoryActive();
+            this.setActiveTab(TABS.NODE_REPOSITORY);
         } else {
-            this.setWorkflowMetaActive();
+            this.setActiveTab(TABS.WORKFLOW_METADATA);
         }
 
         this.$nextTick(() => {
@@ -62,8 +62,8 @@ export default {
     },
     methods: {
         ...mapMutations('canvas', ['setInteractionsEnabled']),
+        ...mapMutations('panel', ['setActiveTab']),
         ...mapActions('canvas', ['fillScreen']),
-        ...mapActions('panel', ['setNodeRepositoryActive', 'setWorkflowMetaActive']),
         ...mapActions('selection', ['deselectAllObjects']),
         onNodeSelectionPreview($event) {
             this.$refs.workflow.applyNodeSelectionPreview($event);

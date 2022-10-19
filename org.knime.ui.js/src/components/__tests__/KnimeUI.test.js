@@ -10,7 +10,11 @@ import HotkeyHandler from '@/components/application/HotkeyHandler.vue';
 import Sidebar from '@/components/sidebar/Sidebar.vue';
 import WorkflowToolbar from '@/components/toolbar/WorkflowToolbar.vue';
 import WorkflowEntryPage from '@/components/workflow/WorkflowEntryPage.vue';
+import { loadPageBuilder as loadPageBuilderMock } from '@/components/embeddedViews/pagebuilderLoader';
+
 import KnimeUI from '../KnimeUI.vue';
+
+jest.mock('@/components/embeddedViews/pagebuilderLoader');
 
 describe('KnimeUI.vue', () => {
     let $store, doShallowMount, initializeApplication, wrapper, storeConfig, destroyApplication,
@@ -50,6 +54,11 @@ describe('KnimeUI.vue', () => {
             // await promises during load
             await new Promise(r => setTimeout(r, 0));
         };
+    });
+
+    it('loads the pagebuilder on mount', () => {
+        doShallowMount();
+        expect(loadPageBuilderMock).toHaveBeenCalled();
     });
 
     it('renders before loading', () => {

@@ -30,9 +30,9 @@ describe('OpenSourceCreditsModal', () => {
     it('activates modal when button is clicked', async () => {
         doMount();
         
-        expect(wrapper.findComponent(Modal).props('active')).toBe(false);
+        expect(wrapper.findComponent(Modal).isVisible()).toBe(false);
         await wrapper.findComponent(Button).vm.$emit('click');
         
-        expect(wrapper.findComponent(Modal).props('active')).toBe(true);
+        expect(wrapper.findComponent(Modal).isVisible()).toBe(true);
     });
 });

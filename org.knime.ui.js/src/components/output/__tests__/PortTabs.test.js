@@ -59,6 +59,33 @@ describe('PortTabs.vue', () => {
         ]);
         expect(portIcon).toHaveBeenCalledWith(expect.anything(), portIconSize);
     });
+    
+    it('displays view tab as the first tab', () => {
+        portIcon.mockReturnValue('portIcon');
+            
+        const wrapper = doShallowMount({
+            hasViewTab: true,
+            node: {
+                kind: 'node',
+                outPorts: [
+                    {
+                        index: 0,
+                        name: 'flowVariable port'
+                    }, {
+                        index: 1,
+                        name: 'triangle port'
+                    }
+                ]
+            }
+        });
+        
+        expect(wrapper.findComponent(TabBar).props().possibleValues).toStrictEqual([
+            { value: 'view', label: 'View', icon: expect.anything() },
+            { value: '1', label: '1: triangle port', icon: expect.anything() },
+            { value: '0', label: 'Flow Variables', icon: expect.anything() }
+        ]);
+        expect(portIcon).toHaveBeenCalledWith(expect.anything(), portIconSize);
+    });
 
     it('arranges tabs for normal node', () => {
         portIcon.mockReturnValueOnce('portIcon-1');

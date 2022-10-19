@@ -1,10 +1,14 @@
 <script>
-import { mapState, mapGetters, mapActions } from 'vuex';
+import { mapState, mapActions, mapMutations } from 'vuex';
 import InfoIcon from 'webapps-common/ui/assets/img/icons/circle-info.svg';
+import NodeCogIcon from 'webapps-common/ui/assets/img/icons/node-cog.svg';
 import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
 
+import { TABS } from '@/store/panel';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
+import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
+
 import LeftCollapsiblePanel from './LeftCollapsiblePanel.vue';
 
 export default {
@@ -13,21 +17,58 @@ export default {
         PlusIcon,
         LeftCollapsiblePanel,
         WorkflowMetadata,
-        NodeRepository
+        NodeRepository,
+        NodeDialogWrapper
+    },
+    data() {
+        return {
+            TABS: Object.freeze(TABS)
+        };
     },
     computed: {
         ...mapState('panel', ['activeTab', 'expanded']),
         ...mapState('nodeRepository', ['isDescriptionPanelOpen']),
-        ...mapGetters('panel', ['isWorkflowMetaActive', 'isNodeRepositoryActive'])
+        
+        sidebarSections() {
+            return [
+                {
+                    title: 'Workflow metadata',
+                    icon: InfoIcon,
+                    isActive: this.isTabActive(TABS.WORKFLOW_METADATA),
+                    isExpanded: this.expanded,
+                    onClick: () => this.clickItem(TABS.WORKFLOW_METADATA)
+                },
+                {
+                    title: 'Node repository',
+                    icon: PlusIcon,
+                    isActive: this.isTabActive(TABS.NODE_REPOSITORY),
+                    isExpanded: this.expanded,
+                    onClick: () => this.clickItem(TABS.NODE_REPOSITORY)
+                },
+                {
+                    title: 'Node dialog',
+                    icon: NodeCogIcon,
+                    isActive: this.isTabActive(TABS.NODE_DIALOG),
+                    isExpanded: this.expanded,
+                    onClick: () => this.clickItem(TABS.NODE_DIALOG)
+                }
+            ];
+        }
     },
     methods: {
-        ...mapActions('panel', ['setWorkflowMetaActive', 'setNodeRepositoryActive', 'close', 'toggleExpanded']),
+        ...mapMutations('panel', ['setActiveTab', 'closePanel', 'toggleExpanded']),
         ...mapActions('nodeRepository', ['closeDescriptionPanel']),
-        clickItem(alreadyActive, setActive) {
-            if (alreadyActive && this.expanded) {
-                this.close();
+
+        isTabActive(tabName) {
+            return this.activeTab === tabName;
+        },
+
+        clickItem(tabName) {
+            const isAlreadyActive = this.isTabActive(tabName);
+            if (isAlreadyActive && this.expanded) {
+                this.closePanel();
             } else {
-                setActive();
+                this.setActiveTab(tabName);
             }
 
             this.closeDescriptionPanel();
@@ -41,18 +82,13 @@ export default {
     <nav>
       <ul>
         <li
-          :class="{ active: isWorkflowMetaActive, expanded }"
-          title="Workflow metadata"
-          @click="clickItem(isWorkflowMetaActive, setWorkflowMetaActive)"
+          v-for="section in sidebarSections"
+          :key="section.title"
+          :title="section.title"
+          :class="{ active: section.isActive, expanded: section.isExpanded }"
+          @click="section.onClick"
         >
-          <InfoIcon />
-        </li>
-        <li
-          :class="{ active: isNodeRepositoryActive, expanded }"
-          title="Node repository"
-          @click="clickItem(isNodeRepositoryActive, setNodeRepositoryActive)"
-        >
-          <PlusIcon />
+          <Component :is="section.icon" />
         </li>
       </ul>
     </nav>
@@ -62,7 +98,7 @@ export default {
       width="360px"
       title="Open sidebar"
       :expanded="expanded"
-      :disabled="isDescriptionPanelOpen && isNodeRepositoryActive"
+      :disabled="isDescriptionPanelOpen && isTabActive(TABS.NODE_REPOSITORY)"
       @toggle-expand="toggleExpanded"
     >
       <TransitionGroup
@@ -70,13 +106,18 @@ export default {
         tag="span"
       >
         <NodeRepository
-          v-if="isNodeRepositoryActive"
+          v-show="isTabActive(TABS.NODE_REPOSITORY)"
           key="node-repository"
         />
 
         <WorkflowMetadata
-          v-if="isWorkflowMetaActive"
+          v-show="isTabActive(TABS.WORKFLOW_METADATA)"
           key="workflow-metadata"
+        />
+
+        <NodeDialogWrapper
+          v-show="isTabActive(TABS.NODE_DIALOG)"
+          key="node-dialog"
         />
       </TransitionGroup>
     </LeftCollapsiblePanel>
@@ -145,6 +186,7 @@ nav {
     overflow-y: hidden;
   }
 }
+
 .tab-enter-active {
   transition: all 150ms ease-in;
 }

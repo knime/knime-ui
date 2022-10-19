@@ -5,43 +5,49 @@ import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
 import * as selectionStore from '@/store/selection';
 
-import Button from 'webapps-common/ui/components/Button.vue';
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
 
 import * as $shapes from '@/style/shapes.mjs';
+import * as $colors from '@/style/colors.mjs';
 
 import NodeOutput from '../NodeOutput.vue';
 import PortTabs from '../PortTabs.vue';
-import FlowVariablePortView from '../FlowVariablePortView.vue';
-import PortViewLoader from '../PortViewLoader.vue';
+
+import PortViewTabOutput from '../PortViewTabOutput.vue';
+import NodeViewTabOutput from '../NodeViewTabOutput.vue';
+
+jest.mock('@api', () => ({ getPortView: jest.fn() }), { virtual: true });
 
 jest.mock('@knime/ui-extension-service');
 
 describe('NodeOutput.vue', () => {
-    let props, doShallowMount, wrapper, $store, dummyNodes, workflow, application, selectedNodeIds;
-    const FLOW_VARIABLE = 'FV';
-    const TABLE = 'TA';
-
-    beforeEach(() => {
-        wrapper = null;
-        props = {};
-
-        dummyNodes = {
-            node1: {
-                id: 'node1',
-                outPorts: ['dummy'],
-                isLoaded: false,
-                state: {
-                    executionState: 'UNSET'
-                },
-                allowedActions: {
-                    canExecute: false
-                }
+    const FLOW_VARIABLE = 'flowVariable';
+    const TABLE = 'table';
+    const UNSUPPORTED = 'unsupported';
+    
+    const dummyNodes = {
+        node1: {
+            id: 'node1',
+            outPorts: [{ typeId: 'flowVariable', index: 0 }, { typeId: 'table', index: 1 }],
+            isLoaded: false,
+            state: {
+                executionState: 'UNSET'
+            },
+            allowedActions: {
+                canExecute: false
             }
-        };
-        selectedNodeIds = ['node1'];
+        }
+    };
 
-        workflow = {
+    const createNode = (customProperties) => ({ ...dummyNodes.node1, ...customProperties });
+
+    const createStore = ({
+        nodes = dummyNodes,
+        selectedNodeIds = ['node1'],
+        isDragging = jest.fn().mockReturnValue(false),
+        executeNodes = jest.fn()
+    } = {}) => {
+        const workflow = {
             mutations: {
                 update(state, action) {
                     action(state);
@@ -49,22 +55,18 @@ describe('NodeOutput.vue', () => {
             },
             state: {
                 activeWorkflow: {
-                    nodes: dummyNodes,
+                    nodes,
                     state: {},
                     info: {
                         containerId: 'workflowId'
                     }
                 }
             },
-            getters: {
-                isDragging: jest.fn().mockReturnValue(false)
-            },
-            actions: {
-                executeNodes: jest.fn()
-            }
+            getters: { isDragging },
+            actions: { executeNodes }
         };
 
-        application = {
+        const application = {
             state: {
                 activeProjectId: 'projectId',
                 availablePortTypes: {
@@ -77,316 +79,276 @@ describe('NodeOutput.vue', () => {
                         kind: 'flowVariable',
                         name: 'Flow Variable',
                         hasView: true
+                    },
+                    [UNSUPPORTED]: {
+                        kind: 'unsupported',
+                        name: 'Unsupported',
+                        hasView: false
                     }
                 }
             }
         };
 
-        doShallowMount = () => {
-            $store = mockVuexStore({
-                workflow,
-                application,
-                selection: selectionStore
-            });
-            $store.commit('selection/addNodesToSelection', selectedNodeIds);
+        const $store = mockVuexStore({
+            workflow,
+            application,
+            selection: selectionStore
+        });
+        $store.commit('selection/addNodesToSelection', selectedNodeIds);
+        return $store;
+    };
 
-            wrapper = shallowMount(NodeOutput, {
-                props,
-                global: {
-                    plugins: [$store],
-                    mocks: { $shapes }
-                }
-            });
-        };
+    const doMount = (store = null) => shallowMount(NodeOutput, {
+        global: {
+            plugins: [store || createStore()],
+            mocks: { $shapes, $colors }
+        }
     });
 
-    describe('selection check', () => {
-        it('renders placeholder if no node is selected', () => {
-            selectedNodeIds = [];
-            doShallowMount();
+    const placeholderMessage = (wrapper) => wrapper.find('.placeholder').text();
+    const triggerOutputStateChange = async (wrapper, state) => {
+        wrapper
+            .findComponent(PortViewTabOutput)
+            .vm.$emit('output-state-change', state);
+        await Vue.nextTick();
+    };
 
-            expect(wrapper.find('.placeholder').text()).toBe(
+    describe('Selection check', () => {
+        it('should render placeholder if no node is selected', () => {
+            const store = createStore({ selectedNodeIds: [] });
+            const wrapper = doMount(store);
+
+            expect(placeholderMessage(wrapper)).toBe(
                 'To show the node output, please select a configured or executed node.'
             );
-        });
 
-        it('renders placeholder if more than one node is selected', () => {
-            selectedNodeIds = ['node1', 'node2'];
-            dummyNodes.node2 = { ...dummyNodes.node1, id: 'node2' };
-            doShallowMount();
-
-            expect(wrapper.find('.placeholder').text()).toBe('To show the node output, please select only one node.');
-        });
-
-        afterEach(() => {
             expect(wrapper.findComponent(PortTabs).exists()).toBe(false);
-            expect(wrapper.findComponent(FlowVariablePortView).exists()).toBe(false);
+            expect(wrapper.find('.loading-icon').exists()).toBe(false);
+            expect(wrapper.find('.action-button').exists()).toBe(false);
+        });
+
+        it('should render placeholder if more than one node is selected', () => {
+            const nodes = { ...dummyNodes, node2: { ...dummyNodes.node1, id: 'node2' } };
+            const store = createStore({ selectedNodeIds: ['node1', 'node2'], nodes });
+            const wrapper = doMount(store);
+
+            expect(placeholderMessage(wrapper)).toBe('To show the node output, please select only one node.');
+            expect(wrapper.findComponent(PortTabs).exists()).toBe(false);
             expect(wrapper.find('.loading-icon').exists()).toBe(false);
             expect(wrapper.find('.action-button').exists()).toBe(false);
         });
     });
 
-    describe('node problems', () => {
-        it("is dragging and table hasn't been loaded yet", () => {
-            workflow.getters.isDragging.mockReturnValue(true);
-            doShallowMount();
+    it('should render the emitted error state from the PortView', async () => {
+        const wrapper = doMount();
+        const viewComponent = wrapper.findComponent(PortViewTabOutput);
+        
+        viewComponent.vm.$emit('output-state-change', { message: 'Some message' });
+
+        await Vue.nextTick();
+        expect(placeholderMessage(wrapper)).toBe('Some message');
+    });
+    
+    it('should render the emitted error state from the NodeView', async () => {
+        const wrapper = doMount();
+        wrapper.findComponent(PortTabs).vm.$emit('update:modelValue', 'view');
+        await Vue.nextTick();
+
+        const viewComponent = wrapper.findComponent(NodeViewTabOutput);
+        viewComponent.vm.$emit('output-state-change', { message: 'Some message' });
+
+        await Vue.nextTick();
+        expect(placeholderMessage(wrapper)).toBe('Some message');
+    });
+
+    it('should show loading indicator', async () => {
+        const wrapper = doMount();
+        const portView = wrapper.findComponent(PortViewTabOutput);
+        
+        portView.vm.$emit('output-state-change', { loading: true, message: 'Loading data' });
+
+        await Vue.nextTick();
+        expect(placeholderMessage(wrapper)).toBe('Loading data');
+        expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
+    });
+    
+    it('should show execute node button and trigger node execution', async () => {
+        const executeNodes = jest.fn();
+        const node = createNode();
+        const store = createStore({ executeNodes, nodes: { [node.id]: node }, selectedNodeIds: [node.id] });
+        const wrapper = doMount(store);
+        const portView = wrapper.findComponent(PortViewTabOutput);
+        
+        portView.vm.$emit('output-state-change', { message: 'Some error', error: { code: 'NODE_UNEXECUTED' } });
+        await Vue.nextTick();
+
+        expect(wrapper.find('.action-button').exists()).toBe(true);
+        wrapper.find('.action-button').trigger('click');
+
+        expect(executeNodes).toHaveBeenCalledWith(
+            expect.any(Object),
+            [node.id]
+        );
+    });
+
+    it('should display placeholder when node is dragging', () => {
+        const store = createStore({ isDragging: jest.fn(() => true) });
+        const wrapper = doMount(store);
+
+        expect(placeholderMessage(wrapper)).toBe('Node output will be loaded after moving is completed');
+        expect(wrapper.findComponent(PortTabs).exists()).toBe(true);
+        expect(wrapper.findComponent(PortTabs).props('disabled')).toBe(true);
+
+        expect(wrapper.find('.loading-icon').exists()).toBe(false);
+        expect(wrapper.find('.action-button').exists()).toBe(false);
+    });
+
+    describe('Updates', () => {
+        it('node gets problem -> display error placeholder', async () => {
+            const wrapper = doMount();
+
+            expect(wrapper.find('.placeholder').exists()).toBe(false);
             
-            wrapper.setData({ portViewerState: null });
-            expect(wrapper.find('.placeholder').text()).toBe('Node output will be loaded after moving is completed');
-            expect(wrapper.findComponent(PortTabs).exists()).toBe(true);
-        });
-
-        it('renders placeholder if no output port is present', () => {
-            dummyNodes.node1.outPorts = [];
-            doShallowMount();
-            expect(wrapper.find('.placeholder').text()).toBe('The selected node has no output ports.');
-            expect(wrapper.findComponent(PortTabs).exists()).toBe(false);
-        });
-
-        it('renders placeholder if ports are not supported', () => {
-            doShallowMount();
-            expect(wrapper.find('.placeholder').text()).toBe('The selected node has no supported output port.');
-        });
-
-        it('renders placeholder if node needs to be configured', () => {
-            dummyNodes.node1.outPorts[0] = { typeId: TABLE };
-            dummyNodes.node1.state = { executionState: 'IDLE' };
-            doShallowMount();
-            expect(wrapper.findComponent(PortTabs).exists()).toBe(true);
-            expect(wrapper.find('.placeholder').text()).toBe('Please first configure the selected node.');
-        });
-
-        afterEach(() => {
-            expect(wrapper.findComponent(FlowVariablePortView).exists()).toBe(false);
-            expect(wrapper.find('.loading-icon').exists()).toBe(false);
-            expect(wrapper.find('.action-button').exists()).toBe(false);
-
-            let tabs = wrapper.findComponent(PortTabs);
-            if (tabs.exists()) {
-                expect(tabs.props().disabled).toBe(true);
-            }
-        });
-    });
-
-    describe('port problems', () => {
-        beforeEach(() => {
-            // have at least one supported output port
-            dummyNodes.node1.outPorts[0] = { typeId: FLOW_VARIABLE };
-        });
-
-        it('selected port is unsupported', () => {
-            dummyNodes.node1.outPorts[1] = { typeId: 'something unsupported' };
-            doShallowMount();
-
-            expect(wrapper.find('.placeholder').text()).toBe(
-                'The data at the output port is not supported by any viewer.'
-            );
-            expect(wrapper.find('.port-view').exists()).toBe(false);
-            expect(wrapper.find('.action-button').exists()).toBe(false);
-            expect(wrapper.findComponent(PortTabs).exists()).toBe(true);
-        });
-
-        it('selected port is inactive', () => {
-            dummyNodes.node1.outPorts[0].inactive = true;
-            doShallowMount();
-
-            expect(wrapper.find('.placeholder').text()).toBe(
-                'This output port is inactive and therefore no output data is available for display.'
-            );
-            expect(wrapper.find('.port-view').exists()).toBe(false);
-            expect(wrapper.find('.action-button').exists()).toBe(false);
-        });
-
-        it('node is not yet executed (flow variable port)', () => {
-            dummyNodes.node1.outPorts[0] = { typeId: FLOW_VARIABLE };
-            dummyNodes.node1.allowedActions = { canExecute: true };
-            doShallowMount();
-
-            expect(wrapper.find('.action-button').exists()).toBe(false);
-            expect(wrapper.findComponent(PortViewLoader).exists()).toBe(true);
-        });
-
-        it('node is not yet executed (any other port)', () => {
-            dummyNodes.node1.outPorts[0] = { typeId: TABLE };
-            dummyNodes.node1.allowedActions = { canExecute: true };
-            doShallowMount();
-
-            expect(wrapper.find('.placeholder').text())
-                .toMatch('To show the output, please execute the selected node.');
-            expect(wrapper.find('.port-view').exists()).toBe(false);
-
-            let executeButton = wrapper.findComponent(Button);
-            expect(executeButton.text()).toBe('Execute');
-            executeButton.vm.$emit('click');
-            expect(workflow.actions.executeNodes).toHaveBeenCalledWith(expect.anything(), [dummyNodes.node1.id]);
-        });
-
-        describe.each(['EXECUTING', 'QUEUED'])('only flow variables can be shown while %s', (executingOrQueued) => {
-            it('flow variable port', () => {
-                dummyNodes.node1.outPorts[0] = { typeId: FLOW_VARIABLE };
-                dummyNodes.node1.state = { executionState: executingOrQueued };
-                doShallowMount();
-
-                expect(wrapper.findComponent(ReloadIcon).exists()).toBe(false);
-
-                expect(wrapper.findComponent(PortViewLoader).exists()).toBe(true);
-            });
-
-            it('any other port', () => {
-                dummyNodes.node1.outPorts[0] = { typeId: TABLE };
-                dummyNodes.node1.state = { executionState: executingOrQueued };
-                doShallowMount();
-
-                expect(wrapper.find('.placeholder').text()).toBe('Output is available after execution.');
-                expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
-                expect(wrapper.find('.port-view').exists()).toBe(false);
-            });
-        });
-
-        afterEach(() => {
-            expect(wrapper.findComponent(PortTabs).props().disabled).toBe(false);
-        });
-    });
-
-    describe('port view', () => {
-        beforeEach(() => {
-            dummyNodes.node1.state.executionState = 'EXECUTED';
-            dummyNodes.node1.outPorts[0] = { typeId: TABLE, portObjectVersion: 'ticker' };
-        });
-
-        it('shows loading indicator', async () => {
-            doShallowMount();
-            const portView = wrapper.findComponent(PortViewLoader);
+            await triggerOutputStateChange(wrapper, { message: 'Some Error' });
             
-            portView.vm.$emit('state-change', { state: 'loading' });
-
-            await Vue.nextTick();
-            expect(wrapper.find('.placeholder').text()).toBe('Loading data');
-            expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
-        });
-    });
-
-    describe('updates', () => {
-        it('node gets problem -> reset selected port', async () => {
-            dummyNodes.node1.state.executionState = 'EXECUTED';
-            dummyNodes.node1.outPorts[0] = { typeId: TABLE };
-            doShallowMount();
-
-            expect(wrapper.vm.selectedPortIndex).toBe('0');
-            expect(wrapper.findComponent(PortViewLoader).exists()).toBe(true);
-
-            $store.commit('workflow/update', ({ activeWorkflow }) => {
-                activeWorkflow.nodes.node1.state.executionState = 'IDLE';
-            });
-            await Vue.nextTick();
-
-            expect(wrapper.vm.selectedPortIndex).toBe(null);
-            expect(wrapper.findComponent(PortViewLoader).exists()).toBe(false);
+            expect(wrapper.find('.placeholder').exists()).toBe(true);
         });
 
         it('node loses problem -> default port is selected', async () => {
-            dummyNodes.node1.state.executionState = 'IDLE';
-            dummyNodes.node1.outPorts[0] = { typeId: TABLE };
-            doShallowMount();
+            const wrapper = doMount();
 
-            expect(wrapper.vm.selectedPortIndex).toBe(null);
-
-            $store.commit('workflow/update', ({ activeWorkflow }) => {
-                activeWorkflow.nodes.node1.state.executionState = 'EXECUTED';
-            });
-
-            await Vue.nextTick();
-
-            expect(wrapper.vm.selectedPortIndex).toBe('0');
+            await triggerOutputStateChange(wrapper, { message: 'Some Error' });
+            expect(wrapper.find('.placeholder').exists()).toBe(true);
+            
+            await triggerOutputStateChange(wrapper, null);
+            expect(wrapper.find('.placeholder').exists()).toBe(false);
+            expect(wrapper.findComponent(PortViewTabOutput).props('selectedPortIndex')).toBe('1');
         });
 
         it('selected node changes -> default port is selected', async () => {
-            dummyNodes.node1.state.executionState = 'EXECUTED';
-            dummyNodes.node1.outPorts[0] = { typeId: TABLE };
-            selectedNodeIds = [];
-            doShallowMount();
+            // create a full node containing 2 ports (1 flowvariable + 1 extra port)
+            const node1 = createNode({ id: 'node1' });
+            // create a metanode with a single port
+            const node2 = createNode({ id: 'node2', kind: 'metanode', outPorts: [dummyNodes.node1.outPorts[0]] });
+            const store = createStore({
+                nodes: { [node1.id]: node1, [node2.id]: node2 },
+                selectedNodeIds: [node1.id]
+            });
+            const wrapper = doMount(store);
 
-            expect(wrapper.vm.selectedPortIndex).toBe(null);
-            expect(wrapper.findComponent(PortViewLoader).exists()).toBe(false);
+            // port should initially be 1 because regular nodes by default select the second port
+            // since the first is the flowVariable port
+            expect(wrapper.findComponent(PortViewTabOutput).props('selectedPortIndex')).toBe('1');
 
-            $store.commit('selection/addNodesToSelection', ['node1']);
+            // change from node1 -> node2
+            store.commit('selection/clearSelection');
+            store.commit('selection/addNodesToSelection', ['node2']);
             await Vue.nextTick();
 
-            expect(wrapper.findComponent(PortViewLoader).exists()).toBe(true);
+            // the port should change to 0 because metanode has a single port
+            expect(wrapper.findComponent(PortViewTabOutput).props('selectedPortIndex')).toBe('0');
         });
 
-        describe('select port', () => {
-            let nodeWithPort, nodeWithoutPort, metanode, nodeWithManyPorts;
+        describe('Select port', () => {
+            const nodeWithPorts = createNode({
+                id: '1',
+                kind: 'node',
+                outPorts: [{ typeId: FLOW_VARIABLE }, { typeId: TABLE }]
+            });
 
-            beforeEach(() => {
-                nodeWithPort = {
-                    ...dummyNodes.node1,
-                    id: 1,
-                    kind: 'node',
-                    outPorts: [{ typeId: FLOW_VARIABLE }, { typeId: TABLE }],
-                    state: { executionState: 'EXECUTED' }
-                };
+            const nodeWithManyPorts = createNode({
+                id: '2',
+                kind: 'node',
+                outPorts: [{ typeId: FLOW_VARIABLE }, { typeId: TABLE }, { typeId: TABLE }]
+            });
 
-                nodeWithManyPorts = {
-                    ...nodeWithPort,
-                    id: 2,
-                    outPorts: [{ typeId: FLOW_VARIABLE }, { typeId: TABLE }, { typeId: TABLE }]
-                };
+            const nodeWithoutPort = createNode({
+                id: '3',
+                outPorts: []
+            });
 
-                nodeWithoutPort = {
-                    ...nodeWithPort,
-                    id: 3,
-                    outPorts: [{ typeId: FLOW_VARIABLE }]
-                };
+            const metanode = createNode({
+                id: '4',
+                kind: 'metanode',
+                outPorts: [{ typeId: FLOW_VARIABLE }, { typeId: TABLE }]
+            });
 
-                metanode = {
-                    ...nodeWithPort,
-                    id: 4,
-                    kind: 'metanode'
-                };
+            const nodeWithView = createNode({
+                id: '5',
+                hasView: true,
+                outPorts: [{ typeId: FLOW_VARIABLE }, { typeId: TABLE }]
+            });
+
+            it('selects the proper tab when handling nodes with views', async () => {
+                const node2 = createNode({ ...nodeWithView, id: '6' });
+
+                const store = createStore({
+                    nodes: { [nodeWithView.id]: nodeWithView, [node2.id]: node2 },
+                    selectedNodeIds: [nodeWithView.id]
+                });
+                const wrapper = doMount(store);
+
+                // start from the right tab
+                wrapper.findComponent(PortTabs).vm.$emit('update:modelValue', 'view');
+                await Vue.nextTick();
+                expect(wrapper.findComponent(NodeViewTabOutput).exists()).toBe(true);
+
+                // select other node
+                store.commit('selection/clearSelection');
+                store.commit('selection/addNodesToSelection', [node2.id]);
+
+                await Vue.nextTick();
+
+                expect(wrapper.findComponent(PortViewTabOutput).exists()).toBe(false);
+                expect(wrapper.findComponent(NodeViewTabOutput).exists()).toBe(true);
+                expect(wrapper.findComponent(NodeViewTabOutput).props('selectedNode')).toEqual(node2);
             });
 
             test.each([
-                ['node with port', () => nodeWithPort, '1'],
+                ['node with port', () => nodeWithPorts, '1'],
                 ['node without port', () => nodeWithoutPort, '0'],
-                ['component with port', () => ({ ...nodeWithPort, kind: 'component' }), '1'],
+                ['component with port', () => ({ ...nodeWithPorts, kind: 'component' }), '1'],
                 ['component without port', () => ({ ...nodeWithoutPort, kind: 'component' }), '0'],
                 ['metanode', () => metanode, '0']
-            ])('default ports %s', (_, nodeGetter, defaultPort) => {
-                let node = nodeGetter();
-                dummyNodes[node.id] = node;
-                selectedNodeIds = [node.id];
-                doShallowMount();
+            ])('default ports %s', async (_, getNode, expectedPort) => {
+                const node = getNode();
+                const store = createStore({
+                    nodes: { [node.id]: node },
+                    selectedNodeIds: [node.id]
+                });
+                const wrapper = doMount(store);
+                await Vue.nextTick();
                 
-                expect(wrapper.vm.selectedPortIndex).toBe(defaultPort);
+                expect(wrapper.findComponent(PortViewTabOutput).props('selectedPortIndex')).toBe(expectedPort);
             });
 
             test.each([
-                ['tablePort to tablePort (keep port)', () => nodeWithPort, () => nodeWithPort, '1', '1'],
-                ['tablePort to tablePort (change port)', () => nodeWithManyPorts, () => nodeWithPort, '2', '1'],
-                ['tablePort to flowVariablePort (change port)', () => nodeWithPort, () => nodeWithoutPort, '1', '0'],
-                ['flowVariable to flowVariable (keep port)', () => nodeWithPort, () => nodeWithPort, '0', '0'],
-                ['metanodes first to nodes flow variable (keep port)', () => metanode, () => nodeWithPort, '0', '0']
+                ['tablePort to tablePort (keep port)', () => nodeWithPorts, () => nodeWithPorts, '1', '1'],
+                ['tablePort to tablePort (change port)', () => nodeWithManyPorts, () => nodeWithPorts, '2', '1'],
+                ['tablePort to flowVariablePort (change port)', () => nodeWithPorts, () => nodeWithoutPort, '1', '0'],
+                ['flowVariable to flowVariable (keep port)', () => nodeWithPorts, () => nodeWithPorts, '0', '0'],
+                ['metanodes first to nodes flow variable (keep port)', () => metanode, () => nodeWithPorts, '0', '0']
             ])('switch from %s', async (_, getNode1, getNode2, fromPort, toPort) => {
-                let selectedNode = getNode1();
-                dummyNodes[selectedNode.id] = selectedNode;
-                selectedNodeIds = [selectedNode.id];
+                const node1 = getNode1();
+                const node2 = getNode2();
 
-                let otherNode = getNode2();
-                dummyNodes[otherNode.id] = otherNode;
-                doShallowMount();
+                const store = createStore({
+                    nodes: { [node1.id]: node1, [node2.id]: node2 },
+                    selectedNodeIds: [node1.id]
+                });
+                const wrapper = doMount(store);
 
                 // start from the right port
-                wrapper.setData({ selectedPortIndex: fromPort });
+                wrapper.findComponent(PortTabs).vm.$emit('update:modelValue', fromPort);
                 await Vue.nextTick();
 
                 // select other node
-                $store.commit('selection/clearSelection');
-                $store.commit('selection/addNodesToSelection', [otherNode.id]);
+                store.commit('selection/clearSelection');
+                store.commit('selection/addNodesToSelection', [node2.id]);
 
                 await Vue.nextTick();
 
-                expect(wrapper.vm.selectedPortIndex).toBe(toPort);
+                expect(wrapper.findComponent(PortViewTabOutput).props('selectedPortIndex')).toBe(toPort);
             });
         });
     });
