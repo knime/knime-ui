@@ -9,9 +9,6 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
  * Implements the v-model pattern.
  */
 export default {
-    compatConfig: {
-        COMPONENT_V_MODEL: false
-    },
     components: {
         FunctionButton,
         CloseIcon,

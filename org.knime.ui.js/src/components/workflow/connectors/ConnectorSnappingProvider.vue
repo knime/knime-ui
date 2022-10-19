@@ -10,9 +10,6 @@ import { mapActions } from 'vuex';
  * ports of the same type (or compatible types) that can be connected together
  */
 export default {
-    compatConfig: {
-        MODE: 3
-    },
     props: {
         /**
          * Id of the port container. Will be used to identify the different connector events

@@ -11,9 +11,6 @@ import Tooltip from './Tooltip.vue';
  * Prevents native browser zooming by catching Ctrl-Wheel events
  */
 export default {
-    compatConfig: {
-        MODE: 3
-    },
     components: {
         Tooltip
     },

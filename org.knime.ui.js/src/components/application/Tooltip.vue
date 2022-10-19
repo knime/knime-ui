@@ -3,9 +3,6 @@
  * A tooltip displaying text and an optional headline
  */
 export default {
-    compatConfig: {
-        MODE: 3
-    },
     props: {
         /**
          * The text to display

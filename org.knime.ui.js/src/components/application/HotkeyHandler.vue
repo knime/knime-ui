@@ -9,9 +9,6 @@ const blacklistTagNames = /^(input|textarea|select)$/i;
  * on document and dispatching the corresponding shortcut handler.
  */
 export default {
-    compatConfig: {
-        RENDER_FUNCTION: false
-    },
     computed: {
         ...mapState('workflow', ['activeWorkflow']),
         ...mapState('canvas', ['suggestPanning']),

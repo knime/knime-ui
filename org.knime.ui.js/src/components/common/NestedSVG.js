@@ -7,9 +7,6 @@ import { h as createElement } from 'vue';
  * It expects one svg in the default slot.
  */
 export default {
-    compatConfig: {
-        RENDER_FUNCTION: false
-    },
     render() {
         const svg = this.$slots.default();
         return createElement(svg[0].children[0]);
