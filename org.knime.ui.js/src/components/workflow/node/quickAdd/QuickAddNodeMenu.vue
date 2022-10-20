@@ -116,7 +116,7 @@ export default {
         <div class="content">
           <ul class="nodes">
             <li
-              v-for="node in recommendedNodes"
+              v-for="node in recommendedNodes.nodes"
               :key="node.id"
             >
               <div
