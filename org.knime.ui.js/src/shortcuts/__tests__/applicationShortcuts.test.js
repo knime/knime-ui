@@ -38,4 +38,12 @@ describe('applicationShortcuts', () => {
         applicationShortcuts.closeWorkflow.execute({ $store });
         expect(mockDispatch).toHaveBeenCalledWith('workflow/closeWorkflow', '1');
     });
+
+    describe('condition', () => {
+        test('closeWorkflow', () => {
+            expect(applicationShortcuts.closeWorkflow.condition({ $store })).toBe(true);
+            $store.state.workflow.activeWorkflow.projectId = null;
+            expect(applicationShortcuts.closeWorkflow.condition({ $store })).toBeFalsy();
+        });
+    });
 });
