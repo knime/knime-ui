@@ -11,6 +11,7 @@ import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
 
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
+import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
 import Sidebar from '../Sidebar.vue';
 
 Vue.config.ignoredElements = ['portal-target'];
@@ -22,6 +23,10 @@ describe('Sidebar', () => {
         const localVue = createLocalVue();
         localVue.use(vuex);
     });
+
+    const mockFeatureFlags = {
+        shouldDisplayEmbeddedDialogs: jest.fn(() => true)
+    };
 
     beforeEach(() => {
         workflow = {
@@ -47,7 +52,8 @@ describe('Sidebar', () => {
         doShallowMount = () => {
             wrapper = shallowMount(Sidebar, {
                 mocks: {
-                    $store: store
+                    $store: store,
+                    $features: mockFeatureFlags
                 }
             });
         };
@@ -123,5 +129,14 @@ describe('Sidebar', () => {
     it('has portal for extension panel', () => {
         doShallowMount();
         expect(wrapper.find('portal-target[name="extension-panel"').exists()).toBe(true);
+    });
+
+    it('should not display node dialog section when flag is set to false', () => {
+        mockFeatureFlags.shouldDisplayEmbeddedDialogs.mockImplementation(() => false);
+
+        doShallowMount();
+
+        expect(wrapper.find('ul').findAll('li').length).toBe(2);
+        expect(wrapper.findComponent(NodeDialogWrapper).exists()).toBe(false);
     });
 });
