@@ -44,7 +44,7 @@ export const changeLoopState = async ({ projectId, workflowId, nodeId, action })
 export const getNodeDescription = async ({ className, settings }) => {
     try {
         const node = await rpc('NodeService.getNodeDescription', { className, settings });
-
+  
         return node;
     } catch (e) {
         consola.error(e);
