@@ -144,7 +144,9 @@ describe('workflow commands', () => {
                 x: 0,
                 y: 1
             },
-            nodeFactory: { className: 'className' }
+            nodeFactory: { className: 'className' },
+            sourceNodeId: 'src-node',
+            sourcePortIdx: 3
         });
         expect(window.jsonrpc).toHaveBeenCalledWith({
             jsonrpc: '2.0',
@@ -158,8 +160,10 @@ describe('workflow commands', () => {
                         x: 0,
                         y: 1
                     },
-                    nodeFactory: { className: 'className' }
-                }
+                    nodeFactory: { className: 'className' },
+                    sourceNodeId: 'src-node',
+                    sourcePortIdx: 3
+                },
             ],
             id: 0
         });
