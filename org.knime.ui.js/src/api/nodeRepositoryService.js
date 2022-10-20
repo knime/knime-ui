@@ -80,14 +80,15 @@ export const getNodeRecommendations = async ({
     fullTemplateInfo
 }) => {
     try {
-        const recommendations = await rpc('NodeRepositoryService.getNodeRecommendations', {
+        const recommendations = await rpc(
+            'NodeRepositoryService.getNodeRecommendations',
             projectId,
             workflowId,
             nodeId,
             portIdx,
             nodesLimit,
             fullTemplateInfo
-        });
+        );
 
         return recommendations;
     } catch (e) {
