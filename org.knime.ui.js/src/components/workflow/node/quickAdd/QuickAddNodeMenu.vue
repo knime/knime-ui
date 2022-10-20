@@ -73,6 +73,7 @@ export default {
                 workflowId,
                 projectId,
                 nodeId: this.nodeId,
+                portIdx: this.port.index,
                 nodesLimit: MAX_NODES,
                 fullTemplateInfo: true
             });

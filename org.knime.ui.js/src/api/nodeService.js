@@ -51,27 +51,3 @@ export const getNodeDescription = async ({ className, settings }) => {
         throw new Error('Could not fetch node description');
     }
 };
-
-export const getNodeRecommendations = async ({
-    projectId,
-    workflowId,
-    nodeId,
-    nodesLimit,
-    fullTemplateInfo
-}) => {
-    try {
-        // TODO: check if this is the correct RPC call
-        const recommendations = await rpc('NodeService.getNodeRecommendations', {
-            projectId,
-            workflowId,
-            nodeId,
-            nodesLimit,
-            fullTemplateInfo
-        });
-
-        return recommendations;
-    } catch (e) {
-        consola.error(e);
-        throw new Error('Could not fetch recommended nodes');
-    }
-};
