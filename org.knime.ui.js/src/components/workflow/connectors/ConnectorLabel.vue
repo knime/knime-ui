@@ -53,14 +53,14 @@ export default {
 <template>
   <foreignObject
     v-if="label.length > 0"
-    class="foreignObject"
+    class="foreign-object"
     :width="labelWidth"
     :height="labelHeight"
     :transform="`translate(${ halfWayPosition })`"
   >
-    <p class="textWrapper">
+    <p class="text-wrapper">
       <span
-        class="streamingLabel"
+        class="streaming-label"
       >
         {{ label }}
       </span>
@@ -69,17 +69,16 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
-.streamingLabel {
+.streaming-label {
   color: white;
   font-size: 12px;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 0 4px rgb(0 0 0 / 25%);
   border-radius: 2px;
   background-color: var(--knime-masala);
   padding: 5px;
 }
 
-.textWrapper {
+.text-wrapper {
   height: 100%;
   display: flex;
   align-items: center;
@@ -87,7 +86,7 @@ export default {
   margin: 0;
 }
 
-.foreignObject {
+.foreign-object {
   pointer-events: none;
 }
 </style>

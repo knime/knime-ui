@@ -67,8 +67,8 @@ describe('Tooltip', () => {
         let gap = propsData.gap + Math.SQRT1_2 * $shapes.tooltipArrowSize;
         expect(wrapper.attributes('style')).toContain('left: 123px;');
         expect(wrapper.attributes('style')).toContain('top: 345px;');
-        expect(wrapper.attributes('style')).toContain(`--gapSize: ${gap}`);
-        expect(wrapper.attributes('style')).toContain(`--arrowSize: ${$shapes.tooltipArrowSize}`);
+        expect(wrapper.attributes('style')).toContain(`--gap-size: ${gap}`);
+        expect(wrapper.attributes('style')).toContain(`--arrow-size: ${$shapes.tooltipArrowSize}`);
     });
 
     it('sets maximum size', () => {

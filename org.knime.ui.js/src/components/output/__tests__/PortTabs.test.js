@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 
-import FlowVarTabIcon from '@/assets/flow-variables.svg';
+import FlowVarTabIcon from 'webapps-common/ui/assets/img/icons/both-flow-variables.svg';
 import TabBar from 'webapps-common/ui/components/TabBar.vue';
 
 import portIcon from '@/components/common/PortIconRenderer';
@@ -26,7 +26,7 @@ describe('PortTabs.vue', () => {
 
     it('passes "value" through', () => {
         propsData = {
-            value: '5',
+            modelValue: '5',
             node: { outPorts: [] }
         };
         doMount();
@@ -36,14 +36,14 @@ describe('PortTabs.vue', () => {
 
     it('emits an "input"-event if TabBar changes', async () => {
         propsData = {
-            value: '5',
+            modelValue: '5',
             node: { outPorts: [] }
         };
         doMount();
 
         wrapper.findComponent(TabBar).vm.$emit('update:value', 1);
         await Vue.nextTick();
-        expect(wrapper.emitted().input[0]).toStrictEqual([1]);
+        expect(wrapper.emitted('update:modelValue')[0]).toStrictEqual([1]);
     });
 
     it('arranges tabs for metanode', () => {
@@ -67,6 +67,34 @@ describe('PortTabs.vue', () => {
         expect(wrapper.findComponent(TabBar).props().possibleValues).toStrictEqual([
             { value: '0', label: '0: flowVariable port', icon: 'portIcon-fv' },
             { value: '1', label: '1: triangle port', icon: 'portIcon-1' }
+        ]);
+        expect(portIcon).toHaveBeenCalledWith(expect.anything(), portIconSize);
+    });
+    
+    it('displays view tab as the first tab', () => {
+        portIcon.mockReturnValue('portIcon');
+            
+        propsData = {
+            hasViewTab: true,
+            node: {
+                kind: 'node',
+                outPorts: [
+                    {
+                        index: 0,
+                        name: 'flowVariable port'
+                    }, {
+                        index: 1,
+                        name: 'triangle port'
+                    }
+                ]
+            }
+        };
+        doMount();
+        
+        expect(wrapper.findComponent(TabBar).props().possibleValues).toStrictEqual([
+            { value: 'view', label: 'View', icon: expect.anything() },
+            { value: '1', label: '1: triangle port', icon: expect.anything() },
+            { value: '0', label: 'Flow Variables', icon: expect.anything() }
         ]);
         expect(portIcon).toHaveBeenCalledWith(expect.anything(), portIconSize);
     });

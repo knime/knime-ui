@@ -12,6 +12,7 @@ import NodeOutput from '@/components/output/NodeOutput.vue';
 
 import WorkflowEntryPage from '@/components/workflow/WorkflowEntryPage.vue';
 import WorkflowPanel from '@/components/workflow/WorkflowPanel.vue';
+import { loadPageBuilder } from '@/components/embeddedViews/pagebuilderLoader';
 
 /**
  * Main page and entry point of KNIME Next
@@ -59,8 +60,9 @@ export default {
         await this.setup();
     },
     
-    mounted() {
+    async mounted() {
         this.checkClipboardSupport();
+        await loadPageBuilder({ window, store: this.$store });
     },
 
     async beforeDestroy() {
@@ -175,12 +177,11 @@ export default {
   --side-bar-width: 40px;
 
   display: grid;
-  grid-template-columns: min-content auto;
-  grid-template-rows: min-content min-content auto;
-  grid-template-areas:
-    "header header"
-    "toolbar toolbar"
-    "sidebar workflow";
+  grid-template:
+    "header header" min-content
+    "toolbar toolbar" min-content
+    "sidebar workflow" auto
+    / min-content auto;
   height: 100vh;
   background: var(--knime-white);
   color: var(--knime-masala);
@@ -197,7 +198,7 @@ export default {
 
 #toolbar {
   grid-area: toolbar;
-  height: 50px;
+  height: var(--app-toolbar-height);
   flex: 0 0 auto;
   padding: 10px;
   background-color: var(--knime-porcelain);

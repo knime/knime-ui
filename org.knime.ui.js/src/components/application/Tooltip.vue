@@ -74,8 +74,8 @@ export default {
   <div
     :class="['tooltip', orientation, type, { hoverable }]"
     :style="{
-      '--arrowSize': `${$shapes.tooltipArrowSize}px`,
-      '--gapSize': `${expandedGap}px`,
+      '--arrow-size': `${$shapes.tooltipArrowSize}px`,
+      '--gap-size': `${expandedGap}px`,
       top: `${y}px`,
       left: `${x}px`,
       maxWidth: `${$shapes.tooltipMaxWidth}px`,
@@ -114,17 +114,17 @@ export default {
 
   &.top {
     transform: translate(-50%, calc(-100% + var(--border-width)));
-    padding-bottom: var(--gapSize);
+    padding-bottom: var(--gap-size);
   }
 
   &.bottom {
-    padding-top: var(--gapSize);
+    padding-top: var(--gap-size);
   }
 
   & .scroller {
     position: relative;
     z-index: 1;
-    padding: 8px 10px 10px 10px;
+    padding: 8px 10px 10px;
     overflow-y: auto;
     font-family: "Roboto Condensed", sans-serif;
     font-size: 13px;
@@ -141,16 +141,16 @@ export default {
   }
 
   & .wrap-arrow {
-    box-shadow: 0 0 10px rgba(62, 58, 57, 0.3);
+    box-shadow: 0 0 10px rgb(62 58 57 / 30%);
     border: var(--border-width) solid;
     position: relative;
   }
 
   &.top .wrap-arrow::after,
   &.bottom .wrap-arrow::before {
-    width: var(--arrowSize);
-    height: var(--arrowSize);
-    content: '';
+    width: var(--arrow-size);
+    height: var(--arrow-size);
+    content: "";
     position: absolute;
     left: 50%;
     border: var(--border-width) solid;
@@ -221,7 +221,7 @@ export default {
 
     & .scroller {
       background-color: var(--knime-masala);
-      padding: 2px 6px 4px 6px;
+      padding: 2px 6px 4px;
     }
   }
 }

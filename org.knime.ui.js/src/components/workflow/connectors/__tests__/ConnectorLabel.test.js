@@ -68,7 +68,7 @@ describe('ConnectorLabel.vue', () => {
             propsData.label = '10';
             doMount();
 
-            expect(wrapper.find('.streamingLabel').exists()).toBe(true);
+            expect(wrapper.find('.streaming-label').exists()).toBe(true);
         });
 
         it('moving node moves label', async () => {

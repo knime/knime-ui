@@ -1,14 +1,27 @@
-<!-- eslint-disable brace-style -->
 <script>
+/* eslint-disable brace-style */
 import { mapState, mapGetters } from 'vuex';
 
 import Button from 'webapps-common/ui/components/Button.vue';
 import ReloadIcon from 'webapps-common/ui/assets/img/icons/reload.svg';
 import PlayIcon from '@/assets/execute.svg';
 
-import { runNodeValidationChecks, runPortValidationChecks } from './output-validator';
 import PortTabs from './PortTabs.vue';
-import PortViewLoader from './PortViewLoader.vue';
+import PortViewTabOutput from './PortViewTabOutput.vue';
+import NodeViewTabOutput from './NodeViewTabOutput.vue';
+
+import { buildMiddleware, validateDragging, validateSelection } from './output-validator';
+
+export const runValidationChecks = ({ selectedNodes, isDragging }) => {
+    const validationMiddleware = buildMiddleware(
+        validateDragging,
+        validateSelection
+    );
+
+    const result = validationMiddleware({ selectedNodes, isDragging })();
+
+    return Object.freeze(result);
+};
 
 /**
  * Node output panel, displaying output port selection bar and port view if possible.
@@ -20,92 +33,73 @@ export default {
         Button,
         ReloadIcon,
         PlayIcon,
-        PortViewLoader
+        PortViewTabOutput,
+        NodeViewTabOutput
     },
     data() {
         return {
-            selectedPortIndex: null,
-            portViewerState: null
+            selectedTab: '',
+            outputState: null
         };
     },
     computed: {
-        ...mapState('application', { projectId: 'activeProjectId', portTypes: 'availablePortTypes' }),
+        ...mapState('application', { projectId: 'activeProjectId', availablePortTypes: 'availablePortTypes' }),
         ...mapState('workflow', { workflowId: state => state.activeWorkflow.info.containerId }),
-        ...mapGetters('workflow', { isDragging: 'isDragging' }),
         ...mapGetters('selection', ['selectedNodes', 'singleSelectedNode']),
+        ...mapGetters('workflow', { isDragging: 'isDragging' }),
 
-        // ========================== Conditions before loading view ============================
-        // The following properties execute from top to bottom
-        
-        nodeErrors() {
-            const { error } = runNodeValidationChecks({
-                selectedNodes: this.selectedNodes,
-                isDragging: this.isDragging,
-                portTypes: this.portTypes
-            });
-
-            return error;
-        },
-        
-        portErrors() {
-            if (this.nodeErrors) { return true; }
-
-            const { error } = runPortValidationChecks({
-                selectedNode: this.singleSelectedNode,
-                portTypes: this.portTypes,
-                selectedPortIndex: this.selectedPortIndex
-            });
-            return error;
+        canSelectTabs() {
+            // allow selecting tabs when:
+            return (
+                // doesn't have errors in the output state
+                !this.outputState?.error ||
+                // or when it doesn't have these specific error types
+                (
+                    this.outputState?.error?.code !== 'NO_SUPPORTED_PORTS' &&
+                    this.outputState?.error?.code !== 'NODE_DRAGGING'
+                )
+            );
         },
 
-        selectedPort() {
-            if (this.nodeErrors) { return null; }
+        isViewTabSelected() {
+            return this.selectedTab === 'view';
+        },
 
-            return this.singleSelectedNode.outPorts[this.selectedPortIndex];
+        selectedPortIndex: {
+            get() {
+                return this.isViewTabSelected ? null : this.selectedTab;
+            },
+            set(value) {
+                this.selectedTab = value;
+            }
         },
 
         validationErrors() {
-            return this.nodeErrors || this.portErrors || null;
-        },
+            const { error } = runValidationChecks({
+                selectedNodes: this.selectedNodes,
+                isDragging: this.isDragging
+            });
 
-        /* Return validation error message or the current state of the port view */
-        placeholderText() {
-            if (this.validationErrors) {
-                return this.validationErrors.message;
-            }
-
-            switch (this.portViewerState?.state) {
-                case 'loading':
-                    return 'Loading data';
-                case 'error':
-                    return this.portViewerState.message;
-                default:
-                    return null;
-            }
-        },
-
-        showLoader() {
-            return this.portViewerState?.state === 'loading' ||
-                   this.validationErrors?.code === 'NODE_BUSY';
-        },
-        
-        showExecuteButton() {
-            return this.validationErrors?.code === 'NODE_UNEXECUTED';
+            return error;
         }
     },
     watch: {
-        nodeErrors: {
-            handler(nodeErrors) {
-                if (nodeErrors) {
-                    this.selectedPortIndex = null;
-                    this.portViewerState = null;
+        validationErrors: {
+            handler(validationErrors) {
+                if (validationErrors) {
+                    this.outputState = {
+                        message: this.validationErrors.message,
+                        error: validationErrors
+                    };
                 } else {
                     this.selectPort();
                 }
             },
-
-            // also set the selected port if a node is already selected before NodeOutput is created
+            // trigger the port selection as soon as the component mounts, based on the validation results
             immediate: true,
+            // watcher won't trigger when the value hasn't been assigned a new value (e.g it stays the same),
+            // and that is the case because the computed property has cached it. But we deep watch to select the port
+            // and update the output state every time the validations retrigger
             deep: true
         }
     },
@@ -115,10 +109,16 @@ export default {
         // then a default for that kind of node is used and the previously selected port is overwritten
         selectPort() {
             let { outPorts, kind: nodeKind } = this.singleSelectedNode;
-  
+
             // check if the currently selected port exists on that node
             if (outPorts[this.selectedPortIndex]) {
                 // keep selected port index;
+                return;
+            }
+
+            // if we're moving to a node which has a view skip automatic port selection
+            if (this.singleSelectedNode.hasView) {
+                this.selectedTab = 'view';
                 return;
             }
 
@@ -140,28 +140,28 @@ export default {
 
 <template>
   <div class="output-container">
-    <!-- Node -->
     <PortTabs
       v-if="singleSelectedNode && singleSelectedNode.outPorts.length"
-      v-model="selectedPortIndex"
+      v-model="selectedTab"
+      :has-view-tab="singleSelectedNode.hasView"
       :node="singleSelectedNode"
-      :disabled="Boolean(nodeErrors)"
+      :disabled="!canSelectTabs"
     />
     
-    <!-- Error Message and Placeholder -->
+    <!-- Error Message / Placeholder message -->
     <div
-      v-if="placeholderText"
-      :class="['placeholder', { isViewerLoading: portViewerState && portViewerState.state === 'loading' }]"
+      v-if="outputState"
+      :class="['placeholder', { 'is-viewer-loading': outputState.loading }]"
     >
       <span>
         <ReloadIcon
-          v-if="showLoader"
+          v-if="outputState.loading"
           class="loading-icon"
         />
-        {{ placeholderText }}
+        {{ outputState.message }}
       </span>
       <Button
-        v-if="showExecuteButton"
+        v-if="outputState.error && outputState.error.code === 'NODE_UNEXECUTED'"
         class="action-button"
         primary
         compact
@@ -171,17 +171,29 @@ export default {
         Execute
       </Button>
     </div>
-    
-    <!-- Port Viewer -->
-    <PortViewLoader
-      v-if="!nodeErrors && !portErrors"
-      :project-id="projectId"
-      :workflow-id="workflowId"
-      :selected-node="singleSelectedNode"
-      :selected-port-index="Number(selectedPortIndex)"
-      class="port-view"
-      @state-change="portViewerState = $event"
-    />
+
+    <template v-if="!validationErrors">
+      <NodeViewTabOutput
+        v-if="isViewTabSelected"
+        :project-id="projectId"
+        :workflow-id="workflowId"
+        :selected-node="singleSelectedNode"
+        :available-port-types="availablePortTypes"
+        class="output"
+        @output-state-change="outputState = $event"
+      />
+
+      <PortViewTabOutput
+        v-if="!isViewTabSelected"
+        :project-id="projectId"
+        :workflow-id="workflowId"
+        :selected-node="singleSelectedNode"
+        :selected-port-index="selectedPortIndex"
+        :available-port-types="availablePortTypes"
+        class="output"
+        @output-state-change="outputState = $event"
+      />
+    </template>
   </div>
 </template>
 
@@ -197,17 +209,7 @@ export default {
   to { opacity: 1; }
 }
 
-.output-container {
-  height: 100%;
-  padding: 10px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  contain: strict;
-}
-
-.port-view {
+.output {
   flex-shrink: 1;
   overflow-y: auto;
 }
@@ -219,7 +221,7 @@ export default {
   justify-content: center;
   align-items: center;
 
-  &.isViewerLoading {
+  & .is-viewer-loading {
     /* Wait for a short amount of time before rendering loading placeholder
        to prevent flickering when the table loads very quickly */
     animation: show 100ms ease-in 150ms;
@@ -241,6 +243,25 @@ export default {
       stroke: var(--knime-masala);
       vertical-align: -6px;
       margin-right: 10px;
+    }
+  }
+}
+
+.output-container {
+  height: 100%;
+  padding: 10px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  contain: strict;
+
+  & >>> .tab-bar {
+    padding-top: 0;
+
+    & span {
+      font-size: 13px;
+      line-height: 61px;
     }
   }
 }

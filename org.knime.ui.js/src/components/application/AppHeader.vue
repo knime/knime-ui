@@ -107,7 +107,7 @@ export default {
 <style lang="postcss" scoped>
 header {
   display: flex;
-  height: 80px;
+  height: var(--app-header-height);
   background-color: var(--knime-masala);
   border-bottom: 4px solid var(--knime-yellow);
   position: relative;
@@ -115,7 +115,7 @@ header {
   /* smalish dark spacer */
 
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: -4px;
     width: 100%;

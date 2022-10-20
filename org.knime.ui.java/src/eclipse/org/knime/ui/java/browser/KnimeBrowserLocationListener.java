@@ -72,18 +72,14 @@ public class KnimeBrowserLocationListener implements LocationListener {
 
 	@Override
 	public void changing(final LocationEvent event) {
-		// Any change of the location (i.e. URL) will be intercepted and the URL
-		// opened in the external browser.
-		// Except if the new location URL is the actual APP page, the EMPTY page,
-		// or a localhost-URL (for development)
-        if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)
-            || isCEFMiddlewareResource(event.location)) {
-            // let the location change happen without further ado
-		    // except ...
-		    // - remove all event listeners because the webapp is newly loaded and will register
-		    //   required listeners (again) - might be a refresh
+		if (isCEFMiddlewareResource(event.location)) {
+			// Allow location change to middleware resources, these are handled by resource handlers.
+		} else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
+			// Allow location change, but de-register any listeners in case the web app is being
+			//   refreshed. Required listeners will be registered on initialisation.
 		    DefaultEventService.getInstance().removeAllEventListeners();
 		} else {
+			// Do not allow location change and open in external browser.
 			if (!Program.launch(event.location)) {
 				NodeLogger.getLogger(this.getClass())
 						.error("Failed to open URL in external browser. The URL is: " + event.location);

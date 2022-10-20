@@ -45,6 +45,7 @@ export const mutations = {
         no need to restore savedContainerScroll, it will be overwritten when setting containerScroll
         don't restore containerSize, it might have changed
     */
+   
     /*
      * suggestPanning is set when the Alt-key is pressed and displays a different cursor
      */

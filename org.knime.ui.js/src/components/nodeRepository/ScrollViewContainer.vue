@@ -62,7 +62,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 .scroll-container {
   background-color: var(--knime-gray-ultra-light);
   overflow-x: hidden;

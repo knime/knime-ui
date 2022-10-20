@@ -106,6 +106,7 @@ export default {
        also supported in Firefox (yes with -webkit prefix) https://caniuse.com/css-line-clamp */
     word-wrap: break-word;
     text-overflow: ellipsis;
+    /* stylelint-disable-next-line value-no-vendor-prefix */
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: var(--node-name-max-lines-shape);

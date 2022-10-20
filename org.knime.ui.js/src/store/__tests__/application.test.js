@@ -7,6 +7,10 @@ jest.mock('@/util/fuzzyPortTypeSearch', () => ({
     makeTypeSearch: jest.fn().mockReturnValue('searchFunction')
 }));
 
+jest.mock('@/util/encodeString', () => ({
+    encodeString: jest.fn(value => value)
+}));
+
 describe('application store', () => {
     let store, storeConfig, fetchApplicationState, localVue, addEventListener, removeEventListener, dispatchSpy,
         loadWorkflow;
@@ -16,8 +20,6 @@ describe('application store', () => {
     };
 
     beforeAll(() => {
-        window.btoa = (value) => value;
-
         fetchApplicationState = jest.fn().mockReturnValue(applicationState);
         addEventListener = jest.fn();
         removeEventListener = jest.fn();

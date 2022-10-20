@@ -114,7 +114,7 @@ export default {
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
     <div
       v-if="isLinked || isStreaming || isInsideLinked"
-      :class="['workflow-info', { onlyStreaming: isStreaming && !isLinked }]"
+      :class="['workflow-info', { 'only-streaming': isStreaming && !isLinked }]"
     >
       <span v-if="isInsideLinked">
         This is a {{ workflow.info.containerType }} inside a linked {{ insideLinkedType }} and cannot be edited.
@@ -124,7 +124,7 @@ export default {
       </span>
       <span
         v-if="isStreaming"
-        :class="['streaming-indicator', { isLinked }]"
+        :class="['streaming-indicator', { 'is-linked': isLinked }]"
       >
         <StreamingIcon />
         Streaming
@@ -165,7 +165,7 @@ export default {
   pointer-events: none;
   user-select: none;
 
-  &.onlyStreaming {
+  &.only-streaming {
     background-color: unset;
     justify-content: flex-end;
     margin-right: 0;
@@ -193,7 +193,7 @@ export default {
       width: 32px;
     }
 
-    &.isLinked {
+    &.is-linked {
       margin-right: 10px;
     }
   }

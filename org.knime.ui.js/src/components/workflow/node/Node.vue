@@ -216,7 +216,7 @@ export default {
             if (this.selectionPreview === null) {
                 return this.isSelected && !this.isDragging;
             }
-            
+
             // preview can override selected state (think: deselect with shift)
             if (this.isSelected && this.selectionPreview === 'hide') {
                 return false;
@@ -241,7 +241,7 @@ export default {
         ...mapActions('workflow', ['openNodeConfiguration']),
         ...mapActions('application', ['switchWorkflow']),
         ...mapActions('selection', ['selectNode', 'deselectAllObjects', 'deselectNode']),
-        
+
         onLeaveHoverArea(e) {
             if (this.$refs.actionbar?.$el?.contains(e.relatedTarget)) {
                 // Used to test for elements that are logically contained inside this node
@@ -303,7 +303,7 @@ export default {
             if (this.isDragging) {
                 return;
             }
-            
+
             if (e.ctrlKey || e.metaKey) {
                 // user tries to open component or metanode
                 e.stopPropagation();
@@ -332,6 +332,7 @@ export default {
   <ConnectorSnappingProvider
     :id="id"
     :position="position"
+    :port-groups="portGroups"
     :port-positions="portPositions"
   >
     <template
@@ -487,7 +488,7 @@ export default {
 
 .node-torso:hover,
 .node-state:hover {
-  filter: 'url(#node-state-shadow)';
+  filter: "url(#node-state-shadow)";
 }
 
 .connection-forbidden .hover-container {

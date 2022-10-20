@@ -193,7 +193,12 @@ public class KnimeBrowserView {
             }
         });
 
-        CEFMiddlewareService.initializePageAndPageBuilderResourceHandlers("Port View", PageResourceHandler.PORT_VIEW);
+        CEFMiddlewareService.initializePageAndPageBuilderResourceHandlers( //
+            null, //
+            PageResourceHandler.PORT_VIEW,  //
+            PageResourceHandler.NODE_VIEW,  //
+            PageResourceHandler.NODE_DIALOG //
+        );
     }
 
     private static EventConsumer initializeJavaBrowserCommunication(final String jsonRpcActionId,

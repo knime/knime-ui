@@ -378,7 +378,7 @@ describe('Node', () => {
 
             wrapper.find('.hover-container').trigger('mouseenter');
             await Vue.nextTick();
-            
+
             expect(wrapper.findComponent(NodeActionBar).props()).toStrictEqual({
                 nodeId: 'root:1',
                 canExecute: true,
@@ -491,14 +491,14 @@ describe('Node', () => {
         it('increases the size of the hover-container on hover', async () => {
             triggerHover(wrapper, false);
             await Vue.nextTick();
-            
+
             const smallHoverWidth = Number(wrapper.find('.hover-area').attributes('width'));
-            
+
             triggerHover(wrapper, true);
             await Vue.nextTick();
-            
+
             const largeHoverWidth = Number(wrapper.find('.hover-area').attributes('width'));
-            
+
             expect(largeHoverWidth > smallHoverWidth).toBe(true);
         });
 
@@ -520,7 +520,7 @@ describe('Node', () => {
             await Vue.nextTick();
 
             const actionBar = wrapper.findComponent(NodeActionBar);
-            
+
             expect(actionBar.exists()).toBe(true);
             expect(actionBar.props()).toStrictEqual({
                 canReset: true,
@@ -557,7 +557,7 @@ describe('Node', () => {
 
                 wrapper.findComponent(NodeActionBar).trigger('mouseleave');
                 await Vue.nextTick();
-                
+
                 expect(wrapper.findComponent(NodeTorso).classes()).not.toContain('hover');
             });
         });
@@ -565,15 +565,15 @@ describe('Node', () => {
         it('enlargens the hover area to include ports', async () => {
             triggerHover(wrapper, true);
             await Vue.nextTick();
-            
+
             const previousHoverHeight = Number(wrapper.find('.hover-area').attributes('height'));
             expect(previousHoverHeight).toBe(89);
-            
+
             wrapper.findComponent(NodePorts).vm.$emit('update-port-positions', {
                 in: [[0, 96.5]],
                 out: []
             });
-            
+
             await Vue.nextTick();
 
             const currentHoverHeight = Number(wrapper.find('.hover-area').attributes('height'));
@@ -615,7 +615,7 @@ describe('Node', () => {
 
         it('forwards targetPort to children', async () => {
             const { position: nodePosition } = commonNode;
-            
+
             // start with mock port positions, based on the node's position
             const mockPortPositions = { in: [[nodePosition.x, nodePosition.y + 20]], out: [] };
             // update Node.vue
@@ -624,14 +624,14 @@ describe('Node', () => {
             // connector enters
             wrapper.find('.hover-container').trigger('connector-enter', { preventDefault: jest.fn() });
             await Vue.nextTick();
-            
+
             // connector moves
             wrapper.find('.hover-container').trigger('connector-move', {
                 detail: {
                     x: commonNode.position.x + 10,
                     y: commonNode.position.y + 10,
                     targetPortDirection: 'in',
-                    onSnapCallback: () => true
+                    onSnapCallback: () => ({ didSnap: true })
                 }
             });
 
@@ -663,7 +663,7 @@ describe('Node', () => {
                         x: commonNode.position.x + x,
                         y: commonNode.position.y + y,
                         targetPortDirection: direction,
-                        onSnapCallback: () => true
+                        onSnapCallback: () => ({ didSnap: true })
                     }
                 });
             };
@@ -674,10 +674,10 @@ describe('Node', () => {
             test('above upper bound', async () => {
                 moveConnectorTo(0, -21);
                 await Vue.nextTick();
-                
+
                 expect(isOutside()).toBe(true);
             });
-            
+
             test('below upper bound', async () => {
                 moveConnectorTo(0, -20);
                 await Vue.nextTick();
@@ -738,7 +738,7 @@ describe('Node', () => {
                                 connectorHover,
                                 connectionForbidden,
                                 isConnectionSource,
-                                
+
                                 on: mockConnectorListeners
                             });
                         }
@@ -752,7 +752,7 @@ describe('Node', () => {
 
             test('illegal', async () => {
                 doMount(getConnectorSnappingProviderStub({ connectionForbidden: true }));
-                
+
                 await Vue.nextTick();
 
                 expect(wrapper.classes('connection-forbidden')).toBe(true);
