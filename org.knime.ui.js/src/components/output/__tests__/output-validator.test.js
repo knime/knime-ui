@@ -1,4 +1,4 @@
-import { runNodeValidationChecks, runPortValidationChecks } from '../output-validator';
+import * as outputValidator from '../output-validator';
 
 describe('output-validator.js', () => {
     const portTypes = {
@@ -30,6 +30,17 @@ describe('output-validator.js', () => {
     };
 
     describe('Node validation checks', () => {
+        const runNodeValidationChecks = (params) => {
+            const runMiddleware = outputValidator.buildMiddleware(
+                outputValidator.validateDragging,
+                outputValidator.validateSelection,
+                outputValidator.validateNodeConfigurationState,
+                outputValidator.validateOutputPorts
+            )(params);
+
+            return runMiddleware();
+        };
+
         it('validates that node is not being dragged', () => {
             const result = runNodeValidationChecks({ selectedNodes: [dummyNode], portTypes, isDragging: true });
             expect(result).toEqual({
@@ -121,7 +132,7 @@ describe('output-validator.js', () => {
                     isDragging: false
                 });
     
-                expect(result.error).toBeNull();
+                expect(result.error).toBeUndefined();
             });
         });
         
@@ -145,6 +156,16 @@ describe('output-validator.js', () => {
 
     // Port validation checks assume that the `selectedNode` is already valid
     describe('Port validation checks', () => {
+        const runPortValidationChecks = (params) => {
+            const runMiddleware = outputValidator.buildMiddleware(
+                outputValidator.validatePortSelection,
+                outputValidator.validatePortSupport,
+                outputValidator.validateNodeExecutionState
+            )(params);
+
+            return runMiddleware();
+        };
+
         it('validates that a port is selected', () => {
             const result = runPortValidationChecks({
                 selectedNode: dummyNode,
@@ -228,7 +249,7 @@ describe('output-validator.js', () => {
                     selectedPortIndex
                 });
 
-                expect(result.error).toBeNull();
+                expect(result.error).toBeUndefined();
             });
 
             it.each([

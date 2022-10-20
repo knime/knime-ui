@@ -1,42 +1,81 @@
 /**
+ * Determines whether a given component (by name) is registered on the given Vue instance
+ * @param {Object} param
+ * @param {Object} param.vueInstance The vue instance to check
+ * @param {String} param.componentName The component name to assert
+ * @returns {Boolean} whether the component is already registered or not
+ */
+export const isComponentRegistered = ({ vueInstance, componentName }) => Boolean(vueInstance.component(componentName));
+
+const registerComponent = ({ vueInstance, componentName, component }) => {
+    vueInstance.component(componentName, component);
+};
+
+/**
+ * Dynamically loads a script and appends its contents to the document head
+ * @param {Object} payload
+ * @param {Object} payload.window Window object reference. Useful when loading to an iframe
+ * @param {String} payload.url url to fetch the script from
+ * @returns {Promise} A promise that is resolved with the script element in case of success, or rejected on error.
+ */
+export const loadScript = ({ window, url }) => new Promise((resolve, reject) => {
+    const script = window.document.createElement('script');
+    
+    script.async = true; // this is the default, but let's be safe
+    
+    script.addEventListener('load', () => {
+        resolve(script);
+    });
+    
+    script.addEventListener('error', () => {
+        reject(new Error(`Script loading of "${url}" failed`));
+        window.document.head.removeChild(script);
+    });
+    
+    script.src = url;
+    window.document.head.appendChild(script);
+});
+
+
+/**
  * Loads a component from an url and registers it
  * Requires the component to be built in library mode
  *
- * @param { Object } param.window window reference
- * @param { String } param.resourceLocation url to load component from
- * @param { String } param.componentName name of component
- * @returns { Promise }
+ * @param {Object} param.window window reference
+ * @param {String} param.resourceLocation url to load component from
+ * @param {String} param.componentName name of component
+ * @param {Function} param.onLoad callback function that will execute as soon as the component is loaded, but before
+ * it's registered in the Vue instance
+ * @returns {Promise} A promise that is resolved if the component was loaded successfully.
  */
-export const loadComponentLibrary = async ({ window, resourceLocation, componentName }) => {
-    // resolve, if component has already been loaded
-    if (window[componentName]) {
-        return Promise.resolve();
+export const loadComponentLibrary = async ({
+    window,
+    vueInstance,
+    resourceLocation,
+    componentName,
+    onLoad = null
+}) => {
+    const activeVueInstance = vueInstance || window.Vue;
+    // resolve immediately if component has already been loaded
+    if (isComponentRegistered({ vueInstance: activeVueInstance, componentName })) {
+        return Promise.resolve(activeVueInstance.component(componentName));
     }
     
-    // Load and mount component library
-    await new Promise((resolve, reject) => {
-        const script = window.document.createElement('script');
-        script.async = true;
-        
-        script.addEventListener('load', () => {
-            resolve(script);
-        });
-        
-        script.addEventListener('error', () => {
-            reject(new Error(`Script loading of "${resourceLocation}" failed`));
-            window.document.head.removeChild(script);
-        });
-        
-        script.src = resourceLocation;
-        window.document.head.appendChild(script);
-    });
+    // Load and mount component library script
+    await loadScript({ window, url: resourceLocation });
     
     // Lib build defines component on `window` using the name defined during build.
     // This name has to match the componentName
     const component = window[componentName];
     if (!component) {
-        throw new Error(`Component loading failed. Script invalid.`);
+        throw new Error(`Component "${componentName}" loading failed. Script invalid.`);
     }
 
-    return Promise.resolve();
+    onLoad?.({ component });
+    
+    registerComponent({ vueInstance: activeVueInstance, componentName, component });
+    // clean up Window object
+    delete window[componentName];
+
+    return Promise.resolve(activeVueInstance.component(componentName));
 };

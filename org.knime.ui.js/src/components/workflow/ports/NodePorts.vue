@@ -7,7 +7,6 @@ import NodePort from './NodePort.vue';
 
 /**
  * This component renders and handles interactions with a Node's Ports
- * It needs to be a direct child of <Node> because is coupled by direct access to portBarBottom
  */
 export default {
     components: {
@@ -19,7 +18,7 @@ export default {
             type: String,
             required: true
         },
-        
+
         nodeKind: {
             type: String,
             required: true,
@@ -45,7 +44,7 @@ export default {
             type: Object,
             default: null
         },
-        
+
         /** object that contains information which port to highlight */
         targetPort: {
             type: Object,
@@ -88,7 +87,7 @@ export default {
          * The position for each port is an array with two coordinates [x, y].
          */
         portPositions() {
-            return {
+            let positions = {
                 in: portPositions({
                     portCount: this.inPorts.length,
                     isMetanode: this.isMetanode
@@ -99,24 +98,35 @@ export default {
                     isOutports: true
                 })
             };
-        },
-        addPortPlaceholderPositions() {
-            return {
-                input: placeholderPosition({
+
+            // add placeholder positions to enable the drop to a placeholder
+            if (this.canAddPort.input) {
+                positions.in.push(placeholderPosition({
                     portCount: this.inPorts.length,
                     isMetanode: this.isMetanode
-                }),
-                output: placeholderPosition({
+                }));
+            }
+
+            if (this.canAddPort.output) {
+                positions.out.push(placeholderPosition({
                     portCount: this.outPorts.length,
                     isMetanode: this.isMetanode,
                     isOutport: true
-                })
+                }));
+            }
+            return positions;
+        },
+        addPortPlaceholderPositions() {
+            // the last position is the one of the placeholder
+            return {
+                input: this.portPositions.in[this.portPositions.in.length - 1],
+                output: this.portPositions.out[this.portPositions.out.length - 1]
             };
         },
         /* eslint-disable brace-style, curly */
         canAddPort() {
             if (!this.isWritable) return { input: false, output: false };
-            
+
             if (this.isComponent || this.isMetanode) return { input: true, output: true };
 
             if (this.portGroups) {
@@ -126,7 +136,7 @@ export default {
                     output: portGroups.some(portGroup => portGroup.canAddOutPort)
                 };
             }
-            
+
             // Native node without port groups
             return { input: false, output: false };
         }
@@ -189,6 +199,11 @@ export default {
         },
         isPortTargeted({ index }, side) {
             return this.targetPort?.side === side && this.targetPort.index === index;
+        },
+        isPlaceholderPortTargeted(side) {
+            return side === 'input'
+                ? this.isPortTargeted({ index: this.inPorts.length }, 'in')
+                : this.isPortTargeted({ index: this.outPorts.length }, 'out');
         },
         addPort({ side, typeId, portGroup }) {
             this.addNodePort({
@@ -262,6 +277,8 @@ export default {
         v-if="canAddPort[side]"
         :key="side"
         :side="side"
+        :targeted="isPlaceholderPortTargeted(side)"
+        :target-port="targetPort"
         :node-id="nodeId"
         :position="addPortPlaceholderPositions[side]"
         :port-groups="portGroups"

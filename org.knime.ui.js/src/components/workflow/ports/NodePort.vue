@@ -10,13 +10,13 @@ import Connector from '@/components/workflow/connectors/Connector.vue';
 import NodePortActions from './NodePortActions.vue';
 
 const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) => {
-    const isPortFree = toPort.connectedVia.length === 0;
-    
-    if (isPortFree) {
-        return true;
-    }
-
     if (targetPortDirection === 'in') {
+        const isPortFree = toPort.connectedVia.length === 0;
+    
+        if (isPortFree) {
+            return true;
+        }
+
         // In ports can only have 1 connection at a time
         const [connectionId] = toPort.connectedVia;
 
@@ -24,7 +24,7 @@ const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) =>
         return connections[connectionId].allowedActions.canDelete;
     }
 
-    return false;
+    return true;
 };
 
 const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {
@@ -54,6 +54,94 @@ const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {
 
     // lastly, if port types ids don't match then they can't be connected
     return fromPort.typeId === toPort.typeId;
+};
+
+// creates an array of [group, supportedPortTypes] entries even for metanodes and components (where the group is null)
+const groupAddablePortTypesByPortGroup = ({
+    targetPortGroups,
+    availablePortTypes,
+    targetPortDirection
+}) => {
+    // use all port types for metanodes and components (we assume them if portGroups is null!)
+    if (!targetPortGroups) {
+        return [[null, Object.keys(availablePortTypes)]]; // end here
+    }
+
+    // unwrap compatible port type by portGroup
+    const portGroupEntries = Object.entries(targetPortGroups);
+    const filterProp = targetPortDirection === 'in' ? 'canAddInPort' : 'canAddOutPort';
+    const portGroupsForTargetDirection = portGroupEntries.filter(([_, portGroup]) => portGroup[filterProp]);
+
+    return portGroupsForTargetDirection.map(([groupName, portGroup]) => [groupName, portGroup.supportedPortTypeIds]);
+};
+
+const findTypeIdFromPlaceholderPort = ({
+    fromPort,
+    availablePortTypes,
+    targetPortGroups,
+    targetPortDirection
+}) => {
+    let suggestedTypeId,
+        portGroup;
+
+    const addablePortTypesGrouped = groupAddablePortTypesByPortGroup({
+        availablePortTypes,
+        targetPortGroups,
+        targetPortDirection
+    });
+
+    const directMatches = addablePortTypesGrouped.filter(([_, supportedIds]) => supportedIds.includes(fromPort.typeId));
+
+    // TODO: NXT-1242 let the user choose the portGroup
+    // for now just use the first direct match
+    if (directMatches.length > 0) {
+        suggestedTypeId = fromPort.typeId;
+        [[portGroup]] = directMatches;
+    } else {
+        const compatibleMatches = addablePortTypesGrouped.map(([group, supportedTypeIds]) => {
+            const compatibleTypeIds = supportedTypeIds.filter(typeId => checkPortCompatibility({
+                fromPort,
+                toPort: { typeId },
+                availablePortTypes
+            }));
+            return compatibleTypeIds.length ? [group, compatibleTypeIds] : null;
+        }).filter(Boolean);
+
+        // TODO: NXT-1242 let the user choose the compatible match if its more then one
+        if (compatibleMatches.length > 0) {
+            [[portGroup, [suggestedTypeId]]] = compatibleMatches;
+        }
+    }
+
+    return {
+        didSnap: Boolean(suggestedTypeId),
+        createPortFromPlaceholder: {
+            typeId: suggestedTypeId,
+            portGroup
+        }
+    };
+};
+
+const checkCompatibleConnectionAndPort = ({
+    fromPort,
+    toPort,
+    availablePortTypes,
+    targetPortDirection,
+    connections
+}) => {
+    const isSupportedConnection = checkConnectionSupport({
+        toPort,
+        connections,
+        targetPortDirection
+    });
+
+    const isCompatiblePort = checkPortCompatibility({
+        fromPort,
+        toPort,
+        availablePortTypes
+    });
+
+    return { didSnap: isSupportedConnection && isCompatiblePort };
 };
 
 export default {
@@ -95,6 +183,7 @@ export default {
         }
     },
     data: () => ({
+        // represents the <Connector> line that can be dragged to other ports
         dragConnector: null,
         didMove: false,
         pointerDown: false,
@@ -125,7 +214,7 @@ export default {
             }
             return template;
         },
-        
+
         // implemented as required by the tooltip mixin
         tooltip() {
             // table ports have less space than other ports, because the triangular shape naturally creates a gap
@@ -161,7 +250,7 @@ export default {
                 return;
             }
             e.stopPropagation();
-            
+
             this.pointerDown = true;
             e.target.setPointerCapture(e.pointerId);
         },
@@ -196,7 +285,7 @@ export default {
             if (!this.dragConnector) {
                 return;
             }
-            
+
             // find HTML-Element below cursor
             const hitTarget = document.elementFromPoint(e.x, e.y);
 
@@ -205,7 +294,7 @@ export default {
                 this.dragConnector.absolutePoint = [x, y];
             };
             setDragConnectorCoords(absoluteX, absoluteY);
-            
+
             const targetPortDirection = this.direction === 'out' ? 'in' : 'out';
             // create move event
             const moveEvent = new CustomEvent('connector-move', {
@@ -213,22 +302,26 @@ export default {
                     x: absoluteX,
                     y: absoluteY,
                     targetPortDirection,
-                    onSnapCallback: ({ snapPosition, targetPort }) => {
+                    onSnapCallback: ({ snapPosition, targetPort, targetPortGroups }) => {
                         const [x, y] = snapPosition;
-                        const isSupportedConnection = checkConnectionSupport({
-                            toPort: this.port,
-                            connections: this.connections,
-                            targetPortDirection
-                        });
 
-                        const isCompatiblePort = checkPortCompatibility({
-                            fromPort: this.port,
-                            toPort: targetPort,
-                            availablePortTypes: this.availablePortTypes
-                        });
+                        let result = targetPort.isPlaceHolderPort
+                            ? findTypeIdFromPlaceholderPort({
+                                fromPort: this.port,
+                                availablePortTypes: this.availablePortTypes,
+                                targetPortDirection,
+                                targetPortGroups
+                            })
+                            : checkCompatibleConnectionAndPort({
+                                fromPort: this.port,
+                                toPort: targetPort,
+                                availablePortTypes: this.availablePortTypes,
+                                targetPortDirection,
+                                connections: this.connections
+                            });
 
-                        this.didDragToCompatibleTarget = isSupportedConnection && isCompatiblePort;
-                        
+                        this.didDragToCompatibleTarget = result.didSnap;
+
                         // setting the drag connector coordinates will cause the connector to snap
                         // We prevent that if it's not a compatible target
                         if (this.didDragToCompatibleTarget) {
@@ -236,7 +329,8 @@ export default {
                         }
 
                         // The callback should return whether a snapped connection was made to a compatible target
-                        return this.didDragToCompatibleTarget;
+                        // and needs to provide data for the to be added port for placeholder snaps
+                        return result;
                     }
                 },
                 bubbles: true
@@ -301,7 +395,7 @@ export default {
         }),
         onPointerUp(e) {
             this.pointerDown = false;
-            
+
             if (!this.dragConnector) {
                 return;
             }
@@ -309,17 +403,13 @@ export default {
             e.stopPropagation();
             e.target.releasePointerCapture(e.pointerId);
 
-            let { sourceNode, sourcePort, destNode, destPort } = this.dragConnector;
-
             if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
                 let dropped = this.lastHitTarget.element.dispatchEvent(
                     new CustomEvent(
                         'connector-drop', {
                             detail: {
-                                sourceNode,
-                                sourcePort,
-                                destNode,
-                                destPort,
+                                startNode: this.nodeId,
+                                startPort: this.port.index,
                                 // when connection is dropped we pass in whether the last hit target was compatible.
                                 // incompatible targets will be ignored and will not be connected to
                                 isCompatible: this.lastHitTarget.isCompatible

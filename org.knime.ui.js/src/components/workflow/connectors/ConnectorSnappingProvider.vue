@@ -45,6 +45,11 @@ export default {
             type: Object,
             required: true,
             validator: value => Array.isArray(value.in) && Array.isArray(value.out)
+        },
+
+        portGroups: {
+            type: Object,
+            default: null
         }
     },
 
@@ -98,9 +103,9 @@ export default {
         this.$root.$on('connector-start', this.onConnectorStart);
         this.$root.$on('connector-end', this.onConnectorEnd);
     },
-    
+
     methods: {
-        ...mapActions('workflow', ['connectNodes']),
+        ...mapActions('workflow', ['connectNodes', 'addNodePort']),
         onConnectorStart({ validConnectionTargets, startNodeId }) {
             // Don't set the `connectionForbidden` state when the checks are disabled for all "valid" targets
             // e.g.: Metanode portbar ports can always be connected to (provided they're "compatible")
@@ -156,7 +161,7 @@ export default {
             const snapPartitions = this.snapPartitions[targetPortDirection];
 
             const portPositions = this.portPositions[targetPortDirection];
-            
+
             // no port, no snap. assumes partitions don't change while dragging connector
             if (!snapPartitions) {
                 return;
@@ -180,13 +185,25 @@ export default {
             const [relPortX, relPortY] = portPositions[snapPortIndex];
             const absolutePortPosition = [relPortX + this.position.x, relPortY + this.position.y];
 
+            const possibleTargetPorts = ports[`${targetPortDirection}Ports`];
+            let targetPortData;
+
+            // If the snapPortIndex is smaller than the port list then a regular port is being targeted,
+            // otherwise it’s most likely the placeholder port that is being targeted
+            if (snapPortIndex < possibleTargetPorts.length) {
+                targetPortData = possibleTargetPorts[snapPortIndex];
+            } else {
+                targetPortData = { isPlaceHolderPort: true };
+            }
+
             // Position connector's end. A move event will provide an `onSnapCallback`
             // which will determine whether the snapping can happen for the given target
-            const didSnap = e.detail.onSnapCallback({
-                targetPort: ports[`${targetPortDirection}Ports`][snapPortIndex],
+            // for placeholder snaps it will also return the data required to add the port
+            const { didSnap, createPortFromPlaceholder } = e.detail.onSnapCallback({
+                targetPort: targetPortData,
+                targetPortGroups: this.portGroups,
                 snapPosition: absolutePortPosition
             });
-
 
             if (didSnap && this.targetPort?.index !== snapPortIndex) {
                 // set the target port's side and index
@@ -195,41 +212,71 @@ export default {
                     side: targetPortDirection,
                     index: snapPortIndex
                 };
+                // add data to targetPort if we need to create that port before we connect to it
+                if (createPortFromPlaceholder) {
+                    this.targetPort = { ...this.targetPort, ...createPortFromPlaceholder, isPlaceHolderPort: true };
+                }
             }
         },
-        onConnectorDrop(e) {
-            if (isNaN(this.targetPort?.index)) {
-                // dropped on component, but no port is targeted
-                e.preventDefault();
-                return;
-            }
-
-            const { destNode, destPort, sourceNode, sourcePort, isCompatible } = e.detail;
-
-            const newConnector = this.targetPort.side === 'in'
+        addPort({ side, typeId, portGroup }) {
+            return this.addNodePort({
+                nodeId: this.id,
+                side: side === 'in' ? 'input' : 'output',
+                typeId,
+                portGroup
+            });
+        },
+        createConnectorObject({ startNode, startPort, targetNode, targetPort, side }) {
+            return side === 'in'
                 ? {
-                    sourceNode,
-                    sourcePort,
-                    destNode: this.id,
-                    destPort: this.targetPort.index
+                    sourceNode: startNode,
+                    sourcePort: startPort,
+                    destNode: targetNode,
+                    destPort: targetPort
                 }
                 : {
-                    sourceNode: this.id,
-                    sourcePort: this.targetPort.index,
-                    destNode,
-                    destPort
+                    sourceNode: targetNode,
+                    sourcePort: targetPort,
+                    destNode: startNode,
+                    destPort: startPort
                 };
+        },
+        async onConnectorDrop({ preventDefault, detail: { startNode, startPort, isCompatible } }) {
+            // copy over the target port as the async backend calls might come after it has been set to null by
+            // onConnectorEnd()
+            let targetPort = { ...this.targetPort };
+
+            // dropped on component, but no port is targeted
+            if (isNaN(targetPort?.index)) {
+                preventDefault();
+                return;
+            }
 
             // A drop event defines whether the target is compatible for connection. Regardless of validity,
             // a connection target can be compatible or incompatible; e.g.: A port that doesn't create a connection
             // circle would be "valid" but if it has a different type than the initial port then it's "incompatible"
-            if (isCompatible) {
-                this.connectNodes(newConnector);
-            } else {
-                e.preventDefault();
+            if (!isCompatible) {
+                preventDefault();
+                return; // end here
             }
-        },
 
+            // create the port if the targetPort is marked as a placeholder port
+            if (targetPort.isPlaceHolderPort) {
+                const { newPortIdx } = await this.addPort(targetPort);
+                // update target port index: the backend might have added the port
+                // above the others while the placeholder is always the last one
+                targetPort.index = newPortIdx;
+                targetPort.isPlaceHolderPort = false;
+            }
+
+            this.connectNodes(this.createConnectorObject({
+                startNode,
+                startPort,
+                targetPort: targetPort.index,
+                targetNode: this.id,
+                side: targetPort.side
+            }));
+        },
         isOutsideConnectorHoverRegion(x, y, targetPortDirection) {
             const upperBound = -20;
 
