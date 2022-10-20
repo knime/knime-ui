@@ -8,6 +8,22 @@ jest.mock('@api', () => ({
 }));
 
 describe('applicationShortcuts', () => {
+    let mockDispatch, $store;
+
+    beforeEach(() => {
+        mockDispatch = jest.fn();
+        $store = {
+            dispatch: mockDispatch,
+            state: {
+                workflow: {
+                    activeWorkflow: {
+                        projectId: '1'
+                    }
+                }
+            }
+        };
+    });
+
     test('openWorkflow', () => {
         applicationShortcuts.openWorkflow.execute();
         expect(mockOpenWorkflow).toHaveBeenCalledTimes(1);
@@ -19,8 +35,7 @@ describe('applicationShortcuts', () => {
     });
 
     test('closeWorkflow', () => {
-        let mockDispatch = jest.fn();
-        applicationShortcuts.closeWorkflow.execute({ $store: { dispatch: mockDispatch } });
-        expect(mockDispatch).toHaveBeenCalledWith('workflow/closeWorkflow');
+        applicationShortcuts.closeWorkflow.execute({ $store });
+        expect(mockDispatch).toHaveBeenCalledWith('workflow/closeWorkflow', '1');
     });
 });

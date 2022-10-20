@@ -18,8 +18,7 @@ export const actions = {
     },
 
     /* Tell the backend to unload this workflow from memory */
-    async closeWorkflow({ dispatch, state }) {
-        let { activeWorkflow: { projectId } } = state;
+    async closeWorkflow({ dispatch, state }, projectId) {
         const didClose = await closeWorkflow({ projectId });
         
         if (didClose) {

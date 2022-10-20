@@ -73,7 +73,7 @@ export default {
     </div>
     <div class="toolbar">
       <ul
-        v-if="openProjects.length > 1"
+        v-if="openProjects.length >= 1"
         class="project-tabs"
       >
         <Carousel>
@@ -90,7 +90,7 @@ export default {
               <FunctionButton
                 :class="[ isHoveredOver === projectId ? 'visible' : null ]"
                 class="icon"
-                @click.stop="closeWorkflow"
+                @click.stop="closeWorkflow(projectId)"
               >
                 <CloseIcon />
               </FunctionButton>

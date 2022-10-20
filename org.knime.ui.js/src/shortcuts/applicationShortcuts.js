@@ -11,7 +11,7 @@ export default {
         text: 'Close workflow',
         hotkey: ['Ctrl', 'W'],
         execute:
-            ({ $store }) => $store.dispatch('workflow/closeWorkflow')
+            ({ $store }) => $store.dispatch('workflow/closeWorkflow', $store.state.workflow.activeWorkflow?.projectId)
     },
     createWorkflow: {
         text: 'Create workflow',
