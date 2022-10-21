@@ -69,7 +69,8 @@ export default {
             const workflowId = this.workflow.info.containerId;
             const projectId = this.workflow.projectId;
 
-            this.recommendedNodes = await getNodeRecommendations({
+            // call api
+            const recommendedNodesResult = await getNodeRecommendations({
                 workflowId,
                 projectId,
                 nodeId: this.nodeId,
@@ -77,6 +78,8 @@ export default {
                 nodesLimit: MAX_NODES,
                 fullTemplateInfo: true
             });
+
+            this.recommendedNodes = recommendedNodesResult.nodes;
         },
         async addNode({ nodeFactory }) {
             if (!this.isWritable) {
@@ -116,7 +119,7 @@ export default {
         <div class="content">
           <ul class="nodes">
             <li
-              v-for="node in recommendedNodes.nodes"
+              v-for="node in recommendedNodes"
               :key="node.id"
             >
               <div
