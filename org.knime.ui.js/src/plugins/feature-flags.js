@@ -12,7 +12,9 @@ export default ({ store }, inject) => {
     const features = {
         shouldDisplayEmbeddedDialogs: () => getFlagValue(allFeatures, 'embedded_views_and_dialogs'),
         
-        shouldDisplayEmbeddedViews: () => getFlagValue(allFeatures, 'embedded_views_and_dialogs')
+        shouldDisplayEmbeddedViews: () => getFlagValue(allFeatures, 'embedded_views_and_dialogs'),
+
+        shouldLoadPageBuilder: () => getFlagValue(allFeatures, 'embedded_views_and_dialogs')
     };
 
     inject('features', features);
