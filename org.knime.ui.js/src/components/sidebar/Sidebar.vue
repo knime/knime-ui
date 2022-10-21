@@ -2,17 +2,20 @@
 import { mapState, mapActions, mapMutations } from 'vuex';
 import InfoIcon from 'webapps-common/ui/assets/img/icons/circle-info.svg';
 import NodeCogIcon from 'webapps-common/ui/assets/img/icons/node-cog.svg';
+import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
 import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
 
 import { TABS } from '@/store/panel';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
 import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
+import SpaceExplorer from '@/components/spaceExplorer/SpaceExplorer.vue';
 
 import LeftCollapsiblePanel from './LeftCollapsiblePanel.vue';
 
 export default {
     components: {
+        SpaceExplorer,
         InfoIcon,
         PlusIcon,
         LeftCollapsiblePanel,
@@ -61,6 +64,13 @@ export default {
                     isActive: this.isTabActive(TABS.NODE_DIALOG),
                     isExpanded: this.expanded,
                     onClick: () => this.clickItem(TABS.NODE_DIALOG)
+                },
+                {
+                    title: 'Space explorer',
+                    icon: CubeIcon,
+                    isActive: this.isTabActive(TABS.SPACE_EXPLORER),
+                    isExpanded: this.expanded,
+                    onClick: () => this.clickItem(TABS.SPACE_EXPLORER)
                 }
             ];
         }
@@ -125,6 +135,11 @@ export default {
         <NodeDialogWrapper
           v-show="isTabActive(TABS.NODE_DIALOG)"
           key="node-dialog"
+        />
+
+        <SpaceExplorer
+          v-show="isTabActive(TABS.SPACE_EXPLORER)"
+          key="space-explorer"
         />
       </transition-group>
     </LeftCollapsiblePanel>

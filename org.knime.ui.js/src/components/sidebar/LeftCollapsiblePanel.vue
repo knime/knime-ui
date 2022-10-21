@@ -79,7 +79,7 @@ export default {
 }
 
 .container {
-  background-color: var(--knime-gray-ultra-light);
+  background-color: var(--knime-porcelain);
   overflow-x: hidden;
   transition: width 0.3s ease;
 }
@@ -92,7 +92,7 @@ button {
   border: none;
   width: 10px;
   padding: 0;
-  background-color: var(--knime-porcelain);
+  background-color: var(--knime-silver-sand-semi);
   cursor: pointer;
 
   &:hover {
