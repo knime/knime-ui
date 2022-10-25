@@ -1,7 +1,8 @@
 import * as Vue from 'vue';
 import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '@api';
+import { encodeString } from '@/util/encodeString';
 
-const getCanvasStateKey = (input) => window.btoa(input);
+const getCanvasStateKey = (input) => encodeString(input);
 const getRootWorkflowId = (workflowId) => workflowId.split(':')[0];
 
 /*
