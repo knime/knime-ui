@@ -4,7 +4,7 @@ import { getNodeRecommendations } from '@api';
 
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
-import { mapNodePorts } from '@/util/portDataMapper.js';
+import { mapNodePorts } from '@/util/portDataMapper';
 
 const MAX_NODES = 12;
 
@@ -167,7 +167,7 @@ export default {
 
   & hr {
     border: none;
-    border-top: 1px solid var(--knime-silver-sand)
+    border-top: 1px solid var(--knime-silver-sand);
   }
 
   & .results {
@@ -206,6 +206,7 @@ export default {
       & label {
         max-height: 26px;
         max-width: 90px;
+        /* stylelint-disable-next-line value-no-vendor-prefix */
         display: -webkit-box;
         -webkit-box-orient: vertical;
         -webkit-line-clamp: 2;
@@ -228,12 +229,13 @@ export default {
         cursor: pointer;
 
         & .node-preview {
-          filter: url(#node-torso-shadow);
+          filter: url("#node-torso-shadow");
         }
       }
 
       &:focus {
         outline: 0;
+
         /* outline with border-radius is not working properly in Safari and CEF */
         box-shadow: 0 0 0 calc(var(--selected-node-stroke-width-shape) * 1px) var(--selection-active-border-color);
         border-radius: calc(var(--selected-node-border-radius-shape) * 1px);

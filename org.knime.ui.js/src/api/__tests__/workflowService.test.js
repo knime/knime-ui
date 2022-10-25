@@ -163,7 +163,7 @@ describe('workflow commands', () => {
                     nodeFactory: { className: 'className' },
                     sourceNodeId: 'src-node',
                     sourcePortIdx: 3
-                },
+                }
             ],
             id: 0
         });

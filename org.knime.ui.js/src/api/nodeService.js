@@ -44,7 +44,7 @@ export const changeLoopState = async ({ projectId, workflowId, nodeId, action })
 export const getNodeDescription = async ({ className, settings }) => {
     try {
         const node = await rpc('NodeService.getNodeDescription', { className, settings });
-  
+
         return node;
     } catch (e) {
         consola.error(e);
@@ -71,6 +71,8 @@ export const getNodeView = async ({ projectId, workflowId, nodeId }) => {
 
 /**
  * Calls the 'updateDataPointSelection' endpoint (see API documentation).
+ * @param {String} projectId
+ * @returns {void}
  */
 export const updateDataPointSelection = async (projectId) => {
     // TODO: implement update selection. Also, is this needed for our use case?
