@@ -4,6 +4,7 @@ import { getNodeRecommendations } from '@api';
 
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
+import { mapNodePorts } from '@/util/portDataMapper.js';
 
 const MAX_NODES = 12;
 
@@ -39,6 +40,7 @@ export default {
         };
     },
     computed: {
+        ...mapState('application', ['availablePortTypes']),
         ...mapState('nodeRepository', ['nodesPerCategory']),
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapState('canvas', ['zoomFactor']),
@@ -79,7 +81,9 @@ export default {
                 fullTemplateInfo: true
             });
 
-            this.recommendedNodes = recommendedNodesResult.nodes;
+            const withMappedPorts = mapNodePorts(recommendedNodesResult, this.availablePortTypes);
+
+            this.recommendedNodes = withMappedPorts;
         },
         async addNode({ nodeFactory }) {
             if (!this.isWritable) {
