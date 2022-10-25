@@ -57,10 +57,11 @@ describe('AppHeader.vue', () => {
 
         it('allows to switch workflow', () => {
             doMount();
+            const projectId = storeConfig.application.state.openProjects[2].projectId;
 
             wrapper.findAll('li').at(2).trigger('click');
             expect(storeConfig.application.actions.switchWorkflow)
-                .toHaveBeenCalledWith(expect.anything(), storeConfig.application.state.openProjects[2]);
+                .toHaveBeenCalledWith(expect.anything(), { projectId });
         });
 
         it('allows to click knime logo and switch workflow to entry page', () => {

@@ -33,11 +33,22 @@ export default {
     data() {
         return {
             windowWidth: 0,
-            isHoveredOver: null
+            isHoveredOver: null,
+            isEntryPageActive: null
         };
     },
     computed: {
         ...mapState('application', ['openProjects', 'activeProjectId'])
+    },
+    watch: {
+        activeProjectId: {
+            immediate: true,
+            handler() {
+                if (this.activeProjectId) {
+                    this.isEntryPageActive = this.activeProjectId === null;
+                }
+            }
+        }
     },
     created() {
         window.addEventListener('resize', this.onWindowResize);
@@ -52,11 +63,15 @@ export default {
         switchToJavaUI() {
             window.switchToJavaUI();
         },
-        truncatedProjectName(name) {
+        truncateProjectName(name) {
             const maxCharFunction = maxCharSwitch.find(fn => fn(this.windowWidth));
             const maxChars = maxCharFunction(this.windowWidth);
 
             return name.length > maxChars ? `${name.slice(0, maxChars)} …` : name;
+        },
+        setLogoTab() {
+            this.isEntryPageActive = true;
+            this.switchWorkflow(null);
         }
     }
 };
@@ -66,8 +81,8 @@ export default {
   <header>
     <div
       id="knime-logo"
-      :class="[ activeProjectId === null ? 'active-logo' : null ]"
-      @click="switchWorkflow(null)"
+      :class="[ isEntryPageActive ? 'active-logo' : null ]"
+      @click="setLogoTab()"
     >
       <KnimeIcon />
     </div>
@@ -82,11 +97,11 @@ export default {
               v-for="{ name, projectId } in openProjects"
               :key="projectId"
               :class="[ activeProjectId === projectId ? 'active' : null ]"
-              @click.stop="activeProjectId === projectId ? null : switchWorkflow({ name, projectId })"
+              @click.stop="activeProjectId === projectId ? null : switchWorkflow({ projectId })"
               @mouseover="isHoveredOver = projectId"
               @mouseleave="isHoveredOver = null"
             >
-              <span class="text">{{ truncatedProjectName(name) }}</span>
+              <span class="text">{{ truncateProjectName(name) }}</span>
               <FunctionButton
                 :class="[ isHoveredOver === projectId ? 'visible' : null ]"
                 class="icon"
