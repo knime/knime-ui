@@ -169,21 +169,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-.scroll-container {
-  position: relative;
-  overflow: scroll;
-  height: 100%;
-  width: 100%;
-
-  &:focus {
-    outline: none;
-  }
-
-  &.disabled {
-    overflow: hidden; /* disables scrolling */
-  }
-}
-
 svg {
   position: relative; /* needed for z-index to have effect */
   display: block;
@@ -197,4 +182,25 @@ svg {
     pointer-events: none !important;
   }
 }
+
+.scroll-container {
+  position: relative;
+  overflow: scroll;
+  height: 100%;
+  width: 100%;
+
+  &:focus {
+    outline: none;
+  }
+
+  &.disabled {
+    overflow: hidden; /* disables scrolling */
+
+    & svg,
+    & svg >>> * {
+      pointer-events: none !important;
+    }
+  }
+}
+
 </style>

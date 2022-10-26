@@ -96,6 +96,9 @@ describe('FloatingMenu.vue', () => {
                 }),
                 getters: {
                     screenFromCanvasCoordinates: screenFromCanvasCoordinatesMock
+                },
+                mutations: {
+                    setInteractionsEnabled: jest.fn()
                 }
             }
         };
@@ -239,6 +242,12 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('left: -80px;');
             expect(wrapper.attributes('style')).toMatch('top: 20px;');
         });
+
+        test('disabled interactions', () => {
+            doMount();
+
+            expect(storeConfig.canvas.mutations.setInteractionsEnabled).toBeCalledWith(expect.anything(), false);
+        });
     });
 
     describe('clean up', () => {
@@ -263,6 +272,13 @@ describe('FloatingMenu.vue', () => {
             wrapper.destroy();
 
             expect(mockResizeObserver.disconnect).toHaveBeenCalled();
+        });
+
+        test('enables interactions', () => {
+            doMount();
+            wrapper.destroy();
+
+            expect(storeConfig.canvas.mutations.setInteractionsEnabled).toBeCalledWith(expect.anything(), true);
         });
     });
 });
