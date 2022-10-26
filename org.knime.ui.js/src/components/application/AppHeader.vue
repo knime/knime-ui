@@ -45,7 +45,7 @@ export default {
             immediate: true,
             handler() {
                 if (this.activeProjectId) {
-                    this.isEntryPageActive = this.activeProjectId === null;
+                    this.isEntryPageActive = false;
                 }
             }
         }
@@ -69,7 +69,7 @@ export default {
 
             return name.length > maxChars ? `${name.slice(0, maxChars)} …` : name;
         },
-        setLogoTab() {
+        setEntryPageTab() {
             this.isEntryPageActive = true;
             this.switchWorkflow(null);
         }
@@ -82,7 +82,7 @@ export default {
     <div
       id="knime-logo"
       :class="[ isEntryPageActive ? 'active-logo' : null ]"
-      @click="setLogoTab()"
+      @click="setEntryPageTab()"
     >
       <KnimeIcon />
     </div>
