@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapMutations } from 'vuex';
 import throttle from 'raf-throttle';
 import { mixin as clickaway } from 'vue-clickaway2';
 
@@ -72,6 +72,7 @@ export default {
     },
     mounted() {
         this.setAbsolutePosition();
+        this.setInteractionsEnabled(false);
         
         let kanvas = document.getElementById('kanvas');
         kanvas.addEventListener('scroll', this.onCanvasScroll);
@@ -87,6 +88,7 @@ export default {
         this.resizeObserver.observe(this.$el);
     },
     beforeDestroy() {
+        this.setInteractionsEnabled(true);
         // if kanvas currently exists (workflow is open) remove scroll event listener
         let kanvas = document.getElementById('kanvas');
         kanvas?.removeEventListener('scroll', this.onCanvasScroll);
@@ -94,6 +96,7 @@ export default {
         this.stopResizeObserver();
     },
     methods: {
+        ...mapMutations('canvas', ['setInteractionsEnabled']),
         distanceToCanvas({ left, top }) {
             let kanvas = document.getElementById('kanvas');
             let { y, x, width, height } = kanvas.getBoundingClientRect();
