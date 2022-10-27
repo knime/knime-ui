@@ -3,6 +3,6 @@
 @import "./shapes";
 
 * {
-    --app-header-height: 80px;
+    --app-header-height: 53px;
     --app-toolbar-height: 50px;
 }

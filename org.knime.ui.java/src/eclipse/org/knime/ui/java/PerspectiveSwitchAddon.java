@@ -69,6 +69,8 @@ import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.UIEvents.EventTags;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
+import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.gateway.impl.webui.AppStateProvider;
@@ -116,6 +118,12 @@ public final class PerspectiveSwitchAddon {
         }
 
         MPerspective oldPerspective = (MPerspective)event.getProperty(EventTags.OLD_VALUE);
+        if (oldPerspective == null) {
+            // NXT-988: Workaround to handle case when AP is quit while in WebUI perspective. The perspective is
+            //  removed on shutdown (see PerspectiveFixAddon#removeWebUIPerspective). On next startup, we switch out
+            //  of the WebUI perspective (see KNIMEApplication#preventWebUIStartup), triggering this handler.
+            return;
+        }
         MPerspective newPerspective = (MPerspective)newValue;
         MPerspective webUIPerspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
 

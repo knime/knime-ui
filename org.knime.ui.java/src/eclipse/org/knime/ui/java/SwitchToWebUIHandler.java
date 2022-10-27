@@ -76,15 +76,8 @@ public final class SwitchToWebUIHandler {
 
     @Execute
     public void execute() {
-		MPerspective p = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
-        if (p != null) {
-            if (!p.isVisible()) {
-                p.setVisible(true);
-            }
-            m_partService.switchPerspective(p);
-        } else {
-            throw new IllegalStateException("No KNIME Web UI perspective registered");
-        }
+        var perspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
+        PerspectiveUtil.switchAndMakeVisible(perspective, m_partService);
     }
 
 }

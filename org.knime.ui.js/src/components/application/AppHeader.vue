@@ -1,7 +1,8 @@
 <script>
-import { mapGetters, mapActions } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
+import Carousel from 'webapps-common/ui/components/Carousel.vue';
 import KnimeIcon from 'webapps-common/ui/assets/img/KNIME_Triangle.svg';
 import SwitchIcon from 'webapps-common/ui/assets/img/icons/perspective-switch.svg';
 import CloseIcon from '@/assets/cancel.svg';
@@ -25,21 +26,28 @@ export default {
     components: {
         KnimeIcon,
         FunctionButton,
+        Carousel,
         SwitchIcon,
         CloseIcon
     },
     data() {
         return {
-            windowWidth: 0
+            windowWidth: 0,
+            isHoveredOver: null,
+            isEntryPageActive: null
         };
     },
     computed: {
-        ...mapGetters('application', ['activeProjectName']),
-        truncatedProjectName() {
-            const maxCharFunction = maxCharSwitch.find(fn => fn(this.windowWidth));
-            const maxChars = maxCharFunction(this.windowWidth);
-            const name = this.activeProjectName;
-            return name.length > maxChars ? `${name.slice(0, maxChars)} …` : name;
+        ...mapState('application', ['openProjects', 'activeProjectId'])
+    },
+    watch: {
+        activeProjectId: {
+            immediate: true,
+            handler() {
+                if (this.activeProjectId) {
+                    this.isEntryPageActive = false;
+                }
+            }
         }
     },
     created() {
@@ -48,11 +56,22 @@ export default {
     },
     methods: {
         ...mapActions('workflow', ['closeWorkflow']),
+        ...mapActions('application', ['switchWorkflow']),
         onWindowResize() {
             this.windowWidth = window.innerWidth;
         },
         switchToJavaUI() {
             window.switchToJavaUI();
+        },
+        truncateProjectName(name) {
+            const maxCharFunction = maxCharSwitch.find(fn => fn(this.windowWidth));
+            const maxChars = maxCharFunction(this.windowWidth);
+
+            return name.length > maxChars ? `${name.slice(0, maxChars)} …` : name;
+        },
+        setEntryPageTab() {
+            this.isEntryPageActive = true;
+            this.switchWorkflow(null);
         }
     }
 };
@@ -60,25 +79,40 @@ export default {
 
 <template>
   <header>
-    <div id="knime-logo">
+    <div
+      id="knime-logo"
+      :class="[ isEntryPageActive ? 'active-logo' : null ]"
+      @click="setEntryPageTab()"
+    >
       <KnimeIcon />
     </div>
     <div class="toolbar">
-      <!-- Closeable Project Name -->
-      <div
-        v-if="activeProjectName"
-        class="project-name"
+      <ul
+        v-if="openProjects.length >= 1"
+        class="project-tabs"
       >
-        <span class="text">{{ truncatedProjectName }}</span>
-        <FunctionButton
-          class="icon"
-          @click="closeWorkflow"
-        >
-          <CloseIcon />
-        </FunctionButton>
-      </div>
-
-      <!-- Or Application Name -->
+        <Carousel>
+          <div class="wrapper">
+            <li
+              v-for="{ name, projectId } in openProjects"
+              :key="projectId"
+              :class="[ activeProjectId === projectId ? 'active' : null ]"
+              @click.stop="activeProjectId === projectId ? null : switchWorkflow({ projectId })"
+              @mouseover="isHoveredOver = projectId"
+              @mouseleave="isHoveredOver = null"
+            >
+              <span class="text">{{ truncateProjectName(name) }}</span>
+              <FunctionButton
+                :class="[ isHoveredOver === projectId ? 'visible' : null ]"
+                class="icon"
+                @click.stop="closeWorkflow(projectId)"
+              >
+                <CloseIcon />
+              </FunctionButton>
+            </li>
+          </div>
+        </Carousel>
+      </ul>
       <div
         v-else
         class="application-name"
@@ -112,7 +146,7 @@ header {
   border-bottom: 4px solid var(--knime-yellow);
   position: relative;
 
-  /* smalish dark spacer */
+  /* smallish dark spacer */
 
   &::after {
     content: "";
@@ -124,59 +158,12 @@ header {
   }
 
   & .toolbar {
-    display: flex;
-    align-items: center;
     width: 100%;
-    justify-content: space-between;
-
-    /* Application name or project name */
-    & .project-name,
-    & .application-name {
-      padding: 0 20px;
-      display: flex;
-      min-width: 0;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      overflow: hidden;
-
-      & .text {
-        color: var(--knime-white);
-        font-family: "Roboto Condensed", sans-serif;
-        font-size: 20px;
-        padding: 10px 0;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
-        min-width: 0;
-      }
-
-      /* Close workflow button */
-
-      & .icon {
-        border: 0;
-        border-radius: 20px;
-        flex-shrink: 0;
-        margin-left: 5px;
-        width: 32px;
-        height: 32px;
-        align-self: center;
-        align-items: center;
-
-        & svg {
-          height: 20px;
-          width: 20px;
-          stroke: var(--knime-white);
-          stroke-width: calc(32px / 30); /* get 1px stroke width */
-        }
-
-        &:hover,
-        &:focus {
-          cursor: pointer;
-          background-color: var(--knime-silver-sand-semi);
-          stroke: var(--knime-white);
-        }
-      }
-    }
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    align-content: center;
 
     /* Feedback and Switch to classic ui buttons */
 
@@ -184,6 +171,7 @@ header {
       display: flex;
       margin-right: 15px;
       flex-shrink: 0;
+      margin-left: 30px;
 
       & .feedback {
         margin-right: 10px;
@@ -218,6 +206,124 @@ header {
         }
       }
     }
+
+    & .application-name {
+      padding: 0 20px;
+      display: flex;
+
+      & .text {
+        color: var(--knime-white);
+        font-family: "Roboto Condensed", sans-serif;
+        font-size: 18px;
+      }
+    }
+
+    & .project-tabs {
+      padding: 0;
+      min-width: 0;
+      white-space: nowrap;
+      list-style: none;
+
+      & :deep(.shadow-wrapper::before) {
+        background-image: none;
+      }
+
+      & :deep(.shadow-wrapper::after) {
+        background-image: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-masala) 100%);
+      }
+
+      & .wrapper {
+        display: inline-flex;
+        padding-left: -20px;
+        margin-left: -24px;
+        margin-right: -20px;
+
+        & li {
+          height: 49px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 1px;
+          padding-left: 10px;
+          padding-bottom: 1px;
+          text-align: center;
+          white-space: nowrap;
+          cursor: pointer;
+          user-select: none;
+          border-radius: 1px 1px 0 0;
+          background-color: var(--knime-black);
+          color: var(--knime-white);
+          max-width: 300px;
+
+          &:hover {
+            background-color: var(--knime-masala);
+          }
+
+          & .text {
+            color: var(--knime-white);
+            font-family: "Roboto Condensed", sans-serif;
+            font-size: 18px;
+            padding: 10px 0;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            min-width: 0;
+          }
+
+          /* Close workflow button */
+
+          & .icon {
+            margin-left: -20px;
+            width: 32px;
+            align-self: center;
+            align-items: center;
+            border-radius: 0;
+
+            & svg {
+              display: none;
+            }
+          }
+
+          & .visible {
+            height: 49px;
+            background: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-masala) 30%);
+
+            & svg {
+              display: block;
+              height: 20px;
+              width: 20px;
+              stroke: var(--knime-white);
+              stroke-width: calc(32px / 30); /* get 1px stroke width */
+            }
+          }
+        }
+
+        & .active {
+          background-color: var(--knime-yellow);
+          color: var(--knime-black);
+          cursor: inherit;
+
+          & .text {
+            color: var(--knime-black);
+          }
+
+          & .visible {
+            height: 49px;
+            background: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-yellow) 30%);
+
+            & svg {
+              stroke: var(--knime-black);
+            }
+          }
+
+          &:hover,
+          &:focus {
+            cursor: inherit;
+            background-color: var(--knime-yellow);
+          }
+        }
+      }
+    }
   }
 
   & #knime-logo {
@@ -227,10 +333,33 @@ header {
     width: var(--side-bar-width);
     background-color: var(--knime-black);
     text-align: center;
+    height: 100%;
+    margin-right: 25px;
 
     & svg {
       width: 26px;
       height: 26px;
+    }
+
+    &:hover,
+    &:focus {
+      cursor: pointer;
+      background-color: var(--knime-masala);
+    }
+  }
+
+  & #knime-logo.active-logo {
+    background-color: var(--knime-yellow);
+    pointer-events: none;
+
+    & svg {
+      fill: var(--knime-black);
+    }
+
+    &:hover,
+    &:focus {
+      cursor: inherit;
+      background-color: var(--knime-yellow);
     }
   }
 }
