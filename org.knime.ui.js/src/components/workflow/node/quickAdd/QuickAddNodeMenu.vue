@@ -41,7 +41,6 @@ export default {
     },
     computed: {
         ...mapState('application', ['availablePortTypes']),
-        ...mapState('nodeRepository', ['nodesPerCategory']),
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapState('canvas', ['zoomFactor']),
         ...mapGetters('workflow', ['isWritable']),
@@ -49,7 +48,7 @@ export default {
             let pos = { ...this.position };
             const halfPort = this.$shapes.portSize / 2;
 
-            // x: align with the arrow (position seems to be the center of the port)
+            // x: align with the port arrow (position is the center of the port)
             if (this.direction === 'out') {
                 pos.x += halfPort;
             } else {
