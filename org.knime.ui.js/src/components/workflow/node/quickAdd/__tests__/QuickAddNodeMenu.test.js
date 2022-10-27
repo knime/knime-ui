@@ -44,7 +44,6 @@ describe('QuickAddNodeMenu.vue', () => {
 
     beforeEach(() => {
         propsData = {
-            direction: 'out',
             nodeId: 'node-id',
             position: { x: 10, y: 10 },
             port: {
@@ -119,19 +118,10 @@ describe('QuickAddNodeMenu.vue', () => {
             expect(wrapper.emitted('menu-close')).toBeTruthy();
         });
 
-        it('centers to port (direction=out)', () => {
+        it('centers to port', () => {
             let wrapper = doMount();
             expect(wrapper.findComponent(FloatingMenuStub).props('canvasPosition')).toStrictEqual({
                 x: 15,
-                y: 10
-            });
-        });
-
-        it('centers to port (direction=in)', () => {
-            propsData.direction = 'in';
-            let wrapperIn = doMount();
-            expect(wrapperIn.findComponent(FloatingMenuStub).props('canvasPosition')).toStrictEqual({
-                x: 5,
                 y: 10
             });
         });

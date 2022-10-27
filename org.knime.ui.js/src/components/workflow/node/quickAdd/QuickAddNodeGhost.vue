@@ -2,6 +2,10 @@
 import NestedSVG from '@/components/common/NestedSVG';
 import PlusIcon from 'webapps-common/ui/assets/img/icons/plus-small.svg';
 
+/**
+ * Node ghost with a plus ([ + ]) that shows up when user drags a port to some free space.
+ * Only works for direction = out ports
+ */
 export default {
     components: {
         NestedSVG,
@@ -11,11 +15,6 @@ export default {
         position: {
             type: Array,
             required: true
-        },
-        direction: {
-            type: String,
-            default: 'out',
-            validator: (t) => ['in', 'out'].includes(t)
         }
     },
     computed: {
@@ -29,11 +28,6 @@ export default {
         portSize() {
             return this.$shapes.portSize;
         },
-        adjustedPosition() {
-            return this.direction === 'out'
-                ? this.position
-                : [this.position[0] - this.size - this.portSize, this.position[1]];
-        },
         transformToCenter() {
             return [this.portSize / 2, -this.size / 2];
         }
@@ -42,7 +36,7 @@ export default {
 </script>
 
 <template>
-  <g :transform="`translate(${adjustedPosition})`">
+  <g :transform="`translate(${position})`">
     <g :transform="`translate(${transformToCenter})`">
       <rect
         :width="size"

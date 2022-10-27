@@ -475,7 +475,6 @@ export default {
                         id: `${this.nodeId}-${this.direction}`,
                         props: {
                             position,
-                            direction: this.direction,
                             port: this.port,
                             nodeId: this.nodeId
                         },
@@ -569,7 +568,6 @@ export default {
       <QuickAddNodeGhost
         v-if="showAddNodeGhost"
         class="non-interactive"
-        :direction="direction"
         :position="dragConnector.absolutePoint"
       />
     </portal>

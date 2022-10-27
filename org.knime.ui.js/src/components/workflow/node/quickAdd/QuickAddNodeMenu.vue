@@ -8,18 +8,16 @@ import { mapNodePorts } from '@/util/portDataMapper';
 
 const MAX_NODES = 12;
 
+/*
+ * Quick Add Node Menu: Shows a menu with recommended nodes that are provided by the api (based on usage statistics).
+ * This component fetches, displays and adds them to the workflow.
+ */
 export default {
     components: {
         NodePreview,
         FloatingMenu
     },
     props: {
-        /** direction of the start port where the connector was dragged away from */
-        direction: {
-            type: String,
-            required: true,
-            validator: (t) => ['in', 'out'].includes(t)
-        },
         nodeId: {
             type: String,
             required: true
@@ -49,11 +47,9 @@ export default {
             const halfPort = this.$shapes.portSize / 2;
 
             // x: align with the port arrow (position is the center of the port)
-            if (this.direction === 'out') {
-                pos.x += halfPort;
-            } else {
-                pos.x -= halfPort;
-            }
+            // assume direction == out
+            pos.x += halfPort;
+
             return pos;
         },
         ghostSizeZoomed() {
@@ -61,7 +57,7 @@ export default {
         }
     },
     created() {
-        // this component is always destroyed for each node so we don't need to fetch data again when the nodeId changes
+        // this component is always destroyed for each node so we don't need to fetch data again if the nodeId changes
         this.fetchRecommendedNodes();
     },
     methods: {
@@ -108,7 +104,6 @@ export default {
   <FloatingMenu
     class="quick-add-node"
     :canvas-position="canvasPosition"
-    :anchor="direction === 'in' ? 'top-right' : 'top-left'"
     :style="`--ghost-size: ${ghostSizeZoomed}; --extra-margin: ${Math.log(ghostSizeZoomed) / 1.1}`"
     aria-label="Quick add node"
     prevent-overflow

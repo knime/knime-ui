@@ -15,7 +15,6 @@ import * as $colors from '@/style/colors.mjs';
 
 import NodePort from '../NodePort.vue';
 import NodePortActions from '../NodePortActions.vue';
-import QuickAddNodeMenu from '@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue';
 import QuickAddNodeGhost from '@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue';
 
 jest.mock('raf-throttle', () => function (func) {
@@ -920,7 +919,6 @@ describe('NodePort', () => {
                         id: 'node:1-out',
                         props: expect.objectContaining({
                             nodeId: 'node:1',
-                            direction: 'out',
                             position: {
                                 x: 0,
                                 y: 0
@@ -939,7 +937,7 @@ describe('NodePort', () => {
                     let openEvent = dispatchEventSpy.mock.calls[1][0];
 
                     // call close
-                    openEvent.detail.events['menu-close']()
+                    openEvent.detail.events['menu-close']();
                     await Vue.nextTick();
 
                     // see if close went good
