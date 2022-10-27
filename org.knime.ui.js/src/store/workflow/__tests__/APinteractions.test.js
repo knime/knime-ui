@@ -94,7 +94,7 @@ describe('workflow store: AP Interactions', () => {
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
 
-            await store.dispatch('workflow/closeWorkflow');
+            await store.dispatch('workflow/closeWorkflow', 'foo');
             expect(closeWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
             expect(dispatchSpy).toHaveBeenCalledWith('application/removeCanvasState', {});
         });
@@ -105,7 +105,7 @@ describe('workflow store: AP Interactions', () => {
             await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
 
-            await store.dispatch('workflow/closeWorkflow');
+            await store.dispatch('workflow/closeWorkflow', 'foo');
             expect(closeWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
             expect(dispatchSpy).not.toHaveBeenCalledWith('application/removeCanvasState', {});
         });

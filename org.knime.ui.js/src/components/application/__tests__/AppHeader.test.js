@@ -1,5 +1,5 @@
 import Vuex from 'vuex';
-import { shallowMount, createLocalVue } from '@vue/test-utils';
+import { mount, createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
@@ -7,7 +7,7 @@ import CloseIcon from '@/assets/cancel.svg';
 import AppHeader from '../AppHeader.vue';
 
 describe('AppHeader.vue', () => {
-    let propsData, mocks, doShallowMount, wrapper, storeConfig, $store;
+    let propsData, mocks, doMount, wrapper, storeConfig, $store;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -19,8 +19,16 @@ describe('AppHeader.vue', () => {
 
         storeConfig = {
             application: {
-                getters: {
-                    activeProjectName: () => 'Project Name'
+                state: {
+                    openProjects: [
+                        { projectId: '1', name: 'Test1' },
+                        { projectId: '2', name: 'Test2' },
+                        { projectId: '3', name: 'Test3' }
+                    ],
+                    activeProjectId: '1'
+                },
+                actions: {
+                    switchWorkflow: jest.fn()
                 }
             },
             workflow: {
@@ -31,31 +39,48 @@ describe('AppHeader.vue', () => {
             }
         };
 
-        doShallowMount = () => {
+        doMount = () => {
             $store = mockVuexStore(storeConfig);
             mocks = { $store };
-            wrapper = shallowMount(AppHeader, { propsData, mocks });
+            wrapper = mount(AppHeader, { propsData, mocks });
         };
     });
 
     describe('Application Title', () => {
         it('allows to close workflow', () => {
-            doShallowMount();
+            doMount();
+
             expect(wrapper.findComponent(CloseIcon).exists()).toBe(true);
-            wrapper.findComponent(FunctionButton).vm.$emit('click');
-            expect(storeConfig.workflow.actions.closeWorkflow).toHaveBeenCalled();
+            wrapper.findAllComponents(FunctionButton).at(1).trigger('click');
+            expect(storeConfig.workflow.actions.closeWorkflow).toHaveBeenCalledWith(expect.anything(), '2');
         });
 
-        it('renders name of the project', () => {
-            doShallowMount();
+        it('allows to switch workflow', () => {
+            doMount();
+            const projectId = storeConfig.application.state.openProjects[2].projectId;
 
-            const title = wrapper.find('.project-name');
-            expect(title.text()).toBe('Project Name');
+            wrapper.findAll('li').at(2).trigger('click');
+            expect(storeConfig.application.actions.switchWorkflow)
+                .toHaveBeenCalledWith(expect.anything(), { projectId });
+        });
+
+        it('allows to click knime logo and switch workflow to entry page', () => {
+            doMount();
+
+            wrapper.find('#knime-logo').trigger('click');
+            expect(storeConfig.application.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), null);
+        });
+
+        it('renders tabs of opened projects', () => {
+            doMount();
+
+            const tabs = wrapper.findAll('li');
+            expect(tabs.length).toBe(3);
         });
 
         it('render application title, if no active project name exists', () => {
-            storeConfig.application.getters.activeProjectName = () => null;
-            doShallowMount();
+            storeConfig.application.state.openProjects = [];
+            doMount();
 
             const title = wrapper.find('.application-name');
             expect(title.text()).toBe('KNIME Modern UI Preview');
@@ -80,10 +105,10 @@ describe('AppHeader.vue', () => {
                 [3000, 256]
             ])('truncates the name for a %spx width to a max of %s characters long', (width, maxChars) => {
                 window.innerWidth = width;
-                storeConfig.application.getters.activeProjectName = () => longName;
-                doShallowMount();
+                storeConfig.application.state.openProjects = [{ id: 1, name: longName }];
+                doMount();
     
-                const nameElement = wrapper.find('.project-name .text');
+                const nameElement = wrapper.find('.wrapper .text');
                 
                 // +2 to account for the " …"
                 expect(nameElement.text().length).toBe(maxChars + 2);
@@ -94,13 +119,13 @@ describe('AppHeader.vue', () => {
     describe('Right side buttons', () => {
         it('allows switching to old UI', () => {
             window.switchToJavaUI = jest.fn();
-            doShallowMount();
+            doMount();
             wrapper.find('.switch-classic').vm.$emit('click');
             expect(window.switchToJavaUI).toHaveBeenCalled();
         });
 
         test('feedback URL is correct', () => {
-            doShallowMount();
+            doMount();
             expect(wrapper.find('.feedback').attributes('href')).toBe('https://knime.com/modern-ui-feedback?src=knimeapp?utm_source=knimeapp');
         });
     });
