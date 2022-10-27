@@ -223,13 +223,20 @@ describe('WorkflowPanel', () => {
         });
 
         test('passes props', () => {
-            let portMenu = wrapper.findComponent(QuickAddNodeMenu);
-            expect(portMenu.vm.direction).toBe('in');
+            let quickAddNodeMenu = wrapper.findComponent(QuickAddNodeMenu);
+            expect(quickAddNodeMenu.props()).toEqual({
+                nodeId: 'node:0',
+                port: { index: 2 },
+                position: {
+                    x: 0,
+                    y: 0
+                }
+            });
         });
 
         test('binds events', () => {
-            let portMenu = wrapper.findComponent(QuickAddNodeMenu);
-            portMenu.vm.$emit('menu-close');
+            let quickAddNodeMenu = wrapper.findComponent(QuickAddNodeMenu);
+            quickAddNodeMenu.vm.$emit('menu-close');
             expect(closeCallback).toHaveBeenCalled();
         });
 
