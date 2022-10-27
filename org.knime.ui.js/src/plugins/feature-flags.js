@@ -1,20 +1,22 @@
 const featureFlagsPrefix = 'org.knime.ui.feature';
 
-const getFlagValue = (allFlags, name) => allFlags[`${featureFlagsPrefix}.${name}`];
+const featureFlagDefaults = {
+    [`${featureFlagsPrefix}.embedded_views_and_dialogs`]: false
+};
+
+const getFlagValue = (store, name) => {
+    const featureFlags = store.state.application.featureFlags || featureFlagDefaults;
+    return featureFlags[`${featureFlagsPrefix}.${name}`];
+};
+
 
 export default ({ store }, inject) => {
-    const featureFlagDefaults = {
-        [`${featureFlagsPrefix}.embedded_views_and_dialogs`]: false
-    };
-
-    const allFeatures = store.state.application.featureFlags || featureFlagDefaults;
-
     const features = {
-        shouldDisplayEmbeddedDialogs: () => getFlagValue(allFeatures, 'embedded_views_and_dialogs'),
-        
-        shouldDisplayEmbeddedViews: () => getFlagValue(allFeatures, 'embedded_views_and_dialogs'),
+        shouldDisplayEmbeddedDialogs: () => getFlagValue(store, 'embedded_views_and_dialogs'),
 
-        shouldLoadPageBuilder: () => getFlagValue(allFeatures, 'embedded_views_and_dialogs')
+        shouldDisplayEmbeddedViews: () => getFlagValue(store, 'embedded_views_and_dialogs'),
+
+        shouldLoadPageBuilder: () => getFlagValue(store, 'embedded_views_and_dialogs')
     };
 
     inject('features', features);
