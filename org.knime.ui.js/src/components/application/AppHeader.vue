@@ -47,6 +47,10 @@ export default {
                 if (this.activeProjectId) {
                     this.isEntryPageActive = false;
                 }
+                
+                if (this.openProjects.length === 0) {
+                    this.isEntryPageActive = true;
+                }
             }
         }
     },
@@ -169,22 +173,23 @@ header {
 
     & .buttons {
       display: flex;
-      margin-right: 15px;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
       flex-shrink: 0;
       margin-left: 30px;
 
       & .feedback {
         margin-right: 10px;
         border: 1px solid var(--knime-dove-gray);
-        line-height: 16px;
-        font-size: 16px;
+        line-height: 18px;
+        font-size: 13px;
         font-family: "Roboto Condensed", sans-serif;
         color: white;
-        padding: 11px 20px;
+        padding: 6px 15px;
         border-radius: 40px;
         text-decoration: none;
         font-weight: 500;
-        height: 40px;
 
         &:hover,
         &:focus {
@@ -194,22 +199,23 @@ header {
       }
 
       & .switch-classic {
-        height: 40px;
-        width: 40px;
         border: 1px solid var(--knime-dove-gray);
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         & svg {
-          width: 26px;
-          height: 26px;
+          width: 18px;
+          height: 18px;
           stroke: var(--knime-white);
-          stroke-width: calc(32px / 26); /* get 1px stroke width */
+          stroke-width: calc(36px / 18); /* get 1px stroke width */
         }
       }
     }
 
     & .application-name {
-      padding: 0 20px;
       display: flex;
+      margin-left: -10px;
 
       & .text {
         color: var(--knime-white);
@@ -268,6 +274,8 @@ header {
             white-space: nowrap;
             overflow: hidden;
             min-width: 0;
+            line-height: 21px;
+            font-weight: 400;
           }
 
           /* Close workflow button */
@@ -292,13 +300,17 @@ header {
               display: block;
               height: 20px;
               width: 20px;
+              stroke: var(--knime-gray-ultra-light);
+              stroke-width: calc(32px / 20); /* get 1px stroke width */
+            }
+
+            &:hover svg {
               stroke: var(--knime-white);
-              stroke-width: calc(32px / 30); /* get 1px stroke width */
             }
           }
         }
 
-        & .active {
+        & li.active {
           background-color: var(--knime-yellow);
           color: var(--knime-black);
           cursor: inherit;
@@ -312,6 +324,10 @@ header {
             background: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-yellow) 30%);
 
             & svg {
+              stroke: var(--knime-masala);
+            }
+
+            &:hover svg {
               stroke: var(--knime-black);
             }
           }
