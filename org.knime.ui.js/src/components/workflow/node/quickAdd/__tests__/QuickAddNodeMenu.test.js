@@ -35,23 +35,35 @@ import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 
 
 describe('QuickAddNodeMenu.vue', () => {
-    let propsData, doMount, storeConfig, $store, FloatingMenuStub;
-
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
     });
 
-    beforeEach(() => {
-        propsData = {
+    let FloatingMenuStub = {
+        template: `
+          <div>
+          <slot />
+          </div>`,
+        props: FloatingMenu.props
+    };
+
+    const doMount = ({
+        addNodeMock = jest.fn(),
+        isWriteableMock = jest.fn().mockReturnValue(true)
+    } = {}) => {
+        let propsData = {
             nodeId: 'node-id',
-            position: { x: 10, y: 10 },
+            position: {
+                x: 10,
+                y: 10
+            },
             port: {
                 index: 1
             }
         };
 
-        storeConfig = {
+        let storeConfig = {
             canvas: {
                 state: () => ({
                     zoomFactor: 1
@@ -60,8 +72,14 @@ describe('QuickAddNodeMenu.vue', () => {
             application: {
                 state: {
                     availablePortTypes: {
-                        'org.knime.core.node.BufferedDataTable': { kind: 'table', color: 'green' },
-                        'org.some.otherPorType': { kind: 'other', color: 'blue' }
+                        'org.knime.core.node.BufferedDataTable': {
+                            kind: 'table',
+                            color: 'green'
+                        },
+                        'org.some.otherPorType': {
+                            kind: 'other',
+                            color: 'blue'
+                        }
                     }
                 }
             },
@@ -75,40 +93,32 @@ describe('QuickAddNodeMenu.vue', () => {
                     }
                 },
                 actions: {
-                    addNode: jest.fn()
+                    addNode: addNodeMock
                 },
                 getters: {
-                    isWritable: jest.fn().mockReturnValue(true)
+                    isWritable: isWriteableMock
                 }
             }
         };
-
-        FloatingMenuStub = {
-            template: `<div><slot /></div>`,
-            props: FloatingMenu.props
+        let $store = mockVuexStore(storeConfig);
+        let mocks = {
+            $shapes: {
+                ...$shapes,
+                // set port size to a fixed value so test will not fail if we change it.
+                portSize: 10
+            },
+            $store
         };
 
-        doMount = () => {
-            $store = mockVuexStore(storeConfig);
-            let mocks = {
-                $shapes: {
-                    ...$shapes,
-                    // set port size to a fixed value so test will not fail if we change it.
-                    portSize: 10
-                },
-                $store
-            };
-
-            return shallowMount(QuickAddNodeMenu, {
-                propsData,
-                mocks,
-                attachTo: document.body,
-                stubs: {
-                    FloatingMenu: FloatingMenuStub
-                }
-            });
-        };
-    });
+        return shallowMount(QuickAddNodeMenu, {
+            propsData,
+            mocks,
+            attachTo: document.body,
+            stubs: {
+                FloatingMenu: FloatingMenuStub
+            }
+        });
+    };
 
     describe('Menu', () => {
         it('re-emits menu-close', () => {
@@ -144,11 +154,12 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('adds node on click', async () => {
-            let wrapper = doMount();
+            let addNodeMock = jest.fn();
+            let wrapper = doMount({ addNodeMock });
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('click');
-            expect(storeConfig.workflow.actions.addNode).toHaveBeenCalledWith(expect.anything(), {
+            expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), {
                 nodeFactory: { className: 'org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory' },
                 position: {
                     x: 10,
@@ -160,11 +171,12 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('adds node on pressing enter key', async () => {
-            let wrapper = doMount();
+            let addNodeMock = jest.fn();
+            let wrapper = doMount({ addNodeMock });
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('keydown.enter');
-            expect(storeConfig.workflow.actions.addNode).toHaveBeenCalledWith(expect.anything(), {
+            expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), {
                 nodeFactory: { className: 'org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory' },
                 position: {
                     x: 10,
@@ -176,12 +188,15 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('does not add node if workflow is not writeable', async () => {
-            storeConfig.workflow.getters.isWritable.mockReturnValue(false);
-            let wrapper = doMount();
+            let addNodeMock = jest.fn();
+            let wrapper = doMount({
+                isWriteableMock: jest.fn().mockReturnValue(false),
+                addNodeMock
+            });
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('click');
-            expect(storeConfig.workflow.actions.addNode).toHaveBeenCalledTimes(0);
+            expect(addNodeMock).toHaveBeenCalledTimes(0);
         });
     });
 });

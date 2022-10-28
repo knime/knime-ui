@@ -343,7 +343,7 @@ export default {
 
             if (isSameTarget && !this.lastHitTarget.allowsDrop) {
                 // same hitTarget as before, but doesn't allow drop
-                // Do-Nothing; just reset state (important for add node ghost)
+                // just reset state (important for add node ghost)
                 this.didDragToCompatibleTarget = false;
             } else if (isSameTarget) {
                 // same hitTarget as before and allows connector drop
