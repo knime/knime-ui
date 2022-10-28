@@ -139,10 +139,6 @@ describe('QuickAddNodeMenu.vue', () => {
         it('should display the nodes recommended by the api', async () => {
             let wrapper = doMount();
             await Vue.nextTick();
-            expect(wrapper.vm.recommendedNodes).toEqual([
-                expect.objectContaining({ name: 'Column Filter' }),
-                expect.objectContaining({ name: 'Row Filter' })
-            ]);
 
             const labels = wrapper.findAll('.node > label');
             expect(labels.at(0).text()).toBe('Column Filter');
