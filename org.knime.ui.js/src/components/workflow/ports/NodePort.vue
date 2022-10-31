@@ -285,7 +285,9 @@ export default {
                 this.initialPointerMove(e);
             }
 
-            if (!this.dragConnector) {
+            // skip pointermove logic when there's no active dragconnector being displayed or
+            // when the user is no longer holding down the pointer click
+            if (!this.dragConnector || !this.pointerDown) {
                 return;
             }
 
