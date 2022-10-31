@@ -131,6 +131,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 .error-overlay {
   position: fixed;
   z-index: 10;
@@ -166,10 +168,8 @@ export default {
     right: 15px;
 
     & svg {
-      width: 26px;
-      height: 26px;
+      @mixin svg-icon 26;
       stroke: var(--knime-white);
-      stroke-width: calc(32px / 26); /* get 1px stroke width */
     }
   }
 
@@ -197,7 +197,8 @@ export default {
       width: 44px;
       height: 44px;
       stroke: var(--knime-white);
-      stroke-width: calc(32px / 22); /* 2px stroke-width */
+      /* 2px stroke-width */
+      stroke-width: calc(32px / 22);
     }
   }
 
@@ -215,10 +216,8 @@ export default {
     }
 
     & svg {
-      width: 18px;
-      height: 18px;
       stroke: var(--knime-masala);
-      stroke-width: calc(32px / 18); /* 1px stroke width */
+      @mixin svg-icon 18;
     }
 
     & > .copy-to-clipboard {

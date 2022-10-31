@@ -92,6 +92,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 .zoom {
   margin-left: auto;
   z-index: 5;
@@ -101,9 +103,7 @@ export default {
     align-items: center;
 
     & svg {
-      height: 12px;
-      width: 12px;
-      stroke-width: calc(32px / 12);
+      @mixin svg-icon 12;
       margin-bottom: 1px;
     }
 

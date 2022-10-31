@@ -198,6 +198,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 @keyframes spin {
   100% {
     transform: rotate(-360deg);
@@ -235,10 +237,8 @@ export default {
     color: var(--knime-masala);
 
     & .loading-icon {
+      @mixin svg-icon 24;
       animation: spin 2s linear infinite;
-      width: 24px;
-      height: 24px;
-      stroke-width: calc(32px / 24);
       margin: auto;
       stroke: var(--knime-masala);
       vertical-align: -6px;
