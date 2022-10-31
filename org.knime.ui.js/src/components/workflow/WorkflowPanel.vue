@@ -98,7 +98,6 @@ export default {
     <PortTypeMenu
       v-if="Boolean(portTypeMenuConfig)"
       :key="portTypeMenuConfig.id"
-      ref="portTypeMenu"
       v-bind="portTypeMenuConfig.props"
       v-on="portTypeMenuConfig.events"
     />
@@ -106,7 +105,6 @@ export default {
     <QuickAddNodeMenu
       v-if="Boolean(quickAddNodeMenuConfig)"
       :key="quickAddNodeMenuConfig.id"
-      ref="quickAddNodeMenu"
       v-bind="quickAddNodeMenuConfig.props"
       v-on="quickAddNodeMenuConfig.events"
     />
