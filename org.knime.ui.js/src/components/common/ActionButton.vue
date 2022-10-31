@@ -73,7 +73,7 @@ export default {
   }
 
   & >>> svg {
-    /* 20 to match the width & height of the NestedSvg component,
+    /* divide by 20 to match the width & height of the NestedSvg component,
       and get a stroke width of 1px
     */
     stroke-width: calc(32px / 20);

@@ -6,13 +6,17 @@
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 button {
-  --icon-size: 30; /* +2*1px border */
+  --icon-size: 18;
+  --icon-margin: 6;
+  --icon-box-size: calc(var(--icon-size) + var(--icon-margin) * 2);
 
   display: flex;
   align-items: center;
-  height: calc((var(--icon-size) + 2) * 1px);
-  border-radius: calc((var(--icon-size) + 2) / 2 * 1px);
+  height: calc((var(--icon-box-size) + 2) * 1px);
+  border-radius: calc((var(--icon-box-size) + 2) / 2 * 1px);
   border: 1px solid var(--knime-silver-sand);
   color: var(--knime-masala);
   background: transparent;
@@ -27,10 +31,9 @@ button {
   }
 
   & svg {
-    width: calc(var(--icon-size) * 1px);
-    height: calc(var(--icon-size) * 1px);
-    stroke-width: calc(32px / var(--icon-size));
+    @mixin svg-icon var(--icon-size);
     stroke: var(--knime-masala);
+    margin: calc(var(--icon-margin) * 1px);
   }
 
   &:disabled {
