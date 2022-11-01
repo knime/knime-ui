@@ -301,7 +301,7 @@ header {
               height: 20px;
               width: 20px;
               stroke: var(--knime-gray-ultra-light);
-              stroke-width: calc(32px / 20); /* get 1px stroke width */
+              stroke-width: calc(32px / 30); /* get 1px stroke width */
             }
 
             &:hover svg {
