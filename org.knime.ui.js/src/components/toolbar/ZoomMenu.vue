@@ -104,6 +104,7 @@ export default {
 
     & svg {
       @mixin svg-icon 12;
+
       margin-bottom: 1px;
     }
 

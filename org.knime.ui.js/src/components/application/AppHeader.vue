@@ -202,6 +202,7 @@ header {
 
         & svg {
           @mixin svg-icon 26;
+
           stroke: var(--knime-white);
         }
       }
@@ -290,7 +291,9 @@ header {
 
             & svg {
               display: block;
+
               @mixin svg-icon 20;
+
               stroke: var(--knime-white);
             }
           }

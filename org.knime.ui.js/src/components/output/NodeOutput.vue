@@ -238,6 +238,7 @@ export default {
 
     & .loading-icon {
       @mixin svg-icon 24;
+
       animation: spin 2s linear infinite;
       margin: auto;
       stroke: var(--knime-masala);

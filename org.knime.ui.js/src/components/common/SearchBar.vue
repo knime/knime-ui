@@ -80,10 +80,11 @@ export default {
     padding: 6px;
     margin-left: 3px;
     pointer-events: none;
-    
+
     & svg {
       vertical-align: top;
       stroke: var(--theme-button-function-foreground-color);
+
       @mixin svg-icon 18;
     }
   }

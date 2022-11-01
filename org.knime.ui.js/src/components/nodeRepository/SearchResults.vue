@@ -111,6 +111,7 @@ export default {
 
     & .loading-indicator {
       @mixin svg-icon 40;
+
       animation: spin 2s linear infinite;
       stroke: var(--knime-masala);
       align-self: center;

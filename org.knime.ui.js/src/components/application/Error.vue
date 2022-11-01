@@ -169,6 +169,7 @@ export default {
 
     & svg {
       @mixin svg-icon 26;
+
       stroke: var(--knime-white);
     }
   }
@@ -197,6 +198,7 @@ export default {
       width: 44px;
       height: 44px;
       stroke: var(--knime-white);
+
       /* 2px stroke-width */
       stroke-width: calc(32px / 22);
     }
@@ -217,6 +219,7 @@ export default {
 
     & svg {
       stroke: var(--knime-masala);
+
       @mixin svg-icon 18;
     }
 

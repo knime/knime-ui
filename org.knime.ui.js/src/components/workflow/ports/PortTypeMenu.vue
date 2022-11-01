@@ -258,7 +258,7 @@ export default {
   border-bottom: 0;
   background-color: white;
   box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
-  
+
   &:hover {
     cursor: pointer;
     outline: none;
@@ -267,6 +267,7 @@ export default {
 
   & svg {
     stroke: var(--knime-masala);
+
     @mixin svg-icon 14;
   }
 }
