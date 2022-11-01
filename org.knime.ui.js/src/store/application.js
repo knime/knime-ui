@@ -48,15 +48,11 @@ export const mutations = {
             const newStateKey = getCanvasStateKey(`${project}--${workflow}`);
             // get a reference of an existing parent state or create new one
             const parentState = savedCanvasStates[newStateKey] || emptyParentState;
+            parentState.lastActive = workflow;
 
-            state.savedCanvasStates = {
-                // keep all the root states
-                ...savedCanvasStates,
-                // update parent state with the newStates
-                [newStateKey]: {
-                    ...parentState,
-                    ...newStates
-                }
+            state.savedCanvasStates[newStateKey] = {
+                ...parentState,
+                ...newStates
             };
         } else {
             const parentStateKey = getCanvasStateKey(`${project}--${rootWorkflowId}`);
@@ -64,17 +60,14 @@ export const mutations = {
             // in case we directly access a child the parent would not exist, so we default to an empty one
             const parentState = savedCanvasStates[parentStateKey] || emptyParentState;
 
-            state.savedCanvasStates = {
-                // keep all the root states
-                ...savedCanvasStates,
-                [parentStateKey]: {
-                    // keep the parent state
-                    ...parentState,
-                    children: {
-                        // update the children with the newStates
-                        ...parentState.children,
-                        [newStateKey]: newStates
-                    }
+            state.savedCanvasStates[parentStateKey] = {
+                // keep the parent state
+                ...parentState,
+                lastActive: workflow,
+                children: {
+                    // update the children with the newStates
+                    ...parentState.children,
+                    [newStateKey]: newStates
                 }
             };
         }
@@ -142,9 +135,11 @@ export const actions = {
      *   W O R K F L O W   L I F E C Y C L E
      */
 
-    async switchWorkflow({ commit, dispatch, rootState }, newWorkflow) {
+    async switchWorkflow({ commit, dispatch, rootState, state }, newWorkflow) {
+        const isChangingProject = rootState.workflow?.activeWorkflow?.projectId !== newWorkflow?.projectId;
+
         if (rootState.workflow?.activeWorkflow) {
-            // if entering new workflow a new workflow, we save user state like scroll and zoom
+            // if entering a new workflow, we save user state like scroll and zoom
             // otherwise it means we've closed a workflow and we don't need to save anything
             if (newWorkflow) {
                 dispatch('saveCanvasState');
@@ -157,8 +152,17 @@ export const actions = {
 
         // only continue if the new workflow exists
         if (newWorkflow) {
-            let { projectId, workflowId } = newWorkflow;
-            await dispatch('loadWorkflow', { projectId, workflowId });
+            let { projectId, workflowId = 'root' } = newWorkflow;
+
+            // check if project is being changed and if there is already active workflow
+            if (isChangingProject && rootState.workflow?.activeWorkflow) {
+                const stateKey = getCanvasStateKey(`${projectId}--${workflowId}`);
+                const newWorkflowId = state.savedCanvasStates[stateKey]?.lastActive;
+
+                await dispatch('loadWorkflow', { projectId, workflowId: newWorkflowId });
+            } else {
+                await dispatch('loadWorkflow', { projectId, workflowId });
+            }
 
             await Vue.nextTick();
             await Vue.nextTick();

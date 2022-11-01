@@ -330,7 +330,8 @@ describe('application store', () => {
                     scrollLeft: 100,
                     scrollTop: 100,
                     workflow: 'workflow1',
-                    zoomFactor: 1
+                    zoomFactor: 1,
+                    lastActive: 'workflow1'
                 }
             });
         });
@@ -346,6 +347,7 @@ describe('application store', () => {
 
             expect(store.state.application.savedCanvasStates).toStrictEqual({
                 'project1--workflow1': {
+                    lastActive: 'workflow1:214',
                     children: {
                         'workflow1:214': {
                             project: 'project1',
