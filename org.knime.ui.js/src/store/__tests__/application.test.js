@@ -291,6 +291,28 @@ describe('application store', () => {
             expect(store.state.application.activeProjectId).toBe('1');
             expect(dispatchSpy).toHaveBeenCalledWith('application/restoreCanvasState', undefined);
         });
+
+        test('switch from workflow to workflow and back', async () => {
+            store.state.application.savedCanvasStates = {
+                '1--root': {
+                    children: {},
+                    project: '1',
+                    workflow: 'root',
+                    zoomFactor: 1,
+                    lastActive: 'root:214'
+                }
+            };
+
+            await store.dispatch('application/switchWorkflow', { projectId: '2', workflowId: 'root' });
+            expect(store.state.application.activeProjectId).toBe('2');
+
+            await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root' });
+            expect(dispatchSpy).toHaveBeenCalledWith(
+                'application/loadWorkflow',
+                { projectId: '1', workflowId: 'root:214' }
+            );
+            expect(store.state.application.activeProjectId).toBe('1');
+        });
     });
 
     describe('getters', () => {
