@@ -15,6 +15,7 @@ import * as $colors from '@/style/colors.mjs';
 
 import NodePort from '../NodePort.vue';
 import NodePortActions from '../NodePortActions.vue';
+import QuickAddNodeGhost from '@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue';
 
 jest.mock('raf-throttle', () => function (func) {
     return function (...args) {
@@ -878,6 +879,107 @@ describe('NodePort', () => {
 
             dropOnTarget();
             expect(hitTarget._connectorDropEvent).toBeFalsy();
+        });
+
+        describe('Quick add node menu', () => {
+            describe('dragging out port', () => {
+                beforeEach(() => {
+                    propsData.direction = 'out';
+                });
+
+                it('shows quick add node ghost', async () => {
+                    startDragging();
+                    await Vue.nextTick();
+
+                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
+                });
+
+                it('opens quick add node menu', async () => {
+                    startDragging();
+                    await Vue.nextTick();
+
+                    // we cannot mock dispatchEvent as it is required to be the real function for wrapper.trigger calls!
+                    const dispatchEventSpy = jest.spyOn(wrapper.element, 'dispatchEvent');
+
+                    // connector and QuickAddNodeGhost should be visible
+                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
+                    expect(wrapper.findComponent(Connector).exists()).toBe(true);
+
+                    await wrapper.trigger('lostpointercapture');
+
+                    expect(wrapper.findComponent(Connector).exists()).toBe(true);
+                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
+
+                    let dispatchCall = dispatchEventSpy.mock.calls[1];
+                    let [openEvent] = dispatchCall;
+
+                    expect(openEvent.bubbles).toBe(true);
+                    expect(openEvent.type).toBe('open-quick-add-node-menu');
+                    expect(openEvent.detail).toEqual(expect.objectContaining({
+                        id: 'node:1-out',
+                        props: expect.objectContaining({
+                            nodeId: 'node:1',
+                            position: {
+                                x: 0,
+                                y: 0
+                            }
+                        })
+                    }));
+                });
+
+                it('closes the quick add node menu', async () => {
+                    startDragging();
+                    await Vue.nextTick();
+
+                    // open so we can close it again
+                    const dispatchEventSpy = jest.spyOn(wrapper.element, 'dispatchEvent');
+                    await wrapper.trigger('lostpointercapture');
+                    let openEvent = dispatchEventSpy.mock.calls[1][0];
+
+                    // call close
+                    openEvent.detail.events['menu-close']();
+                    await Vue.nextTick();
+
+                    // see if close went good
+                    let closeEvent = dispatchEventSpy.mock.calls[2][0];
+                    expect(closeEvent.bubbles).toBe(true);
+                    expect(closeEvent.type).toBe('close-quick-add-node-menu');
+                    expect(closeEvent.detail.id).toBe('node:1-out');
+                });
+            });
+
+            describe('dragging in port', () => {
+                beforeEach(() => {
+                    propsData.direction = 'in';
+                });
+
+                it('does not show quick add node ghost', async () => {
+                    startDragging();
+                    await Vue.nextTick();
+
+                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);
+                });
+
+                it('does not show quick add node menu', async () => {
+                    startDragging();
+                    await Vue.nextTick();
+
+                    // we cannot mock dispatchEvent as it is required to be the real function for wrapper.trigger calls!
+                    const dispatchEventSpy = jest.spyOn(wrapper.element, 'dispatchEvent');
+
+                    // connector and QuickAddNodeGhost should be visible
+                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);
+                    expect(wrapper.findComponent(Connector).exists()).toBe(true);
+
+                    await wrapper.trigger('lostpointercapture');
+
+                    expect(wrapper.findComponent(Connector).exists()).toBe(false);
+                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);
+
+                    // one event is triggered by the wrapper.trigger which translates to wrapper.element.dispatchEvent
+                    expect(dispatchEventSpy.mock.calls.length).toBe(1);
+                });
+            });
         });
     });
 

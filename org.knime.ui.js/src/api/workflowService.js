@@ -64,10 +64,15 @@ const workflowCommand = async ({ projectId, workflowId, command, args }) => {
  * @returns { Promise } Promise
  */
 export const addNode = ({
-    position, nodeFactory, projectId, workflowId
+    position,
+    nodeFactory,
+    projectId,
+    workflowId,
+    sourceNodeId = null,
+    sourcePortIdx = null
 }) => workflowCommand({
     command: 'add_node',
-    args: { position, nodeFactory },
+    args: { position, nodeFactory, sourceNodeId, sourcePortIdx },
     projectId,
     workflowId
 });
