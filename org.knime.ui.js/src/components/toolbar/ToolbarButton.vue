@@ -31,7 +31,7 @@ button {
   }
 
   & svg {
-    @mixin svg-icon var(--icon-size);
+    @mixin svg-icon-size var(--icon-size);
 
     stroke: var(--knime-masala);
     margin: calc(var(--icon-margin) * 1px);

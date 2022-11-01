@@ -110,7 +110,7 @@ export default {
     align-items: flex-start;
 
     & .loading-indicator {
-      @mixin svg-icon 40;
+      @mixin svg-icon-size 40;
 
       animation: spin 2s linear infinite;
       stroke: var(--knime-masala);

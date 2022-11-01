@@ -103,7 +103,7 @@ export default {
     align-items: center;
 
     & svg {
-      @mixin svg-icon 12;
+      @mixin svg-icon-size 12;
 
       margin-bottom: 1px;
     }

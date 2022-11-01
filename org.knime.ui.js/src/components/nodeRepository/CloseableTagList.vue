@@ -161,7 +161,7 @@ export default {
     }
 
     & svg {
-      @mixin svg-icon 10;
+      @mixin svg-icon-size 10;
 
       stroke: var(--knime-masala);
       transform: rotate(90deg);

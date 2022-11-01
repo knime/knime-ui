@@ -201,7 +201,7 @@ header {
         border: 1px solid var(--knime-dove-gray);
 
         & svg {
-          @mixin svg-icon 26;
+          @mixin svg-icon-size 26;
 
           stroke: var(--knime-white);
         }
@@ -292,7 +292,7 @@ header {
             & svg {
               display: block;
 
-              @mixin svg-icon 20;
+              @mixin svg-icon-size 20;
 
               stroke: var(--knime-white);
             }

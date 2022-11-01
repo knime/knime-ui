@@ -102,7 +102,7 @@ button {
   }
 
   & svg {
-    @mixin svg-icon 10;
+    @mixin svg-icon-size 10;
 
     stroke: var(--knime-masala);
     transition: transform 0.3s ease;

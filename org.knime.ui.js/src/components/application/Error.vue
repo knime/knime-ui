@@ -168,7 +168,7 @@ export default {
     right: 15px;
 
     & svg {
-      @mixin svg-icon 26;
+      @mixin svg-icon-size 26;
 
       stroke: var(--knime-white);
     }
@@ -220,7 +220,7 @@ export default {
     & svg {
       stroke: var(--knime-masala);
 
-      @mixin svg-icon 18;
+      @mixin svg-icon-size 18;
     }
 
     & > .copy-to-clipboard {

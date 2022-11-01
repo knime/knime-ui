@@ -268,7 +268,7 @@ export default {
   & svg {
     stroke: var(--knime-masala);
 
-    @mixin svg-icon 14;
+    @mixin svg-icon-size 14;
   }
 }
 

@@ -1,4 +1,4 @@
-@define-mixin svg-icon $size {
+@define-mixin svg-icon-size $size {
     width: calc($size * 1px);
     height: calc($size * 1px);
     

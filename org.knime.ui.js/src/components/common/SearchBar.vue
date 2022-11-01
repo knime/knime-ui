@@ -85,7 +85,7 @@ export default {
       vertical-align: top;
       stroke: var(--theme-button-function-foreground-color);
 
-      @mixin svg-icon 18;
+      @mixin svg-icon-size 18;
     }
   }
 
@@ -95,7 +95,7 @@ export default {
     margin-right: calc(var(--icon-size) / 2 * 1px);
 
     & >>> svg {
-      @mixin svg-icon var(--icon-size);
+      @mixin svg-icon-size var(--icon-size);
     }
   }
 }
