@@ -117,7 +117,7 @@ export default {
             }
 
             // if we're moving to a node which has a view skip automatic port selection
-            if (this.singleSelectedNode.hasView) {
+            if (this.singleSelectedNode.hasView && this.$features.shouldDisplayEmbeddedViews()) {
                 this.selectedTab = 'view';
                 return;
             }
