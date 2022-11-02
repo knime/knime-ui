@@ -5,6 +5,9 @@ def BN = (BRANCH_NAME == 'master' || BRANCH_NAME.startsWith('releases/')) ? BRAN
 library "knime-pipeline@$BN"
 
 properties([
+    pipelineTriggers([upstream(
+        'knime-gatewaay/' + env.BRANCH_NAME.replaceAll('/', '%2F')
+    )]),
     buildDiscarder(logRotator(numToKeepStr: '5')),
     parameters([p2Tools.getP2pruningParameter()]),
     disableConcurrentBuilds()

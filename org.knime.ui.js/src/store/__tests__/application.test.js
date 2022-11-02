@@ -291,6 +291,58 @@ describe('application store', () => {
             expect(store.state.application.activeProjectId).toBe('1');
             expect(dispatchSpy).toHaveBeenCalledWith('application/restoreCanvasState', undefined);
         });
+
+        describe('lastActive', () => {
+            it('switch from workflow to workflow and back', async () => {
+                store.state.application.savedCanvasStates = {
+                    '1--root': {
+                        children: {},
+                        project: '1',
+                        workflow: 'root',
+                        zoomFactor: 1,
+                        lastActive: 'root:214'
+                    }
+                };
+    
+                await store.dispatch('application/switchWorkflow', { projectId: '2', workflowId: 'root' });
+                expect(store.state.application.activeProjectId).toBe('2');
+    
+                await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root' });
+                expect(dispatchSpy).toHaveBeenCalledWith(
+                    'application/loadWorkflow',
+                    { projectId: '1', workflowId: 'root:214' }
+                );
+                expect(store.state.application.activeProjectId).toBe('1');
+            });
+    
+            it('restores `lastActive` workflow when switching projects', async () => {
+                // start with a projectId 2
+                store.state.workflow.activeWorkflow = {
+                    projectId: '2',
+                    info: { containerId: 'root-1234' }
+                };
+                
+                // make sure project 1 has a `lastActive` state
+                store.state.application.savedCanvasStates = {
+                    '1--root': {
+                        children: {},
+                        project: '1',
+                        workflow: 'root',
+                        zoomFactor: 1,
+                        lastActive: 'root:214'
+                    }
+                };
+    
+                // change to project 1
+                await store.dispatch('application/switchWorkflow', { projectId: '1' });
+
+                // assert that project 1 was loaded and the correct `lastActive` was restored
+                expect(dispatchSpy).toHaveBeenCalledWith(
+                    'application/loadWorkflow',
+                    { projectId: '1', workflowId: 'root:214' }
+                );
+            });
+        });
     });
 
     describe('getters', () => {
@@ -330,7 +382,8 @@ describe('application store', () => {
                     scrollLeft: 100,
                     scrollTop: 100,
                     workflow: 'workflow1',
-                    zoomFactor: 1
+                    zoomFactor: 1,
+                    lastActive: 'workflow1'
                 }
             });
         });
@@ -346,6 +399,7 @@ describe('application store', () => {
 
             expect(store.state.application.savedCanvasStates).toStrictEqual({
                 'project1--workflow1': {
+                    lastActive: 'workflow1:214',
                     children: {
                         'workflow1:214': {
                             project: 'project1',
