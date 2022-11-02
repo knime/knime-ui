@@ -8,11 +8,12 @@ import { circleDetection } from '@/util/compatibleConnections';
 import Port from '@/components/common/Port.vue';
 import Connector from '@/components/workflow/connectors/Connector.vue';
 import NodePortActions from './NodePortActions.vue';
+import QuickAddNodeGhost from '@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue';
 
 const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) => {
     if (targetPortDirection === 'in') {
         const isPortFree = toPort.connectedVia.length === 0;
-    
+
         if (isPortFree) {
             return true;
         }
@@ -148,6 +149,7 @@ export default {
     components: {
         Port,
         Connector,
+        QuickAddNodeGhost,
         NodePortActions
     },
     mixins: [clickaway, tooltip],
@@ -187,7 +189,8 @@ export default {
         dragConnector: null,
         didMove: false,
         pointerDown: false,
-        didDragToCompatibleTarget: false
+        didDragToCompatibleTarget: false,
+        showAddNodeGhost: false
     }),
     computed: {
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
@@ -282,7 +285,9 @@ export default {
                 this.initialPointerMove(e);
             }
 
-            if (!this.dragConnector) {
+            // skip pointermove logic when there's no active dragconnector being displayed or
+            // when the user is no longer holding down the pointer click
+            if (!this.dragConnector || !this.pointerDown) {
                 return;
             }
 
@@ -340,7 +345,8 @@ export default {
 
             if (isSameTarget && !this.lastHitTarget.allowsDrop) {
                 // same hitTarget as before, but doesn't allow drop
-                // Do-Nothing
+                // just reset state (important for add node ghost)
+                this.didDragToCompatibleTarget = false;
             } else if (isSameTarget) {
                 // same hitTarget as before and allows connector drop
                 hitTarget.dispatchEvent(moveEvent);
@@ -391,6 +397,11 @@ export default {
                     isCompatible: this.didDragToCompatibleTarget
                 };
             }
+
+            // show add node ghost for output ports
+            if (this.direction === 'out') {
+                this.showAddNodeGhost = !this.didDragToCompatibleTarget;
+            }
             /* eslint-enable no-invalid-this */
         }),
         onPointerUp(e) {
@@ -426,8 +437,13 @@ export default {
         },
         onLostPointerCapture(e) {
             this.pointerDown = false;
-            this.dragConnector = null;
             this.didMove = false;
+            if (this.showAddNodeGhost) {
+                this.openQuickAddNodeMenu();
+            } else {
+                // clear drag connector now; otherwise this happens on close of the menu
+                this.dragConnector = null;
+            }
             if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
                 this.lastHitTarget.element.dispatchEvent(new CustomEvent('connector-leave', { bubbles: true }));
             }
@@ -444,6 +460,48 @@ export default {
             if (this.selected) {
                 this.$emit('deselect');
             }
+        },
+        openQuickAddNodeMenu() {
+            // find the position in coordinates relative to the origin
+            let position = {
+                x: this.dragConnector.absolutePoint[0],
+                y: this.dragConnector.absolutePoint[1]
+            };
+
+            // Because of an issue with Vue Portal (https://github.com/LinusBorg/portal-vue/issues/290)
+            // We have to make this work like a custom teleport (can probably be replaced by Vue3's teleport)
+            // by telling the WorkflowPanel to render a PortTypeMenu with specified props and events
+            this.$el.dispatchEvent(new CustomEvent(
+                'open-quick-add-node-menu', {
+                    detail: {
+                        id: `${this.nodeId}-${this.direction}`,
+                        props: {
+                            position,
+                            port: this.port,
+                            nodeId: this.nodeId
+                        },
+                        events: {
+                            'menu-close': this.closeQuickAddNodeMenu
+                        }
+                    },
+                    bubbles: true
+                }
+            ));
+        },
+        closeQuickAddNodeMenu() {
+            // close the menu
+            this.$el.dispatchEvent(new CustomEvent(
+                'close-quick-add-node-menu', {
+                    detail: {
+                        id: `${this.nodeId}-${this.direction}`
+                    },
+                    bubbles: true
+                }
+            ));
+            // remove the ghost
+            this.showAddNodeGhost = false;
+            // clear the drag connector
+            this.dragConnector = null;
         },
         createConnectorFromEvent(e) {
             const { kind: portKind } = this.portTemplate;
@@ -508,6 +566,11 @@ export default {
         data-test-id="drag-connector-port"
         :port="port"
         :transform="`translate(${dragConnector.absolutePoint})`"
+      />
+      <QuickAddNodeGhost
+        v-if="showAddNodeGhost"
+        class="non-interactive"
+        :position="dragConnector.absolutePoint"
       />
     </portal>
   </g>

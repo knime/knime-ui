@@ -4,19 +4,22 @@ import StreamingIcon from 'webapps-common/ui/assets/img/icons/nodes-connect.svg'
 import ContextMenu from '@/components/application/ContextMenu.vue';
 import WorkflowCanvas from '@/components/workflow/WorkflowCanvas.vue';
 import PortTypeMenu from '@/components/workflow/ports/PortTypeMenu.vue';
+import QuickAddNodeMenu from '@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue';
 
 export default {
     components: {
         StreamingIcon,
         ContextMenu,
         WorkflowCanvas,
+        QuickAddNodeMenu,
         PortTypeMenu
     },
     data() {
         return {
             // null (or falsy) means context menu is invisible, otherwise should be an Object with x, y as Numbers
             contextMenuPosition: null,
-            portTypeMenuConfig: null
+            portTypeMenuConfig: null,
+            quickAddNodeMenuConfig: null
         };
     },
     computed: {
@@ -59,6 +62,19 @@ export default {
             if (this.portTypeMenuConfig.id === e.detail.id) {
                 this.portTypeMenuConfig = null;
             }
+        },
+        onOpenQuickAddNodeMenu(e) {
+            if (this.quickAddNodeMenuConfig && this.quickAddNodeMenuConfig.id !== e.detail.id) {
+                // if another menu than the current one sends an open signal, close the other one first
+                this.quickAddNodeMenuConfig.events['menu-close']();
+            }
+            this.quickAddNodeMenuConfig = e.detail;
+        },
+        onCloseQuickAddNodeMenu(e) {
+            // if the menu that is currently open sends a close signal, then close the current menu
+            if (this.quickAddNodeMenuConfig.id === e.detail.id) {
+                this.quickAddNodeMenuConfig = null;
+            }
         }
     }
 };
@@ -70,19 +86,27 @@ export default {
     @contextmenu="onContextMenu"
     @open-port-type-menu="onOpenPortTypeMenu"
     @close-port-type-menu="onClosePortTypeMenu"
+    @open-quick-add-node-menu="onOpenQuickAddNodeMenu"
+    @close-quick-add-node-menu="onCloseQuickAddNodeMenu"
   >
     <ContextMenu
       v-if="Boolean(contextMenuPosition)"
       :position="contextMenuPosition"
       @menu-close="contextMenuPosition = null"
     />
-    
+
     <PortTypeMenu
       v-if="Boolean(portTypeMenuConfig)"
       :key="portTypeMenuConfig.id"
-      ref="portTypeMenu"
       v-bind="portTypeMenuConfig.props"
       v-on="portTypeMenuConfig.events"
+    />
+
+    <QuickAddNodeMenu
+      v-if="Boolean(quickAddNodeMenuConfig)"
+      :key="quickAddNodeMenuConfig.id"
+      v-bind="quickAddNodeMenuConfig.props"
+      v-on="quickAddNodeMenuConfig.events"
     />
 
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->

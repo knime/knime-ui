@@ -4,6 +4,7 @@ import shortcuts from './shortcuts';
 import constants from './constants';
 import { directiveMove } from './directive-move';
 import events from './events';
+import featuresFlags from './feature-flags';
 
 export const initPlugins = (vueInstance, store) => {
     const wrapPlugin = (plugin) => ({
@@ -22,5 +23,6 @@ export const initPlugins = (vueInstance, store) => {
     vueInstance.use(wrapPlugin(shortcuts));
     vueInstance.use(wrapPlugin(constants));
     vueInstance.use(wrapPlugin(events));
+    vueInstance.use(wrapPlugin(featuresFlags));
     vueInstance.directive(directiveMove.name, directiveMove.options);
 };

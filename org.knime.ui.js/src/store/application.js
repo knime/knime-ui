@@ -81,6 +81,9 @@ export const mutations = {
     },
     setHasClipboardSupport(state, hasClipboardSupport) {
         state.hasClipboardSupport = hasClipboardSupport;
+    },
+    setFeatureFlags(state, featureFlags) {
+        state.featureFlags = featureFlags;
     }
 };
 
@@ -107,6 +110,7 @@ export const actions = {
         commit('setOpenProjects', openProjects);
         commit('setAvailablePortTypes', applicationState.availablePortTypes);
         commit('setSuggestedPortTypes', applicationState.suggestedPortTypeIds);
+        commit('setFeatureFlags', applicationState.featureFlags);
 
         await dispatch('setActiveProject', openProjects);
     },

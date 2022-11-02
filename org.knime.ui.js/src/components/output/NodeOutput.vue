@@ -174,7 +174,7 @@ export default {
 
     <template v-if="!validationErrors">
       <NodeViewTabOutput
-        v-if="isViewTabSelected"
+        v-if="isViewTabSelected && $features.shouldDisplayEmbeddedViews()"
         :project-id="projectId"
         :workflow-id="workflowId"
         :selected-node="singleSelectedNode"

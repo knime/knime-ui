@@ -29,6 +29,10 @@ describe('NodeOutput.vue', () => {
         localVue.use(Vuex);
     });
 
+    const mockFeatureFlags = {
+        shouldDisplayEmbeddedViews: jest.fn(() => true)
+    };
+
     const dummyNodes = {
         node1: {
             id: 'node1',
@@ -103,7 +107,7 @@ describe('NodeOutput.vue', () => {
     };
 
     const doMount = (store = null) => shallowMount(NodeOutput, {
-        mocks: { $store: store || createStore(), $colors, $shapes }
+        mocks: { $store: store || createStore(), $colors, $shapes, $features: mockFeatureFlags }
     });
 
     const placeholderMessage = (wrapper) => wrapper.find('.placeholder').text();
@@ -352,5 +356,15 @@ describe('NodeOutput.vue', () => {
                 expect(wrapper.findComponent(PortViewTabOutput).props('selectedPortIndex')).toBe(toPort);
             });
         });
+    });
+
+    it('should not display ViewTabOutput component when feature flag is set to false', async () => {
+        mockFeatureFlags.shouldDisplayEmbeddedViews.mockImplementation(() => false);
+        
+        const wrapper = doMount();
+
+        wrapper.findComponent(PortTabs).vm.$emit('update:modelValue', 'view');
+        await Vue.nextTick();
+        expect(wrapper.findComponent(NodeViewTabOutput).exists()).toBe(false);
     });
 });
