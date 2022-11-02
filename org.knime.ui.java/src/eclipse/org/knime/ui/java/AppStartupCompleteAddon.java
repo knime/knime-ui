@@ -67,7 +67,9 @@ import org.eclipse.e4.ui.model.application.ui.menu.MToolBar;
 import org.eclipse.e4.ui.model.application.ui.menu.MTrimContribution;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.osgi.service.event.Event;
 
 /**
@@ -88,13 +90,23 @@ public final class AppStartupCompleteAddon {
     private EModelService m_modelService;
 
     @Inject
+    private EPartService m_partService;
+
+    @SuppressWarnings("javadoc")
+    @Inject
     @Optional
     public void applicationStarted(@EventTopic(UIEvents.UILifeCycle.APP_STARTUP_COMPLETE) final Event event) {
-
         // programmatic manipulations of the application model
         addSwitchButton();
         addWebUIPerspective();
         disableEmptyTopLevelMenus();
+
+        if (Boolean.getBoolean(PerspectiveUtil.PERSPECTIVE_SWITCH_SYS_PROP)) {
+            PlatformUI.getWorkbench().getDisplay().syncExec(() -> {
+                var perspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
+                PerspectiveUtil.switchAndMakeVisible(perspective, m_partService);
+            });
+        }
     }
 
     private void addSwitchButton() {
@@ -110,6 +122,7 @@ public final class AppStartupCompleteAddon {
         }
     }
 
+    @SuppressWarnings("restriction")
     private void addWebUIPerspective() {
 		MPerspectiveStack perspectiveStack = (MPerspectiveStack) m_modelService
 				.find(PERSPECTIVE_STACK_ID, m_app);
