@@ -143,6 +143,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 header {
   display: flex;
   height: var(--app-header-height);
@@ -205,10 +207,9 @@ header {
         justify-content: center;
 
         & svg {
-          width: 18px;
-          height: 18px;
+          @mixin svg-icon-size 18;
+
           stroke: var(--knime-white);
-          stroke-width: calc(36px / 18); /* get 1px stroke width */
         }
       }
     }
@@ -298,10 +299,10 @@ header {
 
             & svg {
               display: block;
-              height: 20px;
-              width: 20px;
+
+              @mixin svg-icon-size 20;
+
               stroke: var(--knime-gray-ultra-light);
-              stroke-width: calc(32px / 30); /* get 1px stroke width */
             }
 
             &:hover svg {

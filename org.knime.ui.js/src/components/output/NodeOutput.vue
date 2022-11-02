@@ -117,7 +117,7 @@ export default {
             }
 
             // if we're moving to a node which has a view skip automatic port selection
-            if (this.singleSelectedNode.hasView) {
+            if (this.singleSelectedNode.hasView && this.$features.shouldDisplayEmbeddedViews()) {
                 this.selectedTab = 'view';
                 return;
             }
@@ -198,6 +198,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 @keyframes spin {
   100% {
     transform: rotate(-360deg);
@@ -235,10 +237,9 @@ export default {
     color: var(--knime-masala);
 
     & .loading-icon {
+      @mixin svg-icon-size 24;
+
       animation: spin 2s linear infinite;
-      width: 24px;
-      height: 24px;
-      stroke-width: calc(32px / 24);
       margin: auto;
       stroke: var(--knime-masala);
       vertical-align: -6px;

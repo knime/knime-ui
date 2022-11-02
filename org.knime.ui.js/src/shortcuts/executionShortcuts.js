@@ -1,10 +1,10 @@
-import ExecuteAllIcon from '@/assets/execute-all.svg';
-import CancelAllIcon from '@/assets/cancel.svg';
-import ResetAllIcon from '@/assets/reset-all.svg';
+import ExecuteAllIcon from 'webapps-common/ui/assets/img/icons/execute-all.svg';
+import CancelAllIcon from 'webapps-common/ui/assets/img/icons/cancel-execution.svg';
+import ResetAllIcon from 'webapps-common/ui/assets/img/icons/reset-all.svg';
 
-import ExecuteSelectedIcon from '@/assets/execute-selected.svg';
-import CancelSelectedIcon from '@/assets/cancel-selected.svg';
-import ResetSelectedIcon from '@/assets/reset-selected.svg';
+import ExecuteSelectedIcon from 'webapps-common/ui/assets/img/icons/selected-execute.svg';
+import CancelSelectedIcon from 'webapps-common/ui/assets/img/icons/selected-cancel.svg';
+import ResetSelectedIcon from 'webapps-common/ui/assets/img/icons/selected-reset.svg';
 
 import ResumeLoopIcon from '@/assets/resume-execution.svg';
 import PauseLoopIcon from '@/assets/pause-execution.svg';

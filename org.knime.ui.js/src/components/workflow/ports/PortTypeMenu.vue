@@ -232,6 +232,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 .header {
   font-size: 13px;
   margin-top: -7px;
@@ -256,7 +258,6 @@ export default {
   border-bottom: 0;
   background-color: white;
   box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
-  --icon-size: 14;
 
   &:hover {
     cursor: pointer;
@@ -266,9 +267,8 @@ export default {
 
   & svg {
     stroke: var(--knime-masala);
-    width: calc(var(--icon-size) * 1px);
-    height: calc(var(--icon-size) * 1px);
-    stroke-width: calc(32px / var(--icon-size));
+
+    @mixin svg-icon-size 14;
   }
 }
 

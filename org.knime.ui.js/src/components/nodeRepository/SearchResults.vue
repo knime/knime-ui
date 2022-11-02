@@ -83,6 +83,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 @keyframes spin {
   100% {
     transform: rotate(-360deg);
@@ -108,11 +110,11 @@ export default {
     align-items: flex-start;
 
     & .loading-indicator {
+      @mixin svg-icon-size 40;
+
       animation: spin 2s linear infinite;
-      width: 40px;
-      height: 40px;
-      stroke-width: calc(32px / 40);
       stroke: var(--knime-masala);
+      align-self: center;
     }
   }
 }
