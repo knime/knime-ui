@@ -315,7 +315,14 @@ describe('application store', () => {
                 expect(store.state.application.activeProjectId).toBe('1');
             });
     
-            it('switch inside a workflow to nested workflow', async () => {
+            it('restores `lastActive` workflow when switching projects', async () => {
+                // start with a projectId 2
+                store.state.workflow.activeWorkflow = {
+                    projectId: '2',
+                    info: { containerId: 'root-1234' }
+                };
+                
+                // make sure project 1 has a `lastActive` state
                 store.state.application.savedCanvasStates = {
                     '1--root': {
                         children: {},
@@ -326,10 +333,13 @@ describe('application store', () => {
                     }
                 };
     
-                await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root:211' });
+                // change to project 1
+                await store.dispatch('application/switchWorkflow', { projectId: '1' });
+
+                // assert that project 1 was loaded and the correct `lastActive` was restored
                 expect(dispatchSpy).toHaveBeenCalledWith(
                     'application/loadWorkflow',
-                    { projectId: '1', workflowId: 'root:211' }
+                    { projectId: '1', workflowId: 'root:214' }
                 );
             });
         });
