@@ -56,7 +56,8 @@ describe('Kanvas', () => {
                     suggestPanning: false,
                     // mock implementation of contentBounds for testing watcher
                     __contentBounds: { left: 0, top: 0 },
-                    interactionsEnabled: true
+                    interactionsEnabled: true,
+                    isEmpty: false
                 },
                 getters: {
                     viewBox: () => ({ string: 'viewbox-string' }),
@@ -216,6 +217,26 @@ describe('Kanvas', () => {
             expect(wrapper.element.setPointerCapture).not.toHaveBeenCalled();
             expect(wrapper.vm.isPanning).toBe(null);
         });
+
+        it('does not pan if workflow is empty', () => {
+            $store.state.canvas.isEmpty = true;
+            doShallowMount();
+
+            wrapper.element.setPointerCapture = jest.fn();
+            wrapper.element.releasePointerCapture = jest.fn();
+
+            wrapper.element.scrollLeft = 100;
+            wrapper.element.scrollTop = 100;
+            wrapper.trigger('pointerdown', {
+                button: 1, // middle
+                screenX: 100,
+                screenY: 100,
+                pointerId: -1
+            });
+
+            expect(wrapper.element.setPointerCapture).not.toHaveBeenCalled();
+            expect(wrapper.vm.isPanning).toBe(null);
+        });
     });
 
     describe('Container Resize', () => {
@@ -277,6 +298,19 @@ describe('Kanvas', () => {
 
         it('does not zooms on mouse wheel if interactionsEnabled is false', () => {
             $store.state.canvas.interactionsEnabled = false;
+            doShallowMount();
+
+            wrapper.element.dispatchEvent(new WheelEvent('wheel', {
+                deltaY: -5,
+                ctrlKey: true,
+                clientX: 10,
+                clientY: 10
+            }));
+            expect(storeConfig.canvas.actions.zoomAroundPointer).not.toHaveBeenCalled();
+        });
+
+        it('does not zooms on mouse wheel if workflow is empty', () => {
+            $store.state.canvas.isEmpty = true;
             doShallowMount();
 
             wrapper.element.dispatchEvent(new WheelEvent('wheel', {

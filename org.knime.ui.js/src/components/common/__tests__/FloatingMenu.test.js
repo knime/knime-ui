@@ -91,14 +91,20 @@ describe('FloatingMenu.vue', () => {
 
         storeConfig = {
             canvas: {
-                state: () => ({
-                    zoomFactor: 1
-                }),
+                state: {
+                    zoomFactor: 1,
+                    isEmpty: false
+                },
                 getters: {
                     screenFromCanvasCoordinates: screenFromCanvasCoordinatesMock
                 },
                 mutations: {
                     setInteractionsEnabled: jest.fn()
+                }
+            },
+            nodeRepository: {
+                state: {
+                    isDraggingNode: false
                 }
             }
         };
@@ -128,6 +134,14 @@ describe('FloatingMenu.vue', () => {
         it('closes menu when focus leaves the component', () => {
             doMount();
             wrapper.trigger('focusout', { relatedTarget: document.createElement('div') });
+
+            expect(wrapper.emitted('menu-close')).toBeDefined();
+        });
+
+        it('closes menu if node from repository is being dragged', async () => {
+            doMount();
+            $store.state.nodeRepository.isDraggingNode = true;
+            await Vue.nextTick();
 
             expect(wrapper.emitted('menu-close')).toBeDefined();
         });
@@ -243,10 +257,17 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('top: 20px;');
         });
 
-        test('disabled interactions', () => {
+        test('disable interactions', () => {
             doMount();
 
             expect(storeConfig.canvas.mutations.setInteractionsEnabled).toBeCalledWith(expect.anything(), false);
+        });
+
+        test('does not disable interactions when workflow is empty', () => {
+            storeConfig.canvas.state.isEmpty = true;
+            doMount();
+
+            expect(storeConfig.canvas.mutations.setInteractionsEnabled).not.toBeCalled();
         });
     });
 
@@ -279,6 +300,14 @@ describe('FloatingMenu.vue', () => {
             wrapper.destroy();
 
             expect(storeConfig.canvas.mutations.setInteractionsEnabled).toBeCalledWith(expect.anything(), true);
+        });
+
+        test('does not enable interactions when workflow is empty', () => {
+            storeConfig.canvas.state.isEmpty = true;
+            doMount();
+            wrapper.destroy();
+
+            expect(storeConfig.canvas.mutations.setInteractionsEnabled).not.toBeCalled();
         });
     });
 });

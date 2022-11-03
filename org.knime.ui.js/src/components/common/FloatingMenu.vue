@@ -55,7 +55,8 @@ export default {
     }),
     computed: {
         ...mapGetters('canvas', ['screenFromCanvasCoordinates']),
-        ...mapState('canvas', ['zoomFactor'])
+        ...mapState('canvas', ['zoomFactor', 'isEmpty']),
+        ...mapState('nodeRepository', ['isDraggingNode'])
     },
     watch: {
         canvasPosition() {
@@ -63,11 +64,22 @@ export default {
         },
         zoomFactor() {
             this.setAbsolutePosition();
+        },
+        isDraggingNode: {
+            immediate: true,
+            handler() {
+                if (this.isDraggingNode) {
+                    this.$emit('menu-close');
+                }
+            }
         }
     },
     mounted() {
         this.setAbsolutePosition();
-        this.setInteractionsEnabled(false);
+
+        if (!this.isEmpty) {
+            this.setInteractionsEnabled(false);
+        }
         
         let kanvas = document.getElementById('kanvas');
         kanvas.addEventListener('scroll', this.onCanvasScroll);
@@ -83,7 +95,10 @@ export default {
         this.resizeObserver.observe(this.$el);
     },
     beforeDestroy() {
-        this.setInteractionsEnabled(true);
+        if (!this.isEmpty) {
+            this.setInteractionsEnabled(true);
+        }
+
         // if kanvas currently exists (workflow is open) remove scroll event listener
         let kanvas = document.getElementById('kanvas');
         kanvas?.removeEventListener('scroll', this.onCanvasScroll);

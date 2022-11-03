@@ -25,9 +25,12 @@ export default {
         ({ $store }) => Boolean($store.state.workflow.activeWorkflow),
         {
             ...workflowShortcuts,
-            ...selectionShortcuts,
             ...conditionGroup(
                 ({ $store }) => Boolean($store.state.canvas.interactionsEnabled),
+                selectionShortcuts
+            ),
+            ...conditionGroup(
+                ({ $store }) => Boolean($store.state.canvas.interactionsEnabled && !$store.state.canvas.isEmpty),
                 canvasShortcuts
             )
         }
