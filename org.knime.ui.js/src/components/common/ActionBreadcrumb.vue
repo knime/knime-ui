@@ -58,7 +58,6 @@ export default {
   <Breadcrumb
     v-bind="$attrs"
     :items="breadcrumbItems"
-    v-on="$attrs"
     @click.capture.prevent.stop="onClick"
   />
 </template>

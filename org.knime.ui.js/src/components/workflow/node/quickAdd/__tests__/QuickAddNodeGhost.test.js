@@ -4,22 +4,20 @@ import * as $shapes from '@/style/shapes.mjs';
 import QuickAddNodeGhost from '../QuickAddNodeGhost.vue';
 
 describe('QuickAddNodeGhost.vue', () => {
-    const doMount = (propsData = {
+    const doMount = (props = {
         position: [5, 8]
-    }) => {
-        let mocks = {
-            $shapes: {
-                ...$shapes,
-                portSize: 10,
-                addNodeGhostSize: 20
+    }) => shallowMount(QuickAddNodeGhost, {
+        props,
+        global: {
+            mocks: {
+                $shapes: {
+                    ...$shapes,
+                    portSize: 10,
+                    addNodeGhostSize: 20
+                }
             }
-        };
-
-        return shallowMount(QuickAddNodeGhost, {
-            propsData,
-            mocks
-        });
-    };
+        }
+    });
 
     describe('Ghost', () => {
         it('renders', () => {

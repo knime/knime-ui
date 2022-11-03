@@ -482,7 +482,7 @@ export default {
                             nodeId: this.nodeId
                         },
                         events: {
-                            'menu-close': this.closeQuickAddNodeMenu
+                            onMenuClose: this.closeQuickAddNodeMenu
                         }
                     },
                     bubbles: true

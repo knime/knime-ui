@@ -7,7 +7,7 @@ import * as $colors from '@/style/colors.mjs';
 import Port from '@/components/common/Port.vue';
 import AddPortPlaceholder, { addPortPlaceholderPath } from '../AddPortPlaceholder.vue';
 
-describe('PortTypeMenu.vue', () => {
+describe('AddPortPlaceholder.vue', () => {
     let props, doMount, wrapper, provide;
 
     beforeEach(() => {
@@ -92,9 +92,9 @@ describe('PortTypeMenu.vue', () => {
                         portGroups: {}
                     },
                     events: {
-                        'item-active': expect.any(Function),
-                        'item-click': expect.any(Function),
-                        'menu-close': expect.any(Function)
+                        onItemActive: expect.any(Function),
+                        onItemClick: expect.any(Function),
+                        onMenuClose: expect.any(Function)
                     }
                 });
 
@@ -121,7 +121,7 @@ describe('PortTypeMenu.vue', () => {
             it('preview port', async () => {
                 let port = { typeId: 'table' };
 
-                callbacks['item-active']({ port });
+                callbacks.onItemActive({ port });
                 await Vue.nextTick();
 
                 expect(wrapper.find('.add-port-icon').exists()).toBe(false);
@@ -132,7 +132,7 @@ describe('PortTypeMenu.vue', () => {
             });
 
             it('resets port preview', async () => {
-                callbacks['item-active'](null);
+                callbacks.onItemActive(null);
                 await Vue.nextTick();
 
                 expect(wrapper.find('.add-port-icon').exists()).toBe(true);
@@ -147,15 +147,15 @@ describe('PortTypeMenu.vue', () => {
             });
 
             it('closes menu on close-menu event', async () => {
-                callbacks['menu-close']();
+                callbacks.onMenuClose();
                 await Vue.nextTick();
 
                 testCloseMenu();
             });
 
             test('close menu without selecting a port resets port preview', async () => {
-                callbacks['item-active']({ portId: 'table' });
-                callbacks['menu-close']();
+                callbacks.onItemActive({ portId: 'table' });
+                callbacks.onMenuClose();
                 await Vue.nextTick();
 
                 expect(wrapper.findComponent(Port).exists()).toBe(false);
@@ -165,7 +165,7 @@ describe('PortTypeMenu.vue', () => {
             // TODO: test transition element directly
             test('click on item reset preview without transition', async () => {
                 let port = { typeId: 'table' };
-                callbacks['item-click']({ port });
+                callbacks.onItemClick({ port });
 
                 expect(wrapper.vm.transitionEnabled).toBe(false);
                 await Vue.nextTick();
@@ -179,7 +179,7 @@ describe('PortTypeMenu.vue', () => {
             });
 
             test('click on item emits event', () => {
-                callbacks['item-click']({ typeId: 'table' });
+                callbacks.onItemClick({ typeId: 'table' });
                 
                 expect(wrapper.emitted('addPort')).toStrictEqual([[{ typeId: 'table', portGroup: undefined }]]);
             });

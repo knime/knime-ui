@@ -105,9 +105,9 @@ export default {
                             portGroups: this.validPortGroups
                         },
                         events: {
-                            'item-active': this.onItemActive,
-                            'item-click': this.onItemClick,
-                            'menu-close': this.onRequestClose
+                            onItemActive: this.onItemActive,
+                            onItemClick: this.onItemClick,
+                            onMenuClose: this.onRequestClose
                         }
                     },
                     bubbles: true

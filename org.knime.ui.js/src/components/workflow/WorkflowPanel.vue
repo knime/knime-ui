@@ -53,7 +53,7 @@ export default {
         onOpenPortTypeMenu(e) {
             if (this.portTypeMenuConfig && this.portTypeMenuConfig.id !== e.detail.id) {
                 // if another menu than the current one sends an open signal, close the other one first
-                this.portTypeMenuConfig.events['menu-close']();
+                this.portTypeMenuConfig.events.onMenuClose();
             }
             this.portTypeMenuConfig = e.detail;
         },
@@ -66,7 +66,7 @@ export default {
         onOpenQuickAddNodeMenu(e) {
             if (this.quickAddNodeMenuConfig && this.quickAddNodeMenuConfig.id !== e.detail.id) {
                 // if another menu than the current one sends an open signal, close the other one first
-                this.quickAddNodeMenuConfig.events['menu-close']();
+                this.quickAddNodeMenuConfig.events.onMenuClose();
             }
             this.quickAddNodeMenuConfig = e.detail;
         },
@@ -98,15 +98,13 @@ export default {
     <PortTypeMenu
       v-if="Boolean(portTypeMenuConfig)"
       :key="portTypeMenuConfig.id"
-      v-bind="portTypeMenuConfig.props"
-      v-on="portTypeMenuConfig.events"
+      v-bind="{ ...portTypeMenuConfig.props, ...portTypeMenuConfig.events }"
     />
 
     <QuickAddNodeMenu
       v-if="Boolean(quickAddNodeMenuConfig)"
       :key="quickAddNodeMenuConfig.id"
-      v-bind="quickAddNodeMenuConfig.props"
-      v-on="quickAddNodeMenuConfig.events"
+      v-bind="{ ...quickAddNodeMenuConfig.props, ...quickAddNodeMenuConfig.events }"
     />
 
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->

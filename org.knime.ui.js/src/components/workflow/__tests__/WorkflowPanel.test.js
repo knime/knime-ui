@@ -114,13 +114,13 @@ describe('WorkflowPanel', () => {
             expect(wrapper.findComponent(ContextMenu).props('position')).toStrictEqual({ x: 242, y: 122 });
         });
 
-        it('handles @menu-close event from ContextMenu properly', async () => {
+        it('handles @menuClose event from ContextMenu properly', async () => {
             doShallowMount();
 
             wrapper.trigger('contextmenu', { clientX: 100, clientY: 200 });
             await wrapper.vm.$nextTick();
 
-            wrapper.findComponent(ContextMenu).vm.$emit('menu-close');
+            wrapper.findComponent(ContextMenu).vm.$emit('menuClose');
 
             await wrapper.vm.$nextTick();
             expect(wrapper.findComponent(ContextMenu).exists()).toBe(false);
@@ -140,7 +140,7 @@ describe('WorkflowPanel', () => {
                 detail: {
                     id: '0',
                     props: { side: 'input', position: { x: 0, y: 0 } },
-                    events: { 'menu-close': closeCallback }
+                    events: { onMenuClose: closeCallback }
                 }
             });
 
@@ -152,9 +152,9 @@ describe('WorkflowPanel', () => {
             expect(portMenu.vm.side).toBe('input');
         });
 
-        test('binds events', () => {
+        test('binds events', async () => {
             let portMenu = wrapper.findComponent(PortTypeMenu);
-            portMenu.vm.$emit('menu-close');
+            await portMenu.vm.$emit('menuClose');
             expect(closeCallback).toHaveBeenCalled();
         });
 
@@ -208,7 +208,7 @@ describe('WorkflowPanel', () => {
                 detail: {
                     id: '0',
                     props: { direction: 'in', position: { x: 0, y: 0 }, port: { index: 2 }, nodeId: 'node:0' },
-                    events: { 'menu-close': closeCallback }
+                    events: { onMenuClose: closeCallback }
                 }
             });
 
@@ -229,7 +229,7 @@ describe('WorkflowPanel', () => {
 
         test('binds events', () => {
             let quickAddNodeMenu = wrapper.findComponent(QuickAddNodeMenu);
-            quickAddNodeMenu.vm.$emit('menu-close');
+            quickAddNodeMenu.vm.$emit('menuClose');
             expect(closeCallback).toHaveBeenCalled();
         });
 

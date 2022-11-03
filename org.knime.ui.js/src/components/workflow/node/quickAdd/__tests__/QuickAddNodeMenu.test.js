@@ -1,6 +1,12 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
+
+import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import * as $shapes from '@/style/shapes.mjs';
-import Vue from 'vue';
+import FloatingMenu from '@/components/common/FloatingMenu.vue';
+import { mockVuexStore } from '@/test/test-utils';
+
+import QuickAddNodeMenu from '../QuickAddNodeMenu.vue';
 
 const getNodeRecommendationsResponse = [{
     inPorts: [{ typeId: 'org.knime.core.node.BufferedDataTable' }],
@@ -27,19 +33,7 @@ jest.mock('@api', () => ({
     getNodeRecommendations: jest.fn().mockReturnValue(getNodeRecommendationsResponse)
 }));
 
-import QuickAddNodeMenu from '../QuickAddNodeMenu.vue';
-import FloatingMenu from '@/components/common/FloatingMenu.vue';
-import { mockVuexStore } from '@/test/test-utils/index';
-import Vuex from 'vuex';
-import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
-
-
 describe('QuickAddNodeMenu.vue', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     let FloatingMenuStub = {
         template: `
           <div>
@@ -52,7 +46,7 @@ describe('QuickAddNodeMenu.vue', () => {
         addNodeMock = jest.fn(),
         isWriteableMock = jest.fn().mockReturnValue(true)
     } = {}) => {
-        let propsData = {
+        let props = {
             nodeId: 'node-id',
             position: {
                 x: 10,
@@ -101,22 +95,23 @@ describe('QuickAddNodeMenu.vue', () => {
             }
         };
         let $store = mockVuexStore(storeConfig);
-        let mocks = {
-            $shapes: {
-                ...$shapes,
-                // set port size to a fixed value so test will not fail if we change it.
-                portSize: 10
-            },
-            $store
-        };
-
+        
         return shallowMount(QuickAddNodeMenu, {
-            propsData,
-            mocks,
-            attachTo: document.body,
-            stubs: {
-                FloatingMenu: FloatingMenuStub
-            }
+            propsData: props,
+            global: {
+                plugins: [$store],
+                mocks: {
+                    $shapes: {
+                        ...$shapes,
+                        // set port size to a fixed value so test will not fail if we change it.
+                        portSize: 10
+                    }
+                },
+                stubs: {
+                    FloatingMenu: FloatingMenuStub
+                }
+            },
+            attachTo: document.body
         });
     };
 

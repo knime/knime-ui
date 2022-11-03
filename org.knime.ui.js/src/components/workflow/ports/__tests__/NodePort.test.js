@@ -3,8 +3,6 @@ import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
-// import { $bus } from '@/plugins/event-bus';
-
 import Port from '@/components/common/Port.vue';
 import Connector from '@/components/workflow/connectors/Connector.vue';
 
@@ -111,7 +109,10 @@ describe('NodePort', () => {
                 global: {
                     mocks: { $shapes, $colors, $bus: mockBus },
                     provide,
-                    plugins: [$store]
+                    plugins: [$store],
+                    stubs: {
+                        Portal: { template: '<div><slot /></div>' }
+                    }
                 }
             });
         };
@@ -894,19 +895,17 @@ describe('NodePort', () => {
         describe('Quick add node menu', () => {
             describe('dragging out port', () => {
                 beforeEach(() => {
-                    propsData.direction = 'out';
+                    props.direction = 'out';
                 });
 
                 it('shows quick add node ghost', async () => {
-                    startDragging();
-                    await Vue.nextTick();
-
+                    await startDragging();
+                    
                     expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
                 });
 
                 it('opens quick add node menu', async () => {
-                    startDragging();
-                    await Vue.nextTick();
+                    await startDragging();
 
                     // we cannot mock dispatchEvent as it is required to be the real function for wrapper.trigger calls!
                     const dispatchEventSpy = jest.spyOn(wrapper.element, 'dispatchEvent');
@@ -938,8 +937,7 @@ describe('NodePort', () => {
                 });
 
                 it('closes the quick add node menu', async () => {
-                    startDragging();
-                    await Vue.nextTick();
+                    await startDragging();
 
                     // open so we can close it again
                     const dispatchEventSpy = jest.spyOn(wrapper.element, 'dispatchEvent');
@@ -947,7 +945,7 @@ describe('NodePort', () => {
                     let openEvent = dispatchEventSpy.mock.calls[1][0];
 
                     // call close
-                    openEvent.detail.events['menu-close']();
+                    openEvent.detail.events.onMenuClose();
                     await Vue.nextTick();
 
                     // see if close went good
@@ -960,7 +958,7 @@ describe('NodePort', () => {
 
             describe('dragging in port', () => {
                 beforeEach(() => {
-                    propsData.direction = 'in';
+                    props.direction = 'in';
                 });
 
                 it('does not show quick add node ghost', async () => {
@@ -971,8 +969,7 @@ describe('NodePort', () => {
                 });
 
                 it('does not show quick add node menu', async () => {
-                    startDragging();
-                    await Vue.nextTick();
+                    await startDragging();
 
                     // we cannot mock dispatchEvent as it is required to be the real function for wrapper.trigger calls!
                     const dispatchEventSpy = jest.spyOn(wrapper.element, 'dispatchEvent');

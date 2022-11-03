@@ -1,5 +1,4 @@
 <script>
-import NestedSVG from '@/components/common/NestedSVG';
 import PlusIcon from 'webapps-common/ui/assets/img/icons/plus-small.svg';
 
 /**
@@ -8,7 +7,6 @@ import PlusIcon from 'webapps-common/ui/assets/img/icons/plus-small.svg';
  */
 export default {
     components: {
-        NestedSVG,
         PlusIcon
     },
     props: {
@@ -44,14 +42,12 @@ export default {
         rx="1"
         ry="1"
       />
-      <NestedSVG
+      <PlusIcon
         :width="iconSize"
         :height="iconSize"
         :x="(size / 2) - iconSize / 2"
         :y="(size / 2) - iconSize / 2"
-      >
-        <PlusIcon />
-      </NestedSVG>
+      />
     </g>
   </g>
 </template>
