@@ -70,6 +70,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 .panel {
   display: flex;
   height: 100%;
@@ -101,10 +103,9 @@ button {
   }
 
   & svg {
-    width: 10px;
-    height: 10px;
+    @mixin svg-icon-size 10;
+
     stroke: var(--knime-masala);
-    stroke-width: calc(32px / 10);
     transition: transform 0.3s ease;
   }
 }

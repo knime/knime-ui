@@ -20,6 +20,10 @@ describe('KnimeUI.vue', () => {
     let $store, doShallowMount, initializeApplication, wrapper, storeConfig, destroyApplication,
         setHasClipboardSupport;
 
+    const mockFeatureFlags = {
+        shouldLoadPageBuilder: jest.fn(() => true)
+    };
+
     beforeEach(() => {
         initializeApplication = jest.fn().mockResolvedValue();
         destroyApplication = jest.fn();
@@ -50,10 +54,19 @@ describe('KnimeUI.vue', () => {
 
         $store = mockVuexStore(storeConfig);
         doShallowMount = async () => {
-            wrapper = shallowMount(KnimeUI, { global: { plugins: [$store] } });
+            wrapper = shallowMount(KnimeUI, {
+                global: {
+                    plugins: [$store],
+                    mocks: { $features: mockFeatureFlags }
+                }
+            });
             // await promises during load
             await new Promise(r => setTimeout(r, 0));
         };
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
     it('loads the pagebuilder on mount', () => {
@@ -161,5 +174,13 @@ describe('KnimeUI.vue', () => {
             await doShallowMount();
             expect(setHasClipboardSupport).toHaveBeenCalledWith({}, true);
         });
+    });
+
+    it('should not load pagebuilder when the feature flag is set', async () => {
+        mockFeatureFlags.shouldLoadPageBuilder.mockImplementation(() => false);
+
+        await doShallowMount();
+
+        expect(loadPageBuilderMock).not.toHaveBeenCalled();
     });
 });

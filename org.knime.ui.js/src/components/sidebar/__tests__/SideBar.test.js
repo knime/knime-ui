@@ -15,6 +15,10 @@ import Sidebar from '../Sidebar.vue';
 describe('Sidebar', () => {
     let store, workflow, wrapper, doShallowMount;
 
+    const mockFeatureFlags = {
+        shouldDisplayEmbeddedDialogs: jest.fn(() => true)
+    };
+
     beforeEach(() => {
         workflow = {
             projectMetadata: {
@@ -39,7 +43,8 @@ describe('Sidebar', () => {
         doShallowMount = () => {
             wrapper = shallowMount(Sidebar, {
                 global: {
-                    plugins: [store]
+                    plugins: [store],
+                    mocks: { $features: mockFeatureFlags }
                 }
             });
         };
@@ -116,5 +121,14 @@ describe('Sidebar', () => {
     it('has portal for extension panel', () => {
         doShallowMount();
         expect(wrapper.find('[name="extension-panel"').exists()).toBe(true);
+    });
+
+    it('should not display node dialog section when flag is set to false', () => {
+        mockFeatureFlags.shouldDisplayEmbeddedDialogs.mockImplementation(() => false);
+
+        doShallowMount();
+
+        expect(wrapper.find('ul').findAll('li').length).toBe(2);
+        expect(wrapper.findComponent(NodeDialogWrapper).exists()).toBe(false);
     });
 });

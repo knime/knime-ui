@@ -66,6 +66,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 .node-search {
   display: flex;
   align-items: center;
@@ -79,14 +81,12 @@ export default {
     padding: 6px;
     margin-left: 3px;
     pointer-events: none;
-    --icon-size: 18;
 
     & svg {
       vertical-align: top;
       stroke: var(--theme-button-function-foreground-color);
-      width: calc(var(--icon-size) * 1px);
-      height: calc(var(--icon-size) * 1px);
-      stroke-width: calc(32px / var(--icon-size));
+
+      @mixin svg-icon-size 18;
     }
   }
 
@@ -96,9 +96,7 @@ export default {
     margin-right: calc(var(--icon-size) / 2 * 1px);
 
     & :deep(svg) {
-      width: calc(var(--icon-size) * 1px);
-      height: calc(var(--icon-size) * 1px);
-      stroke-width: calc(32px / var(--icon-size));
+      @mixin svg-icon-size var(--icon-size);
     }
   }
 }

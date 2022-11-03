@@ -8,7 +8,6 @@ import { TABS } from '@/store/panel';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
 import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
-
 import LeftCollapsiblePanel from './LeftCollapsiblePanel.vue';
 
 export default {
@@ -45,14 +44,16 @@ export default {
                     isExpanded: this.expanded,
                     onClick: () => this.clickItem(TABS.NODE_REPOSITORY)
                 },
-                {
-                    title: 'Node dialog',
-                    icon: NodeCogIcon,
-                    isActive: this.isTabActive(TABS.NODE_DIALOG),
-                    isExpanded: this.expanded,
-                    onClick: () => this.clickItem(TABS.NODE_DIALOG)
-                }
-            ];
+                this.$features.shouldDisplayEmbeddedDialogs()
+                    ? {
+                        title: 'Node dialog',
+                        icon: NodeCogIcon,
+                        isActive: this.isTabActive(TABS.NODE_DIALOG),
+                        isExpanded: this.expanded,
+                        onClick: () => this.clickItem(TABS.NODE_DIALOG)
+                    }
+                    : null
+            ].filter(Boolean);
         }
     },
     methods: {
@@ -116,6 +117,7 @@ export default {
         />
 
         <NodeDialogWrapper
+          v-if="$features.shouldDisplayEmbeddedDialogs()"
           v-show="isTabActive(TABS.NODE_DIALOG)"
           key="node-dialog"
         />

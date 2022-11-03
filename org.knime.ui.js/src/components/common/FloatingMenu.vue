@@ -13,11 +13,6 @@ import { escapeStack } from '@/mixins/escapeStack';
  * If the menu wants to be closed it emits @menu-close event.
  * The menu will be closed on `esc` key press or on click away.
  *
- * Example:
- * |--------------------|
- * | Menu Item       F9 |
- * | Another Item    F7 |
- * |--------------------|
  */
 
 export default {
@@ -73,10 +68,10 @@ export default {
     },
     mounted() {
         this.setAbsolutePosition();
-        
+
         let kanvas = document.getElementById('kanvas');
         kanvas.addEventListener('scroll', this.onCanvasScroll);
-        
+
         // set up resize observer
         this.resizeObserver = new ResizeObserver(entries => {
             this.setAbsolutePosition();
@@ -120,13 +115,13 @@ export default {
 
             // if the target point is outside the canvas, first reduce opacity then close menu
             let distanceToCanvas = this.distanceToCanvas({ left, top });
-              
+
             // linear fading depending on distance
             const distanceThreshold = 50;
 
             let alpha = Math.max(0, distanceThreshold - distanceToCanvas) / distanceThreshold;
             this.$el.style.opacity = alpha;
-              
+
             // close menu if outside threshold
             if (distanceToCanvas > distanceThreshold) {
                 this.$emit('menuClose');
@@ -139,7 +134,7 @@ export default {
             if (this.anchor === 'top-right') {
                 left -= menuWidth;
             }
-              
+
             if (this.preventOverflow) {
                 // ensure the menu is always visible within the window
                 if ((window.innerWidth - left) < menuWidth) {
@@ -147,7 +142,7 @@ export default {
                 } else if (left < 0) {
                     left = 0;
                 }
-  
+
                 // ensure the menu is always visible within the window
                 if ((window.innerHeight - top) < menuHeight) {
                     top = window.innerHeight - menuHeight;
@@ -155,7 +150,7 @@ export default {
                     top = 0;
                 }
             }
-  
+
             this.absolutePosition = { left, top };
         },
         onFocusOut(e) {
