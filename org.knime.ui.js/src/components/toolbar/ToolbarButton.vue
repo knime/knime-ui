@@ -31,7 +31,7 @@ button {
     padding-left: 2px;
   }
 
-  :slotted(.icon) {
+  & :slotted(svg) {
     @mixin svg-icon-size var(--icon-size);
 
     stroke: var(--knime-masala);
@@ -51,7 +51,7 @@ button {
       color: var(--knime-black);
       border-color: var(--knime-black);
 
-      & svg {
+      & :slotted(svg) {
         stroke: var(--knime-black);
       }
     }
@@ -72,8 +72,8 @@ button {
       border-color: var(--knime-black);
     }
 
-    &:hover svg,
-    &:active svg {
+    &:hover :slotted(svg),
+    &:active :slotted(svg) {
       stroke: var(--knime-white);
     }
   }
