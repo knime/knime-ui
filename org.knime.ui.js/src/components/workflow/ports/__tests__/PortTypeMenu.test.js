@@ -263,7 +263,8 @@ describe('PortTypeMenu.vue', () => {
                 
                 it('should automatically select the port group when only 1 is given', () => {
                     const portGroups = {
-                        group1: { supportedPortTypeIds: ['table', 'flowVariable'], canAddOutPort: true }
+                        group1: { supportedPortTypeIds: ['table', 'flowVariable'], canAddInPort: true },
+                        group2: { supportedPortTypeIds: ['table', 'flowVariable'], canAddOutPort: true }
                     };
                     doMount({ portGroups });
                     expect(wrapper.findComponent(MenuItems).props('items')).toStrictEqual([

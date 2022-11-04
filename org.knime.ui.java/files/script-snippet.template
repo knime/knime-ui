@@ -1,11 +1,11 @@
-function jsonrpcNotificationBase64Decoded(base64JsonString) {
-    window.jsonrpcNotification(window.atob(base64JsonString));
+function dispatchJsonrpcNotification(jsonrpcNotification) {
+    window.jsonrpcNotification(jsonrpcNotification);
 }
 
 if (window.EquoCommService) {
     window.EquoCommService.on(
         '##JSON_RPC_NOTIFICATION_ACTION_ID##', 
-        jsonrpcNotificationBase64Decoded, 
+        dispatchJsonrpcNotification, 
         e => console.error(e)
     );
     
