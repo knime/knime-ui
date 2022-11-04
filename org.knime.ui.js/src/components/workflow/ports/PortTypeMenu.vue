@@ -125,10 +125,6 @@ export default {
 
         shouldDisplaySearchBar() {
             return this.portGroups ? Boolean(this.selectedPortGroup) : true;
-        },
-
-        hasSinglePortGroup() {
-            return this.sidePortGroups.length === 1;
         }
     },
     watch: {
