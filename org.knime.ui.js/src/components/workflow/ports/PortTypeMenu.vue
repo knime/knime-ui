@@ -91,11 +91,18 @@ export default {
             return this.searchPortsFunction(this.searchQuery);
         },
 
+        sidePortGroups() {
+            if (this.portGroups) {
+                return Object.entries(this.portGroups)
+                    .filter(([_, group]) => this.side === 'input' ? group.canAddInPort : group.canAddOutPort);
+            }
+
+            return null;
+        },
+
         menuItems() {
             if (this.portGroups && !this.selectedPortGroup) {
-                return Object.entries(this.portGroups)
-                    .filter(([_, group]) => this.side === 'input' ? group.canAddInPort : group.canAddOutPort)
-                    .map(([groupName]) => ({ text: groupName }));
+                return this.sidePortGroups.map(([groupName]) => ({ text: groupName }));
             }
 
             const menuItems = this.searchResults.map(({ typeId, name }) => ({
@@ -124,10 +131,10 @@ export default {
         portGroups: {
             immediate: true,
             handler() {
-                const portGroupsNames = Object.keys(this.portGroups || {});
                 // automatically select the first port group when there's only 1
-                if (portGroupsNames.length === 1) {
-                    this.selectedPortGroup = portGroupsNames[0];
+                if (this.sidePortGroups?.length === 1) {
+                    const [groupName] = this.sidePortGroups[0];
+                    this.selectedPortGroup = groupName;
                 }
             }
         }
@@ -190,7 +197,7 @@ export default {
     </div>
 
     <div
-      v-if="selectedPortGroup && Object.keys(portGroups).length > 1"
+      v-if="selectedPortGroup && Object.keys(sidePortGroups).length > 1"
       class="return-button"
       @click="selectedPortGroup = null"
     >
