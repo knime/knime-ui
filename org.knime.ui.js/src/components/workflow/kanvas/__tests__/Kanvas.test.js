@@ -309,7 +309,7 @@ describe('Kanvas', () => {
             expect(storeConfig.canvas.actions.zoomAroundPointer).not.toHaveBeenCalled();
         });
 
-        it('does not zooms on mouse wheel if workflow is empty', () => {
+        it('does not zoom on mouse wheel if workflow is empty', () => {
             $store.state.canvas.isEmpty = true;
             doShallowMount();
 

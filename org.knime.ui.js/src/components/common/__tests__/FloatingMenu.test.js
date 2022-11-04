@@ -92,8 +92,7 @@ describe('FloatingMenu.vue', () => {
         storeConfig = {
             canvas: {
                 state: {
-                    zoomFactor: 1,
-                    isEmpty: false
+                    zoomFactor: 1
                 },
                 getters: {
                     screenFromCanvasCoordinates: screenFromCanvasCoordinatesMock
@@ -262,13 +261,6 @@ describe('FloatingMenu.vue', () => {
 
             expect(storeConfig.canvas.mutations.setInteractionsEnabled).toBeCalledWith(expect.anything(), false);
         });
-
-        test('does not disable interactions when workflow is empty', () => {
-            storeConfig.canvas.state.isEmpty = true;
-            doMount();
-
-            expect(storeConfig.canvas.mutations.setInteractionsEnabled).not.toBeCalled();
-        });
     });
 
     describe('clean up', () => {
@@ -300,14 +292,6 @@ describe('FloatingMenu.vue', () => {
             wrapper.destroy();
 
             expect(storeConfig.canvas.mutations.setInteractionsEnabled).toBeCalledWith(expect.anything(), true);
-        });
-
-        test('does not enable interactions when workflow is empty', () => {
-            storeConfig.canvas.state.isEmpty = true;
-            doMount();
-            wrapper.destroy();
-
-            expect(storeConfig.canvas.mutations.setInteractionsEnabled).not.toBeCalled();
         });
     });
 });
