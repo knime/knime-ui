@@ -134,7 +134,7 @@ li {
         align-self: center;
         align-items: center;
         border-radius: 0;
-        margin-left: auto;
+        margin-left: -18px;
         margin-right: 4px;
         width: 20px;
 
