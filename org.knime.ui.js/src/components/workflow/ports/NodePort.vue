@@ -513,7 +513,6 @@ export default {
             this.dragConnector = null;
         },
         createConnectorFromEvent(e) {
-
             const relatedNode = this.direction === 'out' ? 'sourceNode' : 'destNode';
             const relatedPort = this.direction === 'out' ? 'sourcePort' : 'destPort';
 
