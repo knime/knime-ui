@@ -34,12 +34,14 @@ module.exports = {
     moduleFileExtensions: [
         'mjs',
         'js',
+        'ts',
         'vue',
         'json'
     ],
     transform: {
         '\\.mjs$': 'babel-jest',
         '\\.js$': 'babel-jest',
+        '\\.ts$': 'ts-jest',
         '\\.vue$': '@vue/vue3-jest',
         '\\.(css|styl|less|sass|scss|ttf|woff|woff2)(\\?|$)': 'jest-transform-stub'
     },
