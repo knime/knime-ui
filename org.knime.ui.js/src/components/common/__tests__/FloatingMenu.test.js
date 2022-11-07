@@ -85,11 +85,19 @@ describe('FloatingMenu.vue', () => {
 
         storeConfig = {
             canvas: {
-                state: () => ({
+                state: {
                     zoomFactor: 1
-                }),
+                },
                 getters: {
                     screenFromCanvasCoordinates: screenFromCanvasCoordinatesMock
+                },
+                mutations: {
+                    setInteractionsEnabled: jest.fn()
+                }
+            },
+            nodeRepository: {
+                state: {
+                    isDraggingNode: false
                 }
             }
         };
@@ -125,6 +133,14 @@ describe('FloatingMenu.vue', () => {
             wrapper.find('.floating-menu').wrapperElement.dispatchEvent(focusOutEvent);
 
             expect(wrapper.emitted('menuClose')).toBeDefined();
+        });
+
+        it('closes menu if node from repository is being dragged', async () => {
+            doMount();
+            $store.state.nodeRepository.isDraggingNode = true;
+            await Vue.nextTick();
+
+            expect(wrapper.emitted('menu-close')).toBeDefined();
         });
     });
 
@@ -237,6 +253,12 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('left: -80px;');
             expect(wrapper.attributes('style')).toMatch('top: 20px;');
         });
+
+        test('disable interactions', () => {
+            doMount();
+
+            expect(storeConfig.canvas.mutations.setInteractionsEnabled).toBeCalledWith(expect.anything(), false);
+        });
     });
 
     describe('clean up', () => {
@@ -261,6 +283,13 @@ describe('FloatingMenu.vue', () => {
             wrapper.unmount();
 
             expect(mockResizeObserver.disconnect).toHaveBeenCalled();
+        });
+
+        test('enables interactions', () => {
+            doMount();
+            wrapper.unmount();
+
+            expect(storeConfig.canvas.mutations.setInteractionsEnabled).toBeCalledWith(expect.anything(), true);
         });
     });
 });

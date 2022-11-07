@@ -32,7 +32,7 @@ describe('Kanvas', () => {
                     fillScreen: jest.fn()
                 },
                 mutations: {
-                    setInteractionsEnabled: jest.fn()
+                    setIsEmpty: jest.fn()
                 }
             },
             selection: {
@@ -134,7 +134,7 @@ describe('Kanvas', () => {
             wrapper.vm.$options.watch.isWorkflowEmpty.handler.call(wrapper.vm, false);
             await Vue.nextTick();
 
-            expect(storeConfig.canvas.mutations.setInteractionsEnabled).toHaveBeenCalledWith(expect.anything(), true);
+            expect(storeConfig.canvas.mutations.setIsEmpty).toHaveBeenCalledWith(expect.anything(), false);
             expect(storeConfig.canvas.actions.fillScreen).not.toHaveBeenCalled();
             expect(storeConfig.panel.mutations.setActiveTab).not.toHaveBeenCalledWith(
                 expect.any(Object),
@@ -181,7 +181,7 @@ describe('Kanvas', () => {
             wrapper.vm.$options.watch.isWorkflowEmpty.handler.call(wrapper.vm, true);
             await Vue.nextTick();
 
-            expect(storeConfig.canvas.mutations.setInteractionsEnabled).toHaveBeenCalledWith(expect.anything(), false);
+            expect(storeConfig.canvas.mutations.setIsEmpty).toHaveBeenCalledWith(expect.anything(), true);
             expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
             expect(storeConfig.panel.mutations.setActiveTab).toHaveBeenCalledWith(
                 expect.any(Object),

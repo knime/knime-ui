@@ -16,7 +16,7 @@ export default {
     },
     computed: {
         ...mapGetters('canvas', ['canvasSize', 'viewBox', 'contentBounds']),
-        ...mapState('canvas', ['suggestPanning', 'zoomFactor', 'interactionsEnabled'])
+        ...mapState('canvas', ['suggestPanning', 'zoomFactor', 'interactionsEnabled', 'isEmpty'])
     },
     watch: {
         contentBounds(...args) {
@@ -70,7 +70,7 @@ export default {
         */
         onMouseWheel: throttle(function (e) {
             /* eslint-disable no-invalid-this */
-            if (!this.interactionsEnabled) {
+            if (!this.interactionsEnabled || this.isEmpty) {
                 return;
             }
 
@@ -99,7 +99,7 @@ export default {
             this.setSuggestPanning(true);
         },
         beginPan(e) {
-            if (!this.interactionsEnabled) {
+            if (!this.interactionsEnabled || this.isEmpty) {
                 return;
             }
 
@@ -140,7 +140,8 @@ export default {
     tabindex="0"
     :class="['scroll-container', {
       'panning': isPanning || suggestPanning,
-      'disabled': !interactionsEnabled
+      'empty': isEmpty,
+      'disabled': !interactionsEnabled,
     }]"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
@@ -170,21 +171,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-.scroll-container {
-  position: relative;
-  overflow: scroll;
-  height: 100%;
-  width: 100%;
-
-  &:focus {
-    outline: none;
-  }
-
-  &.disabled {
-    overflow: hidden; /* disables scrolling */
-  }
-}
-
 svg {
   position: relative; /* needed for z-index to have effect */
   display: block;
@@ -198,4 +184,29 @@ svg {
     pointer-events: none !important;
   }
 }
+
+.scroll-container {
+  position: relative;
+  overflow: scroll;
+  height: 100%;
+  width: 100%;
+
+  &:focus {
+    outline: none;
+  }
+
+  &.empty {
+    overflow: hidden; /* disables scrolling */
+  }
+
+  &.disabled {
+    pointer-events: none !important;
+
+    & svg,
+    & svg :deep(*) {
+      pointer-events: none !important;
+    }
+  }
+}
+
 </style>

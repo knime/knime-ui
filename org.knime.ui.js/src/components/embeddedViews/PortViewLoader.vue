@@ -63,7 +63,8 @@ export default {
         },
 
         resourceLocationResolver({ resourceInfo }) {
-            // TODO: NXT-1217 Remove this unnecessary store getter once the issue in the ticket
+            // TODO: NXT-1295. Originally caused NXT-1217
+            // Remove this unnecessary store getter once the issue in the ticket
             // can be solved in a better way. It is necessary at the moment because the TableView is accessing
             // this store module internally, so if not provided then it would error out in the application
             return this.$store.getters['api/uiExtResourceLocation']({ resourceInfo });

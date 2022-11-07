@@ -41,7 +41,7 @@ export default {
     },
 
     created() {
-        // TODO: remove hack. Overwrite internally used function by UI Ext's NodeDialog.min.js
+        // TODO: NXT-1295 remove hack. Overwrite internally used function by UI Ext's NodeDialog.min.js
         if (!window.closeCEFWindow) {
             window.closeCEFWindow = () => {};
         }
@@ -90,7 +90,7 @@ export default {
                 (notification) => {
                     // Dispatch a notification to the page builder so that it updates the corresponding view
                     // of the active node, whose settings are controlled by THIS dialog
-                    // TODO: this should be reworked in the pagebuilder somehow, so that the NodeDialog and
+                    // TODO: NXT-1295 this should be reworked in the pagebuilder somehow, so that the NodeDialog and
                     // the pagebuilder are not coupled to each other like this
                     this.$store.dispatch('pagebuilder/service/pushNotification', notification);
                 }
