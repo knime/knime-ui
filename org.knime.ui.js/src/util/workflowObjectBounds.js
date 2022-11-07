@@ -18,6 +18,10 @@ export default ({ nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPort
     let right = -Infinity;
     let bottom = -Infinity;
     
+    // To create the bounds of the workflow:
+
+    // 1. Look for the outermost `left`, `top, `right`, and `bottom` values when considering
+    // all the existing nodes and their positions
     Object.values(nodes).forEach(({ position: { x, y } }) => {
         const nodeTop = y - (padding ? nodePadding.top : 0);
         const nodeBottom = y + nodeSize + (padding ? nodePadding.bottom : 0);
@@ -30,6 +34,7 @@ export default ({ nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPort
         bottom = Math.max(bottom, nodeBottom);
     });
 
+    // 2. Also account for annotations
     workflowAnnotations.forEach(({ bounds: { x, y, height, width } }) => {
         left = Math.min(left, x);
         top = Math.min(top, y);
@@ -43,6 +48,21 @@ export default ({ nodes = {}, workflowAnnotations = [], metaInPorts, metaOutPort
         top = 0;
         right = 0;
         bottom = 0;
+    }
+
+    const hasNodes = Object.keys(nodes).length !== 0;
+    const isMetanode = Boolean(metaInPorts || metaOutPorts);
+    const hasMetaInPorts = metaInPorts?.ports?.length > 0;
+    const hasMetaOutPorts = metaOutPorts?.ports?.length > 0;
+    if (!hasNodes && isMetanode && (hasMetaInPorts || hasMetaOutPorts)) {
+        return {
+            left,
+            top,
+            right,
+            bottom,
+            width: right - left,
+            height: bottom - top
+        };
     }
     
     // Consider horizontal position of metanode input / output bars.
