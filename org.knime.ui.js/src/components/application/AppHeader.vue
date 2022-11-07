@@ -22,7 +22,6 @@ export default {
     data() {
         return {
             windowWidth: 0,
-            isLoadingWorkflow: false,
             isEntryPageActive: null,
             hoveredTab: null,
             activeTab: null
