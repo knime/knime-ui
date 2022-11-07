@@ -52,7 +52,7 @@ You can generate a coverage report with
 npm run coverage
 ```
 
-The output can be found in the `coverage` folder. It contains a browseable html report as well as raw coverage data in
+The output can be found in the `test-results` folder. It contains a browseable html report as well as raw coverage data in
 [LCOV] and [Clover] format, which can be used in analysis software (SonarQube, Jenkins, …).
 
 

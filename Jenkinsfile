@@ -17,7 +17,7 @@ try {
     node('maven && java11 && large') {
         knimetools.defaultTychoBuild(updateSiteProject: 'org.knime.update.ui')
         
-        junit '**/coverage/junit.xml'
+        junit '**/test-results/junit.xml'
         knimetools.processAuditResults()
         
         stage('Sonarqube analysis') {
