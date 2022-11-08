@@ -91,11 +91,19 @@ describe('FloatingMenu.vue', () => {
 
         storeConfig = {
             canvas: {
-                state: () => ({
+                state: {
                     zoomFactor: 1
-                }),
+                },
                 getters: {
                     screenFromCanvasCoordinates: screenFromCanvasCoordinatesMock
+                },
+                mutations: {
+                    setInteractionsEnabled: jest.fn()
+                }
+            },
+            nodeRepository: {
+                state: {
+                    isDraggingNode: false
                 }
             }
         };
@@ -125,6 +133,14 @@ describe('FloatingMenu.vue', () => {
         it('closes menu when focus leaves the component', () => {
             doMount();
             wrapper.trigger('focusout', { relatedTarget: document.createElement('div') });
+
+            expect(wrapper.emitted('menu-close')).toBeDefined();
+        });
+
+        it('closes menu if node from repository is being dragged', async () => {
+            doMount();
+            $store.state.nodeRepository.isDraggingNode = true;
+            await Vue.nextTick();
 
             expect(wrapper.emitted('menu-close')).toBeDefined();
         });
@@ -239,6 +255,12 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('left: -80px;');
             expect(wrapper.attributes('style')).toMatch('top: 20px;');
         });
+
+        test('disable interactions', () => {
+            doMount();
+
+            expect(storeConfig.canvas.mutations.setInteractionsEnabled).toBeCalledWith(expect.anything(), false);
+        });
     });
 
     describe('clean up', () => {
@@ -263,6 +285,13 @@ describe('FloatingMenu.vue', () => {
             wrapper.destroy();
 
             expect(mockResizeObserver.disconnect).toHaveBeenCalled();
+        });
+
+        test('enables interactions', () => {
+            doMount();
+            wrapper.destroy();
+
+            expect(storeConfig.canvas.mutations.setInteractionsEnabled).toBeCalledWith(expect.anything(), true);
         });
     });
 });
