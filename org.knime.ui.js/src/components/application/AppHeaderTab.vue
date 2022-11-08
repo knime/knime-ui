@@ -89,113 +89,113 @@ export default {
 @import "@/assets/mixins.css";
 
 li {
-    height: 49px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin: 0 1px;
-    padding-left: 10px;
-    padding-bottom: 1px;
-    text-align: center;
-    white-space: nowrap;
-    cursor: pointer;
-    user-select: none;
-    border-radius: 1px 1px 0 0;
-    background-color: var(--knime-black);
+  height: 49px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0 1px;
+  padding-left: 10px;
+  padding-bottom: 1px;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 1px 1px 0 0;
+  background-color: var(--knime-black);
+  color: var(--knime-white);
+  min-width: 80px;
+  max-width: 300px;
+
+  &:hover {
+    background-color: var(--knime-masala);
+  }
+
+  & .text {
     color: var(--knime-white);
-    min-width: 80px;
-    max-width: 300px;
+    font-family: "Roboto Condensed", sans-serif;
+    font-size: 18px;
+    padding: 10px 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    min-width: 0;
+    line-height: 21px;
+    font-weight: 400;
+    width: 100%;
+    text-align: left;
+  }
 
-    &:hover {
-        background-color: var(--knime-masala);
+  /* Increase rule specificity to override function-button's styles */
+  & .function-button.icon {
+    padding: 0;
+  }
+
+  & .icon {
+    align-self: center;
+    align-items: center;
+    border-radius: 0;
+    margin-left: -18px;
+    margin-right: 4px;
+    width: 20px;
+
+    & svg {
+      display: none;
+    }
+  }
+
+  /* Increase rule specificity to override function-button's styles */
+  & .function-button.icon.visible {
+    background: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-masala) 30%);
+  }
+
+  & .visible {
+    & svg {
+      display: block;
+
+      @mixin svg-icon-size 18;
+
+      stroke: var(--knime-porcelain);
     }
 
-    & .text {
-        color: var(--knime-white);
-        font-family: "Roboto Condensed", sans-serif;
-        font-size: 18px;
-        padding: 10px 0;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
-        min-width: 0;
-        line-height: 21px;
-        font-weight: 400;
-        width: 100%;
-        text-align: left;
+    &:hover svg {
+      stroke: var(--knime-white);
     }
-
-    /* Increase rule specificity to override function-button's styles */
-    & .function-button.icon {
-        padding: 0;
-    }
-
-    & .icon {
-        align-self: center;
-        align-items: center;
-        border-radius: 0;
-        margin-left: -18px;
-        margin-right: 4px;
-        width: 20px;
-
-        & svg {
-            display: none;
-        }
-    }
-
-    /* Increase rule specificity to override function-button's styles */
-    & .function-button.icon.visible {
-        background: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-masala) 30%);
-    }
-
-    & .visible {
-        & svg {
-            display: block;
-
-            @mixin svg-icon-size 18;
-
-            stroke: var(--knime-porcelain);
-        }
-
-        &:hover svg {
-            stroke: var(--knime-white);
-        }
-    }
+  }
 }
 
 li.hovered:last-child:not(.active) {
-    border-right: 2px solid var(--knime-black);
+  border-right: 2px solid var(--knime-black);
 }
 
 li.active {
-    background-color: var(--knime-yellow);
+  background-color: var(--knime-yellow);
+  color: var(--knime-black);
+  cursor: inherit;
+
+  & .text {
     color: var(--knime-black);
+  }
+
+  & .function-button.icon.visible {
+    background: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-yellow) 30%);
+  }
+
+  & .visible {
+    height: 49px;
+
+    & svg {
+      stroke: var(--knime-masala);
+    }
+
+    &:hover svg {
+      stroke: var(--knime-black);
+    }
+  }
+
+  &:hover,
+  &:focus {
     cursor: inherit;
-
-    & .text {
-        color: var(--knime-black);
-    }
-
-    & .function-button.icon.visible {
-        background: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-yellow) 30%);
-    }
-
-    & .visible {
-        height: 49px;
-
-        & svg {
-            stroke: var(--knime-masala);
-        }
-
-        &:hover svg {
-            stroke: var(--knime-black);
-        }
-    }
-
-    &:hover,
-    &:focus {
-        cursor: inherit;
-        background-color: var(--knime-yellow);
-    }
+    background-color: var(--knime-yellow);
+  }
 }
 </style>
