@@ -165,6 +165,11 @@ export default {
             type: String,
             default: null
         },
+        nodeKind: {
+            type: String,
+            required: true,
+            validator: kind => ['node', 'metanode', 'component'].includes(kind)
+        },
         relativePosition: {
             type: Array,
             default: () => [0, 0],
@@ -217,7 +222,9 @@ export default {
             }
             return template;
         },
-
+        isFlowVariable() {
+            return this.portTemplate.kind === 'flowVariable';
+        },
         // implemented as required by the tooltip mixin
         tooltip() {
             // table ports have less space than other ports, because the triangular shape naturally creates a gap
@@ -399,7 +406,9 @@ export default {
             }
 
             // show add node ghost for output ports
-            if (this.direction === 'out') {
+            if (this.direction === 'out' &&
+                !this.isFlowVariable &&
+                !['metanode', 'component'].includes(this.nodeKind)) {
                 this.showAddNodeGhost = !this.didDragToCompatibleTarget;
             }
             /* eslint-enable no-invalid-this */
@@ -504,15 +513,13 @@ export default {
             this.dragConnector = null;
         },
         createConnectorFromEvent(e) {
-            const { kind: portKind } = this.portTemplate;
-
             const relatedNode = this.direction === 'out' ? 'sourceNode' : 'destNode';
             const relatedPort = this.direction === 'out' ? 'sourcePort' : 'destPort';
 
             return {
                 id: 'drag-connector',
                 allowedActions: { canDelete: false },
-                flowVariableConnection: portKind === 'flowVariable',
+                flowVariableConnection: this.isFlowVariable,
                 absolutePoint: this.screenToCanvasCoordinates([e.x, e.y]),
                 [relatedNode]: this.nodeId,
                 [relatedPort]: this.port.index
