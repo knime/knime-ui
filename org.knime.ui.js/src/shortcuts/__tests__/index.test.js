@@ -1,7 +1,8 @@
 /* eslint-disable max-nested-callbacks */
 import shortcuts, { conditionGroup } from '..';
-import workflowShortcutssMock from '../workflowShortcuts';
+import workflowShortcutsMock from '../workflowShortcuts';
 import canvasShortcutsMock from '../canvasShortcuts';
+import { selectionShortcuts as selectionShortcutsMocks } from '../miscShortcuts';
 
 jest.mock('@/shortcuts/workflowShortcuts', () => ({
     __esModule: true,
@@ -60,7 +61,7 @@ describe('Shortcuts', () => {
         });
 
         test('adds workflow shortcuts if workflow is present', () => {
-            const workflowShortcuts = Object.keys(workflowShortcutssMock).reduce((res, key) => {
+            const workflowShortcuts = Object.keys(workflowShortcutsMock).reduce((res, key) => {
                 res[key] = shortcuts[key];
                 return res;
             }, {});
@@ -76,7 +77,7 @@ describe('Shortcuts', () => {
             expect(resultWithWorkflow).toStrictEqual(expect.arrayContaining(['save', 'undo']));
         });
 
-        test('adds canvas shortcuts if interactions are enabled', () => {
+        test('adds canvas shortcuts if interactions are enabled and workflow is not empty', () => {
             const canvasShortcuts = Object.keys(canvasShortcutsMock).reduce((res, key) => {
                 res[key] = shortcuts[key];
                 return res;
@@ -91,12 +92,36 @@ describe('Shortcuts', () => {
             expect(resultNoInteractions).not.toStrictEqual(expect.arrayContaining(['fitToScreen', 'zoomTo100']));
 
             $store.state.canvas.interactionsEnabled = true;
+            $store.state.canvas.isEmpty = false;
 
             const resultInteractions = Object
                 .keys(canvasShortcuts)
                 .filter(c => canvasShortcuts[c].condition({ $store }));
                 
             expect(resultInteractions).toStrictEqual(expect.arrayContaining(['fitToScreen', 'zoomTo100']));
+        });
+
+        test('adds selection shortcuts if interactions are enabled', () => {
+            const selectionShortcuts = Object.keys(selectionShortcutsMocks).reduce((res, key) => {
+                res[key] = shortcuts[key];
+                return res;
+            }, {});
+
+            // we need workflow and interactions
+            $store.state.workflow.activeWorkflow = {};
+
+            const resultNoInteractions = Object.keys(selectionShortcuts).filter(
+                c => selectionShortcuts[c].condition({ $store })
+            );
+            expect(resultNoInteractions).not.toStrictEqual(expect.arrayContaining(['selectAllNodes', 'deselectAll']));
+
+            $store.state.canvas.interactionsEnabled = true;
+
+            const resultInteractions = Object
+                .keys(selectionShortcuts)
+                .filter(c => selectionShortcuts[c].condition({ $store }));
+                
+            expect(resultInteractions).toStrictEqual(expect.arrayContaining(['selectAllNodes', 'deselectAll']));
         });
     });
 });
