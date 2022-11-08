@@ -50,6 +50,7 @@ module.exports = {
         '/node_modules/'
     ],
     reporters: ['default', ['jest-junit', { outputDirectory: './test-results', reportTestSuiteErrors: true }]],
+    coverageDirectory: './test-results',
     coverageReporters: ['lcov', 'text'],
     coverageProvider: 'v8',
     // keep in sync with sonar-project.properties!
