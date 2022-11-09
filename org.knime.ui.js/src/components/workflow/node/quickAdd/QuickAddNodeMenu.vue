@@ -3,6 +3,7 @@ import { mapActions, mapGetters, mapState } from 'vuex';
 import { getNodeRecommendations } from '@api';
 
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
+import Button from 'webapps-common/ui/components/Button.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import { mapNodePorts } from '@/util/portDataMapper';
 
@@ -15,6 +16,7 @@ const MAX_NODES = 12;
 export default {
     components: {
         NodePreview,
+        Button,
         FloatingMenu
     },
     props: {
@@ -34,7 +36,8 @@ export default {
     },
     data() {
         return {
-            recommendedNodes: []
+            recommendedNodes: [],
+            showOverlay: true
         };
     },
     computed: {
@@ -59,6 +62,10 @@ export default {
     created() {
         // this component is always destroyed for each node so we don't need to fetch data again if the nodeId changes
         this.fetchRecommendedNodes();
+    },
+    mounted() {
+        // send a call to check if workflow coach is enable
+        // change showOverlay based on it
     },
     methods: {
         ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
@@ -111,6 +118,24 @@ export default {
     @menu-close="$emit('menu-close')"
   >
     <div class="wrapper">
+      <div
+        v-if="showOverlay"
+        class="overlay"
+      >
+        <h2>Workflow coach</h2>
+        <span>
+          The workflow coach will help you build workflows more efficiently by suggesting the next node for your
+          workflow. It is only available with usage date reporting.
+          By activating the community node recommendations you also automatically agree to provide your own usage
+          statistics to the community.
+        </span>
+        <Button
+          primary
+          class="button"
+        >
+          Open settings
+        </Button>
+      </div>
       <section
         class="results"
       >
@@ -147,6 +172,41 @@ export default {
 .quick-add-node {
   width: 330px;
   margin-top: calc(var(--ghost-size) / 2 * 1px + var(--extra-margin) * 1px + 3px);
+
+  & .overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    align-content: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    padding: 20px;
+    background: rgb(32 30 30 / 80%);
+    color: var(--knime-white);
+    font-family: "Roboto Condensed", sans-serif;
+    font-weight: 400;
+
+    & h2 {
+      font-size: 18px;
+      line-height: 21px;
+    }
+
+    & span {
+      font-size: 13px;
+      line-height: 15px;
+      padding: 10px 0;
+    }
+
+    & .button {
+      padding: 6px 15px;
+      height: 30px;
+    }
+  }
 
   & .wrapper {
     min-height: 357px;
