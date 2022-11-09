@@ -4,6 +4,30 @@ import { mapGetters } from 'vuex';
 import MenuItems from 'webapps-common/ui/components/MenuItems.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 
+const menuGroups = function () {
+    let currItems = [];
+
+    const onlyVisible = ({ isVisible }) => isVisible;
+                
+    return {
+        append(groupItems) {
+            const newItems = groupItems.filter(onlyVisible);
+
+            if (currItems.length !== 0 && newItems.length > 0) {
+                // add separator to last item of previous group
+                currItems[currItems.length - 1].separator = true;
+            }
+                        
+            currItems = currItems.concat(newItems);
+
+            // eslint-disable-next-line no-invalid-this
+            return this;
+        },
+
+        value: () => currItems
+    };
+};
+
 /**
  * ContextMenu offers actions for the Kanvas based on the selected nodes.
  */
@@ -31,13 +55,23 @@ export default {
         // map visible items to menu items and add shortcut information
         menuItems() {
             return this.visibleItems
-                .map(name => this.$shortcuts.get(name))
-                .map(({ text, hotkeyText, name }) => ({
-                    text,
-                    hotkeyText,
-                    name,
-                    disabled: !this.$shortcuts.isEnabled(name)
-                }));
+                .map((item) => {
+                    const shortcut = this.$shortcuts.get(item.name);
+
+                    if (!shortcut) {
+                        return {
+                            text: item.text || item.name,
+                            separator: item.separator
+                        };
+                    }
+
+                    return {
+                        text: item.text || shortcut.text,
+                        hotkeyText: shortcut.hotkeyText,
+                        disabled: !this.$shortcuts.isEnabled(item.name),
+                        separator: item.separator
+                    };
+                });
         }
     },
     watch: {
@@ -64,50 +98,56 @@ export default {
             const isView = this.singleSelectedNode && 'canOpenView' in this.singleSelectedNode.allowedActions;
             const hasLegacyFlowVariableDialog = this.singleSelectedNode &&
                 'canOpenLegacyFlowVariableDialog' in this.singleSelectedNode.allowedActions;
-            const isMetanodeOrComponent = ['metanode', 'component'].includes(this.singleSelectedNode?.kind);
             const isMetanode = this.singleSelectedNode?.kind === 'metanode';
             const isComponent = this.singleSelectedNode?.kind === 'component';
+            const isMetanodeOrComponent = isMetanode || isComponent;
 
-            let allMenuItems = {
-                // Exactly one node selected
-                configureNode: this.singleSelectedNode,
+            const basicOperationsGroup = [
+                { name: 'configureNode', isVisible: this.singleSelectedNode },
+                { name: 'executeSelected', isVisible: this.selectedNodes.length },
+                // Loop nodes
+                { name: 'resumeLoopExecution', isVisible: isLoopEnd },
+                { name: 'pauseLoopExecution', isVisible: isLoopEnd },
+                { name: 'stepLoopExecution', isVisible: isLoopEnd },
+                { name: 'cancelSelected', isVisible: this.selectedNodes.length },
+                { name: 'resetSelected', isVisible: this.selectedNodes.length },
+                // misc
+                { name: 'openView', isVisible: isView },
+                { name: 'configureFlowVariables', isVisible: hasLegacyFlowVariableDialog },
+                // no nodes selected
+                { name: 'executeAll', isVisible: !somethingSelected },
+                { name: 'cancelAll', isVisible: !somethingSelected },
+                { name: 'resetAll', isVisible: !somethingSelected }
+            ];
 
-                // Node Execution
-                executeSelected: this.selectedNodes.length,
-                resumeLoopExecution: isLoopEnd,
-                pauseLoopExecution: isLoopEnd,
-                stepLoopExecution: isLoopEnd,
-                cancelSelected: this.selectedNodes.length,
-                resetSelected: this.selectedNodes.length,
+            const clipboardOperationsGroup = [
+                { name: 'cut', isVisible: somethingSelected },
+                { name: 'copy', isVisible: somethingSelected },
+                { name: 'paste', isVisible: !somethingSelected },
+                { name: 'deleteSelected', isVisible: somethingSelected }
+            ];
 
-                configureFlowVariables: hasLegacyFlowVariableDialog,
-                openView: isView,
-                editName: isMetanodeOrComponent,
-                
-                // Something selected
-                deleteSelected: somethingSelected,
+            const metanodeOperationsGroup = [
+                { name: 'createMetanode', isVisible: this.selectedNodes.length },
+                { name: 'expandMetanode', isVisible: isMetanode },
+                { name: 'editName', isVisible: isMetanodeOrComponent, text: 'Rename Metanode' },
+                { name: 'createComponent', isVisible: this.selectedNodes.length }
+            ];
 
-                // Copy & paste
-                copy: somethingSelected,
-                cut: somethingSelected,
-                paste: !somethingSelected,
+            const componentOperationsGroup = [
+                { name: 'createMetanode', isVisible: this.selectedNodes.length },
+                { name: 'createComponent', isVisible: this.selectedNodes.length },
+                { name: 'expandComponent', isVisible: isComponent },
+                { name: 'editName', isVisible: isMetanodeOrComponent, text: 'Rename Component' }
+            ];
 
-                // Workflow
-                executeAll: !somethingSelected,
-                cancelAll: !somethingSelected,
-                resetAll: !somethingSelected,
+            const items = menuGroups()
+                .append(basicOperationsGroup)
+                .append(clipboardOperationsGroup)
+                .append(isMetanode ? metanodeOperationsGroup : componentOperationsGroup)
+                .value();
 
-                createMetanode: this.selectedNodes.length,
-                createComponent: this.selectedNodes.length,
-                expandMetanode: isMetanode,
-                expandComponent: isComponent
-            };
-
-            // Array of name of shortcuts
-            this.visibleItems = Object
-                .entries(allMenuItems)
-                .filter(([name, visible]) => visible)
-                .map(([name, visible]) => name);
+            this.visibleItems = items;
         }
     }
 };
