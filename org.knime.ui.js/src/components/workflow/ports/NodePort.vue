@@ -165,11 +165,6 @@ export default {
             type: String,
             default: null
         },
-        nodeKind: {
-            type: String,
-            required: true,
-            validator: kind => ['node', 'metanode', 'component'].includes(kind)
-        },
         relativePosition: {
             type: Array,
             default: () => [0, 0],
@@ -185,6 +180,10 @@ export default {
             default: false
         },
         selected: {
+            type: Boolean,
+            default: false
+        },
+        disableQuickNodeAdd: {
             type: Boolean,
             default: false
         }
@@ -406,9 +405,7 @@ export default {
             }
 
             // show add node ghost for output ports
-            if (this.direction === 'out' &&
-                !this.isFlowVariable &&
-                !['metanode', 'component'].includes(this.nodeKind)) {
+            if (this.direction === 'out' && !this.disableQuickNodeAdd && !this.isFlowVariable) {
                 this.showAddNodeGhost = !this.didDragToCompatibleTarget;
             }
             /* eslint-enable no-invalid-this */
