@@ -1,6 +1,6 @@
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
-import { getNodeRecommendations } from '@api';
+import { getNodeRecommendations, openWorkflowCoachPreferencePage } from '@api';
 
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import Button from 'webapps-common/ui/components/Button.vue';
@@ -37,11 +37,11 @@ export default {
     data() {
         return {
             recommendedNodes: [],
-            showOverlay: true
+            showOverlay: false
         };
     },
     computed: {
-        ...mapState('application', ['availablePortTypes']),
+        ...mapState('application', ['availablePortTypes', 'hasNodeRecommendationsEnabled']),
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapState('canvas', ['zoomFactor']),
         ...mapGetters('workflow', ['isWritable']),
@@ -64,11 +64,13 @@ export default {
         this.fetchRecommendedNodes();
     },
     mounted() {
-        // send a call to check if workflow coach is enable
-        // change showOverlay based on it
+        if (!this.hasNodeRecommendationsEnabled) {
+            this.showOverlay = true;
+        }
     },
     methods: {
         ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
+        openWorkflowCoachPreferencePage,
         async fetchRecommendedNodes() {
             const workflowId = this.workflow.info.containerId;
             const projectId = this.workflow.projectId;
@@ -125,15 +127,17 @@ export default {
         <h2>Workflow coach</h2>
         <span>
           The workflow coach will help you build workflows more efficiently by suggesting the next node for your
-          workflow. It is only available with usage date reporting.
-          By activating the community node recommendations you also automatically agree to provide your own usage
-          statistics to the community.
+          workflow.
+        </span>
+        <span>
+          To activate this function you need to change the settings inside the preference page.
         </span>
         <Button
           primary
           class="button"
+          @click="openWorkflowCoachPreferencePage"
         >
-          Open settings
+          Open Preferences
         </Button>
       </div>
       <section
@@ -189,22 +193,25 @@ export default {
     background: rgb(32 30 30 / 80%);
     color: var(--knime-white);
     font-family: "Roboto Condensed", sans-serif;
-    font-weight: 400;
 
     & h2 {
       font-size: 18px;
       line-height: 21px;
+      font-weight: 400;
     }
 
     & span {
       font-size: 13px;
       line-height: 15px;
-      padding: 10px 0;
+      padding: 5px 0 10px;
     }
 
     & .button {
       padding: 6px 15px;
       height: 30px;
+      font-size: 13px;
+      font-family: "Roboto Condensed", sans-serif;
+      margin-top: 20px;
     }
   }
 

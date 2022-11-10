@@ -133,3 +133,19 @@ export const openLayoutEditor = ({ projectId, workflowId }) => {
         consola.error(`Could not open layout editor`, e);
     }
 };
+
+/**
+ * Opens workflow coach preference page
+ * @returns {void}
+ */
+export const openWorkflowCoachPreferencePage = () => {
+    try {
+        // returns falsy on success
+        let error = window.openWorkflowCoachPreferencePage();
+        if (error) {
+            throw new Error(error);
+        }
+    } catch (e) {
+        consola.error(`Could not open preference page`, e);
+    }
+};
