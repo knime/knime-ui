@@ -92,6 +92,13 @@ describe('canvas store', () => {
         expect(store.state.canvas.interactionsEnabled).toBe(false);
     });
 
+    test('setIsEmpty', () => {
+        expect(store.state.canvas.isEmpty).toBe(false);
+
+        store.commit('canvas/setIsEmpty', true);
+        expect(store.state.canvas.isEmpty).toBe(true);
+    });
+
     describe('scroll container element', () => {
         test('set & get ScrollContainerElement', () => {
             store.dispatch('canvas/initScrollContainerElement', scrollContainer);

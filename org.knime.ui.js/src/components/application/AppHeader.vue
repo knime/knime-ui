@@ -5,77 +5,68 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import Carousel from 'webapps-common/ui/components/Carousel.vue';
 import KnimeIcon from 'webapps-common/ui/assets/img/KNIME_Triangle.svg';
 import SwitchIcon from 'webapps-common/ui/assets/img/icons/perspective-switch.svg';
-import CloseIcon from '@/assets/cancel.svg';
 
-/* eslint-disable no-magic-numbers */
-const maxCharSwitch = [
-    (width) => width < 600 ? 10 : false,
-    (width) => width < 900 ? 20 : false,
-    (width) => width < 1280 ? 50 : false,
-    (width) => width < 1680 ? 100 : false,
-    (width) => width < 2180 ? 150 : false,
-    (width) => width < 2800 ? 200 : false,
-    (width) => width >= 2800 ? 256 : false
-];
-/* eslint-enable no-magic-numbers */
+import AppHeaderTab from './AppHeaderTab.vue';
 
 /**
- * Header Bar containing Logo, project name and Switch to Java UI Button
+ * Header Bar containing Logo, Open project tabs, Feedback button and Switch to Java UI Button
  */
 export default {
     components: {
+        AppHeaderTab,
         KnimeIcon,
         FunctionButton,
         Carousel,
-        SwitchIcon,
-        CloseIcon
+        SwitchIcon
     },
     data() {
         return {
             windowWidth: 0,
-            isHoveredOver: null,
-            isEntryPageActive: null
+            isEntryPageActive: null,
+            hoveredTab: null,
+            activeTab: null
         };
     },
     computed: {
         ...mapState('application', ['openProjects', 'activeProjectId'])
     },
     watch: {
-        activeProjectId: {
-            immediate: true,
+        openProjects: {
             handler() {
-                if (this.activeProjectId) {
-                    this.isEntryPageActive = false;
-                }
-                
                 if (this.openProjects.length === 0) {
                     this.isEntryPageActive = true;
                 }
+            },
+            immediate: true
+        },
+        activeProjectId() {
+            if (this.activeProjectId) {
+                this.activeTab = this.activeProjectId;
+                this.isEntryPageActive = false;
             }
         }
     },
     created() {
-        window.addEventListener('resize', this.onWindowResize);
-        this.onWindowResize();
+        this.setupResizeListener();
     },
     methods: {
         ...mapActions('workflow', ['closeWorkflow']),
         ...mapActions('application', ['switchWorkflow']),
-        onWindowResize() {
-            this.windowWidth = window.innerWidth;
+        setupResizeListener() {
+            const onResize = () => {
+                this.windowWidth = window.innerWidth;
+            };
+
+            window.addEventListener('resize', onResize);
+            onResize();
         },
         switchToJavaUI() {
             window.switchToJavaUI();
         },
-        truncateProjectName(name) {
-            const maxCharFunction = maxCharSwitch.find(fn => fn(this.windowWidth));
-            const maxChars = maxCharFunction(this.windowWidth);
-
-            return name.length > maxChars ? `${name.slice(0, maxChars)} …` : name;
-        },
         setEntryPageTab() {
             this.isEntryPageActive = true;
             this.switchWorkflow(null);
+            this.activeTab = null;
         }
     }
 };
@@ -97,23 +88,18 @@ export default {
       >
         <Carousel>
           <div class="wrapper">
-            <li
+            <AppHeaderTab
               v-for="{ name, projectId } in openProjects"
               :key="projectId"
-              :class="[ activeProjectId === projectId ? 'active' : null ]"
-              @click.stop="activeProjectId === projectId ? null : switchWorkflow({ projectId })"
-              @mouseover="isHoveredOver = projectId"
-              @mouseleave="isHoveredOver = null"
-            >
-              <span class="text">{{ truncateProjectName(name) }}</span>
-              <FunctionButton
-                :class="[ isHoveredOver === projectId ? 'visible' : null ]"
-                class="icon"
-                @click.stop="closeWorkflow(projectId)"
-              >
-                <CloseIcon />
-              </FunctionButton>
-            </li>
+              :name="name"
+              :project-id="projectId"
+              :window-width="windowWidth"
+              :is-active="activeTab === projectId"
+              :is-hovered-over="hoveredTab === projectId"
+              @hover="hoveredTab = $event"
+              @switch-workflow="switchWorkflow({ projectId: $event })"
+              @close-workflow="closeWorkflow($event)"
+            />
           </div>
         </Carousel>
       </ul>
@@ -153,7 +139,6 @@ header {
   position: relative;
 
   /* smallish dark spacer */
-
   &::after {
     content: "";
     position: absolute;
@@ -172,7 +157,6 @@ header {
     align-content: center;
 
     /* Feedback and Switch to classic ui buttons */
-
     & .buttons {
       display: flex;
       align-items: center;
@@ -244,101 +228,6 @@ header {
         padding-left: -20px;
         margin-left: -24px;
         margin-right: -20px;
-
-        & li {
-          height: 49px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 1px;
-          padding-left: 10px;
-          padding-bottom: 1px;
-          text-align: center;
-          white-space: nowrap;
-          cursor: pointer;
-          user-select: none;
-          border-radius: 1px 1px 0 0;
-          background-color: var(--knime-black);
-          color: var(--knime-white);
-          max-width: 300px;
-
-          &:hover {
-            background-color: var(--knime-masala);
-          }
-
-          & .text {
-            color: var(--knime-white);
-            font-family: "Roboto Condensed", sans-serif;
-            font-size: 18px;
-            padding: 10px 0;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
-            min-width: 0;
-            line-height: 21px;
-            font-weight: 400;
-          }
-
-          /* Close workflow button */
-
-          & .icon {
-            margin-left: -20px;
-            width: 32px;
-            align-self: center;
-            align-items: center;
-            border-radius: 0;
-
-            & svg {
-              display: none;
-            }
-          }
-
-          & .visible {
-            height: 49px;
-            background: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-masala) 30%);
-
-            & svg {
-              display: block;
-
-              @mixin svg-icon-size 20;
-
-              stroke: var(--knime-gray-ultra-light);
-            }
-
-            &:hover svg {
-              stroke: var(--knime-white);
-            }
-          }
-        }
-
-        & li.active {
-          background-color: var(--knime-yellow);
-          color: var(--knime-black);
-          cursor: inherit;
-
-          & .text {
-            color: var(--knime-black);
-          }
-
-          & .visible {
-            height: 49px;
-            background: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-yellow) 30%);
-
-            & svg {
-              stroke: var(--knime-masala);
-            }
-
-            &:hover svg {
-              stroke: var(--knime-black);
-            }
-          }
-
-          &:hover,
-          &:focus {
-            cursor: inherit;
-            background-color: var(--knime-yellow);
-          }
-        }
       }
     }
   }

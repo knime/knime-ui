@@ -894,6 +894,22 @@ describe('NodePort', () => {
                     expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
                 });
 
+                it('disables quick-node-add feature via prop', async () => {
+                    propsData.disableQuickNodeAdd = true;
+                    startDragging();
+                    await Vue.nextTick();
+
+                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);
+                });
+
+                it('does not show quick add node ghost for flowVariables', async () => {
+                    propsData.port.typeId = 'flowVariable';
+                    startDragging();
+                    await Vue.nextTick();
+
+                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);
+                });
+
                 it('opens quick add node menu', async () => {
                     startDragging();
                     await Vue.nextTick();

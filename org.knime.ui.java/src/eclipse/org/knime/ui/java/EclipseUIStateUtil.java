@@ -50,13 +50,15 @@ package org.knime.ui.java;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
@@ -178,21 +180,45 @@ public final class EclipseUIStateUtil {
     private static List<OpenedWorkflow> collectOpenedWorkflows(final EModelService modelService,
         final MApplication app) {
         List<MPart> editorParts = modelService.findElements(app, WORKFLOW_EDITOR_PART_ID, MPart.class);
-        Set<String> loadedProjectIds = new HashSet<>();
-        return editorParts.stream().map(EclipseUIStateUtil::createOpenedWorkflowAndWorkflowProject)//
-            .filter(Objects::nonNull)//
-            // ('non-visible' projects are removed first)
-            .sorted((p1, p2) -> Boolean.compare(p2.getSecond().isVisible(), p1.getSecond().isVisible()))//
-            .filter(p ->
-                // keep ids of loaded project and filter duplicates
-                // ('non-visible' projects are removed first)
-                loadedProjectIds.add(p.getFirst().getID())//
-            ).map(p -> {
-                WorkflowProject wp = p.getFirst();
-                WorkflowProjectManager.getInstance().addWorkflowProject(wp.getID(), wp);
-                return p.getSecond();
-            })//
-            .collect(Collectors.toList());
+        var workflows = editorParts.stream().map(EclipseUIStateUtil::createOpenedWorkflowAndWorkflowProject) //
+            .filter(Objects::nonNull);
+
+        var resolved = resolveDuplicates(workflows,
+            // Determine duplicates by project ID
+            p -> p.getFirst().getID(),
+            // Among duplicates, prefer picking one that is not visible
+            group -> group.stream().min( //
+                (p1, p2) -> Boolean.compare(!p1.getSecond().isVisible(), !p2.getSecond().isVisible()) //
+            ).get() // NOSONAR: group is never empty (result of groupBy)
+        );
+
+        return resolved.map(p -> {
+            WorkflowProject wp = p.getFirst();
+            WorkflowProjectManager.getInstance().addWorkflowProject(wp.getID(), wp);
+            return p.getSecond();
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Given a stream of objects,
+     * <ol>
+     * <li>Determine duplicates based on the given function <code>keySelector</code></li>
+     * <li>For each group of duplicates, pick one representative determined by <code>valueSelector</code></li>
+     * </ol>
+     *
+     * @implNote This function preserves the ordering of the input data.
+     * @param data The input data
+     * @param keySelector The function to determine the key based on which equality is determined
+     * @param valueSelector The function to pick a representative from a list of duplicates (never empty)
+     * @param <V> The value type of the input list
+     * @param <K> The type of the key to group by
+     * @return A list with duplicates resolved as described above.
+     */
+    private static <V, K> Stream<V> resolveDuplicates(final Stream<V> data, final Function<V, K> keySelector,
+        final Function<List<V>, V> valueSelector) {
+        LinkedHashMap<K, List<V>> groups =
+            data.collect(Collectors.groupingBy(keySelector, LinkedHashMap::new, Collectors.toList()));
+        return groups.values().stream().map(valueSelector);
     }
 
     private static boolean isSelectedEditor(final MPart editorPart) {

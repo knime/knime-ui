@@ -1,3 +1,4 @@
+import Vue from 'vue';
 import Vuex from 'vuex';
 import { mount, createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
@@ -5,6 +6,7 @@ import { mockVuexStore } from '@/test/test-utils';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import CloseIcon from '@/assets/cancel.svg';
 import AppHeader from '../AppHeader.vue';
+import AppHeaderTab from '../AppHeaderTab.vue';
 
 describe('AppHeader.vue', () => {
     let propsData, mocks, doMount, wrapper, storeConfig, $store;
@@ -46,7 +48,14 @@ describe('AppHeader.vue', () => {
         };
     });
 
-    describe('Application Title', () => {
+    describe('Tabs', () => {
+        it('renders tabs of opened projects', () => {
+            doMount();
+
+            const tabs = wrapper.findAll('li');
+            expect(tabs.length).toBe(3);
+        });
+        
         it('allows to close workflow', () => {
             doMount();
 
@@ -64,20 +73,15 @@ describe('AppHeader.vue', () => {
                 .toHaveBeenCalledWith(expect.anything(), { projectId });
         });
 
-        it('allows to click knime logo and switch workflow to entry page', () => {
+        it('allows to click knime logo and switch workflow to entry page', async () => {
             doMount();
 
             wrapper.find('#knime-logo').trigger('click');
             expect(storeConfig.application.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), null);
+            await Vue.nextTick();
+            expect(wrapper.find('#knime-logo').classes()).toContain('active-logo');
         });
-
-        it('renders tabs of opened projects', () => {
-            doMount();
-
-            const tabs = wrapper.findAll('li');
-            expect(tabs.length).toBe(3);
-        });
-
+        
         it('render application title, if no active project name exists', () => {
             storeConfig.application.state.openProjects = [];
             doMount();
@@ -86,34 +90,38 @@ describe('AppHeader.vue', () => {
             expect(title.text()).toBe('KNIME Modern UI Preview');
         });
 
-        describe('truncates the workflow name', () => {
-            const longName = `
-                03_Transform_Using_Rule_Engine_and_String_Manipulation_Node 03_Transform_Using_Rule_Engine_and_String_
-                Manipulation_Node 03_Transform_Using_Rule_Engine_and_String_Manipulation_Node 03_Transform_Using_Rule_En
-                gine_and_String_Manipulation_Node 03_Transform_Using_Rule_Engine_and_String_Manipulation_Node 03_Transfo
-                rm_Using_Rule_Engine_and_String_Manipulation
-            `.trim();
-            
-            it.each([
-                // [viewport size, max characters]
-                [400, 10],
-                [700, 20],
-                [1000, 50],
-                [1366, 100],
-                [1800, 150],
-                [2200, 200],
-                [3000, 256]
-            ])('truncates the name for a %spx width to a max of %s characters long', (width, maxChars) => {
-                window.innerWidth = width;
-                storeConfig.application.state.openProjects = [{ id: 1, name: longName }];
-                doMount();
-    
-                const nameElement = wrapper.find('.wrapper .text');
-                
-                // +2 to account for the " …"
-                expect(nameElement.text().length).toBe(maxChars + 2);
-            });
+        it('sets the entry tab at startup when there are no open projects', () => {
+            storeConfig.application.state.openProjects = [];
+            doMount();
+            expect(wrapper.find('#knime-logo').classes()).toContain('active-logo');
         });
+
+        it('updates the active tab when the activeProject changes', async () => {
+            doMount();
+            storeConfig.application.state.activeProjectId = '2';
+            const secondTab = wrapper.findAllComponents(AppHeaderTab).at(1);
+            await Vue.nextTick();
+            expect(secondTab.props('isActive')).toBe(true);
+        });
+        
+        it('updates the hoveredTab state', async () => {
+            doMount();
+            const secondTab = wrapper.findAllComponents(AppHeaderTab).at(1);
+            expect(secondTab.props('isHoveredOver')).toBe(false);
+            
+            secondTab.vm.$emit('hover', '2');
+            await Vue.nextTick();
+            expect(secondTab.props('isHoveredOver')).toBe(true);
+        });
+    });
+
+    it('should setup a window resize listener and update window width', async () => {
+        doMount();
+        window.innerWidth = 100;
+        window.dispatchEvent(new Event('resize'));
+        
+        await Vue.nextTick();
+        expect(wrapper.findAllComponents(AppHeaderTab).at(0).props('windowWidth')).toBe(100);
     });
 
     describe('Right side buttons', () => {
