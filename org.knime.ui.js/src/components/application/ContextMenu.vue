@@ -58,13 +58,6 @@ export default {
                 .map((item) => {
                     const shortcut = this.$shortcuts.get(item.name);
 
-                    if (!shortcut) {
-                        return {
-                            text: item.text || item.name,
-                            separator: item.separator
-                        };
-                    }
-
                     return {
                         text: item.text || shortcut.text,
                         hotkeyText: shortcut.hotkeyText,
@@ -93,7 +86,9 @@ export default {
             this.$shortcuts.dispatch(shortcut.name, event);
         },
         setMenuItems() {
-            const somethingSelected = this.selectedNodes.length || this.selectedConnections.length;
+            const areNodesSelected = this.selectedNodes.length > 0;
+            const areConnectionsSelected = this.selectedConnections.length > 0;
+            const isSomethingSelected = areNodesSelected || areConnectionsSelected;
             const isLoopEnd = Boolean(this.singleSelectedNode?.loopInfo?.allowedActions);
             const isView = this.singleSelectedNode && 'canOpenView' in this.singleSelectedNode.allowedActions;
             const hasLegacyFlowVariableDialog = this.singleSelectedNode &&
@@ -115,16 +110,16 @@ export default {
                 { name: 'openView', isVisible: isView },
                 { name: 'configureFlowVariables', isVisible: hasLegacyFlowVariableDialog },
                 // no nodes selected
-                { name: 'executeAll', isVisible: !somethingSelected },
-                { name: 'cancelAll', isVisible: !somethingSelected },
-                { name: 'resetAll', isVisible: !somethingSelected }
+                { name: 'executeAll', isVisible: !isSomethingSelected },
+                { name: 'cancelAll', isVisible: !isSomethingSelected },
+                { name: 'resetAll', isVisible: !isSomethingSelected }
             ];
 
             const clipboardOperationsGroup = [
-                { name: 'cut', isVisible: somethingSelected },
-                { name: 'copy', isVisible: somethingSelected },
-                { name: 'paste', isVisible: !somethingSelected },
-                { name: 'deleteSelected', isVisible: somethingSelected }
+                { name: 'cut', isVisible: areNodesSelected },
+                { name: 'copy', isVisible: areNodesSelected },
+                { name: 'paste', isVisible: !isSomethingSelected },
+                { name: 'deleteSelected', isVisible: isSomethingSelected }
             ];
 
             const metanodeOperationsGroup = [
@@ -155,8 +150,9 @@ export default {
 
 <template>
   <FloatingMenu
-    class="context-menu"
     :canvas-position="position"
+    :disable-interations="true"
+    class="context-menu"
     aria-label="Context Menu"
     prevent-overflow
     @menu-close="$emit('menu-close')"
