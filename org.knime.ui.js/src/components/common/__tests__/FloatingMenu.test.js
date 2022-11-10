@@ -105,6 +105,14 @@ describe('FloatingMenu.vue', () => {
                 state: {
                     isDraggingNode: false
                 }
+            },
+            workflow: {
+                state: {
+                    _isDragging: false
+                },
+                getters: {
+                    isDragging: (state) => state._isDragging
+                }
             }
         };
 
@@ -142,6 +150,14 @@ describe('FloatingMenu.vue', () => {
             $store.state.nodeRepository.isDraggingNode = true;
             await Vue.nextTick();
 
+            expect(wrapper.emitted('menu-close')).toBeDefined();
+        });
+        
+        it('closes menu when a node is dragged in the canvas', async () => {
+            doMount();
+            $store.state.workflow._isDragging = true;
+            
+            await Vue.nextTick();
             expect(wrapper.emitted('menu-close')).toBeDefined();
         });
     });
@@ -256,7 +272,8 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('top: 20px;');
         });
 
-        test('disable interactions', () => {
+        test('disable interactions when the prop is set', () => {
+            propsData.disableInterations = true;
             doMount();
 
             expect(storeConfig.canvas.mutations.setInteractionsEnabled).toBeCalledWith(expect.anything(), false);
