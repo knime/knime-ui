@@ -529,4 +529,17 @@ describe('NodePorts.vue', () => {
             outPort.props('targeted')
         ]).toStrictEqual(result);
     });
+
+    it.each([
+        ['metanode'],
+        ['component']
+    ])('disables quick-node-add feature for %ss', (nodeKind) => {
+        propsData.nodeKind = nodeKind;
+        doMount();
+
+        const ports = wrapper.findAllComponents(NodePort).wrappers;
+        const allDisabled = ports.map(port => port.props('disableQuickNodeAdd')).every(disabled => disabled);
+
+        expect(allDisabled).toBe(true);
+    });
 });
