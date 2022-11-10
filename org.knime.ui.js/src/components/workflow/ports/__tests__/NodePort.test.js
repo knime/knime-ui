@@ -41,7 +41,6 @@ describe('NodePort', () => {
             direction: 'in',
             nodeId: 'node:1',
             relativePosition: [16, 32],
-            nodeKind: 'node',
             port: {
                 canRemove: true,
                 connectedVia: [],
@@ -895,16 +894,8 @@ describe('NodePort', () => {
                     expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
                 });
 
-                it('does not show quick add node ghost for metanodes', async () => {
-                    propsData.nodeKind = 'metanode';
-                    startDragging();
-                    await Vue.nextTick();
-
-                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);
-                });
-
-                it('does not show quick add node ghost for components', async () => {
-                    propsData.nodeKind = 'component';
+                it('disables quick-node-add feature via prop', async () => {
+                    propsData.disableQuickNodeAdd = true;
                     startDragging();
                     await Vue.nextTick();
 
