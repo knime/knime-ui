@@ -45,7 +45,8 @@ describe('application store', () => {
             workflow: await import('@/store/workflow'),
             canvas: {
                 getters: {
-                    getCanvasScrollState: jest.fn(() => () => ({ mockCanvasState: true }))
+                    getCanvasScrollState: jest.fn(() => () => ({ mockCanvasState: true })),
+                    screenToCanvasCoordinates: jest.fn(() => ([x, y]) => [x, y])
                 },
                 actions: {
                     restoreScrollState: jest.fn()
@@ -68,7 +69,8 @@ describe('application store', () => {
             availablePortTypes: {},
             suggestedPortTypes: [],
             savedCanvasStates: {},
-            hasClipboardSupport: false
+            hasClipboardSupport: false,
+            contextMenu: { isOpen: false, position: null }
         });
     });
 
@@ -482,6 +484,82 @@ describe('application store', () => {
 
             store.dispatch('application/removeCanvasState');
             expect(store.state.application.savedCanvasStates).toEqual({});
+        });
+    });
+
+    describe('Context Menu', () => {
+        const createEvent = ({ x = 0, y = 0, srcElemClasses = [] } = {}) => {
+            const preventDefault = jest.fn();
+            const eventMock = {
+                clientX: x,
+                clientY: y,
+                srcElement: {
+                    classList: {
+                        contains: (className) => srcElemClasses.includes(className)
+                    }
+                },
+                preventDefault
+            };
+            
+            return { event: eventMock, preventDefault };
+        };
+
+        it('should set the context menu', async () => {
+            const { event: clickEvent, preventDefault } = createEvent({
+                x: 200,
+                y: 200
+            });
+
+            await store.dispatch('application/toggleContextMenu', clickEvent);
+            expect(store.state.application.contextMenu.isOpen).toBe(true);
+            expect(storeConfig.canvas.getters.screenToCanvasCoordinates).toHaveBeenCalled();
+            expect(store.state.application.contextMenu.position).toEqual({ x: 200, y: 200 });
+            expect(preventDefault).toHaveBeenCalled();
+        });
+        
+        it('should hide the menu', async () => {
+            store.state.application.contextMenu = {
+                isOpen: true,
+                position: { x: 200, y: 200 }
+            };
+            const { event: clickEvent, preventDefault } = createEvent();
+
+            await store.dispatch('application/toggleContextMenu', clickEvent);
+
+            expect(store.state.application.contextMenu.isOpen).toBe(false);
+            expect(store.state.application.contextMenu.position).toBeNull();
+            expect(preventDefault).toHaveBeenCalled();
+        });
+
+        describe('native context menu', () => {
+            it(
+                'should open native context menu if the proper class is set and the context menu is NOT open',
+                async () => {
+                    const { event: clickEvent, preventDefault } = createEvent({
+                        srcElemClasses: ['native-context-menu']
+                    });
+
+                    expect(store.state.application.contextMenu.position).toBeNull();
+                    await store.dispatch('application/toggleContextMenu', clickEvent);
+                    expect(preventDefault).not.toHaveBeenCalled();
+                    expect(store.state.application.contextMenu.position).toBeNull();
+                }
+            );
+
+            it('should NOT open the native context menu if the context menu is already open', async () => {
+                const { event: clickEvent, preventDefault } = createEvent({
+                    srcElemClasses: ['native-context-menu']
+                });
+
+                store.state.application.contextMenu = {
+                    isOpen: true,
+                    position: { x: 200, y: 200 }
+                };
+
+                await store.dispatch('application/toggleContextMenu', clickEvent);
+                expect(preventDefault).toHaveBeenCalled();
+                expect(store.state.application.contextMenu.position).toBeNull();
+            });
         });
     });
 });

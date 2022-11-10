@@ -16,8 +16,6 @@ export default {
     },
     data() {
         return {
-            // null (or falsy) means context menu is invisible, otherwise should be an Object with x, y as Numbers
-            contextMenuPosition: null,
             portTypeMenuConfig: null,
             quickAddNodeMenuConfig: null
         };
@@ -27,6 +25,7 @@ export default {
             workflow: 'activeWorkflow',
             activeWorkflowId: state => state.activeWorkflow.info.containerId
         }),
+        ...mapState('application', ['contextMenu']),
         ...mapGetters('workflow', [
             'isLinked',
             'isInsideLinked',
@@ -34,21 +33,24 @@ export default {
             'isWritable',
             'isStreaming'
         ]),
-        ...mapGetters('canvas', ['screenToCanvasCoordinates'])
+        ...mapGetters('canvas', ['screenToCanvasCoordinates']),
+        ...mapGetters('selection', ['selectedNodeIds'])
+    },
+    watch: {
+        selectedNodeIds() {
+            if (this.quickAddNodeMenuConfig) {
+                this.quickAddNodeMenuConfig.events['menu-close']();
+            }
+        }
     },
     methods: {
-        onContextMenu(e) {
-            // do nothing (also not preventing!) if source element has the following class set
-            if (e.srcElement.classList.contains('native-context-menu')) {
-                return;
+        toggleContextMenu(e) {
+            if (!this.contextMenu.isOpen && (this.portTypeMenuConfig || this.quickAddNodeMenuConfig)) {
+                this.quickAddNodeMenuConfig?.events['menu-close']?.();
+                this.portTypeMenuConfig?.events['menu-close']?.();
             }
-            // this is not done via modifier as we need to let the native context menu appear if the class is set
-            e.preventDefault();
 
-            // update position to current mouse coordinates
-
-            let [x, y] = this.screenToCanvasCoordinates([e.clientX, e.clientY]);
-            this.contextMenuPosition = { x, y };
+            this.$store.dispatch('application/toggleContextMenu', e);
         },
         onOpenPortTypeMenu(e) {
             if (this.portTypeMenuConfig && this.portTypeMenuConfig.id !== e.detail.id) {
@@ -83,16 +85,16 @@ export default {
 <template>
   <div
     :class="['workflow-panel', { 'read-only': !isWritable }]"
-    @contextmenu="onContextMenu"
+    @contextmenu="toggleContextMenu"
     @open-port-type-menu="onOpenPortTypeMenu"
     @close-port-type-menu="onClosePortTypeMenu"
     @open-quick-add-node-menu="onOpenQuickAddNodeMenu"
     @close-quick-add-node-menu="onCloseQuickAddNodeMenu"
   >
     <ContextMenu
-      v-if="Boolean(contextMenuPosition)"
-      :position="contextMenuPosition"
-      @menu-close="contextMenuPosition = null"
+      v-if="contextMenu.isOpen"
+      :position="contextMenu.position"
+      @menu-close="toggleContextMenu"
     />
 
     <PortTypeMenu

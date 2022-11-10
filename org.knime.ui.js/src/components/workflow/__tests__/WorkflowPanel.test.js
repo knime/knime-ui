@@ -4,6 +4,9 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
+import * as selectionStore from '@/store/selection';
+import * as applicationStore from '@/store/application';
+
 import ContextMenu from '@/components/application/ContextMenu.vue';
 import PortTypeMenu from '@/components/workflow/ports/PortTypeMenu.vue';
 
@@ -52,11 +55,13 @@ describe('WorkflowPanel', () => {
         };
         storeConfig = {
             workflow: workflowStoreConfig,
+            application: applicationStore,
             canvas: {
                 getters: {
                     screenToCanvasCoordinates: () => position => position
                 }
-            }
+            },
+            selection: selectionStore
         };
 
         $store = mockVuexStore(storeConfig);
@@ -131,6 +136,52 @@ describe('WorkflowPanel', () => {
 
             await wrapper.vm.$nextTick();
             expect(wrapper.findComponent(ContextMenu).exists()).toBe(false);
+        });
+
+        it('closes PortTypeMenu when context menu is opened', async () => {
+            doShallowMount();
+            const id = '0';
+            const closeCallback = (_wrapper, id) => () => {
+                _wrapper.trigger('close-port-type-menu', { detail: { id } });
+            };
+
+            wrapper.trigger('open-port-type-menu', {
+                detail: {
+                    id,
+                    props: { side: 'input', position: { x: 0, y: 0 } },
+                    events: { 'menu-close': closeCallback(wrapper, id) }
+                }
+            });
+
+            await Vue.nextTick();
+
+            wrapper.trigger('contextmenu', { clientX: 100, clientY: 200 });
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(false);
+        });
+        
+        it('closes QuickAddNodeMenu when context menu is opened', async () => {
+            doShallowMount();
+            const id = '0';
+            const closeCallback = (_wrapper, id) => () => {
+                _wrapper.trigger('close-quick-add-node-menu', { detail: { id } });
+            };
+
+            wrapper.trigger('open-quick-add-node-menu', {
+                detail: {
+                    id,
+                    props: { direction: 'in', position: { x: 0, y: 0 }, port: { index: 2 }, nodeId: 'node:0' },
+                    events: { 'menu-close': closeCallback(wrapper, id) }
+                }
+            });
+
+            await Vue.nextTick();
+
+            wrapper.trigger('contextmenu', { clientX: 100, clientY: 200 });
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(false);
         });
     });
 
