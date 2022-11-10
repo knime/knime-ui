@@ -52,7 +52,7 @@ export default {
 }
 
 .counts {
-  margin: 7px 0px 9px 3px;
+  margin: 7px 0 9px 3px;
   height: 19px;
   line-height: 19px;
   font-size: 13px;
@@ -73,7 +73,7 @@ export default {
 table {
   min-width: 100%;
   border-collapse: collapse;
-  font-family: "Roboto", sans-serif;
+  font-family: Roboto, sans-serif;
   contain: strict;
 
   & >>> th,
@@ -92,8 +92,6 @@ table {
     height: 41px;
     position: sticky;
     top: 0;
-
-
   }
 
   & >>> td {
