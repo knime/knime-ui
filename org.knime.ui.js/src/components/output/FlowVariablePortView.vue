@@ -52,10 +52,11 @@ export default {
 }
 
 .counts {
-  margin-bottom: 20px;
+  margin: 7px 0 9px 3px;
   height: 19px;
   line-height: 19px;
-  font-size: 14px;
+  font-size: 13px;
+  color: var(--knime-dove-gray);
 
   & .count {
     &:not(:first-child) {
@@ -72,12 +73,12 @@ export default {
 table {
   min-width: 100%;
   border-collapse: collapse;
-  font-family: "Roboto Condensed", sans-serif;
+  font-family: Roboto, sans-serif;
   contain: strict;
 
   & >>> th,
   & >>> td {
-    padding: 0 6px;
+    padding: 0 10px;
     text-align: left;
     max-width: 1000px;
     overflow: hidden;
@@ -86,24 +87,11 @@ table {
   }
 
   & >>> th {
+    border-top: 1px solid var(--knime-silver-sand-semi);
     background: var(--knime-porcelain);
-    height: 42px;
+    height: 41px;
     position: sticky;
     top: 0;
-
-    &:not(:last-child) {
-      /* border-right: 1px solid var(--knime-white); does not work with position: sticky */
-      &::after {
-        content: "";
-        display: block;
-        position: absolute;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        width: 1px;
-        background: var(--knime-white);
-      }
-    }
   }
 
   & >>> td {
@@ -112,9 +100,8 @@ table {
     overflow: hidden;
     text-overflow: ellipsis;
     border: none;
-    height: 26px;
-    line-height: 26px;
-    font-size: 14px;
+    line-height: 24px;
+    font-size: 13px;
   }
 
   & >>> tr:not(:last-child) {
