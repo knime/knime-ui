@@ -70,7 +70,7 @@ export default {
             immediate: true,
             handler() {
                 if (this.isDraggingNode) {
-                    this.$emit('menu-close');
+                    this.$emit('menuClose');
                 }
             }
         }

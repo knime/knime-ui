@@ -109,6 +109,7 @@ export default {
     &::after {
       left: 0;
       right: 0;
+      bottom: 6px;
     }
   }
 }

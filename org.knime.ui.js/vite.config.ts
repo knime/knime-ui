@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
         server: {
             port: Number(process.env.VITE_APP_PORT) || 3000,
             watch: {
-                ignored: ['**/coverage/**']
+                ignored: ['**/test-results/**']
             }
         },
         

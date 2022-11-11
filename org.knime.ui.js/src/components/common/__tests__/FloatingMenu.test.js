@@ -140,7 +140,7 @@ describe('FloatingMenu.vue', () => {
             $store.state.nodeRepository.isDraggingNode = true;
             await Vue.nextTick();
 
-            expect(wrapper.emitted('menu-close')).toBeDefined();
+            expect(wrapper.emitted('menuClose')).toBeDefined();
         });
     });
 

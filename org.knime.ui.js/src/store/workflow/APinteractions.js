@@ -2,7 +2,7 @@ import { openNodeDialog, openLegacyFlowVariableDialog, openView, saveWorkflow, c
     openLayoutEditor } from '@api';
 
 /**
- * This store is not instantiated by Nuxt but merged with the workflow store.
+ * This store is merged with the workflow store.
  * It holds all calls from the workflow store to the local Analytics Platform.
  */
 

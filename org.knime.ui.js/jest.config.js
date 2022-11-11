@@ -1,5 +1,5 @@
 const coverageIgnoreFolders = [
-    'coverage',
+    'test-results',
     'dist',
     'src/test',
     'target',
@@ -49,7 +49,8 @@ module.exports = {
         // ignore node_module packages for transform except packages from the @knime scope
         '/node_modules/(?!@knime/*)(.*)'
     ],
-    reporters: ['default', ['jest-junit', { outputDirectory: './coverage', reportTestSuiteErrors: true }]],
+    reporters: ['default', ['jest-junit', { outputDirectory: './test-results', reportTestSuiteErrors: true }]],
+    coverageDirectory: './test-results',
     coverageReporters: ['lcov', 'text'],
     coverageProvider: 'v8',
     // keep in sync with sonar-project.properties!
@@ -66,7 +67,7 @@ module.exports = {
         `<rootDir>/(${coverageIgnoreFiles.join('|')})`
     ],
     watchPathIgnorePatterns: [
-        '^<rootDir>/(coverage|dist|target|node_modules|bin|webapps-common|.history)/'
+        '^<rootDir>/(test-results|dist|target|node_modules|bin|webapps-common|.history)/'
     ],
     testEnvironment: 'jsdom',
     testEnvironmentOptions: {

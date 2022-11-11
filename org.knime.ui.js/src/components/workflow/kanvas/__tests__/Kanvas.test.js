@@ -248,6 +248,7 @@ describe('Kanvas', () => {
                     resolve();
                 }, RESIZE_DEBOUNCE);
             });
+            await Vue.nextTick();
 
             expect(wrapper.emitted('containerSizeChanged')).toBeTruthy();
             expect(storeConfig.canvas.actions.updateContainerSize).toHaveBeenCalledTimes(1);

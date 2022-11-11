@@ -224,7 +224,7 @@ export const actions = {
         }
     },
     saveCanvasState({ rootGetters, commit, rootState }) {
-        const { info: { containerId: workflow }, projectId: project } = rootState.workflow?.activeWorkflow;
+        const { info: { containerId: workflow }, projectId: project } = rootState.workflow.activeWorkflow;
 
         const scrollState = rootGetters['canvas/getCanvasScrollState']();
 
@@ -238,7 +238,7 @@ export const actions = {
         }
     },
     removeCanvasState({ rootState, state }) {
-        const { info: { containerId: workflow }, projectId: project } = rootState.workflow?.activeWorkflow;
+        const { info: { containerId: workflow }, projectId: project } = rootState.workflow.activeWorkflow;
         const rootWorkflowId = getRootWorkflowId(workflow);
         const stateKey = getCanvasStateKey(`${project}--${rootWorkflowId}`);
 
@@ -255,7 +255,7 @@ export const getters = {
     },
 
     workflowCanvasState({ savedCanvasStates }, _, { workflow }) {
-        const { info: { containerId: workflowId }, projectId } = workflow?.activeWorkflow;
+        const { info: { containerId: workflowId }, projectId } = workflow.activeWorkflow;
         const rootWorkflowId = getRootWorkflowId(workflowId);
         const isRootWorkflow = rootWorkflowId === workflowId;
         const parentStateKey = getCanvasStateKey(`${projectId}--${rootWorkflowId}`);

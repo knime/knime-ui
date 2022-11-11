@@ -16,8 +16,8 @@
         <sonar.sources>src</sonar.sources>
         <sonar.tests>src</sonar.tests>
         <sonar.test.inclusions>src/**/__tests__/**/*</sonar.test.inclusions>
-        <sonar.exclusions>src/**/__tests__/**/*,node_modules/**/*,dist/**/*,.nyc_output/**/*,coverage/**/*,*.log,config/**/*,**/config.js,**/*.config.js,buildtools/**,webapps-common/**</sonar.exclusions>
-        <sonar.javascript.lcov.reportPaths>coverage/lcov.info</sonar.javascript.lcov.reportPaths>
+        <sonar.exclusions>src/**/__tests__/**/*,node_modules/**/*,dist/**/*,.nyc_output/**/*,test-results/**/*,*.log,config/**/*,**/config.js,**/*.config.js,buildtools/**,webapps-common/**</sonar.exclusions>
+        <sonar.javascript.lcov.reportPaths>test-results/lcov.info</sonar.javascript.lcov.reportPaths>
         <sonar.css.stylelint.reportPaths>target/stylelint.json</sonar.css.stylelint.reportPaths>
         <sonar.eslint.reportPaths>target/eslint.json</sonar.eslint.reportPaths>
         <node.version>v18.8.0</node.version>
@@ -109,24 +109,24 @@
                     </execution>
 
                     <execution>
-                        <id>npm run audit:ci</id>
+                        <id>npm run jenkins:audit</id>
                         <phase>verify</phase>
                         <goals>
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <arguments>run audit:ci</arguments>
+                            <arguments>run jenkins:audit</arguments>
                         </configuration>
                     </execution>
 
                     <execution>
-                        <id>npm run lint</id>
+                        <id>npm run jenkins:lint</id>
                         <phase>verify</phase>
                         <goals>
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <arguments>run lint:ci</arguments>
+                            <arguments>run jenkins:lint</arguments>
                         </configuration>
                     </execution>
                 </executions>

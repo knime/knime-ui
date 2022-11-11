@@ -259,6 +259,7 @@ export default {
 
   & :deep(.tab-bar) {
     padding-top: 0;
+    padding-bottom: 0;
 
     & span {
       font-size: 13px;
