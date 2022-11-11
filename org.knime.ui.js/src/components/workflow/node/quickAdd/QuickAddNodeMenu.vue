@@ -190,7 +190,7 @@ export default {
     left: 0;
     z-index: 1;
     padding: 20px;
-    background: rgb(32 30 30 / 80%);
+    background: var(--knime-black-semi);
     color: var(--knime-white);
     font-family: "Roboto Condensed", sans-serif;
 
