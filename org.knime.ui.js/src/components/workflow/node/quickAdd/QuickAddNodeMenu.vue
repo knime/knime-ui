@@ -112,6 +112,7 @@ export default {
   >
     <div class="wrapper">
       <section
+        v-if="recommendedNodes.length > 0"
         class="results"
       >
         <div class="content">
@@ -139,6 +140,12 @@ export default {
           </ul>
         </div>
       </section>
+      <span
+        v-else
+        class="placeholder"
+      >
+        The Workflow Coach cannot recommend any nodes to you yet.
+      </span>
     </div>
   </FloatingMenu>
 </template>
@@ -153,6 +160,7 @@ export default {
     box-shadow: 0 1px 6px 0 var(--knime-gray-dark-semi);
     background: var(--knime-gray-ultra-light);
     padding: 0.5em 0;
+    display: flex;
   }
 
   &:focus {
@@ -175,6 +183,17 @@ export default {
       flex-direction: column;
       align-items: flex-start;
     }
+  }
+
+  & .placeholder {
+    font-family: "Roboto Condensed", sans-serif;
+    font-style: italic;
+    font-size: 16px;
+    line-height: 19px;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    padding: 10px 30px;
   }
 
   & .nodes {
