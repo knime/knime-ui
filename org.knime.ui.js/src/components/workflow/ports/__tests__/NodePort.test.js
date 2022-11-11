@@ -932,12 +932,12 @@ describe('NodePort', () => {
                     expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);
                 });
 
-                it('does not show quick add node ghost for flowVariables', async () => {
+                it('does show quick add node ghost for flowVariables', async () => {
                     propsData.port.typeId = 'flowVariable';
                     startDragging();
                     await Vue.nextTick();
 
-                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);
+                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
                 });
 
                 it('opens quick add node menu', async () => {
