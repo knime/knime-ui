@@ -11,7 +11,8 @@ import { pastePartsAt } from '@/util/pasteToWorkflow';
 export const state = {
     movePreviewDelta: { x: 0, y: 0 },
     nameEditorNodeId: null,
-    copyPaste: null
+    copyPaste: null,
+    hasAbortedNodeDrag: false
 };
 
 export const mutations = {
@@ -38,6 +39,10 @@ export const mutations = {
         }
 
         state.copyPaste.lastPasteBounds = bounds;
+    },
+
+    setHasAbortedNodeDrag(state, value) {
+        state.hasAbortedNodeDrag = value;
     }
 };
 
