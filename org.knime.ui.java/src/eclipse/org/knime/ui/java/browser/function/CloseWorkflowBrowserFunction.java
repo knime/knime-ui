@@ -82,22 +82,18 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
      * @param arguments An array of {@code String}s with contents:
      *            <ol>
      *            <li>The ID of the project to be closed</li>
-     *            <li>The ID of the currently active project (can be the same as (1.))</li>
-     *            <li>The ID of the project that was active before the currently active project. Can be {@code
-     *                  null} or omitted if there is no previously active project (e.g. when closing the last remaining
-     *            project).</li>
+*                 <li>The ID of the project to make active after the current one has been closed. Can be null or
+     *                       omitted if there is no next project ID (e.g. when closing the last tab).</li>
      *            </ol>
      * @return A boolean indicating whether an editor has been closed.
      */
     @Override
     public Object function(final Object[] arguments) {
 
-        String projectIdToClose = Objects.requireNonNull((String)arguments[0], "Project ID to close not given");
+        String projectIdToClose = requireAtIndex(arguments, 0, String.class)
+                .orElseThrow(() -> new NoSuchElementException("Project ID to close not given"));
 
-        String currentlyActiveProjectId =
-            Objects.requireNonNull((String)arguments[1], "Currently active project ID not given");
-
-        Optional<String> previouslyActiveProjectId = requireAtIndex(arguments, 2, String.class);
+        Optional<String> nextProjectId = requireAtIndex(arguments, 1, String.class);
 
         var editorToClose = getEditor(projectIdToClose);
         var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
@@ -108,31 +104,13 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
             WorkflowProjectManager.getInstance().removeWorkflowProject(projectIdToClose);
 
             // Workaround for keeping the classic and Web UI's editors/tabs in sync
-            findNextActiveProjectId(projectIdToClose, currentlyActiveProjectId, previouslyActiveProjectId)
-                .ifPresent(next -> {
-                    EclipseUIStateUtil.setEditorPartActive(getEditorPart(next));
-                });
+            nextProjectId.ifPresent(next -> EclipseUIStateUtil.setEditorPartActive(getEditorPart(next)));
 
             // triggers sending event
             m_appStateProvider.updateAppState();
         }
 
         return wasClosed;
-    }
-
-    /**
-     * Determine the project ID whose editor should be made active after closing the current editor.
-     */
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private static Optional<String> findNextActiveProjectId(final String projectIdToClose,
-        final String currentlyActiveProjectId, final Optional<String> previouslyActiveProjectId) {
-        if (!projectIdToClose.equals(currentlyActiveProjectId)) {
-            return Optional.of(currentlyActiveProjectId);
-        } else {
-            // If previouslyActiveProjectId is empty, we are closing the last editor tab. In this case, there is
-            //   no next project to make active and this method should return an empty Optional as well.
-            return previouslyActiveProjectId;
-        }
     }
 
     private static WorkflowEditor getEditor(final String projectId) {
