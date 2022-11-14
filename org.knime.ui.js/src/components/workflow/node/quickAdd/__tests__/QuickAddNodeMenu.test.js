@@ -1,6 +1,7 @@
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import * as $shapes from '@/style/shapes.mjs';
 import Vue from 'vue';
+import { getNodeRecommendations } from '@api';
 
 const getNodeRecommendationsResponse = [{
     inPorts: [{ typeId: 'org.knime.core.node.BufferedDataTable' }],
@@ -35,6 +36,8 @@ import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 
 
 describe('QuickAddNodeMenu.vue', () => {
+    let wrapper, $store, doShallowMount, addNodeMock, isWritable;
+    
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
@@ -48,10 +51,10 @@ describe('QuickAddNodeMenu.vue', () => {
         props: FloatingMenu.props
     };
 
-    const doMount = ({
-        addNodeMock = jest.fn(),
-        isWriteableMock = jest.fn().mockReturnValue(true)
-    } = {}) => {
+    beforeEach(() => {
+        addNodeMock = jest.fn();
+        isWritable = true;
+
         let propsData = {
             nodeId: 'node-id',
             position: {
@@ -80,7 +83,8 @@ describe('QuickAddNodeMenu.vue', () => {
                             kind: 'other',
                             color: 'blue'
                         }
-                    }
+                    },
+                    hasNodeRecommendationsEnabled: true
                 }
             },
             workflow: {
@@ -96,11 +100,13 @@ describe('QuickAddNodeMenu.vue', () => {
                     addNode: addNodeMock
                 },
                 getters: {
-                    isWritable: isWriteableMock
+                    isWritable() {
+                        return isWritable;
+                    }
                 }
             }
         };
-        let $store = mockVuexStore(storeConfig);
+        $store = mockVuexStore(storeConfig);
         let mocks = {
             $shapes: {
                 ...$shapes,
@@ -110,26 +116,28 @@ describe('QuickAddNodeMenu.vue', () => {
             $store
         };
 
-        return shallowMount(QuickAddNodeMenu, {
-            propsData,
-            mocks,
-            attachTo: document.body,
-            stubs: {
-                FloatingMenu: FloatingMenuStub
-            }
-        });
-    };
+        doShallowMount = () => {
+            wrapper = shallowMount(QuickAddNodeMenu, {
+                propsData,
+                mocks,
+                attachTo: document.body,
+                stubs: {
+                    FloatingMenu: FloatingMenuStub
+                }
+            });
+        };
+    });
 
     describe('Menu', () => {
         it('re-emits menu-close', () => {
-            let wrapper = doMount();
+            doShallowMount();
 
             wrapper.findComponent(FloatingMenuStub).vm.$emit('menu-close');
             expect(wrapper.emitted('menu-close')).toBeTruthy();
         });
 
         it('centers to port', () => {
-            let wrapper = doMount();
+            doShallowMount();
             expect(wrapper.findComponent(FloatingMenuStub).props('canvasPosition')).toStrictEqual({
                 x: 15,
                 y: 10
@@ -137,7 +145,7 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('should display the nodes recommended by the api', async () => {
-            let wrapper = doMount();
+            doShallowMount();
             await Vue.nextTick();
 
             const labels = wrapper.findAll('.node > label');
@@ -150,8 +158,7 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('adds node on click', async () => {
-            let addNodeMock = jest.fn();
-            let wrapper = doMount({ addNodeMock });
+            doShallowMount();
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('click');
@@ -167,8 +174,7 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('adds node on pressing enter key', async () => {
-            let addNodeMock = jest.fn();
-            let wrapper = doMount({ addNodeMock });
+            doShallowMount();
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('keydown.enter');
@@ -184,15 +190,20 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('does not add node if workflow is not writeable', async () => {
-            let addNodeMock = jest.fn();
-            let wrapper = doMount({
-                isWriteableMock: jest.fn().mockReturnValue(false),
-                addNodeMock
-            });
+            isWritable = false;
+            doShallowMount();
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('click');
             expect(addNodeMock).toHaveBeenCalledTimes(0);
+        });
+
+        it('displays placeholder message if there are no suggested nodes', async () => {
+            getNodeRecommendations.mockReturnValue([]);
+            doShallowMount();
+            await Vue.nextTick();
+
+            expect(wrapper.find('.placeholder').exists()).toBe(true);
         });
     });
 });
