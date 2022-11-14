@@ -241,14 +241,15 @@ export default {
                     destPort: startPort
                 };
         },
-        async onConnectorDrop({ preventDefault, detail: { startNode, startPort, isCompatible } }) {
+        async onConnectorDrop(event) {
             // copy over the target port as the async backend calls might come after it has been set to null by
             // onConnectorEnd()
             let targetPort = { ...this.targetPort };
+            const { detail: { startNode, startPort, isCompatible } } = event;
 
             // dropped on component, but no port is targeted
             if (isNaN(targetPort?.index)) {
-                preventDefault();
+                event.preventDefault();
                 return;
             }
 
@@ -256,7 +257,7 @@ export default {
             // a connection target can be compatible or incompatible; e.g.: A port that doesn't create a connection
             // circle would be "valid" but if it has a different type than the initial port then it's "incompatible"
             if (!isCompatible) {
-                preventDefault();
+                event.preventDefault();
                 return; // end here
             }
 
