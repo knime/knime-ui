@@ -53,7 +53,7 @@ export default {
         /**
          * When set to true will disable interactions on the workflow canvas when the menu is open
          */
-        disableInterations: {
+        disableInteractions: {
             type: Boolean,
             default: false
         }
@@ -90,7 +90,7 @@ export default {
     },
     mounted() {
         this.setAbsolutePosition();
-        if (this.disableInterations) {
+        if (this.disableInteractions) {
             this.setInteractionsEnabled(false);
         }
         

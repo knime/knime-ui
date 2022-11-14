@@ -118,6 +118,7 @@ describe('ContextMenu.vue', () => {
 
         expect($shortcuts.isEnabled).toHaveBeenCalledWith('executeAll');
         expect(renderedMenuItems(wrapper)).toEqual(expect.arrayContaining([{
+            name: 'executeAll',
             text: 'executeAll',
             hotkeyText: 'hotkeyText',
             disabled: true

@@ -273,7 +273,7 @@ describe('FloatingMenu.vue', () => {
         });
 
         test('disable interactions when the prop is set', () => {
-            propsData.disableInterations = true;
+            propsData.disableInteractions = true;
             doMount();
 
             expect(storeConfig.canvas.mutations.setInteractionsEnabled).toBeCalledWith(expect.anything(), false);

@@ -59,6 +59,7 @@ export default {
                     const shortcut = this.$shortcuts.get(item.name);
 
                     return {
+                        name: item.name,
                         text: item.text || shortcut.text,
                         hotkeyText: shortcut.hotkeyText,
                         disabled: !this.$shortcuts.isEnabled(item.name),
@@ -151,7 +152,7 @@ export default {
 <template>
   <FloatingMenu
     :canvas-position="position"
-    :disable-interations="true"
+    :disable-interactions="true"
     class="context-menu"
     aria-label="Context Menu"
     prevent-overflow
