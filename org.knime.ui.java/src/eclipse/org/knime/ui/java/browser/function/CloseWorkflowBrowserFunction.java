@@ -47,13 +47,18 @@
 package org.knime.ui.java.browser.function;
 
 import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
 
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.ui.PlatformUI;
+import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.ui.java.EclipseUIStateUtil;
+import org.knime.workbench.editor2.WorkflowEditor;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
@@ -72,33 +77,96 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
     }
 
     /**
-     * Close the workflow project associated with the given project ID.
+     * Close the Eclipse editor(s) associated with the given project ID.
      *
-     * @param arguments Assume arguments[0] is a String containing the project ID (e.g. "simple-workflow 0").
-     * @return always {@code null}
+     * @param arguments An array of {@code String}s with contents:
+     *            <ol>
+     *            <li>The ID of the project to be closed</li>
+     *            <li>The ID of the currently active project (can be the same as (1.))</li>
+     *            <li>The ID of the project that was active before the currently active project. Can be {@code
+     *                  null} or omitted if there is no previously active project (e.g. when closing the last remaining
+     *            project).</li>
+     *            </ol>
+     * @return A boolean indicating whether an editor has been closed.
      */
     @Override
     public Object function(final Object[] arguments) {
 
-        String projectId = (String)arguments[0]; // e.g. "simple-workflow 0"
+        String projectIdToClose = Objects.requireNonNull((String)arguments[0], "Project ID to close not given");
 
-        var projectWfm = DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
-        var editor = EclipseUIStateUtil.getEditorForManager(projectWfm)
-            .orElseThrow(() -> new NoSuchElementException("No workflow editor for project found."));
+        String currentlyActiveProjectId =
+            Objects.requireNonNull((String)arguments[1], "Currently active project ID not given");
 
+        Optional<String> previouslyActiveProjectId = requireAtIndex(arguments, 2, String.class);
+
+        var editorToClose = getEditor(projectIdToClose);
         var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-
         // Since we are closing the editor of the root workflow manager, this will also close any editors
         //  of child workflow managers.
-        var wasClosed = page.closeEditor(editor, true);
-
+        var wasClosed = page.closeEditor(editorToClose, true);
         if (wasClosed) {
-            WorkflowProjectManager.getInstance().removeWorkflowProject(projectId);
+            WorkflowProjectManager.getInstance().removeWorkflowProject(projectIdToClose);
+
+            // Workaround for keeping the classic and Web UI's editors/tabs in sync
+            findNextActiveProjectId(projectIdToClose, currentlyActiveProjectId, previouslyActiveProjectId)
+                .ifPresent(next -> {
+                    EclipseUIStateUtil.setEditorPartActive(getEditorPart(next));
+                });
+
             // triggers sending event
             m_appStateProvider.updateAppState();
         }
 
         return wasClosed;
+    }
+
+    /**
+     * Determine the project ID whose editor should be made active after closing the current editor.
+     */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private static Optional<String> findNextActiveProjectId(final String projectIdToClose,
+        final String currentlyActiveProjectId, final Optional<String> previouslyActiveProjectId) {
+        if (!projectIdToClose.equals(currentlyActiveProjectId)) {
+            return Optional.of(currentlyActiveProjectId);
+        } else {
+            // If previouslyActiveProjectId is empty, we are closing the last editor tab. In this case, there is
+            //   no next project to make active and this method should return an empty Optional as well.
+            return previouslyActiveProjectId;
+        }
+    }
+
+    private static WorkflowEditor getEditor(final String projectId) {
+        return EclipseUIStateUtil.getOpenWorkflowEditor(getWorkflowManager(projectId))
+            .orElseThrow(() -> new NoSuchElementException("No workflow editor for project found."));
+    }
+
+    private static MPart getEditorPart(final String projectId) {
+        return EclipseUIStateUtil.getOpenWorkflowEditorPart(getWorkflowManager(projectId))
+            .orElseThrow(() -> new NoSuchElementException("No workflow editor part for project found."));
+    }
+
+    private static WorkflowManager getWorkflowManager(final String projectId) {
+        return DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
+    }
+
+    /**
+     * @param arguments The source data
+     * @param index The index of the element to look for
+     * @param targetClass The class the element should be cast to
+     * @param <V> The expected value type of the element.
+     * @return An {code Optional} containing the element at the given {@code index} as cast to {@code targetClass} if it
+     *         is present in the given * {@code arguments}, non-null and can be cast; or an empty {@code Optional}
+     *         otherwise.
+     */
+    private static <V> Optional<V> requireAtIndex(final Object[] arguments, final int index,
+        final Class<V> targetClass) {
+        if (arguments.length - 1 < index) {
+            return Optional.empty();
+        }
+        if (!targetClass.isAssignableFrom(arguments[index].getClass())) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(arguments[index]).map(targetClass::cast);
     }
 
 }
