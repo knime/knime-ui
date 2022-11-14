@@ -59,14 +59,17 @@ export default {
             return this.$shapes.addNodeGhostSize * this.zoomFactor;
         }
     },
+    watch: {
+        hasNodeRecommendationsEnabled: {
+            immediate: true,
+            handler() {
+                this.showOverlay = !this.hasNodeRecommendationsEnabled;
+            }
+        }
+    },
     created() {
         // this component is always destroyed for each node so we don't need to fetch data again if the nodeId changes
         this.fetchRecommendedNodes();
-    },
-    mounted() {
-        if (!this.hasNodeRecommendationsEnabled) {
-            this.showOverlay = true;
-        }
     },
     methods: {
         ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
