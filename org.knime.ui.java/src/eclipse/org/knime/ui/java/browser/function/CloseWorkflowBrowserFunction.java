@@ -47,7 +47,6 @@
 package org.knime.ui.java.browser.function;
 
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
@@ -82,8 +81,8 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
      * @param arguments An array of {@code String}s with contents:
      *            <ol>
      *            <li>The ID of the project to be closed</li>
-*                 <li>The ID of the project to make active after the current one has been closed. Can be null or
-     *                       omitted if there is no next project ID (e.g. when closing the last tab).</li>
+     *            <li>The ID of the project to make active after the current one has been closed. Can be null or omitted
+     *            if there is no next project ID (e.g. when closing the last tab).</li>
      *            </ol>
      * @return A boolean indicating whether an editor has been closed.
      */
@@ -91,7 +90,7 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
     public Object function(final Object[] arguments) {
 
         String projectIdToClose = requireAtIndex(arguments, 0, String.class)
-                .orElseThrow(() -> new NoSuchElementException("Project ID to close not given"));
+            .orElseThrow(() -> new NoSuchElementException("Project ID to close not given"));
 
         Optional<String> nextProjectId = requireAtIndex(arguments, 1, String.class);
 
