@@ -45,10 +45,8 @@ export default {
     },
     methods: {
         toggleContextMenu(e) {
-            if (!this.contextMenu.isOpen && (this.portTypeMenuConfig || this.quickAddNodeMenuConfig)) {
-                this.quickAddNodeMenuConfig?.events['menu-close']?.();
-                this.portTypeMenuConfig?.events['menu-close']?.();
-            }
+            this.quickAddNodeMenuConfig?.events['menu-close']?.();
+            this.portTypeMenuConfig?.events['menu-close']?.();
 
             this.$store.dispatch('application/toggleContextMenu', e);
         },
