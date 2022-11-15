@@ -52,8 +52,7 @@ import static org.knime.js.cef.middleware.CEFMiddlewareService.isCEFMiddlewareRe
 
 import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
-import org.eclipse.swt.program.Program;
-import org.knime.core.node.NodeLogger;
+import org.knime.core.webui.WebUIUtil;
 import org.knime.gateway.impl.webui.service.DefaultEventService;
 
 /**
@@ -70,23 +69,19 @@ public class KnimeBrowserLocationListener implements LocationListener {
         m_browserView = browserView;
     }
 
-	@Override
-	public void changing(final LocationEvent event) {
-		if (isCEFMiddlewareResource(event.location)) {
-			// Allow location change to middleware resources, these are handled by resource handlers.
-		} else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
-			// Allow location change, but de-register any listeners in case the web app is being
-			//   refreshed. Required listeners will be registered on initialisation.
-		    DefaultEventService.getInstance().removeAllEventListeners();
-		} else {
-			// Do not allow location change and open in external browser.
-			if (!Program.launch(event.location)) {
-				NodeLogger.getLogger(this.getClass())
-						.error("Failed to open URL in external browser. The URL is: " + event.location);
-			}
-			event.doit = false;
-		}
-	}
+    @Override
+    public void changing(final LocationEvent event) {
+        if (isCEFMiddlewareResource(event.location)) {
+            // Allow location change to middleware resources, these are handled by resource handlers.
+        } else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
+            // Allow location change, but de-register any listeners in case the web app is being
+            //   refreshed. Required listeners will be registered on initialisation.
+            DefaultEventService.getInstance().removeAllEventListeners();
+        } else {
+            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(event.location, KnimeBrowserView.class);
+            event.doit = false;
+        }
+    }
 
     @Override
     public void changed(final LocationEvent event) {

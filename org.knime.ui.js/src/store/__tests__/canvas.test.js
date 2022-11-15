@@ -246,6 +246,12 @@ describe('canvas store', () => {
                 // 100(scrollTop) is to 500(scrollHeight) as 200(expected) is to 1000(currentScrollHeight)
                 expect(scrollContainer.scrollTop).toBe(200);
             });
+
+            it('defaults to `fillScreen` if canvas state is not valid when restoring', async () => {
+                await store.dispatch('canvas/restoreScrollState', {});
+                
+                expect(dispatchSpy).toHaveBeenCalledWith('canvas/fillScreen', undefined);
+            });
         });
 
         test('content bounds change', () => {

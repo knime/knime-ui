@@ -21,7 +21,12 @@ export const state = () => ({
     savedCanvasStates: {},
 
     /* Indicates whether the browser has support (enabled) for the Clipboard API or not */
-    hasClipboardSupport: false
+    hasClipboardSupport: false,
+
+    contextMenu: {
+        isOpen: false,
+        position: null
+    }
 });
 
 export const mutations = {
@@ -77,6 +82,9 @@ export const mutations = {
     },
     setFeatureFlags(state, featureFlags) {
         state.featureFlags = featureFlags;
+    },
+    setContextMenu(state, value) {
+        state.contextMenu = value;
     }
 };
 
@@ -243,6 +251,34 @@ export const actions = {
         const stateKey = getCanvasStateKey(`${project}--${rootWorkflowId}`);
 
         delete state.savedCanvasStates[stateKey];
+    },
+    toggleContextMenu({ state, commit, rootGetters }, contextMenuEvent) {
+        if (state.contextMenu.isOpen) {
+            // when closing an active menu, we could optionally receive a native event
+            // e.g the menu is getting closed by right-clicking again
+            contextMenuEvent?.preventDefault();
+            commit('setContextMenu', { isOpen: false, position: null });
+            return;
+        }
+
+        // if source element has the following class set, then just let the event do the natural behavior
+        if (contextMenuEvent.srcElement.classList.contains('native-context-menu')) {
+            return;
+        }
+
+        // safety check
+        if (!contextMenuEvent) {
+            return;
+        }
+
+        contextMenuEvent.preventDefault();
+        const { clientX, clientY } = contextMenuEvent;
+        const screenToCanvasCoordinates = rootGetters['canvas/screenToCanvasCoordinates'];
+        const [x, y] = screenToCanvasCoordinates([clientX, clientY]);
+        state.contextMenu = {
+            isOpen: true,
+            position: { x, y }
+        };
     }
 };
 

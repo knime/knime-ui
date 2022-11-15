@@ -7,6 +7,7 @@ import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import { mockVuexStore } from '@/test/test-utils';
 
 import QuickAddNodeMenu from '../QuickAddNodeMenu.vue';
+import { getNodeRecommendations } from '@api';
 
 const getNodeRecommendationsResponse = [{
     inPorts: [{ typeId: 'org.knime.core.node.BufferedDataTable' }],
@@ -188,6 +189,13 @@ describe('QuickAddNodeMenu.vue', () => {
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('click');
             expect(addNodeMock).toHaveBeenCalledTimes(0);
+        });
+
+        it('displays placeholder message if there are no suggested nodes', async () => {
+            getNodeRecommendations.mockReturnValue([]);
+            let wrapper = doMount();
+            await Vue.nextTick();
+            expect(wrapper.find('.placeholder').exists()).toBe(true);
         });
     });
 });

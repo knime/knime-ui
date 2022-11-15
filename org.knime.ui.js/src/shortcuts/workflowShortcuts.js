@@ -51,6 +51,7 @@ export default {
     },
     configureFlowVariables: {
         text: 'Configure flow variables',
+        hotkey: ['Shift', 'F6'],
         execute:
             ({ $store }) => $store.dispatch('workflow/openFlowVariableConfiguration',
                 $store.getters['selection/singleSelectedNode'].id),
