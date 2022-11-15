@@ -1,8 +1,13 @@
-import { createLocalVue, shallowMount } from '@vue/test-utils';
-import * as $shapes from '@/style/shapes.mjs';
 import Vue from 'vue';
-import { openWorkflowCoachPreferencePage as openWorkflowCoachPreferencePageMock } from '@api';
+import Vuex from 'vuex';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { mockVuexStore } from '@/test/test-utils/index';
+import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import Button from 'webapps-common/ui/components/Button.vue';
+import { openWorkflowCoachPreferencePage as openWorkflowCoachPreferencePageMock } from '@api';
+import * as $shapes from '@/style/shapes.mjs';
+import FloatingMenu from '@/components/common/FloatingMenu.vue';
+import QuickAddNodeMenu from '../QuickAddNodeMenu.vue';
 
 const getNodeRecommendationsResponse = [{
     inPorts: [{ typeId: 'org.knime.core.node.BufferedDataTable' }],
@@ -30,16 +35,7 @@ jest.mock('@api', () => ({
     openWorkflowCoachPreferencePage: jest.fn()
 }));
 
-import QuickAddNodeMenu from '../QuickAddNodeMenu.vue';
-import FloatingMenu from '@/components/common/FloatingMenu.vue';
-import { mockVuexStore } from '@/test/test-utils/index';
-import Vuex from 'vuex';
-import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
-
-
 describe('QuickAddNodeMenu.vue', () => {
-    let wrapper, $store, doShallowMount, addNodeMock, isWritable;
-    
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
@@ -53,10 +49,10 @@ describe('QuickAddNodeMenu.vue', () => {
         props: FloatingMenu.props
     };
 
-    beforeEach(() => {
-        addNodeMock = jest.fn();
-        isWritable = true;
-
+    const doMount = ({
+        addNodeMock = jest.fn(),
+        isWriteableMock = jest.fn().mockReturnValue(true)
+    } = {}) => {
         let propsData = {
             nodeId: 'node-id',
             position: {
@@ -102,13 +98,11 @@ describe('QuickAddNodeMenu.vue', () => {
                     addNode: addNodeMock
                 },
                 getters: {
-                    isWritable() {
-                        return isWritable;
-                    }
+                    isWritable: isWriteableMock
                 }
             }
         };
-        $store = mockVuexStore(storeConfig);
+        let $store = mockVuexStore(storeConfig);
         let mocks = {
             $shapes: {
                 ...$shapes,
@@ -118,28 +112,28 @@ describe('QuickAddNodeMenu.vue', () => {
             $store
         };
 
-        doShallowMount = () => {
-            wrapper = shallowMount(QuickAddNodeMenu, {
-                propsData,
-                mocks,
-                attachTo: document.body,
-                stubs: {
-                    FloatingMenu: FloatingMenuStub
-                }
-            });
-        };
-    });
+        const wrapper = shallowMount(QuickAddNodeMenu, {
+            propsData,
+            mocks,
+            attachTo: document.body,
+            stubs: {
+                FloatingMenu: FloatingMenuStub
+            }
+        });
+
+        return { wrapper, $store, addNodeMock };
+    };
 
     describe('Menu', () => {
         it('re-emits menu-close', () => {
-            doShallowMount();
+            let { wrapper } = doMount();
 
             wrapper.findComponent(FloatingMenuStub).vm.$emit('menu-close');
             expect(wrapper.emitted('menu-close')).toBeTruthy();
         });
 
         it('centers to port', () => {
-            doShallowMount();
+            let { wrapper } = doMount();
             expect(wrapper.findComponent(FloatingMenuStub).props('canvasPosition')).toStrictEqual({
                 x: 15,
                 y: 10
@@ -147,7 +141,7 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('should display the nodes recommended by the api', async () => {
-            doShallowMount();
+            let { wrapper } = doMount();
             await Vue.nextTick();
 
             const labels = wrapper.findAll('.node > label');
@@ -160,7 +154,7 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('adds node on click', async () => {
-            doShallowMount();
+            let { wrapper, addNodeMock } = doMount();
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('click');
@@ -176,7 +170,7 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('adds node on pressing enter key', async () => {
-            doShallowMount();
+            let { wrapper, addNodeMock } = doMount();
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('keydown.enter');
@@ -192,8 +186,9 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('does not add node if workflow is not writeable', async () => {
-            isWritable = false;
-            doShallowMount();
+            let { wrapper, addNodeMock } = doMount({
+                isWriteableMock: jest.fn(() => false)
+            });
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('click');
@@ -201,25 +196,22 @@ describe('QuickAddNodeMenu.vue', () => {
         });
 
         it('does display overlay if workflow coach is disabled', async () => {
+            let { wrapper, $store } = doMount();
             $store.state.application.hasNodeRecommendationsEnabled = false;
-            doShallowMount();
             await Vue.nextTick();
-
             expect(wrapper.find('.overlay').exists()).toBe(true);
         });
 
         it('does not display overlay if workflow coach is enabled', async () => {
-            doShallowMount();
+            let { wrapper } = doMount();
             await Vue.nextTick();
-
             expect(wrapper.find('.overlay').exists()).toBe(false);
         });
 
         it('opens workflow coach preferences page when button is clicked', async () => {
+            let { wrapper, $store } = doMount();
             $store.state.application.hasNodeRecommendationsEnabled = false;
-            doShallowMount();
             await Vue.nextTick();
-
             await wrapper.findComponent(Button).vm.$emit('click');
             expect(openWorkflowCoachPreferencePageMock).toHaveBeenCalled();
         });
