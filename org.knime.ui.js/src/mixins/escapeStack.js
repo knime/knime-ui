@@ -7,9 +7,21 @@ let stack = [];
     export default {
         mixins: [
             escapeStack({
+                // Handler that will get called when the escape key is called
                 onEscape() {
                     this.doSomething();
-                }
+                },
+
+                // Optional. If a stack entry that has a group set is being handled, then all the stack entries that
+                // belong to the same group will execute all their handlers as well
+                // (with their corresponding component instance) when the escape key is pressed
+                group: 'GROUP_NAME',
+                
+                // Will keep the stack entry in the stack even after the handler has executed. This is useful for
+                // components that do not destroy after escape is pressed and want to keep the escape handling behavior
+                // for as long as they're mounted. Destroying the component will still remove the entry, even if this
+                // property is set.
+                alwaysActive: true,
             })
         ]
     };
@@ -27,18 +39,31 @@ export const escapeStack = ({ onEscape, group = null, alwaysActive = false }) =>
 
 const getLastEntry = (_stack) => stack[stack.length - 1];
 
+const runAllEntries = (_stack, predicateFn) => {
+    stack
+        .filter(predicateFn)
+        .map(([context, { onEscape }]) => [context, onEscape])
+        // run the calls backwards (from most recent to oldest)
+        .reverse()
+        // using the component as "this"-argument for onEscape
+        .forEach(([context, handler]) => handler.call(context));
+};
+
 const handleGroupStackEntries = (_stack) => {
     // eslint-disable-next-line no-unused-vars
     const [_, lastEntryData] = getLastEntry(_stack);
 
-    const pendingGroupCalls = stack
-        .filter(([_, { group }]) => group === lastEntryData.group)
-        .map(([context, { onEscape }]) => [context, onEscape]);
-            
-    // using the component as "this"-argument for onEscape
-    pendingGroupCalls.forEach(([context, handler]) => handler.call(context));
+    // stack
+    //     .filter(([_, { group }]) => group === lastEntryData.group)
+    //     .map(([context, { onEscape }]) => [context, onEscape])
+    //     // run the calls backwards (from most recent to oldest)
+    //     .reverse()
+    //     // using the component as "this"-argument for onEscape
+    //     .forEach(([context, handler]) => handler.call(context));
 
-    return _stack.filter(([_, stackData]) => stackData.group !== lastEntryData.group);
+    runAllEntries(_stack, ([_, entryData]) => entryData.group === lastEntryData.group && !entryData.alwaysActive);
+
+    return _stack.filter(([_, entryData]) => entryData.group !== lastEntryData.group || entryData.alwaysActive);
 };
 
 const handleSingleStackEntry = (_stack) => {
@@ -52,7 +77,7 @@ const handleSingleStackEntry = (_stack) => {
 
 // This method is to be called from the hotkey handler.
 // It calls "onEscape" on the topmost component, or calls all "onEscape" handlers
-// for a group of components
+// for a component or group of components
 export const escapePressed = () => {
     if (stack.length) {
         const hasAlwaysActiveEntries = stack.some(([, { alwaysActive }]) => alwaysActive);
@@ -60,10 +85,12 @@ export const escapePressed = () => {
         // Entries that do not remove their handler after call are considered as "always active"
         // so we call all stored entries regardless of which is the last entry in the stack
         if (hasAlwaysActiveEntries) {
-            stack
-                .filter(([_, { alwaysActive }]) => alwaysActive)
-                .map(([context, { onEscape }]) => [context, onEscape])
-                .forEach(([context, handler]) => handler.call(context));
+            // stack
+            //     .filter(([_, { alwaysActive }]) => alwaysActive)
+            //     .map(([context, { onEscape }]) => [context, onEscape])
+            //     .reverse()
+            //     .forEach(([context, handler]) => handler.call(context));
+            runAllEntries(stack, ([_, entryData]) => entryData.alwaysActive);
         }
 
         // eslint-disable-next-line no-unused-vars
