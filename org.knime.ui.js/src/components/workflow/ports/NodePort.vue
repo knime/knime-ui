@@ -463,6 +463,7 @@ export default {
             this.didMove = false;
 
             if (this.hasAbortedDrag) {
+                this.$root.$emit('connector-end');
                 this.hasAbortedDrag = false;
                 return;
             }

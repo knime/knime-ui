@@ -907,6 +907,8 @@ describe('NodePort', () => {
             // only the trigger of `lostpointecapture`, but not opening the quick node add menu
             // since drag was aborted
             expect(dispatchEventSpy).toHaveBeenCalledTimes(1);
+            const rootWrapper = createWrapper(wrapper.vm.$root);
+            expect(rootWrapper.emitted('connector-end')).toBeTruthy();
         });
 
         describe('Quick add node menu', () => {
