@@ -2,10 +2,30 @@ import { openNodeDialog, openLegacyFlowVariableDialog, openView, saveWorkflow, c
     openLayoutEditor } from '@api';
 
 /**
+ * Determines which project id should be set after closing the active one
+ *
+ * @param {Object} param
+ * @param {Array} param.openProjects
+ * @param {String} params.activeProjectId
+ * @param {String} params.closingProjectId
+ * @returns {String} next project id to set
+ */
+const getNextProjectId = ({ openProjects, activeProjectId, closingProjectId }) => {
+    if (closingProjectId !== activeProjectId) {
+        return activeProjectId;
+    }
+
+    const activeProjectIndex = openProjects.findIndex(({ projectId }) => projectId === activeProjectId);
+    const isLastIndex = openProjects.length - 1 === activeProjectIndex;
+    const nextIndex = isLastIndex ? activeProjectIndex - 1 : activeProjectIndex + 1;
+
+    return openProjects[nextIndex].projectId;
+};
+
+/**
  * This store is merged with the workflow store.
  * It holds all calls from the workflow store to the local Analytics Platform.
  */
-
 export const state = { };
 
 export const mutations = { };
@@ -18,8 +38,15 @@ export const actions = {
     },
 
     /* Tell the backend to unload this workflow from memory */
-    async closeWorkflow({ dispatch, state }, projectId) {
-        const didClose = await closeWorkflow({ projectId });
+    async closeWorkflow({ dispatch, state, rootState }, closingProjectId) {
+        const { openProjects, activeProjectId } = rootState.application;
+        const nextProjectId = getNextProjectId({
+            openProjects,
+            activeProjectId,
+            closingProjectId
+        });
+
+        const didClose = await closeWorkflow({ closingProjectId, nextProjectId });
         
         if (didClose) {
             dispatch('application/removeCanvasState', {}, { root: true });
