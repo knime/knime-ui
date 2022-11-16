@@ -41,7 +41,7 @@ describe('NodePorts.vue', () => {
             portGroups: null,
             nodeId: 'root:1',
             nodeKind: 'node',
-            isEditable: false,
+            isEditable: true,
             targetPort: null,
             hover: false,
             connectorHover: false,
@@ -54,7 +54,6 @@ describe('NodePorts.vue', () => {
                     __isDragging: false
                 }),
                 getters: {
-                    isWritable: () => true,
                     isDragging: (state) => state.__isDragging
                 },
                 actions: {
@@ -118,7 +117,6 @@ describe('NodePorts.vue', () => {
         });
 
         it('placeholderPositions on component', () => {
-            propsData.isEditable = true;
             propsData.nodeKind = 'component';
             doMount();
 
@@ -142,9 +140,9 @@ describe('NodePorts.vue', () => {
             expect(allPorts.every(port => port.props('selected') === false)).toBeTruthy();
         });
 
-        test('ports cant be selected on a write-protected workflow', async () => {
+        test('ports cant be selected if components or metanodes are linked or workflow is not writable', async () => {
             propsData.nodeKind = 'metanode';
-            storeConfig.workflow.getters.isWritable = () => false;
+            propsData.isEditable = false;
             doMount();
 
             let firstPort = wrapper.findAllComponents(NodePort).at(0);
@@ -420,9 +418,9 @@ describe('NodePorts.vue', () => {
     });
 
     describe('Add and remove node ports', () => {
-        it('cant add ports if not writable', () => {
+        it('cant add ports if components or metanodes are linked or workflow is not writable', () => {
             propsData.nodeKind = 'component';
-            storeConfig.workflow.getters.isWritable = () => false;
+            propsData.isEditable = false;
             doMount();
 
             expect(wrapper.findAllComponents(AddPortPlaceholder).length).toBe(0);

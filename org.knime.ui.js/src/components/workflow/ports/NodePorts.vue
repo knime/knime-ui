@@ -74,7 +74,7 @@ export default {
         selectedPort: null
     }),
     computed: {
-        ...mapGetters('workflow', ['isDragging', 'isWritable']),
+        ...mapGetters('workflow', ['isDragging']),
 
         isMetanode() {
             return this.nodeKind === 'metanode';
@@ -125,7 +125,7 @@ export default {
         },
         /* eslint-disable brace-style, curly */
         canAddPort() {
-            if (!this.isWritable) return { input: false, output: false };
+            if (!this.isEditable) return { input: false, output: false };
 
             if (this.isComponent || this.isMetanode) return { input: true, output: true };
 
@@ -157,7 +157,7 @@ export default {
     methods: {
         ...mapActions('workflow', ['addNodePort', 'removeNodePort']),
         onPortClick({ index, portGroupId }, side) {
-            if (!this.isWritable) {
+            if (!this.isEditable) {
                 return;
             }
 
