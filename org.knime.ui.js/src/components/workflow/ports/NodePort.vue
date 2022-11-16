@@ -2,7 +2,7 @@
 import { mapState, mapGetters } from 'vuex';
 import throttle from 'raf-throttle';
 import { mixin as clickaway } from 'vue-clickaway2';
-import { tooltip } from '@/mixins';
+import { escapeStack, tooltip } from '@/mixins';
 
 import { circleDetection } from '@/util/compatibleConnections';
 import Port from '@/components/common/Port.vue';
@@ -152,7 +152,22 @@ export default {
         QuickAddNodeGhost,
         NodePortActions
     },
-    mixins: [clickaway, tooltip],
+    mixins: [
+        clickaway,
+        tooltip,
+        escapeStack({
+            group: 'PORT_DRAG',
+            alwaysActive: true,
+            onEscape() {
+                // quick add menu can also be closed with escape,
+                // so we need to exclude it when handling the escape logic
+                if (this.dragConnector && !this.isShowingQuickAddNodeMenu) {
+                    this.dragConnector = null;
+                    this.hasAbortedDrag = true;
+                }
+            }
+        })
+    ],
     inject: ['anchorPoint'],
     props: {
         /** direction of the port and the connector coming out of it: in-coming or out-going */
@@ -194,7 +209,9 @@ export default {
         didMove: false,
         pointerDown: false,
         didDragToCompatibleTarget: false,
-        showAddNodeGhost: false
+        showAddNodeGhost: false,
+        hasAbortedDrag: false,
+        isShowingQuickAddNodeMenu: false
     }),
     computed: {
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
@@ -441,15 +458,22 @@ export default {
                 }
             }
         },
-        onLostPointerCapture(e) {
+        onLostPointerCapture() {
             this.pointerDown = false;
             this.didMove = false;
+
+            if (this.hasAbortedDrag) {
+                this.hasAbortedDrag = false;
+                return;
+            }
+
             if (this.showAddNodeGhost) {
                 this.openQuickAddNodeMenu();
             } else {
                 // clear drag connector now; otherwise this happens on close of the menu
                 this.dragConnector = null;
             }
+
             if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
                 this.lastHitTarget.element.dispatchEvent(new CustomEvent('connector-leave', { bubbles: true }));
             }
@@ -468,6 +492,7 @@ export default {
             }
         },
         openQuickAddNodeMenu() {
+            this.isShowingQuickAddNodeMenu = true;
             // find the position in coordinates relative to the origin
             let position = {
                 x: this.dragConnector.absolutePoint[0],
@@ -495,6 +520,7 @@ export default {
             ));
         },
         closeQuickAddNodeMenu() {
+            this.isShowingQuickAddNodeMenu = false;
             // close the menu
             this.$el.dispatchEvent(new CustomEvent(
                 'close-quick-add-node-menu', {
