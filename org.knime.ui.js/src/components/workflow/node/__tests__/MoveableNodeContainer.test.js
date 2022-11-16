@@ -53,7 +53,6 @@ describe('MoveableNodeContainer', () => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
         Vue.directive(directiveMove.name, mockMoveDirective);
-        // Vue.directive(directiveMove.name, directiveMove.options);
     });
 
     const doMount = ({

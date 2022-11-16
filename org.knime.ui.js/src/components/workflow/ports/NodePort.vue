@@ -161,7 +161,7 @@ export default {
             onEscape() {
                 // quick add menu can also be closed with escape,
                 // so we need to exclude it when handling the escape logic
-                if (this.dragConnector && !this.hasShownQuickAddNodeMenu) {
+                if (this.dragConnector && !this.isShowingQuickAddNodeMenu) {
                     this.dragConnector = null;
                     this.hasAbortedDrag = true;
                 }
@@ -211,7 +211,7 @@ export default {
         didDragToCompatibleTarget: false,
         showAddNodeGhost: false,
         hasAbortedDrag: false,
-        hasShownQuickAddNodeMenu: false
+        isShowingQuickAddNodeMenu: false
     }),
     computed: {
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
@@ -492,7 +492,7 @@ export default {
             }
         },
         openQuickAddNodeMenu() {
-            this.hasShownQuickAddNodeMenu = true;
+            this.isShowingQuickAddNodeMenu = true;
             // find the position in coordinates relative to the origin
             let position = {
                 x: this.dragConnector.absolutePoint[0],
@@ -520,7 +520,7 @@ export default {
             ));
         },
         closeQuickAddNodeMenu() {
-            this.hasShownQuickAddNodeMenu = false;
+            this.isShowingQuickAddNodeMenu = false;
             // close the menu
             this.$el.dispatchEvent(new CustomEvent(
                 'close-quick-add-node-menu', {

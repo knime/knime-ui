@@ -45,7 +45,7 @@ const runAllEntries = (_stack, predicateFn) => {
         .map(([context, { onEscape }]) => [context, onEscape])
         // run the calls backwards (from most recent to oldest)
         .reverse()
-        // using the component as "this"-argument for onEscape
+        // call handler with the correct context applied
         .forEach(([context, handler]) => handler.call(context));
 };
 
@@ -53,16 +53,10 @@ const handleGroupStackEntries = (_stack) => {
     // eslint-disable-next-line no-unused-vars
     const [_, lastEntryData] = getLastEntry(_stack);
 
-    // stack
-    //     .filter(([_, { group }]) => group === lastEntryData.group)
-    //     .map(([context, { onEscape }]) => [context, onEscape])
-    //     // run the calls backwards (from most recent to oldest)
-    //     .reverse()
-    //     // using the component as "this"-argument for onEscape
-    //     .forEach(([context, handler]) => handler.call(context));
-
+    // run all handlers for the group, except `alwaysActive` ones, which were already executed
     runAllEntries(_stack, ([_, entryData]) => entryData.group === lastEntryData.group && !entryData.alwaysActive);
 
+    // remove all handlers on the group, except `alwaysActive` ones
     return _stack.filter(([_, entryData]) => entryData.group !== lastEntryData.group || entryData.alwaysActive);
 };
 
@@ -85,11 +79,6 @@ export const escapePressed = () => {
         // Entries that do not remove their handler after call are considered as "always active"
         // so we call all stored entries regardless of which is the last entry in the stack
         if (hasAlwaysActiveEntries) {
-            // stack
-            //     .filter(([_, { alwaysActive }]) => alwaysActive)
-            //     .map(([context, { onEscape }]) => [context, onEscape])
-            //     .reverse()
-            //     .forEach(([context, handler]) => handler.call(context));
             runAllEntries(stack, ([_, entryData]) => entryData.alwaysActive);
         }
 
