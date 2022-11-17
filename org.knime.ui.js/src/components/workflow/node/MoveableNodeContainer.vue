@@ -2,7 +2,21 @@
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex';
 import throttle from 'raf-throttle';
 
+import { escapeStack } from '@/mixins';
+
 export default {
+    mixins: [
+        escapeStack({
+            group: 'NODE_DRAG',
+            alwaysActive: true,
+            onEscape() {
+                if (this.isDragging) {
+                    this.setMovePreview({ deltaX: 0, deltaY: 0 });
+                    this.setHasAbortedNodeDrag(true);
+                }
+            }
+        })
+    ],
     props: {
         /**
          * Node id, unique to the containing workflow
@@ -38,7 +52,7 @@ export default {
         ...mapGetters('selection', ['isNodeSelected']),
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapState('application', ['activeProjectId']),
-        ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow']),
+        ...mapState('workflow', ['movePreviewDelta', 'activeWorkflow', 'hasAbortedNodeDrag']),
         ...mapState('canvas', ['zoomFactor']),
 
         // Combined position of original position + the dragged amount
@@ -66,7 +80,7 @@ export default {
     },
     methods: {
         ...mapActions('selection', ['selectNode', 'deselectNode', 'deselectAllObjects']),
-        ...mapMutations('workflow', ['setMovePreview']),
+        ...mapMutations('workflow', ['setMovePreview', 'setHasAbortedNodeDrag']),
         /**
          * Resets the drag position in the store. This can only happen here, as otherwise the node
          * will be reset to its position before the actual movement of the store happened.
@@ -99,7 +113,7 @@ export default {
          */
         onMove: throttle(function ({ detail: { clientX, clientY, altKey } }) {
             /* eslint-disable no-invalid-this */
-            if (!this.startPos) {
+            if (!this.startPos || this.hasAbortedNodeDrag) {
                 return;
             }
 
@@ -134,6 +148,11 @@ export default {
          */
         onMoveEnd: throttle(function () {
             /* eslint-disable no-invalid-this */
+            if (this.hasAbortedNodeDrag) {
+                this.setHasAbortedNodeDrag(false);
+                return;
+            }
+
             this.$store.dispatch('workflow/moveObjects', {
                 projectId: this.activeProjectId,
                 startPos: this.startPos,

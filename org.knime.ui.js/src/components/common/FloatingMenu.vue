@@ -48,15 +48,24 @@ export default {
             type: String,
             default: 'top-left',
             validator: (anchor) => ['top-left', 'top-right'].includes(anchor)
+        },
+
+        /**
+         * When set to true will disable interactions on the workflow canvas when the menu is open
+         */
+        disableInteractions: {
+            type: Boolean,
+            default: false
         }
     },
     data: () => ({
         absolutePosition: { left: 0, top: 0 }
     }),
     computed: {
+        ...mapGetters('workflow', { isDraggingNodeInCanvas: 'isDragging' }),
         ...mapGetters('canvas', ['screenFromCanvasCoordinates']),
         ...mapState('canvas', ['zoomFactor']),
-        ...mapState('nodeRepository', ['isDraggingNode'])
+        ...mapState('nodeRepository', { isDraggingNodeFromRepository: 'isDraggingNode' })
     },
     watch: {
         canvasPosition() {
@@ -65,10 +74,15 @@ export default {
         zoomFactor() {
             this.setAbsolutePosition();
         },
-        isDraggingNode: {
+        isDraggingNodeInCanvas() {
+            if (this.isDraggingNodeInCanvas) {
+                this.$emit('menu-close');
+            }
+        },
+        isDraggingNodeFromRepository: {
             immediate: true,
             handler() {
-                if (this.isDraggingNode) {
+                if (this.isDraggingNodeFromRepository) {
                     this.$emit('menu-close');
                 }
             }
@@ -76,13 +90,15 @@ export default {
     },
     mounted() {
         this.setAbsolutePosition();
-        this.setInteractionsEnabled(false);
+        if (this.disableInteractions) {
+            this.setInteractionsEnabled(false);
+        }
         
         let kanvas = document.getElementById('kanvas');
         kanvas.addEventListener('scroll', this.onCanvasScroll);
 
         // set up resize observer
-        this.resizeObserver = new ResizeObserver(entries => {
+        this.resizeObserver = new ResizeObserver(() => {
             this.setAbsolutePosition();
             consola.trace('floating menu: resize detected');
         });

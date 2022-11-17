@@ -4,7 +4,7 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/index';
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
 import Button from 'webapps-common/ui/components/Button.vue';
-import { openWorkflowCoachPreferencePage as openWorkflowCoachPreferencePageMock } from '@api';
+import { openWorkflowCoachPreferencePage as openWorkflowCoachPreferencePageMock, getNodeRecommendations } from '@api';
 import * as $shapes from '@/style/shapes.mjs';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import QuickAddNodeMenu from '../QuickAddNodeMenu.vue';
@@ -127,13 +127,14 @@ describe('QuickAddNodeMenu.vue', () => {
     describe('Menu', () => {
         it('re-emits menu-close', () => {
             let { wrapper } = doMount();
-
             wrapper.findComponent(FloatingMenuStub).vm.$emit('menu-close');
+
             expect(wrapper.emitted('menu-close')).toBeTruthy();
         });
 
         it('centers to port', () => {
             let { wrapper } = doMount();
+
             expect(wrapper.findComponent(FloatingMenuStub).props('canvasPosition')).toStrictEqual({
                 x: 15,
                 y: 10
@@ -143,12 +144,13 @@ describe('QuickAddNodeMenu.vue', () => {
         it('should display the nodes recommended by the api', async () => {
             let { wrapper } = doMount();
             await Vue.nextTick();
-
             const labels = wrapper.findAll('.node > label');
+
             expect(labels.at(0).text()).toBe('Column Filter');
             expect(labels.at(1).text()).toBe('Row Filter');
 
             const previews = wrapper.findAllComponents(NodePreview);
+            
             expect(previews.length).toBe(2);
             expect(previews.at(0).props('type')).toBe('Manipulator');
         });
@@ -158,6 +160,7 @@ describe('QuickAddNodeMenu.vue', () => {
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('click');
+
             expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), {
                 nodeFactory: { className: 'org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory' },
                 position: {
@@ -174,6 +177,7 @@ describe('QuickAddNodeMenu.vue', () => {
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('keydown.enter');
+
             expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), {
                 nodeFactory: { className: 'org.knime.base.node.preproc.filter.column.DataColumnSpecFilterNodeFactory' },
                 position: {
@@ -192,6 +196,7 @@ describe('QuickAddNodeMenu.vue', () => {
             await Vue.nextTick();
             const node1 = wrapper.findAll('.node').at(0);
             await node1.trigger('click');
+
             expect(addNodeMock).toHaveBeenCalledTimes(0);
         });
 
@@ -199,12 +204,14 @@ describe('QuickAddNodeMenu.vue', () => {
             let { wrapper, $store } = doMount();
             $store.state.application.hasNodeRecommendationsEnabled = false;
             await Vue.nextTick();
+
             expect(wrapper.find('.overlay').exists()).toBe(true);
         });
 
         it('does not display overlay if workflow coach is enabled', async () => {
             let { wrapper } = doMount();
             await Vue.nextTick();
+
             expect(wrapper.find('.overlay').exists()).toBe(false);
         });
 
@@ -213,7 +220,16 @@ describe('QuickAddNodeMenu.vue', () => {
             $store.state.application.hasNodeRecommendationsEnabled = false;
             await Vue.nextTick();
             await wrapper.findComponent(Button).vm.$emit('click');
+
             expect(openWorkflowCoachPreferencePageMock).toHaveBeenCalled();
+        });
+
+        it('displays placeholder message if there are no suggested nodes', async () => {
+            getNodeRecommendations.mockReturnValue([]);
+            let { wrapper } = doMount();
+            await Vue.nextTick();
+
+            expect(wrapper.find('.placeholder').exists()).toBe(true);
         });
     });
 });
