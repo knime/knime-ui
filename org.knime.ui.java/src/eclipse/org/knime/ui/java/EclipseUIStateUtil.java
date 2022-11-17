@@ -341,7 +341,7 @@ public final class EclipseUIStateUtil {
      * @param app
      * @return
      */
-    public static Stream<MPart> getOpenWorkflowEditorParts(final EModelService modelService, final MApplication app) {
+    private static Stream<MPart> getOpenWorkflowEditorParts(final EModelService modelService, final MApplication app) {
         return modelService.findElements(app, WORKFLOW_EDITOR_PART_ID, MPart.class).stream()
             .filter(p -> p.getObject() instanceof CompatibilityPart);
     }
