@@ -154,7 +154,6 @@ describe('workflow store: AP Interactions', () => {
                 const { store, dispatchSpy } = await loadStore({ apiMocks });
     
                 await store.dispatch('workflow/closeWorkflow', 'foo');
-                // expect(closeWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
                 expect(dispatchSpy).not.toHaveBeenCalledWith('application/removeCanvasState', {});
             });
         });

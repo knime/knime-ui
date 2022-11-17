@@ -42,7 +42,7 @@ export const actions = {
     },
 
     /* Tell the backend to unload this workflow from memory */
-    async closeWorkflow({ dispatch, state, rootState }, closingProjectId) {
+    async closeWorkflow({ dispatch, rootState }, closingProjectId) {
         const { openProjects, activeProjectId } = rootState.application;
         const nextProjectId = getNextProjectId({
             openProjects,
