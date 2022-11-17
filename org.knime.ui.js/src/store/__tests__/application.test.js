@@ -16,7 +16,7 @@ describe('application store', () => {
         loadWorkflow;
 
     const applicationState = {
-        openedWorkflows: [{ projectId: 'foo', name: 'bar' }]
+        openProjects: [{ projectId: 'foo', name: 'bar' }]
     };
 
     beforeAll(() => {
@@ -70,7 +70,8 @@ describe('application store', () => {
             suggestedPortTypes: [],
             savedCanvasStates: {},
             hasClipboardSupport: false,
-            contextMenu: { isOpen: false, position: null }
+            contextMenu: { isOpen: false, position: null },
+            hasNodeRecommendationsEnabled: false
         });
     });
 
@@ -105,6 +106,12 @@ describe('application store', () => {
         it('sets the clipboard support flag', () => {
             store.commit('application/setHasClipboardSupport', true);
             expect(store.state.application.hasClipboardSupport)
+                .toBe(true);
+        });
+
+        it('sets the has node recommendations enabled flag', () => {
+            store.commit('application/setHasNodeRecommendationsEnabled', true);
+            expect(store.state.application.hasNodeRecommendationsEnabled)
                 .toBe(true);
         });
     });
@@ -207,7 +214,7 @@ describe('application store', () => {
     describe('set active workflow', () => {
         test('if provided by backend', async () => {
             const state = {
-                openedWorkflows: [
+                openProjects: [
                     { projectId: 'foo', name: 'bar' },
                     {
                         projectId: 'bee',
@@ -233,7 +240,7 @@ describe('application store', () => {
 
         it('uses first in row if not provided by backend', async () => {
             const state = {
-                openedWorkflows: [
+                openProjects: [
                     { projectId: 'foo', name: 'bar' },
                     { projectId: 'bee', name: 'gee' }
                 ]
@@ -248,7 +255,7 @@ describe('application store', () => {
         });
 
         it('does not set active project if there are no open workflows', async () => {
-            const state = { openedWorkflows: [] };
+            const state = { openProjects: [] };
             await store.dispatch('application/replaceApplicationState', state);
 
             expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow', null);
@@ -258,7 +265,7 @@ describe('application store', () => {
     describe('switch workflow', () => {
         test('switch from workflow to nothing', async () => {
             await store.dispatch('application/replaceApplicationState', {
-                openedWorkflows:
+                openProjects:
                     [
                         { projectId: '0', name: 'p0' },
                         { projectId: '1', name: 'p1' }
