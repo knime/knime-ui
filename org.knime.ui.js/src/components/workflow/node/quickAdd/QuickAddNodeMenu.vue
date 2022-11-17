@@ -37,7 +37,8 @@ export default {
     data() {
         return {
             recommendedNodes: [],
-            showOverlay: false
+            showOverlay: false,
+            noNodeRecommendations: false
         };
     },
     computed: {
@@ -64,6 +65,10 @@ export default {
             immediate: true,
             handler() {
                 this.showOverlay = !this.hasNodeRecommendationsEnabled;
+
+                if (this.hasNodeRecommendationsEnabled) {
+                    this.fetchRecommendedNodes();
+                }
             }
         }
     },
@@ -87,6 +92,10 @@ export default {
                 nodesLimit: MAX_NODES,
                 fullTemplateInfo: true
             });
+
+            if (recommendedNodesResult.length === 0) {
+                this.noNodeRecommendations = true;
+            }
 
             const withMappedPorts = mapNodePorts(recommendedNodesResult, this.availablePortTypes);
 
@@ -144,7 +153,7 @@ export default {
         </Button>
       </div>
       <section
-        v-if="recommendedNodes.length > 0"
+        v-if="!noNodeRecommendations"
         class="results"
       >
         <div class="content">
