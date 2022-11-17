@@ -4,6 +4,7 @@ import throttle from 'raf-throttle';
 import { mixin as clickaway } from 'vue-clickaway2';
 import { escapeStack, tooltip } from '@/mixins';
 
+import { toPortObject } from '@/util/portDataMapper';
 import { circleDetection } from '@/util/compatibleConnections';
 import Port from '@/components/common/Port.vue';
 import Connector from '@/components/workflow/connectors/Connector.vue';
@@ -29,8 +30,10 @@ const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) =>
 };
 
 const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {
-    const fromPortObjectInfo = availablePortTypes[fromPort.typeId];
-    const toPortObjectInfo = availablePortTypes[toPort.typeId];
+    // const fromPortObjectInfo = availablePortTypes[fromPort.typeId];
+    // const toPortObjectInfo = availablePortTypes[toPort.typeId];
+    const fromPortObjectInfo = toPortObject(availablePortTypes)(fromPort);
+    const toPortObjectInfo = toPortObject(availablePortTypes)(toPort);
     const { compatibleTypes } = toPortObjectInfo;
     const { kind: fromPortKind } = fromPortObjectInfo;
     const { kind: toPortKind } = toPortObjectInfo;
@@ -232,7 +235,7 @@ export default {
             );
         },
         portTemplate() {
-            let template = this.availablePortTypes[this.port.typeId];
+            const template = toPortObject(this.availablePortTypes)(this.port.typeId);
             if (!template) {
                 throw new Error(`port template ${this.port.typeId} not available in application`);
             }
