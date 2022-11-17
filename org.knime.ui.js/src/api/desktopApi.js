@@ -87,8 +87,9 @@ export const openWorkflow = () => {
 
 /**
  * Close a workflow.
- * @param {String} closingProjectId projectId to close
- * @param {String} nextProjectId projectId that should be set as active after close
+ * @param {Object} param projectId to close
+ * @param {String} param.closingProjectId projectId to close
+ * @param {String | Null} param.nextProjectId projectId that should be set as active after close
  * @returns {void}
  */
 export const closeWorkflow = ({ closingProjectId, nextProjectId }) => {

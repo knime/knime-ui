@@ -6,13 +6,17 @@ import { openNodeDialog, openLegacyFlowVariableDialog, openView, saveWorkflow, c
  *
  * @param {Object} param
  * @param {Array} param.openProjects
- * @param {String} params.activeProjectId
- * @param {String} params.closingProjectId
+ * @param {String} param.activeProjectId
+ * @param {String} param.closingProjectId
  * @returns {String} next project id to set
  */
 const getNextProjectId = ({ openProjects, activeProjectId, closingProjectId }) => {
     if (closingProjectId !== activeProjectId) {
         return activeProjectId;
+    }
+
+    if (openProjects.length === 1) {
+        return null;
     }
 
     const activeProjectIndex = openProjects.findIndex(({ projectId }) => projectId === activeProjectId);

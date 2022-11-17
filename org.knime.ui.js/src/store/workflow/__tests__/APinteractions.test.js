@@ -83,7 +83,31 @@ describe('workflow store: AP Interactions', () => {
             expect(saveWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
         });
 
-        describe.only('Close workflow', () => {
+        describe('Close workflow', () => {
+            it('closes correctly when single project is opened', async () => {
+                let closeWorkflow = jest.fn(() => true);
+                let apiMocks = { closeWorkflow };
+
+                const openProjects = [
+                    { name: 'Mock project 1', projectId: 'Mock project 1' }
+                ];
+                const { projectId: activeProjectId } = openProjects[0];
+                const { projectId: closingProjectId } = openProjects[0];
+
+                // setup
+                const { store, dispatchSpy } = await loadStore({ apiMocks });
+                store.commit('application/setOpenProjects', openProjects);
+                store.commit('application/setActiveProjectId', activeProjectId);
+                store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
+
+                await store.dispatch('workflow/closeWorkflow', closingProjectId);
+                expect(closeWorkflow).toHaveBeenCalledWith({
+                    closingProjectId,
+                    nextProjectId: null
+                });
+                expect(dispatchSpy).toHaveBeenCalledWith('application/removeCanvasState', {});
+            });
+
             it.each([
                 [
                     'keep "active project" unchanged if closing a non-active project',
