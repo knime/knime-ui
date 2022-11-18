@@ -1,8 +1,13 @@
 /**
- * Maps a port type id to a port object
- * @param {Object} availablePortTypes Dictionary of all available port types
- * @param {Boolean} includeType Dictionary of all available port types
- * @returns {Function} mapping function
+ * Maps a port `typeId` string or a object with a `typeId` property to a port object with all the properties of the
+ * PortObject schema from the API
+ * @param {Object} availablePortTypes Dictionary of all available port types and their information
+ * @param {Boolean} includeType whether to include a `type` property holding the value of the port kind.
+ * This is necessary when the data will injected (down the line) into the PortIcon component from webapps-common
+ * which uses a `type` prop instead of a `kind`
+ * @returns {Function} mapping function that takes either a string that represents the port type id, or an object
+ * with a `typeId` property. This mapping function will return the whole port object with information about color, kind,
+ * etc
  */
 export const toPortObject = (availablePortTypes, includeType = true) => (input) => {
     const fullPortObject = typeof input === 'string'
@@ -34,22 +39,10 @@ export const toPortObject = (availablePortTypes, includeType = true) => (input) 
 export const mapPortTypes = (ports = [], availablePortTypes = {}) => ports.map(toPortObject(availablePortTypes));
 
 /**
- * Maps over a collection of nodes in order to add to their ports information about each
- * port's color and kind. This information will be read from the provided `availablePortTypes` parameter
- * which acts as a dictionary of all the ports' metadata and is indexed by the
- * fully qualified name of the port (aka `typeId`)
- *
- * @param {{ inPorts: Array, outPorts: Array }} nodes
- * @param {Record<string, any>} availablePortTypes
- * @returns {{ inPorts: Array, outPorts: Array }} mapped nodes
+ * Maps a node object and adds to every of its ports all the properties of the PortObject schema from the API
+ * @param {Object} availablePortTypes Dictionary of all available port types and their information
+ * @returns {Function} mapping function that takes a node to which all the port information will be added
  */
-export const mapNodePorts = (nodes = [], availablePortTypes) => nodes.map((node) => {
-    const { inPorts = [], outPorts = [] } = node;
-    const mappedInPorts = mapPortTypes(inPorts, availablePortTypes);
-    const mappedOutPorts = mapPortTypes(outPorts, availablePortTypes);
-    return { ...node, inPorts: mappedInPorts, outPorts: mappedOutPorts };
-});
-
 export const toNodeWithFullPorts = (availablePortTypes) => (node) => {
     const { inPorts = [], outPorts = [] } = node;
     

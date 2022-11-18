@@ -30,8 +30,6 @@ const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) =>
 };
 
 const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {
-    // const fromPortObjectInfo = availablePortTypes[fromPort.typeId];
-    // const toPortObjectInfo = availablePortTypes[toPort.typeId];
     const fromPortObjectInfo = toPortObject(availablePortTypes)(fromPort);
     const toPortObjectInfo = toPortObject(availablePortTypes)(toPort);
     const { compatibleTypes } = toPortObjectInfo;
