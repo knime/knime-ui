@@ -137,10 +137,9 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
      */
     private static <V> Optional<V> requireAtIndex(final Object[] arguments, final int index,
         final Class<V> targetClass) {
-        if (arguments.length - 1 < index) {
-            return Optional.empty();
-        }
-        if (!targetClass.isAssignableFrom(arguments[index].getClass())) {
+        if (arguments.length - 1 < index //
+            || arguments[index] == null //
+            || !targetClass.isAssignableFrom(arguments[index].getClass())) {
             return Optional.empty();
         }
         return Optional.ofNullable(arguments[index]).map(targetClass::cast);
