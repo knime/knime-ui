@@ -8,21 +8,22 @@ import AddPortPlaceholder from '../AddPortPlaceholder.vue';
 import NodePorts from '../NodePorts.vue';
 import NodePort from '../NodePort.vue';
 
-const mockPort = ({ index, connectedVia = [] }) => ({
+const mockPort = ({ index, connectedVia = [], portGroupId = null }) => ({
     inactive: false,
     optional: false,
     index,
     type: 'other',
-    connectedVia
+    connectedVia,
+    portGroupId
 });
 
 describe('NodePorts.vue', () => {
-    let wrapper, props, doMount, storeConfig, $store;
-
-    beforeEach(() => {
-        wrapper = null;
-        
-        props = {
+    const doMount = ({
+        addNodePortMock = jest.fn(),
+        removeNodePortMock = jest.fn(),
+        customProps = {}
+    } = {}) => {
+        let defaultProps = {
             inPorts: [
                 mockPort({ index: 0, connectedVia: ['inA'] }),
                 mockPort({ index: 1 })
@@ -35,44 +36,41 @@ describe('NodePorts.vue', () => {
             portGroups: null,
             nodeId: 'root:1',
             nodeKind: 'node',
-            isEditable: false,
+            isEditable: true,
             targetPort: null,
             hover: false,
             connectorHover: false,
             isSingleConnected: false
         };
 
-        storeConfig = {
+        let storeConfig = {
             workflow: {
                 state: () => ({
                     __isDragging: false
                 }),
                 getters: {
-                    isWritable: () => true,
                     isDragging: (state) => state.__isDragging
                 },
                 actions: {
-                    addNodePort: jest.fn(),
-                    removeNodePort: jest.fn()
+                    addNodePort: addNodePortMock,
+                    removeNodePort: removeNodePortMock
                 }
             }
         };
-        
-        doMount = () => {
-            $store = mockVuexStore(storeConfig);
 
-            wrapper = shallowMount(NodePorts, {
-                props,
-                global: { mocks: { $shapes }, plugins: [$store] }
-            });
-        };
-    });
+        const $store = mockVuexStore(storeConfig);
+
+        const wrapper = shallowMount(NodePorts, {
+            props: { ...defaultProps, ...customProps },
+            global: { mocks: { $shapes }, plugins: [$store] }
+        });
+
+        return { wrapper, $store, addNodePortMock, removeNodePortMock };
+    };
 
     describe('Port positions', () => {
         it('for meta node', () => {
-            props.nodeKind = 'metanode';
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { nodeKind: 'metanode' } });
             const ports = wrapper.findAllComponents(NodePort);
             const locations = ports.map(p => p.props().relativePosition);
             const portAttrs = ports.map(p => p.props().port.index);
@@ -92,9 +90,7 @@ describe('NodePorts.vue', () => {
             ['component'],
             ['node']
         ])('for %s', (nodeKind) => {
-            props.nodeKind = nodeKind;
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { nodeKind } });
             const ports = wrapper.findAllComponents(NodePort);
             const locations = ports.map(p => p.props().relativePosition);
             const portAttrs = ports.map(p => p.props().port.index);
@@ -111,11 +107,9 @@ describe('NodePorts.vue', () => {
         });
 
         it('placeholderPositions on component', () => {
-            props.isEditable = true;
-            props.nodeKind = 'component';
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { nodeKind: 'component' } });
             const addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
+
             expect(addPortPlaceholders.at(0).props('position')).toStrictEqual([-4.5, 37]);
             expect(addPortPlaceholders.at(1).props('position')).toStrictEqual([36.5, 37]);
         });
@@ -123,10 +117,7 @@ describe('NodePorts.vue', () => {
 
     describe('Port selection', () => {
         test('no port can be selected', async () => {
-            props.nodeKind = 'node';
-            props.portGroups = null;
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { nodeKind: 'node', portGroups: null } });
             let somePort = wrapper.findComponent(NodePort);
             somePort.vm.$emit('click');
             await Vue.nextTick();
@@ -135,11 +126,8 @@ describe('NodePorts.vue', () => {
             expect(allPorts.every(port => port.props('selected') === false)).toBeTruthy();
         });
 
-        test('ports cant be selected on a write-protected workflow', async () => {
-            props.nodeKind = 'metanode';
-            storeConfig.workflow.getters.isWritable = () => false;
-            doMount();
-
+        test('ports cant be selected if components or metanodes are linked or workflow is not writable', async () => {
+            let { wrapper } = doMount({ customProps: { nodeKind: 'metanode', isEditable: false } });
             let firstPort = wrapper.findAllComponents(NodePort).at(0);
             firstPort.vm.$emit('click');
             await Vue.nextTick();
@@ -148,9 +136,7 @@ describe('NodePorts.vue', () => {
         });
 
         test('Metanode', async () => {
-            props.nodeKind = 'metanode';
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { nodeKind: 'metanode' } });
             let firstPort = wrapper.findAllComponents(NodePort).at(0);
             firstPort.vm.$emit('click');
             await Vue.nextTick();
@@ -159,8 +145,7 @@ describe('NodePorts.vue', () => {
         });
 
         test('Component', async () => {
-            props.nodeKind = 'component';
-            doMount();
+            let { wrapper } = doMount({ customProps: { nodeKind: 'component' } });
 
             // Flow Variable Port can't be selected
             let flowVariablePort = wrapper.findAllComponents(NodePort).at(0);
@@ -177,17 +162,26 @@ describe('NodePorts.vue', () => {
         });
 
         test('Select last port of group for Dynamic Native Nodes', async () => {
-            props.nodeKind = 'node';
-            props.inPorts[1].portGroupId = 'group1';
-            props.outPorts[1].portGroupId = 'group1';
-            props.outPorts[2].portGroupId = 'group1';
-            props.portGroups = {
-                group1: {
-                    inputRange: [1, 1],
-                    outputRange: [1, 2]
-                }
-            };
-            doMount();
+            const inPorts = [
+                mockPort({ index: 0, connectedVia: ['inA'] }),
+                mockPort({ index: 1, portGroupId: 'group1' })
+            ];
+            const outPorts = [
+                mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] }),
+                mockPort({ index: 1, outgoing: true, portGroupId: 'group1' }),
+                mockPort({ index: 2, outgoing: true, connectedVia: ['outB'], portGroupId: 'group1' })
+            ];
+            let { wrapper } = doMount({ customProps: {
+                nodeKind: 'node',
+                portGroups: {
+                    group1: {
+                        inputRange: [1, 1],
+                        outputRange: [1, 2]
+                    }
+                },
+                inPorts,
+                outPorts
+            } });
 
             // Flow Variable Port can't be selected
             let flowVariablePort = wrapper.findAllComponents(NodePort).at(0);
@@ -205,9 +199,7 @@ describe('NodePorts.vue', () => {
         });
 
         test('port can deselect itself', async () => {
-            props.nodeKind = 'component';
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { nodeKind: 'component' } });
             let normalPort = wrapper.findAllComponents(NodePort).at(1);
             normalPort.vm.$emit('click');
             await Vue.nextTick();
@@ -221,9 +213,7 @@ describe('NodePorts.vue', () => {
         });
 
         test('port is deselected by selecting another', async () => {
-            props.nodeKind = 'component';
-            doMount();
-            
+            let { wrapper } = doMount({ customProps: { nodeKind: 'component' } });
             let normalPort = wrapper.findAllComponents(NodePort).at(1);
             normalPort.vm.$emit('click');
             await Vue.nextTick();
@@ -239,9 +229,7 @@ describe('NodePorts.vue', () => {
         });
 
         test('dragging a node deselects', async () => {
-            props.nodeKind = 'component';
-            doMount();
-            
+            let { wrapper, $store } = doMount({ customProps: { nodeKind: 'component' } });
             let normalPort = wrapper.findAllComponents(NodePort).at(1);
             normalPort.vm.$emit('click');
             await Vue.nextTick();
@@ -257,23 +245,19 @@ describe('NodePorts.vue', () => {
     });
 
     it('always shows ports other than mickey-mouse', () => {
-        doMount();
-
+        let { wrapper } = doMount();
         let ports = wrapper.findAllComponents(NodePort);
+
         expect(ports.at(1).attributes().class).toBe('port');
         expect(ports.at(3).attributes().class).toBe('port');
         expect(ports.at(4).attributes().class).toBe('port');
     });
 
     describe('Mickey-Mouse ports', () => {
-        beforeEach(() => {
-            props.isMetanode = false;
-        });
-
         it('only first ports of %s are mickey mouse ports', () => {
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { isMetanode: 'false' } });
             let ports = wrapper.findAllComponents(NodePort);
+
             expect(ports.at(0).attributes().class).toMatch('mickey-mouse');
             expect(ports.at(1).attributes().class).not.toMatch('mickey-mouse');
             expect(ports.at(2).attributes().class).toMatch('mickey-mouse');
@@ -282,27 +266,24 @@ describe('NodePorts.vue', () => {
         });
 
         it('metanodes have no mickey-mouse ports', () => {
-            props.nodeKind = 'metanode';
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { isMetanode: 'false', nodeKind: 'metanode' } });
             let ports = wrapper.findAllComponents(NodePort);
+
             ports.forEach(port => {
                 expect(port.attributes().class).not.toMatch('mickey-mouse');
             });
         });
 
         it('connected ports are displayed', () => {
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { isMetanode: 'false' } });
             let ports = wrapper.findAllComponents(NodePort);
+
             expect(ports.at(0).attributes().class).toMatch('connected');
             expect(ports.at(1).attributes().class).not.toMatch('connected');
         });
 
         it('hover fades-in mickey-mouse ports', () => {
-            props.hover = true;
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { isMetanode: 'false', hover: true } });
             let ports = wrapper.findAllComponents(NodePort);
 
             // flowVariable ports fades in
@@ -311,9 +292,7 @@ describe('NodePorts.vue', () => {
         });
 
         it('hover fades-out mickey-mouse ports', () => {
-            props.hover = false;
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { isMetanode: 'false', hover: false } });
             let ports = wrapper.findAllComponents(NodePort);
 
             // flowVariable ports fades out
@@ -323,13 +302,8 @@ describe('NodePorts.vue', () => {
     });
 
     describe('Add-Port Placeholder', () => {
-        beforeEach(() => {
-            props.nodeKind = 'component';
-        });
-
         it('render, setup, props', () => {
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { nodeKind: 'component' } });
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
                 
             expect(addPortPlaceholders.at(0).props('nodeId')).toBe('root:1');
@@ -346,9 +320,9 @@ describe('NodePorts.vue', () => {
         });
 
         it('show and hide with port type menu', () => {
-            doMount();
-                
+            let { wrapper } = doMount({ customProps: { nodeKind: 'component' } });
             let addPortPlaceholder = wrapper.findComponent(AddPortPlaceholder);
+
             expect(addPortPlaceholder.element.style.opacity).toBe('');
                 
             addPortPlaceholder.trigger('open-port-type-menu');
@@ -363,10 +337,9 @@ describe('NodePorts.vue', () => {
         });
 
         it('opening menu again aborts delayed fade out', () => {
-            doMount();
-                
+            let { wrapper } = doMount({ customProps: { nodeKind: 'component' } });
             let addPortPlaceholder = wrapper.findComponent(AddPortPlaceholder);
-                
+
             jest.useFakeTimers();
             addPortPlaceholder.trigger('open-port-type-menu');
             addPortPlaceholder.trigger('close-port-type-menu');
@@ -377,59 +350,52 @@ describe('NodePorts.vue', () => {
         });
 
         it('not visible by default', () => {
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { nodeKind: 'component' } });
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
+            
             expect(addPortPlaceholders.at(0).classes()).not.toContain('node-hover');
             expect(addPortPlaceholders.at(1).classes()).not.toContain('node-hover');
         });
 
         it('visible on hover', () => {
-            props.hover = true;
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { nodeKind: 'component', hover: true } });
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
+            
             expect(addPortPlaceholders.at(0).classes()).toContain('node-hover');
             expect(addPortPlaceholders.at(1).classes()).toContain('node-hover');
         });
 
         it('visible on connector-hover', () => {
-            props.connectorHover = true;
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { nodeKind: 'component', connectorHover: true } });
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
+            
             expect(addPortPlaceholders.at(0).classes()).toContain('connector-hover');
             expect(addPortPlaceholders.at(1).classes()).toContain('connector-hover');
         });
 
         it('visible if selected', () => {
-            props.isSingleSelected = true;
-            doMount();
-
+            let { wrapper } = doMount({ customProps: { nodeKind: 'component', isSingleSelected: true } });
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
+
             expect(addPortPlaceholders.at(0).classes()).toContain('node-selected');
             expect(addPortPlaceholders.at(1).classes()).toContain('node-selected');
         });
     });
 
     describe('Add and remove node ports', () => {
-        it('cant add ports if not writable', () => {
-            props.nodeKind = 'component';
-            storeConfig.workflow.getters.isWritable = () => false;
-            doMount();
+        it('cant add ports if components or metanodes are linked or workflow is not writable', () => {
+            let { wrapper } = doMount({ customProps: { nodeKind: 'component', isEditable: false } });
 
             expect(wrapper.findAllComponents(AddPortPlaceholder).length).toBe(0);
         });
 
         describe.each(['metanode', 'component'])('add ports for %s', (nodeKind) => {
             test.each(['input', 'output'])('on %s side', (side) => {
-                props.nodeKind = nodeKind;
-                doMount();
-
+                let { wrapper, addNodePortMock } = doMount({ customProps: { nodeKind } });
                 let addPortButton = wrapper.findAllComponents(AddPortPlaceholder).at(side === 'input' ? 0 : 1);
                 addPortButton.vm.$emit('add-port', { typeId: 'type1', portGroup: 'table' });
                 
-                expect(storeConfig.workflow.actions.addNodePort).toHaveBeenCalledWith(expect.anything(), {
+                expect(addNodePortMock).toHaveBeenCalledWith(expect.anything(), {
                     nodeId: 'root:1',
                     side,
                     typeId: 'type1',
@@ -440,20 +406,20 @@ describe('NodePorts.vue', () => {
 
        
         test.each(['input', 'output'])('add dynamic ports on %s side', (side) => {
-            props.nodeKind = 'node';
-            props.portGroups = {
-                group1: {
-                    canAddInPort: true,
-                    canAddOutPort: true,
-                    supportedPortTypeIds: ['type1']
+            let { wrapper, addNodePortMock } = doMount({ customProps: {
+                nodeKind: 'node',
+                portGroups: {
+                    group1: {
+                        canAddInPort: true,
+                        canAddOutPort: true,
+                        supportedPortTypeIds: ['type1']
+                    }
                 }
-            };
-            doMount();
-
+            } });
             let addPortButton = wrapper.findAllComponents(AddPortPlaceholder).at(side === 'input' ? 0 : 1);
             addPortButton.vm.$emit('add-port', { typeId: 'type1', portGroup: 'group1' });
                 
-            expect(storeConfig.workflow.actions.addNodePort).toHaveBeenCalledWith(expect.anything(), {
+            expect(addNodePortMock).toHaveBeenCalledWith(expect.anything(), {
                 nodeId: 'root:1',
                 side,
                 typeId: 'type1',
@@ -463,37 +429,52 @@ describe('NodePorts.vue', () => {
 
         describe.each(['metanode', 'component'])('remove port on %s', (nodeKind) => {
             test.each(['input', 'output'])('from %s side', (side) => {
-                props.nodeKind = nodeKind;
-                props.inPorts.length = 2;
-                props.outPorts.length = 2;
-                doMount();
-                
+                const inPorts = [
+                    mockPort({ index: 0, connectedVia: ['inA'] }),
+                    mockPort({ index: 1 })
+                ];
+                const outPorts = [
+                    mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] }),
+                    mockPort({ index: 1, outgoing: true })
+                ];
+                let { wrapper, removeNodePortMock } = doMount({ customProps: {
+                    nodeKind,
+                    inPorts,
+                    outPorts
+                } });
                 let port = wrapper.findAllComponents(NodePort).at(side === 'input' ? 1 : 3);
                 port.vm.$emit('remove');
                 
-                expect(storeConfig.workflow.actions.removeNodePort).toHaveBeenCalledWith(expect.anything(), {
+                expect(removeNodePortMock).toHaveBeenCalledWith(expect.anything(), {
                     index: 1,
                     nodeId: 'root:1',
                     side,
-                    portGroup: undefined
+                    portGroup: null
                 });
             });
         });
 
         test.each(['input', 'output'])('remove dynamic ports on %s side', (side) => {
-            props.nodeKind = 'node';
-            props.inPorts[1].portGroupId = 'group1';
-            props.outPorts[1].portGroupId = 'group1';
-
-            props.portGroups = {
-                group1: { }
-            };
-            doMount();
-
+            const inPorts = [
+                mockPort({ index: 0, connectedVia: ['inA'] }),
+                mockPort({ index: 1, portGroupId: 'group1' })
+            ];
+            const outPorts = [
+                mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] }),
+                mockPort({ index: 1, outgoing: true, portGroupId: 'group1' })
+            ];
+            let { wrapper, removeNodePortMock } = doMount({ customProps: {
+                nodeKind: 'node',
+                portGroups: {
+                    group1: {}
+                },
+                inPorts,
+                outPorts
+            } });
             let port = wrapper.findAllComponents(NodePort).at(side === 'input' ? 1 : 3);
             port.vm.$emit('remove');
                 
-            expect(storeConfig.workflow.actions.removeNodePort).toHaveBeenCalledWith(expect.anything(), {
+            expect(removeNodePortMock).toHaveBeenCalledWith(expect.anything(), {
                 nodeId: 'root:1',
                 side,
                 index: 1,
@@ -509,11 +490,17 @@ describe('NodePorts.vue', () => {
         [{ index: 1, side: 'out' }, [false, false]]
     ])('target input port', (targetPort, result) => {
         // use only on port on each side
-        props.inPorts.length = 1;
-        props.outPorts.length = 1;
-        props.targetPort = targetPort;
-        doMount();
-
+        const inPorts = [
+            mockPort({ index: 0, connectedVia: ['inA'] })
+        ];
+        const outPorts = [
+            mockPort({ index: 0, outgoing: true, connectedVia: ['outA'] })
+        ];
+        let { wrapper } = doMount({ customProps: {
+            inPorts,
+            outPorts,
+            targetPort
+        } });
         let ports = wrapper.findAllComponents(NodePort);
         const [inPort, outPort] = ports;
         
@@ -526,10 +513,8 @@ describe('NodePorts.vue', () => {
     it.each([
         ['metanode'],
         ['component']
-    ])('disables quick-node-add feature for %ss', (nodeKind) => {
-        props.nodeKind = nodeKind;
-        doMount();
-
+    ])('disables quick-node-add feature for %s', (nodeKind) => {
+        let { wrapper } = doMount({ customProps: { nodeKind } });
         const ports = wrapper.findAllComponents(NodePort);
         const allDisabled = ports.map(port => port.props('disableQuickNodeAdd')).every(disabled => disabled);
 

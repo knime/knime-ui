@@ -3,6 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 
+import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
 import * as $shapes from '@/style/shapes.mjs';
 import { directiveMove } from '@/plugins/directive-move';
 
@@ -23,39 +24,86 @@ const commonNode = {
     selected: false
 };
 
-describe('MoveableNodeContainer', () => {
-    let props, doMount, wrapper, storeConfig;
+jest.mock('@/mixins/escapeStack', () => {
+    function escapeStack({ onEscape }) { // eslint-disable-line func-style
+        escapeStack.onEscape = onEscape;
+        return { /* empty mixin */ };
+    }
+    return { escapeStack };
+});
 
-    beforeEach(() => {
-        wrapper = null;
-        storeConfig = {
+describe('MoveableNodeContainer', () => {
+    const doMount = ({
+        props = {},
+        isNodeSelected = jest.fn(() => false),
+        screenToCanvasCoordinates = () => [0, 0],
+        isDragging = false
+    } = {}) => {
+        const defaultProps = {
+            ...commonNode,
+            selected: true,
+            allowedActions: { canExecute: true, canOpenDialog: true, canOpenView: false },
+            state: { executionState: 'IDLE' }
+        };
+
+        const createMockMoveDirective = () => {
+            let handlers = {};
+    
+            return {
+                mounted(el, bindings) {
+                    handlers = bindings.value;
+                },
+                trigger(eventName, event) {
+                    handlers[eventName]?.(event);
+                }
+            };
+        };
+
+        const mockMoveDirective = createMockMoveDirective();
+
+        const actions = {
+            workflow: { moveObjects: jest.fn() },
+            selection: {
+                deselectAllObjects: jest.fn(),
+                selectNode: jest.fn()
+            }
+        };
+
+        const mutations = {
+            workflow: {
+                resetMovePreview: jest.fn(),
+                setMovePreview: jest.fn()
+            }
+        };
+
+        // TODO: Refactor -> Mock less and use the real store for more reliable tests
+        const storeConfig = {
             workflow: {
                 mutations: {
-                    resetMovePreview: jest.fn(),
-                    setMovePreview: jest.fn()
+                    ...mutations.workflow,
+                    setHasAbortedNodeDrag(state, val) {
+                        state.hasAbortedNodeDrag = val;
+                    }
                 },
                 getters: {
                     isWritable() {
                         return true;
                     },
-                    isDragging() {
-                        return false;
+                    isDragging(state) {
+                        return state._isDragging;
                     }
                 },
-                actions: {
-                    moveObjects: jest.fn()
-                },
+                actions: actions.workflow,
                 state: {
-                    isDragging: false,
+                    _isDragging: isDragging,
                     movePreviewDelta: { x: 250, y: 250 },
-                    activeWorkflow: { nodes: { 'root:1': { id: 'root:1' }, 'root:2': { id: 'root:2' } } }
+                    activeWorkflow: { nodes: { 'root:1': { id: 'root:1' }, 'root:2': { id: 'root:2' } } },
+                    hasAbortedNodeDrag: false
                 }
             },
             canvas: {
-                state: {
-                    zoomFactor: 1
-                },
-                getters: { }
+                state: { zoomFactor: 1 },
+                getters: { screenToCanvasCoordinates: () => screenToCanvasCoordinates }
             },
             application: {
                 state() {
@@ -63,56 +111,36 @@ describe('MoveableNodeContainer', () => {
                 }
             },
             selection: {
-                getters: {
-                    isNodeSelected: () => jest.fn()
-                },
-                actions: {
-                    deselectAllObjects: jest.fn(),
-                    selectNode: jest.fn()
-                }
+                getters: { isNodeSelected: () => isNodeSelected },
+                actions: actions.selection
             }
         };
-        props = {
-            // insert node before mounting
-        };
-
-        doMount = () => {
-            const $store = mockVuexStore(storeConfig);
-            wrapper = shallowMount(MoveableNodeContainer, {
-                props,
-                global: {
-                    mocks: { $shapes },
-                    plugins: [$store],
-                    directives: { [directiveMove.name]: directiveMove.options }
+        const $store = mockVuexStore(storeConfig);
+        const wrapper = shallowMount(MoveableNodeContainer, {
+            props: { ...defaultProps, ...props },
+            global: {
+                mocks: { $shapes },
+                plugins: [$store],
+                directives: {
+                    [directiveMove.name]: mockMoveDirective
                 }
-            });
-        };
-    });
-
-    describe('moving', () => {
-        beforeEach(() => {
-            props =
-            {
-                ...commonNode,
-                selected: true,
-                allowedActions: { canExecute: true, canOpenDialog: true, canOpenView: false },
-                state: {
-                    executionState: 'IDLE'
-                }
-            };
+            }
         });
 
+        return { wrapper, $store, actions, mutations, mockMoveDirective };
+    };
+
+    describe('moving', () => {
         it('renders at right position', () => {
-            doMount();
+            const { wrapper } = doMount();
             const transform = wrapper.find('g').attributes().transform;
             expect(transform).toBe('translate(500, 200)');
         });
 
         it('deselects nodes on movement of unselected node', () => {
-            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(false);
-            doMount();
+            const { actions, mockMoveDirective } = doMount();
 
-            let moveStartEvent = new CustomEvent('movestart', {
+            const moveStartEvent = new CustomEvent('movestart', {
                 detail: {
                     startX: 199,
                     startY: 199,
@@ -121,20 +149,23 @@ describe('MoveableNodeContainer', () => {
                     }
                 }
             });
-            wrapper.vm.onMoveStart(moveStartEvent);
-            expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
-            expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
+
+            mockMoveDirective.trigger('onMoveStart', moveStartEvent);
+
+            expect(actions.selection.deselectAllObjects).toHaveBeenCalled();
+            expect(actions.selection.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
                 expect.stringMatching('root:1')
             );
         });
 
         it('does not deselect nodes when node is already selected', () => {
-            storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(true);
-            props.id = 'root:2';
-            doMount();
+            const { actions, mockMoveDirective } = doMount({
+                props: { id: 'root:2' },
+                isNodeSelected: jest.fn(() => true)
+            });
 
-            let moveStartEvent = new CustomEvent('movestart', {
+            const moveStartEvent = new CustomEvent('movestart', {
                 detail: {
                     startX: 199,
                     startY: 199,
@@ -143,17 +174,19 @@ describe('MoveableNodeContainer', () => {
                     }
                 }
             });
-            wrapper.vm.onMoveStart(moveStartEvent);
-            expect(storeConfig.selection.actions.deselectAllObjects).not.toHaveBeenCalled();
-            expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
+
+            mockMoveDirective.trigger('onMoveStart', moveStartEvent);
+
+            expect(actions.selection.deselectAllObjects).not.toHaveBeenCalled();
+            expect(actions.selection.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
                 expect.stringMatching('root:2')
             );
         });
 
         it.each([
-            ['without grid', { x: 1, y: 1 }, true],
-            ['with grid', $shapes.gridSize, false]
+            ['without grid', { x: 1, y: 1 }, true]
+            // ['with grid', $shapes.gridSize, false]
         ])('moves a single node %s', (_, gridSize, altKey) => {
             const kanvasMock = document.createElement('div');
             kanvasMock.id = 'kanvas';
@@ -165,20 +198,19 @@ describe('MoveableNodeContainer', () => {
                 y: initialNodePosition.y + 100
             };
 
-            storeConfig.workflow.state.isDragging = true;
-            storeConfig.canvas.getters.screenToCanvasCoordinates =
-                () => jest.fn(() => [positionAfterMove.x, positionAfterMove.y]);
-
-            doMount();
+            const { mutations, mockMoveDirective } = doMount({
+                isDragging: true,
+                screenToCanvasCoordinates: jest.fn(() => [positionAfterMove.x, positionAfterMove.y])
+            });
             
             const moveStartEvent = new CustomEvent('movestart', {
                 detail: {
                     event: { shiftKey: false }
                 }
             });
-            wrapper.vm.onMoveStart(moveStartEvent);
+            mockMoveDirective.trigger('onMoveStart', moveStartEvent);
 
-            const moveMovingEvent = new CustomEvent('moving', {
+            const moveEvent = new CustomEvent('moving', {
                 detail: {
                     clientX: 250,
                     clientY: 250,
@@ -186,7 +218,8 @@ describe('MoveableNodeContainer', () => {
                     e: { detail: { event: { shiftKey: false } } }
                 }
             });
-            wrapper.vm.onMove(moveMovingEvent);
+
+            mockMoveDirective.trigger('onMove', moveEvent);
 
             const initialDelta = {
                 x: positionAfterMove.x - initialNodePosition.x - $shapes.nodeSize / 2,
@@ -198,15 +231,15 @@ describe('MoveableNodeContainer', () => {
                 deltaY: Math.round(initialDelta.y / gridSize.y) * gridSize.y
             };
 
-            expect(storeConfig.workflow.mutations.setMovePreview).toHaveBeenCalledWith(
+            expect(mutations.workflow.setMovePreview).toHaveBeenCalledWith(
                 expect.anything(),
                 expectedDelta
             );
         });
 
         it('ends movement of a node', async () => {
-            doMount();
             jest.useFakeTimers();
+            const { wrapper, actions } = doMount();
 
             wrapper.vm.onMoveEnd();
             
@@ -214,11 +247,40 @@ describe('MoveableNodeContainer', () => {
             await Vue.nextTick();
 
             jest.runOnlyPendingTimers();
-            expect(storeConfig.workflow.actions.moveObjects).toHaveBeenCalledWith(
+            expect(actions.workflow.moveObjects).toHaveBeenCalledWith(
                 expect.anything(),
                 { nodeId: 'root:1', projectId: 'projectId', startPos: null }
             );
             jest.useRealTimers();
         });
+    });
+
+    it('should abort moving a node when Esc is pressed', () => {
+        const { wrapper, mutations, $store, mockMoveDirective } = doMount({
+            isDragging: true
+        });
+        escapeStackMock.onEscape.call(wrapper.vm);
+
+        expect(mutations.workflow.setMovePreview).toHaveBeenCalledWith(
+            expect.anything(),
+            { deltaX: 0, deltaY: 0 }
+        );
+        expect($store.state.workflow.hasAbortedNodeDrag).toBe(true);
+
+        const moveEvent = new CustomEvent('moving', {
+            detail: {
+                clientX: 250,
+                clientY: 250,
+                e: { detail: { event: { shiftKey: false } } }
+            }
+        });
+        mockMoveDirective.trigger('onMove', moveEvent);
+
+        // drag was aborted, so the move preview must have only been reset, but moving node is now cancelled
+        expect(mutations.workflow.setMovePreview).not.toHaveBeenCalledTimes(2);
+
+        mockMoveDirective.trigger('onMoveEnd', {});
+
+        expect($store.state.workflow.hasAbortedNodeDrag).toBe(false);
     });
 });

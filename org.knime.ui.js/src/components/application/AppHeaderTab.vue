@@ -138,6 +138,7 @@ li {
     margin-left: -18px;
     margin-right: 4px;
     width: 20px;
+    height: 100%;
 
     & svg {
       display: none;

@@ -2,8 +2,9 @@
 import { mapState, mapGetters } from 'vuex';
 import throttle from 'raf-throttle';
 import { mixin as VueClickAway } from 'vue3-click-away';
-import { tooltip } from '@/mixins';
+import { escapeStack, tooltip } from '@/mixins';
 
+import { toPortObject } from '@/util/portDataMapper';
 import { circleDetection } from '@/util/compatibleConnections';
 import Port from '@/components/common/Port.vue';
 import Connector from '@/components/workflow/connectors/Connector.vue';
@@ -29,8 +30,8 @@ const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) =>
 };
 
 const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {
-    const fromPortObjectInfo = availablePortTypes[fromPort.typeId];
-    const toPortObjectInfo = availablePortTypes[toPort.typeId];
+    const fromPortObjectInfo = toPortObject(availablePortTypes)(fromPort);
+    const toPortObjectInfo = toPortObject(availablePortTypes)(toPort);
     const { compatibleTypes } = toPortObjectInfo;
     const { kind: fromPortKind } = fromPortObjectInfo;
     const { kind: toPortKind } = toPortObjectInfo;
@@ -152,7 +153,22 @@ export default {
         QuickAddNodeGhost,
         NodePortActions
     },
-    mixins: [VueClickAway, tooltip],
+    mixins: [
+        VueClickAway,
+        tooltip,
+        escapeStack({
+            group: 'PORT_DRAG',
+            alwaysActive: true,
+            onEscape() {
+                // quick add menu can also be closed with escape,
+                // so we need to exclude it when handling the escape logic
+                if (this.dragConnector && !this.isShowingQuickAddNodeMenu) {
+                    this.dragConnector = null;
+                    this.hasAbortedDrag = true;
+                }
+            }
+        })
+    ],
     inject: ['anchorPoint'],
     props: {
         /** direction of the port and the connector coming out of it: in-coming or out-going */
@@ -195,7 +211,9 @@ export default {
         didMove: false,
         pointerDown: false,
         didDragToCompatibleTarget: false,
-        showAddNodeGhost: false
+        showAddNodeGhost: false,
+        hasAbortedDrag: false,
+        isShowingQuickAddNodeMenu: false
     }),
     computed: {
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
@@ -216,7 +234,7 @@ export default {
             );
         },
         portTemplate() {
-            let template = this.availablePortTypes[this.port.typeId];
+            const template = toPortObject(this.availablePortTypes)(this.port.typeId);
             if (!template) {
                 throw new Error(`port template ${this.port.typeId} not available in application`);
             }
@@ -442,15 +460,23 @@ export default {
                 }
             }
         },
-        onLostPointerCapture(e) {
+        onLostPointerCapture() {
             this.pointerDown = false;
             this.didMove = false;
+
+            if (this.hasAbortedDrag) {
+                this.$bus.emit('connector-end');
+                this.hasAbortedDrag = false;
+                return;
+            }
+
             if (this.showAddNodeGhost) {
                 this.openQuickAddNodeMenu();
             } else {
                 // clear drag connector now; otherwise this happens on close of the menu
                 this.dragConnector = null;
             }
+
             if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
                 this.lastHitTarget.element.dispatchEvent(new CustomEvent('connector-leave', { bubbles: true }));
             }
@@ -469,6 +495,7 @@ export default {
             }
         },
         openQuickAddNodeMenu() {
+            this.isShowingQuickAddNodeMenu = true;
             // find the position in coordinates relative to the origin
             let position = {
                 x: this.dragConnector.absolutePoint[0],
@@ -496,6 +523,7 @@ export default {
             ));
         },
         closeQuickAddNodeMenu() {
+            this.isShowingQuickAddNodeMenu = false;
             // close the menu
             this.$el.dispatchEvent(new CustomEvent(
                 'close-quick-add-node-menu', {

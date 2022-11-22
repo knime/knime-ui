@@ -3,6 +3,7 @@ import * as Vue from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
+import { escapeStack as escapeStackMock } from '@/mixins/escapeStack';
 import Port from '@/components/common/Port.vue';
 import Connector from '@/components/workflow/connectors/Connector.vue';
 
@@ -21,9 +22,18 @@ jest.mock('raf-throttle', () => function (func) {
         return func.apply(this, args);
     };
 });
+
 jest.mock('@/util/compatibleConnections', () => ({
     circleDetection: jest.fn().mockReturnValue([])
 }));
+
+jest.mock('@/mixins/escapeStack', () => {
+    function escapeStack({ onEscape }) { // eslint-disable-line func-style
+        escapeStack.onEscape = onEscape;
+        return { /* empty mixin */ };
+    }
+    return { escapeStack };
+});
 
 describe('NodePort', () => {
     let props, $store, doShallowMount, storeConfig, wrapper, isWritable;
@@ -890,6 +900,24 @@ describe('NodePort', () => {
 
             dropOnTarget();
             expect(hitTarget._connectorDropEvent).toBeFalsy();
+        });
+
+        it('should abort dragging a port when Esc is pressed', async () => {
+            doShallowMount();
+            await startDragging();
+            
+            escapeStackMock.onEscape.call(wrapper.vm);
+            
+            await Vue.nextTick();
+            expect(wrapper.findComponent(Connector).exists()).toBe(false);
+
+            const dispatchEventSpy = jest.spyOn(wrapper.element, 'dispatchEvent');
+            await wrapper.trigger('lostpointercapture');
+
+            // only the trigger of `lostpointecapture`, but not opening the quick node add menu
+            // since drag was aborted
+            expect(dispatchEventSpy).toHaveBeenCalledTimes(1);
+            expect(mockBus.emit).toHaveBeenCalledWith('connector-end');
         });
 
         describe('Quick add node menu', () => {

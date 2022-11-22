@@ -1,5 +1,5 @@
 import { searchNodes, getNodesGroupedByTags, getNodeDescription } from '@api';
-import { mapNodePorts } from '../util/portDataMapper';
+import { toNodeWithFullPorts } from '../util/portDataMapper';
 
 /**
  * Store that manages node repository state.
@@ -65,11 +65,10 @@ export const mutations = {
         state.selectedTags = selectedTags;
         state.searchScrollPosition = 0;
     },
-    setNodesPerCategories(state, groupedNodes) {
-        state.nodesPerCategory = groupedNodes;
-    },
-    addNodesPerCategories(state, groupedNodes) {
-        state.nodesPerCategory = state.nodesPerCategory.concat(groupedNodes);
+    setNodesPerCategories(state, { groupedNodes, append }) {
+        state.nodesPerCategory = append
+            ? state.nodesPerCategory.concat(groupedNodes)
+            : groupedNodes;
     },
     setQuery(state, value) {
         state.query = value;
@@ -99,30 +98,35 @@ export const mutations = {
 };
 
 export const actions = {
-    async getAllNodes({ commit, state }, { append }) {
+    async getAllNodes({ commit, state, rootState }, { append }) {
         if (state.nodesPerCategory.length === state.totalNumCategories) {
             return;
         }
         let tagsOffset = append ? firstLoadOffset + state.categoryPage * categoryPageSize : 0;
         let tagsLimit = append ? categoryPageSize : firstLoadOffset;
+
         if (append) {
             commit('setCategoryPage', state.categoryPage + 1);
         } else {
             commit('setNodeSearchPage', 0);
             commit('setCategoryPage', 0);
         }
-        let res = await getNodesGroupedByTags({
+
+        const { totalNumGroups, groups } = await getNodesGroupedByTags({
             numNodesPerTag: 6,
             tagsOffset,
             tagsLimit,
             fullTemplateInfo: true
         });
-        commit('setTotalNumCategories', res.totalNumGroups);
-        if (append) {
-            commit('addNodesPerCategories', res.groups);
-        } else {
-            commit('setNodesPerCategories', res.groups);
-        }
+
+        const { availablePortTypes } = rootState.application;
+        const withMappedPorts = groups.map(({ nodes, tag }) => ({
+            nodes: nodes.map(toNodeWithFullPorts(availablePortTypes)),
+            tag
+        }));
+
+        commit('setTotalNumCategories', totalNumGroups);
+        commit('setNodesPerCategories', { groupedNodes: withMappedPorts, append });
     },
 
     /**
@@ -146,7 +150,7 @@ export const actions = {
             commit('setNodeSearchPage', 0);
         }
 
-        let res = await searchNodes({
+        const { nodes, totalNumNodes, tags } = await searchNodes({
             query: state.query,
             tags: state.selectedTags,
             allTagsMatch: true,
@@ -156,27 +160,24 @@ export const actions = {
         });
 
         const { availablePortTypes } = rootState.application;
-        const withMappedPorts = mapNodePorts(res.nodes, availablePortTypes);
+        const withMappedPorts = nodes.map(toNodeWithFullPorts(availablePortTypes));
 
-        commit('setTotalNumNodes', res.totalNumNodes);
+        commit('setTotalNumNodes', totalNumNodes);
 
-        if (append) {
-            commit('addNodes', withMappedPorts);
-        } else {
-            commit('setNodes', withMappedPorts);
-        }
-
-        commit('setTags', res.tags);
+        const nodesMutation = append ? 'addNodes' : 'setNodes';
+        commit(nodesMutation, withMappedPorts);
+        
+        commit('setTags', tags);
     },
 
     async getNodeDescription({ commit, state, rootState }) {
-        let results = await getNodeDescription({
+        const node = await getNodeDescription({
             className: state.selectedNode.nodeFactory.className,
             settings: state.selectedNode.nodeFactory.settings
         });
 
         const { availablePortTypes } = rootState.application;
-        const [withMappedPorts] = mapNodePorts([results], availablePortTypes);
+        const withMappedPorts = toNodeWithFullPorts(availablePortTypes)(node);
 
         commit('setNodeDescription', withMappedPorts);
     },
