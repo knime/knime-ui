@@ -118,16 +118,20 @@ public final class EclipseUIStateUtil {
      * @return The state of the Eclipse UI in terms of {@link AppState}.
      */
     public static AppState createAppState(final EModelService modelService, final MApplication app) {
+        // Collect data before instantiating the AppState, so its changes can be tracked
+        var openedWorkflows = collectOpenedWorkflows(modelService, app);
+        var availablePortTypes = PortTypeRegistry.getInstance().availablePortTypes().stream()//
+            .collect(Collectors.toSet());
+        // Return new AppState instance
         return new AppState() {
             @Override
             public List<OpenedWorkflow> getOpenedWorkflows() {
-                return collectOpenedWorkflows(modelService, app);
+                return openedWorkflows;
             }
 
             @Override
             public Set<PortType> getAvailablePortTypes() {
-                return PortTypeRegistry.getInstance().availablePortTypes().stream() //
-                    .collect(Collectors.toSet());
+                return availablePortTypes;
             }
 
             @Override
