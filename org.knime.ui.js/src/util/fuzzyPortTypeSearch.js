@@ -1,18 +1,11 @@
 import Fuse from 'fuse.js';
+import { toPortObject } from '@/util/portDataMapper';
 
 const fuseOptions = {
     shouldSort: true,
     isCaseSensitive: false,
     minMatchCharLength: 0
 };
-
-/**
- * Maps a port type id to a port object
- * @param {Object} availablePortTypes Dictionary of all available port types
- * @returns {Function} mapping function
- */
-const portTypeToPortObject =
-    (availablePortTypes) => (portType) => ({ ...availablePortTypes[portType], typeId: portType });
 
 /**
  * Remove duplicate objects in an array by a given key's value
@@ -47,11 +40,11 @@ const removeDuplicates = (array, compareKey = 'name') => {
  * @param {Boolean} options.showHidden Whether hidden ports should be included in the search
  */
 export const makeTypeSearch = ({ availablePortTypes, typeIds, suggestedTypeIds = [], showHidden = false }) => {
-    const suggestedPorts = suggestedTypeIds
-        .map(portTypeToPortObject(availablePortTypes));
-        
+    const includeType = false;
+    const suggestedPorts = suggestedTypeIds.map(toPortObject(availablePortTypes, includeType));
+
     const otherPorts = typeIds
-        .map(portTypeToPortObject(availablePortTypes))
+        .map(toPortObject(availablePortTypes, includeType))
         // sort non-suggested ports by name
         .sort((a, b) => a.name.localeCompare(b.name));
 

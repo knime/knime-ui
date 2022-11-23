@@ -93,7 +93,7 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
         // For at least as long as new frontend is integrated in "old" knime eclipse workbench,
         // we want a save action triggered from new frontend to be consistent with one triggered
         // from the traditional UI. The best thing we can do is trigger the exact same action.
-        WorkflowEditor editor = EclipseUIStateUtil.getEditorForManager(projectWfm).orElseThrow(
+        WorkflowEditor editor = EclipseUIStateUtil.getOpenWorkflowEditor(projectWfm).orElseThrow(
                 () -> new NoSuchElementException("No workflow editor for project found.")
         );
         editor.doSave(new NullProgressMonitor());
@@ -106,7 +106,7 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
                 return;
             }
             getChildWfms(projectWfm).stream()
-                    .map(EclipseUIStateUtil::getEditorForManager)
+                    .map(EclipseUIStateUtil::getOpenWorkflowEditor)
                     .flatMap(Optional::stream)  // unpack/collapse optionals
                     .forEach(WorkflowEditor::unmarkDirty);
         });

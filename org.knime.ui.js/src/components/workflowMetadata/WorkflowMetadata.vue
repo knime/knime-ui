@@ -1,7 +1,7 @@
 <script>
 import { mapState } from 'vuex';
 
-import { mapPortTypes } from '@/util/portDataMapper';
+import { toPortObject } from '@/util/portDataMapper';
 import ExternalResourcesList from '@/components/common/ExternalResourcesList.vue';
 
 import WorkflowMetadataTitle from './WorkflowMetadataTitle.vue';
@@ -48,13 +48,11 @@ export default {
         },
         nodePreview() {
             if (this.isComponent) {
-                const { componentMetadata: { inPorts, outPorts, type, icon } = {} } = this.workflow;
-                const mappedInPorts = mapPortTypes(inPorts, this.availablePortTypes);
-                const mappedOutPorts = mapPortTypes(outPorts, this.availablePortTypes);
-              
+                const { componentMetadata: { inPorts = [], outPorts = [], type, icon } = {} } = this.workflow;
+
                 return {
-                    inPorts: mappedInPorts,
-                    outPorts: mappedOutPorts,
+                    inPorts: inPorts.map(toPortObject(this.availablePortTypes)),
+                    outPorts: outPorts.map(toPortObject(this.availablePortTypes)),
                     icon,
                     type,
                     isComponent: true,
@@ -81,13 +79,15 @@ export default {
                 case 'project': return this.workflow.projectMetadata?.nodeFeatures;
                 case 'component': {
                     const {
-                        componentMetadata: { inPorts, outPorts, options, views } = {}
+                        componentMetadata: { inPorts = [], outPorts = [], options, views } = {}
                     } = this.workflow;
-                    
-                    const mappedInPorts = mapPortTypes(inPorts, this.availablePortTypes);
-                    const mappedOutPorts = mapPortTypes(outPorts, this.availablePortTypes);
 
-                    return { inPorts: mappedInPorts, outPorts: mappedOutPorts, views, options };
+                    return {
+                        inPorts: inPorts.map(toPortObject(this.availablePortTypes)),
+                        outPorts: outPorts.map(toPortObject(this.availablePortTypes)),
+                        views,
+                        options
+                    };
                 }
                 default: throw new Error('unknown container type');
             }

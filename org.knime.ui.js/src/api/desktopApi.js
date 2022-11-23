@@ -87,13 +87,15 @@ export const openWorkflow = () => {
 
 /**
  * Close a workflow.
- * @param {String} projectId
+ * @param {Object} param projectId to close
+ * @param {String} param.closingProjectId projectId to close
+ * @param {String | Null} param.nextProjectId projectId that should be set as active after close
  * @returns {void}
  */
-export const closeWorkflow = ({ projectId }) => {
+export const closeWorkflow = ({ closingProjectId, nextProjectId }) => {
     try {
         // returns true on success
-        return window.closeWorkflow(projectId);
+        return window.closeWorkflow(closingProjectId, nextProjectId);
     } catch (e) {
         consola.error(`Could not close workflow`, e);
         return false;

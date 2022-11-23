@@ -47,13 +47,17 @@
 package org.knime.ui.java.browser.function;
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.ui.PlatformUI;
+import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.ui.java.EclipseUIStateUtil;
+import org.knime.workbench.editor2.WorkflowEditor;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
@@ -72,33 +76,73 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
     }
 
     /**
-     * Close the workflow project associated with the given project ID.
+     * Close the Eclipse editor(s) associated with the given project ID.
      *
-     * @param arguments Assume arguments[0] is a String containing the project ID (e.g. "simple-workflow 0").
-     * @return always {@code null}
+     * @param arguments An array of {@code String}s with contents:
+     *            <ol>
+     *            <li>The ID of the project to be closed</li>
+     *            <li>The ID of the project to make active after the current one has been closed. Can be null or omitted
+     *            if there is no next project ID (e.g. when closing the last tab).</li>
+     *            </ol>
+     * @return A boolean indicating whether an editor has been closed.
      */
     @Override
     public Object function(final Object[] arguments) {
 
-        String projectId = (String)arguments[0]; // e.g. "simple-workflow 0"
+        String projectIdToClose = requireAtIndex(arguments, 0, String.class)
+            .orElseThrow(() -> new NoSuchElementException("Project ID to close not given"));
 
-        var projectWfm = DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
-        var editor = EclipseUIStateUtil.getEditorForManager(projectWfm)
-            .orElseThrow(() -> new NoSuchElementException("No workflow editor for project found."));
+        Optional<String> nextProjectId = requireAtIndex(arguments, 1, String.class);
 
+        var editorToClose = getEditor(projectIdToClose);
         var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-
         // Since we are closing the editor of the root workflow manager, this will also close any editors
         //  of child workflow managers.
-        var wasClosed = page.closeEditor(editor, true);
-
+        var wasClosed = page.closeEditor(editorToClose, true);
         if (wasClosed) {
-            WorkflowProjectManager.getInstance().removeWorkflowProject(projectId);
+            WorkflowProjectManager.getInstance().removeWorkflowProject(projectIdToClose);
+
+            // Workaround for keeping the classic and Web UI's editors/tabs in sync
+            nextProjectId.ifPresent(next -> EclipseUIStateUtil.setEditorPartActive(getEditorPart(next)));
+
             // triggers sending event
             m_appStateProvider.updateAppState();
         }
 
         return wasClosed;
+    }
+
+    private static WorkflowEditor getEditor(final String projectId) {
+        return EclipseUIStateUtil.getOpenWorkflowEditor(getWorkflowManager(projectId))
+            .orElseThrow(() -> new NoSuchElementException("No workflow editor for project found."));
+    }
+
+    private static MPart getEditorPart(final String projectId) {
+        return EclipseUIStateUtil.getOpenWorkflowEditorPart(getWorkflowManager(projectId))
+            .orElseThrow(() -> new NoSuchElementException("No workflow editor part for project found."));
+    }
+
+    private static WorkflowManager getWorkflowManager(final String projectId) {
+        return DefaultServiceUtil.getWorkflowManager(projectId, NodeIDEnt.getRootID());
+    }
+
+    /**
+     * @param arguments The source data
+     * @param index The index of the element to look for
+     * @param targetClass The class the element should be cast to
+     * @param <V> The expected value type of the element.
+     * @return An {code Optional} containing the element at the given {@code index} as cast to {@code targetClass} if it
+     *         is present in the given * {@code arguments}, non-null and can be cast; or an empty {@code Optional}
+     *         otherwise.
+     */
+    private static <V> Optional<V> requireAtIndex(final Object[] arguments, final int index,
+        final Class<V> targetClass) {
+        if (arguments.length - 1 < index //
+            || arguments[index] == null //
+            || !targetClass.isAssignableFrom(arguments[index].getClass())) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(arguments[index]).map(targetClass::cast);
     }
 
 }
