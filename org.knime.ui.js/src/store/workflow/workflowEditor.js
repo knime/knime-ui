@@ -90,13 +90,13 @@ export const actions = {
      * @returns {void} - nothing to return
      */
     async moveObjects({ state, commit, rootGetters }, { projectId }) {
-        let translation;
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
-        // calculate the translation either relative to the position or the outline position
-        translation = {
+
+        const translation = {
             x: state.movePreviewDelta.x,
             y: state.movePreviewDelta.y
         };
+
         try {
             await moveObjects({
                 projectId,
