@@ -11,11 +11,12 @@ import CreateComponent from 'webapps-common/ui/assets/img/icons/component.svg';
 import LayoutIcon from 'webapps-common/ui/assets/img/icons/layout-editor.svg';
 
 const canExpand = (kind) => ({ $store }) => {
-    if (!$store.getters['workflow/isWritable'] || $store.getters['selection/singleSelectedNode'].link) {
+    const selectedNode = $store.getters['selection/singleSelectedNode'];
+
+    if (!$store.getters['workflow/isWritable'] || selectedNode?.link) {
         return false;
     }
 
-    const selectedNode = $store.getters['selection/singleSelectedNode'];
     return selectedNode?.kind === kind && selectedNode?.allowedActions.canExpand !== 'false';
 };
 
