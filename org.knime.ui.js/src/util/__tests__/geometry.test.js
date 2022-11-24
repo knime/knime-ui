@@ -1,4 +1,4 @@
-import { rectangleIntersection, areaCoverage } from '../geometry';
+import { rectangleIntersection, areaCoverage, adjustToGrid } from '../geometry';
 
 describe('Geometry', () => {
     describe('rectangle intersection', () => {
@@ -49,5 +49,24 @@ describe('Geometry', () => {
                 { left: -10, top: -10, width: 20, height: 20 }
             )).toBe(1);
         });
+    });
+
+    describe('adjustToGrid', () => {
+        it.each([
+            // gridSize, initialCoordinates, expectedCoordinates
+            [5, { x: 7, y: 32 }, { x: 5, y: 30 }],
+            [5, { x: 8, y: 34 }, { x: 10, y: 35 }],
+            [1, { x: 8, y: 32 }, { x: 8, y: 32 }]
+        ])(
+            'returns the correct coordinates for a grid of size %s',
+            (gridSize, initialCoordinates, expectedCoordinates) => {
+                expect(
+                    adjustToGrid({
+                        coords: initialCoordinates,
+                        gridSize: { x: gridSize, y: gridSize }
+                    })
+                ).toEqual(expectedCoordinates);
+            }
+        );
     });
 });

@@ -1,6 +1,7 @@
 <script>
 import { mapState, mapGetters, mapActions, mapMutations } from 'vuex';
 import throttle from 'raf-throttle';
+import { adjustToGrid } from '@/util/geometry';
 
 import { escapeStack } from '@/mixins';
 
@@ -103,7 +104,21 @@ export default {
             }
             this.selectNode(this.id);
             
-            this.startPos = { x: this.position.x, y: this.position.y };
+            const gridAdjustedPosition = adjustToGrid({
+                coords: this.position,
+                gridSize: this.$shapes.gridSize
+            });
+            
+            // account for any delta between the current position and its grid-adjusted equivalent.
+            // this is useful for nodes that might be not aligned to the grid, so that they can be brought back in
+            // during the drag operation
+            this.startPos = {
+                ...gridAdjustedPosition,
+                positionDelta: {
+                    x: gridAdjustedPosition.x - this.position.x,
+                    y: gridAdjustedPosition.y - this.position.y
+                }
+            };
         },
 
         /**
@@ -117,24 +132,30 @@ export default {
                 return;
             }
 
-            // get absolute coordinates
-            const [x, y] = this.screenToCanvasCoordinates([clientX, clientY]);
-            const updatedPos = { x, y };
-
-            // adjust the delta using `nodeSize` to make sure the reference is from the center of the node
             const { nodeSize } = this.$shapes;
-            let deltaX = updatedPos.x - this.startPos.x - nodeSize / 2;
-            let deltaY = updatedPos.y - this.startPos.y - nodeSize / 2;
-            
-            let gridSize = altKey ? { x: 1, y: 1 } : this.$shapes.gridSize;
+            const gridSize = altKey ? { x: 1, y: 1 } : this.$shapes.gridSize;
+
+            // get absolute coordinates
+            const [canvasX, canvasY] = this.screenToCanvasCoordinates([clientX, clientY]);
 
             // Adjusted For Grid Snapping
-            deltaX = Math.round(deltaX / gridSize.x) * gridSize.x;
-            deltaY = Math.round(deltaY / gridSize.y) * gridSize.y;
+            const deltas = adjustToGrid({
+                coords: {
+                    // adjust the deltas using `nodeSize` to make sure the reference is from the center of the node
+                    x: canvasX - this.startPos.x - nodeSize / 2,
+                    y: canvasY - this.startPos.y - nodeSize / 2
+                },
+                gridSize
+            });
             
             // prevent unneeded dispatches if the position hasn't changed
-            if (this.movePreviewDelta.x !== deltaX || this.movePreviewDelta.y !== deltaY) {
-                this.setMovePreview({ deltaX, deltaY });
+            if (this.movePreviewDelta.x !== deltas.x || this.movePreviewDelta.y !== deltas.y) {
+                this.setMovePreview({
+                    // further adjust to snap to grid. e.g if the node had been previously moved
+                    // by ignoring the grid we use the start position delta to bring it back to the grid
+                    deltaX: deltas.x + this.startPos.positionDelta.x,
+                    deltaY: deltas.y + this.startPos.positionDelta.y
+                });
             }
             /* eslint-enable no-invalid-this */
         }),
