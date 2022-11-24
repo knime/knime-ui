@@ -96,6 +96,8 @@ describe('Drop Node Mixin', () => {
     it('calls the addNode api with the correct position to add the node', async () => {
         const { wrapper, dummyEvent, addNodeMock, $store } = doMount();
 
+        $store.dispatch('selection/selectNode', 'dummy-id');
+
         wrapper.trigger('drop', dummyEvent);
 
         expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), {

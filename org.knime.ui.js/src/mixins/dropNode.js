@@ -11,13 +11,14 @@ export const dropNode = {
     },
     methods: {
         ...mapActions('workflow', ['addNode']),
-        ...mapActions('selection', ['selectNode']),
+        ...mapActions('selection', ['selectNode', 'deselectAllObjects']),
         async onDrop(e) {
             if (this.isWritable) {
                 const nodeFactory = JSON.parse(e.dataTransfer.getData(KnimeMIME));
                 const [x, y] = this.getDestinationPosition(e);
                 try {
                     const { newNodeId } = await this.addNode({ position: { x, y }, nodeFactory });
+                    this.deselectAllObjects();
                     this.selectNode(newNodeId);
                 } catch (error) {
                     consola.error({ message: 'Error adding node to workflow', error });
