@@ -103,7 +103,7 @@ public final class DefaultServicesUtil {
         if (ServiceInstances.areServicesInitialized()) {
             AppStateEnt previousState = DefaultApplicationService.getInstance().getState();
             if (previousState != null) {
-                previousState.getOpenedWorkflows().forEach(
+                previousState.getOpenProjects().forEach(
                     wfProjEnt -> WorkflowProjectManager.getInstance().removeWorkflowProject(wfProjEnt.getProjectId()));
             }
         }
