@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapActions } from 'vuex';
 import throttle from 'raf-throttle';
 import { mixin as clickaway } from 'vue-clickaway2';
 import { escapeStack, tooltip } from '@/mixins';
@@ -211,14 +211,14 @@ export default {
         pointerDown: false,
         didDragToCompatibleTarget: false,
         showAddNodeGhost: false,
-        hasAbortedDrag: false,
-        isShowingQuickAddNodeMenu: false
+        hasAbortedDrag: false
     }),
     computed: {
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapGetters('workflow', ['isWritable', 'isDragging']),
         ...mapState('application', ['availablePortTypes']),
         ...mapState('workflow', { connections: state => state.activeWorkflow.connections }),
+        ...mapState('workflow', ['quickAddNodeMenu']),
         /*
          * only in-Ports replace their current connector if a new one is connected
          * only in-Ports that are connected need to indicate connector replacement
@@ -241,6 +241,13 @@ export default {
         },
         isFlowVariable() {
             return this.portTemplate.kind === 'flowVariable';
+        },
+        isShowingQuickAddNodeMenu() {
+            // we currently only support quick add node for output ports
+            return this.quickAddNodeMenu.isOpen &&
+                this.direction === 'out' &&
+                this.quickAddNodeMenu.props.nodeId === this.nodeId &&
+                this.quickAddNodeMenu.props.port.index === this.port.index;
         },
         // implemented as required by the tooltip mixin
         tooltip() {
@@ -271,6 +278,7 @@ export default {
         }
     },
     methods: {
+        ...mapActions('workflow', ['openQuickAddNodeMenu', 'closeQuickAddNodeMenu']),
         /* ======== Drag Connector ======== */
         onPointerDown(e) {
             if (!this.isWritable || e.button !== 0 || e.shiftKey || e.ctrlKey) {
@@ -470,7 +478,7 @@ export default {
             }
 
             if (this.showAddNodeGhost) {
-                this.openQuickAddNodeMenu();
+                this.openQuickAdd();
             } else {
                 // clear drag connector now; otherwise this happens on close of the menu
                 this.dragConnector = null;
@@ -493,45 +501,27 @@ export default {
                 this.$emit('deselect');
             }
         },
-        openQuickAddNodeMenu() {
-            this.isShowingQuickAddNodeMenu = true;
+        openQuickAdd() {
             // find the position in coordinates relative to the origin
             let position = {
                 x: this.dragConnector.absolutePoint[0],
                 y: this.dragConnector.absolutePoint[1]
             };
 
-            // Because of an issue with Vue Portal (https://github.com/LinusBorg/portal-vue/issues/290)
-            // We have to make this work like a custom teleport (can probably be replaced by Vue3's teleport)
-            // by telling the WorkflowPanel to render a PortTypeMenu with specified props and events
-            this.$el.dispatchEvent(new CustomEvent(
-                'open-quick-add-node-menu', {
-                    detail: {
-                        id: `${this.nodeId}-${this.direction}`,
-                        props: {
-                            position,
-                            port: this.port,
-                            nodeId: this.nodeId
-                        },
-                        events: {
-                            'menu-close': this.closeQuickAddNodeMenu
-                        }
-                    },
-                    bubbles: true
+            this.openQuickAddNodeMenu({
+                props: {
+                    position,
+                    port: this.port,
+                    nodeId: this.nodeId
+                },
+                events: {
+                    'menu-close': this.closeQuickAdd
                 }
-            ));
+            });
         },
-        closeQuickAddNodeMenu() {
-            this.isShowingQuickAddNodeMenu = false;
+        closeQuickAdd() {
             // close the menu
-            this.$el.dispatchEvent(new CustomEvent(
-                'close-quick-add-node-menu', {
-                    detail: {
-                        id: `${this.nodeId}-${this.direction}`
-                    },
-                    bubbles: true
-                }
-            ));
+            this.closeQuickAddNodeMenu();
             // remove the ghost
             this.showAddNodeGhost = false;
             // clear the drag connector
