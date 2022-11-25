@@ -2,7 +2,6 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
-import * as selectionStore from '@/store/selection';
 import * as $shapes from '@/style/shapes.mjs';
 
 import { dropNode, KnimeMIME } from '../dropNode';
@@ -59,8 +58,7 @@ describe('Drop Node Mixin', () => {
                 getters: {
                     screenToCanvasCoordinates: state => ([x, y]) => [x - 10, y - 10]
                 }
-            },
-            selection: selectionStore
+            }
         });
 
         document.getElementById = (id) => id === 'kanvas' ? kanvasElement : null;
@@ -94,24 +92,19 @@ describe('Drop Node Mixin', () => {
     });
 
     it('calls the addNode api with the correct position to add the node', async () => {
-        const { wrapper, dummyEvent, addNodeMock, $store } = doMount();
-
-        $store.dispatch('selection/selectNode', 'dummy-id');
+        const { wrapper, dummyEvent, addNodeMock } = doMount();
 
         wrapper.trigger('drop', dummyEvent);
 
         expect(addNodeMock).toHaveBeenCalledWith(expect.anything(), {
             nodeFactory: { className: 'sampleClassName' },
             position: {
-                // values are accounting for (1) screen canvas coordinate conversion and (2) grid adjustment
-                x: -25,
-                y: -25
+                x: -10 + dummyEvent.clientX - $shapes.nodeSize / 2,
+                y: -10 + dummyEvent.clientY - $shapes.nodeSize / 2
             }
         });
 
         await Vue.nextTick();
-
-        expect($store.state.selection.selectedNodes).toEqual({ 'mock-new-node': true });
         expect(Event.prototype.preventDefault).toHaveBeenCalledTimes(1);
     });
 
