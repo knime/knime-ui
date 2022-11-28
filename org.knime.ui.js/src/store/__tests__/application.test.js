@@ -489,7 +489,7 @@ describe('application store', () => {
             expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(1);
             expect(store.state.application.savedCanvasStates['project1--workflow1']).toBeTruthy();
 
-            store.dispatch('application/removeCanvasState');
+            store.dispatch('application/removeCanvasState', 'project1');
             expect(store.state.application.savedCanvasStates).toEqual({});
         });
     });

@@ -1,4 +1,3 @@
-import Vue from 'vue';
 import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '@api';
 import { encodeString } from '@/util/encodeString';
 
@@ -166,11 +165,7 @@ export const actions = {
         const isChangingProject = rootState.workflow?.activeWorkflow?.projectId !== newWorkflow?.projectId;
 
         if (rootState.workflow?.activeWorkflow) {
-            // if entering a new workflow, we save user state like scroll and zoom
-            // otherwise it means we've closed a workflow and we don't need to save anything
-            if (newWorkflow) {
-                dispatch('saveCanvasState');
-            }
+            dispatch('saveCanvasState');
 
             // unload current workflow
             dispatch('unloadActiveWorkflow', { clearWorkflow: !newWorkflow });
@@ -190,12 +185,6 @@ export const actions = {
             } else {
                 await dispatch('loadWorkflow', { projectId, workflowId });
             }
-
-            await Vue.nextTick();
-            await Vue.nextTick();
-
-            // restore scroll and zoom if saved before
-            dispatch('restoreCanvasState');
         }
     },
     async loadWorkflow({ commit, rootState, dispatch }, { projectId, workflowId = 'root' }) {
@@ -210,7 +199,7 @@ export const actions = {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    setWorkflow({ commit }, { workflow, projectId, snapshotId }) {
+    setWorkflow({ commit, dispatch }, { workflow, projectId, snapshotId }) {
         commit('setActiveProjectId', projectId);
         commit('workflow/setActiveWorkflow', {
             ...workflow,
@@ -223,6 +212,9 @@ export const actions = {
         // TODO: remove this 'root' fallback after mocks have been adjusted
         let workflowId = workflow.info.containerId || 'root';
         addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+
+        // restore scroll and zoom if saved before
+        dispatch('restoreCanvasState');
     },
     unloadActiveWorkflow({ commit, rootState }, { clearWorkflow }) {
         let activeWorkflow = rootState.workflow.activeWorkflow;
@@ -260,10 +252,10 @@ export const actions = {
             dispatch('canvas/restoreScrollState', workflowCanvasState, { root: true });
         }
     },
-    removeCanvasState({ rootState, state }) {
-        const { info: { containerId: workflow }, projectId: project } = rootState.workflow.activeWorkflow;
+    removeCanvasState({ rootState, state }, projectId) {
+        const { info: { containerId: workflow } } = rootState.workflow.activeWorkflow;
         const rootWorkflowId = getRootWorkflowId(workflow);
-        const stateKey = getCanvasStateKey(`${project}--${rootWorkflowId}`);
+        const stateKey = getCanvasStateKey(`${projectId}--${rootWorkflowId}`);
 
         delete state.savedCanvasStates[stateKey];
     },

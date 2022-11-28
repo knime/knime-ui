@@ -105,7 +105,7 @@ describe('workflow store: AP Interactions', () => {
                     closingProjectId,
                     nextProjectId: null
                 });
-                expect(dispatchSpy).toHaveBeenCalledWith('application/removeCanvasState', {});
+                expect(dispatchSpy).toHaveBeenCalledWith('application/removeCanvasState', closingProjectId);
             });
 
             it.each([
@@ -145,7 +145,7 @@ describe('workflow store: AP Interactions', () => {
                     closingProjectId,
                     nextProjectId: expectedNextProjectId
                 });
-                expect(dispatchSpy).toHaveBeenCalledWith('application/removeCanvasState', {});
+                expect(dispatchSpy).toHaveBeenCalledWith('application/removeCanvasState', closingProjectId);
             });
     
             it('does not remove canvas state if closeWorkflow is cancelled', async () => {
@@ -154,7 +154,7 @@ describe('workflow store: AP Interactions', () => {
                 const { store, dispatchSpy } = await loadStore({ apiMocks });
     
                 await store.dispatch('workflow/closeWorkflow', 'foo');
-                expect(dispatchSpy).not.toHaveBeenCalledWith('application/removeCanvasState', {});
+                expect(dispatchSpy).not.toHaveBeenCalledWith('application/removeCanvasState', 'foo');
             });
         });
     });
