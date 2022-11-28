@@ -37,6 +37,10 @@ export default {
             validate(o) {
                 return o.hasOwnProperty('canDelete');
             }
+        },
+        interactive: {
+            type: Boolean,
+            default: true
         }
     },
     data: () => ({
@@ -146,6 +150,7 @@ export default {
     @indicate-replacement.stop="onIndicateReplacement"
   >
     <path
+      v-if="interactive"
       :d="path"
       class="hover-area"
       @mouseenter="hover = true"

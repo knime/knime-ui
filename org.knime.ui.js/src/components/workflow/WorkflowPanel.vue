@@ -39,14 +39,14 @@ export default {
     watch: {
         selectedNodeIds() {
             if (this.quickAddNodeMenuConfig) {
-                this.quickAddNodeMenuConfig.events['menu-close']();
+                this.quickAddNodeMenuConfig.events.onMenuClose();
             }
         }
     },
     methods: {
         toggleContextMenu(e) {
-            this.quickAddNodeMenuConfig?.events['menu-close']?.();
-            this.portTypeMenuConfig?.events['menu-close']?.();
+            this.quickAddNodeMenuConfig?.events.onMenuClose?.();
+            this.portTypeMenuConfig?.events.onMenuClose?.();
 
             this.$store.dispatch('application/toggleContextMenu', e);
         },
@@ -59,7 +59,7 @@ export default {
         },
         onClosePortTypeMenu(e) {
             // if the menu that is currently open sends a close signal, then close the current menu
-            if (this.portTypeMenuConfig.id === e.detail.id) {
+            if (this.portTypeMenuConfig?.id === e.detail.id) {
                 this.portTypeMenuConfig = null;
             }
         },
@@ -72,7 +72,7 @@ export default {
         },
         onCloseQuickAddNodeMenu(e) {
             // if the menu that is currently open sends a close signal, then close the current menu
-            if (this.quickAddNodeMenuConfig.id === e.detail.id) {
+            if (this.quickAddNodeMenuConfig?.id === e.detail.id) {
                 this.quickAddNodeMenuConfig = null;
             }
         }
