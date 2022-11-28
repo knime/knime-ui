@@ -47,6 +47,7 @@ import org.knime.ui.java.browser.function.OpenLegacyFlowVariableDialogBrowserFun
 import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeViewBrowserFunction;
 import org.knime.ui.java.browser.function.OpenWorkflowBrowserFunction;
+import org.knime.ui.java.browser.function.OpenWorkflowCoachPreferencePageBrowserFunction;
 import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 
@@ -157,6 +158,7 @@ public class KnimeBrowserView {
      *
      * @param appStateProvider required to initialize the {@link OpenWorkflowBrowserFunction}
      */
+    @SuppressWarnings("unused") // Browser functions are registered on instantiation
     public void initBrowserFunctions(final AppStateProvider appStateProvider) {
         new SwitchToJavaUIBrowserFunction(m_browser);
         new OpenNodeViewBrowserFunction(m_browser);
@@ -167,6 +169,7 @@ public class KnimeBrowserView {
 		new CloseWorkflowBrowserFunction(m_browser, appStateProvider);
 		new CreateWorkflowBrowserFunction(m_browser, appStateProvider);
 		new OpenLayoutEditorBrowserFunction(m_browser);
+		new OpenWorkflowCoachPreferencePageBrowserFunction(m_browser, appStateProvider);
         if (isRemoteDebuggingPortSet()) {
             new InitAppForTestingBrowserFunction(m_browser, this);
             new ClearAppForTestingBrowserFunction(m_browser, this);

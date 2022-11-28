@@ -26,7 +26,10 @@ export const state = () => ({
     contextMenu: {
         isOpen: false,
         position: null
-    }
+    },
+
+    /* Indicates whether node recommendations are available or not */
+    hasNodeRecommendationsEnabled: false
 });
 
 export const mutations = {
@@ -85,6 +88,9 @@ export const mutations = {
     },
     setContextMenu(state, value) {
         state.contextMenu = value;
+    },
+    setHasNodeRecommendationsEnabled(state, hasNodeRecommendationsEnabled) {
+        state.hasNodeRecommendationsEnabled = hasNodeRecommendationsEnabled;
     }
 };
 
@@ -98,22 +104,31 @@ export const actions = {
         const applicationState = await fetchApplicationState();
         await dispatch('replaceApplicationState', applicationState);
     },
-    
     destroyApplication({ dispatch }) {
         removeEventListener('AppStateChanged');
         dispatch('unloadActiveWorkflow', { clearWorkflow: true });
     },
-    // -------------------------------------------------------------------- //
+
+    // ----------------------------------------------------------------------------------------- //
+
     async replaceApplicationState({ commit, dispatch, state }, applicationState) {
-        // NXT-962: rename openedWorkflows to openProjects
-        const openProjects = applicationState.openedWorkflows;
-
-        commit('setOpenProjects', openProjects);
-        commit('setAvailablePortTypes', applicationState.availablePortTypes);
-        commit('setSuggestedPortTypes', applicationState.suggestedPortTypeIds);
-        commit('setFeatureFlags', applicationState.featureFlags);
-
-        await dispatch('setActiveProject', openProjects);
+        // Only set application state properties present in the received object
+        if (applicationState.availablePortTypes) {
+            commit('setAvailablePortTypes', applicationState.availablePortTypes);
+        }
+        if (applicationState.suggestedPortTypeIds) {
+            commit('setSuggestedPortTypes', applicationState.suggestedPortTypeIds);
+        }
+        if (applicationState.hasNodeRecommendationsEnabled) {
+            commit('setHasNodeRecommendationsEnabled', applicationState.hasNodeRecommendationsEnabled);
+        }
+        if (applicationState.featureFlags) {
+            commit('setFeatureFlags', applicationState.featureFlags);
+        }
+        if (applicationState.openProjects) {
+            commit('setOpenProjects', applicationState.openProjects);
+            await dispatch('setActiveProject', applicationState.openProjects);
+        }
     },
     async setActiveProject({ commit, dispatch }, openProjects) {
         if (openProjects.length === 0) {

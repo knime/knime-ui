@@ -424,7 +424,7 @@ export default {
             }
 
             // show add node ghost for output ports
-            if (this.direction === 'out' && !this.disableQuickNodeAdd && !this.isFlowVariable) {
+            if (this.direction === 'out' && !this.disableQuickNodeAdd) {
                 this.showAddNodeGhost = !this.didDragToCompatibleTarget;
             }
             /* eslint-enable no-invalid-this */

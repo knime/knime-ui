@@ -2,6 +2,8 @@ import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameCo
     addNodePort, removeNodePort, expandContainerNode, copyOrCutWorkflowParts, pasteWorkflowParts } from '@api';
 import workflowObjectBounds from '@/util/workflowObjectBounds';
 import { pastePartsAt } from '@/util/pasteToWorkflow';
+import { adjustToGrid } from '@/util/geometry';
+import * as $shapes from '@/style/shapes.mjs';
 
 /**
  * This store is not instantiated by Nuxt but merged with the workflow store.
@@ -65,20 +67,53 @@ export const actions = {
     },
 
     /* See docs in API */
-    undo:
-        wrapAPI(undo),
-    redo:
-        wrapAPI(redo),
-    connectNodes:
-        wrapAPI(connectNodes),
-    addNode:
-        wrapAPI(addNode),
-    addNodePort:
-        wrapAPI(addNodePort),
-    removeNodePort:
-        wrapAPI(removeNodePort),
-    renameContainerNode:
-        wrapAPI(renameContainerNode),
+    undo: wrapAPI(undo),
+    redo: wrapAPI(redo),
+    connectNodes: wrapAPI(connectNodes),
+    addNodePort: wrapAPI(addNodePort),
+    removeNodePort: wrapAPI(removeNodePort),
+    renameContainerNode: wrapAPI(renameContainerNode),
+    
+    async addNode({ state, dispatch }, {
+        position,
+        nodeFactory,
+        sourceNodeId = null,
+        sourcePortIdx = null,
+        // possible values are: 'new-only' | 'add' | 'none'
+        // 'new-only' clears the active selection and selects only the new node
+        // 'add' adds the new node to the active selection
+        // 'none' doesn't modify the active selection nor it selects the new node
+        selectionMode = 'new-only'
+    }) {
+        const { activeWorkflow } = state;
+        const { projectId } = activeWorkflow;
+        const { info: { containerId: workflowId } } = activeWorkflow;
+        
+        // Adjusted For Grid Snapping
+        const gridAdjustedPosition = adjustToGrid({
+            coords: position,
+            gridSize: $shapes.gridSize
+        });
+
+        const response = await addNode({
+            projectId,
+            workflowId,
+            position: gridAdjustedPosition,
+            nodeFactory,
+            sourceNodeId,
+            sourcePortIdx
+        });
+
+        if (selectionMode !== 'none') {
+            if (selectionMode === 'new-only') {
+                dispatch('selection/deselectAllObjects', null, { root: true });
+            }
+
+            dispatch('selection/selectNode', response.newNodeId, { root: true });
+        }
+
+        return response;
+    },
 
     /**
      * Calls the API to save the position of the nodes after the move is over
@@ -90,13 +125,13 @@ export const actions = {
      * @returns {void} - nothing to return
      */
     async moveObjects({ state, commit, rootGetters }, { projectId }) {
-        let translation;
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
-        // calculate the translation either relative to the position or the outline position
-        translation = {
+
+        const translation = {
             x: state.movePreviewDelta.x,
             y: state.movePreviewDelta.y
         };
+
         try {
             await moveObjects({
                 projectId,

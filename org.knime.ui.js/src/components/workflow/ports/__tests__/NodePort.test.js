@@ -480,12 +480,12 @@ describe('NodePort', () => {
                 expect(wrapper.vm.dragConnector.absolutePoint).toStrictEqual([2, 2]);
             });
 
-            test('moving does not select port', () => {
-                startDragging([0, 0]);
+            test('moving does not select port', async () => {
+                await startDragging([0, 0]);
 
-                dragAboveTarget(null, [2, 2]);
+                await dragAboveTarget(null, [2, 2]);
 
-                dropOnTarget();
+                await dropOnTarget();
 
                 // mimic a click event being sent along with the pointer(down/up) events
                 wrapper.findComponent(Port).vm.$emit('select');
@@ -493,11 +493,11 @@ describe('NodePort', () => {
                 expect(wrapper.findComponent(NodePortActions).exists()).toBe(false);
             });
 
-            test('move onto element', () => {
-                startDragging([0, 0]);
+            test('move onto element', async () => {
+                await startDragging([0, 0]);
 
                 let hitTarget = document.createElement('div');
-                dragAboveTarget(hitTarget, [0, 0]);
+                await dragAboveTarget(hitTarget, [0, 0]);
 
                 expect(hitTarget._connectorEnterEvent).toBeTruthy();
 
@@ -509,11 +509,11 @@ describe('NodePort', () => {
                 });
             });
 
-            test('move on same element', () => {
-                startDragging([0, 0]);
+            test('move on same element', async () => {
+                await startDragging([0, 0]);
 
                 let hitTarget = document.createElement('div');
-                dragAboveTarget(hitTarget, [0, 0]);
+                await dragAboveTarget(hitTarget, [0, 0]);
 
                 expect(hitTarget._connectorEnterEvent).toBeTruthy();
                 expect(hitTarget._connectorMoveEvent).toBeTruthy();
@@ -521,7 +521,7 @@ describe('NodePort', () => {
                 delete hitTarget._connectorEnterEvent;
                 delete hitTarget._connectorMoveEvent;
 
-                dragAboveTarget(hitTarget, [1, 1]);
+                await dragAboveTarget(hitTarget, [1, 1]);
 
                 expect(hitTarget._connectorEnterEvent).toBeFalsy();
                 expect(hitTarget._connectorMoveEvent).toBeTruthy();
@@ -934,18 +934,16 @@ describe('NodePort', () => {
 
                 it('disables quick-node-add feature via prop', async () => {
                     props.disableQuickNodeAdd = true;
-                    startDragging();
-                    await Vue.nextTick();
+                    await startDragging();
 
                     expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);
                 });
 
-                it('does not show quick add node ghost for flowVariables', async () => {
+                it('does show quick add node ghost for flowVariables', async () => {
                     props.port.typeId = 'flowVariable';
-                    startDragging();
-                    await Vue.nextTick();
+                    await startDragging();
 
-                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);
+                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
                 });
 
                 it('opens quick add node menu', async () => {
@@ -1006,8 +1004,7 @@ describe('NodePort', () => {
                 });
 
                 it('does not show quick add node ghost', async () => {
-                    startDragging();
-                    await Vue.nextTick();
+                    await startDragging();
 
                     expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(false);
                 });

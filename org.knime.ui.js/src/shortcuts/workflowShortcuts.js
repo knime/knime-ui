@@ -10,6 +10,16 @@ import CreateMetanode from 'webapps-common/ui/assets/img/icons/metanode-add.svg'
 import CreateComponent from 'webapps-common/ui/assets/img/icons/component.svg';
 import LayoutIcon from 'webapps-common/ui/assets/img/icons/layout-editor.svg';
 
+const canExpand = (kind) => ({ $store }) => {
+    const selectedNode = $store.getters['selection/singleSelectedNode'];
+
+    if (!$store.getters['workflow/isWritable'] || selectedNode?.link) {
+        return false;
+    }
+
+    return selectedNode?.kind === kind && selectedNode?.allowedActions.canExpand !== 'false';
+};
+
 export default {
     ...executionShortcuts,
     save: {
@@ -71,14 +81,14 @@ export default {
     editName: {
         text: 'Rename',
         hotkey: ['F2'],
-        execute:
-            ({ $store }) => $store.dispatch('workflow/openNameEditor',
-                $store.getters['selection/singleSelectedNode'].id),
-        condition:
-            ({ $store }) => ['metanode', 'component']
-                .includes($store.getters['selection/singleSelectedNode']?.kind) &&
-                !$store.getters['selection/singleSelectedNode']?.link &&
-                $store.getters['workflow/isWritable']
+        execute: ({ $store }) => $store.dispatch(
+            'workflow/openNameEditor',
+            $store.getters['selection/singleSelectedNode'].id
+        ),
+        condition: ({ $store }) => ['metanode', 'component']
+            .includes($store.getters['selection/singleSelectedNode']?.kind) &&
+            !$store.getters['selection/singleSelectedNode']?.link &&
+            $store.getters['workflow/isWritable']
     },
     deleteSelected: {
         text: 'Delete',
@@ -148,31 +158,15 @@ export default {
         text: 'Expand Metanode',
         title: 'Expand metanode',
         hotkey: ['Ctrl', 'Shift', 'G'],
-        execute:
-            ({ $store }) => $store.dispatch('workflow/expandContainerNode'),
-        condition({ $store }) {
-            if (!$store.getters['workflow/isWritable']) {
-                return false;
-            }
-
-            let selectedNode = $store.getters['selection/singleSelectedNode'];
-            return selectedNode?.kind === 'metanode' && selectedNode?.allowedActions.canExpand !== 'false';
-        }
+        execute: ({ $store }) => $store.dispatch('workflow/expandContainerNode'),
+        condition: canExpand('metanode')
     },
     expandComponent: {
         text: 'Expand Component',
         title: 'Expand component',
         hotkey: ['Ctrl', 'Shift', 'K'],
-        execute:
-            ({ $store }) => $store.dispatch('workflow/expandContainerNode'),
-        condition({ $store }) {
-            if (!$store.getters['workflow/isWritable']) {
-                return false;
-            }
-
-            let selectedNode = $store.getters['selection/singleSelectedNode'];
-            return selectedNode?.kind === 'component' && selectedNode?.allowedActions.canExpand !== 'false';
-        }
+        execute: ({ $store }) => $store.dispatch('workflow/expandContainerNode'),
+        condition: canExpand('component')
     },
     openLayoutEditor: {
         text: 'Open Layout editor',

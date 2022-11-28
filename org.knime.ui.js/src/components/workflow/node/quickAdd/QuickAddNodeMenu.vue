@@ -1,8 +1,9 @@
 <script>
 import { mapActions, mapGetters, mapState } from 'vuex';
-import { getNodeRecommendations } from '@api';
+import { getNodeRecommendations, openWorkflowCoachPreferencePage } from '@api';
 
 import NodePreview from 'webapps-common/ui/components/node/NodePreview.vue';
+import Button from 'webapps-common/ui/components/Button.vue';
 import FloatingMenu from '@/components/common/FloatingMenu.vue';
 import { toNodeWithFullPorts } from '@/util/portDataMapper';
 
@@ -15,6 +16,7 @@ const MAX_NODES = 12;
 export default {
     components: {
         NodePreview,
+        Button,
         FloatingMenu
     },
     props: {
@@ -34,11 +36,13 @@ export default {
     },
     data() {
         return {
-            recommendedNodes: []
+            recommendedNodes: [],
+            showOverlay: false,
+            noNodeRecommendations: false
         };
     },
     computed: {
-        ...mapState('application', ['availablePortTypes']),
+        ...mapState('application', ['availablePortTypes', 'hasNodeRecommendationsEnabled']),
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapState('canvas', ['zoomFactor']),
         ...mapGetters('workflow', ['isWritable']),
@@ -56,12 +60,21 @@ export default {
             return this.$shapes.addNodeGhostSize * this.zoomFactor;
         }
     },
-    created() {
-        // this component is always destroyed for each node so we don't need to fetch data again if the nodeId changes
-        this.fetchRecommendedNodes();
+    watch: {
+        hasNodeRecommendationsEnabled: {
+            immediate: true,
+            handler() {
+                this.showOverlay = !this.hasNodeRecommendationsEnabled;
+
+                if (this.hasNodeRecommendationsEnabled) {
+                    this.fetchRecommendedNodes();
+                }
+            }
+        }
     },
     methods: {
         ...mapActions('workflow', { addNodeToWorkflow: 'addNode' }),
+        openWorkflowCoachPreferencePage,
         async fetchRecommendedNodes() {
             const workflowId = this.workflow.info.containerId;
             const projectId = this.workflow.projectId;
@@ -75,6 +88,10 @@ export default {
                 nodesLimit: MAX_NODES,
                 fullTemplateInfo: true
             });
+
+            if (recommendedNodesResult.length === 0) {
+                this.noNodeRecommendations = true;
+            }
 
             this.recommendedNodes = recommendedNodesResult.map(toNodeWithFullPorts(this.availablePortTypes));
         },
@@ -109,8 +126,28 @@ export default {
     @menu-close="$emit('menu-close')"
   >
     <div class="wrapper">
+      <div
+        v-if="showOverlay"
+        class="overlay"
+      >
+        <h2>Workflow coach</h2>
+        <span>
+          The workflow coach will help you build workflows more efficiently by suggesting the next node for your
+          workflow.
+        </span>
+        <span>
+          To activate this function you need to change the settings inside the preference page.
+        </span>
+        <Button
+          primary
+          class="button"
+          @click="openWorkflowCoachPreferencePage"
+        >
+          Open Preferences
+        </Button>
+      </div>
       <section
-        v-if="recommendedNodes.length > 0"
+        v-if="!noNodeRecommendations"
         class="results"
       >
         <div class="content">
@@ -152,6 +189,44 @@ export default {
 .quick-add-node {
   width: 330px;
   margin-top: calc(var(--ghost-size) / 2 * 1px + var(--extra-margin) * 1px + 3px);
+
+  & .overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    align-content: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    padding: 20px;
+    background: var(--knime-black-semi);
+    color: var(--knime-white);
+    font-family: "Roboto Condensed", sans-serif;
+
+    & h2 {
+      font-size: 18px;
+      line-height: 21px;
+      font-weight: 400;
+    }
+
+    & span {
+      font-size: 13px;
+      line-height: 15px;
+      padding: 5px 0 10px;
+    }
+
+    & .button {
+      padding: 6px 15px;
+      height: 30px;
+      font-size: 13px;
+      font-family: "Roboto Condensed", sans-serif;
+      margin-top: 20px;
+    }
+  }
 
   & .wrapper {
     min-height: 357px;

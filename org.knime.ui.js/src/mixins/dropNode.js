@@ -10,22 +10,27 @@ export const dropNode = {
     },
     methods: {
         ...mapActions('workflow', ['addNode']),
-        onDrop(e) {
+        ...mapActions('selection', ['selectNode', 'deselectAllObjects']),
+        async onDrop(e) {
             if (this.isWritable) {
                 const nodeFactory = JSON.parse(e.dataTransfer.getData(KnimeMIME));
-                const [x, y] = this.getDestinationPosition(e);
-                this.addNode({ position: { x, y }, nodeFactory });
+                const [x, y] = this.screenToCanvasCoordinates([
+                    e.clientX - this.$shapes.nodeSize / 2,
+                    e.clientY - this.$shapes.nodeSize / 2
+                ]);
+
+                try {
+                    await this.addNode({ position: { x, y }, nodeFactory });
+                } catch (error) {
+                    consola.error({ message: 'Error adding node to workflow', error });
+                    throw error;
+                }
             }
 
             // Default action when dropping links is to open them in your browser.
             e.preventDefault();
         },
-        getDestinationPosition(e) {
-            return this.screenToCanvasCoordinates([
-                e.clientX - this.$shapes.nodeSize / 2,
-                e.clientY - this.$shapes.nodeSize / 2
-            ]);
-        },
+
         onDragOver(e) {
             if (this.isWritable && isKnimeNode(e)) {
                 e.dataTransfer.dropEffect = 'copy';
