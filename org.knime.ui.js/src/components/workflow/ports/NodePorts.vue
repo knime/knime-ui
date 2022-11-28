@@ -88,7 +88,7 @@ export default {
          * The position for each port is an array with two coordinates [x, y].
          */
         portPositions() {
-            let positions = {
+            const positions = {
                 in: portPositions({
                     portCount: this.inPorts.length,
                     isMetanode: this.isMetanode
@@ -148,12 +148,12 @@ export default {
                 this.selectedPort = null;
             }
         },
-        portPositions: {
-            immediate: true,
-            handler(portPositions) {
-                this.$emit('updatePortPositions', portPositions);
-            }
+        portPositions() {
+            this.$emit('updatePortPositions', this.portPositions);
         }
+    },
+    mounted() {
+        this.$emit('updatePortPositions', this.portPositions);
     },
     methods: {
         ...mapActions('workflow', ['addNodePort', 'removeNodePort']),
