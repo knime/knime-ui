@@ -151,9 +151,19 @@ export const actions = {
             return;
         }
 
-        if (state?.activeProjectId === activeProject.projectId) {
+        const isSameActiveProject = state?.activeProjectId === activeProject.projectId;
+        if (isSameActiveProject) {
             // don't set the workflow if already on it. e.g another tab was closed
-            // and we receieve an update for `openProjects`
+            // and we receive an update for `openProjects`
+            return;
+        }
+
+        const stateKey = getCanvasStateKey(`${activeProject.projectId}--${'root'}`);
+        const hasSavedState = Boolean(state.savedCanvasStates[stateKey]);
+        const lastActiveWorkflow = state.savedCanvasStates[stateKey]?.lastActive;
+        if (hasSavedState && lastActiveWorkflow !== 'root') {
+            dispatch('loadWorkflow', { projectId: activeProject.projectId, workflowId: lastActiveWorkflow });
+
             return;
         }
 
@@ -214,7 +224,6 @@ export const actions = {
         }, { root: true });
 
         commit('workflow/setActiveSnapshotId', snapshotId, { root: true });
-
         
         // TODO: remove this 'root' fallback after mocks have been adjusted
         let workflowId = workflow.info.containerId || 'root';
