@@ -42,7 +42,11 @@ describe('NodeDescription', () => {
                     },
                     nodeDescriptionObject: {
                         id: 1,
-                        description: 'This is a node.'
+                        description: 'This is a node.',
+                        links: [{
+                            text: 'link',
+                            url: 'www.link.com'
+                        }]
                     },
                     query: 'Source',
                     nodesPerCategory: [
@@ -107,6 +111,17 @@ describe('NodeDescription', () => {
         doMount();
         const description = wrapper.find('span');
         expect(description.text()).toBe('There is no description for this node.');
+    });
+
+    it('does not render external links if there are not any', () => {
+        storeConfig.nodeRepository.state.nodeDescriptionObject = {
+            id: 1,
+            description: 'This is a node.'
+        };
+        doMount();
+        expect(wrapper.findComponent(NodeDescription).exists()).toBe(true);
+        expect(wrapper.findComponent(Description).exists()).toBe(true);
+        expect(wrapper.findComponent(ExternalResourcesList).exists()).toBe(false);
     });
 
     it('closes the panel when button is clicked', () => {
