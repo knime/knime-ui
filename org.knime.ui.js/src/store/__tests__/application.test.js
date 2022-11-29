@@ -325,6 +325,8 @@ describe('application store', () => {
         test('switch from nothing to workflow', async () => {
             store.state.workflow.activeWorkflow = null;
 
+            store.commit('application/setSavedCanvasStates', { project: '1', workflow: 'root' });
+
             await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root' });
 
             expect(dispatchSpy).not.toHaveBeenCalledWith('application/saveCanvasState');

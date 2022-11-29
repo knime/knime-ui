@@ -194,7 +194,7 @@ export const actions = {
             let { projectId, workflowId = 'root' } = newWorkflow;
 
             // check if project is being changed and if there is already active workflow
-            if (isChangingProject && rootState.workflow?.activeWorkflow) {
+            if (isChangingProject) {
                 const stateKey = getCanvasStateKey(`${projectId}--${workflowId}`);
                 const newWorkflowId = state.savedCanvasStates[stateKey]?.lastActive;
 
