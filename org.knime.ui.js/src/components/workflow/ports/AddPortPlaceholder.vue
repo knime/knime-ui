@@ -173,7 +173,7 @@ export default {
   <g :transform="`translate(${position})`">
     <transition :name="transitionEnabled ? 'port-fade' : 'none'">
       <Port
-        v-if="previewPort && previewPort.typeId"
+        v-if="previewPort?.typeId"
         :key="previewPort.typeId"
         :port="previewPort"
       />
