@@ -106,9 +106,9 @@ export default {
             }
 
             return this.searchResults.map(({ typeId, name }) => ({
-                port: { typeId, inactive: false },
+                port: { typeId },
                 text: name,
-                icon: portIcon({ typeId, inactive: false }),
+                icon: portIcon({ typeId }),
                 title: name.length > portNameSizeThreshold ? name : null
             }));
         },

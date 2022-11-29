@@ -90,10 +90,9 @@ const findTypeIdFromPlaceholderPort = ({
     });
 
     const directMatches = addablePortTypesGrouped.filter(([_, supportedIds]) => supportedIds.includes(fromPort.typeId));
-
     const canAddPortKey = targetPortDirection === 'in' ? 'canAddInPort' : 'canAddOutPort';
 
-    // do we have direct matches?
+    // case 1: direct matches
     if (directMatches.length > 0) {
         const suggestedTypeId = fromPort.typeId;
         const [[portGroup]] = directMatches;
@@ -104,7 +103,7 @@ const findTypeIdFromPlaceholderPort = ({
         };
     }
 
-    // try to find compatible matches
+    // case 2: compatible matches
     const compatibleMatches = addablePortTypesGrouped.map(([group, supportedTypeIds]) => {
         const compatibleTypeIds = supportedTypeIds.filter(typeId => checkPortCompatibility({
             fromPort,
@@ -115,10 +114,10 @@ const findTypeIdFromPlaceholderPort = ({
     }).filter(Boolean);
 
     if (compatibleMatches.length > 0) {
-        const validPortGroups = compatibleMatches.map(v => ({
-            [v[0]]: {
+        const validPortGroups = compatibleMatches.map(([group, compatibleIds]) => ({
+            [group]: {
                 [canAddPortKey]: true,
-                supportedPortTypeIds: v[1]
+                supportedPortTypeIds: compatibleIds
             }
         }));
         return {
@@ -127,7 +126,7 @@ const findTypeIdFromPlaceholderPort = ({
         };
     }
 
-    // could not find anything we don't snap
+    // case 3: no match -> don't snap
     return { didSnap: false };
 };
 
