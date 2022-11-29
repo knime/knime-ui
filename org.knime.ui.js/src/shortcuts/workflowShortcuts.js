@@ -118,7 +118,7 @@ export default {
         }
     },
     createMetanode: {
-        text: 'Create Metanode',
+        text: 'Create metanode',
         title: 'Create metanode',
         hotkey: ['Ctrl', 'G'],
         icon: CreateMetanode,
@@ -137,7 +137,7 @@ export default {
         }
     },
     createComponent: {
-        text: 'Create Component',
+        text: 'Create component',
         title: 'Create component',
         hotkey: ['Ctrl', 'K'],
         icon: CreateComponent,
@@ -155,22 +155,22 @@ export default {
         }
     },
     expandMetanode: {
-        text: 'Expand Metanode',
+        text: 'Expand metanode',
         title: 'Expand metanode',
         hotkey: ['Ctrl', 'Shift', 'G'],
         execute: ({ $store }) => $store.dispatch('workflow/expandContainerNode'),
         condition: canExpand('metanode')
     },
     expandComponent: {
-        text: 'Expand Component',
+        text: 'Expand component',
         title: 'Expand component',
         hotkey: ['Ctrl', 'Shift', 'K'],
         execute: ({ $store }) => $store.dispatch('workflow/expandContainerNode'),
         condition: canExpand('component')
     },
     openLayoutEditor: {
-        text: 'Open Layout editor',
-        title: 'Open Layout editor',
+        text: 'Open layout editor',
+        title: 'Open layout editor',
         hotkey: ['Ctrl', 'D'],
         icon: LayoutIcon,
         execute:
