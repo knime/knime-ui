@@ -106,11 +106,13 @@ export default {
             }
 
             const menuItems = this.searchResults.map(({ typeId, name }) => ({
-                port: { typeId },
+                port: { typeId, inactive: false },
                 text: name,
-                icon: portIcon({ typeId }),
+                icon: portIcon({ typeId, inactive: false }),
                 title: name.length > portNameSizeThreshold ? name : null
             }));
+
+            console.log('menuItems', menuItems);
 
             return menuItems;
         },

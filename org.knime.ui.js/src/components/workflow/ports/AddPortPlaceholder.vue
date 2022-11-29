@@ -49,11 +49,6 @@ export default {
     },
     data: () => ({
         transitionEnabled: true,
-
-        /*
-         * if defined, selectedPort is the currently active port of the menu.
-         */
-        selectedPort: null,
         closeTimeout: null
     }),
     computed: {
@@ -79,6 +74,15 @@ export default {
         previewPort() {
             // show either the selected port of the menu or the targeted port for drag & drop to this placeholder
             return this.targeted ? this.targetPort : this.selectedPort;
+        },
+        selectedPort: {
+            // use global store state for preview
+            get() {
+                return this.portTypeMenu.previewPort;
+            },
+            set(value) {
+                this.portTypeMenu.previewPort = value;
+            }
         }
     },
     watch: {
@@ -169,7 +173,7 @@ export default {
   <g :transform="`translate(${position})`">
     <transition :name="transitionEnabled ? 'port-fade' : 'none'">
       <Port
-        v-if="previewPort"
+        v-if="previewPort && previewPort.typeId"
         :key="previewPort.typeId"
         :port="previewPort"
       />

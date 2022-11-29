@@ -83,9 +83,6 @@ const findTypeIdFromPlaceholderPort = ({
     targetPortGroups,
     targetPortDirection
 }) => {
-    let suggestedTypeId,
-        portGroup;
-
     const addablePortTypesGrouped = groupAddablePortTypesByPortGroup({
         availablePortTypes,
         targetPortGroups,
@@ -94,34 +91,44 @@ const findTypeIdFromPlaceholderPort = ({
 
     const directMatches = addablePortTypesGrouped.filter(([_, supportedIds]) => supportedIds.includes(fromPort.typeId));
 
-    // TODO: NXT-1242 let the user choose the portGroup
-    // for now just use the first direct match
-    if (directMatches.length > 0) {
-        suggestedTypeId = fromPort.typeId;
-        [[portGroup]] = directMatches;
-    } else {
-        const compatibleMatches = addablePortTypesGrouped.map(([group, supportedTypeIds]) => {
-            const compatibleTypeIds = supportedTypeIds.filter(typeId => checkPortCompatibility({
-                fromPort,
-                toPort: { typeId },
-                availablePortTypes
-            }));
-            return compatibleTypeIds.length ? [group, compatibleTypeIds] : null;
-        }).filter(Boolean);
+    const canAddPortKey = targetPortDirection === 'in' ? 'canAddInPort' : 'canAddOutPort';
 
-        // TODO: NXT-1242 let the user choose the compatible match if its more then one
-        if (compatibleMatches.length > 0) {
-            [[portGroup, [suggestedTypeId]]] = compatibleMatches;
-        }
+    // do we have direct matches?
+    if (directMatches.length > 0) {
+        const suggestedTypeId = fromPort.typeId;
+        const [[portGroup]] = directMatches;
+        const validPortGroups = { [portGroup]: { [canAddPortKey]: true, supportedPortTypeIds: [suggestedTypeId] } };
+        return {
+            didSnap: true,
+            createPortFromPlaceholder: { validPortGroups }
+        };
     }
 
-    return {
-        didSnap: Boolean(suggestedTypeId),
-        createPortFromPlaceholder: {
-            typeId: suggestedTypeId,
-            portGroup
-        }
-    };
+    // try to find compatible matches
+    const compatibleMatches = addablePortTypesGrouped.map(([group, supportedTypeIds]) => {
+        const compatibleTypeIds = supportedTypeIds.filter(typeId => checkPortCompatibility({
+            fromPort,
+            toPort: { typeId },
+            availablePortTypes
+        }));
+        return compatibleTypeIds.length ? [group, compatibleTypeIds] : null;
+    }).filter(Boolean);
+
+    if (compatibleMatches.length > 0) {
+        const validPortGroups = compatibleMatches.map(v => ({
+            [v[0]]: {
+                [canAddPortKey]: true,
+                supportedPortTypeIds: v[1]
+            }
+        }));
+        return {
+            didSnap: true,
+            createPortFromPlaceholder: { validPortGroups }
+        };
+    }
+
+    // could not find anything we don't snap
+    return { didSnap: false };
 };
 
 const checkCompatibleConnectionAndPort = ({

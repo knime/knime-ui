@@ -18,6 +18,7 @@ export const state = {
     portTypeMenu: {
         isOpen: false,
         nodeId: null,
+        previewPort: null,
         props: {},
         events: {}
     },
@@ -89,6 +90,7 @@ export const actions = {
     openPortTypeMenu({ commit }, { nodeId, props, events }) {
         commit('setPortTypeMenu', {
             isOpen: true,
+            previewPort: null,
             nodeId,
             props,
             events
@@ -98,6 +100,7 @@ export const actions = {
         commit('setPortTypeMenu', {
             isOpen: false,
             nodeId: null,
+            previewPort: null,
             props: {},
             events: {}
         });
@@ -125,7 +128,7 @@ export const actions = {
     addNodePort: wrapAPI(addNodePort),
     removeNodePort: wrapAPI(removeNodePort),
     renameContainerNode: wrapAPI(renameContainerNode),
-    
+
     async addNode({ state, dispatch }, {
         position,
         nodeFactory,
@@ -140,7 +143,7 @@ export const actions = {
         const { activeWorkflow } = state;
         const { projectId } = activeWorkflow;
         const { info: { containerId: workflowId } } = activeWorkflow;
-        
+
         // Adjusted For Grid Snapping
         const gridAdjustedPosition = adjustToGrid({
             coords: position,

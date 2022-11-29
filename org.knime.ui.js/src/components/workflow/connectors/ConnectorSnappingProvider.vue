@@ -1,5 +1,5 @@
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 
 /**
  * Renderless component that provides all the computed/data/methods necessary for the connector snapping logic.
@@ -62,6 +62,7 @@ export default {
     }),
 
     computed: {
+        ...mapState('workflow', ['portTypeMenu']),
         /**
          * Divides the height of the container into partitions
          * that divide the space between ports by half
@@ -105,7 +106,7 @@ export default {
     },
 
     methods: {
-        ...mapActions('workflow', ['connectNodes', 'addNodePort']),
+        ...mapActions('workflow', ['connectNodes', 'addNodePort', 'openPortTypeMenu', 'closePortTypeMenu']),
         onConnectorStart({ validConnectionTargets, startNodeId }) {
             // Don't set the `connectionForbidden` state when the checks are disabled for all "valid" targets
             // e.g.: Metanode portbar ports can always be connected to (provided they're "compatible")
@@ -214,7 +215,12 @@ export default {
                 };
                 // add data to targetPort if we need to create that port before we connect to it
                 if (createPortFromPlaceholder) {
-                    this.targetPort = { ...this.targetPort, ...createPortFromPlaceholder, isPlaceHolderPort: true };
+                    this.targetPort = {
+                        ...this.targetPort,
+                        ...createPortFromPlaceholder,
+                        isPlaceHolderPort: true,
+                        snapPosition: absolutePortPosition
+                    };
                 }
             }
         },
@@ -225,6 +231,21 @@ export default {
                 typeId,
                 portGroup
             });
+        },
+        async addPortAndConnectIt({ typeId, portGroup, side, startNode, startPort }) {
+            const { newPortIdx } = await this.addPort({
+                side,
+                typeId,
+                portGroup
+            });
+
+            this.connectNodes(this.createConnectorObject({
+                startNode,
+                startPort,
+                targetPort: newPortIdx,
+                targetNode: this.id,
+                side
+            }));
         },
         createConnectorObject({ startNode, startPort, targetNode, targetPort, side }) {
             return side === 'in'
@@ -241,7 +262,7 @@ export default {
                     destPort: startPort
                 };
         },
-        async onConnectorDrop(event) {
+        onConnectorDrop(event) {
             // copy over the target port as the async backend calls might come after it has been set to null by
             // onConnectorEnd()
             let targetPort = { ...this.targetPort };
@@ -258,25 +279,58 @@ export default {
             // circle would be "valid" but if it has a different type than the initial port then it's "incompatible"
             if (!isCompatible) {
                 event.preventDefault();
-                return; // end here
+                return;
             }
 
+            // no placeholder port? just connect it and end
+            if (!targetPort.isPlaceHolderPort) {
+                // just connect the ports
+                this.connectNodes(this.createConnectorObject({
+                    startNode,
+                    startPort,
+                    targetPort: targetPort.index,
+                    targetNode: this.id,
+                    side: targetPort.side
+                }));
+                return;
+            }
             // create the port if the targetPort is marked as a placeholder port
-            if (targetPort.isPlaceHolderPort) {
-                const { newPortIdx } = await this.addPort(targetPort);
-                // update target port index: the backend might have added the port
-                // above the others while the placeholder is always the last one
-                targetPort.index = newPortIdx;
-                targetPort.isPlaceHolderPort = false;
+            // we have a direct match so just add and connect it
+            if (Object.keys(targetPort.validPortGroups).length === 1) {
+                const portGroup = Object.keys(targetPort.validPortGroups)[0];
+                const typeId = targetPort.validPortGroups[portGroup].supportedPortTypeIds[0];
+                const side = targetPort.side;
+                this.addPortAndConnectIt({
+                    typeId,
+                    portGroup,
+                    side,
+                    startNode,
+                    startPort
+                });
+                return;
             }
-
-            this.connectNodes(this.createConnectorObject({
-                startNode,
-                startPort,
-                targetPort: targetPort.index,
-                targetNode: this.id,
-                side: targetPort.side
-            }));
+            // show menu to the user to select the portGroup and the type
+            this.openPortTypeMenu({
+                nodeId: this.id,
+                props: {
+                    side: targetPort.side === 'in' ? 'input' : 'output',
+                    position: {
+                        x: targetPort.snapPosition[0],
+                        y: targetPort.snapPosition[1]
+                    },
+                    portGroups: targetPort.validPortGroups
+                },
+                events: {
+                    'item-active': (item) => {
+                        this.portTypeMenu.previewPort = item?.port;
+                    },
+                    'item-click': ({ typeId, portGroup }) => {
+                        const side = targetPort.side;
+                        this.addPortAndConnectIt({ typeId, portGroup, side, startNode, startPort });
+                    },
+                    'menu-close': () => this.closePortTypeMenu()
+                }
+            });
         },
         isOutsideConnectorHoverRegion(x, y, targetPortDirection) {
             const upperBound = -20;
