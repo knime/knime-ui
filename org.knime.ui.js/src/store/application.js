@@ -129,32 +129,39 @@ export const actions = {
             await dispatch('setActiveProject', applicationState.openProjects);
         }
     },
-    async setActiveProject({ commit, dispatch }, openProjects) {
+    async setActiveProject({ commit, dispatch, state }, openProjects) {
         if (openProjects.length === 0) {
             consola.info('No workflows opened');
             await dispatch('switchWorkflow', null);
             return;
         }
 
-        let activeProject = openProjects.find(item => item.activeWorkflow);
-        if (activeProject) {
-            // active project is attached to the list of tabs
-            dispatch('setWorkflow', {
-                projectId: activeProject.projectId,
-                workflow: activeProject.activeWorkflow.workflow,
-                snapshotId: activeProject.activeWorkflow.snapshotId
-            });
-        } else {
+        const activeProject = openProjects.find(item => item.activeWorkflow);
+
+        if (!activeProject) {
             consola.info('No active workflow provided');
 
             // chose root workflow of first tab
-            activeProject = openProjects[0];
+            const [firstProject] = openProjects;
             await dispatch('loadWorkflow', {
-                projectId: activeProject.projectId,
+                projectId: firstProject.projectId,
                 // ATTENTION: we can only open tabs, that have root workflows (no standalone metanodes or components)
                 workflowId: 'root'
             });
+            return;
         }
+
+        if (state?.activeProjectId === activeProject.projectId) {
+            // don't set the workflow if already on it. e.g another tab was closed
+            // and we receieve an update for `openProjects`
+            return;
+        }
+
+        dispatch('setWorkflow', {
+            projectId: activeProject.projectId,
+            workflow: activeProject.activeWorkflow.workflow,
+            snapshotId: activeProject.activeWorkflow.snapshotId
+        });
     },
 
     /*

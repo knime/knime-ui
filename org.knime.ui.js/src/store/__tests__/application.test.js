@@ -142,6 +142,20 @@ describe('application store', () => {
                 { projectId: 'foo', name: 'bar' }
             ]);
         });
+
+        it('does not setWorkflow when replacing application state and the activeProject did not change', async () => {
+            const applicationState = {
+                openProjects: [
+                    { projectId: 'foo', name: 'bar' },
+                    { projectId: 'baz', name: 'bar', activeWorkflow: { workflow: { info: {} } } }
+                ]
+            };
+            store.commit('application/setActiveProjectId', 'baz');
+            await store.dispatch('application/replaceApplicationState', applicationState);
+
+            expect(dispatchSpy).not.toHaveBeenCalledWith('application/setWorkflow');
+            expect(store.state.application.activeProjectId).toBe('baz');
+        });
     });
 
     describe('Workflow Lifecycle', () => {
