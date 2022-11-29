@@ -112,8 +112,6 @@ export default {
                 title: name.length > portNameSizeThreshold ? name : null
             }));
 
-            console.log('menuItems', menuItems);
-
             return menuItems;
         },
 

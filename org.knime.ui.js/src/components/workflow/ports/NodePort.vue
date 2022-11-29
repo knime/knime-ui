@@ -514,7 +514,6 @@ export default {
                 x: this.dragConnector.absolutePoint[0],
                 y: this.dragConnector.absolutePoint[1]
             };
-
             this.openQuickAddNodeMenu({
                 props: {
                     position,
