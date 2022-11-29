@@ -105,14 +105,12 @@ export default {
                 return this.sidePortGroups.map(([groupName]) => ({ text: groupName }));
             }
 
-            const menuItems = this.searchResults.map(({ typeId, name }) => ({
+            return this.searchResults.map(({ typeId, name }) => ({
                 port: { typeId, inactive: false },
                 text: name,
                 icon: portIcon({ typeId, inactive: false }),
                 title: name.length > portNameSizeThreshold ? name : null
             }));
-
-            return menuItems;
         },
 
         portTypesInSelectedGroup() {
