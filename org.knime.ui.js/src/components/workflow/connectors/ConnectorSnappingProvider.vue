@@ -1,5 +1,5 @@
 <script>
-import { mapActions, mapState } from 'vuex';
+import { mapActions, mapMutations, mapState } from 'vuex';
 
 /**
  * Renderless component that provides all the computed/data/methods necessary for the connector snapping logic.
@@ -107,6 +107,7 @@ export default {
 
     methods: {
         ...mapActions('workflow', ['connectNodes', 'addNodePort', 'openPortTypeMenu', 'closePortTypeMenu']),
+        ...mapMutations('workflow',  ['setPortTypeMenuPreviewPort']),
         onConnectorStart({ validConnectionTargets, startNodeId }) {
             // Don't set the `connectionForbidden` state when the checks are disabled for all "valid" targets
             // e.g.: Metanode portbar ports can always be connected to (provided they're "compatible")
@@ -322,13 +323,13 @@ export default {
                 },
                 events: {
                     'item-active': (item) => {
-                        this.portTypeMenu.previewPort = item?.port;
+                        this.setPortTypeMenuPreviewPort(item?.port);
                     },
                     'item-click': ({ typeId, portGroup }) => {
                         const side = targetPort.side;
                         this.addPortAndConnectIt({ typeId, portGroup, side, startNode, startPort });
                     },
-                    'menu-close': () => this.closePortTypeMenu()
+                    'menu-close': this.closePortTypeMenu
                 }
             });
         },

@@ -1,6 +1,6 @@
 <script>
 import Port from '@/components/common/Port.vue';
-import { mapActions, mapState } from 'vuex';
+import { mapActions, mapMutations, mapState } from 'vuex';
 
 export const addPortPlaceholderPath = (() => {
     let cx = 0;
@@ -81,7 +81,7 @@ export default {
                 return this.portTypeMenu.previewPort;
             },
             set(value) {
-                this.portTypeMenu.previewPort = value;
+                this.setPortTypeMenuPreviewPort(value);
             }
         }
     },
@@ -103,6 +103,7 @@ export default {
     },
     methods: {
         ...mapActions('workflow', ['openPortTypeMenu', 'closePortTypeMenu']),
+        ...mapMutations('workflow', ['setPortTypeMenuPreviewPort']),
         openMenu() {
             // find the position in coordinates relative to the origin
             let position = {

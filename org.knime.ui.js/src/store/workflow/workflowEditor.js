@@ -66,6 +66,10 @@ export const mutations = {
 
     setQuickAddNodeMenu(state, value) {
         state.quickAddNodeMenu = value;
+    },
+
+    setPortTypeMenuPreviewPort({ commit }, value) {
+        state.portTypeMenu.previewPort = value;
     }
 };
 

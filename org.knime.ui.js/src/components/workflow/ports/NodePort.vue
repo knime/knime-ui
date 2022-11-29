@@ -284,7 +284,10 @@ export default {
         }
     },
     methods: {
-        ...mapActions('workflow', ['openQuickAddNodeMenu', 'closeQuickAddNodeMenu']),
+        ...mapActions('workflow', {
+            openQuickAddNodeMenuAction: 'openQuickAddNodeMenu',
+            closeQuickAddNodeMenuAction: 'closeQuickAddNodeMenu'
+        }),
         /* ======== Drag Connector ======== */
         onPointerDown(e) {
             if (!this.isWritable || e.button !== 0 || e.shiftKey || e.ctrlKey) {
@@ -484,7 +487,7 @@ export default {
             }
 
             if (this.showAddNodeGhost) {
-                this.openQuickAdd();
+                this.openQuickAddNodeMenu();
             } else {
                 // clear drag connector now; otherwise this happens on close of the menu
                 this.dragConnector = null;
@@ -507,26 +510,26 @@ export default {
                 this.$emit('deselect');
             }
         },
-        openQuickAdd() {
+        openQuickAddNodeMenu() {
             // find the position in coordinates relative to the origin
             let position = {
                 x: this.dragConnector.absolutePoint[0],
                 y: this.dragConnector.absolutePoint[1]
             };
-            this.openQuickAddNodeMenu({
+            this.openQuickAddNodeMenuAction({
                 props: {
                     position,
                     port: this.port,
                     nodeId: this.nodeId
                 },
                 events: {
-                    'menu-close': this.closeQuickAdd
+                    'menu-close': this.closeQuickAddNodeMenu
                 }
             });
         },
-        closeQuickAdd() {
+        closeQuickAddNodeMenu() {
             // close the menu
-            this.closeQuickAddNodeMenu();
+            this.closeQuickAddNodeMenuAction();
             // remove the ghost
             this.showAddNodeGhost = false;
             // clear the drag connector
