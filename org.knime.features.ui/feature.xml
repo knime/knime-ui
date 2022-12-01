@@ -92,10 +92,6 @@ KNIME is, however, entitled to take legal action before any
 competent court at the domicile of the Licensee.  
    </license>
 
-   <includes
-         id="org.knime.features.gateway"
-         version="0.0.0"/>
-
    <plugin
          id="org.knime.ui.java"
          download-size="0"
