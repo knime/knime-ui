@@ -13,9 +13,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -33,10 +33,12 @@ import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
+import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
+import org.knime.ui.java.DefaultServicesUtil;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.CreateWorkflowBrowserFunction;
@@ -83,72 +85,92 @@ public class KnimeBrowserView {
 
     private static final String BASE_PATH = "dist";
 
-    private Browser m_browser;
-
     private static final String JSON_RPC_ACTION_ID = "org.knime.ui.java.jsonrpc";
 
     private static final String JSON_RPC_NOTIFICATION_ACTION_ID = "org.knime.ui.java.jsonrpcNotification";
 
+    private static KnimeBrowserView INSTANCE = null;
+
+    private static Consumer<KnimeBrowserView> viewInitializer = null;
+
+    private Browser m_browser;
+
+    /**
+     * Activates the view initializer that will be executed as soon as this view becomes finally visible (again). Once
+     * the view initializer has been executed, it will be activated (and would need to be activated again).
+     *
+     * @param appStateSupplier supplies the app state for the UI
+     */
+    public static void activateViewInitializer(final Supplier<AppState> appStateSupplier) {
+        viewInitializer = v -> v.initView(appStateSupplier, false);
+    }
+
+    /**
+     * Initializes the view for testing purposes.
+     *
+     * @param appStateSupplier supplies the app state for the UI
+     */
+    public static void initViewForTesting(final Supplier<AppState> appStateSupplier) {
+        if (INSTANCE == null) {
+            throw new IllegalStateException("No browser view instance available");
+        }
+        INSTANCE.initView(appStateSupplier, true);
+    }
+
+    private void initView(final Supplier<AppState> appStateSupplier, final boolean ignoreEmptyPageAsDevUrl) {
+        var eventConsumer = createEventConsumer();
+        var appStateProvider = new AppStateProvider(appStateSupplier);
+        DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer);
+        initBrowserFunctions(appStateProvider);
+        setUrl(ignoreEmptyPageAsDevUrl);
+    }
+
+    /**
+     * Clears the view. Called when the view is not needed anymore (for some time), e.g. on perspective switch.
+     *
+     * If the view is activated/used again, it need to be initialized either via
+     * {@link #activateViewInitializer(Supplier)} or {@link #initViewForTesting(Supplier)}.
+     */
+    public static void clearView() {
+        if (INSTANCE != null) {
+            INSTANCE.clearUrl();
+            DefaultServicesUtil.disposeDefaultServices();
+        }
+    }
+
 	@PostConstruct
 	public void createPartControl(final Composite parent) {
+        // This is a 'quasi' singleton.
+        // Even though it has a public constructor it's only
+        // expected to have one single instance and will fail if this method
+	    // is called on another instance again.
+        if (INSTANCE != null) {
+            throw new IllegalStateException(
+                "Instance can't be created. There's only one instance of the KnimeBrowserView allowed.");
+        }
+        INSTANCE = this; // NOSONAR it's fine because this class is technically a singleton
+
 		m_browser = new Browser(parent, SWT.NONE);
 		m_browser.addLocationListener(new KnimeBrowserLocationListener(this));
 		m_browser.setMenu(new Menu(m_browser.getShell()));
 		initializeResourceHandlers();
-	}
+
+        if (viewInitializer == null) {
+            activateViewInitializer(NoOpenWorkflowsAppState::new);
+        }
+    }
 
     @Inject
     void partActivated(@Active final MPart part) {
         boolean isBrowserView = part.getElementId().equals(BROWSER_VIEW_PART_ID);
-		// This handler is called multiple times during perspective switch, before and after @PostConstruct.
-		// `isRendered` is heuristically regarded to be the point in the life cycle at which the browser view is
-		// 	ready for interaction.
+        // This handler is called multiple times during perspective switch, before and after @PostConstruct.
+        // `isRendered` is heuristically regarded to be the point in the life cycle at which the browser view is
+        // 	ready for interaction.
         boolean isRendered = part.getObject() instanceof KnimeBrowserView;
-        if (isBrowserView && isRendered) {
-            ActivatedCallbackManager.notify((KnimeBrowserView)part.getObject());
-            ActivatedCallbackManager.clear();
+        if (isBrowserView && isRendered && viewInitializer != null) {
+            viewInitializer.accept(INSTANCE);
+            viewInitializer = null; // NOSONAR because this is technically a singleton
         }
-    }
-
-    /**
-     * Allows one to defer calls on the browser view until it's available.
-     *
-     * @param callback called as soon as this view is completely loaded and activated
-     */
-    public static void addActivatedCallback(final Consumer<KnimeBrowserView> callback) {
-        ActivatedCallbackManager.addCallback(callback);
-    }
-
-    /**
-     * Notify callbacks exactly once when the browser view is activated *and* rendered.
-	 * After the callbacks have been notified, it is not possible to register any further callbacks.
-     *
-     * @see KnimeBrowserView#partActivated(MPart)
-     */
-    private static class ActivatedCallbackManager {
-
-        private static Set<Consumer<KnimeBrowserView>> callbacks = new HashSet<>();
-
-        private static void addCallback(final Consumer<KnimeBrowserView> callback) {
-            try {
-                callbacks.add(callback);
-            } catch (UnsupportedOperationException e) {
-                throw new UnsupportedOperationException("Can not register callbacks after event has occurred", e);
-            }
-        }
-
-        private static void notify(final KnimeBrowserView view) {
-			if (callbacks.isEmpty()) {
-				// no callbacks registered or already notified
-				return;
-			}
-			callbacks.forEach(c -> c.accept(view));
-			callbacks = Collections.emptySet();  // immutable
-		}
-
-		private static void clear() {
-			callbacks = new HashSet<>();  // modifiable
-		}
     }
 
     /**
@@ -157,7 +179,7 @@ public class KnimeBrowserView {
      * @param appStateProvider required to initialize the {@link OpenWorkflowBrowserFunction}
      */
     @SuppressWarnings("unused") // Browser functions are registered on instantiation
-    public void initBrowserFunctions(final AppStateProvider appStateProvider) {
+    private void initBrowserFunctions(final AppStateProvider appStateProvider) {
         new SwitchToJavaUIBrowserFunction(m_browser);
         new OpenNodeViewBrowserFunction(m_browser);
         new OpenNodeDialogBrowserFunction(m_browser);
@@ -169,8 +191,8 @@ public class KnimeBrowserView {
 		new OpenLayoutEditorBrowserFunction(m_browser);
 		new OpenWorkflowCoachPreferencePageBrowserFunction(m_browser, appStateProvider);
         if (isRemoteDebuggingPortSet()) {
-            new InitAppForTestingBrowserFunction(m_browser, this);
-            new ClearAppForTestingBrowserFunction(m_browser, this);
+            new InitAppForTestingBrowserFunction(m_browser);
+            new ClearAppForTestingBrowserFunction(m_browser);
         }
     }
 
@@ -260,17 +282,8 @@ public class KnimeBrowserView {
 	/**
 	 * Clears the browser's url.
 	 */
-	public void clearUrl() {
+	private void clearUrl() {
 		m_browser.setUrl(EMPTY_PAGE);
-	}
-
-	/**
-	 * Sets the browser's URL to show the web-ui. The URL is either taken from
-	 * the system property org.knime.ui.dev.url or, if not set, the actual
-	 * file URL is used.
-	 */
-	public void setUrl() {
-		setUrl(false);
 	}
 
 	/**
@@ -283,7 +296,7 @@ public class KnimeBrowserView {
 	 * is about:blank), the dev URL (i.e. empty page) will be ignored and the
 	 * actual file URL is used
 	 */
-	public void setUrl(final boolean ignoreEmptyPageAsDevUrl) {
+	private void setUrl(final boolean ignoreEmptyPageAsDevUrl) {
 		if (m_browser.getUrl().equals(EMPTY_PAGE)) {
 			if (!setDevURL(m_browser, ignoreEmptyPageAsDevUrl)) { // NOSONAR
 			    m_browser.setUrl(APP_PAGE);
@@ -294,7 +307,7 @@ public class KnimeBrowserView {
 	/**
 	 * @return a new event consumer instance forwarding events to java-script
 	 */
-    public EventConsumer createEventConsumer() {
+    private static EventConsumer createEventConsumer() {
         return initializeJavaBrowserCommunication(JSON_RPC_ACTION_ID, JSON_RPC_NOTIFICATION_ACTION_ID);
     }
 
@@ -320,5 +333,14 @@ public class KnimeBrowserView {
 
 	private static boolean isRemoteDebuggingPortSet() {
 		return System.getProperty(KnimeBrowserView.REMOTE_DEBUGGING_PORT_PROP) != null;
+	}
+
+	private static class NoOpenWorkflowsAppState implements AppState {
+
+        @Override
+        public List<OpenedWorkflow> getOpenedWorkflows() {
+            return Collections.emptyList();
+        }
+
 	}
 }

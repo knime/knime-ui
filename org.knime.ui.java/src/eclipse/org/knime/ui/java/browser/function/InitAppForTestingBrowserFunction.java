@@ -49,18 +49,15 @@
 package org.knime.ui.java.browser.function;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.knime.core.node.NodeLogger;
-import org.knime.core.node.port.PortType;
-import org.knime.core.node.port.PortTypeRegistry;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState.OpenedWorkflow;
 import org.knime.ui.java.TestingUtil;
-import org.knime.ui.java.browser.KnimeBrowserView;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
@@ -81,18 +78,13 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
 
 	private static final ObjectMapper MAPPER = new ObjectMapper();
 
-	private KnimeBrowserView m_knimeBrowser;
-
 	/**
 	 * Constructor.
 	 *
 	 * @param browser the browser to register this function with
-	 * @param knimeBrowser reference to the knime browser view mainly to be able
-	 * to set an URL
 	 */
-	public InitAppForTestingBrowserFunction(final Browser browser, final KnimeBrowserView knimeBrowser) {
+	public InitAppForTestingBrowserFunction(final Browser browser) {
 		super(browser, FUNCTION_NAME);
-		m_knimeBrowser = knimeBrowser;
 	}
 
 	@Override
@@ -102,36 +94,28 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
 					+ "'. The arguments are: " + Arrays.toString(args));
 		}
 
-		JsonNode appStateNode;
-		try {
-			appStateNode = MAPPER.readValue((String) args[0], JsonNode.class);
-		} catch (JsonProcessingException ex) {
-			NodeLogger.getLogger(this.getClass()).warn("Argument couldn't be parsed to JSON", ex);
-			return null;
-		}
-		JsonNode openedWorkflows = appStateNode.get("openedWorkflows");
-        if (openedWorkflows != null) {
-			var appState = new AppState() {
-				@Override
-				public List<OpenedWorkflow> getOpenedWorkflows() {
-					return StreamSupport.stream(openedWorkflows.spliterator(), false)
-							.map(InitAppForTestingBrowserFunction::createOpenedWorkflow).collect(Collectors.toList());
-				}
-
-                @Override
-                public Set<PortType> getAvailablePortTypes() {
-                    return PortTypeRegistry.getInstance().availablePortTypes().stream() //
-                        .collect(Collectors.toSet());
-                }
-
-                @Override
-                public List<PortType> getSuggestedPortTypes() {
-                    return AppState.SUGGESTED_PORT_TYPES;
-                }
-            };
-            TestingUtil.initAppStateForTesting(appState, m_knimeBrowser.createEventConsumer());
+        JsonNode appStateNode;
+        try {
+            appStateNode = MAPPER.readValue((String)args[0], JsonNode.class);
+        } catch (JsonProcessingException ex) {
+            NodeLogger.getLogger(this.getClass()).warn("Argument couldn't be parsed to JSON", ex);
+            return null;
         }
-        m_knimeBrowser.setUrl(true);
+        JsonNode openedWorkflows = appStateNode.get("openedWorkflows");
+        List<OpenedWorkflow> openedWorkflowsList;
+        if (openedWorkflows != null) {
+            openedWorkflowsList = StreamSupport.stream(openedWorkflows.spliterator(), false)
+                .map(InitAppForTestingBrowserFunction::createOpenedWorkflow).collect(Collectors.toList());
+        } else {
+            openedWorkflowsList = Collections.emptyList();
+        }
+        var appState = new AppState() { // NOSONAR
+            @Override
+            public List<OpenedWorkflow> getOpenedWorkflows() {
+                return openedWorkflowsList;
+            }
+        };
+        TestingUtil.initAppForTesting(appState);
         return null;
     }
 
