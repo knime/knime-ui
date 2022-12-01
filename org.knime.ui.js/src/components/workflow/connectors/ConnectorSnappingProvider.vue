@@ -296,10 +296,10 @@ export default {
                 return;
             }
             // create the port if the targetPort is marked as a placeholder port
-            // we have a direct match so just add and connect it
+            // we have a single direct match so just add and connect it
             if (Object.keys(targetPort.validPortGroups).length === 1) {
-                const portGroup = Object.keys(targetPort.validPortGroups)[0];
-                const typeId = targetPort.validPortGroups[portGroup].supportedPortTypeIds[0];
+                const [portGroup] = Object.keys(targetPort.validPortGroups);
+                const [typeId] = targetPort.validPortGroups[portGroup].supportedPortTypeIds;
                 const side = targetPort.side;
                 this.addPortAndConnectIt({
                     typeId,
@@ -311,14 +311,13 @@ export default {
                 return;
             }
             // show menu to the user to select the portGroup and the type
+            const [x, y] = targetPort.snapPosition;
             this.openPortTypeMenu({
                 nodeId: this.id,
+                startNodeId: startNode,
                 props: {
                     side: targetPort.side === 'in' ? 'input' : 'output',
-                    position: {
-                        x: targetPort.snapPosition[0],
-                        y: targetPort.snapPosition[1]
-                    },
+                    position: { x, y },
                     portGroups: targetPort.validPortGroups
                 },
                 events: {

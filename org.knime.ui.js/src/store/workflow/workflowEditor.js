@@ -18,6 +18,7 @@ export const state = {
     portTypeMenu: {
         isOpen: false,
         nodeId: null,
+        startNodeId: null,
         previewPort: null,
         props: {},
         events: {}
@@ -91,11 +92,12 @@ export const actions = {
         commit('setNameEditorNodeId', null);
     },
 
-    openPortTypeMenu({ commit }, { nodeId, props, events }) {
+    openPortTypeMenu({ commit }, { nodeId, startNodeId, props, events }) {
         commit('setPortTypeMenu', {
             isOpen: true,
             previewPort: null,
             nodeId,
+            startNodeId,
             props,
             events
         });

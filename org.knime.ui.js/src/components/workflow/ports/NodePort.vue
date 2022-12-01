@@ -77,6 +77,15 @@ const groupAddablePortTypesByPortGroup = ({
     return portGroupsForTargetDirection.map(([groupName, portGroup]) => [groupName, portGroup.supportedPortTypeIds]);
 };
 
+const transformToPortGroupObject = (groupArray, canAddPortKey) => Object.assign(
+    ...groupArray.map(([group, supportedPortTypeIds]) => ({
+        [group]: {
+            [canAddPortKey]: true,
+            supportedPortTypeIds
+        }
+    }))
+);
+
 const findTypeIdFromPlaceholderPort = ({
     fromPort,
     availablePortTypes,
@@ -94,12 +103,9 @@ const findTypeIdFromPlaceholderPort = ({
 
     // case 1: direct matches
     if (directMatches.length > 0) {
-        const suggestedTypeId = fromPort.typeId;
-        const [[portGroup]] = directMatches;
-        const validPortGroups = { [portGroup]: { [canAddPortKey]: true, supportedPortTypeIds: [suggestedTypeId] } };
         return {
             didSnap: true,
-            createPortFromPlaceholder: { validPortGroups }
+            createPortFromPlaceholder: { validPortGroups: transformToPortGroupObject(directMatches, canAddPortKey) }
         };
     }
 
@@ -114,15 +120,9 @@ const findTypeIdFromPlaceholderPort = ({
     }).filter(Boolean);
 
     if (compatibleMatches.length > 0) {
-        const validPortGroups = compatibleMatches.map(([group, compatibleIds]) => ({
-            [group]: {
-                [canAddPortKey]: true,
-                supportedPortTypeIds: compatibleIds
-            }
-        }));
         return {
             didSnap: true,
-            createPortFromPlaceholder: { validPortGroups }
+            createPortFromPlaceholder: { validPortGroups: transformToPortGroupObject(compatibleMatches, canAddPortKey) }
         };
     }
 
@@ -224,7 +224,7 @@ export default {
         ...mapGetters('workflow', ['isWritable', 'isDragging']),
         ...mapState('application', ['availablePortTypes']),
         ...mapState('workflow', { connections: state => state.activeWorkflow.connections }),
-        ...mapState('workflow', ['quickAddNodeMenu']),
+        ...mapState('workflow', ['quickAddNodeMenu', 'portTypeMenu']),
         /*
          * only in-Ports replace their current connector if a new one is connected
          * only in-Ports that are connected need to indicate connector replacement
@@ -255,6 +255,10 @@ export default {
                 this.quickAddNodeMenu.props.nodeId === this.nodeId &&
                 this.quickAddNodeMenu.props.port.index === this.port.index;
         },
+        isShowingPortTypeMenu() {
+            // shows the port type menu where this node was the start of the drag
+            return this.portTypeMenu.isOpen && this.portTypeMenu.startNodeId === this.nodeId;
+        },
         // implemented as required by the tooltip mixin
         tooltip() {
             // table ports have less space than other ports, because the triangular shape naturally creates a gap
@@ -281,6 +285,11 @@ export default {
             incomingConnector.dispatchEvent(new CustomEvent('indicate-replacement', { detail: {
                 state: indicateReplacement
             } }));
+        },
+        isShowingPortTypeMenu(value, oldValue) {
+            if (value === false && oldValue === true && this.dragConnector) {
+                this.dragConnector = null;
+            }
         }
     },
     methods: {
@@ -488,8 +497,9 @@ export default {
 
             if (this.showAddNodeGhost) {
                 this.openQuickAddNodeMenu();
-            } else {
-                // clear drag connector now; otherwise this happens on close of the menu
+            }
+            // clear drag connector if no menu is open
+            if (!this.isShowingQuickAddNodeMenu && !this.isShowingPortTypeMenu) {
                 this.dragConnector = null;
             }
 
