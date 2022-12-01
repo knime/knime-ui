@@ -107,7 +107,7 @@ export default {
 
     methods: {
         ...mapActions('workflow', ['connectNodes', 'addNodePort', 'openPortTypeMenu', 'closePortTypeMenu']),
-        ...mapMutations('workflow',  ['setPortTypeMenuPreviewPort']),
+        ...mapMutations('workflow', ['setPortTypeMenuPreviewPort']),
         onConnectorStart({ validConnectionTargets, startNodeId }) {
             // Don't set the `connectionForbidden` state when the checks are disabled for all "valid" targets
             // e.g.: Metanode portbar ports can always be connected to (provided they're "compatible")

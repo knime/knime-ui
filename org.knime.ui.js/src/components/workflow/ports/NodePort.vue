@@ -77,6 +77,13 @@ const groupAddablePortTypesByPortGroup = ({
     return portGroupsForTargetDirection.map(([groupName, portGroup]) => [groupName, portGroup.supportedPortTypeIds]);
 };
 
+/**
+ * Transforms array of portGroups and supportedPortTypes tuples to a valid portGroup object
+ *
+ * @param {[[string, string[]]]} groupArray - array with arrays of [portGroup, supportedPortTypeIds]
+ * @param {string} canAddPortKey - either canAddInPort or canAddOutPort
+ * @returns {Object.<string, Object>} returns an object with the portGroup as key and an object as value
+ */
 const transformToPortGroupObject = (groupArray, canAddPortKey) => Object.assign(
     ...groupArray.map(([group, supportedPortTypeIds]) => ({
         [group]: {
@@ -98,7 +105,10 @@ const findTypeIdFromPlaceholderPort = ({
         targetPortDirection
     });
 
-    const directMatches = addablePortTypesGrouped.filter(([_, supportedIds]) => supportedIds.includes(fromPort.typeId));
+    // only add the direct match in the supportedIds array
+    const directMatches = addablePortTypesGrouped.flatMap(
+        ([group, supportedIds]) => supportedIds.includes(fromPort.typeId) ? [[group, [fromPort.typeId]]] : []
+    );
     const canAddPortKey = targetPortDirection === 'in' ? 'canAddInPort' : 'canAddOutPort';
 
     // case 1: direct matches
@@ -110,14 +120,14 @@ const findTypeIdFromPlaceholderPort = ({
     }
 
     // case 2: compatible matches
-    const compatibleMatches = addablePortTypesGrouped.map(([group, supportedTypeIds]) => {
+    const compatibleMatches = addablePortTypesGrouped.flatMap(([group, supportedTypeIds]) => {
         const compatibleTypeIds = supportedTypeIds.filter(typeId => checkPortCompatibility({
             fromPort,
             toPort: { typeId },
             availablePortTypes
         }));
-        return compatibleTypeIds.length ? [group, compatibleTypeIds] : null;
-    }).filter(Boolean);
+        return compatibleTypeIds.length ? [[group, compatibleTypeIds]] : [];
+    });
 
     if (compatibleMatches.length > 0) {
         return {
