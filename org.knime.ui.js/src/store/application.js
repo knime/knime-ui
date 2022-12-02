@@ -1,4 +1,3 @@
-import Vue from 'vue';
 import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '@api';
 import { encodeString } from '@/util/encodeString';
 
@@ -130,32 +129,49 @@ export const actions = {
             await dispatch('setActiveProject', applicationState.openProjects);
         }
     },
-    async setActiveProject({ commit, dispatch }, openProjects) {
+    async setActiveProject({ commit, dispatch, state }, openProjects) {
         if (openProjects.length === 0) {
             consola.info('No workflows opened');
             await dispatch('switchWorkflow', null);
             return;
         }
 
-        let activeProject = openProjects.find(item => item.activeWorkflow);
-        if (activeProject) {
-            // active project is attached to the list of tabs
-            dispatch('setWorkflow', {
-                projectId: activeProject.projectId,
-                workflow: activeProject.activeWorkflow.workflow,
-                snapshotId: activeProject.activeWorkflow.snapshotId
-            });
-        } else {
+        const activeProject = openProjects.find(item => item.activeWorkflow);
+
+        if (!activeProject) {
             consola.info('No active workflow provided');
 
             // chose root workflow of first tab
-            activeProject = openProjects[0];
+            const [firstProject] = openProjects;
             await dispatch('loadWorkflow', {
-                projectId: activeProject.projectId,
+                projectId: firstProject.projectId,
                 // ATTENTION: we can only open tabs, that have root workflows (no standalone metanodes or components)
                 workflowId: 'root'
             });
+            return;
         }
+
+        const isSameActiveProject = state?.activeProjectId === activeProject.projectId;
+        if (isSameActiveProject) {
+            // don't set the workflow if already on it. e.g another tab was closed
+            // and we receive an update for `openProjects`
+            return;
+        }
+
+        const stateKey = getCanvasStateKey(`${activeProject.projectId}--${'root'}`);
+        const hasSavedState = Boolean(state.savedCanvasStates[stateKey]);
+        const lastActiveWorkflow = state.savedCanvasStates[stateKey]?.lastActive;
+        if (hasSavedState && lastActiveWorkflow !== 'root') {
+            dispatch('loadWorkflow', { projectId: activeProject.projectId, workflowId: lastActiveWorkflow });
+
+            return;
+        }
+
+        dispatch('setWorkflow', {
+            projectId: activeProject.projectId,
+            workflow: activeProject.activeWorkflow.workflow,
+            snapshotId: activeProject.activeWorkflow.snapshotId
+        });
     },
 
     /*
@@ -166,11 +182,7 @@ export const actions = {
         const isChangingProject = rootState.workflow?.activeWorkflow?.projectId !== newWorkflow?.projectId;
 
         if (rootState.workflow?.activeWorkflow) {
-            // if entering a new workflow, we save user state like scroll and zoom
-            // otherwise it means we've closed a workflow and we don't need to save anything
-            if (newWorkflow) {
-                dispatch('saveCanvasState');
-            }
+            dispatch('saveCanvasState');
 
             // unload current workflow
             dispatch('unloadActiveWorkflow', { clearWorkflow: !newWorkflow });
@@ -182,7 +194,7 @@ export const actions = {
             let { projectId, workflowId = 'root' } = newWorkflow;
 
             // check if project is being changed and if there is already active workflow
-            if (isChangingProject && rootState.workflow?.activeWorkflow) {
+            if (isChangingProject) {
                 const stateKey = getCanvasStateKey(`${projectId}--${workflowId}`);
                 const newWorkflowId = state.savedCanvasStates[stateKey]?.lastActive;
 
@@ -190,12 +202,6 @@ export const actions = {
             } else {
                 await dispatch('loadWorkflow', { projectId, workflowId });
             }
-
-            await Vue.nextTick();
-            await Vue.nextTick();
-
-            // restore scroll and zoom if saved before
-            dispatch('restoreCanvasState');
         }
     },
     async loadWorkflow({ commit, rootState, dispatch }, { projectId, workflowId = 'root' }) {
@@ -210,7 +216,7 @@ export const actions = {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    setWorkflow({ commit }, { workflow, projectId, snapshotId }) {
+    setWorkflow({ commit, dispatch }, { workflow, projectId, snapshotId }) {
         commit('setActiveProjectId', projectId);
         commit('workflow/setActiveWorkflow', {
             ...workflow,
@@ -218,11 +224,13 @@ export const actions = {
         }, { root: true });
 
         commit('workflow/setActiveSnapshotId', snapshotId, { root: true });
-
         
         // TODO: remove this 'root' fallback after mocks have been adjusted
         let workflowId = workflow.info.containerId || 'root';
         addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+
+        // restore scroll and zoom if saved before
+        dispatch('restoreCanvasState');
     },
     unloadActiveWorkflow({ commit, rootState }, { clearWorkflow }) {
         let activeWorkflow = rootState.workflow.activeWorkflow;
@@ -260,10 +268,10 @@ export const actions = {
             dispatch('canvas/restoreScrollState', workflowCanvasState, { root: true });
         }
     },
-    removeCanvasState({ rootState, state }) {
-        const { info: { containerId: workflow }, projectId: project } = rootState.workflow.activeWorkflow;
+    removeCanvasState({ rootState, state }, projectId) {
+        const { info: { containerId: workflow } } = rootState.workflow.activeWorkflow;
         const rootWorkflowId = getRootWorkflowId(workflow);
-        const stateKey = getCanvasStateKey(`${project}--${rootWorkflowId}`);
+        const stateKey = getCanvasStateKey(`${projectId}--${rootWorkflowId}`);
 
         delete state.savedCanvasStates[stateKey];
     },

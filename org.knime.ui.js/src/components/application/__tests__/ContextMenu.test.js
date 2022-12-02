@@ -339,7 +339,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'deleteSelected', separator: true },
                     { text: 'createMetanode' },
                     { text: 'expandMetanode' },
-                    { text: 'Rename Metanode' },
+                    { text: 'Rename metanode' },
                     { text: 'createComponent' }
                 ])
             );
@@ -368,7 +368,7 @@ describe('ContextMenu.vue', () => {
                     { text: 'createMetanode' },
                     { text: 'createComponent' },
                     { text: 'expandComponent' },
-                    { text: 'Rename Component' }
+                    { text: 'Rename component' }
                 ])
             );
         });

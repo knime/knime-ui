@@ -131,7 +131,9 @@ describe('application store', () => {
             expect(removeEventListener).toHaveBeenCalled();
             expect(dispatchSpy).toHaveBeenCalledWith('application/unloadActiveWorkflow', { clearWorkflow: true });
         });
-        
+    });
+
+    describe('Replace application State', () => {
         it('replaces application state', async () => {
             await store.dispatch('application/replaceApplicationState', applicationState);
     
@@ -141,6 +143,41 @@ describe('application store', () => {
             expect(dispatchSpy).toHaveBeenCalledWith('application/setActiveProject', [
                 { projectId: 'foo', name: 'bar' }
             ]);
+        });
+
+        it('does not setWorkflow when replacing application state and the activeProject did not change', async () => {
+            const applicationState = {
+                openProjects: [
+                    { projectId: 'foo', name: 'bar' },
+                    { projectId: 'baz', name: 'bar', activeWorkflow: { workflow: { info: {} } } }
+                ]
+            };
+            store.commit('application/setActiveProjectId', 'baz');
+            await store.dispatch('application/replaceApplicationState', applicationState);
+
+            expect(dispatchSpy).not.toHaveBeenCalledWith('application/setWorkflow');
+            expect(store.state.application.activeProjectId).toBe('baz');
+        });
+
+        it('loads the proper (lastActive) workflow when the activeProject has an existing saved state', async () => {
+            const applicationState = {
+                openProjects: [
+                    { projectId: 'foo', name: 'bar' },
+                    { projectId: 'baz', name: 'bar', activeWorkflow: { workflow: { info: { containerId: 'root' } } } }
+                ]
+            };
+
+            store.commit('application/setSavedCanvasStates', {
+                workflow: 'root:2',
+                project: 'baz'
+            });
+
+            await store.dispatch('application/replaceApplicationState', applicationState);
+            
+            expect(dispatchSpy).toHaveBeenCalledWith('application/loadWorkflow', {
+                projectId: 'baz',
+                workflowId: 'root:2'
+            });
         });
     });
 
@@ -287,6 +324,8 @@ describe('application store', () => {
 
         test('switch from nothing to workflow', async () => {
             store.state.workflow.activeWorkflow = null;
+
+            store.commit('application/setSavedCanvasStates', { project: '1', workflow: 'root' });
 
             await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root' });
 
@@ -489,7 +528,7 @@ describe('application store', () => {
             expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(1);
             expect(store.state.application.savedCanvasStates['project1--workflow1']).toBeTruthy();
 
-            store.dispatch('application/removeCanvasState');
+            store.dispatch('application/removeCanvasState', 'project1');
             expect(store.state.application.savedCanvasStates).toEqual({});
         });
     });
