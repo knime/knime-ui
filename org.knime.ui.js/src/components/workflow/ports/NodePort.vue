@@ -107,7 +107,9 @@ const findTypeIdFromPlaceholderPort = ({
 
     // only add the direct match in the supportedIds array
     const directMatches = addablePortTypesGrouped.flatMap(
-        ([group, supportedIds]) => supportedIds.includes(fromPort.typeId) ? [[group, [fromPort.typeId]]] : []
+        ([group, supportedIds]) => supportedIds.includes(fromPort.typeId)
+            ? [[group ? group : 'default', [fromPort.typeId]]]
+            : []
     );
     const canAddPortKey = targetPortDirection === 'in' ? 'canAddInPort' : 'canAddOutPort';
 
