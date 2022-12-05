@@ -37,7 +37,6 @@ import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
-import org.knime.ui.java.UIPlugin;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.CreateWorkflowBrowserFunction;
@@ -54,7 +53,6 @@ import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
 import com.equo.comm.api.CommServiceProvider;
-import com.equo.middleware.api.IMiddlewareService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -177,25 +175,19 @@ public class KnimeBrowserView {
     }
 
     private static void initializeResourceHandlers() {
-        var context = UIPlugin.getContext();
-        var reference = context.getServiceReference(IMiddlewareService.class);
-        var middlewareService = context.getService(reference);
-        if (middlewareService.getResourceHandlers().containsKey(HTTP + DOMAIN_NAME)) {
-            return;
-        }
-        middlewareService.addResourceHandler(HTTP, DOMAIN_NAME, (request, headers) -> { // NOSONAR
-            var path = stringToURL(request.getUrl()).getPath();
+        CEFMiddlewareService.registerCustomResourceHandler(DOMAIN_NAME, urlString -> { // NOSONAR
+            var path = stringToURL(urlString).getPath();
             var url = Platform.getBundle("org.knime.ui.js").getEntry(BASE_PATH + path);
             try {
                 return FileLocator.toFileURL(url).openStream();
             } catch (Exception e) { // NOSONAR
-                var message = "Problem loading UI resources at '" + request.getUrl() + "'. See log for details.";
+                var message = "Problem loading UI resources at '" + urlString + "'. See log for details.";
                 NodeLogger.getLogger(KnimeBrowserView.class).error(message, e);
                 return new ByteArrayInputStream(message.getBytes(StandardCharsets.UTF_8));
             }
         });
 
-        CEFMiddlewareService.initializePageAndPageBuilderResourceHandlers( //
+        CEFMiddlewareService.registerPageAndPageBuilderResourceHandlers( //
             null, //
             PageResourceHandler.PORT_VIEW,  //
             PageResourceHandler.NODE_VIEW,  //

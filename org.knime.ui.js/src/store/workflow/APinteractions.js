@@ -53,7 +53,7 @@ export const actions = {
         const didClose = await closeWorkflow({ closingProjectId, nextProjectId });
         
         if (didClose) {
-            dispatch('application/removeCanvasState', {}, { root: true });
+            dispatch('application/removeCanvasState', closingProjectId, { root: true });
         }
     },
     

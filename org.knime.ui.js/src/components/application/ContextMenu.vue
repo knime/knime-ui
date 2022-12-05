@@ -127,7 +127,7 @@ export default {
             const metanodeOperationsGroup = [
                 { name: 'createMetanode', isVisible: this.selectedNodes.length },
                 { name: 'expandMetanode', isVisible: isMetanode },
-                { name: 'editName', isVisible: isMetanodeOrComponent, text: 'Rename Metanode' },
+                { name: 'editName', isVisible: isMetanodeOrComponent, text: 'Rename metanode' },
                 { name: 'createComponent', isVisible: this.selectedNodes.length }
             ];
 
@@ -135,7 +135,7 @@ export default {
                 { name: 'createMetanode', isVisible: this.selectedNodes.length },
                 { name: 'createComponent', isVisible: this.selectedNodes.length },
                 { name: 'expandComponent', isVisible: isComponent },
-                { name: 'editName', isVisible: isMetanodeOrComponent, text: 'Rename Component' }
+                { name: 'editName', isVisible: isMetanodeOrComponent, text: 'Rename component' }
             ];
 
             const items = menuGroups()
