@@ -214,11 +214,17 @@ describe('ConnectorSnappingProvider.vue', () => {
     });
 
     describe('Placeholder ports', () => {
+        const validPortGroups = {
+            default: {
+                canAddInPort: true,
+                canAddOutPort: true,
+                supportedPortTypeIds: ['TYPE_ID']
+            }
+        };
         const onSnapCallback = jest.fn(() => ({
             didSnap: true,
             createPortFromPlaceholder: {
-                typeId: 'TYPE_ID',
-                portGroup: null
+                validPortGroups
             }
         }));
 
@@ -258,9 +264,9 @@ describe('ConnectorSnappingProvider.vue', () => {
                 })).toStrictEqual({
                     index: 3,
                     isPlaceHolderPort: true,
-                    portGroup: null,
                     side: 'in',
-                    typeId: 'TYPE_ID'
+                    snapPosition: [5, 25],
+                    validPortGroups
                 });
             });
 
@@ -277,17 +283,6 @@ describe('ConnectorSnappingProvider.vue', () => {
                     onSnapCallback
                 });
 
-                // sets the proper data to target port that enables us to create this port on drop
-                expect(getSlottedStubProp({
-                    wrapper,
-                    propName: 'targetPort'
-                })).toStrictEqual({
-                    index: 3,
-                    isPlaceHolderPort: true,
-                    portGroup: null,
-                    side: 'in',
-                    typeId: 'TYPE_ID'
-                });
 
                 addNodePortMock.mockReturnValueOnce({ newPortIdx: 3 });
 
@@ -344,9 +339,9 @@ describe('ConnectorSnappingProvider.vue', () => {
                 })).toStrictEqual({
                     index: 3,
                     isPlaceHolderPort: true,
-                    portGroup: null,
                     side: 'out',
-                    typeId: 'TYPE_ID'
+                    snapPosition: [35, 25],
+                    validPortGroups
                 });
             });
 
@@ -361,18 +356,6 @@ describe('ConnectorSnappingProvider.vue', () => {
                         targetPortDirection: 'out'
                     },
                     onSnapCallback
-                });
-
-                // sets the proper data to target port that enables us to create this port on drop
-                expect(getSlottedStubProp({
-                    wrapper,
-                    propName: 'targetPort'
-                })).toStrictEqual({
-                    index: 3,
-                    isPlaceHolderPort: true,
-                    portGroup: null,
-                    side: 'out',
-                    typeId: 'TYPE_ID'
                 });
 
                 addNodePortMock.mockReturnValueOnce({ newPortIdx: 3 });
@@ -400,6 +383,9 @@ describe('ConnectorSnappingProvider.vue', () => {
                     sourcePort: 3
                 });
             });
+
+            // TODO: shows menu if multiple ports or portGroups can be added
+
         });
 
         describe('Incompatible and incomplete states', () => {
@@ -443,9 +429,9 @@ describe('ConnectorSnappingProvider.vue', () => {
                 })).toStrictEqual({
                     index: 3,
                     isPlaceHolderPort: true,
-                    portGroup: null,
                     side: 'out',
-                    typeId: 'TYPE_ID'
+                    snapPosition: [35, 25],
+                    validPortGroups
                 });
 
                 addNodePortMock.mockReturnValueOnce({ newPortIdx: 3 });

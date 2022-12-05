@@ -303,7 +303,7 @@ export default {
                 const side = targetPort.side;
                 this.addPortAndConnectIt({
                     typeId,
-                    portGroup,
+                    portGroup: portGroup === 'default' ? null : portGroup,
                     side,
                     startNode,
                     startPort
