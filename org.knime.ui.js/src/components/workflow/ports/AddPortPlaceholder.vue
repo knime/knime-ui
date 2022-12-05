@@ -129,6 +129,11 @@ export default {
             this.closePortTypeMenu();
         },
         onClick() {
+            if (this.isMenuOpen) {
+                this.closeMenu();
+                return;
+            }
+
             const portGroups = Object.values(this.validPortGroups || {});
 
             if (portGroups.length === 1) {
