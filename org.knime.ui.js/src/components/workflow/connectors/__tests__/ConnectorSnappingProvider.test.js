@@ -243,6 +243,7 @@ describe('ConnectorSnappingProvider.vue', () => {
                 supportedPortTypeIds: ['TYPE_ID']
             }
         };
+
         describe('Add Port', () => {
             test.each([
                 ['input', 'in', 0],

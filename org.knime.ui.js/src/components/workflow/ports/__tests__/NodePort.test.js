@@ -80,7 +80,7 @@ describe('NodePort', () => {
                     }
                 },
                 mutations: {
-                    setTooltip: jest.fn(),
+                    setTooltip: jest.fn()
                 },
                 actions: {
                     connectNodes: jest.fn(),

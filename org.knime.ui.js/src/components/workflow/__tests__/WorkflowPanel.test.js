@@ -246,7 +246,7 @@ describe('WorkflowPanel', () => {
     describe('Quick add node menu', () => {
         let closeCallback;
 
-        beforeEach(async () => {
+        beforeEach(() => {
             closeCallback = jest.fn();
             storeConfig.workflow.state.quickAddNodeMenu = {
                 isOpen: true,
