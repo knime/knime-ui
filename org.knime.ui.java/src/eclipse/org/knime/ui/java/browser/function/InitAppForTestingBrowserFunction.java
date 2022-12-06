@@ -102,13 +102,10 @@ public class InitAppForTestingBrowserFunction extends BrowserFunction {
             return null;
         }
         JsonNode openedWorkflows = appStateNode.get("openedWorkflows");
-        List<OpenedWorkflow> openedWorkflowsList;
-        if (openedWorkflows != null) {
-            openedWorkflowsList = StreamSupport.stream(openedWorkflows.spliterator(), false)
+        List<OpenedWorkflow> openedWorkflowsList = openedWorkflows == null ? //
+            Collections.emptyList() : //
+            StreamSupport.stream(openedWorkflows.spliterator(), false)
                 .map(InitAppForTestingBrowserFunction::createOpenedWorkflow).collect(Collectors.toList());
-        } else {
-            openedWorkflowsList = Collections.emptyList();
-        }
         var appState = new AppState() { // NOSONAR
             @Override
             public List<OpenedWorkflow> getOpenedWorkflows() {

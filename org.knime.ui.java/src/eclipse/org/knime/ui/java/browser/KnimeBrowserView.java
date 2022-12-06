@@ -138,22 +138,20 @@ public class KnimeBrowserView {
         }
     }
 
-	@PostConstruct
-	public void createPartControl(final Composite parent) {
-        // This is a 'quasi' singleton.
-        // Even though it has a public constructor it's only
-        // expected to have one single instance and will fail if this method
-	    // is called on another instance again.
+    @PostConstruct
+    public void createPartControl(final Composite parent) {
+        // This is a 'quasi' singleton. Even though it has a public constructor it's only expected to have one single
+        // instance and will fail if this method is called on another instance again.
         if (INSTANCE != null) {
             throw new IllegalStateException(
                 "Instance can't be created. There's only one instance of the KnimeBrowserView allowed.");
         }
         INSTANCE = this; // NOSONAR it's fine because this class is technically a singleton
 
-		m_browser = new Browser(parent, SWT.NONE);
-		m_browser.addLocationListener(new KnimeBrowserLocationListener(this));
-		m_browser.setMenu(new Menu(m_browser.getShell()));
-		initializeResourceHandlers();
+        m_browser = new Browser(parent, SWT.NONE);
+        m_browser.addLocationListener(new KnimeBrowserLocationListener(this));
+        m_browser.setMenu(new Menu(m_browser.getShell()));
+        initializeResourceHandlers();
 
         if (viewInitializer == null) {
             activateViewInitializer(NoOpenWorkflowsAppState::new);
