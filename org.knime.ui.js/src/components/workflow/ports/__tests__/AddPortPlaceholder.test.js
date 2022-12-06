@@ -72,6 +72,39 @@ describe('AddPortPlaceholder.vue', () => {
             expect(addPortButton.find('path').attributes('d')).toBe(addPortPlaceholderPath);
         });
 
+        it('show and hide with port type menu', async () => {
+            // jest.useFakeTimers does not work, not sure why
+            window.setTimeout = fn => fn();
+            let wrapper = doMount();
+
+            expect(wrapper.element.style.opacity).toBe('');
+
+            $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
+            await Vue.nextTick();
+
+            expect(wrapper.element.style.opacity).toBe('1');
+
+            $store.dispatch('workflow/closePortTypeMenu');
+            await Vue.nextTick();
+
+            expect(wrapper.element.style.opacity).toBe('');
+        });
+
+        it('opening menu again aborts delayed fade out', async () => {
+            let wrapper = doMount();
+
+            expect(wrapper.element.style.opacity).toBe('');
+
+            jest.useFakeTimers();
+            $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
+            $store.dispatch('workflow/closePortTypeMenu');
+            $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
+            jest.runAllTimers();
+            await Vue.nextTick();
+
+            expect(wrapper.element.style.opacity).toBe('1');
+        });
+
         test('adds port directly, if only one option is given', () => {
             let propsData = { portGroups: { input: { supportedPortTypeIds: ['table'], canAddInPort: true } } };
             let wrapper = doMount(propsData);
