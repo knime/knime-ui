@@ -297,13 +297,15 @@ export default {
             }
             // create the port if the targetPort is marked as a placeholder port
             // we have a single direct match so just add and connect it
-            if (Object.keys(targetPort.validPortGroups).length === 1) {
-                const [portGroup] = Object.keys(targetPort.validPortGroups);
-                const [typeId] = targetPort.validPortGroups[portGroup].supportedPortTypeIds;
+            const portGroupKeys = Object.keys(targetPort.validPortGroups);
+            const [firstPortGroup] = portGroupKeys;
+            if (portGroupKeys.length === 1 &&
+                targetPort.validPortGroups[firstPortGroup].supportedPortTypeIds.length === 1) {
+                const [typeId] = targetPort.validPortGroups[firstPortGroup].supportedPortTypeIds;
                 const side = targetPort.side;
                 this.addPortAndConnectIt({
                     typeId,
-                    portGroup: portGroup === 'default' ? null : portGroup,
+                    portGroup: firstPortGroup === 'default' ? null : firstPortGroup,
                     side,
                     startNode,
                     startPort
@@ -325,6 +327,7 @@ export default {
                         this.setPortTypeMenuPreviewPort(item?.port);
                     },
                     'item-click': ({ typeId, portGroup }) => {
+                        portGroup = portGroup === 'default' ? null : portGroup;
                         const side = targetPort.side;
                         this.addPortAndConnectIt({ typeId, portGroup, side, startNode, startPort });
                     },
