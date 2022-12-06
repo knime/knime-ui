@@ -57,10 +57,10 @@ export const openView = ({ projectId, nodeId }) => {
  * @param {String} projectId
  * @returns {void}
  */
-export const saveWorkflow = ({ projectId }) => {
+export const saveWorkflow = ({ projectId, workflowPreviewSvg }) => {
     try {
         // returns falsy on success
-        let error = window.saveWorkflow(projectId);
+        let error = window.saveWorkflow(projectId, workflowPreviewSvg);
         if (error) {
             throw new Error(error);
         }

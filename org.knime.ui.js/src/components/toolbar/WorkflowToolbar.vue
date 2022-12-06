@@ -4,9 +4,7 @@ import { mapState, mapGetters } from 'vuex';
 import WorkflowBreadcrumb from './WorkflowBreadcrumb.vue';
 import ZoomMenu from './ZoomMenu.vue';
 import ToolbarShortcutButton from './ToolbarShortcutButton.vue';
-import ToolbarButton from './ToolbarButton.vue';
 
-import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
 /**
  * A toolbar shown on top of a workflow canvas. Contains action buttons and breadcrumb.
  */
@@ -14,16 +12,12 @@ export default {
     components: {
         WorkflowBreadcrumb,
         ZoomMenu,
-        ToolbarShortcutButton,
-        ToolbarButton
+        ToolbarShortcutButton
     },
     computed: {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
-        ...mapState('application', ['activeProjectId']),
-        ...mapState('canvas', ['getScrollContainerElement']),
         ...mapGetters('workflow', ['isWorkflowEmpty']),
         ...mapGetters('selection', ['selectedNodes']),
-        ...mapGetters('application', ['getWorkflowPreviewSnapshot']),
 
         hasBreadcrumb() {
             return this.workflow?.parents?.length > 0;
@@ -61,19 +55,6 @@ export default {
                 .filter(([name, visible]) => visible)
                 .map(([name, visible]) => name);
         }
-    },
-    methods: {
-        async createSvgPreview() {
-            console.clear();
-            const isRootWorkflow = this.workflow.info.containerId === 'root';
-
-            const svgElement = isRootWorkflow
-                ? this.getScrollContainerElement().firstChild
-                : this.getWorkflowPreviewSnapshot(this.activeProjectId);
-
-            const output = await generateWorkflowPreview(svgElement);
-            console.log(output);
-        }
     }
 };
 </script>
@@ -100,14 +81,6 @@ export default {
         />
       </div>
     </transition-group>
-
-    <ToolbarButton
-      :class="['toolbar-button']"
-      title="SVG Preview"
-      @click.native="createSvgPreview"
-    >
-      svg preview
-    </ToolbarButton>
 
     <WorkflowBreadcrumb
       v-if="hasBreadcrumb"

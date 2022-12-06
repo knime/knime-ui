@@ -1,3 +1,4 @@
+import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
 import { openNodeDialog, openLegacyFlowVariableDialog, openView, saveWorkflow, closeWorkflow,
     openLayoutEditor } from '@api';
 
@@ -36,9 +37,20 @@ export const mutations = { };
 
 export const actions = {
     /* See docs in API */
-    saveWorkflow({ state }) {
-        let { activeWorkflow: { projectId } } = state;
-        saveWorkflow({ projectId });
+    async saveWorkflow({ state, rootState, rootGetters }) {
+        const { getScrollContainerElement } = rootState.canvas;
+        const { activeWorkflow: { projectId, info: { containerId } } } = state;
+        
+        const getWorkflowPreviewSnapshot = rootGetters['application/getWorkflowPreviewSnapshot'];
+
+        const isRootWorkflow = containerId === 'root';
+
+        const svgElement = isRootWorkflow
+            ? getScrollContainerElement().firstChild
+            : getWorkflowPreviewSnapshot(projectId);
+
+        const workflowPreviewSvg = await generateWorkflowPreview(svgElement);
+        saveWorkflow({ projectId, workflowPreviewSvg });
     },
 
     /* Tell the backend to unload this workflow from memory */

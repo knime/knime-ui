@@ -62,9 +62,13 @@ const removeElements = (elements, predicateFn) => {
 };
 
 /**
+ * Obtains a clone of the provided SVG element. Adding it to the DOM
+ * as a child of a hidden parent. We add it to the DOM so that we can
+ * get the browser to calculate computed styles
+ *
  * @typedef {Object} ReturnType
- * @property {HTMLElement} svgClone
- * @property {Function} teardown
+ * @property {HTMLElement} svgClone the SVG element clone
+ * @property {Function} teardown a function that can be called to clean up the DOM after we're done using the clone
  *
  * @param {HTMLElement} element
  * @returns {ReturnType}
@@ -93,6 +97,7 @@ const getSVGElementClone = (element) => {
 /**
  * Updates the viewBox property on the SVG element by using the same size as
  * the workflow sheet (actual workspace size)
+ *
  * @param {HTMLElement} svgClone
  * @param {HTMLElement} workflowSheet
  * @returns {void}
@@ -125,7 +130,7 @@ const inheritedCssProperties = [
 ];
 
 /**
- * Function that given an element will apply all the computed styles (derived from css classes)
+ * Function that, given an element, will apply all the computed styles (derived from css classes)
  * as direct inlined styles to the element. It will recursively also run the same behavior for all
  * the element's children
  *
@@ -154,6 +159,7 @@ const useCSSfromComputedStyles = (element) => {
 /**
  * Returns the base64 encoded contents of the file that will be fetched from the given
  * filepath
+ *
  * @param {String} filepath
  * @returns {Promise}
  */
@@ -179,38 +185,33 @@ const fileToBase64 = async (filepath) => {
 };
 
 /**
- * @typedef {'embed'} EmbedMode
- * @typedef {'import'} ImportMode
- * @typedef {(EmbedMode | ImportMode) } Mode
+ * Appends a style tag in the SVG defs that will contain the required fonts
+ * as a base64 data-url
  *
  * @param {HTMLElement} svgElement
- * @param {Mode} mode
  * @returns {void}
  */
-const addFontStyles = async (svgElement, mode = 'embed') => {
+const addFontStyles = async (svgElement) => {
     const styleTag = document.createElement('style');
 
-    if (mode === 'import') {
-        styleTag.appendChild(
-            document.createTextNode(`@import url('https://fonts.googleapis.com/css?family=Roboto+Condensed:400,100,100italic,300,300italic,400italic,500,500italic,700,700italic,900,900italic');`)
-        );
-    } else {
-        const fontBase64 = await fileToBase64(robotoCondensed);
+    const fontBase64 = await fileToBase64(robotoCondensed);
 
-        styleTag.appendChild(
-            document.createTextNode(`@font-face {
-                font-family: "Roboto Condensed";
-                src: url("data:application/font-woff;charset=utf-8;base64,${fontBase64}");
-            }`)
-        );
-    }
+    styleTag.appendChild(
+        document.createTextNode(`@font-face { 
+            font-family: "Roboto Condensed"; 
+            src: url("data:application/font-woff;charset=utf-8;base64,${fontBase64}");
+        }`)
+    );
+    
     styleTag.type = 'text/css';
 
     svgElement.getElementsByTagName('defs')[0].appendChild(styleTag);
 };
 
 /**
- * Generate the preview of the "current" root workflow.
+ * Generate the preview of a workflow based on the provided SVG element which
+ * represents the rendered workflow content.
+ *
  * @param {HTMLElement} svgElement root workflow SVG element
  * @returns {String} The contents of the root workflow as an SVG string
  */
