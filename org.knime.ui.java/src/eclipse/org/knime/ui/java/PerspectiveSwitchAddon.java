@@ -119,7 +119,10 @@ public final class PerspectiveSwitchAddon {
             previousPerspectiveId = oldPerspective.getElementId();
         }
 
-        if (newPerspective == webUIPerspective && oldPerspective != null) {
+        if (newPerspective == webUIPerspective && oldPerspective == null) {
+            // make sure the web ui perspective is initialized correctly if visible on start-up
+            setTrimsAndMenuVisible(false, m_modelService, m_app);
+        } else if (newPerspective == webUIPerspective) {
             onSwitchToWebUI();
         } else if (oldPerspective == webUIPerspective) {
             onSwitchToJavaUI();
