@@ -307,7 +307,7 @@ export const actions = {
                 element: canvasElement
             });
             
-        // Going back to the root of a workflow without having changed projects
+            // Going back to the root of a workflow without having changed projects
         } else if (!isCurrentlyOnRoot && newWorkflow?.workflowId === 'root' && !isChangingProject) {
             // Since we're back in the root workflow, we can clear the previously saved snapshot
             commit('removeWorkflowPreviewSnapshot', { projectId: activeProjectId });

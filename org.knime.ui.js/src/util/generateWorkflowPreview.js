@@ -148,11 +148,11 @@ const useCSSfromComputedStyles = (element) => {
     const compStyles = getComputedStyle(element);
 
     if (compStyles.length > 0) {
-        for (const compStyle of compStyles) {
+        Object.values(compStyles).forEach(compStyle => {
             if (inheritedCssProperties.includes(compStyle)) {
                 element.style.setProperty(compStyle, compStyles.getPropertyValue(compStyle));
             }
-        }
+        });
     }
 };
 
@@ -223,7 +223,7 @@ export const generateWorkflowPreview = async (svgElement) => {
 
     // inline custom fonts to the svg element clone
     await addFontStyles(svgClone);
-    
+
     // set workflow sheet transparency
     setElementFill(workflowSheet, 'transparent');
 
