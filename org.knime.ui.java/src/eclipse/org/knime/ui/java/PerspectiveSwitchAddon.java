@@ -119,7 +119,7 @@ public final class PerspectiveSwitchAddon {
             previousPerspectiveId = oldPerspective.getElementId();
         }
 
-        if (newPerspective == webUIPerspective) {
+        if (newPerspective == webUIPerspective && oldPerspective != null) {
             onSwitchToWebUI();
         } else if (oldPerspective == webUIPerspective) {
             onSwitchToJavaUI();
