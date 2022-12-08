@@ -128,7 +128,7 @@ export default {
             if (!$store.getters['workflow/isWritable']) {
                 return false;
             }
-            
+
             if (!$store.getters['selection/selectedNodes'].length) {
                 return false;
             }
@@ -183,11 +183,12 @@ export default {
         text: 'Copy',
         title: 'Copy selection',
         hotkey: ['Ctrl', 'C'],
+        allowDefault: true,
         execute:
             ({ $store }) => $store.dispatch('workflow/copyOrCutWorkflowParts', { command: 'copy' }),
         condition:
             ({ $store }) => Object.keys($store.getters['selection/selectedNodes']).length !== 0 &&
-            $store.state.application.hasClipboardSupport
+                $store.state.application.hasClipboardSupport && document?.activeElement?.id === 'kanvas'
     },
     cut: {
         text: 'Cut',
@@ -197,7 +198,7 @@ export default {
             ({ $store }) => $store.dispatch('workflow/copyOrCutWorkflowParts', { command: 'cut' }),
         condition:
             ({ $store }) => Object.keys($store.getters['selection/selectedNodes']).length !== 0 &&
-            $store.getters['workflow/isWritable'] && $store.state.application.hasClipboardSupport
+                $store.getters['workflow/isWritable'] && $store.state.application.hasClipboardSupport
     },
     paste: {
         text: 'Paste',
@@ -209,7 +210,7 @@ export default {
 
                 if (eventDetail) {
                     const { clientX, clientY } = eventDetail;
-                    
+
                     const [x, y] = $store.getters['canvas/screenToCanvasCoordinates']([clientX, clientY]);
                     customPosition = { x, y };
                 }
