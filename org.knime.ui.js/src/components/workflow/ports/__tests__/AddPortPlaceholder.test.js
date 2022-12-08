@@ -73,8 +73,7 @@ describe('AddPortPlaceholder.vue', () => {
         });
 
         it('show and hide with port type menu', async () => {
-            // jest.useFakeTimers does not work, not sure why
-            window.setTimeout = fn => fn();
+            jest.useFakeTimers();
             let wrapper = doMount();
 
             expect(wrapper.element.style.opacity).toBe('');
@@ -86,6 +85,7 @@ describe('AddPortPlaceholder.vue', () => {
 
             $store.dispatch('workflow/closePortTypeMenu');
             await Vue.nextTick();
+            jest.advanceTimersToNextTimer();
 
             expect(wrapper.element.style.opacity).toBe('');
         });
@@ -99,8 +99,8 @@ describe('AddPortPlaceholder.vue', () => {
             $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
             $store.dispatch('workflow/closePortTypeMenu');
             $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
-            jest.runAllTimers();
             await Vue.nextTick();
+            jest.advanceTimersToNextTimer();
 
             expect(wrapper.element.style.opacity).toBe('1');
         });
