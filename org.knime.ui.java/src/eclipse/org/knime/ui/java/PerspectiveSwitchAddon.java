@@ -47,10 +47,7 @@
 package org.knime.ui.java;
 
 import static org.eclipse.ui.internal.IWorkbenchConstants.PERSPECTIVE_STACK_ID;
-import static org.knime.ui.java.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
-import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.inject.Inject;
@@ -64,13 +61,10 @@ import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
 import org.eclipse.e4.ui.model.application.ui.advanced.MPerspectiveStack;
-import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.UIEvents.EventTags;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.e4.ui.workbench.modeling.EPartService;
-import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
 import org.knime.gateway.impl.webui.AppStateProvider;
@@ -118,18 +112,17 @@ public final class PerspectiveSwitchAddon {
         }
 
         MPerspective oldPerspective = (MPerspective)event.getProperty(EventTags.OLD_VALUE);
-        if (oldPerspective == null) {
-            // NXT-988: Workaround to handle case when AP is quit while in WebUI perspective. The perspective is
-            //  removed on shutdown (see PerspectiveFixAddon#removeWebUIPerspective). On next startup, we switch out
-            //  of the WebUI perspective (see KNIMEApplication#preventWebUIStartup), triggering this handler.
-            return;
-        }
         MPerspective newPerspective = (MPerspective)newValue;
         MPerspective webUIPerspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
 
-        previousPerspectiveId = oldPerspective.getElementId();
+        if (oldPerspective != null) {
+            previousPerspectiveId = oldPerspective.getElementId();
+        }
 
-        if (newPerspective == webUIPerspective) {
+        if (newPerspective == webUIPerspective && oldPerspective == null) {
+            // make sure the web ui perspective is initialized correctly if visible on start-up
+            setTrimsAndMenuVisible(false, m_modelService, m_app);
+        } else if (newPerspective == webUIPerspective) {
             onSwitchToWebUI();
         } else if (oldPerspective == webUIPerspective) {
             onSwitchToJavaUI();
@@ -158,13 +151,7 @@ public final class PerspectiveSwitchAddon {
         PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
         setTrimsAndMenuVisible(false, m_modelService, m_app);
         Supplier<AppStateProvider.AppState> supplier = () -> EclipseUIStateUtil.createAppState(m_modelService, m_app);
-        KnimeBrowserView.addActivatedCallback(v -> {
-            var eventConsumer = v.createEventConsumer();
-            var appStateProvider = new AppStateProvider(supplier);
-            DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer);
-            v.initBrowserFunctions(appStateProvider);
-        });
-        KnimeBrowserView.addActivatedCallback(KnimeBrowserView::setUrl);
+        KnimeBrowserView.activateViewInitializer(supplier);
         switchToWebUITheme();
         if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
             // Fixes a drag'n'drop issue on Windows, see NXT-1151.
@@ -176,8 +163,7 @@ public final class PerspectiveSwitchAddon {
     }
 
     private void onSwitchToJavaUI() {
-        callOnKnimeBrowserView(KnimeBrowserView::clearUrl);
-        DefaultServicesUtil.disposeDefaultServices();
+        KnimeBrowserView.clearView();
         setTrimsAndMenuVisible(true, m_modelService, m_app);
         switchToJavaUITheme();
         // the color of the workflow editor canvas changes when switching back
@@ -189,23 +175,6 @@ public final class PerspectiveSwitchAddon {
 
         if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
             System.clearProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
-        }
-    }
-
-    private void callOnKnimeBrowserView(final Consumer<KnimeBrowserView> call) {
-        List<MPart> views = m_modelService.findElements(m_app, BROWSER_VIEW_PART_ID, MPart.class);
-        for (MPart view : views) {
-            if (view.getObject() instanceof KnimeBrowserView) {
-                call.accept((KnimeBrowserView)view.getObject());
-            } else {
-                LOGGER.warn("Element found for '" + BROWSER_VIEW_PART_ID + "'"
-                    + " which is not the expected KNIME browser view.");
-            }
-        }
-        if (views.size() > 1) {
-            LOGGER.warn(views.size()
-                + " web-ui views have been found while switching the perspective, but only one is expected!");
-
         }
     }
 
