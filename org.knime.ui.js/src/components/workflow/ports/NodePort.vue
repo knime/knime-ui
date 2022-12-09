@@ -85,8 +85,8 @@ const groupAddablePortTypesByPortGroup = ({
  * @returns {Object.<string, Object>} returns an object with the portGroup as key and an object as value
  */
 const transformToPortGroupObject = (groupArray, canAddPortKey) => Object.assign(
-    ...groupArray.map(([group, supportedPortTypeIds]) => ({
-        [group]: {
+    ...groupArray.map(([groupName, supportedPortTypeIds]) => ({
+        [groupName]: {
             [canAddPortKey]: true,
             supportedPortTypeIds
         }
@@ -107,8 +107,8 @@ const findTypeIdFromPlaceholderPort = ({
 
     // only add the direct match in the supportedIds array
     const directMatches = addablePortTypesGrouped.flatMap(
-        ([group, supportedIds]) => supportedIds.includes(fromPort.typeId)
-            ? [[group ? group : 'default', [fromPort.typeId]]]
+        ([groupName, supportedIds]) => supportedIds.includes(fromPort.typeId)
+            ? [[groupName || 'default', [fromPort.typeId]]]
             : []
     );
     const canAddPortKey = targetPortDirection === 'in' ? 'canAddInPort' : 'canAddOutPort';
@@ -128,7 +128,7 @@ const findTypeIdFromPlaceholderPort = ({
             toPort: { typeId },
             availablePortTypes
         }));
-        return compatibleTypeIds.length ? [[group, compatibleTypeIds]] : [];
+        return compatibleTypeIds.length > 0 ? [[group, compatibleTypeIds]] : [];
     });
 
     if (compatibleMatches.length > 0) {

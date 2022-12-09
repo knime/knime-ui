@@ -78,14 +78,12 @@ describe('AddPortPlaceholder.vue', () => {
 
             expect(wrapper.element.style.opacity).toBe('');
 
-            $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
-            await Vue.nextTick();
+            await $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
 
             expect(wrapper.element.style.opacity).toBe('1');
 
-            $store.dispatch('workflow/closePortTypeMenu');
-            await Vue.nextTick();
-            jest.advanceTimersToNextTimer();
+            await $store.dispatch('workflow/closePortTypeMenu');
+            jest.runAllTimers();
 
             expect(wrapper.element.style.opacity).toBe('');
         });
@@ -96,10 +94,9 @@ describe('AddPortPlaceholder.vue', () => {
             expect(wrapper.element.style.opacity).toBe('');
 
             jest.useFakeTimers();
-            $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
-            $store.dispatch('workflow/closePortTypeMenu');
-            $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
-            await Vue.nextTick();
+            await $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
+            await $store.dispatch('workflow/closePortTypeMenu');
+            await $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
             jest.advanceTimersToNextTimer();
 
             expect(wrapper.element.style.opacity).toBe('1');
