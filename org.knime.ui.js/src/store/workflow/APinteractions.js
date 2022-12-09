@@ -54,7 +54,7 @@ export const actions = {
     },
 
     /* Tell the backend to unload this workflow from memory */
-    async closeWorkflow({ dispatch, rootState }, closingProjectId) {
+    async closeWorkflow({ dispatch, commit, rootState }, closingProjectId) {
         const { openProjects, activeProjectId } = rootState.application;
         const nextProjectId = getNextProjectId({
             openProjects,
@@ -65,6 +65,7 @@ export const actions = {
         const didClose = await closeWorkflow({ closingProjectId, nextProjectId });
         
         if (didClose) {
+            dispatch('application/removeWorkflowPreviewSnapshot', { projectId: activeProjectId }, { root: true });
             dispatch('application/removeCanvasState', closingProjectId, { root: true });
         }
     },

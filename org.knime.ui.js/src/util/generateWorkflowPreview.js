@@ -185,6 +185,25 @@ const fileToBase64 = async (filepath) => {
 };
 
 /**
+ * Gets base64 string of the fonts used by the SVG preview. It caches the string for
+ * further use
+ * @returns {Promise<String>}
+ */
+const getFontData = async () => {
+    const fontCacheKey = 'workflow-preview-font';
+    const cachedFont = localStorage.getItem(fontCacheKey);
+
+    if (cachedFont) {
+        return Promise.resolve(cachedFont);
+    }
+
+    const fontBase64 = await fileToBase64(robotoCondensed);
+    localStorage.setItem(fontCacheKey, fontBase64);
+    
+    return fontBase64;
+};
+
+/**
  * Appends a style tag in the SVG defs that will contain the required fonts
  * as a base64 data-url
  *
@@ -194,7 +213,7 @@ const fileToBase64 = async (filepath) => {
 const addFontStyles = async (svgElement) => {
     const styleTag = document.createElement('style');
 
-    const fontBase64 = await fileToBase64(robotoCondensed);
+    const fontBase64 = await getFontData();
 
     styleTag.appendChild(
         document.createTextNode(`@font-face { 
@@ -213,9 +232,14 @@ const addFontStyles = async (svgElement) => {
  * represents the rendered workflow content.
  *
  * @param {HTMLElement} svgElement root workflow SVG element
- * @returns {String} The contents of the root workflow as an SVG string
+ * @returns {String | null} The contents of the root workflow as an SVG string or null when no element is provided
+ * as a parameter
  */
 export const generateWorkflowPreview = async (svgElement) => {
+    if (!svgElement) {
+        return null;
+    }
+
     // clone the element so that the original one does not get modified
     const { svgClone, teardown } = getSVGElementClone(svgElement);
 

@@ -172,4 +172,20 @@ describe('generateWorkflowPreview', () => {
         const outputEl = createElementFromOutput(output);
         expect(outputEl.querySelector('foreignObject').style.stroke).toBe('rgb(123, 123, 123)');
     });
+
+    it('caches the fonts for continued usage', async () => {
+        localStorage.clear();
+        const { svg } = setup();
+        jest.spyOn(Storage.prototype, 'setItem');
+        jest.spyOn(Storage.prototype, 'getItem');
+        
+        await generateWorkflowPreview(svg);
+        
+        expect(localStorage.setItem).toHaveBeenCalledTimes(1);
+        
+        await generateWorkflowPreview(svg);
+        
+        expect(localStorage.getItem).toHaveBeenCalled();
+        expect(localStorage.setItem).toHaveBeenCalledTimes(1);
+    });
 });

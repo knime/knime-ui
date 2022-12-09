@@ -31,21 +31,11 @@ export const state = () => ({
     hasNodeRecommendationsEnabled: false,
 
     // Map that keeps track of root workflow snapshots. Only needed when
-    // wanting to generate a workflow preview from a nested workflow
-    workflowPreviewSnapshots: new Map()
+    // wanting to generate a workflow preview while being in a nested workflow
+    rootWorkflowSnapshots: new Map()
 });
 
 export const mutations = {
-    setWorkflowPreviewSnapshot(state, { projectId, element }) {
-        // always use the "root" workflow
-        const snapshotKey = encodeString(`${projectId}--root`);
-        state.workflowPreviewSnapshots.set(snapshotKey, element.cloneNode(true));
-    },
-
-    removeWorkflowPreviewSnapshot(state, { projectId }) {
-        state.workflowPreviewSnapshots.delete(encodeString(`${projectId}--root`));
-    },
-
     setActiveProjectId(state, projectId) {
         state.activeProjectId = projectId;
     },
@@ -291,7 +281,7 @@ export const actions = {
 
         delete state.savedCanvasStates[stateKey];
     },
-    updatePreviewSnapshot({ rootState, state, commit }, { isChangingProject, newWorkflow }) {
+    updatePreviewSnapshot({ rootState, state, dispatch }, { isChangingProject, newWorkflow }) {
         const isCurrentlyOnRoot = rootState.workflow?.activeWorkflow?.info.containerId === 'root';
 
         const { activeProjectId } = state;
@@ -302,7 +292,7 @@ export const actions = {
             const canvasElement = rootState.canvas.getScrollContainerElement().firstChild;
             
             // save a snapshot of the current state of the root workflow
-            commit('setWorkflowPreviewSnapshot', {
+            dispatch('setWorkflowPreviewSnapshot', {
                 projectId: activeProjectId,
                 element: canvasElement
             });
@@ -310,9 +300,19 @@ export const actions = {
             // Going back to the root of a workflow without having changed projects
         } else if (!isCurrentlyOnRoot && newWorkflow?.workflowId === 'root' && !isChangingProject) {
             // Since we're back in the root workflow, we can clear the previously saved snapshot
-            commit('removeWorkflowPreviewSnapshot', { projectId: activeProjectId });
+            dispatch('removeWorkflowPreviewSnapshot', { projectId: activeProjectId });
         }
     },
+    setWorkflowPreviewSnapshot({ state }, { projectId, element }) {
+        // always use the "root" workflow
+        const snapshotKey = encodeString(`${projectId}--root`);
+        state.rootWorkflowSnapshots.set(snapshotKey, element.cloneNode(true));
+    },
+
+    removeWorkflowPreviewSnapshot({ state }, { projectId }) {
+        state.rootWorkflowSnapshots.delete(encodeString(`${projectId}--root`));
+    },
+
     toggleContextMenu({ state, commit, rootGetters }, contextMenuEvent) {
         if (state.contextMenu.isOpen) {
             // when closing an active menu, we could optionally receive a native event
@@ -372,7 +372,7 @@ export const getters = {
         return (projectId) => {
             const snapshotKey = encodeString(`${projectId}--root`);
 
-            return state.workflowPreviewSnapshots.get(snapshotKey);
+            return state.rootWorkflowSnapshots.get(snapshotKey);
         };
     }
 };
