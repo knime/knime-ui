@@ -66,20 +66,22 @@ export default {
             // This currently only looks for the first shortcut that matches the hotkey
             let shortcut = this.$shortcuts.findByHotkey(e);
 
-            if (shortcut) {
-                const isEnabled = this.$shortcuts.isEnabled(shortcut);
-                if (isEnabled) {
-                    this.$shortcuts.dispatch(shortcut);
-                }
-
-                // prevent default if shortcut did not allow it (like copy text via CTRL+C)
-                if (isEnabled || this.$shortcuts.preventDefault(shortcut)) {
-                    e.preventDefault();
-                }
-
-                // this is the only place where the registered hotkeys should be handled
-                e.stopPropagation();
+            if (!shortcut) {
+                return;
             }
+
+            const isEnabled = this.$shortcuts.isEnabled(shortcut);
+            if (isEnabled) {
+                this.$shortcuts.dispatch(shortcut);
+            }
+
+            // prevent default if shortcut did not allow it (like copy text via CTRL+C)
+            if (isEnabled || this.$shortcuts.preventDefault(shortcut)) {
+                e.preventDefault();
+            }
+
+            // this is the only place where the registered hotkeys should be handled
+            e.stopPropagation();
         },
         onKeypress(e) {
             if (blacklistTagNames.test(e.target.tagName)) {

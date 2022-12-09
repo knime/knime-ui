@@ -85,7 +85,7 @@ export default (context, inject) => {
             throw new Error(`Shortcut ${shortcutName} doesn't exist`);
         }
 
-        return !shortcut.allowDefault;
+        return !shortcut.allowEventDefault;
     };
 
     // execute a shortcut

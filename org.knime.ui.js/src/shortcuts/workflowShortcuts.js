@@ -183,12 +183,19 @@ export default {
         text: 'Copy',
         title: 'Copy selection',
         hotkey: ['Ctrl', 'C'],
-        allowDefault: true,
+        allowEventDefault: true,
         execute:
             ({ $store }) => $store.dispatch('workflow/copyOrCutWorkflowParts', { command: 'copy' }),
         condition:
-            ({ $store }) => Object.keys($store.getters['selection/selectedNodes']).length !== 0 &&
-                $store.state.application.hasClipboardSupport && document?.activeElement?.id === 'kanvas'
+            ({ $store }) => {
+                const kanvas = $store.state.canvas.getScrollContainerElement();
+                const selectedNodes = Object.keys($store.getters['selection/selectedNodes']);
+                return (
+                    selectedNodes.length !== 0 &&
+                    $store.state.application.hasClipboardSupport &&
+                    document.activeElement === kanvas
+                );
+            }
     },
     cut: {
         text: 'Cut',
