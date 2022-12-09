@@ -86,7 +86,7 @@ describe('application store', () => {
             hasClipboardSupport: false,
             contextMenu: { isOpen: false, position: null },
             hasNodeRecommendationsEnabled: false,
-            workflowPreviewSnapshots: new Map()
+            rootWorkflowSnapshots: new Map()
         });
     });
 
@@ -661,7 +661,7 @@ describe('application store', () => {
     });
 
     describe('workflow preview snapshot', () => {
-        const getSnapshotKeys = (_store) => Array.from(_store.state.application.workflowPreviewSnapshots.keys());
+        const getSnapshotKeys = (_store) => Array.from(_store.state.application.rootWorkflowSnapshots.keys());
 
         it('should update the workflow preview snapshots correctly (single project)', async () => {
             const { store } = await loadStore();
@@ -690,7 +690,7 @@ describe('application store', () => {
             // should have saved 1 snapshot
             expect(getSnapshotKeys(store).length).toBe(1);
             expect(
-                store.state.application.workflowPreviewSnapshots.get(getSnapshotKeys(store)[0])
+                store.state.application.rootWorkflowSnapshots.get(getSnapshotKeys(store)[0])
             ).toEqual(canvasMockEl);
             
             // go back to the root workflow

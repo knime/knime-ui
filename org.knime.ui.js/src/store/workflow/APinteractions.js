@@ -65,7 +65,7 @@ export const actions = {
         const didClose = await closeWorkflow({ closingProjectId, nextProjectId });
         
         if (didClose) {
-            dispatch('application/removeWorkflowPreviewSnapshot', { projectId: activeProjectId }, { root: true });
+            dispatch('application/removeRootWorkflowSnapshot', { projectId: closingProjectId }, { root: true });
             dispatch('application/removeCanvasState', closingProjectId, { root: true });
         }
     },

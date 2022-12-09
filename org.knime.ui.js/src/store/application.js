@@ -292,7 +292,7 @@ export const actions = {
             const canvasElement = rootState.canvas.getScrollContainerElement().firstChild;
             
             // save a snapshot of the current state of the root workflow
-            dispatch('setWorkflowPreviewSnapshot', {
+            dispatch('setRootWorkflowSnapshot', {
                 projectId: activeProjectId,
                 element: canvasElement
             });
@@ -300,16 +300,16 @@ export const actions = {
             // Going back to the root of a workflow without having changed projects
         } else if (!isCurrentlyOnRoot && newWorkflow?.workflowId === 'root' && !isChangingProject) {
             // Since we're back in the root workflow, we can clear the previously saved snapshot
-            dispatch('removeWorkflowPreviewSnapshot', { projectId: activeProjectId });
+            dispatch('removeRootWorkflowSnapshot', { projectId: activeProjectId });
         }
     },
-    setWorkflowPreviewSnapshot({ state }, { projectId, element }) {
+    setRootWorkflowSnapshot({ state }, { projectId, element }) {
         // always use the "root" workflow
         const snapshotKey = encodeString(`${projectId}--root`);
         state.rootWorkflowSnapshots.set(snapshotKey, element.cloneNode(true));
     },
 
-    removeWorkflowPreviewSnapshot({ state }, { projectId }) {
+    removeRootWorkflowSnapshot({ state }, { projectId }) {
         state.rootWorkflowSnapshots.delete(encodeString(`${projectId}--root`));
     },
 

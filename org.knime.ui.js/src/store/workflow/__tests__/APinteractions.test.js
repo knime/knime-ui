@@ -133,7 +133,7 @@ describe('workflow store: AP Interactions', () => {
                 // 'root:1' to mimic being inside component/metanode
                 const workflowId = 'root:1';
                 // set the snapshot on the store
-                store.state.application.workflowPreviewSnapshots.set(`${projectId}--root`, 'store-snapshot');
+                store.state.application.rootWorkflowSnapshots.set(`${projectId}--root`, 'store-snapshot');
                 
                 generateWorkflowPreviewMock.mockImplementation((input) => input);
                 
@@ -171,6 +171,9 @@ describe('workflow store: AP Interactions', () => {
                 expect(closeWorkflow).toHaveBeenCalledWith({
                     closingProjectId,
                     nextProjectId: null
+                });
+                expect(dispatchSpy).toHaveBeenCalledWith('application/removeRootWorkflowSnapshot', {
+                    projectId: closingProjectId
                 });
                 expect(dispatchSpy).toHaveBeenCalledWith('application/removeCanvasState', closingProjectId);
             });
@@ -215,12 +218,14 @@ describe('workflow store: AP Interactions', () => {
                 expect(dispatchSpy).toHaveBeenCalledWith('application/removeCanvasState', closingProjectId);
             });
     
-            it('does not remove canvas state if closeWorkflow is cancelled', async () => {
+            it('does not remove canvasState nor workflowPreviewSnapshot if closeWorkflow is cancelled', async () => {
                 let closeWorkflow = jest.fn(() => false);
                 let apiMocks = { closeWorkflow };
                 const { store, dispatchSpy } = await loadStore({ apiMocks });
     
                 await store.dispatch('workflow/closeWorkflow', 'foo');
+
+                expect(dispatchSpy).not.toHaveBeenCalledWith('application/removeRootWorkflowSnapshot');
                 expect(dispatchSpy).not.toHaveBeenCalledWith('application/removeCanvasState', 'foo');
             });
         });
