@@ -1,10 +1,13 @@
 #!groovy
 
-def BN = (BRANCH_NAME == 'master' || BRANCH_NAME.startsWith('releases/')) ? BRANCH_NAME : 'releases/2022-09'
+def BN = (BRANCH_NAME == 'master' || BRANCH_NAME.startsWith('releases/')) ? BRANCH_NAME : 'releases/2022-12'
 
 library "knime-pipeline@$BN"
 
 properties([
+    pipelineTriggers([upstream(
+        'knime-gatewaay/' + env.BRANCH_NAME.replaceAll('/', '%2F')
+    )]),
     buildDiscarder(logRotator(numToKeepStr: '5')),
     parameters([p2Tools.getP2pruningParameter()]),
     disableConcurrentBuilds()
@@ -14,7 +17,7 @@ try {
     node('maven && java11 && large') {
         knimetools.defaultTychoBuild(updateSiteProject: 'org.knime.update.ui')
         
-        junit '**/coverage/junit.xml'
+        junit '**/test-results/junit.xml'
         knimetools.processAuditResults()
         
         stage('Sonarqube analysis') {

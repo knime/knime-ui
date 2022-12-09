@@ -1,18 +1,20 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapActions } from 'vuex';
 import throttle from 'raf-throttle';
 import { mixin as clickaway } from 'vue-clickaway2';
-import { tooltip } from '@/mixins';
+import { escapeStack, tooltip } from '@/mixins';
 
+import { toPortObject } from '@/util/portDataMapper';
 import { circleDetection } from '@/util/compatibleConnections';
 import Port from '@/components/common/Port.vue';
 import Connector from '@/components/workflow/connectors/Connector.vue';
 import NodePortActions from './NodePortActions.vue';
+import QuickAddNodeGhost from '@/components/workflow/node/quickAdd/QuickAddNodeGhost.vue';
 
 const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) => {
     if (targetPortDirection === 'in') {
         const isPortFree = toPort.connectedVia.length === 0;
-    
+
         if (isPortFree) {
             return true;
         }
@@ -28,8 +30,8 @@ const checkConnectionSupport = ({ toPort, connections, targetPortDirection }) =>
 };
 
 const checkPortCompatibility = ({ fromPort, toPort, availablePortTypes }) => {
-    const fromPortObjectInfo = availablePortTypes[fromPort.typeId];
-    const toPortObjectInfo = availablePortTypes[toPort.typeId];
+    const fromPortObjectInfo = toPortObject(availablePortTypes)(fromPort);
+    const toPortObjectInfo = toPortObject(availablePortTypes)(toPort);
     const { compatibleTypes } = toPortObjectInfo;
     const { kind: fromPortKind } = fromPortObjectInfo;
     const { kind: toPortKind } = toPortObjectInfo;
@@ -75,51 +77,69 @@ const groupAddablePortTypesByPortGroup = ({
     return portGroupsForTargetDirection.map(([groupName, portGroup]) => [groupName, portGroup.supportedPortTypeIds]);
 };
 
+/**
+ * Transforms array of portGroups and supportedPortTypes tuples to a valid portGroup object
+ *
+ * @param {[[string, string[]]]} groupArray - array with arrays of [portGroup, supportedPortTypeIds]
+ * @param {string} canAddPortKey - either canAddInPort or canAddOutPort
+ * @returns {Object.<string, Object>} returns an object with the portGroup as key and an object as value
+ */
+const transformToPortGroupObject = (groupArray, canAddPortKey) => Object.assign(
+    ...groupArray.map(([groupName, supportedPortTypeIds]) => ({
+        [groupName]: {
+            [canAddPortKey]: true,
+            supportedPortTypeIds
+        }
+    }))
+);
+
 const findTypeIdFromPlaceholderPort = ({
     fromPort,
     availablePortTypes,
     targetPortGroups,
     targetPortDirection
 }) => {
-    let suggestedTypeId,
-        portGroup;
-
     const addablePortTypesGrouped = groupAddablePortTypesByPortGroup({
         availablePortTypes,
         targetPortGroups,
         targetPortDirection
     });
 
-    const directMatches = addablePortTypesGrouped.filter(([_, supportedIds]) => supportedIds.includes(fromPort.typeId));
+    // only add the direct match in the supportedIds array
+    const directMatches = addablePortTypesGrouped.flatMap(
+        ([groupName, supportedIds]) => supportedIds.includes(fromPort.typeId)
+            ? [[groupName || 'default', [fromPort.typeId]]]
+            : []
+    );
+    const canAddPortKey = targetPortDirection === 'in' ? 'canAddInPort' : 'canAddOutPort';
 
-    // TODO: NXT-1242 let the user choose the portGroup
-    // for now just use the first direct match
+    // case 1: direct matches
     if (directMatches.length > 0) {
-        suggestedTypeId = fromPort.typeId;
-        [[portGroup]] = directMatches;
-    } else {
-        const compatibleMatches = addablePortTypesGrouped.map(([group, supportedTypeIds]) => {
-            const compatibleTypeIds = supportedTypeIds.filter(typeId => checkPortCompatibility({
-                fromPort,
-                toPort: { typeId },
-                availablePortTypes
-            }));
-            return compatibleTypeIds.length ? [group, compatibleTypeIds] : null;
-        }).filter(Boolean);
-
-        // TODO: NXT-1242 let the user choose the compatible match if its more then one
-        if (compatibleMatches.length > 0) {
-            [[portGroup, [suggestedTypeId]]] = compatibleMatches;
-        }
+        return {
+            didSnap: true,
+            createPortFromPlaceholder: { validPortGroups: transformToPortGroupObject(directMatches, canAddPortKey) }
+        };
     }
 
-    return {
-        didSnap: Boolean(suggestedTypeId),
-        createPortFromPlaceholder: {
-            typeId: suggestedTypeId,
-            portGroup
-        }
-    };
+    // case 2: compatible matches
+    const compatibleMatches = addablePortTypesGrouped.flatMap(([group, supportedTypeIds]) => {
+        const compatibleTypeIds = supportedTypeIds.filter(typeId => checkPortCompatibility({
+            fromPort,
+            toPort: { typeId },
+            availablePortTypes
+        }));
+        return compatibleTypeIds.length > 0 ? [[group, compatibleTypeIds]] : [];
+    });
+
+    if (compatibleMatches.length > 0) {
+        return {
+            didSnap: true,
+            createPortFromPlaceholder: { validPortGroups: transformToPortGroupObject(compatibleMatches, canAddPortKey) }
+        };
+    }
+
+    // case 3: no match -> don't snap
+    return { didSnap: false };
 };
 
 const checkCompatibleConnectionAndPort = ({
@@ -148,9 +168,25 @@ export default {
     components: {
         Port,
         Connector,
+        QuickAddNodeGhost,
         NodePortActions
     },
-    mixins: [clickaway, tooltip],
+    mixins: [
+        clickaway,
+        tooltip,
+        escapeStack({
+            group: 'PORT_DRAG',
+            alwaysActive: true,
+            onEscape() {
+                // quick add menu can also be closed with escape,
+                // so we need to exclude it when handling the escape logic
+                if (this.dragConnector && !this.isShowingQuickAddNodeMenu) {
+                    this.dragConnector = null;
+                    this.hasAbortedDrag = true;
+                }
+            }
+        })
+    ],
     inject: ['anchorPoint'],
     props: {
         /** direction of the port and the connector coming out of it: in-coming or out-going */
@@ -180,6 +216,10 @@ export default {
         selected: {
             type: Boolean,
             default: false
+        },
+        disableQuickNodeAdd: {
+            type: Boolean,
+            default: false
         }
     },
     data: () => ({
@@ -187,13 +227,16 @@ export default {
         dragConnector: null,
         didMove: false,
         pointerDown: false,
-        didDragToCompatibleTarget: false
+        didDragToCompatibleTarget: false,
+        showAddNodeGhost: false,
+        hasAbortedDrag: false
     }),
     computed: {
         ...mapGetters('canvas', ['screenToCanvasCoordinates']),
         ...mapGetters('workflow', ['isWritable', 'isDragging']),
         ...mapState('application', ['availablePortTypes']),
         ...mapState('workflow', { connections: state => state.activeWorkflow.connections }),
+        ...mapState('workflow', ['quickAddNodeMenu', 'portTypeMenu']),
         /*
          * only in-Ports replace their current connector if a new one is connected
          * only in-Ports that are connected need to indicate connector replacement
@@ -208,13 +251,26 @@ export default {
             );
         },
         portTemplate() {
-            let template = this.availablePortTypes[this.port.typeId];
+            const template = toPortObject(this.availablePortTypes)(this.port.typeId);
             if (!template) {
                 throw new Error(`port template ${this.port.typeId} not available in application`);
             }
             return template;
         },
-
+        isFlowVariable() {
+            return this.portTemplate.kind === 'flowVariable';
+        },
+        isShowingQuickAddNodeMenu() {
+            // we currently only support quick add node for output ports
+            return this.quickAddNodeMenu.isOpen &&
+                this.direction === 'out' &&
+                this.quickAddNodeMenu.props.nodeId === this.nodeId &&
+                this.quickAddNodeMenu.props.port.index === this.port.index;
+        },
+        isShowingPortTypeMenu() {
+            // shows the port type menu where this node was the start of the drag
+            return this.portTypeMenu.isOpen && this.portTypeMenu.startNodeId === this.nodeId;
+        },
         // implemented as required by the tooltip mixin
         tooltip() {
             // table ports have less space than other ports, because the triangular shape naturally creates a gap
@@ -241,9 +297,18 @@ export default {
             incomingConnector.dispatchEvent(new CustomEvent('indicate-replacement', { detail: {
                 state: indicateReplacement
             } }));
+        },
+        isShowingPortTypeMenu(value, oldValue) {
+            if (value === false && oldValue === true && this.dragConnector) {
+                this.dragConnector = null;
+            }
         }
     },
     methods: {
+        ...mapActions('workflow', {
+            openQuickAddNodeMenuAction: 'openQuickAddNodeMenu',
+            closeQuickAddNodeMenuAction: 'closeQuickAddNodeMenu'
+        }),
         /* ======== Drag Connector ======== */
         onPointerDown(e) {
             if (!this.isWritable || e.button !== 0 || e.shiftKey || e.ctrlKey) {
@@ -282,7 +347,9 @@ export default {
                 this.initialPointerMove(e);
             }
 
-            if (!this.dragConnector) {
+            // skip pointermove logic when there's no active dragconnector being displayed or
+            // when the user is no longer holding down the pointer click
+            if (!this.dragConnector || !this.pointerDown) {
                 return;
             }
 
@@ -340,7 +407,8 @@ export default {
 
             if (isSameTarget && !this.lastHitTarget.allowsDrop) {
                 // same hitTarget as before, but doesn't allow drop
-                // Do-Nothing
+                // just reset state (important for add node ghost)
+                this.didDragToCompatibleTarget = false;
             } else if (isSameTarget) {
                 // same hitTarget as before and allows connector drop
                 hitTarget.dispatchEvent(moveEvent);
@@ -391,6 +459,11 @@ export default {
                     isCompatible: this.didDragToCompatibleTarget
                 };
             }
+
+            // show add node ghost for output ports
+            if (this.direction === 'out' && !this.disableQuickNodeAdd) {
+                this.showAddNodeGhost = !this.didDragToCompatibleTarget;
+            }
             /* eslint-enable no-invalid-this */
         }),
         onPointerUp(e) {
@@ -424,10 +497,24 @@ export default {
                 }
             }
         },
-        onLostPointerCapture(e) {
+        onLostPointerCapture() {
             this.pointerDown = false;
-            this.dragConnector = null;
             this.didMove = false;
+
+            if (this.hasAbortedDrag) {
+                this.$root.$emit('connector-end');
+                this.hasAbortedDrag = false;
+                return;
+            }
+
+            if (this.showAddNodeGhost) {
+                this.openQuickAddNodeMenu();
+            }
+            // clear drag connector if no menu is open
+            if (!this.isShowingQuickAddNodeMenu && !this.isShowingPortTypeMenu) {
+                this.dragConnector = null;
+            }
+
             if (this.lastHitTarget && this.lastHitTarget.allowsDrop) {
                 this.lastHitTarget.element.dispatchEvent(new CustomEvent('connector-leave', { bubbles: true }));
             }
@@ -445,16 +532,39 @@ export default {
                 this.$emit('deselect');
             }
         },
+        openQuickAddNodeMenu() {
+            // find the position in coordinates relative to the origin
+            let position = {
+                x: this.dragConnector.absolutePoint[0],
+                y: this.dragConnector.absolutePoint[1]
+            };
+            this.openQuickAddNodeMenuAction({
+                props: {
+                    position,
+                    port: this.port,
+                    nodeId: this.nodeId
+                },
+                events: {
+                    'menu-close': this.closeQuickAddNodeMenu
+                }
+            });
+        },
+        closeQuickAddNodeMenu() {
+            // close the menu
+            this.closeQuickAddNodeMenuAction();
+            // remove the ghost
+            this.showAddNodeGhost = false;
+            // clear the drag connector
+            this.dragConnector = null;
+        },
         createConnectorFromEvent(e) {
-            const { kind: portKind } = this.portTemplate;
-
             const relatedNode = this.direction === 'out' ? 'sourceNode' : 'destNode';
             const relatedPort = this.direction === 'out' ? 'sourcePort' : 'destPort';
 
             return {
                 id: 'drag-connector',
                 allowedActions: { canDelete: false },
-                flowVariableConnection: portKind === 'flowVariable',
+                flowVariableConnection: this.isFlowVariable,
                 absolutePoint: this.screenToCanvasCoordinates([e.x, e.y]),
                 [relatedNode]: this.nodeId,
                 [relatedPort]: this.port.index
@@ -508,6 +618,11 @@ export default {
         data-test-id="drag-connector-port"
         :port="port"
         :transform="`translate(${dragConnector.absolutePoint})`"
+      />
+      <QuickAddNodeGhost
+        v-if="showAddNodeGhost"
+        class="non-interactive"
+        :position="dragConnector.absolutePoint"
       />
     </portal>
   </g>

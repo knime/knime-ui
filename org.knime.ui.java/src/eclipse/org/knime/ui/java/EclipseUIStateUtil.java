@@ -50,13 +50,14 @@ package org.knime.ui.java;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
@@ -70,14 +71,12 @@ import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.port.PortType;
-import org.knime.core.node.port.PortTypeRegistry;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
-import org.knime.core.node.workflow.WorkflowContext;
 import org.knime.core.node.workflow.WorkflowLoadHelper;
 import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor.WorkflowLoadResult;
+import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
 import org.knime.core.util.LoadVersion;
 import org.knime.core.util.LockFailedException;
 import org.knime.core.util.Pair;
@@ -95,6 +94,7 @@ import org.knime.workbench.editor2.WorkflowEditor;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
  */
+@SuppressWarnings("restriction") // Accessing Eclipse-internal APIs
 public final class EclipseUIStateUtil {
 
     /**
@@ -115,21 +115,13 @@ public final class EclipseUIStateUtil {
      * @return The state of the Eclipse UI in terms of {@link AppState}.
      */
     public static AppState createAppState(final EModelService modelService, final MApplication app) {
-        return new AppState() {
+        // Collect data before instantiating the AppState, so its changes can be tracked
+        var openedWorkflows = collectOpenedWorkflows(modelService, app);
+        // Return new AppState instance
+        return new AppState() { // NOSONAR
             @Override
             public List<OpenedWorkflow> getOpenedWorkflows() {
-                return collectOpenedWorkflows(modelService, app);
-            }
-
-            @Override
-            public Set<PortType> getAvailablePortTypes() {
-                return PortTypeRegistry.getInstance().availablePortTypes().stream() //
-                    .collect(Collectors.toSet());
-            }
-
-            @Override
-            public List<PortType> getSuggestedPortTypes() {
-                return AppState.SUGGESTED_PORT_TYPES;
+                return openedWorkflows;
             }
         };
     }
@@ -137,19 +129,24 @@ public final class EclipseUIStateUtil {
     private static Pair<WorkflowProject, OpenedWorkflow>
         createOpenedWorkflowAndWorkflowProject(final MPart editorPart) {
         var wfm = getWorkflowManager(editorPart);
-        WorkflowManager projectWfm = wfm != null ? getProjectManager(wfm) : null;
-        if (projectWfm != null) {
-            WorkflowProject wp =
-                WorkflowProjectManager.getInstance().getWorkflowProject(projectWfm.getNameWithID()).orElse(null);
-            if (wp == null) {
-                wp = createWorkflowProject(editorPart, projectWfm);
-            }
-            if (wp != null) {
-                var ow = createOpenedWorkflow(wp.getID(),
-                    new NodeIDEnt(wfm.getID(), projectWfm.getProjectComponent().isPresent()).toString(),
-                    isSelectedEditor(editorPart));
-                return Pair.create(wp, ow);
-            }
+        var projectWfm = wfm.flatMap(EclipseUIStateUtil::getProjectManager);
+        return zipOptional(wfm, projectWfm) //
+            .map(pair -> createOpenedWorkflowAndWorkflowProject(pair.getFirst(), pair.getSecond(), editorPart)) //
+            .orElse(null);
+    }
+
+    private static Pair<WorkflowProject, OpenedWorkflow> createOpenedWorkflowAndWorkflowProject(
+        final WorkflowManager childWfm, final WorkflowManager projWfm, final MPart editorPart) {
+        WorkflowProject wp =
+            WorkflowProjectManager.getInstance().getWorkflowProject(projWfm.getNameWithID()).orElse(null);
+        if (wp == null) {
+            wp = createWorkflowProject(editorPart, projWfm);
+        }
+        if (wp != null) {
+            var ow = createOpenedWorkflow(wp.getID(),
+                new NodeIDEnt(childWfm.getID(), projWfm.getProjectComponent().isPresent()).toString(),
+                isEditorPartSelectedElement(editorPart));
+            return Pair.create(wp, ow);
         }
         return null;
     }
@@ -178,25 +175,58 @@ public final class EclipseUIStateUtil {
     private static List<OpenedWorkflow> collectOpenedWorkflows(final EModelService modelService,
         final MApplication app) {
         List<MPart> editorParts = modelService.findElements(app, WORKFLOW_EDITOR_PART_ID, MPart.class);
-        Set<String> loadedProjectIds = new HashSet<>();
-        return editorParts.stream().map(EclipseUIStateUtil::createOpenedWorkflowAndWorkflowProject)//
-            .filter(Objects::nonNull)//
-            // ('non-visible' projects are removed first)
-            .sorted((p1, p2) -> Boolean.compare(p2.getSecond().isVisible(), p1.getSecond().isVisible()))//
-            .filter(p ->
-                // keep ids of loaded project and filter duplicates
-                // ('non-visible' projects are removed first)
-                loadedProjectIds.add(p.getFirst().getID())//
-            ).map(p -> {
-                WorkflowProject wp = p.getFirst();
-                WorkflowProjectManager.getInstance().addWorkflowProject(wp.getID(), wp);
-                return p.getSecond();
-            })//
-            .collect(Collectors.toList());
+        var workflows = editorParts.stream().map(EclipseUIStateUtil::createOpenedWorkflowAndWorkflowProject) //
+            .filter(Objects::nonNull);
+
+        var resolved = resolveDuplicates(workflows,
+            // Determine duplicates by project ID
+            p -> p.getFirst().getID(),
+            // Among duplicates, prefer picking one that is not visible
+            group -> group.stream().min( //
+                (p1, p2) -> Boolean.compare(!p1.getSecond().isVisible(), !p2.getSecond().isVisible()) //
+            ).get() // NOSONAR: group is never empty (result of groupBy)
+        );
+
+        return resolved.map(p -> {
+            WorkflowProject wp = p.getFirst();
+            WorkflowProjectManager.getInstance().addWorkflowProject(wp.getID(), wp);
+            return p.getSecond();
+        }).collect(Collectors.toList());
     }
 
-    private static boolean isSelectedEditor(final MPart editorPart) {
+    /**
+     * Given a stream of objects,
+     * <ol>
+     * <li>Determine duplicates based on the given function <code>keySelector</code></li>
+     * <li>For each group of duplicates, pick one representative determined by <code>valueSelector</code></li>
+     * </ol>
+     *
+     * @implNote This function preserves the ordering of the input data.
+     * @param data The input data
+     * @param keySelector The function to determine the key based on which equality is determined
+     * @param valueSelector The function to pick a representative from a list of duplicates (never empty)
+     * @param <V> The value type of the input list
+     * @param <K> The type of the key to group by
+     * @return A list with duplicates resolved as described above.
+     */
+    private static <V, K> Stream<V> resolveDuplicates(final Stream<V> data, final Function<V, K> keySelector,
+        final Function<List<V>, V> valueSelector) {
+        LinkedHashMap<K, List<V>> groups =
+            data.collect(Collectors.groupingBy(keySelector, LinkedHashMap::new, Collectors.toList()));
+        return groups.values().stream().map(valueSelector);
+    }
+
+    private static boolean isEditorPartSelectedElement(final MPart editorPart) {
         return editorPart.getParent().getSelectedElement() == editorPart;
+    }
+
+    /**
+     * Make the given editor part the selected element in its hierarchy
+     *
+     * @param editorPart The editor part to make active
+     */
+    public static void setEditorPartActive(final MPart editorPart) {
+        editorPart.getParent().setSelectedElement(editorPart);
     }
 
     private static WorkflowProject createWorkflowProject(final MPart editorPart, final WorkflowManager wfm) {
@@ -225,21 +255,18 @@ public final class EclipseUIStateUtil {
         return null;
     }
 
-    private static WorkflowManager getProjectManager(final WorkflowManager wfm) {
+    private static Optional<WorkflowManager> getProjectManager(final WorkflowManager wfm) {
         WorkflowManager project = wfm.getProjectWFM();
         if (project == WorkflowManager.ROOT) {
-            project = wfm.getProjectComponent().map(SubNodeContainer::getWorkflowManager).orElse(null);
+            return wfm.getProjectComponent().map(SubNodeContainer::getWorkflowManager);
         }
-        return project;
+        return Optional.ofNullable(project);
     }
 
-    private static WorkflowManager getWorkflowManager(final MPart editorPart) {
-        if (editorPart.getObject() instanceof CompatibilityPart) {
-            return getWorkflowEditor((CompatibilityPart)editorPart.getObject())
-                .flatMap(WorkflowEditor::getWorkflowManager).orElse(null);
-        } else {
-            return null;
-        }
+    private static Optional<WorkflowManager> getWorkflowManager(final MPart editorPart) {
+        return Optional.of(editorPart).filter(p -> p.getObject() instanceof CompatibilityPart)
+            .flatMap(p -> getWorkflowEditor((CompatibilityPart)p.getObject()))
+            .flatMap(WorkflowEditor::getWorkflowManager);
     }
 
     /**
@@ -254,7 +281,7 @@ public final class EclipseUIStateUtil {
     }
 
     /**
-     * Determines all opened workflow editors (in the classic KNIME perspective).
+     * Determine all workflow editors that are currently part of the application model.
      *
      * @param modelService
      * @param app
@@ -262,34 +289,30 @@ public final class EclipseUIStateUtil {
      */
     public static List<WorkflowEditor> getOpenWorkflowEditors(final EModelService modelService,
         final MApplication app) {
-        return modelService.findElements(app, WORKFLOW_EDITOR_PART_ID, MPart.class).stream()
-            .filter(p -> p.getObject() instanceof CompatibilityPart)
-            .map(p -> getWorkflowEditor((CompatibilityPart)p.getObject()).orElse(null)).filter(Objects::nonNull)
+        return getOpenWorkflowEditorParts(modelService, app) //
+            .map(p -> getWorkflowEditor((CompatibilityPart)p.getObject())) //
+            .flatMap(Optional::stream) //
             .collect(Collectors.toList());
     }
 
     /**
-     * Obtain the {@link WorkflowEditor} for a given {@link WorkflowManager} by looking through
-     * the currently open editors.
+     * Obtain the {@link WorkflowEditor} for a given {@link WorkflowManager} by looking through the currently open
+     * editors.
+     *
      * @param targetWfm The workflow manager to retrieve the editor for
-     * @return An optional containing the workflow editor for the given target workflow manager, or an empty optional
-     *  if no such editor could be unambiguously determined
+     * @return An {@code Optional} containing the workflow editor for the given target workflow manager, or an empty
+     *         optional if no such editor could be unambiguously determined
      */
-    public static Optional<WorkflowEditor> getEditorForManager(final WorkflowManager targetWfm) {
-        var matchedEditors = getOpenWorkflowEditors().stream()
-                .filter(wfEd -> wfEd.getWorkflowManager()
-                        .map(e -> Objects.equals(e, targetWfm))
-                        .orElse(false)
-                )
-                .collect(Collectors.toList());
-        if (matchedEditors.size() == 1) {
-            return Optional.of(matchedEditors.get(0));
-        } else {
-            return Optional.empty();
-        }
+    public static Optional<WorkflowEditor> getOpenWorkflowEditor(final WorkflowManager targetWfm) {
+        var matchedEditors = getOpenWorkflowEditors().stream() //
+            .filter(wfEd -> wfEd.getWorkflowManager() //
+                .map(e -> Objects.equals(e, targetWfm)) //
+                .orElse(false) //
+            );
+        return expectSingleOf(matchedEditors);
     }
 
-    private static java.util.Optional<WorkflowEditor> getWorkflowEditor(final CompatibilityPart part) {
+    private static Optional<WorkflowEditor> getWorkflowEditor(final CompatibilityPart part) {
         AtomicReference<WorkflowEditor> ref = new AtomicReference<>();
         Display.getDefault().syncExec(() -> {
             IEditorPart editor = ((IEditorReference)part.getReference()).getEditor(true);
@@ -300,24 +323,85 @@ public final class EclipseUIStateUtil {
         return java.util.Optional.ofNullable(ref.get());
     }
 
-    static WorkflowManager loadWorkflow(final File workflowDir) throws IOException, InvalidSettingsException,
+    /**
+     * Determine all workflow editor parts that are currently part of the application model.
+     *
+     * @param modelService
+     * @param app
+     * @return
+     */
+    private static Stream<MPart> getOpenWorkflowEditorParts(final EModelService modelService, final MApplication app) {
+        return modelService.findElements(app, WORKFLOW_EDITOR_PART_ID, MPart.class).stream()
+            .filter(p -> p.getObject() instanceof CompatibilityPart);
+    }
+
+    /**
+     * Obtain the workflow editor {@code MPart} for a given {@link WorkflowManager} by looking through the currently
+     * open editors.
+     *
+     * @param targetWfm The workflow manager to retrieve the editor part for
+     * @return An {@code Optional} containing the workflow editor part for the given target workflow manager, or an
+     *         empty {@code Optional} if no such editor could be unambiguously determined.
+     */
+    public static Optional<MPart> getOpenWorkflowEditorPart(final WorkflowManager targetWfm) {
+        var workbench = (Workbench)PlatformUI.getWorkbench();
+        var matchedParts =
+            getOpenWorkflowEditorParts(workbench.getService(EModelService.class), workbench.getApplication())
+                .filter(p -> getWorkflowManager(p) //
+                    .filter(edWfm -> Objects.equals(edWfm, targetWfm)) //
+                    .isPresent() //
+                );
+        return expectSingleOf(matchedParts);
+    }
+
+    static WorkflowManager loadTempWorkflow(final File wfDir) throws IOException, InvalidSettingsException,
         CanceledExecutionException, UnsupportedWorkflowVersionException, LockFailedException {
-        WorkflowLoadHelper loadHelper = new WorkflowLoadHelper() {
-            @Override
-            public WorkflowContext getWorkflowContext() {
-                var fac = new WorkflowContext.Factory(workflowDir);
-                return fac.createContext();
-            }
+        WorkflowLoadHelper loadHelper =
+            new WorkflowLoadHelper(WorkflowContextV2.forTemporaryWorkflow(wfDir.toPath(), null)) {
+                @Override
+                public UnknownKNIMEVersionLoadPolicy getUnknownKNIMEVersionLoadPolicy(
+                    final LoadVersion workflowKNIMEVersion, final Version createdByKNIMEVersion,
+                    final boolean isNightlyBuild) {
+                    return UnknownKNIMEVersionLoadPolicy.Try;
+                }
+            };
 
-            @Override
-            public UnknownKNIMEVersionLoadPolicy getUnknownKNIMEVersionLoadPolicy(
-                final LoadVersion workflowKNIMEVersion, final Version createdByKNIMEVersion,
-                final boolean isNightlyBuild) {
-                return UnknownKNIMEVersionLoadPolicy.Try;
-            }
-        };
-
-        WorkflowLoadResult loadRes = WorkflowManager.loadProject(workflowDir, new ExecutionMonitor(), loadHelper);
+        WorkflowLoadResult loadRes = WorkflowManager.loadProject(wfDir, new ExecutionMonitor(), loadHelper);
         return loadRes.getWorkflowManager();
+    }
+
+    /**
+     * Extract the single element of a stream if it contains only one, otherwise return an empty {@code Optional}.
+     *
+     * @param data A stream of values
+     * @param <V> The value type
+     * @return An {@code Optional} containing the single value if the stream contained just one element, an empty
+     *         {@code Optional} otherwise.
+     */
+    private static <V> Optional<V> expectSingleOf(final Stream<V> data) {
+        var els = data.collect(Collectors.toList());
+        if (els.size() == 1) {
+            return Optional.of(els.get(0));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Zip two {@code Optional}s.
+     *
+     * @param left
+     * @param right
+     * @param <V> The value type
+     * @return An {@code Optional} containing the pair of the two values if both are present, or an empty
+     *         {@code Optional} otherwise.
+     */
+    @SuppressWarnings("java:S3553")
+    private static <V> Optional<Pair<V, V>> zipOptional(final Optional<V> left, final Optional<V> right) {
+        if (left.isEmpty() || right.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(Pair.create(left.get(), right.get()));
+        }
     }
 }

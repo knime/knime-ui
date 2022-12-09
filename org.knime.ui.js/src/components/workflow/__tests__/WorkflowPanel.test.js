@@ -4,10 +4,14 @@ import { createLocalVue, shallowMount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 
+import * as selectionStore from '@/store/selection';
+import * as applicationStore from '@/store/application';
+
 import ContextMenu from '@/components/application/ContextMenu.vue';
 import PortTypeMenu from '@/components/workflow/ports/PortTypeMenu.vue';
 
 import WorkflowPanel from '../WorkflowPanel.vue';
+import QuickAddNodeMenu from '@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue';
 
 describe('WorkflowPanel', () => {
     let propsData, mocks, doShallowMount, wrapper, $store, workflow, workflowStoreConfig, storeConfig;
@@ -29,7 +33,23 @@ describe('WorkflowPanel', () => {
         };
         workflowStoreConfig = {
             state: {
-                activeWorkflow: workflow
+                activeWorkflow: workflow,
+                portTypeMenu: {
+                    isOpen: false,
+                    props: {},
+                    events: {}
+                },
+                quickAddNodeMenu: {
+                    isOpen: false,
+                    props: {},
+                    events: {}
+                }
+            },
+            actions: {
+                openQuickAddNodeMenu: jest.fn(),
+                closeQuickAddNodeMenu: jest.fn(),
+                openPortTypeMenu: jest.fn(),
+                closePortTypeMenu: jest.fn()
             },
             getters: {
                 isLinked() {
@@ -51,11 +71,13 @@ describe('WorkflowPanel', () => {
         };
         storeConfig = {
             workflow: workflowStoreConfig,
+            application: applicationStore,
             canvas: {
                 getters: {
                     screenToCanvasCoordinates: () => position => position
                 }
-            }
+            },
+            selection: selectionStore
         };
 
         $store = mockVuexStore(storeConfig);
@@ -111,93 +133,156 @@ describe('WorkflowPanel', () => {
     describe('Context menu', () => {
         it('renders context menu', async () => {
             doShallowMount();
-            
+
             expect(wrapper.findComponent(ContextMenu).exists()).toBe(false);
-            
+
             wrapper.trigger('contextmenu', { clientX: 242, clientY: 122 });
             await wrapper.vm.$nextTick();
-            
+
             expect(wrapper.findComponent(ContextMenu).props('position')).toStrictEqual({ x: 242, y: 122 });
         });
 
         it('handles @menu-close event from ContextMenu properly', async () => {
             doShallowMount();
-            
+
             wrapper.trigger('contextmenu', { clientX: 100, clientY: 200 });
             await wrapper.vm.$nextTick();
-            
+
             wrapper.findComponent(ContextMenu).vm.$emit('menu-close');
-            
+
             await wrapper.vm.$nextTick();
             expect(wrapper.findComponent(ContextMenu).exists()).toBe(false);
+        });
+
+        it('closes PortTypeMenu when context menu is opened', async () => {
+            doShallowMount();
+            const id = '0';
+            const closeCallback = (_wrapper, id) => () => {
+                _wrapper.trigger('close-port-type-menu', { detail: { id } });
+            };
+
+            wrapper.trigger('open-port-type-menu', {
+                detail: {
+                    id,
+                    props: { side: 'input', position: { x: 0, y: 0 } },
+                    events: { 'menu-close': closeCallback(wrapper, id) }
+                }
+            });
+
+            await Vue.nextTick();
+
+            wrapper.trigger('contextmenu', { clientX: 100, clientY: 200 });
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(false);
+        });
+
+        it('closes QuickAddNodeMenu when context menu is opened', async () => {
+            doShallowMount();
+            const id = '0';
+            const closeCallback = (_wrapper, id) => () => {
+                _wrapper.trigger('close-quick-add-node-menu', { detail: { id } });
+            };
+
+            wrapper.trigger('open-quick-add-node-menu', {
+                detail: {
+                    id,
+                    props: { direction: 'in', position: { x: 0, y: 0 }, port: { index: 2 }, nodeId: 'node:0' },
+                    events: { 'menu-close': closeCallback(wrapper, id) }
+                }
+            });
+
+            await Vue.nextTick();
+
+            wrapper.trigger('contextmenu', { clientX: 100, clientY: 200 });
+            await wrapper.vm.$nextTick();
+
+            expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(false);
         });
     });
 
     describe('Port Type menu', () => {
         let closeCallback;
 
-        beforeEach(async () => {
-            doShallowMount();
+        beforeEach(() => {
+            closeCallback = jest.fn();
+            storeConfig.workflow.state.portTypeMenu = {
+                isOpen: true,
+                props: {
+                    side: 'input',
+                    position: { x: 0, y: 0 }
+                },
+                events: { 'menu-close': closeCallback }
+            };
+        });
 
+        test('renders if open', () => {
+            storeConfig.workflow.state.portTypeMenu.isOpen = false;
+            doShallowMount();
             expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(false);
 
-            closeCallback = jest.fn();
-            wrapper.trigger('open-port-type-menu', {
-                detail: {
-                    id: '0',
-                    props: { side: 'input', position: { x: 0, y: 0 } },
-                    events: { 'menu-close': closeCallback }
-                }
-            });
-
-            await Vue.nextTick();
+            storeConfig.workflow.state.portTypeMenu.isOpen = true;
+            doShallowMount();
+            expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(true);
         });
 
         test('passes props', () => {
+            storeConfig.workflow.state.portTypeMenu.isOpen = true;
+            doShallowMount();
+            expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(true);
             let portMenu = wrapper.findComponent(PortTypeMenu);
             expect(portMenu.vm.side).toBe('input');
         });
 
         test('binds events', () => {
+            storeConfig.workflow.state.portTypeMenu.isOpen = true;
+            doShallowMount();
             let portMenu = wrapper.findComponent(PortTypeMenu);
             portMenu.vm.$emit('menu-close');
             expect(closeCallback).toHaveBeenCalled();
         });
+    });
 
-        test('opening another menu closes current one', () => {
-            expect(closeCallback).not.toHaveBeenCalled();
+    describe('Quick add node menu', () => {
+        let closeCallback;
 
-            wrapper.trigger('open-port-type-menu', {
-                detail: {
-                    id: '1',
-                    props: { side: 'input', position: { x: 0, y: 0 } },
-                    events: {}
+        beforeEach(() => {
+            closeCallback = jest.fn();
+            storeConfig.workflow.state.quickAddNodeMenu = {
+                isOpen: true,
+                props: { direction: 'in', position: { x: 0, y: 0 }, port: { index: 2 }, nodeId: 'node:0' },
+                events: { 'menu-close': closeCallback }
+            };
+        });
+
+        test('renders menu if open', () => {
+            storeConfig.workflow.state.quickAddNodeMenu.isOpen = false;
+            doShallowMount();
+            expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(false);
+
+            storeConfig.workflow.state.quickAddNodeMenu.isOpen = true;
+            doShallowMount();
+            expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(true);
+        });
+
+        test('passes props', () => {
+            doShallowMount();
+            let quickAddNodeMenu = wrapper.findComponent(QuickAddNodeMenu);
+            expect(quickAddNodeMenu.props()).toEqual({
+                nodeId: 'node:0',
+                port: { index: 2 },
+                position: {
+                    x: 0,
+                    y: 0
                 }
             });
+        });
 
+        test('binds events', () => {
+            doShallowMount();
+            let quickAddNodeMenu = wrapper.findComponent(QuickAddNodeMenu);
+            quickAddNodeMenu.vm.$emit('menu-close');
             expect(closeCallback).toHaveBeenCalled();
-        });
-
-        test('close menu', async () => {
-            wrapper.trigger('close-port-type-menu', {
-                detail: {
-                    id: '0'
-                }
-            });
-            await Vue.nextTick();
-
-            expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(false);
-        });
-
-        test('close event doesn`t interfere with current menu', async () => {
-            wrapper.trigger('close-port-type-menu', {
-                detail: {
-                    id: '1'
-                }
-            });
-            await Vue.nextTick();
-
-            expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(true);
         });
     });
 });

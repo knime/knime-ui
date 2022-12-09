@@ -62,7 +62,10 @@ export default {
     
     async mounted() {
         this.checkClipboardSupport();
-        await loadPageBuilder({ window, store: this.$store });
+        
+        if (this.$features.shouldLoadPageBuilder()) {
+            await loadPageBuilder({ window, store: this.$store });
+        }
     },
 
     async beforeDestroy() {

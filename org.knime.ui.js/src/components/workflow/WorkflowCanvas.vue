@@ -32,7 +32,7 @@ export default {
             immediate: true,
             async handler(isWorkflowEmpty) {
                 // disable zoom & pan if workflow is empty
-                this.setInteractionsEnabled(!isWorkflowEmpty);
+                this.setIsEmpty(isWorkflowEmpty);
                 
                 if (isWorkflowEmpty) {
                     // call to action: move nodes onto workflow
@@ -61,7 +61,7 @@ export default {
         });
     },
     methods: {
-        ...mapMutations('canvas', ['setInteractionsEnabled']),
+        ...mapMutations('canvas', ['setIsEmpty']),
         ...mapMutations('panel', ['setActiveTab']),
         ...mapActions('canvas', ['fillScreen']),
         ...mapActions('selection', ['deselectAllObjects']),

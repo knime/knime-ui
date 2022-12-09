@@ -56,6 +56,7 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPartSashContainer;
 import org.eclipse.e4.ui.model.application.ui.basic.MPartSashContainerElement;
 import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
+import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.workbench.editor2.WorkflowEditor;
 
@@ -116,6 +117,24 @@ public final class PerspectiveUtil {
     }
 
     /**
+     * Make the given perspective visible and switch to it.
+     * @param p The perspective to switch to
+     * @param partService The part service to use
+     * @throws IllegalStateException If the given perspective is <code>null</code>
+     */
+    public static void switchAndMakeVisible(final MPerspective p, final EPartService partService)
+        throws IllegalStateException {
+        if (p != null) {
+            if (!p.isVisible()) {
+                p.setVisible(true);
+            }
+            partService.switchPerspective(p);
+        } else {
+            throw new IllegalStateException("No KNIME Web UI perspective registered");
+        }
+    }
+
+    /**
      * Workaround to open a {@link WorkflowEditor} from the Web UI perspective without showing the editor part.
      * Having an editor part is required for saving the workflow. See NXT-622 (save workflow) and NXT-807 (open workflow).
      * Creates a sash container of the {@link KnimeBrowserView} and a placeholder for the shared editor area. A sash
@@ -125,7 +144,7 @@ public final class PerspectiveUtil {
      *
      * @see org.knime.ui.java.browser.function.OpenWorkflowBrowserFunction
      */
-    static void addSharedEditorAreaToWebUIPerspective(EModelService modelService, MApplication application) {
+    static void addSharedEditorAreaToWebUIPerspective(final EModelService modelService, final MApplication application) {
         MPerspective webUIPerspective = getWebUIPerspective(application, modelService);
 
         var hasSharedEditorArea = modelService.find(SHARED_EDITOR_AREA_ID, webUIPerspective) != null;
@@ -165,7 +184,7 @@ public final class PerspectiveUtil {
      * @param sourceElement The element to create a placeholder for.
      * @return The placeholder for the element.
      */
-    private static MPlaceholder createPlaceholder(final MUIElement sourceElement, EModelService modelService) {
+    private static MPlaceholder createPlaceholder(final MUIElement sourceElement, final EModelService modelService) {
         // Create and return a reference to the shared part
         MPlaceholder placeholder = modelService.createModelElement(MPlaceholder.class);
         placeholder.setElementId(sourceElement.getElementId());

@@ -16,7 +16,7 @@ describe('application store', () => {
         loadWorkflow;
 
     const applicationState = {
-        openedWorkflows: [{ projectId: 'foo', name: 'bar' }]
+        openProjects: [{ projectId: 'foo', name: 'bar' }]
     };
 
     beforeAll(() => {
@@ -45,7 +45,8 @@ describe('application store', () => {
             workflow: await import('@/store/workflow'),
             canvas: {
                 getters: {
-                    getCanvasScrollState: jest.fn(() => () => ({ mockCanvasState: true }))
+                    getCanvasScrollState: jest.fn(() => () => ({ mockCanvasState: true })),
+                    screenToCanvasCoordinates: jest.fn(() => ([x, y]) => [x, y])
                 },
                 actions: {
                     restoreScrollState: jest.fn()
@@ -68,7 +69,9 @@ describe('application store', () => {
             availablePortTypes: {},
             suggestedPortTypes: [],
             savedCanvasStates: {},
-            hasClipboardSupport: false
+            hasClipboardSupport: false,
+            contextMenu: { isOpen: false, position: null },
+            hasNodeRecommendationsEnabled: false
         });
     });
 
@@ -105,6 +108,12 @@ describe('application store', () => {
             expect(store.state.application.hasClipboardSupport)
                 .toBe(true);
         });
+
+        it('sets the has node recommendations enabled flag', () => {
+            store.commit('application/setHasNodeRecommendationsEnabled', true);
+            expect(store.state.application.hasNodeRecommendationsEnabled)
+                .toBe(true);
+        });
     });
 
     describe('Application Lifecycle', () => {
@@ -122,7 +131,9 @@ describe('application store', () => {
             expect(removeEventListener).toHaveBeenCalled();
             expect(dispatchSpy).toHaveBeenCalledWith('application/unloadActiveWorkflow', { clearWorkflow: true });
         });
-        
+    });
+
+    describe('Replace application State', () => {
         it('replaces application state', async () => {
             await store.dispatch('application/replaceApplicationState', applicationState);
     
@@ -132,6 +143,41 @@ describe('application store', () => {
             expect(dispatchSpy).toHaveBeenCalledWith('application/setActiveProject', [
                 { projectId: 'foo', name: 'bar' }
             ]);
+        });
+
+        it('does not setWorkflow when replacing application state and the activeProject did not change', async () => {
+            const applicationState = {
+                openProjects: [
+                    { projectId: 'foo', name: 'bar' },
+                    { projectId: 'baz', name: 'bar', activeWorkflow: { workflow: { info: {} } } }
+                ]
+            };
+            store.commit('application/setActiveProjectId', 'baz');
+            await store.dispatch('application/replaceApplicationState', applicationState);
+
+            expect(dispatchSpy).not.toHaveBeenCalledWith('application/setWorkflow');
+            expect(store.state.application.activeProjectId).toBe('baz');
+        });
+
+        it('loads the proper (lastActive) workflow when the activeProject has an existing saved state', async () => {
+            const applicationState = {
+                openProjects: [
+                    { projectId: 'foo', name: 'bar' },
+                    { projectId: 'baz', name: 'bar', activeWorkflow: { workflow: { info: { containerId: 'root' } } } }
+                ]
+            };
+
+            store.commit('application/setSavedCanvasStates', {
+                workflow: 'root:2',
+                project: 'baz'
+            });
+
+            await store.dispatch('application/replaceApplicationState', applicationState);
+            
+            expect(dispatchSpy).toHaveBeenCalledWith('application/loadWorkflow', {
+                projectId: 'baz',
+                workflowId: 'root:2'
+            });
         });
     });
 
@@ -205,7 +251,7 @@ describe('application store', () => {
     describe('set active workflow', () => {
         test('if provided by backend', async () => {
             const state = {
-                openedWorkflows: [
+                openProjects: [
                     { projectId: 'foo', name: 'bar' },
                     {
                         projectId: 'bee',
@@ -231,7 +277,7 @@ describe('application store', () => {
 
         it('uses first in row if not provided by backend', async () => {
             const state = {
-                openedWorkflows: [
+                openProjects: [
                     { projectId: 'foo', name: 'bar' },
                     { projectId: 'bee', name: 'gee' }
                 ]
@@ -246,7 +292,7 @@ describe('application store', () => {
         });
 
         it('does not set active project if there are no open workflows', async () => {
-            const state = { openedWorkflows: [] };
+            const state = { openProjects: [] };
             await store.dispatch('application/replaceApplicationState', state);
 
             expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow', null);
@@ -256,7 +302,7 @@ describe('application store', () => {
     describe('switch workflow', () => {
         test('switch from workflow to nothing', async () => {
             await store.dispatch('application/replaceApplicationState', {
-                openedWorkflows:
+                openProjects:
                     [
                         { projectId: '0', name: 'p0' },
                         { projectId: '1', name: 'p1' }
@@ -279,6 +325,8 @@ describe('application store', () => {
         test('switch from nothing to workflow', async () => {
             store.state.workflow.activeWorkflow = null;
 
+            store.commit('application/setSavedCanvasStates', { project: '1', workflow: 'root' });
+
             await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root' });
 
             expect(dispatchSpy).not.toHaveBeenCalledWith('application/saveCanvasState');
@@ -290,6 +338,58 @@ describe('application store', () => {
             );
             expect(store.state.application.activeProjectId).toBe('1');
             expect(dispatchSpy).toHaveBeenCalledWith('application/restoreCanvasState', undefined);
+        });
+
+        describe('lastActive', () => {
+            it('switch from workflow to workflow and back', async () => {
+                store.state.application.savedCanvasStates = {
+                    '1--root': {
+                        children: {},
+                        project: '1',
+                        workflow: 'root',
+                        zoomFactor: 1,
+                        lastActive: 'root:214'
+                    }
+                };
+    
+                await store.dispatch('application/switchWorkflow', { projectId: '2', workflowId: 'root' });
+                expect(store.state.application.activeProjectId).toBe('2');
+    
+                await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root' });
+                expect(dispatchSpy).toHaveBeenCalledWith(
+                    'application/loadWorkflow',
+                    { projectId: '1', workflowId: 'root:214' }
+                );
+                expect(store.state.application.activeProjectId).toBe('1');
+            });
+    
+            it('restores `lastActive` workflow when switching projects', async () => {
+                // start with a projectId 2
+                store.state.workflow.activeWorkflow = {
+                    projectId: '2',
+                    info: { containerId: 'root-1234' }
+                };
+                
+                // make sure project 1 has a `lastActive` state
+                store.state.application.savedCanvasStates = {
+                    '1--root': {
+                        children: {},
+                        project: '1',
+                        workflow: 'root',
+                        zoomFactor: 1,
+                        lastActive: 'root:214'
+                    }
+                };
+    
+                // change to project 1
+                await store.dispatch('application/switchWorkflow', { projectId: '1' });
+
+                // assert that project 1 was loaded and the correct `lastActive` was restored
+                expect(dispatchSpy).toHaveBeenCalledWith(
+                    'application/loadWorkflow',
+                    { projectId: '1', workflowId: 'root:214' }
+                );
+            });
         });
     });
 
@@ -330,7 +430,8 @@ describe('application store', () => {
                     scrollLeft: 100,
                     scrollTop: 100,
                     workflow: 'workflow1',
-                    zoomFactor: 1
+                    zoomFactor: 1,
+                    lastActive: 'workflow1'
                 }
             });
         });
@@ -346,6 +447,7 @@ describe('application store', () => {
 
             expect(store.state.application.savedCanvasStates).toStrictEqual({
                 'project1--workflow1': {
+                    lastActive: 'workflow1:214',
                     children: {
                         'workflow1:214': {
                             project: 'project1',
@@ -426,8 +528,84 @@ describe('application store', () => {
             expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(1);
             expect(store.state.application.savedCanvasStates['project1--workflow1']).toBeTruthy();
 
-            store.dispatch('application/removeCanvasState');
+            store.dispatch('application/removeCanvasState', 'project1');
             expect(store.state.application.savedCanvasStates).toEqual({});
+        });
+    });
+
+    describe('Context Menu', () => {
+        const createEvent = ({ x = 0, y = 0, srcElemClasses = [] } = {}) => {
+            const preventDefault = jest.fn();
+            const eventMock = {
+                clientX: x,
+                clientY: y,
+                srcElement: {
+                    classList: {
+                        contains: (className) => srcElemClasses.includes(className)
+                    }
+                },
+                preventDefault
+            };
+            
+            return { event: eventMock, preventDefault };
+        };
+
+        it('should set the context menu', async () => {
+            const { event: clickEvent, preventDefault } = createEvent({
+                x: 200,
+                y: 200
+            });
+
+            await store.dispatch('application/toggleContextMenu', clickEvent);
+            expect(store.state.application.contextMenu.isOpen).toBe(true);
+            expect(storeConfig.canvas.getters.screenToCanvasCoordinates).toHaveBeenCalled();
+            expect(store.state.application.contextMenu.position).toEqual({ x: 200, y: 200 });
+            expect(preventDefault).toHaveBeenCalled();
+        });
+        
+        it('should hide the menu', async () => {
+            store.state.application.contextMenu = {
+                isOpen: true,
+                position: { x: 200, y: 200 }
+            };
+            const { event: clickEvent, preventDefault } = createEvent();
+
+            await store.dispatch('application/toggleContextMenu', clickEvent);
+
+            expect(store.state.application.contextMenu.isOpen).toBe(false);
+            expect(store.state.application.contextMenu.position).toBeNull();
+            expect(preventDefault).toHaveBeenCalled();
+        });
+
+        describe('native context menu', () => {
+            it(
+                'should open native context menu if the proper class is set and the context menu is NOT open',
+                async () => {
+                    const { event: clickEvent, preventDefault } = createEvent({
+                        srcElemClasses: ['native-context-menu']
+                    });
+
+                    expect(store.state.application.contextMenu.position).toBeNull();
+                    await store.dispatch('application/toggleContextMenu', clickEvent);
+                    expect(preventDefault).not.toHaveBeenCalled();
+                    expect(store.state.application.contextMenu.position).toBeNull();
+                }
+            );
+
+            it('should NOT open the native context menu if the context menu is already open', async () => {
+                const { event: clickEvent, preventDefault } = createEvent({
+                    srcElemClasses: ['native-context-menu']
+                });
+
+                store.state.application.contextMenu = {
+                    isOpen: true,
+                    position: { x: 200, y: 200 }
+                };
+
+                await store.dispatch('application/toggleContextMenu', clickEvent);
+                expect(preventDefault).toHaveBeenCalled();
+                expect(store.state.application.contextMenu.position).toBeNull();
+            });
         });
     });
 });

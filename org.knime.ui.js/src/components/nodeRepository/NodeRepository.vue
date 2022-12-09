@@ -10,7 +10,7 @@ import SearchResults from './SearchResults.vue';
 import NodeDescription from './NodeDescription.vue';
 
 const SEARCH_COOLDOWN = 150; // ms
-const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in SideMenu
+const DESELECT_NODE_DELAY = 50; // ms - keep in sync with extension panel transition in Sidebar.vue
 
 export default {
     components: {

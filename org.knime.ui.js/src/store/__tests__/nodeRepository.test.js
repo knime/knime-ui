@@ -11,14 +11,28 @@ const getNodesGroupedByTagsResponse = {
                 icon: 'data:image/png;base64,xxx',
                 name: 'GroupBy Bar Chart (JFreeChart)',
                 id: 'org.knime.ext.jfc.node.groupbarchart.JfcGroupBarChartNodeFactory',
-                type: 'Visualizer'
+                type: 'Visualizer',
+                inPorts: [
+                    { typeId: 'org.knime.core.node.BufferedDataTable' }
+                ],
+                outPorts: [
+                    { typeId: 'org.knime.core.node.BufferedDataTable' }
+                ]
             },
             {
                 component: false,
                 icon: 'data:image/png;base64,xxx',
                 name: 'Decision Tree Learner',
                 id: 'org.knime.base.node.mine.decisiontree2.learner2.DecisionTreeLearnerNodeFactory3',
-                type: 'Learner'
+                type: 'Learner',
+                inPorts: [
+                    { typeId: 'org.knime.core.node.BufferedDataTable' }
+                ],
+                outPorts: [
+                    { typeId: 'org.knime.core.node.BufferedDataTable' },
+                    { typeId: 'org.knime.core.node.BufferedDataTable' },
+                    { typeId: 'org.some.otherPorType' }
+                ]
             }
         ],
         tag: 'Analytics'
@@ -38,38 +52,57 @@ const searchNodesResponse = {
             icon: 'data:image/png;base64,xxx',
             name: 'GroupBy Bar Chart (JFreeChart)',
             id: 'org.knime.ext.jfc.node.groupbarchart.JfcGroupBarChartNodeFactory',
-            type: 'Visualizer'
+            type: 'Visualizer',
+            inPorts: [
+                { typeId: 'org.knime.core.node.BufferedDataTable' }
+            ],
+            outPorts: []
         },
         {
             component: false,
             icon: 'data:image/png;base64,xxx',
             name: 'Decision Tree Learner',
             id: 'org.knime.base.node.mine.decisiontree2.learner2.DecisionTreeLearnerNodeFactory3',
-            type: 'Learner'
+            type: 'Learner',
+            inPorts: [],
+            outPorts: [
+                { typeId: 'org.some.otherPorType' }
+            ]
         }
     ]
 };
 
 const getNodeDescriptionResponse = {
     id: 1,
-    description: 'This is a node.'
+    description: 'This is a node.',
+    inPorts: [{ typeId: 'org.knime.core.node.BufferedDataTable' }],
+    outPorts: []
 };
 
 describe('Node Repository store', () => {
-    let store, localVue, searchNodesMock, getNodesGroupedByTagsMock, getNodeDescriptionMock, commitSpy, dispatchSpy;
-
     beforeAll(() => {
-        localVue = createLocalVue();
+        const localVue = createLocalVue();
         localVue.use(Vuex);
-
-        searchNodesMock = jest.fn().mockReturnValue(searchNodesResponse);
-        getNodesGroupedByTagsMock = jest.fn().mockReturnValue(getNodesGroupedByTagsResponse);
-        getNodeDescriptionMock = jest.fn().mockReturnValue(getNodeDescriptionResponse);
     });
 
-    beforeEach(async () => {
-        jest.clearAllMocks();
+    const createStore = async () => {
+        const availablePortTypes = {
+            'org.knime.core.node.BufferedDataTable': {
+                kind: 'table',
+                color: 'green'
+            },
+            'org.some.otherPorType': {
+                kind: 'other',
+                color: 'blue'
+            }
+        };
 
+        const searchNodesMock = jest.fn().mockReturnValue(searchNodesResponse);
+        const getNodesGroupedByTagsMock = jest.fn().mockReturnValue(getNodesGroupedByTagsResponse);
+        const getNodeDescriptionMock = jest.fn().mockReturnValue(getNodeDescriptionResponse);
+
+        // remove any caching on mocks
+        jest.resetModules();
         jest.doMock('@api', () => ({
             __esModule: true,
             searchNodes: searchNodesMock,
@@ -77,15 +110,29 @@ describe('Node Repository store', () => {
             getNodeDescription: getNodeDescriptionMock
         }), { virtual: true });
 
-        store = mockVuexStore({
+        const store = mockVuexStore({
             nodeRepository: await import('@/store/nodeRepository'),
-            application: { availablePortTypes: {} }
+            application: {
+                state: {
+                    availablePortTypes
+                }
+            }
         });
-        commitSpy = jest.spyOn(store, 'commit');
-        dispatchSpy = jest.spyOn(store, 'dispatch');
-    });
 
-    it('creates an empty store', () => {
+        const dispatchSpy = jest.spyOn(store, 'dispatch');
+
+        return {
+            dispatchSpy,
+            availablePortTypes,
+            store,
+            searchNodesMock,
+            getNodesGroupedByTagsMock,
+            getNodeDescriptionMock
+        };
+    };
+
+    it('creates an empty store', async () => {
+        const { store } = await createStore();
         expect(store.state.nodeRepository).toStrictEqual({
             nodes: null,
             nodesPerCategory: [],
@@ -106,7 +153,8 @@ describe('Node Repository store', () => {
     });
 
     describe('getters', () => {
-        it('returns proper values for hasSearchParams', () => {
+        it('returns proper values for hasSearchParams', async () => {
+            const { store } = await createStore();
             expect(store.getters['nodeRepository/hasSearchParams']).toBe(false);
             store.state.nodeRepository.query = 'value';
             expect(store.getters['nodeRepository/hasSearchParams']).toBe(true);
@@ -116,7 +164,8 @@ describe('Node Repository store', () => {
             expect(store.getters['nodeRepository/hasSearchParams']).toBe(true);
         });
 
-        it('returns proper value for searchIsActive', () => {
+        it('returns proper value for searchIsActive', async () => {
+            const { store } = await createStore();
             expect(store.getters['nodeRepository/searchIsActive']).toBe(false);
             store.state.nodeRepository.nodes = [{ id: 1, name: 'Node' }];
             expect(store.getters['nodeRepository/searchIsActive']).toBe(false);
@@ -124,7 +173,8 @@ describe('Node Repository store', () => {
             expect(store.getters['nodeRepository/searchIsActive']).toBe(true);
         });
 
-        it('returns proper value for searchResultsContainSelectedNode', () => {
+        it('returns proper value for searchResultsContainSelectedNode', async () => {
+            const { store } = await createStore();
             expect(store.getters['nodeRepository/searchResultsContainSelectedNode']).toBe(false);
             store.state.nodeRepository.nodes = [{ id: 1, name: 'Node' }];
             expect(store.getters['nodeRepository/searchResultsContainSelectedNode']).toBe(false);
@@ -132,7 +182,8 @@ describe('Node Repository store', () => {
             expect(store.getters['nodeRepository/searchResultsContainSelectedNode']).toBe(true);
         });
 
-        it('returns proper value for nodesPerCategoryContainSelectedNode', () => {
+        it('returns proper value for nodesPerCategoryContainSelectedNode', async () => {
+            const { store } = await createStore();
             expect(store.getters['nodeRepository/nodesPerCategoryContainSelectedNode']).toBe(false);
             store.state.nodeRepository.nodesPerCategory = [{ tag: 'tag:1', nodes: [{ id: 1 }, { id: 2 }] }];
             expect(store.getters['nodeRepository/nodesPerCategoryContainSelectedNode']).toBe(false);
@@ -140,8 +191,8 @@ describe('Node Repository store', () => {
             expect(store.getters['nodeRepository/nodesPerCategoryContainSelectedNode']).toBe(true);
         });
 
-        it('returns proper value for selectedNodeIsVisible for searches', () => {
-            // searchIsActive = true
+        it('returns proper value for selectedNodeIsVisible for searches', async () => {
+            const { store } = await createStore();
             store.state.nodeRepository.nodes = [{ id: 1, name: 'Node' }];
             store.state.nodeRepository.query = 'value';
             store.state.nodeRepository.selectedNode = { id: 3, name: 'Node 3' };
@@ -150,8 +201,8 @@ describe('Node Repository store', () => {
             expect(store.getters['nodeRepository/selectedNodeIsVisible']).toBe(true);
         });
 
-        it('returns proper value for selectedNodeIsVisible for categories', () => {
-            // searchIsActive = false
+        it('returns proper value for selectedNodeIsVisible for categories', async () => {
+            const { store } = await createStore();
             expect(store.getters['nodeRepository/selectedNodeIsVisible']).toBe(false);
             store.state.nodeRepository.nodesPerCategory = [{ tag: 'tag:1', nodes: [{ id: 1 }, { id: 2 }] }];
             store.state.nodeRepository.selectedNode = { id: 2, name: 'Node' };
@@ -160,43 +211,43 @@ describe('Node Repository store', () => {
     });
 
     describe('mutations', () => {
-        it('sets nodeSearchPage', () => {
+        it('sets nodeSearchPage', async () => {
+            const { store } = await createStore();
             store.commit('nodeRepository/setNodeSearchPage', 2);
             expect(store.state.nodeRepository.nodeSearchPage).toBe(2);
         });
 
-        it('sets totalNumNodes', () => {
+        it('sets totalNumNodes', async () => {
+            const { store } = await createStore();
             store.commit('nodeRepository/setTotalNumNodes', 2);
             expect(store.state.nodeRepository.totalNumNodes).toBe(2);
         });
 
-        it('adds nodes (and skips duplicates)', () => {
-            const nodes = [{
-                id: 'node1'
-            }, {
-                id: 'node2'
-            }];
+        it('adds nodes (and skips duplicates)', async () => {
+            const { store } = await createStore();
+            const nodes = [{ id: 'node1' }, { id: 'node2' }];
             store.commit('nodeRepository/setNodes', nodes);
 
-            const moreNodes = [...nodes, {
-                id: 'node3'
-            }];
+            const moreNodes = [...nodes, { id: 'node3' }];
             store.commit('nodeRepository/addNodes', moreNodes);
             expect(store.state.nodeRepository.nodes).toEqual(moreNodes);
         });
 
-        it('sets nodes', () => {
+        it('sets nodes', async () => {
+            const { store } = await createStore();
             const nodes = [{ id: 'node1' }];
             store.commit('nodeRepository/setNodes', [{ id: 'node1' }]);
             expect(store.state.nodeRepository.nodes).toEqual(nodes);
         });
 
-        it('sets tags', () => {
+        it('sets tags', async () => {
+            const { store } = await createStore();
             store.commit('nodeRepository/setTags', ['myTag', 'myTag2']);
             expect(store.state.nodeRepository.tags).toEqual(['myTag', 'myTag2']);
         });
 
-        it('sets selectedTags', () => {
+        it('sets selectedTags', async () => {
+            const { store } = await createStore();
             store.commit('nodeRepository/setSearchScrollPosition', 100);
 
             store.commit('nodeRepository/setSelectedTags', ['myTag', 'myTag2']);
@@ -204,28 +255,39 @@ describe('Node Repository store', () => {
             expect(store.state.nodeRepository.searchScrollPosition).toBe(0);
         });
 
-        it('sets categoryPage', () => {
+        it('sets categoryPage', async () => {
+            const { store } = await createStore();
             store.commit('nodeRepository/setCategoryPage', 1);
             expect(store.state.nodeRepository.categoryPage).toBe(1);
         });
 
-        it('sets nodesPerCategory', () => {
+        it('sets nodesPerCategory', async () => {
+            const { store } = await createStore();
             const categories = [{ tag: 'MyTag1', nodes: [{ id: 'node1' }] }];
-            store.commit('nodeRepository/setNodesPerCategories', [{ tag: 'MyTag1', nodes: [{ id: 'node1' }] }]);
+            store.commit('nodeRepository/setNodesPerCategories', {
+                groupedNodes: [{ tag: 'MyTag1', nodes: [{ id: 'node1' }] }]
+            });
             expect(store.state.nodeRepository.nodesPerCategory).toStrictEqual(categories);
         });
 
-        it('adds nodesPerCategory', () => {
-            store.commit('nodeRepository/setNodesPerCategories', [{ tag: 'MyTag1', nodes: [{ id: 'node1' }] }]);
+        it('adds nodesPerCategory', async () => {
+            const { store } = await createStore();
+            store.commit('nodeRepository/setNodesPerCategories', {
+                groupedNodes: [{ tag: 'MyTag1', nodes: [{ id: 'node1' }] }]
+            });
             const categories = store.state.nodeRepository.nodesPerCategory;
             const category = { tag: 'MyTag2', nodes: [{ id: 'node2' }] };
-            store.commit('nodeRepository/addNodesPerCategories', [category]);
+            store.commit('nodeRepository/setNodesPerCategories', {
+                groupedNodes: [category],
+                append: true
+            });
             categories.push(category);
 
             expect(store.state.nodeRepository.nodesPerCategory).toStrictEqual(categories);
         });
 
-        it('sets query', () => {
+        it('sets query', async () => {
+            const { store } = await createStore();
             store.commit('nodeRepository/setSearchScrollPosition', 100);
 
             store.commit('nodeRepository/setQuery', 'some value');
@@ -233,34 +295,40 @@ describe('Node Repository store', () => {
             expect(store.state.nodeRepository.searchScrollPosition).toBe(0);
         });
 
-        it('sets totalNumCategories', () => {
+        it('sets totalNumCategories', async () => {
+            const { store } = await createStore();
             store.commit('nodeRepository/setTotalNumCategories', 2);
             expect(store.state.nodeRepository.totalNumCategories).toEqual(2);
         });
 
-        it('sets search scroll position', () => {
+        it('sets search scroll position', async () => {
+            const { store } = await createStore();
             store.commit('nodeRepository/setSearchScrollPosition', 22);
             expect(store.state.nodeRepository.searchScrollPosition).toEqual(22);
         });
 
-        it('sets category scroll position', () => {
+        it('sets category scroll position', async () => {
+            const { store } = await createStore();
             store.commit('nodeRepository/setCategoryScrollPosition', 22);
             expect(store.state.nodeRepository.categoryScrollPosition).toEqual(22);
         });
 
-        it('sets selected node', () => {
+        it('sets selected node', async () => {
+            const { store } = await createStore();
             const node = { id: 'node1' };
             store.commit('nodeRepository/setSelectedNode', { id: 'node1' });
             expect(store.state.nodeRepository.selectedNode).toEqual(node);
         });
 
-        it('sets node description object', () => {
+        it('sets node description object', async () => {
+            const { store } = await createStore();
             const node = { id: 'node1' };
             store.commit('nodeRepository/setNodeDescription', { id: 'node1' });
             expect(store.state.nodeRepository.nodeDescriptionObject).toEqual(node);
         });
 
-        it('sets isDraggingNode', () => {
+        it('sets isDraggingNode', async () => {
+            const { store } = await createStore();
             expect(store.state.nodeRepository.isDraggingNode).toBe(false);
             store.commit('nodeRepository/setDraggingNode', true);
             expect(store.state.nodeRepository.isDraggingNode).toBe(true);
@@ -268,39 +336,64 @@ describe('Node Repository store', () => {
     });
 
     describe('actions', () => {
-        describe('getAllNodes', () => {
-            it('gets all nodes without append and with a bigger tagsLimits', async () => {
-                await store.dispatch('nodeRepository/getAllNodes', { append: false });
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setCategoryPage', 0, undefined);
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
-                expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
-                    numNodesPerTag: 6,
-                    tagsOffset: 0,
-                    tagsLimit: 6,
-                    fullTemplateInfo: true
-                });
-                expect(commitSpy).toHaveBeenCalledWith(
-                    'nodeRepository/setNodesPerCategories', getNodesGroupedByTagsResponse.groups, undefined
-                );
-            });
+        const withPorts = (nodes, availablePortTypes) => nodes.map(node => ({
+            ...node,
+            inPorts: node.inPorts.map(port => ({
+                ...port,
+                ...availablePortTypes[port.typeId],
+                type: availablePortTypes[port.typeId].kind
+            })),
+            outPorts: node.outPorts.map(port => ({
+                ...port,
+                ...availablePortTypes[port.typeId],
+                type: availablePortTypes[port.typeId].kind
+            }))
+        }));
 
+        describe('getAllNodes', () => {
             it('gets all nodes', async () => {
+                const { store, getNodesGroupedByTagsMock, availablePortTypes } = await createStore();
+
                 await store.dispatch('nodeRepository/getAllNodes', { append: true });
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setCategoryPage', 1, undefined);
+                expect(store.state.nodeRepository.categoryPage).toBe(1);
+                
                 expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
                     numNodesPerTag: 6,
                     tagsOffset: 6,
                     tagsLimit: 3,
                     fullTemplateInfo: true
                 });
-                expect(commitSpy).toHaveBeenCalledWith(
-                    'nodeRepository/addNodesPerCategories', getNodesGroupedByTagsResponse.groups, undefined
-                );
+
+                const { nodes, tag } = getNodesGroupedByTagsResponse.groups[0];
+                
+                // make sure the port information is mapped in to every node
+                const groupedNodesWithPorts = withPorts(nodes, availablePortTypes);
+                
+                expect(store.state.nodeRepository.nodesPerCategory).toEqual([{
+                    nodes: groupedNodesWithPorts,
+                    tag
+                }]);
+            });
+
+            it('gets all nodes without append and with a bigger tagsLimits', async () => {
+                const { store, getNodesGroupedByTagsMock } = await createStore();
+                
+                await store.dispatch('nodeRepository/getAllNodes', { append: false });
+                
+                expect(store.state.nodeRepository.categoryPage).toBe(0);
+                expect(store.state.nodeRepository.nodeSearchPage).toBe(0);
+                expect(getNodesGroupedByTagsMock).toHaveBeenCalledWith({
+                    numNodesPerTag: 6,
+                    tagsOffset: 0,
+                    tagsLimit: 6,
+                    fullTemplateInfo: true
+                });
             });
 
             it('skips getting nodes when all categories were loaded', async () => {
+                const { store, getNodesGroupedByTagsMock } = await createStore();
                 const categories = [{}, {}, {}];
-                store.commit('nodeRepository/setNodesPerCategories', categories);
+                store.commit('nodeRepository/setNodesPerCategories', { groupedNodes: categories });
                 store.commit('nodeRepository/setTotalNumCategories', categories.length);
 
                 await store.dispatch('nodeRepository/getAllNodes', { append: true });
@@ -309,18 +402,19 @@ describe('Node Repository store', () => {
         });
 
         describe('search', () => {
-            const withPorts = searchNodesResponse.nodes.map(node => ({ ...node, inPorts: [], outPorts: [] }));
-
             it('clears search results on empty parameters (tags and query)', async () => {
+                const { store } = await createStore();
                 await store.dispatch('nodeRepository/searchNodes');
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', null, undefined);
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', [], undefined);
+                expect(store.state.nodeRepository.nodes).toBeNull();
+                expect(store.state.nodeRepository.tags).toEqual([]);
             });
     
             it('searches for nodes', async () => {
+                const { store, searchNodesMock, availablePortTypes } = await createStore();
                 store.commit('nodeRepository/setQuery', 'lookup');
                 await store.dispatch('nodeRepository/searchNodes');
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 0, undefined);
+
+                expect(store.state.nodeRepository.nodeSearchPage).toBe(0);
                 expect(searchNodesMock).toHaveBeenCalledWith({
                     allTagsMatch: true,
                     fullTemplateInfo: true,
@@ -329,64 +423,21 @@ describe('Node Repository store', () => {
                     query: 'lookup',
                     tags: []
                 });
-                expect(commitSpy).toHaveBeenCalledWith(
-                    'nodeRepository/setTotalNumNodes',
-                    searchNodesResponse.totalNumNodes,
-                    undefined
+                expect(store.state.nodeRepository.totalNumNodes).toBe(searchNodesResponse.totalNumNodes);
+                expect(store.state.nodeRepository.nodes).toEqual(
+                    withPorts(searchNodesResponse.nodes, availablePortTypes)
                 );
-                
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', withPorts, undefined);
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', searchNodesResponse.tags, undefined);
-            });
-
-            it('adds the port type and color from the global state to the search results', async () => {
-                const mockFullyQualifiedPortName = 'mock-port-id';
-                const mockPortMetadata = {
-                    kind: 'MOCK-KIND',
-                    color: 'MOCK-COLOR'
-                };
-                // add port metadata to global state
-                store.state.application.availablePortTypes = {
-                    [mockFullyQualifiedPortName]: mockPortMetadata
-                };
-                
-                /* eslint-disable max-nested-callbacks */
-                // add `typeId` property to ports returned in the search response
-                searchNodesMock.mockReturnValueOnce({
-                    ...searchNodesResponse,
-                    nodes: searchNodesResponse.nodes.map(node => ({
-                        ...node,
-                        inPorts: [{ typeId: mockFullyQualifiedPortName }],
-                        outPorts: [{ typeId: mockFullyQualifiedPortName }]
-                    }))
-                });
-
-                const expectedNodes = searchNodesResponse.nodes.map(node => ({
-                    ...node,
-                    inPorts: [{
-                        typeId: mockFullyQualifiedPortName,
-                        type: mockPortMetadata.kind,
-                        color: mockPortMetadata.color
-                    }],
-                    outPorts: [{
-                        typeId: mockFullyQualifiedPortName,
-                        type: mockPortMetadata.kind,
-                        color: mockPortMetadata.color
-                    }]
-                }));
-                /* eslint-enable max-nested-callbacks */
-
-                store.commit('nodeRepository/setQuery', 'lookup');
-                await store.dispatch('nodeRepository/searchNodes');
-                                
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', expectedNodes, undefined);
+                expect(store.state.nodeRepository.tags).toEqual(searchNodesResponse.tags);
             });
     
             it('searches for nodes with append=true', async () => {
-                store.commit('nodeRepository/setNodes', []);
+                const { store, searchNodesMock, availablePortTypes } = await createStore();
+                const dummyNode = { dummy: true };
+                store.commit('nodeRepository/setNodes', [dummyNode]);
                 store.commit('nodeRepository/setQuery', 'lookup');
                 await store.dispatch('nodeRepository/searchNodes', { append: true });
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodeSearchPage', 1, undefined);
+                
+                expect(store.state.nodeRepository.nodeSearchPage).toBe(1);
                 expect(searchNodesMock).toHaveBeenCalledWith({
                     allTagsMatch: true,
                     fullTemplateInfo: true,
@@ -395,51 +446,58 @@ describe('Node Repository store', () => {
                     query: 'lookup',
                     tags: []
                 });
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTotalNumNodes',
-                    searchNodesResponse.totalNumNodes, undefined);
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/addNodes', withPorts, undefined);
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', searchNodesResponse.tags, undefined);
+                expect(store.state.nodeRepository.totalNumNodes).toBe(searchNodesResponse.totalNumNodes);
+                expect(store.state.nodeRepository.nodes).toEqual([
+                    dummyNode,
+                    ...withPorts(searchNodesResponse.nodes, availablePortTypes)
+                ]);
+                expect(store.state.nodeRepository.tags).toEqual(searchNodesResponse.tags);
             });
 
             it('updates query', async () => {
+                const { store, dispatchSpy } = await createStore();
                 await store.dispatch('nodeRepository/updateQuery', 'some value');
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setQuery', 'some value', undefined);
-                expect(dispatchSpy).toHaveBeenCalledWith(
-                    'nodeRepository/searchNodes', undefined
-                );
+
+                expect(store.state.nodeRepository.query).toBe('some value');
+                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
             });
     
             it('searches for nodes next page', async () => {
+                const { store, dispatchSpy } = await createStore();
                 await store.dispatch('nodeRepository/searchNodesNextPage');
                 expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', { append: true });
             });
     
-            it('set selected Tags', () => {
+            it('set selected Tags', async () => {
+                const { store, dispatchSpy } = await createStore();
                 store.dispatch('nodeRepository/setSelectedTags', ['myTag', 'myTag2']);
-                expect(commitSpy).toHaveBeenCalledWith(
-                    'nodeRepository/setSelectedTags',
-                    ['myTag', 'myTag2'],
-                    undefined
-                );
+                expect(store.state.nodeRepository.selectedTags).toEqual(['myTag', 'myTag2']);
+                
                 expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/searchNodes', undefined);
             });
     
-            it('clears search params (tags and query)', () => {
+            it('clears search params (tags and query)', async () => {
+                const { store } = await createStore();
                 store.dispatch('nodeRepository/clearSearchParams');
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setSelectedTags', [], undefined);
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setQuery', '', undefined);
-                expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/clearSearchResults', undefined);
+
+                expect(store.state.nodeRepository.selectedTags).toEqual([]);
+                expect(store.state.nodeRepository.query).toEqual('');
+                expect(store.state.nodeRepository.nodes).toEqual(null);
+                expect(store.state.nodeRepository.tags).toEqual([]);
             });
     
-            it('clears search results', () => {
+            it('clears search results', async () => {
+                const { store } = await createStore();
+
                 store.dispatch('nodeRepository/clearSearchResults');
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setTags', [], undefined);
-                expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodes', null, undefined);
+                expect(store.state.nodeRepository.nodes).toEqual(null);
+                expect(store.state.nodeRepository.tags).toEqual([]);
             });
         });
 
         describe('node description', () => {
             it('fetches node description', async () => {
+                const { store, getNodeDescriptionMock, availablePortTypes } = await createStore();
                 const node = {
                     id: 'node1',
                     nodeFactory: {
@@ -452,66 +510,24 @@ describe('Node Repository store', () => {
                 await store.dispatch('nodeRepository/getNodeDescription');
                 
                 expect(getNodeDescriptionMock).toHaveBeenCalled();
-                expect(commitSpy).toHaveBeenCalledWith(
-                    'nodeRepository/setNodeDescription',
-                    expect.objectContaining(getNodeDescriptionResponse),
-                    undefined
-                );
-            });
-
-            it('adds the port metadata to the description object', async () => {
-                const mockFullyQualifiedPortName = 'mock-port-id';
-                const mockPortMetadata = {
-                    kind: 'MOCK-KIND',
-                    color: 'MOCK-COLOR'
-                };
-
-                // add port metadata to global state
-                store.state.application.availablePortTypes = {
-                    [mockFullyQualifiedPortName]: mockPortMetadata
-                };
-
-                getNodeDescriptionMock.mockReturnValueOnce({
-                    ...getNodeDescriptionResponse,
-                    // add a port to the node returned by the description endpoint
-                    inPorts: [{ typeId: mockFullyQualifiedPortName }]
-                });
-
-                const node = {
-                    id: 'node1',
-                    nodeFactory: {
-                        className: 'test',
-                        settings: 'test1'
-                    }
-                };
-
-                store.commit('nodeRepository/setSelectedNode', node);
-                await store.dispatch('nodeRepository/getNodeDescription');
                 
-                expect(getNodeDescriptionMock).toHaveBeenCalled();
-                expect(commitSpy).toHaveBeenCalledWith(
-                    'nodeRepository/setNodeDescription',
-                    expect.objectContaining({
-                        ...getNodeDescriptionResponse,
-                        inPorts: [{
-                            typeId: mockFullyQualifiedPortName,
-                            type: mockPortMetadata.kind,
-                            color: mockPortMetadata.color
-                        }]
-                    }),
-                    undefined
+                expect(store.state.nodeRepository.nodeDescriptionObject).toEqual(
+                    withPorts([getNodeDescriptionResponse], availablePortTypes)[0]
                 );
             });
 
-            it('opens description panel', () => {
-                store.state.nodeRepository.isDescriptionPanelOpen = false;
+            it('opens description panel', async () => {
+                const { store } = await createStore();
+                
                 store.dispatch('nodeRepository/openDescriptionPanel');
                 expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(true);
             });
         
-            it('closes description panel', () => {
-                store.state.nodeRepository.isDescriptionPanelOpen = true;
-                store.dispatch('nodeRepository/closeDescriptionPanel');
+            it('closes description panel', async () => {
+                const { store } = await createStore();
+                await store.dispatch('nodeRepository/openDescriptionPanel');
+
+                await store.dispatch('nodeRepository/closeDescriptionPanel');
                 expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(false);
             });
         });

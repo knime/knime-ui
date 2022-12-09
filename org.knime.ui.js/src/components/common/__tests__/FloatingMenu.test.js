@@ -91,11 +91,27 @@ describe('FloatingMenu.vue', () => {
 
         storeConfig = {
             canvas: {
-                state: () => ({
+                state: {
                     zoomFactor: 1
-                }),
+                },
                 getters: {
                     screenFromCanvasCoordinates: screenFromCanvasCoordinatesMock
+                },
+                mutations: {
+                    setInteractionsEnabled: jest.fn()
+                }
+            },
+            nodeRepository: {
+                state: {
+                    isDraggingNode: false
+                }
+            },
+            workflow: {
+                state: {
+                    _isDragging: false
+                },
+                getters: {
+                    isDragging: (state) => state._isDragging
                 }
             }
         };
@@ -126,6 +142,22 @@ describe('FloatingMenu.vue', () => {
             doMount();
             wrapper.trigger('focusout', { relatedTarget: document.createElement('div') });
 
+            expect(wrapper.emitted('menu-close')).toBeDefined();
+        });
+
+        it('closes menu if node from repository is being dragged', async () => {
+            doMount();
+            $store.state.nodeRepository.isDraggingNode = true;
+            await Vue.nextTick();
+
+            expect(wrapper.emitted('menu-close')).toBeDefined();
+        });
+        
+        it('closes menu when a node is dragged in the canvas', async () => {
+            doMount();
+            $store.state.workflow._isDragging = true;
+            
+            await Vue.nextTick();
             expect(wrapper.emitted('menu-close')).toBeDefined();
         });
     });
@@ -239,6 +271,13 @@ describe('FloatingMenu.vue', () => {
             expect(wrapper.attributes('style')).toMatch('left: -80px;');
             expect(wrapper.attributes('style')).toMatch('top: 20px;');
         });
+
+        test('disable interactions when the prop is set', () => {
+            propsData.disableInteractions = true;
+            doMount();
+
+            expect(storeConfig.canvas.mutations.setInteractionsEnabled).toBeCalledWith(expect.anything(), false);
+        });
     });
 
     describe('clean up', () => {
@@ -263,6 +302,13 @@ describe('FloatingMenu.vue', () => {
             wrapper.destroy();
 
             expect(mockResizeObserver.disconnect).toHaveBeenCalled();
+        });
+
+        test('enables interactions', () => {
+            doMount();
+            wrapper.destroy();
+
+            expect(storeConfig.canvas.mutations.setInteractionsEnabled).toBeCalledWith(expect.anything(), true);
         });
     });
 });

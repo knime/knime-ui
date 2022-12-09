@@ -64,7 +64,11 @@ export default {
                 .map(portToPortTab);
               
             return []
-                .concat(this.hasViewTab ? { value: 'view', label: 'View', icon: Eye } : null)
+                .concat(
+                    this.hasViewTab && this.$features.shouldDisplayEmbeddedViews()
+                        ? { value: 'view', label: 'View', icon: Eye }
+                        : null
+                )
                 // all ports go before the flow variables
                 .concat(ports)
                 // add the flow variables but skip for metanodes which don't have any
@@ -104,6 +108,7 @@ export default {
     &::after {
       left: 0;
       right: 0;
+      bottom: 6px;
     }
   }
 }

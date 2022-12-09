@@ -75,7 +75,10 @@ export default {
               There is no description for this node.
             </span>
 
-            <ExternalResourcesList :links="nodeDescriptionObject.links" />
+            <ExternalResourcesList
+              v-if="nodeDescriptionObject.links"
+              :links="nodeDescriptionObject.links"
+            />
 
             <NodeFeatureList
               :in-ports="nodeDescriptionObject.inPorts"

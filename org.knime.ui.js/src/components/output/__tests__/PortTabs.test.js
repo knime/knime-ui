@@ -12,11 +12,15 @@ jest.mock('@/components/common/PortIconRenderer', () => jest.fn());
 describe('PortTabs.vue', () => {
     let doMount, wrapper, propsData;
 
+    const mockFeatureFlags = {
+        shouldDisplayEmbeddedViews: jest.fn(() => true)
+    };
+
     beforeEach(() => {
         propsData = {};
 
         doMount = () => {
-            wrapper = shallowMount(PortTabs, { propsData });
+            wrapper = shallowMount(PortTabs, { propsData, mocks: { $features: mockFeatureFlags } });
         };
     });
     
@@ -122,5 +126,31 @@ describe('PortTabs.vue', () => {
             { value: '0', label: 'Flow Variables', icon: FlowVarTabIcon }
         ]);
         expect(portIcon).toHaveBeenCalledWith(expect.anything(), portIconSize);
+    });
+
+    it('should not display view tab when feature flag is set to false', () => {
+        mockFeatureFlags.shouldDisplayEmbeddedViews.mockImplementation(() => false);
+        propsData = {
+            hasViewTab: true,
+            node: {
+                kind: 'node',
+                outPorts: [
+                    {
+                        index: 0,
+                        name: 'flowVariable port'
+                    }, {
+                        index: 1,
+                        name: 'triangle port'
+                    }
+                ]
+            }
+        };
+        doMount();
+
+        expect(wrapper.findComponent(TabBar).props().possibleValues).not.toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ value: 'view', label: 'View', icon: expect.anything() })
+            ])
+        );
     });
 });

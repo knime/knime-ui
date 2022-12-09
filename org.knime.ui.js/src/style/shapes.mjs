@@ -2,6 +2,8 @@
 export const nodeSize = 32;
 export const portSize = 9;
 
+export const addNodeGhostSize = 20;
+
 export const nodeStatusHeight = 12;
 export const nodeStatusMarginTop = 8;
 

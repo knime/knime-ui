@@ -1,0 +1,30 @@
+image: node:18.8
+
+definitions: 
+  steps:
+    - step: &lint-test-build
+        name: Lint, tests and build
+        caches:
+          - node
+        script:
+          - cd org.knime.ui.js
+          - git submodule update --init --recursive
+          - npm ci
+          - npm run ci:lint
+          - npm run coverage -- --ci
+          - npm run build
+          - npm run audit
+        artifacts:
+          - org.knime.ui.js/dist/**
+
+
+pipelines:
+  pull-requests:
+    '**':
+      - step: *lint-test-build
+ 
+  branches:
+    master:
+      - step: *lint-test-build
+    vue3:
+      - step: *lint-test-build

@@ -62,3 +62,19 @@ export const areaCoverage = (A, B) => {
 
     return areaIntersection / areaA;
 };
+
+/**
+ * Adjust a given coordinate point to its closes position on a grid of given size (provided by the gridSize parameter)
+ * @typedef {Object} Point
+ * @property {number} x - The X Coordinate
+ * @property {number} y - The Y Coordinate
+ *
+ * @param {Object} param
+ * @param {Point} param.coords
+ * @param {Point} [param.gridSize] grid size. defaults to { x: 1, y: 1 }
+ * @returns {Point} the grid adjusted coordinates
+ */
+export const adjustToGrid = ({ coords, gridSize = { x: 1, y: 1 } }) => ({
+    x: Math.round(coords.x / gridSize.x) * gridSize.x,
+    y: Math.round(coords.y / gridSize.y) * gridSize.y
+});

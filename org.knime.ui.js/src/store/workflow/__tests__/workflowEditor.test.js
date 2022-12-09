@@ -8,64 +8,58 @@ import { mockVuexStore } from '@/test/test-utils';
 import { wrapAPI } from '../workflowEditor';
 
 describe('workflow store: Editing', () => {
-    let store, localVue, loadStore, moveObjectsMock, deleteObjectsMock, pastePartsAtMock;
-
     beforeAll(() => {
-        localVue = createLocalVue();
+        const localVue = createLocalVue();
         localVue.use(Vuex);
     });
 
-    beforeEach(() => {
-        store = null;
-        moveObjectsMock = jest.fn().mockReturnValue(Promise.resolve());
-        deleteObjectsMock = jest.fn().mockReturnValue(Promise.resolve());
+    const loadStore = async ({ apiMocks = {} } = {}) => {
+        const moveObjectsMock = jest.fn().mockReturnValue(Promise.resolve());
+        const deleteObjectsMock = jest.fn().mockReturnValue(Promise.resolve());
 
-        loadStore = async ({ apiMocks = {} } = {}) => {
-            /**
-             * We have to import the workflow-store dynamically to apply our @api mocks.
-             * Because the module is cached after it is required for the first time,
-             * a reset is needed
-             */
-            jest.resetModules();
-            jest.doMock('@api', () => ({
-                __esModule: true,
-                ...apiMocks,
-                moveObjects: moveObjectsMock,
-                deleteObjects: deleteObjectsMock
-            }), { virtual: true });
+        /**
+         * We have to import the workflow-store dynamically to apply our @api mocks.
+         * Because the module is cached after it is required for the first time,
+         * a reset is needed
+         */
+        jest.resetModules();
+        jest.doMock('@api', () => ({
+            __esModule: true,
+            ...apiMocks,
+            moveObjects: moveObjectsMock,
+            deleteObjects: deleteObjectsMock
+        }), { virtual: true });
 
-            pastePartsAtMock = jest.fn();
-            jest.doMock('@/util/pasteToWorkflow', () => ({
-                __esModule: true,
-                pastePartsAt: pastePartsAtMock
-            }));
+        const pastePartsAtMock = jest.fn();
+        jest.doMock('@/util/pasteToWorkflow', () => ({
+            __esModule: true,
+            pastePartsAt: pastePartsAtMock
+        }));
 
-            store = mockVuexStore({
-                application: await import('@/store/application'),
-                workflow: await import('@/store/workflow'),
-                selection: await import('@/store/selection'),
-                canvas: {
-                    getters: {
-                        getVisibleFrame() {
-                            return () => ({
-                                left: -500,
-                                top: -500,
-                                width: 1000,
-                                height: 1000
-                            });
-                        }
+        const store = mockVuexStore({
+            application: await import('@/store/application'),
+            workflow: await import('@/store/workflow'),
+            selection: await import('@/store/selection'),
+            canvas: {
+                getters: {
+                    getVisibleFrame() {
+                        return () => ({
+                            left: -500,
+                            top: -500,
+                            width: 1000,
+                            height: 1000
+                        });
                     }
                 }
-            });
-        };
-    });
-
-    describe('mutation', () => {
-        beforeEach(async () => {
-            await loadStore();
+            }
         });
 
-        it('shifts the position of a node', () => {
+        return { store, moveObjectsMock, deleteObjectsMock, pastePartsAtMock };
+    };
+
+    describe('mutation', () => {
+        it('shifts the position of a node', async () => {
+            const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'bar',
                 nodes: {
@@ -78,7 +72,8 @@ describe('workflow store: Editing', () => {
             expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 50, y: 50 });
         });
 
-        it('resets the position of the outlint', () => {
+        it('resets the position of the outlint', async () => {
+            const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'bar',
                 nodes: {
@@ -91,6 +86,13 @@ describe('workflow store: Editing', () => {
             expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 50, y: 50 });
             store.commit('workflow/resetMovePreview', { nodeId: node.id });
             expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 0, y: 0 });
+        });
+
+        it('sets the preview of a portTypeMenu', async () => {
+            const { store } = await loadStore();
+            store.commit('workflow/setPortTypeMenuPreviewPort', { typeId: 'prev' });
+
+            expect(store.state.workflow.portTypeMenu.previewPort).toStrictEqual({ typeId: 'prev' });
         });
     });
 
@@ -123,9 +125,66 @@ describe('workflow store: Editing', () => {
             });
         });
 
+        describe('Add node', () => {
+            const setupStoreWithWorkflow = async () => {
+                const addNodeMock = jest.fn(() => ({ newNodeId: 'new-mock-node' }));
+                const loadStoreResponse = await loadStore({ apiMocks: { addNode: addNodeMock } });
+
+                loadStoreResponse.store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'bar',
+                    info: { containerId: 'baz' },
+                    nodes: {
+                        'root:1': { id: 'root:1', position: { x: 0, y: 0 } }
+                    }
+                });
+                return { ...loadStoreResponse, addNodeMock };
+            };
+
+            it('should adjust the position of the node to grid positions', async () => {
+                const { store, addNodeMock } = await setupStoreWithWorkflow();
+
+                store.dispatch('workflow/addNode', { position: { x: 7, y: 31 }, nodeFactory: 'factory' });
+
+                expect(addNodeMock).toHaveBeenCalledWith({
+                    projectId: store.state.workflow.activeWorkflow.projectId,
+                    workflowId: store.state.workflow.activeWorkflow.info.containerId,
+                    position: { x: 5, y: 30 },
+                    nodeFactory: 'factory',
+                    sourceNodeId: null,
+                    sourcePortIdx: null
+                });
+            });
+
+            it.each([
+                // selectionMode, currentSelectedNodeIds, expectedNodeIds
+                ['new-only', ['root:id'], ['new-mock-node']],
+                ['add', ['root:id'], ['root:id', 'new-mock-node']],
+                ['none', [], []]
+            ])(
+                'adjusts selection correctly after adding node',
+                async (selectionMode, currentSelectedNodeIds, expectedNodeIds) => {
+                    const { store } = await setupStoreWithWorkflow();
+                    await store.dispatch('selection/selectNodes', currentSelectedNodeIds);
+
+                    await store.dispatch('workflow/addNode', {
+                        position: { x: 0, y: 0 },
+                        nodeFactory: 'factory',
+                        selectionMode
+                    });
+
+                    const expectedSelection = expectedNodeIds.reduce((acc, nodeId) => ({
+                        ...acc,
+                        [nodeId]: true
+                    }), {});
+
+                    expect(store.state.selection.selectedNodes).toEqual(expectedSelection);
+                }
+            );
+        });
+
         it('can add Node Ports', async () => {
             let apiMocks = { addNodePort: jest.fn() };
-            await loadStore({ apiMocks });
+            const { store } = await loadStore({ apiMocks });
 
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
             store.dispatch(`workflow/addNodePort`,
@@ -143,7 +202,7 @@ describe('workflow store: Editing', () => {
 
         it('can remove Node Ports', async () => {
             let apiMocks = { removeNodePort: jest.fn() };
-            await loadStore({ apiMocks });
+            const { store } = await loadStore({ apiMocks });
 
             const payload = { nodeId: 'node x', side: 'input', typeId: 'porty', portIndex: 1, portGroup: 'group' };
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
@@ -155,7 +214,7 @@ describe('workflow store: Editing', () => {
         });
 
         it('moves actual nodes', async () => {
-            await loadStore();
+            const { store } = await loadStore();
             store.commit('workflow/setActiveWorkflow', {
                 projectId: 'bar',
                 nodes: {
@@ -171,7 +230,7 @@ describe('workflow store: Editing', () => {
         });
 
         it('moves nodes outline', async () => {
-            await loadStore();
+            const { store } = await loadStore();
             let nodesArray = {};
             for (let i = 0; i < 11; i++) {
                 let name = `node-${i}`;
@@ -189,7 +248,7 @@ describe('workflow store: Editing', () => {
         });
 
         it('moves subset of node outlines', async () => {
-            await loadStore();
+            const { store } = await loadStore();
             let nodesArray = {};
             for (let i = 0; i < 21; i++) {
                 let name = `node-${i}`;
@@ -215,7 +274,7 @@ describe('workflow store: Editing', () => {
             [1],
             [20]
         ])('saves position after move end for %s nodes', async (amount) => {
-            await loadStore();
+            const { store, moveObjectsMock } = await loadStore();
             let nodesArray = {};
             for (let i = 0; i < amount; i++) {
                 let name = `node-${i}`;
@@ -249,7 +308,7 @@ describe('workflow store: Editing', () => {
             [1],
             [20]
         ])('deletes %s objects', async (amount) => {
-            await loadStore();
+            const { store, deleteObjectsMock } = await loadStore();
             let nodesArray = {};
             let connectionsArray = {};
             let nodeIds = [];
@@ -294,10 +353,9 @@ describe('workflow store: Editing', () => {
             let connectionsArray = {};
             connectionsArray[connectorName] = { id: connectorName, allowedActions: { canDelete: false } };
 
-            beforeEach(async () => {
-                await loadStore();
-
-                store.commit('workflow/setActiveWorkflow', {
+            const setupStoreWithWorkflow = async () => {
+                const loadStoreResponse = await loadStore();
+                loadStoreResponse.store.commit('workflow/setActiveWorkflow', {
                     nodes: nodesArray,
                     connections: connectionsArray,
                     projectId: 'foo',
@@ -305,9 +363,12 @@ describe('workflow store: Editing', () => {
                         containerId: 'test'
                     }
                 });
-            });
+                return loadStoreResponse;
+            };
 
             test('nodes', async () => {
+                const { store } = await setupStoreWithWorkflow();
+
                 store.dispatch('selection/selectNode', nodesArray[nodeName].id);
 
                 await Vue.nextTick();
@@ -318,6 +379,8 @@ describe('workflow store: Editing', () => {
             });
 
             test('connections', async () => {
+                const { store } = await setupStoreWithWorkflow();
+
                 store.dispatch('selection/selectConnection', connectionsArray[connectorName].id);
 
                 await Vue.nextTick();
@@ -328,6 +391,8 @@ describe('workflow store: Editing', () => {
             });
 
             test('nodes and connections', async () => {
+                const { store } = await setupStoreWithWorkflow();
+
                 store.dispatch('selection/selectNode', nodesArray[nodeName].id);
                 store.dispatch('selection/selectConnection', connectionsArray[connectorName].id);
 
@@ -343,7 +408,7 @@ describe('workflow store: Editing', () => {
         it('connects nodes', async () => {
             let connectNodes = jest.fn();
             let apiMocks = { connectNodes };
-            await loadStore({ apiMocks });
+            const { store } = await loadStore({ apiMocks });
             store.commit('workflow/setActiveWorkflow', { projectId: 'foo', info: { containerId: 'root' } });
 
             store.dispatch('workflow/connectNodes', {
@@ -365,8 +430,8 @@ describe('workflow store: Editing', () => {
 
         describe('Collapse', () => {
             const loadStoreWithNodes = async ({ apiMocks }) => {
-                await loadStore({ apiMocks });
-                store.commit('workflow/setActiveWorkflow', {
+                const result = await loadStore({ apiMocks });
+                result.store.commit('workflow/setActiveWorkflow', {
                     projectId: 'bar',
                     info: {
                         containerId: 'root'
@@ -396,18 +461,19 @@ describe('workflow store: Editing', () => {
                         }
                     }
                 });
+                return result;
             };
 
             it('collapses nodes to a container', async () => {
                 let collapseToContainer = jest.fn(() => ({ newNodeId: '' }));
                 let apiMocks = { collapseToContainer };
-                await loadStoreWithNodes({ apiMocks });
+                const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectAllNodes');
-    
+
                 store.dispatch('workflow/collapseToContainer', {
                     containerType: 'metanode'
                 });
-    
+
                 expect(collapseToContainer).toHaveBeenCalledWith({
                     projectId: 'bar',
                     workflowId: 'root',
@@ -416,18 +482,18 @@ describe('workflow store: Editing', () => {
                     annotationIds: []
                 });
             });
-    
+
             it('selects the new container after collapsing nodes', async () => {
                 const newNodeId = 'new-container';
                 let collapseToContainer = jest.fn(() => ({ newNodeId }));
                 let apiMocks = { collapseToContainer };
-                await loadStoreWithNodes({ apiMocks });
+                const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectAllNodes');
-    
+
                 await store.dispatch('workflow/collapseToContainer', {
                     containerType: 'metanode'
                 });
-    
+
                 expect(store.state.selection.selectedNodes).toEqual({ [newNodeId]: true });
                 expect(store.state.workflow.nameEditorNodeId).toBe(newNodeId);
             });
@@ -436,9 +502,9 @@ describe('workflow store: Editing', () => {
                 const newNodeId = 'new-container';
                 let collapseToContainer = jest.fn(() => ({ newNodeId }));
                 let apiMocks = { collapseToContainer };
-                await loadStoreWithNodes({ apiMocks });
+                const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectAllNodes');
-    
+
                 const commandCall = store.dispatch('workflow/collapseToContainer', {
                     containerType: 'metanode'
                 });
@@ -446,7 +512,7 @@ describe('workflow store: Editing', () => {
                 store.dispatch('selection/selectNode', 'foo');
 
                 await commandCall;
-    
+
                 expect(store.state.selection.selectedNodes).toStrictEqual({ foo: true });
                 expect(store.state.workflow.nameEditorNodeId).toBe(null);
             });
@@ -454,8 +520,8 @@ describe('workflow store: Editing', () => {
 
         describe('Expand', () => {
             const loadStoreWithNodes = async ({ apiMocks }) => {
-                await loadStore({ apiMocks });
-                store.commit('workflow/setActiveWorkflow', {
+                const result = await loadStore({ apiMocks });
+                result.store.commit('workflow/setActiveWorkflow', {
                     projectId: 'bar',
                     info: {
                         containerId: 'root'
@@ -487,16 +553,18 @@ describe('workflow store: Editing', () => {
                         }
                     }
                 });
+
+                return result;
             };
 
             it('expands a container node', async () => {
                 let expandContainerNode = jest.fn(() => ({ expandedNodeIds: [] }));
                 let apiMocks = { expandContainerNode };
-                await loadStoreWithNodes({ apiMocks });
+                const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectNode', 'foo');
-    
+
                 store.dispatch('workflow/expandContainerNode');
-    
+
                 expect(expandContainerNode).toHaveBeenCalledWith({
                     projectId: 'bar',
                     workflowId: 'root',
@@ -509,11 +577,11 @@ describe('workflow store: Editing', () => {
 
                 let expandContainerNode = jest.fn(() => ({ expandedNodeIds }));
                 let apiMocks = { expandContainerNode };
-                await loadStoreWithNodes({ apiMocks });
+                const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectNode', 'foo');
-    
+
                 await store.dispatch('workflow/expandContainerNode');
-    
+
                 expect(store.state.selection.selectedNodes).toEqual({ foo: true, bar: true });
             });
 
@@ -522,34 +590,103 @@ describe('workflow store: Editing', () => {
 
                 let expandContainerNode = jest.fn(() => ({ expandedNodeIds }));
                 let apiMocks = { expandContainerNode };
-                await loadStoreWithNodes({ apiMocks });
+                const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectNode', 'foo');
-    
+
                 const commandCall = store.dispatch('workflow/expandContainerNode');
 
                 await store.dispatch('selection/selectNode', 'barbaz');
 
                 await commandCall;
-    
+
                 expect(store.state.selection.selectedNodes).toStrictEqual({ barbaz: true });
             });
         });
 
-        describe('Copy, Cut and Paste', () => {
-            let clipboardObject;
+        describe('QuickAddNodeMenu', () => {
+            it('opens the quick add node menu', async () => {
+                const { store } = await loadStore();
+                expect(store.state.workflow.quickAddNodeMenu.isOpen).toBe(false);
+                await store.dispatch(
+                    'workflow/openQuickAddNodeMenu',
+                    {
+                        props: { someProp: 'val' },
+                        events: { 'menu-close': () => {} }
+                    }
+                );
+                expect(store.state.workflow.quickAddNodeMenu.isOpen).toBe(true);
+                expect(store.state.workflow.quickAddNodeMenu.props).toStrictEqual({ someProp: 'val' });
+                expect(store.state.workflow.quickAddNodeMenu.events).toMatchObject({ 'menu-close': expect.anything() });
+            });
 
-            beforeEach(() => {
+            it('closes the quick add node menu', async () => {
+                const { store } = await loadStore();
+                await store.dispatch('workflow/openQuickAddNodeMenu', {});
+                expect(store.state.workflow.quickAddNodeMenu.isOpen).toBe(true);
+                await store.dispatch('workflow/closeQuickAddNodeMenu');
+                expect(store.state.workflow.quickAddNodeMenu.isOpen).toBe(false);
+            });
+        });
+
+        describe('PortTypeMenu', () => {
+            it('opens the port type menu', async () => {
+                const { store } = await loadStore();
+                expect(store.state.workflow.portTypeMenu.isOpen).toBe(false);
+                await store.dispatch(
+                    'workflow/openPortTypeMenu',
+                    {
+                        nodeId: 'node-id',
+                        props: { side: 'out' },
+                        startNodeId: 'start-node-id',
+                        events: { 'menu-close': () => {} }
+                    }
+                );
+                expect(store.state.workflow.portTypeMenu.isOpen).toBe(true);
+                expect(store.state.workflow.portTypeMenu.nodeId).toBe('node-id');
+                expect(store.state.workflow.portTypeMenu.startNodeId).toBe('start-node-id');
+                expect(store.state.workflow.portTypeMenu.previewPort).toBe(null);
+                expect(store.state.workflow.portTypeMenu.props).toStrictEqual({ side: 'out' });
+                expect(store.state.workflow.portTypeMenu.events).toMatchObject({ 'menu-close': expect.anything() });
+            });
+
+            it('closes the port type menu', async () => {
+                const { store } = await loadStore();
+                await store.dispatch('workflow/openPortTypeMenu', {});
+                expect(store.state.workflow.portTypeMenu.isOpen).toBe(true);
+                await store.dispatch('workflow/closePortTypeMenu');
+                expect(store.state.workflow.portTypeMenu.isOpen).toBe(false);
+            });
+        });
+
+        describe('Copy, Cut and Paste', () => {
+            const createClipboardMock = (initialContent = {}) => {
+                const clipboardMock = (function (_initialContent) {
+                    let clipboardContent = _initialContent;
+
+                    return {
+                        setContent(newContent) {
+                            clipboardContent = newContent;
+                        },
+                        getContent() {
+                            return clipboardContent;
+                        }
+                    };
+                })(initialContent);
+
                 Object.assign(navigator, {
                     clipboard: {
-                        writeText: jest.fn().mockImplementation(text => {
-                            clipboardObject = JSON.parse(text);
-                        }),
-                        readText: jest.fn().mockImplementation(() => clipboardObject
-                            ? JSON.stringify(clipboardObject)
-                            : '')
+                        writeText: (text) => {
+                            clipboardMock.setContent(JSON.parse(text));
+                        },
+                        readText: () => {
+                            const content = clipboardMock.getContent();
+                            return content ? JSON.stringify(content) : '';
+                        }
                     }
                 });
-            });
+
+                return clipboardMock;
+            };
 
             afterEach(() => {
                 jest.clearAllMocks();
@@ -559,17 +696,18 @@ describe('workflow store: Editing', () => {
                 ['copy'],
                 ['cut']
             ])('executes <%s> command', async (command) => {
-                let stringifiedPayload = JSON.stringify({
+                const stringifiedPayload = JSON.stringify({
                     payloadIdentifier: 'p-id-1',
                     otherData: 'is here'
                 });
 
-                let copyOrCutWorkflowParts = jest.fn().mockReturnValue({
+                const copyOrCutWorkflowParts = jest.fn().mockReturnValue({
                     content: stringifiedPayload
                 });
-                let apiMocks = { copyOrCutWorkflowParts };
-                await loadStore({ apiMocks });
-    
+
+                const clipboardMock = createClipboardMock();
+                const { store } = await loadStore({ apiMocks: { copyOrCutWorkflowParts } });
+
                 store.commit('application/setHasClipboardSupport', true);
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'my project',
@@ -589,7 +727,7 @@ describe('workflow store: Editing', () => {
                 store.dispatch('selection/selectAllNodes');
                 await Vue.nextTick();
                 await store.dispatch('workflow/copyOrCutWorkflowParts', { command });
-    
+
                 expect(copyOrCutWorkflowParts).toHaveBeenCalledWith({
                     projectId: 'my project',
                     workflowId: 'root',
@@ -598,7 +736,7 @@ describe('workflow store: Editing', () => {
                     annotationIds: []
                 });
 
-                expect(clipboardObject).toStrictEqual({
+                expect(clipboardMock.getContent()).toStrictEqual({
                     payloadIdentifier: 'p-id-1',
                     projectId: 'my project',
                     workflowId: 'root',
@@ -615,51 +753,63 @@ describe('workflow store: Editing', () => {
             });
 
             describe('executes paste command', () => {
-                let workflow, doAfterPasteMock, pasteWorkflowParts, startPaste;
-
-                beforeEach(async () => {
+                const setupStoreForPaste = async () => {
                     // register "pasteWorkflowParts" API function
-                    pasteWorkflowParts = jest.fn().mockReturnValue({
+                    const pasteWorkflowParts = jest.fn().mockReturnValue({
                         nodeIds: ['bar']
                     });
-                    let apiMocks = { pasteWorkflowParts };
-                    await loadStore({ apiMocks });
-                
+
+                    const loadStoreResponse = await loadStore({
+                        apiMocks: { pasteWorkflowParts }
+                    });
+
                     // set up workflow
-                    workflow = {
+                    const workflow = {
                         projectId: 'my project',
                         info: { containerId: 'root' },
                         nodes: { foo: { id: 'foo' }, bar: { id: 'bar' } },
                         workflowAnnotations: []
                     };
-                    store.commit('workflow/setActiveWorkflow', workflow);
+                    loadStoreResponse.store.commit('workflow/setActiveWorkflow', workflow);
 
                     // mock current clipboard content
-                    clipboardObject = {
+                    const clipboardMock = createClipboardMock({
                         objectBounds: {
                             width: 100,
                             height: 100
                         },
                         data: 'parts'
-                    };
+                    });
 
                     // mock strategy result
-                    doAfterPasteMock = jest.fn();
-                    pastePartsAtMock.mockReturnValue({
+                    const doAfterPasteMock = jest.fn();
+                    loadStoreResponse.pastePartsAtMock.mockReturnValue({
                         position: { x: 5, y: 5 },
                         doAfterPaste: doAfterPasteMock
                     });
 
                     // mock previous copy paste state
-                    store.commit('workflow/setCopyPaste', {
+                    loadStoreResponse.store.commit('workflow/setCopyPaste', {
                         dummy: null
                     });
 
                     // Start pasting
-                    startPaste = (payload = {}) => store.dispatch('workflow/pasteWorkflowParts', payload);
-                });
+                    const startPaste = (payload = {}) => loadStoreResponse.store.dispatch(
+                        'workflow/pasteWorkflowParts', payload
+                    );
+
+                    return {
+                        startPaste,
+                        clipboardMock,
+                        pasteWorkflowParts,
+                        workflow,
+                        doAfterPasteMock,
+                        ...loadStoreResponse
+                    };
+                };
 
                 it('calls partePartsAt', async () => {
+                    const { pastePartsAtMock, workflow, startPaste, clipboardMock } = await setupStoreForPaste();
                     await startPaste();
 
                     expect(pastePartsAtMock).toHaveBeenCalledWith({
@@ -669,7 +819,7 @@ describe('workflow store: Editing', () => {
                             left: -500,
                             top: -500
                         },
-                        clipboardContent: clipboardObject,
+                        clipboardContent: clipboardMock.getContent(),
                         isWorkflowEmpty: false,
                         workflow,
                         copyPaste: expect.objectContaining({ dummy: null })
@@ -677,10 +827,11 @@ describe('workflow store: Editing', () => {
                 });
 
                 it('pastes at given position', async () => {
+                    const { pastePartsAtMock, startPaste, pasteWorkflowParts } = await setupStoreForPaste();
                     await startPaste({ position: { x: 100, y: 100 } });
 
                     expect(pastePartsAtMock).not.toHaveBeenCalled();
-                    
+
                     expect(pasteWorkflowParts).toHaveBeenCalledWith({
                         projectId: 'my project',
                         workflowId: 'root',
@@ -690,6 +841,7 @@ describe('workflow store: Editing', () => {
                 });
 
                 it('stores pastes boundary', async () => {
+                    const { store, startPaste } = await setupStoreForPaste();
                     await startPaste();
 
                     expect(store.state.workflow.copyPaste).toStrictEqual({
@@ -704,6 +856,7 @@ describe('workflow store: Editing', () => {
                 });
 
                 it('calls paste API function', async () => {
+                    const { pasteWorkflowParts, startPaste } = await setupStoreForPaste();
                     await startPaste();
 
                     expect(pasteWorkflowParts).toHaveBeenCalledWith({
@@ -715,12 +868,14 @@ describe('workflow store: Editing', () => {
                 });
 
                 it('calls after paste hook', async () => {
+                    const { startPaste, doAfterPasteMock } = await setupStoreForPaste();
                     await startPaste();
 
                     expect(doAfterPasteMock).toHaveBeenCalled();
                 });
 
                 it('selects nodes afterwards', async () => {
+                    const { startPaste, store } = await setupStoreForPaste();
                     await startPaste();
 
                     expect(store.state.selection.selectedNodes.foo).toBeFalsy();

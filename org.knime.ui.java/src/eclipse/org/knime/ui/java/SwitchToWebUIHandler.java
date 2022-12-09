@@ -50,7 +50,6 @@ import javax.inject.Inject;
 
 import org.eclipse.e4.core.di.annotations.Execute;
 import org.eclipse.e4.ui.model.application.MApplication;
-import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 
@@ -74,17 +73,11 @@ public final class SwitchToWebUIHandler {
     @Inject
     private EModelService m_modelService;
 
+    @SuppressWarnings("javadoc")
     @Execute
     public void execute() {
-		MPerspective p = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
-        if (p != null) {
-            if (!p.isVisible()) {
-                p.setVisible(true);
-            }
-            m_partService.switchPerspective(p);
-        } else {
-            throw new IllegalStateException("No KNIME Web UI perspective registered");
-        }
+        var perspective = PerspectiveUtil.getWebUIPerspective(m_app, m_modelService);
+        PerspectiveUtil.switchAndMakeVisible(perspective, m_partService);
     }
 
 }

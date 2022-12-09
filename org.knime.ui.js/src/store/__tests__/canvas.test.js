@@ -92,6 +92,13 @@ describe('canvas store', () => {
         expect(store.state.canvas.interactionsEnabled).toBe(false);
     });
 
+    test('setIsEmpty', () => {
+        expect(store.state.canvas.isEmpty).toBe(false);
+
+        store.commit('canvas/setIsEmpty', true);
+        expect(store.state.canvas.isEmpty).toBe(true);
+    });
+
     describe('scroll container element', () => {
         test('set & get ScrollContainerElement', () => {
             store.dispatch('canvas/initScrollContainerElement', scrollContainer);
@@ -245,6 +252,12 @@ describe('canvas store', () => {
                 // proportion:
                 // 100(scrollTop) is to 500(scrollHeight) as 200(expected) is to 1000(currentScrollHeight)
                 expect(scrollContainer.scrollTop).toBe(200);
+            });
+
+            it('defaults to `fillScreen` if canvas state is not valid when restoring', async () => {
+                await store.dispatch('canvas/restoreScrollState', {});
+                
+                expect(dispatchSpy).toHaveBeenCalledWith('canvas/fillScreen', undefined);
             });
         });
 

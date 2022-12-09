@@ -1,24 +1,21 @@
+import Vue from 'vue';
 import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
-
 import * as $shapes from '@/style/shapes.mjs';
 
 import { dropNode, KnimeMIME } from '../dropNode';
 
 describe('Drop Node Mixin', () => {
-    let doMount, wrapper, addNodeMock, dummyEvent, kanvasElement, isWritable;
-
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
     });
 
-    beforeEach(() => {
-        isWritable = true;
+    const doMount = ({ isWritable = true } = {}) => {
         Event.prototype.preventDefault = jest.fn();
 
-        dummyEvent = {
+        const dummyEvent = {
             clientX: 0,
             clientY: 1,
             dataTransfer: {
@@ -28,16 +25,16 @@ describe('Drop Node Mixin', () => {
             },
             preventDefault: jest.fn()
         };
-        addNodeMock = jest.fn();
+        const addNodeMock = jest.fn(() => ({ newNodeId: 'mock-new-node' }));
 
-        kanvasElement = {
+        const kanvasElement = {
             scrollLeft: 5,
             scrollTop: 5,
             offsetLeft: 5,
             offsetTop: 5
         };
     
-        let dropNodeTarget = {
+        const dropNodeTarget = {
             template: `
                 <div
                     @drop.stop="onDrop"
@@ -46,7 +43,7 @@ describe('Drop Node Mixin', () => {
             mixins: [dropNode]
         };
 
-        let $store = mockVuexStore({
+        const $store = mockVuexStore({
             workflow: {
                 actions: {
                     addNode: addNodeMock
@@ -66,13 +63,13 @@ describe('Drop Node Mixin', () => {
 
         document.getElementById = (id) => id === 'kanvas' ? kanvasElement : null;
         
-        doMount = () => {
-            wrapper = shallowMount(dropNodeTarget, { mocks: { $store, $shapes } });
-        };
-    });
+        const wrapper = shallowMount(dropNodeTarget, { mocks: { $store, $shapes } });
+
+        return { wrapper, dummyEvent, addNodeMock, $store };
+    };
 
     it('doesnt allow normal drag & drop', () => {
-        doMount();
+        const { wrapper, dummyEvent } = doMount();
 
         wrapper.trigger('dragover', dummyEvent);
 
@@ -83,7 +80,7 @@ describe('Drop Node Mixin', () => {
     });
 
     it('allows drag & drop from node repo', () => {
-        doMount();
+        const { wrapper, dummyEvent } = doMount();
         dummyEvent.dataTransfer.types.push(KnimeMIME);
 
         wrapper.trigger('dragover', dummyEvent);
@@ -94,8 +91,8 @@ describe('Drop Node Mixin', () => {
         expect(Event.prototype.preventDefault).toHaveBeenCalledTimes(1);
     });
 
-    it('calls the addNode api', () => {
-        doMount();
+    it('calls the addNode api with the correct position to add the node', async () => {
+        const { wrapper, dummyEvent, addNodeMock } = doMount();
 
         wrapper.trigger('drop', dummyEvent);
 
@@ -107,12 +104,12 @@ describe('Drop Node Mixin', () => {
             }
         });
 
+        await Vue.nextTick();
         expect(Event.prototype.preventDefault).toHaveBeenCalledTimes(1);
     });
 
     it('does not allow drag and drop in write-protected workflow', () => {
-        isWritable = false;
-        doMount();
+        const { wrapper, dummyEvent, addNodeMock } = doMount({ isWritable: false });
 
         wrapper.trigger('dragover', dummyEvent);
         expect(dummyEvent.dataTransfer.dropEffect).toBe('');

@@ -64,6 +64,7 @@ import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
+import org.knime.ui.java.browser.KnimeBrowserView;
 
 /**
  * Utility methods for testing.
@@ -79,23 +80,20 @@ public final class TestingUtil {
 
     /**
      * @param newAppState
-     * @param eventConsumer
      * @see DefaultServicesUtil#setDefaultServiceDependencies(AppStateProvider, EventConsumer)
      */
-    public static void initAppStateForTesting(final AppState newAppState,
-        final EventConsumer eventConsumer) {
-        clearAppStateForTesting();
+    public static void initAppForTesting(final AppState newAppState) {
+        clearAppForTesting();
         newAppState.getOpenedWorkflows().forEach(TestingUtil::addToProjectManagerForTesting);
-        var appStateProvider = new AppStateProvider(() -> newAppState);
-        DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer);
+        KnimeBrowserView.initViewForTesting(() -> newAppState);
     }
 
     /**
      * Clears the entire app state.
      */
-    public static void clearAppStateForTesting() {
+    public static void clearAppForTesting() {
+        KnimeBrowserView.clearView();
         disposeLoadedWorkflowsForTesting();
-        DefaultServicesUtil.disposeDefaultServices();
     }
 
     private static void addToProjectManagerForTesting(final AppState.OpenedWorkflow workflow) {
@@ -121,7 +119,7 @@ public final class TestingUtil {
     private static WorkflowManager loadWorkflowForTesting(final AppState.OpenedWorkflow workflow) {
         var file = new File(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile(), workflow.getProjectId());
         try {
-            WorkflowManager wfm = EclipseUIStateUtil.loadWorkflow(file);
+            WorkflowManager wfm = EclipseUIStateUtil.loadTempWorkflow(file);
             if (loadedWorkflowsForTesting == null) {
                 loadedWorkflowsForTesting = new HashSet<>();
             }
@@ -137,12 +135,13 @@ public final class TestingUtil {
     private static void disposeLoadedWorkflowsForTesting() {
         if (loadedWorkflowsForTesting != null) {
             for (String id : loadedWorkflowsForTesting) {
-                WorkflowManager wfm = WorkflowProjectManager.getInstance().openAndCacheWorkflow(id).orElse(null);
-                try {
-                    CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
-                } catch (InterruptedException ex) { // NOSONAR should never happen
-                    throw new IllegalStateException(ex);
-                }
+                WorkflowProjectManager.getInstance().openAndCacheWorkflow(id).ifPresent(wfm -> {
+                    try {
+                        CoreUtil.cancelAndCloseLoadedWorkflow(wfm);
+                    } catch (InterruptedException ex) { // NOSONAR should never happen
+                        throw new IllegalStateException(ex);
+                    }
+                });
             }
             loadedWorkflowsForTesting.clear();
         }

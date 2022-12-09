@@ -91,21 +91,26 @@ export default {
             return this.searchPortsFunction(this.searchQuery);
         },
 
-        menuItems() {
-            if (this.portGroups && !this.selectedPortGroup) {
+        sidePortGroups() {
+            if (this.portGroups) {
                 return Object.entries(this.portGroups)
-                    .filter(([_, group]) => this.side === 'input' ? group.canAddInPort : group.canAddOutPort)
-                    .map(([groupName]) => ({ text: groupName }));
+                    .filter(([_, group]) => this.side === 'input' ? group.canAddInPort : group.canAddOutPort);
             }
 
-            const menuItems = this.searchResults.map(({ typeId, name }) => ({
+            return null;
+        },
+
+        menuItems() {
+            if (this.portGroups && !this.selectedPortGroup) {
+                return this.sidePortGroups.map(([groupName]) => ({ text: groupName }));
+            }
+
+            return this.searchResults.map(({ typeId, name }) => ({
                 port: { typeId },
                 text: name,
                 icon: portIcon({ typeId }),
                 title: name.length > portNameSizeThreshold ? name : null
             }));
-
-            return menuItems;
         },
 
         portTypesInSelectedGroup() {
@@ -124,10 +129,10 @@ export default {
         portGroups: {
             immediate: true,
             handler() {
-                const portGroupsNames = Object.keys(this.portGroups || {});
                 // automatically select the first port group when there's only 1
-                if (portGroupsNames.length === 1) {
-                    this.selectedPortGroup = portGroupsNames[0];
+                if (this.sidePortGroups?.length === 1) {
+                    const [groupName] = this.sidePortGroups[0];
+                    this.selectedPortGroup = groupName;
                 }
             }
         }
@@ -190,7 +195,7 @@ export default {
     </div>
 
     <div
-      v-if="selectedPortGroup && Object.keys(portGroups).length > 1"
+      v-if="selectedPortGroup && Object.keys(sidePortGroups).length > 1"
       class="return-button"
       @click="selectedPortGroup = null"
     >
@@ -232,6 +237,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 .header {
   font-size: 13px;
   margin-top: -7px;
@@ -256,7 +263,6 @@ export default {
   border-bottom: 0;
   background-color: white;
   box-shadow: 0 1px 4px 0 var(--knime-gray-dark-semi);
-  --icon-size: 14;
 
   &:hover {
     cursor: pointer;
@@ -266,9 +272,8 @@ export default {
 
   & svg {
     stroke: var(--knime-masala);
-    width: calc(var(--icon-size) * 1px);
-    height: calc(var(--icon-size) * 1px);
-    stroke-width: calc(32px / var(--icon-size));
+
+    @mixin svg-icon-size 14;
   }
 }
 

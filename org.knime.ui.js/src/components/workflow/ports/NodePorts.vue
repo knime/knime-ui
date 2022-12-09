@@ -74,7 +74,7 @@ export default {
         selectedPort: null
     }),
     computed: {
-        ...mapGetters('workflow', ['isDragging', 'isWritable']),
+        ...mapGetters('workflow', ['isDragging']),
 
         isMetanode() {
             return this.nodeKind === 'metanode';
@@ -125,7 +125,7 @@ export default {
         },
         /* eslint-disable brace-style, curly */
         canAddPort() {
-            if (!this.isWritable) return { input: false, output: false };
+            if (!this.isEditable) return { input: false, output: false };
 
             if (this.isComponent || this.isMetanode) return { input: true, output: true };
 
@@ -157,7 +157,7 @@ export default {
     methods: {
         ...mapActions('workflow', ['addNodePort', 'removeNodePort']),
         onPortClick({ index, portGroupId }, side) {
-            if (!this.isWritable) {
+            if (!this.isEditable) {
                 return;
             }
 
@@ -221,20 +221,6 @@ export default {
                 portGroup: portGroupId
             });
             this.selectedPort = null;
-        },
-        onPortTypeMenuOpen(e) {
-            // show add-port button
-            e.target.style.opacity = 1;
-
-            // clear the close-timeout of this button if set
-            clearTimeout(e.target.closeTimeout);
-        },
-        onPortTypeMenuClose(e) {
-            // after closing the menu, keep the add-port button for 1s,
-            // then go back to styling by css
-            e.target.closeTimeout = setTimeout(() => {
-                e.target.style.opacity = null;
-            }, 1000);
         }
     }
 };
@@ -248,10 +234,12 @@ export default {
       :class="['port', portAnimationClasses(port)]"
       direction="in"
       :node-id="nodeId"
+      :node-kind="nodeKind"
       :port="port"
       :relative-position="portPositions.in[port.index]"
       :selected="selectedPort === `input-${port.index}`"
       :targeted="isPortTargeted(port, 'in')"
+      :disable-quick-node-add="isMetanode || isComponent"
       @click="onPortClick(port, 'input')"
       @remove="removePort(port, 'input')"
       @deselect="onDeselectPort"
@@ -263,10 +251,12 @@ export default {
       :class="['port', portAnimationClasses(port)]"
       direction="out"
       :node-id="nodeId"
+      :node-kind="nodeKind"
       :port="port"
       :relative-position="portPositions.out[port.index]"
       :selected="selectedPort === `output-${port.index}`"
       :targeted="isPortTargeted(port, 'out')"
+      :disable-quick-node-add="isMetanode || isComponent"
       @click="onPortClick(port, 'output')"
       @remove="removePort(port, 'output')"
       @deselect="onDeselectPort"
@@ -288,8 +278,6 @@ export default {
           'node-selected': isSingleSelected,
         }]"
         @add-port="addPort({ side, typeId: $event.typeId, portGroup: $event.portGroup })"
-        @open-port-type-menu.native="onPortTypeMenuOpen($event)"
-        @close-port-type-menu.native="onPortTypeMenuClose($event)"
       />
     </template>
   </g>

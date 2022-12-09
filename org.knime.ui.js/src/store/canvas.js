@@ -23,7 +23,8 @@ export const state = () => ({
     suggestPanning: false,
     containerSize: { width: 0, height: 0 },
     getScrollContainerElement: unsetScrollContainer,
-    interactionsEnabled: true
+    interactionsEnabled: true,
+    isEmpty: false
 });
 
 export const mutations = {
@@ -61,6 +62,9 @@ export const mutations = {
     },
     setInteractionsEnabled(state, value) {
         state.interactionsEnabled = value;
+    },
+    setIsEmpty(state, value) {
+        state.isEmpty = value;
     }
 };
 
@@ -244,8 +248,19 @@ export const actions = {
         kanvas.scrollTop += deltaY;
     },
 
-    async restoreScrollState({ state, commit }, savedState) {
+    async restoreScrollState({ state, commit, dispatch }, savedState = {}) {
         const { zoomFactor, scrollLeft, scrollTop, scrollWidth, scrollHeight } = savedState;
+
+        // when switching perspective from a nested workflow (e.g component or metanode) directly from classic AP
+        // it could be the case that there's no stored canvas state for the parent workflow. So if we change to a
+        // non-existant state then we default back to the `fillScreen` behavior.
+        // NOTE: this logic can probably be deleted once the perspective switch / classic AP are phased out
+        const hasValidPreviousState = zoomFactor && scrollLeft && scrollTop && scrollWidth && scrollHeight;
+        if (!hasValidPreviousState) {
+            await dispatch('fillScreen');
+            return;
+        }
+
         commit('setFactor', zoomFactor);
         await Vue.nextTick();
 

@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapMutations } from 'vuex';
 import throttle from 'raf-throttle';
 import { mixin as clickaway } from 'vue-clickaway2';
 
@@ -13,11 +13,6 @@ import { escapeStack } from '@/mixins/escapeStack';
  * If the menu wants to be closed it emits @menu-close event.
  * The menu will be closed on `esc` key press or on click away.
  *
- * Example:
- * |--------------------|
- * | Menu Item       F9 |
- * | Another Item    F7 |
- * |--------------------|
  */
 
 export default {
@@ -53,14 +48,24 @@ export default {
             type: String,
             default: 'top-left',
             validator: (anchor) => ['top-left', 'top-right'].includes(anchor)
+        },
+
+        /**
+         * When set to true will disable interactions on the workflow canvas when the menu is open
+         */
+        disableInteractions: {
+            type: Boolean,
+            default: false
         }
     },
     data: () => ({
         absolutePosition: { left: 0, top: 0 }
     }),
     computed: {
+        ...mapGetters('workflow', { isDraggingNodeInCanvas: 'isDragging' }),
         ...mapGetters('canvas', ['screenFromCanvasCoordinates']),
-        ...mapState('canvas', ['zoomFactor'])
+        ...mapState('canvas', ['zoomFactor']),
+        ...mapState('nodeRepository', { isDraggingNodeFromRepository: 'isDraggingNode' })
     },
     watch: {
         canvasPosition() {
@@ -68,16 +73,32 @@ export default {
         },
         zoomFactor() {
             this.setAbsolutePosition();
+        },
+        isDraggingNodeInCanvas() {
+            if (this.isDraggingNodeInCanvas) {
+                this.$emit('menu-close');
+            }
+        },
+        isDraggingNodeFromRepository: {
+            immediate: true,
+            handler() {
+                if (this.isDraggingNodeFromRepository) {
+                    this.$emit('menu-close');
+                }
+            }
         }
     },
     mounted() {
         this.setAbsolutePosition();
+        if (this.disableInteractions) {
+            this.setInteractionsEnabled(false);
+        }
         
         let kanvas = document.getElementById('kanvas');
         kanvas.addEventListener('scroll', this.onCanvasScroll);
-        
+
         // set up resize observer
-        this.resizeObserver = new ResizeObserver(entries => {
+        this.resizeObserver = new ResizeObserver(() => {
             this.setAbsolutePosition();
             consola.trace('floating menu: resize detected');
         });
@@ -87,6 +108,8 @@ export default {
         this.resizeObserver.observe(this.$el);
     },
     beforeDestroy() {
+        this.setInteractionsEnabled(true);
+
         // if kanvas currently exists (workflow is open) remove scroll event listener
         let kanvas = document.getElementById('kanvas');
         kanvas?.removeEventListener('scroll', this.onCanvasScroll);
@@ -94,6 +117,7 @@ export default {
         this.stopResizeObserver();
     },
     methods: {
+        ...mapMutations('canvas', ['setInteractionsEnabled']),
         distanceToCanvas({ left, top }) {
             let kanvas = document.getElementById('kanvas');
             let { y, x, width, height } = kanvas.getBoundingClientRect();
@@ -119,13 +143,13 @@ export default {
 
             // if the target point is outside the canvas, first reduce opacity then close menu
             let distanceToCanvas = this.distanceToCanvas({ left, top });
-              
+
             // linear fading depending on distance
             const distanceThreshold = 50;
 
             let alpha = Math.max(0, distanceThreshold - distanceToCanvas) / distanceThreshold;
             this.$el.style.opacity = alpha;
-              
+
             // close menu if outside threshold
             if (distanceToCanvas > distanceThreshold) {
                 this.$emit('menu-close');
@@ -138,7 +162,7 @@ export default {
             if (this.anchor === 'top-right') {
                 left -= menuWidth;
             }
-              
+
             if (this.preventOverflow) {
                 // ensure the menu is always visible within the window
                 if ((window.innerWidth - left) < menuWidth) {
@@ -146,7 +170,7 @@ export default {
                 } else if (left < 0) {
                     left = 0;
                 }
-  
+
                 // ensure the menu is always visible within the window
                 if ((window.innerHeight - top) < menuHeight) {
                     top = window.innerHeight - menuHeight;
@@ -154,7 +178,7 @@ export default {
                     top = 0;
                 }
             }
-  
+
             this.absolutePosition = { left, top };
         },
         onFocusOut(e) {

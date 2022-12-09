@@ -56,7 +56,7 @@ export default {
         },
         outlineX() {
             let offset = 0;
-            
+
             // trafic light ports and table ports need to offset the outline by 1px to make the port look centered.
             if (this.trafficLight) {
                 offset -= 1;

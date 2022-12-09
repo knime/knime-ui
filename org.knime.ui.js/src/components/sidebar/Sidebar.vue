@@ -58,13 +58,15 @@ export default {
                     isExpanded: this.expanded,
                     onClick: () => this.clickItem(TABS.NODE_REPOSITORY)
                 },
-                {
-                    title: 'Node dialog',
-                    icon: NodeCogIcon,
-                    isActive: this.isTabActive(TABS.NODE_DIALOG),
-                    isExpanded: this.expanded,
-                    onClick: () => this.clickItem(TABS.NODE_DIALOG)
-                },
+                this.$features.shouldDisplayEmbeddedDialogs()
+                    ? {
+                        title: 'Node dialog',
+                        icon: NodeCogIcon,
+                        isActive: this.isTabActive(TABS.NODE_DIALOG),
+                        isExpanded: this.expanded,
+                        onClick: () => this.clickItem(TABS.NODE_DIALOG)
+                    }
+                    : null,
                 {
                     title: 'Space explorer',
                     icon: CubeIcon,
@@ -72,7 +74,7 @@ export default {
                     isExpanded: this.expanded,
                     onClick: () => this.clickItem(TABS.SPACE_EXPLORER)
                 }
-            ];
+            ].filter(Boolean);
         }
     },
     methods: {
@@ -133,6 +135,7 @@ export default {
         />
 
         <NodeDialogWrapper
+          v-if="$features.shouldDisplayEmbeddedDialogs()"
           v-show="isTabActive(TABS.NODE_DIALOG)"
           key="node-dialog"
         />

@@ -4,26 +4,26 @@ import StreamingIcon from 'webapps-common/ui/assets/img/icons/nodes-connect.svg'
 import ContextMenu from '@/components/application/ContextMenu.vue';
 import WorkflowCanvas from '@/components/workflow/WorkflowCanvas.vue';
 import PortTypeMenu from '@/components/workflow/ports/PortTypeMenu.vue';
+import QuickAddNodeMenu from '@/components/workflow/node/quickAdd/QuickAddNodeMenu.vue';
 
 export default {
     components: {
         StreamingIcon,
         ContextMenu,
         WorkflowCanvas,
+        QuickAddNodeMenu,
         PortTypeMenu
-    },
-    data() {
-        return {
-            // null (or falsy) means context menu is invisible, otherwise should be an Object with x, y as Numbers
-            contextMenuPosition: null,
-            portTypeMenuConfig: null
-        };
     },
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow',
             activeWorkflowId: state => state.activeWorkflow.info.containerId
         }),
+        ...mapState('workflow', [
+            'portTypeMenu',
+            'quickAddNodeMenu'
+        ]),
+        ...mapState('application', ['contextMenu']),
         ...mapGetters('workflow', [
             'isLinked',
             'isInsideLinked',
@@ -31,34 +31,26 @@ export default {
             'isWritable',
             'isStreaming'
         ]),
-        ...mapGetters('canvas', ['screenToCanvasCoordinates'])
+        ...mapGetters('canvas', ['screenToCanvasCoordinates']),
+        ...mapGetters('selection', ['selectedNodeIds'])
+    },
+    watch: {
+        // close quickAddNodeMenu if node selection changes
+        selectedNodeIds() {
+            if (this.quickAddNodeMenu.isOpen) {
+                this.quickAddNodeMenu.events['menu-close']?.();
+            }
+        }
     },
     methods: {
-        onContextMenu(e) {
-            // do nothing (also not preventing!) if source element has the following class set
-            if (e.srcElement.classList.contains('native-context-menu')) {
-                return;
+        toggleContextMenu(e) {
+            if (this.quickAddNodeMenu.isOpen) {
+                this.quickAddNodeMenu.events['menu-close']?.();
             }
-            // this is not done via modifier as we need to let the native context menu appear if the class is set
-            e.preventDefault();
-
-            // update position to current mouse coordinates
-
-            let [x, y] = this.screenToCanvasCoordinates([e.clientX, e.clientY]);
-            this.contextMenuPosition = { x, y };
-        },
-        onOpenPortTypeMenu(e) {
-            if (this.portTypeMenuConfig && this.portTypeMenuConfig.id !== e.detail.id) {
-                // if another menu than the current one sends an open signal, close the other one first
-                this.portTypeMenuConfig.events['menu-close']();
+            if (this.portTypeMenu.isOpen) {
+                this.portTypeMenu.events['menu-close']?.();
             }
-            this.portTypeMenuConfig = e.detail;
-        },
-        onClosePortTypeMenu(e) {
-            // if the menu that is currently open sends a close signal, then close the current menu
-            if (this.portTypeMenuConfig.id === e.detail.id) {
-                this.portTypeMenuConfig = null;
-            }
+            this.$store.dispatch('application/toggleContextMenu', e);
         }
     }
 };
@@ -67,22 +59,24 @@ export default {
 <template>
   <div
     :class="['workflow-panel', { 'read-only': !isWritable }]"
-    @contextmenu="onContextMenu"
-    @open-port-type-menu="onOpenPortTypeMenu"
-    @close-port-type-menu="onClosePortTypeMenu"
+    @contextmenu="toggleContextMenu"
   >
     <ContextMenu
-      v-if="Boolean(contextMenuPosition)"
-      :position="contextMenuPosition"
-      @menu-close="contextMenuPosition = null"
+      v-if="contextMenu.isOpen"
+      :position="contextMenu.position"
+      @menu-close="toggleContextMenu"
     />
-    
+
     <PortTypeMenu
-      v-if="Boolean(portTypeMenuConfig)"
-      :key="portTypeMenuConfig.id"
-      ref="portTypeMenu"
-      v-bind="portTypeMenuConfig.props"
-      v-on="portTypeMenuConfig.events"
+      v-if="portTypeMenu.isOpen"
+      v-bind="portTypeMenu.props"
+      v-on="portTypeMenu.events"
+    />
+
+    <QuickAddNodeMenu
+      v-if="quickAddNodeMenu.isOpen"
+      v-bind="quickAddNodeMenu.props"
+      v-on="quickAddNodeMenu.events"
     />
 
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->
