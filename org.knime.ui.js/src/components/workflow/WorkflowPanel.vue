@@ -14,17 +14,15 @@ export default {
         QuickAddNodeMenu,
         PortTypeMenu
     },
-    data() {
-        return {
-            portTypeMenuConfig: null,
-            quickAddNodeMenuConfig: null
-        };
-    },
     computed: {
         ...mapState('workflow', {
             workflow: 'activeWorkflow',
             activeWorkflowId: state => state.activeWorkflow.info.containerId
         }),
+        ...mapState('workflow', [
+            'portTypeMenu',
+            'quickAddNodeMenu'
+        ]),
         ...mapState('application', ['contextMenu']),
         ...mapGetters('workflow', [
             'isLinked',
@@ -37,44 +35,22 @@ export default {
         ...mapGetters('selection', ['selectedNodeIds'])
     },
     watch: {
+        // close quickAddNodeMenu if node selection changes
         selectedNodeIds() {
-            if (this.quickAddNodeMenuConfig) {
-                this.quickAddNodeMenuConfig.events['menu-close']();
+            if (this.quickAddNodeMenu.isOpen) {
+                this.quickAddNodeMenu.events['menu-close']?.();
             }
         }
     },
     methods: {
         toggleContextMenu(e) {
-            this.quickAddNodeMenuConfig?.events['menu-close']?.();
-            this.portTypeMenuConfig?.events['menu-close']?.();
-
+            if (this.quickAddNodeMenu.isOpen) {
+                this.quickAddNodeMenu.events['menu-close']?.();
+            }
+            if (this.portTypeMenu.isOpen) {
+                this.portTypeMenu.events['menu-close']?.();
+            }
             this.$store.dispatch('application/toggleContextMenu', e);
-        },
-        onOpenPortTypeMenu(e) {
-            if (this.portTypeMenuConfig && this.portTypeMenuConfig.id !== e.detail.id) {
-                // if another menu than the current one sends an open signal, close the other one first
-                this.portTypeMenuConfig.events['menu-close']();
-            }
-            this.portTypeMenuConfig = e.detail;
-        },
-        onClosePortTypeMenu(e) {
-            // if the menu that is currently open sends a close signal, then close the current menu
-            if (this.portTypeMenuConfig.id === e.detail.id) {
-                this.portTypeMenuConfig = null;
-            }
-        },
-        onOpenQuickAddNodeMenu(e) {
-            if (this.quickAddNodeMenuConfig && this.quickAddNodeMenuConfig.id !== e.detail.id) {
-                // if another menu than the current one sends an open signal, close the other one first
-                this.quickAddNodeMenuConfig.events['menu-close']();
-            }
-            this.quickAddNodeMenuConfig = e.detail;
-        },
-        onCloseQuickAddNodeMenu(e) {
-            // if the menu that is currently open sends a close signal, then close the current menu
-            if (this.quickAddNodeMenuConfig.id === e.detail.id) {
-                this.quickAddNodeMenuConfig = null;
-            }
         }
     }
 };
@@ -84,10 +60,6 @@ export default {
   <div
     :class="['workflow-panel', { 'read-only': !isWritable }]"
     @contextmenu="toggleContextMenu"
-    @open-port-type-menu="onOpenPortTypeMenu"
-    @close-port-type-menu="onClosePortTypeMenu"
-    @open-quick-add-node-menu="onOpenQuickAddNodeMenu"
-    @close-quick-add-node-menu="onCloseQuickAddNodeMenu"
   >
     <ContextMenu
       v-if="contextMenu.isOpen"
@@ -96,17 +68,15 @@ export default {
     />
 
     <PortTypeMenu
-      v-if="Boolean(portTypeMenuConfig)"
-      :key="portTypeMenuConfig.id"
-      v-bind="portTypeMenuConfig.props"
-      v-on="portTypeMenuConfig.events"
+      v-if="portTypeMenu.isOpen"
+      v-bind="portTypeMenu.props"
+      v-on="portTypeMenu.events"
     />
 
     <QuickAddNodeMenu
-      v-if="Boolean(quickAddNodeMenuConfig)"
-      :key="quickAddNodeMenuConfig.id"
-      v-bind="quickAddNodeMenuConfig.props"
-      v-on="quickAddNodeMenuConfig.events"
+      v-if="quickAddNodeMenu.isOpen"
+      v-bind="quickAddNodeMenu.props"
+      v-on="quickAddNodeMenu.events"
     />
 
     <!-- Container for different notifications. At the moment there are streaming|linked notifications -->

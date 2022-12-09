@@ -312,7 +312,7 @@ describe('NodePorts.vue', () => {
         it('render, setup, props', () => {
             let { wrapper } = doMount({ customProps: { nodeKind: 'component' } });
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
-                
+
             expect(addPortPlaceholders.at(0).props('nodeId')).toBe('root:1');
             expect(addPortPlaceholders.at(1).props('nodeId')).toBe('root:1');
 
@@ -321,45 +321,15 @@ describe('NodePorts.vue', () => {
 
             expect(addPortPlaceholders.at(0).props('side')).toBe('input');
             expect(addPortPlaceholders.at(1).props('side')).toBe('output');
-                
+
             expect(addPortPlaceholders.at(0).props('position')).toStrictEqual([-4.5, 37]);
             expect(addPortPlaceholders.at(1).props('position')).toStrictEqual([36.5, 37]);
-        });
-
-        it('show and hide with port type menu', () => {
-            let { wrapper } = doMount({ customProps: { nodeKind: 'component' } });
-            let addPortPlaceholder = wrapper.findComponent(AddPortPlaceholder);
-
-            expect(addPortPlaceholder.element.style.opacity).toBe('');
-                
-            addPortPlaceholder.trigger('open-port-type-menu');
-            expect(addPortPlaceholder.element.style.opacity).toBe('1');
-                
-            // wait for 1000ms
-            jest.useFakeTimers();
-            addPortPlaceholder.trigger('close-port-type-menu');
-            jest.runAllTimers();
-
-            expect(addPortPlaceholder.element.style.opacity).toBe('');
-        });
-
-        it('opening menu again aborts delayed fade out', () => {
-            let { wrapper } = doMount({ customProps: { nodeKind: 'component' } });
-            let addPortPlaceholder = wrapper.findComponent(AddPortPlaceholder);
-
-            jest.useFakeTimers();
-            addPortPlaceholder.trigger('open-port-type-menu');
-            addPortPlaceholder.trigger('close-port-type-menu');
-            addPortPlaceholder.trigger('open-port-type-menu');
-            jest.runAllTimers();
-                
-            expect(addPortPlaceholder.element.style.opacity).toBe('1');
         });
 
         it('not visible by default', () => {
             let { wrapper } = doMount({ customProps: { nodeKind: 'component' } });
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
-            
+
             expect(addPortPlaceholders.at(0).classes()).not.toContain('node-hover');
             expect(addPortPlaceholders.at(1).classes()).not.toContain('node-hover');
         });
@@ -367,7 +337,7 @@ describe('NodePorts.vue', () => {
         it('visible on hover', () => {
             let { wrapper } = doMount({ customProps: { nodeKind: 'component', hover: true } });
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
-            
+
             expect(addPortPlaceholders.at(0).classes()).toContain('node-hover');
             expect(addPortPlaceholders.at(1).classes()).toContain('node-hover');
         });
@@ -375,7 +345,7 @@ describe('NodePorts.vue', () => {
         it('visible on connector-hover', () => {
             let { wrapper } = doMount({ customProps: { nodeKind: 'component', connectorHover: true } });
             let addPortPlaceholders = wrapper.findAllComponents(AddPortPlaceholder);
-            
+
             expect(addPortPlaceholders.at(0).classes()).toContain('connector-hover');
             expect(addPortPlaceholders.at(1).classes()).toContain('connector-hover');
         });
@@ -401,7 +371,7 @@ describe('NodePorts.vue', () => {
                 let { wrapper, addNodePortMock } = doMount({ customProps: { nodeKind } });
                 let addPortButton = wrapper.findAllComponents(AddPortPlaceholder).at(side === 'input' ? 0 : 1);
                 addPortButton.vm.$emit('add-port', { typeId: 'type1', portGroup: 'table' });
-                
+
                 expect(addNodePortMock).toHaveBeenCalledWith(expect.anything(), {
                     nodeId: 'root:1',
                     side,
@@ -411,7 +381,7 @@ describe('NodePorts.vue', () => {
             });
         });
 
-       
+
         test.each(['input', 'output'])('add dynamic ports on %s side', (side) => {
             let { wrapper, addNodePortMock } = doMount({ customProps: {
                 nodeKind: 'node',
@@ -425,7 +395,7 @@ describe('NodePorts.vue', () => {
             } });
             let addPortButton = wrapper.findAllComponents(AddPortPlaceholder).at(side === 'input' ? 0 : 1);
             addPortButton.vm.$emit('add-port', { typeId: 'type1', portGroup: 'group1' });
-                
+
             expect(addNodePortMock).toHaveBeenCalledWith(expect.anything(), {
                 nodeId: 'root:1',
                 side,
@@ -451,7 +421,7 @@ describe('NodePorts.vue', () => {
                 } });
                 let port = wrapper.findAllComponents(NodePort).at(side === 'input' ? 1 : 3);
                 port.vm.$emit('remove');
-                
+
                 expect(removeNodePortMock).toHaveBeenCalledWith(expect.anything(), {
                     index: 1,
                     nodeId: 'root:1',
@@ -480,7 +450,7 @@ describe('NodePorts.vue', () => {
             } });
             let port = wrapper.findAllComponents(NodePort).at(side === 'input' ? 1 : 3);
             port.vm.$emit('remove');
-                
+
             expect(removeNodePortMock).toHaveBeenCalledWith(expect.anything(), {
                 nodeId: 'root:1',
                 side,
@@ -510,7 +480,7 @@ describe('NodePorts.vue', () => {
         } });
         let ports = wrapper.findAllComponents(NodePort);
         const [inPort, outPort] = ports.wrappers;
-        
+
         expect([
             inPort.props('targeted'),
             outPort.props('targeted')

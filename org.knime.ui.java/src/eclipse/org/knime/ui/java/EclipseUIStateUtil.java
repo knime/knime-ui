@@ -54,7 +54,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -72,8 +71,6 @@ import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
-import org.knime.core.node.port.PortType;
-import org.knime.core.node.port.PortTypeRegistry;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowLoadHelper;
@@ -120,23 +117,11 @@ public final class EclipseUIStateUtil {
     public static AppState createAppState(final EModelService modelService, final MApplication app) {
         // Collect data before instantiating the AppState, so its changes can be tracked
         var openedWorkflows = collectOpenedWorkflows(modelService, app);
-        var availablePortTypes = PortTypeRegistry.getInstance().availablePortTypes().stream()//
-            .collect(Collectors.toSet());
         // Return new AppState instance
-        return new AppState() {
+        return new AppState() { // NOSONAR
             @Override
             public List<OpenedWorkflow> getOpenedWorkflows() {
                 return openedWorkflows;
-            }
-
-            @Override
-            public Set<PortType> getAvailablePortTypes() {
-                return availablePortTypes;
-            }
-
-            @Override
-            public List<PortType> getSuggestedPortTypes() {
-                return AppState.SUGGESTED_PORT_TYPES;
             }
         };
     }

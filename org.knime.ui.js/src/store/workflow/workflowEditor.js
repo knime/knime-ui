@@ -14,7 +14,21 @@ export const state = {
     movePreviewDelta: { x: 0, y: 0 },
     nameEditorNodeId: null,
     copyPaste: null,
-    hasAbortedNodeDrag: false
+    hasAbortedNodeDrag: false,
+    portTypeMenu: {
+        isOpen: false,
+        nodeId: null,
+        startNodeId: null,
+        previewPort: null,
+        props: {},
+        events: {}
+    },
+    quickAddNodeMenu: {
+        isOpen: false,
+        nodeId: null,
+        props: {},
+        events: {}
+    }
 };
 
 export const mutations = {
@@ -27,7 +41,7 @@ export const mutations = {
     resetMovePreview(state) {
         state.movePreviewDelta = { x: 0, y: 0 };
     },
-    
+
     setNameEditorNodeId(state, nodeId) {
         state.nameEditorNodeId = nodeId;
     },
@@ -45,6 +59,18 @@ export const mutations = {
 
     setHasAbortedNodeDrag(state, value) {
         state.hasAbortedNodeDrag = value;
+    },
+
+    setPortTypeMenu(state, value) {
+        state.portTypeMenu = value;
+    },
+
+    setQuickAddNodeMenu(state, value) {
+        state.quickAddNodeMenu = value;
+    },
+
+    setPortTypeMenuPreviewPort(state, previewPort) {
+        state.portTypeMenu = { ...state.portTypeMenu, previewPort };
     }
 };
 
@@ -66,6 +92,41 @@ export const actions = {
         commit('setNameEditorNodeId', null);
     },
 
+    openPortTypeMenu({ commit }, { nodeId, startNodeId, props, events }) {
+        commit('setPortTypeMenu', {
+            isOpen: true,
+            previewPort: null,
+            nodeId,
+            startNodeId,
+            props,
+            events
+        });
+    },
+    closePortTypeMenu({ commit }) {
+        commit('setPortTypeMenu', {
+            isOpen: false,
+            nodeId: null,
+            previewPort: null,
+            props: {},
+            events: {}
+        });
+    },
+
+    openQuickAddNodeMenu({ commit }, { props, events }) {
+        commit('setQuickAddNodeMenu', {
+            isOpen: true,
+            props,
+            events
+        });
+    },
+    closeQuickAddNodeMenu({ commit }) {
+        commit('setQuickAddNodeMenu', {
+            isOpen: false,
+            props: {},
+            events: {}
+        });
+    },
+
     /* See docs in API */
     undo: wrapAPI(undo),
     redo: wrapAPI(redo),
@@ -73,7 +134,7 @@ export const actions = {
     addNodePort: wrapAPI(addNodePort),
     removeNodePort: wrapAPI(removeNodePort),
     renameContainerNode: wrapAPI(renameContainerNode),
-    
+
     async addNode({ state, dispatch }, {
         position,
         nodeFactory,
@@ -88,7 +149,7 @@ export const actions = {
         const { activeWorkflow } = state;
         const { projectId } = activeWorkflow;
         const { info: { containerId: workflowId } } = activeWorkflow;
-        
+
         // Adjusted For Grid Snapping
         const gridAdjustedPosition = adjustToGrid({
             coords: position,
@@ -151,16 +212,16 @@ export const actions = {
         const { activeWorkflow: { info: { containerId } } } = state;
         const selectedNodeIds = rootGetters['selection/selectedNodeIds'];
         const selectedNodes = rootGetters['selection/selectedNodes'];
-    
+
         if (selectedNodes.some(node => node.allowedActions.canCollapse === 'resetRequired')) {
             if (!window.confirm(`Creating this ${containerType} will reset executed nodes.`)) {
                 return;
             }
         }
-    
+
         // 1. deselect all objects
         dispatch('selection/deselectAllObjects', null, { root: true });
-    
+
         // 2. send request
         const { newNodeId } = await collapseToContainer({
             containerType,
@@ -181,7 +242,7 @@ export const actions = {
         const { activeWorkflow: { projectId } } = state;
         const { activeWorkflow: { info: { containerId } } } = state;
         const selectedNode = rootGetters['selection/singleSelectedNode'];
-            
+
         if (selectedNode.allowedActions.canExpand === 'resetRequired') {
             if (!window.confirm(`Expanding this ${selectedNode.kind} will reset executed nodes.`)) {
                 return;
@@ -189,7 +250,7 @@ export const actions = {
         }
         // 1. deselect all objects
         dispatch('selection/deselectAllObjects', null, { root: true });
-    
+
         // 2. send request
         const { expandedNodeIds } = await expandContainerNode({
             projectId,
@@ -254,17 +315,17 @@ export const actions = {
         const { activeWorkflow: { info: { containerId } } } = state;
         const selectedNodes = rootGetters['selection/selectedNodeIds'];
         const selectedAnnotations = []; // Annotations cannot be selected yet
-        
+
         if (rootGetters['selection/isSelectionEmpty']) {
             return;
         }
-        
+
         let objectBounds = workflowObjectBounds({ nodes: rootGetters['selection/selectedNodes'] });
 
         if (command === 'cut') {
             dispatch('selection/deselectAllObjects', null, { root: true });
         }
-        
+
         const response = await copyOrCutWorkflowParts({
             projectId,
             workflowId: containerId,
@@ -281,27 +342,27 @@ export const actions = {
             data: response.content,
             objectBounds
         };
-        
+
         try {
             navigator.clipboard.writeText(JSON.stringify(clipboardContent));
-            
+
             commit('setCopyPaste', {
                 payloadIdentifier: clipboardContent.payloadIdentifier
             });
-            
+
             consola.info('Copied workflow parts', clipboardContent);
         } catch (error) {
             consola.info('Could not write to clipboard.');
         }
     },
-    
+
     async pasteWorkflowParts({
         state: { activeWorkflow, copyPaste },
         getters: { isWorkflowEmpty },
         dispatch, rootGetters, commit, rootState
     }, { position: customPosition } = {}) {
         let clipboardContent;
-        
+
         try {
             // TODO: NXT-1168 Put a limit on the clipboard content size
             const clipboardText = await navigator.clipboard.readText();

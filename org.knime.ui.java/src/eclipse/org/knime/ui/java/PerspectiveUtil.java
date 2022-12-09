@@ -100,12 +100,6 @@ public final class PerspectiveUtil {
     public static final String SHARED_EDITOR_AREA_ID = "org.eclipse.ui.editorss";
 
     /**
-     * If true, start directly into the Web UI perspective.
-     * @see AppStartupCompleteAddon#applicationStarted(Event)
-     */
-    public static final String PERSPECTIVE_SWITCH_SYS_PROP = "org.knime.ui.dev.switchOnStart";
-
-    /**
      * Obtain the Web UI perspective
      *
      * @param app The application model

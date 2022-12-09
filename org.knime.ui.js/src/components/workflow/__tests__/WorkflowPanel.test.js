@@ -33,7 +33,23 @@ describe('WorkflowPanel', () => {
         };
         workflowStoreConfig = {
             state: {
-                activeWorkflow: workflow
+                activeWorkflow: workflow,
+                portTypeMenu: {
+                    isOpen: false,
+                    props: {},
+                    events: {}
+                },
+                quickAddNodeMenu: {
+                    isOpen: false,
+                    props: {},
+                    events: {}
+                }
+            },
+            actions: {
+                openQuickAddNodeMenu: jest.fn(),
+                closeQuickAddNodeMenu: jest.fn(),
+                openPortTypeMenu: jest.fn(),
+                closePortTypeMenu: jest.fn()
             },
             getters: {
                 isLinked() {
@@ -160,7 +176,7 @@ describe('WorkflowPanel', () => {
 
             expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(false);
         });
-        
+
         it('closes QuickAddNodeMenu when context menu is opened', async () => {
             doShallowMount();
             const id = '0';
@@ -188,92 +204,69 @@ describe('WorkflowPanel', () => {
     describe('Port Type menu', () => {
         let closeCallback;
 
-        beforeEach(async () => {
-            doShallowMount();
+        beforeEach(() => {
+            closeCallback = jest.fn();
+            storeConfig.workflow.state.portTypeMenu = {
+                isOpen: true,
+                props: {
+                    side: 'input',
+                    position: { x: 0, y: 0 }
+                },
+                events: { 'menu-close': closeCallback }
+            };
+        });
 
+        test('renders if open', () => {
+            storeConfig.workflow.state.portTypeMenu.isOpen = false;
+            doShallowMount();
             expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(false);
 
-            closeCallback = jest.fn();
-            wrapper.trigger('open-port-type-menu', {
-                detail: {
-                    id: '0',
-                    props: { side: 'input', position: { x: 0, y: 0 } },
-                    events: { 'menu-close': closeCallback }
-                }
-            });
-
-            await Vue.nextTick();
+            storeConfig.workflow.state.portTypeMenu.isOpen = true;
+            doShallowMount();
+            expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(true);
         });
 
         test('passes props', () => {
+            storeConfig.workflow.state.portTypeMenu.isOpen = true;
+            doShallowMount();
+            expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(true);
             let portMenu = wrapper.findComponent(PortTypeMenu);
             expect(portMenu.vm.side).toBe('input');
         });
 
         test('binds events', () => {
+            storeConfig.workflow.state.portTypeMenu.isOpen = true;
+            doShallowMount();
             let portMenu = wrapper.findComponent(PortTypeMenu);
             portMenu.vm.$emit('menu-close');
             expect(closeCallback).toHaveBeenCalled();
-        });
-
-        test('opening another menu closes current one', () => {
-            expect(closeCallback).not.toHaveBeenCalled();
-
-            wrapper.trigger('open-port-type-menu', {
-                detail: {
-                    id: '1',
-                    props: { side: 'input', position: { x: 0, y: 0 } },
-                    events: {}
-                }
-            });
-
-            expect(closeCallback).toHaveBeenCalled();
-        });
-
-        test('close menu', async () => {
-            wrapper.trigger('close-port-type-menu', {
-                detail: {
-                    id: '0'
-                }
-            });
-            await Vue.nextTick();
-
-            expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(false);
-        });
-
-        test('close event doesn`t interfere with current menu', async () => {
-            wrapper.trigger('close-port-type-menu', {
-                detail: {
-                    id: '1'
-                }
-            });
-            await Vue.nextTick();
-
-            expect(wrapper.findComponent(PortTypeMenu).exists()).toBe(true);
         });
     });
 
     describe('Quick add node menu', () => {
         let closeCallback;
 
-        beforeEach(async () => {
-            doShallowMount();
+        beforeEach(() => {
+            closeCallback = jest.fn();
+            storeConfig.workflow.state.quickAddNodeMenu = {
+                isOpen: true,
+                props: { direction: 'in', position: { x: 0, y: 0 }, port: { index: 2 }, nodeId: 'node:0' },
+                events: { 'menu-close': closeCallback }
+            };
+        });
 
+        test('renders menu if open', () => {
+            storeConfig.workflow.state.quickAddNodeMenu.isOpen = false;
+            doShallowMount();
             expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(false);
 
-            closeCallback = jest.fn();
-            wrapper.trigger('open-quick-add-node-menu', {
-                detail: {
-                    id: '0',
-                    props: { direction: 'in', position: { x: 0, y: 0 }, port: { index: 2 }, nodeId: 'node:0' },
-                    events: { 'menu-close': closeCallback }
-                }
-            });
-
-            await Vue.nextTick();
+            storeConfig.workflow.state.quickAddNodeMenu.isOpen = true;
+            doShallowMount();
+            expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(true);
         });
 
         test('passes props', () => {
+            doShallowMount();
             let quickAddNodeMenu = wrapper.findComponent(QuickAddNodeMenu);
             expect(quickAddNodeMenu.props()).toEqual({
                 nodeId: 'node:0',
@@ -286,31 +279,10 @@ describe('WorkflowPanel', () => {
         });
 
         test('binds events', () => {
+            doShallowMount();
             let quickAddNodeMenu = wrapper.findComponent(QuickAddNodeMenu);
             quickAddNodeMenu.vm.$emit('menu-close');
             expect(closeCallback).toHaveBeenCalled();
-        });
-
-        test('close menu', async () => {
-            wrapper.trigger('close-quick-add-node-menu', {
-                detail: {
-                    id: '0'
-                }
-            });
-            await Vue.nextTick();
-
-            expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(false);
-        });
-
-        test('close event doesn`t interfere with current menu', async () => {
-            wrapper.trigger('close-quick-add-node-menu', {
-                detail: {
-                    id: '1'
-                }
-            });
-            await Vue.nextTick();
-
-            expect(wrapper.findComponent(QuickAddNodeMenu).exists()).toBe(true);
         });
     });
 });

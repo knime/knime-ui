@@ -49,7 +49,6 @@
 package org.knime.ui.java.browser.function;
 
 import org.knime.ui.java.TestingUtil;
-import org.knime.ui.java.browser.KnimeBrowserView;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
@@ -64,23 +63,18 @@ public class ClearAppForTestingBrowserFunction extends BrowserFunction {
 
 	private static final String FUNCTION_NAME = "clearAppForTesting";
 
-	private KnimeBrowserView m_knimeBrowser;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param browser the browser to register this function with
-	 * @param knimeBrowser reference to the knime browser view mainly to be able to set a URL
-	 */
-	public ClearAppForTestingBrowserFunction(final Browser browser, final KnimeBrowserView knimeBrowser) {
-		super(browser, FUNCTION_NAME);
-		m_knimeBrowser = knimeBrowser;
-	}
+    /**
+     * Constructor.
+     *
+     * @param browser the browser to register this function with
+     */
+    public ClearAppForTestingBrowserFunction(final Browser browser) {
+        super(browser, FUNCTION_NAME);
+    }
 
 	@Override
 	public Object function(final Object[] args) { // NOSONAR it's ok that this method always returns null
-		m_knimeBrowser.clearUrl();
-		TestingUtil.clearAppStateForTesting();
+		TestingUtil.clearAppForTesting();
 		return null;
 	}
 

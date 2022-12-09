@@ -67,13 +67,25 @@ describe('NodePort', () => {
             workflow: {
                 state: {
                     activeWorkflow: 'workflowRef',
-                    isDragging: false // mock value to make getter reactive
+                    isDragging: false, // mock value to make getter reactive
+                    portTypeMenu: {
+                        isOpen: false,
+                        props: {}
+                    },
+                    quickAddNodeMenu: {
+                        isOpen: false,
+                        props: {
+                            port: {}
+                        }
+                    }
                 },
                 mutations: {
                     setTooltip: jest.fn()
                 },
                 actions: {
                     connectNodes: jest.fn(),
+                    openQuickAddNodeMenu: jest.fn(),
+                    closeQuickAddNodeMenu: jest.fn(),
                     removeContainerNodePort: jest.fn()
                 },
                 getters: {
@@ -578,8 +590,12 @@ describe('NodePort', () => {
                     expect(snapCallbackResult).toMatchObject({
                         didSnap: true,
                         createPortFromPlaceholder: {
-                            portGroup: null,
-                            typeId: 'table'
+                            validPortGroups: {
+                                default: {
+                                    canAddOutPort: true,
+                                    supportedPortTypeIds: ['table']
+                                }
+                            }
                         }
                     });
 
@@ -622,8 +638,12 @@ describe('NodePort', () => {
                     expect(snapCallbackResult).toMatchObject({
                         didSnap: true,
                         createPortFromPlaceholder: {
-                            portGroup: 'My Port Group',
-                            typeId: 'table'
+                            validPortGroups: {
+                                'My Port Group': {
+                                    canAddOutPort: true,
+                                    supportedPortTypeIds: ['table']
+                                }
+                            }
                         }
                     });
 
@@ -637,6 +657,11 @@ describe('NodePort', () => {
                             canAddInPort: true,
                             canAddOutPort: false,
                             supportedPortTypeIds: ['specific', 'generic']
+                        },
+                        'Second Port Group': {
+                            canAddInPort: true,
+                            canAddOutPort: false,
+                            supportedPortTypeIds: ['specific', 'other']
                         }
                     };
                     const targetPort = { isPlaceHolderPort: true };
@@ -666,8 +691,16 @@ describe('NodePort', () => {
                     expect(snapCallbackResult).toMatchObject({
                         didSnap: true,
                         createPortFromPlaceholder: {
-                            portGroup: 'My Port Group',
-                            typeId: 'specific'
+                            validPortGroups: {
+                                'My Port Group': {
+                                    canAddInPort: true,
+                                    supportedPortTypeIds: ['specific', 'generic']
+                                },
+                                'Second Port Group': {
+                                    canAddInPort: true,
+                                    supportedPortTypeIds: ['specific'] // other is missing as it's not compatible!
+                                }
+                            }
                         }
                     });
 
@@ -895,9 +928,9 @@ describe('NodePort', () => {
             doShallowMount();
             startDragging();
             await Vue.nextTick();
-            
+
             escapeStackMock.onEscape.call(wrapper.vm);
-            
+
             await Vue.nextTick();
             expect(wrapper.findComponent(Connector).exists()).toBe(false);
 
@@ -944,53 +977,70 @@ describe('NodePort', () => {
                     startDragging();
                     await Vue.nextTick();
 
-                    // we cannot mock dispatchEvent as it is required to be the real function for wrapper.trigger calls!
-                    const dispatchEventSpy = jest.spyOn(wrapper.element, 'dispatchEvent');
-
                     // connector and QuickAddNodeGhost should be visible
                     expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
                     expect(wrapper.findComponent(Connector).exists()).toBe(true);
 
                     await wrapper.trigger('lostpointercapture');
 
-                    expect(wrapper.findComponent(Connector).exists()).toBe(true);
-                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
-
-                    let dispatchCall = dispatchEventSpy.mock.calls[1];
-                    let [openEvent] = dispatchCall;
-
-                    expect(openEvent.bubbles).toBe(true);
-                    expect(openEvent.type).toBe('open-quick-add-node-menu');
-                    expect(openEvent.detail).toEqual(expect.objectContaining({
-                        id: 'node:1-out',
-                        props: expect.objectContaining({
-                            nodeId: 'node:1',
-                            position: {
-                                x: 0,
-                                y: 0
+                    expect(storeConfig.workflow.actions.openQuickAddNodeMenu).toBeCalledWith(
+                        expect.anything(),
+                        expect.objectContaining({
+                            props: {
+                                nodeId: 'node:1',
+                                port: expect.anything(),
+                                position: {
+                                    x: 0,
+                                    y: 0
+                                }
                             }
                         })
-                    }));
+                    );
+                });
+
+                it('keeps connector and ghost visible on pointer release if menu is open', async () => {
+                    startDragging();
+                    await Vue.nextTick();
+
+                    // connector and QuickAddNodeGhost should be visible
+                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
+                    expect(wrapper.findComponent(Connector).exists()).toBe(true);
+
+                    // simulate open menu
+                    storeConfig.workflow.state.quickAddNodeMenu = {
+                        isOpen: true,
+                        props: {
+                            nodeId: propsData.nodeId,
+                            port: {
+                                index: propsData.port.index
+                            }
+                        }
+                    };
+
+                    await wrapper.trigger('lostpointercapture');
+
+                    expect(wrapper.findComponent(Connector).exists()).toBe(true);
+                    expect(wrapper.findComponent(QuickAddNodeGhost).exists()).toBe(true);
                 });
 
                 it('closes the quick add node menu', async () => {
                     startDragging();
                     await Vue.nextTick();
 
+                    let menuCloseFn;
+                    storeConfig.workflow.actions.openQuickAddNodeMenu.mockImplementationOnce((_, { events }) => {
+                        menuCloseFn = events['menu-close'];
+                    });
+
                     // open so we can close it again
-                    const dispatchEventSpy = jest.spyOn(wrapper.element, 'dispatchEvent');
                     await wrapper.trigger('lostpointercapture');
-                    let openEvent = dispatchEventSpy.mock.calls[1][0];
 
                     // call close
-                    openEvent.detail.events['menu-close']();
+                    menuCloseFn();
                     await Vue.nextTick();
 
                     // see if close went good
-                    let closeEvent = dispatchEventSpy.mock.calls[2][0];
-                    expect(closeEvent.bubbles).toBe(true);
-                    expect(closeEvent.type).toBe('close-quick-add-node-menu');
-                    expect(closeEvent.detail.id).toBe('node:1-out');
+                    expect(storeConfig.workflow.actions.closeQuickAddNodeMenu).toBeCalledTimes(1);
                 });
             });
 
