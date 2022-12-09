@@ -11,7 +11,7 @@ describe('workflowShortcuts', () => {
         selectedConnections = [],
         singleSelectedNode = mockSelectedNode,
         isWorkflowWritable = true,
-        kanvasElement = {}
+        getScrollContainerElement = jest.fn()
     } = {}) => {
         const mockDispatch = jest.fn();
         const $store = {
@@ -29,7 +29,7 @@ describe('workflowShortcuts', () => {
                     }
                 },
                 canvas: {
-                    getScrollContainerElement: () => kanvasElement
+                    getScrollContainerElement
                 }
             },
             getters: {
@@ -397,14 +397,18 @@ describe('workflowShortcuts', () => {
             const kanvasElement = document.getElementById('kanvas');
             kanvasElement.focus();
             expect(document.activeElement).toBe(kanvasElement);
+            let getScrollContainerElement = jest.fn().mockReturnValue(kanvasElement);
 
-            const { $store } = createStore({ kanvasElement });
+            const { $store } = createStore({ getScrollContainerElement });
 
             expect(workflowShortcuts.copy.condition({ $store })).toBeFalsy();
             $store.getters['selection/selectedNodes'] = [{ allowedActions: {} }];
 
             expect(workflowShortcuts.copy.condition({ $store })).toBe(true);
             $store.state.application.hasClipboardSupport = false;
+            expect(workflowShortcuts.copy.condition({ $store })).toBeFalsy();
+
+            getScrollContainerElement.mockReturnValue({});
             expect(workflowShortcuts.copy.condition({ $store })).toBeFalsy();
         });
 
