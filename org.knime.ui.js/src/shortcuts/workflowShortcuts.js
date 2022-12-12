@@ -204,8 +204,14 @@ export default {
         execute:
             ({ $store }) => $store.dispatch('workflow/copyOrCutWorkflowParts', { command: 'cut' }),
         condition:
-            ({ $store }) => Object.keys($store.getters['selection/selectedNodes']).length !== 0 &&
-                $store.getters['workflow/isWritable'] && $store.state.application.hasClipboardSupport
+            ({ $store }) => {
+                const selectedNodes = Object.keys($store.getters['selection/selectedNodes']);
+                return (
+                    selectedNodes.length !== 0 &&
+                    $store.getters['workflow/isWritable'] &&
+                    $store.state.application.hasClipboardSupport
+                );
+            }
     },
     paste: {
         text: 'Paste',
