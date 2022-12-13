@@ -20,6 +20,10 @@ export default {
         kind: {
             type: String,
             default: ''
+        },
+        nodePosition: {
+            type: Object,
+            required: true
         }
     },
     computed: {
@@ -52,13 +56,16 @@ export default {
 <template>
   <g>
     <template v-if="isEditing">
-      <NodeLabelEditor
-        :node-id="nodeId"
-        :value="value"
-        :kind="kind"
-        @save="onSave"
-        @cancel="onCancel"
-      />
+      <portal to="node-label-editor">
+        <NodeLabelEditor
+          :node-id="nodeId"
+          :value="value"
+          :kind="kind"
+          :node-position="nodePosition"
+          @save="onSave"
+          @cancel="onCancel"
+        />
+      </portal>
     </template>
     <template v-else>
       <NodeLabelText

@@ -380,6 +380,7 @@ export default {
           :value="annotation.text"
           :kind="kind"
           :node-id="id"
+          :node-position="position"
         />
 
         <!-- Elements for which mouse hover triggers hover state -->

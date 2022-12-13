@@ -62,6 +62,7 @@ export default {
     font-style: normal;
     font-size: calc(var(--node-name-font-size-shape) * 1px);
     text-align: center;
+    white-space: pre-wrap;
   }
 
   & .node-label {

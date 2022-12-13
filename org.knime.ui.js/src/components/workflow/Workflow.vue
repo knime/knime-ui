@@ -109,6 +109,11 @@ export default {
       name="node-name-editor"
     />
 
+    <portal-target
+      tag="g"
+      name="node-label-editor"
+    />
+
     <!-- Quick Actions Layer: Buttons for Hovered & Selected Nodes and their ids -->
     <portal-target
       multiple

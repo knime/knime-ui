@@ -20,6 +20,11 @@ export default {
         kind: {
             type: String,
             default: ''
+        },
+        nodePosition: {
+            type: Object,
+            required: true,
+            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         }
     },
     data() {
@@ -40,10 +45,10 @@ export default {
         },
         actionBarPosition() {
             return [
-                this.$shapes.nodeSize / 2,
+                this.nodePosition.x + this.$shapes.nodeSize / 2,
                 this.kind === 'metanode'
-                    ? this.$shapes.metanodeLabelActionBarOffset
-                    : this.$shapes.nodeLabelActionBarOffset
+                    ? this.nodePosition.y + this.$shapes.metanodeLabelActionBarOffset
+                    : this.nodePosition.y + this.$shapes.nodeLabelActionBarOffset
             ];
         }
     },
@@ -89,7 +94,6 @@ export default {
 
     <!-- Save/Cancel actions -->
     <NodeEditorActionBar
-      class="action-bar"
       :transform="`translate(${actionBarPosition})`"
       @save="onSave"
       @cancel="onCancel"
@@ -98,6 +102,7 @@ export default {
     <!-- Node name inline editor -->
     <NodeLabelTextArea
       v-model="currentLabel"
+      :transform="`translate(${nodePosition.x}, ${nodePosition.y})`"
       :kind="kind"
       :parent-width="$shapes.nodeSize"
       @save="onSave"
@@ -106,9 +111,3 @@ export default {
   </g>
 </template>
 
-<style lang="postcss" scoped>
-.action-bar {
-  z-index: 9;
-  backdrop-filter: blur(10px);
-}
-</style>
