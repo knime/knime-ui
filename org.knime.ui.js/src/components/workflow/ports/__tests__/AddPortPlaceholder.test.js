@@ -1,5 +1,10 @@
 import Vue from 'vue';
-import { shallowMount } from '@vue/test-utils';
+import Vuex from 'vuex';
+import { createLocalVue, shallowMount } from '@vue/test-utils';
+
+import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
+
+import { actions as workflowStoreActions, mutations as workflowStoreMutations } from '@/store/workflow';
 
 import * as $shapes from '@/style/shapes.mjs';
 import * as $colors from '@/style/colors.mjs';
@@ -8,37 +13,58 @@ import Port from '@/components/common/Port.vue';
 import AddPortPlaceholder, { addPortPlaceholderPath } from '../AddPortPlaceholder.vue';
 
 describe('AddPortPlaceholder.vue', () => {
-    let propsData, mocks, doMount, wrapper, provide;
+    let doMount, $store;
 
-    beforeEach(() => {
-        wrapper = null;
-        propsData = {
-            position: [10, 10],
-            side: 'output',
-            nodeId: 'node-id',
-            targeted: false,
-            targetPort: null,
-            portGroups: { input: { supportedPortTypeIds: ['type1', 'type2'] } }
-        };
-        provide = {
-            anchorPoint: { x: 10, y: 10 }
-        };
+    beforeAll(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
 
-        doMount = () => {
-            mocks = { $shapes, $colors };
+        doMount = (propsDataOverrides = {}) => {
+            let propsDataDefault = {
+                position: [10, 10],
+                side: 'output',
+                nodeId: 'node-id',
+                targeted: false,
+                targetPort: null,
+                portGroups: { input: { supportedPortTypeIds: ['type1', 'type2'] } }
+            };
 
-            wrapper = shallowMount(AddPortPlaceholder, { propsData, mocks, provide });
+            let provide = {
+                anchorPoint: {
+                    x: 10,
+                    y: 10
+                }
+            };
+
+            let storeConfig = {
+                workflow: {
+                    state: {
+                        portTypeMenu: {
+                            isOpen: false
+                        }
+                    },
+                    actions: workflowStoreActions,
+                    mutations: workflowStoreMutations
+                }
+            };
+
+            let propsData = { ...propsDataDefault, ...propsDataOverrides };
+
+            $store = mockVuexStore(storeConfig);
+            const mocks = { $shapes, $colors, $store };
+
+            return shallowMount(AddPortPlaceholder, { propsData, mocks, provide });
         };
     });
 
     describe('AddPortPlaceholder', () => {
         test('set position', () => {
-            doMount();
+            let wrapper = doMount();
             expect(wrapper.attributes('transform')).toBe('translate(10,10)');
         });
 
         test('Add Port Button', () => {
-            doMount();
+            let wrapper = doMount();
 
             let addPortButton = wrapper.find('.add-port-icon');
 
@@ -46,9 +72,39 @@ describe('AddPortPlaceholder.vue', () => {
             expect(addPortButton.find('path').attributes('d')).toBe(addPortPlaceholderPath);
         });
 
+        it('show and hide with port type menu', async () => {
+            jest.useFakeTimers();
+            let wrapper = doMount();
+
+            expect(wrapper.element.style.opacity).toBe('');
+
+            await $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
+
+            expect(wrapper.element.style.opacity).toBe('1');
+
+            await $store.dispatch('workflow/closePortTypeMenu');
+            jest.runAllTimers();
+
+            expect(wrapper.element.style.opacity).toBe('');
+        });
+
+        it('opening menu again aborts delayed fade out', async () => {
+            let wrapper = doMount();
+
+            expect(wrapper.element.style.opacity).toBe('');
+
+            jest.useFakeTimers();
+            await $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
+            await $store.dispatch('workflow/closePortTypeMenu');
+            await $store.dispatch('workflow/openPortTypeMenu', { nodeId: 'node-id', props: { side: 'output' } });
+            jest.advanceTimersToNextTimer();
+
+            expect(wrapper.element.style.opacity).toBe('1');
+        });
+
         test('adds port directly, if only one option is given', () => {
-            propsData.portGroups = { input: { supportedPortTypeIds: ['table'], canAddInPort: true } };
-            doMount();
+            let propsData = { portGroups: { input: { supportedPortTypeIds: ['table'], canAddInPort: true } } };
+            let wrapper = doMount(propsData);
 
             wrapper.find('.add-port-icon').trigger('click');
             expect(wrapper.emitted('add-port')).toStrictEqual([[{ portGroup: 'input', typeId: 'table' }]]);
@@ -56,7 +112,7 @@ describe('AddPortPlaceholder.vue', () => {
 
         it('uses targetPort as preview port if placeholder is targeted', async () => {
             let targetPort = { typeId: 'targetTypeId' };
-            doMount();
+            let wrapper = doMount();
 
             expect(wrapper.find('.add-port-icon').exists()).toBe(true);
             await wrapper.setProps({ targeted: true, targetPort });
@@ -66,27 +122,22 @@ describe('AddPortPlaceholder.vue', () => {
         });
 
         describe('with open menu', () => {
-            let callbacks;
+            const mountWithOpenMenu = async () => {
+                let wrapper = doMount();
+                await wrapper.find('.add-port-icon').trigger('click');
+                return wrapper;
+            };
 
-            beforeEach(async () => {
-                doMount();
+            it('opens the menu on click', async () => {
+                await mountWithOpenMenu();
 
-                wrapper.element.dispatchEvent = jest.fn();
-
-                // open type menu
-                wrapper.find('.add-port-icon').trigger('click');
-                await Vue.nextTick();
-
-                // test open-port-type-menu event
-                let dispatchCall = wrapper.element.dispatchEvent.mock.calls[0];
-                let [openEvent] = dispatchCall;
-
-                expect(openEvent.bubbles).toBe(true);
-                expect(openEvent.type).toBe('open-port-type-menu');
-                expect(openEvent.detail).toStrictEqual({
-                    id: 'node-id-output',
+                expect($store.state.workflow.portTypeMenu).toMatchObject({
+                    nodeId: 'node-id',
                     props: {
-                        position: { x: 20, y: 20 },
+                        position: {
+                            x: 20,
+                            y: 20
+                        },
                         side: 'output',
                         portGroups: {}
                     },
@@ -96,31 +147,18 @@ describe('AddPortPlaceholder.vue', () => {
                         'menu-close': expect.any(Function)
                     }
                 });
-
-                callbacks = openEvent.detail.events;
             });
 
-            const testCloseMenu = () => {
-                let callsToDispatch = wrapper.element.dispatchEvent.mock.calls;
-                let dispatchCall = callsToDispatch[callsToDispatch.length - 1];
-                let [closeEvent] = dispatchCall;
-
-                expect(closeEvent.bubbles).toBe(true);
-                expect(closeEvent.type).toBe('close-port-type-menu');
-                expect(closeEvent.detail).toStrictEqual({
-                    id: 'node-id-output'
-                });
-            };
-
-            it('sets add-port-icon active', () => {
+            it('sets add-port-icon active', async () => {
+                let wrapper = await mountWithOpenMenu();
                 expect(wrapper.find('.add-port-icon').classes()).toContain('active');
             });
 
-
             it('preview port', async () => {
-                let port = { typeId: 'table' };
+                let wrapper = await mountWithOpenMenu();
 
-                callbacks['item-active']({ port });
+                let port = { typeId: 'table' };
+                $store.state.workflow.portTypeMenu.events['item-active']({ port });
                 await Vue.nextTick();
 
                 expect(wrapper.find('.add-port-icon').exists()).toBe(false);
@@ -131,7 +169,9 @@ describe('AddPortPlaceholder.vue', () => {
             });
 
             it('resets port preview', async () => {
-                callbacks['item-active'](null);
+                let wrapper = await mountWithOpenMenu();
+
+                $store.state.workflow.portTypeMenu.events['item-active'](null);
                 await Vue.nextTick();
 
                 expect(wrapper.find('.add-port-icon').exists()).toBe(true);
@@ -139,20 +179,26 @@ describe('AddPortPlaceholder.vue', () => {
             });
 
             it('closes menu on click', async () => {
-                wrapper.find('.add-port-icon').trigger('click');
-                await Vue.nextTick();
+                let wrapper = await mountWithOpenMenu();
 
-                testCloseMenu();
+                await wrapper.find('.add-port-icon').trigger('click');
+
+                expect($store.state.workflow.portTypeMenu.isOpen).toBe(false);
             });
 
             it('closes menu on close-menu event', async () => {
-                callbacks['menu-close']();
+                await mountWithOpenMenu();
+
+                $store.state.workflow.portTypeMenu.events['menu-close']();
                 await Vue.nextTick();
 
-                testCloseMenu();
+                expect($store.state.workflow.portTypeMenu.isOpen).toBe(false);
             });
 
             test('close menu without selecting a port resets port preview', async () => {
+                let wrapper = await mountWithOpenMenu();
+                let callbacks = $store.state.workflow.portTypeMenu.events;
+
                 callbacks['item-active']({ portId: 'table' });
                 callbacks['menu-close']();
                 await Vue.nextTick();
@@ -163,8 +209,10 @@ describe('AddPortPlaceholder.vue', () => {
 
             // TODO: test transition element directly
             test('click on item reset preview without transition', async () => {
+                let wrapper = await mountWithOpenMenu();
+
                 let port = { typeId: 'table' };
-                callbacks['item-click']({ port });
+                $store.state.workflow.portTypeMenu.events['item-click']({ port });
 
                 expect(wrapper.vm.transitionEnabled).toBe(false);
                 await Vue.nextTick();
@@ -177,8 +225,10 @@ describe('AddPortPlaceholder.vue', () => {
                 expect(wrapper.vm.transitionEnabled).toBe(true);
             });
 
-            test('click on item emits event', () => {
-                callbacks['item-click']({ typeId: 'table' });
+            test('click on item emits event', async () => {
+                let wrapper = await mountWithOpenMenu();
+
+                $store.state.workflow.portTypeMenu.events['item-click']({ typeId: 'table' });
 
                 expect(wrapper.emitted('add-port')).toStrictEqual([[{ typeId: 'table', portGroup: undefined }]]);
             });
