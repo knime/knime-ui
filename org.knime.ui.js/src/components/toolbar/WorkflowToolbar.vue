@@ -18,6 +18,7 @@ export default {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapGetters('workflow', ['isWorkflowEmpty']),
         ...mapGetters('selection', ['selectedNodes']),
+
         hasBreadcrumb() {
             return this.workflow?.parents?.length > 0;
         },
