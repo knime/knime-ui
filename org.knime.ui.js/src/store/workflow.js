@@ -127,11 +127,5 @@ export const getters = {
         } else {
             return node.type;
         }
-    },
-
-    getNodeKind: ({ activeWorkflow }) => nodeId => {
-        let node = activeWorkflow.nodes[nodeId];
-        
-        return node.kind;
     }
 };

@@ -20,14 +20,6 @@ export default {
         kind: {
             type: String,
             default: ''
-        },
-        /**
-         * @values "left", "center", "right"
-         */
-        textAlign: {
-            type: String,
-            default: 'center',
-            validator: val => ['left', 'center', 'right'].includes(val)
         }
     },
     computed: {
@@ -41,9 +33,8 @@ export default {
         onRequestEdit() {
             this.openLabelEditor(this.nodeId);
         },
-        onSave({ dimensionsOnClose, newLabel }) {
+        onSave({ newLabel }) {
             this.renameNodeLabel({ nodeId: this.nodeId, label: newLabel });
-            this.editorInitialDimensions = dimensionsOnClose;
 
             // Schedule closing editor on next the event loop run
             // to allow styles to apply properly when editor is destroyed
@@ -79,5 +70,3 @@ export default {
   </g>
 </template>
 
-<style lang="postcss" scoped>
-</style>

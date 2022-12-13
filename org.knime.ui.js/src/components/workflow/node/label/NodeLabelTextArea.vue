@@ -12,10 +12,6 @@ export default {
             type: String,
             default: ''
         },
-        invalidCharacters: {
-            type: RegExp,
-            default: null
-        },
         kind: {
             type: String,
             default: ''
@@ -33,15 +29,7 @@ export default {
     },
     methods: {
         onInput(event, sizeChangeCallback) {
-            let value = event.target.value;
-            value = value.replace(/(\r\n|\n|\r)/gm, ''); // remove all new lines
-
-            // remove invalid characters here as well, they could have been sneaked in via paste or drop
-            if (this.invalidCharacters && this.invalidCharacters.test(value)) {
-                this.$emit('invalid-input');
-                value = value.replace(this.invalidCharacters, '');
-            }
-
+            const value = event.target.value;
             this.$refs.textarea.value = value;
             this.$refs.ghost.innerText = value;
 
@@ -53,17 +41,6 @@ export default {
 
             this.$emit('input', value);
         },
-        onKeyDown(event) {
-            // prevent inserting invalid characters
-            if (this.invalidCharacters && this.invalidCharacters.test(event.key)) {
-                this.$emit('invalid-input');
-                event.preventDefault();
-            }
-        },
-        onEnter(event) {
-            event.preventDefault();
-            this.$emit('save');
-        },
         onEscape(event) {
             event.preventDefault();
             this.$emit('cancel');
@@ -74,10 +51,8 @@ export default {
                 return;
             }
             // width
-            const width = Math.min(
-                Math.max(this.$refs.ghost.scrollWidth + 2, this.$shapes.nodeNameEditorMinWidth),
-                this.$shapes.maxNodeNameWidth
-            );
+            // eslint-disable-next-line no-magic-numbers
+            const width = this.$refs.ghost.scrollWidth + 10;
             textarea.style.width = `${width}px`;
 
             // height
@@ -93,8 +68,6 @@ export default {
     show-overflow
     class="editor"
     :kind="kind"
-    @width-change="$emit('width-change', $event)"
-    @height-change="$emit('height-change', $event)"
   >
     <template #default="{ on: { sizeChange } }">
       <span
@@ -111,8 +84,6 @@ export default {
         :value="value"
         @pointerdown.stop
         @input="onInput($event, sizeChange)"
-        @keydown="onKeyDown"
-        @keydown.enter.exact="onEnter"
         @keydown.esc="onEscape"
       />
     </template>
@@ -140,7 +111,6 @@ export default {
   display: block;
   text-align: inherit;
   border: 0;
-  padding: 0;
   margin: 0;
   resize: none;
   background-color: transparent;

@@ -3,10 +3,6 @@ import { mapGetters } from 'vuex';
 import NodeLabelTextArea from './NodeLabelTextArea.vue';
 import NodeEditorActionBar from '../common/NodeEditorActionBar.vue';
 
-/**
- * Node Label Editor. Component wraps inline textarea and editor action bar (cancel, save). It overlays the whole
- * canvas (via the portal) with a rect that avoids changes to the canvas.
- */
 export default {
     components: {
         NodeLabelTextArea,
@@ -57,14 +53,6 @@ export default {
         }
     },
     methods: {
-        handleDimensionChange(dimensionName, dimensionValue) {
-            // keep a reference of the dimensions so that we can emit the most recent
-            // value upon saving. These values can be later provided so that the editor
-            // can be reinitialized using them as a starting point
-            this.latestDimensions = { ...this.latestDimensions, [dimensionName]: dimensionValue };
-
-            this.$emit(`${dimensionName}-change`, dimensionValue);
-        },
         onSave() {
             // reset to old value on empty edits
             if (this.currentLabel.trim() === '') {
@@ -76,7 +64,7 @@ export default {
             if (this.currentLabel === this.value) {
                 this.onCancel();
             } else {
-                this.$emit('save', { dimensionsOnClose: this.latestDimensions, newLabel: this.currentLabel.trim() });
+                this.$emit('save', { newLabel: this.currentLabel });
             }
         },
         onCancel() {
@@ -101,8 +89,8 @@ export default {
 
     <!-- Save/Cancel actions -->
     <NodeEditorActionBar
-      :transform="`translate(${actionBarPosition})`"
       class="action-bar"
+      :transform="`translate(${actionBarPosition})`"
       @save="onSave"
       @cancel="onCancel"
     />
@@ -112,7 +100,6 @@ export default {
       v-model="currentLabel"
       :kind="kind"
       :parent-width="$shapes.nodeSize"
-      :max-width="$shapes.maxNodeAnnotationWidth"
       @save="onSave"
       @cancel="onCancel"
     />

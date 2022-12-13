@@ -11,7 +11,6 @@ export const nodeStatusMarginTop = 8;
 export const horizontalNodePadding = 50;
 
 // NOTE: this width limit does not apply if a line contains very long words
-export const maxNodeAnnotationWidth = 1000;
 export const nodeAnnotationMarginTop = 8;
 export const nodeNameMargin = 7;
 export const nodeNameLineHeight = 14;
