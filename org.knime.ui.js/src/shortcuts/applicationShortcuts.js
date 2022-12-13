@@ -5,7 +5,10 @@ export default {
         text: 'Open workflow',
         hotkey: ['Ctrl', 'O'],
         execute:
-            () => openWorkflow()
+            ({ $router }) => {
+                openWorkflow();
+                $router.push('/workflow');
+            }
     },
     closeWorkflow: {
         text: 'Close workflow',

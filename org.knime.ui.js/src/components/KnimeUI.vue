@@ -4,14 +4,8 @@ import { mapActions, mapState } from 'vuex';
 import AppHeader from '@/components/application/AppHeader.vue';
 import TooltipContainer from '@/components/application/TooltipContainer.vue';
 import Error from '@/components/application/Error.vue';
-import HotkeyHandler from '@/components/application/HotkeyHandler.vue';
-import Splitter from '@/components/application/Splitter.vue';
-import Sidebar from '@/components/sidebar/Sidebar.vue';
 import WorkflowToolbar from '@/components/toolbar/WorkflowToolbar.vue';
-import NodeOutput from '@/components/output/NodeOutput.vue';
 
-import WorkflowEntryPage from '@/components/workflow/WorkflowEntryPage.vue';
-import WorkflowPanel from '@/components/workflow/WorkflowPanel.vue';
 import { loadPageBuilder } from '@/components/embeddedViews/pagebuilderLoader';
 
 /**
@@ -23,14 +17,8 @@ export default {
     components: {
         AppHeader,
         Error,
-        HotkeyHandler,
-        Sidebar,
         TooltipContainer,
-        WorkflowToolbar,
-        WorkflowEntryPage,
-        WorkflowPanel,
-        NodeOutput,
-        Splitter
+        WorkflowToolbar
     },
 
     data() {
@@ -90,6 +78,7 @@ export default {
 
                 // render the application
                 this.loaded = true;
+                this.$router.push('/workflow');
             } catch ({ message, stack }) {
                 this.error = { message, stack };
             }
@@ -144,28 +133,9 @@ export default {
     <TooltipContainer id="tooltip-container" />
     
     <template v-if="loaded">
-      <HotkeyHandler />
-
-      <template v-if="workflow">
-        <Sidebar id="sidebar" />
-
-        <main class="workflow-area">
-          <Splitter
-            id="kanvasOutputSplitter"
-            direction="column"
-          >
-            <WorkflowPanel id="workflow-panel" />
-            <template #secondary>
-              <NodeOutput />
-            </template>
-          </Splitter>
-        </main>
-      </template>
-      
-      <WorkflowEntryPage
-        v-else
-        class="workflow-empty"
-      />
+      <div style="width:100vw;height:100vh">
+        <RouterView />
+      </div>
     </template>
     
     <div

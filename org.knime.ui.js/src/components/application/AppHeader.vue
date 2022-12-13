@@ -5,11 +5,12 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import Carousel from 'webapps-common/ui/components/Carousel.vue';
 import KnimeIcon from 'webapps-common/ui/assets/img/KNIME_Triangle.svg';
 import SwitchIcon from 'webapps-common/ui/assets/img/icons/perspective-switch.svg';
+import InfoIcon from 'webapps-common/ui/assets/img/icons/circle-info.svg';
 
 import AppHeaderTab from './AppHeaderTab.vue';
 
 /**
- * Header Bar containing Logo, Open project tabs, Feedback button and Switch to Java UI Button
+ * Header Bar containing Logo, Open project tabs, Feedback button, InfoButton and Switch to Java UI Button
  */
 export default {
     components: {
@@ -17,7 +18,8 @@ export default {
         KnimeIcon,
         FunctionButton,
         Carousel,
-        SwitchIcon
+        SwitchIcon,
+        InfoIcon
     },
     data() {
         return {
@@ -63,10 +65,21 @@ export default {
         switchToJavaUI() {
             window.switchToJavaUI();
         },
+        switchToInfoPage() {
+            this.isEntryPageActive = true;
+            this.$router.push('/workflow-info');
+            this.switchWorkflow(null);
+            this.activeTab = null;
+        },
         setEntryPageTab() {
             this.isEntryPageActive = true;
             this.switchWorkflow(null);
+            this.$router.push('/workflow-entry');
             this.activeTab = null;
+        },
+        async onTabChange($event) {
+            await this.switchWorkflow({ projectId: $event });
+            this.$router.push('/workflow');
         }
     }
 };
@@ -97,7 +110,7 @@ export default {
               :is-active="activeTab === projectId"
               :is-hovered-over="hoveredTab === projectId"
               @hover="hoveredTab = $event"
-              @switch-workflow="switchWorkflow({ projectId: $event })"
+              @switch-workflow="onTabChange"
               @close-workflow="closeWorkflow($event)"
             />
           </div>
@@ -117,6 +130,12 @@ export default {
         >
           Provide feedback via the forum
         </a>
+        <FunctionButton
+          class="switch-classic"
+          @click="switchToInfoPage"
+        >
+          <InfoIcon />
+        </FunctionButton>
         <FunctionButton
           class="switch-classic"
           @click="switchToJavaUI"
@@ -161,10 +180,9 @@ header {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 10px;
       flex-shrink: 0;
       margin-left: 30px;
-
+      
       & .feedback {
         margin-right: 10px;
         border: 1px solid var(--knime-dove-gray);
@@ -176,7 +194,7 @@ header {
         border-radius: 40px;
         text-decoration: none;
         font-weight: 500;
-
+        
         &:hover,
         &:focus {
           outline: none;
@@ -187,12 +205,13 @@ header {
       & .switch-classic {
         border: 1px solid var(--knime-dove-gray);
         display: flex;
+        margin-right: 10px;
         align-items: center;
         justify-content: center;
 
         & svg {
           @mixin svg-icon-size 18;
-
+          
           stroke: var(--knime-white);
         }
       }

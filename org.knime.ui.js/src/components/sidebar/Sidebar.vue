@@ -1,6 +1,6 @@
 <script>
 import { mapState, mapActions, mapMutations } from 'vuex';
-import InfoIcon from 'webapps-common/ui/assets/img/icons/circle-info.svg';
+import TextIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
 import NodeCogIcon from 'webapps-common/ui/assets/img/icons/node-cog.svg';
 import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
 
@@ -12,7 +12,7 @@ import LeftCollapsiblePanel from './LeftCollapsiblePanel.vue';
 
 export default {
     components: {
-        InfoIcon,
+        TextIcon,
         PlusIcon,
         LeftCollapsiblePanel,
         WorkflowMetadata,
@@ -42,7 +42,7 @@ export default {
             return [
                 {
                     title: 'Workflow metadata',
-                    icon: InfoIcon,
+                    icon: TextIcon,
                     isActive: this.isTabActive(TABS.WORKFLOW_METADATA),
                     isExpanded: this.expanded,
                     onClick: () => this.clickItem(TABS.WORKFLOW_METADATA)
