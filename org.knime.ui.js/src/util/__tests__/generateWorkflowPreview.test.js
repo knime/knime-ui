@@ -20,7 +20,7 @@ describe('generateWorkflowPreview', () => {
         const parser = new DOMParser();
         const doc = parser.parseFromString(svgString, 'image/svg+xml');
 
-        return doc.firstChild;
+        return doc.querySelector('svg');
     };
 
     const setup = ({ workflowSheetDimensions = null } = {}) => {
