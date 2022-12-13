@@ -32,6 +32,12 @@ export const maxNodeNameWidth = (nodeSelectionPaddingLeft + nodeSize + nodeSelec
 
 export const nodeWidthWithPadding = nodeSelectionPaddingLeft + nodeSelectionPaddingRight + nodeSize;
 
+export const metanodeLabelOffsetY = nodeSize + nodeAnnotationMarginTop;
+export const nodeLabelOffsetY = nodeSize + nodeAnnotationMarginTop + (nodeStatusHeight + nodeStatusMarginTop);
+export const metanodeLabelActionBarOffset = (nodeWidthWithPadding / 2) -
+(nodeSelectionPaddingBottom + nodeStatusHeight + nodeStatusMarginTop);
+export const nodeLabelActionBarOffset = (nodeWidthWithPadding / 2) - nodeSelectionPaddingBottom;
+
 export const nodeNameEditorMinWidth = 10;
 
 // Margins including 3 NodeActionButtons. If more that 3 Buttons are present,

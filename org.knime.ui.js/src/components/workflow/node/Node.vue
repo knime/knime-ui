@@ -5,12 +5,12 @@
 import { mapActions, mapState, mapGetters } from 'vuex';
 
 import NodePorts from '@/components/workflow/ports/NodePorts.vue';
-import NodeAnnotation from '@/components/workflow/annotations/NodeAnnotation.vue';
 import ConnectorSnappingProvider from '@/components/workflow/connectors/ConnectorSnappingProvider.vue';
 
 import NodeTorso from './torso/NodeTorso.vue';
 import NodeDecorators from './decorators/NodeDecorators.vue';
 import NodeName from './name/NodeName.vue';
+import NodeLabel from './label/NodeLabel.vue';
 
 import NodeActionBar from './NodeActionBar.vue';
 import NodeState from './NodeState.vue';
@@ -25,10 +25,10 @@ import NodeHoverSizeProvider from './NodeHoverSizeProvider.vue';
 export default {
     components: {
         NodeActionBar,
-        NodeAnnotation,
         NodeTorso,
         NodeState,
         NodeName,
+        NodeLabel,
         NodePorts,
         NodeSelectionPlane,
         NodeDecorators,
@@ -374,10 +374,12 @@ export default {
         </portal>
 
         <!-- Annotation needs to be behind ports -->
-        <NodeAnnotation
+        <NodeLabel
           v-if="annotation && annotation.text"
           v-bind="annotation"
-          :y-offset="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
+          :value="annotation.text"
+          :kind="kind"
+          :node-id="id"
         />
 
         <!-- Elements for which mouse hover triggers hover state -->

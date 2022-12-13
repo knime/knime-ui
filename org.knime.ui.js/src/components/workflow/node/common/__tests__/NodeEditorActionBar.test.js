@@ -3,16 +3,16 @@ import { shallowMount } from '@vue/test-utils';
 import * as $shapes from '@/style/shapes.mjs';
 
 import ActionButton from '@/components/common/ActionButton.vue';
-import NodeNameEditorActionBar from '../NodeNameEditorActionBar.vue';
+import NodeEditorActionBar from '../NodeEditorActionBar.vue';
 
-describe('NodeNameEditorActionBar', () => {
+describe('NodeEditorActionBar', () => {
     let mocks, doShallowMount, wrapper;
 
     beforeEach(() => {
         wrapper = null;
         doShallowMount = () => {
             mocks = { $shapes };
-            wrapper = shallowMount(NodeNameEditorActionBar, { propsData: {}, mocks });
+            wrapper = shallowMount(NodeEditorActionBar, { propsData: {}, mocks });
         };
         doShallowMount();
     });

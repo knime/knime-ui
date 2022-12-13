@@ -1,5 +1,6 @@
 import { deleteObjects, moveObjects, undo, redo, connectNodes, addNode, renameContainerNode, collapseToContainer,
-    addNodePort, removeNodePort, expandContainerNode, copyOrCutWorkflowParts, pasteWorkflowParts } from '@api';
+    addNodePort, removeNodePort, expandContainerNode, copyOrCutWorkflowParts, pasteWorkflowParts,
+    renameNodeLabel } from '@api';
 import workflowObjectBounds from '@/util/workflowObjectBounds';
 import { pastePartsAt } from '@/util/pasteToWorkflow';
 import { adjustToGrid } from '@/util/geometry';
@@ -13,6 +14,7 @@ import * as $shapes from '@/style/shapes.mjs';
 export const state = {
     movePreviewDelta: { x: 0, y: 0 },
     nameEditorNodeId: null,
+    labelEditorNodeId: null,
     copyPaste: null,
     hasAbortedNodeDrag: false
 };
@@ -30,6 +32,10 @@ export const mutations = {
     
     setNameEditorNodeId(state, nodeId) {
         state.nameEditorNodeId = nodeId;
+    },
+
+    setLabelEditorNodeId(state, nodeId) {
+        state.labelEditorNodeId = nodeId;
     },
 
     setCopyPaste(state, copyPasteState) {
@@ -65,6 +71,12 @@ export const actions = {
     closeNameEditor({ commit }) {
         commit('setNameEditorNodeId', null);
     },
+    openLabelEditor({ commit }, nodeId) {
+        commit('setLabelEditorNodeId', nodeId);
+    },
+    closeLabelEditor({ commit }) {
+        commit('setLabelEditorNodeId', null);
+    },
 
     /* See docs in API */
     undo: wrapAPI(undo),
@@ -73,6 +85,7 @@ export const actions = {
     addNodePort: wrapAPI(addNodePort),
     removeNodePort: wrapAPI(removeNodePort),
     renameContainerNode: wrapAPI(renameContainerNode),
+    renameNodeLabel: wrapAPI(renameNodeLabel),
     
     async addNode({ state, dispatch }, {
         position,

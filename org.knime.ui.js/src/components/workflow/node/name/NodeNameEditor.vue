@@ -2,7 +2,7 @@
 import { mapGetters } from 'vuex';
 
 import NodeNameTextarea from './NodeNameTextarea.vue';
-import NodeNameEditorActionBar from './NodeNameEditorActionBar.vue';
+import NodeEditorActionBar from '../common/NodeEditorActionBar.vue';
 
 const invalidCharsErrorVisibleTime = 4000; // ms
 
@@ -12,7 +12,7 @@ const invalidCharsErrorVisibleTime = 4000; // ms
  */
 export default {
     components: {
-        NodeNameEditorActionBar,
+        NodeEditorActionBar,
         NodeNameTextarea
     },
     props: {
@@ -137,7 +137,7 @@ export default {
     />
 
     <!-- Save/Cancel actions -->
-    <NodeNameEditorActionBar
+    <NodeEditorActionBar
       :transform="`translate(${actionBarPosition})`"
       @save="onSave"
       @cancel="onCancel"
