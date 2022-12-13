@@ -18,7 +18,7 @@
         </children>
       </children>
     </elements>
-    <elements xsi:type="advanced:Perspective" xmi:id="_zsE9QOHxEeqv_LafONhFZw" elementId="org.knime.ui.java.perspective" visible="false" selectedElement="_lJevIOH0Eeqv_LafONhFZw" label="KNIME Modern UI Preview" iconURI="platform:/plugin/org.knime.ui.java/icons/knime.png">
+    <elements xsi:type="advanced:Perspective" xmi:id="_zsE9QOHxEeqv_LafONhFZw" elementId="org.knime.ui.java.perspective" selectedElement="_lJevIOH0Eeqv_LafONhFZw" label="KNIME Modern UI Preview" iconURI="platform:/plugin/org.knime.ui.java/icons/knime.png">
       <children xsi:type="basic:Part" xmi:id="_lJevIOH0Eeqv_LafONhFZw" elementId="org.knime.ui.java.browser.view" contributionURI="bundleclass://org.knime.ui.java/org.knime.ui.java.browser.KnimeBrowserView" iconURI="platform:/plugin/org.knime.ui.java/icons/knime.png"/>
     </elements>
   </fragments>
