@@ -137,6 +137,9 @@ header {
   background-color: var(--knime-masala);
   border-bottom: 4px solid var(--knime-yellow);
   position: relative;
+  
+  /* override padding set by grid system */
+  padding: initial;
 
   /* smallish dark spacer */
   &::after {

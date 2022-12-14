@@ -143,6 +143,7 @@ export default {
         <SpaceExplorer
           v-show="isTabActive(TABS.SPACE_EXPLORER)"
           key="space-explorer"
+          mode="mini"
         />
       </transition-group>
     </LeftCollapsiblePanel>

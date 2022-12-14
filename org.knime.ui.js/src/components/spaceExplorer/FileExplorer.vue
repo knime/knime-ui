@@ -8,6 +8,16 @@ import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 
+
+const ITEM_TYPES = {
+    WorkflowGroup: 'WorkflowGroup',
+    Workflow: 'Workflow',
+    Component: 'Component',
+    Metanode: 'WorkflowTemplate',
+    Data: 'Data',
+    Other: 'Other'
+};
+
 export default {
     components: {
         MenuOptionsIcon,
@@ -21,13 +31,24 @@ export default {
     },
 
     props: {
-        path: {
-            type: Array,
+        mode: {
+            type: String,
+            default: 'normal',
+            validator: (value) => ['normal', 'mini'].includes(value)
+        },
+
+        fullPath: {
+            type: String,
             required: true
         },
 
-        tree: {
-            type: Object,
+        isRootFolder: {
+            type: Boolean,
+            required: true
+        },
+
+        items: {
+            type: Array,
             required: true
         }
     },
@@ -35,39 +56,30 @@ export default {
     data() {
         return {
             currentLevel: null,
-            draggedItem: null
+            selectedItems: []
         };
-    },
-
-    computed: {
-        isRoot() {
-            return this.path.length === 1 && this.path[0] === 'root';
-        }
     },
 
     methods: {
         canEnterDirectory(child) {
-            return child.type === 'workflow-group';
+            return child.type === ITEM_TYPES.WorkflowGroup;
         },
 
         getTypeIcon(child) {
             const typeIcons = {
-                'workflow-group': WorkflowGroupIcon,
-                workflow: WorkflowIcon,
-                component: ComponentIcon,
-                'workflow-template': MetaNodeIcon,
-                data: DataIcon,
-                other: UnknownIcon
+                [ITEM_TYPES.WorkflowGroup]: WorkflowGroupIcon,
+                [ITEM_TYPES.Workflow]: WorkflowIcon,
+                [ITEM_TYPES.Component]: ComponentIcon,
+                [ITEM_TYPES.Metanode]: MetaNodeIcon,
+                [ITEM_TYPES.Data]: DataIcon,
+                [ITEM_TYPES.Other]: UnknownIcon
             };
 
             return typeIcons[child.type];
         },
         
         changeDirectory(pathId) {
-            const isBack = pathId === '..';
-            
-            const nextPath = isBack ? this.path.slice(0, -1) : [...this.path, pathId];
-            this.$emit('change-directory', nextPath);
+            this.$emit('change-directory', pathId);
         }
     }
 };
@@ -86,9 +98,9 @@ export default {
         </th>
       </tr>
     </thead>
-    <tbody>
+    <tbody :class="mode">
       <tr
-        v-if="!isRoot"
+        v-if="!isRootFolder"
         class="file-tree-item"
         title="Go back"
         @dblclick="changeDirectory('..')"
@@ -105,31 +117,31 @@ export default {
       </tr>
 
       <tr
-        v-for="(child, i) in tree.children"
-        :key="i"
-        :ref="`item-${child.id}`"
+        v-for="(item, index) in items"
+        :key="index"
+        :ref="`item-${item.id}`"
         class="file-tree-item"
-        :draggable="child.type === 'workflow'"
-        @dblclick="canEnterDirectory(child) && changeDirectory(child.id)"
+        @dblclick="canEnterDirectory(item) && changeDirectory(item.id)"
       >
         <td class="item-icon">
-          <Component :is="getTypeIcon(child)" />
+          <Component :is="getTypeIcon(item)" />
         </td>
           
         <td
           class="item-content"
-          :class="{ light: child.type === 'workflow' }"
+          :class="{ light: item.type === 'workflow' }"
         >
-          {{ child.name }}
+          {{ mode === 'mini' && item.name.length > 50 ? `${item.name.slice(0, 35)}...` : item.name }}
         </td>
 
         <td class="item-option">
-          <MenuOptionsIcon />
+          <!-- TODO: add later -->
+          <!-- <MenuOptionsIcon /> -->
         </td>
       </tr>
         
       <tr
-        v-if="Object.keys(tree.children).length === 0"
+        v-if="items.length === 0"
         class="empty"
       >
         <td>
@@ -141,13 +153,7 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-/* TODO: maybe reuse later in other parts of the app */
-@define-mixin svg-icon $size {
-  width: calc($size * 1px);
-  height: calc($size * 1px);
-  stroke-width: calc(32px / $size);
-  @mixin-content;
-}
+@import "@/assets/mixins.css";
 
 .hidden {
   display: none;
@@ -170,9 +176,20 @@ tbody {
   border-spacing: 0;
 }
 
+tbody {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+tbody.mini {
+  font-weight: 400;
+  font-size: 16px;
+}
+
 .file-tree-item {
   --icon-size: 20;
   --item-padding: 8px;
+  --selection-color: hsl(206deg 88% 45%/19%);
 
   user-select: none;
   cursor: pointer;
@@ -200,7 +217,9 @@ tbody {
   & .item-option {
     & svg {
       display: flex;
-      @mixin svg-icon var(--icon-size);
+
+      @mixin svg-icon-size var(--icon-size);
+
       stroke: var(--knime-masala);
     }
   }
@@ -213,6 +232,7 @@ tbody {
   & .item-option {
     width: 34px;
   }
+
 }
 
 .empty {
