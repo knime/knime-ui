@@ -235,7 +235,6 @@ tbody.mini {
   & .item-option {
     width: 34px;
   }
-
 }
 
 .empty {

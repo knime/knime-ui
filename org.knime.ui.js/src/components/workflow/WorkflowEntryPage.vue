@@ -76,8 +76,8 @@ header {
 
     & .space-icon {
       @mixin svg-icon-size 18;
-      margin-right: 5px;
 
+      margin-right: 5px;
       stroke: var(--knime-masala);
     }
   }

@@ -145,7 +145,7 @@ export default {
   border-bottom: 1px solid var(--knime-silver-sand);
 
   & .breadcrumb {
-    padding-bottom: 0px;
+    padding-bottom: 0;
   }
 }
 
