@@ -47,7 +47,8 @@ export default {
                 return;
             }
             // width
-            const width = this.$refs.ghost.scrollWidth + 2;
+            // eslint-disable-next-line no-magic-numbers
+            const width = this.$refs.ghost.scrollWidth + 4;
             textarea.style.width = `${width}px`;
 
             // height
@@ -131,7 +132,7 @@ export default {
   }
 
   &:focus-within {
-    outline: 1px solid var(--knime-masala);
+    outline: 1px solid var(--knime-stone-dark);
   }
 }
 </style>

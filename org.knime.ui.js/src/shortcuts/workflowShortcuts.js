@@ -97,7 +97,7 @@ export default {
             'workflow/openLabelEditor',
             $store.getters['selection/singleSelectedNode'].id
         ),
-        condition: ({ $store }) => $store.getters['selection/singleSelectedNode'] &&
+        condition: ({ $store }) => $store.getters['selection/singleSelectedNode'] === true &&
         !$store.getters['selection/singleSelectedNode']?.link &&
         $store.getters['workflow/isWritable']
     },

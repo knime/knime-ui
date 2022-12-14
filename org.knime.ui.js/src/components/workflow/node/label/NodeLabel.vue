@@ -72,6 +72,7 @@ export default {
         :value="value"
         :kind="kind"
         @request-edit="onRequestEdit"
+        @contextmenu="$emit('contextmenu', $event)"
       />
     </template>
   </g>

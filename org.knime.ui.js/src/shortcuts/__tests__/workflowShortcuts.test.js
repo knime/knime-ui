@@ -82,6 +82,12 @@ describe('workflowShortcuts', () => {
             expect(mockDispatch).toHaveBeenCalledWith('workflow/openNameEditor', 'root:0');
         });
 
+        test('editNodeLabel', () => {
+            const { $store, mockDispatch } = createStore();
+            workflowShortcuts.editNodeLabel.execute({ $store });
+            expect(mockDispatch).toHaveBeenCalledWith('workflow/openLabelEditor', 'root:0');
+        });
+
         test('deleteSelected', () => {
             const { $store, mockDispatch } = createStore();
             workflowShortcuts.deleteSelected.execute({ $store });
@@ -201,9 +207,46 @@ describe('workflowShortcuts', () => {
 
             test('cannot rename if the selected node is linked', () => {
                 const { $store } = createStore();
+                
                 $store.getters['workflow/isWritable'] = true;
                 $store.getters['selection/singleSelectedNode'].kind = 'component';
                 $store.getters['selection/singleSelectedNode'].link = true;
+
+                expect(workflowShortcuts.editName.condition({ $store })).toBe(false);
+            });
+        });
+
+        describe('editNodeLabel', () => {
+            test('cannot edit label if no node is selected', () => {
+                const { $store } = createStore({
+                    isWorkflowWritable: true,
+                    singleSelectedNode: null
+                });
+
+                expect(workflowShortcuts.editNodeLabel.condition({ $store })).toBe(false);
+            });
+
+            test('cannot edit label when workflow is not writable', () => {
+                const { $store } = createStore({
+                    isWorkflowWritable: false,
+                    singleSelectedNode: {
+                        kind: 'node',
+                        id: 'node1'
+                    }
+                });
+
+                expect(workflowShortcuts.editNodeLabel.condition({ $store })).toBe(false);
+            });
+
+            test('cannot edit label if the selected node is linked', () => {
+                const { $store } = createStore({
+                    isWorkflowWritable: true,
+                    singleSelectedNode: {
+                        kind: 'node',
+                        id: 'node1',
+                        link: true
+                    }
+                });
 
                 expect(workflowShortcuts.editName.condition({ $store })).toBe(false);
             });
@@ -236,7 +279,7 @@ describe('workflowShortcuts', () => {
                 expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(false);
             });
 
-            test('one connnection is not deletable', () => {
+            test('one connection is not deletable', () => {
                 const { $store } = createStore({
                     singleSelectedNode: null,
                     selectedNodes: [

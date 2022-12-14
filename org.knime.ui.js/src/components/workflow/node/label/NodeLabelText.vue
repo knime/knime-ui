@@ -4,9 +4,6 @@ import AutoSizeForeignObject from '@/components/common/AutoSizeForeignObject.vue
 export default {
     components: { AutoSizeForeignObject },
     props: {
-        /**
-         * The node's label text itself
-         */
         value: {
             type: String,
             default: ''
@@ -34,7 +31,6 @@ export default {
     <template #default="{ on }">
       <div
         class="node-label"
-        @click.prevent="$emit('click', $event)"
         @contextmenu="$emit('contextmenu', $event)"
         @dblclick.left="$emit('request-edit')"
       >

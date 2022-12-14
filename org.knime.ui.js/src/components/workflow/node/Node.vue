@@ -376,11 +376,11 @@ export default {
         <!-- Annotation needs to be behind ports -->
         <NodeLabel
           v-if="annotation && annotation.text"
-          v-bind="annotation"
           :value="annotation.text"
           :kind="kind"
           :node-id="id"
           :node-position="position"
+          @contextmenu.prevent="onContextMenu"
         />
 
         <!-- Elements for which mouse hover triggers hover state -->
