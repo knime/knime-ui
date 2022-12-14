@@ -20,6 +20,10 @@ describe('Shortcuts Plugin', () => {
                 },
                 selectAll: {
                     hotkey: ['Ctrl', 'A']
+                },
+                copy: {
+                    hotkey: ['Ctrl', 'C'],
+                    allowEventDefault: true
                 }
             }));
             mockUserAgent(userAgent);
@@ -111,9 +115,18 @@ describe('Shortcuts Plugin', () => {
             });
         });
 
-        test('dispatch and isEnabled throw for unknown shortcut', () => {
+        test('preventDefault by default', () => {
+            expect($shortcuts.preventDefault('crazyHotkey')).toBe(true);
+        });
+
+        test('no preventDefault if allowEventDefault is true', () => {
+            expect($shortcuts.preventDefault('copy')).toBe(false);
+        });
+
+        test('dispatch, isEnabled and preventDefault throw for unknown shortcut', () => {
             expect(() => $shortcuts.isEnabled('unknown')).toThrow();
             expect(() => $shortcuts.dispatch('unknown')).toThrow();
+            expect(() => $shortcuts.preventDefault('unknown')).toThrow();
         });
 
         describe('hotkeys', () => {

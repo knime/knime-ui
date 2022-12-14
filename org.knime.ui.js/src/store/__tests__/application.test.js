@@ -1,7 +1,9 @@
+/* eslint-disable max-lines */
 import Vuex from 'vuex';
 import { createLocalVue } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
+import * as selectionStore from '@/store/selection';
 
 jest.mock('@/util/fuzzyPortTypeSearch', () => ({
     makeTypeSearch: jest.fn().mockReturnValue('searchFunction')
@@ -12,19 +14,22 @@ jest.mock('@/util/encodeString', () => ({
 }));
 
 describe('application store', () => {
-    let store, storeConfig, fetchApplicationState, localVue, addEventListener, removeEventListener, dispatchSpy,
-        loadWorkflow;
-
     const applicationState = {
         openProjects: [{ projectId: 'foo', name: 'bar' }]
     };
 
     beforeAll(() => {
-        fetchApplicationState = jest.fn().mockReturnValue(applicationState);
-        addEventListener = jest.fn();
-        removeEventListener = jest.fn();
-        loadWorkflow = jest.fn().mockResolvedValue({ workflow: { info: { containerId: '' } } });
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
+    });
 
+    const loadStore = async () => {
+        const fetchApplicationState = jest.fn().mockReturnValue(applicationState);
+        const addEventListener = jest.fn();
+        const removeEventListener = jest.fn();
+        const loadWorkflow = jest.fn().mockResolvedValue({ workflow: { info: { containerId: '' } } });
+
+        jest.resetModules();
         jest.doMock('@api', () => ({
             __esModule: true,
             addEventListener,
@@ -33,36 +38,45 @@ describe('application store', () => {
             loadWorkflow
         }), { virtual: true });
 
-        localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+        const actions = {
+            canvas: {
+                restoreScrollState: jest.fn()
+            }
+        };
 
-    beforeEach(async () => {
-        jest.clearAllMocks();
+        const getters = {
+            canvas: {
+                getCanvasScrollState: jest.fn(() => () => ({ mockCanvasState: true })),
+                screenToCanvasCoordinates: jest.fn(() => ([x, y]) => [x, y])
+            }
+        };
 
-        storeConfig = {
+        const storeConfig = {
             application: await import('@/store/application'),
             workflow: await import('@/store/workflow'),
             canvas: {
-                getters: {
-                    getCanvasScrollState: jest.fn(() => () => ({ mockCanvasState: true })),
-                    screenToCanvasCoordinates: jest.fn(() => ([x, y]) => [x, y])
-                },
-                actions: {
-                    restoreScrollState: jest.fn()
-                }
+                getters: getters.canvas,
+                actions: actions.canvas
             },
-            selection: {
-                mutations: {
-                    clearSelection: jest.fn()
-                }
-            }
+            selection: selectionStore
         };
-        store = mockVuexStore(storeConfig);
-        dispatchSpy = jest.spyOn(store, 'dispatch');
-    });
+        const store = mockVuexStore(storeConfig);
+        const dispatchSpy = jest.spyOn(store, 'dispatch');
 
-    it('creates an empty store', () => {
+        return {
+            store,
+            dispatchSpy,
+            mockedGetters: getters,
+            mockedActions: actions,
+            fetchApplicationState,
+            addEventListener,
+            removeEventListener,
+            loadWorkflow
+        };
+    };
+
+    it('creates an empty store', async () => {
+        const { store } = await loadStore();
         expect(store.state.application).toStrictEqual({
             openProjects: [],
             activeProjectId: null,
@@ -71,17 +85,20 @@ describe('application store', () => {
             savedCanvasStates: {},
             hasClipboardSupport: false,
             contextMenu: { isOpen: false, position: null },
-            hasNodeRecommendationsEnabled: false
+            hasNodeRecommendationsEnabled: false,
+            rootWorkflowSnapshots: new Map()
         });
     });
 
     describe('mutations', () => {
-        it('allows setting the active id', () => {
+        it('allows setting the active id', async () => {
+            const { store } = await loadStore();
             store.commit('application/setActiveProjectId', 'foo');
             expect(store.state.application.activeProjectId).toBe('foo');
         });
 
-        it('allows setting all items', () => {
+        it('allows setting all items', async () => {
+            const { store } = await loadStore();
             store.commit('application/setOpenProjects',
                 [{ projectId: 'foo', name: 'bar' }, { projectId: 'bee', name: 'gee' }]);
 
@@ -91,25 +108,29 @@ describe('application store', () => {
             );
         });
 
-        it('sets the available port types', () => {
+        it('sets the available port types', async () => {
+            const { store } = await loadStore();
             store.commit('application/setAvailablePortTypes', { 'port type id': { kind: 'table', name: 'Data' } });
             expect(store.state.application.availablePortTypes)
                 .toStrictEqual({ 'port type id': { kind: 'table', name: 'Data' } });
         });
 
-        it('sets the suggested port types', () => {
+        it('sets the suggested port types', async () => {
+            const { store } = await loadStore();
             store.commit('application/setSuggestedPortTypes', ['type1', 'type2']);
             expect(store.state.application.suggestedPortTypes)
                 .toStrictEqual(['type1', 'type2']);
         });
 
-        it('sets the clipboard support flag', () => {
+        it('sets the clipboard support flag', async () => {
+            const { store } = await loadStore();
             store.commit('application/setHasClipboardSupport', true);
             expect(store.state.application.hasClipboardSupport)
                 .toBe(true);
         });
 
-        it('sets the has node recommendations enabled flag', () => {
+        it('sets the has node recommendations enabled flag', async () => {
+            const { store } = await loadStore();
             store.commit('application/setHasNodeRecommendationsEnabled', true);
             expect(store.state.application.hasNodeRecommendationsEnabled)
                 .toBe(true);
@@ -118,6 +139,7 @@ describe('application store', () => {
 
     describe('Application Lifecycle', () => {
         test('initialization', async () => {
+            const { store, dispatchSpy, fetchApplicationState, addEventListener } = await loadStore();
             await store.dispatch('application/initializeApplication');
 
             expect(addEventListener).toHaveBeenCalled();
@@ -125,7 +147,8 @@ describe('application store', () => {
             expect(dispatchSpy).toHaveBeenCalledWith('application/replaceApplicationState', applicationState);
         });
 
-        test('destroy application', () => {
+        test('destroy application', async () => {
+            const { store, dispatchSpy, removeEventListener } = await loadStore();
             store.dispatch('application/destroyApplication');
 
             expect(removeEventListener).toHaveBeenCalled();
@@ -135,6 +158,7 @@ describe('application store', () => {
 
     describe('Replace application State', () => {
         it('replaces application state', async () => {
+            const { store, dispatchSpy } = await loadStore();
             await store.dispatch('application/replaceApplicationState', applicationState);
     
             expect(store.state.application.openProjects).toStrictEqual([
@@ -152,6 +176,7 @@ describe('application store', () => {
                     { projectId: 'baz', name: 'bar', activeWorkflow: { workflow: { info: {} } } }
                 ]
             };
+            const { store, dispatchSpy } = await loadStore();
             store.commit('application/setActiveProjectId', 'baz');
             await store.dispatch('application/replaceApplicationState', applicationState);
 
@@ -166,7 +191,7 @@ describe('application store', () => {
                     { projectId: 'baz', name: 'bar', activeWorkflow: { workflow: { info: { containerId: 'root' } } } }
                 ]
             };
-
+            const { store, dispatchSpy } = await loadStore();
             store.commit('application/setSavedCanvasStates', {
                 workflow: 'root:2',
                 project: 'baz'
@@ -183,6 +208,7 @@ describe('application store', () => {
 
     describe('Workflow Lifecycle', () => {
         it('loads root workflow successfully', async () => {
+            const { store, loadWorkflow, addEventListener } = await loadStore();
             loadWorkflow.mockResolvedValue({
                 dummy: true,
                 workflow: { info: { containerId: 'root' }, nodes: [] },
@@ -206,6 +232,7 @@ describe('application store', () => {
         });
 
         it('loads inner workflow successfully', async () => {
+            const { store, loadWorkflow, addEventListener } = await loadStore();
             loadWorkflow.mockResolvedValue({ workflow: { dummy: true, info: { containerId: 'root' }, nodes: [] } });
             await store.dispatch('application/loadWorkflow', { projectId: 'wf2', workflowId: 'root:0:123' });
 
@@ -223,6 +250,7 @@ describe('application store', () => {
         });
 
         it('unloads workflow when another one is loaded', async () => {
+            const { store, loadWorkflow, removeEventListener } = await loadStore();
             loadWorkflow.mockResolvedValue({
                 workflow: { dummy: true, info: { containerId: 'root' }, nodes: [] },
                 snapshotId: 'snap'
@@ -237,10 +265,12 @@ describe('application store', () => {
                 snapshotId: 'snap'
             });
             expect(store.state.workflow.activeWorkflow).toBe(null);
-            expect(storeConfig.selection.mutations.clearSelection).toHaveBeenCalled();
+            expect(store.state.selection.selectedConnections).toEqual({});
+            expect(store.state.selection.selectedNodes).toEqual({});
         });
 
         it('does not unload if there is no active workflow', async () => {
+            const { store, removeEventListener } = await loadStore();
             store.state.workflow.activeWorkflow = null;
             await store.dispatch('application/unloadActiveWorkflow', { clearWorkflow: false });
 
@@ -265,14 +295,14 @@ describe('application store', () => {
                     }
                 ]
             };
+            const { store, dispatchSpy } = await loadStore();
             await store.dispatch('application/replaceApplicationState', state);
 
-            expect(dispatchSpy).toHaveBeenCalledWith('application/setWorkflow',
-                {
-                    projectId: 'bee',
-                    workflow: { info: { containerId: 'root' } },
-                    snapshotId: '0'
-                });
+            expect(dispatchSpy).toHaveBeenCalledWith('application/setWorkflow', {
+                projectId: 'bee',
+                workflow: { info: { containerId: 'root' } },
+                snapshotId: '0'
+            });
         });
 
         it('uses first in row if not provided by backend', async () => {
@@ -282,6 +312,7 @@ describe('application store', () => {
                     { projectId: 'bee', name: 'gee' }
                 ]
             };
+            const { store, dispatchSpy } = await loadStore();
             await store.dispatch('application/replaceApplicationState', state);
 
             expect(dispatchSpy).toHaveBeenCalledWith('application/loadWorkflow',
@@ -293,6 +324,7 @@ describe('application store', () => {
 
         it('does not set active project if there are no open workflows', async () => {
             const state = { openProjects: [] };
+            const { store, dispatchSpy } = await loadStore();
             await store.dispatch('application/replaceApplicationState', state);
 
             expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow', null);
@@ -301,6 +333,7 @@ describe('application store', () => {
 
     describe('switch workflow', () => {
         test('switch from workflow to nothing', async () => {
+            const { store, dispatchSpy } = await loadStore();
             await store.dispatch('application/replaceApplicationState', {
                 openProjects:
                     [
@@ -323,6 +356,7 @@ describe('application store', () => {
         });
 
         test('switch from nothing to workflow', async () => {
+            const { store, dispatchSpy } = await loadStore();
             store.state.workflow.activeWorkflow = null;
 
             store.commit('application/setSavedCanvasStates', { project: '1', workflow: 'root' });
@@ -342,6 +376,7 @@ describe('application store', () => {
 
         describe('lastActive', () => {
             it('switch from workflow to workflow and back', async () => {
+                const { store, dispatchSpy } = await loadStore();
                 store.state.application.savedCanvasStates = {
                     '1--root': {
                         children: {},
@@ -364,6 +399,7 @@ describe('application store', () => {
             });
     
             it('restores `lastActive` workflow when switching projects', async () => {
+                const { store, dispatchSpy } = await loadStore();
                 // start with a projectId 2
                 store.state.workflow.activeWorkflow = {
                     projectId: '2',
@@ -394,7 +430,8 @@ describe('application store', () => {
     });
 
     describe('getters', () => {
-        it('returns the active workflow name', () => {
+        it('returns the active workflow name', async () => {
+            const { store } = await loadStore();
             store.commit('application/setOpenProjects', [
                 { projectId: 'foo', name: 'bar' },
                 { projectId: 'bee', name: 'gee' }
@@ -407,14 +444,19 @@ describe('application store', () => {
     });
 
     describe('Saved Canvas States', () => {
-        beforeEach(() => {
-            store.state.workflow.activeWorkflow = {
+        const loadStoreWithWorkflow = async () => {
+            const { store, ...rest } = await loadStore();
+
+            store.commit('workflow/setActiveWorkflow', {
                 info: { containerId: 'workflow1' },
                 projectId: 'project1'
-            };
-        });
+            });
 
-        it('sets saved states', () => {
+            return { store, ...rest };
+        };
+
+        it('sets saved states', async () => {
+            const { store } = await loadStoreWithWorkflow();
             store.commit('application/setSavedCanvasStates', {
                 zoomFactor: 1,
                 scrollTop: 100,
@@ -436,7 +478,8 @@ describe('application store', () => {
             });
         });
 
-        it('sets children in saved state', () => {
+        it('sets children in saved state', async () => {
+            const { store } = await loadStoreWithWorkflow();
             store.commit('application/setSavedCanvasStates', {
                 zoomFactor: 1,
                 scrollTop: 100,
@@ -461,16 +504,18 @@ describe('application store', () => {
             });
         });
         
-        it('saves the canvas state', () => {
+        it('saves the canvas state', async () => {
+            const { store, mockedGetters } = await loadStoreWithWorkflow();
             expect(store.state.application.savedCanvasStates).toEqual({});
             store.dispatch('application/saveCanvasState');
             
-            expect(storeConfig.canvas.getters.getCanvasScrollState).toHaveBeenCalled();
+            expect(mockedGetters.canvas.getCanvasScrollState).toHaveBeenCalled();
             expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(1);
             expect(store.state.application.savedCanvasStates['project1--workflow1']).toBeTruthy();
         });
     
-        it('restores canvas state', () => {
+        it('restores canvas state', async () => {
+            const { store, mockedActions } = await loadStoreWithWorkflow();
             store.commit('application/setSavedCanvasStates', {
                 zoomFactor: 1,
                 scrollTop: 100,
@@ -482,7 +527,7 @@ describe('application store', () => {
             });
     
             store.dispatch('application/restoreCanvasState');
-            expect(storeConfig.canvas.actions.restoreScrollState).toHaveBeenCalledWith(
+            expect(mockedActions.canvas.restoreScrollState).toHaveBeenCalledWith(
                 expect.any(Object),
                 expect.objectContaining({
                     zoomFactor: 1,
@@ -494,7 +539,8 @@ describe('application store', () => {
             );
         });
 
-        it('restores canvas state of a child', () => {
+        it('restores canvas state of a child', async () => {
+            const { store, mockedActions } = await loadStoreWithWorkflow();
             store.state.workflow.activeWorkflow = {
                 info: { containerId: 'workflow1:214' },
                 projectId: 'project1'
@@ -511,7 +557,7 @@ describe('application store', () => {
             });
     
             store.dispatch('application/restoreCanvasState');
-            expect(storeConfig.canvas.actions.restoreScrollState).toHaveBeenCalledWith(
+            expect(mockedActions.canvas.restoreScrollState).toHaveBeenCalledWith(
                 expect.any(Object),
                 expect.objectContaining({
                     zoomFactor: 1,
@@ -523,7 +569,8 @@ describe('application store', () => {
             );
         });
 
-        it('removes canvas state', () => {
+        it('removes canvas state', async () => {
+            const { store } = await loadStoreWithWorkflow();
             store.dispatch('application/saveCanvasState');
             expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(1);
             expect(store.state.application.savedCanvasStates['project1--workflow1']).toBeTruthy();
@@ -555,15 +602,17 @@ describe('application store', () => {
                 x: 200,
                 y: 200
             });
+            const { store, mockedGetters } = await loadStore();
 
             await store.dispatch('application/toggleContextMenu', clickEvent);
             expect(store.state.application.contextMenu.isOpen).toBe(true);
-            expect(storeConfig.canvas.getters.screenToCanvasCoordinates).toHaveBeenCalled();
+            expect(mockedGetters.canvas.screenToCanvasCoordinates).toHaveBeenCalled();
             expect(store.state.application.contextMenu.position).toEqual({ x: 200, y: 200 });
             expect(preventDefault).toHaveBeenCalled();
         });
         
         it('should hide the menu', async () => {
+            const { store } = await loadStore();
             store.state.application.contextMenu = {
                 isOpen: true,
                 position: { x: 200, y: 200 }
@@ -581,6 +630,7 @@ describe('application store', () => {
             it(
                 'should open native context menu if the proper class is set and the context menu is NOT open',
                 async () => {
+                    const { store } = await loadStore();
                     const { event: clickEvent, preventDefault } = createEvent({
                         srcElemClasses: ['native-context-menu']
                     });
@@ -596,6 +646,7 @@ describe('application store', () => {
                 const { event: clickEvent, preventDefault } = createEvent({
                     srcElemClasses: ['native-context-menu']
                 });
+                const { store } = await loadStore();
 
                 store.state.application.contextMenu = {
                     isOpen: true,
@@ -606,6 +657,97 @@ describe('application store', () => {
                 expect(preventDefault).toHaveBeenCalled();
                 expect(store.state.application.contextMenu.position).toBeNull();
             });
+        });
+    });
+
+    describe('workflow preview snapshot', () => {
+        const getSnapshotKeys = (_store) => Array.from(_store.state.application.rootWorkflowSnapshots.keys());
+
+        it('should update the workflow preview snapshots correctly (single project)', async () => {
+            const { store } = await loadStore();
+
+            const projectId = 'project1';
+
+            // create a dummy element to act as the workflow
+            const canvasWrapperMockEl = document.createElement('div');
+            const canvasMockEl = document.createElement('div');
+            canvasWrapperMockEl.appendChild(canvasMockEl);
+
+            // setup canvas
+            store.state.canvas = { getScrollContainerElement: () => canvasWrapperMockEl };
+            // setup activeWorkflow
+            store.commit('workflow/setActiveWorkflow', {
+                info: { containerId: 'root' },
+                projectId
+            });
+            // setup projects
+            store.commit('application/setActiveProjectId', projectId);
+            store.commit('application/setOpenProjects', [{ projectId, name: projectId }]);
+            
+            // switch to nested workflow on the same project
+            await store.dispatch('application/switchWorkflow', { projectId, workflowId: 'root:1' });
+
+            // should have saved 1 snapshot
+            expect(getSnapshotKeys(store).length).toBe(1);
+            expect(
+                store.state.application.rootWorkflowSnapshots.get(getSnapshotKeys(store)[0])
+            ).toEqual(canvasMockEl);
+            
+            // go back to the root workflow
+            await store.dispatch('application/switchWorkflow', { projectId, workflowId: 'root' });
+            
+            // should have cleared the snapshot
+            expect(getSnapshotKeys(store).length).toBe(0);
+        });
+
+        it('should update the workflow preview snapshots correctly (multiple projects)', async () => {
+            const { store, loadWorkflow } = await loadStore();
+
+            loadWorkflow
+                .mockResolvedValueOnce({
+                    workflow: { info: { containerId: 'root:1' }, nodes: [] },
+                    snapshotId: 'snap'
+                })
+                .mockResolvedValueOnce({
+                    workflow: { info: { containerId: 'root' }, nodes: [] },
+                    snapshotId: 'snap'
+                });
+
+            const project1 = 'project1';
+            const project2 = 'project2';
+
+            // create a dummy element to act as the workflow
+            const canvasWrapperMockEl = document.createElement('div');
+            const canvasMockEl = document.createElement('div');
+            canvasWrapperMockEl.appendChild(canvasMockEl);
+
+            // setup canvas
+            store.state.canvas = { getScrollContainerElement: () => canvasWrapperMockEl };
+            // setup activeWorkflow
+            store.commit('workflow/setActiveWorkflow', {
+                info: { containerId: 'root' },
+                projectId: project1
+            });
+            // setup projects
+            store.commit('application/setActiveProjectId', project1);
+            store.commit('application/setOpenProjects', [
+                { projectId: project1, name: project1 },
+                { projectId: project2, name: project2 }
+            ]);
+            
+            // first switch to nested workflow on project1
+            await store.dispatch('application/switchWorkflow', { projectId: project1, workflowId: 'root:1' });
+            // then switch to root workflow on project2
+            await store.dispatch('application/switchWorkflow', { projectId: project2, workflowId: 'root' });
+            
+            // should have saved 1 snapshot (only from the 1st project)
+            expect(getSnapshotKeys(store).length).toBe(1);
+            
+            // go into nested workflow on project 2
+            await store.dispatch('application/switchWorkflow', { projectId: project2, workflowId: 'root:2' });
+
+            // should have saved 2 snapshots, one for each project
+            expect(getSnapshotKeys(store).length).toBe(2);
         });
     });
 });

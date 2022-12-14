@@ -10,7 +10,8 @@ describe('workflowShortcuts', () => {
         selectedNodes = [],
         selectedConnections = [],
         singleSelectedNode = mockSelectedNode,
-        isWorkflowWritable = true
+        isWorkflowWritable = true,
+        getScrollContainerElement = jest.fn()
     } = {}) => {
         const mockDispatch = jest.fn();
         const $store = {
@@ -26,6 +27,9 @@ describe('workflowShortcuts', () => {
                             containerType
                         }
                     }
+                },
+                canvas: {
+                    getScrollContainerElement
                 }
             },
             getters: {
@@ -232,7 +236,7 @@ describe('workflowShortcuts', () => {
                     ],
                     selectedConnections: [{ allowedActions: { canDelete: true } }]
                 });
-                
+
                 expect(workflowShortcuts.deleteSelected.condition({ $store })).toBe(false);
             });
 
@@ -286,9 +290,9 @@ describe('workflowShortcuts', () => {
                 const { $store } = createStore({
                     selectedNodes: [{ allowedActions: { canCollapse: 'true' } }]
                 });
-                
+
                 expect(workflowShortcuts[shortcut].condition({ $store })).toBe(true);
-                
+
                 $store.getters['selection/selectedNodes'] = [{ allowedActions: { canCollapse: 'false' } }];
                 expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
             });
@@ -298,7 +302,7 @@ describe('workflowShortcuts', () => {
                     isWorkflowWritable: false,
                     selectedNodes: [{ allowedActions: { canCollapse: 'true' } }]
                 });
-               
+
                 expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
             });
 
@@ -323,7 +327,7 @@ describe('workflowShortcuts', () => {
                         }
                     }
                 });
-                
+
                 expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
                 $store.getters['selection/singleSelectedNode'] = {
                     kind: nodeKind,
@@ -347,7 +351,7 @@ describe('workflowShortcuts', () => {
 
                 expect(workflowShortcuts[shortcut].condition({ $store })).toBe(false);
             });
-            
+
             test(`it can not expand ${nodeKind} when the metanode is linked`, () => {
                 const { $store } = createStore({
                     singleSelectedNode: {
@@ -374,7 +378,7 @@ describe('workflowShortcuts', () => {
                     isWorkflowWritable: false,
                     containerType: 'component'
                 });
-                
+
                 expect(workflowShortcuts.openLayoutEditor.condition({ $store })).toBeFalsy();
             });
 
@@ -388,13 +392,23 @@ describe('workflowShortcuts', () => {
         });
 
         test('copy', () => {
-            const { $store } = createStore();
+            // mock kanvas element and make it the activeElement
+            document.body.innerHTML = '<div id="kanvas" tabindex="0"></div>';
+            const kanvasElement = document.getElementById('kanvas');
+            kanvasElement.focus();
+            expect(document.activeElement).toBe(kanvasElement);
+            let getScrollContainerElement = jest.fn().mockReturnValue(kanvasElement);
+
+            const { $store } = createStore({ getScrollContainerElement });
 
             expect(workflowShortcuts.copy.condition({ $store })).toBeFalsy();
             $store.getters['selection/selectedNodes'] = [{ allowedActions: {} }];
-            
+
             expect(workflowShortcuts.copy.condition({ $store })).toBe(true);
             $store.state.application.hasClipboardSupport = false;
+            expect(workflowShortcuts.copy.condition({ $store })).toBeFalsy();
+
+            getScrollContainerElement.mockReturnValue({});
             expect(workflowShortcuts.copy.condition({ $store })).toBeFalsy();
         });
 
@@ -415,7 +429,7 @@ describe('workflowShortcuts', () => {
 
             test('nothing selected, writeable -> disabled', () => {
                 const { $store } = createStore({ isWorkflowWritable: true });
-                
+
                 expect(workflowShortcuts.cut.condition({ $store })).toBeFalsy();
             });
 
@@ -433,7 +447,7 @@ describe('workflowShortcuts', () => {
                     isWorkflowWritable: true
                 });
                 $store.state.application.hasClipboardSupport = false;
-               
+
                 expect(workflowShortcuts.cut.condition({ $store })).toBeFalsy();
             });
         });
@@ -446,9 +460,9 @@ describe('workflowShortcuts', () => {
 
             expect(workflowShortcuts.paste.condition({ $store })).toBeFalsy();
             $store.getters['workflow/isWritable'] = true;
-            
+
             expect(workflowShortcuts.paste.condition({ $store })).toBe(true);
-            
+
             $store.state.application.hasClipboardSupport = false;
             expect(workflowShortcuts.paste.condition({ $store })).toBeFalsy();
         });

@@ -20,13 +20,30 @@ describe('workflow store: AP Interactions', () => {
             ...apiMocks
         }), { virtual: true });
 
+        const generateWorkflowPreviewMock = jest.fn();
+        jest.doMock('@/util/generateWorkflowPreview', () => ({
+            generateWorkflowPreview: generateWorkflowPreviewMock
+        }));
+        jest.doMock('@/util/encodeString', () => ({
+            encodeString: (value) => value
+        }));
+
+        const mockCanvasWrapperEl = document.createElement('div');
+        const mockCanvasEl = document.createElement('div');
+        mockCanvasWrapperEl.appendChild(mockCanvasEl);
+
         const store = mockVuexStore({
             workflow: await import('@/store/workflow'),
-            application: await import('@/store/application')
+            application: await import('@/store/application'),
+            canvas: {
+                state: {
+                    getScrollContainerElement: () => mockCanvasWrapperEl
+                }
+            }
         });
         const dispatchSpy = jest.spyOn(store, 'dispatch');
 
-        return { store, dispatchSpy };
+        return { store, dispatchSpy, mockCanvasEl, generateWorkflowPreviewMock };
     };
 
     describe('actions', () => {
@@ -71,16 +88,66 @@ describe('workflow store: AP Interactions', () => {
             expect(openLayoutEditor).toHaveBeenCalledWith({ projectId: 'foo', workflowId: 'root' });
         });
 
+        describe('Save workflow', () => {
+            it('saves the workflow via the API', async () => {
+                const saveWorkflow = jest.fn();
+                const apiMocks = { saveWorkflow };
+                const { store } = await loadStore({ apiMocks });
 
-        it('saves the workflow via the API', async () => {
-            let saveWorkflow = jest.fn();
-            let apiMocks = { saveWorkflow };
-            const { store } = await loadStore({ apiMocks });
-            store.commit('workflow/setActiveWorkflow', { projectId: 'foo' });
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'foo',
+                    info: { containerId: 'root' }
+                });
+    
+                await store.dispatch('workflow/saveWorkflow');
+    
+                expect(saveWorkflow).toHaveBeenCalledWith(expect.objectContaining({ projectId: 'foo' }));
+            });
+            
+            it('sends the correct workflow preview for a root workflow', async () => {
+                const saveWorkflow = jest.fn();
+                const apiMocks = { saveWorkflow };
 
-            store.dispatch('workflow/saveWorkflow');
+                const { store, generateWorkflowPreviewMock } = await loadStore({ apiMocks });
 
-            expect(saveWorkflow).toHaveBeenCalledWith({ projectId: 'foo' });
+                generateWorkflowPreviewMock.mockResolvedValue('mock svg preview');
+
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId: 'foo',
+                    info: { containerId: 'root' }
+                });
+    
+                await store.dispatch('workflow/saveWorkflow');
+    
+                expect(saveWorkflow).toHaveBeenCalledWith(expect.objectContaining({
+                    workflowPreviewSvg: 'mock svg preview'
+                }));
+            });
+            
+            it('sends the correct workflow preview for a nested workflow', async () => {
+                const saveWorkflow = jest.fn();
+                const apiMocks = { saveWorkflow };
+                const { store, generateWorkflowPreviewMock } = await loadStore({ apiMocks });
+                
+                const projectId = 'project1';
+                // 'root:1' to mimic being inside component/metanode
+                const workflowId = 'root:1';
+                // set the snapshot on the store
+                store.state.application.rootWorkflowSnapshots.set(`${projectId}--root`, 'store-snapshot');
+                
+                generateWorkflowPreviewMock.mockImplementation((input) => input);
+                
+                store.commit('workflow/setActiveWorkflow', {
+                    projectId,
+                    info: { containerId: workflowId }
+                });
+    
+                await store.dispatch('workflow/saveWorkflow');
+    
+                expect(saveWorkflow).toHaveBeenCalledWith(expect.objectContaining({
+                    workflowPreviewSvg: 'store-snapshot'
+                }));
+            });
         });
 
         describe('Close workflow', () => {
@@ -104,6 +171,9 @@ describe('workflow store: AP Interactions', () => {
                 expect(closeWorkflow).toHaveBeenCalledWith({
                     closingProjectId,
                     nextProjectId: null
+                });
+                expect(dispatchSpy).toHaveBeenCalledWith('application/removeRootWorkflowSnapshot', {
+                    projectId: closingProjectId
                 });
                 expect(dispatchSpy).toHaveBeenCalledWith('application/removeCanvasState', closingProjectId);
             });
@@ -148,12 +218,14 @@ describe('workflow store: AP Interactions', () => {
                 expect(dispatchSpy).toHaveBeenCalledWith('application/removeCanvasState', closingProjectId);
             });
     
-            it('does not remove canvas state if closeWorkflow is cancelled', async () => {
+            it('does not remove canvasState nor workflowPreviewSnapshot if closeWorkflow is cancelled', async () => {
                 let closeWorkflow = jest.fn(() => false);
                 let apiMocks = { closeWorkflow };
                 const { store, dispatchSpy } = await loadStore({ apiMocks });
     
                 await store.dispatch('workflow/closeWorkflow', 'foo');
+
+                expect(dispatchSpy).not.toHaveBeenCalledWith('application/removeRootWorkflowSnapshot');
                 expect(dispatchSpy).not.toHaveBeenCalledWith('application/removeCanvasState', 'foo');
             });
         });

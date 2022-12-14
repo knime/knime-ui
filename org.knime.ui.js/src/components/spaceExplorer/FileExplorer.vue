@@ -132,7 +132,7 @@ export default {
           
         <td
           class="item-content"
-          :class="{ light: item.type === ITEM_TYPES.Workflow }"
+          :class="{ light: item.type !== ITEM_TYPES.WorkflowGroup }"
         >
           {{ getItemText(item) }}
         </td>

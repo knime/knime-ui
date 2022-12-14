@@ -51,7 +51,7 @@ export default (context, inject) => {
             let ctrlMatches = modifiers.includes('Ctrl') === (isMac ? metaKey : ctrlKey);
             let shiftMatches = Boolean(shiftKey) === modifiers.includes('Shift');
             let altMatches = Boolean(altKey) === modifiers.includes('Alt');
-            
+
             // keys are matched case insensitively
             let keysMatch = key.toUpperCase() === character.toUpperCase() ||
                 // on mac 'backspace' can be used instead of delete
@@ -79,6 +79,15 @@ export default (context, inject) => {
         return shortcut.condition({ $store: context.store });
     };
 
+    const preventDefault = (shortcutName) => {
+        let shortcut = shortcuts[shortcutName];
+        if (!shortcut) {
+            throw new Error(`Shortcut ${shortcutName} doesn't exist`);
+        }
+
+        return !shortcut.allowEventDefault;
+    };
+
     // execute a shortcut
     const dispatch = (shortcutName, eventDetail = null) => {
         let shortcut = shortcuts[shortcutName];
@@ -93,6 +102,7 @@ export default (context, inject) => {
     inject('shortcuts', {
         isEnabled,
         dispatch,
+        preventDefault,
         findByHotkey,
         get
     });

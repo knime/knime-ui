@@ -28,7 +28,8 @@ const coverageIgnoreFiles = [
 module.exports = {
     moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/src/$1',
-        '@api': '<rootDir>/src/api/index.js'
+        '@api': '<rootDir>/src/api/index.js',
+        '@fontsource/(.*)$': 'jest-transform-stub'
     },
     moduleFileExtensions: [
         'mjs',
