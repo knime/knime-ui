@@ -37,11 +37,6 @@ export default {
             validator: (value) => ['normal', 'mini'].includes(value)
         },
 
-        fullPath: {
-            type: String,
-            required: true
-        },
-
         isRootFolder: {
             type: Boolean,
             required: true
@@ -55,17 +50,16 @@ export default {
 
     data() {
         return {
-            currentLevel: null,
-            selectedItems: []
+            ITEM_TYPES
         };
     },
 
     methods: {
-        canEnterDirectory(child) {
-            return child.type === ITEM_TYPES.WorkflowGroup;
+        canEnterDirectory(item) {
+            return item.type === ITEM_TYPES.WorkflowGroup;
         },
 
-        getTypeIcon(child) {
+        getTypeIcon(item) {
             const typeIcons = {
                 [ITEM_TYPES.WorkflowGroup]: WorkflowGroupIcon,
                 [ITEM_TYPES.Workflow]: WorkflowIcon,
@@ -75,7 +69,16 @@ export default {
                 [ITEM_TYPES.Other]: UnknownIcon
             };
 
-            return typeIcons[child.type];
+            return typeIcons[item.type];
+        },
+
+        getItemText(item) {
+            const LENGTH_THRESHOLD = 50;
+            const TRUNCATE_SIZE = 35;
+
+            return this.mode === 'mini' && item.name.length > LENGTH_THRESHOLD
+                ? `${item.name.slice(0, TRUNCATE_SIZE)}…`
+                : item.name;
         },
         
         changeDirectory(pathId) {
@@ -101,7 +104,7 @@ export default {
     <tbody :class="mode">
       <tr
         v-if="!isRootFolder"
-        class="file-tree-item"
+        class="file-explorer-item"
         title="Go back"
         @dblclick="changeDirectory('..')"
       >
@@ -119,8 +122,8 @@ export default {
       <tr
         v-for="(item, index) in items"
         :key="index"
-        :ref="`item-${item.id}`"
-        class="file-tree-item"
+        class="file-explorer-item"
+        :class="item.type"
         @dblclick="canEnterDirectory(item) && changeDirectory(item.id)"
       >
         <td class="item-icon">
@@ -129,9 +132,9 @@ export default {
           
         <td
           class="item-content"
-          :class="{ light: item.type === 'workflow' }"
+          :class="{ light: item.type === ITEM_TYPES.Workflow }"
         >
-          {{ mode === 'mini' && item.name.length > 50 ? `${item.name.slice(0, 35)}...` : item.name }}
+          {{ getItemText(item) }}
         </td>
 
         <td class="item-option">
@@ -186,7 +189,7 @@ tbody.mini {
   font-size: 16px;
 }
 
-.file-tree-item {
+.file-explorer-item {
   --icon-size: 20;
   --item-padding: 8px;
   --selection-color: hsl(206deg 88% 45%/19%);

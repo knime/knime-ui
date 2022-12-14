@@ -7,8 +7,6 @@ import FileExplorer from './FileExplorer.vue';
 
 const DISPLAY_LOADING_DELAY = 500;
 
-const encodeId = (id) => `#${encodeURIComponent(id)}`;
-
 export default {
     components: {
         FileExplorer,
@@ -38,14 +36,18 @@ export default {
             }
 
             const { pathIds, pathNames } = this.spaceDirectoryData;
-            const rootBreadcrumb = { text: 'Home', id: 'root', href: encodeId('root') };
+            const rootBreadcrumb = {
+                text: 'Home',
+                id: 'root',
+                clickable: pathIds.length > 0
+            };
             const lastPathIndex = pathIds.length - 1;
 
             return [rootBreadcrumb].concat(
                 pathIds.map((pathId, index) => ({
                     text: pathNames[index],
                     id: pathId,
-                    href: index === lastPathIndex ? null : encodeId(pathId)
+                    clickable: index !== lastPathIndex
                 }))
             );
         },
@@ -81,7 +83,7 @@ export default {
             this.setLoading(true);
 
             this.spaceDirectoryData = await getSpaceItems({ spaceId: 'local', itemId: spaceDirectoryId });
-            
+
             this.setLoading(false);
         },
 
@@ -98,14 +100,8 @@ export default {
             this.fetchSpaceItems(nextSpaceDirectoryId);
         },
 
-        onBreadcrumbClick({ target }) {
-            if (!target || !target.href) {
-                return;
-            }
-            
-            const { hash } = new URL(target.href);
-            const directoryId = decodeURIComponent(hash.replace(/^#/, ''));
-            this.fetchSpaceItems(directoryId);
+        onBreadcrumbClick({ id }) {
+            this.fetchSpaceItems(id);
         }
     }
 };
@@ -117,21 +113,20 @@ export default {
       <Breadcrumb
         class="breacrumb"
         :items="breadcrumbItems"
-        @click.capture.prevent.stop.native="onBreadcrumbClick"
+        @click-item="onBreadcrumbClick"
       />
     </div>
 
     <FileExplorer
       v-if="spaceDirectoryData && !isLoading"
       :mode="mode"
-      :full-path="fullPath"
       :items="spaceDirectoryData.items"
       :is-root-folder="spaceDirectoryData.pathIds.length === 0"
       @change-directory="onChangeDirectory"
     />
 
     <div
-      v-else
+      v-if="isLoading"
       class="loading"
     >
       <LoadingIcon />
