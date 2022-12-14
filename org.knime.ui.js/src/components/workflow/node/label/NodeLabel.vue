@@ -69,6 +69,7 @@ export default {
     </template>
     <template v-else>
       <NodeLabelText
+        :node-id="nodeId"
         :value="value"
         :kind="kind"
         @request-edit="onRequestEdit"

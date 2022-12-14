@@ -207,7 +207,6 @@ describe('workflowShortcuts', () => {
 
             test('cannot rename if the selected node is linked', () => {
                 const { $store } = createStore();
-                
                 $store.getters['workflow/isWritable'] = true;
                 $store.getters['selection/singleSelectedNode'].kind = 'component';
                 $store.getters['selection/singleSelectedNode'].link = true;

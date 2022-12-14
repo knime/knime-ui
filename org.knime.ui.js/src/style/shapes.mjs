@@ -34,8 +34,8 @@ export const nodeWidthWithPadding = nodeSelectionPaddingLeft + nodeSelectionPadd
 export const metanodeLabelOffsetY = nodeSize + nodeAnnotationMarginTop;
 export const nodeLabelOffsetY = nodeSize + nodeAnnotationMarginTop + (nodeStatusHeight + nodeStatusMarginTop);
 export const metanodeLabelActionBarOffset = (nodeWidthWithPadding / 2) -
-(nodeSelectionPaddingBottom + nodeStatusHeight + nodeStatusMarginTop);
-export const nodeLabelActionBarOffset = (nodeWidthWithPadding / 2) - nodeSelectionPaddingBottom;
+(nodeStatusHeight + nodeStatusMarginTop + 2);
+export const nodeLabelActionBarOffset = (nodeWidthWithPadding / 2) - 2;
 
 export const nodeNameEditorMinWidth = 10;
 

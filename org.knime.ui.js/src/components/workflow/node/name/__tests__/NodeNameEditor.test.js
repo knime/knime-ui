@@ -7,7 +7,7 @@ import * as $shapes from '@/style/shapes.mjs';
 
 import NodeNameEditor from '../NodeNameEditor.vue';
 import NodeNameTextarea from '../NodeNameTextarea.vue';
-import NodeNameEditorActionBar from '../NodeNameEditorActionBar.vue';
+import NodeEditorActionBar from '../../common/NodeEditorActionBar.vue';
 
 describe('NodeNameEditor', () => {
     const propsData = {
@@ -46,7 +46,7 @@ describe('NodeNameEditor', () => {
 
     it('should render the ActionBar and the Textarea', () => {
         expect(wrapper.findComponent(NodeNameTextarea).exists()).toBe(true);
-        expect(wrapper.findComponent(NodeNameEditorActionBar).exists()).toBe(true);
+        expect(wrapper.findComponent(NodeEditorActionBar).exists()).toBe(true);
     });
 
 
@@ -84,7 +84,7 @@ describe('NodeNameEditor', () => {
 
     describe('Action bar', () => {
         it('should be positioned based on the relevant prop', () => {
-            const actionBar = wrapper.findComponent(NodeNameEditorActionBar);
+            const actionBar = wrapper.findComponent(NodeEditorActionBar);
             const expectedPosition = 'translate(31,-6)';
 
             expect(actionBar.attributes('transform')).toBe(expectedPosition);
@@ -92,13 +92,13 @@ describe('NodeNameEditor', () => {
 
         it('should emit save when clicking the save button', () => {
             wrapper.findComponent(NodeNameTextarea).vm.$emit('input', 'new value');
-            wrapper.findComponent(NodeNameEditorActionBar).vm.$emit('save');
+            wrapper.findComponent(NodeEditorActionBar).vm.$emit('save');
 
             expect(wrapper.emitted('save')).toBeDefined();
         });
 
         it('should emit a cancel event when clicking the cancel button', () => {
-            wrapper.findComponent(NodeNameEditorActionBar).vm.$emit('cancel');
+            wrapper.findComponent(NodeEditorActionBar).vm.$emit('cancel');
 
             expect(wrapper.emitted('cancel')).toBeDefined();
         });

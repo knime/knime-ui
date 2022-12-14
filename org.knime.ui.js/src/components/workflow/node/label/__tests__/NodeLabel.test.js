@@ -1,81 +1,158 @@
-import { shallowMount } from '@vue/test-utils';
+import Vue from 'vue';
+import Vuex from 'vuex';
+import { shallowMount, createLocalVue } from '@vue/test-utils';
+import { mockVuexStore } from '@/test/test-utils';
 
-import * as $shapes from '@/style/shapes.mjs';
+import NodeLabel from '../NodeLabel.vue';
+import NodeLabelText from '../NodeLabelText.vue';
+import NodeLabelEditor from '../NodeLabelEditor.vue';
 
-import AutoSizeForeignObject from '@/components/common/AutoSizeForeignObject.vue';
+describe('NodeLabel', () => {
+    const defaultProps = {
+        nodeId: 'root:1',
+        nodePosition: { x: 15, y: 13 },
+        kind: 'metanode',
+        value: 'Test label'
+    };
 
-import NodeAnnotation from '../NodeAnnotation.vue';
-import LegacyAnnotationText from '../LegacyAnnotationText.vue';
-
-describe('Node Annotation', () => {
-    let propsData, mocks, doShallowMount, wrapper;
-
-    beforeEach(() => {
-        wrapper = null;
-        propsData = {
-            textAlign: 'right',
-            text: 'hallo',
-            backgroundColor: 'rgb(255, 216, 0)',
-            styleRanges: [{ start: 0, length: 2, fontSize: 15 }],
-            yOffset: 33
-        };
-        doShallowMount = () => {
-            mocks = { $shapes, adjustDimensions: jest.fn() };
-            wrapper = shallowMount(NodeAnnotation, { propsData, mocks });
-        };
+    beforeAll(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
     });
 
-    describe('render default', () => {
+    const doShallowMount = ({ propsData = {}, $store }) => {
+        const wrapper = shallowMount(NodeLabel, {
+            propsData: { ...defaultProps, ...propsData },
+            mocks: {
+                $store
+            }
+        });
+
+        return wrapper;
+    };
+
+    describe('Handles text', () => {
+        let storeConfig, wrapper;
+
         beforeEach(() => {
-            doShallowMount();
+            storeConfig = {
+                workflow: {
+                    state: {
+                        labelEditorNodeId: 'root:2'
+                    },
+                    actions: {
+                        openLabelEditor: jest.fn(),
+                        closeLabelEditor: jest.fn(),
+                        renameNodeLabel: jest.fn()
+                    }
+                }
+            };
+
+            const $store = mockVuexStore(storeConfig);
+
+            wrapper = doShallowMount({ $store });
         });
 
-        it('styles', () => {
-            expect(wrapper.findComponent(LegacyAnnotationText).attributes().style).toBe(
-                'text-align: right; ' +
-                'background-color: rgb(255, 216, 0); ' +
-                'padding: 2px; ' +
-                'font-size: 12px;'
+        it('should render properly', () => {
+            expect(wrapper.findComponent(NodeLabelText).exists()).toBe(true);
+            expect(wrapper.findComponent(NodeLabelEditor).exists()).toBe(false);
+        });
+
+        it('should forward props', () => {
+            expect(wrapper.findComponent(NodeLabelText).props()).toEqual(
+                expect.objectContaining({
+                    value: defaultProps.value,
+                    kind: defaultProps.kind
+                })
             );
         });
 
-        it('passes yOffset to AutoSizeForeignObject', () => {
-            expect(wrapper.findComponent(AutoSizeForeignObject).props('yOffset')).toBe(
-                $shapes.nodeSize + $shapes.nodeAnnotationMarginTop + propsData.yOffset
-            );
+        it('should emit a contextmenu event', () => {
+            wrapper.findComponent(NodeLabelText).vm.$emit('contextmenu', { mock: 'mock' });
+
+            expect(wrapper.emitted('contextmenu')[0][0]).toEqual({ mock: 'mock' });
         });
 
-        it('passes props to LegacyAnnotationText', () => {
-            expect(wrapper.findComponent(LegacyAnnotationText).props('text')).toBe('hallo');
-
-            expect(wrapper.findComponent(LegacyAnnotationText).props('styleRanges')).toEqual(
-                [{ start: 0, length: 2, fontSize: 15 }]
-            );
-        });
-
-        describe('Resize key', () => {
-            it.each([
-                ['text', 'foo'],
-                ['textAlign', 'left'],
-                ['defaultFontSize', 1],
-                ['styleRanges', []]
-            ])('updates the resizeKey when the "%s" prop changes', async (propName, propValue) => {
-                const initialValue = wrapper.findComponent(AutoSizeForeignObject).props('resizeKey');
-
-                await wrapper.setProps({ [propName]: propValue });
-
-                expect(wrapper.findComponent(AutoSizeForeignObject).props('resizeKey')).not.toBe(initialValue);
-            });
+        it('should handle a name change request', () => {
+            wrapper.findComponent(NodeLabelText).vm.$emit('request-edit');
+            expect(storeConfig.workflow.actions.openLabelEditor).toHaveBeenCalled();
         });
     });
 
-    it('honors annotationsFontSizePointToPixelFactor', () => {
-        let shapes = { ...$shapes, annotationsFontSizePointToPixelFactor: 2.5 };
-        propsData.defaultFontSize = 18;
-        mocks = { $shapes: shapes, adjustDimensions: jest.fn() };
-        wrapper = shallowMount(NodeAnnotation, { propsData, mocks });
-        expect(wrapper.findComponent(LegacyAnnotationText).attributes('style')).toContain(
-            'font-size: 45px;'
-        );
+    describe('Handles editor', () => {
+        let storeConfig, wrapper, $store;
+
+        beforeEach(() => {
+            storeConfig = {
+                workflow: {
+                    state: {
+                        labelEditorNodeId: 'root:1'
+                    },
+                    actions: {
+                        openLabelEditor: jest.fn(),
+                        closeLabelEditor: jest.fn(),
+                        renameNodeLabel: jest.fn()
+                    }
+                }
+            };
+
+            $store = mockVuexStore(storeConfig);
+
+            wrapper = doShallowMount({ $store });
+        });
+
+        it('should render properly', () => {
+            expect(wrapper.findComponent(NodeLabelEditor).exists()).toBe(true);
+            expect(wrapper.findComponent(NodeLabelText).exists()).toBe(false);
+        });
+
+        it('should portal editor when visible', () => {
+            expect(wrapper.find('portal[to="node-label-editor"]').exists()).toBe(true);
+        });
+
+        it('should forward props', () => {
+            expect(wrapper.findComponent(NodeLabelEditor).props()).toEqual(
+                expect.objectContaining({
+                    nodeId: defaultProps.nodeId,
+                    value: defaultProps.value,
+                    kind: defaultProps.kind,
+                    nodePosition: defaultProps.nodePosition
+                })
+            );
+        });
+
+        it('should handle saving the label', async () => {
+            jest.useFakeTimers();
+            const saveEventPayload = { newLabel: 'New label' };
+
+            wrapper.findComponent(NodeLabelEditor).vm.$emit('save', saveEventPayload);
+            expect(storeConfig.workflow.actions.renameNodeLabel).toHaveBeenCalledWith(
+                expect.any(Object),
+                expect.objectContaining({ nodeId: defaultProps.nodeId, label: saveEventPayload.newLabel })
+            );
+
+            jest.runAllTimers();
+            expect(storeConfig.workflow.actions.closeLabelEditor).toHaveBeenCalled();
+
+            // emulate editor being closed from store
+            $store.state.workflow.labelEditorNodeId = null;
+
+            await Vue.nextTick();
+            expect(wrapper.findComponent(NodeLabelEditor).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeLabelText).exists()).toBe(true);
+        });
+
+        it('should handle closing the editor', async () => {
+            wrapper.findComponent(NodeLabelEditor).vm.$emit('cancel');
+
+            expect(storeConfig.workflow.actions.closeLabelEditor).toHaveBeenCalled();
+
+            // emulate editor being closed from store
+            $store.state.workflow.labelEditorNodeId = null;
+
+            await Vue.nextTick();
+            expect(wrapper.findComponent(NodeLabelEditor).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeLabelText).exists()).toBe(true);
+        });
     });
 });
