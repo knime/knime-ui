@@ -41,18 +41,13 @@ export default {
 
             this.$emit('input', value);
         },
-        onEscape(event) {
-            event.preventDefault();
-            this.$emit('cancel');
-        },
         resizeTextarea() {
             const textarea = this.$refs.textarea;
             if (!textarea) {
                 return;
             }
             // width
-            // eslint-disable-next-line no-magic-numbers
-            const width = this.$refs.ghost.scrollWidth + 10;
+            const width = this.$refs.ghost.scrollWidth + 2;
             textarea.style.width = `${width}px`;
 
             // height
@@ -84,7 +79,8 @@ export default {
         :value="value"
         @pointerdown.stop
         @input="onInput($event, sizeChange)"
-        @keydown.esc="onEscape"
+        @keydown.meta.enter.exact="$emit('save')"
+        @keydown.esc.prevent="$emit('save')"
       />
     </template>
   </NodeLabelText>

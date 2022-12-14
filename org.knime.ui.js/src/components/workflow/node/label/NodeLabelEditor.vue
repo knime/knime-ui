@@ -69,7 +69,7 @@ export default {
             if (this.currentLabel === this.value) {
                 this.onCancel();
             } else {
-                this.$emit('save', { newLabel: this.currentLabel });
+                this.$emit('save', { newLabel: this.currentLabel.trim() });
             }
         },
         onCancel() {

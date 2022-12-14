@@ -107,6 +107,7 @@ export default {
                 { name: 'stepLoopExecution', isVisible: isLoopEnd },
                 { name: 'cancelSelected', isVisible: this.selectedNodes.length },
                 { name: 'resetSelected', isVisible: this.selectedNodes.length },
+                { name: 'editNodeLabel', isVisible: this.singleSelectedNode },
                 // misc
                 { name: 'openView', isVisible: isView },
                 { name: 'configureFlowVariables', isVisible: hasLegacyFlowVariableDialog },
