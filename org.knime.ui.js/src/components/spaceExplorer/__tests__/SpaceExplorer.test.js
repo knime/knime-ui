@@ -1,4 +1,8 @@
-import { mount } from '@vue/test-utils';
+import Vuex from 'vuex';
+import { createLocalVue, mount } from '@vue/test-utils';
+
+import { mockVuexStore } from '@/test/test-utils';
+import * as spaceExplorerStore from '@/store/spaceExplorer';
 import { getSpaceItems } from '@api';
 
 import SpaceExplorer from '../SpaceExplorer.vue';
@@ -31,21 +35,36 @@ const getSpaceItemsResponse = {
 };
 
 describe('SpaceExplorer.vue', () => {
+    beforeAll(() => {
+        const localVue = createLocalVue();
+        localVue.use(Vuex);
+    });
+    
     const doMount = async ({
         awaitLoad = true,
-        mockResponse = getSpaceItemsResponse
+        mockResponse = getSpaceItemsResponse,
+        mockGetSpaceItems = null
     } = {}) => {
-        getSpaceItems.mockResolvedValue(mockResponse);
+        if (mockGetSpaceItems) {
+            getSpaceItems.mockImplementation(mockGetSpaceItems);
+        } else {
+            getSpaceItems.mockResolvedValue(mockResponse);
+        }
+
+        const store = mockVuexStore({
+            spaceExplorer: spaceExplorerStore
+        });
 
         const wrapper = mount(SpaceExplorer, {
-            stubs: { NuxtLink: true }
+            stubs: { NuxtLink: true },
+            mocks: { $store: store }
         });
 
         if (awaitLoad) {
             await new Promise(r => setTimeout(r, 0));
         }
 
-        return { wrapper };
+        return { wrapper, store };
     };
 
     it('should load root directory data on created', async () => {
@@ -115,9 +134,22 @@ describe('SpaceExplorer.vue', () => {
             }, 600);
         }));
 
-        const wrapper = mount(SpaceExplorer, {
-            stubs: { NuxtLink: true }
+        jest.useFakeTimers();
+
+        const store = mockVuexStore({
+            spaceExplorer: spaceExplorerStore
         });
+
+        const wrapper = mount(SpaceExplorer, {
+            stubs: { NuxtLink: true },
+            mocks: { $store: store }
+        });
+
+        const advanceTime = async (timeMs) => {
+            jest.advanceTimersByTime(timeMs);
+            await wrapper.vm.$nextTick();
+            await wrapper.vm.$nextTick();
+        };
 
         // total time now: 0ms
         // initially loading should not be yet visible
@@ -126,19 +158,19 @@ describe('SpaceExplorer.vue', () => {
         
         // total time now: 100ms
         // after waiting for 100ms it should still not be visible
-        await new Promise(r => setTimeout(r, 100));
+        await advanceTime(100);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(false);
         expect(wrapper.find('.loading').exists()).toBe(false);
         
         // total time now: 500ms
         // after waiting for 400ms it should now be displayed since it crossed the threshold
-        await new Promise(r => setTimeout(r, 400));
+        await advanceTime(400);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(false);
         expect(wrapper.find('.loading').exists()).toBe(true);
         
         // total time now: 600ms
         // after waiting for 100ms the data should be loaded now, so loading is not visible
-        await new Promise(r => setTimeout(r, 100));
+        await advanceTime(100);
         expect(wrapper.find('.loading').exists()).toBe(false);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(true);
     });

@@ -1,7 +1,7 @@
 <script>
+import { mapState } from 'vuex';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 
-import { getSpaceItems } from '@api';
 import LoadingIcon from './LoadingIcon.vue';
 import FileExplorer from './FileExplorer.vue';
 
@@ -24,18 +24,19 @@ export default {
 
     data() {
         return {
-            spaceDirectoryData: null,
             isLoading: false
         };
     },
 
     computed: {
+        ...mapState('spaceExplorer', ['spaceDirectory']),
+
         breadcrumbItems() {
-            if (!this.spaceDirectoryData) {
+            if (!this.spaceDirectory) {
                 return [];
             }
 
-            const { pathIds, pathNames } = this.spaceDirectoryData;
+            const { pathIds, pathNames } = this.spaceDirectory;
             const rootBreadcrumb = {
                 text: 'Home',
                 id: 'root',
@@ -53,10 +54,10 @@ export default {
         },
 
         fullPath() {
-            if (!this.spaceDirectoryData) {
+            if (!this.spaceDirectory) {
                 return '';
             }
-            const { pathNames } = this.spaceDirectoryData;
+            const { pathNames } = this.spaceDirectory;
             return ['home'].concat(pathNames).join('/');
         }
     },
@@ -82,22 +83,13 @@ export default {
         async fetchSpaceItems(spaceDirectoryId) {
             this.setLoading(true);
 
-            this.spaceDirectoryData = await getSpaceItems({ spaceId: 'local', itemId: spaceDirectoryId });
+            await this.$store.dispatch('spaceExplorer/fetchSpaceItems', { itemId: spaceDirectoryId });
 
             this.setLoading(false);
         },
 
         onChangeDirectory(pathId) {
-            const isGoingBack = pathId === '..';
-
-            // when we're down to 1 item it means we're 1 level away from the root
-            const getParentDirectoryId = (pathIds) => pathIds.length === 1 ? 'root' : pathIds[pathIds.length - 2];
-
-            const nextSpaceDirectoryId = isGoingBack
-                ? getParentDirectoryId(this.spaceDirectoryData.pathIds)
-                : pathId;
-
-            this.fetchSpaceItems(nextSpaceDirectoryId);
+            this.$store.dispatch('spaceExplorer/changeDirectory', { pathId });
         },
 
         onBreadcrumbClick({ id }) {
@@ -118,10 +110,10 @@ export default {
     </div>
 
     <FileExplorer
-      v-if="spaceDirectoryData && !isLoading"
+      v-if="spaceDirectory && !isLoading"
       :mode="mode"
-      :items="spaceDirectoryData.items"
-      :is-root-folder="spaceDirectoryData.pathIds.length === 0"
+      :items="spaceDirectory.items"
+      :is-root-folder="spaceDirectory.pathIds.length === 0"
       @change-directory="onChangeDirectory"
     />
 
