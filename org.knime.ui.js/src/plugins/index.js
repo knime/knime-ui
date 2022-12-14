@@ -6,10 +6,10 @@ import { directiveMove } from './directive-move';
 import events from './events';
 import featuresFlags from './feature-flags';
 
-export const initPlugins = (vueInstance, store) => {
+export const initPlugins = (vueInstance, { store, router }) => {
     const wrapPlugin = (plugin) => ({
         install(Vue) {
-            let context = { store };
+            let context = { store, router };
     
             let inject = (name, content) => {
                 Vue.prototype[`$${name}`] = content;

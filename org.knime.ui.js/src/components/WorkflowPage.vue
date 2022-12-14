@@ -6,12 +6,13 @@ import Splitter from '@/components/application/Splitter.vue';
 import Sidebar from '@/components/sidebar/Sidebar.vue';
 import NodeOutput from '@/components/output/NodeOutput.vue';
 
+import TooltipContainer from '@/components/application/TooltipContainer.vue';
+import WorkflowToolbar from '@/components/toolbar/WorkflowToolbar.vue';
+
 import WorkflowPanel from '@/components/workflow/WorkflowPanel.vue';
 
 /**
- * Main page and entry point of KNIME Next
- * Initiates application state
- * Defines the layout of the application
+ * Component that acts as a router page to render the workflow
  */
 export default {
     components: {
@@ -19,12 +20,12 @@ export default {
         Sidebar,
         WorkflowPanel,
         NodeOutput,
-        Splitter
+        Splitter,
+        WorkflowToolbar,
+        TooltipContainer
     },
     computed: {
-        ...mapState('workflow', {
-            workflow: 'activeWorkflow'
-        })
+        ...mapState('workflow', { workflow: 'activeWorkflow' })
     }
 };
 </script>
@@ -32,9 +33,11 @@ export default {
 <template>
   <div
     v-if="workflow"
-    id="knime-ui"
+    id="workflow-page"
   >
     <HotkeyHandler />
+    <WorkflowToolbar id="toolbar" />
+    <TooltipContainer id="tooltip-container" />
     <Sidebar id="sidebar" />
 
     <main class="workflow-area">
@@ -52,12 +55,11 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-#knime-ui {
+#workflow-page {
   --side-bar-width: 40px;
 
   display: grid;
   grid-template:
-    "header header" min-content
     "toolbar toolbar" min-content
     "sidebar workflow" auto
     / min-content auto;
@@ -65,10 +67,6 @@ export default {
   background: var(--knime-white);
   color: var(--knime-masala);
   overflow: hidden;
-}
-
-#header {
-  grid-area: header;
 }
 
 #sidebar {

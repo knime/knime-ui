@@ -1,5 +1,6 @@
 import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '@api';
 import { encodeString } from '@/util/encodeString';
+import router, { APP_ROUTES } from '@/router';
 
 const getCanvasStateKey = (input) => encodeString(input);
 const getRootWorkflowId = (workflowId) => workflowId.split(':')[0];
@@ -32,10 +33,15 @@ export const state = () => ({
 
     // Map that keeps track of root workflow snapshots. Only needed when
     // wanting to generate a workflow preview while being in a nested workflow
-    rootWorkflowSnapshots: new Map()
+    rootWorkflowSnapshots: new Map(),
+
+    isLoadingWorkflow: false
 });
 
 export const mutations = {
+    setIsLoadingWorkflow(state, value) {
+        state.isLoadingWorkflow = value;
+    },
     setActiveProjectId(state, projectId) {
         state.activeProjectId = projectId;
     },
@@ -106,6 +112,42 @@ export const actions = {
         
         const applicationState = await fetchApplicationState();
         await dispatch('replaceApplicationState', applicationState);
+        
+        router.beforeEach(async (to, from, next) => {
+            if (to.params.skipGuards) {
+                next();
+                return;
+            }
+
+            const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage.name;
+            const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage.name;
+        
+            // Leaving a workflow should be handled in the BEFORE each router hook.
+            // This way the workflow state is removed and there are no DOM accesses from the canvas
+            // before the route is destroyed
+            if (isLeavingWorkflow && !isEnteringWorkflow) {
+                await dispatch('switchWorkflow', null);
+                next();
+                return;
+            }
+        
+            next();
+        });
+
+        router.afterEach(async (to, from) => {
+            if (to.params.skipGuards) {
+                return;
+            }
+
+            const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage.name;
+        
+            // Entering a workflow should be handled in the AFTER each router hook.
+            // This way the workflow state is set up after the route has already rendered the component
+            // and thus further DOM accesses from the canvas would be valid since the elements are rendered
+            if (isEnteringWorkflow) {
+                await dispatch('switchWorkflow', to.params);
+            }
+        });
     },
     destroyApplication({ dispatch }) {
         removeEventListener('AppStateChanged');
@@ -139,9 +181,9 @@ export const actions = {
             await dispatch('switchWorkflow', null);
             return;
         }
-
+        
         const activeProject = openProjects.find(item => item.activeWorkflow);
-
+        
         if (!activeProject) {
             consola.info('No active workflow provided');
 
@@ -154,7 +196,7 @@ export const actions = {
             });
             return;
         }
-
+        
         const isSameActiveProject = state?.activeProjectId === activeProject.projectId;
         if (isSameActiveProject) {
             // don't set the workflow if already on it. e.g another tab was closed
@@ -167,11 +209,10 @@ export const actions = {
         const lastActiveWorkflow = state.savedCanvasStates[stateKey]?.lastActive;
         if (hasSavedState && lastActiveWorkflow !== 'root') {
             dispatch('loadWorkflow', { projectId: activeProject.projectId, workflowId: lastActiveWorkflow });
-
             return;
         }
 
-        dispatch('setWorkflow', {
+        await dispatch('setWorkflow', {
             projectId: activeProject.projectId,
             workflow: activeProject.activeWorkflow.workflow,
             snapshotId: activeProject.activeWorkflow.snapshotId
@@ -184,17 +225,18 @@ export const actions = {
 
     async switchWorkflow({ commit, dispatch, rootState, state }, newWorkflow) {
         const isChangingProject = rootState.workflow?.activeWorkflow?.projectId !== newWorkflow?.projectId;
-
-        await dispatch('updatePreviewSnapshot', { isChangingProject, newWorkflow });
         
+        await dispatch('updatePreviewSnapshot', { isChangingProject, newWorkflow });
+
         if (rootState.workflow?.activeWorkflow) {
+            commit('setIsLoadingWorkflow', true);
             dispatch('saveCanvasState');
 
             // unload current workflow
             dispatch('unloadActiveWorkflow', { clearWorkflow: !newWorkflow });
             commit('setActiveProjectId', null);
         }
-
+        
         // only continue if the new workflow exists
         if (newWorkflow) {
             let { projectId, workflowId = 'root' } = newWorkflow;
@@ -209,6 +251,8 @@ export const actions = {
                 await dispatch('loadWorkflow', { projectId, workflowId });
             }
         }
+        
+        commit('setIsLoadingWorkflow', false);
     },
     async loadWorkflow({ commit, rootState, dispatch }, { projectId, workflowId = 'root' }) {
         const project = await loadWorkflow({ projectId, workflowId });
@@ -222,7 +266,7 @@ export const actions = {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    setWorkflow({ commit, dispatch }, { workflow, projectId, snapshotId }) {
+    async setWorkflow({ commit, dispatch }, { workflow, projectId, snapshotId }) {
         commit('setActiveProjectId', projectId);
         commit('workflow/setActiveWorkflow', {
             ...workflow,
@@ -234,9 +278,11 @@ export const actions = {
         // TODO: remove this 'root' fallback after mocks have been adjusted
         let workflowId = workflow.info.containerId || 'root';
         addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+        
+        // await navigateToWorkflow({ workflow, projectId });
 
         // restore scroll and zoom if saved before
-        dispatch('restoreCanvasState');
+        await dispatch('restoreCanvasState');
     },
     unloadActiveWorkflow({ commit, rootState }, { clearWorkflow }) {
         let activeWorkflow = rootState.workflow.activeWorkflow;
@@ -267,11 +313,11 @@ export const actions = {
 
         commit('setSavedCanvasStates', { ...scrollState, project, workflow });
     },
-    restoreCanvasState({ dispatch, getters }) {
+    async restoreCanvasState({ dispatch, getters }) {
         const { workflowCanvasState } = getters;
         
         if (workflowCanvasState) {
-            dispatch('canvas/restoreScrollState', workflowCanvasState, { root: true });
+            await dispatch('canvas/restoreScrollState', workflowCanvasState, { root: true });
         }
     },
     removeCanvasState({ rootState, state }, projectId) {

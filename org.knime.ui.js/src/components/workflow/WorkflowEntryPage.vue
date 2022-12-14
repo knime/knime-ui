@@ -48,6 +48,7 @@ main {
   background-repeat: no-repeat;
   background-position: bottom right;
   background-size: 100%;
+  height: 100%;
 }
 
 .button-tiles {

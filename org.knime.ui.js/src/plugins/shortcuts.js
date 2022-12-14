@@ -94,8 +94,12 @@ export default (context, inject) => {
         if (!shortcut) {
             throw new Error(`Shortcut ${shortcutName} doesn't exist`);
         }
-
-        shortcut.execute({ $store: context.store, eventDetail, $router: context.router });
+        
+        shortcut.execute({
+            $store: context.store,
+            $router: context.router,
+            eventDetail
+        });
     };
 
     // inject $shortcuts into components

@@ -2,23 +2,20 @@
 import { mapActions, mapState } from 'vuex';
 
 import AppHeader from '@/components/application/AppHeader.vue';
-import TooltipContainer from '@/components/application/TooltipContainer.vue';
 import Error from '@/components/application/Error.vue';
-import WorkflowToolbar from '@/components/toolbar/WorkflowToolbar.vue';
 
 import { loadPageBuilder } from '@/components/embeddedViews/pagebuilderLoader';
+import { APP_ROUTES } from '@/router';
 
 /**
  * Main page and entry point of KNIME Next
  * Initiates application state
- * Defines the layout of the application
+ * Defines the router outlet
  */
 export default {
     components: {
         AppHeader,
-        Error,
-        TooltipContainer,
-        WorkflowToolbar
+        Error
     },
 
     data() {
@@ -29,9 +26,7 @@ export default {
     },
     
     computed: {
-        ...mapState('workflow', {
-            workflow: 'activeWorkflow'
-        }),
+        ...mapState('workflow', { workflow: 'activeWorkflow' }),
 
         isInsideAP() {
             // When the `window.isInsideAP` property is set, the app is being run in development mode
@@ -78,10 +73,17 @@ export default {
 
                 // render the application
                 this.loaded = true;
-                this.$router.push('/workflow');
-            } catch ({ message, stack }) {
+            } catch ({ message, stack, type }) {
                 this.error = { message, stack };
             }
+
+            const { info: { containerId: workflowId }, projectId } = this.workflow;
+                
+            const nextRoute = this.workflow
+                ? { name: APP_ROUTES.WorkflowPage.name, params: { workflowId, projectId, skipGuards: true } }
+                : { name: APP_ROUTES.EntryPage.name };
+                
+            await this.$router.push(nextRoute);
         },
 
         async checkClipboardSupport() {
@@ -119,7 +121,7 @@ export default {
 </script>
 
 <template>
-  <div id="knime-ui">
+  <div>
     <!-- if subsequent errors occur, stick with the first one -->
     <Error
       v-if="error"
@@ -129,11 +131,9 @@ export default {
     />
     
     <AppHeader id="header" />
-    <WorkflowToolbar id="toolbar" />
-    <TooltipContainer id="tooltip-container" />
-    
+   
     <template v-if="loaded">
-      <div style="width:100vw;height:100vh">
+      <div class="main-content">
         <RouterView />
       </div>
     </template>
@@ -146,54 +146,47 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+
 #knime-ui {
   --side-bar-width: 40px;
 
   display: grid;
   grid-template:
     "header header" min-content
-    "toolbar toolbar" min-content
-    "sidebar workflow" auto
-    / min-content auto;
-  height: 100vh;
-  background: var(--knime-white);
-  color: var(--knime-masala);
-  overflow: hidden;
+    "workflow workflow" auto;
 }
 
 #header {
   grid-area: header;
 }
 
-#sidebar {
-  grid-area: sidebar;
+.main-content {
+  width:100vw;
+  height:100vh;
+  grid-area: workflow;
 }
 
-#toolbar {
+/*
+#sidebar {
+  grid-area: sidebar;
+} */
+
+/* #toolbar {
   grid-area: toolbar;
   height: var(--app-toolbar-height);
   flex: 0 0 auto;
   padding: 10px;
   background-color: var(--knime-porcelain);
   border-bottom: 1px solid var(--knime-silver-sand);
-}
+} */
 
-main {
+/* main {
   display: flex;
   overflow: auto;
   flex-direction: column;
   align-items: stretch;
   height: 100%;
-}
-
-.workflow-area {
-  grid-area: workflow;
-}
-
-.workflow-empty {
-  grid-area: workflow;
-  grid-column-start: 1;
-}
+} */
 
 .loader {
   height: 100vh;

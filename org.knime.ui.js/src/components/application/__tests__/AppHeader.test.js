@@ -7,9 +7,10 @@ import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import CloseIcon from '@/assets/cancel.svg';
 import AppHeader from '../AppHeader.vue';
 import AppHeaderTab from '../AppHeaderTab.vue';
+import { APP_ROUTES } from '@/router';
 
 describe('AppHeader.vue', () => {
-    let propsData, mocks, doMount, wrapper, storeConfig, $store;
+    let propsData, mocks, doMount, wrapper, storeConfig, $store, mockPush;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -40,10 +41,16 @@ describe('AppHeader.vue', () => {
                 }
             }
         };
-
+        mockPush = jest.fn();
+        
         doMount = () => {
             $store = mockVuexStore(storeConfig);
-            mocks = { $store };
+            mocks = {
+                $store,
+                $router: {
+                    push: mockPush
+                }
+            };
             wrapper = mount(AppHeader, { propsData, mocks });
         };
     });
@@ -128,8 +135,15 @@ describe('AppHeader.vue', () => {
         it('allows switching to old UI', () => {
             window.switchToJavaUI = jest.fn();
             doMount();
-            wrapper.find('.switch-classic').vm.$emit('click');
+            wrapper.findAll('.switch-classic').at(1).vm.$emit('click');
             expect(window.switchToJavaUI).toHaveBeenCalled();
+        });
+
+        it('allows switching to Info Page', async () => {
+            doMount();
+            await wrapper.findAll('.switch-classic').at(0).trigger('click');
+            expect(mockPush).toHaveBeenCalledTimes(1);
+            expect(mockPush).toHaveBeenCalledWith(APP_ROUTES.WorkflowEntry);
         });
 
         test('feedback URL is correct', () => {

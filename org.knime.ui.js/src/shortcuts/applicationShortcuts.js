@@ -4,11 +4,7 @@ export default {
     openWorkflow: {
         text: 'Open workflow',
         hotkey: ['Ctrl', 'O'],
-        execute:
-            ({ $router }) => {
-                openWorkflow();
-                $router.push('/workflow');
-            }
+        execute: () => openWorkflow()
     },
     closeWorkflow: {
         text: 'Close workflow',
@@ -21,7 +17,6 @@ export default {
     createWorkflow: {
         text: 'Create workflow',
         hotkey: ['Ctrl', 'N'],
-        execute:
-            () => createWorkflow()
+        execute: () => createWorkflow()
     }
 };
