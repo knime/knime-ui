@@ -105,7 +105,7 @@ export default {
     methods: {
         ...mapActions('selection', ['selectConnection', 'deselectConnection', 'deselectAllObjects']),
         onContextMenu(event) {
-            console.log('Connector context menu ')
+            // right click should work same as left click
             this.onMouseClick(event);
             this.$store.dispatch('application/toggleContextMenu', { event });
         },
