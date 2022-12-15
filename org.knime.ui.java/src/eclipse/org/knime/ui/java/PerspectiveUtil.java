@@ -99,6 +99,23 @@ public final class PerspectiveUtil {
      */
     public static final String SHARED_EDITOR_AREA_ID = "org.eclipse.ui.editorss";
 
+    private static boolean isClassicPerspectiveActive = false;
+
+    /**
+     * @return {@code true} if the classic perspective is active (i.e. the user switched from there to the Modern UI at
+     *         least once)
+     */
+    public static boolean isClassicPerspectiveActive() {
+        return isClassicPerspectiveActive;
+    }
+
+    /**
+     * Sets the 'isClassicPerspectiveActive' flag to true.
+     */
+    public static void markClassicPerspectiveActive() {
+        isClassicPerspectiveActive = true;
+    }
+
     /**
      * Obtain the Web UI perspective
      *
