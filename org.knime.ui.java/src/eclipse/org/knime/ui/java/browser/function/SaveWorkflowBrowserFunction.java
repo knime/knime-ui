@@ -115,16 +115,16 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
             WorkflowEditor editor = EclipseUIStateUtil.getOpenWorkflowEditor(projectWfm)
                 .orElseThrow(() -> new NoSuchElementException("No workflow editor for project found."));
             editor.doSave(new NullProgressMonitor());
-            setChildWorkflowEditorsToClean(display, projectWfm);
-        } else { // SVG received, workflow editor might instance not be present
-            var canSetWorkflowEditorToClean = saveWorkflowWithoutWorkflowEditorInstance(projectWfm, projectSVG);
+            unmarkDirtyChildWorkflowEditors(display, projectWfm);
+        } else { // SVG received, workflow editor instance might not be present
+            var canSetWorkflowEditorToClean = saveWorkflowWithoutWorkflowEditorInstance(projectWfm, projectSVG, display);
             if (canSetWorkflowEditorToClean) {
                 // If the conditions are met, set the workflow editor to clean
                 EclipseUIStateUtil.getOpenWorkflowEditor(projectWfm).ifPresent(WorkflowEditor::unmarkDirty);
-                setChildWorkflowEditorsToClean(display, projectWfm);
+                unmarkDirtyChildWorkflowEditors(display, projectWfm);
             } else {
                 // Show a warning otherwise
-                showWarning(display);
+                showWarning(display, "Workflow in execution", "Executing nodes are not saved!");
             }
         }
 
@@ -151,7 +151,8 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
     /**
      * @return Whether to set workflow to clean or not
      */
-    private static boolean saveWorkflowWithoutWorkflowEditorInstance(final WorkflowManager wfm, final String svg) {
+    private static boolean saveWorkflowWithoutWorkflowEditorInstance(final WorkflowManager wfm, final String svg,
+        final Display display) {
         // Save progress state
         var state = wfm.getNodeContainerState();
         var wasInProgress = state.isExecutionInProgress() && !state.isExecutingRemotely();
@@ -159,7 +160,7 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
         // Create `IRunnableWithProgress` to save the workflow
         IRunnableWithProgress saveRunnable = wfm.isComponentProjectWFM() //
             ? (monitor -> saveComponentWorkflow()) // Not supported yet
-            : (monitor -> saveRegularWorkflow(monitor, wfm, svg));
+            : (monitor -> saveRegularWorkflow(monitor, wfm, svg, display));
 
         // Run the runnable to save the workflow
         try {
@@ -179,7 +180,8 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
     /**
      * Save regular workflow
      */
-    private static void saveRegularWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg) {
+    private static void saveRegularWorkflow(final IProgressMonitor monitor, final WorkflowManager wfm, final String svg,
+        final Display display) {
         // Get workflow path
         var workflowPath = wfm.getContextV2().getExecutorInfo().getLocalWorkflowPath();
 
@@ -189,7 +191,10 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
             var exec = new ExecutionMonitor(nodeProgressMonitor);
             wfm.save(workflowPath.toFile(), exec, true);
         } catch (final IOException | CanceledExecutionException | LockFailedException e) {
-            LOGGER.error("Saving the workflow didn't work", e);
+            var title = "Workflow save attempt";
+            var message = "Saving the workflow didn't work";
+            LOGGER.error(title + ": " + message, e);
+            showWarning(display, title, message);
             return; // Abort if saving the workflow fails
         }
 
@@ -197,7 +202,10 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
         try {
             Files.writeString(workflowPath.resolve(WorkflowPersistor.SVG_WORKFLOW_FILE), svg, StandardCharsets.UTF_8);
         } catch (IllegalArgumentException | IOException | UnsupportedOperationException | SecurityException e) {
-            LOGGER.error("Saving the SVG didn't work", e);
+            var title = "SVG save attempt";
+            var message = "Saving the SVG didn't work";
+            LOGGER.error(title + ": " + message, e);
+            showWarning(display, title, message);
         }
     }
 
@@ -212,7 +220,7 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
      * Workaround to set sub-editors to clean (cf WorkflowEditor#saveTo). If viewing in new frontend, the existing
      * implementation does not suffice to find sub-editors.
      */
-    private static void setChildWorkflowEditorsToClean(final Display display, final WorkflowManager wfm) {
+    private static void unmarkDirtyChildWorkflowEditors(final Display display, final WorkflowManager wfm) {
         display.asyncExec(() -> {
             if (display.isDisposed()) {
                 return;
@@ -224,11 +232,9 @@ public class SaveWorkflowBrowserFunction extends BrowserFunction {
         });
     }
 
-    private static void showWarning(final Display display) {
+    private static void showWarning(final Display display, final String title, final String message) {
         display.syncExec(() -> {
             var sh = SWTUtilities.getActiveShell();
-            var title = "Workflow in execution";
-            var message = "Executing nodes are not saved!";
             MessageDialog.openWarning(sh, title, message);
         });
     }
