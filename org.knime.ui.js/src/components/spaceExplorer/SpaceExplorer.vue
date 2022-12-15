@@ -135,9 +135,19 @@ export default {
   margin-bottom: 12px;
   width: 100%;
   border-bottom: 1px solid var(--knime-silver-sand);
+  overflow-x: auto;
 
   & .breadcrumb {
     padding-bottom: 0;
+    overflow-x: auto;
+    white-space: pre;
+    -ms-overflow-style: none; /* needed to hide scroll bar in edge */
+    scrollbar-width: none; /* for firefox */
+    user-select: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 }
 
