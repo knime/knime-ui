@@ -104,6 +104,11 @@ export default {
     },
     methods: {
         ...mapActions('selection', ['selectConnection', 'deselectConnection', 'deselectAllObjects']),
+        onContextMenu(event) {
+            console.log('Connector context menu ')
+            this.onMouseClick(event);
+            this.$store.dispatch('application/toggleContextMenu', { event });
+        },
         onMouseClick(e) {
             if (e.shiftKey) {
                 // Multi select
@@ -151,7 +156,7 @@ export default {
       @mouseenter="hover = true"
       @mouseleave="hover = false"
       @click.left="onMouseClick"
-      @contextmenu.prevent="onMouseClick"
+      @pointerdown.right="onContextMenu"
     />
     <path
       ref="visiblePath"

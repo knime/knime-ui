@@ -133,7 +133,6 @@ export default {
       fill="transparent"
       @pointerdown.stop.prevent
       @click.stop.prevent
-      @contextmenu.stop.prevent
     />
 
     <!-- Save/Cancel actions -->

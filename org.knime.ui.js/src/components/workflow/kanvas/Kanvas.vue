@@ -10,7 +10,10 @@ export default {
     data() {
         return {
             /* Truthy if currently panning. Stores mouse origin */
-            isPanning: null
+            isPanning: null,
+            useMoveCursor: false,
+            hasPanned: null,
+            moveCursorTimeoutId: null
         };
     },
     computed: {
@@ -48,7 +51,7 @@ export default {
                     this.$emit('container-size-changed');
                 });
             }, RESIZE_DEBOUNCE);
-            
+
             this.resizeObserver = new ResizeObserver(entries => {
                 const containerEl = entries.find(({ target }) => target === this.$el);
                 if (containerEl) {
@@ -102,8 +105,18 @@ export default {
                 return;
             }
 
-            if (this.suggestPanning || e.button === 1) {
+            if (this.suggestPanning || [1, 2].includes(e.button)) {
                 this.isPanning = true;
+                // delay move cursor for right click
+                if (e.button === 2) {
+                    this.moveCursorTimeoutId = setTimeout(() => {
+                        this.hasPanned = true;
+                        this.useMoveCursor = true;
+                    }, 1000);
+                } else {
+                    this.useMoveCursor = true;
+                }
+                this.hasPanned = false;
                 this.panningOffset = [e.screenX, e.screenY];
                 this.$el.setPointerCapture(e.pointerId);
             }
@@ -111,6 +124,9 @@ export default {
         movePan: throttle(function (e) {
             /* eslint-disable no-invalid-this */
             if (this.isPanning) {
+                this.hasPanned = true;
+                clearTimeout(this.moveCursorTimeoutId);
+                this.useMoveCursor = true;
                 const delta = [e.screenX - this.panningOffset[0], e.screenY - this.panningOffset[1]];
                 this.panningOffset = [e.screenX, e.screenY];
                 this.$el.scrollLeft -= delta[0];
@@ -122,12 +138,21 @@ export default {
             this.setSuggestPanning(false);
             this.isPanning = false;
         },
-        stopPan(e) {
+        stopPan(event) {
             if (this.isPanning) {
+                if (!this.hasPanned) {
+                    this.$store.dispatch('application/toggleContextMenu', {
+                        event,
+                        deselectAllObjects: true
+                    });
+                }
+                clearTimeout(this.moveCursorTimeoutId);
+                this.useMoveCursor = false;
+                this.hasPanned = false;
                 this.isPanning = false;
                 this.panningOffset = null;
-                this.$el.releasePointerCapture(e.pointerId);
-                e.stopPropagation();
+                this.$el.releasePointerCapture(event.pointerId);
+                event.stopPropagation();
             }
         }
     }
@@ -138,7 +163,7 @@ export default {
   <div
     tabindex="0"
     :class="['scroll-container', {
-      'panning': isPanning || suggestPanning,
+      'panning': useMoveCursor || suggestPanning,
       'empty': isEmpty,
       'disabled': !interactionsEnabled,
     }]"
@@ -147,9 +172,11 @@ export default {
     @keypress.space.once="suggestPan"
     @keyup.space="stopSuggestingPanning"
     @pointerdown.middle="beginPan"
+    @pointerdown.right="beginPan"
     @pointerdown.left="beginPan"
     @pointerup.middle="stopPan"
     @pointerup.left="stopPan"
+    @pointerup.capture.right="stopPan"
     @pointermove="movePan"
   >
     <svg
@@ -162,7 +189,6 @@ export default {
       @pointerup.left.stop="$emit('selection-pointerup', $event)"
       @pointermove="$emit('selection-pointermove', $event)"
       @lostpointercapture="$emit('selection-lostpointercapture', $event)"
-      @contextmenu="$emit('contextmenu', $event)"
     >
       <slot />
     </svg>

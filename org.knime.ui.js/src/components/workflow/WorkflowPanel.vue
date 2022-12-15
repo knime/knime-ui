@@ -23,6 +23,7 @@ export default {
             'portTypeMenu',
             'quickAddNodeMenu'
         ]),
+        ...mapState('canvas', ['isPanning']),
         ...mapState('application', ['contextMenu']),
         ...mapGetters('workflow', [
             'isLinked',
@@ -43,14 +44,22 @@ export default {
         }
     },
     methods: {
-        toggleContextMenu(e) {
-            if (this.quickAddNodeMenu.isOpen) {
-                this.quickAddNodeMenu.events['menu-close']?.();
+        toggleContextMenu(event) {
+            this.$store.dispatch('application/toggleContextMenu', { event });
+        },
+        onContextMenu(event) {
+            // this is the only place where we handle native context menu events
+            if (event.srcElement.classList.contains('native-context-menu')) {
+                return;
             }
-            if (this.portTypeMenu.isOpen) {
-                this.portTypeMenu.events['menu-close']?.();
+            // handle context menu keyboard or anything else that is not triggered by the mouse
+            if (event.button < 0) {
+                // TODO: add proper position by calculate the center of the selected items (nodes an connections)
+                this.$store.dispatch('application/toggleContextMenu', { event });
+                return;
             }
-            this.$store.dispatch('application/toggleContextMenu', e);
+            // prevent native context menus to appear
+            event.preventDefault();
         }
     }
 };
@@ -59,7 +68,8 @@ export default {
 <template>
   <div
     :class="['workflow-panel', { 'read-only': !isWritable }]"
-    @contextmenu="toggleContextMenu"
+    @contextmenu.stop="onContextMenu"
+    @pointerdown.right="contextMenu.isOpen && toggleContextMenu($event)"
   >
     <ContextMenu
       v-if="contextMenu.isOpen"

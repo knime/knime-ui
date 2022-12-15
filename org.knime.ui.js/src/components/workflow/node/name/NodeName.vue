@@ -99,7 +99,6 @@ export default {
         @request-edit="onRequestEdit"
         @mouseleave="$emit('mouseleave', $event)"
         @mouseenter="$emit('mouseenter', $event)"
-        @contextmenu="$emit('contextmenu', $event)"
       />
     </template>
   </g>

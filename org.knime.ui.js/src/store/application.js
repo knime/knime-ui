@@ -13,7 +13,7 @@ export const state = () => ({
 
     /* Map of port type id to port type */
     availablePortTypes: {},
-    
+
     // A list provided by the backend that says which ports should be suggested to the user in the port type menu.
     suggestedPortTypes: [],
 
@@ -54,7 +54,7 @@ export const mutations = {
         const rootWorkflowId = getRootWorkflowId(workflow);
         const isRootWorkflow = rootWorkflowId === workflow;
         const emptyParentState = { children: {} };
-        
+
         if (isRootWorkflow) {
             const newStateKey = getCanvasStateKey(`${project}--${workflow}`);
             // get a reference of an existing parent state or create new one
@@ -103,7 +103,7 @@ export const actions = {
      */
     async initializeApplication({ dispatch }) {
         await addEventListener('AppStateChanged');
-        
+
         const applicationState = await fetchApplicationState();
         await dispatch('replaceApplicationState', applicationState);
     },
@@ -186,7 +186,7 @@ export const actions = {
         const isChangingProject = rootState.workflow?.activeWorkflow?.projectId !== newWorkflow?.projectId;
 
         await dispatch('updatePreviewSnapshot', { isChangingProject, newWorkflow });
-        
+
         if (rootState.workflow?.activeWorkflow) {
             dispatch('saveCanvasState');
 
@@ -230,7 +230,7 @@ export const actions = {
         }, { root: true });
 
         commit('workflow/setActiveSnapshotId', snapshotId, { root: true });
-        
+
         // TODO: remove this 'root' fallback after mocks have been adjusted
         let workflowId = workflow.info.containerId || 'root';
         addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
@@ -245,17 +245,17 @@ export const actions = {
         if (!activeWorkflow) {
             return;
         }
-        
+
         // clean up
         let { projectId } = activeWorkflow;
         let { activeSnapshotId: snapshotId } = rootState.workflow;
         let workflowId = rootState.workflow.activeWorkflow.info.containerId;
 
         removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
-       
+
         commit('selection/clearSelection', null, { root: true });
         commit('workflow/setTooltip', null, { root: true });
-        
+
         if (clearWorkflow) {
             commit('workflow/setActiveWorkflow', null, { root: true });
         }
@@ -269,7 +269,7 @@ export const actions = {
     },
     restoreCanvasState({ dispatch, getters }) {
         const { workflowCanvasState } = getters;
-        
+
         if (workflowCanvasState) {
             dispatch('canvas/restoreScrollState', workflowCanvasState, { root: true });
         }
@@ -290,13 +290,13 @@ export const actions = {
         // without having changed projects
         if (isCurrentlyOnRoot && newWorkflow && !isChangingProject) {
             const canvasElement = rootState.canvas.getScrollContainerElement().firstChild;
-            
+
             // save a snapshot of the current state of the root workflow
             dispatch('setRootWorkflowSnapshot', {
                 projectId: activeProjectId,
                 element: canvasElement
             });
-            
+
             // Going back to the root of a workflow without having changed projects
         } else if (!isCurrentlyOnRoot && newWorkflow?.workflowId === 'root' && !isChangingProject) {
             // Since we're back in the root workflow, we can clear the previously saved snapshot
@@ -313,27 +313,47 @@ export const actions = {
         state.rootWorkflowSnapshots.delete(encodeString(`${projectId}--root`));
     },
 
-    toggleContextMenu({ state, commit, rootGetters }, contextMenuEvent) {
+    toggleContextMenu({
+        state,
+        commit,
+        dispatch,
+        rootGetters,
+        rootState
+    }, {
+        event,
+        deselectAllObjects = false
+    }) {
+        // close other menus if they are open
+        if (rootState.workflow.quickAddNodeMenu.isOpen) {
+            rootState.workflow.quickAddNodeMenu.events['menu-close']?.();
+        }
+        if (rootState.workflow.portTypeMenu.isOpen) {
+            rootState.workflow.portTypeMenu.events['menu-close']?.();
+        }
+
+        // close an open menu
         if (state.contextMenu.isOpen) {
             // when closing an active menu, we could optionally receive a native event
-            // e.g the menu is getting closed by right-clicking again
-            contextMenuEvent?.preventDefault();
+            // e.g. the menu is getting closed by right-clicking again
+            event?.preventDefault();
             commit('setContextMenu', { isOpen: false, position: null });
             return;
         }
 
-        // if source element has the following class set, then just let the event do the natural behavior
-        if (contextMenuEvent.srcElement.classList.contains('native-context-menu')) {
-            return;
-        }
-
         // safety check
-        if (!contextMenuEvent) {
+        if (!event) {
             return;
         }
 
-        contextMenuEvent.preventDefault();
-        const { clientX, clientY } = contextMenuEvent;
+        // we do not want it to bubble up if we handle it here
+        event.stopPropagation();
+        event.preventDefault();
+
+        if (deselectAllObjects) {
+            dispatch('selection/deselectAllObjects', null, { root: true });
+        }
+
+        const { clientX, clientY } = event;
         const screenToCanvasCoordinates = rootGetters['canvas/screenToCanvasCoordinates'];
         const [x, y] = screenToCanvasCoordinates([clientX, clientY]);
         state.contextMenu = {
@@ -363,7 +383,7 @@ export const getters = {
         } else {
             // read child state
             const savedStateKey = getCanvasStateKey(workflowId);
-            
+
             return savedCanvasStates[parentStateKey]?.children[savedStateKey];
         }
     },
