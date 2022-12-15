@@ -23,8 +23,7 @@ export default {
         isMetanode() {
             return this.kind === 'metanode';
         },
-        isVisible() {
-            // v-if="value || isVisible"
+        isSelected() {
             return this.nodeId === this.singleSelectedNode?.id;
         }
     }
@@ -33,7 +32,7 @@ export default {
 
 <template>
   <AutoSizeForeignObject
-    v-if="value || isVisible"
+    v-if="value || isSelected"
     ref="node-label-text-container"
     class="node-label-text-container"
     :y-offset="isMetanode ? $shapes.metanodeLabelOffsetY : $shapes.nodeLabelOffsetY"

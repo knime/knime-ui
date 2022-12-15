@@ -1,10 +1,6 @@
 <script>
 import NodeLabelText from './NodeLabelText.vue';
 
-/**
- * Inline editor for the node label. Emits 'save' and 'cancel' events. Implements v-model pattern. On input, it might
- * emit 'invalidCharacter' if the input matches forbiddenCharacters.
- */
 export default {
     components: { NodeLabelText },
     props: {
@@ -43,9 +39,7 @@ export default {
         },
         resizeTextarea() {
             const textarea = this.$refs.textarea;
-            if (!textarea) {
-                return;
-            }
+            
             // width
             // eslint-disable-next-line no-magic-numbers
             const width = this.$refs.ghost.scrollWidth + 6;
@@ -54,6 +48,15 @@ export default {
             // height
             textarea.style.height = 'auto';
             textarea.style.height = `${textarea.scrollHeight}px`;
+        },
+        onSave(e) {
+            const isMac = navigator?.userAgent?.toLowerCase()?.includes('mac');
+
+            if (isMac && e.metaKey === true) {
+                this.$emit('save');
+            } else if (!isMac && e.ctrlKey === true) {
+                this.$emit('save');
+            }
         }
     }
 };
@@ -80,7 +83,7 @@ export default {
         :value="value"
         @pointerdown.stop
         @input="onInput($event, sizeChange)"
-        @keydown.meta.enter.exact="$emit('save')"
+        @keydown.enter="onSave"
         @keydown.esc.prevent="$emit('cancel')"
       />
     </template>
