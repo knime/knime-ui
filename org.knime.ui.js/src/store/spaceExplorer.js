@@ -36,9 +36,14 @@ export const actions = {
 
 export const getters = {
     parentDirectoryId(state) {
-        const { spaceDirectory: { pathIds } } = state;
+        const { spaceDirectory: { path } } = state;
+
+        // we're already at the root, there's no parent
+        if (path.length === 0) {
+            return null;
+        }
 
         // when we're down to 1 item it means we're 1 level away from the root
-        return pathIds.length === 1 ? 'root' : pathIds[pathIds.length - 2];
+        return path.length === 1 ? 'root' : path[path.length - 2].id;
     }
 };

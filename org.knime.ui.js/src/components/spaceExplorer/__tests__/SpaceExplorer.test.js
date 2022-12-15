@@ -13,8 +13,7 @@ jest.mock('@api');
 
 const getSpaceItemsResponse = {
     id: 'root',
-    pathIds: [],
-    pathNames: [],
+    path: [],
     items: [
         {
             id: '1',
@@ -89,8 +88,10 @@ describe('SpaceExplorer.vue', () => {
             const { wrapper } = await doMount({
                 mockResponse: {
                     ...getSpaceItemsResponse,
-                    pathIds: ['parentId', 'currentDirectoryId'],
-                    pathNames: ['parentDirectory', 'currentDirectory']
+                    path: [
+                        { id: 'parentId', name: 'Parent Directory' },
+                        { id: 'currentDirectoryId', name: 'Current Directory' }
+                    ]
                 }
             });
     
@@ -103,8 +104,7 @@ describe('SpaceExplorer.vue', () => {
             const { wrapper } = await doMount({
                 mockResponse: {
                     ...getSpaceItemsResponse,
-                    pathIds: ['currentDirectoryId'],
-                    pathNames: ['currentDirectory']
+                    path: [{ id: 'currentDirectoryId', name: 'Current Directory' }]
                 }
             });
     
@@ -118,8 +118,10 @@ describe('SpaceExplorer.vue', () => {
         const { wrapper } = await doMount({
             mockResponse: {
                 ...getSpaceItemsResponse,
-                pathIds: ['parentId', 'currentDirectoryId'],
-                pathNames: ['parentDirectory', 'currentDirectory']
+                path: [
+                    { id: 'parentId', name: 'Parent Directory' },
+                    { id: 'currentDirectoryId', name: 'Current Directory' }
+                ]
             }
         });
 

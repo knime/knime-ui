@@ -36,18 +36,18 @@ export default {
                 return [];
             }
 
-            const { pathIds, pathNames } = this.spaceDirectory;
+            const { path } = this.spaceDirectory;
             const rootBreadcrumb = {
                 text: 'Home',
                 id: 'root',
-                clickable: pathIds.length > 0
+                clickable: path.length > 0
             };
-            const lastPathIndex = pathIds.length - 1;
+            const lastPathIndex = path.length - 1;
 
             return [rootBreadcrumb].concat(
-                pathIds.map((pathId, index) => ({
-                    text: pathNames[index],
-                    id: pathId,
+                path.map((pathItem, index) => ({
+                    text: pathItem.name,
+                    id: pathItem.id,
                     clickable: index !== lastPathIndex
                 }))
             );
@@ -57,8 +57,8 @@ export default {
             if (!this.spaceDirectory) {
                 return '';
             }
-            const { pathNames } = this.spaceDirectory;
-            return ['home'].concat(pathNames).join('/');
+            const { path } = this.spaceDirectory;
+            return ['home'].concat(path.map(({ name }) => name)).join('/');
         }
     },
 
@@ -113,7 +113,7 @@ export default {
       v-if="spaceDirectory && !isLoading"
       :mode="mode"
       :items="spaceDirectory.items"
-      :is-root-folder="spaceDirectory.pathIds.length === 0"
+      :is-root-folder="spaceDirectory.path.length === 0"
       @change-directory="onChangeDirectory"
     />
 
