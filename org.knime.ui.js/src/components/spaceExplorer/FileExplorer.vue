@@ -3,19 +3,16 @@ import WorkflowGroupIcon from 'webapps-common/ui/assets/img/icons/folder.svg';
 import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
 import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg';
 import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
-import UnknownIcon from 'webapps-common/ui/assets/img/icons/file-question.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
-
 
 const ITEM_TYPES = {
     WorkflowGroup: 'WorkflowGroup',
     Workflow: 'Workflow',
     Component: 'Component',
     Metanode: 'WorkflowTemplate',
-    Data: 'Data',
-    Other: 'Other'
+    Data: 'Data'
 };
 
 export default {
@@ -26,7 +23,6 @@ export default {
         ComponentIcon,
         DataIcon,
         MetaNodeIcon,
-        UnknownIcon,
         ArrowIcon
     },
 
@@ -65,8 +61,7 @@ export default {
                 [ITEM_TYPES.Workflow]: WorkflowIcon,
                 [ITEM_TYPES.Component]: ComponentIcon,
                 [ITEM_TYPES.Metanode]: MetaNodeIcon,
-                [ITEM_TYPES.Data]: DataIcon,
-                [ITEM_TYPES.Other]: UnknownIcon
+                [ITEM_TYPES.Data]: DataIcon
             };
 
             return typeIcons[item.type];

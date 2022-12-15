@@ -4,7 +4,7 @@ export const getSpaceItems =
     async ({ spaceId, itemId }) => {
         try {
             return await rpc(
-                'SpaceService.getSpaceItems',
+                'SpaceService.listWorkflowGroup',
                 spaceId, itemId
             );
         } catch (e) {

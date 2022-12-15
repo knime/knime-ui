@@ -4,7 +4,6 @@ import WorkflowGroupIcon from 'webapps-common/ui/assets/img/icons/folder.svg';
 import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
 import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg';
 import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
-import UnknownIcon from 'webapps-common/ui/assets/img/icons/file-question.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
 
 import FileExplorer from '../FileExplorer.vue';
@@ -46,12 +45,6 @@ describe('FileExplorer.vue', () => {
             name: 'File 3',
             type: 'WorkflowTemplate',
             icon: MetaNodeIcon
-        },
-        {
-            id: '6',
-            name: 'File 3',
-            type: 'Other',
-            icon: UnknownIcon
         }
     ];
 
