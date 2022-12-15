@@ -12,12 +12,17 @@ jest.mock('@/mixins/escapeStack', () => ({
 }));
 
 const expectEventHandled = () => {
-    expect(KeyboardEvent.prototype.preventDefault).toHaveBeenCalled();
     expect(KeyboardEvent.prototype.stopPropagation).toHaveBeenCalled();
 };
 const expectEventNotHandled = () => {
-    expect(KeyboardEvent.prototype.preventDefault).not.toHaveBeenCalled();
     expect(KeyboardEvent.prototype.stopPropagation).not.toHaveBeenCalled();
+};
+const expectPreventDefaultHandled = () => {
+    expect(KeyboardEvent.prototype.preventDefault).toHaveBeenCalled();
+};
+
+const expectPreventDefaultNotHandled = () => {
+    expect(KeyboardEvent.prototype.preventDefault).not.toHaveBeenCalled();
 };
 
 describe('HotKeys', () => {
@@ -37,6 +42,7 @@ describe('HotKeys', () => {
         $shortcuts = {
             findByHotkey: jest.fn(),
             isEnabled: jest.fn(),
+            preventDefault: jest.fn(),
             dispatch: jest.fn()
         };
 
@@ -130,13 +136,14 @@ describe('HotKeys', () => {
     test('Escape triggers event', () => {
         doShallowMount();
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-            
+
         expect(escapePressedMock).toHaveBeenCalled();
     });
 
     test('shortcut found and is enabled', () => {
         $shortcuts.findByHotkey.mockReturnValue('shortcut');
         $shortcuts.isEnabled.mockReturnValue(true);
+        $shortcuts.preventDefault.mockReturnValue(false);
         doShallowMount();
 
         // random key combination
@@ -145,6 +152,8 @@ describe('HotKeys', () => {
         expect($shortcuts.isEnabled).toHaveBeenCalledWith('shortcut');
         expect($shortcuts.dispatch).toHaveBeenCalledWith('shortcut');
         expectEventHandled();
+        // enabled shortcuts always prevent even if the config says other
+        expectPreventDefaultHandled();
     });
 
     test('no matching shortcut found', () => {
@@ -168,6 +177,7 @@ describe('HotKeys', () => {
     test('shortcut found but is not enabled', () => {
         $shortcuts.findByHotkey.mockReturnValue('shortcut');
         $shortcuts.isEnabled.mockReturnValue(false);
+        $shortcuts.preventDefault.mockReturnValue(true);
         doShallowMount();
 
         // random key combination
@@ -176,5 +186,22 @@ describe('HotKeys', () => {
         expect($shortcuts.isEnabled).toHaveBeenCalledWith('shortcut');
         expect($shortcuts.dispatch).not.toHaveBeenCalledWith('shortcut');
         expectEventHandled();
+        expectPreventDefaultHandled();
+    });
+
+    test('shortcut allows event default action', () => {
+        $shortcuts.findByHotkey.mockReturnValue('shortcut');
+        $shortcuts.isEnabled.mockReturnValue(false);
+        $shortcuts.preventDefault.mockReturnValue(false);
+        doShallowMount();
+
+        // random key combination
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'b', ctrlKey: true }));
+
+        expect($shortcuts.isEnabled).toHaveBeenCalledWith('shortcut');
+        expect($shortcuts.dispatch).not.toHaveBeenCalledWith('shortcut');
+
+        expectEventHandled();
+        expectPreventDefaultNotHandled();
     });
 });
