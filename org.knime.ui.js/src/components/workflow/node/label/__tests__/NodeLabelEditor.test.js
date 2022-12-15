@@ -6,7 +6,7 @@ import { mockVuexStore } from '@/test/test-utils';
 import * as $shapes from '@/style/shapes.mjs';
 
 import NodeLabelEditor from '../NodeLabelEditor.vue';
-import NodeLabelTextarea from '../NodeLabelTextarea.vue';
+import NodeLabelTextArea from '../NodeLabelTextArea.vue';
 import NodeEditorActionBar from '../../common/NodeEditorActionBar.vue';
 
 describe('NodeLabelEditor', () => {
@@ -46,7 +46,7 @@ describe('NodeLabelEditor', () => {
     });
 
     it('should render the ActionBar and the Textarea', () => {
-        expect(wrapper.findComponent(NodeLabelTextarea).exists()).toBe(true);
+        expect(wrapper.findComponent(NodeLabelTextArea).exists()).toBe(true);
         expect(wrapper.findComponent(NodeEditorActionBar).exists()).toBe(true);
     });
 
@@ -100,7 +100,7 @@ describe('NodeLabelEditor', () => {
         });
 
         it('should emit save when clicking the save button', () => {
-            wrapper.findComponent(NodeLabelTextarea).vm.$emit('input', 'new value');
+            wrapper.findComponent(NodeLabelTextArea).vm.$emit('input', 'new value');
             wrapper.findComponent(NodeEditorActionBar).vm.$emit('save');
 
             expect(wrapper.emitted('save')).toBeDefined();
@@ -115,21 +115,21 @@ describe('NodeLabelEditor', () => {
 
     describe('Handle textarea events', () => {
         it('should emit a save event', () => {
-            wrapper.findComponent(NodeLabelTextarea).vm.$emit('input', 'new value');
-            wrapper.findComponent(NodeLabelTextarea).vm.$emit('save');
+            wrapper.findComponent(NodeLabelTextArea).vm.$emit('input', 'new value');
+            wrapper.findComponent(NodeLabelTextArea).vm.$emit('save');
 
             expect(wrapper.emitted('save')).toBeDefined();
         });
 
         it('should not emit a save event if the label did not change', () => {
-            wrapper.findComponent(NodeLabelTextarea).vm.$emit('input', propsData.value);
-            wrapper.findComponent(NodeLabelTextarea).vm.$emit('save');
+            wrapper.findComponent(NodeLabelTextArea).vm.$emit('input', propsData.value);
+            wrapper.findComponent(NodeLabelTextArea).vm.$emit('save');
 
             expect(wrapper.emitted('save')).toBeUndefined();
         });
 
         it('should emit a cancel event', () => {
-            wrapper.findComponent(NodeLabelTextarea).vm.$emit('cancel');
+            wrapper.findComponent(NodeLabelTextArea).vm.$emit('cancel');
             expect(wrapper.emitted('cancel')).toBeDefined();
         });
     });
@@ -137,8 +137,8 @@ describe('NodeLabelEditor', () => {
     it('should trim content before saving', () => {
         const emittedValue = '   this is the content    ';
 
-        wrapper.findComponent(NodeLabelTextarea).vm.$emit('input', emittedValue);
-        wrapper.findComponent(NodeLabelTextarea).vm.$emit('save');
+        wrapper.findComponent(NodeLabelTextArea).vm.$emit('input', emittedValue);
+        wrapper.findComponent(NodeLabelTextArea).vm.$emit('save');
 
         expect(wrapper.emitted('save')[0][0]).toEqual(expect.objectContaining({
             newLabel: emittedValue.trim()
@@ -146,8 +146,8 @@ describe('NodeLabelEditor', () => {
     });
 
     it('updates value of textarea on value prop change', async () => {
-        expect(wrapper.findComponent(NodeLabelTextarea).props('value')).toBe('test');
+        expect(wrapper.findComponent(NodeLabelTextArea).props('value')).toBe('test');
         await wrapper.setProps({ value: 'newValue' });
-        expect(wrapper.findComponent(NodeLabelTextarea).props('value')).toBe('newValue');
+        expect(wrapper.findComponent(NodeLabelTextArea).props('value')).toBe('newValue');
     });
 });

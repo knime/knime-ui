@@ -3,13 +3,13 @@ import { clear as clearUserAgent, mockUserAgent } from 'jest-useragent-mock';
 
 import * as $shapes from '@/style/shapes.mjs';
 
-import NodeLabelTextarea from '../NodeLabelTextarea.vue';
+import NodeLabelTextArea from '../NodeLabelTextArea.vue';
 
-describe('NodeLabelTextarea', () => {
+describe('NodeLabelTextArea', () => {
     const mockSizeChangeFn = jest.fn();
 
     const doShallowMount = (opts = { propsData: { value: '' } }) => {
-        const wrapper = shallowMount(NodeLabelTextarea, {
+        const wrapper = shallowMount(NodeLabelTextArea, {
             ...opts,
             mocks: {
                 $shapes,
