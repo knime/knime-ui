@@ -1,4 +1,5 @@
 <script>
+import { mapGetters } from 'vuex';
 import AutoSizeForeignObject from '@/components/common/AutoSizeForeignObject.vue';
 
 export default {
@@ -6,16 +7,25 @@ export default {
     props: {
         value: {
             type: String,
-            default: ''
+            default: 'Node label'
         },
         kind: {
+            type: String,
+            default: ''
+        },
+        nodeId: {
             type: String,
             default: ''
         }
     },
     computed: {
+        ...mapGetters('selection', ['singleSelectedNode']),
         isMetanode() {
             return this.kind === 'metanode';
+        },
+        isVisible() {
+            // v-if="value || isVisible"
+            return this.nodeId === this.singleSelectedNode?.id;
         }
     }
 };
@@ -23,6 +33,7 @@ export default {
 
 <template>
   <AutoSizeForeignObject
+    v-if="value || isVisible"
     ref="node-label-text-container"
     class="node-label-text-container"
     :y-offset="isMetanode ? $shapes.metanodeLabelOffsetY : $shapes.nodeLabelOffsetY"
@@ -35,7 +46,14 @@ export default {
         @dblclick.left="$emit('request-edit')"
       >
         <span class="text">
-          <slot :on="on">{{ value }}</slot>
+          <slot
+            v-if="value"
+            :on="on"
+          >{{ value }}</slot>
+          <slot
+            v-else
+            :on="on"
+          >Node label</slot>
         </span>
       </div>
     </template>

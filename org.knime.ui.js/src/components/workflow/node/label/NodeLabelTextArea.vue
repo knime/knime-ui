@@ -48,7 +48,7 @@ export default {
             }
             // width
             // eslint-disable-next-line no-magic-numbers
-            const width = this.$refs.ghost.scrollWidth + 4;
+            const width = this.$refs.ghost.scrollWidth + 6;
             textarea.style.width = `${width}px`;
 
             // height
@@ -81,7 +81,7 @@ export default {
         @pointerdown.stop
         @input="onInput($event, sizeChange)"
         @keydown.meta.enter.exact="$emit('save')"
-        @keydown.esc.prevent="$emit('save')"
+        @keydown.esc.prevent="$emit('cancel')"
       />
     </template>
   </NodeLabelText>
