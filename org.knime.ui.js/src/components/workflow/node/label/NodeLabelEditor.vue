@@ -59,13 +59,6 @@ export default {
     },
     methods: {
         onSave() {
-            // reset to old value on empty edits
-            if (this.currentLabel.trim() === '') {
-                this.currentLabel = this.value;
-                this.$emit('cancel');
-                return;
-            }
-
             if (this.currentLabel === this.value) {
                 this.onCancel();
             } else {

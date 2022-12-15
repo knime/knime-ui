@@ -145,16 +145,6 @@ describe('NodeLabelEditor', () => {
         }));
     });
 
-    it('should not save empty values', () => {
-        const emittedValue = '    ';
-
-        wrapper.findComponent(NodeLabelTextarea).vm.$emit('input', emittedValue);
-        wrapper.findComponent(NodeLabelTextarea).vm.$emit('save');
-
-        expect(wrapper.emitted('save')).toBeUndefined();
-        expect(wrapper.emitted('cancel')).toBeDefined();
-    });
-
     it('updates value of textarea on value prop change', async () => {
         expect(wrapper.findComponent(NodeLabelTextarea).props('value')).toBe('test');
         await wrapper.setProps({ value: 'newValue' });
