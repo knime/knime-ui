@@ -74,6 +74,6 @@ describe('NodeLabelText.vue', () => {
         const wrapper = doShallowMount();
         const text = wrapper.find('.text');
 
-        expect(text.text()).toBe('Node label');
+        expect(text.text()).toBe('Add comment');
     });
 });

@@ -64,7 +64,6 @@ export default {
 
 <template>
   <NodeLabelText
-    show-overflow
     class="editor"
     :kind="kind"
   >

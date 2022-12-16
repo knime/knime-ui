@@ -44,7 +44,7 @@ export default {
         @contextmenu="$emit('contextmenu', $event)"
         @dblclick.left="$emit('request-edit')"
       >
-        <span class="text">
+        <span :class="['text', {'placeholder': !value}]">
           <slot
             v-if="value"
             :on="on"
@@ -52,7 +52,7 @@ export default {
           <slot
             v-else
             :on="on"
-          >Node label</slot>
+          >Add comment</slot>
         </span>
       </div>
     </template>
@@ -76,6 +76,11 @@ export default {
     font-size: calc(var(--node-name-font-size-shape) * 1px);
     text-align: center;
     white-space: pre-wrap;
+  }
+
+  & .text.placeholder {
+    color: var(--knime-dove-gray);
+    font-style: italic;
   }
 
   & .node-label {

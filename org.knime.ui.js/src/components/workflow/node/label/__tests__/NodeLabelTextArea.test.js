@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { clear as clearUserAgent, mockUserAgent } from 'jest-useragent-mock';
+import { mockUserAgent } from 'jest-useragent-mock';
 
 import * as $shapes from '@/style/shapes.mjs';
 
@@ -24,10 +24,6 @@ describe('NodeLabelTextArea', () => {
 
         return wrapper;
     };
-
-    afterEach(() => {
-        clearUserAgent();
-    });
 
     it('render with given value as text', () => {
         const value = 'test';
