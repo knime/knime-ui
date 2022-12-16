@@ -374,8 +374,7 @@ export default {
 
         <!-- Annotation needs to be behind ports -->
         <NodeLabel
-          v-if="annotation"
-          :value="annotation.text"
+          :value="annotation ? annotation.text : ''"
           :kind="kind"
           :node-id="id"
           :node-position="position"

@@ -212,11 +212,17 @@ describe('Node', () => {
             expect(nodePorts.props('nodeKind')).toBe('component');
         });
 
-        it("doesn't render non-existent node annotation", () => {
+        it('if annotation does not exist it passes empty string as value', () => {
             delete propsData.annotation;
             doMount();
 
-            expect(wrapper.findComponent(NodeLabel).exists()).toBe(false);
+            expect(wrapper.findComponent(NodeLabel).props()).toStrictEqual({
+                value: '',
+                kind: commonNode.kind,
+                nodeId: commonNode.id,
+                nodePosition: commonNode.position
+                
+            });
         });
 
         it('displays annotation', () => {
