@@ -47,6 +47,7 @@ import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
 import org.knime.ui.java.DefaultServicesUtil;
+import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.CreateWorkflowBrowserFunction;
@@ -167,6 +168,8 @@ public class KnimeBrowserView {
                 "Instance can't be created. There's only one instance of the KnimeBrowserView allowed.");
         }
         instance = this; // NOSONAR it's fine because this class is technically a singleton
+
+        PerspectiveSwitchAddon.updateChromiumExternalMessagsePumpSystemProperty();
 
         m_browser = new Browser(parent, SWT.NONE);
         m_browser.addLocationListener(new KnimeBrowserLocationListener(this));

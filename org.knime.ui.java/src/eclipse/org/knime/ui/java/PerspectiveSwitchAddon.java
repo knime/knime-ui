@@ -156,12 +156,16 @@ public final class PerspectiveSwitchAddon {
         Supplier<AppStateProvider.AppState> supplier = () -> EclipseUIStateUtil.createAppState(m_modelService, m_app);
         KnimeBrowserView.activateViewInitializer(supplier);
         switchToWebUITheme();
+        updateChromiumExternalMessagsePumpSystemProperty();
+    }
+
+    @SuppressWarnings("javadoc")
+    public static void updateChromiumExternalMessagsePumpSystemProperty() {
         if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
             // Fixes a drag'n'drop issue on Windows, see NXT-1151.
             // Doesn't have an effect on Linux.
             // Must be 'true' on Mac (see AP-19241).
             // Possibly to be removed via AP-19243.
-
             System.setProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP, "false");
         }
     }
@@ -183,6 +187,7 @@ public final class PerspectiveSwitchAddon {
         if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
             System.clearProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
         }
+
     }
 
     private static void disposeAllWorkflowProjects() {
