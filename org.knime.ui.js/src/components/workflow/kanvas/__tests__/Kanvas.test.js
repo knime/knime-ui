@@ -49,6 +49,11 @@ describe('Kanvas', () => {
         isDraggingNode = false;
 
         storeConfig = {
+            application: {
+                actions: {
+                    toggleContextMenu: jest.fn()
+                }
+            },
             canvas: {
                 state: {
                     getScrollContainerElement: null,
@@ -169,26 +174,37 @@ describe('Kanvas', () => {
             expect(storeConfig.canvas.mutations.setSuggestPanning).toBeCalledWith(expect.anything(), false);
         });
 
-        it('pans', async () => {
+        it.each([
+            ['middle', 1],
+            ['right', 2]
+        ])('pans with %s mouse button', async (mouseButtonName, mouseButton) => {
             doShallowMount();
             wrapper.element.setPointerCapture = jest.fn();
             wrapper.element.releasePointerCapture = jest.fn();
 
             wrapper.element.scrollLeft = 100;
             wrapper.element.scrollTop = 100;
-            wrapper.trigger('pointerdown', {
-                button: 1, // middle
+            await wrapper.trigger('pointerdown', {
+                button: mouseButton, // middle or right
                 screenX: 100,
                 screenY: 100,
                 pointerId: -1
             });
             expect(wrapper.element.setPointerCapture).toHaveBeenCalledWith(-1);
 
-            wrapper.trigger('pointermove', {
+            // change cursor on down event for middle mouse but not for right click
+            if (mouseButtonName === 'right') {
+                expect(wrapper.element.className).not.toMatch('panning');
+            } else {
+                expect(wrapper.element.className).toMatch('panning');
+            }
+
+            await wrapper.trigger('pointermove', {
                 screenX: 90,
                 screenY: 90
             });
-            await Vue.nextTick();
+            // if we moved in all cases it should show the proper cursor
+            expect(wrapper.element.className).toMatch('panning');
             expect(wrapper.element.scrollLeft).toBe(110);
             expect(wrapper.element.scrollTop).toBe(110);
 
@@ -196,6 +212,7 @@ describe('Kanvas', () => {
                 pointerId: -1
             });
             expect(wrapper.element.releasePointerCapture).toHaveBeenCalledWith(-1);
+            expect(storeConfig.application.actions.toggleContextMenu).toHaveBeenCalledTimes(0);
         });
 
         it('does not pan if interactionsEnabled is false', () => {
@@ -236,6 +253,33 @@ describe('Kanvas', () => {
 
             expect(wrapper.element.setPointerCapture).not.toHaveBeenCalled();
             expect(wrapper.vm.isPanning).toBe(null);
+        });
+    });
+
+    describe('Context Menu', () => {
+        it('shows context menu if user has not paned and used right mouse button', async () => {
+            doShallowMount();
+            wrapper.element.setPointerCapture = jest.fn();
+            wrapper.element.releasePointerCapture = jest.fn();
+
+            await wrapper.trigger('pointerdown', {
+                button: 2, // right
+                screenX: 100,
+                screenY: 100,
+                pointerId: -1
+            });
+
+            await wrapper.trigger('pointerup', {
+                pointerId: -1
+            });
+
+            expect(storeConfig.application.actions.toggleContextMenu).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({
+                    deselectAllObjects: true,
+                    event: expect.anything()
+                })
+            );
         });
     });
 

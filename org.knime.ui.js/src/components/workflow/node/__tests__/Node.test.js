@@ -113,7 +113,8 @@ describe('Node', () => {
                     return { activeProjectId: 'projectId' };
                 },
                 actions: {
-                    switchWorkflow: jest.fn()
+                    switchWorkflow: jest.fn(),
+                    toggleContextMenu: jest.fn()
                 }
             },
             selection: {
@@ -438,12 +439,13 @@ describe('Node', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
             doMount();
 
-            await wrapper.find('.mouse-clickable').trigger('contextmenu', { shiftKey: true });
+            await wrapper.find('.mouse-clickable').trigger('pointerdown', { button: 2, shiftKey: true });
 
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
                 expect.stringMatching('root:1')
             );
+            expect(storeConfig.application.actions.toggleContextMenu).toHaveBeenCalled();
         });
 
         it('shift-right-click does not remove from selection', async () => {
@@ -458,7 +460,7 @@ describe('Node', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(false);
             doMount();
 
-            await wrapper.find('.mouse-clickable').trigger('contextmenu');
+            await wrapper.find('.mouse-clickable').trigger('pointerdown', { button: 2 });
 
             expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
@@ -838,14 +840,13 @@ describe('Node', () => {
         });
 
         it('should handle contextmenu events', async () => {
-            const preventDefault = jest.fn();
-            wrapper.findComponent(NodeName).vm.$emit('contextmenu', { preventDefault });
+            wrapper.findComponent(NodeName).trigger('pointerdown', { button: 2 });
             await Vue.nextTick();
-            expect(preventDefault).toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
                 expect.stringMatching('root:1')
             );
+            expect(storeConfig.application.actions.toggleContextMenu).toHaveBeenCalled();
         });
 
         it('should handle click events', async () => {

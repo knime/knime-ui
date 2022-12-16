@@ -160,7 +160,7 @@ describe('application store', () => {
         it('replaces application state', async () => {
             const { store, dispatchSpy } = await loadStore();
             await store.dispatch('application/replaceApplicationState', applicationState);
-    
+
             expect(store.state.application.openProjects).toStrictEqual([
                 { projectId: 'foo', name: 'bar' }
             ]);
@@ -198,7 +198,7 @@ describe('application store', () => {
             });
 
             await store.dispatch('application/replaceApplicationState', applicationState);
-            
+
             expect(dispatchSpy).toHaveBeenCalledWith('application/loadWorkflow', {
                 projectId: 'baz',
                 workflowId: 'root:2'
@@ -214,7 +214,7 @@ describe('application store', () => {
                 workflow: { info: { containerId: 'root' }, nodes: [] },
                 snapshotId: 'snap'
             });
-            
+
             await store.dispatch('application/loadWorkflow', { projectId: 'wf1' });
 
             expect(loadWorkflow).toHaveBeenCalledWith({ workflowId: 'root', projectId: 'wf1' });
@@ -342,7 +342,7 @@ describe('application store', () => {
                     ]
             });
             expect(store.state.application.activeProjectId).toBe('0');
-            
+
             // clean dispatch list for easier testing
             dispatchSpy.mockClear();
 
@@ -386,10 +386,10 @@ describe('application store', () => {
                         lastActive: 'root:214'
                     }
                 };
-    
+
                 await store.dispatch('application/switchWorkflow', { projectId: '2', workflowId: 'root' });
                 expect(store.state.application.activeProjectId).toBe('2');
-    
+
                 await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root' });
                 expect(dispatchSpy).toHaveBeenCalledWith(
                     'application/loadWorkflow',
@@ -397,7 +397,7 @@ describe('application store', () => {
                 );
                 expect(store.state.application.activeProjectId).toBe('1');
             });
-    
+
             it('restores `lastActive` workflow when switching projects', async () => {
                 const { store, dispatchSpy } = await loadStore();
                 // start with a projectId 2
@@ -405,7 +405,7 @@ describe('application store', () => {
                     projectId: '2',
                     info: { containerId: 'root-1234' }
                 };
-                
+
                 // make sure project 1 has a `lastActive` state
                 store.state.application.savedCanvasStates = {
                     '1--root': {
@@ -416,7 +416,7 @@ describe('application store', () => {
                         lastActive: 'root:214'
                     }
                 };
-    
+
                 // change to project 1
                 await store.dispatch('application/switchWorkflow', { projectId: '1' });
 
@@ -503,17 +503,17 @@ describe('application store', () => {
                 }
             });
         });
-        
+
         it('saves the canvas state', async () => {
             const { store, mockedGetters } = await loadStoreWithWorkflow();
             expect(store.state.application.savedCanvasStates).toEqual({});
             store.dispatch('application/saveCanvasState');
-            
+
             expect(mockedGetters.canvas.getCanvasScrollState).toHaveBeenCalled();
             expect(Object.keys(store.state.application.savedCanvasStates).length).toBe(1);
             expect(store.state.application.savedCanvasStates['project1--workflow1']).toBeTruthy();
         });
-    
+
         it('restores canvas state', async () => {
             const { store, mockedActions } = await loadStoreWithWorkflow();
             store.commit('application/setSavedCanvasStates', {
@@ -525,7 +525,7 @@ describe('application store', () => {
                 workflow: 'workflow1',
                 project: 'project1'
             });
-    
+
             store.dispatch('application/restoreCanvasState');
             expect(mockedActions.canvas.restoreScrollState).toHaveBeenCalledWith(
                 expect.any(Object),
@@ -555,7 +555,7 @@ describe('application store', () => {
                 workflow: 'workflow1:214',
                 project: 'project1'
             });
-    
+
             store.dispatch('application/restoreCanvasState');
             expect(mockedActions.canvas.restoreScrollState).toHaveBeenCalledWith(
                 expect.any(Object),
@@ -583,6 +583,7 @@ describe('application store', () => {
     describe('Context Menu', () => {
         const createEvent = ({ x = 0, y = 0, srcElemClasses = [] } = {}) => {
             const preventDefault = jest.fn();
+            const stopPropagation = jest.fn();
             const eventMock = {
                 clientX: x,
                 clientY: y,
@@ -591,72 +592,77 @@ describe('application store', () => {
                         contains: (className) => srcElemClasses.includes(className)
                     }
                 },
-                preventDefault
+                preventDefault,
+                stopPropagation
             };
-            
-            return { event: eventMock, preventDefault };
+
+            return { event: eventMock, preventDefault, stopPropagation };
         };
 
         it('should set the context menu', async () => {
-            const { event: clickEvent, preventDefault } = createEvent({
+            const { event, preventDefault, stopPropagation } = createEvent({
                 x: 200,
                 y: 200
             });
-            const { store, mockedGetters } = await loadStore();
+            const { store, mockedGetters, dispatchSpy } = await loadStore();
 
-            await store.dispatch('application/toggleContextMenu', clickEvent);
+            await store.dispatch('application/toggleContextMenu', { event });
+            expect(dispatchSpy).not.toHaveBeenCalledWith('selection/deselectAllObjects', null);
             expect(store.state.application.contextMenu.isOpen).toBe(true);
             expect(mockedGetters.canvas.screenToCanvasCoordinates).toHaveBeenCalled();
             expect(store.state.application.contextMenu.position).toEqual({ x: 200, y: 200 });
             expect(preventDefault).toHaveBeenCalled();
+            expect(stopPropagation).toHaveBeenCalled();
         });
-        
+
+        it('should deselect all objects if parameter is given', async () => {
+            const { event, preventDefault, stopPropagation } = createEvent({
+                x: 200,
+                y: 200
+            });
+            const { store, mockedGetters, dispatchSpy } = await loadStore();
+
+            await store.dispatch('application/toggleContextMenu', { event, deselectAllObjects: true });
+            expect(dispatchSpy).toHaveBeenCalledWith('selection/deselectAllObjects', null);
+            expect(store.state.application.contextMenu.isOpen).toBe(true);
+            expect(mockedGetters.canvas.screenToCanvasCoordinates).toHaveBeenCalled();
+            expect(store.state.application.contextMenu.position).toEqual({ x: 200, y: 200 });
+            expect(preventDefault).toHaveBeenCalled();
+            expect(stopPropagation).toHaveBeenCalled();
+        });
+
         it('should hide the menu', async () => {
             const { store } = await loadStore();
             store.state.application.contextMenu = {
                 isOpen: true,
                 position: { x: 200, y: 200 }
             };
-            const { event: clickEvent, preventDefault } = createEvent();
+            const { event, preventDefault } = createEvent();
 
-            await store.dispatch('application/toggleContextMenu', clickEvent);
+            await store.dispatch('application/toggleContextMenu', { event });
 
             expect(store.state.application.contextMenu.isOpen).toBe(false);
             expect(store.state.application.contextMenu.position).toBeNull();
             expect(preventDefault).toHaveBeenCalled();
         });
 
-        describe('native context menu', () => {
-            it(
-                'should open native context menu if the proper class is set and the context menu is NOT open',
-                async () => {
-                    const { store } = await loadStore();
-                    const { event: clickEvent, preventDefault } = createEvent({
-                        srcElemClasses: ['native-context-menu']
-                    });
-
-                    expect(store.state.application.contextMenu.position).toBeNull();
-                    await store.dispatch('application/toggleContextMenu', clickEvent);
-                    expect(preventDefault).not.toHaveBeenCalled();
-                    expect(store.state.application.contextMenu.position).toBeNull();
+        it.each([
+            ['PortTypeMenu', 'portTypeMenu'],
+            ['QuickAddNodeMenu', 'quickAddNodeMenu']
+        ])('closes the %s if its open when context menu opens', async (_, stateMenuKey) => {
+            const { store } = await loadStore();
+            const menuCloseMock = jest.fn();
+            store.state.workflow[stateMenuKey] = {
+                isOpen: true,
+                events: {
+                    'menu-close': menuCloseMock
                 }
-            );
+            };
+            const { event } = createEvent();
 
-            it('should NOT open the native context menu if the context menu is already open', async () => {
-                const { event: clickEvent, preventDefault } = createEvent({
-                    srcElemClasses: ['native-context-menu']
-                });
-                const { store } = await loadStore();
-
-                store.state.application.contextMenu = {
-                    isOpen: true,
-                    position: { x: 200, y: 200 }
-                };
-
-                await store.dispatch('application/toggleContextMenu', clickEvent);
-                expect(preventDefault).toHaveBeenCalled();
-                expect(store.state.application.contextMenu.position).toBeNull();
-            });
+            await store.dispatch('application/toggleContextMenu', { event });
+            expect(store.state.application.contextMenu.isOpen).toBe(true);
+            expect(menuCloseMock).toHaveBeenCalled();
         });
     });
 
@@ -683,7 +689,7 @@ describe('application store', () => {
             // setup projects
             store.commit('application/setActiveProjectId', projectId);
             store.commit('application/setOpenProjects', [{ projectId, name: projectId }]);
-            
+
             // switch to nested workflow on the same project
             await store.dispatch('application/switchWorkflow', { projectId, workflowId: 'root:1' });
 
@@ -692,10 +698,10 @@ describe('application store', () => {
             expect(
                 store.state.application.rootWorkflowSnapshots.get(getSnapshotKeys(store)[0])
             ).toEqual(canvasMockEl);
-            
+
             // go back to the root workflow
             await store.dispatch('application/switchWorkflow', { projectId, workflowId: 'root' });
-            
+
             // should have cleared the snapshot
             expect(getSnapshotKeys(store).length).toBe(0);
         });
@@ -734,15 +740,15 @@ describe('application store', () => {
                 { projectId: project1, name: project1 },
                 { projectId: project2, name: project2 }
             ]);
-            
+
             // first switch to nested workflow on project1
             await store.dispatch('application/switchWorkflow', { projectId: project1, workflowId: 'root:1' });
             // then switch to root workflow on project2
             await store.dispatch('application/switchWorkflow', { projectId: project2, workflowId: 'root' });
-            
+
             // should have saved 1 snapshot (only from the 1st project)
             expect(getSnapshotKeys(store).length).toBe(1);
-            
+
             // go into nested workflow on project 2
             await store.dispatch('application/switchWorkflow', { projectId: project2, workflowId: 'root:2' });
 
