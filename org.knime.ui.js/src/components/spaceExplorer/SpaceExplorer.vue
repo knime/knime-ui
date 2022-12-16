@@ -88,8 +88,12 @@ export default {
             this.setLoading(false);
         },
 
-        onChangeDirectory(pathId) {
-            this.$store.dispatch('spaceExplorer/changeDirectory', { pathId });
+        async onChangeDirectory(pathId) {
+            this.setLoading(true);
+
+            await this.$store.dispatch('spaceExplorer/changeDirectory', { pathId });
+
+            // this.setLoading(false);
         },
 
         onBreadcrumbClick({ id }) {
@@ -103,7 +107,6 @@ export default {
   <div :class="mode">
     <div class="breadcrumb-wrapper">
       <Breadcrumb
-        class="breacrumb"
         :items="breadcrumbItems"
         @click-item="onBreadcrumbClick"
       />
@@ -161,7 +164,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  height: 400px;
 
   & svg {
     @mixin svg-icon-size 30;

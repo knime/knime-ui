@@ -35,8 +35,8 @@ export const actions = {
 };
 
 export const getters = {
-    parentWorkflowGroupId(state) {
-        const { currentWorkflowGroup: { path } } = state;
+    parentWorkflowGroupId({ currentWorkflowGroup }) {
+        const { path } = currentWorkflowGroup;
 
         // we're already at the root, there's no parent
         if (path.length === 0) {

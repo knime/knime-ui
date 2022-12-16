@@ -15,6 +15,9 @@ const ITEM_TYPES = {
     Data: 'Data'
 };
 
+const TEXT_LENGTH_THRESHOLD = 50;
+const TEXT_TRUNCATE_SIZE = 35;
+
 export default {
     components: {
         MenuOptionsIcon,
@@ -67,12 +70,13 @@ export default {
             return typeIcons[item.type];
         },
 
-        getItemText(item) {
-            const LENGTH_THRESHOLD = 50;
-            const TRUNCATE_SIZE = 35;
+        shouldTruncateText(text) {
+            return this.mode === 'mini' && text.length > TEXT_LENGTH_THRESHOLD;
+        },
 
-            return this.mode === 'mini' && item.name.length > LENGTH_THRESHOLD
-                ? `${item.name.slice(0, TRUNCATE_SIZE)}…`
+        getItemText(item) {
+            return this.shouldTruncateText(item.name)
+                ? `${item.name.slice(0, TEXT_TRUNCATE_SIZE)}…`
                 : item.name;
         },
         
@@ -128,6 +132,7 @@ export default {
         <td
           class="item-content"
           :class="{ light: item.type !== ITEM_TYPES.WorkflowGroup }"
+          :title="shouldTruncateText(item.name) ? item.name : null"
         >
           {{ getItemText(item) }}
         </td>

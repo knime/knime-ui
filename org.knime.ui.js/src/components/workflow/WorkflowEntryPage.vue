@@ -2,16 +2,104 @@
 import SpaceExplorer from '@/components/spaceExplorer/SpaceExplorer.vue';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
 
+/**
+ * Detects the scrollbar width of the current browser
+ * @returns {Number}
+ */
+const getScrollbarWidth = () => {
+    // Creating invisible container
+    const outer = document.createElement('div');
+    outer.style.visibility = 'hidden';
+    outer.style.overflow = 'scroll'; // forcing scrollbar to appear
+    outer.style.msOverflowStyle = 'scrollbar'; // needed for WinJS apps
+    document.body.appendChild(outer);
+
+    // Creating inner element and placing it in the container
+    const inner = document.createElement('div');
+    outer.appendChild(inner);
+
+    // Calculating difference between container's full width and the child width
+    const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+
+    // Removing temporary elements from the DOM
+    outer.parentNode.removeChild(outer);
+
+    return scrollbarWidth;
+};
+
+/**
+ * Determines whether the given element has Y overflow
+ * @param {HTMLElement} element
+ * @returns {Boolean}
+ */
+const isElementOverflowing = (element) => element.clientHeight < element.scrollHeight;
+
+/**
+ * Adds extra padding to target element's children depending on whether the target has overflow.
+ * Padding amount will match the scrollbar width on the current OS's browser. This will avoid jumping
+ * of the content when the scrollbars appear/disappear due to different content sizes
+ *
+ * @param {HTMLElement} target
+ * @returns {void}
+ */
+const setExtraPadding = (target) => {
+    if (!target) {
+        return;
+    }
+
+    const scrollbarWidth = getScrollbarWidth();
+    const isOverflowing = isElementOverflowing(target);
+
+    // Apply padding to all of target's childrens instead of target itself to
+    // make sure that the extra padding does not interfere with children's background colors
+    target.childNodes.forEach(child => {
+        const currentPadding = parseInt(
+            getComputedStyle(child).getPropertyValue('padding-right'),
+            10
+        );
+                  
+        // account for existing paddings and add or remove the scrollbar width accordingly
+        child.style.paddingRight = isOverflowing
+            ? `${currentPadding - scrollbarWidth}px`
+            : `${currentPadding + scrollbarWidth}px`;
+    });
+};
+
 export default {
     components: {
         SpaceExplorer,
         ComputerDesktopIcon
+    },
+
+    mounted() {
+        this.disconnectObserver = this.preventScrollJump();
+    },
+
+    beforeDestroy() {
+        this.disconnectObserver?.();
+    },
+
+    methods: {
+        preventScrollJump() {
+            const main = this.$refs.main;
+
+            setExtraPadding(main);
+          
+            const resizeObserver = new ResizeObserver(() => {
+                setExtraPadding(main);
+            });
+            resizeObserver.observe(main);
+
+            return () => {
+                resizeObserver.disconnect();
+            };
+        }
     }
 };
 </script>
 
 <template>
-  <main>
+  <main ref="main">
     <header>
       <div class="grid-container">
         <div class="grid-item-12 space-info">
@@ -89,7 +177,9 @@ header {
   min-height: 60px;
   background: var(--knime-gray-light-semi);
 
-  & .grid-container, & .grid-item-12, & .toolbar {
+  & .grid-container,
+  & .grid-item-12,
+  & .toolbar {
     height: 100%;
   }
 
