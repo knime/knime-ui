@@ -23,7 +23,6 @@ export default {
             'portTypeMenu',
             'quickAddNodeMenu'
         ]),
-        ...mapState('canvas', ['isPanning']),
         ...mapState('application', ['contextMenu']),
         ...mapGetters('workflow', [
             'isLinked',
@@ -50,12 +49,6 @@ export default {
         onContextMenu(event) {
             // this is the only place where we handle native context menu events
             if (event.srcElement.classList.contains('native-context-menu')) {
-                return;
-            }
-            // handle context menu keyboard or anything else that is not triggered by the mouse
-            if (event.button < 0) {
-                // TODO: add proper position by calculate the center of the selected items (nodes an connections)
-                this.$store.dispatch('application/toggleContextMenu', { event });
                 return;
             }
             // prevent native context menus to appear

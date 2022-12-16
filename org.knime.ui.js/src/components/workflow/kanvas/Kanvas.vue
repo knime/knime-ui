@@ -4,6 +4,7 @@ import { debounce } from 'lodash';
 import throttle from 'raf-throttle';
 
 export const RESIZE_DEBOUNCE = 100;
+const RIGHT_BUTTON_PAN_MODE_DELAY = 900; // ms
 const blacklistTagNames = /^(input|textarea|select)$/i;
 
 export default {
@@ -104,15 +105,17 @@ export default {
             if (!this.interactionsEnabled || this.isEmpty) {
                 return;
             }
+            const middleButton = 1;
+            const rightButton = 2;
 
-            if (this.suggestPanning || [1, 2].includes(e.button)) {
+            if (this.suggestPanning || [middleButton, rightButton].includes(e.button)) {
                 this.isPanning = true;
                 // delay move cursor for right click
-                if (e.button === 2) {
+                if (e.button === rightButton) {
                     this.moveCursorTimeoutId = setTimeout(() => {
                         this.hasPanned = true;
                         this.useMoveCursor = true;
-                    }, 1000);
+                    }, RIGHT_BUTTON_PAN_MODE_DELAY);
                 } else {
                     this.useMoveCursor = true;
                 }
@@ -176,7 +179,7 @@ export default {
     @pointerdown.left="beginPan"
     @pointerup.middle="stopPan"
     @pointerup.left="stopPan"
-    @pointerup.capture.right="stopPan"
+    @pointerup.right="stopPan"
     @pointermove="movePan"
   >
     <svg
