@@ -60,7 +60,7 @@ export const openView = ({ projectId, nodeId }) => {
 export const saveWorkflow = ({ projectId, workflowPreviewSvg }) => {
     try {
         // returns falsy on success
-        let error = window.saveWorkflow(projectId);
+        let error = window.saveWorkflow(projectId, workflowPreviewSvg);
         if (error) {
             throw new Error(error);
         }
