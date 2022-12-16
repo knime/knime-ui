@@ -67,6 +67,8 @@ import org.eclipse.e4.ui.workbench.UIEvents.EventTags;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
+import org.knime.gateway.api.util.CoreUtil;
+import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.workbench.editor2.WorkflowEditor;
@@ -159,11 +161,15 @@ public final class PerspectiveSwitchAddon {
             // Doesn't have an effect on Linux.
             // Must be 'true' on Mac (see AP-19241).
             // Possibly to be removed via AP-19243.
+
             System.setProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP, "false");
         }
     }
 
     private void onSwitchToJavaUI() {
+        if (!PerspectiveUtil.isClassicPerspectiveActive()) {
+            disposeAllWorkflowProjects();
+        }
         KnimeBrowserView.clearView();
         setTrimsAndMenuVisible(true, m_modelService, m_app);
         switchToJavaUITheme();
@@ -177,6 +183,20 @@ public final class PerspectiveSwitchAddon {
         if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
             System.clearProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
         }
+    }
+
+    private static void disposeAllWorkflowProjects() {
+        var wpm = WorkflowProjectManager.getInstance();
+        wpm.getWorkflowProjectsIds().stream().forEach(projectId -> {
+            wpm.getCachedWorkflow(projectId).ifPresent(t -> {
+                try {
+                    CoreUtil.cancelAndCloseLoadedWorkflow(t);
+                } catch (InterruptedException e) { // NOSONAR
+                    NodeLogger.getLogger(PerspectiveSwitchAddon.class).error(e);
+                }
+            });
+            wpm.removeWorkflowProject(projectId);
+        });
     }
 
     private void switchToWebUITheme() {
