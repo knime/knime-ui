@@ -50,6 +50,7 @@ import org.knime.gateway.api.webui.entity.AppStateEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
+import org.knime.gateway.impl.webui.SpaceProviders;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.DefaultApplicationService;
 import org.knime.gateway.impl.webui.service.ServiceDependencies;
@@ -73,9 +74,10 @@ public final class DefaultServicesUtil {
      *
      * @param appStateProvider The application state provider
      * @param eventConsumer The event consumer
+     * @param spaceProviders
      */
     public static void setDefaultServiceDependencies(final AppStateProvider appStateProvider,
-        final EventConsumer eventConsumer) {
+        final EventConsumer eventConsumer, final SpaceProviders spaceProviders) {
         if (!ServiceInstances.areServicesInitialized()) {
             ServiceDependencies.setServiceDependency(AppStateProvider.class, appStateProvider);
             ServiceDependencies.setServiceDependency(EventConsumer.class, eventConsumer);
@@ -83,6 +85,7 @@ public final class DefaultServicesUtil {
                 new WorkflowMiddleware(WorkflowProjectManager.getInstance()));
             ServiceDependencies.setServiceDependency(WorkflowProjectManager.class,
                 WorkflowProjectManager.getInstance());
+            ServiceDependencies.setServiceDependency(SpaceProviders.class, spaceProviders);
         } else {
             throw new IllegalStateException(
                 "Some services are already initialized. Service dependencies can't be set anymore. "
