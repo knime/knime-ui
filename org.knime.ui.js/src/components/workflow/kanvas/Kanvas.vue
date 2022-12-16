@@ -175,11 +175,11 @@ export default {
     @keypress.space.once="suggestPan"
     @keyup.space="stopSuggestingPanning"
     @pointerdown.middle="beginPan"
-    @pointerdown.right="beginPan"
+    @pointerdown.prevent.right="beginPan"
     @pointerdown.left="beginPan"
     @pointerup.middle="stopPan"
     @pointerup.left="stopPan"
-    @pointerup.right="stopPan"
+    @pointerup.prevent.right="stopPan"
     @pointermove="movePan"
   >
     <svg
