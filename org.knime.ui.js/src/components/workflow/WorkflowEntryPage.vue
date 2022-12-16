@@ -47,16 +47,13 @@ export default {
 
 main {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--knime-white);
   flex-direction: column;
-  height: 100vh;
+  background-color: var(--knime-white);
 }
 
 header {
   font-family: Roboto, sans-serif;
-  height: 200px;
+  min-height: 150px;
 
   & .grid-container {
     height: 100%;
@@ -88,9 +85,24 @@ header {
   }
 }
 
+.toolbar-wrapper {
+  min-height: 60px;
+  background: var(--knime-gray-light-semi);
+
+  & .grid-container, & .grid-item-12, & .toolbar {
+    height: 100%;
+  }
+
+  & .toolbar {
+    display: flex;
+    align-items: center;
+  }
+}
+
 .space-explorer-wrapper {
   background: var(--knime-porcelain);
-  height: 100%;
   padding-top: 50px;
+  padding-bottom: 80px;
+  flex: 1;
 }
 </style>

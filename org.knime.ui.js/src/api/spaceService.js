@@ -1,6 +1,6 @@
 import rpc from './json-rpc-adapter';
 
-export const getSpaceItems =
+export const fetchWorkflowGroupContent =
     async ({ spaceId, itemId }) => {
         try {
             return await rpc(

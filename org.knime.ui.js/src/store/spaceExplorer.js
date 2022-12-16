@@ -1,8 +1,8 @@
-import { getSpaceItems } from '@api';
+import { fetchWorkflowGroupContent } from '@api';
 
 export const state = () => ({
     spaceId: 'local',
-    spaceDirectory: null
+    currentWorkflowGroup: null
 });
 
 export const mutations = {
@@ -10,33 +10,33 @@ export const mutations = {
         state.spaceId = value;
     },
 
-    setSpaceDirectory(state, spaceDirectoryData) {
-        state.spaceDirectory = spaceDirectoryData;
+    setCurrentWorkflowGroup(state, data) {
+        state.currentWorkflowGroup = data;
     }
 };
 
 export const actions = {
-    async fetchSpaceItems({ commit }, { spaceId = 'local', itemId = 'root' }) {
-        const data = await getSpaceItems({ spaceId, itemId });
+    async fetchWorkflowGroupContent({ commit }, { spaceId = 'local', itemId = 'root' }) {
+        const data = await fetchWorkflowGroupContent({ spaceId, itemId });
         
-        commit('setSpaceDirectory', data);
+        commit('setCurrentWorkflowGroup', data);
         return data;
     },
 
     changeDirectory({ dispatch, getters }, { pathId }) {
         const isGoingBack = pathId === '..';
 
-        const nextSpaceDirectoryId = isGoingBack
-            ? getters.parentDirectoryId
+        const nextWorkflowGroupId = isGoingBack
+            ? getters.parentWorkflowGroupId
             : pathId;
 
-        return dispatch('fetchSpaceItems', { itemId: nextSpaceDirectoryId });
+        return dispatch('fetchWorkflowGroupContent', { itemId: nextWorkflowGroupId });
     }
 };
 
 export const getters = {
-    parentDirectoryId(state) {
-        const { spaceDirectory: { path } } = state;
+    parentWorkflowGroupId(state) {
+        const { currentWorkflowGroup: { path } } = state;
 
         // we're already at the root, there's no parent
         if (path.length === 0) {

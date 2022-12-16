@@ -3,15 +3,16 @@ import { createLocalVue, mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 import * as spaceExplorerStore from '@/store/spaceExplorer';
-import { getSpaceItems } from '@api';
+
+import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
+import { fetchWorkflowGroupContent } from '@api';
 
 import SpaceExplorer from '../SpaceExplorer.vue';
 import FileExplorer from '../FileExplorer.vue';
-import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 
 jest.mock('@api');
 
-const getSpaceItemsResponse = {
+const fetchWorkflowGroupContentResponse = {
     id: 'root',
     path: [],
     items: [
@@ -41,13 +42,13 @@ describe('SpaceExplorer.vue', () => {
     
     const doMount = async ({
         awaitLoad = true,
-        mockResponse = getSpaceItemsResponse,
+        mockResponse = fetchWorkflowGroupContentResponse,
         mockGetSpaceItems = null
     } = {}) => {
         if (mockGetSpaceItems) {
-            getSpaceItems.mockImplementation(mockGetSpaceItems);
+            fetchWorkflowGroupContent.mockImplementation(mockGetSpaceItems);
         } else {
-            getSpaceItems.mockResolvedValue(mockResponse);
+            fetchWorkflowGroupContent.mockResolvedValue(mockResponse);
         }
 
         const store = mockVuexStore({
@@ -70,24 +71,24 @@ describe('SpaceExplorer.vue', () => {
         const { wrapper } = await doMount();
         
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(true);
-        expect(wrapper.findComponent(FileExplorer).props('items')).toBe(getSpaceItemsResponse.items);
+        expect(wrapper.findComponent(FileExplorer).props('items')).toBe(fetchWorkflowGroupContentResponse.items);
         expect(wrapper.findComponent(FileExplorer).props('isRootFolder')).toBe(true);
     });
 
     it('should load data when navigating to a directory', async () => {
         const { wrapper } = await doMount();
 
-        getSpaceItems.mockReset();
+        fetchWorkflowGroupContent.mockReset();
 
         wrapper.findComponent(FileExplorer).vm.$emit('change-directory', '1234');
-        expect(getSpaceItems).toHaveBeenCalledWith({ spaceId: 'local', itemId: '1234' });
+        expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({ spaceId: 'local', itemId: '1234' });
     });
 
     describe('Navigate back', () => {
         it('should load data when navigating back to the parent directory', async () => {
             const { wrapper } = await doMount({
                 mockResponse: {
-                    ...getSpaceItemsResponse,
+                    ...fetchWorkflowGroupContentResponse,
                     path: [
                         { id: 'parentId', name: 'Parent Directory' },
                         { id: 'currentDirectoryId', name: 'Current Directory' }
@@ -95,29 +96,29 @@ describe('SpaceExplorer.vue', () => {
                 }
             });
     
-            getSpaceItems.mockReset();
+            fetchWorkflowGroupContent.mockReset();
             wrapper.findComponent(FileExplorer).vm.$emit('change-directory', '..');
-            expect(getSpaceItems).toHaveBeenCalledWith({ spaceId: 'local', itemId: 'parentId' });
+            expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({ spaceId: 'local', itemId: 'parentId' });
         });
 
         it('should navigate to "root" when going back from 1 level below the root directory', async () => {
             const { wrapper } = await doMount({
                 mockResponse: {
-                    ...getSpaceItemsResponse,
+                    ...fetchWorkflowGroupContentResponse,
                     path: [{ id: 'currentDirectoryId', name: 'Current Directory' }]
                 }
             });
     
-            getSpaceItems.mockReset();
+            fetchWorkflowGroupContent.mockReset();
             wrapper.findComponent(FileExplorer).vm.$emit('change-directory', '..');
-            expect(getSpaceItems).toHaveBeenCalledWith({ spaceId: 'local', itemId: 'root' });
+            expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({ spaceId: 'local', itemId: 'root' });
         });
     });
 
     it('should navigate via the breadcrumb', async () => {
         const { wrapper } = await doMount({
             mockResponse: {
-                ...getSpaceItemsResponse,
+                ...fetchWorkflowGroupContentResponse,
                 path: [
                     { id: 'parentId', name: 'Parent Directory' },
                     { id: 'currentDirectoryId', name: 'Current Directory' }
@@ -126,13 +127,13 @@ describe('SpaceExplorer.vue', () => {
         });
 
         wrapper.findComponent(Breadcrumb).vm.$emit('click-item', { id: 'parentId' });
-        expect(getSpaceItems).toHaveBeenCalledWith({ spaceId: 'local', itemId: 'parentId' });
+        expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({ spaceId: 'local', itemId: 'parentId' });
     });
 
     it('should display the loader only after a specific timeout', async () => {
-        getSpaceItems.mockImplementation(() => new Promise(resolve => {
+        fetchWorkflowGroupContent.mockImplementation(() => new Promise(resolve => {
             setTimeout(() => {
-                resolve(getSpaceItemsResponse);
+                resolve(fetchWorkflowGroupContentResponse);
             }, 600);
         }));
 

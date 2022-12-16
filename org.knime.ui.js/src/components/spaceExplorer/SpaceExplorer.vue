@@ -29,14 +29,14 @@ export default {
     },
 
     computed: {
-        ...mapState('spaceExplorer', ['spaceDirectory']),
+        ...mapState('spaceExplorer', ['currentWorkflowGroup']),
 
         breadcrumbItems() {
-            if (!this.spaceDirectory) {
+            if (!this.currentWorkflowGroup) {
                 return [];
             }
 
-            const { path } = this.spaceDirectory;
+            const { path } = this.currentWorkflowGroup;
             const rootBreadcrumb = {
                 text: 'Home',
                 id: 'root',
@@ -54,16 +54,16 @@ export default {
         },
 
         fullPath() {
-            if (!this.spaceDirectory) {
+            if (!this.currentWorkflowGroup) {
                 return '';
             }
-            const { path } = this.spaceDirectory;
+            const { path } = this.currentWorkflowGroup;
             return ['home'].concat(path.map(({ name }) => name)).join('/');
         }
     },
 
     async created() {
-        await this.fetchSpaceItems('root');
+        await this.fetchWorkflowGroupContent('root');
     },
 
     methods: {
@@ -80,10 +80,10 @@ export default {
             }, DISPLAY_LOADING_DELAY);
         },
 
-        async fetchSpaceItems(spaceDirectoryId) {
+        async fetchWorkflowGroupContent(itemId) {
             this.setLoading(true);
 
-            await this.$store.dispatch('spaceExplorer/fetchSpaceItems', { itemId: spaceDirectoryId });
+            await this.$store.dispatch('spaceExplorer/fetchWorkflowGroupContent', { itemId });
 
             this.setLoading(false);
         },
@@ -93,7 +93,7 @@ export default {
         },
 
         onBreadcrumbClick({ id }) {
-            this.fetchSpaceItems(id);
+            this.fetchWorkflowGroupContent(id);
         }
     }
 };
@@ -110,10 +110,10 @@ export default {
     </div>
 
     <FileExplorer
-      v-if="spaceDirectory && !isLoading"
+      v-if="currentWorkflowGroup && !isLoading"
       :mode="mode"
-      :items="spaceDirectory.items"
-      :is-root-folder="spaceDirectory.path.length === 0"
+      :items="currentWorkflowGroup.items"
+      :is-root-folder="currentWorkflowGroup.path.length === 0"
       @change-directory="onChangeDirectory"
     />
 
@@ -154,6 +154,7 @@ export default {
 .mini {
   padding: 20px 15px;
   height: 100%;
+  overflow-y: auto;
 }
 
 .loading {
