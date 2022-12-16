@@ -71,7 +71,7 @@ describe('FileExplorer.vue', () => {
 
         allItems.wrappers.forEach((item, index) => {
             expect(item.classes()).toContain(MOCK_DATA.at(index).type);
-            expect(wrapper.findComponent(MOCK_DATA.at(index).icon));
+            expect(wrapper.findComponent(MOCK_DATA.at(index).icon).exists()).toBe(true);
         });
     });
 

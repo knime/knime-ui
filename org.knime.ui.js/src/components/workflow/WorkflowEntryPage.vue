@@ -57,6 +57,10 @@ const setExtraPadding = (target) => {
             getComputedStyle(child).getPropertyValue('padding-right'),
             10
         );
+
+        if (child.nodeType !== 1 /* Node.ELEMENT_NODE */) {
+            return;
+        }
                   
         // account for existing paddings and add or remove the scrollbar width accordingly
         child.style.paddingRight = isOverflowing

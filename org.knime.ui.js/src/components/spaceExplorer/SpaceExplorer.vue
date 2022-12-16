@@ -93,7 +93,7 @@ export default {
 
             await this.$store.dispatch('spaceExplorer/changeDirectory', { pathId });
 
-            // this.setLoading(false);
+            this.setLoading(false);
         },
 
         onBreadcrumbClick({ id }) {

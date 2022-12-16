@@ -88,7 +88,7 @@ export default {
 </script>
 
 <template>
-  <table>
+  <table aria-label="Current workflow group in Space Explorer">
     <thead>
       <tr>
         <th scope="col">Type</th>
@@ -192,7 +192,6 @@ tbody.mini {
 .file-explorer-item {
   --icon-size: 20;
   --item-padding: 8px;
-  --selection-color: hsl(206deg 88% 45%/19%);
 
   user-select: none;
   cursor: pointer;
