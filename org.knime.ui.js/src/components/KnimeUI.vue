@@ -121,7 +121,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div id="knime-ui">
     <!-- if subsequent errors occur, stick with the first one -->
     <Error
       v-if="error"
@@ -148,12 +148,10 @@ export default {
 <style lang="postcss" scoped>
 
 #knime-ui {
-  --side-bar-width: 40px;
-
   display: grid;
   grid-template:
-    "header header" min-content
-    "workflow workflow" auto;
+    "header" min-content
+    "workflow" auto;
 }
 
 #header {
@@ -165,28 +163,6 @@ export default {
   height:100vh;
   grid-area: workflow;
 }
-
-/*
-#sidebar {
-  grid-area: sidebar;
-} */
-
-/* #toolbar {
-  grid-area: toolbar;
-  height: var(--app-toolbar-height);
-  flex: 0 0 auto;
-  padding: 10px;
-  background-color: var(--knime-porcelain);
-  border-bottom: 1px solid var(--knime-silver-sand);
-} */
-
-/* main {
-  display: flex;
-  overflow: auto;
-  flex-direction: column;
-  align-items: stretch;
-  height: 100%;
-} */
 
 .loader {
   height: 100vh;

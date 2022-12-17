@@ -241,7 +241,7 @@ header {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: var(--side-bar-width);
+    width: var(--app-side-bar-width);
     background-color: var(--knime-black);
     text-align: center;
     height: 100%;

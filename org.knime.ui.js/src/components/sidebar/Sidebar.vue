@@ -147,7 +147,7 @@ export default {
 }
 
 nav {
-  width: var(--side-bar-width);
+  width: var(--app-side-bar-width);
   background-color: var(--knime-black);
 
   & ul {

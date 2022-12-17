@@ -56,8 +56,6 @@ export default {
 
 <style lang="postcss" scoped>
 #workflow-page {
-  --side-bar-width: 40px;
-
   display: grid;
   grid-template:
     "toolbar toolbar" min-content
