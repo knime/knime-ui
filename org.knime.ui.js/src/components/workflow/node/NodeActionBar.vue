@@ -69,49 +69,49 @@ export default {
             return {
                 configureNode: {
                     title: () => this.hoverTitle('Configure', this.$shortcuts.get('configureNode').hotkeyText),
-                    isEnabled: this.canOpenDialog,
+                    disabled: !this.canOpenDialog,
                     icon: OpenDialogIcon,
                     onClick: () => this.openNodeConfiguration(this.nodeId)
                 },
                 pauseLoopExecution: {
                     title: () => this.hoverTitle('Pause', this.$shortcuts.get('pauseLoopExecution').hotkeyText),
-                    isEnabled: true,
+                    disabled: false,
                     icon: PauseIcon,
                     onClick: () => this.pauseLoopExecution(this.nodeId)
                 },
                 resumeLoopExecution: {
                     title: () => this.hoverTitle('Resume', this.$shortcuts.get('resumeLoopExecution').hotkeyText),
-                    isEnabled: true,
+                    disabled: false,
                     icon: ResumeIcon,
                     onClick: () => this.resumeLoopExecution(this.nodeId)
                 },
                 execute: {
                     title: () => this.hoverTitle('Execute', this.$shortcuts.get('executeSelected').hotkeyText),
-                    isEnabled: this.canExecute,
+                    disabled: !this.canExecute,
                     icon: ExecuteIcon,
                     onClick: () => this.executeNodes([this.nodeId])
                 },
                 stepLoopExecution: {
                     title: () => this.hoverTitle('Step', this.$shortcuts.get('stepLoopExecution').hotkeyText),
-                    isEnabled: this.canStep,
+                    disabled: !this.canStep,
                     icon: StepIcon,
                     onClick: () => this.stepLoopExecution(this.nodeId)
                 },
                 cancelExecution: {
                     title: () => this.hoverTitle('Cancel', this.$shortcuts.get('cancelSelected').hotkeyText),
-                    isEnabled: this.canCancel,
+                    disabled: !this.canCancel,
                     icon: CancelIcon,
                     onClick: () => this.cancelNodeExecution([this.nodeId])
                 },
                 reset: {
                     title: () => this.hoverTitle('Reset', this.$shortcuts.get('resetSelected').hotkeyText),
-                    isEnabled: this.canReset,
+                    disabled: !this.canReset,
                     icon: ResetIcon,
                     onClick: () => this.resetNodes([this.nodeId])
                 },
                 openView: {
                     title: () => this.hoverTitle('Open View', this.$shortcuts.get('openView').hotkeyText),
-                    isEnabled: this.canOpenView,
+                    disabled: !this.canOpenView,
                     icon: OpenViewIcon,
                     onClick: () => this.openView(this.nodeId)
                 }

@@ -1,13 +1,13 @@
 import Vuex from 'vuex';
-import { shallowMount, createLocalVue } from '@vue/test-utils';
+import { mount, createLocalVue } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
+import ActionBar from '@/components/common/ActionBar.vue';
 
 import NodeLabelEditor from '../NodeLabelEditor.vue';
 import NodeLabelTextArea from '../NodeLabelTextArea.vue';
-import NodeEditorActionBar from '../../common/NodeEditorActionBar.vue';
 
 describe('NodeLabelEditor', () => {
     let wrapper, storeConfig, propsData;
@@ -28,7 +28,7 @@ describe('NodeLabelEditor', () => {
             }
         };
         const $store = mockVuexStore(storeConfig);
-        const wrapper = shallowMount(NodeLabelEditor, {
+        const wrapper = mount(NodeLabelEditor, {
             propsData,
             mocks: { $shapes, $store }
         });
@@ -47,7 +47,7 @@ describe('NodeLabelEditor', () => {
 
     it('should render the ActionBar and the Textarea', () => {
         expect(wrapper.findComponent(NodeLabelTextArea).exists()).toBe(true);
-        expect(wrapper.findComponent(NodeEditorActionBar).exists()).toBe(true);
+        expect(wrapper.findComponent(ActionBar).exists()).toBe(true);
     });
 
 
@@ -85,7 +85,7 @@ describe('NodeLabelEditor', () => {
 
     describe('Action bar', () => {
         it('should be positioned based on the relevant prop', () => {
-            const actionBar = wrapper.findComponent(NodeEditorActionBar);
+            const actionBar = wrapper.findComponent(ActionBar);
             const expectedPosition = 'translate(31,61)';
 
             expect(actionBar.attributes('transform')).toBe(expectedPosition);
@@ -93,7 +93,7 @@ describe('NodeLabelEditor', () => {
 
         it('should be positioned differently for metanode', async () => {
             await wrapper.setProps({ kind: 'metanode' });
-            const actionBar = wrapper.findComponent(NodeEditorActionBar);
+            const actionBar = wrapper.findComponent(ActionBar);
             const expectedPosition = 'translate(31,41)';
 
             expect(actionBar.attributes('transform')).toBe(expectedPosition);
@@ -101,13 +101,16 @@ describe('NodeLabelEditor', () => {
 
         it('should emit save when clicking the save button', () => {
             wrapper.findComponent(NodeLabelTextArea).vm.$emit('input', 'new value');
-            wrapper.findComponent(NodeEditorActionBar).vm.$emit('save');
+            
+            wrapper.findAll('.action-button').at(0).trigger('click');
 
             expect(wrapper.emitted('save')).toBeDefined();
         });
 
         it('should emit a cancel event when clicking the cancel button', () => {
-            wrapper.findComponent(NodeEditorActionBar).vm.$emit('cancel');
+            wrapper.findComponent(ActionBar).vm.$emit('cancel');
+
+            wrapper.findAll('.action-button').at(1).trigger('click');
 
             expect(wrapper.emitted('cancel')).toBeDefined();
         });

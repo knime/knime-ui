@@ -1,13 +1,13 @@
 import Vuex from 'vuex';
-import { shallowMount, createLocalVue } from '@vue/test-utils';
+import { mount, createLocalVue } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
+import ActionBar from '@/components/common/ActionBar.vue';
 
 import NodeNameEditor from '../NodeNameEditor.vue';
 import NodeNameTextarea from '../NodeNameTextarea.vue';
-import NodeEditorActionBar from '../../common/NodeEditorActionBar.vue';
 
 describe('NodeNameEditor', () => {
     const propsData = {
@@ -27,9 +27,10 @@ describe('NodeNameEditor', () => {
             }
         };
         const $store = mockVuexStore(storeConfig);
-        const wrapper = shallowMount(NodeNameEditor, {
+        const wrapper = mount(NodeNameEditor, {
             propsData,
-            mocks: { $shapes, $store }
+            mocks: { $shapes, $store },
+            stubs: { NodeNameTextarea: true }
         });
 
         return wrapper;
@@ -46,7 +47,7 @@ describe('NodeNameEditor', () => {
 
     it('should render the ActionBar and the Textarea', () => {
         expect(wrapper.findComponent(NodeNameTextarea).exists()).toBe(true);
-        expect(wrapper.findComponent(NodeEditorActionBar).exists()).toBe(true);
+        expect(wrapper.findComponent(ActionBar).exists()).toBe(true);
     });
 
 
@@ -84,7 +85,7 @@ describe('NodeNameEditor', () => {
 
     describe('Action bar', () => {
         it('should be positioned based on the relevant prop', () => {
-            const actionBar = wrapper.findComponent(NodeEditorActionBar);
+            const actionBar = wrapper.findComponent(ActionBar);
             const expectedPosition = 'translate(31,-6)';
 
             expect(actionBar.attributes('transform')).toBe(expectedPosition);
@@ -92,13 +93,16 @@ describe('NodeNameEditor', () => {
 
         it('should emit save when clicking the save button', () => {
             wrapper.findComponent(NodeNameTextarea).vm.$emit('input', 'new value');
-            wrapper.findComponent(NodeEditorActionBar).vm.$emit('save');
+            
+            wrapper.findAll('.action-button').at(0).trigger('click');
 
             expect(wrapper.emitted('save')).toBeDefined();
         });
 
         it('should emit a cancel event when clicking the cancel button', () => {
-            wrapper.findComponent(NodeEditorActionBar).vm.$emit('cancel');
+            wrapper.findComponent(ActionBar).vm.$emit('cancel');
+
+            wrapper.findAll('.action-button').at(1).trigger('click');
 
             expect(wrapper.emitted('cancel')).toBeDefined();
         });
