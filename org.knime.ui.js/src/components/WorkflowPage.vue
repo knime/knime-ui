@@ -91,22 +91,4 @@ main {
 .workflow-area {
   grid-area: workflow;
 }
-
-.workflow-empty {
-  grid-area: workflow;
-  grid-column-start: 1;
-}
-
-.loader {
-  height: 100vh;
-
-  &::after {
-    content: "Loading…";
-    display: block;
-    position: absolute;
-    right: 10px;
-    bottom: 10px;
-    color: var(--knime-silver-sand);
-  }
-}
 </style>

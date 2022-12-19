@@ -122,31 +122,19 @@ export const actions = {
             const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage.name;
             const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage.name;
         
-            // Leaving a workflow should be handled in the BEFORE each router hook.
-            // This way the workflow state is removed and there are no DOM accesses from the canvas
-            // before the route is destroyed
             if (isLeavingWorkflow && !isEnteringWorkflow) {
-                await dispatch('switchWorkflow', null);
+                await dispatch('switchWorkflow', { newWorkflow: null });
                 next();
+                return;
+            }
+
+            if (isEnteringWorkflow) {
+                // switchWorkflow will call `next` on its own via the `navigateToWorkflow` parameter
+                await dispatch('switchWorkflow', { newWorkflow: to.params, navigateToWorkflow: next });
                 return;
             }
         
             next();
-        });
-
-        router.afterEach(async (to, from) => {
-            if (to.params.skipGuards) {
-                return;
-            }
-
-            const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage.name;
-        
-            // Entering a workflow should be handled in the AFTER each router hook.
-            // This way the workflow state is set up after the route has already rendered the component
-            // and thus further DOM accesses from the canvas would be valid since the elements are rendered
-            if (isEnteringWorkflow) {
-                await dispatch('switchWorkflow', to.params);
-            }
         });
     },
     destroyApplication({ dispatch }) {
@@ -223,7 +211,7 @@ export const actions = {
      *   W O R K F L O W   L I F E C Y C L E
      */
 
-    async switchWorkflow({ commit, dispatch, rootState, state }, newWorkflow) {
+    async switchWorkflow({ commit, dispatch, rootState, state }, { newWorkflow = null, navigateToWorkflow }) {
         const isChangingProject = rootState.workflow?.activeWorkflow?.projectId !== newWorkflow?.projectId;
         
         await dispatch('updatePreviewSnapshot', { isChangingProject, newWorkflow });
@@ -246,27 +234,28 @@ export const actions = {
                 const stateKey = getCanvasStateKey(`${projectId}--${workflowId}`);
                 const newWorkflowId = state.savedCanvasStates[stateKey]?.lastActive;
 
-                await dispatch('loadWorkflow', { projectId, workflowId: newWorkflowId });
+                await dispatch('loadWorkflow', { projectId, workflowId: newWorkflowId, navigateToWorkflow });
             } else {
-                await dispatch('loadWorkflow', { projectId, workflowId });
+                await dispatch('loadWorkflow', { projectId, workflowId, navigateToWorkflow });
             }
         }
         
         commit('setIsLoadingWorkflow', false);
     },
-    async loadWorkflow({ commit, rootState, dispatch }, { projectId, workflowId = 'root' }) {
+    async loadWorkflow({ commit, rootState, dispatch }, { projectId, workflowId = 'root', navigateToWorkflow }) {
         const project = await loadWorkflow({ projectId, workflowId });
         if (project) {
             dispatch('setWorkflow', {
                 projectId,
                 workflow: project.workflow,
-                snapshotId: project.snapshotId
+                snapshotId: project.snapshotId,
+                navigateToWorkflow
             });
         } else {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    async setWorkflow({ commit, dispatch }, { workflow, projectId, snapshotId }) {
+    async setWorkflow({ commit, dispatch }, { workflow, projectId, snapshotId, navigateToWorkflow }) {
         commit('setActiveProjectId', projectId);
         commit('workflow/setActiveWorkflow', {
             ...workflow,
@@ -276,10 +265,11 @@ export const actions = {
         commit('workflow/setActiveSnapshotId', snapshotId, { root: true });
         
         // TODO: remove this 'root' fallback after mocks have been adjusted
-        let workflowId = workflow.info.containerId || 'root';
+        const workflowId = workflow.info.containerId || 'root';
         addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
         
-        // await navigateToWorkflow({ workflow, projectId });
+        // Call navigate to workflow function (if provided) before restoring the canvas state
+        navigateToWorkflow?.();
 
         // restore scroll and zoom if saved before
         await dispatch('restoreCanvasState');
