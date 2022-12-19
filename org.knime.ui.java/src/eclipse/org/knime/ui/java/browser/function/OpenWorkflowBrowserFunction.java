@@ -47,40 +47,43 @@
 package org.knime.ui.java.browser.function;
 
 import static org.knime.ui.java.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
+import static org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction.showWarningAndLogError;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
 
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.jface.window.Window;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.FileStoreEditorInput;
-import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.Workbench;
 import org.knime.core.node.NodeLogger;
+import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.node.workflow.WorkflowPersistor;
+import org.knime.core.node.workflow.contextv2.LocalLocationInfo;
+import org.knime.core.node.workflow.contextv2.WorkflowContextV2;
+import org.knime.gateway.impl.project.WorkflowProject;
+import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider;
+import org.knime.gateway.impl.webui.LocalWorkspace;
+import org.knime.gateway.impl.webui.service.DefaultSpaceService;
 import org.knime.ui.java.PerspectiveUtil;
-import org.knime.workbench.explorer.ExplorerMountTable;
-import org.knime.workbench.explorer.dialogs.SpaceResourceSelectionDialog;
-import org.knime.workbench.explorer.dialogs.Validator;
-import org.knime.workbench.explorer.filesystem.AbstractExplorerFileStore;
+import org.knime.workbench.editor2.LoadWorkflowRunnable;
+import org.knime.workbench.editor2.WorkflowEditor;
+import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;
 import org.knime.workbench.explorer.filesystem.LocalExplorerFileStore;
-import org.knime.workbench.explorer.localworkspace.LocalWorkspaceContentProvider;
-import org.knime.workbench.explorer.view.AbstractContentProvider;
+import org.knime.workbench.explorer.localworkspace.LocalWorkspaceFileStore;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
 
 /**
- * Display a workflow selection popup and open selected workflow.
+ * Opens a workflow.
  *
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
+ * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
 public class OpenWorkflowBrowserFunction extends BrowserFunction {
 
@@ -93,33 +96,99 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
     }
 
     /**
-     * Display a selection popup for workflows in the LOCAL mountpoint. On selection, opens and loads the selected
-     * workflow as a new workflow project and opens an editor part in the Java UI. Having an editor part open for each
-     * open workflow is required for saving the workflow, see NXT-622. If the workflow is already open, this will make
-     * the editor part be the selected element in the shared editor area (i.e. the "tab" in the UI is active).
+     * Opens the workflow either in both, the Classic UI and the Modern/Web UI if the classic UI is active (the
+     * WorkflowEditor is used in that case to open the workflow). Or it opens and loads the workflow exclusively in the
+     * Modern UI. Those workflows won't be available in the classic UI when switching to it.
      *
-     * @param arguments No parameters expected, parameter is ignored.
+     * @param arguments space-id (0) and item-id (1); never null
      * @return always {@code null}
      */
     @Override
-    @SuppressWarnings("java:S3516")  // same return value
     public Object function(final Object[] arguments) {
+        var spaceId = (String)arguments[0];
+        var itemId = (String)arguments[1];
 
-        Optional<LocalExplorerFileStore> selectedFileStore = prompt();
-        if (selectedFileStore.isEmpty()) {
-            return null;
+        var space = DefaultSpaceService.getInstance().getSpace(spaceId);
+        var localAbsolutePath = space.toLocalAbsolutePath(itemId);
+        if (space instanceof LocalWorkspace) {
+            if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
+                var localWorkspaceRoot = ((LocalWorkspace)space).getLocalWorkspaceRoot();
+                openWorkflowInClassicAndWebUIPerspective(localWorkspaceRoot.relativize(localAbsolutePath),
+                    m_appStateProvider);
+            } else {
+                openWorkflowInWebUIPerspectiveOnly(localAbsolutePath, m_appStateProvider);
+            }
+        } else {
+            throw new UnsupportedOperationException(
+                "Opening a workflow from other then the local workspace is not supported, yet");
         }
 
-        try {
-            openEditor(selectedFileStore.get());
-            hideSharedEditorArea();
-        } catch (PartInitException | IllegalArgumentException e) {  // NOSONAR
-            NodeLogger.getLogger(this.getClass()).warn("Could not open editor", e);
-            return null;
-        }
-
-        m_appStateProvider.updateAppState();
         return null;
+    }
+
+    private static void openWorkflowInWebUIPerspectiveOnly(final Path absoluteLocalPath,
+        final AppStateProvider appStateProvider) {
+        var workflowContext = WorkflowContextV2.builder()
+            .withAnalyticsPlatformExecutor(builder -> builder.withCurrentUserAsUserId() //
+                .withLocalWorkflowPath(absoluteLocalPath)) //
+            .withLocation(LocalLocationInfo.getInstance(null)) //
+            .build();
+        final var progressService = PlatformUI.getWorkbench().getProgressService();
+        var loadWorkflowRunnable = new LoadWorkflowRunnable(wfm -> onWorkflowLoaded(wfm, appStateProvider),
+            absoluteLocalPath.resolve(WorkflowPersistor.WORKFLOW_FILE).toFile(), workflowContext);
+        try {
+            progressService.busyCursorWhile(loadWorkflowRunnable);
+        } catch (InvocationTargetException e) {
+            showWarningAndLogError("Opening workflow failed", e.getMessage(),
+                NodeLogger.getLogger(OpenWorkflowBrowserFunction.class), e);
+        } catch (InterruptedException e) {
+            NodeLogger.getLogger(OpenWorkflowBrowserFunction.class).warn("Opening workflow interrupted");
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private static void onWorkflowLoaded(final WorkflowManager wfm, final AppStateProvider appStateProvider) {
+        var wpm = WorkflowProjectManager.getInstance();
+        var projectId = wfm.getNameWithID();
+        wpm.addWorkflowProject(projectId, new WorkflowProject() {
+
+            @Override
+            public WorkflowManager openProject() {
+                return wfm;
+            }
+
+            @Override
+            public String getName() {
+                return wfm.getName();
+            }
+
+            @Override
+            public String getID() {
+                return projectId;
+            }
+        });
+        wpm.openAndCacheWorkflow(projectId);
+        wpm.setWorkflowProjectActive(projectId);
+        appStateProvider.updateAppState();
+    }
+
+    private static void openWorkflowInClassicAndWebUIPerspective(final Path relativePath,
+        final AppStateProvider appStateProvider) {
+        LocalWorkspaceFileStore fileStore;
+        try {
+            fileStore = (LocalWorkspaceFileStore)ExplorerFileSystem.INSTANCE
+                .getStore(new URI("knime://LOCAL/" + relativePath.toString() + "/" + WorkflowPersistor.WORKFLOW_FILE)); // NOSONAR
+        } catch (URISyntaxException e) {
+            // should never happen
+            throw new IllegalStateException(e);
+        }
+        try {
+            openEditor(fileStore);
+            hideSharedEditorArea();
+            appStateProvider.updateAppState();
+        } catch (PartInitException | IllegalArgumentException e) { // NOSONAR
+            NodeLogger.getLogger(OpenWorkflowBrowserFunction.class).warn("Could not open editor", e);
+        }
     }
 
     /**
@@ -130,66 +199,9 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
      */
     private static void openEditor(final LocalExplorerFileStore fileStore) throws PartInitException {
         var input = new FileStoreEditorInput(fileStore);
-        final IEditorDescriptor editorDescriptor = IDE.getEditorDescriptor(input.getName(), true, true);
         var page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-        page.openEditor(input, editorDescriptor.getId(), false);
+        page.openEditor(input, WorkflowEditor.ID, false);
     }
-
-    private static Optional<LocalExplorerFileStore> prompt() {
-        AtomicReference<AbstractExplorerFileStore> selection = new AtomicReference<>();
-        Display.getDefault().syncExec(() -> {  // NOSONAR
-            // Only list local mountpoints.
-            var mountIds = ExplorerMountTable.getMountedContent().entrySet().stream().filter(entry -> {
-                AbstractContentProvider acp = entry.getValue();
-                return (acp instanceof LocalWorkspaceContentProvider);
-            }).map(Map.Entry::getKey).toArray(String[]::new);
-
-            var size = new Point(625, 625);
-            var dialog = new SpaceResourceSelectionDialog(
-                    Display.getDefault().getActiveShell(),
-                    mountIds,
-                    null,
-                    size, size, true);
-            dialog.setInitTreeLevel(2);
-            dialog.setResultPanelEnabled(false);
-            dialog.setTitle("Open KNIME Workflow");
-            dialog.setDescription("Select a workflow.");
-            dialog.setValidator(new ResourceSelectionValidator());
-
-            int choice = dialog.open();
-            if (choice == Window.OK) {
-                selection.set(dialog.getSelection());
-            } else {
-                selection.set(null);
-            }
-        });
-
-        return Optional.ofNullable(selection.getAcquire()).filter(LocalExplorerFileStore.class::isInstance)
-            .map(LocalExplorerFileStore.class::cast)
-            .map(fileStore -> {
-                // Dialog provides the directory, but we need the file store for the workflow.knime file.
-                LocalExplorerFileStore workflowFile = fileStore.getChild(WorkflowPersistor.WORKFLOW_FILE);
-                if (workflowFile.fetchInfo().exists()) {
-                    return workflowFile;
-                } else {
-                    return null;
-                }
-            });
-    }
-
-    /**
-     * Validator for entries in the workflow selection dialog.
-     */
-    private static final class ResourceSelectionValidator extends Validator {
-        @Override
-        public String validateSelectionValue(final AbstractExplorerFileStore selection, final String currentName) {
-            if (!AbstractExplorerFileStore.isWorkflow(selection)) {
-                return "Please select a workflow.";
-            }
-            return null;
-        }
-    }
-
 
     private static void hideSharedEditorArea() {
         // Set editor area to non-visible again (WorkbenchPage#openEditor sets it to active).

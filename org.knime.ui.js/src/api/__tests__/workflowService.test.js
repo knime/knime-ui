@@ -1,5 +1,5 @@
 import { connectNodes, moveObjects, deleteObjects, addNode, collapseToContainer, expandContainerNode,
-    copyOrCutWorkflowParts, pasteWorkflowParts } from '@api';
+    copyOrCutWorkflowParts, pasteWorkflowParts, renameContainerNode, renameNodeLabel, addNodePort } from '@api';
 
 describe('workflow commands', () => {
     beforeEach(() => {
@@ -275,6 +275,79 @@ describe('workflow commands', () => {
                             x: 128,
                             y: 256
                         }
+                    }
+                ],
+                id: 0
+            });
+        });
+
+        test('addNodePort', () => {
+            addNodePort({
+                projectId: 'project',
+                workflowId: 'workflow',
+                nodeId: 'root:1',
+                side: 'input',
+                portGroup: 'portGroup',
+                typeId: '1'
+            });
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'WorkflowService.executeWorkflowCommand',
+                params: [
+                    'project',
+                    'workflow',
+                    {
+                        kind: 'add_port',
+                        nodeId: 'root:1',
+                        side: 'input',
+                        portGroup: 'portGroup',
+                        portTypeId: '1'
+                    }
+                ],
+                id: 0
+            });
+        });
+
+        test('renameContainerNode', () => {
+            renameContainerNode({
+                projectId: 'project',
+                workflowId: 'workflow',
+                nodeId: 'root:1',
+                name: 'New name'
+            });
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'WorkflowService.executeWorkflowCommand',
+                params: [
+                    'project',
+                    'workflow',
+                    {
+                        kind: 'update_component_or_metanode_name',
+                        nodeId: 'root:1',
+                        name: 'New name'
+                    }
+                ],
+                id: 0
+            });
+        });
+
+        test('renameNodeLabel', () => {
+            renameNodeLabel({
+                projectId: 'project',
+                workflowId: 'workflow',
+                nodeId: 'root:1',
+                label: 'New label'
+            });
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'WorkflowService.executeWorkflowCommand',
+                params: [
+                    'project',
+                    'workflow',
+                    {
+                        kind: 'update_node_label',
+                        nodeId: 'root:1',
+                        label: 'New label'
                     }
                 ],
                 id: 0

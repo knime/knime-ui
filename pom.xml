@@ -44,6 +44,11 @@
             <layout>p2</layout>
         </repository>
         <repository>
+            <id>p2-knime-core-ui</id>
+            <url>${knime.core.ui.p2}</url>
+            <layout>p2</layout>
+        </repository>
+        <repository>
             <id>p2-knime-shared</id>
             <url>${knime.shared.p2}</url>
             <layout>p2</layout>

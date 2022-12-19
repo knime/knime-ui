@@ -38,7 +38,7 @@ export default {
         return {
             recommendedNodes: [],
             showOverlay: false,
-            noNodeRecommendations: false
+            hasNodeRecommendations: false
         };
     },
     computed: {
@@ -89,8 +89,8 @@ export default {
                 fullTemplateInfo: true
             });
 
-            if (recommendedNodesResult.length === 0) {
-                this.noNodeRecommendations = true;
+            if (recommendedNodesResult.length > 0) {
+                this.hasNodeRecommendations = true;
             }
 
             this.recommendedNodes = recommendedNodesResult.map(toNodeWithFullPorts(this.availablePortTypes));
@@ -146,8 +146,8 @@ export default {
           Open Preferences
         </Button>
       </div>
-      <section
-        v-if="!noNodeRecommendations"
+      <div
+        v-if="hasNodeRecommendations"
         class="results"
       >
         <div class="content">
@@ -174,7 +174,7 @@ export default {
             </li>
           </ul>
         </div>
-      </section>
+      </div>
       <span
         v-else
         class="placeholder"

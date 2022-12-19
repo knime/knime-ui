@@ -119,7 +119,7 @@ describe('NodeName', () => {
         });
 
         it('should portal editor when visible', () => {
-            expect(wrapper.find('portal[to="node-name-editor"]').exists()).toBe(true);
+            expect(wrapper.find('portal[to="node-text-editor"]').exists()).toBe(true);
         });
 
         it('should forward props', () => {

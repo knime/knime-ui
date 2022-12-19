@@ -6,13 +6,13 @@ import { createLocalVue, mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 
-import NodeAnnotation from '@/components/workflow/annotations/NodeAnnotation.vue';
 import NodePorts from '@/components/workflow/ports/NodePorts.vue';
 import NodePort from '@/components/workflow/ports/NodePort.vue';
 import ConnectorSnappingProvider from '@/components/workflow/connectors/ConnectorSnappingProvider.vue';
 
 import NodeTorso from '../torso/NodeTorso.vue';
 import NodeName from '../name/NodeName.vue';
+import NodeLabel from '../label/NodeLabel.vue';
 import NodeDecorators from '../decorators/NodeDecorators.vue';
 
 import NodeActionBar from '../NodeActionBar.vue';
@@ -37,9 +37,7 @@ const commonNode = {
 
     position: { x: 500, y: 200 },
     annotation: {
-        text: 'ThatsMyNode',
-        backgroundColor: 'rgb(255, 216, 0)',
-        styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
+        text: 'ThatsMyNode'
     },
 
     name: 'My Name',
@@ -214,41 +212,26 @@ describe('Node', () => {
             expect(nodePorts.props('nodeKind')).toBe('component');
         });
 
-        it("doesn't render non-existent node annotation", () => {
+        it('should pass an empty string if annotation does not exist', () => {
             delete propsData.annotation;
             doMount();
 
-            expect(wrapper.findComponent(NodeAnnotation).exists()).toBe(false);
-        });
-
-        it("doesn't render empty node annotation", () => {
-            propsData.annotation.text = '';
-            doMount();
-
-            expect(wrapper.findComponent(NodeAnnotation).exists()).toBe(false);
-        });
-
-        it('displays annotation', () => {
-            expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
-                backgroundColor: 'rgb(255, 216, 0)',
-                defaultFontSize: 12,
-                styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
-                text: 'ThatsMyNode',
-                textAlign: 'center',
-                yOffset: 20
+            expect(wrapper.findComponent(NodeLabel).props()).toStrictEqual({
+                value: '',
+                kind: commonNode.kind,
+                nodeId: commonNode.id,
+                nodePosition: commonNode.position,
+                editable: expect.any(Boolean)
             });
         });
 
-        it('pushes Metanode annotation up', () => {
-            propsData = { ...metaNode };
-            doMount();
-            expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
-                backgroundColor: 'rgb(255, 216, 0)',
-                defaultFontSize: 12,
-                styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
-                text: 'ThatsMyNode',
-                textAlign: 'center',
-                yOffset: 0
+        it('displays annotation', () => {
+            expect(wrapper.findComponent(NodeLabel).props()).toStrictEqual({
+                value: commonNode.annotation.text,
+                kind: commonNode.kind,
+                nodeId: commonNode.id,
+                nodePosition: commonNode.position,
+                editable: expect.any(Boolean)
             });
         });
 

@@ -16,11 +16,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.contexts.Active;
@@ -30,15 +32,22 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.knime.core.node.NodeLogger;
+import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
+import org.knime.gateway.impl.project.WorkflowProject;
+import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
+import org.knime.gateway.impl.webui.LocalWorkspace;
+import org.knime.gateway.impl.webui.SpaceProvider;
+import org.knime.gateway.impl.webui.SpaceProviders;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
 import org.knime.ui.java.DefaultServicesUtil;
+import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.CreateWorkflowBrowserFunction;
@@ -89,7 +98,7 @@ public class KnimeBrowserView {
 
     private static final String JSON_RPC_NOTIFICATION_ACTION_ID = "org.knime.ui.java.jsonrpcNotification";
 
-    private static KnimeBrowserView INSTANCE = null;
+    private static KnimeBrowserView instance = null;
 
     private static Consumer<KnimeBrowserView> viewInitializer = null;
 
@@ -111,18 +120,30 @@ public class KnimeBrowserView {
      * @param appStateSupplier supplies the app state for the UI
      */
     public static void initViewForTesting(final Supplier<AppState> appStateSupplier) {
-        if (INSTANCE == null) {
+        if (instance == null) {
             throw new IllegalStateException("No browser view instance available");
         }
-        INSTANCE.initView(appStateSupplier, true);
+        instance.initView(appStateSupplier, true);
     }
 
     private void initView(final Supplier<AppState> appStateSupplier, final boolean ignoreEmptyPageAsDevUrl) {
         var eventConsumer = createEventConsumer();
         var appStateProvider = new AppStateProvider(appStateSupplier);
-        DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer);
+        DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer,
+            createSpaceProviders());
         initBrowserFunctions(appStateProvider);
         setUrl(ignoreEmptyPageAsDevUrl);
+    }
+
+    private static SpaceProviders createSpaceProviders() {
+        var localWorkspaceProvider = createLocalWorkspaceProvider();
+        return () -> Collections.singletonList(localWorkspaceProvider);
+    }
+
+    private static SpaceProvider createLocalWorkspaceProvider() {
+        var localWorkspaceRootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
+        var localWorkspace = new LocalWorkspace(localWorkspaceRootPath);
+        return () -> Collections.singletonList(localWorkspace);
     }
 
     /**
@@ -132,8 +153,8 @@ public class KnimeBrowserView {
      * {@link #activateViewInitializer(Supplier)} or {@link #initViewForTesting(Supplier)}.
      */
     public static void clearView() {
-        if (INSTANCE != null) {
-            INSTANCE.clearUrl();
+        if (instance != null) {
+            instance.clearUrl();
             DefaultServicesUtil.disposeDefaultServices();
         }
     }
@@ -142,11 +163,13 @@ public class KnimeBrowserView {
     public void createPartControl(final Composite parent) {
         // This is a 'quasi' singleton. Even though it has a public constructor it's only expected to have one single
         // instance and will fail if this method is called on another instance again.
-        if (INSTANCE != null) {
+        if (instance != null) {
             throw new IllegalStateException(
                 "Instance can't be created. There's only one instance of the KnimeBrowserView allowed.");
         }
-        INSTANCE = this; // NOSONAR it's fine because this class is technically a singleton
+        instance = this; // NOSONAR it's fine because this class is technically a singleton
+
+        PerspectiveSwitchAddon.updateChromiumExternalMessagePumpSystemProperty();
 
         m_browser = new Browser(parent, SWT.NONE);
         m_browser.addLocationListener(new KnimeBrowserLocationListener(this));
@@ -154,7 +177,7 @@ public class KnimeBrowserView {
         initializeResourceHandlers();
 
         if (viewInitializer == null) {
-            activateViewInitializer(NoOpenWorkflowsAppState::new);
+            activateViewInitializer(AppStateDerivedFromWorkflowProjectManager::new);
         }
     }
 
@@ -166,7 +189,7 @@ public class KnimeBrowserView {
         // 	ready for interaction.
         boolean isRendered = part.getObject() instanceof KnimeBrowserView;
         if (isBrowserView && isRendered && viewInitializer != null) {
-            viewInitializer.accept(INSTANCE);
+            viewInitializer.accept(instance);
             viewInitializer = null; // NOSONAR because this is technically a singleton
         }
     }
@@ -333,12 +356,42 @@ public class KnimeBrowserView {
 		return System.getProperty(KnimeBrowserView.REMOTE_DEBUGGING_PORT_PROP) != null;
 	}
 
-	private static class NoOpenWorkflowsAppState implements AppState {
+	private static class AppStateDerivedFromWorkflowProjectManager implements AppState {
+
+        private final List<OpenedWorkflow> m_openedWorkflows;
+
+        AppStateDerivedFromWorkflowProjectManager() {
+            var wpm = WorkflowProjectManager.getInstance();
+            m_openedWorkflows = wpm.getWorkflowProjectsIds().stream()
+                .map(id -> toOpenedWorkflow(wpm.getWorkflowProject(id).orElseThrow(), wpm.isActiveWorkflowProject(id)))
+                .collect(Collectors.toList());
+        }
 
         @Override
         public List<OpenedWorkflow> getOpenedWorkflows() {
-            return Collections.emptyList();
+            return m_openedWorkflows;
+        }
+
+        private static AppState.OpenedWorkflow toOpenedWorkflow(final WorkflowProject wp, final boolean isVisible) {
+            return new AppState.OpenedWorkflow() {
+
+                @Override
+                public boolean isVisible() {
+                    return isVisible;
+                }
+
+                @Override
+                public String getWorkflowId() {
+                    return NodeIDEnt.getRootID().toString();
+                }
+
+                @Override
+                public String getProjectId() {
+                    return wp.getID();
+                }
+            };
         }
 
 	}
+
 }

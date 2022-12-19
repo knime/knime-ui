@@ -77,13 +77,17 @@ export default {
                 this.error = { message, stack };
             }
 
+            if (!this.workflow) {
+                await this.$router.push({ name: APP_ROUTES.EntryPage.name });
+                return;
+            }
+
             const { info: { containerId: workflowId }, projectId } = this.workflow;
                 
-            const nextRoute = this.workflow
-                ? { name: APP_ROUTES.WorkflowPage.name, params: { workflowId, projectId, skipGuards: true } }
-                : { name: APP_ROUTES.EntryPage.name };
-                
-            await this.$router.push(nextRoute);
+            await this.$router.push({
+                name: APP_ROUTES.WorkflowPage.name,
+                params: { workflowId, projectId, skipGuards: true }
+            });
         },
 
         async checkClipboardSupport() {
@@ -159,8 +163,8 @@ export default {
 }
 
 .main-content {
-  width:100vw;
-  height:100vh;
+  width: 100vw;
+  height: 100vh;
   grid-area: workflow;
 }
 

@@ -97,6 +97,7 @@ export default {
             this.centerAroundParentWidth();
             this.emitDimensions();
         } else {
+            this.centerAroundParentWidth();
             this.adjustDimensions();
         }
     },

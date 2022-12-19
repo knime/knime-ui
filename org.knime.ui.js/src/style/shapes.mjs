@@ -11,7 +11,6 @@ export const nodeStatusMarginTop = 8;
 export const horizontalNodePadding = 50;
 
 // NOTE: this width limit does not apply if a line contains very long words
-export const maxNodeAnnotationWidth = 1000;
 export const nodeAnnotationMarginTop = 8;
 export const nodeNameMargin = 7;
 export const nodeNameLineHeight = 14;
@@ -31,6 +30,12 @@ export const nodeSelectionPadding = [nodeSelectionPaddingTop, nodeSelectionPaddi
 export const maxNodeNameWidth = (nodeSelectionPaddingLeft + nodeSize + nodeSelectionPaddingRight) * 1.7; // 170px
 
 export const nodeWidthWithPadding = nodeSelectionPaddingLeft + nodeSelectionPaddingRight + nodeSize;
+
+export const metanodeLabelOffsetY = nodeSize + nodeAnnotationMarginTop;
+export const nodeLabelOffsetY = nodeSize + nodeAnnotationMarginTop + (nodeStatusHeight + nodeStatusMarginTop);
+export const metanodeLabelActionBarOffset = (nodeWidthWithPadding / 2) -
+(nodeStatusHeight + nodeStatusMarginTop + 2);
+export const nodeLabelActionBarOffset = (nodeWidthWithPadding / 2) - 2;
 
 export const nodeNameEditorMinWidth = 10;
 
