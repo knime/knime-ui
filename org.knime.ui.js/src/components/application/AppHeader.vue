@@ -46,7 +46,6 @@ export default {
             return (
                 this.openProjects.length === 0 ||
                 (!this.activeProjectId && !this.isLoadingWorkflow) ||
-                this.isInfoPageActive ||
                 this.isEntryPageActive
             );
         }
