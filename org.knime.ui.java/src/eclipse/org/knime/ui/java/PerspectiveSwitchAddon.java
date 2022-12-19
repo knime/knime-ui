@@ -67,6 +67,8 @@ import org.eclipse.e4.ui.workbench.UIEvents.EventTags;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.NodeTimer;
+import org.knime.gateway.api.util.CoreUtil;
+import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.workbench.editor2.WorkflowEditor;
@@ -148,11 +150,17 @@ public final class PerspectiveSwitchAddon {
 
     private void onSwitchToWebUI() {
         NodeTimer.GLOBAL_TIMER.incWebUIPerspectiveSwitch();
+        PerspectiveUtil.markClassicPerspectiveAsLoaded();
         PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
         setTrimsAndMenuVisible(false, m_modelService, m_app);
         Supplier<AppStateProvider.AppState> supplier = () -> EclipseUIStateUtil.createAppState(m_modelService, m_app);
         KnimeBrowserView.activateViewInitializer(supplier);
         switchToWebUITheme();
+        updateChromiumExternalMessagePumpSystemProperty();
+    }
+
+    @SuppressWarnings("javadoc")
+    public static void updateChromiumExternalMessagePumpSystemProperty() {
         if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
             // Fixes a drag'n'drop issue on Windows, see NXT-1151.
             // Doesn't have an effect on Linux.
@@ -163,6 +171,9 @@ public final class PerspectiveSwitchAddon {
     }
 
     private void onSwitchToJavaUI() {
+        if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            disposeAllWorkflowProjects();
+        }
         KnimeBrowserView.clearView();
         setTrimsAndMenuVisible(true, m_modelService, m_app);
         switchToJavaUITheme();
@@ -176,6 +187,20 @@ public final class PerspectiveSwitchAddon {
         if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
             System.clearProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
         }
+    }
+
+    private static void disposeAllWorkflowProjects() {
+        var wpm = WorkflowProjectManager.getInstance();
+        wpm.getWorkflowProjectsIds().stream().forEach(projectId -> {
+            wpm.getCachedWorkflow(projectId).ifPresent(t -> {
+                try {
+                    CoreUtil.cancelAndCloseLoadedWorkflow(t);
+                } catch (InterruptedException e) { // NOSONAR
+                    NodeLogger.getLogger(PerspectiveSwitchAddon.class).error(e);
+                }
+            });
+            wpm.removeWorkflowProject(projectId);
+        });
     }
 
     private void switchToWebUITheme() {

@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -31,7 +32,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.knime.core.node.NodeLogger;
+import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
+import org.knime.gateway.impl.project.WorkflowProject;
+import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
@@ -43,6 +47,7 @@ import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
 import org.knime.ui.java.DefaultServicesUtil;
+import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.CreateWorkflowBrowserFunction;
@@ -164,13 +169,15 @@ public class KnimeBrowserView {
         }
         instance = this; // NOSONAR it's fine because this class is technically a singleton
 
+        PerspectiveSwitchAddon.updateChromiumExternalMessagePumpSystemProperty();
+
         m_browser = new Browser(parent, SWT.NONE);
         m_browser.addLocationListener(new KnimeBrowserLocationListener(this));
         m_browser.setMenu(new Menu(m_browser.getShell()));
         initializeResourceHandlers();
 
         if (viewInitializer == null) {
-            activateViewInitializer(NoOpenWorkflowsAppState::new);
+            activateViewInitializer(AppStateDerivedFromWorkflowProjectManager::new);
         }
     }
 
@@ -349,12 +356,42 @@ public class KnimeBrowserView {
 		return System.getProperty(KnimeBrowserView.REMOTE_DEBUGGING_PORT_PROP) != null;
 	}
 
-	private static class NoOpenWorkflowsAppState implements AppState {
+	private static class AppStateDerivedFromWorkflowProjectManager implements AppState {
+
+        private final List<OpenedWorkflow> m_openedWorkflows;
+
+        AppStateDerivedFromWorkflowProjectManager() {
+            var wpm = WorkflowProjectManager.getInstance();
+            m_openedWorkflows = wpm.getWorkflowProjectsIds().stream()
+                .map(id -> toOpenedWorkflow(wpm.getWorkflowProject(id).orElseThrow(), wpm.isActiveWorkflowProject(id)))
+                .collect(Collectors.toList());
+        }
 
         @Override
         public List<OpenedWorkflow> getOpenedWorkflows() {
-            return Collections.emptyList();
+            return m_openedWorkflows;
+        }
+
+        private static AppState.OpenedWorkflow toOpenedWorkflow(final WorkflowProject wp, final boolean isVisible) {
+            return new AppState.OpenedWorkflow() {
+
+                @Override
+                public boolean isVisible() {
+                    return isVisible;
+                }
+
+                @Override
+                public String getWorkflowId() {
+                    return NodeIDEnt.getRootID().toString();
+                }
+
+                @Override
+                public String getProjectId() {
+                    return wp.getID();
+                }
+            };
         }
 
 	}
+
 }
