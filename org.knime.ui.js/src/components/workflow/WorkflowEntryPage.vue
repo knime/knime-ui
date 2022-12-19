@@ -1,141 +1,202 @@
 <script>
-import CirclePlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
-import FolderWorkflowIcon from 'webapps-common/ui/assets/img/icons/folder-workflow.svg';
-import OpenSourceCreditsModal from './OpenSourceCreditsModal.vue';
+import SpaceExplorer from '@/components/spaceExplorer/SpaceExplorer.vue';
+import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
+
+/**
+ * Detects the scrollbar width of the current browser
+ * @returns {Number}
+ */
+const getScrollbarWidth = () => {
+    // Creating invisible container
+    const outer = document.createElement('div');
+    outer.style.visibility = 'hidden';
+    outer.style.overflow = 'scroll'; // forcing scrollbar to appear
+    outer.style.msOverflowStyle = 'scrollbar'; // needed for WinJS apps
+    document.body.appendChild(outer);
+
+    // Creating inner element and placing it in the container
+    const inner = document.createElement('div');
+    outer.appendChild(inner);
+
+    // Calculating difference between container's full width and the child width
+    const scrollbarWidth = outer.offsetWidth - inner.offsetWidth;
+
+    // Removing temporary elements from the DOM
+    outer.parentNode.removeChild(outer);
+
+    return scrollbarWidth;
+};
+
+/**
+ * Determines whether the given element has Y overflow
+ * @param {HTMLElement} element
+ * @returns {Boolean}
+ */
+const isElementOverflowing = (element) => element.clientHeight < element.scrollHeight;
+
+/**
+ * Adds extra padding to target element's children depending on whether the target has overflow.
+ * Padding amount will match the scrollbar width on the current OS's browser. This will avoid jumping
+ * of the content when the scrollbars appear/disappear due to different content sizes
+ *
+ * @param {HTMLElement} target
+ * @returns {void}
+ */
+const setExtraPadding = (target) => {
+    if (!target) {
+        return;
+    }
+
+    const scrollbarWidth = getScrollbarWidth();
+    const isOverflowing = isElementOverflowing(target);
+
+    // Apply padding to all of target's childrens instead of target itself to
+    // make sure that the extra padding does not interfere with children's background colors
+    target.childNodes.forEach(child => {
+        const currentPadding = parseInt(
+            getComputedStyle(child).getPropertyValue('padding-right'),
+            10
+        );
+
+        if (child.nodeType !== 1 /* Node.ELEMENT_NODE */) {
+            return;
+        }
+                  
+        // account for existing paddings and add or remove the scrollbar width accordingly
+        child.style.paddingRight = isOverflowing
+            ? `${currentPadding - scrollbarWidth}px`
+            : `${currentPadding + scrollbarWidth}px`;
+    });
+};
 
 export default {
     components: {
-        CirclePlusIcon,
-        FolderWorkflowIcon,
-        OpenSourceCreditsModal
+        SpaceExplorer,
+        ComputerDesktopIcon
+    },
+
+    mounted() {
+        this.disconnectObserver = this.preventScrollJump();
+    },
+
+    beforeDestroy() {
+        this.disconnectObserver?.();
+    },
+
+    methods: {
+        preventScrollJump() {
+            const main = this.$refs.main;
+
+            setExtraPadding(main);
+          
+            const resizeObserver = new ResizeObserver(() => {
+                setExtraPadding(main);
+            });
+            resizeObserver.observe(main);
+
+            return () => {
+                resizeObserver.disconnect();
+            };
+        }
     }
 };
 </script>
 
 <template>
-  <main>
-    <div class="button-tiles">
-      <button @click="$shortcuts.dispatch('createWorkflow')">
-        <div class="icon">
-          <CirclePlusIcon />
+  <main ref="main">
+    <header>
+      <div class="grid-container">
+        <div class="grid-item-12 space-info">
+          <span class="space-type">
+            <ComputerDesktopIcon class="space-icon" />
+            Local space
+          </span>
+          <span class="space-name">Your Local Space</span>
         </div>
-        <div class="text primary">
-          Create workflow
+      </div>
+    </header>
+
+    <section class="toolbar-wrapper">
+      <div class="grid-container">
+        <div class="grid-item-12">
+          <div class="toolbar" />
         </div>
-      </button>
-      <button @click="$shortcuts.dispatch('openWorkflow')">
-        <div class="icon">
-          <FolderWorkflowIcon />
+      </div>
+    </section>
+
+    <section class="space-explorer-wrapper">
+      <div class="grid-container">
+        <div class="grid-item-12">
+          <SpaceExplorer />
         </div>
-        <div class="text">
-          Open workflow
-        </div>
-      </button>
-    </div>
-    <div class="footer">
-      <OpenSourceCreditsModal />
-    </div>
+      </div>
+    </section>
   </main>
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 main {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
   background-color: var(--knime-white);
-  background-image: url("@/assets/workflow-entry-page-background.webp");
-  background-repeat: no-repeat;
-  background-position: bottom right;
-  background-size: 100%;
 }
 
-.button-tiles {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
+header {
+  font-family: Roboto, sans-serif;
+  min-height: 150px;
 
-button {
-  width: 400px;
-  padding: 0;
-  background-color: var(--knime-gray-ultra-light);
-  border: 0;
-  border-radius: 2px;
-  box-shadow: 0 0 4px var(--knime-gray-dark-semi);
-  transition: all 150ms ease-out;
-  margin: 30px;
-
-  & .icon {
-    height: 260px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    & svg {
-      transition: all 150ms ease-out;
-      width: 50px;
-      stroke: var(--knime-dove-gray);
-    }
+  & .grid-container {
+    height: 100%;
   }
 
-  & .text {
-    background-color: var(--knime-masala);
-    color: var(--knime-white);
-    font-family: "Roboto Condensed", sans-serif;
-    font-size: 20px;
-    border-radius: 0 0 2px 2px;
-    transition: all 150ms ease-out;
-    height: 60px;
-    width: 100%;
-    display: flex;
-    align-items: center;
+  & .space-info {
+    display: flex !important;
+    align-items: flex-start;
+    flex-direction: column;
     justify-content: center;
-
-    &.primary {
-      background-color: var(--knime-yellow);
-      color: var(--knime-masala);
-    }
   }
 
-  &:hover {
-    box-shadow: 0 2px 10px 0 var(--knime-gray-dark-semi);
-    cursor: pointer;
+  & .space-type {
+    font-size: 16px;
+    color: var(--knime-masala);
+    display: flex;
 
-    & .icon svg {
+    & .space-icon {
+      @mixin svg-icon-size 18;
+
+      margin-right: 5px;
       stroke: var(--knime-masala);
     }
-
-    & .text {
-      background-color: var(--knime-black);
-    }
-
-    & .text.primary {
-      background-color: var(--knime-masala);
-      color: var(--knime-white);
-    }
   }
 
-  &:active {
-    transform: scale(0.98);
+  & .space-name {
+    font-size: 36px;
+    font-weight: 700;
   }
 }
 
-.footer {
-  position: absolute;
-  bottom: 0;
-  right: 0;
+.toolbar-wrapper {
+  min-height: 60px;
+  background: var(--knime-gray-light-semi);
 
-  & >>> .primary {
-    color: var(--knime-masala);
-    font-size: 12px;
-    background-color: transparent;
-
-    &:matches(:hover, :focus, :active) {
-      color: var(--knime-masala);
-      background-color: transparent;
-      text-decoration: underline;
-    }
+  & .grid-container,
+  & .grid-item-12,
+  & .toolbar {
+    height: 100%;
   }
+
+  & .toolbar {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.space-explorer-wrapper {
+  background: var(--knime-porcelain);
+  padding-top: 50px;
+  padding-bottom: 80px;
+  flex: 1;
 }
 </style>
