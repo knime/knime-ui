@@ -13,7 +13,8 @@ describe('NodeLabelText.vue', () => {
         value: 'test',
         nodePosition: { x: 15, y: 13 },
         nodeId: 'root:1',
-        kind: 'node'
+        kind: 'node',
+        editable: true
     };
 
     const doShallowMount = () => {
@@ -53,6 +54,20 @@ describe('NodeLabelText.vue', () => {
         expect(wrapper.emitted('request-edit')).toBeDefined();
     });
 
+    it('should not emit request edit if label is not editable', () => {
+        propsData = {
+            value: 'label',
+            nodePosition: { x: 15, y: 13 },
+            nodeId: 'root:1',
+            kind: 'node',
+            editable: false
+        };
+        const wrapper = doShallowMount();
+        wrapper.find('.node-label').trigger('dblclick');
+
+        expect(wrapper.emitted('request-edit')).toBeUndefined();
+    });
+
     it('should emit a contextmenu event', () => {
         const wrapper = doShallowMount();
 
@@ -69,7 +84,8 @@ describe('NodeLabelText.vue', () => {
             value: '',
             nodePosition: { x: 15, y: 13 },
             nodeId: 'root:1',
-            kind: 'node'
+            kind: 'node',
+            editable: true
         };
         const wrapper = doShallowMount();
         const text = wrapper.find('.text');

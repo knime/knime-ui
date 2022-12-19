@@ -24,6 +24,10 @@ export default {
         nodePosition: {
             type: Object,
             required: true
+        },
+        editable: {
+            type: Boolean,
+            default: false
         }
     },
     computed: {
@@ -72,6 +76,7 @@ export default {
         :node-id="nodeId"
         :value="value"
         :kind="kind"
+        :editable="editable"
         @request-edit="onRequestEdit"
         @contextmenu="$emit('contextmenu', $event)"
       />

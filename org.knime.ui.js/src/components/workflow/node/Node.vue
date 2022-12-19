@@ -378,6 +378,7 @@ export default {
           :kind="kind"
           :node-id="id"
           :node-position="position"
+          :editable="isEditable"
           @contextmenu.prevent="onContextMenu"
         />
 

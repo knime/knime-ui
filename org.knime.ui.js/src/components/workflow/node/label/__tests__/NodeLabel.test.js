@@ -12,7 +12,8 @@ describe('NodeLabel', () => {
         nodeId: 'root:1',
         nodePosition: { x: 15, y: 13 },
         kind: 'metanode',
-        value: 'Test label'
+        value: 'Test label',
+        editable: true
     };
 
     beforeAll(() => {
@@ -62,7 +63,9 @@ describe('NodeLabel', () => {
             expect(wrapper.findComponent(NodeLabelText).props()).toEqual(
                 expect.objectContaining({
                     value: defaultProps.value,
-                    kind: defaultProps.kind
+                    kind: defaultProps.kind,
+                    editable: defaultProps.editable,
+                    nodeId: defaultProps.nodeId
                 })
             );
         });

@@ -220,8 +220,8 @@ describe('Node', () => {
                 value: '',
                 kind: commonNode.kind,
                 nodeId: commonNode.id,
-                nodePosition: commonNode.position
-                
+                nodePosition: commonNode.position,
+                editable: expect.any(Boolean)
             });
         });
 
@@ -230,8 +230,8 @@ describe('Node', () => {
                 value: commonNode.annotation.text,
                 kind: commonNode.kind,
                 nodeId: commonNode.id,
-                nodePosition: commonNode.position
-                
+                nodePosition: commonNode.position,
+                editable: expect.any(Boolean)
             });
         });
 

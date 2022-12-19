@@ -16,6 +16,10 @@ export default {
         nodeId: {
             type: String,
             default: ''
+        },
+        editable: {
+            type: Boolean,
+            default: false
         }
     },
     computed: {
@@ -41,17 +45,17 @@ export default {
       <div
         class="node-label"
         @contextmenu="$emit('contextmenu', $event)"
-        @dblclick.left="$emit('request-edit')"
+        @dblclick.left="editable ? $emit('request-edit') : null"
       >
         <span :class="['text', {'placeholder': !value}]">
           <slot
-            v-if="value"
+            v-if="!value && editable"
             :on="on"
-          >{{ value }}</slot>
+          >Add comment</slot>
           <slot
             v-else
             :on="on"
-          >Add comment</slot>
+          >{{ value }}</slot>
         </span>
       </div>
     </template>
