@@ -150,17 +150,17 @@ public final class PerspectiveSwitchAddon {
 
     private void onSwitchToWebUI() {
         NodeTimer.GLOBAL_TIMER.incWebUIPerspectiveSwitch();
-        PerspectiveUtil.markClassicPerspectiveActive();
+        PerspectiveUtil.markClassicPerspectiveAsLoaded();
         PerspectiveUtil.addSharedEditorAreaToWebUIPerspective(m_modelService, m_app);
         setTrimsAndMenuVisible(false, m_modelService, m_app);
         Supplier<AppStateProvider.AppState> supplier = () -> EclipseUIStateUtil.createAppState(m_modelService, m_app);
         KnimeBrowserView.activateViewInitializer(supplier);
         switchToWebUITheme();
-        updateChromiumExternalMessagsePumpSystemProperty();
+        updateChromiumExternalMessagePumpSystemProperty();
     }
 
     @SuppressWarnings("javadoc")
-    public static void updateChromiumExternalMessagsePumpSystemProperty() {
+    public static void updateChromiumExternalMessagePumpSystemProperty() {
         if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
             // Fixes a drag'n'drop issue on Windows, see NXT-1151.
             // Doesn't have an effect on Linux.
@@ -171,7 +171,7 @@ public final class PerspectiveSwitchAddon {
     }
 
     private void onSwitchToJavaUI() {
-        if (!PerspectiveUtil.isClassicPerspectiveActive()) {
+        if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
             disposeAllWorkflowProjects();
         }
         KnimeBrowserView.clearView();
@@ -187,7 +187,6 @@ public final class PerspectiveSwitchAddon {
         if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
             System.clearProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
         }
-
     }
 
     private static void disposeAllWorkflowProjects() {

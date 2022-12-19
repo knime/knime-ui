@@ -99,21 +99,21 @@ public final class PerspectiveUtil {
      */
     public static final String SHARED_EDITOR_AREA_ID = "org.eclipse.ui.editorss";
 
-    private static boolean isClassicPerspectiveActive = false;
+    private static boolean isClassicPerspectiveLoaded = false;
 
     /**
-     * @return {@code true} if the classic perspective is active (i.e. the user switched from there to the Modern UI at
-     *         least once)
+     * @return {@code true} if the classic perspective has been loaded (i.e. the user switched from there to the Modern
+     *         UI at least once)
      */
-    public static boolean isClassicPerspectiveActive() {
-        return isClassicPerspectiveActive;
+    public static boolean isClassicPerspectiveLoaded() {
+        return isClassicPerspectiveLoaded;
     }
 
     /**
-     * Sets the 'isClassicPerspectiveActive' flag to true.
+     * Sets the 'isClassicPerspectiveLoaded' flag to true.
      */
-    public static void markClassicPerspectiveActive() {
-        isClassicPerspectiveActive = true;
+    public static void markClassicPerspectiveAsLoaded() {
+        isClassicPerspectiveLoaded = true;
     }
 
     /**

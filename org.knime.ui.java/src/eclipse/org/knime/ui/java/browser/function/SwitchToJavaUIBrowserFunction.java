@@ -57,6 +57,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
+import org.knime.core.node.workflow.WorkflowManager;
 import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
@@ -82,7 +83,10 @@ public class SwitchToJavaUIBrowserFunction extends BrowserFunction {
 
     @Override
     public Object function(final Object[] args) { // NOSONAR
-        if (!PerspectiveUtil.isClassicPerspectiveActive()) {
+        if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            // NOTE: if no classic UI has been loaded, yet,
+            // all the open workflow projects will be closed on perspective switch, see PerspectiveSwitchAddon
+
             var openAndDirtyWorkflowProjects = getOpenAndDirtyWorkflowProjects();
             var message = "In order to switch to the classic UI all opened workflows are being closed.\n";
             if (isWorkflowExecutionInProgress(openAndDirtyWorkflowProjects)) {
@@ -115,10 +119,13 @@ public class SwitchToJavaUIBrowserFunction extends BrowserFunction {
     }
 
     private static List<WorkflowProject> getOpenAndDirtyWorkflowProjects() {
-        if (!PerspectiveUtil.isClassicPerspectiveActive()) {
+        if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
             var wpm = WorkflowProjectManager.getInstance();
             return wpm.getWorkflowProjectsIds().stream() //
-                .filter(id -> wpm.getCachedWorkflow(id).isPresent()) //
+                .filter(id -> {
+                    WorkflowManager wfm = wpm.getCachedWorkflow(id).orElse(null);
+                    return wfm != null && wfm.isDirty();
+                }) //
                 .map(id -> wpm.getWorkflowProject(id).orElseThrow()) //
                 .collect(Collectors.toList()); //
         }

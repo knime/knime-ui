@@ -169,7 +169,7 @@ public class KnimeBrowserView {
         }
         instance = this; // NOSONAR it's fine because this class is technically a singleton
 
-        PerspectiveSwitchAddon.updateChromiumExternalMessagsePumpSystemProperty();
+        PerspectiveSwitchAddon.updateChromiumExternalMessagePumpSystemProperty();
 
         m_browser = new Browser(parent, SWT.NONE);
         m_browser.addLocationListener(new KnimeBrowserLocationListener(this));
