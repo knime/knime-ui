@@ -203,7 +203,7 @@ export default {
   grid-area: toolbar;
 }
 
-main {
+main.workflow-area {
   display: flex;
   overflow: auto;
   flex-direction: column;

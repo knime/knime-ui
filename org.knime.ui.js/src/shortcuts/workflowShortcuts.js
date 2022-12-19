@@ -80,7 +80,7 @@ export default {
     },
     editName: {
         text: 'Rename',
-        hotkey: ['F2'],
+        hotkey: ['Shift', 'F2'],
         execute: ({ $store }) => $store.dispatch(
             'workflow/openNameEditor',
             $store.getters['selection/singleSelectedNode'].id
@@ -92,7 +92,7 @@ export default {
     },
     editNodeLabel: {
         text: 'Edit node label',
-        hotkey: ['Shift', 'F2'],
+        hotkey: ['F2'],
         execute: ({ $store }) => $store.dispatch(
             'workflow/openLabelEditor',
             $store.getters['selection/singleSelectedNode'].id
