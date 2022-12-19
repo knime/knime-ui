@@ -1,12 +1,16 @@
 <script>
 import { mapGetters } from 'vuex';
+
+import SaveIcon from '@/assets/ok.svg';
+import CancelIcon from '@/assets/cancel.svg';
+import ActionBar from '@/components/common/ActionBar.vue';
+
 import NodeLabelTextArea from './NodeLabelTextArea.vue';
-import NodeEditorActionBar from '../common/NodeEditorActionBar.vue';
 
 export default {
     components: {
         NodeLabelTextArea,
-        NodeEditorActionBar
+        ActionBar
     },
     props: {
         value: {
@@ -42,6 +46,21 @@ export default {
                 x: left,
                 y: top
             };
+        },
+        actions() {
+            return [
+                {
+                    name: 'save',
+                    icon: SaveIcon,
+                    onClick: this.onSave,
+                    primary: true
+                },
+                {
+                    name: 'cancel',
+                    icon: CancelIcon,
+                    onClick: this.onCancel
+                }
+            ];
         },
         actionBarPosition() {
             return [
@@ -86,10 +105,10 @@ export default {
     />
 
     <!-- Save/Cancel actions -->
-    <NodeEditorActionBar
+    <ActionBar
+      :actions="actions"
       :transform="`translate(${actionBarPosition})`"
-      @save="onSave"
-      @cancel="onCancel"
+      prevent-context-menu
     />
 
     <!-- Node name inline editor -->

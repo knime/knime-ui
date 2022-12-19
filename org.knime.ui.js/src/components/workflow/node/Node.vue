@@ -372,7 +372,7 @@ export default {
           />
         </portal>
 
-        <!-- Annotation needs to be behind ports -->
+        <!-- Label needs to be behind ports -->
         <NodeLabel
           :value="annotation ? annotation.text : ''"
           :kind="kind"

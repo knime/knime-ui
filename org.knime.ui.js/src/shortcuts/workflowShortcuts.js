@@ -97,9 +97,15 @@ export default {
             'workflow/openLabelEditor',
             $store.getters['selection/singleSelectedNode'].id
         ),
-        condition: ({ $store }) => $store.getters['selection/singleSelectedNode'] !== null &&
-        !$store.getters['selection/singleSelectedNode']?.link &&
-        $store.getters['workflow/isWritable']
+        condition: ({ $store }) => {
+            const singleSelectedNode = $store.getters['selection/singleSelectedNode'];
+            
+            return (
+                singleSelectedNode !== null &&
+                !singleSelectedNode.link &&
+                $store.getters['workflow/isWritable']
+            );
+        }
     },
     deleteSelected: {
         text: 'Delete',

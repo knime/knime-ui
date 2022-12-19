@@ -10,7 +10,7 @@ import StepIcon from '@/assets/step-execution.svg';
 import OpenViewIcon from '@/assets/open-view.svg';
 import OpenDialogIcon from '@/assets/configure-node.svg';
 
-import ActionButton from '@/components/common/ActionButton.vue';
+import ActionBar from '@/components/common/ActionBar.vue';
 
 /**
  *  Displays a bar of action buttons above nodes
@@ -18,7 +18,7 @@ import ActionButton from '@/components/common/ActionButton.vue';
  */
 export default {
     components: {
-        ActionButton
+        ActionBar
     },
     props: {
         nodeId: {
@@ -68,60 +68,52 @@ export default {
         actions() {
             return {
                 configureNode: {
-                    title: 'Configure',
+                    title: () => this.hoverTitle('Configure', this.$shortcuts.get('configureNode').hotkeyText),
                     isEnabled: this.canOpenDialog,
                     icon: OpenDialogIcon,
-                    handler: () => this.openNodeConfiguration(this.nodeId),
-                    hotkeyText: this.$shortcuts.get('configureNode').hotkeyText
+                    onClick: () => this.openNodeConfiguration(this.nodeId)
                 },
                 pauseLoopExecution: {
-                    title: 'Pause',
+                    title: () => this.hoverTitle('Pause', this.$shortcuts.get('pauseLoopExecution').hotkeyText),
                     isEnabled: true,
                     icon: PauseIcon,
-                    handler: () => this.pauseLoopExecution(this.nodeId),
-                    hotkeyText: this.$shortcuts.get('pauseLoopExecution').hotkeyText
+                    onClick: () => this.pauseLoopExecution(this.nodeId)
                 },
                 resumeLoopExecution: {
-                    title: 'Resume',
+                    title: () => this.hoverTitle('Resume', this.$shortcuts.get('resumeLoopExecution').hotkeyText),
                     isEnabled: true,
                     icon: ResumeIcon,
-                    handler: () => this.resumeLoopExecution(this.nodeId),
-                    hotkeyText: this.$shortcuts.get('resumeLoopExecution').hotkeyText
+                    onClick: () => this.resumeLoopExecution(this.nodeId)
                 },
                 execute: {
-                    title: 'Execute',
+                    title: () => this.hoverTitle('Execute', this.$shortcuts.get('executeSelected').hotkeyText),
                     isEnabled: this.canExecute,
                     icon: ExecuteIcon,
-                    handler: () => this.executeNodes([this.nodeId]),
-                    hotkeyText: this.$shortcuts.get('executeSelected').hotkeyText
+                    onClick: () => this.executeNodes([this.nodeId])
                 },
                 stepLoopExecution: {
-                    title: 'Step',
+                    title: () => this.hoverTitle('Step', this.$shortcuts.get('stepLoopExecution').hotkeyText),
                     isEnabled: this.canStep,
                     icon: StepIcon,
-                    handler: () => this.stepLoopExecution(this.nodeId),
-                    hotkeyText: this.$shortcuts.get('stepLoopExecution').hotkeyText
+                    onClick: () => this.stepLoopExecution(this.nodeId)
                 },
                 cancelExecution: {
-                    title: 'Cancel',
+                    title: () => this.hoverTitle('Cancel', this.$shortcuts.get('cancelSelected').hotkeyText),
                     isEnabled: this.canCancel,
                     icon: CancelIcon,
-                    handler: () => this.cancelNodeExecution([this.nodeId]),
-                    hotkeyText: this.$shortcuts.get('cancelSelected').hotkeyText
+                    onClick: () => this.cancelNodeExecution([this.nodeId])
                 },
                 reset: {
-                    title: 'Reset',
+                    title: () => this.hoverTitle('Reset', this.$shortcuts.get('resetSelected').hotkeyText),
                     isEnabled: this.canReset,
                     icon: ResetIcon,
-                    handler: () => this.resetNodes([this.nodeId]),
-                    hotkeyText: this.$shortcuts.get('resetSelected').hotkeyText
+                    onClick: () => this.resetNodes([this.nodeId])
                 },
                 openView: {
-                    title: 'Open View',
+                    title: () => this.hoverTitle('Open View', this.$shortcuts.get('openView').hotkeyText),
                     isEnabled: this.canOpenView,
                     icon: OpenViewIcon,
-                    handler: () => this.openView(this.nodeId),
-                    hotkeyText: this.$shortcuts.get('openView').hotkeyText
+                    onClick: () => this.openView(this.nodeId)
                 }
             };
         },
@@ -147,17 +139,6 @@ export default {
             return Object.entries(conditionMap)
                 .filter(([name, visible]) => visible)
                 .map(([name, visible]) => this.actions[name]);
-        },
-        /**
-         *  returns the x-position of each button depending on the total amount of buttons
-         *  @returns {Array<Number>} x-pos
-         */
-        positions() {
-            const { nodeActionBarButtonSpread } = this.$shapes;
-            let buttonCount = this.visibleActions.length;
-
-            // spread buttons evenly around the horizontal center
-            return this.visibleActions.map((_, i) => (i + (1 - buttonCount) / 2) * nodeActionBarButtonSpread);
         }
     },
     methods: {
@@ -186,16 +167,7 @@ export default {
 
 <template>
   <g>
-    <ActionButton
-      v-for="({ isEnabled, icon, handler, title, hotkeyText }, index) in visibleActions"
-      :key="title"
-      :x="positions[index]"
-      :disabled="!isEnabled"
-      :title="hoverTitle(title, hotkeyText)"
-      @click="handler"
-    >
-      <Component :is="icon" />
-    </ActionButton>
+    <ActionBar :actions="visibleActions" />
 
     <text
       class="node-id"

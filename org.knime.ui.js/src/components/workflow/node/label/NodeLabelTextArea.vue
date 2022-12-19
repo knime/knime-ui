@@ -51,10 +51,9 @@ export default {
         },
         onSave(e) {
             const isMac = navigator?.userAgent?.toLowerCase()?.includes('mac');
+            const metaKey = isMac ? e.metaKey : e.ctrlKey;
 
-            if (isMac && e.metaKey === true) {
-                this.$emit('save');
-            } else if (!isMac && e.ctrlKey === true) {
+            if (metaKey) {
                 this.$emit('save');
             }
         }

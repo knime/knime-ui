@@ -212,7 +212,7 @@ describe('Node', () => {
             expect(nodePorts.props('nodeKind')).toBe('component');
         });
 
-        it('if annotation does not exist it passes empty string as value', () => {
+        it('should pass an empty string if annotation does not exist', () => {
             delete propsData.annotation;
             doMount();
 

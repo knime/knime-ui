@@ -56,7 +56,7 @@ export default {
 <template>
   <g>
     <template v-if="isEditing">
-      <portal to="node-label-editor">
+      <portal to="node-text-editor">
         <NodeLabelEditor
           :node-id="nodeId"
           :value="value"

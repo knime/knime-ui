@@ -33,7 +33,6 @@ export default {
 <template>
   <AutoSizeForeignObject
     v-if="value || isSelected"
-    ref="node-label-text-container"
     class="node-label-text-container"
     :y-offset="isMetanode ? $shapes.metanodeLabelOffsetY : $shapes.nodeLabelOffsetY"
     :parent-width="$shapes.nodeSize"
