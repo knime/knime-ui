@@ -4,6 +4,7 @@ import ExtensionIcon from 'webapps-common/ui/assets/img/icons/extension.svg';
 import PerspectiveSwitchIcon from 'webapps-common/ui/assets/img/icons/perspective-switch.svg';
 import KnimeLogo from 'webapps-common/ui/assets/img/KNIME_Logo_gray.svg';
 import Button from 'webapps-common/ui/components/Button.vue';
+
 import OpenSourceCreditsModal from './OpenSourceCreditsModal.vue';
 
 export default {

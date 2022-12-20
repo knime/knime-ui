@@ -1,14 +1,14 @@
 import { shallowMount } from '@vue/test-utils';
 
-import WorkflowEntryPage from '../WorkflowEntryPage.vue';
 import SpaceExplorer from '@/components/spaceExplorer/SpaceExplorer.vue';
+import EntryPage from '../EntryPage.vue';
 
-describe('WorkflowEntryPage', () => {
+describe('EntryPage', () => {
     const doShallowMount = () => {
         window.getComputedStyle = () => ({ getPropertyValue: jest.fn() });
         window.ResizeObserver = jest.fn(() => ({ observe: jest.fn() }));
 
-        const wrapper = shallowMount(WorkflowEntryPage);
+        const wrapper = shallowMount(EntryPage);
         return { wrapper };
     };
 

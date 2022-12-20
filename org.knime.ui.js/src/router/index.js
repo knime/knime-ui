@@ -1,7 +1,7 @@
 import VueRouter from 'vue-router';
-import WorkflowPage from '@/components/WorkflowPage.vue';
-import WorkflowEntryPage from '@/components/workflow/WorkflowEntryPage.vue';
-import WorkflowInfoPage from '@/components/workflow/WorkflowInfoPage.vue';
+import WorkflowPage from '@/components/workflow/WorkflowPage.vue';
+import EntryPage from '@/components/entryPage/EntryPage.vue';
+import InfoPage from '@/components/infoPage/InfoPage.vue';
 
 export const APP_ROUTES = {
     WorkflowPage: {
@@ -12,12 +12,12 @@ export const APP_ROUTES = {
     EntryPage: {
         name: 'EntryPage',
         path: '/entry',
-        component: WorkflowEntryPage
+        component: EntryPage
     },
     InfoPage: {
         name: 'InfoPage',
         path: '/info',
-        component: WorkflowInfoPage
+        component: InfoPage
     }
 };
 
