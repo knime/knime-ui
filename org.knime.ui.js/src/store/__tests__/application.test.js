@@ -1,9 +1,12 @@
 /* eslint-disable max-lines */
 import Vuex from 'vuex';
+import VueRouter from 'vue-router';
 import { createLocalVue } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 import * as selectionStore from '@/store/selection';
+
+import router, { APP_ROUTES } from '@/router';
 
 jest.mock('@/util/fuzzyPortTypeSearch', () => ({
     makeTypeSearch: jest.fn().mockReturnValue('searchFunction')
@@ -20,6 +23,7 @@ describe('application store', () => {
 
     beforeAll(() => {
         const localVue = createLocalVue();
+        localVue.use(VueRouter);
         localVue.use(Vuex);
     });
 
@@ -83,6 +87,7 @@ describe('application store', () => {
             availablePortTypes: {},
             suggestedPortTypes: [],
             savedCanvasStates: {},
+            isLoadingWorkflow: false,
             hasClipboardSupport: false,
             contextMenu: { isOpen: false, position: null },
             hasNodeRecommendationsEnabled: false,
@@ -140,7 +145,7 @@ describe('application store', () => {
     describe('Application Lifecycle', () => {
         test('initialization', async () => {
             const { store, dispatchSpy, fetchApplicationState, addEventListener } = await loadStore();
-            await store.dispatch('application/initializeApplication');
+            await store.dispatch('application/initializeApplication', { $router: router });
 
             expect(addEventListener).toHaveBeenCalled();
             expect(fetchApplicationState).toHaveBeenCalled();
@@ -153,6 +158,60 @@ describe('application store', () => {
 
             expect(removeEventListener).toHaveBeenCalled();
             expect(dispatchSpy).toHaveBeenCalledWith('application/unloadActiveWorkflow', { clearWorkflow: true });
+        });
+    });
+
+    describe('Load workflows on navigation', () => {
+        it('should unload workflows when leaving the worklow page', async () => {
+            const { store, dispatchSpy } = await loadStore();
+
+            await store.dispatch('application/initializeApplication', { $router: router });
+
+            await router.push({
+                name: APP_ROUTES.WorkflowPage.name,
+                params: { projectId: 'foo', workflowId: 'bar' }
+            });
+            
+            await router.push({ name: APP_ROUTES.EntryPage.name });
+
+            expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow', {
+                newWorkflow: null
+            });
+
+            expect(router.currentRoute.name).toBe(APP_ROUTES.EntryPage.name);
+        });
+
+        it('should load aworkflow when entering the worklow page', async () => {
+            const { store, dispatchSpy } = await loadStore();
+
+            await store.dispatch('application/initializeApplication', { $router: router });
+            
+            await router.push({
+                name: APP_ROUTES.WorkflowPage.name,
+                params: { projectId: 'foo', workflowId: 'bar' }
+            });
+
+            expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow', {
+                newWorkflow: { projectId: 'foo', workflowId: 'bar' },
+                navigateToWorkflow: expect.anything()
+            });
+
+            expect(router.currentRoute.name).toBe(APP_ROUTES.WorkflowPage.name);
+        });
+       
+
+        it('should skip the navigation guards', async () => {
+            const { store, dispatchSpy } = await loadStore();
+
+            await store.dispatch('application/initializeApplication', { $router: router });
+
+            await router.push({
+                name: APP_ROUTES.WorkflowPage.name,
+                params: { projectId: 'foo', workflowId: 'bar', skipGuards: true }
+            });
+
+            expect(dispatchSpy).not.toHaveBeenCalledWith('application/switchWorkflow');
+            expect(router.currentRoute.name).toBe(APP_ROUTES.WorkflowPage.name);
         });
     });
 
@@ -327,7 +386,7 @@ describe('application store', () => {
             const { store, dispatchSpy } = await loadStore();
             await store.dispatch('application/replaceApplicationState', state);
 
-            expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow', null);
+            expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow', { newWorkflow: null });
         });
     });
 
@@ -346,7 +405,7 @@ describe('application store', () => {
             // clean dispatch list for easier testing
             dispatchSpy.mockClear();
 
-            await store.dispatch('application/switchWorkflow', null);
+            await store.dispatch('application/switchWorkflow', { newWorkflow: null });
 
             expect(dispatchSpy).not.toHaveBeenCalledWith('application/saveCanvasState');
             expect(dispatchSpy).toHaveBeenCalledWith('application/unloadActiveWorkflow', { clearWorkflow: true });
@@ -361,7 +420,9 @@ describe('application store', () => {
 
             store.commit('application/setSavedCanvasStates', { project: '1', workflow: 'root' });
 
-            await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root' });
+            await store.dispatch('application/switchWorkflow', {
+                newWorkflow: { projectId: '1', workflowId: 'root' }
+            });
 
             expect(dispatchSpy).not.toHaveBeenCalledWith('application/saveCanvasState');
             expect(dispatchSpy).not.toHaveBeenCalledWith('workflow/unloadActiveWorkflow');
@@ -387,10 +448,14 @@ describe('application store', () => {
                     }
                 };
     
-                await store.dispatch('application/switchWorkflow', { projectId: '2', workflowId: 'root' });
+                await store.dispatch('application/switchWorkflow', {
+                    newWorkflow: { projectId: '2', workflowId: 'root' }
+                });
                 expect(store.state.application.activeProjectId).toBe('2');
     
-                await store.dispatch('application/switchWorkflow', { projectId: '1', workflowId: 'root' });
+                await store.dispatch('application/switchWorkflow', {
+                    newWorkflow: { projectId: '1', workflowId: 'root' }
+                });
                 expect(dispatchSpy).toHaveBeenCalledWith(
                     'application/loadWorkflow',
                     { projectId: '1', workflowId: 'root:214' }
@@ -418,7 +483,7 @@ describe('application store', () => {
                 };
     
                 // change to project 1
-                await store.dispatch('application/switchWorkflow', { projectId: '1' });
+                await store.dispatch('application/switchWorkflow', { newWorkflow: { projectId: '1' } });
 
                 // assert that project 1 was loaded and the correct `lastActive` was restored
                 expect(dispatchSpy).toHaveBeenCalledWith(
@@ -685,7 +750,9 @@ describe('application store', () => {
             store.commit('application/setOpenProjects', [{ projectId, name: projectId }]);
             
             // switch to nested workflow on the same project
-            await store.dispatch('application/switchWorkflow', { projectId, workflowId: 'root:1' });
+            await store.dispatch('application/switchWorkflow', {
+                newWorkflow: { projectId, workflowId: 'root:1' }
+            });
 
             // should have saved 1 snapshot
             expect(getSnapshotKeys(store).length).toBe(1);
@@ -694,7 +761,9 @@ describe('application store', () => {
             ).toEqual(canvasMockEl);
             
             // go back to the root workflow
-            await store.dispatch('application/switchWorkflow', { projectId, workflowId: 'root' });
+            await store.dispatch('application/switchWorkflow', {
+                newWorkflow: { projectId, workflowId: 'root' }
+            });
             
             // should have cleared the snapshot
             expect(getSnapshotKeys(store).length).toBe(0);
@@ -736,15 +805,21 @@ describe('application store', () => {
             ]);
             
             // first switch to nested workflow on project1
-            await store.dispatch('application/switchWorkflow', { projectId: project1, workflowId: 'root:1' });
+            await store.dispatch('application/switchWorkflow', {
+                newWorkflow: { projectId: project1, workflowId: 'root:1' }
+            });
             // then switch to root workflow on project2
-            await store.dispatch('application/switchWorkflow', { projectId: project2, workflowId: 'root' });
+            await store.dispatch('application/switchWorkflow', {
+                newWorkflow: { projectId: project2, workflowId: 'root' }
+            });
             
             // should have saved 1 snapshot (only from the 1st project)
             expect(getSnapshotKeys(store).length).toBe(1);
             
             // go into nested workflow on project 2
-            await store.dispatch('application/switchWorkflow', { projectId: project2, workflowId: 'root:2' });
+            await store.dispatch('application/switchWorkflow', {
+                newWorkflow: { projectId: project2, workflowId: 'root:2' }
+            });
 
             // should have saved 2 snapshots, one for each project
             expect(getSnapshotKeys(store).length).toBe(2);

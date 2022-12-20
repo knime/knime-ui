@@ -10,7 +10,7 @@ import AppHeaderTab from '../AppHeaderTab.vue';
 import { APP_ROUTES } from '@/router';
 
 describe('AppHeader.vue', () => {
-    let propsData, mocks, doMount, wrapper, storeConfig, $store, mockPush;
+    let propsData, mocks, doMount, wrapper, storeConfig, $store, $router, $route;
 
     beforeAll(() => {
         const localVue = createLocalVue();
@@ -41,15 +41,21 @@ describe('AppHeader.vue', () => {
                 }
             }
         };
-        mockPush = jest.fn();
+        $router = {
+            currentRoute: {},
+            push: jest.fn()
+        };
+
+        $route = {
+            name: ''
+        };
         
         doMount = () => {
             $store = mockVuexStore(storeConfig);
             mocks = {
                 $store,
-                $router: {
-                    push: mockPush
-                }
+                $router,
+                $route
             };
             wrapper = mount(AppHeader, { propsData, mocks });
         };
@@ -63,7 +69,7 @@ describe('AppHeader.vue', () => {
             expect(tabs.length).toBe(3);
         });
         
-        it('allows to close workflow', () => {
+        it('allows closing workflow', () => {
             doMount();
 
             expect(wrapper.findComponent(CloseIcon).exists()).toBe(true);
@@ -71,20 +77,27 @@ describe('AppHeader.vue', () => {
             expect(storeConfig.workflow.actions.closeWorkflow).toHaveBeenCalledWith(expect.anything(), '2');
         });
 
-        it('allows to switch workflow', () => {
+        it('should navigate to workflow', () => {
             doMount();
             const projectId = storeConfig.application.state.openProjects[2].projectId;
 
             wrapper.findAll('li').at(2).trigger('click');
-            expect(storeConfig.application.actions.switchWorkflow)
-                .toHaveBeenCalledWith(expect.anything(), { projectId });
+            expect($router.push).toHaveBeenCalledWith({
+                name: APP_ROUTES.WorkflowPage.name,
+                params: { projectId, workflowId: 'root' }
+            });
         });
 
         it('allows to click knime logo and switch workflow to entry page', async () => {
             doMount();
 
             wrapper.find('#knime-logo').trigger('click');
-            expect(storeConfig.application.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), null);
+            
+            expect($router.push).toHaveBeenCalledWith({
+                name: APP_ROUTES.EntryPage.name
+            });
+            $route.name = APP_ROUTES.EntryPage.name;
+            
             await Vue.nextTick();
             expect(wrapper.find('#knime-logo').classes()).toContain('active-logo');
         });
@@ -132,23 +145,12 @@ describe('AppHeader.vue', () => {
     });
 
     describe('Right side buttons', () => {
-        it('allows switching to old UI', () => {
-            window.switchToJavaUI = jest.fn();
-            doMount();
-            wrapper.findAll('.switch-classic').at(1).vm.$emit('click');
-            expect(window.switchToJavaUI).toHaveBeenCalled();
-        });
-
         it('allows switching to Info Page', async () => {
             doMount();
-            await wrapper.findAll('.switch-classic').at(0).trigger('click');
-            expect(mockPush).toHaveBeenCalledTimes(1);
-            expect(mockPush).toHaveBeenCalledWith(APP_ROUTES.WorkflowEntry);
-        });
-
-        test('feedback URL is correct', () => {
-            doMount();
-            expect(wrapper.find('.feedback').attributes('href')).toBe('https://knime.com/modern-ui-feedback?src=knimeapp?utm_source=knimeapp');
+            await wrapper.find('.switch-info-page').trigger('click');
+            expect($router.push).toHaveBeenCalledWith({
+                name: APP_ROUTES.InfoPage.name
+            });
         });
     });
 });

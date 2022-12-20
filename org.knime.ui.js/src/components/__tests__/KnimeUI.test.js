@@ -6,15 +6,11 @@ import { mockUserAgent } from 'jest-useragent-mock';
 import { mockVuexStore } from '@/test/test-utils';
 
 import AppHeader from '@/components/application/AppHeader.vue';
-import TooltipContainer from '@/components/application/TooltipContainer.vue';
 import Error from '@/components/application/Error.vue';
-import HotkeyHandler from '@/components/application/HotkeyHandler.vue';
-import Sidebar from '@/components/sidebar/Sidebar.vue';
-import WorkflowToolbar from '@/components/toolbar/WorkflowToolbar.vue';
-import WorkflowEntryPage from '@/components/workflow/WorkflowEntryPage.vue';
 import { loadPageBuilder as loadPageBuilderMock } from '@/components/embeddedViews/pagebuilderLoader';
 
 import KnimeUI from '../KnimeUI.vue';
+import { APP_ROUTES } from '@/router';
 
 jest.mock('@/components/embeddedViews/pagebuilderLoader');
 
@@ -29,7 +25,7 @@ describe('KnimeUI.vue', () => {
     };
 
     let $store, doShallowMount, initializeApplication, wrapper, storeConfig, mocks, destroyApplication,
-        setHasClipboardSupport;
+        setHasClipboardSupport, $router;
 
     beforeEach(() => {
         initializeApplication = jest.fn().mockResolvedValue();
@@ -60,9 +56,17 @@ describe('KnimeUI.vue', () => {
         };
 
         $store = mockVuexStore(storeConfig);
-        mocks = { $store, $features: mockFeatureFlags };
+        $router = {
+            currentRoute: {},
+            push: jest.fn()
+        };
+        mocks = {
+            $store,
+            $features: mockFeatureFlags,
+            $router
+        };
         doShallowMount = async () => {
-            wrapper = await shallowMount(KnimeUI, { mocks });
+            wrapper = await shallowMount(KnimeUI, { mocks, stubs: { RouterView: true } });
         };
     });
 
@@ -78,11 +82,7 @@ describe('KnimeUI.vue', () => {
     it('renders before loading', async () => {
         await doShallowMount();
         expect(wrapper.findComponent(AppHeader).exists()).toBe(true);
-        expect(wrapper.findComponent(WorkflowToolbar).exists()).toBe(true);
-        expect(wrapper.findComponent(TooltipContainer).exists()).toBe(true);
-        expect(wrapper.findComponent(Sidebar).exists()).toBe(false);
-        expect(wrapper.findComponent(WorkflowEntryPage).exists()).toBe(false);
-        expect(wrapper.findComponent(HotkeyHandler).exists()).toBe(false);
+        expect(wrapper.find('.main-content').exists()).not.toBe(true);
     });
 
     it('catches errors in fetch hook', async () => {
@@ -103,10 +103,9 @@ describe('KnimeUI.vue', () => {
     it('renders after loading with existing workflow', async () => {
         storeConfig.workflow.state.activeWorkflow = {
             info: {
-                containerType: 'project',
                 containerId: 'root'
             },
-            parents: []
+            projectId: 'project'
         };
         document.fonts.load.mockResolvedValue('dummy');
         await doShallowMount();
@@ -117,7 +116,10 @@ describe('KnimeUI.vue', () => {
         // await rendering
         await Vue.nextTick();
 
-        expect(wrapper.findComponent(Sidebar).exists()).toBe(true);
+        expect($router.push).toHaveBeenCalledWith({
+            name: APP_ROUTES.WorkflowPage.name,
+            params: { projectId: 'project', workflowId: 'root', skipGuards: true }
+        });
     });
 
     it('renders after loading without a workflow', async () => {
@@ -130,8 +132,9 @@ describe('KnimeUI.vue', () => {
         // await rendering
         await Vue.nextTick();
 
-        expect(wrapper.findComponent(WorkflowEntryPage).exists()).toBe(true);
-        expect(wrapper.findComponent(HotkeyHandler).exists()).toBe(true);
+        expect($router.push).toHaveBeenCalledWith({
+            name: APP_ROUTES.EntryPage.name
+        });
     });
 
     it('initiates', async () => {

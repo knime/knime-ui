@@ -1,6 +1,6 @@
 import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '@api';
 import { encodeString } from '@/util/encodeString';
-import router, { APP_ROUTES } from '@/router';
+import { APP_ROUTES } from '@/router';
 
 const getCanvasStateKey = (input) => encodeString(input);
 const getRootWorkflowId = (workflowId) => workflowId.split(':')[0];
@@ -107,13 +107,13 @@ export const actions = {
     /*
      *   A P P L I C A T I O N   L I F E C Y C L E
      */
-    async initializeApplication({ dispatch }) {
+    async initializeApplication({ dispatch }, { $router }) {
         await addEventListener('AppStateChanged');
         
         const applicationState = await fetchApplicationState();
         await dispatch('replaceApplicationState', applicationState);
         
-        router.beforeEach(async (to, from, next) => {
+        $router.beforeEach(async (to, from, next) => {
             if (to.params.skipGuards) {
                 next();
                 return;

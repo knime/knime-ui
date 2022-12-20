@@ -8,11 +8,10 @@ jest.mock('@api', () => ({
 }));
 
 describe('applicationShortcuts', () => {
-    let mockDispatch, $store, mockPush, $router;
+    let mockDispatch, $store, $router;
 
     beforeEach(() => {
         mockDispatch = jest.fn();
-        mockPush = jest.fn();
         $store = {
             dispatch: mockDispatch,
             state: {
@@ -23,15 +22,11 @@ describe('applicationShortcuts', () => {
                 }
             }
         };
-        $router = {
-            push: mockPush
-        };
     });
 
     test('openWorkflow', () => {
         applicationShortcuts.openWorkflow.execute({ $router });
         expect(mockOpenWorkflow).toHaveBeenCalledTimes(1);
-        expect(mockPush).toHaveBeenCalledTimes(1);
     });
 
     test('createWorkflow', () => {

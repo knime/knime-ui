@@ -61,7 +61,7 @@ export default {
         async setup() {
             try {
                 await Promise.all([
-                    this.initializeApplication(),
+                    this.initializeApplication({ $router: this.$router }),
 
                     // These fonts will be pre-loaded at application startup with the given font-weights,
                     // to prevent text-jumping
@@ -83,7 +83,7 @@ export default {
             }
 
             const { info: { containerId: workflowId }, projectId } = this.workflow;
-                
+
             await this.$router.push({
                 name: APP_ROUTES.WorkflowPage.name,
                 params: { workflowId, projectId, skipGuards: true }
