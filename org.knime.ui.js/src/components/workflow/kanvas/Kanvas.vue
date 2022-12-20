@@ -4,7 +4,6 @@ import { debounce } from 'lodash';
 import throttle from 'raf-throttle';
 
 export const RESIZE_DEBOUNCE = 100;
-const RIGHT_BUTTON_PAN_MODE_DELAY = 900; // ms
 const blacklistTagNames = /^(input|textarea|select)$/i;
 
 export default {
@@ -14,16 +13,32 @@ export default {
             isPanning: null,
             useMoveCursor: false,
             hasPanned: null,
-            moveCursorTimeoutId: null
+            moveCursorTimeoutId: null,
+
+            isHoldingDownSpace: false,
+            isHoldingDownMiddleClick: false,
+            isHoldingDownRightClick: false
         };
     },
     computed: {
         ...mapGetters('canvas', ['canvasSize', 'viewBox', 'contentBounds']),
-        ...mapState('canvas', ['suggestPanning', 'zoomFactor', 'interactionsEnabled', 'isEmpty'])
+        ...mapState('canvas', ['zoomFactor', 'interactionsEnabled', 'isEmpty'])
     },
     watch: {
         contentBounds(...args) {
             this.contentBoundsChanged(args);
+        },
+
+        isHoldingDownSpace(newValue) {
+            if (newValue) {
+                // listen to blur events while waiting for space bar to be released
+                this.windowBlurListener = () => this.onReleaseSpace();
+                window.addEventListener('blur', this.windowBlurListener, { once: true });
+            } else {
+                // remove manually when space bar has been released
+                window.removeEventListener('blur', this.windowBlurListener);
+                this.windowBlurListener = null;
+            }
         }
     },
     mounted() {
@@ -38,11 +53,16 @@ export default {
 
         // Remove reference to $el
         this.clearScrollContainerElement();
+        window.removeEventListener('blur', this.windowBlurListener);
     },
     methods: {
-        ...mapActions('canvas', ['initScrollContainerElement', 'updateContainerSize', 'zoomAroundPointer',
-            'contentBoundsChanged']),
-        ...mapMutations('canvas', ['clearScrollContainerElement', 'setSuggestPanning']),
+        ...mapActions('canvas', [
+            'initScrollContainerElement',
+            'updateContainerSize',
+            'zoomAroundPointer',
+            'contentBoundsChanged'
+        ]),
+        ...mapMutations('canvas', ['clearScrollContainerElement']),
 
         initResizeObserver() {
             // updating the container size and recalculating the canvas is debounced.
@@ -89,18 +109,22 @@ export default {
             this.zoomAroundPointer({ delta, cursorX, cursorY });
             /* eslint-enable no-invalid-this */
         }),
-        /*
-            Panning
-        */
-        suggestPan(e) {
+
+        onPressSpace(e) {
             if (blacklistTagNames.test(e.target.tagName)) {
                 return;
             }
-
+            
             e.preventDefault();
             e.stopPropagation();
-            this.setSuggestPanning(true);
+
+            if (!this.isHoldingDownSpace) {
+                this.useMoveCursor = true;
+            }
+
+            this.isHoldingDownSpace = true;
         },
+
         beginPan(e) {
             if (!this.interactionsEnabled || this.isEmpty) {
                 return;
@@ -108,55 +132,92 @@ export default {
             const middleButton = 1;
             const rightButton = 2;
 
-            if (this.suggestPanning || [middleButton, rightButton].includes(e.button)) {
+            this.isHoldingDownMiddleClick = e.button === middleButton;
+            this.isHoldingDownRightClick = e.button === rightButton;
+
+            // definite pan for these 2 interactions
+            if (this.isHoldingDownMiddleClick || this.isHoldingDownSpace) {
                 this.isPanning = true;
-                // delay move cursor for right click
-                if (e.button === rightButton) {
-                    this.moveCursorTimeoutId = setTimeout(() => {
-                        this.hasPanned = true;
-                        this.useMoveCursor = true;
-                    }, RIGHT_BUTTON_PAN_MODE_DELAY);
-                } else {
-                    this.useMoveCursor = true;
-                }
-                this.hasPanned = false;
+                this.useMoveCursor = true;
                 this.panningOffset = [e.screenX, e.screenY];
                 this.$el.setPointerCapture(e.pointerId);
+            }
+
+            // possibly will pan, but we need to wait further for the user to move
+            if (this.isHoldingDownRightClick) {
+                this.maybePanning = true;
+                this.initialRightClickPosition = [e.screenX, e.screenY];
             }
         },
         movePan: throttle(function (e) {
             /* eslint-disable no-invalid-this */
             if (this.isPanning) {
-                this.hasPanned = true;
-                clearTimeout(this.moveCursorTimeoutId);
-                this.useMoveCursor = true;
-                const delta = [e.screenX - this.panningOffset[0], e.screenY - this.panningOffset[1]];
+                const delta = [
+                    e.screenX - this.panningOffset[0],
+                    e.screenY - this.panningOffset[1]
+                ];
                 this.panningOffset = [e.screenX, e.screenY];
                 this.$el.scrollLeft -= delta[0];
                 this.$el.scrollTop -= delta[1];
             }
+
+            // user could be potentially wanting to pan via right-click
+            if (this.maybePanning) {
+                const MOVE_THRESHOLD = 15;
+                const deltaX = Math.abs(e.screenX - this.initialRightClickPosition[0]);
+                const deltaY = Math.abs(e.screenY - this.initialRightClickPosition[1]);
+
+                // only start panning after we cross a certain threshold
+                if (deltaX >= MOVE_THRESHOLD || deltaY >= MOVE_THRESHOLD) {
+                    this.isPanning = true;
+                    this.useMoveCursor = true;
+                    this.panningOffset = [e.screenX, e.screenY];
+                    this.$el.setPointerCapture(e.pointerId);
+
+                    // clear right-click state
+                    this.maybePanning = false;
+                    this.initialRightClickPosition = null;
+                }
+            }
             /* eslint-enable no-invalid-this */
         }),
-        stopSuggestingPanning(e) {
-            this.setSuggestPanning(false);
+        onReleaseSpace() {
+            // unset panning state
+            this.useMoveCursor = false;
             this.isPanning = false;
+            this.isHoldingDownSpace = false;
         },
         stopPan(event) {
+            // user is not panning but did right-clicked
+            if (!this.isPanning && this.isHoldingDownRightClick) {
+                this.$store.dispatch('application/toggleContextMenu', {
+                    event,
+                    deselectAllObjects: true
+                });
+
+                // unset right-click state since we're directly opening the menu instead of panning
+                this.isHoldingDownRightClick = false;
+                this.maybePanning = false;
+
+                // stop event here
+                event.stopPropagation();
+                return;
+            }
+
             if (this.isPanning) {
-                if (!this.hasPanned) {
-                    this.$store.dispatch('application/toggleContextMenu', {
-                        event,
-                        deselectAllObjects: true
-                    });
-                }
-                clearTimeout(this.moveCursorTimeoutId);
-                this.useMoveCursor = false;
-                this.hasPanned = false;
                 this.isPanning = false;
                 this.panningOffset = null;
                 this.$el.releasePointerCapture(event.pointerId);
                 event.stopPropagation();
             }
+
+            // reset all states
+            this.isHoldingDownRightClick = false;
+            this.isHoldingDownMiddleClick = false;
+            this.maybePanning = false;
+
+            // move cursor should remain set if the user is still holding down the space key
+            this.useMoveCursor = this.isHoldingDownSpace;
         }
     }
 };
@@ -166,14 +227,14 @@ export default {
   <div
     tabindex="0"
     :class="['scroll-container', {
-      'panning': useMoveCursor || suggestPanning,
+      'panning': useMoveCursor,
       'empty': isEmpty,
       'disabled': !interactionsEnabled,
     }]"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
-    @keypress.space.once="suggestPan"
-    @keyup.space="stopSuggestingPanning"
+    @keypress.space="onPressSpace"
+    @keyup.space="onReleaseSpace"
     @pointerdown.middle="beginPan"
     @pointerdown.prevent.right="beginPan"
     @pointerdown.left="beginPan"
