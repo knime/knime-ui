@@ -176,8 +176,9 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
         final AppStateProvider appStateProvider) {
         LocalWorkspaceFileStore fileStore;
         try {
-            fileStore = (LocalWorkspaceFileStore)ExplorerFileSystem.INSTANCE
-                .getStore(new URI("knime://LOCAL/" + relativePath.toString() + "/" + WorkflowPersistor.WORKFLOW_FILE)); // NOSONAR
+            var uri = new URI(ExplorerFileSystem.SCHEME, "LOCAL",
+                "/" + relativePath.toString() + "/" + WorkflowPersistor.WORKFLOW_FILE, null);
+            fileStore = (LocalWorkspaceFileStore)ExplorerFileSystem.INSTANCE.getStore(uri);
         } catch (URISyntaxException e) {
             // should never happen
             throw new IllegalStateException(e);
