@@ -1,5 +1,4 @@
 <script>
-import { mapState } from 'vuex';
 import { escapePressed } from '@/mixins/escapeStack';
 
 const blacklistTagNames = /^(input|textarea|select)$/i;
@@ -9,13 +8,6 @@ const blacklistTagNames = /^(input|textarea|select)$/i;
  * on document and dispatching the corresponding shortcut handler.
  */
 export default {
-    computed: {
-        ...mapState('workflow', ['activeWorkflow']),
-        isWorkflowPresent() {
-            // workflow hotkeys are enabled only if a workflow is present
-            return Boolean(this.activeWorkflow);
-        }
-    },
     mounted() {
         // Start Key Listener
         document.addEventListener('keydown', this.onKeydown);

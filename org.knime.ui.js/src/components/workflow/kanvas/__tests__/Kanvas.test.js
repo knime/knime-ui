@@ -442,7 +442,7 @@ describe('Kanvas', () => {
     });
 
     describe('Context Menu', () => {
-        it('shows context menu if user has not paned and used right mouse button', async () => {
+        it('shows context menu if user has not panned and used right mouse button', async () => {
             const { wrapper, actions } = doShallowMount();
 
             await triggerPointerDown({

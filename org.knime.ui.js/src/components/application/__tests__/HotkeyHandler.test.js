@@ -77,44 +77,6 @@ describe('HotKeys', () => {
         };
     });
 
-    // describe('Panning mode by holding Space', () => {
-    //     afterEach(() => expectEventHandled());
-
-    //     test('Space: Set Panning mode', async () => {
-    //         doShallowMount();
-
-    //         document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
-    //         await Vue.nextTick();
-    //         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
-    //         expectEventHandled();
-
-    //         document.dispatchEvent(new KeyboardEvent('keyup', { code: 'Space' }));
-    //         await Vue.nextTick();
-    //         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
-
-    //         // this event shall have no effect
-    //         window.dispatchEvent(new FocusEvent('blur'));
-    //         await Vue.nextTick();
-    //         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledTimes(2);
-    //     });
-
-    //     test('Space: Cancel panning mode on focus loss', async () => {
-    //         doShallowMount();
-
-    //         document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
-    //         await Vue.nextTick();
-    //         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
-
-    //         window.dispatchEvent(new FocusEvent('blur'));
-    //         window.dispatchEvent(new FocusEvent('blur'));
-    //         await Vue.nextTick();
-
-    //         // panning mode has been canceled exactly 1 Time
-    //         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
-    //         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledTimes(2);
-    //     });
-    // });
-
     test('Escape triggers event', () => {
         doShallowMount();
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
