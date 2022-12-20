@@ -75,7 +75,7 @@ export default {
 <template>
   <g>
     <template v-if="isEditing">
-      <portal to="node-name-editor">
+      <portal to="node-text-editor">
         <NodeNameEditor
           :node-id="nodeId"
           :node-position="nodePosition"

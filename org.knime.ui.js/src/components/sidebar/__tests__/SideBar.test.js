@@ -136,7 +136,7 @@ describe('Sidebar', () => {
 
         doShallowMount();
 
-        expect(wrapper.find('ul').findAll('li').length).toBe(2);
+        expect(wrapper.find('ul').findAll('li').length).toBe(3);
         expect(wrapper.findComponent(NodeDialogWrapper).exists()).toBe(false);
     });
 });

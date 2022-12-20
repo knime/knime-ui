@@ -101,6 +101,29 @@ export const renameContainerNode = ({
     workflowId
 });
 
+/**
+ * @param { Object } cfg The configuration object
+ * @param { String } cfg.label The new label of the node
+ * @param { String } cfg.nodeId Id of the node that will be updated
+ * @param { String } cfg.projectId
+ * @param { String } cfg.workflowId
+ * @returns { Promise } Promise
+ */
+export const renameNodeLabel = ({
+    nodeId,
+    label,
+    projectId,
+    workflowId
+}) => workflowCommand({
+    command: 'update_node_label',
+    args: {
+        nodeId,
+        label
+    },
+    projectId,
+    workflowId
+});
+
 
 /**
  * @param { Object } cfg The configuration object

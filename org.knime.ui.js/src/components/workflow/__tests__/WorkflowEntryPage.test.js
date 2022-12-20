@@ -1,55 +1,20 @@
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 
-import OpenSourceCreditsModal from '../OpenSourceCreditsModal.vue';
 import WorkflowEntryPage from '../WorkflowEntryPage.vue';
+import SpaceExplorer from '@/components/spaceExplorer/SpaceExplorer.vue';
 
 describe('WorkflowEntryPage', () => {
-    let mocks, doShallowMount, wrapper, $shortcuts;
+    const doShallowMount = () => {
+        window.getComputedStyle = () => ({ getPropertyValue: jest.fn() });
+        window.ResizeObserver = jest.fn(() => ({ observe: jest.fn() }));
 
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
+        const wrapper = shallowMount(WorkflowEntryPage);
+        return { wrapper };
+    };
 
-    beforeEach(() => {
-        wrapper = null;
+    it('renders renders the SpaceExplorer', () => {
+        const { wrapper } = doShallowMount();
 
-        $shortcuts = {
-            dispatch: jest.fn()
-        };
-
-        mocks = { $shortcuts };
-        doShallowMount = () => {
-            wrapper = shallowMount(WorkflowEntryPage, { mocks });
-        };
-    });
-
-    it('renders two buttons', () => {
-        doShallowMount();
-        const buttons = wrapper.findAll('button');
-        expect(buttons.length).toBe(2);
-    });
-
-    it('renders open source credits modal', () => {
-        doShallowMount();
-
-        expect(wrapper.findComponent(OpenSourceCreditsModal).exists()).toBe(true);
-    });
-
-    it('dispatches shortcut handler to openWorkflow', () => {
-        doShallowMount();
-
-        const buttons = wrapper.findAll('button');
-        buttons.at(1).trigger('click');
-        expect($shortcuts.dispatch).toHaveBeenCalledWith('openWorkflow');
-    });
-
-    it('dispatches shortcut handler to createWorkflow', () => {
-        doShallowMount();
-
-        const buttons = wrapper.findAll('button');
-        buttons.at(0).trigger('click');
-        expect($shortcuts.dispatch).toHaveBeenCalledWith('createWorkflow');
+        expect(wrapper.findComponent(SpaceExplorer).exists()).toBe(true);
     });
 });

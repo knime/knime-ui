@@ -1,5 +1,5 @@
 import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { createLocalVue, mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
@@ -8,18 +8,20 @@ import ActionButton from '@/components/common/ActionButton.vue';
 import NodeActionBar from '../NodeActionBar.vue';
 
 describe('NodeActionBar', () => {
-    let mocks, doMount, storeConfig, $shortcuts, propsData, wrapper;
-
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
     });
 
-    beforeEach(() => {
-        propsData = {
+    const $shortcuts = {
+        get: jest.fn(() => ({}))
+    };
+
+    const doMount = ({ props, isNodeSelected = () => () => false } = {}) => {
+        const defaultProps = {
             nodeId: 'root:1'
         };
-        storeConfig = {
+        const storeConfig = {
             workflow: {
                 actions: {
                     executeNodes: jest.fn(),
@@ -34,30 +36,30 @@ describe('NodeActionBar', () => {
             },
             selection: {
                 getters: {
-                    isNodeSelected: () => () => false
+                    isNodeSelected
                 }
             }
         };
-        $shortcuts = {
-            get: jest.fn(() => ({}))
-        };
-        doMount = (allowedActions = {}) => {
-            let $store = mockVuexStore(storeConfig);
 
-            mocks = { $shapes, $shortcuts, $store };
+        const $store = mockVuexStore(storeConfig);
 
-            wrapper = shallowMount(NodeActionBar, {
-                propsData: {
-                    ...propsData,
-                    ...allowedActions
-                },
-                mocks
-            });
-        };
+        const wrapper = mount(NodeActionBar, {
+            propsData: {
+                ...defaultProps,
+                ...props
+            },
+            mocks: { $shapes, $shortcuts, $store }
+        });
+
+        return { wrapper, storeConfig };
+    };
+
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
     it('renders disabled action buttons without openNodeConfiguration and openView', () => {
-        doMount();
+        const { wrapper } = doMount();
 
         let buttons = wrapper.findAllComponents(ActionButton);
         
@@ -67,8 +69,7 @@ describe('NodeActionBar', () => {
     });
 
     it('renders disabled action buttons with openNodeConfiguration and without openView', () => {
-        propsData.canOpenDialog = false;
-        doMount();
+        const { wrapper } = doMount({ props: { canOpenDialog: false } });
 
         let buttons = wrapper.findAllComponents(ActionButton);
         
@@ -79,9 +80,9 @@ describe('NodeActionBar', () => {
     });
 
     it('renders disabled action buttons with openNodeConfiguration and openView', () => {
-        propsData.canOpenDialog = false;
-        propsData.canOpenView = false;
-        doMount();
+        const { wrapper } = doMount({
+            props: { canOpenDialog: false, canOpenView: false }
+        });
 
         let buttons = wrapper.findAllComponents(ActionButton);
         
@@ -93,15 +94,15 @@ describe('NodeActionBar', () => {
     });
 
     it('renders enabled action buttons', () => {
-        propsData = {
-            ...propsData,
-            canOpenDialog: true,
-            canExecute: true,
-            canCancel: true,
-            canReset: true,
-            canOpenView: true
-        };
-        doMount();
+        const { wrapper, storeConfig } = doMount({
+            props: {
+                canOpenDialog: true,
+                canExecute: true,
+                canCancel: true,
+                canReset: true,
+                canOpenView: true
+            }
+        });
 
         let buttons = wrapper.findAllComponents(ActionButton);
 
@@ -117,8 +118,10 @@ describe('NodeActionBar', () => {
     });
 
     describe('loop action buttons', () => {
-        test('step and pause', () => {
-            doMount({ canStep: true, canPause: true, canResume: false });
+        it('should step and pause', () => {
+            const { wrapper, storeConfig } = doMount({
+                props: { canStep: true, canPause: true, canResume: false }
+            });
 
             // fires action event
             let buttons = wrapper.findAllComponents(ActionButton);
@@ -130,8 +133,10 @@ describe('NodeActionBar', () => {
             expect(storeConfig.workflow.actions.stepLoopExecution).toHaveBeenCalled();
         });
 
-        test('step and resume', () => {
-            doMount({ canStep: true, canPause: false, canResume: true });
+        it('should step and resume', () => {
+            const { wrapper, storeConfig } = doMount({
+                props: { canStep: true, canPause: false, canResume: true }
+            });
 
             let buttons = wrapper.findAllComponents(ActionButton);
             buttons.wrappers.forEach(button => {
@@ -141,9 +146,11 @@ describe('NodeActionBar', () => {
             expect(storeConfig.workflow.actions.stepLoopExecution).toHaveBeenCalled();
         });
 
-        test('step, pause, resume', () => {
+        it('should step, pause, resume', () => {
             // ensure only two of the three loop options are rendered at a time
-            doMount({ canStep: true, canPause: true, canResume: true });
+            const { wrapper, storeConfig } = doMount({
+                props: { canStep: true, canPause: true, canResume: true }
+            });
 
             let buttons = wrapper.findAllComponents(ActionButton);
             buttons.wrappers.forEach(button => {
@@ -156,16 +163,18 @@ describe('NodeActionBar', () => {
     });
 
     it('renders node Id', () => {
-        doMount();
+        const { wrapper } = doMount();
 
         expect(wrapper.find('text').text()).toBe('root:1');
     });
 
     it('should add the hotkey binding to the action tooltip when node is selected', () => {
-        storeConfig.selection.getters.isNodeSelected = () => () => true;
         $shortcuts.get = jest.fn((name) => ({ hotkeyText: 'MOCK HOTKEY TEXT' }));
 
-        doMount({ canReset: true });
+        const { wrapper } = doMount({
+            props: { canReset: true },
+            isNodeSelected: () => () => true
+        });
 
         const buttons = wrapper.findAllComponents(ActionButton);
         const lastButton = buttons.at(buttons.length - 1);

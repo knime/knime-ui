@@ -138,6 +138,9 @@ header {
   border-bottom: 4px solid var(--knime-yellow);
   position: relative;
 
+  /* override padding set by grid system */
+  padding: initial;
+
   /* smallish dark spacer */
   &::after {
     content: "";
@@ -215,6 +218,10 @@ header {
       white-space: nowrap;
       list-style: none;
 
+      & >>> .shadow-wrapper {
+        margin-left: -24px;
+      }
+
       & >>> .shadow-wrapper::before {
         background-image: none;
       }
@@ -223,9 +230,13 @@ header {
         background-image: linear-gradient(90deg, hsl(0deg 0% 100% / 0%) 0%, var(--knime-masala) 100%);
       }
 
+      & >>> .carousel {
+        padding-left: 24px;
+      }
+
+
       & .wrapper {
         display: inline-flex;
-        padding-left: -20px;
         margin-left: -24px;
         margin-right: -20px;
       }

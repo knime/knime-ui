@@ -49,7 +49,9 @@ export const actions = {
             ? getScrollContainerElement().firstChild
             : getWorkflowPreviewSnapshot(projectId);
 
-        const workflowPreviewSvg = await generateWorkflowPreview(svgElement);
+        const isCanvasEmpty = rootState.canvas.isEmpty;
+
+        const workflowPreviewSvg = await generateWorkflowPreview(svgElement, isCanvasEmpty);
         saveWorkflow({ projectId, workflowPreviewSvg });
     },
 

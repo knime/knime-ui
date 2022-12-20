@@ -80,7 +80,7 @@ export default {
     },
     editName: {
         text: 'Rename',
-        hotkey: ['F2'],
+        hotkey: ['Shift', 'F2'],
         execute: ({ $store }) => $store.dispatch(
             'workflow/openNameEditor',
             $store.getters['selection/singleSelectedNode'].id
@@ -89,6 +89,23 @@ export default {
             .includes($store.getters['selection/singleSelectedNode']?.kind) &&
             !$store.getters['selection/singleSelectedNode']?.link &&
             $store.getters['workflow/isWritable']
+    },
+    editNodeLabel: {
+        text: 'Edit node label',
+        hotkey: ['F2'],
+        execute: ({ $store }) => $store.dispatch(
+            'workflow/openLabelEditor',
+            $store.getters['selection/singleSelectedNode'].id
+        ),
+        condition: ({ $store }) => {
+            const singleSelectedNode = $store.getters['selection/singleSelectedNode'];
+            
+            return (
+                singleSelectedNode !== null &&
+                !singleSelectedNode.link &&
+                $store.getters['workflow/isWritable']
+            );
+        }
     },
     deleteSelected: {
         text: 'Delete',

@@ -27,9 +27,10 @@ limitations under the License.
 /**
  * Outputs the given SVG Element as a string
  * @param {HTMLElement} svg
+ * @param {Boolean} skipLicense whether to add the license for the fonts
  * @returns {String} serialized svg element
  */
-const getSvgContent = (svg) => {
+const getSvgContent = (svg, skipLicense) => {
     // Get svg source
     const serializer = new XMLSerializer();
     let source = serializer.serializeToString(svg);
@@ -54,7 +55,7 @@ const getSvgContent = (svg) => {
     }
 
     // Add xml declaration
-    source = `<?xml version="1.0" standalone="no"?>\r\n${LICENSE}\r\n${source}`;
+    source = `<?xml version="1.0" standalone="no"?>${skipLicense ? '' : `\r\n${LICENSE}`}\r\n${source}`;
 
     return source;
 };
@@ -256,12 +257,19 @@ const addFontStyles = async (svgElement) => {
  * represents the rendered workflow content.
  *
  * @param {HTMLElement} svgElement root workflow SVG element
+ * @param {Boolean} isEmpty whether the canvas is empty
  * @returns {String | null} The contents of the root workflow as an SVG string or null when no element is provided
  * as a parameter
  */
-export const generateWorkflowPreview = async (svgElement) => {
+export const generateWorkflowPreview = async (svgElement, isEmpty) => {
     if (!svgElement) {
         return null;
+    }
+
+    if (isEmpty) {
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const emptySvg = document.createElementNS(svgNS, 'svg');
+        return getSvgContent(emptySvg, true);
     }
 
     // clone the element so that the original one does not get modified

@@ -94,6 +94,13 @@ describe('workflow store: Editing', () => {
 
             expect(store.state.workflow.portTypeMenu.previewPort).toStrictEqual({ typeId: 'prev' });
         });
+
+        it('sets the id of the node thats label is being edited', async () => {
+            const { store } = await loadStore();
+            store.commit('workflow/setLabelEditorNodeId', 'root:1');
+
+            expect(store.state.workflow.labelEditorNodeId).toStrictEqual('root:1');
+        });
     });
 
     describe('actions', () => {
@@ -882,6 +889,14 @@ describe('workflow store: Editing', () => {
                     expect(store.state.selection.selectedNodes.bar).toBe(true);
                 });
             });
+        });
+
+        it('opens and closes node label editor', async () => {
+            const { store } = await loadStore();
+            await store.dispatch('workflow/openLabelEditor', 'root:1');
+            expect(store.state.workflow.labelEditorNodeId).toBe('root:1');
+            await store.dispatch('workflow/closeLabelEditor');
+            expect(store.state.workflow.labelEditorNodeId).toBe(null);
         });
     });
 });

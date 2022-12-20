@@ -1,0 +1,125 @@
+<script>
+import { mapGetters } from 'vuex';
+
+import SaveIcon from '@/assets/ok.svg';
+import CancelIcon from '@/assets/cancel.svg';
+import ActionBar from '@/components/common/ActionBar.vue';
+
+import NodeLabelTextArea from './NodeLabelTextArea.vue';
+
+export default {
+    components: {
+        NodeLabelTextArea,
+        ActionBar
+    },
+    props: {
+        value: {
+            type: String,
+            default: ''
+        },
+        nodeId: {
+            type: String,
+            required: true
+        },
+        kind: {
+            type: String,
+            default: ''
+        },
+        nodePosition: {
+            type: Object,
+            required: true,
+            validator: position => typeof position.x === 'number' && typeof position.y === 'number'
+        }
+    },
+    data() {
+        return {
+            currentLabel: this.value
+        };
+    },
+    computed: {
+        ...mapGetters('canvas', ['viewBox']),
+        overlayStyles() {
+            const { left, top } = this.viewBox;
+            return {
+                width: '100%',
+                height: '100%',
+                x: left,
+                y: top
+            };
+        },
+        actions() {
+            return [
+                {
+                    name: 'save',
+                    icon: SaveIcon,
+                    onClick: this.onSave,
+                    primary: true
+                },
+                {
+                    name: 'cancel',
+                    icon: CancelIcon,
+                    onClick: this.onCancel
+                }
+            ];
+        },
+        actionBarPosition() {
+            return [
+                this.nodePosition.x + this.$shapes.nodeSize / 2,
+                this.kind === 'metanode'
+                    ? this.nodePosition.y + this.$shapes.metanodeLabelActionBarOffset
+                    : this.nodePosition.y + this.$shapes.nodeLabelActionBarOffset
+            ];
+        }
+    },
+    watch: {
+        value(newValue) {
+            this.currentLabel = newValue;
+        }
+    },
+    methods: {
+        onSave() {
+            if (this.currentLabel === this.value) {
+                this.onCancel();
+            } else {
+                this.$emit('save', { newLabel: this.currentLabel.trim() });
+            }
+        },
+        onCancel() {
+            // reset internal value
+            this.currentLabel = this.value;
+            this.$emit('cancel');
+        }
+    }
+};
+</script>
+
+<template>
+  <g>
+    <!-- Block all inputs to the kanvas -->
+    <rect
+      v-bind="overlayStyles"
+      fill="transparent"
+      @pointerdown.stop.prevent
+      @click.stop.prevent
+      @contextmenu.stop.prevent
+    />
+
+    <!-- Save/Cancel actions -->
+    <ActionBar
+      :actions="actions"
+      :transform="`translate(${actionBarPosition})`"
+      prevent-context-menu
+    />
+
+    <!-- Node name inline editor -->
+    <NodeLabelTextArea
+      v-model="currentLabel"
+      :transform="`translate(${nodePosition.x}, ${nodePosition.y})`"
+      :kind="kind"
+      :parent-width="$shapes.nodeSize"
+      @save="onSave"
+      @cancel="onCancel"
+    />
+  </g>
+</template>
+
