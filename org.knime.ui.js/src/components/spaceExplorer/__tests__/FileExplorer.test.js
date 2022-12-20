@@ -106,22 +106,9 @@ describe('FileExplorer.vue', () => {
         expect(wrapper.find('.empty').exists()).toBe(true);
     });
 
-    describe('Mini mode', () => {
-        it('should apply the right styles for "mini" mode', () => {
-            const { wrapper } = doMount({ props: { mode: 'mini' } });
-            
-            expect(wrapper.find('tbody').classes()).toContain('mini');
-        });
-
-        it('should truncate long item names', () => {
-            const longName = `
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-            `.trim();
-            const items = [...MOCK_DATA, { ...MOCK_DATA.at(MOCK_DATA.length - 1), name: longName }];
+    it('should apply the right styles for "mini" mode', () => {
+        const { wrapper } = doMount({ props: { mode: 'mini' } });
         
-            const { wrapper } = doMount({ props: { items, mode: 'mini' } });
-        
-            expect(wrapper.findAll('.file-explorer-item').at(MOCK_DATA.length).text()).toMatch(longName.slice(0, 35));
-        });
+        expect(wrapper.find('tbody').classes()).toContain('mini');
     });
 });
