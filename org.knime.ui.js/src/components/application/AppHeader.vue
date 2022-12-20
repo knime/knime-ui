@@ -200,7 +200,7 @@ header {
 
         & svg {
           @mixin svg-icon-size 18;
-          
+
           stroke: var(--knime-white);
         }
       }

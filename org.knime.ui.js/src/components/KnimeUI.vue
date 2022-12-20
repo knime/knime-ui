@@ -150,7 +150,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 #knime-ui {
   display: grid;
   grid-template:

@@ -94,7 +94,7 @@ export default {
         </div>
 
         <div class="grid-item-9 body">
-          <p style="color: red">
+          <p style="color: red;">
             TBD — There should be a nice text that helps users to understands that they are not
             surprised that they see the classic user interface.
           </p>
