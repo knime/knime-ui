@@ -188,4 +188,12 @@ describe('generateWorkflowPreview', () => {
         expect(localStorage.getItem).toHaveBeenCalled();
         expect(localStorage.setItem).toHaveBeenCalledTimes(1);
     });
+
+    it('should return empty svg when canvas is empty', async () => {
+        const { svg } = setup();
+
+        const output = await generateWorkflowPreview(svg, true);
+        const outputEl = createElementFromOutput(output);
+        expect(outputEl.childNodes.length).toBe(0);
+    });
 });
