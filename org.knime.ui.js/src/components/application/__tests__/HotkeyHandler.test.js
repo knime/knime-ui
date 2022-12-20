@@ -1,4 +1,3 @@
-import Vue from 'vue';
 import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
@@ -78,60 +77,43 @@ describe('HotKeys', () => {
         };
     });
 
-    test('adds and removes listener', () => {
-        jest.spyOn(document, 'addEventListener');
-        jest.spyOn(document, 'removeEventListener');
-        jest.spyOn(window, 'removeEventListener');
-        doShallowMount();
+    // describe('Panning mode by holding Space', () => {
+    //     afterEach(() => expectEventHandled());
 
-        expect(document.addEventListener).toHaveBeenNthCalledWith(1, 'keydown', wrapper.vm.onKeydown);
-        expect(document.addEventListener).toHaveBeenNthCalledWith(2, 'keypress', wrapper.vm.onKeypress);
-        expect(document.addEventListener).toHaveBeenNthCalledWith(3, 'keyup', wrapper.vm.onKeyup);
+    //     test('Space: Set Panning mode', async () => {
+    //         doShallowMount();
 
-        wrapper.destroy();
-        expect(document.removeEventListener).toHaveBeenNthCalledWith(1, 'keydown', wrapper.vm.onKeydown);
-        expect(document.removeEventListener).toHaveBeenNthCalledWith(2, 'keypress', wrapper.vm.onKeypress);
-        expect(document.removeEventListener).toHaveBeenNthCalledWith(3, 'keyup', wrapper.vm.onKeyup);
-        expect(window.removeEventListener).toHaveBeenCalledWith('blur', wrapper.vm.windowBlurListener);
-    });
+    //         document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
+    //         await Vue.nextTick();
+    //         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
+    //         expectEventHandled();
 
-    describe('Panning mode by holding Space', () => {
-        afterEach(() => expectEventHandled());
+    //         document.dispatchEvent(new KeyboardEvent('keyup', { code: 'Space' }));
+    //         await Vue.nextTick();
+    //         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
 
-        test('Space: Set Panning mode', async () => {
-            doShallowMount();
+    //         // this event shall have no effect
+    //         window.dispatchEvent(new FocusEvent('blur'));
+    //         await Vue.nextTick();
+    //         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledTimes(2);
+    //     });
 
-            document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
-            await Vue.nextTick();
-            expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
-            expectEventHandled();
+    //     test('Space: Cancel panning mode on focus loss', async () => {
+    //         doShallowMount();
 
-            document.dispatchEvent(new KeyboardEvent('keyup', { code: 'Space' }));
-            await Vue.nextTick();
-            expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
+    //         document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
+    //         await Vue.nextTick();
+    //         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
 
-            // this event shall have no effect
-            window.dispatchEvent(new FocusEvent('blur'));
-            await Vue.nextTick();
-            expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledTimes(2);
-        });
+    //         window.dispatchEvent(new FocusEvent('blur'));
+    //         window.dispatchEvent(new FocusEvent('blur'));
+    //         await Vue.nextTick();
 
-        test('Space: Cancel panning mode on focus loss', async () => {
-            doShallowMount();
-
-            document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
-            await Vue.nextTick();
-            expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), true);
-
-            window.dispatchEvent(new FocusEvent('blur'));
-            window.dispatchEvent(new FocusEvent('blur'));
-            await Vue.nextTick();
-
-            // panning mode has been canceled exactly 1 Time
-            expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
-            expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledTimes(2);
-        });
-    });
+    //         // panning mode has been canceled exactly 1 Time
+    //         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledWith(expect.anything(), false);
+    //         expect(storeConfig.canvas.mutations.setSuggestPanning).toHaveBeenCalledTimes(2);
+    //     });
+    // });
 
     test('Escape triggers event', () => {
         doShallowMount();

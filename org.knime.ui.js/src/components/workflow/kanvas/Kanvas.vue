@@ -9,11 +9,11 @@ const blacklistTagNames = /^(input|textarea|select)$/i;
 export default {
     data() {
         return {
-            /* Truthy if currently panning. Stores mouse origin */
-            isPanning: null,
+            // true if currently panning
+            isPanning: false,
+            // determines whether the move cursor will be used. It will also apply the 'panning'
+            // class which prevents pointer events on the svg element
             useMoveCursor: false,
-            hasPanned: null,
-            moveCursorTimeoutId: null,
 
             isHoldingDownSpace: false,
             isHoldingDownMiddleClick: false,
@@ -161,7 +161,7 @@ export default {
                 this.$el.scrollTop -= delta[1];
             }
 
-            // user could be potentially wanting to pan via right-click
+            // user could potentially be wanting to pan via right-click
             if (this.maybePanning) {
                 const MOVE_THRESHOLD = 15;
                 const deltaX = Math.abs(e.screenX - this.initialRightClickPosition[0]);
