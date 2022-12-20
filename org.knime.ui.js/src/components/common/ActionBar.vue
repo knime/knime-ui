@@ -68,7 +68,7 @@ export default {
 </script>
 
 <template>
-  <g @contextmenu="onContextMenu">
+  <g>
     <ActionButton
       v-for="(action, index) in actions"
       :key="action.name"

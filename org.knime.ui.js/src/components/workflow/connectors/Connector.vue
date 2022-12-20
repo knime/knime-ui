@@ -52,8 +52,12 @@ export default {
             isWorkflowWritable: 'isWritable',
             isDragging: 'isDragging'
         }),
-        ...mapGetters('selection', ['isConnectionSelected', 'isNodeSelected',
-            'singleSelectedNode', 'selectedConnections']),
+        ...mapGetters('selection', [
+            'isConnectionSelected',
+            'isNodeSelected',
+            'singleSelectedNode',
+            'selectedConnections'
+        ]),
         path() {
             let { start: [x1, y1], end: [x2, y2] } = this;
             // Update position of source or destination node is being moved
@@ -104,6 +108,13 @@ export default {
     },
     methods: {
         ...mapActions('selection', ['selectConnection', 'deselectConnection', 'deselectAllObjects']),
+        ...mapActions('application', ['toggleContextMenu']),
+
+        onContextMenu(event) {
+            // right click should work same as left click
+            this.onMouseClick(event);
+            this.toggleContextMenu({ event });
+        },
         onMouseClick(e) {
             if (e.shiftKey) {
                 // Multi select
@@ -151,7 +162,7 @@ export default {
       @mouseenter="hover = true"
       @mouseleave="hover = false"
       @click.left="onMouseClick"
-      @contextmenu.prevent="onMouseClick"
+      @pointerdown.right="onContextMenu"
     />
     <path
       ref="visiblePath"

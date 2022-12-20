@@ -300,18 +300,18 @@ export default {
          *
          * We use the contextmenu event as click with button = 2 was not reliable.
          */
-        onContextMenu(e) {
+        onContextMenu(event) {
             if (this.isDragging) {
                 return;
             }
 
-            if (e.ctrlKey || e.metaKey) {
+            if (event.ctrlKey || event.metaKey) {
                 // user tries to open component or metanode
-                e.stopPropagation();
+                event.stopPropagation();
                 return;
             }
 
-            if (e.shiftKey) {
+            if (event.shiftKey) {
                 // Multi select
                 this.selectNode(this.id);
             } else if (!this.isNodeSelected(this.id)) {
@@ -319,6 +319,8 @@ export default {
                 this.deselectAllObjects();
                 this.selectNode(this.id);
             }
+
+            this.$store.dispatch('application/toggleContextMenu', { event });
         },
 
         // public
@@ -387,7 +389,7 @@ export default {
         <!-- Elements for which mouse hover triggers hover state -->
         <g
           class="hover-container"
-          @contextmenu.prevent="onContextMenu"
+          @pointerdown.right="onContextMenu"
           @connector-enter="onConnectorEnter"
           @connector-leave="onConnectorLeave"
           @connector-move="onConnectorMove($event, { inPorts, outPorts })"
@@ -459,7 +461,7 @@ export default {
                 :value="name"
                 :editable="isEditable && isContainerNode"
                 @click.native.left="onLeftMouseClick"
-                @contextmenu.prevent="onContextMenu"
+                @pointerdown.right="onContextMenu"
                 @width-change="nameDimensions.width = $event"
                 @height-change="nameDimensions.height = $event"
                 @edit-start="isHovering = false"

@@ -64,18 +64,4 @@ describe('ActionBar.vue', () => {
 
         expect(button.attributes('title')).toMatch('this is my dynamic title');
     });
-
-    it('should prevent contextmenu clicks', () => {
-        const { wrapper } = doShallowMount({ props: { preventContextMenu: true } });
-        
-        const preventDefault = jest.fn();
-        const stopPropagation = jest.fn();
-
-        Event.prototype.preventDefault = preventDefault;
-        Event.prototype.stopPropagation = stopPropagation;
-        wrapper.trigger('contextmenu');
-
-        expect(preventDefault).toHaveBeenCalled();
-        expect(stopPropagation).toHaveBeenCalled();
-    });
 });
