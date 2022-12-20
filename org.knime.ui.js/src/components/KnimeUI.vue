@@ -164,7 +164,7 @@ export default {
 
 .main-content {
   width: 100vw;
-  height: 100vh;
+  height: calc(100vh - var(--app-header-height));
   grid-area: workflow;
 }
 

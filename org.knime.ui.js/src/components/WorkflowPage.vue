@@ -61,7 +61,7 @@ export default {
     "toolbar toolbar" min-content
     "sidebar workflow" auto
     / min-content auto;
-  height: calc(100vh - var(--app-header-height));
+  height: 100%;
   background: var(--knime-white);
   color: var(--knime-masala);
   overflow: hidden;

@@ -166,7 +166,7 @@ export const actions = {
     async setActiveProject({ commit, dispatch, state }, openProjects) {
         if (openProjects.length === 0) {
             consola.info('No workflows opened');
-            await dispatch('switchWorkflow', null);
+            await dispatch('switchWorkflow', { newWorkflow: null });
             return;
         }
         

@@ -43,6 +43,10 @@ export default {
         },
 
         isLogoActive() {
+            if (this.isInfoPageActive) {
+                return false;
+            }
+
             return (
                 this.openProjects.length === 0 ||
                 (!this.activeProjectId && !this.isLoadingWorkflow) ||
