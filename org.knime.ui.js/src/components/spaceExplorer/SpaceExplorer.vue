@@ -5,7 +5,7 @@ import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 import LoadingIcon from './LoadingIcon.vue';
 import FileExplorer from './FileExplorer.vue';
 
-const DISPLAY_LOADING_DELAY = 500;
+const DISPLAY_LOADING_DELAY = 1000;
 
 export default {
     components: {
@@ -96,6 +96,10 @@ export default {
             this.setLoading(false);
         },
 
+        onOpenWorkflow(item) {
+            this.$store.dispatch('spaceExplorer/openWorkflow', { workflowItemId: item.id });
+        },
+
         onBreadcrumbClick({ id }) {
             this.fetchWorkflowGroupContent(id);
         }
@@ -117,6 +121,7 @@ export default {
       :mode="mode"
       :items="currentWorkflowGroup.items"
       :is-root-folder="currentWorkflowGroup.path.length === 0"
+      @open-workflow="onOpenWorkflow"
       @change-directory="onChangeDirectory"
     />
 

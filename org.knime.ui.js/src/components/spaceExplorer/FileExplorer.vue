@@ -6,7 +6,6 @@ import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
-import { openWorkflow } from '@/api';
 
 const ITEM_TYPES = {
     WorkflowGroup: 'WorkflowGroup',
@@ -76,11 +75,14 @@ export default {
             this.$emit('change-directory', pathId);
         },
 
-        onDoubleClickOnItem(item) {
+        onItemDoubleClick(item) {
             if (this.canEnterDirectory(item)) {
                 this.changeDirectory(item.id);
-            } else if (this.canOpenWorkflow(item)) {
-                openWorkflow(item.id);
+                return;
+            }
+
+            if (this.canOpenWorkflow(item)) {
+                this.$emit('open-workflow', item);
             }
         }
     }
@@ -123,7 +125,7 @@ export default {
         :key="index"
         class="file-explorer-item"
         :class="item.type"
-        @dblclick="onDoubleClickOnItem(item)"
+        @dblclick="onItemDoubleClick(item)"
       >
         <td class="item-icon">
           <Component :is="getTypeIcon(item)" />

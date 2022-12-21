@@ -1,4 +1,4 @@
-import { fetchWorkflowGroupContent } from '@api';
+import { fetchWorkflowGroupContent, openWorkflow } from '@api';
 
 export const state = () => ({
     spaceId: 'local',
@@ -31,6 +31,12 @@ export const actions = {
             : pathId;
 
         return dispatch('fetchWorkflowGroupContent', { itemId: nextWorkflowGroupId });
+    },
+
+    openWorkflow({ dispatch, state, rootState }, { workflowItemId }) {
+        const { spaceId } = state;
+        
+        openWorkflow({ spaceId, workflowItemId });
     }
 };
 
