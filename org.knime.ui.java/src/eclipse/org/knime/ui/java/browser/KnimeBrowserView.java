@@ -89,13 +89,15 @@ public class KnimeBrowserView {
 
     private static final String JSON_RPC_NOTIFICATION_ACTION_ID = "org.knime.ui.java.jsonrpcNotification";
 
-	@PostConstruct
-	public void createPartControl(final Composite parent) {
-		m_browser = new Browser(parent, SWT.NONE);
-		m_browser.addLocationListener(new KnimeBrowserLocationListener(this));
-		m_browser.setMenu(new Menu(m_browser.getShell()));
-		initializeResourceHandlers();
-	}
+    @PostConstruct
+    public void createPartControl(final Composite parent) {
+        // In order for the mechanism to block external requests to work (see CEFPlugin-class)
+        // the resource handlers must be registered before the browser initialization
+        initializeResourceHandlers();
+        m_browser = new Browser(parent, SWT.NONE);
+        m_browser.addLocationListener(new KnimeBrowserLocationListener(this));
+        m_browser.setMenu(new Menu(m_browser.getShell()));
+    }
 
     @Inject
     void partActivated(@Active final MPart part) {
