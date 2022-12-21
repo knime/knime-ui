@@ -1,4 +1,6 @@
 <script>
+import { mixin as clickaway } from 'vue-clickaway2';
+
 import WorkflowGroupIcon from 'webapps-common/ui/assets/img/icons/folder.svg';
 import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
 import ComponentIcon from 'webapps-common/ui/assets/img/icons/node-workflow.svg';
@@ -6,6 +8,9 @@ import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
+
+import * as multiSelectionService from './multiSelectionStateService';
+import { createDragGhost } from './dragGhostHelpers';
 
 const ITEM_TYPES = {
     WorkflowGroup: 'WorkflowGroup',
@@ -26,6 +31,8 @@ export default {
         ArrowIcon
     },
 
+    mixins: [clickaway],
+
     props: {
         mode: {
             type: String,
@@ -41,21 +48,47 @@ export default {
         items: {
             type: Array,
             required: true
+        },
+
+        fullPath: {
+            type: String,
+            default: ''
         }
     },
 
     data() {
         return {
-            ITEM_TYPES
+            ITEM_TYPES,
+            currentLevel: null,
+            selectedItems: [],
+            multiSelectionState: multiSelectionService.getInitialState(),
+            isDragging: false,
+            startDragItemIndex: null
         };
     },
 
+    watch: {
+        fullPath() {
+            this.resetSelection();
+        },
+
+        multiSelectionState() {
+            const normalizedRanges = multiSelectionService.normalizeRanges(this.multiSelectionState);
+            
+            this.$emit('selection-change', normalizedRanges);
+        }
+    },
+
     methods: {
+        resetSelection() {
+            this.multiSelectionState = multiSelectionService.getInitialState();
+        },
+
         canEnterDirectory(item) {
             return item.type === ITEM_TYPES.WorkflowGroup;
         },
 
-        canOpenWorkflow(item) {
+        canOpenFile(item) {
             return item.type === ITEM_TYPES.Workflow;
         },
 
@@ -71,6 +104,28 @@ export default {
             return typeIcons[item.type];
         },
 
+        isSelected(index) {
+            return multiSelectionService.isItemSelected(this.multiSelectionState, index);
+        },
+
+        clickItem(index) {
+            this.multiSelectionState = multiSelectionService.click(index);
+        },
+
+        ctrlClickItem(index) {
+            this.multiSelectionState = multiSelectionService.ctrlClick(
+                this.multiSelectionState,
+                index
+            );
+        },
+
+        shiftClickItem(index) {
+            this.multiSelectionState = multiSelectionService.shiftClick(
+                this.multiSelectionState,
+                index
+            );
+        },
+        
         changeDirectory(pathId) {
             this.$emit('change-directory', pathId);
         },
@@ -81,16 +136,64 @@ export default {
                 return;
             }
 
-            if (this.canOpenWorkflow(item)) {
-                this.$emit('open-workflow', item);
+            if (this.canOpenFile(item)) {
+                this.$emit('open-file', item);
             }
+        },
+
+        onDragStart(e, index) {
+            this.isDragging = true;
+            this.startDragItemIndex = index;
+
+            if (!this.isSelected(index)) {
+                this.resetSelection();
+                this.clickItem(index);
+            }
+
+            const isMultipleSelectionActive = multiSelectionService.isMultipleSelectionActive(
+                this.multiSelectionState,
+                index
+            );
+
+            const selectionSize = multiSelectionService.selectionSize(
+                this.multiSelectionState
+            );
+
+            const { ghost, removeGhost } = createDragGhost({
+                dragStartEvent: e,
+                textContent: this.items[index].name,
+                badgeCount: isMultipleSelectionActive ? selectionSize : null
+            });
+
+            this.ghost = ghost;
+            this.removeGhost = removeGhost;
+        },
+
+        onDragEnter(e, index) {
+            if (index !== this.startDragItemIndex) {
+                const [draggedOverEl] = this.$refs[`item--${index}`];
+                draggedOverEl.classList.add('dragging-over');
+            }
+        },
+
+        onDragLeave(e, index) {
+            const [draggedOverEl] = this.$refs[`item--${index}`];
+            draggedOverEl.classList.remove('dragging-over');
+        },
+
+        onDragEnd(e) {
+            this.isDragging = false;
+            this.removeGhost?.();
         }
     }
 };
 </script>
 
 <template>
-  <table aria-label="Current workflow group in Space Explorer">
+  <table
+    v-on-clickaway="() => resetSelection()"
+    aria-label="Current workflow group in Space Explorer"
+  >
     <thead>
       <tr>
         <th scope="col">Type</th>
@@ -123,8 +226,17 @@ export default {
       <tr
         v-for="(item, index) in items"
         :key="index"
+        :ref="`item--${index}`"
         class="file-explorer-item"
-        :class="item.type"
+        :class="[item.type, { selected: !isDragging && isSelected(index), dragging: isDragging && isSelected(index) }]"
+        :draggable="true"
+        @dragstart="onDragStart($event, index)"
+        @dragenter="onDragEnter($event, index)"
+        @dragleave="onDragLeave($event, index)"
+        @dragend="onDragEnd($event, index)"
+        @click.exact="clickItem(index)"
+        @click.exact.ctrl="ctrlClickItem(index)"
+        @click.exact.shift="shiftClickItem(index)"
         @dblclick="onItemDoubleClick(item)"
       >
         <td class="item-icon">
@@ -139,10 +251,10 @@ export default {
           {{ item.name }}
         </td>
 
-        <td class="item-option">
-          <!-- TODO: add later -->
-          <!-- <MenuOptionsIcon /> -->
-        </td>
+        <!-- <td class="item-option"> -->
+        <!-- TODO: add later -->
+        <!-- <MenuOptionsIcon /> -->
+        <!-- </td> -->
       </tr>
         
       <tr
@@ -194,6 +306,7 @@ tbody.mini {
 .file-explorer-item {
   --icon-size: 20;
   --item-padding: 8px;
+  --selection-color: hsl(206deg 88% 45%/19%);
 
   user-select: none;
   cursor: pointer;
@@ -206,6 +319,30 @@ tbody.mini {
     box-shadow: 1px 1px 4px 0 var(--knime-gray-dark-semi);
   }
 
+  &.selected {
+    background: var(--selection-color);
+  }
+
+  &.dragging {
+    background: var(--knime-gray-dark-semi);
+    color: var(--knime-gray-dark);
+  }
+
+  &.dragging-over {
+    background: var(--knime-yellow);
+  }
+
+  &:not(.selected, .dragging, .dragging-over) .item-content {
+    &.light {
+      background-color: var(--knime-white);
+    }
+  }
+
+  /* Prevent children from interfering with drag events */
+  & td {
+    pointer-events: none;
+  }
+
   & .item-content {
     width: 100%;
     height: 100%;
@@ -214,10 +351,6 @@ tbody.mini {
     overflow: hidden;
     white-space: nowrap;
     max-width: 250px;
-
-    &.light {
-      background-color: var(--knime-white);
-    }
   }
 
   & .item-icon,

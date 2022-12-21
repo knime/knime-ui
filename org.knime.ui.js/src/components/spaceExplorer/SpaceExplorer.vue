@@ -96,7 +96,7 @@ export default {
             this.setLoading(false);
         },
 
-        onOpenWorkflow(item) {
+        onOpenFile(item) {
             this.$store.dispatch('spaceExplorer/openWorkflow', { workflowItemId: item.id });
         },
 
@@ -121,7 +121,8 @@ export default {
       :mode="mode"
       :items="currentWorkflowGroup.items"
       :is-root-folder="currentWorkflowGroup.path.length === 0"
-      @open-workflow="onOpenWorkflow"
+      :full-path="fullPath"
+      @open-file="onOpenFile"
       @change-directory="onChangeDirectory"
     />
 
