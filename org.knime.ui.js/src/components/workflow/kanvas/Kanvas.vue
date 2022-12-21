@@ -46,6 +46,9 @@ export default {
         this.initScrollContainerElement(this.$el);
         this.initResizeObserver();
         this.$el.focus();
+
+        document.addEventListener('keypress', this.onPressSpace);
+        document.addEventListener('keyup', this.onReleaseSpace);
     },
     beforeDestroy() {
         // Stop Resize Observer
@@ -54,6 +57,8 @@ export default {
         // Remove reference to $el
         this.clearScrollContainerElement();
         window.removeEventListener('blur', this.windowBlurListener);
+        document.removeEventListener('keypress', this.onPressSpace);
+        document.removeEventListener('keyup', this.onReleaseSpace);
     },
     methods: {
         ...mapActions('canvas', [
@@ -114,6 +119,10 @@ export default {
             if (blacklistTagNames.test(e.target.tagName)) {
                 return;
             }
+
+            if (e.code !== 'Space') {
+                return;
+            }
             
             e.preventDefault();
             e.stopPropagation();
@@ -123,6 +132,17 @@ export default {
             }
 
             this.isHoldingDownSpace = true;
+        },
+
+        onReleaseSpace(e) {
+            if (e.code !== 'Space') {
+                return;
+            }
+
+            // unset panning state
+            this.useMoveCursor = false;
+            this.isPanning = false;
+            this.isHoldingDownSpace = false;
         },
 
         beginPan(e) {
@@ -181,12 +201,7 @@ export default {
             }
             /* eslint-enable no-invalid-this */
         }),
-        onReleaseSpace() {
-            // unset panning state
-            this.useMoveCursor = false;
-            this.isPanning = false;
-            this.isHoldingDownSpace = false;
-        },
+        
         stopPan(event) {
             // user is not panning but did right-clicked
             if (!this.isPanning && this.isHoldingDownRightClick) {
@@ -233,8 +248,6 @@ export default {
     }]"
     @wheel.meta.prevent="onMouseWheel"
     @wheel.ctrl.prevent="onMouseWheel"
-    @keypress.space="onPressSpace"
-    @keyup.space="onReleaseSpace"
     @pointerdown.middle="beginPan"
     @pointerdown.prevent.right="beginPan"
     @pointerdown.left="beginPan"

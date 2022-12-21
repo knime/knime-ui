@@ -206,26 +206,45 @@ describe('Kanvas', () => {
 
     describe('Panning', () => {
         describe('With space', () => {
+            it.each([
+                ['input'],
+                ['textarea'],
+                ['select']
+            ])('should ignore space press on %s elements', async (elementType) => {
+                const { wrapper } = doShallowMount();
+                const element = document.createElement(elementType);
+                
+                document.body.appendChild(element);
+                element.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space', bubbles: true }));
+
+                await Vue.nextTick();
+
+                expect(wrapper.classes()).not.toContain('panning');
+            });
+
             it('adds and removes the panning cursor with space', async () => {
                 const { wrapper } = doShallowMount();
     
                 expect(wrapper.classes()).not.toContain('panning');
                 
-                await wrapper.trigger('keypress.space');
+                document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
+                await Vue.nextTick();
                 expect(wrapper.classes()).toContain('panning');
                 
-                await wrapper.trigger('keyup.space');
+                document.dispatchEvent(new KeyboardEvent('keyup', { code: 'Space' }));
+                await Vue.nextTick();
                 expect(wrapper.classes()).not.toContain('panning');
             });
     
             it('pans with space', async () => {
                 const { wrapper } = doShallowMount({ scrollLeft: 100, scrollTop: 100 });
                 
-                await wrapper.trigger('keypress.space');
-    
+                document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
+                await Vue.nextTick();
+
                 await triggerPointerDown({
                     wrapper,
-                    button: 1, // left click
+                    button: 0, // left click
                     position: {
                         x: 100,
                         y: 100
@@ -243,11 +262,12 @@ describe('Kanvas', () => {
                 const { wrapper, $store } = doShallowMount({ scrollLeft: 100, scrollTop: 100 });
                 $store.state.canvas.interactionsEnabled = false;
                 
-                await wrapper.trigger('keypress.space');
+                document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
+                await Vue.nextTick();
     
                 await triggerPointerDown({
                     wrapper,
-                    button: 1, // left click
+                    button: 0, // left click
                     position: {
                         x: 100,
                         y: 100
