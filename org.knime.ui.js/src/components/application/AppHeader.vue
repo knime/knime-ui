@@ -4,8 +4,9 @@ import { mapActions, mapState } from 'vuex';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import Carousel from 'webapps-common/ui/components/Carousel.vue';
 import KnimeIcon from 'webapps-common/ui/assets/img/KNIME_Triangle.svg';
-import InfoIcon from 'webapps-common/ui/assets/img/icons/circle-info.svg';
 import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
+import SwitchIcon from 'webapps-common/ui/assets/img/icons/perspective-switch.svg';
+import InfoIcon from '@/assets/info.svg';
 
 import { APP_ROUTES } from '@/router';
 
@@ -21,6 +22,7 @@ export default {
         FunctionButton,
         Carousel,
         InfoIcon,
+        SwitchIcon,
         CloseIcon
     },
     data() {
@@ -75,6 +77,10 @@ export default {
 
             window.addEventListener('resize', onResize);
             onResize();
+        },
+
+        switchToJavaUI() {
+            window.switchToJavaUI();
         },
 
         switchToInfoPage() {
@@ -141,7 +147,17 @@ export default {
 
       <div class="buttons">
         <FunctionButton
+          v-if="!isInfoPageActive"
+          class="switch-classic"
+          title="Open KNIME Modern UI Preview"
+          @click="switchToJavaUI"
+        >
+          <SwitchIcon />
+        </FunctionButton>
+
+        <FunctionButton
           class="switch-info-page"
+          title="Go to info page"
           @click="switchToInfoPage"
         >
           <CloseIcon v-if="isInfoPageActive" />
@@ -191,7 +207,8 @@ header {
       flex-shrink: 0;
       margin-left: 30px;
 
-      & .switch-info-page {
+      & .switch-info-page,
+      & .switch-classic {
         border: 1px solid var(--knime-dove-gray);
         display: flex;
         margin-right: 10px;

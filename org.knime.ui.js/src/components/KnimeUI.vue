@@ -73,7 +73,7 @@ export default {
 
                 // render the application
                 this.loaded = true;
-            } catch ({ message, stack, type }) {
+            } catch ({ message, stack }) {
                 this.error = { message, stack };
             }
 

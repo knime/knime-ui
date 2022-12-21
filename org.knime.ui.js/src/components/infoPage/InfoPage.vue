@@ -72,7 +72,7 @@ export default {
 
         <div class="grid-item-9 body">
           <p>
-            TBD — Extensions provide additional functionality such as access to and processing of complex data types,
+            Extensions provide additional functionality such as access to and processing of complex data types,
             as well as the use of advanced algorithms. Install extensions to add additional functionality.
             The KNIME Extensions page gives you an overview of the extensions available for KNIME Analytics Platform.
           </p>
@@ -95,9 +95,9 @@ export default {
         </div>
 
         <div class="grid-item-9 body">
-          <p style="color: red;">
-            TBD — There should be a nice text that helps users to understands that they are not
-            surprised that they see the classic user interface.
+          <p>
+            Switch to the classic KNIME Analytics Platform user interface. To switch back again, click in the classic
+            perspective the button “Open KNIME Modern UI Preview” in the top right corner
           </p>
           <Button
             with-border
@@ -153,6 +153,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 main {
   display: flex;
   flex-direction: column;
@@ -218,7 +220,8 @@ section {
     & svg {
       align-self: flex-start;
       margin-right: 10px;
-      width: 25px;
+      
+      @mixin svg-icon-size 25;
     }
   }
 

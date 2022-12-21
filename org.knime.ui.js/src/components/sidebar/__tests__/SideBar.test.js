@@ -6,8 +6,8 @@ import { mockVuexStore } from '@/test/test-utils/mockVuexStore';
 import * as panelStoreConfig from '@/store/panel';
 import * as nodeRepositoryStoreConfig from '@/store/nodeRepository';
 
-import TextIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
 import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
+import Metainfo from '@/assets/metainfo.svg';
 
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
@@ -62,7 +62,7 @@ describe('Sidebar', () => {
     it('renders default', () => {
         doShallowMount();
         expect(wrapper.exists()).toBe(true);
-        expect(wrapper.findComponent(TextIcon).exists()).toBe(true);
+        expect(wrapper.findComponent(Metainfo).exists()).toBe(true);
         expect(wrapper.findComponent(PlusIcon).exists()).toBe(true);
 
         expect(wrapper.find('[title="Workflow metadata"]').classes('active')).toBe(true);
