@@ -1,9 +1,11 @@
 <script>
+import Button from 'webapps-common/ui/components/Button.vue';
 import SpaceExplorer from '@/components/spaceExplorer/SpaceExplorer.vue';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
 
 export default {
     components: {
+        Button,
         SpaceExplorer,
         ComputerDesktopIcon
     }
@@ -36,6 +38,19 @@ export default {
       <div class="grid-container">
         <div class="grid-item-12">
           <SpaceExplorer />
+        </div>
+      </div>
+    </section>
+
+    <section class="footer-wrapper">
+      <div class="grid-container">
+        <div class="grid-item-12 update-bar">
+          <span class="text">
+            There are updates for 2 extensions available.
+          </span>
+          <Button with-border>
+            Update now
+          </Button>
         </div>
       </div>
     </section>
@@ -110,5 +125,23 @@ header {
   padding-top: 50px;
   padding-bottom: 80px;
   flex: 1;
+}
+
+.footer-wrapper {
+  background-color: var(--knime-yellow);
+
+  & .grid-container {
+    & .update-bar {
+      height: 100px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: "Roboto Condensed", sans-serif;
+      font-size: 22px;
+      color: var(--knime-masala);
+      font-weight: 700;
+      padding: 20px 0;
+    }
+  }
 }
 </style>
