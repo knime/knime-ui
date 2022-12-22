@@ -25,9 +25,21 @@ export default {
             type: Object,
             required: true
         },
-        editable: {
-            type: Boolean,
-            default: false
+        /**
+         * @values "left", "center", "right"
+         */
+        textAlign: {
+            type: String,
+            default: 'center',
+            validator: val => ['left', 'center', 'right'].includes(val)
+        },
+        backgroundColor: {
+            type: String,
+            default: null
+        },
+        styleRanges: {
+            type: Array,
+            default: () => []
         }
     },
     computed: {
@@ -76,7 +88,9 @@ export default {
         :node-id="nodeId"
         :value="value"
         :kind="kind"
-        :editable="editable"
+        :text-align="textAlign"
+        :background-color="backgroundColor"
+        :style-ranges="styleRanges"
         @request-edit="onRequestEdit"
         @contextmenu="$emit('contextmenu', $event)"
       />

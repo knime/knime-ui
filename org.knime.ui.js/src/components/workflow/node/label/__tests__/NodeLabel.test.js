@@ -13,7 +13,9 @@ describe('NodeLabel', () => {
         nodePosition: { x: 15, y: 13 },
         kind: 'metanode',
         value: 'Test label',
-        editable: true
+        textAlign: 'center',
+        backgroundColor: 'rgb(255, 216, 0)',
+        styleRanges: [{ fontSize: 22, color: '#000000' }]
     };
 
     beforeAll(() => {
@@ -64,8 +66,10 @@ describe('NodeLabel', () => {
                 expect.objectContaining({
                     value: defaultProps.value,
                     kind: defaultProps.kind,
-                    editable: defaultProps.editable,
-                    nodeId: defaultProps.nodeId
+                    nodeId: defaultProps.nodeId,
+                    textAlign: defaultProps.textAlign,
+                    backgroundColor: defaultProps.backgroundColor,
+                    styleRanges: defaultProps.styleRanges
                 })
             );
         });

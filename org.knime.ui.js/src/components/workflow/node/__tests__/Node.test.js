@@ -37,7 +37,10 @@ const commonNode = {
 
     position: { x: 500, y: 200 },
     annotation: {
-        text: 'ThatsMyNode'
+        text: 'ThatsMyNode',
+        backgroundColor: 'rgb(255, 216, 0)',
+        styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
+        textAlign: 'center'
     },
 
     name: 'My Name',
@@ -213,8 +216,8 @@ describe('Node', () => {
             expect(nodePorts.props('nodeKind')).toBe('component');
         });
 
-        it('should pass an empty string if annotation does not exist', () => {
-            delete propsData.annotation;
+        it('should pass an empty string if annotation text does not exist', () => {
+            delete propsData.annotation.text;
             doMount();
 
             expect(wrapper.findComponent(NodeLabel).props()).toStrictEqual({
@@ -222,7 +225,9 @@ describe('Node', () => {
                 kind: commonNode.kind,
                 nodeId: commonNode.id,
                 nodePosition: commonNode.position,
-                editable: expect.any(Boolean)
+                backgroundColor: 'rgb(255, 216, 0)',
+                styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
+                textAlign: 'center'
             });
         });
 
@@ -232,7 +237,9 @@ describe('Node', () => {
                 kind: commonNode.kind,
                 nodeId: commonNode.id,
                 nodePosition: commonNode.position,
-                editable: expect.any(Boolean)
+                backgroundColor: 'rgb(255, 216, 0)',
+                styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
+                textAlign: 'center'
             });
         });
 

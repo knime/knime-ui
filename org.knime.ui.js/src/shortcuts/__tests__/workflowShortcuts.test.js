@@ -240,19 +240,6 @@ describe('workflowShortcuts', () => {
 
                 expect(workflowShortcuts.editNodeLabel.condition({ $store })).toBe(false);
             });
-
-            test('cannot edit label if the selected node is linked', () => {
-                const { $store } = createStore({
-                    isWorkflowWritable: true,
-                    singleSelectedNode: {
-                        kind: 'node',
-                        id: 'node1',
-                        link: true
-                    }
-                });
-
-                expect(workflowShortcuts.editName.condition({ $store })).toBe(false);
-            });
         });
 
         describe('deleteSelected', () => {
