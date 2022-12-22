@@ -140,7 +140,6 @@ header {
       font-size: 22px;
       color: var(--knime-masala);
       font-weight: 700;
-      padding: 20px 0;
     }
   }
 }
