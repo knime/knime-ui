@@ -96,8 +96,8 @@ export default {
 
         <div class="grid-item-9 body">
           <p>
-            Switch to the classic KNIME Analytics Platform user interface. To switch back again, click in the classic
-            perspective the button “Open KNIME Modern UI Preview” in the top right corner
+            Switch to the classic KNIME Analytics Platform user interface. To switch back again,
+            click the button “Open KNIME Modern UI Preview” in the top right corner of the classic perspective.
           </p>
           <Button
             with-border
