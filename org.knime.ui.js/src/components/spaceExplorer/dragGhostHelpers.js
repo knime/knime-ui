@@ -2,8 +2,9 @@ import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
 
 const COLORS = {
     dragGhostContainer: {
-        background: knimeColors.CornflowerDark,
-        font: knimeColors.White
+        // create cornflower-ultra-light
+        background: 'hsl(206deg 74% 90%/100%)',
+        font: knimeColors.Masala
     },
     dragGhostBadge: {
         background: knimeColors.Masala,
@@ -82,13 +83,8 @@ const createGhostContainer = ({ badgeCount, textContent, event }) => {
         alignItems: 'center',
         padding: '0 12px',
         borderRadius: '4px',
-        opacity: 1
-        
-        // boxShadow: badgeCount && `
-        //     0 1px 1px rgba(0,0,0,0.15),
-        //     0 8px 0 -5px var(--knime-cornflower),
-        //     0 8px 1px -4px rgba(0,0,0,0.15)
-        // `
+        opacity: 1,
+        boxShadow: '0px 2px 10px rgba(130, 133, 134, 0.4)'
     };
 
     applyStyles(ghost, ghostStyles);
@@ -134,10 +130,10 @@ const createGhostPositionUpdateHandler = (ghost) => ({ clientX, clientY }) => {
  * @returns {Promise}
  */
 const animateIn = ({ ghost, dragStartEvent }) => new Promise(async resolve => {
-    const SLEEP_MS = 50;
+    const SLEEP_MS = 100;
     
     // apply temporary transition
-    ghost.style.transition = 'all 0.05s';
+    ghost.style.transition = 'all 0.5s';
 
     // move ghost to where the mouse position is based on the drag event
     requestAnimationFrame(() => {

@@ -170,6 +170,10 @@ export default {
         },
 
         onDragEnter(e, index) {
+            if (this.isSelected(index)) {
+                return;
+            }
+
             if (index !== this.startDragItemIndex) {
                 const [draggedOverEl] = this.$refs[`item--${index}`];
                 draggedOverEl.classList.add('dragging-over');
@@ -306,7 +310,7 @@ tbody.mini {
 .file-explorer-item {
   --icon-size: 20;
   --item-padding: 8px;
-  --selection-color: hsl(206deg 88% 45%/19%);
+  --selection-color: hsl(206deg 74% 90%/100%);
 
   user-select: none;
   cursor: pointer;
@@ -324,12 +328,12 @@ tbody.mini {
   }
 
   &.dragging {
-    background: var(--knime-gray-dark-semi);
-    color: var(--knime-gray-dark);
+    background: var(--selection-color);
+    color: var(--knime-masala);
   }
 
   &.dragging-over {
-    background: var(--knime-yellow);
+    background: var(--selection-color);
   }
 
   &:not(.selected, .dragging, .dragging-over) .item-content {
@@ -346,6 +350,7 @@ tbody.mini {
   & .item-content {
     width: 100%;
     height: 100%;
+    color: var(--knime-masala);
     padding: var(--item-padding);
     text-overflow: ellipsis;
     overflow: hidden;
