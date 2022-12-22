@@ -33,6 +33,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.entity.NodeIDEnt;
+import org.knime.gateway.api.webui.service.util.ServiceExceptions.InvalidRequestException;
+import org.knime.gateway.api.webui.util.EntityFactory;
 import org.knime.gateway.impl.jsonrpc.JsonRpcRequestHandler;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
@@ -42,11 +44,14 @@ import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.gateway.impl.webui.LocalWorkspace;
 import org.knime.gateway.impl.webui.SpaceProvider;
 import org.knime.gateway.impl.webui.SpaceProviders;
+import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
+import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
 import org.knime.ui.java.DefaultServicesUtil;
+import org.knime.ui.java.EclipseUIStateUtil;
 import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
@@ -77,6 +82,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * For a quick intro to the e4 application model please read 'E4_Application_Model.md'.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH
  */
 public class KnimeBrowserView {
 
@@ -99,6 +105,8 @@ public class KnimeBrowserView {
     private static final String JSON_RPC_ACTION_ID = "org.knime.ui.java.jsonrpc";
 
     private static final String JSON_RPC_NOTIFICATION_ACTION_ID = "org.knime.ui.java.jsonrpcNotification";
+
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(KnimeBrowserView.class);
 
     private static KnimeBrowserView instance = null;
 
@@ -129,10 +137,22 @@ public class KnimeBrowserView {
     }
 
     private void initView(final Supplier<AppState> appStateSupplier, final boolean ignoreEmptyPageAsDevUrl) {
+        // Create and set default service dependencies
         var eventConsumer = createEventConsumer();
         var appStateProvider = new AppStateProvider(appStateSupplier);
+        var updateStateProvider = new UpdateStateProvider(() -> EclipseUIStateUtil.createUpdateState());
         DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer,
-            createSpaceProviders());
+            createSpaceProviders(), updateStateProvider);
+
+        // Check for updates and notify UI
+        try {
+            DefaultEventService.getInstance().addEventListener(EntityFactory.UpdateState.buildEventTypeEnt());
+        } catch (InvalidRequestException e) {
+            LOGGER.error("Could not add update state changed event listener to event service", e);
+        }
+        updateStateProvider.checkForUpdates();
+
+        // Initialize browser functions and set CEF browser URL
         initBrowserFunctions(appStateProvider);
         setUrl(ignoreEmptyPageAsDevUrl);
     }
