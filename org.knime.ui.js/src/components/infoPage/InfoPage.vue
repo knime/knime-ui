@@ -175,6 +175,7 @@ header {
     align-items: flex-start;
     flex-direction: column;
     justify-content: center;
+    margin-top: 20px;
 
     & h1 {
       font-size: 36px;
@@ -184,6 +185,8 @@ header {
 }
 
 section {
+  background-color: var(--knime-gray-light-semi);
+
   & .grid-container {
     padding-top: 60px;
     padding-bottom: 60px;
