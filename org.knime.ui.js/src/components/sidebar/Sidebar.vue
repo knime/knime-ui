@@ -181,7 +181,8 @@ nav {
       transition: background-color 150ms ease-out;
 
       & svg {
-        height: 30px;
+        height: 22px;
+        stroke-width: calc(32px/22);
       }
 
       &.active {
