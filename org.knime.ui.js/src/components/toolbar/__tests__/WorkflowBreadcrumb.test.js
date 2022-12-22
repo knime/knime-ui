@@ -146,8 +146,10 @@ describe('WorkflowBreadcrumb.vue', () => {
             };
             wrapper.vm.onClick(event);
             expect(storeConfig.application.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
-                workflowId: 'root:0:123',
-                projectId: 'proj'
+                newWorkflow: {
+                    workflowId: 'root:0:123',
+                    projectId: 'proj'
+                }
             });
         });
     });

@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import VueRouter from 'vue-router';
 import KnimeUI from './components/KnimeUI.vue';
 import router from './router';
 
@@ -14,7 +15,10 @@ Vue.config.productionTip = false;
 
 // Init store and plugins
 const store = initStore(Vue);
-initPlugins(Vue, store);
+initPlugins(Vue, { store, router });
+
+// Init router
+Vue.use(VueRouter);
 
 // required for dynamically loaded components which will access the Vue instance
 // off of the window object

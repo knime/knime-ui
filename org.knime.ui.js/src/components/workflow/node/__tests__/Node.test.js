@@ -760,8 +760,10 @@ describe('Node', () => {
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
             expect(storeConfig.application.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
-                workflowId: 'root:1',
-                projectId: 'projectId'
+                newWorkflow: {
+                    workflowId: 'root:1',
+                    projectId: 'projectId'
+                }
             });
         });
 
@@ -773,8 +775,10 @@ describe('Node', () => {
             });
 
             expect(storeConfig.application.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
-                workflowId: 'root:1',
-                projectId: 'projectId'
+                newWorkflow: {
+                    workflowId: 'root:1',
+                    projectId: 'projectId'
+                }
             });
         });
 
