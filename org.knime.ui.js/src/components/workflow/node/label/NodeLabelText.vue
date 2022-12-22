@@ -18,22 +18,22 @@ export default {
             type: String,
             default: ''
         },
-        /**
-         * @values "left", "center", "right"
-         */
-        textAlign: {
-            type: String,
-            default: 'center',
-            validator: val => ['left', 'center', 'right'].includes(val)
-        },
-        backgroundColor: {
-            type: String,
-            default: null
-        },
-        styleRanges: {
-            type: Array,
-            default: () => []
+        annotation: {
+            type: Object,
+            required: false,
+            default: () => ({
+                textAlign: 'center',
+                backgroundColor: 'transparent',
+                styleRanges: []
+            })
         }
+    },
+    data() {
+        return {
+            textAlign: this.annotation?.textAlign,
+            backgroundColor:
+            this.annotation?.backgroundColor === '#FFFFFF' ? 'transparent' : this.annotation?.backgroundColor
+        };
     },
     computed: {
         ...mapGetters('selection', ['singleSelectedNode']),
@@ -44,19 +44,29 @@ export default {
         isSelected() {
             return this.nodeId === this.singleSelectedNode?.id;
         },
-        textStyle() {
-            return {
-                textAlign: this.textAlign,
-                backgroundColor: this.backgroundColor === '#FFFFFF' ? 'transparent' : this.backgroundColor
-            };
-        },
         styledText() {
-            let { textRanges, isValid } = applyStyleRanges(this.styleRanges, this.value);
+            const styleRanges = this.annotation ? this.annotation.styleRanges : [];
+            let { textRanges, isValid } = applyStyleRanges(styleRanges, this.value);
             if (!isValid) {
-                consola.warn(`Invalid styleRanges: ${JSON.stringify(this.styleRanges)}. Using default style.`);
+                consola.warn(`Invalid styleRanges: 
+                ${JSON.stringify(this.annotation.styleRanges)}. Using default style.`);
             }
 
             return textRanges;
+        }
+    },
+    methods: {
+        getTextStyles(styledTextPart) {
+            const lineHeight = 1.1;
+            return {
+                fontSize: styledTextPart.fontSize
+                    ? `${styledTextPart.fontSize * this.$shapes.annotationsFontSizePointToPixelFactor}px`
+                    : null,
+                color: styledTextPart.color,
+                fontWeight: styledTextPart.bold ? 'bold' : null,
+                fontStyle: styledTextPart.italic ? 'italic' : null,
+                lineHeight: styledTextPart.fontSize ? lineHeight : null
+            };
         }
     }
 };
@@ -82,13 +92,7 @@ export default {
           v-for="(part, i) in styledText"
           :key="i"
           class="text"
-          :style="{
-            fontSize: part.fontSize ? `${part.fontSize * $shapes.annotationsFontSizePointToPixelFactor}px` : null,
-            color: part.color,
-            fontWeight: part.bold ? 'bold': null,
-            fontStyle: part.italic ? 'italic' : null,
-            lineHeight: part.fontSize ? 1.1 : null
-          }"
+          :style="getTextStyles(part)"
         >
           <slot :on="on">{{ part.text }}</slot>
         </span>

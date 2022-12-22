@@ -216,30 +216,12 @@ describe('Node', () => {
             expect(nodePorts.props('nodeKind')).toBe('component');
         });
 
-        it('should pass an empty string if annotation text does not exist', () => {
-            delete propsData.annotation.text;
-            doMount();
-
-            expect(wrapper.findComponent(NodeLabel).props()).toStrictEqual({
-                value: '',
-                kind: commonNode.kind,
-                nodeId: commonNode.id,
-                nodePosition: commonNode.position,
-                backgroundColor: 'rgb(255, 216, 0)',
-                styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
-                textAlign: 'center'
-            });
-        });
-
         it('displays annotation', () => {
             expect(wrapper.findComponent(NodeLabel).props()).toStrictEqual({
-                value: commonNode.annotation.text,
                 kind: commonNode.kind,
                 nodeId: commonNode.id,
                 nodePosition: commonNode.position,
-                backgroundColor: 'rgb(255, 216, 0)',
-                styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
-                textAlign: 'center'
+                annotation: propsData.annotation
             });
         });
 

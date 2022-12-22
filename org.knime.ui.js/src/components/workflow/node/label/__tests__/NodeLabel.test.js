@@ -12,10 +12,12 @@ describe('NodeLabel', () => {
         nodeId: 'root:1',
         nodePosition: { x: 15, y: 13 },
         kind: 'metanode',
-        value: 'Test label',
-        textAlign: 'center',
-        backgroundColor: 'rgb(255, 216, 0)',
-        styleRanges: [{ fontSize: 22, color: '#000000' }]
+        annotation: {
+            text: 'Test label',
+            textAlign: 'center',
+            backgroundColor: 'rgb(255, 216, 0)',
+            styleRanges: [{ fontSize: 22, color: '#000000' }]
+        }
     };
 
     beforeAll(() => {
@@ -64,12 +66,10 @@ describe('NodeLabel', () => {
         it('should forward props', () => {
             expect(wrapper.findComponent(NodeLabelText).props()).toEqual(
                 expect.objectContaining({
-                    value: defaultProps.value,
+                    value: defaultProps.annotation.text,
                     kind: defaultProps.kind,
                     nodeId: defaultProps.nodeId,
-                    textAlign: defaultProps.textAlign,
-                    backgroundColor: defaultProps.backgroundColor,
-                    styleRanges: defaultProps.styleRanges
+                    annotation: defaultProps.annotation
                 })
             );
         });
@@ -121,7 +121,7 @@ describe('NodeLabel', () => {
             expect(wrapper.findComponent(NodeLabelEditor).props()).toEqual(
                 expect.objectContaining({
                     nodeId: defaultProps.nodeId,
-                    value: defaultProps.value,
+                    value: defaultProps.annotation.text,
                     kind: defaultProps.kind,
                     nodePosition: defaultProps.nodePosition
                 })

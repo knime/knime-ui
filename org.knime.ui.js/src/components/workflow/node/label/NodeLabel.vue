@@ -9,10 +9,6 @@ export default {
         NodeLabelEditor
     },
     props: {
-        value: {
-            type: String,
-            default: ''
-        },
         nodeId: {
             type: String,
             required: true
@@ -25,22 +21,16 @@ export default {
             type: Object,
             required: true
         },
-        /**
-         * @values "left", "center", "right"
-         */
-        textAlign: {
-            type: String,
-            default: 'center',
-            validator: val => ['left', 'center', 'right'].includes(val)
-        },
-        backgroundColor: {
-            type: String,
-            default: null
-        },
-        styleRanges: {
-            type: Array,
-            default: () => []
+        annotation: {
+            type: Object,
+            required: false,
+            default: () => {}
         }
+    },
+    data() {
+        return {
+            value: this.annotation ? this.annotation.text : ''
+        };
     },
     computed: {
         ...mapState('workflow', ['labelEditorNodeId']),
@@ -88,9 +78,7 @@ export default {
         :node-id="nodeId"
         :value="value"
         :kind="kind"
-        :text-align="textAlign"
-        :background-color="backgroundColor"
-        :style-ranges="styleRanges"
+        :annotation="annotation"
         @request-edit="onRequestEdit"
         @contextmenu="$emit('contextmenu', $event)"
       />

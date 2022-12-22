@@ -13,26 +13,28 @@ describe('NodeLabelText.vue', () => {
         localVue.use(Vuex);
     });
 
-    const doShallowMount = ({ props = {}, singleSelectedNode, isWritable } = { }) => {
+    const doShallowMount = ({ props = {}, singleSelectedNode = () => null, isWritable = () => true } = { }) => {
         const defaultProps = {
             value: 'test',
             nodePosition: { x: 15, y: 13 },
             nodeId: 'root:1',
             kind: 'node',
-            textAlign: 'center',
-            backgroundColor: 'rgb(255, 216, 0)',
-            styleRanges: [{ fontSize: 22, color: '#000000' }]
+            annotation: {
+                textAlign: 'center',
+                backgroundColor: 'rgb(255, 216, 0)',
+                styleRanges: [{ fontSize: 22, color: '#000000' }]
+            }
         };
 
         const storeConfig = {
             selection: {
                 getters: {
-                    singleSelectedNode: singleSelectedNode || (() => null)
+                    singleSelectedNode
                 }
             },
             workflow: {
                 getters: {
-                    isWritable: isWritable || (() => true)
+                    isWritable
                 }
             }
         };
@@ -98,11 +100,13 @@ describe('NodeLabelText.vue', () => {
     it('renders styled text', () => {
         const propsData = {
             value: 'foo👻barbazqu👮🏻‍♂️xあなたは素晴らしい人です',
-            styleRanges: [
-                { start: 1, length: 2, bold: true, color: 'red' },
-                { start: 8, length: 1, italic: true, bold: true },
-                { start: 10, length: 1, italic: true, bold: true, fontSize: 13 }
-            ]
+            annotation: {
+                styleRanges: [
+                    { start: 1, length: 2, bold: true, color: 'red' },
+                    { start: 8, length: 1, italic: true, bold: true },
+                    { start: 10, length: 1, italic: true, bold: true, fontSize: 13 }
+                ]
+            }
         };
         const { wrapper } = doShallowMount({ props: propsData });
         let texts = wrapper.findAll('.text');
