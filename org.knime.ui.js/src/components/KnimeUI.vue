@@ -78,7 +78,7 @@ export default {
             }
 
             if (!this.workflow) {
-                await this.$router.push({ name: APP_ROUTES.EntryPage.name });
+                await this.$router.push({ name: APP_ROUTES.GetStartedPage.name });
                 return;
             }
 

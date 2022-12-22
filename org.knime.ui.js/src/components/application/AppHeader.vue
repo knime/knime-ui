@@ -40,8 +40,8 @@ export default {
             return this.$route.name === APP_ROUTES.InfoPage.name;
         },
         
-        isEntryPageActive() {
-            return this.$route.name === APP_ROUTES.EntryPage.name;
+        isGetStartedPageActive() {
+            return this.$route.name === APP_ROUTES.GetStartedPage.name;
         },
 
         isLogoActive() {
@@ -52,7 +52,7 @@ export default {
             return (
                 this.openProjects.length === 0 ||
                 (!this.activeProjectId && !this.isLoadingWorkflow) ||
-                this.isEntryPageActive
+                this.isGetStartedPageActive
             );
         }
     },
@@ -92,9 +92,9 @@ export default {
             }
         },
 
-        setEntryPageTab() {
+        setGetStartedPageTab() {
             this.activeProjectTab = null;
-            this.$router.push({ name: APP_ROUTES.EntryPage.name });
+            this.$router.push({ name: APP_ROUTES.GetStartedPage.name });
         },
 
         onProjectTabChange(projectId) {
@@ -112,7 +112,7 @@ export default {
     <div
       id="knime-logo"
       :class="[ isLogoActive ? 'active-logo' : null ]"
-      @click="setEntryPageTab()"
+      @click="setGetStartedPageTab()"
     >
       <KnimeIcon />
     </div>

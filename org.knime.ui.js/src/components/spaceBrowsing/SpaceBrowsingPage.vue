@@ -1,28 +1,27 @@
 <script>
+import PageHeader from '@/components/common/PageHeader.vue';
 import SpaceExplorer from '@/components/spaceExplorer/SpaceExplorer.vue';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
 
 export default {
     components: {
         SpaceExplorer,
-        ComputerDesktopIcon
+        ComputerDesktopIcon,
+        PageHeader
     }
 };
 </script>
 
 <template>
   <main ref="main">
-    <header>
-      <div class="grid-container">
-        <div class="grid-item-12 space-info">
-          <span class="space-type">
-            <ComputerDesktopIcon class="space-icon" />
-            Local space
-          </span>
-          <span class="space-name">Your Local Space</span>
-        </div>
-      </div>
-    </header>
+    <PageHeader
+      title="Your Local Space"
+      subtitle="Local space"
+    >
+      <template #icon>
+        <ComputerDesktopIcon />
+      </template>
+    </PageHeader>
 
     <section class="toolbar-wrapper">
       <div class="grid-container">
@@ -50,43 +49,7 @@ main {
   flex-direction: column;
   background-color: var(--knime-white);
   overflow-y: scroll;
-  align-items: stretch;
   height: 100%;
-}
-
-header {
-  font-family: Roboto, sans-serif;
-  min-height: 150px;
-
-  & .grid-container {
-    height: 100%;
-  }
-
-  & .space-info {
-    display: flex !important;
-    align-items: flex-start;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  & .space-type {
-    font-size: 16px;
-    color: var(--knime-masala);
-    display: flex;
-
-    & .space-icon {
-      @mixin svg-icon-size 18;
-
-      margin-right: 5px;
-      stroke: var(--knime-masala);
-    }
-  }
-
-  & .space-name {
-    font-size: 36px;
-    font-weight: 700;
-    color: var(--knime-masala);
-  }
 }
 
 .toolbar-wrapper {

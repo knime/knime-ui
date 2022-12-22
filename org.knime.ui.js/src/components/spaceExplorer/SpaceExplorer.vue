@@ -89,6 +89,7 @@ export default {
         },
 
         async onChangeDirectory(pathId) {
+            console.log('pathId', pathId);
             this.setLoading(true);
 
             await this.$store.dispatch('spaceExplorer/changeDirectory', { pathId });

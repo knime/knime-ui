@@ -1,6 +1,8 @@
 import VueRouter from 'vue-router';
 import WorkflowPage from '@/components/workflow/WorkflowPage.vue';
-import EntryPage from '@/components/entryPage/EntryPage.vue';
+import SpaceSelectionPage from '@/components/spaceBrowsing/SpaceSelectionPage.vue';
+import SpaceBrowsingPage from '@/components/spaceBrowsing/SpaceBrowsingPage.vue';
+import GetStartedPage from '@/components/getStartedPage/GetStartedPage.vue';
 import InfoPage from '@/components/infoPage/InfoPage.vue';
 
 export const APP_ROUTES = {
@@ -9,10 +11,20 @@ export const APP_ROUTES = {
         path: '/workflow/:projectId/:workflowId',
         component: WorkflowPage
     },
-    EntryPage: {
-        name: 'EntryPage',
-        path: '/entry',
-        component: EntryPage
+    GetStartedPage: {
+        name: 'GetStartedPage',
+        path: '/get-started',
+        component: GetStartedPage
+    },
+    SpaceSelectionPage: {
+        name: 'SpaceSelectionPage',
+        path: '/space-selection',
+        component: SpaceSelectionPage
+    },
+    SpaceBrowsingPage: {
+        name: 'SpaceBrowsingPage',
+        path: '/space-browsing',
+        component: SpaceBrowsingPage
     },
     InfoPage: {
         name: 'InfoPage',
