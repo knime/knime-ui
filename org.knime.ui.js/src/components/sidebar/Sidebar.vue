@@ -157,6 +157,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 .sidebar-wrapper {
   display: flex;
   height: 100%;
@@ -176,13 +178,13 @@ nav {
       display: flex;
       flex-direction: column;
       justify-content: center;
+      align-items: center;
       background-color: var(--knime-silver-sand);
       border-bottom: 1px var(--knime-black) solid;
       transition: background-color 150ms ease-out;
 
       & svg {
-        height: 22px;
-        stroke-width: calc(32px/22);
+        @mixin svg-icon-size 25;
       }
 
       &.active {
