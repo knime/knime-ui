@@ -50,6 +50,8 @@ main {
   flex-direction: column;
   background-color: var(--knime-white);
   overflow-y: scroll;
+  align-items: stretch;
+  height: 100%;
 }
 
 header {
@@ -83,6 +85,7 @@ header {
   & .space-name {
     font-size: 36px;
     font-weight: 700;
+    color: var(--knime-masala);
   }
 }
 

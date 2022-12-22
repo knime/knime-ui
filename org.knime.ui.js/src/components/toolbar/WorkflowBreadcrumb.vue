@@ -48,13 +48,12 @@ export default {
             }
         },
         onClick({ id }) {
-            this.$store.dispatch(
-                'application/switchWorkflow',
-                {
+            this.$store.dispatch('application/switchWorkflow', {
+                newWorkflow: {
                     projectId: this.workflow.projectId,
                     workflowId: id
                 }
-            );
+            });
         }
     }
 };

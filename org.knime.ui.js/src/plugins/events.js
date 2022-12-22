@@ -1,7 +1,8 @@
 import { registerEventHandlers } from '@api';
 import { notifyPatch } from '@/util/event-syncer';
+import { APP_ROUTES } from '@/router';
 
-export default ({ store: $store }) => {
+export default ({ store: $store, router: $router }) => {
     registerEventHandlers({
         /*
          * Is triggered by the backend, whenever a change to the workflow has been made/requested
@@ -25,7 +26,28 @@ export default ({ store: $store }) => {
          * sends the new state
          */
         // NXT-962: Unpack arguments from Object?
-        AppStateChangedEvent({ appState }) {
+        async AppStateChangedEvent({ appState }) {
+            const { openProjects } = appState;
+            const currentProjectId = $store.state.application.activeProjectId;
+            const nextActiveProject = openProjects.find(item => item.activeWorkflow);
+            
+            // Navigate to EntryPage when no projects are open
+            if (openProjects.length === 0) {
+                await $router.push({ name: APP_ROUTES.EntryPage.name });
+            }
+            
+            // When a new project is set as active, navigate to the corresponding workflow
+            if (nextActiveProject && currentProjectId !== nextActiveProject.projectId) {
+                await $router.push({
+                    name: APP_ROUTES.WorkflowPage.name,
+                    params: {
+                        projectId: nextActiveProject.projectId,
+                        workflowId: 'root',
+                        skipGuards: true
+                    }
+                });
+            }
+
             $store.dispatch('application/replaceApplicationState', appState);
         }
     });

@@ -4,12 +4,16 @@ import { mapActions, mapState } from 'vuex';
 import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import Carousel from 'webapps-common/ui/components/Carousel.vue';
 import KnimeIcon from 'webapps-common/ui/assets/img/KNIME_Triangle.svg';
+import CloseIcon from 'webapps-common/ui/assets/img/icons/close.svg';
 import SwitchIcon from 'webapps-common/ui/assets/img/icons/perspective-switch.svg';
+import InfoIcon from '@/assets/info.svg';
+
+import { APP_ROUTES } from '@/router';
 
 import AppHeaderTab from './AppHeaderTab.vue';
 
 /**
- * Header Bar containing Logo, Open project tabs, Feedback button and Switch to Java UI Button
+ * Header Bar containing Logo, Open project tabs, and switch to Info page Button
  */
 export default {
     components: {
@@ -17,32 +21,46 @@ export default {
         KnimeIcon,
         FunctionButton,
         Carousel,
-        SwitchIcon
+        InfoIcon,
+        SwitchIcon,
+        CloseIcon
     },
     data() {
         return {
             windowWidth: 0,
-            isEntryPageActive: null,
             hoveredTab: null,
-            activeTab: null
+            activeProjectTab: null,
+            lastActiveProject: null
         };
     },
     computed: {
-        ...mapState('application', ['openProjects', 'activeProjectId'])
+        ...mapState('application', ['openProjects', 'activeProjectId', 'isLoadingWorkflow']),
+
+        isInfoPageActive() {
+            return this.$route.name === APP_ROUTES.InfoPage.name;
+        },
+        
+        isEntryPageActive() {
+            return this.$route.name === APP_ROUTES.EntryPage.name;
+        },
+
+        isLogoActive() {
+            if (this.isInfoPageActive) {
+                return false;
+            }
+
+            return (
+                this.openProjects.length === 0 ||
+                (!this.activeProjectId && !this.isLoadingWorkflow) ||
+                this.isEntryPageActive
+            );
+        }
     },
     watch: {
-        openProjects: {
-            handler() {
-                if (this.openProjects.length === 0) {
-                    this.isEntryPageActive = true;
-                }
-            },
-            immediate: true
-        },
         activeProjectId() {
+            // prevent tab color flashing when switching workflows
             if (this.activeProjectId) {
-                this.activeTab = this.activeProjectId;
-                this.isEntryPageActive = false;
+                this.activeProjectTab = this.activeProjectId;
             }
         }
     },
@@ -51,7 +69,7 @@ export default {
     },
     methods: {
         ...mapActions('workflow', ['closeWorkflow']),
-        ...mapActions('application', ['switchWorkflow']),
+        
         setupResizeListener() {
             const onResize = () => {
                 this.windowWidth = window.innerWidth;
@@ -60,13 +78,30 @@ export default {
             window.addEventListener('resize', onResize);
             onResize();
         },
+
         switchToJavaUI() {
             window.switchToJavaUI();
         },
+
+        switchToInfoPage() {
+            if (this.isInfoPageActive) {
+                this.$router.back();
+            } else {
+                this.activeProjectTab = null;
+                this.$router.push({ name: APP_ROUTES.InfoPage.name });
+            }
+        },
+
         setEntryPageTab() {
-            this.isEntryPageActive = true;
-            this.switchWorkflow(null);
-            this.activeTab = null;
+            this.activeProjectTab = null;
+            this.$router.push({ name: APP_ROUTES.EntryPage.name });
+        },
+
+        onProjectTabChange(projectId) {
+            this.$router.push({
+                name: APP_ROUTES.WorkflowPage.name,
+                params: { projectId, workflowId: 'root' }
+            });
         }
     }
 };
@@ -76,7 +111,7 @@ export default {
   <header>
     <div
       id="knime-logo"
-      :class="[ isEntryPageActive ? 'active-logo' : null ]"
+      :class="[ isLogoActive ? 'active-logo' : null ]"
       @click="setEntryPageTab()"
     >
       <KnimeIcon />
@@ -94,10 +129,10 @@ export default {
               :name="name"
               :project-id="projectId"
               :window-width="windowWidth"
-              :is-active="activeTab === projectId"
+              :is-active="activeProjectTab === projectId"
               :is-hovered-over="hoveredTab === projectId"
               @hover="hoveredTab = $event"
-              @switch-workflow="switchWorkflow({ projectId: $event })"
+              @switch-workflow="onProjectTabChange"
               @close-workflow="closeWorkflow($event)"
             />
           </div>
@@ -111,17 +146,22 @@ export default {
       </div>
 
       <div class="buttons">
-        <a
-          href="https://knime.com/modern-ui-feedback?src=knimeapp?utm_source=knimeapp"
-          class="feedback"
-        >
-          Provide feedback via the forum
-        </a>
         <FunctionButton
+          v-if="!isInfoPageActive"
           class="switch-classic"
+          title="Open KNIME Modern UI Preview"
           @click="switchToJavaUI"
         >
           <SwitchIcon />
+        </FunctionButton>
+
+        <FunctionButton
+          class="switch-info-page"
+          title="Go to info page"
+          @click="switchToInfoPage"
+        >
+          <CloseIcon v-if="isInfoPageActive" />
+          <InfoIcon v-else />
         </FunctionButton>
       </div>
     </div>
@@ -138,7 +178,7 @@ header {
   border-bottom: 4px solid var(--knime-yellow);
   position: relative;
 
-  /* override padding set by grid system */
+  /* override padding set by webapps-common grid */
   padding: initial;
 
   /* smallish dark spacer */
@@ -159,37 +199,19 @@ header {
     align-items: center;
     align-content: center;
 
-    /* Feedback and Switch to classic ui buttons */
+    /* Switch to info page button */
     & .buttons {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-right: 10px;
       flex-shrink: 0;
       margin-left: 30px;
 
-      & .feedback {
-        margin-right: 10px;
-        border: 1px solid var(--knime-dove-gray);
-        line-height: 18px;
-        font-size: 13px;
-        font-family: "Roboto Condensed", sans-serif;
-        color: white;
-        padding: 6px 15px;
-        border-radius: 40px;
-        text-decoration: none;
-        font-weight: 500;
-
-        &:hover,
-        &:focus {
-          outline: none;
-          background-color: var(--knime-dove-gray);
-        }
-      }
-
+      & .switch-info-page,
       & .switch-classic {
         border: 1px solid var(--knime-dove-gray);
         display: flex;
+        margin-right: 10px;
         align-items: center;
         justify-content: center;
 
@@ -247,7 +269,7 @@ header {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: var(--side-bar-width);
+    width: var(--app-side-bar-width);
     background-color: var(--knime-black);
     text-align: center;
     height: 100%;
@@ -267,7 +289,6 @@ header {
 
   & #knime-logo.active-logo {
     background-color: var(--knime-yellow);
-    pointer-events: none;
 
     & svg {
       fill: var(--knime-black);
@@ -275,7 +296,6 @@ header {
 
     &:hover,
     &:focus {
-      cursor: inherit;
       background-color: var(--knime-yellow);
     }
   }

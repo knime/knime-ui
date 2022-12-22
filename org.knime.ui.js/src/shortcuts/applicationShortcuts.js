@@ -4,8 +4,7 @@ export default {
     openWorkflow: {
         text: 'Open workflow',
         hotkey: ['Ctrl', 'O'],
-        execute:
-            () => openWorkflow()
+        execute: () => openWorkflow()
     },
     closeWorkflow: {
         text: 'Close workflow',
@@ -18,7 +17,6 @@ export default {
     createWorkflow: {
         text: 'Create workflow',
         hotkey: ['Ctrl', 'N'],
-        execute:
-            () => createWorkflow()
+        execute: () => createWorkflow()
     }
 };
