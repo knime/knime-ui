@@ -223,6 +223,7 @@ section {
     & svg {
       align-self: flex-start;
       margin-right: 10px;
+      
       @mixin svg-icon-size 25;
     }
   }
