@@ -54,7 +54,7 @@ export default {
           <p>Get answers to your data questions from the active, global community.</p>
           <Button
             with-border
-            href="https://forum.knime.com/?src=knimeapp"
+            href="https://forum.knime.com/?src=knimeappmodernui"
           >
             <strong>Visit Forum</strong>
           </Button>
