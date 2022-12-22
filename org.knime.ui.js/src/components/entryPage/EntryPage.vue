@@ -85,6 +85,7 @@ header {
   & .space-name {
     font-size: 36px;
     font-weight: 700;
+    color: var(--knime-masala);
   }
 }
 
