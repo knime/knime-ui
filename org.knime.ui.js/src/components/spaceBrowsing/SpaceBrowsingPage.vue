@@ -34,7 +34,7 @@ export default {
     <section class="space-explorer-wrapper">
       <div class="grid-container">
         <div class="grid-item-12">
-          <SpaceExplorer />
+          <SpaceExplorer :space-id="$route.params.spaceId" />
         </div>
       </div>
     </section>
@@ -42,8 +42,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-@import "@/assets/mixins.css";
-
 main {
   display: flex;
   flex-direction: column;

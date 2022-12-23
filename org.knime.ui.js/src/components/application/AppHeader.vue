@@ -37,11 +37,11 @@ export default {
         ...mapState('application', ['openProjects', 'activeProjectId', 'isLoadingWorkflow']),
 
         isInfoPageActive() {
-            return this.$route.name === APP_ROUTES.InfoPage.name;
+            return this.$route.name === APP_ROUTES.InfoPage;
         },
         
         isGetStartedPageActive() {
-            return this.$route.name === APP_ROUTES.GetStartedPage.name;
+            return this.$route.name === APP_ROUTES.EntryPage.GetStartedPage;
         },
 
         isLogoActive() {
@@ -88,18 +88,18 @@ export default {
                 this.$router.back();
             } else {
                 this.activeProjectTab = null;
-                this.$router.push({ name: APP_ROUTES.InfoPage.name });
+                this.$router.push({ name: APP_ROUTES.InfoPage });
             }
         },
 
         setGetStartedPageTab() {
             this.activeProjectTab = null;
-            this.$router.push({ name: APP_ROUTES.GetStartedPage.name });
+            this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
         },
 
         onProjectTabChange(projectId) {
             this.$router.push({
-                name: APP_ROUTES.WorkflowPage.name,
+                name: APP_ROUTES.WorkflowPage,
                 params: { projectId, workflowId: 'root' }
             });
         }

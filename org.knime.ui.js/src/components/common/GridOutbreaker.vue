@@ -29,8 +29,8 @@ export default {
     },
 
     mounted() {
-        this.$slots.default.forEach(vnode => {
-            vnode.elm.classList.add('outbreaker');
+        (this.$slots.default || []).forEach(vnode => {
+            vnode.elm?.classList?.add('outbreaker');
         });
     }
 };

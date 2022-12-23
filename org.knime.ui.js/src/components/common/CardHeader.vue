@@ -2,9 +2,10 @@
 
 export default {
     props: {
-        primary: {
-            type: Boolean,
-            default: false
+        color: {
+            type: String,
+            default: 'default',
+            validator: (value) => ['default', 'primary', 'light'].includes(value)
         }
     }
 };
@@ -13,13 +14,19 @@ export default {
 <template>
   <div
     class="card-header"
-    :class="{ primary }"
+    :class="{
+      default: color === 'default',
+      primary: color === 'primary',
+      light: color === 'light',
+    }"
   >
     <slot />
   </div>
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 .card {
   & .card-header {
     background-color: var(--knime-masala);
@@ -40,6 +47,25 @@ export default {
     &.primary {
       background-color: var(--knime-yellow);
       color: var(--knime-masala);
+
+      & svg {
+        stroke: var(--knime-masala)
+      }
+    }
+    
+    &.light {
+      background-color: hsla(210, 17%, 98%, 1);
+      color: var(--knime-masala);
+
+      & svg {
+        stroke: var(--knime-masala)
+      }
+    }
+
+    & svg {
+      stroke: var(--knime-white);
+
+      @mixin svg-icon-size 20;
     }
   }
   
@@ -50,6 +76,11 @@ export default {
 
     & .card-header.primary {
       background-color: var(--knime-masala);
+      color: var(--knime-white);
+    }
+    
+    & .card-header.light {
+      background-color: hsla(210, 17%, 98%, 1);
       color: var(--knime-white);
     }
   }

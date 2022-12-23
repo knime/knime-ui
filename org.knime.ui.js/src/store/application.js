@@ -119,8 +119,8 @@ export const actions = {
                 return;
             }
 
-            const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage.name;
-            const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage.name;
+            const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage;
+            const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage;
         
             if (isLeavingWorkflow && !isEnteringWorkflow) {
                 await dispatch('switchWorkflow', { newWorkflow: null });

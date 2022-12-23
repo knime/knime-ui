@@ -4,6 +4,7 @@ import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 
 import LoadingIcon from './LoadingIcon.vue';
 import FileExplorer from './FileExplorer.vue';
+import { routes } from '@/router';
 
 const DISPLAY_LOADING_DELAY = 500;
 
@@ -19,6 +20,10 @@ export default {
             type: String,
             default: 'normal',
             validator: (value) => ['normal', 'mini'].includes(value)
+        },
+        spaceId: {
+            type: String,
+            default: 'local'
         }
     },
 
@@ -83,7 +88,8 @@ export default {
         async fetchWorkflowGroupContent(itemId) {
             this.setLoading(true);
 
-            await this.$store.dispatch('spaceExplorer/fetchWorkflowGroupContent', { itemId });
+            const spaceId = this.spaceId;
+            await this.$store.dispatch('spaceExplorer/fetchWorkflowGroupContent', { itemId, spaceId });
 
             this.setLoading(false);
         },
@@ -92,7 +98,8 @@ export default {
             console.log('pathId', pathId);
             this.setLoading(true);
 
-            await this.$store.dispatch('spaceExplorer/changeDirectory', { pathId });
+            const spaceId = this.spaceId;
+            await this.$store.dispatch('spaceExplorer/changeDirectory', { pathId, spaceId });
 
             this.setLoading(false);
         },

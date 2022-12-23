@@ -23,14 +23,14 @@ export const actions = {
         return data;
     },
 
-    changeDirectory({ dispatch, getters }, { pathId }) {
+    changeDirectory({ dispatch, getters }, { pathId, spaceId }) {
         const isGoingBack = pathId === '..';
 
         const nextWorkflowGroupId = isGoingBack
             ? getters.parentWorkflowGroupId
             : pathId;
 
-        return dispatch('fetchWorkflowGroupContent', { itemId: nextWorkflowGroupId });
+        return dispatch('fetchWorkflowGroupContent', { itemId: nextWorkflowGroupId, spaceId });
     }
 };
 

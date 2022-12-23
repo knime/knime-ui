@@ -2,38 +2,77 @@ import VueRouter from 'vue-router';
 import WorkflowPage from '@/components/workflow/WorkflowPage.vue';
 import SpaceSelectionPage from '@/components/spaceBrowsing/SpaceSelectionPage.vue';
 import SpaceBrowsingPage from '@/components/spaceBrowsing/SpaceBrowsingPage.vue';
-import GetStartedPage from '@/components/getStartedPage/GetStartedPage.vue';
+import EntryPageLayout from '@/components/entryPage/EntryPageLayout.vue';
+import GetStartedPage from '@/components/entryPage/GetStartedPage.vue';
 import InfoPage from '@/components/infoPage/InfoPage.vue';
 
 export const APP_ROUTES = {
-    WorkflowPage: {
-        name: 'WorkflowPage',
+    WorkflowPage: 'WorkflowPage',
+    EntryPage: {
+        GetStartedPage: 'GetStartedPage',
+        SpaceSelectionPage: 'SpaceSelectionPage'
+    },
+    SpaceBrowsingPage: 'SpaceBrowsingPage',
+    InfoPage: 'InfoPage'
+};
+
+/**
+ * @type {Array<import('vue-router').Route>}
+ */
+export const routes = [
+    {
+        name: APP_ROUTES.WorkflowPage,
         path: '/workflow/:projectId/:workflowId',
         component: WorkflowPage
     },
-    GetStartedPage: {
-        name: 'GetStartedPage',
-        path: '/get-started',
-        component: GetStartedPage
+    {
+        name: APP_ROUTES.EntryPage,
+        path: '/',
+        component: EntryPageLayout,
+        children: [
+            {
+                name: APP_ROUTES.EntryPage.GetStartedPage,
+                path: '/get-started',
+                component: GetStartedPage
+            },
+            {
+                name: APP_ROUTES.EntryPage.SpaceSelectionPage,
+                path: '/space-selection',
+                component: SpaceSelectionPage
+            }
+        ]
     },
-    SpaceSelectionPage: {
-        name: 'SpaceSelectionPage',
-        path: '/space-selection',
-        component: SpaceSelectionPage
-    },
-    SpaceBrowsingPage: {
-        name: 'SpaceBrowsingPage',
-        path: '/space-browsing',
+    {
+        name: APP_ROUTES.SpaceBrowsingPage,
+        path: '/space-browsing/:spaceId',
         component: SpaceBrowsingPage
     },
-    InfoPage: {
-        name: 'InfoPage',
+    {
+        name: APP_ROUTES.InfoPage,
         path: '/info',
         component: InfoPage
     }
-};
+];
 
-export const routes = Object.values(APP_ROUTES);
+export const getPathFromRouteName = (name) => {
+    const searchByName = (_routes, name, fullPath = '') => {
+        const foundRoute = _routes.find(route => route.name === name);
+        if (foundRoute) {
+            return `${fullPath}${foundRoute.path}`;
+        }
+
+        let result = null;
+        for (let i = 0; i < _routes.length; i++) {
+            const currentRoute = _routes[i];
+            if (currentRoute.children) {
+                result = searchByName(routes[i].children, name, currentRoute.path);
+            }
+        }
+        return result;
+    };
+
+    return searchByName(routes, name).replaceAll('//', '/');
+};
 
 const router = new VueRouter({
     mode: 'history',
