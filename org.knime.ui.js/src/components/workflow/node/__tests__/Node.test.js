@@ -218,6 +218,7 @@ describe('Node', () => {
 
         it('displays annotation', () => {
             expect(wrapper.findComponent(NodeLabel).props()).toStrictEqual({
+                value: propsData.annotation.text,
                 kind: commonNode.kind,
                 nodeId: commonNode.id,
                 nodePosition: commonNode.position,

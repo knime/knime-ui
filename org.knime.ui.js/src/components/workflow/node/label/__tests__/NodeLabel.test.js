@@ -12,6 +12,7 @@ describe('NodeLabel', () => {
         nodeId: 'root:1',
         nodePosition: { x: 15, y: 13 },
         kind: 'metanode',
+        value: 'Test label',
         annotation: {
             text: 'Test label',
             textAlign: 'center',
@@ -66,7 +67,7 @@ describe('NodeLabel', () => {
         it('should forward props', () => {
             expect(wrapper.findComponent(NodeLabelText).props()).toEqual(
                 expect.objectContaining({
-                    value: defaultProps.annotation.text,
+                    value: defaultProps.value,
                     kind: defaultProps.kind,
                     nodeId: defaultProps.nodeId,
                     annotation: defaultProps.annotation

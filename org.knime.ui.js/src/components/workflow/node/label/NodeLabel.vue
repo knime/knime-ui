@@ -13,6 +13,10 @@ export default {
             type: String,
             required: true
         },
+        value: {
+            type: String,
+            default: ''
+        },
         kind: {
             type: String,
             default: ''
@@ -26,11 +30,6 @@ export default {
             required: false,
             default: () => {}
         }
-    },
-    data() {
-        return {
-            value: this.annotation ? this.annotation.text : ''
-        };
     },
     computed: {
         ...mapState('workflow', ['labelEditorNodeId']),
