@@ -9,10 +9,6 @@ export default {
         NodeLabelEditor
     },
     props: {
-        value: {
-            type: String,
-            default: ''
-        },
         nodeId: {
             type: String,
             required: true
@@ -25,10 +21,16 @@ export default {
             type: Object,
             required: true
         },
-        editable: {
-            type: Boolean,
-            default: false
+        annotation: {
+            type: Object,
+            required: false,
+            default: () => {}
         }
+    },
+    data() {
+        return {
+            value: this.annotation ? this.annotation.text : ''
+        };
     },
     computed: {
         ...mapState('workflow', ['labelEditorNodeId']),
@@ -76,7 +78,7 @@ export default {
         :node-id="nodeId"
         :value="value"
         :kind="kind"
-        :editable="editable"
+        :annotation="annotation"
         @request-edit="onRequestEdit"
         @contextmenu="$emit('contextmenu', $event)"
       />

@@ -378,11 +378,10 @@ export default {
 
         <!-- Label needs to be behind ports -->
         <NodeLabel
-          :value="annotation ? annotation.text : ''"
+          :annotation="annotation"
           :kind="kind"
           :node-id="id"
           :node-position="position"
-          :editable="isEditable"
           @contextmenu.prevent="onContextMenu"
         />
 

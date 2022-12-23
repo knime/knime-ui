@@ -1,5 +1,6 @@
 <script>
 import { mapGetters } from 'vuex';
+import { applyStyleRanges } from '@/util/styleRanges';
 import AutoSizeForeignObject from '@/components/common/AutoSizeForeignObject.vue';
 
 export default {
@@ -17,18 +18,55 @@ export default {
             type: String,
             default: ''
         },
-        editable: {
-            type: Boolean,
-            default: false
+        annotation: {
+            type: Object,
+            required: false,
+            default: () => ({
+                textAlign: 'center',
+                backgroundColor: 'transparent',
+                styleRanges: []
+            })
         }
+    },
+    data() {
+        return {
+            textAlign: this.annotation?.textAlign,
+            backgroundColor:
+            this.annotation?.backgroundColor === '#FFFFFF' ? 'transparent' : this.annotation?.backgroundColor
+        };
     },
     computed: {
         ...mapGetters('selection', ['singleSelectedNode']),
+        ...mapGetters('workflow', ['isWritable']),
         isMetanode() {
             return this.kind === 'metanode';
         },
         isSelected() {
             return this.nodeId === this.singleSelectedNode?.id;
+        },
+        styledText() {
+            const styleRanges = this.annotation ? this.annotation.styleRanges : [];
+            let { textRanges, isValid } = applyStyleRanges(styleRanges, this.value);
+            if (!isValid) {
+                consola.warn(`Invalid styleRanges: 
+                ${JSON.stringify(this.annotation.styleRanges)}. Using default style.`);
+            }
+
+            return textRanges;
+        }
+    },
+    methods: {
+        getTextStyles(styledTextPart) {
+            const lineHeight = 1.1;
+            return {
+                fontSize: styledTextPart.fontSize
+                    ? `${styledTextPart.fontSize * this.$shapes.annotationsFontSizePointToPixelFactor}px`
+                    : null,
+                color: styledTextPart.color,
+                fontWeight: styledTextPart.bold ? 'bold' : null,
+                fontStyle: styledTextPart.italic ? 'italic' : null,
+                lineHeight: styledTextPart.fontSize ? lineHeight : null
+            };
         }
     }
 };
@@ -40,22 +78,29 @@ export default {
     class="node-label-text-container"
     :y-offset="isMetanode ? $shapes.metanodeLabelOffsetY : $shapes.nodeLabelOffsetY"
     :parent-width="$shapes.nodeSize"
+    :style="{ backgroundColor }"
+    :max-width="99999"
   >
     <template #default="{ on }">
       <div
         class="node-label"
+        :style="{ textAlign }"
         @contextmenu="$emit('contextmenu', $event)"
-        @dblclick.left="editable ? $emit('request-edit') : null"
+        @dblclick.left="isWritable ? $emit('request-edit') : null"
       >
-        <span :class="['text', {'placeholder': !value}]">
-          <slot
-            v-if="!value && editable"
-            :on="on"
-          >Add comment</slot>
-          <slot
-            v-else
-            :on="on"
-          >{{ value }}</slot>
+        <span
+          v-for="(part, i) in styledText"
+          :key="i"
+          class="text"
+          :style="getTextStyles(part)"
+        >
+          <slot :on="on">{{ part.text }}</slot>
+        </span>
+        <span
+          v-if="!value && isWritable"
+          class="text placeholder"
+        >
+          <slot :on="on">Add comment</slot>
         </span>
       </div>
     </template>
@@ -73,23 +118,21 @@ export default {
     outline: 1px solid var(--knime-silver-sand);
   }
 
+  & .node-label {
+    padding: calc(var(--node-name-padding-shape) * 1px);
+    line-height: calc(var(--node-name-line-height-shape) * 1px);
+  }
+
   & .text {
     font-family: "Roboto Condensed", sans-serif;
     font-style: normal;
     font-size: calc(var(--node-name-font-size-shape) * 1px);
-    text-align: center;
     white-space: pre-wrap;
   }
 
   & .text.placeholder {
     color: var(--knime-dove-gray);
     font-style: italic;
-  }
-
-  & .node-label {
-    text-align: center;
-    padding: calc(var(--node-name-padding-shape) * 1px);
-    line-height: calc(var(--node-name-line-height-shape) * 1px);
   }
 }
 </style>
