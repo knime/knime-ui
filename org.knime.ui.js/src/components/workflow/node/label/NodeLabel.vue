@@ -1,5 +1,5 @@
 <script>
-import { mapState, mapActions } from 'vuex';
+import { mapState, mapActions, mapGetters } from 'vuex';
 import NodeLabelText from './NodeLabelText.vue';
 import NodeLabelEditor from './NodeLabelEditor.vue';
 
@@ -25,6 +25,10 @@ export default {
             type: Object,
             required: true
         },
+        editable: {
+            type: Boolean,
+            default: false
+        },
         annotation: {
             type: Object,
             required: false,
@@ -33,8 +37,14 @@ export default {
     },
     computed: {
         ...mapState('workflow', ['labelEditorNodeId']),
+        ...mapGetters('selection', ['singleSelectedNode']),
+
         isEditing() {
             return this.nodeId === this.labelEditorNodeId;
+        },
+
+        isSelected() {
+            return this.nodeId === this.singleSelectedNode?.id;
         }
     },
     methods: {
@@ -78,6 +88,8 @@ export default {
         :value="value"
         :kind="kind"
         :annotation="annotation"
+        :editable="editable"
+        :is-selected="isSelected"
         @request-edit="onRequestEdit"
         @contextmenu="$emit('contextmenu', $event)"
       />

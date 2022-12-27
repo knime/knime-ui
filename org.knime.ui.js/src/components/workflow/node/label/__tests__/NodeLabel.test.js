@@ -3,6 +3,8 @@ import Vuex from 'vuex';
 import { shallowMount, createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
+import * as selectionStore from '@/store/selection';
+
 import NodeLabel from '../NodeLabel.vue';
 import NodeLabelText from '../NodeLabelText.vue';
 import NodeLabelEditor from '../NodeLabelEditor.vue';
@@ -51,7 +53,8 @@ describe('NodeLabel', () => {
                         closeLabelEditor: jest.fn(),
                         renameNodeLabel: jest.fn()
                     }
-                }
+                },
+                selection: selectionStore
             };
 
             const $store = mockVuexStore(storeConfig);
@@ -101,7 +104,8 @@ describe('NodeLabel', () => {
                         closeLabelEditor: jest.fn(),
                         renameNodeLabel: jest.fn()
                     }
-                }
+                },
+                selection: selectionStore
             };
 
             $store = mockVuexStore(storeConfig);
