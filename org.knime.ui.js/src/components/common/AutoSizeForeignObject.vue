@@ -117,7 +117,8 @@ export default {
             this.width = this.maxWidth;
             
             // wait for re-render
-            await new Promise(r => setTimeout(r, 0));
+            await this.$nextTick();
+            await this.$nextTick();
 
             // 2. measure content's actual size
             const rect = this.$refs.wrapper?.getBoundingClientRect();
