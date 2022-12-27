@@ -220,6 +220,7 @@ describe('Node', () => {
             expect(wrapper.findComponent(NodeLabel).props()).toStrictEqual({
                 value: propsData.annotation.text,
                 kind: commonNode.kind,
+                editable: true,
                 nodeId: commonNode.id,
                 nodePosition: commonNode.position,
                 annotation: propsData.annotation

@@ -1,5 +1,4 @@
 <script>
-import { mapGetters } from 'vuex';
 import { applyStyleRanges } from '@/util/styleRanges';
 import AutoSizeForeignObject from '@/components/common/AutoSizeForeignObject.vue';
 
@@ -9,6 +8,14 @@ export default {
         value: {
             type: String,
             default: 'Node label'
+        },
+        editable: {
+            type: Boolean,
+            default: false
+        },
+        isSelected: {
+            type: Boolean,
+            default: false
         },
         kind: {
             type: String,
@@ -36,13 +43,8 @@ export default {
         };
     },
     computed: {
-        ...mapGetters('selection', ['singleSelectedNode']),
-        ...mapGetters('workflow', ['isWritable']),
         isMetanode() {
             return this.kind === 'metanode';
-        },
-        isSelected() {
-            return this.nodeId === this.singleSelectedNode?.id;
         },
         styledText() {
             const styleRanges = this.annotation ? this.annotation.styleRanges : [];
@@ -86,7 +88,7 @@ export default {
         class="node-label"
         :style="{ textAlign }"
         @contextmenu="$emit('contextmenu', $event)"
-        @dblclick.left="isWritable ? $emit('request-edit') : null"
+        @dblclick.left="editable ? $emit('request-edit') : null"
       >
         <span
           v-for="(part, i) in styledText"
@@ -97,7 +99,7 @@ export default {
           <slot :on="on">{{ part.text }}</slot>
         </span>
         <span
-          v-if="!value && isWritable"
+          v-if="!value && editable"
           class="text placeholder"
         >
           <slot :on="on">Add comment</slot>

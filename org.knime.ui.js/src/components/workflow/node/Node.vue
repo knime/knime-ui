@@ -380,6 +380,7 @@ export default {
         <NodeLabel
           :value="annotation ? annotation.text : ''"
           :annotation="annotation"
+          :editable="isEditable"
           :kind="kind"
           :node-id="id"
           :node-position="position"
