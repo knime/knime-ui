@@ -2,35 +2,20 @@
 import { mapActions, mapState } from 'vuex';
 
 import AppHeader from '@/components/application/AppHeader.vue';
-import TooltipContainer from '@/components/application/TooltipContainer.vue';
 import Error from '@/components/application/Error.vue';
-import HotkeyHandler from '@/components/application/HotkeyHandler.vue';
-import Splitter from '@/components/application/Splitter.vue';
-import Sidebar from '@/components/sidebar/Sidebar.vue';
-import WorkflowToolbar from '@/components/toolbar/WorkflowToolbar.vue';
-import NodeOutput from '@/components/output/NodeOutput.vue';
 
-import WorkflowEntryPage from '@/components/workflow/WorkflowEntryPage.vue';
-import WorkflowPanel from '@/components/workflow/WorkflowPanel.vue';
 import { loadPageBuilder } from '@/components/embeddedViews/pagebuilderLoader';
+import { APP_ROUTES } from '@/router';
 
 /**
  * Main page and entry point of KNIME Next
  * Initiates application state
- * Defines the layout of the application
+ * Defines the router outlet
  */
 export default {
     components: {
         AppHeader,
-        Error,
-        HotkeyHandler,
-        Sidebar,
-        TooltipContainer,
-        WorkflowToolbar,
-        WorkflowEntryPage,
-        WorkflowPanel,
-        NodeOutput,
-        Splitter
+        Error
     },
 
     data() {
@@ -41,9 +26,7 @@ export default {
     },
     
     computed: {
-        ...mapState('workflow', {
-            workflow: 'activeWorkflow'
-        }),
+        ...mapState('workflow', { workflow: 'activeWorkflow' }),
 
         isInsideAP() {
             // When the `window.isInsideAP` property is set, the app is being run in development mode
@@ -78,7 +61,7 @@ export default {
         async setup() {
             try {
                 await Promise.all([
-                    this.initializeApplication(),
+                    this.initializeApplication({ $router: this.$router }),
 
                     // These fonts will be pre-loaded at application startup with the given font-weights,
                     // to prevent text-jumping
@@ -93,6 +76,19 @@ export default {
             } catch ({ message, stack }) {
                 this.error = { message, stack };
             }
+
+            if (!this.workflow) {
+                await this.$router.push({ name: APP_ROUTES.EntryPage.name });
+                return;
+            }
+
+            const { info: { containerId: workflowId }, projectId } = this.workflow;
+
+            await this.$router.push({
+                name: APP_ROUTES.WorkflowPage.name,
+                params: { workflowId, projectId },
+                query: { skipGuards: true }
+            });
         },
 
         async checkClipboardSupport() {
@@ -139,32 +135,11 @@ export default {
     />
     
     <AppHeader id="header" />
-    <WorkflowToolbar id="toolbar" />
-    <TooltipContainer id="tooltip-container" />
-    
+   
     <template v-if="loaded">
-      <HotkeyHandler />
-
-      <template v-if="workflow">
-        <Sidebar id="sidebar" />
-
-        <main class="workflow-area">
-          <Splitter
-            id="kanvasOutputSplitter"
-            direction="column"
-          >
-            <WorkflowPanel id="workflow-panel" />
-            <template #secondary>
-              <NodeOutput />
-            </template>
-          </Splitter>
-        </main>
-      </template>
-      
-      <WorkflowEntryPage
-        v-else
-        class="workflow-empty"
-      />
+      <div class="main-content">
+        <RouterView />
+      </div>
     </template>
     
     <div
@@ -176,52 +151,20 @@ export default {
 
 <style lang="postcss" scoped>
 #knime-ui {
-  --side-bar-width: 40px;
-
   display: grid;
   grid-template:
-    "header header" min-content
-    "toolbar toolbar" min-content
-    "sidebar workflow" auto
-    / min-content auto;
-  height: 100vh;
-  background: var(--knime-white);
-  color: var(--knime-masala);
-  overflow: hidden;
+    "header" min-content
+    "workflow" auto;
 }
 
 #header {
   grid-area: header;
 }
 
-#sidebar {
-  grid-area: sidebar;
-}
-
-#toolbar {
-  grid-area: toolbar;
-  height: var(--app-toolbar-height);
-  flex: 0 0 auto;
-  padding: 10px;
-  background-color: var(--knime-porcelain);
-  border-bottom: 1px solid var(--knime-silver-sand);
-}
-
-main {
-  display: flex;
-  overflow: auto;
-  flex-direction: column;
-  align-items: stretch;
-  height: 100%;
-}
-
-.workflow-area {
+.main-content {
+  width: 100vw;
+  height: calc(100vh - var(--app-header-height));
   grid-area: workflow;
-}
-
-.workflow-empty {
-  grid-area: workflow;
-  grid-column-start: 1;
 }
 
 .loader {

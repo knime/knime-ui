@@ -1,18 +1,22 @@
 <script>
 import { mapState, mapActions, mapMutations } from 'vuex';
-import InfoIcon from 'webapps-common/ui/assets/img/icons/circle-info.svg';
 import NodeCogIcon from 'webapps-common/ui/assets/img/icons/node-cog.svg';
+import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
 import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
+import MetainfoIcon from '@/assets/metainfo.svg';
 
 import { TABS } from '@/store/panel';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
 import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
+import SpaceExplorer from '@/components/spaceExplorer/SpaceExplorer.vue';
+
 import LeftCollapsiblePanel from './LeftCollapsiblePanel.vue';
 
 export default {
     components: {
-        InfoIcon,
+        MetainfoIcon,
+        SpaceExplorer,
         PlusIcon,
         LeftCollapsiblePanel,
         WorkflowMetadata,
@@ -32,7 +36,7 @@ export default {
             return [
                 {
                     title: 'Workflow metadata',
-                    icon: InfoIcon,
+                    icon: MetainfoIcon,
                     isActive: this.isTabActive(TABS.WORKFLOW_METADATA),
                     isExpanded: this.expanded,
                     onClick: () => this.clickItem(TABS.WORKFLOW_METADATA)
@@ -52,7 +56,14 @@ export default {
                         isExpanded: this.expanded,
                         onClick: () => this.clickItem(TABS.NODE_DIALOG)
                     }
-                    : null
+                    : null,
+                {
+                    title: 'Space explorer',
+                    icon: CubeIcon,
+                    isActive: this.isTabActive(TABS.SPACE_EXPLORER),
+                    isExpanded: this.expanded,
+                    onClick: () => this.clickItem(TABS.SPACE_EXPLORER)
+                }
             ].filter(Boolean);
         }
     },
@@ -121,6 +132,12 @@ export default {
           v-show="isTabActive(TABS.NODE_DIALOG)"
           key="node-dialog"
         />
+
+        <SpaceExplorer
+          v-show="isTabActive(TABS.SPACE_EXPLORER)"
+          key="space-explorer"
+          mode="mini"
+        />
       </TransitionGroup>
     </LeftCollapsiblePanel>
 
@@ -132,6 +149,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 .sidebar-wrapper {
   display: flex;
   height: 100%;
@@ -139,7 +158,7 @@ export default {
 }
 
 nav {
-  width: var(--side-bar-width);
+  width: var(--app-side-bar-width);
   background-color: var(--knime-black);
 
   & ul {
@@ -151,12 +170,13 @@ nav {
       display: flex;
       flex-direction: column;
       justify-content: center;
+      align-items: center;
       background-color: var(--knime-silver-sand);
       border-bottom: 1px var(--knime-black) solid;
       transition: background-color 150ms ease-out;
 
       & svg {
-        height: 30px;
+        @mixin svg-icon-size 25;
       }
 
       &.active {

@@ -33,11 +33,11 @@ export default {
             async handler(isWorkflowEmpty) {
                 // disable zoom & pan if workflow is empty
                 this.setIsEmpty(isWorkflowEmpty);
-                
+
                 if (isWorkflowEmpty) {
                     // call to action: move nodes onto workflow
                     this.setActiveTab(TABS.NODE_REPOSITORY);
-                    
+
                     // for an empty workflow "fillScreen" zooms to 100% and moves the origin (0,0) to the center
                     await this.$nextTick();
                     this.fillScreen();
@@ -64,23 +64,15 @@ export default {
         ...mapMutations('canvas', ['setIsEmpty']),
         ...mapMutations('panel', ['setActiveTab']),
         ...mapActions('canvas', ['fillScreen']),
-        ...mapActions('selection', ['deselectAllObjects']),
         onNodeSelectionPreview($event) {
             this.$refs.workflow.applyNodeSelectionPreview($event);
         },
         async onContainerSizeUpdated() {
             if (this.isWorkflowEmpty) {
                 await this.$nextTick();
-                
+
                 // scroll to center
                 this.fillScreen();
-            }
-        },
-        onContextMenu(e) {
-            // if event's default was prevented it means the behavior was already handled from the Node
-            // otherwise we deselect all objects because it is a click on the canvas itself
-            if (!e.defaultPrevented) {
-                this.deselectAllObjects();
             }
         }
     }
@@ -95,7 +87,6 @@ export default {
     @drop.stop="onDrop"
     @dragover.stop="onDragOver"
     @container-size-changed="onContainerSizeUpdated"
-    @contextmenu="onContextMenu"
   >
     <!-- Includes shadows for Nodes -->
     <KanvasFilters />

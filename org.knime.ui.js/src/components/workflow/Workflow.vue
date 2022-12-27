@@ -105,7 +105,7 @@ export default {
     <!-- Editor Layer; only one editor is open at a time -->
     <PortalTarget
       tag="g"
-      name="node-name-editor"
+      name="node-text-editor"
     />
 
     <!-- Quick Actions Layer: Buttons for Hovered & Selected Nodes and their ids -->

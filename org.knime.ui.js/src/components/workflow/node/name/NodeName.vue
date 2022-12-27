@@ -76,7 +76,7 @@ export default {
 <template>
   <g>
     <template v-if="isEditing">
-      <Portal to="node-name-editor">
+      <Portal to="node-text-editor">
         <NodeNameEditor
           :node-id="nodeId"
           :node-position="nodePosition"
@@ -100,7 +100,6 @@ export default {
         @request-edit="onRequestEdit"
         @mouseleave="$emit('mouseleave', $event)"
         @mouseenter="$emit('mouseenter', $event)"
-        @contextmenu="$emit('contextmenu', $event)"
       />
     </template>
   </g>

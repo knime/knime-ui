@@ -34,11 +34,12 @@ export default {
             required: true
         }
     },
+    emits: ['menuClose'],
     data() {
         return {
             recommendedNodes: [],
             showOverlay: false,
-            noNodeRecommendations: false
+            hasNodeRecommendations: false
         };
     },
     computed: {
@@ -89,8 +90,8 @@ export default {
                 fullTemplateInfo: true
             });
 
-            if (recommendedNodesResult.length === 0) {
-                this.noNodeRecommendations = true;
+            if (recommendedNodesResult.length > 0) {
+                this.hasNodeRecommendations = true;
             }
 
             this.recommendedNodes = recommendedNodesResult.map(toNodeWithFullPorts(this.availablePortTypes));
@@ -109,7 +110,7 @@ export default {
                 sourcePortIdx: this.port.index
             });
 
-            this.$emit('menu-close');
+            this.$emit('menuClose');
         }
     }
 };
@@ -123,7 +124,7 @@ export default {
     aria-label="Quick add node"
     prevent-overflow
     tabindex="0"
-    @menu-close="$emit('menu-close')"
+    @menu-close="$emit('menuClose')"
   >
     <div class="wrapper">
       <div
@@ -146,8 +147,8 @@ export default {
           Open Preferences
         </Button>
       </div>
-      <section
-        v-if="!noNodeRecommendations"
+      <div
+        v-if="hasNodeRecommendations"
         class="results"
       >
         <div class="content">
@@ -174,7 +175,7 @@ export default {
             </li>
           </ul>
         </div>
-      </section>
+      </div>
       <span
         v-else
         class="placeholder"

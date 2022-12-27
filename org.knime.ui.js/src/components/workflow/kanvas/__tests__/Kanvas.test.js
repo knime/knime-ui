@@ -13,14 +13,13 @@ jest.mock('raf-throttle', () => function (func) {
 });
 
 describe('Kanvas', () => {
-    let props, doShallowMount, wrapper, $store, storeConfig, isWorkflowEmpty, isDraggingNode;
-
-    const mockBus = {
-        emit: jest.fn()
-    };
-
-    beforeEach(() => {
-        let getBoundingClientRectMock = jest.fn();
+    const doShallowMount = ({
+        isWorkflowEmpty = true,
+        isDraggingNode = false,
+        scrollLeft = 0,
+        scrollTop = 0
+    } = {}) => {
+        const getBoundingClientRectMock = jest.fn();
         getBoundingClientRectMock.mockReturnValue({
             x: 5,
             y: 10,
@@ -30,23 +29,47 @@ describe('Kanvas', () => {
         HTMLElement.prototype.getBoundingClientRect = getBoundingClientRectMock;
 
         // Mock ResizeObserver Class
-        window.ResizeObserver = function (callback) {
-            this.callback = callback;
+        // eslint-disable-next-line func-style
+        function ResizeObserverMock(callback) {
+            this.callbackRef = callback;
+            this.element = null;
+
+            const disconnect = jest.fn();
+            ResizeObserverMock.__trigger__ = () => {
+                this.callbackRef([{ target: this.element }]);
+            };
+
+            ResizeObserverMock.disconnect = disconnect;
+
             this.observe = function (element) {
                 this.element = element;
             };
-            this.resize = function () {
-                this.callback([{ target: this.element }]);
-            };
-            this.disconnect = jest.fn();
+
+            this.disconnect = disconnect;
+        }
+
+        window.ResizeObserver = ResizeObserverMock;
+
+        const actions = {
+            canvas: {
+                zoomAroundPointer: jest.fn(),
+                updateContainerSize: jest.fn(),
+                contentBoundsChanged: jest.fn(),
+                initScrollContainerElement: jest.fn().mockImplementation(
+                    ({ state }, el) => {
+                        state.getScrollContainerElement = () => el;
+                    }
+                )
+            },
+            application: {
+                toggleContextMenu: jest.fn()
+            }
         };
 
-        wrapper = null;
-        props = {};
-        isWorkflowEmpty = true;
-        isDraggingNode = false;
-
-        storeConfig = {
+        const storeConfig = {
+            application: {
+                actions: actions.application
+            },
             canvas: {
                 state: {
                     getScrollContainerElement: null,
@@ -63,16 +86,7 @@ describe('Kanvas', () => {
                     contentPadding: () => ({ left: 10, top: 10 }),
                     canvasSize: () => ({ width: 30, height: 300 })
                 },
-                actions: {
-                    zoomAroundPointer: jest.fn(),
-                    updateContainerSize: jest.fn(),
-                    contentBoundsChanged: jest.fn(),
-                    initScrollContainerElement: jest.fn().mockImplementation(
-                        ({ state }, el) => {
-                            state.getScrollContainerElement = () => el;
-                        }
-                    )
-                },
+                actions: actions.canvas,
                 mutations: {
                     clearScrollContainerElement: jest.fn(),
                     setSuggestPanning: jest.fn()
@@ -92,52 +106,99 @@ describe('Kanvas', () => {
             }
         };
 
-        $store = mockVuexStore(storeConfig);
-
-        doShallowMount = () => {
-            wrapper = shallowMount(Kanvas, { props, global: { plugins: [$store], mocks: { $bus: mockBus } } });
+        const $store = mockVuexStore(storeConfig);
+        
+        const mockBus = {
+            emit: jest.fn()
         };
+        
+        const wrapper = shallowMount(Kanvas, {
+            global: {
+                plugins: [$store],
+                mocks: { $bus: mockBus }
+            }
+        });
+
+        const setPointerCapture = jest.fn();
+        const releasePointerCapture = jest.fn();
+        wrapper.element.setPointerCapture = setPointerCapture;
+        wrapper.element.releasePointerCapture = releasePointerCapture;
+        wrapper.element.scrollLeft = scrollLeft;
+        wrapper.element.scrollTop = scrollTop;
+
+        return {
+            $store,
+            wrapper,
+            actions,
+            setPointerCapture,
+            releasePointerCapture,
+            ResizeObserverMock,
+            mockBus
+        };
+    };
+
+    const triggerPointerDown = async ({ wrapper, position, pointerId, button }) => {
+        await wrapper.trigger('pointerdown', {
+            button,
+            screenX: position.x,
+            screenY: position.y,
+            pointerId
+        });
+    };
+
+    const triggerPointerMove = async ({ wrapper, position }) => {
+        await wrapper.trigger('pointermove', {
+            screenX: position.x,
+            screenY: position.y
+        });
+    };
+
+    const triggerPointerUp = async ({ wrapper }) => {
+        await wrapper.trigger('pointerup', { pointerId: -1 });
+    };
+
+    it('should make scrollContainer accessible to the store', () => {
+        const { wrapper, actions } = doShallowMount();
+        expect(actions.canvas.initScrollContainerElement).toHaveBeenCalledWith(expect.anything(), wrapper.element);
     });
 
-    it('makes scrollContainer accessible to store', () => {
-        doShallowMount();
-        expect(storeConfig.canvas.actions.initScrollContainerElement)
-            .toHaveBeenCalledWith(expect.anything(), wrapper.element);
-    });
+    it('should update canvas store when content bounds change', async () => {
+        const { wrapper, actions } = doShallowMount();
 
-    test('if content bounds change, tell store', async () => {
-        doShallowMount();
-
-        expect(storeConfig.canvas.actions.contentBoundsChanged).not.toHaveBeenCalled();
+        expect(actions.canvas.contentBoundsChanged).not.toHaveBeenCalled();
 
         // TODO test this via store update
-        wrapper.vm.$options.watch.contentBounds.call(wrapper.vm,
-            { left: 0, top: 0 }, { left: 10, top: 10 });
+        wrapper.vm.$options.watch.contentBounds.call(
+            wrapper.vm,
+            { left: 0, top: 0 }, { left: 10, top: 10 }
+        );
         await Vue.nextTick();
 
-        expect(storeConfig.canvas.actions.contentBoundsChanged).toHaveBeenCalledWith(expect.anything(),
-            [{ left: 0, top: 0 }, { left: 10, top: 10 }]);
+        expect(actions.canvas.contentBoundsChanged).toHaveBeenCalledWith(
+            expect.anything(),
+            [{ left: 0, top: 0 }, { left: 10, top: 10 }]
+        );
     });
 
     describe('selection on canvas', () => {
-        test('clicking on the canvas emits select-pointerdown to the event bus', () => {
-            doShallowMount();
+        it('should emit select-pointerdown when clicking on the canvas', () => {
+            const { wrapper, mockBus } = doShallowMount();
 
             wrapper.find('svg').trigger('pointerdown');
 
             expect(mockBus.emit).toHaveBeenCalledWith('selection-pointerdown', expect.anything());
         });
 
-        test('moving on the canvas emits select-pointermove to the event bus', () => {
-            doShallowMount();
+        it('should emit select-pointermove when moving on the canvas ', () => {
+            const { wrapper, mockBus } = doShallowMount();
 
             wrapper.find('svg').trigger('pointermove');
 
             expect(mockBus.emit).toHaveBeenCalledWith('selection-pointermove', expect.anything());
         });
 
-        test('releasing on the canvas emits select-pointerup to the event bus', () => {
-            doShallowMount();
+        it('should emit select-pointerup when releasing click on the canvas ', () => {
+            const { wrapper, mockBus } = doShallowMount();
 
             wrapper.find('svg').trigger('pointerup');
 
@@ -146,81 +207,247 @@ describe('Kanvas', () => {
     });
 
     describe('Panning', () => {
-        it('suggests panning', async () => {
-            doShallowMount();
+        describe('With space', () => {
+            it.each([
+                ['input'],
+                ['textarea'],
+                ['select']
+            ])('should ignore space press on %s elements', async (elementType) => {
+                const { wrapper } = doShallowMount();
+                const element = document.createElement(elementType);
+                
+                document.body.appendChild(element);
+                element.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space', bubbles: true }));
 
-            expect(wrapper.element.className).not.toMatch('panning');
+                await Vue.nextTick();
 
-            $store.state.canvas.suggestPanning = true;
-            await Vue.nextTick();
-            expect(wrapper.element.className).toMatch('panning');
+                expect(wrapper.classes()).not.toContain('panning');
+            });
+
+            it('adds and removes the panning cursor with space', async () => {
+                const { wrapper } = doShallowMount();
+    
+                expect(wrapper.classes()).not.toContain('panning');
+                
+                document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
+                await Vue.nextTick();
+                expect(wrapper.classes()).toContain('panning');
+                
+                document.dispatchEvent(new KeyboardEvent('keyup', { code: 'Space' }));
+                await Vue.nextTick();
+                expect(wrapper.classes()).not.toContain('panning');
+            });
+    
+            it('pans with space', async () => {
+                const { wrapper } = doShallowMount({ scrollLeft: 100, scrollTop: 100 });
+                
+                document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
+                await Vue.nextTick();
+
+                await triggerPointerDown({
+                    wrapper,
+                    button: 0, // left click
+                    position: {
+                        x: 100,
+                        y: 100
+                    },
+                    pointerId: -1
+                });
+    
+                await triggerPointerMove({ wrapper, position: { x: 90, y: 90 } });
+    
+                expect(wrapper.element.scrollLeft).toBe(110);
+                expect(wrapper.element.scrollTop).toBe(110);
+            });
+
+            it('should not pan if interactionsEnabled is false', async () => {
+                const { wrapper, $store } = doShallowMount({ scrollLeft: 100, scrollTop: 100 });
+                $store.state.canvas.interactionsEnabled = false;
+                
+                document.dispatchEvent(new KeyboardEvent('keypress', { code: 'Space' }));
+                await Vue.nextTick();
+    
+                await triggerPointerDown({
+                    wrapper,
+                    button: 0, // left click
+                    position: {
+                        x: 100,
+                        y: 100
+                    },
+                    pointerId: -1
+                });
+    
+                await triggerPointerMove({ wrapper, position: { x: 90, y: 90 } });
+                
+                expect(wrapper.element.scrollLeft).toBe(100);
+                expect(wrapper.element.scrollTop).toBe(100);
+            });
         });
 
-        it('stops suggesting panning', async () => {
-            doShallowMount();
+        describe('With middle mouse button click', () => {
+            it('pans with middle mouse button', async () => {
+                const { wrapper, setPointerCapture, releasePointerCapture, actions } = doShallowMount({
+                    scrollLeft: 100,
+                    scrollTop: 100
+                });
+    
+                await triggerPointerDown({
+                    wrapper,
+                    button: 1, // middle
+                    position: {
+                        x: 100,
+                        y: 100
+                    },
+                    pointerId: -1
+                });
+                expect(setPointerCapture).toHaveBeenCalledWith(-1);
+    
+                expect(wrapper.classes()).toContain('panning');
+                
+                await triggerPointerMove({ wrapper, position: { x: 90, y: 90 } });
+    
+                expect(wrapper.classes()).toContain('panning');
+                expect(wrapper.element.scrollLeft).toBe(110);
+                expect(wrapper.element.scrollTop).toBe(110);
+    
+                await triggerPointerUp({ wrapper });
+                expect(releasePointerCapture).toHaveBeenCalledWith(-1);
+                expect(actions.application.toggleContextMenu).not.toHaveBeenCalled();
+            });
 
-            await wrapper.trigger('keypress.space');
-            expect(storeConfig.canvas.mutations.setSuggestPanning).toBeCalledWith(expect.anything(), true);
-
-            await wrapper.trigger('keyup.space');
-            expect(storeConfig.canvas.mutations.setSuggestPanning).toBeCalledWith(expect.anything(), false);
+            it('should not pan if interactionsEnabled is false', async () => {
+                const { wrapper, $store } = doShallowMount();
+                $store.state.canvas.interactionsEnabled = false;
+    
+                wrapper.element.setPointerCapture = jest.fn();
+                wrapper.element.releasePointerCapture = jest.fn();
+    
+                wrapper.element.scrollLeft = 100;
+                wrapper.element.scrollTop = 100;
+                await triggerPointerDown({
+                    wrapper,
+                    button: 1, // middle
+                    position: {
+                        x: 100,
+                        y: 100
+                    },
+                    pointerId: -1
+                });
+    
+                expect(wrapper.element.setPointerCapture).not.toHaveBeenCalled();
+                expect(wrapper.classes()).not.toContain('panning');
+            });
         });
 
-        it('pans', async () => {
-            doShallowMount();
-            wrapper.element.setPointerCapture = jest.fn();
-            wrapper.element.releasePointerCapture = jest.fn();
+        describe('With right mouse button click', () => {
+            it('pans with right mouse button if mouse movement threshold is exceeded', async () => {
+                const { wrapper, setPointerCapture, releasePointerCapture, actions } = doShallowMount({
+                    scrollLeft: 100,
+                    scrollTop: 100
+                });
+    
+                await triggerPointerDown({
+                    wrapper,
+                    button: 2, // right
+                    position: {
+                        x: 100,
+                        y: 100
+                    },
+                    pointerId: -1
+                });
+                expect(setPointerCapture).not.toHaveBeenCalled();
+    
+                expect(wrapper.classes()).not.toContain('panning');
+    
+                // we need (1) a larger delta to trigger the move with right click
+                // and (2) to trigger the event more than once to make sure the right-click panned is triggered
+                // since the first time it only validates that the move threshold is exceeded
+                await triggerPointerMove({ wrapper, position: { x: 190, y: 190 } });
+                await triggerPointerMove({ wrapper, position: { x: 200, y: 200 } });
 
-            wrapper.element.scrollLeft = 100;
-            wrapper.element.scrollTop = 100;
-            wrapper.trigger('pointerdown', {
-                button: 1, // middle
-                screenX: 100,
-                screenY: 100,
-                pointerId: -1
-            });
-            expect(wrapper.element.setPointerCapture).toHaveBeenCalledWith(-1);
-
-            wrapper.trigger('pointermove', {
-                screenX: 90,
-                screenY: 90
-            });
-            await Vue.nextTick();
-            expect(wrapper.element.scrollLeft).toBe(110);
-            expect(wrapper.element.scrollTop).toBe(110);
-
-            wrapper.trigger('pointerup', {
-                pointerId: -1
-            });
-            expect(wrapper.element.releasePointerCapture).toHaveBeenCalledWith(-1);
-        });
-
-        it('does not pan if interactionsEnabled is false', () => {
-            $store.state.canvas.interactionsEnabled = false;
-            doShallowMount();
-
-            wrapper.element.setPointerCapture = jest.fn();
-            wrapper.element.releasePointerCapture = jest.fn();
-
-            wrapper.element.scrollLeft = 100;
-            wrapper.element.scrollTop = 100;
-            wrapper.trigger('pointerdown', {
-                button: 1, // middle
-                screenX: 100,
-                screenY: 100,
-                pointerId: -1
+                expect(wrapper.classes()).toContain('panning');
+                
+                expect(wrapper.element.scrollLeft).toBe(90);
+                expect(wrapper.element.scrollTop).toBe(90);
+    
+                await triggerPointerUp({ wrapper });
+                expect(releasePointerCapture).toHaveBeenCalledWith(-1);
+                expect(actions.application.toggleContextMenu).not.toHaveBeenCalled();
             });
 
-            expect(wrapper.element.setPointerCapture).not.toHaveBeenCalled();
-            expect(wrapper.vm.isPanning).toBe(null);
+            it('does not pan and opens the context menu if mouse movement threshold is not exceeded', async () => {
+                const { wrapper, releasePointerCapture, actions } = doShallowMount({
+                    scrollLeft: 100,
+                    scrollTop: 100
+                });
+
+                await triggerPointerDown({
+                    wrapper,
+                    button: 2, // right
+                    position: {
+                        x: 100,
+                        y: 100
+                    },
+                    pointerId: -1
+                });
+
+                // we need (1) a small delta to trigger
+                // and (2) to trigger the event more than once to make sure the right-click panned is triggered
+                // and make sure the threshold is validated
+                await triggerPointerMove({ wrapper, position: { x: 90, y: 90 } });
+                await triggerPointerMove({ wrapper, position: { x: 91, y: 91 } });
+
+                expect(wrapper.classes()).not.toContain('panning');
+                
+                expect(wrapper.element.scrollLeft).toBe(100);
+                expect(wrapper.element.scrollTop).toBe(100);
+    
+                await triggerPointerUp({ wrapper });
+                expect(releasePointerCapture).not.toHaveBeenCalledWith(-1);
+                expect(actions.application.toggleContextMenu).toHaveBeenCalled();
+            });
+
+            it('should not pan if interactionsEnabled is false', async () => {
+                const { wrapper, setPointerCapture, releasePointerCapture, actions, $store } = doShallowMount({
+                    scrollLeft: 100,
+                    scrollTop: 100
+                });
+
+                $store.state.canvas.interactionsEnabled = false;
+                
+                await triggerPointerDown({
+                    wrapper,
+                    button: 2, // right
+                    position: {
+                        x: 100,
+                        y: 100
+                    },
+                    pointerId: -1
+                });
+                expect(setPointerCapture).not.toHaveBeenCalled();
+    
+                expect(wrapper.classes()).not.toContain('panning');
+    
+                // we need (1) a larger delta to trigger the move with right click
+                // and (2) to trigger the event more than once to make sure the right-click panned is triggered
+                // since the first time it only validates that the move threshold is exceeded
+                await triggerPointerMove({ wrapper, position: { x: 190, y: 190 } });
+                await triggerPointerMove({ wrapper, position: { x: 200, y: 200 } });
+
+                expect(wrapper.classes()).not.toContain('panning');
+                
+                expect(wrapper.element.scrollLeft).toBe(100);
+                expect(wrapper.element.scrollTop).toBe(100);
+    
+                await triggerPointerUp({ wrapper });
+                expect(releasePointerCapture).not.toHaveBeenCalledWith(-1);
+                expect(actions.application.toggleContextMenu).not.toHaveBeenCalled();
+            });
         });
 
         it('does not pan if workflow is empty', () => {
+            const { wrapper, $store, setPointerCapture } = doShallowMount();
             $store.state.canvas.isEmpty = true;
-            doShallowMount();
-
-            wrapper.element.setPointerCapture = jest.fn();
-            wrapper.element.releasePointerCapture = jest.fn();
 
             wrapper.element.scrollLeft = 100;
             wrapper.element.scrollTop = 100;
@@ -231,43 +458,67 @@ describe('Kanvas', () => {
                 pointerId: -1
             });
 
-            expect(wrapper.element.setPointerCapture).not.toHaveBeenCalled();
-            expect(wrapper.vm.isPanning).toBe(null);
+            expect(setPointerCapture).not.toHaveBeenCalled();
+            expect(wrapper.classes()).not.toContain('panning');
+        });
+    });
+
+    describe('Context Menu', () => {
+        it('shows context menu if user has not panned and used right mouse button', async () => {
+            const { wrapper, actions } = doShallowMount();
+
+            await triggerPointerDown({
+                wrapper,
+                button: 2, // right
+                position: {
+                    x: 100,
+                    y: 100
+                },
+                pointerId: -1
+            });
+
+            await triggerPointerUp({ wrapper });
+
+            expect(actions.application.toggleContextMenu).toHaveBeenCalledWith(
+                expect.anything(),
+                expect.objectContaining({
+                    deselectAllObjects: true,
+                    event: expect.anything()
+                })
+            );
         });
     });
 
     describe('Container Resize', () => {
-        it('observes container resize', async () => {
-            doShallowMount();
+        it('should observe container resizes', async () => {
+            jest.useFakeTimers();
+            const { wrapper, actions, ResizeObserverMock } = doShallowMount();
 
-            wrapper.vm.resizeObserver.resize();
-            wrapper.vm.resizeObserver.resize();
+            ResizeObserverMock.__trigger__();
+            ResizeObserverMock.__trigger__();
 
-            await new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve();
-                }, RESIZE_DEBOUNCE);
-            });
+            jest.advanceTimersByTime(RESIZE_DEBOUNCE);
             await Vue.nextTick();
 
             expect(wrapper.emitted('containerSizeChanged')).toBeTruthy();
-            expect(storeConfig.canvas.actions.updateContainerSize).toHaveBeenCalledTimes(1);
+            expect(actions.canvas.updateContainerSize).toHaveBeenCalledTimes(1);
+            
+            jest.useRealTimers();
         });
 
-        it('stop resize observer', () => {
-            doShallowMount();
-            let resizeObserver = wrapper.vm.resizeObserver;
+        it('should disconnect resize observer', () => {
+            const { wrapper, ResizeObserverMock } = doShallowMount();
             wrapper.unmount();
-            expect(resizeObserver.disconnect).toHaveBeenCalled();
+            expect(ResizeObserverMock.disconnect).toHaveBeenCalled();
         });
     });
 
     describe('Zooming', () => {
         it('uses canvasSize and viewBox from store', async () => {
-            doShallowMount();
+            const { wrapper, $store } = doShallowMount();
             await Vue.nextTick();
 
-            let svg = wrapper.find('svg');
+            const svg = wrapper.find('svg');
 
             const canvasSize = $store.getters['canvas/canvasSize'];
             expect(Number(svg.attributes('width'))).toBe(canvasSize.width);
@@ -278,8 +529,8 @@ describe('Kanvas', () => {
             expect(svg.attributes('viewBox')).toBe(viewBoxString);
         });
 
-        test('mouse wheel zooms', () => {
-            doShallowMount();
+        it('should zoom when using mouse wheel', () => {
+            const { wrapper, actions } = doShallowMount();
 
             wrapper.element.dispatchEvent(new WheelEvent('wheel', {
                 deltaY: -5,
@@ -287,16 +538,16 @@ describe('Kanvas', () => {
                 clientX: 10,
                 clientY: 10
             }));
-            expect(storeConfig.canvas.actions.zoomAroundPointer).toHaveBeenCalledWith(expect.anything(), {
+            expect(actions.canvas.zoomAroundPointer).toHaveBeenCalledWith(expect.anything(), {
                 delta: 1,
                 cursorX: 5,
                 cursorY: 0
             });
         });
 
-        it('does not zooms on mouse wheel if interactionsEnabled is false', () => {
+        it('does not zoom on mouse wheel if interactionsEnabled is false', () => {
+            const { wrapper, actions, $store } = doShallowMount();
             $store.state.canvas.interactionsEnabled = false;
-            doShallowMount();
 
             wrapper.element.dispatchEvent(new WheelEvent('wheel', {
                 deltaY: -5,
@@ -304,12 +555,12 @@ describe('Kanvas', () => {
                 clientX: 10,
                 clientY: 10
             }));
-            expect(storeConfig.canvas.actions.zoomAroundPointer).not.toHaveBeenCalled();
+            expect(actions.canvas.zoomAroundPointer).not.toHaveBeenCalled();
         });
 
         it('does not zoom on mouse wheel if workflow is empty', () => {
+            const { wrapper, actions, $store } = doShallowMount();
             $store.state.canvas.isEmpty = true;
-            doShallowMount();
 
             wrapper.element.dispatchEvent(new WheelEvent('wheel', {
                 deltaY: -5,
@@ -317,7 +568,7 @@ describe('Kanvas', () => {
                 clientX: 10,
                 clientY: 10
             }));
-            expect(storeConfig.canvas.actions.zoomAroundPointer).not.toHaveBeenCalled();
+            expect(actions.canvas.zoomAroundPointer).not.toHaveBeenCalled();
         });
     });
 });

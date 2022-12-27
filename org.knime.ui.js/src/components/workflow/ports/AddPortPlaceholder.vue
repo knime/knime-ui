@@ -1,5 +1,6 @@
 <script>
 import Port from '@/components/common/Port.vue';
+import { mapActions, mapMutations, mapState } from 'vuex';
 
 export const addPortPlaceholderPath = (() => {
     let cx = 0;
@@ -48,15 +49,12 @@ export default {
     },
     emits: ['addPort'],
     data: () => ({
-        isMenuOpen: false,
         transitionEnabled: true,
-
-        /*
-         * if defined, selectedPort is the currently active port of the menu.
-         */
-        selectedPort: null
+        closeTimeout: null
     }),
     computed: {
+        ...mapState('workflow', ['portTypeMenu']),
+
         addPortPlaceholderPath: () => addPortPlaceholderPath,
         validPortGroups() {
             if (!this.portGroups) {
@@ -69,22 +67,44 @@ export default {
                 // map back to an object structure after filtering to match the api object shape
                 .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
         },
+        isMenuOpen() {
+            return this.portTypeMenu.isOpen &&
+                this.portTypeMenu.nodeId === this.nodeId &&
+                this.portTypeMenu.props.side === this.side;
+        },
         previewPort() {
             // show either the selected port of the menu or the targeted port for drag & drop to this placeholder
             return this.targeted ? this.targetPort : this.selectedPort;
+        },
+        selectedPort: {
+            // use global store state for preview
+            get() {
+                return this.portTypeMenu.previewPort;
+            },
+            set(value) {
+                this.setPortTypeMenuPreviewPort(value);
+            }
         }
     },
     watch: {
-        isMenuOpen(shouldOpen) {
-            // use isMenuOpen as source of truth and react upon change
-            if (shouldOpen) {
-                this.openMenu();
+        isMenuOpen(isOpen) {
+            // make the + visible when the menu is open and hide it with a timeout of 1sec if it closes
+            if (isOpen) {
+                this.$el.style.opacity = '1';
+                // clear the close-timeout of this button if set
+                clearTimeout(this.closeTimeout);
             } else {
-                this.closeMenu();
+                // after closing the menu, keep the add-port button for 1s,
+                // then go back to styling by css
+                this.closeTimeout = setTimeout(() => {
+                    this.$el.style.opacity = null;
+                }, 1000);
             }
         }
     },
     methods: {
+        ...mapActions('workflow', ['openPortTypeMenu', 'closePortTypeMenu']),
+        ...mapMutations('workflow', ['setPortTypeMenuPreviewPort']),
         openMenu() {
             // find the position in coordinates relative to the origin
             let position = {
@@ -92,39 +112,29 @@ export default {
                 y: this.anchorPoint.y + this.position[1]
             };
 
-            // Because of an issue with Vue Portal (https://github.com/LinusBorg/portal-vue/issues/290)
-            // We have to make this work like a custom teleport (can probably be replaced by Vue3's teleport)
-            // by telling the WorkflowPanel to render a PortTypeMenu with specified props and events
-            this.$el.dispatchEvent(new CustomEvent(
-                'open-port-type-menu', {
-                    detail: {
-                        id: `${this.nodeId}-${this.side}`,
-                        props: {
-                            position,
-                            side: this.side,
-                            portGroups: this.validPortGroups
-                        },
-                        events: {
-                            onItemActive: this.onItemActive,
-                            onItemClick: this.onItemClick,
-                            onMenuClose: this.onRequestClose
-                        }
-                    },
-                    bubbles: true
+            this.openPortTypeMenu({
+                nodeId: this.nodeId,
+                props: {
+                    side: this.side,
+                    position,
+                    portGroups: this.validPortGroups
+                },
+                events: {
+                    itemActive: this.onItemActive,
+                    itemClick: this.onItemClick,
+                    menuClose: this.onRequestClose
                 }
-            ));
+            });
         },
         closeMenu() {
-            this.$el.dispatchEvent(new CustomEvent(
-                'close-port-type-menu', {
-                    detail: {
-                        id: `${this.nodeId}-${this.side}`
-                    },
-                    bubbles: true
-                }
-            ));
+            this.closePortTypeMenu();
         },
         onClick() {
+            if (this.isMenuOpen) {
+                this.closeMenu();
+                return;
+            }
+
             const portGroups = Object.values(this.validPortGroups || {});
 
             if (portGroups.length === 1) {
@@ -137,16 +147,14 @@ export default {
                 }
             }
 
-            // toggle the menu
-            this.isMenuOpen = !this.isMenuOpen;
+            this.openMenu();
         },
         onRequestClose(item) {
             if (!item) {
                 // If menu closes without selecting an item (eg. when pressing esc), reset preview
                 this.selectedPort = null;
             }
-
-            this.isMenuOpen = false;
+            this.closeMenu();
         },
 
         onItemActive(item) {
@@ -172,7 +180,7 @@ export default {
   <g :transform="`translate(${position})`">
     <transition :name="transitionEnabled ? 'port-fade' : 'none'">
       <Port
-        v-if="previewPort"
+        v-if="previewPort && previewPort.typeId"
         :key="previewPort.typeId"
         :port="previewPort"
       />
@@ -230,7 +238,6 @@ export default {
 .port-fade-leave-to {
   opacity: 0.2;
 }
-
 
 .add-port-icon {
   cursor: pointer;

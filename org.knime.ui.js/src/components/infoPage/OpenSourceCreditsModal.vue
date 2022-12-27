@@ -9,6 +9,20 @@ export default {
         Button,
         OpenSourceCredits
     },
+    props: {
+        withBorder: {
+            type: Boolean,
+            default: false
+        },
+        primary: {
+            type: Boolean,
+            default: true
+        },
+        textBold: {
+            type: Boolean,
+            default: false
+        }
+    },
     data() {
         return {
             modalActive: false
@@ -20,10 +34,12 @@ export default {
 <template>
   <div>
     <Button
-      primary
+      :primary="primary"
+      :with-border="withBorder"
       @click="modalActive = true"
     >
-      Credits
+      <strong v-if="textBold">Credits</strong>
+      <div v-else>Credits</div>
     </Button>
     <Modal
       :active="modalActive"

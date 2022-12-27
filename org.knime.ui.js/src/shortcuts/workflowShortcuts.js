@@ -80,7 +80,7 @@ export default {
     },
     editName: {
         text: 'Rename',
-        hotkey: ['F2'],
+        hotkey: ['Shift', 'F2'],
         execute: ({ $store }) => $store.dispatch(
             'workflow/openNameEditor',
             $store.getters['selection/singleSelectedNode'].id
@@ -89,6 +89,22 @@ export default {
             .includes($store.getters['selection/singleSelectedNode']?.kind) &&
             !$store.getters['selection/singleSelectedNode']?.link &&
             $store.getters['workflow/isWritable']
+    },
+    editNodeLabel: {
+        text: 'Edit node label',
+        hotkey: ['F2'],
+        execute: ({ $store }) => $store.dispatch(
+            'workflow/openLabelEditor',
+            $store.getters['selection/singleSelectedNode'].id
+        ),
+        condition: ({ $store }) => {
+            const singleSelectedNode = $store.getters['selection/singleSelectedNode'];
+            
+            return (
+                singleSelectedNode !== null &&
+                $store.getters['workflow/isWritable']
+            );
+        }
     },
     deleteSelected: {
         text: 'Delete',
@@ -128,7 +144,7 @@ export default {
             if (!$store.getters['workflow/isWritable']) {
                 return false;
             }
-            
+
             if (!$store.getters['selection/selectedNodes'].length) {
                 return false;
             }
@@ -183,11 +199,19 @@ export default {
         text: 'Copy',
         title: 'Copy selection',
         hotkey: ['Ctrl', 'C'],
+        allowEventDefault: true,
         execute:
             ({ $store }) => $store.dispatch('workflow/copyOrCutWorkflowParts', { command: 'copy' }),
         condition:
-            ({ $store }) => Object.keys($store.getters['selection/selectedNodes']).length !== 0 &&
-            $store.state.application.hasClipboardSupport
+            ({ $store }) => {
+                const kanvas = $store.state.canvas.getScrollContainerElement();
+                const selectedNodes = Object.keys($store.getters['selection/selectedNodes']);
+                return (
+                    selectedNodes.length !== 0 &&
+                    $store.state.application.hasClipboardSupport &&
+                    document.activeElement === kanvas
+                );
+            }
     },
     cut: {
         text: 'Cut',
@@ -196,8 +220,14 @@ export default {
         execute:
             ({ $store }) => $store.dispatch('workflow/copyOrCutWorkflowParts', { command: 'cut' }),
         condition:
-            ({ $store }) => Object.keys($store.getters['selection/selectedNodes']).length !== 0 &&
-            $store.getters['workflow/isWritable'] && $store.state.application.hasClipboardSupport
+            ({ $store }) => {
+                const selectedNodes = Object.keys($store.getters['selection/selectedNodes']);
+                return (
+                    selectedNodes.length !== 0 &&
+                    $store.getters['workflow/isWritable'] &&
+                    $store.state.application.hasClipboardSupport
+                );
+            }
     },
     paste: {
         text: 'Paste',
@@ -209,7 +239,7 @@ export default {
 
                 if (eventDetail) {
                     const { clientX, clientY } = eventDetail;
-                    
+
                     const [x, y] = $store.getters['canvas/screenToCanvasCoordinates']([clientX, clientY]);
                     customPosition = { x, y };
                 }

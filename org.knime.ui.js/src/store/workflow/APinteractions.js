@@ -1,3 +1,4 @@
+import { generateWorkflowPreview } from '@/util/generateWorkflowPreview';
 import { openNodeDialog, openLegacyFlowVariableDialog, openView, saveWorkflow, closeWorkflow,
     openLayoutEditor } from '@api';
 
@@ -36,13 +37,26 @@ export const mutations = { };
 
 export const actions = {
     /* See docs in API */
-    saveWorkflow({ state }) {
-        let { activeWorkflow: { projectId } } = state;
-        saveWorkflow({ projectId });
+    async saveWorkflow({ state, rootState, rootGetters }) {
+        const { getScrollContainerElement } = rootState.canvas;
+        const { activeWorkflow: { projectId, info: { containerId } } } = state;
+        
+        const getWorkflowPreviewSnapshot = rootGetters['application/getWorkflowPreviewSnapshot'];
+
+        const isRootWorkflow = containerId === 'root';
+
+        const svgElement = isRootWorkflow
+            ? getScrollContainerElement().firstChild
+            : getWorkflowPreviewSnapshot(projectId);
+
+        const isCanvasEmpty = rootState.canvas.isEmpty;
+
+        const workflowPreviewSvg = await generateWorkflowPreview(svgElement, isCanvasEmpty);
+        saveWorkflow({ projectId, workflowPreviewSvg });
     },
 
     /* Tell the backend to unload this workflow from memory */
-    async closeWorkflow({ dispatch, rootState }, closingProjectId) {
+    async closeWorkflow({ dispatch, commit, rootState }, closingProjectId) {
         const { openProjects, activeProjectId } = rootState.application;
         const nextProjectId = getNextProjectId({
             openProjects,
@@ -53,6 +67,7 @@ export const actions = {
         const didClose = await closeWorkflow({ closingProjectId, nextProjectId });
         
         if (didClose) {
+            dispatch('application/removeRootWorkflowSnapshot', { projectId: closingProjectId }, { root: true });
             dispatch('application/removeCanvasState', closingProjectId, { root: true });
         }
     },

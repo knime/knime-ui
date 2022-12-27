@@ -222,20 +222,6 @@ export default {
                 portGroup: portGroupId
             });
             this.selectedPort = null;
-        },
-        onPortTypeMenuOpen(e) {
-            // show add-port button
-            e.target.style.opacity = 1;
-
-            // clear the close-timeout of this button if set
-            clearTimeout(e.target.closeTimeout);
-        },
-        onPortTypeMenuClose(e) {
-            // after closing the menu, keep the add-port button for 1s,
-            // then go back to styling by css
-            e.target.closeTimeout = setTimeout(() => {
-                e.target.style.opacity = null;
-            }, 1000);
         }
     }
 };
@@ -293,8 +279,6 @@ export default {
           'node-selected': isSingleSelected,
         }]"
         @add-port="addPort({ side, typeId: $event.typeId, portGroup: $event.portGroup })"
-        @open-port-type-menu="onPortTypeMenuOpen($event)"
-        @close-port-type-menu="onPortTypeMenuClose($event)"
       />
     </template>
   </g>

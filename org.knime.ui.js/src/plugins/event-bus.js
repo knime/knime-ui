@@ -22,6 +22,6 @@ const $bus = { on, off, emit, clearAll };
 
 export { $bus };
 
-export default (app) => {
+export default ({ app }) => {
     app.config.globalProperties.$bus = $bus;
 };

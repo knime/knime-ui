@@ -1,6 +1,7 @@
 /* eslint-disable new-cap */
 import { registeredHandlers } from '@api/json-rpc-notifications';
 import { notifyPatch } from '@/util/event-syncer';
+import { APP_ROUTES } from '@/router';
 
 import eventsPlugin from '../events';
 
@@ -21,16 +22,25 @@ jest.mock('@api/json-rpc-notifications', () => {
 });
 
 describe('Event Plugin', () => {
-    let storeMock;
-
-    beforeEach(() => {
-        storeMock = {
+    const loadPlugin = () => {
+        const storeMock = {
+            state: {
+                application: {}
+            },
             dispatch: jest.fn()
         };
-        eventsPlugin(null, storeMock);
-    });
+
+        const routerMock = {
+            push: jest.fn()
+        };
+
+        eventsPlugin({ $store: storeMock, $router: routerMock });
+
+        return { storeMock, routerMock };
+    };
 
     test('Fixed Events', () => {
+        loadPlugin();
         expect(Object.keys(registeredHandlers)).toStrictEqual([
             'WorkflowChangedEvent',
             'AppStateChangedEvent'
@@ -38,6 +48,7 @@ describe('Event Plugin', () => {
     });
 
     test('All eventsHandlers are functions', () => {
+        loadPlugin();
         Object.values(registeredHandlers).forEach(handler => {
             expect(typeof handler === 'function').toBe(true);
         });
@@ -49,6 +60,7 @@ describe('Event Plugin', () => {
         });
         
         it('handles WorkflowChangedEvents', () => {
+            const { storeMock } = loadPlugin();
             registeredHandlers.WorkflowChangedEvent(
                 { patch: { ops: [{ dummy: true, path: '/foo/bar' }] } }
             );
@@ -64,29 +76,74 @@ describe('Event Plugin', () => {
             registeredHandlers.WorkflowChangedEvent(
                 { patch: { ops: [{ dummy: true, path: '/foo/bar' }] }, snapshotId }
             );
-
+            loadPlugin();
             expect(notifyPatch).toHaveBeenCalledWith(snapshotId);
         });
 
         it('should not call `notifyPatch` for patches without snapshotId', () => {
+            loadPlugin();
             registeredHandlers.WorkflowChangedEvent(
                 { patch: { ops: [{ dummy: true, path: '/foo/bar' }] } }
             );
-
             expect(notifyPatch).not.toHaveBeenCalled();
         });
 
-        it('handles AppStateChangedEvents', () => {
-            registeredHandlers.AppStateChangedEvent(
-                { appState: { openedWorkflows: { id: 1 } } }
-            );
+        describe('AppState event', () => {
+            it('navigates to entry page when no projects are open', async () => {
+                const { storeMock, routerMock } = loadPlugin();
+    
+                await registeredHandlers.AppStateChangedEvent(
+                    { appState: { openProjects: [] } }
+                );
 
-            expect(storeMock.dispatch).toHaveBeenCalledWith(
-                'application/replaceApplicationState',
-                {
-                    openedWorkflows: { id: 1 }
-                }
-            );
+                expect(routerMock.push).toHaveBeenCalledWith({
+                    name: APP_ROUTES.EntryPage.name
+                });
+
+                expect(storeMock.dispatch).toHaveBeenCalledWith(
+                    'application/replaceApplicationState',
+                    { openProjects: [] }
+                );
+            });
+            
+            it('navigates to the corresponding project when it is set as active', async () => {
+                const { storeMock, routerMock } = loadPlugin();
+
+                storeMock.state.application.activeProjectId = 'project1';
+    
+                const openProjects = [
+                    { projectId: 'project1' },
+                    { projectId: 'project2', activeWorkflow: {} }
+                ];
+
+                await registeredHandlers.AppStateChangedEvent({
+                    appState: { openProjects }
+                });
+
+                expect(routerMock.push).toHaveBeenCalledWith({
+                    name: APP_ROUTES.WorkflowPage.name,
+                    params: { projectId: 'project2', workflowId: 'root' },
+                    query: { skipGuards: true }
+                });
+
+                expect(storeMock.dispatch).toHaveBeenCalledWith(
+                    'application/replaceApplicationState',
+                    { openProjects }
+                );
+            });
+
+            it('replaces application state', async () => {
+                const { storeMock } = loadPlugin();
+    
+                await registeredHandlers.AppStateChangedEvent(
+                    { appState: { openProjects: [{ id: 'mock' }] } }
+                );
+    
+                expect(storeMock.dispatch).toHaveBeenCalledWith(
+                    'application/replaceApplicationState',
+                    { openProjects: [{ id: 'mock' }] }
+                );
+            });
         });
     });
 });

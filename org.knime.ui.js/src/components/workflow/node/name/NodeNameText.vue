@@ -66,7 +66,6 @@ export default {
       <div
         class="node-name"
         @click.prevent="$emit('click', $event)"
-        @contextmenu="$emit('contextmenu', $event)"
         @dblclick.left.prevent.stop="editable ? $emit('requestEdit') : null"
         @mouseleave="$emit('mouseleave', $event)"
         @mouseenter="$emit('mouseenter', $event)"

@@ -87,14 +87,14 @@ describe('Kanvas', () => {
     describe('with Workflow', () => {
         it('renders workflow, if it is not empty', () => {
             doShallowMount();
-    
+
             expect(wrapper.findComponent(WorkflowEmpty).exists()).toBe(false);
             expect(wrapper.findComponent(Workflow).exists()).toBe(true);
         });
-    
+
         it('draws workflow boundary', () => {
             doShallowMount();
-    
+
             let workflowSheet = wrapper.find('.workflow-sheet');
             expect(Number(workflowSheet.attributes('x'))).toBe(5);
             expect(Number(workflowSheet.attributes('y'))).toBe(10);
@@ -104,12 +104,12 @@ describe('Kanvas', () => {
 
         it('clicking on empty canvas deselects all', () => {
             doShallowMount();
-            
+
             let workflowComponent = wrapper.findComponent(Workflow);
-            
+
             workflowComponent.vm.applyNodeSelectionPreview = jest.fn();
             wrapper.findComponent(SelectionRectangle).vm.$emit('node-selection-preview', 'args');
-    
+
             expect(workflowComponent.vm.applyNodeSelectionPreview).toHaveBeenCalledWith('args');
         });
 
@@ -119,7 +119,7 @@ describe('Kanvas', () => {
             expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalled();
             const kanvas = wrapper.findComponent(Kanvas);
             kanvas.vm.$emit('container-size-changed');
-    
+
             await Vue.nextTick();
             await Vue.nextTick();
             expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalledTimes(1);
@@ -166,10 +166,10 @@ describe('Kanvas', () => {
 
         it('container size update fills the screen', async () => {
             storeConfig.canvas.actions.fillScreen.mockReset();
-            
+
             const kanvas = wrapper.findComponent(Kanvas);
             kanvas.vm.$emit('container-size-changed');
-    
+
             await Vue.nextTick();
             expect(storeConfig.canvas.actions.fillScreen).toHaveBeenCalledTimes(1);
         });
@@ -214,21 +214,5 @@ describe('Kanvas', () => {
         await Vue.nextTick();
 
         expect(storeConfig.canvas.actions.fillScreen).not.toHaveBeenCalled();
-    });
-
-    describe('clearing selected objects', () => {
-        it('should deselect when right-clicking on canvas', () => {
-            doShallowMount();
-            wrapper.findComponent(Kanvas).vm.$emit('contextmenu', {});
-    
-            expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
-        });
-
-        it('should not deselect when event was already prevented', () => {
-            doShallowMount();
-            wrapper.findComponent(Kanvas).vm.$emit('contextmenu', { defaultPrevented: true });
-    
-            expect(storeConfig.selection.actions.deselectAllObjects).not.toHaveBeenCalled();
-        });
     });
 });

@@ -3,6 +3,7 @@ import KnimeUI from './components/KnimeUI.vue';
 
 import { silentLogger } from './plugins/logger';
 import { initStore } from './store';
+import { router } from './router';
 import { initPlugins } from './plugins';
 
 import './assets/index.css';
@@ -21,8 +22,10 @@ const app = createApp(KnimeUI);
 
 // Provide store and init plugins
 const store = initStore();
-initPlugins(app, store);
+// initPlugins(Vue, { store, router });
+initPlugins({ app, store, router });
 
 app.use(store);
+app.use(router)
 app.mount('#app');
 

@@ -8,10 +8,10 @@ import featureFlags from './feature-flags';
 import Portal from '@/components/common/Portal.vue';
 import PortalTarget from '@/components/common/PortalTarget.vue';
 
-export const initPlugins = (app, store) => {
+export const initPlugins = ({ app, store, router }) => {
     const wrapPlugin = (plugin) => ({
         install(app) {
-            plugin(app, store);
+            plugin({ app, $store: store, $router: router });
         }
     });
 

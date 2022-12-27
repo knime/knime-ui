@@ -32,7 +32,7 @@ Object.entries(shortcuts).forEach(([name, shortcut]) => {
 Object.freeze(shortcuts);
 
 // define plugin
-export default (app, store) => {
+export default ({ app, $store, $router }) => {
     // get the whole shortcut by name
     const get = shortcutName => ({ ...shortcuts[shortcutName] });
 
@@ -51,7 +51,7 @@ export default (app, store) => {
             let ctrlMatches = modifiers.includes('Ctrl') === (isMac ? metaKey : ctrlKey);
             let shiftMatches = Boolean(shiftKey) === modifiers.includes('Shift');
             let altMatches = Boolean(altKey) === modifiers.includes('Alt');
-            
+
             // keys are matched case insensitively
             let keysMatch = key.toUpperCase() === character.toUpperCase() ||
                 // on mac 'backspace' can be used instead of delete
@@ -76,7 +76,16 @@ export default (app, store) => {
             return true;
         }
 
-        return shortcut.condition({ $store: store });
+        return shortcut.condition({ $store });
+    };
+
+    const preventDefault = (shortcutName) => {
+        let shortcut = shortcuts[shortcutName];
+        if (!shortcut) {
+            throw new Error(`Shortcut ${shortcutName} doesn't exist`);
+        }
+
+        return !shortcut.allowEventDefault;
     };
 
     // execute a shortcut
@@ -86,13 +95,18 @@ export default (app, store) => {
             throw new Error(`Shortcut ${shortcutName} doesn't exist`);
         }
 
-        shortcut.execute({ $store: store, eventDetail });
+        shortcut.execute({
+            $store,
+            $router,
+            eventDetail
+        });
     };
 
     // define global $shortcuts property
     app.config.globalProperties.$shortcuts = {
         isEnabled,
         dispatch,
+        preventDefault,
         findByHotkey,
         get
     };

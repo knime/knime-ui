@@ -18,6 +18,7 @@ export default {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
         ...mapGetters('workflow', ['isWorkflowEmpty']),
         ...mapGetters('selection', ['selectedNodes']),
+
         hasBreadcrumb() {
             return this.workflow?.parents?.length > 0;
         },
@@ -98,7 +99,11 @@ export default {
 .toolbar {
   display: flex;
   align-items: center;
-  background: var(--knime-porcelain);
+  height: var(--app-toolbar-height);
+  flex: 0 0 auto;
+  padding: 10px;
+  background-color: var(--knime-gray-ultra-light);
+  border-bottom: 1px solid var(--knime-silver-sand);
 }
 
 .button-list-leave-to,

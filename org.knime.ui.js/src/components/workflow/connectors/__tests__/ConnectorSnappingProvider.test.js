@@ -12,6 +12,9 @@ describe('ConnectorSnappingProvider.vue', () => {
     Event.prototype.preventDefault = jest.fn();
     const connectNodesMock = jest.fn();
     const addNodePortMock = jest.fn();
+    const openPortTypeMenuMock = jest.fn();
+    const closePortTypeMenuMock = jest.fn();
+    const setPortTypeMenuPreviewPortMock = jest.fn();
     const mockPorts = {
         inPorts: [...Array(3).keys()].map((_, idx) => ({ id: `port-${idx + 1}` })),
         outPorts: [...Array(3).keys()].map((_, idx) => ({ id: `port-${idx + 1}` }))
@@ -73,7 +76,12 @@ describe('ConnectorSnappingProvider.vue', () => {
             workflow: {
                 actions: {
                     connectNodes: connectNodesMock,
-                    addNodePort: addNodePortMock
+                    addNodePort: addNodePortMock,
+                    openPortTypeMenu: openPortTypeMenuMock,
+                    closePortTypeMenu: closePortTypeMenuMock
+                },
+                mutations: {
+                    setPortTypeMenuPreviewPort: setPortTypeMenuPreviewPortMock
                 }
             }
         });
@@ -218,11 +226,17 @@ describe('ConnectorSnappingProvider.vue', () => {
     });
 
     describe('Placeholder ports', () => {
+        const validPortGroups = {
+            default: {
+                canAddInPort: true,
+                canAddOutPort: true,
+                supportedPortTypeIds: ['TYPE_ID']
+            }
+        };
         const onSnapCallback = jest.fn(() => ({
             didSnap: true,
             createPortFromPlaceholder: {
-                typeId: 'TYPE_ID',
-                portGroup: null
+                validPortGroups
             }
         }));
 
@@ -234,16 +248,19 @@ describe('ConnectorSnappingProvider.vue', () => {
             }
         };
 
-        describe('Input', () => {
-            it('snaps to input placeholder port ', async () => {
+        describe('Add Port', () => {
+            test.each([
+                ['input', 'in', 0],
+                ['output', 'out', 30]
+            ])('snaps to %s placeholder port ', async (_, direction, x) => {
                 const wrapper = doMount({ portGroups });
 
                 await connectorMove({
                     wrapper,
                     eventDetails: {
-                        x: 0,
+                        x,
                         y: 24,
-                        targetPortDirection: 'in'
+                        targetPortDirection: direction
                     },
                     onSnapCallback
                 });
@@ -251,7 +268,7 @@ describe('ConnectorSnappingProvider.vue', () => {
                 // snaps to the placeholder port
                 expect(onSnapCallback).toHaveBeenCalledWith({
                     targetPort: { isPlaceHolderPort: true },
-                    snapPosition: [5, 25],
+                    snapPosition: [x + 5, 25],
                     targetPortGroups: portGroups
                 });
 
@@ -262,36 +279,38 @@ describe('ConnectorSnappingProvider.vue', () => {
                 })).toStrictEqual({
                     index: 3,
                     isPlaceHolderPort: true,
-                    portGroup: null,
-                    side: 'in',
-                    typeId: 'TYPE_ID'
+                    side: direction,
+                    snapPosition: [x + 5, 25],
+                    validPortGroups
                 });
             });
 
-            it('adds input port on drop on a placeholder port ', async () => {
+            test.each([
+                ['input', 'in', 0, {
+                    destNode: 'root',
+                    destPort: 3,
+                    sourceNode: 'START_NODE_ID',
+                    sourcePort: 1
+                }],
+                ['output', 'out', 30, {
+                    destNode: 'START_NODE_ID',
+                    destPort: 1,
+                    sourceNode: 'root',
+                    sourcePort: 3
+                }]
+            ])('adds %s port on drop on a placeholder port ', async (side, direction, x, connect) => {
                 const wrapper = doMount({ portGroups });
 
                 await connectorMove({
                     wrapper,
                     eventDetails: {
-                        x: 0,
+                        x,
                         y: 24,
-                        targetPortDirection: 'in'
+                        targetPortDirection: direction
                     },
                     onSnapCallback
                 });
 
-                // sets the proper data to target port that enables us to create this port on drop
-                expect(getSlottedStubProp({
-                    wrapper,
-                    propName: 'targetPort'
-                })).toStrictEqual({
-                    index: 3,
-                    isPlaceHolderPort: true,
-                    portGroup: null,
-                    side: 'in',
-                    typeId: 'TYPE_ID'
-                });
 
                 addNodePortMock.mockReturnValueOnce({ newPortIdx: 3 });
 
@@ -307,21 +326,16 @@ describe('ConnectorSnappingProvider.vue', () => {
                 expect(addNodePortMock).toHaveBeenCalledWith(expect.anything(), {
                     nodeId: 'root',
                     portGroup: null,
-                    side: 'input',
+                    side,
                     typeId: 'TYPE_ID'
                 });
 
-                expect(connectNodesMock).toHaveBeenCalledWith(expect.anything(), {
-                    destNode: 'root',
-                    destPort: 3,
-                    sourceNode: 'START_NODE_ID',
-                    sourcePort: 1
-                });
+                expect(connectNodesMock).toHaveBeenCalledWith(expect.anything(), connect);
             });
         });
 
-        describe('Output', () => {
-            it('snaps to output placeholder port ', async () => {
+        describe('Port type menu', () => {
+            const dropForMenu = async (validPortGroups) => {
                 const wrapper = doMount({ portGroups });
 
                 await connectorMove({
@@ -331,55 +345,13 @@ describe('ConnectorSnappingProvider.vue', () => {
                         y: 24,
                         targetPortDirection: 'out'
                     },
-                    onSnapCallback
+                    onSnapCallback: jest.fn(() => ({
+                        didSnap: true,
+                        createPortFromPlaceholder: {
+                            validPortGroups
+                        }
+                    }))
                 });
-
-                // snaps to the placeholder port
-                expect(onSnapCallback).toHaveBeenCalledWith({
-                    targetPort: { isPlaceHolderPort: true },
-                    snapPosition: [35, 25],
-                    targetPortGroups: portGroups
-                });
-
-                // sets the proper data to target port that enables us to create this port on drop
-                expect(getSlottedStubProp({
-                    wrapper,
-                    propName: 'targetPort'
-                })).toStrictEqual({
-                    index: 3,
-                    isPlaceHolderPort: true,
-                    portGroup: null,
-                    side: 'out',
-                    typeId: 'TYPE_ID'
-                });
-            });
-
-            it('adds output port on drop on a placeholder port ', async () => {
-                const wrapper = doMount({ portGroups });
-
-                await connectorMove({
-                    wrapper,
-                    eventDetails: {
-                        x: 30,
-                        y: 24,
-                        targetPortDirection: 'out'
-                    },
-                    onSnapCallback
-                });
-
-                // sets the proper data to target port that enables us to create this port on drop
-                expect(getSlottedStubProp({
-                    wrapper,
-                    propName: 'targetPort'
-                })).toStrictEqual({
-                    index: 3,
-                    isPlaceHolderPort: true,
-                    portGroup: null,
-                    side: 'out',
-                    typeId: 'TYPE_ID'
-                });
-
-                addNodePortMock.mockReturnValueOnce({ newPortIdx: 3 });
 
                 await connectorDrop({
                     wrapper,
@@ -389,20 +361,88 @@ describe('ConnectorSnappingProvider.vue', () => {
                         startPort: 1
                     }
                 });
+
+                return wrapper;
+            };
+
+            it('opens port type menu if types from multiple port groups can be chosen', async () => {
+                await dropForMenu({
+                    'Port Group 1': {
+                        canAddOutPort: true,
+                        supportedPortTypeIds: ['TYPE_ID']
+                    },
+                    'Port Group 2': {
+                        canAddOutPort: true,
+                        supportedPortTypeIds: ['TYPE_ID']
+                    }
+                });
+                expect(openPortTypeMenuMock).toBeCalledTimes(1);
+            });
+
+            it('opens port type menu if multiple types one port group can be chosen', async () => {
+                await dropForMenu({
+                    'Port Group 1': {
+                        canAddOutPort: true,
+                        supportedPortTypeIds: ['TYPE_ID', 'OTHER_TID']
+                    }
+                });
+
+                expect(openPortTypeMenuMock).toBeCalledTimes(1);
+            });
+
+            it('handles default port groups correctly on click', async () => {
+                addNodePortMock.mockReturnValueOnce({ newPortIdx: 3 });
+                await dropForMenu({
+                    default: {
+                        canAddOutPort: true,
+                        supportedPortTypeIds: ['TYPE_ID', 'OTHER_TID']
+                    }
+                });
+
+                const events = openPortTypeMenuMock.mock.calls[0][1].events;
+
+                events['item-click']({ typeId: 'SOME_TYPE', portGroup: 'default' });
+                await Vue.nextTick();
 
                 expect(addNodePortMock).toHaveBeenCalledWith(expect.anything(), {
                     nodeId: 'root',
                     portGroup: null,
                     side: 'output',
-                    typeId: 'TYPE_ID'
+                    typeId: 'SOME_TYPE'
+                });
+            });
+
+            it('sets the preview via menu active items', async () => {
+                await dropForMenu({
+                    default: {
+                        canAddOutPort: true,
+                        supportedPortTypeIds: ['TYPE_ID', 'OTHER_TID']
+                    }
                 });
 
-                expect(connectNodesMock).toHaveBeenCalledWith(expect.anything(), {
-                    destNode: 'START_NODE_ID',
-                    destPort: 1,
-                    sourceNode: 'root',
-                    sourcePort: 3
+                const events = openPortTypeMenuMock.mock.calls[0][1].events;
+
+                const port = { typeId: 'active' };
+                events['item-active']({ port });
+                await Vue.nextTick();
+
+                expect(setPortTypeMenuPreviewPortMock).toHaveBeenCalledWith(expect.anything(), port);
+            });
+
+            it('closes the menu on close event', async () => {
+                await dropForMenu({
+                    default: {
+                        canAddOutPort: true,
+                        supportedPortTypeIds: ['TYPE_ID', 'OTHER_TID']
+                    }
                 });
+
+                const events = openPortTypeMenuMock.mock.calls[0][1].events;
+
+                events['menu-close']();
+                await Vue.nextTick();
+
+                expect(closePortTypeMenuMock).toHaveBeenCalledTimes(1);
             });
         });
 
@@ -447,9 +487,9 @@ describe('ConnectorSnappingProvider.vue', () => {
                 })).toStrictEqual({
                     index: 3,
                     isPlaceHolderPort: true,
-                    portGroup: null,
                     side: 'out',
-                    typeId: 'TYPE_ID'
+                    snapPosition: [35, 25],
+                    validPortGroups
                 });
 
                 addNodePortMock.mockReturnValueOnce({ newPortIdx: 3 });

@@ -201,16 +201,8 @@ describe('workflow store', () => {
             };
             store.commit('workflow/setActiveWorkflow', workflow);
 
-            // workflowObjectsBoundsMock.mockReturnValue('bounds');
+            expect(store.getters['workflow/workflowBounds']).toBe('bounds');
 
-            let getit = store.getters['workflow/workflowBounds'];
-            expect(getit).toBe('bounds');
-
-            // expect(workflowObjectsBoundsMock()).toBe('bounds');
-
-            // expect(store.getters['workflow/workflowBounds']).toBe('bounds');
-            // console.log(workflowObjectsBoundsMock);
-            // expect(getit == workflowObjectsBoundsMock).toBe(true);
             expect(workflowObjectsBoundsMock).toHaveBeenCalled();
         });
 

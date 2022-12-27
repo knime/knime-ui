@@ -10,13 +10,13 @@ const getFlagValue = (store, name) => {
 };
 
 
-export default (app, store) => {
+export default ({ app, $store }) => {
     const features = {
-        shouldDisplayEmbeddedDialogs: () => getFlagValue(store, 'embedded_views_and_dialogs'),
+        shouldDisplayEmbeddedDialogs: () => getFlagValue($store, 'embedded_views_and_dialogs'),
 
-        shouldDisplayEmbeddedViews: () => getFlagValue(store, 'embedded_views_and_dialogs'),
+        shouldDisplayEmbeddedViews: () => getFlagValue($store, 'embedded_views_and_dialogs'),
 
-        shouldLoadPageBuilder: () => getFlagValue(store, 'embedded_views_and_dialogs')
+        shouldLoadPageBuilder: () => getFlagValue($store, 'embedded_views_and_dialogs')
     };
 
     app.config.globalProperties.$features = features;

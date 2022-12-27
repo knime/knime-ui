@@ -1,5 +1,6 @@
 import { fetchApplicationState, addEventListener, removeEventListener, loadWorkflow } from '@api';
 import { encodeString } from '@/util/encodeString';
+import { APP_ROUTES } from '@/router';
 
 const getCanvasStateKey = (input) => encodeString(input);
 const getRootWorkflowId = (workflowId) => workflowId.split(':')[0];
@@ -13,7 +14,7 @@ export const state = () => ({
 
     /* Map of port type id to port type */
     availablePortTypes: {},
-    
+
     // A list provided by the backend that says which ports should be suggested to the user in the port type menu.
     suggestedPortTypes: [],
 
@@ -28,10 +29,19 @@ export const state = () => ({
     },
 
     /* Indicates whether node recommendations are available or not */
-    hasNodeRecommendationsEnabled: false
+    hasNodeRecommendationsEnabled: false,
+
+    // Map that keeps track of root workflow snapshots. Only needed when
+    // wanting to generate a workflow preview while being in a nested workflow
+    rootWorkflowSnapshots: new Map(),
+
+    isLoadingWorkflow: false
 });
 
 export const mutations = {
+    setIsLoadingWorkflow(state, value) {
+        state.isLoadingWorkflow = value;
+    },
     setActiveProjectId(state, projectId) {
         state.activeProjectId = projectId;
     },
@@ -50,7 +60,7 @@ export const mutations = {
         const rootWorkflowId = getRootWorkflowId(workflow);
         const isRootWorkflow = rootWorkflowId === workflow;
         const emptyParentState = { children: {} };
-        
+
         if (isRootWorkflow) {
             const newStateKey = getCanvasStateKey(`${project}--${workflow}`);
             // get a reference of an existing parent state or create new one
@@ -97,11 +107,41 @@ export const actions = {
     /*
      *   A P P L I C A T I O N   L I F E C Y C L E
      */
-    async initializeApplication({ dispatch }) {
+    async initializeApplication({ dispatch }, { $router }) {
         await addEventListener('AppStateChanged');
-        
+
         const applicationState = await fetchApplicationState();
         await dispatch('replaceApplicationState', applicationState);
+        
+        $router.beforeEach(async (to, from, next) => {
+            if (to.query.skipGuards) {
+                next();
+                return;
+            }
+
+            const isLeavingWorkflow = from.name === APP_ROUTES.WorkflowPage.name;
+            const isEnteringWorkflow = to.name === APP_ROUTES.WorkflowPage.name;
+        
+            if (isLeavingWorkflow && !isEnteringWorkflow) {
+                await dispatch('switchWorkflow', { newWorkflow: null });
+                next();
+                return;
+            }
+
+            if (isEnteringWorkflow) {
+                // wrap next in a promise to make sure navigation happens at the right time and the workflow
+                // route page is rendered before the dispatch to the store (switchWorkflow) finishes, not after
+                const navigateToWorkflow = () => new Promise(resolve => {
+                    next();
+                    setTimeout(resolve, 0);
+                });
+                // switchWorkflow will call `next` on its own via the `navigateToWorkflow` parameter
+                await dispatch('switchWorkflow', { newWorkflow: to.params, navigateToWorkflow });
+                return;
+            }
+        
+            next();
+        });
     },
     destroyApplication({ dispatch }) {
         removeEventListener('AppStateChanged');
@@ -132,12 +172,12 @@ export const actions = {
     async setActiveProject({ commit, dispatch, state }, openProjects) {
         if (openProjects.length === 0) {
             consola.info('No workflows opened');
-            await dispatch('switchWorkflow', null);
+            await dispatch('switchWorkflow', { newWorkflow: null });
             return;
         }
-
+        
         const activeProject = openProjects.find(item => item.activeWorkflow);
-
+        
         if (!activeProject) {
             consola.info('No active workflow provided');
 
@@ -150,7 +190,7 @@ export const actions = {
             });
             return;
         }
-
+        
         const isSameActiveProject = state?.activeProjectId === activeProject.projectId;
         if (isSameActiveProject) {
             // don't set the workflow if already on it. e.g another tab was closed
@@ -163,11 +203,10 @@ export const actions = {
         const lastActiveWorkflow = state.savedCanvasStates[stateKey]?.lastActive;
         if (hasSavedState && lastActiveWorkflow !== 'root') {
             dispatch('loadWorkflow', { projectId: activeProject.projectId, workflowId: lastActiveWorkflow });
-
             return;
         }
 
-        dispatch('setWorkflow', {
+        await dispatch('setWorkflow', {
             projectId: activeProject.projectId,
             workflow: activeProject.activeWorkflow.workflow,
             snapshotId: activeProject.activeWorkflow.snapshotId
@@ -178,17 +217,19 @@ export const actions = {
      *   W O R K F L O W   L I F E C Y C L E
      */
 
-    async switchWorkflow({ commit, dispatch, rootState, state }, newWorkflow) {
+    async switchWorkflow({ commit, dispatch, rootState, state }, { newWorkflow = null, navigateToWorkflow }) {
         const isChangingProject = rootState.workflow?.activeWorkflow?.projectId !== newWorkflow?.projectId;
+        await dispatch('updatePreviewSnapshot', { isChangingProject, newWorkflow });
 
         if (rootState.workflow?.activeWorkflow) {
+            commit('setIsLoadingWorkflow', true);
             dispatch('saveCanvasState');
 
             // unload current workflow
             dispatch('unloadActiveWorkflow', { clearWorkflow: !newWorkflow });
             commit('setActiveProjectId', null);
         }
-
+        
         // only continue if the new workflow exists
         if (newWorkflow) {
             let { projectId, workflowId = 'root' } = newWorkflow;
@@ -198,25 +239,28 @@ export const actions = {
                 const stateKey = getCanvasStateKey(`${projectId}--${workflowId}`);
                 const newWorkflowId = state.savedCanvasStates[stateKey]?.lastActive;
 
-                await dispatch('loadWorkflow', { projectId, workflowId: newWorkflowId });
+                await dispatch('loadWorkflow', { projectId, workflowId: newWorkflowId, navigateToWorkflow });
             } else {
-                await dispatch('loadWorkflow', { projectId, workflowId });
+                await dispatch('loadWorkflow', { projectId, workflowId, navigateToWorkflow });
             }
         }
+        
+        commit('setIsLoadingWorkflow', false);
     },
-    async loadWorkflow({ commit, rootState, dispatch }, { projectId, workflowId = 'root' }) {
+    async loadWorkflow({ commit, rootState, dispatch }, { projectId, workflowId = 'root', navigateToWorkflow }) {
         const project = await loadWorkflow({ projectId, workflowId });
         if (project) {
             dispatch('setWorkflow', {
                 projectId,
                 workflow: project.workflow,
-                snapshotId: project.snapshotId
+                snapshotId: project.snapshotId,
+                navigateToWorkflow
             });
         } else {
             throw new Error(`Workflow not found: "${projectId}" > "${workflowId}"`);
         }
     },
-    setWorkflow({ commit, dispatch }, { workflow, projectId, snapshotId }) {
+    async setWorkflow({ commit, dispatch }, { workflow, projectId, snapshotId, navigateToWorkflow }) {
         commit('setActiveProjectId', projectId);
         commit('workflow/setActiveWorkflow', {
             ...workflow,
@@ -224,13 +268,16 @@ export const actions = {
         }, { root: true });
 
         commit('workflow/setActiveSnapshotId', snapshotId, { root: true });
-        
+
         // TODO: remove this 'root' fallback after mocks have been adjusted
-        let workflowId = workflow.info.containerId || 'root';
+        const workflowId = workflow.info.containerId || 'root';
         addEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
+        
+        // Call navigate to workflow function (if provided) before restoring the canvas state
+        await navigateToWorkflow?.();
 
         // restore scroll and zoom if saved before
-        dispatch('restoreCanvasState');
+        await dispatch('restoreCanvasState');
     },
     unloadActiveWorkflow({ commit, rootState }, { clearWorkflow }) {
         let activeWorkflow = rootState.workflow.activeWorkflow;
@@ -239,17 +286,17 @@ export const actions = {
         if (!activeWorkflow) {
             return;
         }
-        
+
         // clean up
         let { projectId } = activeWorkflow;
         let { activeSnapshotId: snapshotId } = rootState.workflow;
         let workflowId = rootState.workflow.activeWorkflow.info.containerId;
 
         removeEventListener('WorkflowChanged', { projectId, workflowId, snapshotId });
-       
+
         commit('selection/clearSelection', null, { root: true });
         commit('workflow/setTooltip', null, { root: true });
-        
+
         if (clearWorkflow) {
             commit('workflow/setActiveWorkflow', null, { root: true });
         }
@@ -261,11 +308,12 @@ export const actions = {
 
         commit('setSavedCanvasStates', { ...scrollState, project, workflow });
     },
-    restoreCanvasState({ dispatch, getters }) {
+    async restoreCanvasState({ dispatch, getters }) {
+        // console.log('HEREEEE')
         const { workflowCanvasState } = getters;
-        
+
         if (workflowCanvasState) {
-            dispatch('canvas/restoreScrollState', workflowCanvasState, { root: true });
+            await dispatch('canvas/restoreScrollState', workflowCanvasState, { root: true });
         }
     },
     removeCanvasState({ rootState, state }, projectId) {
@@ -275,27 +323,79 @@ export const actions = {
 
         delete state.savedCanvasStates[stateKey];
     },
-    toggleContextMenu({ state, commit, rootGetters }, contextMenuEvent) {
+    updatePreviewSnapshot({ rootState, state, dispatch }, { isChangingProject, newWorkflow }) {
+        const isCurrentlyOnRoot = rootState.workflow?.activeWorkflow?.info.containerId === 'root';
+
+        const { activeProjectId } = state;
+
+        // Going from the root into deeper levels (e.g into a Metanode or Component)
+        // without having changed projects
+        if (isCurrentlyOnRoot && newWorkflow && !isChangingProject) {
+            const canvasElement = rootState.canvas.getScrollContainerElement().firstChild;
+
+            // save a snapshot of the current state of the root workflow
+            dispatch('setRootWorkflowSnapshot', {
+                projectId: activeProjectId,
+                element: canvasElement
+            });
+
+            // Going back to the root of a workflow without having changed projects
+        } else if (!isCurrentlyOnRoot && newWorkflow?.workflowId === 'root' && !isChangingProject) {
+            // Since we're back in the root workflow, we can clear the previously saved snapshot
+            dispatch('removeRootWorkflowSnapshot', { projectId: activeProjectId });
+        }
+    },
+    setRootWorkflowSnapshot({ state }, { projectId, element }) {
+        // always use the "root" workflow
+        const snapshotKey = encodeString(`${projectId}--root`);
+        state.rootWorkflowSnapshots.set(snapshotKey, element.cloneNode(true));
+    },
+
+    removeRootWorkflowSnapshot({ state }, { projectId }) {
+        state.rootWorkflowSnapshots.delete(encodeString(`${projectId}--root`));
+    },
+
+    toggleContextMenu({
+        state,
+        commit,
+        dispatch,
+        rootGetters,
+        rootState
+    }, {
+        event,
+        deselectAllObjects = false
+    }) {
+        // close other menus if they are open
+        if (rootState.workflow.quickAddNodeMenu.isOpen) {
+            rootState.workflow.quickAddNodeMenu.events.menuClose?.();
+        }
+        if (rootState.workflow.portTypeMenu.isOpen) {
+            rootState.workflow.portTypeMenu.events.menuClose?.();
+        }
+
+        // close an open menu
         if (state.contextMenu.isOpen) {
             // when closing an active menu, we could optionally receive a native event
-            // e.g the menu is getting closed by right-clicking again
-            contextMenuEvent?.preventDefault();
+            // e.g. the menu is getting closed by right-clicking again
+            event?.preventDefault();
             commit('setContextMenu', { isOpen: false, position: null });
             return;
         }
 
-        // if source element has the following class set, then just let the event do the natural behavior
-        if (contextMenuEvent.srcElement.classList.contains('native-context-menu')) {
-            return;
-        }
-
         // safety check
-        if (!contextMenuEvent) {
+        if (!event) {
             return;
         }
 
-        contextMenuEvent.preventDefault();
-        const { clientX, clientY } = contextMenuEvent;
+        // we do not want it to bubble up if we handle it here
+        event.stopPropagation();
+        event.preventDefault();
+
+        if (deselectAllObjects) {
+            dispatch('selection/deselectAllObjects', null, { root: true });
+        }
+
+        const { clientX, clientY } = event;
         const screenToCanvasCoordinates = rootGetters['canvas/screenToCanvasCoordinates'];
         const [x, y] = screenToCanvasCoordinates([clientX, clientY]);
         state.contextMenu = {
@@ -325,8 +425,16 @@ export const getters = {
         } else {
             // read child state
             const savedStateKey = getCanvasStateKey(workflowId);
-            
+
             return savedCanvasStates[parentStateKey]?.children[savedStateKey];
         }
+    },
+
+    getWorkflowPreviewSnapshot(state) {
+        return (projectId) => {
+            const snapshotKey = encodeString(`${projectId}--root`);
+
+            return state.rootWorkflowSnapshots.get(snapshotKey);
+        };
     }
 };

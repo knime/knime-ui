@@ -6,13 +6,13 @@ import { mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
 import { $bus } from '@/plugins/event-bus';
-import NodeAnnotation from '@/components/workflow/annotations/NodeAnnotation.vue';
 import NodePorts from '@/components/workflow/ports/NodePorts.vue';
 import NodePort from '@/components/workflow/ports/NodePort.vue';
 import ConnectorSnappingProvider from '@/components/workflow/connectors/ConnectorSnappingProvider.vue';
 
 import NodeTorso from '../torso/NodeTorso.vue';
 import NodeName from '../name/NodeName.vue';
+import NodeLabel from '../label/NodeLabel.vue';
 import NodeDecorators from '../decorators/NodeDecorators.vue';
 
 import NodeActionBar from '../NodeActionBar.vue';
@@ -39,7 +39,8 @@ const commonNode = {
     annotation: {
         text: 'ThatsMyNode',
         backgroundColor: 'rgb(255, 216, 0)',
-        styleRanges: [{ start: 0, length: 2, fontSize: 12 }]
+        styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
+        textAlign: 'center'
     },
 
     name: 'My Name',
@@ -108,7 +109,8 @@ describe('Node', () => {
                     return { activeProjectId: 'projectId' };
                 },
                 actions: {
-                    switchWorkflow: jest.fn()
+                    switchWorkflow: jest.fn(),
+                    toggleContextMenu: jest.fn()
                 }
             },
             selection: {
@@ -211,41 +213,13 @@ describe('Node', () => {
             expect(nodePorts.props('nodeKind')).toBe('component');
         });
 
-        it("doesn't render non-existent node annotation", () => {
-            delete props.annotation;
-            doMount();
-
-            expect(wrapper.findComponent(NodeAnnotation).exists()).toBe(false);
-        });
-
-        it("doesn't render empty node annotation", () => {
-            props.annotation.text = '';
-            doMount();
-
-            expect(wrapper.findComponent(NodeAnnotation).exists()).toBe(false);
-        });
-
         it('displays annotation', () => {
-            expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
-                backgroundColor: 'rgb(255, 216, 0)',
-                defaultFontSize: 12,
-                styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
-                text: 'ThatsMyNode',
-                textAlign: 'center',
-                yOffset: 20
-            });
-        });
-
-        it('pushes Metanode annotation up', () => {
-            props = { ...metaNode };
-            doMount();
-            expect(wrapper.findComponent(NodeAnnotation).props()).toStrictEqual({
-                backgroundColor: 'rgb(255, 216, 0)',
-                defaultFontSize: 12,
-                styleRanges: [{ start: 0, length: 2, fontSize: 12 }],
-                text: 'ThatsMyNode',
-                textAlign: 'center',
-                yOffset: 0
+            expect(wrapper.findComponent(NodeLabel).props()).toStrictEqual({
+                value: props.annotation.text,
+                kind: commonNode.kind,
+                nodeId: commonNode.id,
+                nodePosition: commonNode.position,
+                annotation: props.annotation
             });
         });
 
@@ -436,12 +410,13 @@ describe('Node', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValueOnce(true);
             doMount();
 
-            await wrapper.find('.mouse-clickable').trigger('contextmenu', { shiftKey: true });
+            await wrapper.find('.mouse-clickable').trigger('pointerdown', { button: 2, shiftKey: true });
 
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
                 expect.stringMatching('root:1')
             );
+            expect(storeConfig.application.actions.toggleContextMenu).toHaveBeenCalled();
         });
 
         it('shift-right-click does not remove from selection', async () => {
@@ -456,7 +431,7 @@ describe('Node', () => {
             storeConfig.selection.getters.isNodeSelected = () => jest.fn().mockReturnValue(false);
             doMount();
 
-            await wrapper.find('.mouse-clickable').trigger('contextmenu');
+            await wrapper.find('.mouse-clickable').trigger('pointerdown', { button: 2 });
 
             expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
@@ -773,8 +748,10 @@ describe('Node', () => {
             await wrapper.findComponent(NodeTorso).trigger('dblclick');
 
             expect(storeConfig.application.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
-                workflowId: 'root:1',
-                projectId: 'projectId'
+                newWorkflow: {
+                    workflowId: 'root:1',
+                    projectId: 'projectId'
+                }
             });
         });
 
@@ -786,8 +763,10 @@ describe('Node', () => {
             });
 
             expect(storeConfig.application.actions.switchWorkflow).toHaveBeenCalledWith(expect.anything(), {
-                workflowId: 'root:1',
-                projectId: 'projectId'
+                newWorkflow: {
+                    workflowId: 'root:1',
+                    projectId: 'projectId'
+                }
             });
         });
 
@@ -836,14 +815,13 @@ describe('Node', () => {
         });
 
         it('should handle contextmenu events', async () => {
-            const preventDefault = jest.fn();
-            wrapper.findComponent(NodeName).vm.$emit('contextmenu', { preventDefault });
+            wrapper.findComponent(NodeName).trigger('pointerdown', { button: 2 });
             await Vue.nextTick();
-            expect(preventDefault).toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectNode).toHaveBeenCalledWith(
                 expect.anything(),
                 expect.stringMatching('root:1')
             );
+            expect(storeConfig.application.actions.toggleContextMenu).toHaveBeenCalled();
         });
 
         it('should handle click events', async () => {

@@ -99,11 +99,22 @@ public final class PerspectiveUtil {
      */
     public static final String SHARED_EDITOR_AREA_ID = "org.eclipse.ui.editorss";
 
+    private static boolean isClassicPerspectiveLoaded = false;
+
     /**
-     * If true, start directly into the Web UI perspective.
-     * @see AppStartupCompleteAddon#applicationStarted(Event)
+     * @return {@code true} if the classic perspective has been loaded (i.e. the user switched from there to the Modern
+     *         UI at least once)
      */
-    public static final String PERSPECTIVE_SWITCH_SYS_PROP = "org.knime.ui.dev.switchOnStart";
+    public static boolean isClassicPerspectiveLoaded() {
+        return isClassicPerspectiveLoaded;
+    }
+
+    /**
+     * Sets the 'isClassicPerspectiveLoaded' flag to true.
+     */
+    public static void markClassicPerspectiveAsLoaded() {
+        isClassicPerspectiveLoaded = true;
+    }
 
     /**
      * Obtain the Web UI perspective

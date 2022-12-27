@@ -50,13 +50,16 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.PlatformUI;
 import org.knime.core.node.workflow.WorkflowManager;
+import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.ui.java.EclipseUIStateUtil;
+import org.knime.ui.java.PerspectiveUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 import com.equo.chromium.swt.Browser;
@@ -88,9 +91,15 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
      */
     @Override
     public Object function(final Object[] arguments) {
-
         String projectIdToClose = requireAtIndex(arguments, 0, String.class)
-            .orElseThrow(() -> new NoSuchElementException("Project ID to close not given"));
+                .orElseThrow(() -> new NoSuchElementException("Project ID to close not given"));
+
+        // TODO NXT-1386
+        if (!PerspectiveUtil.isClassicPerspectiveLoaded() && WorkflowProjectManager.getInstance()
+            .getCachedWorkflow(projectIdToClose).map(WorkflowManager::isDirty).orElse(false)) {
+            MessageDialog.openWarning(SWTUtilities.getActiveShell(), "Unsaved changes",
+                "Workflow can't be closed because there are unsaved changes. Please save the workflow first.");
+        }
 
         Optional<String> nextProjectId = requireAtIndex(arguments, 1, String.class);
 

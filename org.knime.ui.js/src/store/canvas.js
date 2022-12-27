@@ -20,7 +20,6 @@ const unsetScrollContainer = () => {
 
 export const state = () => ({
     zoomFactor: defaultZoomFactor,
-    suggestPanning: false,
     containerSize: { width: 0, height: 0 },
     getScrollContainerElement: unsetScrollContainer,
     interactionsEnabled: true,
@@ -47,12 +46,6 @@ export const mutations = {
         don't restore containerSize, it might have changed
     */
    
-    /*
-     * suggestPanning is set when the Alt-key is pressed and displays a different cursor
-     */
-    setSuggestPanning(state, newValue) {
-        state.suggestPanning = newValue;
-    },
     setFactor(state, newFactor) {
         state.zoomFactor = clampZoomFactor(newFactor);
     },

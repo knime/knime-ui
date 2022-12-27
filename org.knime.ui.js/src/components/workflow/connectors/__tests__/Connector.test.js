@@ -58,6 +58,11 @@ describe('Connector.vue', () => {
         const portMock = { ...defaultPortMock, ...customPortMock };
 
         return merge({
+            application: {
+                actions: {
+                    toggleContextMenu: jest.fn()
+                }
+            },
             workflow: {
                 ...workflowStoreConfig,
                 state: {
@@ -149,8 +154,9 @@ describe('Connector.vue', () => {
         it('right click selects the connection', async () => {
             const storeConfig = getStoreConfig();
             const wrapper = doShallowMount({ storeConfig });
-            await wrapper.find('g path').trigger('contextmenu');
+            await wrapper.find('g path').trigger('pointerdown', { button: 2 });
 
+            expect(storeConfig.application.actions.toggleContextMenu).toHaveBeenCalled();
             expect(storeConfig.selection.actions.deselectAllObjects).toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectConnection).toHaveBeenCalledWith(
                 expect.anything(),
@@ -173,8 +179,9 @@ describe('Connector.vue', () => {
         it('shift-click and right click add to selection', async () => {
             const storeConfig = getStoreConfig();
             const wrapper = doShallowMount({ storeConfig });
-            await wrapper.find('g path').trigger('contextmenu', { shiftKey: true });
+            await wrapper.find('g path').trigger('pointerdown', { button: 2, shiftKey: true });
 
+            expect(storeConfig.application.actions.toggleContextMenu).toHaveBeenCalled();
             expect(storeConfig.selection.actions.deselectConnection).not.toHaveBeenCalled();
             expect(storeConfig.selection.actions.selectConnection).toHaveBeenCalledWith(
                 expect.anything(),

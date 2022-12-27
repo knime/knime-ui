@@ -1,7 +1,8 @@
 import { registerEventHandlers } from '@api';
 import { notifyPatch } from '@/util/event-syncer';
+import { APP_ROUTES } from '@/router';
 
-export default (_, store) => {
+export default ({ $store, $router }) => {
     registerEventHandlers({
         /*
          * Is triggered by the backend, whenever a change to the workflow has been made/requested
@@ -13,7 +14,7 @@ export default (_, store) => {
             ops.forEach(op => {
                 op.path = `/activeWorkflow${op.path}`;
             });
-            store.dispatch('workflow/patch.apply', ops);
+            $store.dispatch('workflow/patch.apply', ops);
         
             if (snapshotId) {
                 notifyPatch(snapshotId);
@@ -25,8 +26,29 @@ export default (_, store) => {
          * sends the new state
          */
         // NXT-962: Unpack arguments from Object?
-        AppStateChangedEvent({ appState }) {
-            store.dispatch('application/replaceApplicationState', appState);
+        async AppStateChangedEvent({ appState }) {
+            const { openProjects } = appState;
+            const currentProjectId = $store.state.application.activeProjectId;
+            const nextActiveProject = openProjects.find(item => item.activeWorkflow);
+            
+            // Navigate to EntryPage when no projects are open
+            if (openProjects.length === 0) {
+                await $router.push({ name: APP_ROUTES.EntryPage.name });
+            }
+            
+            // When a new project is set as active, navigate to the corresponding workflow
+            if (nextActiveProject && currentProjectId !== nextActiveProject.projectId) {
+                await $router.push({
+                    name: APP_ROUTES.WorkflowPage.name,
+                    params: {
+                        projectId: nextActiveProject.projectId,
+                        workflowId: 'root',
+                    },
+                    query: { skipGuards: true }
+                });
+            }
+
+            $store.dispatch('application/replaceApplicationState', appState);
         }
     });
 };

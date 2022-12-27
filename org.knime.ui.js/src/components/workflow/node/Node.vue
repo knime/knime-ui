@@ -5,12 +5,12 @@
 import { mapActions, mapState, mapGetters } from 'vuex';
 
 import NodePorts from '@/components/workflow/ports/NodePorts.vue';
-import NodeAnnotation from '@/components/workflow/annotations/NodeAnnotation.vue';
 import ConnectorSnappingProvider from '@/components/workflow/connectors/ConnectorSnappingProvider.vue';
 
 import NodeTorso from './torso/NodeTorso.vue';
 import NodeDecorators from './decorators/NodeDecorators.vue';
 import NodeName from './name/NodeName.vue';
+import NodeLabel from './label/NodeLabel.vue';
 
 import NodeActionBar from './NodeActionBar.vue';
 import NodeState from './NodeState.vue';
@@ -25,10 +25,10 @@ import NodeHoverSizeProvider from './NodeHoverSizeProvider.vue';
 export default {
     components: {
         NodeActionBar,
-        NodeAnnotation,
         NodeTorso,
         NodeState,
         NodeName,
+        NodeLabel,
         NodePorts,
         NodeSelectionPlane,
         NodeDecorators,
@@ -257,7 +257,9 @@ export default {
         onLeftDoubleClick(e) {
             // Ctrl key (Cmd key on mac) required to open component. Metanodes can be opened without keys
             if (this.kind === 'metanode' || (this.kind === 'component' && (e.ctrlKey || e.metaKey))) {
-                this.switchWorkflow({ workflowId: this.id, projectId: this.projectId });
+                this.switchWorkflow({
+                    newWorkflow: { workflowId: this.id, projectId: this.projectId }
+                });
             } else if (this.allowedActions?.canOpenDialog) {
                 // open node dialog if one is present
                 this.openNodeConfiguration(this.id);
@@ -273,7 +275,6 @@ export default {
             if (this.isDragging) {
                 return;
             }
-            this.$refs.mouseClickable.focus();
 
             if (e.ctrlKey || e.metaKey) {
                 // user tries to open component or metanode
@@ -299,18 +300,18 @@ export default {
          *
          * We use the contextmenu event as click with button = 2 was not reliable.
          */
-        onContextMenu(e) {
+        onContextMenu(event) {
             if (this.isDragging) {
                 return;
             }
 
-            if (e.ctrlKey || e.metaKey) {
+            if (event.ctrlKey || event.metaKey) {
                 // user tries to open component or metanode
-                e.stopPropagation();
+                event.stopPropagation();
                 return;
             }
 
-            if (e.shiftKey) {
+            if (event.shiftKey) {
                 // Multi select
                 this.selectNode(this.id);
             } else if (!this.isNodeSelected(this.id)) {
@@ -318,6 +319,8 @@ export default {
                 this.deselectAllObjects();
                 this.selectNode(this.id);
             }
+
+            this.$store.dispatch('application/toggleContextMenu', { event });
         },
 
         // public
@@ -376,17 +379,20 @@ export default {
           />
         </Portal>
 
-        <!-- Annotation needs to be behind ports -->
-        <NodeAnnotation
-          v-if="annotation && annotation.text"
-          v-bind="annotation"
-          :y-offset="kind === 'metanode' ? 0 : $shapes.nodeStatusHeight + $shapes.nodeStatusMarginTop"
+        <!-- Label needs to be behind ports -->
+        <NodeLabel
+          :value="annotation ? annotation.text : ''"
+          :annotation="annotation"
+          :kind="kind"
+          :node-id="id"
+          :node-position="position"
+          @contextmenu.prevent="onContextMenu"
         />
 
         <!-- Elements for which mouse hover triggers hover state -->
         <g
           class="hover-container"
-          @contextmenu.prevent="onContextMenu"
+          @pointerdown.right="onContextMenu"
           @connector-enter="onConnectorEnter"
           @connector-leave="onConnectorLeave"
           @connector-move="onConnectorMove($event, { inPorts, outPorts })"
@@ -404,9 +410,7 @@ export default {
             <template #default="{ hoverSize }">
               <!-- Elements for which a click selects node -->
               <g
-                ref="mouseClickable"
                 class="mouse-clickable"
-                tabindex="0"
                 @click.left="onLeftMouseClick"
               >
                 <!-- Hover Area, larger than the node torso -->
@@ -460,7 +464,7 @@ export default {
                 :value="name"
                 :editable="isEditable && isContainerNode"
                 @click.left="onLeftMouseClick"
-                @contextmenu.prevent="onContextMenu"
+                @pointerdown.right="onContextMenu"
                 @width-change="nameDimensions.width = $event"
                 @height-change="nameDimensions.height = $event"
                 @edit-start="isHovering = false"
@@ -503,9 +507,5 @@ export default {
   line-height: 12px;
   pointer-events: none;
   width: 125px;
-}
-
-.mouse-clickable:focus {
-  outline: none;
 }
 </style>

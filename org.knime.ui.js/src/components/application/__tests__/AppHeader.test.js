@@ -6,9 +6,15 @@ import { mockVuexStore } from '@/test/test-utils';
 import CloseIcon from '@/assets/cancel.svg';
 import AppHeader from '../AppHeader.vue';
 import AppHeaderTab from '../AppHeaderTab.vue';
+import { APP_ROUTES } from '@/router';
 
 describe('AppHeader.vue', () => {
-    const doMount = ({ props = {}, customOpenProjects = null, activeProjectId = null } = {}) => {
+    const doMount = ({
+        props = {},
+        customOpenProjects = null,
+        $route = { name: '' },
+        isLoadingWorkflow = false
+    } = {}) => {
         const openProjects = customOpenProjects || [
             { projectId: '1', name: 'Test1' },
             { projectId: '2', name: 'Test2' },
@@ -18,7 +24,8 @@ describe('AppHeader.vue', () => {
             application: {
                 state: {
                     openProjects,
-                    activeProjectId: activeProjectId || openProjects[0]?.projectId
+                    activeProjectId: openProjects[0]?.projectId,
+                    isLoadingWorkflow
                 },
                 actions: { switchWorkflow: jest.fn() }
             },
@@ -26,14 +33,18 @@ describe('AppHeader.vue', () => {
                 actions: { closeWorkflow: jest.fn() }
             }
         };
+        const $router = {
+            currentRoute: {},
+            push: jest.fn()
+        };
 
         const $store = mockVuexStore(storeConfig);
         const wrapper = mount(AppHeader, {
             props,
-            global: { plugins: [$store] }
+            global: { plugins: [$store], mocks: { $router, $route } }
         });
 
-        return { storeConfig, wrapper, $store };
+        return { storeConfig, wrapper, $store, $route, $router };
     };
 
     describe('Tabs', () => {
@@ -54,26 +65,48 @@ describe('AppHeader.vue', () => {
             ).toHaveBeenCalledWith(expect.anything(), '2');
         });
 
-        it('allows to switch workflow', () => {
-            const { wrapper, storeConfig } = doMount();
+        it('should navigate to workflow', () => {
+            const { wrapper, storeConfig, $router } = doMount();
             const projectId =
                 storeConfig.application.state.openProjects[2].projectId;
 
             wrapper.findAll('li').at(2).trigger('click');
-            expect(
-                storeConfig.application.actions.switchWorkflow
-            ).toHaveBeenCalledWith(expect.anything(), { projectId });
+            expect($router.push).toHaveBeenCalledWith({
+                name: APP_ROUTES.WorkflowPage.name,
+                params: { projectId, workflowId: 'root' }
+            });
         });
 
-        it('allows to click knime logo and switch workflow to entry page', async () => {
-            const { wrapper, storeConfig } = doMount();
+        it('allows to click knime logo and navigate to entry page', () => {
+            const { wrapper, $router } = doMount();
 
             wrapper.find('#knime-logo').trigger('click');
-            expect(
-                storeConfig.application.actions.switchWorkflow
-            ).toHaveBeenCalledWith(expect.anything(), null);
-            await Vue.nextTick();
-            expect(wrapper.find('#knime-logo').classes()).toContain('active-logo');
+            
+            expect($router.push).toHaveBeenCalledWith({
+                name: APP_ROUTES.EntryPage.name
+            });
+        });
+
+        describe('Logo', () => {
+            it('should be active when no projects are open', () => {
+                const { wrapper } = doMount({ customOpenProjects: [] });
+               
+                expect(wrapper.find('#knime-logo').classes()).toContain('active-logo');
+            });
+
+            it('should be active when entry page is active', () => {
+                const { wrapper } = doMount({ $route: { name: APP_ROUTES.EntryPage.name } });
+                
+                expect(wrapper.find('#knime-logo').classes()).toContain('active-logo');
+            });
+            
+            it('should be active when there is no activeProjectId and app is not loading a workflow', async () => {
+                const { wrapper, $store } = doMount({ activeProjectId: null, isLoadingWorkflow: false });
+                $store.state.application.activeProjectId = null;
+                await Vue.nextTick();
+                
+                expect(wrapper.find('#knime-logo').classes()).toContain('active-logo');
+            });
         });
 
         it('renders tabs of opened projects', () => {
@@ -126,18 +159,12 @@ describe('AppHeader.vue', () => {
     });
 
     describe('Right side buttons', () => {
-        it('allows switching to old UI', () => {
-            window.switchToJavaUI = jest.fn();
-            const { wrapper } = doMount();
-            wrapper.find('.switch-classic').trigger('click');
-            expect(window.switchToJavaUI).toHaveBeenCalled();
-        });
-
-        test('feedback URL is correct', () => {
-            const { wrapper } = doMount();
-            expect(wrapper.find('.feedback').attributes('href')).toBe(
-                'https://knime.com/modern-ui-feedback?src=knimeapp?utm_source=knimeapp'
-            );
+        it('allows switching to Info Page', async () => {
+            const { wrapper, $router } = doMount();
+            await wrapper.find('.switch-info-page').trigger('click');
+            expect($router.push).toHaveBeenCalledWith({
+                name: APP_ROUTES.InfoPage.name
+            });
         });
     });
 });

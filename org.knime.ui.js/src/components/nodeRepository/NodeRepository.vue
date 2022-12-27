@@ -129,7 +129,7 @@ export default {
 
 .header {
   position: sticky;
-  background: var(--knime-gray-ultra-light);
+  background: var(--knime-porcelain);
   z-index: 2;
   top: 0;
 

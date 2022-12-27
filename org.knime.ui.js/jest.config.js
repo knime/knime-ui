@@ -29,7 +29,8 @@ module.exports = {
         // place the svg stub first so that it gets resolved before other `@` prefixed svg imports
         '\\.svg$': '<rootDir>/src/test/svgStub.vue',
         '^@/(.*)$': '<rootDir>/src/$1',
-        '@api': '<rootDir>/src/api/index.js'
+        '@api': '<rootDir>/src/api/index.js',
+        '@fontsource/(.*)$': 'jest-transform-stub'
     },
     moduleFileExtensions: [
         'mjs',

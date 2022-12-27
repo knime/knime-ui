@@ -7,7 +7,7 @@ import * as panel from './panel';
 import * as selection from './selection';
 import * as workflow from './workflow';
 import * as api from './uiExtApi';
-
+import * as spaceExplorer from './spaceExplorer';
 
 // eslint-disable-next-line arrow-body-style
 export const initStore = () => {
@@ -19,6 +19,7 @@ export const initStore = () => {
             panel: { namespaced: true, ...panel },
             selection: { namespaced: true, ...selection },
             workflow: { namespaced: true, ...workflow },
+            spaceExplorer: { namespaced: true, ...spaceExplorer },
             // TODO: NXT-1217 Remove this unnecessary store once the issue in the ticket
             // can be solved in a better way
             api: { namespaced: true, ...api }

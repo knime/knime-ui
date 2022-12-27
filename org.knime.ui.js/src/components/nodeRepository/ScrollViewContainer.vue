@@ -64,7 +64,7 @@ export default {
 
 <style lang="postcss" scoped>
 .scroll-container {
-  background-color: var(--knime-gray-ultra-light);
+  background-color: var(--knime-porcelain);
   overflow-x: hidden;
   text-align: left;
   height: 100%;

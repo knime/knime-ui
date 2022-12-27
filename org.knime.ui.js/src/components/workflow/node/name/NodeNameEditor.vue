@@ -1,8 +1,11 @@
 <script>
 import { mapGetters } from 'vuex';
 
+import SaveIcon from '@/assets/ok.svg';
+import CancelIcon from '@/assets/cancel.svg';
+import ActionBar from '@/components/common/ActionBar.vue';
+
 import NodeNameTextarea from './NodeNameTextarea.vue';
-import NodeNameEditorActionBar from './NodeNameEditorActionBar.vue';
 
 const invalidCharsErrorVisibleTime = 4000; // ms
 
@@ -12,7 +15,7 @@ const invalidCharsErrorVisibleTime = 4000; // ms
  */
 export default {
     components: {
-        NodeNameEditorActionBar,
+        ActionBar,
         NodeNameTextarea
     },
     props: {
@@ -65,12 +68,30 @@ export default {
         invalidCharacters() {
             return /[*?#:"<>%~|/\\]/g;
         },
+
+        actions() {
+            return [
+                {
+                    name: 'save',
+                    icon: SaveIcon,
+                    onClick: this.onSave,
+                    primary: true
+                },
+                {
+                    name: 'cancel',
+                    icon: CancelIcon,
+                    onClick: this.onCancel
+                }
+            ];
+        },
+
         actionBarPosition() {
             return [
                 this.nodePosition.x + this.$shapes.nodeSize / 2,
                 this.nodePosition.y - this.$shapes.nodeSelectionPadding[0] - this.latestDimensions.height
             ];
         },
+
         errorMessagePosition() {
             const halfNodeSize = this.$shapes.nodeSize / 2;
             // use node with padding as minimum
@@ -138,10 +159,10 @@ export default {
     />
 
     <!-- Save/Cancel actions -->
-    <NodeNameEditorActionBar
+    <ActionBar
       :transform="`translate(${actionBarPosition})`"
-      @save="onSave"
-      @cancel="onCancel"
+      :actions="actions"
+      prevent-context-menu
     />
 
     <!-- Node name inline editor -->

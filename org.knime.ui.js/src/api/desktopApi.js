@@ -57,10 +57,10 @@ export const openView = ({ projectId, nodeId }) => {
  * @param {String} projectId
  * @returns {void}
  */
-export const saveWorkflow = ({ projectId }) => {
+export const saveWorkflow = ({ projectId, workflowPreviewSvg }) => {
     try {
         // returns falsy on success
-        let error = window.saveWorkflow(projectId);
+        let error = window.saveWorkflow(projectId, workflowPreviewSvg);
         if (error) {
             throw new Error(error);
         }
@@ -71,12 +71,13 @@ export const saveWorkflow = ({ projectId }) => {
 
 /**
  * Open a workflow.
+ * @param {String} workflowItemId
  * @returns {void}
  */
-export const openWorkflow = () => {
+export const openWorkflow = (workflowItemId) => {
     try {
         // returns falsy on success
-        let error = window.openWorkflow();
+        let error = window.openWorkflow('local', workflowItemId);
         if (error) {
             throw new Error(error);
         }

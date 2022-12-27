@@ -1,12 +1,12 @@
-import { shallowMount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
+import ActionBar from '@/components/common/ActionBar.vue';
 
 import NodeNameEditor from '../NodeNameEditor.vue';
 import NodeNameTextarea from '../NodeNameTextarea.vue';
-import NodeNameEditorActionBar from '../NodeNameEditorActionBar.vue';
 
 describe('NodeNameEditor', () => {
     const props = {
@@ -24,11 +24,12 @@ describe('NodeNameEditor', () => {
             }
         };
         const $store = mockVuexStore(storeConfig);
-        const wrapper = shallowMount(NodeNameEditor, {
+        const wrapper = mount(NodeNameEditor, {
             props,
             global: {
                 plugins: [$store],
-                mocks: { $shapes }
+                mocks: { $shapes },
+                stubs: { NodeNameTextarea: true }
             }
         });
 
@@ -38,7 +39,7 @@ describe('NodeNameEditor', () => {
     it('should render the ActionBar and the Textarea', () => {
         const wrapper = doShallowMount();
         expect(wrapper.findComponent(NodeNameTextarea).exists()).toBe(true);
-        expect(wrapper.findComponent(NodeNameEditorActionBar).exists()).toBe(true);
+        expect(wrapper.findComponent(ActionBar).exists()).toBe(true);
     });
 
 
@@ -79,7 +80,7 @@ describe('NodeNameEditor', () => {
     describe('Action bar', () => {
         it('should be positioned based on the relevant prop', () => {
             const wrapper = doShallowMount();
-            const actionBar = wrapper.findComponent(NodeNameEditorActionBar);
+            const actionBar = wrapper.findComponent(ActionBar);
             const expectedPosition = 'translate(31,-6)';
 
             expect(actionBar.attributes('transform')).toBe(expectedPosition);
@@ -88,14 +89,14 @@ describe('NodeNameEditor', () => {
         it('should emit save when clicking the save button', () => {
             const wrapper = doShallowMount();
             wrapper.findComponent(NodeNameTextarea).vm.$emit('update:modelValue', 'new value');
-            wrapper.findComponent(NodeNameEditorActionBar).vm.$emit('save');
-
+            
+            wrapper.findAll('.action-button').at(0).trigger('click');
             expect(wrapper.emitted('save')).toBeDefined();
         });
 
         it('should emit a cancel event when clicking the cancel button', () => {
             const wrapper = doShallowMount();
-            wrapper.findComponent(NodeNameEditorActionBar).vm.$emit('cancel');
+            wrapper.findAll('.action-button').at(1).trigger('click');
 
             expect(wrapper.emitted('cancel')).toBeDefined();
         });

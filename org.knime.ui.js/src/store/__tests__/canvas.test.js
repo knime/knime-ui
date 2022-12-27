@@ -71,13 +71,6 @@ describe('canvas store', () => {
         expect(store.state.canvas.zoomFactor).toBe(defaultZoomFactor);
     });
 
-    test('suggest panning', () => {
-        store.commit('canvas/setSuggestPanning', true);
-        expect(store.state.canvas.suggestPanning).toBe(true);
-        store.commit('canvas/setSuggestPanning', false);
-        expect(store.state.canvas.suggestPanning).toBe(false);
-    });
-
     test('setInteractionsEnabled', () => {
         expect(store.state.canvas.interactionsEnabled).toBe(true);
 

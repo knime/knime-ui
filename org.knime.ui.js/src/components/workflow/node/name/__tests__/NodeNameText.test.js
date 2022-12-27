@@ -38,7 +38,6 @@ describe('NodeNameText.vue', () => {
 
     it.each([
         'click',
-        'contextmenu',
         'mouseenter',
         'mouseleave'
     ])('should emit a (%s) event', (eventName) => {

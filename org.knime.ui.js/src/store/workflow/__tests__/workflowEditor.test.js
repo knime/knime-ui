@@ -79,6 +79,20 @@ describe('workflow store: Editing', () => {
             store.commit('workflow/resetMovePreview', { nodeId: node.id });
             expect(store.state.workflow.movePreviewDelta).toStrictEqual({ x: 0, y: 0 });
         });
+
+        it('sets the preview of a portTypeMenu', async () => {
+            const { store } = await loadStore();
+            store.commit('workflow/setPortTypeMenuPreviewPort', { typeId: 'prev' });
+
+            expect(store.state.workflow.portTypeMenu.previewPort).toStrictEqual({ typeId: 'prev' });
+        });
+
+        it('sets the id of the node thats label is being edited', async () => {
+            const { store } = await loadStore();
+            store.commit('workflow/setLabelEditorNodeId', 'root:1');
+
+            expect(store.state.workflow.labelEditorNodeId).toStrictEqual('root:1');
+        });
     });
 
     describe('actions', () => {
@@ -114,7 +128,7 @@ describe('workflow store: Editing', () => {
             const setupStoreWithWorkflow = async () => {
                 const addNodeMock = jest.fn(() => ({ newNodeId: 'new-mock-node' }));
                 const loadStoreResponse = await loadStore({ apiMocks: { addNode: addNodeMock } });
-                
+
                 loadStoreResponse.store.commit('workflow/setActiveWorkflow', {
                     projectId: 'bar',
                     info: { containerId: 'baz' },
@@ -127,7 +141,7 @@ describe('workflow store: Editing', () => {
 
             it('should adjust the position of the node to grid positions', async () => {
                 const { store, addNodeMock } = await setupStoreWithWorkflow();
-                
+
                 store.dispatch('workflow/addNode', { position: { x: 7, y: 31 }, nodeFactory: 'factory' });
 
                 expect(addNodeMock).toHaveBeenCalledWith({
@@ -454,11 +468,11 @@ describe('workflow store: Editing', () => {
                 let apiMocks = { collapseToContainer };
                 const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectAllNodes');
-    
+
                 store.dispatch('workflow/collapseToContainer', {
                     containerType: 'metanode'
                 });
-    
+
                 expect(collapseToContainer).toHaveBeenCalledWith({
                     projectId: 'bar',
                     workflowId: 'root',
@@ -467,18 +481,18 @@ describe('workflow store: Editing', () => {
                     annotationIds: []
                 });
             });
-    
+
             it('selects the new container after collapsing nodes', async () => {
                 const newNodeId = 'new-container';
                 let collapseToContainer = jest.fn(() => ({ newNodeId }));
                 let apiMocks = { collapseToContainer };
                 const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectAllNodes');
-    
+
                 await store.dispatch('workflow/collapseToContainer', {
                     containerType: 'metanode'
                 });
-    
+
                 expect(store.state.selection.selectedNodes).toEqual({ [newNodeId]: true });
                 expect(store.state.workflow.nameEditorNodeId).toBe(newNodeId);
             });
@@ -489,7 +503,7 @@ describe('workflow store: Editing', () => {
                 let apiMocks = { collapseToContainer };
                 const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectAllNodes');
-    
+
                 const commandCall = store.dispatch('workflow/collapseToContainer', {
                     containerType: 'metanode'
                 });
@@ -497,7 +511,7 @@ describe('workflow store: Editing', () => {
                 store.dispatch('selection/selectNode', 'foo');
 
                 await commandCall;
-    
+
                 expect(store.state.selection.selectedNodes).toStrictEqual({ foo: true });
                 expect(store.state.workflow.nameEditorNodeId).toBe(null);
             });
@@ -547,9 +561,9 @@ describe('workflow store: Editing', () => {
                 let apiMocks = { expandContainerNode };
                 const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectNode', 'foo');
-    
+
                 store.dispatch('workflow/expandContainerNode');
-    
+
                 expect(expandContainerNode).toHaveBeenCalledWith({
                     projectId: 'bar',
                     workflowId: 'root',
@@ -564,9 +578,9 @@ describe('workflow store: Editing', () => {
                 let apiMocks = { expandContainerNode };
                 const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectNode', 'foo');
-    
+
                 await store.dispatch('workflow/expandContainerNode');
-    
+
                 expect(store.state.selection.selectedNodes).toEqual({ foo: true, bar: true });
             });
 
@@ -577,14 +591,69 @@ describe('workflow store: Editing', () => {
                 let apiMocks = { expandContainerNode };
                 const { store } = await loadStoreWithNodes({ apiMocks });
                 store.dispatch('selection/selectNode', 'foo');
-    
+
                 const commandCall = store.dispatch('workflow/expandContainerNode');
 
                 await store.dispatch('selection/selectNode', 'barbaz');
 
                 await commandCall;
-    
+
                 expect(store.state.selection.selectedNodes).toStrictEqual({ barbaz: true });
+            });
+        });
+
+        describe('QuickAddNodeMenu', () => {
+            it('opens the quick add node menu', async () => {
+                const { store } = await loadStore();
+                expect(store.state.workflow.quickAddNodeMenu.isOpen).toBe(false);
+                await store.dispatch(
+                    'workflow/openQuickAddNodeMenu',
+                    {
+                        props: { someProp: 'val' },
+                        events: { 'menu-close': () => {} }
+                    }
+                );
+                expect(store.state.workflow.quickAddNodeMenu.isOpen).toBe(true);
+                expect(store.state.workflow.quickAddNodeMenu.props).toStrictEqual({ someProp: 'val' });
+                expect(store.state.workflow.quickAddNodeMenu.events).toMatchObject({ 'menu-close': expect.anything() });
+            });
+
+            it('closes the quick add node menu', async () => {
+                const { store } = await loadStore();
+                await store.dispatch('workflow/openQuickAddNodeMenu', {});
+                expect(store.state.workflow.quickAddNodeMenu.isOpen).toBe(true);
+                await store.dispatch('workflow/closeQuickAddNodeMenu');
+                expect(store.state.workflow.quickAddNodeMenu.isOpen).toBe(false);
+            });
+        });
+
+        describe('PortTypeMenu', () => {
+            it('opens the port type menu', async () => {
+                const { store } = await loadStore();
+                expect(store.state.workflow.portTypeMenu.isOpen).toBe(false);
+                await store.dispatch(
+                    'workflow/openPortTypeMenu',
+                    {
+                        nodeId: 'node-id',
+                        props: { side: 'out' },
+                        startNodeId: 'start-node-id',
+                        events: { 'menu-close': () => {} }
+                    }
+                );
+                expect(store.state.workflow.portTypeMenu.isOpen).toBe(true);
+                expect(store.state.workflow.portTypeMenu.nodeId).toBe('node-id');
+                expect(store.state.workflow.portTypeMenu.startNodeId).toBe('start-node-id');
+                expect(store.state.workflow.portTypeMenu.previewPort).toBe(null);
+                expect(store.state.workflow.portTypeMenu.props).toStrictEqual({ side: 'out' });
+                expect(store.state.workflow.portTypeMenu.events).toMatchObject({ 'menu-close': expect.anything() });
+            });
+
+            it('closes the port type menu', async () => {
+                const { store } = await loadStore();
+                await store.dispatch('workflow/openPortTypeMenu', {});
+                expect(store.state.workflow.portTypeMenu.isOpen).toBe(true);
+                await store.dispatch('workflow/closePortTypeMenu');
+                expect(store.state.workflow.portTypeMenu.isOpen).toBe(false);
             });
         });
 
@@ -637,7 +706,7 @@ describe('workflow store: Editing', () => {
 
                 const clipboardMock = createClipboardMock();
                 const { store } = await loadStore({ apiMocks: { copyOrCutWorkflowParts } });
-    
+
                 store.commit('application/setHasClipboardSupport', true);
                 store.commit('workflow/setActiveWorkflow', {
                     projectId: 'my project',
@@ -657,7 +726,7 @@ describe('workflow store: Editing', () => {
                 store.dispatch('selection/selectAllNodes');
                 await Vue.nextTick();
                 await store.dispatch('workflow/copyOrCutWorkflowParts', { command });
-    
+
                 expect(copyOrCutWorkflowParts).toHaveBeenCalledWith({
                     projectId: 'my project',
                     workflowId: 'root',
@@ -692,7 +761,7 @@ describe('workflow store: Editing', () => {
                     const loadStoreResponse = await loadStore({
                         apiMocks: { pasteWorkflowParts }
                     });
-                
+
                     // set up workflow
                     const workflow = {
                         projectId: 'my project',
@@ -761,7 +830,7 @@ describe('workflow store: Editing', () => {
                     await startPaste({ position: { x: 100, y: 100 } });
 
                     expect(pastePartsAtMock).not.toHaveBeenCalled();
-                    
+
                     expect(pasteWorkflowParts).toHaveBeenCalledWith({
                         projectId: 'my project',
                         workflowId: 'root',
@@ -812,6 +881,14 @@ describe('workflow store: Editing', () => {
                     expect(store.state.selection.selectedNodes.bar).toBe(true);
                 });
             });
+        });
+
+        it('opens and closes node label editor', async () => {
+            const { store } = await loadStore();
+            await store.dispatch('workflow/openLabelEditor', 'root:1');
+            expect(store.state.workflow.labelEditorNodeId).toBe('root:1');
+            await store.dispatch('workflow/closeLabelEditor');
+            expect(store.state.workflow.labelEditorNodeId).toBe(null);
         });
     });
 });
