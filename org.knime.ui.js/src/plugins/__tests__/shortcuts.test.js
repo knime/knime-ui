@@ -5,6 +5,9 @@ describe('Shortcuts Plugin', () => {
    
     const mockApp = { config: { globalProperties: {} } };
     const mockStore = { isDummy: true };
+    const mockRouter = {
+        push: jest.fn()
+    };
 
     beforeEach(() => {
         loadPlugin = async () => {
@@ -25,7 +28,7 @@ describe('Shortcuts Plugin', () => {
             mockUserAgent(userAgent);
             const { default: shortcutPlugin } = await import('@/plugins/shortcuts');
 
-            shortcutPlugin(mockApp, mockStore);
+            shortcutPlugin({ app: mockApp, $store: mockStore, $router: mockRouter });
             $shortcuts = mockApp.config.globalProperties.$shortcuts;
         };
     });
@@ -108,7 +111,8 @@ describe('Shortcuts Plugin', () => {
 
             expect(shortcut.execute).toHaveBeenCalledWith({
                 $store: mockStore,
-                eventDetail: { mockExtraPayload: true }
+                eventDetail: { mockExtraPayload: true },
+                $router: mockRouter
             });
         });
 

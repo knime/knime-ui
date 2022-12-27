@@ -123,11 +123,11 @@ describe('QuickAddNodeMenu.vue', () => {
     };
 
     describe('Menu', () => {
-        it('re-emits menu-close', () => {
+        it('re-emits menuClose', () => {
             let { wrapper } = doMount();
-            wrapper.findComponent(FloatingMenuStub).vm.$emit('menu-close');
+            wrapper.findComponent(FloatingMenuStub).vm.$emit('menuClose');
 
-            expect(wrapper.emitted('menu-close')).toBeTruthy();
+            expect(wrapper.emitted('menuClose')).toBeTruthy();
         });
 
         it('centers to port', () => {

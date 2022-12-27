@@ -26,6 +26,6 @@ const store = initStore();
 initPlugins({ app, store, router });
 
 app.use(store);
-app.use(router)
+app.use(router);
 app.mount('#app');
 

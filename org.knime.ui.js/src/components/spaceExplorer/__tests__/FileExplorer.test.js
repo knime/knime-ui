@@ -81,10 +81,10 @@ describe('FileExplorer.vue', () => {
         const allItems = wrapper.findAll('.file-explorer-item');
         allItems.at(0).trigger('dblclick');
         
-        expect(wrapper.emitted('change-directory')[0][0]).toBe(MOCK_DATA.at(0).id);
+        expect(wrapper.emitted('changeDirectory')[0][0]).toBe(MOCK_DATA.at(0).id);
         
         allItems.at(3).trigger('dblclick');
-        expect(wrapper.emitted('change-directory')[1]).toBeUndefined();
+        expect(wrapper.emitted('changeDirectory')[1]).toBeUndefined();
     });
 
     it('should navigate back to parent', () => {
@@ -96,7 +96,7 @@ describe('FileExplorer.vue', () => {
         expect(allItems.length).toBe(MOCK_DATA.length + 1);
 
         allItems.at(0).trigger('dblclick');
-        expect(wrapper.emitted('change-directory')[0][0]).toBe('..');
+        expect(wrapper.emitted('changeDirectory')[0][0]).toBe('..');
     });
 
     it('should render placeholder for empty directories', () => {

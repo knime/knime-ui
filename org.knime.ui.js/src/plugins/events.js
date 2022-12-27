@@ -42,7 +42,7 @@ export default ({ $store, $router }) => {
                     name: APP_ROUTES.WorkflowPage.name,
                     params: {
                         projectId: nextActiveProject.projectId,
-                        workflowId: 'root',
+                        workflowId: 'root'
                     },
                     query: { skipGuards: true }
                 });

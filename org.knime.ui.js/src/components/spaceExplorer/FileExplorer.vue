@@ -45,6 +45,8 @@ export default {
         }
     },
 
+    emits: ['changeDirectory'],
+
     data() {
         return {
             ITEM_TYPES
@@ -73,7 +75,7 @@ export default {
         },
 
         changeDirectory(pathId) {
-            this.$emit('change-directory', pathId);
+            this.$emit('changeDirectory', pathId);
         },
 
         onDoubleClickOnItem(item) {

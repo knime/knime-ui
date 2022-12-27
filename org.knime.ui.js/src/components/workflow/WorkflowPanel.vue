@@ -38,7 +38,7 @@ export default {
         // close quickAddNodeMenu if node selection changes
         selectedNodeIds() {
             if (this.quickAddNodeMenu.isOpen) {
-                this.quickAddNodeMenuConfig.events.menuClose();
+                this.quickAddNodeMenu.events.menuClose();
             }
         }
     },
