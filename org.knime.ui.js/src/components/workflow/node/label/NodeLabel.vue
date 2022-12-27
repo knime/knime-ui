@@ -35,6 +35,7 @@ export default {
             default: () => {}
         }
     },
+    emits: ['editStart', 'widthChange', 'heightChange', 'mouseleave', 'mouseenter'],
     computed: {
         ...mapState('workflow', ['labelEditorNodeId']),
         ...mapGetters('selection', ['singleSelectedNode']),
@@ -91,7 +92,6 @@ export default {
         :editable="editable"
         :is-selected="isSelected"
         @request-edit="onRequestEdit"
-        @contextmenu="$emit('contextmenu', $event)"
       />
     </template>
   </g>

@@ -56,7 +56,7 @@ describe('FileExplorer.vue', () => {
         };
 
         const wrapper = mount(FileExplorer, {
-            propsData: { ...defaultProps, ...props }
+            props: { ...defaultProps, ...props }
         });
 
         return { wrapper };
@@ -69,7 +69,7 @@ describe('FileExplorer.vue', () => {
 
         expect(allItems.length).toBe(MOCK_DATA.length);
 
-        allItems.wrappers.forEach((item, index) => {
+        allItems.forEach((item, index) => {
             expect(item.classes()).toContain(MOCK_DATA.at(index).type);
             expect(wrapper.findComponent(MOCK_DATA.at(index).icon).exists()).toBe(true);
         });

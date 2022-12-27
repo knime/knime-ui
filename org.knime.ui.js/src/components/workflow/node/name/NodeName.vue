@@ -28,7 +28,7 @@ export default {
             default: ''
         }
     },
-    emits: ['editStart', 'widthChange', 'heightChange', 'mouseleave', 'mouseenter', 'contextmenu'],
+    emits: ['editStart', 'widthChange', 'heightChange', 'mouseleave', 'mouseenter'],
     data() {
         return {
             editorInitialDimensions: {

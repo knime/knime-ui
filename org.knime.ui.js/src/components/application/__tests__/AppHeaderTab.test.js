@@ -14,7 +14,7 @@ describe('AppHeaderTab.vue', () => {
             windowWidth: 1024
         };
 
-        return shallowMount(AppHeaderTab, { propsData: { ...defaultProps, ...props } });
+        return shallowMount(AppHeaderTab, { props: { ...defaultProps, ...props } });
     };
 
     describe('hover', () => {

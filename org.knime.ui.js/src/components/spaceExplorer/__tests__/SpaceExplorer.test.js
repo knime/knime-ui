@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, mount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 import * as spaceExplorerStore from '@/store/spaceExplorer';
@@ -35,11 +34,6 @@ const fetchWorkflowGroupContentResponse = {
 };
 
 describe('SpaceExplorer.vue', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-    
     const doMount = async ({
         awaitLoad = true,
         mockResponse = fetchWorkflowGroupContentResponse,
@@ -51,27 +45,28 @@ describe('SpaceExplorer.vue', () => {
             fetchWorkflowGroupContent.mockResolvedValue(mockResponse);
         }
 
-        const store = mockVuexStore({
+        const $store = mockVuexStore({
             spaceExplorer: spaceExplorerStore
         });
 
         const wrapper = mount(SpaceExplorer, {
-            stubs: { NuxtLink: true },
-            mocks: { $store: store }
+            global: {
+                plugins: [$store]
+            }
         });
 
         if (awaitLoad) {
             await new Promise(r => setTimeout(r, 0));
         }
 
-        return { wrapper, store };
+        return { wrapper, $store };
     };
 
     it('should load root directory data on created', async () => {
         const { wrapper } = await doMount();
         
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(true);
-        expect(wrapper.findComponent(FileExplorer).props('items')).toBe(fetchWorkflowGroupContentResponse.items);
+        expect(wrapper.findComponent(FileExplorer).props('items')).toEqual(fetchWorkflowGroupContentResponse.items);
         expect(wrapper.findComponent(FileExplorer).props('isRootFolder')).toBe(true);
     });
 
@@ -139,17 +134,19 @@ describe('SpaceExplorer.vue', () => {
 
         jest.useFakeTimers();
 
-        const store = mockVuexStore({
+        const $store = mockVuexStore({
             spaceExplorer: spaceExplorerStore
         });
 
         const wrapper = mount(SpaceExplorer, {
-            stubs: { NuxtLink: true },
-            mocks: { $store: store }
+            global: {
+                plugins: [$store]
+            }
         });
 
         const advanceTime = async (timeMs) => {
             jest.advanceTimersByTime(timeMs);
+            await wrapper.vm.$nextTick();
             await wrapper.vm.$nextTick();
             await wrapper.vm.$nextTick();
         };
@@ -158,6 +155,7 @@ describe('SpaceExplorer.vue', () => {
         // initially loading should not be yet visible
         expect(wrapper.find('.loading').exists()).toBe(false);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(false);
+
         
         // total time now: 100ms
         // after waiting for 100ms it should still not be visible
@@ -173,8 +171,11 @@ describe('SpaceExplorer.vue', () => {
         
         // total time now: 600ms
         // after waiting for 100ms the data should be loaded now, so loading is not visible
+        // await advanceTime(100);
         await advanceTime(100);
         expect(wrapper.find('.loading').exists()).toBe(false);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(true);
+
+        jest.useRealTimers();
     });
 });

@@ -46,7 +46,7 @@ export default {
             default: null
         }
     },
-    emits: ['widthChange', 'heightChange', 'click', 'contextmenu', 'requestEdit', 'mouseenter', 'mouseleave']
+    emits: ['widthChange', 'heightChange', 'click', 'requestEdit', 'mouseenter', 'mouseleave']
 };
 </script>
 

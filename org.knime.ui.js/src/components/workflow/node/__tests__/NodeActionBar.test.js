@@ -38,7 +38,7 @@ describe('NodeActionBar', () => {
         const $store = mockVuexStore(storeConfig);
 
         const wrapper = mount(NodeActionBar, {
-            propsData: {
+            props: {
                 ...defaultProps,
                 ...props
             },

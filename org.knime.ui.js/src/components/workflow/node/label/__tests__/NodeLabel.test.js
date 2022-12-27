@@ -1,6 +1,5 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import { shallowMount, createLocalVue } from '@vue/test-utils';
+import * as Vue from 'vue';
+import { shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
 import * as selectionStore from '@/store/selection';
@@ -23,16 +22,11 @@ describe('NodeLabel', () => {
         }
     };
 
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
-    const doShallowMount = ({ propsData = {}, $store }) => {
+    const doShallowMount = ({ props = {}, $store }) => {
         const wrapper = shallowMount(NodeLabel, {
-            propsData: { ...defaultProps, ...propsData },
-            mocks: {
-                $store
+            props: { ...defaultProps, ...props },
+            global: {
+                plugins: [$store]
             }
         });
 
@@ -78,12 +72,6 @@ describe('NodeLabel', () => {
             );
         });
 
-        it('should emit a contextmenu event', () => {
-            wrapper.findComponent(NodeLabelText).vm.$emit('contextmenu', { mock: 'mock' });
-
-            expect(wrapper.emitted('contextmenu')[0][0]).toEqual({ mock: 'mock' });
-        });
-
         it('should handle a name change request', () => {
             wrapper.findComponent(NodeLabelText).vm.$emit('request-edit');
             expect(storeConfig.workflow.actions.openLabelEditor).toHaveBeenCalled();
@@ -119,7 +107,7 @@ describe('NodeLabel', () => {
         });
 
         it('should portal editor when visible', () => {
-            expect(wrapper.find('portal[to="node-text-editor"]').exists()).toBe(true);
+            expect(wrapper.findComponent({ name: 'Portal' }).exists()).toBe(true);
         });
 
         it('should forward props', () => {

@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { createLocalVue, shallowMount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
 
@@ -7,11 +6,6 @@ import AutoSizeForeignObject from '@/components/common/AutoSizeForeignObject.vue
 import NodeLabelText from '../NodeLabelText.vue';
 
 describe('NodeLabelText.vue', () => {
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
     const doShallowMount = ({ props = {} } = { }) => {
         const defaultProps = {
             value: 'test',
@@ -26,9 +20,11 @@ describe('NodeLabelText.vue', () => {
             }
         };
 
-        const wrapper = shallowMount(NodeLabelText, {
-            propsData: { ...defaultProps, ...props },
-            mocks: { $shapes }
+        const wrapper = mount(NodeLabelText, {
+            props: { ...defaultProps, ...props },
+            global: {
+                mocks: { $shapes }
+            }
         });
 
         return { wrapper };
@@ -39,7 +35,7 @@ describe('NodeLabelText.vue', () => {
 
         wrapper.find('.node-label').trigger('dblclick');
 
-        expect(wrapper.emitted('request-edit')).toBeDefined();
+        expect(wrapper.emitted('requestEdit')).toBeDefined();
     });
 
     it('should not emit request edit if workflow is not writable', () => {
@@ -47,7 +43,7 @@ describe('NodeLabelText.vue', () => {
 
         wrapper.find('.node-label').trigger('dblclick');
 
-        expect(wrapper.emitted('request-edit')).toBeUndefined();
+        expect(wrapper.emitted('requestEdit')).toBeUndefined();
     });
 
     it('should emit a contextmenu event', () => {
@@ -61,7 +57,7 @@ describe('NodeLabelText.vue', () => {
     });
 
     it('should show placeholder text if node is selected and does not have value', () => {
-        const propsData = {
+        const props = {
             value: '',
             editable: true,
             nodePosition: { x: 15, y: 13 },
@@ -69,9 +65,7 @@ describe('NodeLabelText.vue', () => {
             isSelected: true,
             kind: 'node'
         };
-        const { wrapper } = doShallowMount({
-            props: propsData
-        });
+        const { wrapper } = doShallowMount({ props });
 
         const text = wrapper.find('.text');
 
@@ -85,7 +79,7 @@ describe('NodeLabelText.vue', () => {
     });
 
     it('renders styled text', () => {
-        const propsData = {
+        const props = {
             value: 'foo👻barbazqu👮🏻‍♂️xあなたは素晴らしい人です',
             annotation: {
                 styleRanges: [
@@ -95,7 +89,7 @@ describe('NodeLabelText.vue', () => {
                 ]
             }
         };
-        const { wrapper } = doShallowMount({ props: propsData });
+        const { wrapper } = doShallowMount({ props });
         let texts = wrapper.findAll('.text');
         expect(texts.length).toBe(7);
 

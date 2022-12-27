@@ -31,6 +31,7 @@ export default {
             validator: position => typeof position.x === 'number' && typeof position.y === 'number'
         }
     },
+    emits: ['save', 'cancel'],
     data() {
         return {
             currentLabel: this.value

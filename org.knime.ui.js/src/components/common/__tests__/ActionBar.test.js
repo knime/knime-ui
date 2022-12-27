@@ -22,8 +22,8 @@ describe('ActionBar.vue', () => {
         ];
 
         const wrapper = shallowMount(ActionBar, {
-            propsData: { actions: defaultActions, ...props },
-            mocks: { $shapes }
+            props: { actions: defaultActions, ...props },
+            global: { mocks: { $shapes } }
         });
 
         return { wrapper, actions: props.actions || defaultActions };

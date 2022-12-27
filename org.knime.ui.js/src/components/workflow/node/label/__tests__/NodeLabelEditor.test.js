@@ -1,5 +1,4 @@
-import Vuex from 'vuex';
-import { mount, createLocalVue } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
 
@@ -10,17 +9,14 @@ import NodeLabelEditor from '../NodeLabelEditor.vue';
 import NodeLabelTextArea from '../NodeLabelTextArea.vue';
 
 describe('NodeLabelEditor', () => {
-    let wrapper, storeConfig, propsData;
-
-    const doShallowMount = () => {
-        propsData = {
-            value: 'test',
-            nodePosition: { x: 15, y: 13 },
-            nodeId: 'root:1',
-            kind: 'node'
-        };
-
-        storeConfig = {
+    const props = {
+        value: 'test',
+        nodePosition: { x: 15, y: 13 },
+        nodeId: 'root:1',
+        kind: 'node'
+    };
+    const doMount = () => {
+        const storeConfig = {
             canvas: {
                 getters: {
                     viewBox: () => ({ left: 0, top: 0 })
@@ -29,23 +25,19 @@ describe('NodeLabelEditor', () => {
         };
         const $store = mockVuexStore(storeConfig);
         const wrapper = mount(NodeLabelEditor, {
-            propsData,
-            mocks: { $shapes, $store }
+            props,
+            global: {
+                plugins: [$store],
+                mocks: { $shapes },
+                stubs: { NodeLabelTextarea: true }
+            }
         });
 
-        return wrapper;
+        return { wrapper };
     };
 
-    beforeAll(() => {
-        const localVue = createLocalVue();
-        localVue.use(Vuex);
-    });
-
-    beforeEach(() => {
-        wrapper = doShallowMount();
-    });
-
     it('should render the ActionBar and the Textarea', () => {
+        const { wrapper } = doMount();
         expect(wrapper.findComponent(NodeLabelTextArea).exists()).toBe(true);
         expect(wrapper.findComponent(ActionBar).exists()).toBe(true);
     });
@@ -65,6 +57,7 @@ describe('NodeLabelEditor', () => {
         });
 
         it('should block click events', () => {
+            const { wrapper } = doMount();
             const rect = wrapper.find('rect');
 
             rect.trigger('click');
@@ -74,6 +67,7 @@ describe('NodeLabelEditor', () => {
         });
 
         it('should block contextmenu events', () => {
+            const { wrapper } = doMount();
             const rect = wrapper.find('rect');
 
             rect.trigger('contextmenu');
@@ -85,6 +79,7 @@ describe('NodeLabelEditor', () => {
 
     describe('Action bar', () => {
         it('should be positioned based on the relevant prop', () => {
+            const { wrapper } = doMount();
             const actionBar = wrapper.findComponent(ActionBar);
             const expectedPosition = 'translate(31,61)';
 
@@ -92,6 +87,7 @@ describe('NodeLabelEditor', () => {
         });
 
         it('should be positioned differently for metanode', async () => {
+            const { wrapper } = doMount();
             await wrapper.setProps({ kind: 'metanode' });
             const actionBar = wrapper.findComponent(ActionBar);
             const expectedPosition = 'translate(31,41)';
@@ -100,7 +96,8 @@ describe('NodeLabelEditor', () => {
         });
 
         it('should emit save when clicking the save button', () => {
-            wrapper.findComponent(NodeLabelTextArea).vm.$emit('input', 'new value');
+            const { wrapper } = doMount();
+            wrapper.findComponent(NodeLabelTextArea).vm.$emit('update:modelValue', 'new value');
             
             wrapper.findAll('.action-button').at(0).trigger('click');
 
@@ -108,6 +105,7 @@ describe('NodeLabelEditor', () => {
         });
 
         it('should emit a cancel event when clicking the cancel button', () => {
+            const { wrapper } = doMount();
             wrapper.findComponent(ActionBar).vm.$emit('cancel');
 
             wrapper.findAll('.action-button').at(1).trigger('click');
@@ -118,29 +116,33 @@ describe('NodeLabelEditor', () => {
 
     describe('Handle textarea events', () => {
         it('should emit a save event', () => {
-            wrapper.findComponent(NodeLabelTextArea).vm.$emit('input', 'new value');
+            const { wrapper } = doMount();
+            wrapper.findComponent(NodeLabelTextArea).vm.$emit('update:modelValue', 'new value');
             wrapper.findComponent(NodeLabelTextArea).vm.$emit('save');
 
             expect(wrapper.emitted('save')).toBeDefined();
         });
 
         it('should not emit a save event if the label did not change', () => {
-            wrapper.findComponent(NodeLabelTextArea).vm.$emit('input', propsData.value);
+            const { wrapper } = doMount();
+            wrapper.findComponent(NodeLabelTextArea).vm.$emit('update:modelValue', props.value);
             wrapper.findComponent(NodeLabelTextArea).vm.$emit('save');
 
             expect(wrapper.emitted('save')).toBeUndefined();
         });
 
         it('should emit a cancel event', () => {
+            const { wrapper } = doMount();
             wrapper.findComponent(NodeLabelTextArea).vm.$emit('cancel');
             expect(wrapper.emitted('cancel')).toBeDefined();
         });
     });
 
     it('should trim content before saving', () => {
+        const { wrapper } = doMount();
         const emittedValue = '   this is the content    ';
 
-        wrapper.findComponent(NodeLabelTextArea).vm.$emit('input', emittedValue);
+        wrapper.findComponent(NodeLabelTextArea).vm.$emit('update:modelValue', emittedValue);
         wrapper.findComponent(NodeLabelTextArea).vm.$emit('save');
 
         expect(wrapper.emitted('save')[0][0]).toEqual(expect.objectContaining({
@@ -149,8 +151,9 @@ describe('NodeLabelEditor', () => {
     });
 
     it('updates value of textarea on value prop change', async () => {
-        expect(wrapper.findComponent(NodeLabelTextArea).props('value')).toBe('test');
+        const { wrapper } = doMount();
+        expect(wrapper.findComponent(NodeLabelTextArea).props('modelValue')).toBe('test');
         await wrapper.setProps({ value: 'newValue' });
-        expect(wrapper.findComponent(NodeLabelTextArea).props('value')).toBe('newValue');
+        expect(wrapper.findComponent(NodeLabelTextArea).props('modelValue')).toBe('newValue');
     });
 });

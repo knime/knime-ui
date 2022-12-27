@@ -35,6 +35,7 @@ export default {
             })
         }
     },
+    emits: ['requestEdit'],
     data() {
         return {
             textAlign: this.annotation?.textAlign,
@@ -87,8 +88,7 @@ export default {
       <div
         class="node-label"
         :style="{ textAlign }"
-        @contextmenu="$emit('contextmenu', $event)"
-        @dblclick.left="editable ? $emit('request-edit') : null"
+        @dblclick.left="editable ? $emit('requestEdit') : null"
       >
         <span
           v-for="(part, i) in styledText"

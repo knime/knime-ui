@@ -4,7 +4,7 @@ import NodeLabelText from './NodeLabelText.vue';
 export default {
     components: { NodeLabelText },
     props: {
-        value: {
+        modelValue: {
             type: String,
             default: ''
         },
@@ -13,6 +13,7 @@ export default {
             default: ''
         }
     },
+    emits: ['update:modelValue', 'save', 'cancel', 'invalidInput'],
     mounted() {
         this.$nextTick(() => {
             this.resizeTextarea();
@@ -35,7 +36,7 @@ export default {
             // apply the styles that resize the textarea according to the content
             this.resizeTextarea();
 
-            this.$emit('input', value);
+            this.$emit('update:modelValue', value);
         },
         resizeTextarea() {
             const textarea = this.$refs.textarea;
@@ -72,13 +73,13 @@ export default {
         class="ghost"
         aria-hidden="true"
       >
-        {{ value }}
+        {{ modelValue }}
       </span>
       <textarea
         ref="textarea"
         rows="1"
         class="label-textarea native-context-menu"
-        :value="value"
+        :value="modelValue"
         @pointerdown.stop
         @input="onInput($event, sizeChange)"
         @keydown.enter="onSave"

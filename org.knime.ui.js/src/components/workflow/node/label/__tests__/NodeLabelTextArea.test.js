@@ -8,16 +8,18 @@ import NodeLabelTextArea from '../NodeLabelTextArea.vue';
 describe('NodeLabelTextArea', () => {
     const mockSizeChangeFn = jest.fn();
 
-    const doShallowMount = (opts = { propsData: { value: '' } }) => {
+    const doShallowMount = (opts = { props: { modelValue: '' } }) => {
         const wrapper = shallowMount(NodeLabelTextArea, {
             ...opts,
-            mocks: {
-                $shapes,
-                mockSizeChangeFn
-            },
-            stubs: {
-                NodeLabelText: {
-                    template: `<div id="node-label-stub"><slot :on="{ sizeChange: mockSizeChangeFn }"></slot></div>`
+            global: {
+                mocks: {
+                    $shapes,
+                    mockSizeChangeFn
+                },
+                stubs: {
+                    NodeLabelText: {
+                        template: `<div id="node-label-stub"><slot :on="{ sizeChange: mockSizeChangeFn }"></slot></div>`
+                    }
                 }
             }
         });
@@ -26,9 +28,9 @@ describe('NodeLabelTextArea', () => {
     };
 
     it('render with given value as text', () => {
-        const value = 'test';
-        const wrapper = doShallowMount({ propsData: { value } });
-        expect(wrapper.find('textarea').element.value).toBe(value);
+        const modelValue = 'test';
+        const wrapper = doShallowMount({ props: { modelValue } });
+        expect(wrapper.find('textarea').element.value).toBe(modelValue);
     });
 
     it('should call the size change callback provided by the slot of the NodeLabelText', () => {
@@ -73,7 +75,7 @@ describe('NodeLabelTextArea', () => {
         wrapper.find('textarea').setValue(emittedValue);
         wrapper.find('textarea').trigger('input');
 
-        expect(wrapper.emitted('input')[0][0]).toBe(emittedValue);
+        expect(wrapper.emitted('update:modelValue')[0][0]).toBe(emittedValue);
     });
 
     it('should focus textarea on mount', async () => {
