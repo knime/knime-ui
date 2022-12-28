@@ -22,7 +22,6 @@ const app = createApp(KnimeUI);
 
 // Provide store and init plugins
 const store = initStore();
-// initPlugins(Vue, { store, router });
 initPlugins({ app, store, router });
 
 app.use(store);
