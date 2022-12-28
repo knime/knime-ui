@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
 
@@ -6,10 +6,15 @@ import AutoSizeForeignObject from '@/components/common/AutoSizeForeignObject.vue
 import NodeNameText from '../NodeNameText.vue';
 
 describe('NodeNameText.vue', () => {
-    const doShallowMount = (props = {}, opts = {}) => mount(NodeNameText, {
+    const doShallowMount = (props = {}, opts = {}) => shallowMount(NodeNameText, {
         props,
         global: {
-            mocks: { $shapes }
+            mocks: { $shapes },
+            stubs: {
+                AutoSizeForeignObject: {
+                    template: `<div><slot :on="{}" /></div>`
+                }
+            }
         },
         ...opts
     });
@@ -22,7 +27,7 @@ describe('NodeNameText.vue', () => {
 
     it('should emit a request edit event when component is editable', () => {
         const wrapper = doShallowMount({ editable: true });
-
+        
         wrapper.find('.node-name').trigger('dblclick');
 
         expect(wrapper.emitted('requestEdit')).toBeDefined();

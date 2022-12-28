@@ -75,7 +75,7 @@ describe('SpaceExplorer.vue', () => {
 
         fetchWorkflowGroupContent.mockReset();
 
-        wrapper.findComponent(FileExplorer).vm.$emit('change-directory', '1234');
+        wrapper.findComponent(FileExplorer).vm.$emit('changeDirectory', '1234');
         expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({ spaceId: 'local', itemId: '1234' });
     });
 
@@ -92,7 +92,7 @@ describe('SpaceExplorer.vue', () => {
             });
     
             fetchWorkflowGroupContent.mockReset();
-            wrapper.findComponent(FileExplorer).vm.$emit('change-directory', '..');
+            wrapper.findComponent(FileExplorer).vm.$emit('changeDirectory', '..');
             expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({ spaceId: 'local', itemId: 'parentId' });
         });
 
@@ -105,7 +105,7 @@ describe('SpaceExplorer.vue', () => {
             });
     
             fetchWorkflowGroupContent.mockReset();
-            wrapper.findComponent(FileExplorer).vm.$emit('change-directory', '..');
+            wrapper.findComponent(FileExplorer).vm.$emit('changeDirectory', '..');
             expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({ spaceId: 'local', itemId: 'root' });
         });
     });

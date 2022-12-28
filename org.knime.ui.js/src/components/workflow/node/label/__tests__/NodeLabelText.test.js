@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
 
@@ -20,10 +20,15 @@ describe('NodeLabelText.vue', () => {
             }
         };
 
-        const wrapper = mount(NodeLabelText, {
+        const wrapper = shallowMount(NodeLabelText, {
             props: { ...defaultProps, ...props },
             global: {
-                mocks: { $shapes }
+                mocks: { $shapes },
+                stubs: {
+                    AutoSizeForeignObject: {
+                        template: `<div><slot :on="{}" /></div>`
+                    }
+                }
             }
         });
 
