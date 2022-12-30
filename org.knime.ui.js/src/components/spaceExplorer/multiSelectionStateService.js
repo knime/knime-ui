@@ -347,3 +347,28 @@ export const selectionSize = (state) => {
 
     return selectionSize;
 };
+
+/**
+ * Returns an array of all the indexes that are selected in the given state
+ * @param {MultiSelectionState} state
+ * @returns {Array<Number>} selected indexes
+ */
+export const getSelectedIndexes = (state) => {
+    const selectionRanges = normalizeRanges(state);
+
+    return selectionRanges.reduce((acc, range) => {
+        const { to, from } = range;
+        const rangeSize = to - from;
+        
+        // given a size N (e.g: 4) and a starting value X (e.g: 3)
+        // create an array of length N, whose elements are [X, X + 1, X + 2, ... X + N]
+        const indexesInRange = new Array(rangeSize)
+            .fill(0)
+            .reduce((acc, i) => {
+                const [previous] = acc.slice(-1);
+                return acc.concat(previous + 1);
+            }, [from]);
+
+        return acc.concat(indexesInRange);
+    }, []);
+};

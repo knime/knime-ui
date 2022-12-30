@@ -1,8 +1,9 @@
+import { gsap } from 'gsap';
 import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
 
 const COLORS = {
     dragGhostContainer: {
-        // create cornflower-ultra-light
+        // TODO: create cornflower-ultra-light in WAC
         background: 'hsl(206deg 74% 90%/100%)',
         font: knimeColors.Masala
     },
@@ -55,11 +56,11 @@ const createGhostBadge = ({ count }) => {
     return badge;
 };
 
-const createGhostContainer = ({ badgeCount, textContent, event }) => {
+const createGhostContainer = ({ badgeCount, textContent, target, addShadow = false }) => {
     const ghost = document.createElement('div');
     ghost.innerText = textContent;
 
-    const { x, y, width, height } = event.target.getBoundingClientRect();
+    const { x, y, width, height } = target.getBoundingClientRect();
 
     /**
      * @type {CSSStyleDeclaration}
@@ -68,7 +69,7 @@ const createGhostContainer = ({ badgeCount, textContent, event }) => {
         background: COLORS.dragGhostContainer.background,
         color: COLORS.dragGhostContainer.font,
         
-        // use the original drag target's position to initialize the ghost
+        // use the original target's position to initialize the ghost
         position: 'absolute',
         top: `${y}px`,
         left: `${x}px`,
@@ -84,7 +85,7 @@ const createGhostContainer = ({ badgeCount, textContent, event }) => {
         padding: '0 12px',
         borderRadius: '4px',
         opacity: 1,
-        boxShadow: '0px 2px 10px rgba(130, 133, 134, 0.4)'
+        boxShadow: addShadow && '0px 2px 10px rgba(130, 133, 134, 0.4)'
     };
 
     applyStyles(ghost, ghostStyles);
@@ -92,9 +93,10 @@ const createGhostContainer = ({ badgeCount, textContent, event }) => {
     if (badgeCount) {
         const badge = createGhostBadge({ count: badgeCount });
         ghost.appendChild(badge);
+        return { ghost, badge };
     }
 
-    return ghost;
+    return { ghost };
 };
 
 /**
@@ -110,48 +112,23 @@ const removeNativeDragGhost = (dragEvent) => {
 
 /**
  * Returns an a function to serve as an event handler to update the ghost's position
- * @param {HTMLElement} ghost
+ * @param {Array<HTMLElement>} ghosts
  * @returns {Function}
  */
-const createGhostPositionUpdateHandler = (ghost) => ({ clientX, clientY }) => {
+const createGhostPositionUpdateHandler = (ghosts) => ({ clientX, clientY }) => {
     if (clientX === 0 && clientY === 0) {
         return;
     }
-
-    ghost.style.left = `${clientX}px`;
-    ghost.style.top = `${clientY}px`;
-};
-
-/**
- * Animates the ghost appearing. Returns a promise that resolves when the animation is complete
- * @param {Object} param
- * @param {HTMLElement} param.ghost
- * @param {DragEvent} param.dragStartEvent
- * @returns {Promise}
- */
-const animateIn = ({ ghost, dragStartEvent }) => new Promise(async resolve => {
-    const SLEEP_MS = 100;
     
-    // apply temporary transition
-    ghost.style.transition = 'all 0.5s';
-
-    // move ghost to where the mouse position is based on the drag event
-    requestAnimationFrame(() => {
-        ghost.style.left = `${dragStartEvent.clientX}px`;
-        ghost.style.top = `${dragStartEvent.clientY}px`;
-        
-        // reduce ghost size
-        ghost.style.width = '200px';
+    ghosts.forEach(g => {
+        gsap.to(g, {
+            left: clientX,
+            top: clientY,
+            width: '200px',
+            duration: 0.35
+        });
     });
-
-    // wait a small time to let transitions play out
-    await new Promise(r => setTimeout(r, SLEEP_MS));
-    
-    // reset transition style so that ghost can be dragged without delays
-    ghost.style.transition = `none`;
-    
-    resolve();
-});
+};
 
 /**
  * @typedef CreateGhostResponse
@@ -162,45 +139,77 @@ const animateIn = ({ ghost, dragStartEvent }) => new Promise(async resolve => {
  *  Creates the drag ghost for the FileExplorer drag operations
  *
  * @param {Object} param
- * @param {String} param.textContent Text to display inside ghost
  * @param {DragEvent} param.dragStartEvent The DragStart event that originated the drag
  * @param {Number | Null} param.badgeCount Whether to display a badge with a count next to the ghost
+ * @param {Object} param.selectedTargets targets that are selected and for whom ghosts will be created
+ * @param {HTMLElement} param.selectedTargets.targetEl element itself
+ * @param {String} param.selectedTargets.textContent Text content to display in each ghost
  * @returns {CreateGhostResponse}
  */
 export const createDragGhost = ({
-    textContent,
     dragStartEvent,
-    badgeCount = null
+    badgeCount = null,
+    selectedTargets
 }) => {
     removeNativeDragGhost(dragStartEvent);
 
-    const { target } = dragStartEvent;
-
-    const ghost = createGhostContainer({ textContent, badgeCount, event: dragStartEvent });
-
-    // add the ghost to body so that it can be animated later
-    document.body.appendChild(ghost);
+    // separate the first target and use it to create the badge
+    const [firstTarget, ...otherTargets] = selectedTargets;
+    const { ghost: firstGhost, badge } = createGhostContainer({
+        addShadow: true,
+        textContent: firstTarget.textContent,
+        badgeCount,
+        target: firstTarget.targetEl
+    });
     
-    const updatePosition = createGhostPositionUpdateHandler(ghost);
-
-    animateIn({ ghost, dragStartEvent }).then(() => {
-        document.addEventListener('drag', updatePosition);
+    const ghosts = otherTargets.map(({ textContent, targetEl }, index) => {
+        const { ghost } = createGhostContainer({
+            textContent,
+            target: targetEl,
+            // eslint-disable-next-line no-magic-numbers
+            addShadow: index < 3
+        });
+        return { ghost, targetEl };
     });
 
-    const removeGhost = () => {
-        const EXIT_TRANSITION_TIME_MS = 200;
-        
-        const { x, y } = target.getBoundingClientRect();
-        ghost.style.transition = `all ${EXIT_TRANSITION_TIME_MS}ms`;
-        ghost.style.left = `${x}px`;
-        ghost.style.top = `${y}px`;
-        ghost.style.opacity = '0';
+    const allGhosts = [{ ghost: firstGhost, targetEl: firstTarget.targetEl }, ...ghosts];
 
-        setTimeout(() => {
-            document.body.removeChild(ghost);
-            document.removeEventListener('drag', updatePosition);
-        }, EXIT_TRANSITION_TIME_MS);
+    // add the ghosts to the document body so that they can be animated and positioned.
+    // reverse them first to make sure the first ghost is added last and is displayed at the top
+    allGhosts.reverse().forEach(({ ghost }) => {
+        document.body.appendChild(ghost);
+    });
+    
+    const updatePosition = createGhostPositionUpdateHandler(allGhosts.map(({ ghost }) => ghost));
+
+    document.addEventListener('drag', updatePosition);
+
+    const removeGhost = () => {
+        allGhosts.forEach(({ ghost, targetEl }) => {
+            const { x, y, width } = targetEl.getBoundingClientRect();
+            if (badge) {
+                gsap.to(badge, {
+                    autoAlpha: 0,
+                    duration: 0.05,
+                    onComplete: () => {
+                        gsap.killTweensOf(badge);
+                    }
+                });
+            }
+
+            gsap.to(ghost, {
+                left: x,
+                top: y,
+                width,
+                duration: 0.2,
+                onComplete: () => {
+                    gsap.killTweensOf(ghost);
+                    document.body.removeChild(ghost);
+                    document.removeEventListener('drag', updatePosition);
+                }
+            });
+        });
     };
     
-    return { ghost, removeGhost };
+    return { removeGhost };
 };

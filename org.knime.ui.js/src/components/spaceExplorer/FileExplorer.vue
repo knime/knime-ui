@@ -155,17 +155,28 @@ export default {
                 index
             );
 
-            const selectionSize = multiSelectionService.selectionSize(
-                this.multiSelectionState
-            );
-
-            const { ghost, removeGhost } = createDragGhost({
-                dragStartEvent: e,
-                textContent: this.items[index].name,
-                badgeCount: isMultipleSelectionActive ? selectionSize : null
+            // get all items that are selected, except the one that initiated the drag
+            const selectedIndexes = multiSelectionService
+                .getSelectedIndexes(this.multiSelectionState)
+                .filter(selectedIndex => index !== selectedIndex);
+            
+            // map an index to an object that will be used to generate the ghost
+            const toGhostTarget = (_index) => ({
+                targetEl: this.$refs[`item--${_index}`][0],
+                textContent: this.items[_index].name
             });
 
-            this.ghost = ghost;
+            const selectedTargets = []
+                // add the item that initiated the drag at the beginning of the array
+                .concat(toGhostTarget(index))
+                .concat(selectedIndexes.map(toGhostTarget));
+
+            const { removeGhost } = createDragGhost({
+                dragStartEvent: e,
+                badgeCount: isMultipleSelectionActive ? selectedIndexes.length + 1 : null,
+                selectedTargets
+            });
+
             this.removeGhost = removeGhost;
         },
 
