@@ -105,7 +105,7 @@ describe('AddPortPlaceholder.vue', () => {
 
         test('adds port directly, if only one option is given', () => {
             let propsData = { portGroups: { input: { supportedPortTypeIds: ['table'], canAddInPort: true } } };
-            let wrapper = doMount(propsData);
+            let wrapper = doMount({ propsDataOverrides: propsData });
 
             wrapper.find('.add-port-icon').trigger('click');
             expect(wrapper.emitted('add-port')).toStrictEqual([[{ portGroup: 'input', typeId: 'table' }]]);

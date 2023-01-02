@@ -73,7 +73,13 @@ export default {
         },
         previewPort() {
             // show either the selected port of the menu or the targeted port for drag & drop to this placeholder
-            return this.targeted ? this.targetPort : this.selectedPort;
+            if (this.targeted) {
+                return this.targetPort;
+            }
+            if (this.isMenuOpen) {
+                return this.selectedPort;
+            }
+            return null;
         },
         selectedPort: {
             // use global store state for preview
@@ -179,7 +185,7 @@ export default {
   <g :transform="`translate(${position})`">
     <transition :name="transitionEnabled ? 'port-fade' : 'none'">
       <Port
-        v-if="isMenuOpen && previewPort && previewPort.typeId"
+        v-if="previewPort && previewPort.typeId"
         :key="previewPort.typeId"
         :port="previewPort"
       />
