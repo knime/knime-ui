@@ -4,7 +4,6 @@ import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 
 import LoadingIcon from './LoadingIcon.vue';
 import FileExplorer from './FileExplorer.vue';
-import { routes } from '@/router';
 
 const DISPLAY_LOADING_DELAY = 500;
 
@@ -20,10 +19,6 @@ export default {
             type: String,
             default: 'normal',
             validator: (value) => ['normal', 'mini'].includes(value)
-        },
-        spaceId: {
-            type: String,
-            default: 'local'
         }
     },
 
@@ -34,14 +29,17 @@ export default {
     },
 
     computed: {
-        ...mapState('spaceExplorer', ['currentWorkflowGroup']),
+        ...mapState('spaces', {
+            activeWorkflowGroup: state => state.activeSpace?.activeWorkflowGroup,
+            spaceId: state => state.activeSpace?.spaceId
+        }),
 
         breadcrumbItems() {
-            if (!this.currentWorkflowGroup) {
+            if (!this.activeWorkflowGroup) {
                 return [];
             }
 
-            const { path } = this.currentWorkflowGroup;
+            const { path } = this.activeWorkflowGroup;
             const rootBreadcrumb = {
                 text: 'Home',
                 id: 'root',
@@ -59,10 +57,10 @@ export default {
         },
 
         fullPath() {
-            if (!this.currentWorkflowGroup) {
+            if (!this.activeWorkflowGroup) {
                 return '';
             }
-            const { path } = this.currentWorkflowGroup;
+            const { path } = this.activeWorkflowGroup;
             return ['home'].concat(path.map(({ name }) => name)).join('/');
         }
     },
@@ -88,18 +86,15 @@ export default {
         async fetchWorkflowGroupContent(itemId) {
             this.setLoading(true);
 
-            const spaceId = this.spaceId;
-            await this.$store.dispatch('spaceExplorer/fetchWorkflowGroupContent', { itemId, spaceId });
+            await this.$store.dispatch('spaces/fetchWorkflowGroupContent', { itemId });
 
             this.setLoading(false);
         },
 
         async onChangeDirectory(pathId) {
-            console.log('pathId', pathId);
             this.setLoading(true);
 
-            const spaceId = this.spaceId;
-            await this.$store.dispatch('spaceExplorer/changeDirectory', { pathId, spaceId });
+            await this.$store.dispatch('spaces/changeDirectory', { pathId });
 
             this.setLoading(false);
         },
@@ -121,10 +116,10 @@ export default {
     </div>
 
     <FileExplorer
-      v-if="currentWorkflowGroup && !isLoading"
+      v-if="activeWorkflowGroup && !isLoading"
       :mode="mode"
-      :items="currentWorkflowGroup.items"
-      :is-root-folder="currentWorkflowGroup.path.length === 0"
+      :items="activeWorkflowGroup.items"
+      :is-root-folder="activeWorkflowGroup.path.length === 0"
       @change-directory="onChangeDirectory"
     />
 

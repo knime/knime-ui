@@ -34,7 +34,7 @@ export default {
     <section class="space-explorer-wrapper">
       <div class="grid-container">
         <div class="grid-item-12">
-          <SpaceExplorer :space-id="$route.params.spaceId" />
+          <SpaceExplorer />
         </div>
       </div>
     </section>

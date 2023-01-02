@@ -1,68 +1,69 @@
 <script>
+import { mapState } from 'vuex';
 import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
-import WorkflowIcon from 'webapps-common/ui/assets/img/icons/workflow.svg';
-import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
-import PrivateSpaceIcon from 'webapps-common/ui/assets/img/icons/private-space.svg';
-import HeartIcon from 'webapps-common/ui/assets/img/icons/heart.svg';
-
-import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
-
-import GridOutbreaker from '@/components/common/GridOutbreaker.vue';
-import Avatar from '@/components/common/Avatar.vue';
-import Card from '@/components/common/Card.vue';
-import CardHeader from '@/components/common/CardHeader.vue';
-import CardContent from '@/components/common/CardContent.vue';
-import CardFooter from '@/components/common/CardFooter.vue';
 
 import { APP_ROUTES } from '@/router';
+import Button from 'webapps-common/ui/components/Button.vue';
+import GridOutbreaker from '@/components/common/GridOutbreaker.vue';
+import Avatar from '@/components/common/Avatar.vue';
 
-import { fetchSpaceProvider } from '@api';
-
-import { MOCK_DATA } from './mockData';
+import SpaceCard from './SpaceCard.vue';
 
 export default {
     components: {
         Avatar,
         GridOutbreaker,
-        Card,
-        CardHeader,
-        CardContent,
-        CardFooter,
-        ComputerDesktopIcon,
-        WorkflowIcon,
-        CubeIcon,
-        PrivateSpaceIcon,
-        HeartIcon
+        SpaceCard,
+        Button
     },
 
     data() {
         return {
-            knimeColors,
-
-            spaceProviders: []
+            knimeColors
         };
     },
 
+    computed: {
+        ...mapState('spaces', ['spaceProviders'])
+    },
+
     created() {
-        this.updateSpaceProviders();
+        this.fetchSpaceProviders();
     },
 
     methods: {
-        onSpaceCardClick(spaceId) {
-            this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage, params: { spaceId } });
-            console.log('You clicked on space', spaceId);
+        fetchSpaceProviders() {
+            this.$store.dispatch('spaces/fetchAllSpaceProviders');
         },
+        
         onLogin(spaceProviderId) {
-            window.connectSpaceProvider(spaceProviderId);
-            // TODO only update the one we connected to
-            this.updateSpaceProviders();
+            this.$store.dispatch('spaces/connectProvider', { spaceProviderId });
         },
-        async updateSpaceProviders() {
-            this.spaceProviders = JSON.parse(window.getSpaceProviders());
-            for (let i = 0; i < this.spaceProviders.length; i++) {
-                const spaceProvider = await fetchSpaceProvider({ spaceProviderId: this.spaceProviders[i].id });
-                this.spaceProviders[i].spaces = spaceProvider.spaces;
-            }
+
+        onLogout(spaceProviderId) {
+            this.$store.dispatch('spaces/disconnectProvider', { spaceProviderId });
+        },
+
+        onSpaceCardClick({ space, spaceProvider }) {
+            this.$store.commit('spaces/setActiveSpaceProvider', spaceProvider);
+            this.$store.commit('spaces/setActiveSpaceId', space.id);
+            this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
+        },
+
+        isLocalSpace(spaceProvider) {
+            return spaceProvider.connectionMode === 'AUTOMATIC' && spaceProvider.id === 'local';
+        },
+
+        shouldDisplayAvatar(spaceProvider) {
+            return spaceProvider.connectionMode !== 'AUTOMATIC' && spaceProvider.connected;
+        },
+
+        shouldDisplayLoginButton(spaceProvider) {
+            return spaceProvider.connectionMode !== 'AUTOMATIC' && !spaceProvider.connected;
+        },
+
+        shouldDisplayLogoutButton(spaceProvider) {
+            return spaceProvider.connectionMode === 'AUTHENTICATED' && spaceProvider.connected;
         }
     }
 };
@@ -75,51 +76,45 @@ export default {
       :key="spaceProvider.id"
       class="space-selection"
     >
-      <div class="hub-space-name">
+      <div class="space-provider-name">
         <h2>{{ spaceProvider.name }}</h2>
-        <div class="owner">
-          <Avatar text="MS" />
+        <div
+          v-if="shouldDisplayAvatar(spaceProvider) && spaceProvider.user"
+          class="owner"
+        >
+          <Avatar :text="'MS'" />
           <span class="owner-name">Mine</span>
         </div>
-      </div>
 
-      <button
-        v-if="!spaceProvider.connected"
-        @click="onLogin(spaceProvider.id)"
-      >
-        LOGIN
-      </button>
-
-      <div class="cards">
-        <Card
-          v-for="(space, index) of spaceProvider.spaces"
-          :key="`${space.name}--${index}`"
-          @click="onSpaceCardClick(space.id)"
-        >
-          <CardHeader color="light">
-            <Component :is="space.private ? 'PrivateSpaceIcon' : 'CubeIcon'" />
-            <div class="kudos">
-              <HeartIcon />
-              <span>{{ space.kudos }}</span>
-            </div>
-          </CardHeader>
-
-          <CardContent
-            padded
-            :centered="false"
-            class="space-card-content"
+        <div class="connection-btn">
+          <Button
+            v-if="shouldDisplayLogoutButton(spaceProvider)"
+            with-border
+            compact
+            @click="onLogout(spaceProvider.id)"
           >
-            <h5>{{ space.name }}</h5>
-            <p>{{ space.description }}</p>
-            <span>Last Update {{ space.lastUpdate }}</span>
-          </CardContent>
+            Log out
+          </Button>
 
-          <CardFooter avatar="MS">
-            <span><WorkflowIcon /> 2</span>
-            <span><WorkflowIcon /> 2</span>
-            <span><WorkflowIcon /> 2</span>
-          </CardFooter>
-        </Card>
+          <Button
+            v-if="shouldDisplayLoginButton(spaceProvider)"
+            primary
+            compact
+            @click="onLogin(spaceProvider.id)"
+          >
+            {{ spaceProvider.connectionMode === 'AUTHENTICATED' ? 'LOGIN' : 'CONNECT' }}
+          </Button>
+        </div>
+      </div>
+      
+      <div class="cards">
+        <SpaceCard
+          v-for="(space, id) of spaceProvider.spaces"
+          :key="id"
+          :space="space"
+          :is-local="isLocalSpace(spaceProvider)"
+          @click="onSpaceCardClick({ space: $event, spaceProvider })"
+        />
       </div>
     </section>
   </GridOutbreaker>
@@ -131,8 +126,14 @@ section.space-selection {
   padding-top: 30px;
   padding-bottom: 50px;
 
-  & .hub-space-name {
+  & .space-provider-name {
     margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+
+    & .connection-btn {
+      margin-left: auto;
+    }
 
     & .owner {
       display: flex;
@@ -154,41 +155,6 @@ section.space-selection {
     & .card {
       margin-bottom: var(--card-margin);
       flex-basis: calc(50% - var(--card-margin) / 2);
-
-      & .kudos {
-        display: flex;
-        align-items: center;
-        margin-left: auto;
-
-        & span {
-          margin-left: 10px;
-          color: var(--knime-dove-gray);
-          font-weight: 500;
-          font-size: 13px;
-          line-height: 18px;
-        }
-      }
-    }
-  }
-
-  & .space-card-content {
-    & h5 {
-      margin: 0;
-      font-size: 19px;
-      font-weight: 700;
-      line-height: 24px;
-    }
-
-    & p {
-      font-size: 16px;
-      margin: 5px 0;
-      font-weight: 300;
-      line-height: 24px;
-    }
-
-    & span {
-      font-size: 11px;
-      line-height: 16px;
     }
   }
 }

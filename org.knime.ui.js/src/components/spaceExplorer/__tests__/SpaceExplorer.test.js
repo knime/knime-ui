@@ -2,7 +2,7 @@ import Vuex from 'vuex';
 import { createLocalVue, mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
-import * as spaceExplorerStore from '@/store/spaceExplorer';
+import * as spaceExplorerStore from '@/store/spaces';
 
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 import { fetchWorkflowGroupContent } from '@api';
