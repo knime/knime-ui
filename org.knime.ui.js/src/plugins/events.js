@@ -54,7 +54,7 @@ export default ({ store: $store, router: $router }) => {
         /** 
          * Is triggered by the backend, whenever there are AP updates available
          */
-        UpdateStateChangedEvent({ newReleases, bugfixes }) {
+        UpdateAvailableEvent({ newReleases, bugfixes }) {
             // TODO: Actually do something here...
             consola.warn("AP release updates available: ", newReleases);
             consola.warn("AP bugfix updates available: ", bugfixes);

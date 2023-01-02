@@ -119,7 +119,7 @@ public final class EclipseUIStateUtil {
      *
      * @return The state of the AP in terms of {@link UpdateState}.
      */
-    public static UpdateState createUpdateState() {
+    public static UpdateState checkForUpdate() {
         List<UpdateInfo> newReleases = new ArrayList<>();
         List<String> bugfixes = new ArrayList<>();
         try {

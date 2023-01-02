@@ -140,7 +140,7 @@ public class KnimeBrowserView {
         // Create and set default service dependencies
         var eventConsumer = createEventConsumer();
         var appStateProvider = new AppStateProvider(appStateSupplier);
-        var updateStateProvider = new UpdateStateProvider(() -> EclipseUIStateUtil.createUpdateState());
+        var updateStateProvider = new UpdateStateProvider(() -> EclipseUIStateUtil.checkForUpdate());
         DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer,
             createSpaceProviders(), updateStateProvider);
 
