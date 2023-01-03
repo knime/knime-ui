@@ -2,7 +2,7 @@ import Vuex from 'vuex';
 import { createLocalVue, mount } from '@vue/test-utils';
 
 import { mockVuexStore } from '@/test/test-utils';
-import * as spaceExplorerStore from '@/store/spaces';
+import * as spacesStore from '@/store/spaces';
 
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 import { fetchWorkflowGroupContent } from '@api';
@@ -52,7 +52,7 @@ describe('SpaceExplorer.vue', () => {
         }
 
         const store = mockVuexStore({
-            spaceExplorer: spaceExplorerStore
+            spaces: spacesStore
         });
 
         const wrapper = mount(SpaceExplorer, {
@@ -81,7 +81,11 @@ describe('SpaceExplorer.vue', () => {
         fetchWorkflowGroupContent.mockReset();
 
         wrapper.findComponent(FileExplorer).vm.$emit('change-directory', '1234');
-        expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({ spaceId: 'local', itemId: '1234' });
+        expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
+            spaceProviderId: 'local',
+            spaceId: 'local',
+            itemId: '1234'
+        });
     });
 
     describe('Navigate back', () => {
@@ -98,7 +102,11 @@ describe('SpaceExplorer.vue', () => {
     
             fetchWorkflowGroupContent.mockReset();
             wrapper.findComponent(FileExplorer).vm.$emit('change-directory', '..');
-            expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({ spaceId: 'local', itemId: 'parentId' });
+            expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
+                spaceProviderId: 'local',
+                spaceId: 'local',
+                itemId: 'parentId'
+            });
         });
 
         it('should navigate to "root" when going back from 1 level below the root directory', async () => {
@@ -111,7 +119,11 @@ describe('SpaceExplorer.vue', () => {
     
             fetchWorkflowGroupContent.mockReset();
             wrapper.findComponent(FileExplorer).vm.$emit('change-directory', '..');
-            expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({ spaceId: 'local', itemId: 'root' });
+            expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
+                spaceProviderId: 'local',
+                spaceId: 'local',
+                itemId: 'root'
+            });
         });
     });
 
@@ -127,7 +139,11 @@ describe('SpaceExplorer.vue', () => {
         });
 
         wrapper.findComponent(Breadcrumb).vm.$emit('click-item', { id: 'parentId' });
-        expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({ spaceId: 'local', itemId: 'parentId' });
+        expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
+            spaceProviderId: 'local',
+            spaceId: 'local',
+            itemId: 'parentId'
+        });
     });
 
     it('should display the loader only after a specific timeout', async () => {
@@ -140,9 +156,11 @@ describe('SpaceExplorer.vue', () => {
         jest.useFakeTimers();
 
         const store = mockVuexStore({
-            spaceExplorer: spaceExplorerStore
+            spaces: spacesStore
         });
 
+        // not using the shared mount function because it is async and it interferes
+        // with this test that works with timers
         const wrapper = mount(SpaceExplorer, {
             stubs: { NuxtLink: true },
             mocks: { $store: store }

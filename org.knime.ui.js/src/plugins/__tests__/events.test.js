@@ -98,7 +98,7 @@ describe('Event Plugin', () => {
                 );
 
                 expect(routerMock.push).toHaveBeenCalledWith({
-                    name: APP_ROUTES.EntryPage.name
+                    name: APP_ROUTES.EntryPage.GetStartedPage
                 });
 
                 expect(storeMock.dispatch).toHaveBeenCalledWith(
@@ -122,7 +122,7 @@ describe('Event Plugin', () => {
                 });
 
                 expect(routerMock.push).toHaveBeenCalledWith({
-                    name: APP_ROUTES.WorkflowPage.name,
+                    name: APP_ROUTES.WorkflowPage,
                     params: { projectId: 'project2', workflowId: 'root', skipGuards: true }
                 });
 

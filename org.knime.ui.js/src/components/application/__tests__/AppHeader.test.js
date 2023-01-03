@@ -83,7 +83,7 @@ describe('AppHeader.vue', () => {
 
             wrapper.findAll('li').at(2).trigger('click');
             expect($router.push).toHaveBeenCalledWith({
-                name: APP_ROUTES.WorkflowPage.name,
+                name: APP_ROUTES.WorkflowPage,
                 params: { projectId, workflowId: 'root' }
             });
         });
@@ -94,9 +94,9 @@ describe('AppHeader.vue', () => {
             wrapper.find('#knime-logo').trigger('click');
             
             expect($router.push).toHaveBeenCalledWith({
-                name: APP_ROUTES.EntryPage.name
+                name: APP_ROUTES.EntryPage.GetStartedPage
             });
-            $route.name = APP_ROUTES.EntryPage.name;
+            $route.name = APP_ROUTES.EntryPage.GetStartedPage;
             
             await Vue.nextTick();
             expect(wrapper.find('#knime-logo').classes()).toContain('active-logo');
@@ -149,7 +149,7 @@ describe('AppHeader.vue', () => {
             doMount();
             await wrapper.find('.switch-info-page').trigger('click');
             expect($router.push).toHaveBeenCalledWith({
-                name: APP_ROUTES.InfoPage.name
+                name: APP_ROUTES.InfoPage
             });
         });
     });
