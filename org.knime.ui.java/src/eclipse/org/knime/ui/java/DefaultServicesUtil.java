@@ -46,10 +46,12 @@
  */
 package org.knime.ui.java;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.knime.gateway.api.webui.entity.AppStateEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
+import org.knime.gateway.impl.webui.LocalWorkspace;
 import org.knime.gateway.impl.webui.SpaceProviders;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
