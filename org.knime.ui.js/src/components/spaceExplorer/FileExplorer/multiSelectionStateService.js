@@ -342,61 +342,39 @@ const removeSubRanges = (ranges) => ranges.reduce((acc, range, _, arr) => {
  * @returns {Array<SelectionRange>} contiguous ranges without overlap
  */
 const removeOverlappingRanges = (ranges) => {
-    const overlappingRangeIndexes = [];
-    const updatedRanges = [];
-    for (let currIndex = 0; currIndex < ranges.length; currIndex++) {
-        const currentRange = ranges[currIndex];
+    let [firstRange, ...sortedRanges] = ranges.slice().sort((a, b) => a.from - b.from);
+    let latestTo = firstRange.to;
+    let resultingRanges = [firstRange];
 
-        const overlappedLeftIndex = ranges.findIndex((_range, _index) => {
-            const isOverlappedLeft =
-                // _range starts earlier
-                _range.from <= currentRange.from &&
-                // _range ends in-between `currentRange`
-                (_range.to >= currentRange.from && _range.to <= currentRange.to);
+    while (sortedRanges.length) {
+        const [currentRange] = sortedRanges;
 
-            const isSameItem = _index === currIndex;
-
-            return isOverlappedLeft && !isSameItem;
-        });
-        
-        const overlappedRightIndex = ranges.findIndex((_range, _index) => {
-            const isOverlappedRight =
-                // _range starts after
-                _range.from >= currentRange.from &&
-                // `currentRange` ends in-between _range
-                (currentRange.from >= _range.from && currentRange.to <= _range.to);
-            const isSameItem = _index === currIndex;
-
-            return isOverlappedRight && !isSameItem;
-        });
-
-        if (overlappedLeftIndex !== -1) {
-            overlappingRangeIndexes.push(overlappedLeftIndex);
-
-            updatedRanges.push({
-                from: ranges[overlappedLeftIndex].from,
-                to: currentRange.to
-            });
-            continue;
-        }
-        
-        if (overlappedRightIndex !== -1) {
-            overlappingRangeIndexes.push(overlappedRightIndex);
-
-            updatedRanges.push({
-                from: currentRange.from,
-                to: ranges[overlappedRightIndex].to
-            });
+        // if currentRange is beyond the most recent one then simply remove it from the
+        // sorted array and add it to the resultingRanges
+        if (currentRange.from > latestTo) {
+            resultingRanges.push(currentRange);
+            sortedRanges = sortedRanges.slice(1);
             continue;
         }
 
-        if (!overlappingRangeIndexes.includes(currIndex)) {
-            updatedRanges.push(currentRange);
-            continue;
+        // when range overlaps
+        const isOverlapping = currentRange.from <= latestTo && currentRange.to > latestTo;
+
+        if (isOverlapping) {
+            // (1) grab the last range in the resultingRanges
+            const [lastRange] = resultingRanges.slice(-1);
+            // (2) increase the `to` value to match that of the currentRange
+            const nextRange = { from: lastRange.from, to: currentRange.to };
+            // (3) update the reference cursor
+            latestTo = currentRange.to;
+            // (4) replace the last item in the resultingRanges with the updated `nextRange`
+            resultingRanges = resultingRanges.slice(0, -1).concat(nextRange);
+            // (5) remove the range from the sorted ranges since we just finished checking it
+            sortedRanges = sortedRanges.slice(1);
         }
     }
 
-    return updatedRanges;
+    return resultingRanges;
 };
   
 /**

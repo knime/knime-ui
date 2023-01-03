@@ -51,6 +51,36 @@ describe('multiSelectionStateService', () => {
         ]);
     });
 
+    it('should remove overlapping ranges', () => {
+        const output = multiSelectionService.normalizeRanges({
+            selectionRanges: [
+                { from: 13, to: 18 },
+                { from: 1, to: 6 },
+                { from: 5, to: 11 },
+                { from: 3, to: 9 }
+            ],
+            anchorExceptions: [],
+            anchorHistory: []
+        });
+
+        expect(output).toEqual([{ from: 1, to: 11 }, { from: 13, to: 18 }]);
+    });
+
+    it('should remove sub ranges', () => {
+        const output = multiSelectionService.normalizeRanges({
+            selectionRanges: [
+                { from: 2, to: 18 },
+                { from: 3, to: 6 },
+                { from: 5, to: 11 },
+                { from: 3, to: 9 }
+            ],
+            anchorExceptions: [],
+            anchorHistory: []
+        });
+
+        expect(output).toEqual([{ from: 2, to: 18 }]);
+    });
+
     describe('click', () => {
         it('should select the item', () => {
             const state = multiSelectionService.click(1);
@@ -126,6 +156,16 @@ describe('multiSelectionStateService', () => {
             const state2 = multiSelectionService.shiftClick(state1, 1);
             expect(multiSelectionService.normalizeRanges(state2)).toEqual([
                 { from: 1, to: 5 }
+            ]);
+        });
+
+        it('should select correctly when selection is empty', () => {
+            const initialState = multiSelectionService.getInitialState();
+            const state1 = multiSelectionService.shiftClick(initialState, 2);
+            const state2 = multiSelectionService.shiftClick(state1, 6);
+
+            expect(multiSelectionService.normalizeRanges(state2)).toEqual([
+                { from: 2, to: 6 }
             ]);
         });
 
