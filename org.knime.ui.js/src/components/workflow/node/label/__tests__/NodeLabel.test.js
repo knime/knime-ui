@@ -3,6 +3,8 @@ import Vuex from 'vuex';
 import { shallowMount, createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
+import * as selectionStore from '@/store/selection';
+
 import NodeLabel from '../NodeLabel.vue';
 import NodeLabelText from '../NodeLabelText.vue';
 import NodeLabelEditor from '../NodeLabelEditor.vue';
@@ -12,6 +14,7 @@ describe('NodeLabel', () => {
         nodeId: 'root:1',
         nodePosition: { x: 15, y: 13 },
         kind: 'metanode',
+        value: 'Test label',
         annotation: {
             text: 'Test label',
             textAlign: 'center',
@@ -50,7 +53,8 @@ describe('NodeLabel', () => {
                         closeLabelEditor: jest.fn(),
                         renameNodeLabel: jest.fn()
                     }
-                }
+                },
+                selection: selectionStore
             };
 
             const $store = mockVuexStore(storeConfig);
@@ -66,7 +70,7 @@ describe('NodeLabel', () => {
         it('should forward props', () => {
             expect(wrapper.findComponent(NodeLabelText).props()).toEqual(
                 expect.objectContaining({
-                    value: defaultProps.annotation.text,
+                    value: defaultProps.value,
                     kind: defaultProps.kind,
                     nodeId: defaultProps.nodeId,
                     annotation: defaultProps.annotation
@@ -100,7 +104,8 @@ describe('NodeLabel', () => {
                         closeLabelEditor: jest.fn(),
                         renameNodeLabel: jest.fn()
                     }
-                }
+                },
+                selection: selectionStore
             };
 
             $store = mockVuexStore(storeConfig);

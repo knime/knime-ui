@@ -73,7 +73,13 @@ export default {
         },
         previewPort() {
             // show either the selected port of the menu or the targeted port for drag & drop to this placeholder
-            return this.targeted ? this.targetPort : this.selectedPort;
+            if (this.targeted) {
+                return this.targetPort;
+            }
+            if (this.isMenuOpen) {
+                return this.selectedPort;
+            }
+            return null;
         },
         selectedPort: {
             // use global store state for preview

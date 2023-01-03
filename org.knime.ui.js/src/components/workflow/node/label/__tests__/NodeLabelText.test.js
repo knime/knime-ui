@@ -1,6 +1,5 @@
 import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
-import { mockVuexStore } from '@/test/test-utils';
 
 import * as $shapes from '@/style/shapes.mjs';
 
@@ -13,12 +12,13 @@ describe('NodeLabelText.vue', () => {
         localVue.use(Vuex);
     });
 
-    const doShallowMount = ({ props = {}, singleSelectedNode = () => null, isWritable = () => true } = { }) => {
+    const doShallowMount = ({ props = {} } = { }) => {
         const defaultProps = {
             value: 'test',
             nodePosition: { x: 15, y: 13 },
             nodeId: 'root:1',
             kind: 'node',
+            editable: true,
             annotation: {
                 textAlign: 'center',
                 backgroundColor: 'rgb(255, 216, 0)',
@@ -26,23 +26,9 @@ describe('NodeLabelText.vue', () => {
             }
         };
 
-        const storeConfig = {
-            selection: {
-                getters: {
-                    singleSelectedNode
-                }
-            },
-            workflow: {
-                getters: {
-                    isWritable
-                }
-            }
-        };
-
-        const $store = mockVuexStore(storeConfig);
         const wrapper = shallowMount(NodeLabelText, {
             propsData: { ...defaultProps, ...props },
-            mocks: { $store, $shapes }
+            mocks: { $shapes }
         });
 
         return { wrapper };
@@ -57,7 +43,7 @@ describe('NodeLabelText.vue', () => {
     });
 
     it('should not emit request edit if workflow is not writable', () => {
-        const { wrapper } = doShallowMount({ isWritable: () => false });
+        const { wrapper } = doShallowMount({ props: { editable: false } });
 
         wrapper.find('.node-label').trigger('dblclick');
 
@@ -75,17 +61,18 @@ describe('NodeLabelText.vue', () => {
     });
 
     it('should show placeholder text if node is selected and does not have value', () => {
-        const node = { id: 'root:1' };
         const propsData = {
             value: '',
+            editable: true,
             nodePosition: { x: 15, y: 13 },
             nodeId: 'root:1',
+            isSelected: true,
             kind: 'node'
         };
         const { wrapper } = doShallowMount({
-            props: propsData,
-            singleSelectedNode: () => node
+            props: propsData
         });
+
         const text = wrapper.find('.text');
 
         expect(text.text()).toBe('Add comment');
