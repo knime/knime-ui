@@ -22,7 +22,7 @@ export const getInitialState = () => ({
 });
   
 /**
- * Merges a an initial state and a partial state together
+ * Merges an initial state and a partial state together
  * @param {MultiSelectionState} initialState
  * @param {Partial<MultiSelectionState>} newState
  * @returns {MultiSelectionState}
@@ -103,8 +103,8 @@ export const ctrlClick = (state, clickedItem) => {
             ({ from, to }) => from <= newRange.from && newRange.to <= to
         );
   
-        // We also have to make sure not to add the anchor if it would already be included
-        // in an existing range.
+        // We also have to make sure not to add the range if it would already be included
+        // in an existing one.
         // (e.g: (1) Range is created (via Shift+click), (2) item is removed (with Ctrl+click), and now
         // it's being added again
         const newSelectionRanges = alreadyInRange ? selectionRanges : [...selectionRanges, newRange];
@@ -342,6 +342,10 @@ const removeSubRanges = (ranges) => ranges.reduce((acc, range, _, arr) => {
  * @returns {Array<SelectionRange>} contiguous ranges without overlap
  */
 const removeOverlappingRanges = (ranges) => {
+    if (ranges.length <= 1) {
+        return ranges;
+    }
+
     let [firstRange, ...sortedRanges] = ranges.slice().sort((a, b) => a.from - b.from);
     let latestTo = firstRange.to;
     let resultingRanges = [firstRange];

@@ -60,7 +60,6 @@ export default {
         return {
             ITEM_TYPES,
             currentLevel: null,
-            selectedItems: [],
             multiSelectionState: multiSelectionService.getInitialState(),
             isDragging: false,
             startDragItemIndex: null

@@ -78,8 +78,11 @@ const createGhostBadgeElement = ({ count }) => {
  * @returns {CreateGhostElementReturnType}
  */
 const createGhostElement = ({ badgeCount, textContent, target, addShadow = false }) => {
+    const TEXT_SIZE_THRESHOLD = 15;
     const ghost = document.createElement('div');
-    ghost.innerText = textContent;
+    ghost.innerText = textContent.length > TEXT_SIZE_THRESHOLD
+        ? `${textContent.slice(0, TEXT_SIZE_THRESHOLD)}…`
+        : textContent;
 
     const { x, y, width, height } = target.getBoundingClientRect();
 
