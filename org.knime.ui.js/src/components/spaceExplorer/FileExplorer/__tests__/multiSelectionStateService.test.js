@@ -149,4 +149,23 @@ describe('multiSelectionStateService', () => {
             ]);
         });
     });
+
+    it('should return the right selection size', () => {
+        const state1 = multiSelectionService.click(1);
+        const state2 = multiSelectionService.ctrlClick(state1, 4);
+        const state3 = multiSelectionService.shiftClick(state2, 8);
+
+        const selectionSize = multiSelectionService.selectionSize(state3);
+        expect(selectionSize).toBe(6);
+    });
+
+    it('should return the selected indexes', () => {
+        const state1 = multiSelectionService.click(1);
+        const state2 = multiSelectionService.ctrlClick(state1, 4);
+        const state3 = multiSelectionService.shiftClick(state2, 8);
+        const state4 = multiSelectionService.ctrlClick(state3, 7);
+
+        const selectedIndexes = multiSelectionService.getSelectedIndexes(state4);
+        expect(selectedIndexes).toEqual([1, 4, 5, 6, 8]);
+    });
 });
