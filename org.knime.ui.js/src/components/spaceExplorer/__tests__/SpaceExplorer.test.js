@@ -8,7 +8,7 @@ import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 import { fetchWorkflowGroupContent } from '@api';
 
 import SpaceExplorer from '../SpaceExplorer.vue';
-import FileExplorer from '../FileExplorer.vue';
+import FileExplorer from '../FileExplorer/FileExplorer.vue';
 
 jest.mock('@api');
 
@@ -134,7 +134,7 @@ describe('SpaceExplorer.vue', () => {
         fetchWorkflowGroupContent.mockImplementation(() => new Promise(resolve => {
             setTimeout(() => {
                 resolve(fetchWorkflowGroupContentResponse);
-            }, 600);
+            }, 1000);
         }));
 
         jest.useFakeTimers();
@@ -159,19 +159,19 @@ describe('SpaceExplorer.vue', () => {
         expect(wrapper.find('.loading').exists()).toBe(false);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(false);
         
-        // total time now: 100ms
-        // after waiting for 100ms it should still not be visible
-        await advanceTime(100);
+        // total time now: 200ms
+        // after waiting for 200ms it should still not be visible
+        await advanceTime(200);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(false);
         expect(wrapper.find('.loading').exists()).toBe(false);
         
-        // total time now: 500ms
-        // after waiting for 400ms it should now be displayed since it crossed the threshold
-        await advanceTime(400);
+        // total time now: 1000ms
+        // after waiting for 800ms it should now be displayed since it crossed the threshold
+        await advanceTime(800);
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(false);
         expect(wrapper.find('.loading').exists()).toBe(true);
         
-        // total time now: 600ms
+        // total time now: 1100ms
         // after waiting for 100ms the data should be loaded now, so loading is not visible
         await advanceTime(100);
         expect(wrapper.find('.loading').exists()).toBe(false);

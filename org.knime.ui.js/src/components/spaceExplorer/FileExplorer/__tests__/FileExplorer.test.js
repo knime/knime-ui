@@ -11,37 +11,37 @@ import FileExplorer from '../FileExplorer.vue';
 describe('FileExplorer.vue', () => {
     const MOCK_DATA = [
         {
-            id: '1',
+            id: '0',
             name: 'Folder 1',
             type: 'WorkflowGroup',
             icon: WorkflowGroupIcon
         },
         {
-            id: '2',
+            id: '1',
             name: 'Folder 2',
             type: 'WorkflowGroup',
             icon: WorkflowGroupIcon
         },
         {
-            id: '3',
+            id: '2',
             name: 'File 1',
             type: 'Data',
             icon: DataIcon
         },
         {
-            id: '4',
+            id: '3',
             name: 'File 2',
             type: 'Workflow',
             icon: WorkflowIcon
         },
         {
-            id: '5',
+            id: '4',
             name: 'File 3',
             type: 'Component',
             icon: ComponentIcon
         },
         {
-            id: '6',
+            id: '5',
             name: 'File 3',
             type: 'WorkflowTemplate',
             icon: MetaNodeIcon
@@ -110,5 +110,57 @@ describe('FileExplorer.vue', () => {
         const { wrapper } = doMount({ props: { mode: 'mini' } });
         
         expect(wrapper.find('tbody').classes()).toContain('mini');
+    });
+
+    describe('Selection', () => {
+        it('should select items', async () => {
+            const { wrapper } = doMount();
+            await wrapper.findAll('.file-explorer-item').at(1).trigger('click');
+            await wrapper.findAll('.file-explorer-item').at(3).trigger('click', { shiftKey: true });
+            await wrapper.findAll('.file-explorer-item').at(5).trigger('click', { ctrlKey: true });
+            
+            expect(wrapper.findAll('.file-explorer-item').at(1).classes()).toContain('selected');
+            expect(wrapper.findAll('.file-explorer-item').at(2).classes()).toContain('selected');
+            expect(wrapper.findAll('.file-explorer-item').at(3).classes()).toContain('selected');
+            expect(wrapper.findAll('.file-explorer-item').at(5).classes()).toContain('selected');
+    
+            expect(wrapper.emitted('selection-change').length).toBe(3);
+        });
+    });
+
+    describe('Drag', () => {
+        it('should add the proper classes when handling dragging events', async () => {
+            const dataTransfer = { setDragImage: jest.fn() };
+            const { wrapper } = doMount();
+            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
+            const thirdItem = wrapper.findAll('.file-explorer-item').at(2);
+
+            // select items 1 and 2
+            await firstItem.trigger('click');
+            await secondItem.trigger('click', { ctrlKey: true });
+
+            // start dragging on 1
+            await firstItem.trigger('dragstart', { dataTransfer });
+
+            // selecte items (1 & 2) should have the proper class
+            expect(firstItem.classes()).toContain('dragging');
+            expect(secondItem.classes()).toContain('dragging');
+            expect(thirdItem.classes()).not.toContain('dragging');
+            
+            // dragging over selected items does not add the dragging-over class
+            await firstItem.trigger('dragenter');
+            expect(firstItem.classes()).not.toContain('dragging-over');
+            await secondItem.trigger('dragenter');
+            expect(secondItem.classes()).not.toContain('dragging-over');
+            
+            // dragging over non-selected items adds the dragging-over class
+            await thirdItem.trigger('dragenter');
+            expect(thirdItem.classes()).toContain('dragging-over');
+            
+            // leaving drag on non-selected items removes the dragging-over class
+            await thirdItem.trigger('dragleave');
+            expect(thirdItem.classes()).not.toContain('dragging-over');
+        });
     });
 });

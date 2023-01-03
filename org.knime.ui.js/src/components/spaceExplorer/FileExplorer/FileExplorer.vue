@@ -10,7 +10,7 @@ import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
 
 import * as multiSelectionService from './multiSelectionStateService';
-import { createDragGhost } from './dragGhostHelpers';
+import { createDragGhosts } from './dragGhostHelpers';
 
 const ITEM_TYPES = {
     WorkflowGroup: 'WorkflowGroup',
@@ -171,16 +171,16 @@ export default {
                 .concat(toGhostTarget(index))
                 .concat(selectedIndexes.map(toGhostTarget));
 
-            const { removeGhost } = createDragGhost({
+            const { removeGhosts } = createDragGhosts({
                 dragStartEvent: e,
                 badgeCount: isMultipleSelectionActive ? selectedIndexes.length + 1 : null,
                 selectedTargets
             });
 
-            this.removeGhost = removeGhost;
+            this.removeGhosts = removeGhosts;
         },
 
-        onDragEnter(e, index) {
+        onDragEnter(_, index) {
             if (this.isSelected(index)) {
                 return;
             }
@@ -191,14 +191,14 @@ export default {
             }
         },
 
-        onDragLeave(e, index) {
+        onDragLeave(_, index) {
             const [draggedOverEl] = this.$refs[`item--${index}`];
             draggedOverEl.classList.remove('dragging-over');
         },
 
-        onDragEnd(e) {
+        onDragEnd() {
             this.isDragging = false;
-            this.removeGhost?.();
+            this.removeGhosts?.();
         }
     }
 };

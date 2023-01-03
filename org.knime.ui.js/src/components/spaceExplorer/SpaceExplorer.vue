@@ -3,7 +3,7 @@ import { mapState } from 'vuex';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 
 import LoadingIcon from './LoadingIcon.vue';
-import FileExplorer from './FileExplorer.vue';
+import FileExplorer from './FileExplorer/FileExplorer.vue';
 
 const DISPLAY_LOADING_DELAY = 1000;
 

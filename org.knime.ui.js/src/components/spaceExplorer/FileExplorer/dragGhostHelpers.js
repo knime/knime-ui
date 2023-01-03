@@ -3,7 +3,7 @@ import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
 
 const COLORS = {
     dragGhostContainer: {
-        // TODO: create cornflower-ultra-light in WAC
+        // TODO: create cornflower-ultra-light in webapps-common
         background: 'hsl(206deg 74% 90%/100%)',
         font: knimeColors.Masala
     },
@@ -25,7 +25,14 @@ const applyStyles = (element, styles) => {
     });
 };
 
-const createGhostBadge = ({ count }) => {
+/**
+ * Creates the element that will be used to display the badge with the count of the total
+ * selected items
+ * @param {Object} param
+ * @param {Number} count number to display in the badge
+ * @returns {HTMLElement}
+ */
+const createGhostBadgeElement = ({ count }) => {
     const badge = document.createElement('div');
     // eslint-disable-next-line no-magic-numbers
     badge.innerText = count <= 99 ? count : '99+';
@@ -56,7 +63,21 @@ const createGhostBadge = ({ count }) => {
     return badge;
 };
 
-const createGhostContainer = ({ badgeCount, textContent, target, addShadow = false }) => {
+/**
+ * @typedef CreateGhostElementReturnType
+ * @property {HTMLElement} ghost
+ */
+/**
+ * Creates the element of the ghost
+ * @param {Object} param
+ * @param {String} param.textContent text to display in the ghost
+ * @param {HTMLElement} param.target the element being ghosted. it's used to initally position the ghost on the same
+ * coordinates
+ * @param {Boolean} [param.addShadow] whether to add boxShadow styles to the ghost
+ * @param {Number} [param.badgeCount] if specified, will add the badge with this value as a count
+ * @returns {CreateGhostElementReturnType}
+ */
+const createGhostElement = ({ badgeCount, textContent, target, addShadow = false }) => {
     const ghost = document.createElement('div');
     ghost.innerText = textContent;
 
@@ -91,7 +112,7 @@ const createGhostContainer = ({ badgeCount, textContent, target, addShadow = fal
     applyStyles(ghost, ghostStyles);
 
     if (badgeCount) {
-        const badge = createGhostBadge({ count: badgeCount });
+        const badge = createGhostBadgeElement({ count: badgeCount });
         ghost.appendChild(badge);
         return { ghost, badge };
     }
@@ -111,7 +132,7 @@ const removeNativeDragGhost = (dragEvent) => {
 };
 
 /**
- * Returns an a function to serve as an event handler to update the ghost's position
+ * Returns a function to serve as an event handler to update the ghost's position
  * @param {Array<HTMLElement>} ghosts
  * @returns {Function}
  */
@@ -131,22 +152,23 @@ const createGhostPositionUpdateHandler = (ghosts) => ({ clientX, clientY }) => {
 };
 
 /**
- * @typedef CreateGhostResponse
- * @property {HTMLElement} ghost the ghost element
- * @property {Function} removeGhost a function to remove the ghost when needed
+ * @typedef CreateDragGhostsReturnType
+ * @property {Array<HTMLElement>} ghosts the added ghosts
+ * @property {Function} removeGhosts a function to remove the ghost when needed
  */
 /**
- *  Creates the drag ghost for the FileExplorer drag operations
+ *  Creates the drag ghosts for the FileExplorer drag operations
  *
  * @param {Object} param
  * @param {DragEvent} param.dragStartEvent The DragStart event that originated the drag
  * @param {Number | Null} param.badgeCount Whether to display a badge with a count next to the ghost
- * @param {Object} param.selectedTargets targets that are selected and for whom ghosts will be created
+ * @param {Array<{ textContent: String, targetEl: HTMLElement }>} param.selectedTargets targets that are selected
+ * and for whom ghosts will be created
  * @param {HTMLElement} param.selectedTargets.targetEl element itself
  * @param {String} param.selectedTargets.textContent Text content to display in each ghost
- * @returns {CreateGhostResponse}
+ * @returns {CreateDragGhostsReturnType}
  */
-export const createDragGhost = ({
+export const createDragGhosts = ({
     dragStartEvent,
     badgeCount = null,
     selectedTargets
@@ -155,7 +177,7 @@ export const createDragGhost = ({
 
     // separate the first target and use it to create the badge
     const [firstTarget, ...otherTargets] = selectedTargets;
-    const { ghost: firstGhost, badge } = createGhostContainer({
+    const { ghost: firstGhost, badge } = createGhostElement({
         addShadow: true,
         textContent: firstTarget.textContent,
         badgeCount,
@@ -163,11 +185,12 @@ export const createDragGhost = ({
     });
     
     const ghosts = otherTargets.map(({ textContent, targetEl }, index) => {
-        const { ghost } = createGhostContainer({
+        const { ghost } = createGhostElement({
             textContent,
             target: targetEl,
             // eslint-disable-next-line no-magic-numbers
-            addShadow: index < 3
+            // Don't add shadows when there are more than 2 elements to ghost, since it makes the shadow too dark
+            addShadow: index < 2
         });
         return { ghost, targetEl };
     });
@@ -179,15 +202,18 @@ export const createDragGhost = ({
     allGhosts.reverse().forEach(({ ghost }) => {
         document.body.appendChild(ghost);
     });
+
+    const ghostElements = allGhosts.map(({ ghost }) => ghost);
     
-    const updatePosition = createGhostPositionUpdateHandler(allGhosts.map(({ ghost }) => ghost));
+    const updatePosition = createGhostPositionUpdateHandler(ghostElements);
 
     document.addEventListener('drag', updatePosition);
 
-    const removeGhost = () => {
+    const removeGhosts = () => {
         allGhosts.forEach(({ ghost, targetEl }) => {
             const { x, y, width } = targetEl.getBoundingClientRect();
             if (badge) {
+                // animate the disappeareance of the badge first
                 gsap.to(badge, {
                     autoAlpha: 0,
                     duration: 0.05,
@@ -211,5 +237,5 @@ export const createDragGhost = ({
         });
     };
     
-    return { removeGhost };
+    return { ghosts: ghostElements, removeGhosts };
 };

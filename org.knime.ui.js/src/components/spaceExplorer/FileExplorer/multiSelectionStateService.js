@@ -242,10 +242,14 @@ export const click = (clickedItem) => {
  * sliced taking into account the anchorExceptions provided in the state. This means
  * that the output selection ranges will be normalized to not include the anchor exceptions
  *
+ * e.g: Given a state with ranges: [(1-5), (7-10)], and anchorExceptions: [2, 8]
+ *     The output for this example should be these ranges: [(1-1), (3-5), (7-7), (9-10)]. Since these ranges do not
+ *     include items 2 and 8
+ *
  * @param {MultiSelectionState} state
  * @returns {Array<SelectionRange>}
  */
-const sliceOnException = (state) => {
+const sliceOnExceptions = (state) => {
     const { anchorExceptions, selectionRanges } = state;
   
     const rawOutput = anchorExceptions.reduce((ranges, exception) => {
@@ -259,13 +263,16 @@ const sliceOnException = (state) => {
             const { from, to } = rangeContainingException;
   
             const newRanges = ranges.reduce((acc, range) => {
-                if (range.from === from && range.to === to) {
+                const isRangeWithException = range.from === from && range.to === to;
+                if (isRangeWithException) {
                     const isExceptionFrom = exception === from;
                     const isExceptionTo = exception === to;
   
                     // if the exception is at the beginning of the range
                     // then we have to adjust the "from" and "to" values
-                    // to be that of the exception. Otherwise take the values
+                    // to be that of the exception. This will create a range of a single item,
+                    // which will be the exception itself.
+                    // Otherwise, if it's not at the beginning of the range, take the values
                     // from the start of the range until 1 unit before the exception
                     const headRangeSlice = {
                         from: isExceptionFrom ? exception : from,
@@ -274,7 +281,9 @@ const sliceOnException = (state) => {
   
                     // if the exception is at the end of the range
                     // then we have to adjust the "from" and "to" values
-                    // to be that of the exception. Otherwise take the values
+                    // to be that of the exception. This will create a range of a single item,
+                    // which will be the exception itself
+                    // Otherwise, if it's not at the end of the range, take the values
                     // from 1 unit after the exception until the end of the range
                     const tailRangeSlice = {
                         from: isExceptionTo ? exception : exception + 1,
@@ -319,6 +328,76 @@ const removeSubRanges = (ranges) => ranges.reduce((acc, range, _, arr) => {
   
     return isIncluded ? acc : acc.concat(range);
 }, []);
+
+/**
+ * Removes any ranges that could be overlapping inside the input joining them as required.
+ *
+ * e.g - 1: Given two ranges: (4-7) and (1-6), the latter would be "overlapping" (the left side) of the first one
+ *      The correct output range for this example should be: (1-7)
+ *
+ * e.g - 2: Given two ranges: (1-5) and (4-9), the latter would be "overlapping" (the right side) of the first one
+ *      The correct output range for this example should be: (1-9)
+ *
+ * @param {Array<SelectionRange>} ranges
+ * @returns {Array<SelectionRange>} contiguous ranges without overlap
+ */
+const removeOverlappingRanges = (ranges) => {
+    const overlappingRangeIndexes = [];
+    const updatedRanges = [];
+    for (let currIndex = 0; currIndex < ranges.length; currIndex++) {
+        const currentRange = ranges[currIndex];
+
+        const overlappedLeftIndex = ranges.findIndex((_range, _index) => {
+            const isOverlappedLeft =
+                // _range starts earlier
+                _range.from <= currentRange.from &&
+                // _range ends in-between `currentRange`
+                (_range.to >= currentRange.from && _range.to <= currentRange.to);
+
+            const isSameItem = _index === currIndex;
+
+            return isOverlappedLeft && !isSameItem;
+        });
+        
+        const overlappedRightIndex = ranges.findIndex((_range, _index) => {
+            const isOverlappedRight =
+                // _range starts after
+                _range.from >= currentRange.from &&
+                // `currentRange` ends in-between _range
+                (currentRange.from >= _range.from && currentRange.to <= _range.to);
+            const isSameItem = _index === currIndex;
+
+            return isOverlappedRight && !isSameItem;
+        });
+
+        if (overlappedLeftIndex !== -1) {
+            overlappingRangeIndexes.push(overlappedLeftIndex);
+
+            updatedRanges.push({
+                from: ranges[overlappedLeftIndex].from,
+                to: currentRange.to
+            });
+            continue;
+        }
+        
+        if (overlappedRightIndex !== -1) {
+            overlappingRangeIndexes.push(overlappedRightIndex);
+
+            updatedRanges.push({
+                from: currentRange.from,
+                to: ranges[overlappedRightIndex].to
+            });
+            continue;
+        }
+
+        if (!overlappingRangeIndexes.includes(currIndex)) {
+            updatedRanges.push(currentRange);
+            continue;
+        }
+    }
+
+    return updatedRanges;
+};
   
 /**
  *
@@ -326,9 +405,10 @@ const removeSubRanges = (ranges) => ranges.reduce((acc, range, _, arr) => {
  * @returns {Array<SelectionRange>}
  */
 export const normalizeRanges = (state) => {
-    const slicedByExceptions = sliceOnException(state);
+    const slicedByExceptions = sliceOnExceptions(state);
     const withoutSubRanges = removeSubRanges(slicedByExceptions);
-    return withoutSubRanges;
+    const withoutOverlap = removeOverlappingRanges(withoutSubRanges);
+    return withoutOverlap;
 };
 
 /**
