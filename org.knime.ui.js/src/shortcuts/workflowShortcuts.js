@@ -102,7 +102,6 @@ export default {
             
             return (
                 singleSelectedNode !== null &&
-                !singleSelectedNode.link &&
                 $store.getters['workflow/isWritable']
             );
         }

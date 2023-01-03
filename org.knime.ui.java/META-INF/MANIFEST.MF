@@ -40,7 +40,8 @@ Require-Bundle: com.github.briandilley.jsonrpc4j;bundle-version="[1.5.2,2.0.0)",
  com.equo.comm.api;bundle-version="[2.0.0,3.0.0)",
  com.equo.comm.chromium.service.provider;bundle-version="[1.0.0,2.0.0)",
  org.knime.js.cef;bundle-version="[4.7.0,5.0.0)",
- org.knime.workbench.ui;bundle-version="[4.7.0,5.0.0)"
+ org.knime.workbench.ui;bundle-version="[4.7.0,5.0.0)",
+ org.knime.product;bundle-version="[4.7.0,5.0.0)"
 Bundle-Vendor: KNIME AG, Zurich, Switzerland
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: org.knime.ui.java

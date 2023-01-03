@@ -3,6 +3,8 @@ import Vuex from 'vuex';
 import { shallowMount, createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
+import * as selectionStore from '@/store/selection';
+
 import NodeLabel from '../NodeLabel.vue';
 import NodeLabelText from '../NodeLabelText.vue';
 import NodeLabelEditor from '../NodeLabelEditor.vue';
@@ -13,7 +15,12 @@ describe('NodeLabel', () => {
         nodePosition: { x: 15, y: 13 },
         kind: 'metanode',
         value: 'Test label',
-        editable: true
+        annotation: {
+            text: 'Test label',
+            textAlign: 'center',
+            backgroundColor: 'rgb(255, 216, 0)',
+            styleRanges: [{ fontSize: 22, color: '#000000' }]
+        }
     };
 
     beforeAll(() => {
@@ -46,7 +53,8 @@ describe('NodeLabel', () => {
                         closeLabelEditor: jest.fn(),
                         renameNodeLabel: jest.fn()
                     }
-                }
+                },
+                selection: selectionStore
             };
 
             const $store = mockVuexStore(storeConfig);
@@ -64,8 +72,8 @@ describe('NodeLabel', () => {
                 expect.objectContaining({
                     value: defaultProps.value,
                     kind: defaultProps.kind,
-                    editable: defaultProps.editable,
-                    nodeId: defaultProps.nodeId
+                    nodeId: defaultProps.nodeId,
+                    annotation: defaultProps.annotation
                 })
             );
         });
@@ -96,7 +104,8 @@ describe('NodeLabel', () => {
                         closeLabelEditor: jest.fn(),
                         renameNodeLabel: jest.fn()
                     }
-                }
+                },
+                selection: selectionStore
             };
 
             $store = mockVuexStore(storeConfig);
@@ -117,7 +126,7 @@ describe('NodeLabel', () => {
             expect(wrapper.findComponent(NodeLabelEditor).props()).toEqual(
                 expect.objectContaining({
                     nodeId: defaultProps.nodeId,
-                    value: defaultProps.value,
+                    value: defaultProps.annotation.text,
                     kind: defaultProps.kind,
                     nodePosition: defaultProps.nodePosition
                 })

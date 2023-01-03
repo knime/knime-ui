@@ -4,7 +4,7 @@ import { APP_ROUTES } from '@/router';
 
 export default ({ store: $store, router: $router }) => {
     registerEventHandlers({
-        /*
+        /**
          * Is triggered by the backend, whenever a change to the workflow has been made/requested
          * Sends a list of json-patch operations to update the frontend's state
          */
@@ -21,7 +21,7 @@ export default ({ store: $store, router: $router }) => {
             }
         },
         
-        /*
+        /**
          * Is triggered by the backend, whenever the application state changes
          * sends the new state
          */
@@ -49,6 +49,15 @@ export default ({ store: $store, router: $router }) => {
             }
 
             $store.dispatch('application/replaceApplicationState', appState);
+        },
+
+        /** 
+         * Is triggered by the backend, whenever there are AP updates available
+         */
+        UpdateAvailableEvent({ newReleases, bugfixes }) {
+            // TODO: Actually do something here...
+            consola.warn("AP release updates available: ", newReleases);
+            consola.warn("AP bugfix updates available: ", bugfixes);
         }
     });
 };

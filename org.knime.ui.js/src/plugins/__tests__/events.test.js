@@ -43,7 +43,8 @@ describe('Event Plugin', () => {
         loadPlugin();
         expect(Object.keys(registeredHandlers)).toStrictEqual([
             'WorkflowChangedEvent',
-            'AppStateChangedEvent'
+            'AppStateChangedEvent',
+            'UpdateAvailableEvent'
         ]);
     });
 
