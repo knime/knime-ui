@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -40,6 +40,7 @@ import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
+import org.knime.gateway.impl.webui.SpaceProvider;
 import org.knime.gateway.impl.webui.SpaceProviders;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
@@ -47,9 +48,6 @@ import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
-import org.knime.ui.java.util.DefaultServicesUtil;
-import org.knime.ui.java.util.EclipseUIStateUtil;
-import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
@@ -65,6 +63,9 @@ import org.knime.ui.java.browser.function.OpenWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.OpenWorkflowCoachPreferencePageBrowserFunction;
 import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
+import org.knime.ui.java.util.DefaultServicesUtil;
+import org.knime.ui.java.util.EclipseUIStateUtil;
+import org.knime.ui.java.util.LocalSpaceUtil;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
@@ -157,7 +158,11 @@ public class KnimeBrowserView {
 
     private static SpaceProviders createSpaceProviders() {
         var localWorkspaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider();
-        return () -> Collections.singletonList(localWorkspaceProvider);
+        var spaceProvidersFromExtensionPoint = SpaceProvidersExtension.getSpaceProvidersFromExtensionPoint();
+        var res = new LinkedHashMap<String, SpaceProvider>();
+        res.put(localWorkspaceProvider.getId(), localWorkspaceProvider);
+        spaceProvidersFromExtensionPoint.forEach(sp -> res.putAll(sp.getProvidersMap()));
+        return () -> res;
     }
 
     /**
