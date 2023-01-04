@@ -123,8 +123,8 @@ public final class EclipseUIStateUtil {
         List<UpdateInfo> newReleases = new ArrayList<>();
         List<String> bugfixes = new ArrayList<>();
         try {
-            UpdateDetector.checkForNewRelease().forEach(info -> newReleases.add(info));
-            UpdateDetector.checkForBugfixes().forEach(name -> bugfixes.add(name));
+            UpdateDetector.checkForNewRelease().forEach(newReleases::add);
+            UpdateDetector.checkForBugfixes().forEach(bugfixes::add);
         } catch (IOException | URISyntaxException e) {
             LOGGER.error("Could not check for updates", e);
         }
