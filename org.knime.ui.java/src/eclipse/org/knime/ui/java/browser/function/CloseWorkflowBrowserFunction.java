@@ -97,8 +97,9 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
         // TODO NXT-1386
         if (!PerspectiveUtil.isClassicPerspectiveLoaded() && WorkflowProjectManager.getInstance()
             .getCachedWorkflow(projectIdToClose).map(WorkflowManager::isDirty).orElse(false)) {
-            MessageDialog.openWarning(SWTUtilities.getActiveShell(), "Unsaved changes",
-                "Workflow can't be closed because there are unsaved changes. Please save the workflow first.");
+            MessageDialog.openInformation(SWTUtilities.getActiveShell(), "Unsaved changes",
+                "Workflow can't be closed because there are unsaved changes. Please save the workflow first."
+                    + "\n(Open ticket to ask to save the workflow: NXT-1386)");
         }
 
         Optional<String> nextProjectId = requireAtIndex(arguments, 1, String.class);
