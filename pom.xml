@@ -93,6 +93,11 @@
             <url>${knime.cef.p2}</url>
             <layout>p2</layout>
         </repository>
+        <repository>
+            <id>p2-knime-product</id>
+            <url>${knime.product.p2}</url>
+            <layout>p2</layout>
+        </repository>
     </repositories>
 
 	<build>
