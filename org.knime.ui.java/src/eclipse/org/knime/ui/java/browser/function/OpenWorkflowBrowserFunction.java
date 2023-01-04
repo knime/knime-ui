@@ -46,7 +46,7 @@
  */
 package org.knime.ui.java.browser.function;
 
-import static org.knime.ui.java.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
+import static org.knime.ui.java.util.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
 import static org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction.showWarningAndLogError;
 
 import java.lang.reflect.InvocationTargetException;
@@ -71,8 +71,8 @@ import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.LocalWorkspace;
 import org.knime.gateway.impl.webui.service.DefaultSpaceService;
-import org.knime.ui.java.LocalSpaceUtil;
-import org.knime.ui.java.PerspectiveUtil;
+import org.knime.ui.java.util.LocalSpaceUtil;
+import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.editor2.WorkflowEditor;
 import org.knime.workbench.explorer.filesystem.ExplorerFileSystem;

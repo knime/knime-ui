@@ -58,8 +58,8 @@ import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.AppStateProvider;
-import org.knime.ui.java.EclipseUIStateUtil;
-import org.knime.ui.java.PerspectiveUtil;
+import org.knime.ui.java.util.EclipseUIStateUtil;
+import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 import com.equo.chromium.swt.Browser;

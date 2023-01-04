@@ -44,7 +44,7 @@
  * ---------------------------------------------------------------------
  *
  */
-package org.knime.ui.java;
+package org.knime.ui.java.util;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.knime.gateway.api.webui.entity.AppStateEnt;

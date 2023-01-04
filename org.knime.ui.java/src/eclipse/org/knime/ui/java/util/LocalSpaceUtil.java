@@ -44,7 +44,7 @@
  * ---------------------------------------------------------------------
  *
  */
-package org.knime.ui.java;
+package org.knime.ui.java.util;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -110,14 +110,14 @@ public final class LocalSpaceUtil {
 
     /**
      * Obtain the {@link org.knime.gateway.impl.project.WorkflowProject.Origin} of a workflow on the local file system
-     * 
+     *
      * @param wfm The workflow manager to get the origin of.
      * @return The {@link org.knime.gateway.impl.project.WorkflowProject.Origin} of the workflow, or an empty optional
      *         if the given workflow is not local.
      */
     public static Optional<WorkflowProject.Origin> getLocalOrigin(final WorkflowManager wfm) {
         var ctx = wfm.getContextV2();
-        var isLocal = WorkflowContextV2.LocationType.LOCAL.equals(ctx.getLocationType());
+        var isLocal = ctx.getLocationType() == WorkflowContextV2.LocationType.LOCAL;
         if (!isLocal) {
             // Only support workflows in the local space for the time being.
             return Optional.empty();
@@ -144,7 +144,7 @@ public final class LocalSpaceUtil {
     /**
      * Obtain the {@link org.knime.gateway.impl.project.WorkflowProject.Origin} of a workflow project on the local file
      * system
-     * 
+     *
      * @param path The path of the workflow project
      * @return The {@link org.knime.gateway.impl.project.WorkflowProject.Origin} of the workflow project.
      */

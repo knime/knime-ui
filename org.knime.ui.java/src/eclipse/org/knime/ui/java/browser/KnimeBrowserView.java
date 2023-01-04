@@ -1,6 +1,6 @@
 package org.knime.ui.java.browser;
 
-import static org.knime.ui.java.PerspectiveUtil.BROWSER_VIEW_PART_ID;
+import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -47,9 +47,9 @@ import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
-import org.knime.ui.java.DefaultServicesUtil;
-import org.knime.ui.java.EclipseUIStateUtil;
-import org.knime.ui.java.LocalSpaceUtil;
+import org.knime.ui.java.util.DefaultServicesUtil;
+import org.knime.ui.java.util.EclipseUIStateUtil;
+import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;

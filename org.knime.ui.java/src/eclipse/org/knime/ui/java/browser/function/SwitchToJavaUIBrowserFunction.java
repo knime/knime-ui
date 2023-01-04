@@ -62,7 +62,7 @@ import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.ui.java.PerspectiveSwitchAddon;
-import org.knime.ui.java.PerspectiveUtil;
+import org.knime.ui.java.util.PerspectiveUtil;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
