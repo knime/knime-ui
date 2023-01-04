@@ -111,7 +111,7 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
         var spaceId = (String)arguments[0];
         var itemId = (String)arguments[1];
 
-        var space = DefaultSpaceService.getInstance().getSpace(spaceId);
+        var space = DefaultSpaceService.getInstance().getSpace(spaceId, LocalWorkspace.LOCAL_WORKSPACE_AND_PROVIDER_ID);
         var localAbsolutePath = space.toLocalAbsolutePath(itemId);
         if (space instanceof LocalWorkspace) {
             if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
