@@ -48,6 +48,7 @@ import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
 import org.knime.ui.java.DefaultServicesUtil;
+import org.knime.ui.java.EclipseUIStateUtil;
 import org.knime.ui.java.LocalSpaceUtil;
 import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;

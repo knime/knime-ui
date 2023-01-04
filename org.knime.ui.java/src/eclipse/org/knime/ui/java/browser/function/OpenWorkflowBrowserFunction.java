@@ -53,6 +53,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.ui.PartInitException;
@@ -69,6 +71,7 @@ import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.LocalWorkspace;
 import org.knime.gateway.impl.webui.service.DefaultSpaceService;
+import org.knime.ui.java.LocalSpaceUtil;
 import org.knime.ui.java.PerspectiveUtil;
 import org.knime.workbench.editor2.LoadWorkflowRunnable;
 import org.knime.workbench.editor2.WorkflowEditor;
@@ -116,7 +119,8 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
                 openWorkflowInClassicAndWebUIPerspective(localWorkspaceRoot.relativize(localAbsolutePath),
                     m_appStateProvider);
             } else {
-                openWorkflowInWebUIPerspectiveOnly(localAbsolutePath, m_appStateProvider);
+                var onWorkflowLoaded = getWorkflowLoadedCallback(m_appStateProvider, spaceId, itemId);
+                openWorkflowInWebUIPerspectiveOnly(localAbsolutePath, onWorkflowLoaded);
             }
         } else {
             throw new UnsupportedOperationException(
@@ -127,14 +131,14 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
     }
 
     private static void openWorkflowInWebUIPerspectiveOnly(final Path absoluteLocalPath,
-        final AppStateProvider appStateProvider) {
+        final Consumer<WorkflowManager> onWorkflowLoaded) {
         var workflowContext = WorkflowContextV2.builder()
             .withAnalyticsPlatformExecutor(builder -> builder.withCurrentUserAsUserId() //
                 .withLocalWorkflowPath(absoluteLocalPath)) //
             .withLocation(LocalLocationInfo.getInstance(null)) //
             .build();
         final var progressService = PlatformUI.getWorkbench().getProgressService();
-        var loadWorkflowRunnable = new LoadWorkflowRunnable(wfm -> onWorkflowLoaded(wfm, appStateProvider),
+        var loadWorkflowRunnable = new LoadWorkflowRunnable(onWorkflowLoaded,
             absoluteLocalPath.resolve(WorkflowPersistor.WORKFLOW_FILE).toFile(), workflowContext);
         try {
             progressService.busyCursorWhile(loadWorkflowRunnable);
@@ -147,11 +151,27 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
         }
     }
 
-    private static void onWorkflowLoaded(final WorkflowManager wfm, final AppStateProvider appStateProvider) {
-        var wpm = WorkflowProjectManager.getInstance();
-        var projectId = wfm.getNameWithID();
-        wpm.addWorkflowProject(projectId, new WorkflowProject() {
+    private static Consumer<WorkflowManager> getWorkflowLoadedCallback(final AppStateProvider appStateProvider,
+        final String spaceId, final String itemId) {
+        return wfm -> {
+            var wpm = WorkflowProjectManager.getInstance();
+            var wfProj = createWorkflowProject(wfm, //
+                LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID, // TODO: parameterize w/ value provided by frontend
+                spaceId, //
+                itemId //
+            );
+            var projectId = wfm.getNameWithID();
+            wpm.addWorkflowProject(projectId, wfProj);
+            wpm.openAndCacheWorkflow(projectId);
+            wpm.setWorkflowProjectActive(projectId);
+            appStateProvider.updateAppState();
+        };
+    }
 
+    private static WorkflowProject createWorkflowProject(final WorkflowManager wfm, final String providerId,
+        final String spaceId, final String itemId) {
+        var projectId = wfm.getNameWithID();
+        return new WorkflowProject() {
             @Override
             public WorkflowManager openProject() {
                 return wfm;
@@ -166,10 +186,27 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
             public String getID() {
                 return projectId;
             }
-        });
-        wpm.openAndCacheWorkflow(projectId);
-        wpm.setWorkflowProjectActive(projectId);
-        appStateProvider.updateAppState();
+
+            @Override
+            public Optional<Origin> getOrigin() {
+                return Optional.of(new Origin() {
+                    @Override
+                    public String getProviderId() {
+                        return providerId;
+                    }
+
+                    @Override
+                    public String getSpaceId() {
+                        return spaceId;
+                    }
+
+                    @Override
+                    public String getItemId() {
+                        return itemId;
+                    }
+                });
+            }
+        };
     }
 
     private static void openWorkflowInClassicAndWebUIPerspective(final Path relativePath,

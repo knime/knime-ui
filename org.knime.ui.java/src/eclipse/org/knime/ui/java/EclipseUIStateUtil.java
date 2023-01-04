@@ -92,7 +92,6 @@ import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState.OpenedWorkflow;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.product.rcp.intro.UpdateDetector;
-import org.knime.gateway.impl.webui.LocalWorkspace;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 /**
@@ -288,37 +287,11 @@ public final class EclipseUIStateUtil {
 
                 @Override
                 public Optional<Origin> getOrigin() {
-                    return EclipseUIStateUtil.getLocalOrigin(wfm);
+                    return LocalSpaceUtil.getLocalOrigin(wfm);
                 }
             };
         }
         return null;
-    }
-
-    private static Optional<WorkflowProject.Origin> getLocalOrigin(final WorkflowManager wfm) {
-        var ctx = wfm.getContextV2();
-        var isLocal = WorkflowContextV2.LocationType.LOCAL.equals(ctx.getLocationType());
-        if (!isLocal) {
-            // Only support workflows in the local space for the time being.
-            return Optional.empty();
-        }
-        return Optional.of(new WorkflowProject.Origin() {
-            @Override
-            public String getProviderId() {
-                return LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID;
-            }
-
-            @Override
-            public String getSpaceId() {
-                return LocalWorkspace.LOCAL_WORKSPACE_SPACE_ID;
-            }
-
-            @Override
-            public String getItemId() {
-                var path = ctx.getExecutorInfo().getLocalWorkflowPath();
-                return LocalSpaceUtil.getLocalWorkspace().getItemIdFunction().apply(path);
-            }
-        });
     }
 
     private static Optional<WorkflowManager> getProjectManager(final WorkflowManager wfm) {

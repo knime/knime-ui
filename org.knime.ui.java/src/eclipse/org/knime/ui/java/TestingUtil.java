@@ -49,6 +49,7 @@ package org.knime.ui.java;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -113,11 +114,16 @@ public final class TestingUtil {
             public String getID() {
                 return workflow.getProjectId();
             }
+
+            @Override
+            public Optional<Origin> getOrigin() {
+                return Optional.of(LocalSpaceUtil.getLocalOrigin(getProjectFile(workflow).toPath()));
+            }
         });
     }
 
     private static WorkflowManager loadWorkflowForTesting(final AppState.OpenedWorkflow workflow) {
-        var file = new File(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile(), workflow.getProjectId());
+        var file = getProjectFile(workflow);
         try {
             WorkflowManager wfm = EclipseUIStateUtil.loadTempWorkflow(file);
             if (loadedWorkflowsForTesting == null) {
@@ -145,6 +151,10 @@ public final class TestingUtil {
             }
             loadedWorkflowsForTesting.clear();
         }
+    }
+
+    private static File getProjectFile(final AppState.OpenedWorkflow workflow) {
+        return new File(ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile(), workflow.getProjectId());
     }
 
     private TestingUtil() {
