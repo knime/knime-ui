@@ -194,10 +194,12 @@ public class KnimeBrowserView {
 
         PerspectiveSwitchAddon.updateChromiumExternalMessagePumpSystemProperty();
 
+        // In order for the mechanism to block external requests to work (see CEFPlugin-class)
+        // the resource handlers must be registered before the browser initialization
+        initializeResourceHandlers();
         m_browser = new Browser(parent, SWT.NONE);
         m_browser.addLocationListener(new KnimeBrowserLocationListener(this));
         m_browser.setMenu(new Menu(m_browser.getShell()));
-        initializeResourceHandlers();
 
         if (viewInitializer == null) {
             activateViewInitializer(AppStateDerivedFromWorkflowProjectManager::new);
