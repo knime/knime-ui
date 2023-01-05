@@ -39,39 +39,50 @@ describe('SpaceExplorer.vue', () => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
     });
+
+    const createStore = ({ openProjects = [] } = {}) => mockVuexStore({
+        spaceExplorer: spaceExplorerStore,
+        application: {
+            state: {
+                openProjects
+            }
+        }
+    });
     
     const doMount = async ({
         awaitLoad = true,
         mockResponse = fetchWorkflowGroupContentResponse,
-        mockGetSpaceItems = null
+        mockGetSpaceItems = null,
+        openProjects = []
     } = {}) => {
         if (mockGetSpaceItems) {
             fetchWorkflowGroupContent.mockImplementation(mockGetSpaceItems);
         } else {
             fetchWorkflowGroupContent.mockResolvedValue(mockResponse);
         }
-
-        const store = mockVuexStore({
-            spaceExplorer: spaceExplorerStore
-        });
+        
+        const store = createStore({ openProjects });
+        const mockRouter = { push: () => {} };
 
         const wrapper = mount(SpaceExplorer, {
             stubs: { NuxtLink: true },
-            mocks: { $store: store }
+            mocks: { $store: store, $router: mockRouter }
         });
 
         if (awaitLoad) {
             await new Promise(r => setTimeout(r, 0));
         }
 
-        return { wrapper, store };
+        return { wrapper, store, mockRouter };
     };
 
     it('should load root directory data on created', async () => {
         const { wrapper } = await doMount();
-        
+
         expect(wrapper.findComponent(FileExplorer).exists()).toBe(true);
-        expect(wrapper.findComponent(FileExplorer).props('items')).toBe(fetchWorkflowGroupContentResponse.items);
+        expect(wrapper.findComponent(FileExplorer).props('items')).toEqual(
+            fetchWorkflowGroupContentResponse.items.map(item => ({ ...item, displayOpenIndicator: false }))
+        );
         expect(wrapper.findComponent(FileExplorer).props('isRootFolder')).toBe(true);
     });
 
@@ -130,6 +141,27 @@ describe('SpaceExplorer.vue', () => {
         expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({ spaceId: 'local', itemId: 'parentId' });
     });
 
+    it('should set the openIndicator for open workflows', async () => {
+        const openProjects = [
+            { origin: { spaceId: 'local', itemId: fetchWorkflowGroupContentResponse.items[2].id } }
+        ];
+        const { wrapper } = await doMount({ openProjects });
+        expect(wrapper.findComponent(FileExplorer).props('items')[2]).toEqual(
+            expect.objectContaining({ displayOpenIndicator: true })
+        );
+    });
+
+    it('should open workflows', async () => {
+        const { wrapper, store, mockRouter } = await doMount();
+        const dispatchSpy = jest.spyOn(store, 'dispatch');
+        wrapper.findComponent(FileExplorer).vm.$emit('open-file', { id: 'dummy' });
+        
+        expect(dispatchSpy).toHaveBeenCalledWith('spaceExplorer/openWorkflow', {
+            workflowItemId: 'dummy',
+            $router: mockRouter
+        });
+    });
+
     it('should display the loader only after a specific timeout', async () => {
         fetchWorkflowGroupContent.mockImplementation(() => new Promise(resolve => {
             setTimeout(() => {
@@ -139,9 +171,7 @@ describe('SpaceExplorer.vue', () => {
 
         jest.useFakeTimers();
 
-        const store = mockVuexStore({
-            spaceExplorer: spaceExplorerStore
-        });
+        const store = createStore();
 
         const wrapper = mount(SpaceExplorer, {
             stubs: { NuxtLink: true },
