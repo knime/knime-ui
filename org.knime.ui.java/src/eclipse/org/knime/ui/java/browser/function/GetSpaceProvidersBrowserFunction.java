@@ -48,7 +48,6 @@
  */
 package org.knime.ui.java.browser.function;
 
-import org.knime.gateway.impl.webui.LocalWorkspace;
 import org.knime.gateway.impl.webui.SpaceProviders;
 
 import com.equo.chromium.swt.Browser;
@@ -83,7 +82,7 @@ public class GetSpaceProvidersBrowserFunction extends BrowserFunction {
     public Object function(final Object[] arguments) {
         var res = MAPPER.createObjectNode();
         for (var sp : m_spaceProviders.getProvidersMap().values()) {
-            var isLocalSpaceProvider = sp.getId().equals(LocalWorkspace.LOCAL_WORKSPACE_AND_PROVIDER_ID);
+            var isLocalSpaceProvider = sp.isLocal();
             var connectionMode = isLocalSpaceProvider ? "AUTOMATIC" : "AUTHENTICATED";
             res.set(sp.getId(), MAPPER.createObjectNode().put("id", sp.getId()) //
                 .put("name", sp.getName()) //
