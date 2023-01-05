@@ -48,7 +48,7 @@ package org.knime.ui.java.util;
 
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -102,8 +102,18 @@ public final class LocalSpaceUtil {
             }
 
             @Override
-            public List<Space> getSpaces() {
-                return Collections.singletonList(localSpace);
+            public Map<String, Space> getSpaceMap() {
+                return Collections.singletonMap(localSpace.getId(), localSpace);
+            }
+
+            @Override
+            public boolean isLocal() {
+                return true;
+            }
+
+            @Override
+            public String getName() {
+                return "Local space";
             }
         };
     }
@@ -130,7 +140,7 @@ public final class LocalSpaceUtil {
 
             @Override
             public String getSpaceId() {
-                return LocalWorkspace.LOCAL_WORKSPACE_SPACE_ID;
+                return LocalWorkspace.LOCAL_WORKSPACE_ID;
             }
 
             @Override
@@ -157,7 +167,7 @@ public final class LocalSpaceUtil {
 
             @Override
             public String getSpaceId() {
-                return LocalWorkspace.LOCAL_WORKSPACE_SPACE_ID;
+                return LocalWorkspace.LOCAL_WORKSPACE_ID;
             }
 
             @Override
