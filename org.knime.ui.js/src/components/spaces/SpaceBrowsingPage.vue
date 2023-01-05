@@ -1,7 +1,7 @@
 <script>
 import PageHeader from '@/components/common/PageHeader.vue';
-import SpaceExplorer from '@/components/spaceExplorer/SpaceExplorer.vue';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
+import SpaceExplorer from './SpaceExplorer.vue';
 
 export default {
     components: {

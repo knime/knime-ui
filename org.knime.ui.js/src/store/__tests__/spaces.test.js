@@ -31,7 +31,7 @@ const fetchWorkflowGroupContentResponse = {
     ]
 };
 
-describe('spaceExplorer store', () => {
+describe('spaces store', () => {
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);

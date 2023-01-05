@@ -1,9 +1,9 @@
 <script>
 import { mapState } from 'vuex';
 import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
+import Button from 'webapps-common/ui/components/Button.vue';
 
 import { APP_ROUTES } from '@/router';
-import Button from 'webapps-common/ui/components/Button.vue';
 import GridOutbreaker from '@/components/common/GridOutbreaker.vue';
 import Avatar from '@/components/common/Avatar.vue';
 
