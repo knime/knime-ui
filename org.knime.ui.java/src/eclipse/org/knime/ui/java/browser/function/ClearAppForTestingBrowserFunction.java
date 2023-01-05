@@ -48,7 +48,7 @@
  */
 package org.knime.ui.java.browser.function;
 
-import org.knime.ui.java.TestingUtil;
+import org.knime.ui.java.util.TestingUtil;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;

@@ -6,7 +6,6 @@ import DataIcon from 'webapps-common/ui/assets/img/icons/file-text.svg';
 import MetaNodeIcon from 'webapps-common/ui/assets/img/icons/workflow-node-stack.svg';
 import MenuOptionsIcon from 'webapps-common/ui/assets/img/icons/menu-options.svg';
 import ArrowIcon from 'webapps-common/ui/assets/img/icons/arrow-back.svg';
-import { openWorkflow } from '@/api';
 
 const ITEM_TYPES = {
     WorkflowGroup: 'WorkflowGroup',
@@ -56,7 +55,7 @@ export default {
             return item.type === ITEM_TYPES.WorkflowGroup;
         },
 
-        canOpenWorkflow(item) {
+        canOpenFile(item) {
             return item.type === ITEM_TYPES.Workflow;
         },
 
@@ -79,8 +78,11 @@ export default {
         onDoubleClickOnItem(item) {
             if (this.canEnterDirectory(item)) {
                 this.changeDirectory(item.id);
-            } else if (this.canOpenWorkflow(item)) {
-                openWorkflow(item.id);
+                return;
+            }
+          
+            if (this.canOpenFile(item)) {
+                this.$emit('open-file', item);
             }
         }
     }
@@ -126,6 +128,10 @@ export default {
         @dblclick="onDoubleClickOnItem(item)"
       >
         <td class="item-icon">
+          <span
+            v-if="item.displayOpenIndicator"
+            class="open-indicator"
+          />
           <Component :is="getTypeIcon(item)" />
         </td>
           
@@ -232,6 +238,18 @@ tbody.mini {
   & .item-icon {
     padding: var(--item-padding);
     width: 60px;
+    position: relative;
+
+    & .open-indicator {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: var(--knime-dove-gray);
+      border: 1px solid var(--knime-gray-ultra-light);
+      border-radius: 50%;
+      bottom: 4px;
+      right: 4px;
+    }
   }
 
   & .item-option {

@@ -1,6 +1,6 @@
 package org.knime.ui.java.browser;
 
-import static org.knime.ui.java.PerspectiveUtil.BROWSER_VIEW_PART_ID;
+import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -22,7 +22,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.contexts.Active;
@@ -41,8 +40,6 @@ import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
-import org.knime.gateway.impl.webui.LocalWorkspace;
-import org.knime.gateway.impl.webui.SpaceProvider;
 import org.knime.gateway.impl.webui.SpaceProviders;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.jsonrpc.DefaultJsonRpcRequestHandler;
@@ -50,8 +47,9 @@ import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
-import org.knime.ui.java.DefaultServicesUtil;
-import org.knime.ui.java.EclipseUIStateUtil;
+import org.knime.ui.java.util.DefaultServicesUtil;
+import org.knime.ui.java.util.EclipseUIStateUtil;
+import org.knime.ui.java.util.LocalSpaceUtil;
 import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
@@ -158,14 +156,8 @@ public class KnimeBrowserView {
     }
 
     private static SpaceProviders createSpaceProviders() {
-        var localWorkspaceProvider = createLocalWorkspaceProvider();
+        var localWorkspaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider();
         return () -> Collections.singletonList(localWorkspaceProvider);
-    }
-
-    private static SpaceProvider createLocalWorkspaceProvider() {
-        var localWorkspaceRootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
-        var localWorkspace = new LocalWorkspace(localWorkspaceRootPath);
-        return () -> Collections.singletonList(localWorkspace);
     }
 
     /**

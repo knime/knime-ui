@@ -4,9 +4,12 @@ import {
     fetchAllSpaceProviders,
     connectSpaceProvider,
     disconnectSpaceProvider,
-    fetchWorkflowGroupContent
+    fetchWorkflowGroupContent,
+    openWorkflow
 // eslint-disable-next-line object-curly-newline
 } from '@api';
+
+import { APP_ROUTES } from '@/router';
 
 export const state = () => ({
     activeSpaceProvider: null,
@@ -129,6 +132,24 @@ export const actions = {
             : pathId;
 
         return dispatch('fetchWorkflowGroupContent', { itemId: nextWorkflowGroupId, spaceId });
+    },
+
+    openWorkflow({ rootState, state, dispatch }, { workflowItemId, $router }) {
+        const { spaceId } = state.activeSpace;
+        const { openProjects } = rootState.application;
+        const foundOpenProject = openProjects.find(
+            project => project.origin.spaceId === spaceId && project.origin.itemId === workflowItemId
+        );
+
+        if (foundOpenProject) {
+            $router.push({
+                name: APP_ROUTES.WorkflowPage,
+                params: { workflowId: 'root', projectId: foundOpenProject.projectId }
+            });
+            return;
+        }
+
+        openWorkflow({ spaceId, workflowItemId });
     }
 };
 
@@ -147,5 +168,25 @@ export const getters = {
 
         // when we're down to 1 item it means we're 1 level away from the root
         return path.length === 1 ? 'root' : path[path.length - 2].id;
+    },
+
+    openedWorkflowItems({ activeSpace }, _, { application }) {
+        if (!activeSpace) {
+            return [];
+        }
+
+        const { spaceId, activeWorkflowGroup } = activeSpace;
+        const { openProjects } = application;
+        
+        const workflowItemIds = activeWorkflowGroup.items
+            .filter(item => item.type === 'Workflow')
+            .map(item => item.id);
+
+        return openProjects
+            .filter(project => {
+                const { origin } = project;
+                return origin.spaceId === spaceId && workflowItemIds.includes(origin.itemId);
+            })
+            .map(({ origin }) => origin.itemId);
     }
 };

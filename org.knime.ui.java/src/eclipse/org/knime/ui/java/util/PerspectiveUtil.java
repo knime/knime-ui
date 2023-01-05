@@ -44,7 +44,7 @@
  * ---------------------------------------------------------------------
  *
  */
-package org.knime.ui.java;
+package org.knime.ui.java.util;
 
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.MUIElement;
@@ -161,7 +161,7 @@ public final class PerspectiveUtil {
      *
      * @see org.knime.ui.java.browser.function.OpenWorkflowBrowserFunction
      */
-    static void addSharedEditorAreaToWebUIPerspective(final EModelService modelService, final MApplication application) {
+    public static void addSharedEditorAreaToWebUIPerspective(final EModelService modelService, final MApplication application) {
         MPerspective webUIPerspective = getWebUIPerspective(application, modelService);
 
         var hasSharedEditorArea = modelService.find(SHARED_EDITOR_AREA_ID, webUIPerspective) != null;

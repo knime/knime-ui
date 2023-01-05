@@ -51,13 +51,13 @@ export default ({ store: $store, router: $router }) => {
             $store.dispatch('application/replaceApplicationState', appState);
         },
 
-        /** 
+        /**
          * Is triggered by the backend, whenever there are AP updates available
          */
         UpdateAvailableEvent({ newReleases, bugfixes }) {
             // TODO: Actually do something here...
-            consola.warn("AP release updates available: ", newReleases);
-            consola.warn("AP bugfix updates available: ", bugfixes);
+            consola.warn('AP release updates available: ', newReleases);
+            consola.warn('AP bugfix updates available: ', bugfixes);
         }
     });
 };
