@@ -44,38 +44,46 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 7, 2021 (hornm): created
+ *   Jan 1, 2023 (hornm): created
  */
 package org.knime.ui.java.browser.function;
 
-import org.knime.ui.java.util.TestingUtil;
+import org.knime.gateway.impl.webui.SpaceProvider;
+import org.knime.gateway.impl.webui.SpaceProvider.SpaceProviderConnection;
+import org.knime.gateway.impl.webui.SpaceProviders;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
 
 /**
- * Browser function that allows one to programmatically clear the App. I.e.
- * clears the app state and sets the url to 'about:blank'.
+ * Disconnects a space provider from its remote location. Essentially calls {@link SpaceProvider#disconnect()}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class ClearAppForTestingBrowserFunction extends BrowserFunction {
+public class DisconnectSpaceProviderBrowserFunction extends BrowserFunction {
 
-	private static final String FUNCTION_NAME = "clearAppForTesting";
+    private final SpaceProviders m_spaceProviders;
 
     /**
-     * Constructor.
-     *
-     * @param browser the browser to register this function with
+     * @param browser
+     * @param spaceProviders
      */
-    public ClearAppForTestingBrowserFunction(final Browser browser) {
-        super(browser, FUNCTION_NAME);
+    public DisconnectSpaceProviderBrowserFunction(final Browser browser, final SpaceProviders spaceProviders) {
+        super(browser, "disconnectSpaceProvider");
+        m_spaceProviders = spaceProviders;
     }
 
-	@Override
-	public Object function(final Object[] args) { // NOSONAR it's ok that this method always returns null
-		TestingUtil.clearAppForTesting();
-		return null;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object function(final Object[] arguments) {
+        var spaceProviderId = (String)arguments[0];
+        var spaceProvider = m_spaceProviders.getProvidersMap().get(spaceProviderId);
+        if (spaceProvider != null) {
+            spaceProvider.getConnection(false).ifPresent(SpaceProviderConnection::disconnect);
+        }
+        return null;
+    }
 
 }

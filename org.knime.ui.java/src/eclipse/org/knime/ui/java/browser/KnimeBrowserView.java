@@ -1,6 +1,6 @@
 package org.knime.ui.java.browser;
 
-import static org.knime.ui.java.PerspectiveUtil.BROWSER_VIEW_PART_ID;
+import static org.knime.ui.java.util.PerspectiveUtil.BROWSER_VIEW_PART_ID;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -22,7 +22,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.contexts.Active;
@@ -41,7 +40,6 @@ import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
-import org.knime.gateway.impl.webui.LocalWorkspace;
 import org.knime.gateway.impl.webui.SpaceProvider;
 import org.knime.gateway.impl.webui.SpaceProviders;
 import org.knime.gateway.impl.webui.UpdateStateProvider;
@@ -50,12 +48,13 @@ import org.knime.gateway.impl.webui.service.DefaultEventService;
 import org.knime.gateway.json.util.ObjectMapperUtil;
 import org.knime.js.cef.middleware.CEFMiddlewareService;
 import org.knime.js.cef.middleware.CEFMiddlewareService.PageResourceHandler;
-import org.knime.ui.java.DefaultServicesUtil;
-import org.knime.ui.java.EclipseUIStateUtil;
 import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
+import org.knime.ui.java.browser.function.ConnectSpaceProviderBrowserFunction;
 import org.knime.ui.java.browser.function.CreateWorkflowBrowserFunction;
+import org.knime.ui.java.browser.function.DisconnectSpaceProviderBrowserFunction;
+import org.knime.ui.java.browser.function.GetSpaceProvidersBrowserFunction;
 import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.OpenAboutDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenInstallExtensionsDialogBrowserFunction;
@@ -67,6 +66,9 @@ import org.knime.ui.java.browser.function.OpenWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.OpenWorkflowCoachPreferencePageBrowserFunction;
 import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
+import org.knime.ui.java.util.DefaultServicesUtil;
+import org.knime.ui.java.util.EclipseUIStateUtil;
+import org.knime.ui.java.util.LocalSpaceUtil;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
@@ -141,8 +143,9 @@ public class KnimeBrowserView {
         var eventConsumer = createEventConsumer();
         var appStateProvider = new AppStateProvider(appStateSupplier);
         var updateStateProvider = new UpdateStateProvider(EclipseUIStateUtil::checkForUpdate);
-        DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer,
-            createSpaceProviders(), updateStateProvider);
+        var spaceProviders = createSpaceProviders();
+        DefaultServicesUtil.setDefaultServiceDependencies(appStateProvider, eventConsumer, spaceProviders,
+            updateStateProvider);
 
         // Check for updates and notify UI
         try {
@@ -153,19 +156,17 @@ public class KnimeBrowserView {
         updateStateProvider.checkForUpdates();
 
         // Initialize browser functions and set CEF browser URL
-        initBrowserFunctions(appStateProvider);
+        initBrowserFunctions(appStateProvider, spaceProviders);
         setUrl(ignoreEmptyPageAsDevUrl);
     }
 
     private static SpaceProviders createSpaceProviders() {
-        var localWorkspaceProvider = createLocalWorkspaceProvider();
-        return () -> Collections.singletonList(localWorkspaceProvider);
-    }
-
-    private static SpaceProvider createLocalWorkspaceProvider() {
-        var localWorkspaceRootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
-        var localWorkspace = new LocalWorkspace(localWorkspaceRootPath);
-        return () -> Collections.singletonList(localWorkspace);
+        var localWorkspaceProvider = LocalSpaceUtil.createLocalWorkspaceProvider();
+        var spaceProvidersFromExtensionPoint = SpaceProvidersExtension.getSpaceProvidersFromExtensionPoint();
+        var res = new LinkedHashMap<String, SpaceProvider>();
+        res.put(localWorkspaceProvider.getId(), localWorkspaceProvider);
+        spaceProvidersFromExtensionPoint.forEach(sp -> res.putAll(sp.getProvidersMap()));
+        return () -> res;
     }
 
     /**
@@ -222,19 +223,22 @@ public class KnimeBrowserView {
      * @param appStateProvider required to initialize the {@link OpenWorkflowBrowserFunction}
      */
     @SuppressWarnings("unused") // Browser functions are registered on instantiation
-    private void initBrowserFunctions(final AppStateProvider appStateProvider) {
+    private void initBrowserFunctions(final AppStateProvider appStateProvider, final SpaceProviders spaceProviders) {
         new SwitchToJavaUIBrowserFunction(m_browser);
         new OpenNodeViewBrowserFunction(m_browser);
         new OpenNodeDialogBrowserFunction(m_browser);
         new OpenLegacyFlowVariableDialogBrowserFunction(m_browser);
         new SaveWorkflowBrowserFunction(m_browser);
         new OpenWorkflowBrowserFunction(m_browser, appStateProvider);
-		new CloseWorkflowBrowserFunction(m_browser, appStateProvider);
-		new CreateWorkflowBrowserFunction(m_browser, appStateProvider);
-		new OpenLayoutEditorBrowserFunction(m_browser);
-		new OpenWorkflowCoachPreferencePageBrowserFunction(m_browser, appStateProvider);
-		new OpenAboutDialogBrowserFunction(m_browser);
-		new OpenInstallExtensionsDialogBrowserFunction(m_browser);
+        new CloseWorkflowBrowserFunction(m_browser, appStateProvider);
+        new CreateWorkflowBrowserFunction(m_browser, appStateProvider);
+        new OpenLayoutEditorBrowserFunction(m_browser);
+        new OpenWorkflowCoachPreferencePageBrowserFunction(m_browser, appStateProvider);
+        new OpenAboutDialogBrowserFunction(m_browser);
+        new OpenInstallExtensionsDialogBrowserFunction(m_browser);
+        new GetSpaceProvidersBrowserFunction(m_browser, spaceProviders);
+        new ConnectSpaceProviderBrowserFunction(m_browser, spaceProviders);
+        new DisconnectSpaceProviderBrowserFunction(m_browser, spaceProviders);
         if (isRemoteDebuggingPortSet()) {
             new InitAppForTestingBrowserFunction(m_browser);
             new ClearAppForTestingBrowserFunction(m_browser);

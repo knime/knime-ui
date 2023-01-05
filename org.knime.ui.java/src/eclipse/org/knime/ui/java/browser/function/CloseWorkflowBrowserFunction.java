@@ -58,8 +58,8 @@ import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
 import org.knime.gateway.impl.webui.AppStateProvider;
-import org.knime.ui.java.EclipseUIStateUtil;
-import org.knime.ui.java.PerspectiveUtil;
+import org.knime.ui.java.util.EclipseUIStateUtil;
+import org.knime.ui.java.util.PerspectiveUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 import com.equo.chromium.swt.Browser;
@@ -97,8 +97,9 @@ public class CloseWorkflowBrowserFunction extends BrowserFunction {
         // TODO NXT-1386
         if (!PerspectiveUtil.isClassicPerspectiveLoaded() && WorkflowProjectManager.getInstance()
             .getCachedWorkflow(projectIdToClose).map(WorkflowManager::isDirty).orElse(false)) {
-            MessageDialog.openWarning(SWTUtilities.getActiveShell(), "Unsaved changes",
-                "Workflow can't be closed because there are unsaved changes. Please save the workflow first.");
+            MessageDialog.openInformation(SWTUtilities.getActiveShell(), "Unsaved changes",
+                "Workflow can't be closed because there are unsaved changes. Please save the workflow first."
+                    + "\n(Open ticket to ask to save the workflow: NXT-1386)");
         }
 
         Optional<String> nextProjectId = requireAtIndex(arguments, 1, String.class);

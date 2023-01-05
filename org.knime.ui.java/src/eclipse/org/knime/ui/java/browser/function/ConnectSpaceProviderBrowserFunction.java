@@ -44,38 +44,50 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 7, 2021 (hornm): created
+ *   Jan 1, 2023 (hornm): created
  */
 package org.knime.ui.java.browser.function;
 
-import org.knime.ui.java.util.TestingUtil;
+import org.knime.gateway.impl.webui.SpaceProvider;
+import org.knime.gateway.impl.webui.SpaceProvider.SpaceProviderConnection;
+import org.knime.gateway.impl.webui.SpaceProviders;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Browser function that allows one to programmatically clear the App. I.e.
- * clears the app state and sets the url to 'about:blank'.
+ * Connects a space provider to its remote location. I.e. essentially calls {@link SpaceProvider#connect()}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class ClearAppForTestingBrowserFunction extends BrowserFunction {
+public class ConnectSpaceProviderBrowserFunction extends BrowserFunction {
 
-	private static final String FUNCTION_NAME = "clearAppForTesting";
+    private final SpaceProviders m_spaceProviders;
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
-     * Constructor.
-     *
-     * @param browser the browser to register this function with
+     * @param browser
+     * @param spaceProviders
      */
-    public ClearAppForTestingBrowserFunction(final Browser browser) {
-        super(browser, FUNCTION_NAME);
+    public ConnectSpaceProviderBrowserFunction(final Browser browser, final SpaceProviders spaceProviders) {
+        super(browser, "connectSpaceProvider");
+        m_spaceProviders = spaceProviders;
     }
 
-	@Override
-	public Object function(final Object[] args) { // NOSONAR it's ok that this method always returns null
-		TestingUtil.clearAppForTesting();
-		return null;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object function(final Object[] arguments) {
+        var spaceProviderId = (String)arguments[0];
+        var spaceProvider = m_spaceProviders.getProvidersMap().get(spaceProviderId);
+        if (spaceProvider != null && spaceProvider.getConnection(false).isEmpty()) {
+            var username = spaceProvider.getConnection(true).map(SpaceProviderConnection::getUsername).orElse(null);
+            return MAPPER.createObjectNode().putObject("user").put("name", username).toPrettyString();
+        }
+        return null;
+    }
 
 }

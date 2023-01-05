@@ -75,7 +75,7 @@ import org.knime.core.ui.util.SWTUtilities;
 import org.knime.core.util.LockFailedException;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.impl.service.util.DefaultServiceUtil;
-import org.knime.ui.java.EclipseUIStateUtil;
+import org.knime.ui.java.util.EclipseUIStateUtil;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 import com.equo.chromium.swt.Browser;

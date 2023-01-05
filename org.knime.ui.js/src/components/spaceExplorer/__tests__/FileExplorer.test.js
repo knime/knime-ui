@@ -111,4 +111,35 @@ describe('FileExplorer.vue', () => {
         
         expect(wrapper.find('tbody').classes()).toContain('mini');
     });
+
+    it('should emit an event when opening a file', () => {
+        const { wrapper } = doMount();
+
+        // workflow-group
+        wrapper.findAll('.file-explorer-item').at(0).trigger('dblclick');
+        // component
+        wrapper.findAll('.file-explorer-item').at(4).trigger('dblclick');
+        
+        expect(wrapper.emitted('open-file')).toBeUndefined();
+        
+        // workflow
+        wrapper.findAll('.file-explorer-item').at(3).trigger('dblclick');
+        expect(wrapper.emitted('open-file')[0][0]).toEqual(MOCK_DATA[3]);
+    });
+
+    it('should show the open indicator for items that specify it', () => {
+        const indexOfItemWithIndicator = 3;
+        const { wrapper } = doMount({
+            props: {
+                items: MOCK_DATA.map((item, index) => ({
+                    ...item,
+                    displayOpenIndicator: index === indexOfItemWithIndicator
+                }))
+            }
+        });
+
+        const items = wrapper.findAll('.file-explorer-item');
+        expect(items.at(0).find('.open-indicator').exists()).toBe(false);
+        expect(items.at(indexOfItemWithIndicator).find('.open-indicator').exists()).toBe(true);
+    });
 });

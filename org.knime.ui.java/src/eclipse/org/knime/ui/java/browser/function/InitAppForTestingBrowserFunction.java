@@ -57,7 +57,7 @@ import java.util.stream.StreamSupport;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState.OpenedWorkflow;
-import org.knime.ui.java.TestingUtil;
+import org.knime.ui.java.util.TestingUtil;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
