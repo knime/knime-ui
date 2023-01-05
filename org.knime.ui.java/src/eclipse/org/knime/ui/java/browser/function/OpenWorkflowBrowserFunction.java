@@ -46,8 +46,8 @@
  */
 package org.knime.ui.java.browser.function;
 
-import static org.knime.ui.java.util.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
 import static org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction.showWarningAndLogError;
+import static org.knime.ui.java.util.PerspectiveUtil.SHARED_EDITOR_AREA_ID;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -153,10 +153,10 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
 
     private static Consumer<WorkflowManager> getWorkflowLoadedCallback(final AppStateProvider appStateProvider,
         final String spaceId, final String itemId) {
-        return wfm -> {
+        return wfm -> { // NOSONAR
             var wpm = WorkflowProjectManager.getInstance();
             var wfProj = createWorkflowProject(wfm, //
-                LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID, // TODO: parameterize w/ value provided by frontend
+                LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID, // TODO: parameterize w/ value provided by frontend; NXT-1409
                 spaceId, //
                 itemId //
             );
@@ -171,7 +171,7 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
     private static WorkflowProject createWorkflowProject(final WorkflowManager wfm, final String providerId,
         final String spaceId, final String itemId) {
         var projectId = wfm.getNameWithID();
-        return new WorkflowProject() {
+        return new WorkflowProject() { // NOSONAR
             @Override
             public WorkflowManager openProject() {
                 return wfm;

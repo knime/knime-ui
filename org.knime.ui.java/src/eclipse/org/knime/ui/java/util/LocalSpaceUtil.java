@@ -68,7 +68,7 @@ public final class LocalSpaceUtil {
      *
      * @see LocalSpaceUtil#getLocalWorkspace()
      */
-    private static LocalWorkspace m_localWorkspace = null;
+    private static LocalWorkspace localWorkspace = null;
 
     /**
      * The ID of the local space provider
@@ -83,11 +83,11 @@ public final class LocalSpaceUtil {
      * @return The singleton instance of {@link LocalWorkspace}, creating a new instance if not yet present.
      */
     public static LocalWorkspace getLocalWorkspace() {
-        if (m_localWorkspace == null) {
+        if (localWorkspace == null) {
             var localWorkspaceRootPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile().toPath();
-            m_localWorkspace = new LocalWorkspace(localWorkspaceRootPath);
+            localWorkspace = new LocalWorkspace(localWorkspaceRootPath);
         }
-        return m_localWorkspace;
+        return localWorkspace;
     }
 
     /**
