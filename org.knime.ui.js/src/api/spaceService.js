@@ -1,11 +1,11 @@
 import rpc from './json-rpc-adapter';
 
 export const fetchWorkflowGroupContent =
-    async ({ spaceId, itemId }) => {
+    async ({ spaceProviderId = 'local', spaceId, itemId }) => {
         try {
             return await rpc(
                 'SpaceService.listWorkflowGroup',
-                spaceId, itemId
+                spaceId, spaceProviderId, itemId
             );
         } catch (e) {
             consola.error(e);
