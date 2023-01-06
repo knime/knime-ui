@@ -1,4 +1,5 @@
 <script>
+import { openInstallExtensionsDialog } from '@api';
 import Button from 'webapps-common/ui/components/Button.vue';
 import SpaceExplorer from '@/components/spaceExplorer/SpaceExplorer.vue';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
@@ -8,6 +9,9 @@ export default {
         Button,
         SpaceExplorer,
         ComputerDesktopIcon
+    },
+    methods: {
+        openInstallExtensionsDialog
     }
 };
 </script>
@@ -48,7 +52,10 @@ export default {
           <span class="text">
             There are updates for 2 extensions available.
           </span>
-          <Button with-border>
+          <Button
+            with-border
+            @click="openInstallExtensionsDialog"
+          >
             Update now
           </Button>
         </div>

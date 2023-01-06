@@ -152,3 +152,19 @@ export const openWorkflowCoachPreferencePage = () => {
         consola.error(`Could not open preference page`, e);
     }
 };
+
+/**
+ * Opens install extensions dialog
+ * @returns {void}
+ */
+export const openInstallExtensionsDialog = () => {
+    try {
+        // returns falsy on success
+        let error = window.openInstallExtensionsDialog();
+        if (error) {
+            throw new Error(error);
+        }
+    } catch (e) {
+        consola.error(`Could not open instal extensions dialog`, e);
+    }
+};
