@@ -38,7 +38,7 @@ export const state = () => ({
     isLoadingWorkflow: false,
 
     /* Object containing available updates */
-    availableUpdates: {}
+    availableUpdates: null
 });
 
 export const mutations = {

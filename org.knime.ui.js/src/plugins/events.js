@@ -56,14 +56,9 @@ export default ({ store: $store, router: $router }) => {
          */
 
         UpdateAvailableEvent({ newReleases, bugfixes }) {
-            const numOfReleases = newReleases ? newReleases.length : 0;
-            const numOfFixes = bugfixes ? bugfixes.length : 0;
-            const numOfUpdates = numOfReleases + numOfFixes;
-
-            $store.commit('application/setAvailableUpdates', numOfUpdates);
-            console.log('total number', numOfUpdates);
-            consola.warn('AP release updates available: ', newReleases);
-            consola.warn('AP bugfix updates available: ', bugfixes);
+            if (newReleases || bugfixes) {
+                $store.commit('application/setAvailableUpdates', { newReleases, bugfixes });
+            }
         }
     });
 };

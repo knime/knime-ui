@@ -11,7 +11,25 @@ export default {
         ComputerDesktopIcon
     },
     computed: {
-        ...mapState('application', ['availableUpdates'])
+        ...mapState('application', ['availableUpdates']),
+        updateMessage() {
+            if (this.availableUpdates.newReleases) {
+                const availableUpdate = this.availableUpdates.newReleases.find(obj => obj.isUpdatePossible === true);
+                const updateVersion = availableUpdate.shortName;
+
+                return `Get the latest features and enhancements! Update now to ${updateVersion}`;
+            }
+
+            if (this.availableUpdates.bugfixes.length === 1) {
+                return 'There is an update for 1 extension available.';
+            }
+
+            if (this.availableUpdates.bugfixes.length > 1) {
+                return `There are updates for ${this.availableUpdates.bugfixes.length} extensions available.`;
+            }
+
+            return null;
+        }
     },
     methods: {
         openUpdateDialog() {
@@ -58,7 +76,7 @@ export default {
       <div class="grid-container">
         <div class="grid-item-12 update-bar">
           <span class="text">
-            There are updates for {{ availableUpdates }} extensions available.
+            {{ updateMessage }}
           </span>
           <Button
             with-border
