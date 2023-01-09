@@ -1,5 +1,5 @@
 <script>
-import RocketIcon from 'webapps-common/ui/assets/img/icons/rocket.svg';
+// import RocketIcon from 'webapps-common/ui/assets/img/icons/rocket.svg';
 import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
 
 import { APP_ROUTES, getPathFromRouteName } from '@/router';
@@ -17,11 +17,12 @@ export default {
     data() {
         return {
             sidebarItems: [
-                {
-                    route: getPathFromRouteName(APP_ROUTES.EntryPage.GetStartedPage),
-                    text: 'Get started',
-                    icon: RocketIcon
-                },
+                // TODO: bring back when Get Started page is displayed
+                // {
+                //     route: getPathFromRouteName(APP_ROUTES.EntryPage.GetStartedPage),
+                //     text: 'Get started',
+                //     icon: RocketIcon
+                // },
                 {
                     route: getPathFromRouteName(APP_ROUTES.EntryPage.SpaceSelectionPage),
                     text: 'Spaces',
@@ -40,6 +41,12 @@ export default {
 
             return titles[this.$route.name];
         }
+    },
+
+    beforeMount() {
+        // TODO: remove when Get Started page is displayed
+        // as this overules the redirects to the Get Started page and uses the selection page instead
+        this.$router.push({ name: APP_ROUTES.EntryPage.SpaceSelectionPage });
     }
 };
 </script>

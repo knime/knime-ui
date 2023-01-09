@@ -10,13 +10,14 @@ export default {
     },
 
     render(createElement) {
-        const icons = (this.$slots.default || [])
+        const icons = (this.$slots.icons || [])
             .map(vnode => createElement(vnode.tag, { class: 'icon' }, vnode.children));
 
         const footerChildren = this.avatar
             // eslint-disable-next-line no-extra-parens
-            ? [...icons, createElement(Avatar, { props: { text: this.avatar } })]
-            : icons;
+            ? [...icons, ...(this.$slots.default || []), createElement(Avatar, { props: { text: this.avatar } })]
+            // eslint-disable-next-line no-extra-parens
+            : [...icons, ...(this.$slots.default || [])];
 
         return createElement(
             'div',

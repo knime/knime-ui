@@ -93,7 +93,7 @@ export default {
             compact
             @click="onLogout(spaceProvider.id)"
           >
-            Log out
+            Logout
           </Button>
 
           <Button
@@ -102,7 +102,7 @@ export default {
             compact
             @click="onLogin(spaceProvider.id)"
           >
-            {{ spaceProvider.connectionMode === 'AUTHENTICATED' ? 'LOGIN' : 'CONNECT' }}
+            {{ spaceProvider.connectionMode === 'AUTHENTICATED' ? 'Sign in' : 'Connect' }}
           </Button>
         </div>
       </div>

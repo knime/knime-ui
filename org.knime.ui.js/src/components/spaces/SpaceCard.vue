@@ -44,11 +44,6 @@ export default {
             }
 
             return this.space.private ? PrivateSpaceIcon : CubeIcon;
-        },
-
-        ownerInitials() {
-            const { owner = 'me' } = this.space;
-            return owner.slice(0, 2).toUpperCase();
         }
     }
 };
@@ -58,7 +53,7 @@ export default {
   <Card @click="$emit('click', space)">
     <CardHeader :color="isLocal ? 'default' : 'light'">
       <Component :is="icon" />
-      <!-- TODO: Add later -->
+      <!-- TODO: Add later when kudos are available -->
       <!-- <div
         v-if="!isLocal"
         class="kudos"
@@ -75,13 +70,12 @@ export default {
     >
       <h5>{{ space.name }}</h5>
       <p>{{ space.description }}</p>
-      <span>Last Update {{ space.lastUpdate }}</span>
+      <!-- TODO: add later when lastUpdate is available -->
+      <!-- <span>Last Update {{ space.lastUpdate }}</span> -->
     </CardContent>
 
-    <CardFooter :avatar="ownerInitials">
-      <span><WorkflowIcon /> 2</span>
-      <span><WorkflowIcon /> 2</span>
-      <span><WorkflowIcon /> 2</span>
+    <CardFooter class="space-card-footer">
+      <span v-if="!isLocal">{{ space.owner }}</span>
     </CardFooter>
   </Card>
 </template>
@@ -116,6 +110,13 @@ export default {
     line-height: 24px;
   }
 
+  & span {
+    font-size: 11px;
+    line-height: 16px;
+  }
+}
+
+.space-card-footer {
   & span {
     font-size: 11px;
     line-height: 16px;
