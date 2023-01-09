@@ -44,38 +44,53 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 7, 2021 (hornm): created
+ *   Jan 1, 2023 (hornm): created
  */
 package org.knime.ui.java.browser.function;
 
-import org.knime.ui.java.util.TestingUtil;
+import org.knime.gateway.impl.webui.SpaceProviders;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Browser function that allows one to programmatically clear the App. I.e.
- * clears the app state and sets the url to 'about:blank'.
+ * Returns infos on all available {@link SpaceProviders}. It's a browser function because this functionality is only
+ * available in the desktop AP (the desktop AP, e.g., can connect to multiple hubs).
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class ClearAppForTestingBrowserFunction extends BrowserFunction {
+public class GetSpaceProvidersBrowserFunction extends BrowserFunction {
 
-	private static final String FUNCTION_NAME = "clearAppForTesting";
+    private final SpaceProviders m_spaceProviders;
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
-     * Constructor.
-     *
-     * @param browser the browser to register this function with
+     * @param browser
+     * @param spaceProviders
      */
-    public ClearAppForTestingBrowserFunction(final Browser browser) {
-        super(browser, FUNCTION_NAME);
+    public GetSpaceProvidersBrowserFunction(final Browser browser, final SpaceProviders spaceProviders) {
+        super(browser, "getSpaceProviders");
+        m_spaceProviders = spaceProviders;
     }
 
-	@Override
-	public Object function(final Object[] args) { // NOSONAR it's ok that this method always returns null
-		TestingUtil.clearAppForTesting();
-		return null;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Object function(final Object[] arguments) {
+        var res = MAPPER.createObjectNode();
+        for (var sp : m_spaceProviders.getProvidersMap().values()) {
+            var isLocalSpaceProvider = sp.isLocal();
+            var connectionMode = isLocalSpaceProvider ? "AUTOMATIC" : "AUTHENTICATED";
+            res.set(sp.getId(), MAPPER.createObjectNode().put("id", sp.getId()) //
+                .put("name", sp.getName()) //
+                .put("connected", isLocalSpaceProvider || sp.getConnection(false).isPresent()) //
+                .put("connectionMode", connectionMode) //
+                .put("local", isLocalSpaceProvider));
+        }
+        return res.toPrettyString();
+    }
 
 }

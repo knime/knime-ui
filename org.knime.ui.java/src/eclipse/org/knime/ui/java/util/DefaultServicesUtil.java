@@ -44,13 +44,16 @@
  * ---------------------------------------------------------------------
  *
  */
-package org.knime.ui.java;
+package org.knime.ui.java.util;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.knime.gateway.api.webui.entity.AppStateEnt;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.service.util.EventConsumer;
 import org.knime.gateway.impl.webui.AppStateProvider;
+import org.knime.gateway.impl.webui.LocalWorkspace;
 import org.knime.gateway.impl.webui.SpaceProviders;
+import org.knime.gateway.impl.webui.UpdateStateProvider;
 import org.knime.gateway.impl.webui.WorkflowMiddleware;
 import org.knime.gateway.impl.webui.service.DefaultApplicationService;
 import org.knime.gateway.impl.webui.service.ServiceDependencies;
@@ -74,10 +77,11 @@ public final class DefaultServicesUtil {
      *
      * @param appStateProvider The application state provider
      * @param eventConsumer The event consumer
-     * @param spaceProviders
+     * @param spaceProviders The space providers
+     * @param updateStateProvider The update state provider
      */
     public static void setDefaultServiceDependencies(final AppStateProvider appStateProvider,
-        final EventConsumer eventConsumer, final SpaceProviders spaceProviders) {
+        final EventConsumer eventConsumer, final SpaceProviders spaceProviders, final UpdateStateProvider updateStateProvider) {
         if (!ServiceInstances.areServicesInitialized()) {
             ServiceDependencies.setServiceDependency(AppStateProvider.class, appStateProvider);
             ServiceDependencies.setServiceDependency(EventConsumer.class, eventConsumer);
@@ -86,6 +90,7 @@ public final class DefaultServicesUtil {
             ServiceDependencies.setServiceDependency(WorkflowProjectManager.class,
                 WorkflowProjectManager.getInstance());
             ServiceDependencies.setServiceDependency(SpaceProviders.class, spaceProviders);
+            ServiceDependencies.setServiceDependency(UpdateStateProvider.class, updateStateProvider);
         } else {
             throw new IllegalStateException(
                 "Some services are already initialized. Service dependencies can't be set anymore. "

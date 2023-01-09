@@ -1,5 +1,5 @@
 <script>
-import { mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 
 import LoadingIcon from './LoadingIcon.vue';
@@ -30,6 +30,14 @@ export default {
 
     computed: {
         ...mapState('spaceExplorer', ['currentWorkflowGroup']),
+        ...mapGetters('spaceExplorer', ['openedWorkflowItems']),
+
+        fileExplorerItems() {
+            return this.currentWorkflowGroup.items.map(item => ({
+                ...item,
+                displayOpenIndicator: this.openedWorkflowItems.includes(item.id)
+            }));
+        },
 
         breadcrumbItems() {
             if (!this.currentWorkflowGroup) {
@@ -96,6 +104,14 @@ export default {
             this.setLoading(false);
         },
 
+        onOpenFile({ id }) {
+            this.$store.dispatch('spaceExplorer/openWorkflow', {
+                workflowItemId: id,
+                // send in router so it can be used to navigate to an already open workflow
+                $router: this.$router
+            });
+        },
+
         onBreadcrumbClick({ id }) {
             this.fetchWorkflowGroupContent(id);
         }
@@ -115,9 +131,10 @@ export default {
     <FileExplorer
       v-if="currentWorkflowGroup && !isLoading"
       :mode="mode"
-      :items="currentWorkflowGroup.items"
+      :items="fileExplorerItems"
       :is-root-folder="currentWorkflowGroup.path.length === 0"
       @change-directory="onChangeDirectory"
+      @open-file="onOpenFile"
     />
 
     <div

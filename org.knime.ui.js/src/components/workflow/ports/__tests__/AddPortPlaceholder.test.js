@@ -19,7 +19,7 @@ describe('AddPortPlaceholder.vue', () => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
 
-        doMount = (propsDataOverrides = {}) => {
+        doMount = ({ propsDataOverrides = {}, portTypeMenu = {} } = {}) => {
             let propsDataDefault = {
                 position: [10, 10],
                 side: 'output',
@@ -40,7 +40,8 @@ describe('AddPortPlaceholder.vue', () => {
                 workflow: {
                     state: {
                         portTypeMenu: {
-                            isOpen: false
+                            isOpen: false,
+                            ...portTypeMenu
                         }
                     },
                     actions: workflowStoreActions,
@@ -104,7 +105,7 @@ describe('AddPortPlaceholder.vue', () => {
 
         test('adds port directly, if only one option is given', () => {
             let propsData = { portGroups: { input: { supportedPortTypeIds: ['table'], canAddInPort: true } } };
-            let wrapper = doMount(propsData);
+            let wrapper = doMount({ propsDataOverrides: propsData });
 
             wrapper.find('.add-port-icon').trigger('click');
             expect(wrapper.emitted('add-port')).toStrictEqual([[{ portGroup: 'input', typeId: 'table' }]]);
@@ -119,6 +120,12 @@ describe('AddPortPlaceholder.vue', () => {
 
             expect(wrapper.find('.add-port-icon').exists()).toBe(false);
             expect(wrapper.findComponent(Port).props('port')).toStrictEqual(targetPort);
+        });
+
+        it('does not show preview port if menu is closed', () => {
+            let wrapper = doMount({ portTypeMenu: { isOpen: false, previewPort: { typeId: 'test' } } });
+
+            expect(wrapper.findComponent(Port).exists()).toBe(false);
         });
 
         describe('with open menu', () => {

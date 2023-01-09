@@ -44,38 +44,30 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 7, 2021 (hornm): created
+ *   Dec 19, 2022 (hornm): created
  */
-package org.knime.ui.java.browser.function;
+package org.knime.ui.java.browser;
 
-import org.knime.ui.java.util.TestingUtil;
+import java.util.List;
 
-import com.equo.chromium.swt.Browser;
-import com.equo.chromium.swt.BrowserFunction;
+import org.knime.gateway.api.util.ExtPointUtil;
+import org.knime.gateway.impl.webui.SpaceProviders;
 
 /**
- * Browser function that allows one to programmatically clear the App. I.e.
- * clears the app state and sets the url to 'about:blank'.
+ * Creates {@link SpaceProviders}-instances from the respective extension point.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class ClearAppForTestingBrowserFunction extends BrowserFunction {
+final class SpaceProvidersExtension {
 
-	private static final String FUNCTION_NAME = "clearAppForTesting";
+    private static final String SPACE_PROVIDERS_EXTENSION_ID = "org.knime.ui.java.SpaceProviders";
 
-    /**
-     * Constructor.
-     *
-     * @param browser the browser to register this function with
-     */
-    public ClearAppForTestingBrowserFunction(final Browser browser) {
-        super(browser, FUNCTION_NAME);
+    public static List<SpaceProviders> getSpaceProvidersFromExtensionPoint() {
+        return ExtPointUtil.collectExecutableExtensions(SPACE_PROVIDERS_EXTENSION_ID, "class");
     }
 
-	@Override
-	public Object function(final Object[] args) { // NOSONAR it's ok that this method always returns null
-		TestingUtil.clearAppForTesting();
-		return null;
-	}
+    private SpaceProvidersExtension() {
+        //
+    }
 
 }

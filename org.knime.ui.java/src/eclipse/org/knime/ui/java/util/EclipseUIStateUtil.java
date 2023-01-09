@@ -46,10 +46,12 @@
  * History
  *   Jan 7, 2021 (hornm): created
  */
-package org.knime.ui.java;
+package org.knime.ui.java.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
@@ -68,9 +70,11 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.e4.compatibility.CompatibilityPart;
+import org.knime.core.eclipseUtil.UpdateChecker.UpdateInfo;
 import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.workflow.SubNodeContainer;
 import org.knime.core.node.workflow.UnsupportedWorkflowVersionException;
 import org.knime.core.node.workflow.WorkflowLoadHelper;
@@ -86,6 +90,8 @@ import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState.OpenedWorkflow;
+import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
+import org.knime.product.rcp.intro.UpdateDetector;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 /**
@@ -102,8 +108,37 @@ public final class EclipseUIStateUtil {
      */
     private static final String WORKFLOW_EDITOR_PART_ID = "org.eclipse.e4.ui.compatibility.editor";
 
+    private static final NodeLogger LOGGER = NodeLogger.getLogger(EclipseUIStateUtil.class);
+
     private EclipseUIStateUtil() {
         // utility class
+    }
+
+    /**
+     * Checks for release and bugfix updates for the AP.
+     *
+     * @return The state of the AP in terms of {@link UpdateState}.
+     */
+    public static UpdateState checkForUpdate() {
+        List<UpdateInfo> newReleases = new ArrayList<>();
+        List<String> bugfixes = new ArrayList<>();
+        try {
+            UpdateDetector.checkForNewRelease().forEach(newReleases::add);
+            UpdateDetector.checkForBugfixes().forEach(bugfixes::add);
+        } catch (IOException | URISyntaxException e) {
+            LOGGER.error("Could not check for updates", e);
+        }
+        return new UpdateState() {
+            @Override
+            public List<UpdateInfo> getNewReleases() {
+                return newReleases;
+            }
+
+            @Override
+            public List<String> getBugfixes() {
+                return bugfixes;
+            }
+        };
     }
 
     /**
@@ -250,6 +285,10 @@ public final class EclipseUIStateUtil {
                     return wfm;
                 }
 
+                @Override
+                public Optional<Origin> getOrigin() {
+                    return LocalSpaceUtil.getLocalOrigin(wfm);
+                }
             };
         }
         return null;

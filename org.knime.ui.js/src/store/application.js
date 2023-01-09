@@ -46,7 +46,7 @@ export const mutations = {
         state.activeProjectId = projectId;
     },
     setOpenProjects(state, projects) {
-        state.openProjects = projects.map(({ projectId, name }) => ({ projectId, name }));
+        state.openProjects = projects.map(({ activeWorkflow, ...rest }) => rest);
     },
     setAvailablePortTypes(state, availablePortTypes) {
         state.availablePortTypes = availablePortTypes;
