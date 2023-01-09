@@ -72,9 +72,8 @@ export default {
 
         <div class="grid-item-9 body">
           <p>
-            Extensions provide additional functionality such as access to and processing of complex data types,
-            as well as the use of advanced algorithms. Install extensions to add additional functionality.
-            The KNIME Extensions page gives you an overview of the extensions available for KNIME Analytics Platform.
+            Install Extensions to access additional functionality such as the ability to
+            process complex data types, as well as to use advanced algorithms.
           </p>
           <Button
             with-border
@@ -91,7 +90,7 @@ export default {
       <div class="grid-container">
         <div class="grid-item-3 category">
           <PerspectiveSwitchIcon />
-          <h3>Switch back to<br>classic user interface</h3>
+          <h3>Switch to<br>classic user interface</h3>
         </div>
 
         <div class="grid-item-9 body">
@@ -130,8 +129,7 @@ export default {
             <br>
             <br>
             This software is a bundle of multiple modules, each released under its own license.
-            Please check the individual licenses by clicking opening the “About KNIME” inside the
-            “Installation Details” → “Properties”; and in addition to that the “Credits” button.
+            Please check the individual licenses by clicking “About KNIME” and the “Credits” button.
           </p>
           <div class="section-buttons">
             <Button
