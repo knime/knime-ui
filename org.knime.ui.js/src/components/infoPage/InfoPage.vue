@@ -54,7 +54,7 @@ export default {
           <p>Get answers to your data questions from the active, global community.</p>
           <Button
             with-border
-            href="https://forum.knime.com/?src=knimeapp"
+            href="https://forum.knime.com/?src=knimeappmodernui"
           >
             <strong>Visit Forum</strong>
           </Button>
@@ -72,9 +72,8 @@ export default {
 
         <div class="grid-item-9 body">
           <p>
-            Extensions provide additional functionality such as access to and processing of complex data types,
-            as well as the use of advanced algorithms. Install extensions to add additional functionality.
-            The KNIME Extensions page gives you an overview of the extensions available for KNIME Analytics Platform.
+            Install Extensions to access additional functionality such as the ability to
+            process complex data types, as well as to use advanced algorithms.
           </p>
           <Button
             with-border
@@ -91,13 +90,13 @@ export default {
       <div class="grid-container">
         <div class="grid-item-3 category">
           <PerspectiveSwitchIcon />
-          <h3>Switch back to<br>classic user interface</h3>
+          <h3>Switch to<br>classic user interface</h3>
         </div>
 
         <div class="grid-item-9 body">
           <p>
-            Switch to the classic KNIME Analytics Platform user interface. To switch back again, click in the classic
-            perspective the button “Open KNIME Modern UI Preview” in the top right corner
+            Switch to the classic KNIME Analytics Platform user interface. To switch back again,
+            click the button “Open KNIME Modern UI Preview” in the top right corner of the classic perspective.
           </p>
           <Button
             with-border
@@ -130,8 +129,7 @@ export default {
             <br>
             <br>
             This software is a bundle of multiple modules, each released under its own license.
-            Please check the individual licenses by clicking opening the “About KNIME” inside the
-            “Installation Details” → “Properties”; and in addition to that the “Credits” button.
+            Please check the individual licenses by clicking “About KNIME” and the “Credits” button.
           </p>
           <div class="section-buttons">
             <Button
