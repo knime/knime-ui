@@ -54,6 +54,7 @@ import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.ConnectSpaceProviderBrowserFunction;
 import org.knime.ui.java.browser.function.CreateWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.DisconnectSpaceProviderBrowserFunction;
+import org.knime.ui.java.browser.function.EmitUpdateAvailableEventForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.GetSpaceProvidersBrowserFunction;
 import org.knime.ui.java.browser.function.InitAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.OpenAboutDialogBrowserFunction;
@@ -156,7 +157,7 @@ public class KnimeBrowserView {
         updateStateProvider.checkForUpdates();
 
         // Initialize browser functions and set CEF browser URL
-        initBrowserFunctions(appStateProvider, spaceProviders);
+        initBrowserFunctions(appStateProvider, spaceProviders, updateStateProvider);
         setUrl(ignoreEmptyPageAsDevUrl);
     }
 
@@ -222,10 +223,13 @@ public class KnimeBrowserView {
     /**
      * Initializes and registers the {@link BrowserFunction BrowserFunctions} with the browser.
      *
-     * @param appStateProvider required to initialize the {@link OpenWorkflowBrowserFunction}
+     * @param appStateProvider Required to initialize some browser functions
+     * @param spaceProviders Required to initialize some browser functions
+     * @param updateStateProvider Required to initialize {@link EmitUpdateAvailableEventForTestingBrowserFunction}
      */
     @SuppressWarnings("unused") // Browser functions are registered on instantiation
-    private void initBrowserFunctions(final AppStateProvider appStateProvider, final SpaceProviders spaceProviders) {
+    private void initBrowserFunctions(final AppStateProvider appStateProvider, final SpaceProviders spaceProviders,
+        final UpdateStateProvider updateStateProvider) {
         new SwitchToJavaUIBrowserFunction(m_browser);
         new OpenNodeViewBrowserFunction(m_browser);
         new OpenNodeDialogBrowserFunction(m_browser);
@@ -244,6 +248,7 @@ public class KnimeBrowserView {
         if (isRemoteDebuggingPortSet()) {
             new InitAppForTestingBrowserFunction(m_browser);
             new ClearAppForTestingBrowserFunction(m_browser);
+            new EmitUpdateAvailableEventForTestingBrowserFunction(m_browser, updateStateProvider);
         }
     }
 
