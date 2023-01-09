@@ -1,5 +1,5 @@
 <script>
-import { openInstallExtensionsDialog } from '@api';
+import { mapState } from 'vuex';
 import Button from 'webapps-common/ui/components/Button.vue';
 import SpaceExplorer from '@/components/spaceExplorer/SpaceExplorer.vue';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
@@ -10,8 +10,13 @@ export default {
         SpaceExplorer,
         ComputerDesktopIcon
     },
+    computed: {
+        ...mapState('application', ['availableUpdates'])
+    },
     methods: {
-        openInstallExtensionsDialog
+        openUpdateDialog() {
+            window.openUpdateDialog();
+        }
     }
 };
 </script>
@@ -46,15 +51,18 @@ export default {
       </div>
     </section>
 
-    <section class="footer-wrapper">
+    <section
+      v-if="availableUpdates"
+      class="footer-wrapper"
+    >
       <div class="grid-container">
         <div class="grid-item-12 update-bar">
           <span class="text">
-            There are updates for 2 extensions available.
+            There are updates for {{ availableUpdates }} extensions available.
           </span>
           <Button
             with-border
-            @click="openInstallExtensionsDialog"
+            @click="openUpdateDialog"
           >
             Update now
           </Button>

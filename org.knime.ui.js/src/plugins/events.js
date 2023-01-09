@@ -54,8 +54,14 @@ export default ({ store: $store, router: $router }) => {
         /**
          * Is triggered by the backend, whenever there are AP updates available
          */
+
         UpdateAvailableEvent({ newReleases, bugfixes }) {
-            // TODO: Actually do something here...
+            const numOfReleases = newReleases ? newReleases.length : 0;
+            const numOfFixes = bugfixes ? bugfixes.length : 0;
+            const numOfUpdates = numOfReleases + numOfFixes;
+
+            $store.commit('application/setAvailableUpdates', numOfUpdates);
+            console.log('total number', numOfUpdates);
             consola.warn('AP release updates available: ', newReleases);
             consola.warn('AP bugfix updates available: ', bugfixes);
         }
