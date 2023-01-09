@@ -23,7 +23,7 @@ export default {
         
         const attrs = this.link
             ? { to: this.href }
-            : {};
+            : { role: 'button' };
 
         const handlers = this.link
             ? {}
@@ -42,6 +42,7 @@ export default {
 <style lang="postcss" scoped>
 .card {
   min-width: 300px;
+  min-height: 150px;
   padding: 0;
   background-color: var(--knime-white);
   border: 0;

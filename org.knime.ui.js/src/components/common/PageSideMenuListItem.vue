@@ -31,7 +31,7 @@ export default {
 
 <template>
   <li
-    :class="{active: isItemActive, disabled: item.disabled, 'has-children': hasChildren}"
+    :class="{ active: isItemActive, disabled: item.disabled, 'has-children': hasChildren }"
     :title="item.tooltip ? item.tooltip : null"
   >
     <Component

@@ -74,7 +74,7 @@ export default {
     <section
       v-for="spaceProvider of spaceProviders"
       :key="spaceProvider.id"
-      class="space-selection"
+      class="space-provider"
     >
       <div class="space-provider-name">
         <h2>{{ spaceProvider.name }}</h2>
@@ -91,6 +91,7 @@ export default {
             v-if="shouldDisplayLogoutButton(spaceProvider)"
             with-border
             compact
+            class="logout"
             @click="onLogout(spaceProvider.id)"
           >
             Logout
@@ -100,6 +101,7 @@ export default {
             v-if="shouldDisplayLoginButton(spaceProvider)"
             primary
             compact
+            class="sign-in"
             @click="onLogin(spaceProvider.id)"
           >
             {{ spaceProvider.connectionMode === 'AUTHENTICATED' ? 'Sign in' : 'Connect' }}
@@ -122,7 +124,7 @@ export default {
 
 <style lang="postcss" scoped>
 
-section.space-selection {
+section.space-provider {
   padding-top: 30px;
   padding-bottom: 50px;
 
