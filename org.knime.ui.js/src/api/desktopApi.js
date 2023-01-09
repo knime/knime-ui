@@ -167,7 +167,7 @@ export const openWorkflowCoachPreferencePage = () => {
 export const fetchAllSpaceProviders = () => {
     try {
         const spaceProviders = window.getSpaceProviders();
-        return JSON.parse(spaceProviders);
+        return Promise.resolve(JSON.parse(spaceProviders));
     } catch (error) {
         consola.error(`Could not fetch space providers`, error);
         throw error;

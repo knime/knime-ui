@@ -32,8 +32,8 @@ export default {
     },
 
     methods: {
-        fetchSpaceProviders() {
-            this.$store.dispatch('spaces/fetchAllSpaceProviders');
+        async fetchSpaceProviders() {
+            await this.$store.dispatch('spaces/fetchAllSpaceProviders');
         },
         
         onLogin(spaceProviderId) {
@@ -70,7 +70,10 @@ export default {
 </script>
 
 <template>
-  <GridOutbreaker :color="knimeColors.Porcelain">
+  <GridOutbreaker
+    v-if="spaceProviders"
+    :color="knimeColors.Porcelain"
+  >
     <section
       v-for="spaceProvider of spaceProviders"
       :key="spaceProvider.id"

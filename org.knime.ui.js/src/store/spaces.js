@@ -39,9 +39,9 @@ export const mutations = {
 };
 
 export const actions = {
-    fetchAllSpaceProviders({ commit, dispatch, state }) {
+    async fetchAllSpaceProviders({ commit, dispatch, state }) {
         try {
-            const spaceProviders = fetchAllSpaceProviders();
+            const spaceProviders = await fetchAllSpaceProviders();
             commit('setSpaceProviders', spaceProviders);
             
             const connectedProviderIds = Object.values(spaceProviders)

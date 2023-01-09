@@ -22,7 +22,7 @@ jest.mock('@api');
 
 describe('SpaceSelectionPage.vue', () => {
     const doMount = ({ mockProvidersResponse = mockSpaceProviders } = {}) => {
-        fetchAllSpaceProviders.mockReturnValue(mockProvidersResponse);
+        fetchAllSpaceProviders.mockResolvedValue(mockProvidersResponse);
         
         const $store = mockVuexStore({
             spaces: spacesStore
@@ -50,13 +50,16 @@ describe('SpaceSelectionPage.vue', () => {
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/fetchAllSpaceProviders');
     });
     
-    it('should render all space providers', () => {
+    it('should render all space providers', async () => {
         const { wrapper } = doMount();
+
+        await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
 
         expect(wrapper.findAll('.space-provider').length).toBe(1);
     });
 
-    it('should handle login for spaces that require authentication', () => {
+    it('should handle login for spaces that require authentication', async () => {
         const { wrapper, dispatchSpy } = doMount({
             mockProvidersResponse: {
                 hub1: {
@@ -68,6 +71,9 @@ describe('SpaceSelectionPage.vue', () => {
             }
         });
 
+        await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
+
         const signInButton = wrapper.find('.sign-in');
         expect(signInButton.exists()).toBe(true);
 
@@ -75,7 +81,7 @@ describe('SpaceSelectionPage.vue', () => {
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/connectProvider', { spaceProviderId: 'hub1' });
     });
     
-    it('should handle logout for spaces that require authentication', () => {
+    it('should handle logout for spaces that require authentication', async () => {
         const { wrapper, dispatchSpy } = doMount({
             mockProvidersResponse: {
                 hub1: {
@@ -86,6 +92,9 @@ describe('SpaceSelectionPage.vue', () => {
                 }
             }
         });
+
+        await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
 
         const signInButton = wrapper.find('.logout');
         expect(signInButton.exists()).toBe(true);
@@ -105,6 +114,9 @@ describe('SpaceSelectionPage.vue', () => {
                 }
             }
         });
+
+        await wrapper.vm.$nextTick();
+        await wrapper.vm.$nextTick();
 
         const dummySpace = { id: 'dummy-id', name: 'Dummy Space', private: true, description: '' };
 
