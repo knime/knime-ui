@@ -63,6 +63,7 @@ import org.knime.ui.java.browser.function.OpenLayoutEditorBrowserFunction;
 import org.knime.ui.java.browser.function.OpenLegacyFlowVariableDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenNodeViewBrowserFunction;
+import org.knime.ui.java.browser.function.OpenUpdateDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.OpenWorkflowCoachPreferencePageBrowserFunction;
 import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
@@ -242,6 +243,7 @@ public class KnimeBrowserView {
         new OpenWorkflowCoachPreferencePageBrowserFunction(m_browser, appStateProvider);
         new OpenAboutDialogBrowserFunction(m_browser);
         new OpenInstallExtensionsDialogBrowserFunction(m_browser);
+        new OpenUpdateDialogBrowserFunction(m_browser);
         new GetSpaceProvidersBrowserFunction(m_browser, spaceProviders);
         new ConnectSpaceProviderBrowserFunction(m_browser, spaceProviders);
         new DisconnectSpaceProviderBrowserFunction(m_browser, spaceProviders);
