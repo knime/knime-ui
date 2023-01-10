@@ -36,7 +36,7 @@ export default {
 
                 if (isWorkflowEmpty) {
                     // call to action: move nodes onto workflow
-                    this.setActiveTab(TABS.NODE_REPOSITORY);
+                    await this.setCurrentProjectActiveTab(TABS.NODE_REPOSITORY);
 
                     // for an empty workflow "fillScreen" zooms to 100% and moves the origin (0,0) to the center
                     await this.$nextTick();
@@ -47,9 +47,7 @@ export default {
     },
     mounted() {
         if (this.isWorkflowEmpty) {
-            this.setActiveTab(TABS.NODE_REPOSITORY);
-        } else {
-            this.setActiveTab(TABS.WORKFLOW_METADATA);
+            this.setCurrentProjectActiveTab(TABS.NODE_REPOSITORY);
         }
 
         this.$nextTick(() => {
@@ -62,7 +60,7 @@ export default {
     },
     methods: {
         ...mapMutations('canvas', ['setIsEmpty']),
-        ...mapMutations('panel', ['setActiveTab']),
+        ...mapActions('panel', ['setCurrentProjectActiveTab']),
         ...mapActions('canvas', ['fillScreen']),
         onNodeSelectionPreview($event) {
             this.$refs.workflow.applyNodeSelectionPreview($event);
