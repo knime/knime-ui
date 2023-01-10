@@ -1,5 +1,9 @@
 <script>
 import { mapGetters, mapState } from 'vuex';
+
+import PlusIcon from 'webapps-common/ui/assets/img/icons/plus-small.svg';
+import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
+import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 
 import LoadingIcon from './LoadingIcon.vue';
@@ -11,7 +15,10 @@ export default {
     components: {
         FileExplorer,
         LoadingIcon,
-        Breadcrumb
+        Breadcrumb,
+        PlusButton,
+        PlusIcon,
+        FunctionButton
     },
 
     props: {
@@ -70,6 +77,11 @@ export default {
             }
             const { path } = this.activeWorkflowGroup;
             return ['home'].concat(path.map(({ name }) => name)).join('/');
+        },
+
+        createWorkflowButtonTitle() {
+            const { text, hotkeyText } = this.$shortcuts.get('createWorkflow');
+            return `${text} (${hotkeyText})`;
         }
     },
 
@@ -107,6 +119,10 @@ export default {
             this.setLoading(false);
         },
 
+        onCreateWorkflow() {
+            this.$store.dispatch('spaces/createWorkflow');
+        },
+
         onOpenFile({ id }) {
             this.$store.dispatch('spaces/openWorkflow', {
                 workflowItemId: id,
@@ -123,13 +139,37 @@ export default {
 </script>
 
 <template>
-  <div :class="mode">
+  <div
+    :class="mode"
+    class="space-explorer"
+  >
     <div class="breadcrumb-wrapper">
       <Breadcrumb
         :items="breadcrumbItems"
         @click-item="onBreadcrumbClick"
       />
+
+      <div
+        v-if="mode === 'mini'"
+        class="toolbar"
+      >
+        <FunctionButton
+          primary
+          :title="createWorkflowButtonTitle"
+          @click="onCreateWorkflow"
+        >
+          <PlusIcon />
+        </FunctionButton>
+      </div>
     </div>
+
+    <PlusButton
+      v-if="mode === 'normal'"
+      :title="createWorkflowButtonTitle"
+      primary
+      class="create-workflow-btn"
+      @click="onCreateWorkflow"
+    />
 
     <FileExplorer
       v-if="activeWorkflowGroup && !isLoading"
@@ -152,6 +192,16 @@ export default {
 <style lang="postcss" scoped>
 @import "@/assets/mixins.css";
 
+.space-explorer {
+  position: relative;
+
+  & .create-workflow-btn {
+    position: absolute;
+    right: -76px;
+    top: 6px;
+  }
+}
+
 .breadcrumb-wrapper {
   position: relative;
   display: flex;
@@ -159,6 +209,16 @@ export default {
   width: 100%;
   border-bottom: 1px solid var(--knime-silver-sand);
   overflow-x: auto;
+  align-items: center;
+
+  & .toolbar {
+    margin-left: auto;
+    margin-right: 5px;
+    
+    & >>> svg {
+      @mixin svg-icon-size 15;
+    }
+  }
 
   & .breadcrumb {
     padding-bottom: 0;
