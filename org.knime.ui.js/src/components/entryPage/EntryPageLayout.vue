@@ -1,0 +1,94 @@
+<script>
+// import RocketIcon from 'webapps-common/ui/assets/img/icons/rocket.svg';
+import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
+
+import { APP_ROUTES, getPathFromRouteName } from '@/router';
+import Page from '@/components/common/Page.vue';
+import PageHeader from '@/components/common/PageHeader.vue';
+import PageSideMenu from '@/components/common/PageSideMenu.vue';
+
+export default {
+    components: {
+        Page,
+        PageHeader,
+        PageSideMenu
+    },
+
+    data() {
+        return {
+            sidebarItems: [
+                // TODO: bring back when Get Started page is displayed
+                // {
+                //     route: getPathFromRouteName(APP_ROUTES.EntryPage.GetStartedPage),
+                //     text: 'Get started',
+                //     icon: RocketIcon
+                // },
+                {
+                    route: getPathFromRouteName(APP_ROUTES.EntryPage.SpaceSelectionPage),
+                    text: 'Spaces',
+                    icon: CubeIcon
+                }
+            ]
+        };
+    },
+
+    computed: {
+        pageTitle() {
+            const titles = {
+                [APP_ROUTES.EntryPage.GetStartedPage]: 'Get started',
+                [APP_ROUTES.EntryPage.SpaceSelectionPage]: 'Spaces'
+            };
+
+            return titles[this.$route.name];
+        }
+    },
+
+    beforeMount() {
+        // TODO: remove when Get Started page is displayed
+        // as this overules the redirects to the Get Started page and uses the selection page instead
+        this.$router.push({ name: APP_ROUTES.EntryPage.SpaceSelectionPage });
+    }
+};
+</script>
+
+<template>
+  <Page with-background>
+    <PageHeader
+      :left-offset="3"
+      :title="pageTitle"
+    />
+    
+    <section class="main-content-wrapper">
+      <div class="grid-container">
+        <div class="grid-item-2 sidebar">
+          <PageSideMenu :items="sidebarItems" />
+        </div>
+
+        <div class="grid-item-9 main-content">
+          <RouterView />
+        </div>
+      </div>
+    </section>
+  </Page>
+</template>
+
+<style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
+section.main-content-wrapper {
+  flex: 1;
+
+  & .grid-container {
+    height: 100%;
+  }
+
+  & .main-content {
+    display: flex;
+    flex-direction: column;
+
+    & >:last-child:has(.recent-workflows) {
+      flex: 1
+    }
+  }
+}
+</style>

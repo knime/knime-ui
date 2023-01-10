@@ -9,7 +9,7 @@ import { TABS } from '@/store/panel';
 import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
 import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
-import SpaceExplorer from '@/components/spaceExplorer/SpaceExplorer.vue';
+import SpaceExplorer from '@/components/spaces/SpaceExplorer.vue';
 
 import LeftCollapsiblePanel from './LeftCollapsiblePanel.vue';
 

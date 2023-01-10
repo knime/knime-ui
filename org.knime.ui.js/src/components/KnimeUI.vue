@@ -78,14 +78,14 @@ export default {
             }
 
             if (!this.workflow) {
-                await this.$router.push({ name: APP_ROUTES.EntryPage.name });
+                await this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
                 return;
             }
 
             const { info: { containerId: workflowId }, projectId } = this.workflow;
 
             await this.$router.push({
-                name: APP_ROUTES.WorkflowPage.name,
+                name: APP_ROUTES.WorkflowPage,
                 params: { workflowId, projectId, skipGuards: true }
             });
         },

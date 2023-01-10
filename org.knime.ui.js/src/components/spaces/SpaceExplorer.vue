@@ -29,22 +29,25 @@ export default {
     },
 
     computed: {
-        ...mapState('spaceExplorer', ['currentWorkflowGroup']),
-        ...mapGetters('spaceExplorer', ['openedWorkflowItems']),
+        ...mapState('spaces', {
+            activeWorkflowGroup: state => state.activeSpace?.activeWorkflowGroup,
+            spaceId: state => state.activeSpace?.spaceId
+        }),
+        ...mapGetters('spaces', ['openedWorkflowItems']),
 
         fileExplorerItems() {
-            return this.currentWorkflowGroup.items.map(item => ({
+            return this.activeWorkflowGroup.items.map(item => ({
                 ...item,
                 displayOpenIndicator: this.openedWorkflowItems.includes(item.id)
             }));
         },
 
         breadcrumbItems() {
-            if (!this.currentWorkflowGroup) {
+            if (!this.activeWorkflowGroup) {
                 return [];
             }
 
-            const { path } = this.currentWorkflowGroup;
+            const { path } = this.activeWorkflowGroup;
             const rootBreadcrumb = {
                 text: 'Home',
                 id: 'root',
@@ -62,10 +65,10 @@ export default {
         },
 
         fullPath() {
-            if (!this.currentWorkflowGroup) {
+            if (!this.activeWorkflowGroup) {
                 return '';
             }
-            const { path } = this.currentWorkflowGroup;
+            const { path } = this.activeWorkflowGroup;
             return ['home'].concat(path.map(({ name }) => name)).join('/');
         }
     },
@@ -91,7 +94,7 @@ export default {
         async fetchWorkflowGroupContent(itemId) {
             this.setLoading(true);
 
-            await this.$store.dispatch('spaceExplorer/fetchWorkflowGroupContent', { itemId });
+            await this.$store.dispatch('spaces/fetchWorkflowGroupContent', { itemId });
 
             this.setLoading(false);
         },
@@ -99,13 +102,13 @@ export default {
         async onChangeDirectory(pathId) {
             this.setLoading(true);
 
-            await this.$store.dispatch('spaceExplorer/changeDirectory', { pathId });
+            await this.$store.dispatch('spaces/changeDirectory', { pathId });
 
             this.setLoading(false);
         },
 
         onOpenFile({ id }) {
-            this.$store.dispatch('spaceExplorer/openWorkflow', {
+            this.$store.dispatch('spaces/openWorkflow', {
                 workflowItemId: id,
                 // send in router so it can be used to navigate to an already open workflow
                 $router: this.$router
@@ -129,10 +132,10 @@ export default {
     </div>
 
     <FileExplorer
-      v-if="currentWorkflowGroup && !isLoading"
+      v-if="activeWorkflowGroup && !isLoading"
       :mode="mode"
       :items="fileExplorerItems"
-      :is-root-folder="currentWorkflowGroup.path.length === 0"
+      :is-root-folder="activeWorkflowGroup.path.length === 0"
       @change-directory="onChangeDirectory"
       @open-file="onOpenFile"
     />
