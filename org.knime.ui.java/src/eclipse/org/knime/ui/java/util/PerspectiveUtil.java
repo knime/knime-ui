@@ -46,6 +46,8 @@
  */
 package org.knime.ui.java.util;
 
+import java.util.Optional;
+
 import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.e4.ui.model.application.ui.MUIElement;
 import org.eclipse.e4.ui.model.application.ui.advanced.MArea;
@@ -59,11 +61,14 @@ import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.knime.ui.java.browser.KnimeBrowserView;
 import org.knime.workbench.editor2.WorkflowEditor;
+import org.knime.workbench.explorer.ExplorerMountTable;
+import org.knime.workbench.explorer.localworkspace.LocalWorkspaceContentProvider;
 
 /**
  * Utility methods and constants to manage switching between Web UI and classic perspectives.
  *
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH
  */
 public final class PerspectiveUtil {
 
@@ -98,6 +103,11 @@ public final class PerspectiveUtil {
      * Used for sharing editors across different perspectives.
      */
     public static final String SHARED_EDITOR_AREA_ID = "org.eclipse.ui.editorss";
+
+    /**
+     * To find the {@link LocalWorkspaceContentProvider} within the list of mounted content providers
+     */
+    private static final String LOCAL_CONTENT_PROVIDER_ID = "LOCAL";
 
     private static boolean isClassicPerspectiveLoaded = false;
 
@@ -192,8 +202,6 @@ public final class PerspectiveUtil {
         webUIPerspective.getChildren().add(sashContainer);
     }
 
-
-
     /**
      * Create a placeholder part for the given element. By convention, the placeholder receives the same ID as the
      * source element. This is essential e.g. when using the shared editor area in different perspectives.
@@ -209,4 +217,14 @@ public final class PerspectiveUtil {
         placeholder.getTags().addAll(sourceElement.getTags());
         return placeholder;
     }
+
+    /**
+     * Calls {@link LocalWorkspaceContentProvider#refresh()} to keep the workflow files in sync
+     */
+    public static void refreshLocalWorkspaceContentProvider() {
+        Optional.ofNullable(ExplorerMountTable.getMountedContent().get(LOCAL_CONTENT_PROVIDER_ID))//
+            .map(LocalWorkspaceContentProvider.class::cast)//
+            .ifPresent(LocalWorkspaceContentProvider::refresh);
+    }
+
 }

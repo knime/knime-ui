@@ -99,6 +99,7 @@ import org.knime.workbench.editor2.WorkflowEditor;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH
  */
 @SuppressWarnings("restriction") // Accessing Eclipse-internal APIs
 public final class EclipseUIStateUtil {
