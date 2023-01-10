@@ -151,16 +151,9 @@ section.space-provider {
   }
 
   & .cards {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-content: space-between;
-    --card-margin: 24px;
-
-    & .card {
-      margin-bottom: var(--card-margin);
-      flex-basis: calc(50% - var(--card-margin) / 2);
-    }
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 </style>
