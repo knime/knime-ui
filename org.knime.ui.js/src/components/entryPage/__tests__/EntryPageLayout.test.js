@@ -3,14 +3,24 @@ import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
-import SpaceExplorer from '@/components/spaceExplorer/SpaceExplorer.vue';
-import EntryPage from '../EntryPage.vue';
+import Page from '@/components/common/Page.vue';
+import PageHeader from '@/components/common/PageHeader.vue';
+import PageSideMenu from '@/components/common/PageSideMenu.vue';
+import EntryPageLayout from '../EntryPageLayout.vue';
 
-describe('EntryPage', () => {
+describe('EntryPageLayout', () => {
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
     });
+
+    const $router = {
+        push: jest.fn()
+    };
+
+    const $route = {
+        name: 'Spaces'
+    };
 
     const doShallowMount = () => {
         const storeConfig = {
@@ -31,16 +41,18 @@ describe('EntryPage', () => {
         };
 
         const $store = mockVuexStore(storeConfig);
-        const wrapper = shallowMount(EntryPage, {
-            mocks: { $store }
+        const wrapper = shallowMount(EntryPageLayout, {
+            mocks: { $store, $route, $router }
         });
         return { wrapper, $store };
     };
 
-    it('renders renders the SpaceExplorer', () => {
+    it('renders the components', () => {
         const { wrapper } = doShallowMount();
 
-        expect(wrapper.findComponent(SpaceExplorer).exists()).toBe(true);
+        expect(wrapper.findComponent(Page).exists()).toBe(true);
+        expect(wrapper.findComponent(PageHeader).exists()).toBe(true);
+        expect(wrapper.findComponent(PageSideMenu).exists()).toBe(true);
     });
 
     it('shows banner with right text if release update is available', () => {

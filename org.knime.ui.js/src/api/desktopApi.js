@@ -152,3 +152,43 @@ export const openWorkflowCoachPreferencePage = () => {
         consola.error(`Could not open preference page`, e);
     }
 };
+
+/**
+ * @typedef SpaceProvider
+ * @property {String} id
+ * @property {String} name
+ * @property {Boolean} connected
+ * @property {'AUTHENTICATED' | 'ANONYMOUS' | 'AUTOMATIC'} connectionMode
+ */
+/**
+ * Get all available space providers
+ * @returns {Record<string, SpaceProvider>}
+ */
+export const fetchAllSpaceProviders = () => {
+    try {
+        const spaceProviders = window.getSpaceProviders();
+        return Promise.resolve(JSON.parse(spaceProviders));
+    } catch (error) {
+        consola.error(`Could not fetch space providers`, error);
+        throw error;
+    }
+};
+
+export const connectSpaceProvider = ({ spaceProviderId }) => {
+    try {
+        window.connectSpaceProvider(spaceProviderId);
+    } catch (error) {
+        consola.error(`Could not connect to provider`, { spaceProviderId, error });
+        throw error;
+    }
+};
+
+export const disconnectSpaceProvider = ({ spaceProviderId }) => {
+    try {
+        const user = window.disconnectSpaceProvider(spaceProviderId);
+        return JSON.parse(user);
+    } catch (error) {
+        consola.error(`Could not disconnect from provider`, { spaceProviderId, error });
+        throw error;
+    }
+};

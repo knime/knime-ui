@@ -31,15 +31,15 @@ export default ({ store: $store, router: $router }) => {
             const currentProjectId = $store.state.application.activeProjectId;
             const nextActiveProject = openProjects.find(item => item.activeWorkflow);
             
-            // Navigate to EntryPage when no projects are open
+            // Navigate to GetStarted page when no projects are open
             if (openProjects.length === 0) {
-                await $router.push({ name: APP_ROUTES.EntryPage.name });
+                await $router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
             }
             
             // When a new project is set as active, navigate to the corresponding workflow
             if (nextActiveProject && currentProjectId !== nextActiveProject.projectId) {
                 await $router.push({
-                    name: APP_ROUTES.WorkflowPage.name,
+                    name: APP_ROUTES.WorkflowPage,
                     params: {
                         projectId: nextActiveProject.projectId,
                         workflowId: 'root',

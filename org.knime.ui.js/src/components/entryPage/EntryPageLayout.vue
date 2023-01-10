@@ -1,15 +1,40 @@
 <script>
 import { mapState } from 'vuex';
 import Button from 'webapps-common/ui/components/Button.vue';
-import SpaceExplorer from '@/components/spaceExplorer/SpaceExplorer.vue';
-import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
+// import RocketIcon from 'webapps-common/ui/assets/img/icons/rocket.svg';
+import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
+
+import { APP_ROUTES, getPathFromRouteName } from '@/router';
+import Page from '@/components/common/Page.vue';
+import PageHeader from '@/components/common/PageHeader.vue';
+import PageSideMenu from '@/components/common/PageSideMenu.vue';
 
 export default {
     components: {
-        Button,
-        SpaceExplorer,
-        ComputerDesktopIcon
+        Page,
+        PageHeader,
+        PageSideMenu,
+        Button
     },
+
+    data() {
+        return {
+            sidebarItems: [
+                // TODO: bring back when Get Started page is displayed
+                // {
+                //     route: getPathFromRouteName(APP_ROUTES.EntryPage.GetStartedPage),
+                //     text: 'Get started',
+                //     icon: RocketIcon
+                // },
+                {
+                    route: getPathFromRouteName(APP_ROUTES.EntryPage.SpaceSelectionPage),
+                    text: 'Spaces',
+                    icon: CubeIcon
+                }
+            ]
+        };
+    },
+
     computed: {
         ...mapState('application', ['availableUpdates']),
         updateMessage() {
@@ -29,7 +54,21 @@ export default {
             }
 
             return null;
+        },
+        pageTitle() {
+            const titles = {
+                [APP_ROUTES.EntryPage.GetStartedPage]: 'Get started',
+                [APP_ROUTES.EntryPage.SpaceSelectionPage]: 'Spaces'
+            };
+
+            return titles[this.$route.name];
         }
+    },
+
+    beforeMount() {
+        // TODO: remove when Get Started page is displayed
+        // as this overules the redirects to the Get Started page and uses the selection page instead
+        this.$router.push({ name: APP_ROUTES.EntryPage.SpaceSelectionPage });
     },
     methods: {
         openUpdateDialog() {
@@ -40,31 +79,20 @@ export default {
 </script>
 
 <template>
-  <main ref="main">
-    <header>
+  <Page with-background>
+    <PageHeader
+      :left-offset="3"
+      :title="pageTitle"
+    />
+    
+    <section class="main-content-wrapper">
       <div class="grid-container">
-        <div class="grid-item-12 space-info">
-          <span class="space-type">
-            <ComputerDesktopIcon class="space-icon" />
-            Local space
-          </span>
-          <span class="space-name">Your Local Space</span>
+        <div class="grid-item-2 sidebar">
+          <PageSideMenu :items="sidebarItems" />
         </div>
-      </div>
-    </header>
 
-    <section class="toolbar-wrapper">
-      <div class="grid-container">
-        <div class="grid-item-12">
-          <div class="toolbar" />
-        </div>
-      </div>
-    </section>
-
-    <section class="space-explorer-wrapper">
-      <div class="grid-container">
-        <div class="grid-item-12">
-          <SpaceExplorer />
+        <div class="grid-item-9 main-content">
+          <RouterView />
         </div>
       </div>
     </section>
@@ -87,80 +115,30 @@ export default {
         </div>
       </div>
     </section>
-  </main>
+  </Page>
 </template>
 
 <style lang="postcss" scoped>
 @import "@/assets/mixins.css";
 
-main {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--knime-white);
-  overflow-y: scroll;
-  align-items: stretch;
-  height: 100%;
-}
-
-header {
-  font-family: Roboto, sans-serif;
-  min-height: 150px;
+section.main-content-wrapper {
+  flex: 1;
 
   & .grid-container {
     height: 100%;
   }
 
-  & .space-info {
-    display: flex !important;
-    align-items: flex-start;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  & .space-type {
-    font-size: 16px;
-    color: var(--knime-masala);
+  & .main-content {
     display: flex;
+    flex-direction: column;
 
-    & .space-icon {
-      @mixin svg-icon-size 18;
-
-      margin-right: 5px;
-      stroke: var(--knime-masala);
+    & > :last-child:has(.recent-workflows) {
+      flex: 1;
     }
   }
-
-  & .space-name {
-    font-size: 36px;
-    font-weight: 700;
-    color: var(--knime-masala);
-  }
 }
 
-.toolbar-wrapper {
-  min-height: 60px;
-  background: var(--knime-gray-light-semi);
-
-  & .grid-container,
-  & .grid-item-12,
-  & .toolbar {
-    height: 100%;
-  }
-
-  & .toolbar {
-    display: flex;
-    align-items: center;
-  }
-}
-
-.space-explorer-wrapper {
-  background: var(--knime-porcelain);
-  padding-top: 50px;
-  padding-bottom: 80px;
-  flex: 1;
-}
-
-.footer-wrapper {
+section.footer-wrapper {
   background-color: var(--knime-yellow);
 
   & .grid-container {

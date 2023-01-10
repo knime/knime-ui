@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 import KnimeUI from './components/KnimeUI.vue';
-import router from './router';
+import { router } from './router';
 
 import { silentLogger } from './plugins/logger';
 import { initStore } from './store';

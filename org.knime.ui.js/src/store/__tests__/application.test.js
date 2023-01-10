@@ -6,7 +6,7 @@ import { createLocalVue } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 import * as selectionStore from '@/store/selection';
 
-import router, { APP_ROUTES } from '@/router';
+import { APP_ROUTES, router } from '@/router';
 
 jest.mock('@/util/fuzzyPortTypeSearch', () => ({
     makeTypeSearch: jest.fn().mockReturnValue('searchFunction')
@@ -177,17 +177,17 @@ describe('application store', () => {
             await store.dispatch('application/initializeApplication', { $router: router });
 
             await router.push({
-                name: APP_ROUTES.WorkflowPage.name,
+                name: APP_ROUTES.WorkflowPage,
                 params: { projectId: 'foo', workflowId: 'bar' }
             });
             
-            await router.push({ name: APP_ROUTES.EntryPage.name });
+            await router.push({ name: APP_ROUTES.EntryPage });
 
             expect(dispatchSpy).toHaveBeenCalledWith('application/switchWorkflow', {
                 newWorkflow: null
             });
 
-            expect(router.currentRoute.name).toBe(APP_ROUTES.EntryPage.name);
+            expect(router.currentRoute.name).toBe(APP_ROUTES.EntryPage);
         });
 
         it('should load aworkflow when entering the worklow page', async () => {
@@ -196,7 +196,7 @@ describe('application store', () => {
             await store.dispatch('application/initializeApplication', { $router: router });
             
             await router.push({
-                name: APP_ROUTES.WorkflowPage.name,
+                name: APP_ROUTES.WorkflowPage,
                 params: { projectId: 'foo', workflowId: 'bar' }
             });
 
@@ -205,7 +205,7 @@ describe('application store', () => {
                 navigateToWorkflow: expect.anything()
             });
 
-            expect(router.currentRoute.name).toBe(APP_ROUTES.WorkflowPage.name);
+            expect(router.currentRoute.name).toBe(APP_ROUTES.WorkflowPage);
         });
        
 
@@ -215,12 +215,12 @@ describe('application store', () => {
             await store.dispatch('application/initializeApplication', { $router: router });
 
             await router.push({
-                name: APP_ROUTES.WorkflowPage.name,
+                name: APP_ROUTES.WorkflowPage,
                 params: { projectId: 'foo', workflowId: 'bar', skipGuards: true }
             });
 
             expect(dispatchSpy).not.toHaveBeenCalledWith('application/switchWorkflow');
-            expect(router.currentRoute.name).toBe(APP_ROUTES.WorkflowPage.name);
+            expect(router.currentRoute.name).toBe(APP_ROUTES.WorkflowPage);
         });
     });
 

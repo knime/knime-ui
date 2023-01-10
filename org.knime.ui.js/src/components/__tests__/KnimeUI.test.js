@@ -117,7 +117,7 @@ describe('KnimeUI.vue', () => {
         await Vue.nextTick();
 
         expect($router.push).toHaveBeenCalledWith({
-            name: APP_ROUTES.WorkflowPage.name,
+            name: APP_ROUTES.WorkflowPage,
             params: { projectId: 'project', workflowId: 'root', skipGuards: true }
         });
     });
@@ -133,7 +133,7 @@ describe('KnimeUI.vue', () => {
         await Vue.nextTick();
 
         expect($router.push).toHaveBeenCalledWith({
-            name: APP_ROUTES.EntryPage.name
+            name: APP_ROUTES.EntryPage.GetStartedPage
         });
     });
 

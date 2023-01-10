@@ -5,6 +5,8 @@ import PerspectiveSwitchIcon from 'webapps-common/ui/assets/img/icons/perspectiv
 import KnimeLogo from 'webapps-common/ui/assets/img/KNIME_Logo_gray.svg';
 import Button from 'webapps-common/ui/components/Button.vue';
 
+import Page from '@/components/common/Page.vue';
+import PageHeader from '@/components/common/PageHeader.vue';
 import OpenSourceCreditsModal from './OpenSourceCreditsModal.vue';
 
 export default {
@@ -14,6 +16,8 @@ export default {
         PerspectiveSwitchIcon,
         KnimeLogo,
         Button,
+        Page,
+        PageHeader,
         OpenSourceCreditsModal
     },
     methods: {
@@ -33,14 +37,8 @@ export default {
 </script>
 
 <template>
-  <main>
-    <header>
-      <div class="grid-container">
-        <div class="grid-item-12 page-title">
-          <h1>Information</h1>
-        </div>
-      </div>
-    </header>
+  <Page>
+    <PageHeader title="Information" />
 
     <!-- Forum section -->
     <section>
@@ -147,40 +145,11 @@ export default {
         </div>
       </div>
     </section>
-  </main>
+  </Page>
 </template>
 
 <style lang="postcss" scoped>
 @import "@/assets/mixins.css";
-
-main {
-  display: flex;
-  flex-direction: column;
-  color: var(--knime-masala);
-  overflow-y: auto;
-  height: 100%;
-}
-
-header {
-  min-height: 150px;
-
-  & .grid-container {
-    height: 100%;
-  }
-
-  & .page-title {
-    display: flex !important;
-    align-items: flex-start;
-    flex-direction: column;
-    justify-content: center;
-    margin-top: 20px;
-
-    & h1 {
-      font-size: 36px;
-      line-height: 42px;
-    }
-  }
-}
 
 section {
   background-color: var(--knime-gray-light-semi);
