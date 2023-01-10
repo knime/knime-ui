@@ -97,7 +97,7 @@ section.examples {
   padding-bottom: 20px;
 
   & .cards {
-    & [class*="grid-item-"]:not(:first-child):not(:last-child) {
+    & [class*="grid-item-"]:not(:first-child, :last-child) {
       margin: 0 15px;
     }
   }

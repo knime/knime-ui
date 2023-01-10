@@ -126,7 +126,6 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
-
 section.space-provider {
   padding-top: 30px;
   padding-bottom: 50px;
