@@ -34,7 +34,7 @@ button {
   display: flex;
   align-items: center;
 
-  /* height: calc((var(--icon-box-size) + 2) * 1px); */
+  height: calc((var(--icon-box-size) + 2) * 1px);
   border-radius: calc((var(--icon-box-size) + 2) / 2 * 1px);
   border: 1px solid var(--knime-silver-sand);
   color: var(--knime-masala);
