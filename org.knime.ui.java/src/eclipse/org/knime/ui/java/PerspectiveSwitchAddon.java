@@ -89,6 +89,7 @@ import org.osgi.service.event.Event;
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
+ * @author Kai Franze, KNIME GmbH
  */
 public final class PerspectiveSwitchAddon {
 
@@ -179,12 +180,16 @@ public final class PerspectiveSwitchAddon {
         KnimeBrowserView.clearView();
         setTrimsAndMenuVisible(true, m_modelService, m_app);
         switchToJavaUITheme();
-        // the color of the workflow editor canvas changes when switching back
+
+        // The color of the workflow editor canvas changes when switching back
         // -> this is a workaround to compensate for it
         // (couldn't be solved via css styling because the background color differs if the respective workflow
         // is write protected)
         EclipseUIStateUtil.getOpenWorkflowEditors(m_modelService, m_app)
             .forEach(WorkflowEditor::updateEditorBackgroundColor);
+
+        // Keeps Classic UI in sync with the file system
+        PerspectiveUtil.refreshLocalWorkspaceContentProvider();
 
         if (!Platform.OS_MACOSX.equals(Platform.getOS())) {
             System.clearProperty(PROP_CHROMIUM_EXTERNAL_MESSAGE_PUMP);
