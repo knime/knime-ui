@@ -110,9 +110,10 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
     public Object function(final Object[] arguments) {
         var spaceId = (String)arguments[0];
         var itemId = (String)arguments[1];
+        final var spaceProviderId =
+                arguments.length < 3 ? LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID : (String)arguments[2];
 
-        var space = DefaultSpaceService.getInstance().getSpace(spaceId,
-            LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID /* TODO NXT-1409 */);
+        final var space = DefaultSpaceService.getInstance().getSpace(spaceId, spaceProviderId);
         var localAbsolutePath = space.toLocalAbsolutePath(itemId);
         if (space instanceof LocalWorkspace) {
             if (PerspectiveUtil.isClassicPerspectiveLoaded()) {
@@ -120,12 +121,12 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
                 openWorkflowInClassicAndWebUIPerspective(localWorkspaceRoot.relativize(localAbsolutePath),
                     m_appStateProvider);
             } else {
-                var onWorkflowLoaded = getWorkflowLoadedCallback(m_appStateProvider, spaceId, itemId);
+                var onWorkflowLoaded = getWorkflowLoadedCallback(m_appStateProvider, spaceProviderId, spaceId, itemId);
                 openWorkflowInWebUIPerspectiveOnly(localAbsolutePath, onWorkflowLoaded);
             }
         } else {
             throw new UnsupportedOperationException(
-                "Opening a workflow from other then the local workspace is not supported, yet");
+                "Opening a workflow from other than the local workspace is not supported, yet");
         }
 
         return null;
@@ -153,14 +154,10 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
     }
 
     private static Consumer<WorkflowManager> getWorkflowLoadedCallback(final AppStateProvider appStateProvider,
-        final String spaceId, final String itemId) {
-        return wfm -> { // NOSONAR
+        final String spaceProviderId, final String spaceId, final String itemId) {
+        return wfm -> {
             var wpm = WorkflowProjectManager.getInstance();
-            var wfProj = createWorkflowProject(wfm, //
-                LocalSpaceUtil.LOCAL_SPACE_PROVIDER_ID, // TODO: parameterize w/ value provided by frontend; NXT-1409
-                spaceId, //
-                itemId //
-            );
+            var wfProj = createWorkflowProject(wfm, spaceProviderId, spaceId, itemId);
             var projectId = wfm.getNameWithID();
             wpm.addWorkflowProject(projectId, wfProj);
             wpm.openAndCacheWorkflow(projectId);
@@ -234,7 +231,7 @@ public class OpenWorkflowBrowserFunction extends BrowserFunction {
      * Open an editor for the given file store in the shared editor area.
      *
      * @param fileStore The file store for the editor.
-     * @throws PartInitException If the editor part could not be initialised.
+     * @throws PartInitException If the editor part could not be initialized.
      */
     private static void openEditor(final LocalExplorerFileStore fileStore) throws PartInitException {
         var input = new FileStoreEditorInput(fileStore);
