@@ -72,7 +72,7 @@ section.footer-wrapper {
 
   & .grid-container {
     & .update-bar {
-      height: 100px;
+      height: var(--app-update-banner-height);
       display: flex;
       justify-content: space-between;
       align-items: center;
