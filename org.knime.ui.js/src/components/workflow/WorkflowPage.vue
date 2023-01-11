@@ -1,7 +1,6 @@
 <script>
 import { mapState } from 'vuex';
 
-import HotkeyHandler from '@/components/application/HotkeyHandler.vue';
 import Splitter from '@/components/application/Splitter.vue';
 import Sidebar from '@/components/sidebar/Sidebar.vue';
 import NodeOutput from '@/components/output/NodeOutput.vue';
@@ -16,7 +15,6 @@ import WorkflowPanel from '@/components/workflow/WorkflowPanel.vue';
  */
 export default {
     components: {
-        HotkeyHandler,
         Sidebar,
         WorkflowPanel,
         NodeOutput,
@@ -35,7 +33,6 @@ export default {
     v-if="workflow"
     id="workflow-page"
   >
-    <HotkeyHandler />
     <WorkflowToolbar id="toolbar" />
     <TooltipContainer id="tooltip-container" />
     <Sidebar id="sidebar" />

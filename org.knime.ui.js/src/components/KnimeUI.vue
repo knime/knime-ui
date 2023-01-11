@@ -3,6 +3,7 @@ import { mapActions, mapState } from 'vuex';
 
 import UpdateBanner from '@/components/common/UpdateBanner.vue';
 import AppHeader from '@/components/application/AppHeader.vue';
+import HotkeyHandler from '@/components/application/HotkeyHandler.vue';
 import Error from '@/components/application/Error.vue';
 
 import { loadPageBuilder } from '@/components/embeddedViews/pagebuilderLoader';
@@ -17,6 +18,7 @@ export default {
     components: {
         UpdateBanner,
         AppHeader,
+        HotkeyHandler,
         Error
     },
 
@@ -138,6 +140,7 @@ export default {
     />
     
     <AppHeader id="header" />
+    <HotkeyHandler />
    
     <template v-if="loaded">
       <div :class="($route.meta.showUpdateBanner && availableUpdates) ? 'main-content-with-banner' : 'main-content'">

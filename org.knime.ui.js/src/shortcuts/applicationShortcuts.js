@@ -1,11 +1,4 @@
-import { openWorkflow, createWorkflow } from '@api';
-
 export default {
-    openWorkflow: {
-        text: 'Open workflow',
-        hotkey: ['Ctrl', 'O'],
-        execute: () => openWorkflow()
-    },
     closeWorkflow: {
         text: 'Close workflow',
         hotkey: ['Ctrl', 'W'],
@@ -17,6 +10,6 @@ export default {
     createWorkflow: {
         text: 'Create workflow',
         hotkey: ['Ctrl', 'N'],
-        execute: () => createWorkflow()
+        execute: ({ $store }) => $store.dispatch('spaces/createWorkflow')
     }
 };

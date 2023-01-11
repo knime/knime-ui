@@ -30,8 +30,9 @@ export default {
     },
     computed: {
         ...mapState('panel', ['activeTab', 'expanded']),
+        ...mapState('application', ['activeProjectId']),
         ...mapState('nodeRepository', ['isDescriptionPanelOpen']),
-        
+
         extensionPanelTransition() {
             // returns a functional component that is used as transition prop on <portal>. This way the transition
             // behaves as without portal, see https://portal-vue.linusb.org/api/portal-target.html#transition
@@ -78,11 +79,13 @@ export default {
         }
     },
     methods: {
-        ...mapMutations('panel', ['setActiveTab', 'closePanel', 'toggleExpanded']),
+        ...mapMutations('panel', ['closePanel', 'toggleExpanded']),
+        ...mapActions('panel', ['setCurrentProjectActiveTab']),
         ...mapActions('nodeRepository', ['closeDescriptionPanel']),
 
         isTabActive(tabName) {
-            return this.activeTab === tabName;
+            const activeTab = this.activeTab[this.activeProjectId] || TABS.WORKFLOW_METADATA;
+            return activeTab === tabName;
         },
 
         clickItem(tabName) {
@@ -90,7 +93,7 @@ export default {
             if (isAlreadyActive && this.expanded) {
                 this.closePanel();
             } else {
-                this.setActiveTab(tabName);
+                this.setCurrentProjectActiveTab(tabName);
             }
 
             this.closeDescriptionPanel();

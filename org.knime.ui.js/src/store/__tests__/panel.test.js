@@ -15,37 +15,57 @@ describe('panel store', () => {
 
     beforeEach(() => {
         store = mockVuexStore({
+            application: {
+                state: {
+                    activeProjectId: 'activeProject33'
+                }
+            },
             panel: panelStoreConfig
         });
     });
 
     it('creates an empty store', () => {
         expect(store.state.panel).toStrictEqual({
-            expanded: false,
-            activeTab: 'workflowMetadata'
+            expanded: true,
+            activeTab: {}
         });
     });
 
     it('toggles expanded', () => {
-        expect(store.state.panel.expanded).toBe(false);
+        expect(store.state.panel.expanded).toBe(true);
 
         store.commit('panel/toggleExpanded');
 
-        expect(store.state.panel.expanded).toBe(true);
+        expect(store.state.panel.expanded).toBe(false);
     });
 
     it('sets activeTab', () => {
-        store.state.panel.activeTab = 'somethingElse';
-        expect(store.state.panel.expanded).toBe(false);
-        expect(store.state.panel.activeTab).not.toBe('workflowMetadata');
-
-        store.commit('panel/setActiveTab', panelStoreConfig.TABS.WORKFLOW_METADATA);
+        const projectId = 'someProjectId1';
+        const anotherProject = 'anotherProjectId';
+        store.state.panel.activeTab = { [projectId]: 'somethingElse' };
         expect(store.state.panel.expanded).toBe(true);
-        expect(store.state.panel.activeTab).toBe('workflowMetadata');
+        expect(store.state.panel.activeTab[projectId]).not.toBe('workflowMetadata');
 
-        store.commit('panel/setActiveTab', panelStoreConfig.TABS.NODE_REPOSITORY);
+        store.commit('panel/setActiveTab', { projectId, activeTab: panelStoreConfig.TABS.WORKFLOW_METADATA });
         expect(store.state.panel.expanded).toBe(true);
-        expect(store.state.panel.activeTab).toBe('nodeRepository');
+        expect(store.state.panel.activeTab[projectId]).toBe('workflowMetadata');
+
+        store.commit('panel/setActiveTab', { projectId, activeTab: panelStoreConfig.TABS.NODE_REPOSITORY });
+        expect(store.state.panel.expanded).toBe(true);
+        expect(store.state.panel.activeTab[projectId]).toBe('nodeRepository');
+
+        store.commit('panel/setActiveTab', {
+            projectId: anotherProject,
+            activeTab: panelStoreConfig.TABS.SPACE_EXPLORER
+        });
+        expect(store.state.panel.expanded).toBe(true);
+        expect(store.state.panel.activeTab[anotherProject]).toBe('spaceExplorer');
+        expect(store.state.panel.activeTab[projectId]).toBe('nodeRepository');
+    });
+
+    it('sets active tab for current project', async () => {
+        await store.dispatch('panel/setCurrentProjectActiveTab', panelStoreConfig.TABS.NODE_REPOSITORY);
+        expect(store.state.panel.activeTab.activeProject33).toBe('nodeRepository');
     });
 
     it('closes the panel', () => {

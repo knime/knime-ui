@@ -79,7 +79,7 @@ export default {
             required: true
         },
         selectedPortIndex: {
-            type: [String, null],
+            type: Number,
             required: true
         },
         availablePortTypes: {
@@ -103,7 +103,7 @@ export default {
 
             return error;
         },
-        
+
         portErrors() {
             if (this.nodeErrors) {
                 return true;
@@ -186,7 +186,7 @@ export default {
     :project-id="projectId"
     :workflow-id="workflowId"
     :selected-node="selectedNode"
-    :selected-port-index="Number(selectedPortIndex)"
+    :selected-port-index="selectedPortIndex"
     @state-change="onPortViewLoaderStateChange"
   />
 </template>
