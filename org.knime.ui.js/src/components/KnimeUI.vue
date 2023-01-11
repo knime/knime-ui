@@ -179,7 +179,7 @@ export default {
 }
 
 .main-content-with-banner {
-  height: calc(100vh - var(--app-header-height) - 100px);
+  height: calc(100vh - var(--app-header-height) - var(--app-update-banner-height));
 }
 
 .loader {
