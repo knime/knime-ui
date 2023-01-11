@@ -37,11 +37,11 @@ export default {
         ...mapState('application', ['openProjects', 'activeProjectId', 'isLoadingWorkflow']),
 
         isInfoPageActive() {
-            return this.$route.name === APP_ROUTES.InfoPage.name;
+            return this.$route.name === APP_ROUTES.InfoPage;
         },
         
-        isEntryPageActive() {
-            return this.$route.name === APP_ROUTES.EntryPage.name;
+        isGetStartedPageActive() {
+            return this.$route.name === APP_ROUTES.EntryPage.GetStartedPage;
         },
 
         isLogoActive() {
@@ -52,7 +52,7 @@ export default {
             return (
                 this.openProjects.length === 0 ||
                 (!this.activeProjectId && !this.isLoadingWorkflow) ||
-                this.isEntryPageActive
+                this.isGetStartedPageActive
             );
         }
     },
@@ -88,18 +88,18 @@ export default {
                 this.$router.back();
             } else {
                 this.activeProjectTab = null;
-                this.$router.push({ name: APP_ROUTES.InfoPage.name });
+                this.$router.push({ name: APP_ROUTES.InfoPage });
             }
         },
 
-        setEntryPageTab() {
+        setGetStartedPageTab() {
             this.activeProjectTab = null;
-            this.$router.push({ name: APP_ROUTES.EntryPage.name });
+            this.$router.push({ name: APP_ROUTES.EntryPage.GetStartedPage });
         },
 
         onProjectTabChange(projectId) {
             this.$router.push({
-                name: APP_ROUTES.WorkflowPage.name,
+                name: APP_ROUTES.WorkflowPage,
                 params: { projectId, workflowId: 'root' }
             });
         }
@@ -112,7 +112,7 @@ export default {
     <div
       id="knime-logo"
       :class="[ isLogoActive ? 'active-logo' : null ]"
-      @click="setEntryPageTab()"
+      @click="setGetStartedPageTab()"
     >
       <KnimeIcon />
     </div>

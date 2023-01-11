@@ -62,7 +62,7 @@ import org.knime.core.ui.util.SWTUtilities;
 import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
 import org.knime.ui.java.PerspectiveSwitchAddon;
-import org.knime.ui.java.PerspectiveUtil;
+import org.knime.ui.java.util.PerspectiveUtil;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
@@ -88,19 +88,22 @@ public class SwitchToJavaUIBrowserFunction extends BrowserFunction {
             // all the open workflow projects will be closed on perspective switch, see PerspectiveSwitchAddon
 
             var openAndDirtyWorkflowProjects = getOpenAndDirtyWorkflowProjects();
-            var message = "In order to switch to the classic UI all opened workflows are being closed.\n";
             if (isWorkflowExecutionInProgress(openAndDirtyWorkflowProjects)) {
-                message += "However, there are workflows still executing. Can't switch to Classic UI.";
-                MessageDialog.openWarning(SWTUtilities.getActiveShell(), "Can't switch to Classic UI", message);
+                var message = "There are workflows that are still executing."
+                    + "\nBefore switching to classic user interface,"
+                    + " wait for the execution to finish or cancel the execution.";
+                MessageDialog.openInformation(SWTUtilities.getActiveShell(), "Can't switch to classic user interface",
+                    message);
                 return null;
             }
             if (!openAndDirtyWorkflowProjects.isEmpty()) {
                 // TODO NXT-1386
-                message += "However, there are open workflows with unsaved changes:\n\n";
+                var message = "There are open workflows with unsaved changes.\n\n";
                 message += openAndDirtyWorkflowProjects.stream().map(WorkflowProject::getName)
                     .collect(Collectors.joining("\n"));
-                message += "\n\nCan't switch to Classic UI. Please save or close the workflows first.";
-                MessageDialog.openWarning(SWTUtilities.getActiveShell(), "Can't switch to Classic UI", message);
+                message += "\n\nBefore switching to classic user interface, save workflows with unsaved changes.";
+                MessageDialog.openInformation(SWTUtilities.getActiveShell(), "Can't switch to classic user interface",
+                    message);
                 return null;
             }
         }

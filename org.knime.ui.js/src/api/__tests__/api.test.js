@@ -445,4 +445,33 @@ describe('API', () => {
             });
         });
     });
+    
+    describe('Space Service', () => {
+        it('fetchWorkflowGroupContent', async () => {
+            const spaceProviderId = 'provider';
+            const spaceId = 'space';
+            const itemId = 'item';
+            let result = await api.fetchWorkflowGroupContent({ spaceProviderId, spaceId, itemId });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'SpaceService.listWorkflowGroup',
+                params: [spaceId, spaceProviderId, itemId],
+                id: 0
+            });
+
+            expect(result).toStrictEqual('dummy');
+        });
+
+        it('fetchSpaceProvider', async () => {
+            await api.fetchSpaceProvider({ spaceProviderId: 'provider' });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'SpaceService.getSpaceProvider',
+                params: ['provider'],
+                id: 0
+            });
+        });
+    });
 });

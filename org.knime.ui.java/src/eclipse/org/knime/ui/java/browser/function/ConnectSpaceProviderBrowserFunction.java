@@ -2,7 +2,7 @@
  * ------------------------------------------------------------------------
  *
  *  Copyright by KNIME AG, Zurich, Switzerland
- *  Website: http://www.knime.org; Email: contact@knime.org
+ *  Website: http://www.knime.com; Email: contact@knime.com
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License, Version 3, as
@@ -43,69 +43,51 @@
  *  when such Node is propagated with or for interoperation with KNIME.
  * ---------------------------------------------------------------------
  *
+ * History
+ *   Jan 1, 2023 (hornm): created
  */
 package org.knime.ui.java.browser.function;
 
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.window.Window;
-import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.ui.PlatformUI;
-import org.knime.core.ui.util.SWTUtilities;
-import org.knime.gateway.impl.webui.AppStateProvider;
-import org.knime.workbench.explorer.ExplorerMountTable;
-import org.knime.workbench.explorer.localworkspace.LocalWorkspaceContentProvider;
-import org.knime.workbench.explorer.localworkspace.LocalWorkspaceContentProviderFactory;
-import org.knime.workbench.explorer.view.actions.NewWorkflowWizard;
+import org.knime.gateway.impl.webui.SpaceProvider;
+import org.knime.gateway.impl.webui.SpaceProvider.SpaceProviderConnection;
+import org.knime.gateway.impl.webui.SpaceProviders;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Display a wizard for creating a new workflow. Has the LOCAL mountpoint set as default parent. The wizard will create
- * the workflow files and open an editor for the newly created workflow in the Java UI.
+ * Connects a space provider to its remote location. I.e. essentially calls {@link SpaceProvider#connect()}.
  *
- * @author Benjamin Moser, KNIME GmbH, Konstanz, Germany
- * @see org.knime.workbench.explorer.view.actions.NewWorkflowWizard
+ * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class CreateWorkflowBrowserFunction extends BrowserFunction {
+public class ConnectSpaceProviderBrowserFunction extends BrowserFunction {
 
-    private final AppStateProvider m_appStateProvider;
+    private final SpaceProviders m_spaceProviders;
 
-    private static final int WIZARD_DIALOG_WIDTH = 470;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private static final int WIZARD_DIALOG_HEIGHT = 550;
-
-    @SuppressWarnings("javadoc")
-    public CreateWorkflowBrowserFunction(final Browser browser, final AppStateProvider appStateProvider) {
-        super(browser, "createWorkflow");
-        m_appStateProvider = appStateProvider;
+    /**
+     * @param browser
+     * @param spaceProviders
+     */
+    public ConnectSpaceProviderBrowserFunction(final Browser browser, final SpaceProviders spaceProviders) {
+        super(browser, "connectSpaceProvider");
+        m_spaceProviders = spaceProviders;
     }
 
     /**
-     * Display the "New KNIME Workflow" wizard
-     *
-     * @param arguments No parameters expected, parameter is ignored.
-     * @return Always {@code null}.
+     * {@inheritDoc}
      */
     @Override
     public Object function(final Object[] arguments) {
-        var newWorkflowWizard = new NewWorkflowWizard();
-        String defaultLocalMountpointID = new LocalWorkspaceContentProviderFactory().getDefaultMountID();
-        var localRootStore = ExplorerMountTable.getMountPoint(defaultLocalMountpointID).getProvider().getRootStore();
-        newWorkflowWizard.init(PlatformUI.getWorkbench(),
-                new StructuredSelection(localRootStore),
-                LocalWorkspaceContentProvider.class::isInstance
-        );
-        var wizardDialog = new WizardDialog(SWTUtilities.getActiveShell(), newWorkflowWizard);
-        wizardDialog.setHelpAvailable(false);
-        wizardDialog.create();
-        wizardDialog.getShell().setSize(Math.max(WIZARD_DIALOG_WIDTH, wizardDialog.getShell().getSize().x),
-            WIZARD_DIALOG_HEIGHT);
-        var response = wizardDialog.open();
-        if (response == Window.OK) {
-            m_appStateProvider.updateAppState();
+        var spaceProviderId = (String)arguments[0];
+        var spaceProvider = m_spaceProviders.getProvidersMap().get(spaceProviderId);
+        if (spaceProvider != null && spaceProvider.getConnection(false).isEmpty()) {
+            var username = spaceProvider.getConnection(true).map(SpaceProviderConnection::getUsername).orElse(null);
+            return MAPPER.createObjectNode().putObject("user").put("name", username).toPrettyString();
         }
-        // Do nothing if wizard is aborted.
         return null;
     }
+
 }

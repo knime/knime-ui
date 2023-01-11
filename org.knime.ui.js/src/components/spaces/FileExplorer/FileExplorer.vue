@@ -254,6 +254,10 @@ export default {
         @dblclick="onItemDoubleClick(item)"
       >
         <td class="item-icon">
+          <span
+            v-if="item.displayOpenIndicator"
+            class="open-indicator"
+          />
           <Component :is="getTypeIcon(item)" />
         </td>
           
@@ -265,10 +269,10 @@ export default {
           {{ item.name }}
         </td>
 
-        <!-- <td class="item-option"> -->
-        <!-- TODO: add later -->
-        <!-- <MenuOptionsIcon /> -->
-        <!-- </td> -->
+        <td class="item-option">
+          <!-- TODO: add later -->
+          <!-- <MenuOptionsIcon /> -->
+        </td>
       </tr>
         
       <tr
@@ -382,6 +386,18 @@ tbody.mini {
   & .item-icon {
     padding: var(--item-padding);
     width: 60px;
+    position: relative;
+
+    & .open-indicator {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: var(--knime-dove-gray);
+      border: 1px solid var(--knime-gray-ultra-light);
+      border-radius: 50%;
+      bottom: 4px;
+      right: 4px;
+    }
   }
 
   & .item-option {
