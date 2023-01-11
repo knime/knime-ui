@@ -111,7 +111,7 @@ export default {
                 return;
             }
 
-            // chose the first node of a metanode
+            // choose the first node of a metanode
             if (nodeKind === 'metanode') {
                 this.selectedTab = '0';
                 return;
