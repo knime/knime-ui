@@ -38,6 +38,7 @@ export default {
     },
     data() {
         return {
+            // string: either 'view' or the number of the port as string
             selectedTab: '',
             outputState: null
         };
@@ -65,13 +66,9 @@ export default {
             return this.selectedTab === 'view';
         },
 
-        selectedPortIndex: {
-            get() {
-                return this.isViewTabSelected ? null : this.selectedTab;
-            },
-            set(value) {
-                this.selectedTab = value;
-            }
+        selectedPortIndex() {
+            // tab values are port indexes if it's not the view tab as string
+            return this.isViewTabSelected ? null : Number(this.selectedTab);
         },
 
         validationErrors() {
@@ -104,32 +101,25 @@ export default {
         }
     },
     methods: {
-        // When switching between nodes, best effort is made to ensure that the selected port number remains constant
-        // If another node is selected that doesn't have the previously selected port, (eg. no flow variables)
-        // then a default for that kind of node is used and the previously selected port is overwritten
+        // select the first tab
         selectPort() {
             let { outPorts, kind: nodeKind } = this.singleSelectedNode;
 
-            // check if the currently selected port exists on that node
-            if (outPorts[this.selectedPortIndex]) {
-                // keep selected port index;
-                return;
-            }
-
-            // if we're moving to a node which has a view skip automatic port selection
+            // if a node has a view it's the first tab
             if (this.singleSelectedNode.hasView && this.$features.shouldDisplayEmbeddedViews()) {
                 this.selectedTab = 'view';
                 return;
             }
 
+            // chose the first node of a metanode
             if (nodeKind === 'metanode') {
-                // chose the first node of a metanode
-                this.selectedPortIndex = '0';
-            } else {
-                // node is component or native node
-                // select mickey-mouse port, if it is the only one, otherwise the first regular port
-                this.selectedPortIndex = outPorts.length > 1 ? '1' : '0';
+                this.selectedTab = '0';
+                return;
             }
+
+            // node is component or native node
+            // select mickey-mouse port, if it is the only one, otherwise the first regular port
+            this.selectedTab = outPorts.length > 1 ? '1' : '0';
         },
         executeNode() {
             this.$store.dispatch('workflow/executeNodes', [this.singleSelectedNode.id]);
@@ -147,7 +137,7 @@ export default {
       :node="singleSelectedNode"
       :disabled="!canSelectTabs"
     />
-    
+
     <!-- Error Message / Placeholder message -->
     <div
       v-if="outputState"
