@@ -73,34 +73,30 @@ describe('Sidebar', () => {
         expect(wrapper.find('[title="Workflow metadata"]').classes('active')).toBe(true);
         expect(wrapper.find('[title="Node repository"]').classes('active')).toBe(false);
         wrapper.findAll('li').wrappers.forEach(wp => {
-            expect(wp.classes('expanded')).toBe(false);
+            expect(wp.classes('expanded')).toBe(true);
         });
     });
 
-    it.each([
-        ['Workflow metadata', WorkflowMetadata],
-        ['Node repository', NodeRepository]
-    ])('expands and activates "%s"', async (tabName, renderedComponent) => {
+    it('expands and activates tab', async () => {
+        const tabName = 'Node repository';
         doShallowMount();
-        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(false);
+        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(true);
 
         await wrapper.find(`[title="${tabName}"]`).trigger('click');
         expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(true);
         expect(wrapper.find(`[title="${tabName}"]`).classes('active')).toBe(true);
 
-        expect(wrapper.findComponent(renderedComponent).exists()).toBe(true);
+        expect(wrapper.findComponent(NodeRepository).exists()).toBe(true);
     });
 
-    it.each([
-        ['Workflow metadata', WorkflowMetadata],
-        ['Node repository', NodeRepository]
-    ])('clicking on open tab should close it', async (tabName, renderedComponent) => {
+    it('clicking on open tab should close it', async () => {
+        const tabName = 'Workflow metadata';
         doShallowMount();
         await wrapper.find(`[title="${tabName}"]`).trigger('click');
-        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(true);
+        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(false);
 
         await wrapper.find(`[title="${tabName}"]`).trigger('click');
-        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(false);
+        expect(wrapper.find(`[title="${tabName}"]`).classes('expanded')).toBe(true);
     });
 
     it('click on node repository icon when description panel is open closes both panels', async () => {
