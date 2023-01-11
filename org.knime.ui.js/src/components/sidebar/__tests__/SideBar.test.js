@@ -40,6 +40,11 @@ describe('Sidebar', () => {
         };
 
         store = mockVuexStore({
+            application: {
+                state: {
+                    activeProjectId: 'activeProject1'
+                }
+            },
             workflow: {
                 state: {
                     activeWorkflow: workflow
@@ -48,7 +53,7 @@ describe('Sidebar', () => {
             panel: panelStoreConfig,
             nodeRepository: nodeRepositoryStoreConfig
         });
-        
+
         doShallowMount = () => {
             wrapper = shallowMount(Sidebar, {
                 mocks: {
@@ -105,7 +110,7 @@ describe('Sidebar', () => {
         // emulate opening the description panel
         await store.dispatch('nodeRepository/openDescriptionPanel');
         expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(true);
-        
+
         await wrapper.find('[title="Node repository"]').trigger('click');
         expect(store.state.nodeRepository.isDescriptionPanelOpen).toBe(false);
     });

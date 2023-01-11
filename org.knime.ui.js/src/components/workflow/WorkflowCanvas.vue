@@ -24,7 +24,6 @@ export default {
         ...mapGetters('workflow', ['isWorkflowEmpty']),
         ...mapState('nodeRepository', { isDraggingNodeFromRepository: 'isDraggingNode' }),
         ...mapState('canvas', ['zoomFactor']),
-        ...mapState('application', ['activeProjectId']),
         ...mapState('workflow', ['activeWorkflow'])
     },
     watch: {
