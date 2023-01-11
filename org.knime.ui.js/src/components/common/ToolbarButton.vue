@@ -1,6 +1,24 @@
 <!-- A native button for use inside a toolbar. This is just used for styling. -->
+<script>
+export default {
+    props: {
+        withText: {
+            type: Boolean,
+            default: false
+        },
+        primary: {
+            type: Boolean,
+            default: false
+        }
+    }
+};
+</script>
+
 <template>
-  <button tabindex="1">
+  <button
+    :class="{ 'with-text': withText, primary }"
+    tabindex="1"
+  >
     <slot />
   </button>
 </template>
@@ -15,7 +33,8 @@ button {
 
   display: flex;
   align-items: center;
-  height: calc((var(--icon-box-size) + 2) * 1px);
+
+  /* height: calc((var(--icon-box-size) + 2) * 1px); */
   border-radius: calc((var(--icon-box-size) + 2) / 2 * 1px);
   border: 1px solid var(--knime-silver-sand);
   color: var(--knime-masala);
@@ -31,6 +50,12 @@ button {
     padding-left: 2px;
   }
 
+  &.primary {
+    background: var(--knime-yellow);
+    border-color: var(--knime-yellow);
+  }
+
+  /* Style icon in slot */
   & svg {
     @mixin svg-icon-size var(--icon-size);
 
@@ -51,6 +76,7 @@ button {
       color: var(--knime-black);
       border-color: var(--knime-black);
 
+      /* Style icon in slot */
       & svg {
         stroke: var(--knime-black);
       }
@@ -72,6 +98,7 @@ button {
       border-color: var(--knime-black);
     }
 
+    /* Style icon in slot */
     &:hover svg,
     &:active svg {
       stroke: var(--knime-white);

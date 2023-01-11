@@ -1,5 +1,5 @@
 <script>
-import ToolbarButton from './ToolbarButton.vue';
+import ToolbarButton from '@/components/common/ToolbarButton.vue';
 
 export default {
     components: {
@@ -28,7 +28,8 @@ export default {
 
 <template>
   <ToolbarButton
-    :class="['toolbar-button', { 'with-text': shortcut.text }]"
+    class="toolbar-button"
+    :with-text="Boolean(shortcut.text)"
     :disabled="!enabled"
     :title="title"
     @click.native="$shortcuts.dispatch(name)"

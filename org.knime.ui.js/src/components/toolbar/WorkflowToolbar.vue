@@ -116,11 +116,12 @@ export default {
 }
 
 .button-list {
-  transition: opacity 150ms ease-out;
-  flex-shrink: 0;
+  /* transition: opacity 150ms ease-out;
+  flex-shrink: 0; */
   display: flex;
-  font-size: 14px;
-  user-select: none;
+
+  /* font-size: 14px;
+  user-select: none; */
 }
 
 .breadcrumb {

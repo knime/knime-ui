@@ -1,8 +1,8 @@
 import { shallowMount } from '@vue/test-utils';
 
 import IconComponent from '@/assets/redo.svg';
+import ToolbarButton from '@/components/common/ToolbarButton.vue';
 import ToolbarShortcutButton from '../ToolbarShortcutButton.vue';
-import ToolbarButton from '../ToolbarButton.vue';
 
 describe('ToolbarShortcutButton.vue', () => {
     let wrapper, doShallowMount, propsData, shortcut, $shortcuts;

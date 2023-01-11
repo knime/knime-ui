@@ -4,7 +4,6 @@ import { createLocalVue, mount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 import * as spacesStore from '@/store/spaces';
 
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
 import { fetchWorkflowGroupContent, createWorkflow } from '@api';
 
@@ -227,9 +226,9 @@ describe('SpaceExplorer.vue', () => {
             }
         };
 
-        expect(wrapper.findComponent(FunctionButton).exists()).toBe(true);
+        expect(wrapper.find('.create-workflow-mini-btn').exists()).toBe(true);
 
-        wrapper.findComponent(FunctionButton).vm.$emit('click');
+        wrapper.find('.create-workflow-mini-btn').trigger('click');
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow');
     });
 

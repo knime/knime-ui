@@ -1,10 +1,11 @@
 <script>
 import { mapGetters, mapState } from 'vuex';
 
-import PlusIcon from 'webapps-common/ui/assets/img/icons/plus-small.svg';
 import PlusButton from 'webapps-common/ui/components/PlusButton.vue';
-import FunctionButton from 'webapps-common/ui/components/FunctionButton.vue';
 import Breadcrumb from 'webapps-common/ui/components/Breadcrumb.vue';
+
+import PlusIcon from '@/assets/plus.svg';
+import ToolbarButton from '@/components/common/ToolbarButton.vue';
 
 import LoadingIcon from './LoadingIcon.vue';
 import FileExplorer from './FileExplorer.vue';
@@ -18,7 +19,7 @@ export default {
         Breadcrumb,
         PlusButton,
         PlusIcon,
-        FunctionButton
+        ToolbarButton
     },
 
     props: {
@@ -149,18 +150,15 @@ export default {
         @click-item="onBreadcrumbClick"
       />
 
-      <div
+      <ToolbarButton
         v-if="mode === 'mini'"
-        class="toolbar"
+        primary
+        class="create-workflow-mini-btn"
+        :title="createWorkflowButtonTitle"
+        @click.native="onCreateWorkflow"
       >
-        <FunctionButton
-          primary
-          :title="createWorkflowButtonTitle"
-          @click="onCreateWorkflow"
-        >
-          <PlusIcon />
-        </FunctionButton>
-      </div>
+        <PlusIcon />
+      </ToolbarButton>
     </div>
 
     <PlusButton
@@ -205,19 +203,16 @@ export default {
 .breadcrumb-wrapper {
   position: relative;
   display: flex;
+  padding-bottom: 5px;
   margin-bottom: 12px;
   width: 100%;
   border-bottom: 1px solid var(--knime-silver-sand);
   overflow-x: auto;
   align-items: center;
 
-  & .toolbar {
+  & .create-workflow-mini-btn {
     margin-left: auto;
     margin-right: 5px;
-    
-    & >>> svg {
-      @mixin svg-icon-size 15;
-    }
   }
 
   & .breadcrumb {
