@@ -27,7 +27,8 @@ describe('Event Plugin', () => {
             state: {
                 application: {}
             },
-            dispatch: jest.fn()
+            dispatch: jest.fn(),
+            commit: jest.fn()
         };
 
         const routerMock = {
@@ -44,7 +45,8 @@ describe('Event Plugin', () => {
         expect(Object.keys(registeredHandlers)).toStrictEqual([
             'WorkflowChangedEvent',
             'AppStateChangedEvent',
-            'UpdateAvailableEvent'
+            'UpdateAvailableEvent',
+            'SaveAndCloseWorkflowsEvent'
         ]);
     });
 
@@ -144,6 +146,16 @@ describe('Event Plugin', () => {
                     { openProjects: [{ id: 'mock' }] }
                 );
             });
+
+            it.todo('should clear the application busy state');
+        });
+        
+        describe('SaveAndCloseWorkflowsEvent', () => {
+            it.todo('should set the application busy state');
+
+            it.todo('should generate all unsaved project snapshots');
+
+            it.todo('should call the browser function with the correct parameters');
         });
     });
 });

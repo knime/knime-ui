@@ -4,6 +4,7 @@ import { mapActions, mapState } from 'vuex';
 import AppHeader from '@/components/application/AppHeader.vue';
 import HotkeyHandler from '@/components/application/HotkeyHandler.vue';
 import Error from '@/components/application/Error.vue';
+import LoadingOverlay from '@/components/application/LoadingOverlay.vue';
 
 import { loadPageBuilder } from '@/components/embeddedViews/pagebuilderLoader';
 import { APP_ROUTES } from '@/router';
@@ -17,7 +18,8 @@ export default {
     components: {
         AppHeader,
         HotkeyHandler,
-        Error
+        Error,
+        LoadingOverlay
     },
 
     data() {
@@ -145,10 +147,7 @@ export default {
       </div>
     </template>
     
-    <div
-      v-else
-      class="loader"
-    />
+    <LoadingOverlay />
   </div>
 </template>
 
@@ -168,18 +167,5 @@ export default {
   width: 100vw;
   height: calc(100vh - var(--app-header-height));
   grid-area: workflow;
-}
-
-.loader {
-  height: 100vh;
-
-  &::after {
-    content: "Loading…";
-    display: block;
-    position: absolute;
-    right: 10px;
-    bottom: 10px;
-    color: var(--knime-silver-sand);
-  }
 }
 </style>

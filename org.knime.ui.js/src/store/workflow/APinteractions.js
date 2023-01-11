@@ -37,21 +37,19 @@ export const mutations = { };
 
 export const actions = {
     /* See docs in API */
-    async saveWorkflow({ state, rootState, rootGetters }) {
-        const { getScrollContainerElement } = rootState.canvas;
-        const { activeWorkflow: { projectId, info: { containerId } } } = state;
-        
-        const getWorkflowPreviewSnapshot = rootGetters['application/getWorkflowPreviewSnapshot'];
+    async saveWorkflow({ state, dispatch, rootState }) {
+        const { activeWorkflow: { projectId } } = state;
 
-        const isRootWorkflow = containerId === 'root';
-
-        const svgElement = isRootWorkflow
-            ? getScrollContainerElement().firstChild
-            : getWorkflowPreviewSnapshot(projectId);
+        const workflowSnapshotElement = await dispatch(
+            'application/getActiveWorkflowSnapshot',
+            null,
+            { root: true }
+        );
 
         const isCanvasEmpty = rootState.canvas.isEmpty;
 
-        const workflowPreviewSvg = await generateWorkflowPreview(svgElement, isCanvasEmpty);
+        const workflowPreviewSvg = await generateWorkflowPreview(workflowSnapshotElement, isCanvasEmpty);
+        
         saveWorkflow({ projectId, workflowPreviewSvg });
     },
 
@@ -67,7 +65,7 @@ export const actions = {
         const didClose = await closeWorkflow({ closingProjectId, nextProjectId });
         
         if (didClose) {
-            dispatch('application/removeRootWorkflowSnapshot', { projectId: closingProjectId }, { root: true });
+            dispatch('application/removeFromRootWorkflowSnapshots', { projectId: closingProjectId }, { root: true });
             dispatch('application/removeCanvasState', closingProjectId, { root: true });
         }
     },
