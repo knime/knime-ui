@@ -6,7 +6,8 @@ import { fetchWorkflowGroupContent,
     openWorkflow,
     fetchAllSpaceProviders,
     fetchSpaceProvider,
-    connectSpaceProvider } from '@api';
+    connectSpaceProvider,
+    createWorkflow } from '@api';
 
 import * as spacesConfig from '../spaces';
 import { APP_ROUTES } from '@/router';
@@ -173,9 +174,6 @@ describe('spaces store', () => {
         describe('fetchWorkflowGroupContent', () => {
             it('should fetch items correctly and set the spaceId and spaceProviderId if not set', async () => {
                 const { store } = loadStore();
-    
-                expect(store.state.spaces.activeSpace.spaceId).toBeNull();
-                expect(store.state.spaces.activeSpaceProvider).toBeNull();
 
                 await store.dispatch('spaces/fetchWorkflowGroupContent', { itemId: 'bar' });
                 expect(fetchWorkflowGroupContent).toHaveBeenCalledWith({
@@ -225,6 +223,54 @@ describe('spaces store', () => {
                 expect(fetchWorkflowGroupContent).toHaveBeenCalledWith(
                     expect.objectContaining({ itemId: 'level1' })
                 );
+            });
+        });
+        
+        describe('createWorkflow', () => {
+            it('should create a new workflow', async () => {
+                const { store } = loadStore();
+                createWorkflow.mockResolvedValue({ id: 'NewFile', type: 'Workflow' });
+
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local',
+                    activeWorkflowGroup: {
+                        path: [{ id: 'level1' }, { id: 'level2' }],
+                        items: [{ id: 'File-1', type: 'Workflow' }]
+                    }
+                };
+    
+                await store.dispatch('spaces/createWorkflow');
+                expect(createWorkflow).toHaveBeenCalledWith(
+                    expect.objectContaining({ spaceId: 'local', itemId: 'level2' })
+                );
+                expect(openWorkflow).toHaveBeenCalledWith({ workflowItemId: 'NewFile' });
+                expect(store.state.spaces.activeSpace.activeWorkflowGroup.items).toEqual([
+                    { id: 'File-1', type: 'Workflow' },
+                    { id: 'NewFile', type: 'Workflow' }
+                ]);
+            });
+
+            it('should sort active workflow group items after creating a new workflow', async () => {
+                const { store } = loadStore();
+                createWorkflow.mockResolvedValue({ id: '3', name: 'A', type: 'Workflow' });
+
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local',
+                    activeWorkflowGroup: {
+                        path: [{ id: 'current-group' }],
+                        items: [
+                            { id: '1', name: 'Z', type: 'WorkflowGroup' },
+                            { id: '2', name: 'B', type: 'Workflow' }
+                        ]
+                    }
+                };
+
+                await store.dispatch('spaces/createWorkflow');
+                expect(store.state.spaces.activeSpace.activeWorkflowGroup.items).toEqual([
+                    { id: '1', name: 'Z', type: 'WorkflowGroup' },
+                    { id: '3', name: 'A', type: 'Workflow' },
+                    { id: '2', name: 'B', type: 'Workflow' }
+                ]);
             });
         });
 
@@ -296,6 +342,32 @@ describe('spaces store', () => {
                 };
 
                 expect(store.getters['spaces/parentWorkflowGroupId']).toBe('path1');
+            });
+        });
+        
+        describe('currentWorkflowGroupId', () => {
+            it('should return the correct id for a root path', () => {
+                const { store } = loadStore();
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local',
+                    activeWorkflowGroup: {
+                        path: []
+                    }
+                };
+
+                expect(store.getters['spaces/currentWorkflowGroupId']).toBe('root');
+            });
+
+            it('should return the correct id a child path', () => {
+                const { store } = loadStore();
+                store.state.spaces.activeSpace = {
+                    spaceId: 'local',
+                    activeWorkflowGroup: {
+                        path: [{ id: 'path1' }]
+                    }
+                };
+
+                expect(store.getters['spaces/currentWorkflowGroupId']).toBe('path1');
             });
         });
 

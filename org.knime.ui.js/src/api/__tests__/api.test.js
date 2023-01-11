@@ -462,6 +462,22 @@ describe('API', () => {
 
             expect(result).toStrictEqual('dummy');
         });
+        
+        it('createWorkflow', async () => {
+            const spaceProviderId = 'provider';
+            const spaceId = 'space';
+            const itemId = 'item';
+            let result = await api.createWorkflow({ spaceProviderId, spaceId, itemId });
+
+            expect(window.jsonrpc).toHaveBeenCalledWith({
+                jsonrpc: '2.0',
+                method: 'SpaceService.createWorkflow',
+                params: [spaceId, spaceProviderId, itemId],
+                id: 0
+            });
+
+            expect(result).toStrictEqual('dummy');
+        });
 
         it('fetchSpaceProvider', async () => {
             await api.fetchSpaceProvider({ spaceProviderId: 'provider' });

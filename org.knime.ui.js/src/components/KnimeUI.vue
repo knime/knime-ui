@@ -2,6 +2,7 @@
 import { mapActions, mapState } from 'vuex';
 
 import AppHeader from '@/components/application/AppHeader.vue';
+import HotkeyHandler from '@/components/application/HotkeyHandler.vue';
 import Error from '@/components/application/Error.vue';
 
 import { loadPageBuilder } from '@/components/embeddedViews/pagebuilderLoader';
@@ -15,6 +16,7 @@ import { APP_ROUTES } from '@/router';
 export default {
     components: {
         AppHeader,
+        HotkeyHandler,
         Error
     },
 
@@ -135,6 +137,7 @@ export default {
     />
     
     <AppHeader id="header" />
+    <HotkeyHandler />
    
     <template v-if="loaded">
       <div class="main-content">

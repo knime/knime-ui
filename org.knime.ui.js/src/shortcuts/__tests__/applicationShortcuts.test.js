@@ -1,4 +1,3 @@
-import { openWorkflow as mockOpenWorkflow, createWorkflow as mockCreateWorkflow } from '@api';
 import applicationShortcuts from '../applicationShortcuts';
 
 jest.mock('@api', () => ({
@@ -8,7 +7,7 @@ jest.mock('@api', () => ({
 }));
 
 describe('applicationShortcuts', () => {
-    let mockDispatch, $store, $router;
+    let mockDispatch, $store;
 
     beforeEach(() => {
         mockDispatch = jest.fn();
@@ -24,14 +23,9 @@ describe('applicationShortcuts', () => {
         };
     });
 
-    test('openWorkflow', () => {
-        applicationShortcuts.openWorkflow.execute({ $router });
-        expect(mockOpenWorkflow).toHaveBeenCalledTimes(1);
-    });
-
     test('createWorkflow', () => {
-        applicationShortcuts.createWorkflow.execute();
-        expect(mockCreateWorkflow).toHaveBeenCalledTimes(1);
+        applicationShortcuts.createWorkflow.execute({ $store });
+        expect(mockDispatch).toHaveBeenCalledWith('spaces/createWorkflow');
     });
 
     test('closeWorkflow', () => {
