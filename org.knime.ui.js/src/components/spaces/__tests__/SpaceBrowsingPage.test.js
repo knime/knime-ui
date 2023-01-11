@@ -3,25 +3,16 @@ import Vuex from 'vuex';
 import { createLocalVue, shallowMount } from '@vue/test-utils';
 import { mockVuexStore } from '@/test/test-utils';
 
-import Page from '@/components/common/Page.vue';
 import PageHeader from '@/components/common/PageHeader.vue';
-import PageSideMenu from '@/components/common/PageSideMenu.vue';
 import UpdateBanner from '@/components/common/UpdateBanner.vue';
-import EntryPageLayout from '../EntryPageLayout.vue';
+import SpaceExplorer from '../SpaceExplorer.vue';
+import SpaceBrowsingPage from '../SpaceBrowsingPage.vue';
 
-describe('EntryPageLayout', () => {
+describe('SpaceBrowsingPage', () => {
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
     });
-
-    const $router = {
-        push: jest.fn()
-    };
-
-    const $route = {
-        name: 'Spaces'
-    };
 
     const doShallowMount = () => {
         const storeConfig = {
@@ -42,8 +33,8 @@ describe('EntryPageLayout', () => {
         };
 
         const $store = mockVuexStore(storeConfig);
-        const wrapper = shallowMount(EntryPageLayout, {
-            mocks: { $store, $route, $router }
+        const wrapper = shallowMount(SpaceBrowsingPage, {
+            mocks: { $store }
         });
         return { wrapper, $store };
     };
@@ -51,9 +42,8 @@ describe('EntryPageLayout', () => {
     it('renders the components', () => {
         const { wrapper } = doShallowMount();
 
-        expect(wrapper.findComponent(Page).exists()).toBe(true);
         expect(wrapper.findComponent(PageHeader).exists()).toBe(true);
-        expect(wrapper.findComponent(PageSideMenu).exists()).toBe(true);
+        expect(wrapper.findComponent(SpaceExplorer).exists()).toBe(true);
         expect(wrapper.findComponent(UpdateBanner).exists()).toBe(true);
     });
 

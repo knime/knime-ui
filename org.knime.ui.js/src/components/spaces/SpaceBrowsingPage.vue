@@ -1,5 +1,7 @@
 <script>
+import { mapState } from 'vuex';
 import PageHeader from '@/components/common/PageHeader.vue';
+import UpdateBanner from '@/components/common/UpdateBanner.vue';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
 import SpaceExplorer from './SpaceExplorer.vue';
 
@@ -7,7 +9,11 @@ export default {
     components: {
         SpaceExplorer,
         ComputerDesktopIcon,
-        PageHeader
+        PageHeader,
+        UpdateBanner
+    },
+    computed: {
+        ...mapState('application', ['availableUpdates'])
     }
 };
 </script>
@@ -38,6 +44,10 @@ export default {
         </div>
       </div>
     </section>
+
+    <UpdateBanner
+      v-if="availableUpdates"
+    />
   </main>
 </template>
 
