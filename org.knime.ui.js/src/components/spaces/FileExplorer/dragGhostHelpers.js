@@ -131,6 +131,8 @@ const createGhostElement = ({ badgeCount, textContent, target, addShadow = false
 const removeNativeDragGhost = (dragEvent) => {
     const img = new Image();
     img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
+    dragEvent.dataTransfer.dropEffect = 'move';
+    dragEvent.dataTransfer.effectAllowed = 'move';
     dragEvent.dataTransfer.setDragImage(img, 0, 0);
 };
 

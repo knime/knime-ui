@@ -83,7 +83,7 @@ export default {
             this.multiSelectionState = multiSelectionService.getInitialState();
         },
 
-        canEnterDirectory(item) {
+        isDirectory(item) {
             return item.type === ITEM_TYPES.WorkflowGroup;
         },
 
@@ -130,7 +130,7 @@ export default {
         },
 
         onItemDoubleClick(item) {
-            if (this.canEnterDirectory(item)) {
+            if (this.isDirectory(item)) {
                 this.changeDirectory(item.id);
                 return;
             }
@@ -179,25 +179,48 @@ export default {
             this.removeGhosts = removeGhosts;
         },
 
-        onDragEnter(_, index) {
-            if (this.isSelected(index)) {
+        onDragEnter(index) {
+            if (this.isSelected(index) && index !== 'BACK') {
                 return;
             }
 
             if (index !== this.startDragItemIndex) {
-                const [draggedOverEl] = this.$refs[`item--${index}`];
+                const draggedOverEl = this.getItemElementByRefIndex(index);
                 draggedOverEl.classList.add('dragging-over');
             }
         },
 
-        onDragLeave(_, index) {
-            const [draggedOverEl] = this.$refs[`item--${index}`];
+        onDragLeave(index) {
+            const draggedOverEl = this.getItemElementByRefIndex(index);
             draggedOverEl.classList.remove('dragging-over');
         },
 
         onDragEnd() {
             this.isDragging = false;
             this.removeGhosts?.();
+        },
+        
+        onDrop(index) {
+            const droppedEl = this.getItemElementByRefIndex(index);
+            droppedEl.classList.remove('dragging-over');
+
+            if (index !== 'BACK' && !this.isDirectory(this.items[index])) {
+                return;
+            }
+
+            const selectedIndexes = multiSelectionService.getSelectedIndexes(this.multiSelectionState);
+            this.$emit('move', {
+                sourceItems: selectedIndexes.map(index => this.items[index].id),
+                targetItem: index === 'BACK' ? '..' : this.items[index].id
+            });
+        },
+
+        getItemElementByRefIndex(index) {
+            return index === 'BACK'
+                ? this.$refs[`item--${index}`]
+                // except for the "BACK" item, all others are present within a v-for
+                // so the refs are returned in a collection, but we only need the 1st item
+                : this.$refs[`item--${index}`][0];
         }
     }
 };
@@ -222,8 +245,13 @@ export default {
     <tbody :class="mode">
       <tr
         v-if="!isRootFolder"
+        ref="item--BACK"
         class="file-explorer-item"
         title="Go back"
+        @dragenter="onDragEnter('BACK')"
+        @dragleave="onDragLeave('BACK')"
+        @dragover.prevent
+        @drop.prevent="onDrop('BACK')"
         @dblclick="changeDirectory('..')"
       >
         <td
@@ -245,9 +273,11 @@ export default {
         :class="[item.type, { selected: !isDragging && isSelected(index), dragging: isDragging && isSelected(index) }]"
         :draggable="true"
         @dragstart="onDragStart($event, index)"
-        @dragenter="onDragEnter($event, index)"
-        @dragleave="onDragLeave($event, index)"
-        @dragend="onDragEnd($event, index)"
+        @dragenter="onDragEnter(index)"
+        @dragover.prevent
+        @dragleave="onDragLeave(index)"
+        @dragend="onDragEnd"
+        @drop.prevent="onDrop(index)"
         @click.exact="clickItem(index)"
         @click.exact.ctrl="ctrlClickItem(index)"
         @click.exact.shift="shiftClickItem(index)"
@@ -269,10 +299,10 @@ export default {
           {{ item.name }}
         </td>
 
-        <td class="item-option">
-          <!-- TODO: add later -->
-          <!-- <MenuOptionsIcon /> -->
-        </td>
+        <!-- <td class="item-option"> -->
+        <!-- TODO: add later -->
+        <!-- <MenuOptionsIcon /> -->
+        <!-- </td> -->
       </tr>
         
       <tr
@@ -327,11 +357,11 @@ tbody.mini {
   --selection-color: hsl(206deg 74% 90%/100%);
 
   user-select: none;
-  cursor: pointer;
   background: var(--knime-gray-ultra-light);
   margin-bottom: 3px;
   transition: box-shadow 0.15s;
   display: block;
+  border: 1px solid transparent;
 
   &:hover {
     box-shadow: 1px 1px 4px 0 var(--knime-gray-dark-semi);
@@ -347,18 +377,8 @@ tbody.mini {
   }
 
   &.dragging-over {
-    background: var(--selection-color);
-  }
-
-  &:not(.selected, .dragging, .dragging-over) .item-content {
-    &.light {
-      background-color: var(--knime-white);
-    }
-  }
-
-  /* Prevent children from interfering with drag events */
-  & td {
-    pointer-events: none;
+    background: var(--knime-porcelain);
+    border: 1px solid var(--knime-dove-gray);
   }
 
   & .item-content {
@@ -370,6 +390,17 @@ tbody.mini {
     overflow: hidden;
     white-space: nowrap;
     max-width: 250px;
+  }
+
+  &:not(.selected, .dragging, .dragging-over) .item-content {
+    &.light {
+      background-color: var(--knime-white);
+    }
+  }
+
+  /* Prevent children from interfering with drag events */
+  & td {
+    pointer-events: none;
   }
 
   & .item-icon,
