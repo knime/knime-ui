@@ -1,11 +1,11 @@
-import { shallowMount } from '@vue/test-utils';
+import { mount } from '@vue/test-utils';
 
 import IconComponent from '@/assets/redo.svg';
+import ToolbarButton from '@/components/common/ToolbarButton.vue';
 import ToolbarShortcutButton from '../ToolbarShortcutButton.vue';
-import ToolbarButton from '../ToolbarButton.vue';
 
 describe('ToolbarShortcutButton.vue', () => {
-    let wrapper, doShallowMount, propsData, shortcut, $shortcuts;
+    let wrapper, doMount, propsData, shortcut, $shortcuts;
 
     beforeEach(() => {
         shortcut = {
@@ -25,19 +25,19 @@ describe('ToolbarShortcutButton.vue', () => {
             name: 'save'
         };
 
-        doShallowMount = () => {
-            wrapper = shallowMount(ToolbarShortcutButton, { propsData, mocks: { $shortcuts } });
+        doMount = () => {
+            wrapper = mount(ToolbarShortcutButton, { propsData, mocks: { $shortcuts } });
         };
     });
 
     describe('renders button', () => {
         test('fetches shortcut', () => {
-            doShallowMount();
+            doMount();
             expect($shortcuts.get).toHaveBeenCalledWith('save');
         });
 
         test('renders full info', () => {
-            doShallowMount();
+            doMount();
 
             let toolbarButton = wrapper.getComponent(ToolbarButton);
             expect(toolbarButton.text()).toBe('save');
@@ -52,7 +52,7 @@ describe('ToolbarShortcutButton.vue', () => {
             shortcut = {
                 title: 'save workflow'
             };
-            doShallowMount();
+            doMount();
 
             let toolbarButton = wrapper.getComponent(ToolbarButton);
             expect(toolbarButton.text()).toBeFalsy();
@@ -64,7 +64,7 @@ describe('ToolbarShortcutButton.vue', () => {
 
         test('renders disabled', () => {
             $shortcuts.isEnabled.mockReturnValue(false);
-            doShallowMount();
+            doMount();
 
             expect($shortcuts.isEnabled).toHaveBeenCalledWith('save');
 
@@ -73,7 +73,7 @@ describe('ToolbarShortcutButton.vue', () => {
         });
 
         test('dispatches shortcut handler', () => {
-            doShallowMount();
+            doMount();
 
             wrapper.trigger('click');
             expect($shortcuts.dispatch).toHaveBeenCalledWith('save');

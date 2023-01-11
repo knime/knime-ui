@@ -5,6 +5,7 @@ import {
     connectSpaceProvider,
     disconnectSpaceProvider,
     fetchWorkflowGroupContent,
+    createWorkflow,
     openWorkflow
 // eslint-disable-next-line object-curly-newline
 } from '@api';
@@ -12,9 +13,9 @@ import {
 import { APP_ROUTES } from '@/router';
 
 export const state = () => ({
-    activeSpaceProvider: null,
+    activeSpaceProvider: { id: 'local' },
     activeSpace: {
-        spaceId: null,
+        spaceId: 'local',
         activeWorkflowGroup: null
     },
     spaceProviders: null
@@ -102,11 +103,6 @@ export const actions = {
 
     async fetchWorkflowGroupContent({ commit, state }, { itemId = 'root' }) {
         try {
-            if (!state.activeSpace || !state.activeSpaceProvider) {
-                commit('setActiveSpaceId', 'local');
-                commit('setActiveSpaceProvider', { id: 'local' });
-            }
-
             const { activeSpaceProvider, activeSpace } = state;
             
             const data = await fetchWorkflowGroupContent({
@@ -132,6 +128,40 @@ export const actions = {
             : pathId;
 
         return dispatch('fetchWorkflowGroupContent', { itemId: nextWorkflowGroupId, spaceId });
+    },
+
+    async createWorkflow({ commit, getters, state }) {
+        try {
+            const { spaceId, activeWorkflowGroup } = state.activeSpace;
+            const itemId = getters.currentWorkflowGroupId;
+        
+            const newWorkflowItem = await createWorkflow({ spaceId, itemId });
+            
+            const updatedWorkflowGroupItems = activeWorkflowGroup
+                .items
+                .concat(newWorkflowItem)
+                .sort((item1, item2) => {
+                    if (item1.type === 'WorflowGroup' && item2.type !== 'WorkflowGroup') {
+                        return -1;
+                    }
+                    
+                    if (item1.type !== 'WorflowGroup' && item2.type === 'WorkflowGroup') {
+                        return 1;
+                    }
+
+                    return item1.name < item2.name ? -1 : 1;
+                });
+        
+            commit('setActiveWorkflowGroupData', {
+                path: activeWorkflowGroup.path,
+                items: updatedWorkflowGroupItems
+            });
+            openWorkflow({ workflowItemId: newWorkflowItem.id });
+        
+            return newWorkflowItem;
+        } catch (error) {
+            throw error;
+        }
     },
 
     openWorkflow({ rootState, state, dispatch }, { workflowItemId, $router }) {
@@ -168,6 +198,16 @@ export const getters = {
 
         // when we're down to 1 item it means we're 1 level away from the root
         return path.length === 1 ? 'root' : path[path.length - 2].id;
+    },
+
+    currentWorkflowGroupId({ activeSpace }) {
+        if (!activeSpace.spaceId || !activeSpace.activeWorkflowGroup) {
+            return null;
+        }
+
+        const { path } = activeSpace.activeWorkflowGroup;
+
+        return path.length > 0 ? path[path.length - 1].id : 'root';
     },
 
     openedWorkflowItems({ activeSpace }, _, { application }) {
