@@ -10,7 +10,6 @@ import PlusIcon from 'webapps-common/ui/assets/img/icons/circle-plus.svg';
 import Metainfo from '@/assets/metainfo.svg';
 
 import NodeRepository from '@/components/nodeRepository/NodeRepository.vue';
-import WorkflowMetadata from '@/components/workflowMetadata/WorkflowMetadata.vue';
 import NodeDialogWrapper from '@/components/embeddedViews/NodeDialogWrapper.vue';
 import Sidebar from '../Sidebar.vue';
 
