@@ -45,12 +45,6 @@ export default {
 
             return titles[this.$route.name];
         }
-    },
-
-    beforeMount() {
-        // TODO: remove when Get Started page is displayed
-        // as this overules the redirects to the Get Started page and uses the selection page instead
-        this.$router.push({ name: APP_ROUTES.EntryPage.SpaceSelectionPage });
     }
 };
 </script>

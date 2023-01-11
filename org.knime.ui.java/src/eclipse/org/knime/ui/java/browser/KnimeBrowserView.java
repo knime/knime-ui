@@ -52,7 +52,6 @@ import org.knime.ui.java.PerspectiveSwitchAddon;
 import org.knime.ui.java.browser.function.ClearAppForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.CloseWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.ConnectSpaceProviderBrowserFunction;
-import org.knime.ui.java.browser.function.CreateWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.DisconnectSpaceProviderBrowserFunction;
 import org.knime.ui.java.browser.function.EmitUpdateAvailableEventForTestingBrowserFunction;
 import org.knime.ui.java.browser.function.GetSpaceProvidersBrowserFunction;
@@ -238,7 +237,6 @@ public class KnimeBrowserView {
         new SaveWorkflowBrowserFunction(m_browser);
         new OpenWorkflowBrowserFunction(m_browser, appStateProvider);
         new CloseWorkflowBrowserFunction(m_browser, appStateProvider);
-        new CreateWorkflowBrowserFunction(m_browser, appStateProvider);
         new OpenLayoutEditorBrowserFunction(m_browser);
         new OpenWorkflowCoachPreferencePageBrowserFunction(m_browser, appStateProvider);
         new OpenAboutDialogBrowserFunction(m_browser);
@@ -247,7 +245,8 @@ public class KnimeBrowserView {
         new GetSpaceProvidersBrowserFunction(m_browser, spaceProviders);
         new ConnectSpaceProviderBrowserFunction(m_browser, spaceProviders);
         new DisconnectSpaceProviderBrowserFunction(m_browser, spaceProviders);
-        if (isRemoteDebuggingPortSet()) {
+		new CloseWorkflowBrowserFunction(m_browser, appStateProvider);
+		if (isRemoteDebuggingPortSet()) {
             new InitAppForTestingBrowserFunction(m_browser);
             new ClearAppForTestingBrowserFunction(m_browser);
             new EmitUpdateAvailableEventForTestingBrowserFunction(m_browser, updateStateProvider);

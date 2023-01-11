@@ -3,6 +3,7 @@ import * as knimeColors from 'webapps-common/ui/colors/knimeColors.mjs';
 
 import ArrowRightIcon from 'webapps-common/ui/assets/img/icons/arrow-right.svg';
 
+import { APP_ROUTES } from '@/router';
 import GridOutbreaker from '@/components/common/GridOutbreaker.vue';
 import Card from '@/components/common/Card.vue';
 import CardHeader from '@/components/common/CardHeader.vue';
@@ -21,6 +22,12 @@ export default {
         return {
             knimeColors
         };
+    },
+
+    beforeMount() {
+        // TODO: remove when Get Started page is displayed
+        // as this overules the redirects to the Get Started page and uses the selection page instead
+        this.$router.push({ name: APP_ROUTES.EntryPage.SpaceSelectionPage });
     }
 };
 </script>
