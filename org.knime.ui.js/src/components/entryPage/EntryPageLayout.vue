@@ -80,8 +80,8 @@ section.main-content-wrapper {
     display: flex;
     flex-direction: column;
 
-    & >:last-child:has(.recent-workflows) {
-      flex: 1
+    & > :last-child:has(.recent-workflows) {
+      flex: 1;
     }
   }
 }

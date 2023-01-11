@@ -41,7 +41,7 @@ export default {
       display: flex;
       align-items: center;
       margin-right: 12px;
-      
+
       & svg {
         stroke: var(--knime-masala);
         margin-right: 6px;

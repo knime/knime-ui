@@ -22,7 +22,7 @@ export default {
   height: 32px;
   width: 32px;
   border-radius: 50%;
-  border: 2px solid hsla(200, 10%, 94%, 1);
+  border: 2px solid hsl(200deg 10% 94% / 100%);
   display: flex;
   align-items: center;
   justify-content: center;

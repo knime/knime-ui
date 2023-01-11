@@ -34,10 +34,11 @@ main {
   flex-direction: column;
   background-color: var(--knime-white);
   color: var(--knime-masala);
+
   /* align-items: stretch; */
   overflow-x: hidden;
   height: 100%;
-  
+
   &.with-background {
     background-image: url("@/assets/workflow-entry-page-background.webp");
     background-repeat: no-repeat;
