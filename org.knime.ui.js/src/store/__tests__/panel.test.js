@@ -26,24 +26,24 @@ describe('panel store', () => {
 
     it('creates an empty store', () => {
         expect(store.state.panel).toStrictEqual({
-            expanded: false,
+            expanded: true,
             activeTab: {}
         });
     });
 
     it('toggles expanded', () => {
-        expect(store.state.panel.expanded).toBe(false);
+        expect(store.state.panel.expanded).toBe(true);
 
         store.commit('panel/toggleExpanded');
 
-        expect(store.state.panel.expanded).toBe(true);
+        expect(store.state.panel.expanded).toBe(false);
     });
 
     it('sets activeTab', () => {
         const projectId = 'someProjectId1';
         const anotherProject = 'anotherProjectId';
         store.state.panel.activeTab = { [projectId]: 'somethingElse' };
-        expect(store.state.panel.expanded).toBe(false);
+        expect(store.state.panel.expanded).toBe(true);
         expect(store.state.panel.activeTab[projectId]).not.toBe('workflowMetadata');
 
         store.commit('panel/setActiveTab', { projectId, activeTab: panelStoreConfig.TABS.WORKFLOW_METADATA });

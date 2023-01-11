@@ -10,7 +10,7 @@ export const TABS = {
 };
 
 export const state = () => ({
-    expanded: false,
+    expanded: true,
     activeTab: {}
 });
 
