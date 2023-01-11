@@ -1,13 +1,20 @@
 <script>
-import { mapState } from 'vuex';
 import Button from 'webapps-common/ui/components/Button.vue';
 
 export default {
     components: {
         Button
     },
+    props: {
+        /**
+         * Object containing available updates
+         */
+        availableUpdates: {
+            type: Object,
+            default: () => {}
+        }
+    },
     computed: {
-        ...mapState('application', ['availableUpdates']),
         updateMessage() {
             if (this.availableUpdates.newReleases) {
                 const availableUpdate = this.availableUpdates.newReleases
@@ -37,7 +44,10 @@ export default {
 </script>
 
 <template>
-  <section class="footer-wrapper">
+  <section
+    v-if="availableUpdates"
+    class="footer-wrapper"
+  >
     <div class="grid-container">
       <div class="grid-item-12 update-bar">
         <span class="text">

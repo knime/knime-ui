@@ -1,5 +1,4 @@
 <script>
-import { mapState } from 'vuex';
 // import RocketIcon from 'webapps-common/ui/assets/img/icons/rocket.svg';
 import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
 
@@ -7,14 +6,12 @@ import { APP_ROUTES, getPathFromRouteName } from '@/router';
 import Page from '@/components/common/Page.vue';
 import PageHeader from '@/components/common/PageHeader.vue';
 import PageSideMenu from '@/components/common/PageSideMenu.vue';
-import UpdateBanner from '@/components/common/UpdateBanner.vue';
 
 export default {
     components: {
         Page,
         PageHeader,
-        PageSideMenu,
-        UpdateBanner
+        PageSideMenu
     },
 
     data() {
@@ -36,7 +33,6 @@ export default {
     },
 
     computed: {
-        ...mapState('application', ['availableUpdates']),
         pageTitle() {
             const titles = {
                 [APP_ROUTES.EntryPage.GetStartedPage]: 'Get started',
@@ -67,10 +63,6 @@ export default {
         </div>
       </div>
     </section>
-
-    <UpdateBanner
-      v-if="availableUpdates"
-    />
   </Page>
 </template>
 

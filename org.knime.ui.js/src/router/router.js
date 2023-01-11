@@ -25,19 +25,22 @@ export const routes = [
             {
                 name: APP_ROUTES.EntryPage.GetStartedPage,
                 path: '/get-started',
-                component: GetStartedPage
+                component: GetStartedPage,
+                meta: { showUpdateBanner: true }
             },
             {
                 name: APP_ROUTES.EntryPage.SpaceSelectionPage,
                 path: '/space-selection',
-                component: SpaceSelectionPage
+                component: SpaceSelectionPage,
+                meta: { showUpdateBanner: true }
             }
         ]
     },
     {
         name: APP_ROUTES.SpaceBrowsingPage,
         path: '/space-browsing',
-        component: SpaceBrowsingPage
+        component: SpaceBrowsingPage,
+        meta: { showUpdateBanner: true }
     },
     {
         name: APP_ROUTES.InfoPage,
