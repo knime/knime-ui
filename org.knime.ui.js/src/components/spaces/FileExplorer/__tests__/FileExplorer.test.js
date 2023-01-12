@@ -129,6 +129,13 @@ describe('FileExplorer.vue', () => {
     });
 
     describe('Drag', () => {
+        const dragAndDropItem = async (_srcItemWrapper, _tgtItemWrapper) => {
+            const dataTransfer = { setDragImage: jest.fn() };
+            await _srcItemWrapper.trigger('dragstart', { dataTransfer });
+            await _tgtItemWrapper.trigger('dragenter');
+            await _tgtItemWrapper.trigger('drop');
+        };
+
         it('should add the proper classes when handling dragging events', async () => {
             const dataTransfer = { setDragImage: jest.fn() };
             const { wrapper } = doMount();
@@ -161,6 +168,38 @@ describe('FileExplorer.vue', () => {
             // leaving drag on non-selected items removes the dragging-over class
             await thirdItem.trigger('dragleave');
             expect(thirdItem.classes()).not.toContain('dragging-over');
+        });
+
+        it('should only allow dropping on "WorkflowGroup"s', async () => {
+            const { wrapper } = doMount();
+
+            // workflow-group item
+            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+            // non workflow-group items
+            const thirdItem = wrapper.findAll('.file-explorer-item').at(2);
+            const fourthItem = wrapper.findAll('.file-explorer-item').at(3);
+            const fifthItem = wrapper.findAll('.file-explorer-item').at(4);
+
+            await dragAndDropItem(firstItem, thirdItem);
+            await dragAndDropItem(firstItem, fourthItem);
+            await dragAndDropItem(firstItem, fifthItem);
+            expect(wrapper.emitted('move')).toBeUndefined();
+        });
+        
+        it('should emit a "move" event when dropping on a "WorkflowGroup"', async () => {
+            const { wrapper } = doMount();
+
+            // workflow-group item
+            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+            // workflow-group item
+            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
+
+            await dragAndDropItem(firstItem, secondItem);
+
+            expect(wrapper.emitted('move')[0][0]).toEqual({
+                sourceItems: ['0'],
+                targetItem: '1'
+            });
         });
     });
 

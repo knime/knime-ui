@@ -160,7 +160,7 @@ export default {
             
             // map an index to an object that will be used to generate the ghost
             const toGhostTarget = (_index) => ({
-                targetEl: this.$refs[`item--${_index}`][0],
+                targetEl: this.getItemElementByRefIndex(_index),
                 textContent: this.items[_index].name
             });
 
@@ -178,19 +178,19 @@ export default {
             this.removeGhosts = removeGhosts;
         },
 
-        onDragEnter(index) {
-            if (this.isSelected(index) && index !== 'BACK') {
+        onDragEnter(index, isGoBackItem = false) {
+            if (this.isSelected(index) && !isGoBackItem) {
                 return;
             }
 
             if (index !== this.startDragItemIndex) {
-                const draggedOverEl = this.getItemElementByRefIndex(index);
+                const draggedOverEl = this.getItemElementByRefIndex(index, isGoBackItem);
                 draggedOverEl.classList.add('dragging-over');
             }
         },
 
-        onDragLeave(index) {
-            const draggedOverEl = this.getItemElementByRefIndex(index);
+        onDragLeave(index, isGoBackItem = false) {
+            const draggedOverEl = this.getItemElementByRefIndex(index, isGoBackItem);
             draggedOverEl.classList.remove('dragging-over');
         },
 
@@ -199,25 +199,25 @@ export default {
             this.removeGhosts?.();
         },
         
-        onDrop(index) {
-            const droppedEl = this.getItemElementByRefIndex(index);
+        onDrop(index, isGoBackItem = false) {
+            const droppedEl = this.getItemElementByRefIndex(index, isGoBackItem);
             droppedEl.classList.remove('dragging-over');
 
-            if (index !== 'BACK' && !this.isDirectory(this.items[index])) {
+            if (!isGoBackItem && !this.isDirectory(this.items[index])) {
                 return;
             }
 
             const selectedIndexes = multiSelectionService.getSelectedIndexes(this.multiSelectionState);
             this.$emit('move', {
                 sourceItems: selectedIndexes.map(index => this.items[index].id),
-                targetItem: index === 'BACK' ? '..' : this.items[index].id
+                targetItem: isGoBackItem ? '..' : this.items[index].id
             });
         },
 
-        getItemElementByRefIndex(index) {
-            return index === 'BACK'
-                ? this.$refs[`item--${index}`]
-                // except for the "BACK" item, all others are present within a v-for
+        getItemElementByRefIndex(index, isGoBackItem = false) {
+            return isGoBackItem
+                ? this.$refs[`item--BACK`]
+                // except for the "Go back" item, all others are present within a v-for
                 // so the refs are returned in a collection, but we only need the 1st item
                 : this.$refs[`item--${index}`][0];
         }
@@ -247,10 +247,10 @@ export default {
         ref="item--BACK"
         class="file-explorer-item"
         title="Go back"
-        @dragenter="onDragEnter('BACK')"
-        @dragleave="onDragLeave('BACK')"
+        @dragenter="onDragEnter(null, true)"
+        @dragleave="onDragLeave(null, true)"
         @dragover.prevent
-        @drop.prevent="onDrop('BACK')"
+        @drop.prevent="onDrop(null, true)"
         @dblclick="changeDirectory('..')"
       >
         <td
