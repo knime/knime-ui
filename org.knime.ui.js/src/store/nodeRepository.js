@@ -242,6 +242,9 @@ export const actions = {
      */
     async setSelectedTags({ dispatch, commit }, tags) {
         commit('setSelectedTags', tags);
+        if (tags.length === 0) {
+            commit('setIncludeAll', false);
+        }
         await dispatch('searchNodes');
     },
 
