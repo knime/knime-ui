@@ -48,20 +48,15 @@
  */
 package org.knime.ui.java.browser.function;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
-import org.knime.core.node.workflow.WorkflowManager;
-import org.knime.core.ui.util.SWTUtilities;
-import org.knime.gateway.impl.project.WorkflowProject;
 import org.knime.gateway.impl.project.WorkflowProjectManager;
+import org.knime.gateway.impl.service.util.EventConsumer;
+import org.knime.gateway.impl.webui.AppStateProvider;
 import org.knime.ui.java.PerspectiveSwitchAddon;
+import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction;
 import org.knime.ui.java.util.PerspectiveUtil;
 
 import com.equo.chromium.swt.Browser;
@@ -74,40 +69,38 @@ import com.equo.chromium.swt.BrowserFunction;
  */
 public class SwitchToJavaUIBrowserFunction extends BrowserFunction {
 
-	private static final String FUNCTION_NAME = "switchToJavaUI";
+    private static final String FUNCTION_NAME = "switchToJavaUI";
+
+    private final EventConsumer m_eventConsumer;
+
+    private final AppStateProvider m_appStateProvider;
 
 	@SuppressWarnings("javadoc")
-    public SwitchToJavaUIBrowserFunction(final Browser browser) {
-		super(browser, FUNCTION_NAME);
-	}
+    public SwitchToJavaUIBrowserFunction(final Browser browser, final EventConsumer eventConsumer,
+        final AppStateProvider appStateProvider) {
+        super(browser, FUNCTION_NAME);
+        m_eventConsumer = eventConsumer;
+        m_appStateProvider = appStateProvider;
+    }
 
     @Override
     public Object function(final Object[] args) { // NOSONAR
         if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
             // NOTE: if no classic UI has been loaded, yet,
-            // all the open workflow projects will be closed on perspective switch, see PerspectiveSwitchAddon
-
-            var openAndDirtyWorkflowProjects = getOpenAndDirtyWorkflowProjects();
-            if (isWorkflowExecutionInProgress(openAndDirtyWorkflowProjects)) {
-                var message = "There are workflows that are still executing."
-                    + "\nBefore switching to classic user interface,"
-                    + " wait for the execution to finish or cancel the execution.";
-                MessageDialog.openInformation(SWTUtilities.getActiveShell(), "Can't switch to classic user interface",
-                    message);
-                return null;
-            }
-            if (!openAndDirtyWorkflowProjects.isEmpty()) {
-                // TODO NXT-1386
-                var message = "There are open workflows with unsaved changes.\n\n";
-                message += openAndDirtyWorkflowProjects.stream().map(WorkflowProject::getName)
-                    .collect(Collectors.joining("\n"));
-                message += "\n\nBefore switching to classic user interface, save workflows with unsaved changes.";
-                MessageDialog.openInformation(SWTUtilities.getActiveShell(), "Can't switch to classic user interface",
-                    message);
+            // all the open workflow projects will be closed on perspective switch
+            var proceed = SaveAndCloseWorkflowsBrowserFunction.saveAndCloseWorkflowsInteractively(
+                WorkflowProjectManager.getInstance().getWorkflowProjectsIds(), m_eventConsumer,
+                PostWorkflowCloseAction.SWITCH_PERSPECTIVE);
+            if (!proceed) {
                 return null;
             }
         }
 
+        switchToJavaUI();
+        return null;
+    }
+
+    static void switchToJavaUI() {
         IWorkbench workbench = PlatformUI.getWorkbench();
         IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
         try {
@@ -118,27 +111,6 @@ public class SwitchToJavaUIBrowserFunction extends BrowserFunction {
             // should never happen
             throw new RuntimeException(e); // NOSONAR
         }
-        return null;
-    }
-
-    private static List<WorkflowProject> getOpenAndDirtyWorkflowProjects() {
-        if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
-            var wpm = WorkflowProjectManager.getInstance();
-            return wpm.getWorkflowProjectsIds().stream() //
-                .filter(id -> {
-                    WorkflowManager wfm = wpm.getCachedWorkflow(id).orElse(null);
-                    return wfm != null && wfm.isDirty();
-                }) //
-                .map(id -> wpm.getWorkflowProject(id).orElseThrow()) //
-                .collect(Collectors.toList()); //
-        }
-        return Collections.emptyList();
-    }
-
-    private static boolean isWorkflowExecutionInProgress(final List<WorkflowProject> projects) {
-        return projects.stream().map(WorkflowProject::openProject)
-            .anyMatch(wfm -> wfm.getNodeContainerState().isExecutionInProgress());
-
     }
 
 }

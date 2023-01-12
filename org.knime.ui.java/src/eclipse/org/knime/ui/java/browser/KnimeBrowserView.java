@@ -12,8 +12,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -23,6 +25,7 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.contexts.Active;
 import org.eclipse.e4.ui.di.Focus;
@@ -30,6 +33,7 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.ISaveablePart2;
 import org.knime.core.node.NodeLogger;
 import org.knime.gateway.api.entity.NodeIDEnt;
 import org.knime.gateway.api.webui.service.util.ServiceExceptions.InvalidRequestException;
@@ -65,11 +69,14 @@ import org.knime.ui.java.browser.function.OpenNodeViewBrowserFunction;
 import org.knime.ui.java.browser.function.OpenUpdateDialogBrowserFunction;
 import org.knime.ui.java.browser.function.OpenWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.OpenWorkflowCoachPreferencePageBrowserFunction;
+import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction;
+import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction;
 import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
 import org.knime.ui.java.util.DefaultServicesUtil;
 import org.knime.ui.java.util.EclipseUIStateUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
+import org.knime.ui.java.util.PerspectiveUtil;
 
 import com.equo.chromium.swt.Browser;
 import com.equo.chromium.swt.BrowserFunction;
@@ -87,7 +94,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  * @author Kai Franze, KNIME GmbH
  */
-public class KnimeBrowserView {
+public class KnimeBrowserView implements ISaveablePart2 {
 
     static final String EMPTY_PAGE = "about:blank";
 
@@ -114,6 +121,12 @@ public class KnimeBrowserView {
     private static KnimeBrowserView instance = null;
 
     private static Consumer<KnimeBrowserView> viewInitializer = null;
+
+    private BooleanSupplier m_saveAndCloseAllWorkflows;
+
+    private Runnable m_removeAndDisposeAllBrowserFunctions;
+
+    private boolean m_initialized = false;
 
     private Browser m_browser;
 
@@ -156,9 +169,18 @@ public class KnimeBrowserView {
         }
         updateStateProvider.checkForUpdates();
 
+        m_saveAndCloseAllWorkflows = () -> { // NOSONAR
+            var projectIds = WorkflowProjectManager.getInstance().getWorkflowProjectsIds();
+            return SaveAndCloseWorkflowsBrowserFunction.saveAndCloseWorkflowsInteractively(projectIds, eventConsumer,
+                PostWorkflowCloseAction.SHUTDOWN);
+        };
+
         // Initialize browser functions and set CEF browser URL
-        initBrowserFunctions(appStateProvider, spaceProviders, updateStateProvider);
+        m_removeAndDisposeAllBrowserFunctions =
+            initBrowserFunctions(m_browser, appStateProvider, spaceProviders, updateStateProvider, eventConsumer);
         setUrl(ignoreEmptyPageAsDevUrl);
+
+        m_initialized = true;
     }
 
     private static SpaceProviders createSpaceProviders() {
@@ -177,9 +199,16 @@ public class KnimeBrowserView {
      * {@link #activateViewInitializer(Supplier)} or {@link #initViewForTesting(Supplier)}.
      */
     public static void clearView() {
-        if (instance != null) {
-            instance.clearUrl();
+        if (instance != null && instance.m_initialized) {
+            if (!instance.m_browser.isDisposed()) {
+                instance.m_browser.setUrl(EMPTY_PAGE);
+            }
+            instance.m_saveAndCloseAllWorkflows = null;
+            instance.m_removeAndDisposeAllBrowserFunctions.run();
+            instance.m_removeAndDisposeAllBrowserFunctions = null;
             DefaultServicesUtil.disposeDefaultServices();
+            viewInitializer = null;
+            instance.m_initialized = false;
         }
     }
 
@@ -226,31 +255,35 @@ public class KnimeBrowserView {
      * @param appStateProvider Required to initialize some browser functions
      * @param spaceProviders Required to initialize some browser functions
      * @param updateStateProvider Required to initialize {@link EmitUpdateAvailableEventForTestingBrowserFunction}
+     * @param eventConsumer
+     * @return a runnable that removes and disposes all browser functions
      */
-    @SuppressWarnings("unused") // Browser functions are registered on instantiation
-    private void initBrowserFunctions(final AppStateProvider appStateProvider, final SpaceProviders spaceProviders,
-        final UpdateStateProvider updateStateProvider) {
-        new SwitchToJavaUIBrowserFunction(m_browser);
-        new OpenNodeViewBrowserFunction(m_browser);
-        new OpenNodeDialogBrowserFunction(m_browser);
-        new OpenLegacyFlowVariableDialogBrowserFunction(m_browser);
-        new SaveWorkflowBrowserFunction(m_browser);
-        new OpenWorkflowBrowserFunction(m_browser, appStateProvider);
-        new CloseWorkflowBrowserFunction(m_browser, appStateProvider);
-        new OpenLayoutEditorBrowserFunction(m_browser);
-        new OpenWorkflowCoachPreferencePageBrowserFunction(m_browser, appStateProvider);
-        new OpenAboutDialogBrowserFunction(m_browser);
-        new OpenInstallExtensionsDialogBrowserFunction(m_browser);
-        new OpenUpdateDialogBrowserFunction(m_browser);
-        new GetSpaceProvidersBrowserFunction(m_browser, spaceProviders);
-        new ConnectSpaceProviderBrowserFunction(m_browser, spaceProviders);
-        new DisconnectSpaceProviderBrowserFunction(m_browser, spaceProviders);
-		new CloseWorkflowBrowserFunction(m_browser, appStateProvider);
-		if (isRemoteDebuggingPortSet()) {
-            new InitAppForTestingBrowserFunction(m_browser);
-            new ClearAppForTestingBrowserFunction(m_browser);
-            new EmitUpdateAvailableEventForTestingBrowserFunction(m_browser, updateStateProvider);
+    private static Runnable initBrowserFunctions(final Browser browser, final AppStateProvider appStateProvider,
+        final SpaceProviders spaceProviders, final UpdateStateProvider updateStateProvider,
+        final EventConsumer eventConsumer) {
+        var functions = new ArrayList<BrowserFunction>();
+        functions.add(new SwitchToJavaUIBrowserFunction(browser, eventConsumer, appStateProvider));
+        functions.add(new OpenNodeViewBrowserFunction(browser));
+        functions.add(new OpenNodeDialogBrowserFunction(browser));
+        functions.add(new OpenLegacyFlowVariableDialogBrowserFunction(browser));
+        functions.add(new SaveWorkflowBrowserFunction(browser));
+        functions.add(new OpenWorkflowBrowserFunction(browser, appStateProvider));
+        functions.add(new CloseWorkflowBrowserFunction(browser, appStateProvider, eventConsumer));
+        functions.add(new OpenLayoutEditorBrowserFunction(browser));
+        functions.add(new OpenWorkflowCoachPreferencePageBrowserFunction(browser, appStateProvider));
+        functions.add(new OpenAboutDialogBrowserFunction(browser));
+        functions.add(new OpenInstallExtensionsDialogBrowserFunction(browser));
+        functions.add(new OpenUpdateDialogBrowserFunction(browser));
+        functions.add(new GetSpaceProvidersBrowserFunction(browser, spaceProviders));
+        functions.add(new ConnectSpaceProviderBrowserFunction(browser, spaceProviders));
+        functions.add(new DisconnectSpaceProviderBrowserFunction(browser, spaceProviders));
+        functions.add(new SaveAndCloseWorkflowsBrowserFunction(browser, appStateProvider));
+        if (isRemoteDebuggingPortSet()) {
+            functions.add(new InitAppForTestingBrowserFunction(browser));
+            functions.add(new ClearAppForTestingBrowserFunction(browser));
+            functions.add(new EmitUpdateAvailableEventForTestingBrowserFunction(browser, updateStateProvider));
         }
+        return () -> functions.stream().forEach(fct -> fct.dispose(true));
     }
 
     private static void initializeResourceHandlers() {
@@ -337,13 +370,6 @@ public class KnimeBrowserView {
     }
 
 	/**
-	 * Clears the browser's url.
-	 */
-	private void clearUrl() {
-		m_browser.setUrl(EMPTY_PAGE);
-	}
-
-	/**
 	 * Sets the browser's URL to show the web-ui. The URL is either taken from
 	 * the system property org.knime.ui.dev.url or, if not set, the actual
 	 * file URL is used.
@@ -375,6 +401,7 @@ public class KnimeBrowserView {
 
 	@PreDestroy
 	public void dispose() {
+	    clearView();
 		m_browser.dispose();
 	}
 
@@ -429,5 +456,39 @@ public class KnimeBrowserView {
         }
 
 	}
+
+    @Override
+    public void doSave(final IProgressMonitor monitor) {
+        //
+    }
+
+    @Override
+    public void doSaveAs() {
+        //
+    }
+
+    @Override
+    public boolean isDirty() {
+        return true;
+    }
+
+    @Override
+    public boolean isSaveAsAllowed() {
+        return false;
+    }
+
+    @Override
+    public boolean isSaveOnCloseNeeded() {
+        return true;
+    }
+
+    @Override
+    public int promptToSaveOnClose() {
+        if (m_saveAndCloseAllWorkflows != null && !PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            return m_saveAndCloseAllWorkflows.getAsBoolean() ? YES : CANCEL;
+        } else {
+            return NO;
+        }
+    }
 
 }

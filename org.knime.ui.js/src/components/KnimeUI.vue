@@ -176,4 +176,8 @@ export default {
   height: calc(100vh - var(--app-header-height));
   grid-area: workflow;
 }
+
+.main-content-with-banner {
+  height: calc(100vh - var(--app-header-height) - var(--app-update-banner-height));
+}
 </style>
