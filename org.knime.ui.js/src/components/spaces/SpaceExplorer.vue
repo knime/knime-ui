@@ -234,6 +234,7 @@ export default {
   padding: 20px 15px;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .loading {
