@@ -59,7 +59,6 @@ export default {
     data() {
         return {
             ITEM_TYPES,
-            currentLevel: null,
             multiSelectionState: multiSelectionService.getInitialState(),
             isDragging: false,
             startDragItemIndex: null
@@ -358,13 +357,12 @@ tbody.mini {
 
   user-select: none;
   background: var(--knime-gray-ultra-light);
-  margin-bottom: 3px;
   transition: box-shadow 0.15s;
   display: block;
   border: 1px solid transparent;
 
   &:hover {
-    box-shadow: 1px 1px 4px 0 var(--knime-gray-dark-semi);
+    box-shadow: 0px 1px 5px 0px var(--knime-gray-dark-semi)
   }
 
   &.selected {
