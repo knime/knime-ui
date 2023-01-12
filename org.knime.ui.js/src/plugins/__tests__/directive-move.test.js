@@ -38,6 +38,7 @@ describe('directive-move', () => {
         wrapper.vm.$vnode.elm.onpointerdown({
             clientX: 100,
             clientY: 100,
+            button: 0,
             stopPropagation: jest.fn(),
             preventDefault: jest.fn(),
             target: dummyTarget
@@ -54,6 +55,7 @@ describe('directive-move', () => {
         wrapper.vm.$vnode.elm.onpointerdown({
             clientX: 50,
             clientY: 50,
+            button: 0,
             stopPropagation: jest.fn(),
             preventDefault: jest.fn(),
             target: dummyTarget
@@ -77,6 +79,7 @@ describe('directive-move', () => {
         wrapper.vm.$vnode.elm.onpointerdown({
             clientX: 50,
             clientY: 50,
+            button: 0,
             stopPropagation: jest.fn(),
             preventDefault: jest.fn(),
             target: dummyTarget
@@ -112,7 +115,27 @@ describe('directive-move', () => {
         }));
     });
 
-    it('tests move end', () => {
+    it('only works with the left button', () => {
+        const wrapper = mount({
+            methods: {
+                onMove,
+                onMoveStart,
+                onMoveEnd
+            },
+            template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
+        });
+        wrapper.vm.$vnode.elm.onpointerdown({
+            clientX: 50,
+            clientY: 50,
+            button: 1,
+            stopPropagation: jest.fn(),
+            preventDefault: jest.fn(),
+            target: dummyTarget
+        });
+        expect(onMoveStart.mock.calls.length).toBe(0);
+    });
+
+    it('calls move end', () => {
         const wrapper = mount({
             methods: { onMove, onMoveStart, onMoveEnd },
             template: '<div v-move="{ onMove, onMoveStart, onMoveEnd, threshold: 5 }"></div>'
@@ -121,6 +144,7 @@ describe('directive-move', () => {
         wrapper.vm.$vnode.elm.onpointerdown({
             clientX: 50,
             clientY: 50,
+            button: 0,
             stopPropagation: jest.fn(),
             preventDefault: jest.fn(),
             target: dummyTarget
@@ -158,7 +182,7 @@ describe('directive-move', () => {
         expect(wrapper.vm.$vnode.elm.onpointerup).toBe(null);
     });
 
-    it('tests that nothing happens if protected property is set', () => {
+    it('does nothing if protected property is set', () => {
         // calls the inserted hook
         const wrapper = mount({
             methods: { onMove, onMoveStart, onMoveEnd },

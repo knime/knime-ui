@@ -20,9 +20,13 @@ let stateMap;
 const defaultThreshold = 5;
 
 const createMousedownHandler = (state, el) => (e) => {
+    // only left mouse button can move
+    if (e.button !== 0) {
+        return;
+    }
     e.stopPropagation();
     e.preventDefault();
-    
+
     let { pointerId } = e;
     state.pointerId = pointerId;
     // This is needed, as otherwise the pointerCapture might not get set if the component does not change
@@ -74,7 +78,7 @@ const createMousemoveHandler = (state) => (e) => {
 
     e.stopPropagation();
     e.preventDefault();
-    
+
     if (!state.dragging && state.handlers.onMoveStart) {
         let event = new CustomEvent('movestart', {
             detail: {
@@ -88,14 +92,14 @@ const createMousemoveHandler = (state) => (e) => {
         state.handlers.onMoveStart(event);
     }
     state.dragging = true;
-    
+
     let deltaX, deltaY;
     if (state.prev) {
         [deltaX, deltaY] = [x - state.prev[0], y - state.prev[1]];
     } else {
         [deltaX, deltaY] = [x, y];
     }
-    
+
     state.prev = [x, y];
     if (state.handlers.onMove) {
         const event = new CustomEvent('moving', {
@@ -127,7 +131,7 @@ const inserted = (el, { value }) => {
         dragging: false
     };
     stateMap.set(el, state);
-    
+
     state.mousedown = createMousedownHandler(state, el);
     el.onpointerdown = state.mousedown;
 
@@ -142,11 +146,11 @@ const unbind = (el, { value }) => {
     if (value.isProtected) {
         return;
     }
-    
+
     el.onpointerdown = null;
     el.onpointermove = null;
     el.onpointerup = null;
-    
+
     stateMap.delete(el);
 };
 
