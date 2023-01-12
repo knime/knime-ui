@@ -5,6 +5,7 @@ import { mockUserAgent } from 'jest-useragent-mock';
 
 import { mockVuexStore } from '@/test/test-utils';
 
+import UpdateBanner from '@/components/common/UpdateBanner.vue';
 import AppHeader from '@/components/application/AppHeader.vue';
 import Error from '@/components/application/Error.vue';
 import { loadPageBuilder as loadPageBuilderMock } from '@/components/embeddedViews/pagebuilderLoader';
@@ -25,7 +26,7 @@ describe('KnimeUI.vue', () => {
     };
 
     let $store, doShallowMount, initializeApplication, wrapper, storeConfig, mocks, destroyApplication,
-        setHasClipboardSupport, $router;
+        setHasClipboardSupport, $router, $route;
 
     beforeEach(() => {
         initializeApplication = jest.fn().mockResolvedValue();
@@ -46,6 +47,18 @@ describe('KnimeUI.vue', () => {
                 actions: {
                     initializeApplication,
                     destroyApplication
+                },
+                state: {
+                    availableUpdates: {
+                        newReleases: [
+                            {
+                                isUpdatePossible: true,
+                                name: 'KNIME Analytics Platform 5.0',
+                                shortName: '5.0'
+                            }
+                        ],
+                        bugfixes: ['Update1', 'Update2']
+                    }
                 }
             },
             workflow: {
@@ -60,10 +73,14 @@ describe('KnimeUI.vue', () => {
             currentRoute: {},
             push: jest.fn()
         };
+        $route = {
+            meta: { showUpdateBanner: false }
+        };
         mocks = {
             $store,
             $features: mockFeatureFlags,
-            $router
+            $router,
+            $route
         };
         doShallowMount = async () => {
             wrapper = await shallowMount(KnimeUI, { mocks, stubs: { RouterView: true } });
@@ -83,6 +100,15 @@ describe('KnimeUI.vue', () => {
         await doShallowMount();
         expect(wrapper.findComponent(AppHeader).exists()).toBe(true);
         expect(wrapper.find('.main-content').exists()).not.toBe(true);
+    });
+
+    it('renders UpdateBanner if showUpdateBanner in meta in router is true', async () => {
+        $route.meta = { showUpdateBanner: true };
+        await doShallowMount();
+        await Vue.nextTick();
+                
+        expect(wrapper.findComponent(UpdateBanner).exists()).toBe(true);
+        expect(wrapper.find('.main-content-with-banner').exists()).toBe(true);
     });
 
     it('catches errors in fetch hook', async () => {
@@ -166,7 +192,7 @@ describe('KnimeUI.vue', () => {
                 Object.assign(navigator, { permissions: { query: () => ({ state }) } });
                 jest.spyOn(navigator.permissions, 'query');
                 await doShallowMount();
-                expect(setHasClipboardSupport).toHaveBeenCalledWith({}, expectedValue);
+                expect(setHasClipboardSupport).toHaveBeenCalledWith(expect.anything(), expectedValue);
             }
         );
 
@@ -179,7 +205,7 @@ describe('KnimeUI.vue', () => {
             Object.assign(navigator, { clipboard: {} });
             
             await doShallowMount();
-            expect(setHasClipboardSupport).toHaveBeenCalledWith({}, false);
+            expect(setHasClipboardSupport).toHaveBeenCalledWith(expect.anything(), false);
         });
 
         it('checks clipboard support for Firefox', async () => {
@@ -191,7 +217,7 @@ describe('KnimeUI.vue', () => {
             jest.spyOn(navigator.clipboard, 'readText');
 
             await doShallowMount();
-            expect(setHasClipboardSupport).toHaveBeenCalledWith({}, true);
+            expect(setHasClipboardSupport).toHaveBeenCalledWith(expect.anything(), true);
         });
     });
 

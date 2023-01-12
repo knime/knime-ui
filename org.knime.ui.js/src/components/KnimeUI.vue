@@ -1,7 +1,9 @@
 <script>
 import { mapActions, mapState } from 'vuex';
 
+import UpdateBanner from '@/components/common/UpdateBanner.vue';
 import AppHeader from '@/components/application/AppHeader.vue';
+import HotkeyHandler from '@/components/application/HotkeyHandler.vue';
 import Error from '@/components/application/Error.vue';
 
 import { loadPageBuilder } from '@/components/embeddedViews/pagebuilderLoader';
@@ -14,7 +16,9 @@ import { APP_ROUTES } from '@/router';
  */
 export default {
     components: {
+        UpdateBanner,
         AppHeader,
+        HotkeyHandler,
         Error
     },
 
@@ -27,6 +31,7 @@ export default {
     
     computed: {
         ...mapState('workflow', { workflow: 'activeWorkflow' }),
+        ...mapState('application', ['availableUpdates']),
 
         isInsideAP() {
             // When the `window.isInsideAP` property is set, the app is being run in development mode
@@ -135,9 +140,10 @@ export default {
     />
     
     <AppHeader id="header" />
+    <HotkeyHandler />
    
     <template v-if="loaded">
-      <div class="main-content">
+      <div :class="($route.meta.showUpdateBanner && availableUpdates) ? 'main-content-with-banner' : 'main-content'">
         <RouterView />
       </div>
     </template>
@@ -145,6 +151,11 @@ export default {
     <div
       v-else
       class="loader"
+    />
+
+    <UpdateBanner
+      v-if="$route.meta.showUpdateBanner"
+      :available-updates="availableUpdates"
     />
   </div>
 </template>
@@ -165,6 +176,10 @@ export default {
   width: 100vw;
   height: calc(100vh - var(--app-header-height));
   grid-area: workflow;
+}
+
+.main-content-with-banner {
+  height: calc(100vh - var(--app-header-height) - var(--app-update-banner-height));
 }
 
 .loader {

@@ -106,22 +106,6 @@ export const closeWorkflow = ({ closingProjectId, nextProjectId }) => {
 };
 
 /**
- * Create a workflow.
- * @returns {void}
- */
-export const createWorkflow = () => {
-    try {
-        // returns falsy on success
-        let error = window.createWorkflow();
-        if (error) {
-            throw new Error(error);
-        }
-    } catch (e) {
-        consola.error(`Could not create a workflow`, e);
-    }
-};
-
-/**
  * Opens the layout editor for a component.
  * @param {String} projectId
  * @param {String} workflowId

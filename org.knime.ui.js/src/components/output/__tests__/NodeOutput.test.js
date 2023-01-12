@@ -23,7 +23,7 @@ describe('NodeOutput.vue', () => {
     const FLOW_VARIABLE = 'flowVariable';
     const TABLE = 'table';
     const UNSUPPORTED = 'unsupported';
-    
+
     beforeAll(() => {
         const localVue = createLocalVue();
         localVue.use(Vuex);
@@ -147,13 +147,13 @@ describe('NodeOutput.vue', () => {
     it('should render the emitted error state from the PortView', async () => {
         const wrapper = doMount();
         const viewComponent = wrapper.findComponent(PortViewTabOutput);
-        
+
         viewComponent.vm.$emit('output-state-change', { message: 'Some message' });
 
         await Vue.nextTick();
         expect(placeholderMessage(wrapper)).toBe('Some message');
     });
-    
+
     it('should render the emitted error state from the NodeView', async () => {
         const wrapper = doMount();
         wrapper.findComponent(PortTabs).vm.$emit('update:modelValue', 'view');
@@ -169,21 +169,21 @@ describe('NodeOutput.vue', () => {
     it('should show loading indicator', async () => {
         const wrapper = doMount();
         const portView = wrapper.findComponent(PortViewTabOutput);
-        
+
         portView.vm.$emit('output-state-change', { loading: true, message: 'Loading data' });
 
         await Vue.nextTick();
         expect(placeholderMessage(wrapper)).toBe('Loading data');
         expect(wrapper.findComponent(ReloadIcon).exists()).toBe(true);
     });
-    
+
     it('should show execute node button and trigger node execution', async () => {
         const executeNodes = jest.fn();
         const node = createNode();
         const store = createStore({ executeNodes, nodes: { [node.id]: node }, selectedNodeIds: [node.id] });
         const wrapper = doMount(store);
         const portView = wrapper.findComponent(PortViewTabOutput);
-        
+
         portView.vm.$emit('output-state-change', { message: 'Some error', error: { code: 'NODE_UNEXECUTED' } });
         await Vue.nextTick();
 
@@ -213,9 +213,9 @@ describe('NodeOutput.vue', () => {
             const wrapper = doMount();
 
             expect(wrapper.find('.placeholder').exists()).toBe(false);
-            
+
             await triggerOutputStateChange(wrapper, { message: 'Some Error' });
-            
+
             expect(wrapper.find('.placeholder').exists()).toBe(true);
         });
 
@@ -224,10 +224,10 @@ describe('NodeOutput.vue', () => {
 
             await triggerOutputStateChange(wrapper, { message: 'Some Error' });
             expect(wrapper.find('.placeholder').exists()).toBe(true);
-            
+
             await triggerOutputStateChange(wrapper, null);
             expect(wrapper.find('.placeholder').exists()).toBe(false);
-            expect(wrapper.findComponent(PortViewTabOutput).props('selectedPortIndex')).toBe('1');
+            expect(wrapper.findComponent(PortViewTabOutput).props('selectedPortIndex')).toBe(1);
         });
 
         it('selected node changes -> default port is selected', async () => {
@@ -243,7 +243,7 @@ describe('NodeOutput.vue', () => {
 
             // port should initially be 1 because regular nodes by default select the second port
             // since the first is the flowVariable port
-            expect(wrapper.findComponent(PortViewTabOutput).props('selectedPortIndex')).toBe('1');
+            expect(wrapper.findComponent(PortViewTabOutput).props('selectedPortIndex')).toBe(1);
 
             // change from node1 -> node2
             store.commit('selection/clearSelection');
@@ -251,7 +251,7 @@ describe('NodeOutput.vue', () => {
             await Vue.nextTick();
 
             // the port should change to 0 because metanode has a single port
-            expect(wrapper.findComponent(PortViewTabOutput).props('selectedPortIndex')).toBe('0');
+            expect(wrapper.findComponent(PortViewTabOutput).props('selectedPortIndex')).toBe(0);
         });
 
         describe('Select port', () => {
@@ -310,11 +310,11 @@ describe('NodeOutput.vue', () => {
             });
 
             test.each([
-                ['node with port', () => nodeWithPorts, '1'],
-                ['node without port', () => nodeWithoutPort, '0'],
-                ['component with port', () => ({ ...nodeWithPorts, kind: 'component' }), '1'],
-                ['component without port', () => ({ ...nodeWithoutPort, kind: 'component' }), '0'],
-                ['metanode', () => metanode, '0']
+                ['node with port', () => nodeWithPorts, 1],
+                ['node without port', () => nodeWithoutPort, 0],
+                ['component with port', () => ({ ...nodeWithPorts, kind: 'component' }), 1],
+                ['component without port', () => ({ ...nodeWithoutPort, kind: 'component' }), 0],
+                ['metanode', () => metanode, 0]
             ])('default ports %s', async (_, getNode, expectedPort) => {
                 const node = getNode();
                 const store = createStore({
@@ -323,16 +323,14 @@ describe('NodeOutput.vue', () => {
                 });
                 const wrapper = doMount(store);
                 await Vue.nextTick();
-                
+
                 expect(wrapper.findComponent(PortViewTabOutput).props('selectedPortIndex')).toBe(expectedPort);
             });
 
             test.each([
-                ['tablePort to tablePort (keep port)', () => nodeWithPorts, () => nodeWithPorts, '1', '1'],
-                ['tablePort to tablePort (change port)', () => nodeWithManyPorts, () => nodeWithPorts, '2', '1'],
-                ['tablePort to flowVariablePort (change port)', () => nodeWithPorts, () => nodeWithoutPort, '1', '0'],
-                ['flowVariable to flowVariable (keep port)', () => nodeWithPorts, () => nodeWithPorts, '0', '0'],
-                ['metanodes first to nodes flow variable (keep port)', () => metanode, () => nodeWithPorts, '0', '0']
+                ['tablePort to tablePort', () => nodeWithPorts, () => nodeWithPorts, 1, 1],
+                ['tablePort to tablePort', () => nodeWithManyPorts, () => nodeWithPorts, 2, 1],
+                ['tablePort to flowVariablePort', () => nodeWithPorts, () => nodeWithoutPort, 1, 0]
             ])('switch from %s', async (_, getNode1, getNode2, fromPort, toPort) => {
                 const node1 = getNode1();
                 const node2 = getNode2();
@@ -343,8 +341,8 @@ describe('NodeOutput.vue', () => {
                 });
                 const wrapper = doMount(store);
 
-                // start from the right port
-                wrapper.findComponent(PortTabs).vm.$emit('update:modelValue', fromPort);
+                // start from the right port (tab values are strings)
+                wrapper.findComponent(PortTabs).vm.$emit('update:modelValue', fromPort.toString());
                 await Vue.nextTick();
 
                 // select other node
@@ -360,7 +358,7 @@ describe('NodeOutput.vue', () => {
 
     it('should not display ViewTabOutput component when feature flag is set to false', async () => {
         mockFeatureFlags.shouldDisplayEmbeddedViews.mockImplementation(() => false);
-        
+
         const wrapper = doMount();
 
         wrapper.findComponent(PortTabs).vm.$emit('update:modelValue', 'view');

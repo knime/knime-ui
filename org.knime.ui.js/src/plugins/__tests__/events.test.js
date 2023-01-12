@@ -27,7 +27,8 @@ describe('Event Plugin', () => {
             state: {
                 application: {}
             },
-            dispatch: jest.fn()
+            dispatch: jest.fn(),
+            commit: jest.fn()
         };
 
         const routerMock = {
@@ -143,6 +144,49 @@ describe('Event Plugin', () => {
                     'application/replaceApplicationState',
                     { openProjects: [{ id: 'mock' }] }
                 );
+            });
+        });
+
+        describe('UpdateAvailable event', () => {
+            it('replaces availableUpdates state', async () => {
+                const { storeMock } = loadPlugin();
+                const newReleases = [
+                    {
+                        isUpdatePossible: true,
+                        name: 'KNIME Analytics Platform 5.0',
+                        shortName: '5.0'
+                    },
+                    {
+                        isUpdatePossible: false,
+                        name: 'KNIME Analytics Platform 6.0',
+                        shortName: '6.0'
+                    }
+                ];
+                const bugfixes = [
+                    'Update1',
+                    'Update2'
+                ];
+    
+                await registeredHandlers.UpdateAvailableEvent(
+                    { newReleases, bugfixes }
+                );
+    
+                expect(storeMock.commit).toHaveBeenCalledWith(
+                    'application/setAvailableUpdates',
+                    { newReleases, bugfixes }
+                );
+            });
+
+            it('does not replace availableUpdates state if there are no updates', async () => {
+                const { storeMock } = loadPlugin();
+                const newReleases = undefined;
+                const bugfixes = undefined;
+    
+                await registeredHandlers.UpdateAvailableEvent(
+                    { newReleases, bugfixes }
+                );
+    
+                expect(storeMock.commit).not.toHaveBeenCalled();
             });
         });
     });

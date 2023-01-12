@@ -35,7 +35,10 @@ export const state = () => ({
     // wanting to generate a workflow preview while being in a nested workflow
     rootWorkflowSnapshots: new Map(),
 
-    isLoadingWorkflow: false
+    isLoadingWorkflow: false,
+
+    /* Object containing available updates */
+    availableUpdates: null
 });
 
 export const mutations = {
@@ -100,6 +103,9 @@ export const mutations = {
     },
     setHasNodeRecommendationsEnabled(state, hasNodeRecommendationsEnabled) {
         state.hasNodeRecommendationsEnabled = hasNodeRecommendationsEnabled;
+    },
+    setAvailableUpdates(state, availableUpdates) {
+        state.availableUpdates = availableUpdates;
     }
 };
 
