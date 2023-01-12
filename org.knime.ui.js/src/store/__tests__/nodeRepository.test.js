@@ -145,6 +145,7 @@ describe('Node Repository store', () => {
             categoryPage: 0,
             searchScrollPosition: 0,
             categoryScrollPosition: 0,
+            includeAll: false,
             selectedNode: null,
             nodeDescriptionObject: null,
             isDraggingNode: false,
@@ -421,7 +422,8 @@ describe('Node Repository store', () => {
                     nodeLimit: 100,
                     nodeOffset: 0,
                     query: 'lookup',
-                    tags: []
+                    tags: [],
+                    includeAll: false
                 });
                 expect(store.state.nodeRepository.totalNumNodes).toBe(searchNodesResponse.totalNumNodes);
                 expect(store.state.nodeRepository.nodes).toEqual(
@@ -444,7 +446,8 @@ describe('Node Repository store', () => {
                     nodeLimit: 100,
                     nodeOffset: 100,
                     query: 'lookup',
-                    tags: []
+                    tags: [],
+                    includeAll: false
                 });
                 expect(store.state.nodeRepository.totalNumNodes).toBe(searchNodesResponse.totalNumNodes);
                 expect(store.state.nodeRepository.nodes).toEqual([

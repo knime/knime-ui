@@ -24,6 +24,7 @@ export const state = () => ({
     query: '',
     nodeSearchPage: 0,
     searchScrollPosition: 0,
+    includeAll: false,
 
     /* node description */
     selectedNode: null,
@@ -94,6 +95,9 @@ export const mutations = {
     },
     setDescriptionPanel(state, value) {
         state.isDescriptionPanelOpen = value;
+    },
+    setIncludeAll(state, value) {
+        state.includeAll = value;
     }
 };
 
@@ -156,7 +160,8 @@ export const actions = {
             allTagsMatch: true,
             nodeOffset: state.nodeSearchPage * nodeSearchPageSize,
             nodeLimit: nodeSearchPageSize,
-            fullTemplateInfo: true
+            fullTemplateInfo: true,
+            includeAll: state.includeAll
         });
 
         const { availablePortTypes } = rootState.application;
@@ -191,6 +196,7 @@ export const actions = {
      */
     async updateQuery({ commit, dispatch }, value) {
         commit('setQuery', value);
+        commit('setIncludeAll', false);
         await dispatch('searchNodes');
     },
 
@@ -203,6 +209,7 @@ export const actions = {
     clearSearchParams({ commit, dispatch }) {
         commit('setSelectedTags', []);
         commit('setQuery', '');
+        commit('setIncludeAll', false);
         dispatch('clearSearchResults');
     },
 
@@ -235,6 +242,17 @@ export const actions = {
      */
     async setSelectedTags({ dispatch, commit }, tags) {
         commit('setSelectedTags', tags);
+        await dispatch('searchNodes');
+    },
+
+    /**
+     * Set the includeAll flag to true. This value will stay until the search changes.
+     *
+     * @param {*} context - Vuex context.
+     * @returns {undefined}
+     */
+    async setIncludeAll({ commit, dispatch }) {
+        commit('setIncludeAll', true);
         await dispatch('searchNodes');
     },
 
