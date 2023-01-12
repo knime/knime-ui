@@ -199,7 +199,7 @@ describe('SpaceExplorer.vue', () => {
         });
     });
 
-    it('should handle create workflow for "normal" mode', () => {
+    it('should handle create workflow for "normal" mode', async () => {
         const { wrapper, store, dispatchSpy } = doMount();
         store.state.spaces.activeSpace = {
             spaceId: 'local',
@@ -208,6 +208,7 @@ describe('SpaceExplorer.vue', () => {
                 items: []
             }
         };
+        await wrapper.vm.$nextTick();
 
         const createWorkflowButton = wrapper.find('.create-workflow-btn');
         expect(createWorkflowButton.exists()).toBe(true);
@@ -216,7 +217,22 @@ describe('SpaceExplorer.vue', () => {
         expect(dispatchSpy).toHaveBeenCalledWith('spaces/createWorkflow');
     });
 
-    it('should handle create workflow for "mini" mode', () => {
+    it.only('should only allow creating workflows on the local space', async () => {
+        const { wrapper, store } = doMount();
+        store.state.spaces.activeSpace = {
+            spaceId: 'somerandomhub',
+            activeWorkflowGroup: {
+                path: [],
+                items: []
+            }
+        };
+
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find('.create-workflow-btn').exists()).toBe(false);
+        expect(wrapper.find('.create-workflow-mini-btn').exists()).toBe(false);
+    });
+
+    it('should handle create workflow for "mini" mode', async () => {
         const { wrapper, store, dispatchSpy } = doMount({ props: { mode: 'mini' } });
         store.state.spaces.activeSpace = {
             spaceId: 'local',
@@ -225,6 +241,7 @@ describe('SpaceExplorer.vue', () => {
                 items: []
             }
         };
+        await wrapper.vm.$nextTick();
 
         expect(wrapper.find('.create-workflow-mini-btn').exists()).toBe(true);
 

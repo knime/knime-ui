@@ -50,6 +50,10 @@ export default {
             }));
         },
 
+        canCreateWorkflow() {
+            return this.spaceId === 'local';
+        },
+
         breadcrumbItems() {
             if (!this.activeWorkflowGroup) {
                 return [];
@@ -151,7 +155,7 @@ export default {
       />
 
       <ToolbarButton
-        v-if="mode === 'mini'"
+        v-if="mode === 'mini' && canCreateWorkflow"
         primary
         class="create-workflow-mini-btn"
         :title="createWorkflowButtonTitle"
@@ -162,7 +166,7 @@ export default {
     </div>
 
     <PlusButton
-      v-if="mode === 'normal'"
+      v-if="mode === 'normal' && canCreateWorkflow"
       :title="createWorkflowButtonTitle"
       primary
       class="create-workflow-btn"
