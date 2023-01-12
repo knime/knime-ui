@@ -201,6 +201,22 @@ describe('FileExplorer.vue', () => {
                 targetItem: '1'
             });
         });
+        
+        it('should emit a "move" event when dropping on the "Go back" item', async () => {
+            const { wrapper } = doMount({ props: { isRootFolder: false } });
+
+            // workflow-group item
+            const firstItem = wrapper.findAll('.file-explorer-item').at(0);
+            // workflow-group item
+            const secondItem = wrapper.findAll('.file-explorer-item').at(1);
+
+            await dragAndDropItem(secondItem, firstItem);
+
+            expect(wrapper.emitted('move')[0][0]).toEqual({
+                sourceItems: ['0'],
+                targetItem: '..'
+            });
+        });
     });
 
     it('should emit an event when opening a file', () => {
