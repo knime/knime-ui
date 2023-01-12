@@ -71,7 +71,9 @@ export const saveWorkflow = ({ projectId, workflowPreviewSvg }) => {
 
 /**
  * Open a workflow.
- * @param {String} workflowItemId
+ * @param {Object} param
+ * @param {String} [param.spaceId]
+ * @param {String} param.workflowItemId
  * @returns {void}
  */
 export const openWorkflow = ({ spaceId = 'local', workflowItemId }) => {
