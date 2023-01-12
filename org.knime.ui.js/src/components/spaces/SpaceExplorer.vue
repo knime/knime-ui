@@ -8,9 +8,9 @@ import PlusIcon from '@/assets/plus.svg';
 import ToolbarButton from '@/components/common/ToolbarButton.vue';
 
 import LoadingIcon from './LoadingIcon.vue';
-import FileExplorer from './FileExplorer.vue';
+import FileExplorer from './FileExplorer/FileExplorer.vue';
 
-const DISPLAY_LOADING_DELAY = 500;
+const DISPLAY_LOADING_DELAY = 1000;
 
 export default {
     components: {
@@ -48,6 +48,10 @@ export default {
                 ...item,
                 displayOpenIndicator: this.openedWorkflowItems.includes(item.id)
             }));
+        },
+
+        canCreateWorkflow() {
+            return this.spaceId === 'local';
         },
 
         breadcrumbItems() {
@@ -151,7 +155,7 @@ export default {
       />
 
       <ToolbarButton
-        v-if="mode === 'mini'"
+        v-if="mode === 'mini' && canCreateWorkflow"
         primary
         class="create-workflow-mini-btn"
         :title="createWorkflowButtonTitle"
@@ -162,7 +166,7 @@ export default {
     </div>
 
     <PlusButton
-      v-if="mode === 'normal'"
+      v-if="mode === 'normal' && canCreateWorkflow"
       :title="createWorkflowButtonTitle"
       primary
       class="create-workflow-btn"
@@ -174,6 +178,7 @@ export default {
       :mode="mode"
       :items="fileExplorerItems"
       :is-root-folder="activeWorkflowGroup.path.length === 0"
+      :full-path="fullPath"
       @change-directory="onChangeDirectory"
       @open-file="onOpenFile"
     />
@@ -233,6 +238,7 @@ export default {
   padding: 20px 15px;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .loading {

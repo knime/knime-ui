@@ -36,7 +36,9 @@ export const state = () => ({
 
     isLoadingWorkflow: false,
 
-    isBusy: false
+    isBusy: false,
+    /* Object containing available updates */
+    availableUpdates: null
 });
 
 export const mutations = {
@@ -104,6 +106,9 @@ export const mutations = {
     },
     setHasNodeRecommendationsEnabled(state, hasNodeRecommendationsEnabled) {
         state.hasNodeRecommendationsEnabled = hasNodeRecommendationsEnabled;
+    },
+    setAvailableUpdates(state, availableUpdates) {
+        state.availableUpdates = availableUpdates;
     }
 };
 

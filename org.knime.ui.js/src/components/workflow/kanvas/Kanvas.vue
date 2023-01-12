@@ -123,7 +123,7 @@ export default {
             if (e.code !== 'Space') {
                 return;
             }
-            
+
             e.preventDefault();
             e.stopPropagation();
 
@@ -201,7 +201,7 @@ export default {
             }
             /* eslint-enable no-invalid-this */
         }),
-        
+
         stopPan(event) {
             // user is not panning but did right-clicked
             if (!this.isPanning && this.isHoldingDownRightClick) {
@@ -246,8 +246,7 @@ export default {
       'empty': isEmpty,
       'disabled': !interactionsEnabled,
     }]"
-    @wheel.meta.prevent="onMouseWheel"
-    @wheel.ctrl.prevent="onMouseWheel"
+    @wheel.prevent="onMouseWheel"
     @pointerdown.middle="beginPan"
     @pointerdown.prevent.right="beginPan"
     @pointerdown.left="beginPan"

@@ -157,5 +157,48 @@ describe('Event Plugin', () => {
 
             it.todo('should call the browser function with the correct parameters');
         });
+
+        describe('UpdateAvailable event', () => {
+            it('replaces availableUpdates state', async () => {
+                const { storeMock } = loadPlugin();
+                const newReleases = [
+                    {
+                        isUpdatePossible: true,
+                        name: 'KNIME Analytics Platform 5.0',
+                        shortName: '5.0'
+                    },
+                    {
+                        isUpdatePossible: false,
+                        name: 'KNIME Analytics Platform 6.0',
+                        shortName: '6.0'
+                    }
+                ];
+                const bugfixes = [
+                    'Update1',
+                    'Update2'
+                ];
+    
+                await registeredHandlers.UpdateAvailableEvent(
+                    { newReleases, bugfixes }
+                );
+    
+                expect(storeMock.commit).toHaveBeenCalledWith(
+                    'application/setAvailableUpdates',
+                    { newReleases, bugfixes }
+                );
+            });
+
+            it('does not replace availableUpdates state if there are no updates', async () => {
+                const { storeMock } = loadPlugin();
+                const newReleases = undefined;
+                const bugfixes = undefined;
+    
+                await registeredHandlers.UpdateAvailableEvent(
+                    { newReleases, bugfixes }
+                );
+    
+                expect(storeMock.commit).not.toHaveBeenCalled();
+            });
+        });
     });
 });

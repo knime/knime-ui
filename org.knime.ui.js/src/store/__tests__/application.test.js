@@ -92,7 +92,8 @@ describe('application store', () => {
             isBusy: false,
             contextMenu: { isOpen: false, position: null },
             hasNodeRecommendationsEnabled: false,
-            rootWorkflowSnapshots: new Map()
+            rootWorkflowSnapshots: new Map(),
+            availableUpdates: null
         });
     });
 
@@ -140,6 +141,14 @@ describe('application store', () => {
             store.commit('application/setHasNodeRecommendationsEnabled', true);
             expect(store.state.application.hasNodeRecommendationsEnabled)
                 .toBe(true);
+        });
+
+        it('sets available updates', async () => {
+            const { store } = await loadStore();
+            store.commit('application/setAvailableUpdates',
+                { newReleases: undefined, bugfixes: ['Update1', 'Update2'] });
+            expect(store.state.application.availableUpdates)
+                .toStrictEqual({ newReleases: undefined, bugfixes: ['Update1', 'Update2'] });
         });
     });
 
