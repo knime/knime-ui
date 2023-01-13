@@ -24,6 +24,9 @@ export default {
         v-if="leftOffset"
         :class="`grid-item-${leftOffset}`"
       />
+      <div class="button">
+        <slot />
+      </div>
       <div
         class="title-wrapper"
         :class="`grid-item-${12 - leftOffset}`"
@@ -59,6 +62,12 @@ header {
 
   & .grid-container {
     height: 100%;
+  }
+
+  & .button {
+    padding-right: 20px;
+    margin-left: -60px;
+    align-self: center;
   }
 
   & .title-wrapper {

@@ -1,13 +1,21 @@
 <script>
+import ArrowLeftIcon from 'webapps-common/ui/assets/img/icons/arrow-left.svg';
+import { APP_ROUTES } from '@/router';
 import PageHeader from '@/components/common/PageHeader.vue';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
 import SpaceExplorer from './SpaceExplorer.vue';
 
 export default {
     components: {
+        ArrowLeftIcon,
         SpaceExplorer,
         ComputerDesktopIcon,
         PageHeader
+    },
+    methods: {
+        onBackButtonClick() {
+            this.$router.push({ name: APP_ROUTES.EntryPage.SpaceSelectionPage });
+        }
     }
 };
 </script>
@@ -18,6 +26,10 @@ export default {
       title="Your Local Space"
       subtitle="Local space"
     >
+      <ArrowLeftIcon
+        class="back-button"
+        @click="onBackButtonClick"
+      />
       <template #icon>
         <ComputerDesktopIcon />
       </template>
@@ -42,6 +54,8 @@ export default {
 </template>
 
 <style lang="postcss" scoped>
+@import "@/assets/mixins.css";
+
 main {
   display: flex;
   flex-direction: column;
@@ -72,4 +86,20 @@ main {
   padding-bottom: 80px;
   flex: 1;
 }
+
+.back-button {
+  @mixin svg-icon-size 30;
+
+  stroke: var(--knime-dove-gray);
+  border-right: 1px solid var(--knime-silver-sand);
+  padding-right: 10px;
+  width: 40px;
+  height: 60px;
+
+  &:hover {
+    cursor: pointer;
+    stroke: var(--knime-masala);
+  }
+}
+
 </style>
