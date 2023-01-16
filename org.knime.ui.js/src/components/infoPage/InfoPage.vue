@@ -3,6 +3,7 @@ import ForumIcon from 'webapps-common/ui/assets/img/icons/forum.svg';
 import ExtensionIcon from 'webapps-common/ui/assets/img/icons/extension.svg';
 import PerspectiveSwitchIcon from 'webapps-common/ui/assets/img/icons/perspective-switch.svg';
 import SphereIcon from 'webapps-common/ui/assets/img/icons/sphere.svg';
+import SettingsIcon from 'webapps-common/ui/assets/img/icons/settings.svg';
 import KnimeLogo from 'webapps-common/ui/assets/img/KNIME_Logo_gray.svg';
 import Button from 'webapps-common/ui/components/Button.vue';
 
@@ -16,6 +17,7 @@ export default {
         ExtensionIcon,
         PerspectiveSwitchIcon,
         SphereIcon,
+        SettingsIcon,
         KnimeLogo,
         Button,
         Page,
@@ -33,6 +35,12 @@ export default {
 
         openInstallExtensionsDialog() {
             window.openInstallExtensionsDialog();
+        },
+
+        openKnimeUIPreferencePage() {
+            // TODO do not call the API directly but add a function to desktopAPI.js
+            // TODO change this for all browser functions called here
+            window.openKnimeUIPreferencePage();
         }
     }
 };
@@ -57,6 +65,28 @@ export default {
             href="https://forum.knime.com/?src=knimeappmodernui"
           >
             <strong>Visit Forum</strong>
+          </Button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Preferences section -->
+    <section>
+      <div class="grid-container">
+        <div class="grid-item-3 category">
+          <SettingsIcon />
+          <h3>Preferences</h3>
+        </div>
+
+        <div class="grid-item-9 body">
+          <p>
+            TODO write something useful
+          </p>
+          <Button
+            with-border
+            @click="openKnimeUIPreferencePage"
+          >
+            <strong>Settings</strong>
           </Button>
         </div>
       </div>
