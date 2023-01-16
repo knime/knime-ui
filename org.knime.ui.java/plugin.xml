@@ -29,5 +29,20 @@
             label="KNIME Modern UI Preview">
       </theme>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.knime.workbench.ui.preferences.gui"
+            class="org.knime.ui.java.prefs.KnimeUIPreferencePage"
+            id="org.knime.ui.java.prefs.KnimeUIPreferencePage"
+            name="Modern UI Settings">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.knime.ui.java.prefs.KnimeUIPreferenceInitializer">
+      </initializer>
+   </extension>
 
 </plugin>
