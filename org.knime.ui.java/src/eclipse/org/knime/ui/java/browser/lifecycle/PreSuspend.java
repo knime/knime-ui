@@ -44,65 +44,53 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 7, 2021 (hornm): created
+ *   Jan 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser;
+package org.knime.ui.java.browser.lifecycle;
 
-import static org.knime.js.cef.middleware.CEFMiddlewareService.isCEFMiddlewareResource;
+import java.util.function.BooleanSupplier;
 
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
-import org.knime.core.webui.WebUIUtil;
-import org.knime.gateway.impl.webui.service.DefaultEventService;
-import org.knime.ui.java.browser.lifecycle.PageLoaded;
-
-import com.equo.chromium.swt.Browser;
+import org.knime.ui.java.util.PerspectiveUtil;
 
 /**
- * Listens for changes of the URL in the KNIME browser and triggers respective
- * actions (e.g. external URLs are opened in the external browser).
+ * The 'pre-suspend' lifecycle-phase for the KNIME-UI. Called before {@link Suspend}.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class KnimeBrowserLocationListener implements LocationListener {
+public final class PreSuspend {
 
-    private final Browser m_browser;
-
-    KnimeBrowserLocationListener(final Browser browser) {
-        m_browser = browser;
+    private PreSuspend() {
+        //
     }
 
-    @Override
-    public void changing(final LocationEvent event) {
-        if (isCEFMiddlewareResource(event.location)) {
-            // Allow location change to middleware resources, these are handled by resource handlers.
-        } else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
-            // Allow location change, but de-register any listeners in case the web app is being
-            //   refreshed. Required listeners will be registered on initialisation.
-            DefaultEventService.getInstance().removeAllEventListeners();
+    /**
+     * Runs the phase.
+     *
+     * @param state
+     *
+     * @return the new state
+     */
+    public static LifeCycleState runPhase(final LifeCycleState state) {
+        var saveAndCloseAllWorkflows = state.saveAndCloseAllWorkflows();
+        assert saveAndCloseAllWorkflows != null;
+        boolean workflowsSuccessfullySaved;
+        if (!PerspectiveUtil.isClassicPerspectiveLoaded()) {
+            workflowsSuccessfullySaved = saveAndCloseAllWorkflows.getAsBoolean();
         } else {
-            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(event.location, KnimeBrowserView.class);
-            event.doit = false;
+            workflowsSuccessfullySaved = true;
         }
+
+        return new LifeCycleState() {
+            @Override
+            public boolean workflowsSuccessfullySaved() {
+                return workflowsSuccessfullySaved;
+            }
+
+            @Override
+            public BooleanSupplier saveAndCloseAllWorkflows() {
+                return workflowsSuccessfullySaved ? null : saveAndCloseAllWorkflows;
+            }
+        };
     }
-
-    @Override
-    public void changed(final LocationEvent event) {
-        if (isAppPage(event.location) || isDevPage(event.location)) {
-            PageLoaded.runPhase(m_browser);
-        }
-    }
-
-	private static boolean isAppPage(final String url) {
-		return url.startsWith(KnimeBrowserView.BASE_URL);
-	}
-
-	private static boolean isEmptyPage(final String url) {
-		return url.endsWith(KnimeBrowserView.EMPTY_PAGE);
-	}
-
-	private static boolean isDevPage(final String url) {
-		return url.startsWith("http://localhost");
-	}
 
 }

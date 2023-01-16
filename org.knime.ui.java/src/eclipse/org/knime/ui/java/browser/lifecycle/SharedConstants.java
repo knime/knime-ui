@@ -44,65 +44,29 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 7, 2021 (hornm): created
+ *   Jan 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser;
-
-import static org.knime.js.cef.middleware.CEFMiddlewareService.isCEFMiddlewareResource;
-
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
-import org.knime.core.webui.WebUIUtil;
-import org.knime.gateway.impl.webui.service.DefaultEventService;
-import org.knime.ui.java.browser.lifecycle.PageLoaded;
-
-import com.equo.chromium.swt.Browser;
+package org.knime.ui.java.browser.lifecycle;
 
 /**
- * Listens for changes of the URL in the KNIME browser and triggers respective
- * actions (e.g. external URLs are opened in the external browser).
+ * Constants shared accross lifecycle phases.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class KnimeBrowserLocationListener implements LocationListener {
+final class SharedConstants {
 
-    private final Browser m_browser;
-
-    KnimeBrowserLocationListener(final Browser browser) {
-        m_browser = browser;
+    private SharedConstants() {
+        // utility
     }
 
-    @Override
-    public void changing(final LocationEvent event) {
-        if (isCEFMiddlewareResource(event.location)) {
-            // Allow location change to middleware resources, these are handled by resource handlers.
-        } else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
-            // Allow location change, but de-register any listeners in case the web app is being
-            //   refreshed. Required listeners will be registered on initialisation.
-            DefaultEventService.getInstance().removeAllEventListeners();
-        } else {
-            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(event.location, KnimeBrowserView.class);
-            event.doit = false;
-        }
+    static final String JSON_RPC_ACTION_ID = "org.knime.ui.java.jsonrpc";
+
+    static final String JSON_RPC_NOTIFICATION_ACTION_ID = "org.knime.ui.java.jsonrpcNotification";
+
+    private static final String REMOTE_DEBUGGING_PORT_PROP = "chromium.remote_debugging_port";
+
+    static boolean isRemoteDebuggingPortSet() {
+        return System.getProperty(REMOTE_DEBUGGING_PORT_PROP) != null;
     }
-
-    @Override
-    public void changed(final LocationEvent event) {
-        if (isAppPage(event.location) || isDevPage(event.location)) {
-            PageLoaded.runPhase(m_browser);
-        }
-    }
-
-	private static boolean isAppPage(final String url) {
-		return url.startsWith(KnimeBrowserView.BASE_URL);
-	}
-
-	private static boolean isEmptyPage(final String url) {
-		return url.endsWith(KnimeBrowserView.EMPTY_PAGE);
-	}
-
-	private static boolean isDevPage(final String url) {
-		return url.startsWith("http://localhost");
-	}
 
 }

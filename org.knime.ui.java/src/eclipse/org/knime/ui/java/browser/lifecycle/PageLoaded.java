@@ -44,65 +44,72 @@
  * ---------------------------------------------------------------------
  *
  * History
- *   Jan 7, 2021 (hornm): created
+ *   Jan 16, 2023 (hornm): created
  */
-package org.knime.ui.java.browser;
+package org.knime.ui.java.browser.lifecycle;
 
-import static org.knime.js.cef.middleware.CEFMiddlewareService.isCEFMiddlewareResource;
+import static org.knime.ui.java.browser.KnimeBrowserView.DOMAIN_NAME;
+import static org.knime.ui.java.browser.lifecycle.SharedConstants.JSON_RPC_ACTION_ID;
+import static org.knime.ui.java.browser.lifecycle.SharedConstants.JSON_RPC_NOTIFICATION_ACTION_ID;
 
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
-import org.knime.core.webui.WebUIUtil;
-import org.knime.gateway.impl.webui.service.DefaultEventService;
-import org.knime.ui.java.browser.lifecycle.PageLoaded;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
+import org.knime.ui.java.browser.KnimeBrowserView;
 
 import com.equo.chromium.swt.Browser;
 
 /**
- * Listens for changes of the URL in the KNIME browser and triggers respective
- * actions (e.g. external URLs are opened in the external browser).
+ * The 'page-loaded' lifecycle-phase of the KNIME-UI. Called after {@link Init} as soon as the (html)-page has been
+ * completely loaded.
  *
  * @author Martin Horn, KNIME GmbH, Konstanz, Germany
  */
-public class KnimeBrowserLocationListener implements LocationListener {
+public final class PageLoaded {
 
-    private final Browser m_browser;
-
-    KnimeBrowserLocationListener(final Browser browser) {
-        m_browser = browser;
+    private PageLoaded() {
+        //
     }
 
-    @Override
-    public void changing(final LocationEvent event) {
-        if (isCEFMiddlewareResource(event.location)) {
-            // Allow location change to middleware resources, these are handled by resource handlers.
-        } else if (isAppPage(event.location) || isEmptyPage(event.location) || isDevPage(event.location)) {
-            // Allow location change, but de-register any listeners in case the web app is being
-            //   refreshed. Required listeners will be registered on initialisation.
-            DefaultEventService.getInstance().removeAllEventListeners();
-        } else {
-            WebUIUtil.openURLInExternalBrowserAndAddToDebugLog(event.location, KnimeBrowserView.class);
-            event.doit = false;
+    /**
+     * Runs this phase.
+     *
+     * @param browser
+     */
+    public static void runPhase(final Browser browser) {
+       initializeJSBrowserCommunication(browser);
+    }
+
+    private static void initializeJSBrowserCommunication(final Browser browser) {
+        // inject the communication (message transport) logic
+        try {
+            var script =
+                Files.readString(Path.of(getAbsolutePath(DOMAIN_NAME, "files/script-snippet.template")))
+                    .replace("##JSON_RPC_NOTIFICATION_ACTION_ID##", JSON_RPC_NOTIFICATION_ACTION_ID)
+                    .replace("##JSON_RPC_ACTION_ID##", JSON_RPC_ACTION_ID);
+            if (!browser.execute(script)) {
+                KnimeBrowserView.LOGGER.error("Script to initialize JS browser communication failed to execute");
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read script to initialize JS browser communication", e);
         }
     }
 
-    @Override
-    public void changed(final LocationEvent event) {
-        if (isAppPage(event.location) || isDevPage(event.location)) {
-            PageLoaded.runPhase(m_browser);
+    private static String getAbsolutePath(final String bundle, final String relativePath) {
+        var url = Platform.getBundle(bundle).getEntry(relativePath);
+        try {
+            var fileUrl = FileLocator.toFileURL(url);
+            return Paths.get(new URI(fileUrl.getProtocol(), fileUrl.getFile(), null)).toString();
+        } catch (IOException | URISyntaxException e) {
+            // should never happen
+            throw new IllegalStateException(e);
         }
     }
-
-	private static boolean isAppPage(final String url) {
-		return url.startsWith(KnimeBrowserView.BASE_URL);
-	}
-
-	private static boolean isEmptyPage(final String url) {
-		return url.endsWith(KnimeBrowserView.EMPTY_PAGE);
-	}
-
-	private static boolean isDevPage(final String url) {
-		return url.startsWith("http://localhost");
-	}
 
 }
