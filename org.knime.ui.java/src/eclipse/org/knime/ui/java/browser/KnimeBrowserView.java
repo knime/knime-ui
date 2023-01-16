@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -182,6 +183,13 @@ public class KnimeBrowserView implements ISaveablePart2 {
         setUrl(ignoreEmptyPageAsDevUrl);
 
         m_initialized = true;
+
+        // Update the app state when the node repository filter changes
+        KnimeUIPreferences.addNodeRepoFilterChangeListener((oldValue, newValue) -> {
+            if (!Objects.equals(oldValue, newValue)) {
+                appStateProvider.updateAppState();
+            }
+        });
     }
 
     private static SpaceProviders createSpaceProviders() {

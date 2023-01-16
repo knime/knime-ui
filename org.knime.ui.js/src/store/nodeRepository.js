@@ -196,7 +196,7 @@ export const actions = {
      */
     async updateQuery({ commit, dispatch }, value) {
         commit('setQuery', value);
-        commit('setIncludeAll', false);
+        dispatch('resetIncludeAll');
         await dispatch('searchNodes');
     },
 
@@ -209,7 +209,7 @@ export const actions = {
     clearSearchParams({ commit, dispatch }) {
         commit('setSelectedTags', []);
         commit('setQuery', '');
-        commit('setIncludeAll', false);
+        dispatch('resetIncludeAll');
         dispatch('clearSearchResults');
     },
 
@@ -243,19 +243,26 @@ export const actions = {
     async setSelectedTags({ dispatch, commit }, tags) {
         commit('setSelectedTags', tags);
         if (tags.length === 0) {
-            commit('setIncludeAll', false);
+            dispatch('resetIncludeAll');
         }
         await dispatch('searchNodes');
+    },
+
+    resetIncludeAll({ commit, rootState }) {
+        if (rootState.application.nodeRepoFilterEnabled) {
+            commit('setIncludeAll', false);
+        }
     },
 
     /**
      * Set the includeAll flag to true. This value will stay until the search changes.
      *
      * @param {*} context - Vuex context.
+     * @param {boolean} includeAll - if all nodes should be included in the next search
      * @returns {undefined}
      */
-    async setIncludeAll({ commit, dispatch }) {
-        commit('setIncludeAll', true);
+    async setIncludeAll({ commit, dispatch }, includeAll) {
+        commit('setIncludeAll', includeAll);
         await dispatch('searchNodes');
     },
 

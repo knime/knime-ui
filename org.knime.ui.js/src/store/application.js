@@ -180,6 +180,11 @@ export const actions = {
             commit('setOpenProjects', applicationState.openProjects);
             await dispatch('setActiveProject', applicationState.openProjects);
         }
+        if (typeof applicationState.nodeRepoFilterEnabled !== 'undefined') {
+            commit('setNodeRepoFilterEnabled', applicationState.nodeRepoFilterEnabled);
+            // TODO should we force the update from here or somewhere else?
+            dispatch('nodeRepository/setIncludeAll', !applicationState.nodeRepoFilterEnabled, { root: true });
+        }
     },
     async setActiveProject({ commit, dispatch, state }, openProjects) {
         if (openProjects.length === 0) {

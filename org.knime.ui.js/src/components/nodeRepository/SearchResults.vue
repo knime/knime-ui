@@ -42,7 +42,7 @@ export default {
             this.setSearchScrollPosition(position);
         },
         onShowAll() {
-            this.setIncludeAll();
+            this.setIncludeAll(true);
         },
         async onSearchChanged() {
             let { scroller } = this.$refs;
