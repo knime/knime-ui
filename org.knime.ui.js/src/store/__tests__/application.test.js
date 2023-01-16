@@ -66,10 +66,12 @@ describe('application store', () => {
         };
         const store = mockVuexStore(storeConfig);
         const dispatchSpy = jest.spyOn(store, 'dispatch');
+        const commitSpy = jest.spyOn(store, 'commit');
 
         return {
             store,
             dispatchSpy,
+            commitSpy,
             mockedGetters: getters,
             mockedActions: actions,
             fetchApplicationState,
@@ -93,7 +95,8 @@ describe('application store', () => {
             contextMenu: { isOpen: false, position: null },
             hasNodeRecommendationsEnabled: false,
             rootWorkflowSnapshots: new Map(),
-            availableUpdates: null
+            availableUpdates: null,
+            nodeRepoFilterEnabled: false
         });
     });
 
@@ -149,6 +152,12 @@ describe('application store', () => {
                 { newReleases: undefined, bugfixes: ['Update1', 'Update2'] });
             expect(store.state.application.availableUpdates)
                 .toStrictEqual({ newReleases: undefined, bugfixes: ['Update1', 'Update2'] });
+        });
+
+        it('sets nodeRepoFilterEnabled', async () => {
+            const { store } = await loadStore();
+            store.commit('application/setNodeRepoFilterEnabled', true);
+            expect(store.state.application.nodeRepoFilterEnabled).toBe(true);
         });
     });
 
@@ -272,6 +281,18 @@ describe('application store', () => {
                 projectId: 'baz',
                 workflowId: 'root:2'
             });
+        });
+
+        it('replaces nodeRepoFilterEnabled', async () => {
+            const applicationState = { nodeRepoFilterEnabled: true };
+            const { store, dispatchSpy, commitSpy } = await loadStore();
+
+            await store.dispatch('application/replaceApplicationState', applicationState);
+            expect(dispatchSpy).toHaveBeenCalledWith('nodeRepository/setIncludeAll', false);
+            expect(commitSpy).toHaveBeenCalledWith('nodeRepository/setNodesPerCategories', {
+                groupedNodes: [],
+                append: false
+            }, { root: true });
         });
     });
 

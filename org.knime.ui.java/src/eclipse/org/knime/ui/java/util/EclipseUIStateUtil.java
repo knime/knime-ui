@@ -94,6 +94,7 @@ import org.knime.gateway.impl.webui.AppStateProvider.AppState;
 import org.knime.gateway.impl.webui.AppStateProvider.AppState.OpenedWorkflow;
 import org.knime.gateway.impl.webui.UpdateStateProvider.UpdateState;
 import org.knime.product.rcp.intro.UpdateDetector;
+import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.workbench.editor2.WorkflowEditor;
 
 /**
@@ -155,11 +156,18 @@ public final class EclipseUIStateUtil {
     public static AppState createAppState(final EModelService modelService, final MApplication app) {
         // Collect data before instantiating the AppState, so its changes can be tracked
         var openedWorkflows = collectOpenedWorkflows(modelService, app);
+        var nodeRepoFilterEnabled =
+            !KnimeUIPreferences.NODE_REPO_FILTER_NONE_ID.equals(KnimeUIPreferences.getNodeRepoFilter());
         // Return new AppState instance
         return new AppState() { // NOSONAR
             @Override
             public List<OpenedWorkflow> getOpenedWorkflows() {
                 return openedWorkflows;
+            }
+
+            @Override
+            public boolean isNodeRepoFilterEnabled() {
+                return nodeRepoFilterEnabled;
             }
         };
     }

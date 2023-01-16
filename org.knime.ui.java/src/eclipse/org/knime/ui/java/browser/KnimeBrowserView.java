@@ -73,6 +73,7 @@ import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction;
 import org.knime.ui.java.browser.function.SaveAndCloseWorkflowsBrowserFunction.PostWorkflowCloseAction;
 import org.knime.ui.java.browser.function.SaveWorkflowBrowserFunction;
 import org.knime.ui.java.browser.function.SwitchToJavaUIBrowserFunction;
+import org.knime.ui.java.prefs.KnimeUIPreferences;
 import org.knime.ui.java.util.DefaultServicesUtil;
 import org.knime.ui.java.util.EclipseUIStateUtil;
 import org.knime.ui.java.util.LocalSpaceUtil;
@@ -423,16 +424,25 @@ public class KnimeBrowserView implements ISaveablePart2 {
 
         private final List<OpenedWorkflow> m_openedWorkflows;
 
+        private final boolean m_nodeRepoFilterEnabled;
+
         AppStateDerivedFromWorkflowProjectManager() {
             var wpm = WorkflowProjectManager.getInstance();
             m_openedWorkflows = wpm.getWorkflowProjectsIds().stream()
                 .map(id -> toOpenedWorkflow(wpm.getWorkflowProject(id).orElseThrow(), wpm.isActiveWorkflowProject(id)))
                 .collect(Collectors.toList());
+            m_nodeRepoFilterEnabled =
+                !KnimeUIPreferences.NODE_REPO_FILTER_NONE_ID.equals(KnimeUIPreferences.getNodeRepoFilter());
         }
 
         @Override
         public List<OpenedWorkflow> getOpenedWorkflows() {
             return m_openedWorkflows;
+        }
+
+        @Override
+        public boolean isNodeRepoFilterEnabled() {
+            return m_nodeRepoFilterEnabled;
         }
 
         private static AppState.OpenedWorkflow toOpenedWorkflow(final WorkflowProject wp, final boolean isVisible) {
@@ -454,7 +464,6 @@ public class KnimeBrowserView implements ISaveablePart2 {
                 }
             };
         }
-
 	}
 
     @Override

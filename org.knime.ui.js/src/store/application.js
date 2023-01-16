@@ -38,7 +38,13 @@ export const state = () => ({
 
     isBusy: false,
     /* Object containing available updates */
-    availableUpdates: null
+    availableUpdates: null,
+
+    /*
+     * If true, the node repository will be filtered to show only the nodes that fit the current filter.
+     * This will have an effect on the node search, on the category groups, and on the node recommendations.
+     */
+    nodeRepoFilterEnabled: false
 });
 
 export const mutations = {
@@ -109,6 +115,9 @@ export const mutations = {
     },
     setAvailableUpdates(state, availableUpdates) {
         state.availableUpdates = availableUpdates;
+    },
+    setNodeRepoFilterEnabled(state, nodeRepoFilterEnabled) {
+        state.nodeRepoFilterEnabled = nodeRepoFilterEnabled;
     }
 };
 
