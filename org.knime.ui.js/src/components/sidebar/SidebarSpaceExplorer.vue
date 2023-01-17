@@ -1,6 +1,6 @@
 <script>
 import SpaceExplorer from '@/components/spaces/SpaceExplorer.vue';
-import { mapState } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 
 export default {
     components: {
@@ -9,6 +9,7 @@ export default {
     computed: {
         ...mapState('application', ['openProjects', 'activeProjectId']),
         ...mapState('spaces', ['lastItemForProject']),
+        ...mapGetters('spaces', ['currentWorkflowGroupId']),
 
         activeProjectOrigin() {
             return this.openProjects.find(p => p.projectId === this.activeProjectId)?.origin;
@@ -26,7 +27,7 @@ export default {
         }
     },
     methods: {
-        async loadSpaceState() {
+        loadSpaceState() {
             if (!this.activeProjectOrigin) {
                 return;
             }
@@ -40,11 +41,8 @@ export default {
             if (lastItemId) {
                 this.$store.commit('spaces/setStartItemId', lastItemId);
             } else {
-                console.log('workaround', this.lastItemForProject[this.activeProjectId], JSON.stringify(this.lastItemForProject));
-                // Workaround until we have the full path in origin - we just assume this was opened via the start page
-                await this.$store.dispatch('spaces/loadSpaceBrowserState');
-                await this.$store.dispatch('spaces/saveCurrentItemForProject');
-                console.log('item after workaround: ', this.lastItemForProject[this.activeProjectId]);
+                // we need to set something otherwise the old item will stay (and might be of a different space)
+                this.$store.commit('spaces/setStartItemId', this.currentWorkflowGroupId);
                 // TODO: this needs to be implemented by the backend in https://knime-com.atlassian.net/browse/NXT-1432
                 // this.$store.commit('spaces/setStartItemId', this.activeProjectOrigin.parentItems[1]);
             }
