@@ -93,13 +93,15 @@ export default {
 
     watch: {
         async startItemId(newStartItemId, oldStartItemId) {
+            console.log('startItemId changed', newStartItemId);
             if (newStartItemId && newStartItemId !== oldStartItemId) {
-                await this.fetchWorkflowGroupContent(this.startItemId || 'root');
+                await this.fetchWorkflowGroupContent(newStartItemId);
             }
         }
     },
 
     async created() {
+        console.log('SpaceExplorer created', this.startItemId);
         await this.fetchWorkflowGroupContent(this.startItemId || 'root');
     },
 
@@ -142,13 +144,14 @@ export default {
         onOpenFile({ id }) {
             this.$store.dispatch('spaces/openWorkflow', {
                 workflowItemId: id,
-                // send in router so it can be used to navigate to an already open workflow
+                // send in router, so it can be used to navigate to an already open workflow
                 $router: this.$router
             });
         },
 
         onBreadcrumbClick({ id }) {
             this.fetchWorkflowGroupContent(id);
+            this.$emit('item-changed', id);
         }
     }
 };

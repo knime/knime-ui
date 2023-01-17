@@ -51,10 +51,10 @@ export default {
             this.$store.dispatch('spaces/disconnectProvider', { spaceProviderId });
         },
 
-        onSpaceCardClick({ space, spaceProvider }) {
+        async onSpaceCardClick({ space, spaceProvider }) {
             this.$store.commit('spaces/setActiveSpaceProvider', spaceProvider);
             this.$store.commit('spaces/setActiveSpaceId', space.id);
-            this.$store.dispatch('spaces/saveSpaceBrowserState');
+            await this.$store.dispatch('spaces/saveSpaceBrowserState');
             this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
         },
 

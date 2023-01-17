@@ -23,7 +23,7 @@ export const state = () => ({
     // state of the global space browser (tab with knime icon)
     spaceBrowser: {
         spaceId: null,
-        spaceProvider: null,
+        spaceProviderId: null,
         itemId: 'root'
     },
     lastItemForProject: {}
@@ -52,23 +52,23 @@ export const mutations = {
     clearSpaceBrowserState(state) {
         state.spaceBrowser = {
             spaceId: null,
-            spaceProvider: null,
+            spaceProviderId: null,
             itemId: 'root'
         };
-    },
-
-    loadSpaceBrowserState(state) {
-        state.activeSpaceProvider = state.spaceBrowser.spaceProvider;
-        state.activeSpace.spaceId = state.spaceBrowser.spaceId;
-        state.activeSpace.startItemId = state.spaceBrowser.itemId || 'root';
     },
 
     setSpaceBrowserState(state, data) {
         state.spaceBrowser = data;
     },
 
+    clearLastItemForProject(state, { projectId }) {
+        // eslint-disable-next-line no-unused-vars
+        const { [projectId]: _, ...result } = state.lastItemForProject;
+        state.lastItemForProject = result;
+    },
+
     setLastItemForProject(state, { projectId, itemId }) {
-        state.lastItemForProject[projectId] = itemId;
+        state.lastItemForProject = { ...state.lastItemForProject, [projectId]: itemId };
     },
 
     setActiveWorkflowGroupData(state, data) {
@@ -82,22 +82,31 @@ export const mutations = {
 
 export const actions = {
     removeLastItemForProject({ commit, getters }, projectId) {
-        commit('setLastItemForProject', { projectId, itemId: null });
+        commit('clearLastItemForProject', { projectId });
     },
 
-    saveCurrentItemForProject({ commit, getters }, { projectId }) {
+    saveCurrentItemForProject({ commit, getters, rootState }, { itemId } = {}) {
+        itemId = itemId || getters.currentWorkflowGroupId;
         commit('setLastItemForProject', {
-            projectId,
-            itemId: getters.currentWorkflowGroupId
+            projectId: rootState.application.activeProjectId,
+            itemId
         });
     },
 
-    saveSpaceBrowserState({ commit, getters, state }) {
+    saveSpaceBrowserState({ commit, getters, state }, { itemId = 'root' } = {}) {
         commit('setSpaceBrowserState', {
             spaceId: state.activeSpace?.spaceId,
-            spaceProvider: state.activeSpaceProvider,
-            itemId: getters.currentWorkflowGroupId
+            spaceProviderId: state.activeSpaceProvider?.id,
+            itemId
         });
+    },
+
+    loadSpaceBrowserState({ commit, state }) {
+        if (state.spaceBrowser.spaceProviderId && state.spaceBrowser.spaceId) {
+            commit('setActiveSpaceProviderById', state.spaceBrowser.spaceProviderId);
+            commit('setActiveSpaceId', state.spaceBrowser.spaceId);
+            commit('setStartItemId', state.spaceBrowser.itemId || 'root');
+        }
     },
 
     async fetchAllSpaceProviders({ commit, dispatch, state }) {

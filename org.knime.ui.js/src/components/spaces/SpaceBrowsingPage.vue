@@ -13,16 +13,18 @@ export default {
     computed: {
         ...mapState('spaces', ['spaceBrowser'])
     },
-    beforeMount() {
+    async beforeMount() {
+        console.log('beforeMount load browser state', this.spaceBrowser, this.activeProjectId);
         if (this.spaceBrowser.spaceId) {
-            this.$store.commit('spaces/loadSpaceBrowserState');
+            await this.$store.dispatch('spaces/loadSpaceBrowserState');
         }
         // TODO: clear on back: this.$store.commit('spaces/clearSpaceBrowserState');
     },
     methods: {
-        onItemChanged(id) {
+        async onItemChanged(itemId) {
             // remember current path
-            this.$store.dispatch('spaces/saveSpaceBrowserState');
+            console.log('SpaceBrowsingPage item changed save state', itemId);
+            await this.$store.dispatch('spaces/saveSpaceBrowserState', { itemId });
         }
     }
 };

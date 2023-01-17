@@ -1,7 +1,6 @@
 <script>
 import SpaceExplorer from '@/components/spaces/SpaceExplorer.vue';
 import { mapState } from 'vuex';
-import { isArray } from 'lodash';
 
 export default {
     components: {
@@ -16,18 +15,18 @@ export default {
         }
     },
     watch: {
-        activeProjectId(newId, oldId) {
-            if (oldId !== newId) {
-                console.log('activeProjectId changed call loadSpaceState', newId);
-                this.loadSpaceState();
-            }
+        activeProjectId: {
+            handler(newId, oldId) {
+                if (newId && oldId !== newId) {
+                    console.log('activeProjectId changed call loadSpaceState', newId);
+                    this.loadSpaceState();
+                }
+            },
+            immediate: true
         }
     },
-    beforeMount() {
-        this.loadSpaceState();
-    },
     methods: {
-        loadSpaceState() {
+        async loadSpaceState() {
             if (!this.activeProjectOrigin) {
                 return;
             }
@@ -41,17 +40,18 @@ export default {
             if (lastItemId) {
                 this.$store.commit('spaces/setStartItemId', lastItemId);
             } else {
+                console.log('workaround', this.lastItemForProject[this.activeProjectId], JSON.stringify(this.lastItemForProject));
                 // Workaround until we have the full path in origin - we just assume this was opened via the start page
-                this.$store.commit('spaces/loadSpaceBrowserState');
-                this.$store.dispatch('spaces/saveCurrentItemForProject', this.activeProjectId);
+                await this.$store.dispatch('spaces/loadSpaceBrowserState');
+                await this.$store.dispatch('spaces/saveCurrentItemForProject');
+                console.log('item after workaround: ', this.lastItemForProject[this.activeProjectId]);
                 // TODO: this needs to be implemented by the backend in https://knime-com.atlassian.net/browse/NXT-1432
                 // this.$store.commit('spaces/setStartItemId', this.activeProjectOrigin.parentItems[1]);
             }
         },
-        onItemChanged(itemId) {
-            this.$store.dispatch('spaces/saveCurrentItemForProject', {
-                projectId: this.activeProjectId
-            });
+        async onItemChanged(itemId) {
+            console.log('SidebarSpaceExplorer onItemChanged', itemId);
+            await this.$store.dispatch('spaces/saveCurrentItemForProject', { itemId });
         }
     }
 };
