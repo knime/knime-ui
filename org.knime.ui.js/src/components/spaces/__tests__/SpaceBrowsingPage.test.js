@@ -27,6 +27,9 @@ describe('SpaceBrowsingPage', () => {
                         private: false,
                         name: ''
                     }
+                },
+                actions: {
+                    fetchWorkflowGroupContent: jest.fn()
                 }
             }
         });

@@ -135,11 +135,29 @@ describe('spaces store', () => {
                     hub1: {}
                 };
 
+                connectSpaceProvider.mockResolvedValue({ name: 'John Doe' });
                 await store.dispatch('spaces/connectProvider', { spaceProviderId: 'hub1' });
 
                 expect(connectSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
-                // TODO: This method would only be called if `connectSpaceProvider` returned something
-                // expect(fetchSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
+                expect(fetchSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
+                expect(store.state.spaces.spaceProviders.hub1).toEqual(expect.objectContaining({
+                    connected: true,
+                    user: { name: 'John Doe' }
+                }));
+            });
+
+            it('should not fetch provider spaces data if the user is null', async () => {
+                const { store } = loadStore();
+
+                store.state.spaces.spaceProviders = {
+                    hub1: {}
+                };
+
+                connectSpaceProvider.mockResolvedValue({ name: '' });
+                await store.dispatch('spaces/connectProvider', { spaceProviderId: 'hub1' });
+
+                expect(connectSpaceProvider).toHaveBeenCalledWith({ spaceProviderId: 'hub1' });
+                expect(fetchSpaceProvider).not.toHaveBeenCalled();
             });
         });
 

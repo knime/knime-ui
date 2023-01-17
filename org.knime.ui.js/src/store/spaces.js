@@ -86,7 +86,9 @@ export const actions = {
     async connectProvider({ dispatch }, { spaceProviderId }) {
         try {
             const user = await connectSpaceProvider({ spaceProviderId });
-            if (user) { // Only fetch spaces when a valid user was returned
+
+            if (user.name) {
+                // Only fetch spaces when a valid user was returned
                 dispatch('fetchProviderSpaces', { id: spaceProviderId, user });
             }
         } catch (error) {
