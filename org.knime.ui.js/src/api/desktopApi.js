@@ -162,7 +162,8 @@ export const fetchAllSpaceProviders = () => {
 
 export const connectSpaceProvider = ({ spaceProviderId }) => {
     try {
-        window.connectSpaceProvider(spaceProviderId);
+        const user = window.connectSpaceProvider(spaceProviderId);
+        return JSON.parse(user);
     } catch (error) {
         consola.error(`Could not connect to provider`, { spaceProviderId, error });
         throw error;

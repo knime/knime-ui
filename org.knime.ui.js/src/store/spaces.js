@@ -66,6 +66,7 @@ export const actions = {
     },
 
     async fetchProviderSpaces({ state, commit }, { id, user = null }) {
+        debugger;
         try {
             const { spaceProviders } = state;
 
@@ -83,11 +84,12 @@ export const actions = {
         }
     },
 
-    connectProvider({ dispatch }, { spaceProviderId }) {
+    async connectProvider({ dispatch }, { spaceProviderId }) {
         try {
-            const user = connectSpaceProvider({ spaceProviderId });
-            
-            dispatch('fetchProviderSpaces', { id: spaceProviderId, user });
+            const user = await connectSpaceProvider({ spaceProviderId });
+            if (user) { // Only fetch spaces when a valid user was returned
+                dispatch('fetchProviderSpaces', { id: spaceProviderId, user });
+            }
         } catch (error) {
             consola.error('Error connecting to provider', { error });
             throw error;
