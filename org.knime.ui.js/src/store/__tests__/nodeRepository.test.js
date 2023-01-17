@@ -370,7 +370,8 @@ describe('Node Repository store', () => {
                     numNodesPerTag: 6,
                     tagsOffset: 6,
                     tagsLimit: 3,
-                    fullTemplateInfo: true
+                    fullTemplateInfo: true,
+                    includeAll: true
                 });
 
                 const { nodes, tag } = getNodesGroupedByTagsResponse.groups[0];
@@ -395,7 +396,8 @@ describe('Node Repository store', () => {
                     numNodesPerTag: 6,
                     tagsOffset: 0,
                     tagsLimit: 6,
-                    fullTemplateInfo: true
+                    fullTemplateInfo: true,
+                    includeAll: true
                 });
             });
 

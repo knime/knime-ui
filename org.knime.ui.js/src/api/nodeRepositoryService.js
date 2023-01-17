@@ -7,16 +7,20 @@ import rpc from './json-rpc-adapter';
  * @param {Number} tagsOffset - The number of tags to be skipped (for pagination).
  * @param {Number} tagsLimit - The maximum number of tags to be returned (mainly for pagination).
  * @param {Boolean} fullTemplateInfo - if the results should contain all node info (incl. img data).
+ * @param {Boolean} includeAll - if true, all nodes/components will be included in the groups.
  * @returns {Object} the grouped nodes results.
  */
-export const getNodesGroupedByTags = async ({ numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo }) => {
+export const getNodesGroupedByTags = async (
+    { numNodesPerTag, tagsOffset, tagsLimit, fullTemplateInfo, includeAll }
+) => {
     try {
         const groupedNodes = await rpc(
             'NodeRepositoryService.getNodesGroupedByTags',
             numNodesPerTag,
             tagsOffset,
             tagsLimit,
-            fullTemplateInfo
+            fullTemplateInfo,
+            includeAll
         );
         consola.debug('Loaded nodes grouped by tags', groupedNodes);
 

@@ -120,7 +120,8 @@ export const actions = {
             numNodesPerTag: 6,
             tagsOffset,
             tagsLimit,
-            fullTemplateInfo: true
+            fullTemplateInfo: true,
+            includeAll: !rootState.application.nodeRepoFilterEnabled
         });
 
         const { availablePortTypes } = rootState.application;
