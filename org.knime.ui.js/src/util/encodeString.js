@@ -1,5 +1,4 @@
 export const encodeString = (stringValue) => {
-    return stringValue;
     // See:
     // https://stackoverflow.com/questions/30106476/using-javascripts-atob-to-decode-base64-doesnt-properly-decode-utf-8-strings
     // convert a Unicode string to a string in which

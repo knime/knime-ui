@@ -72,7 +72,7 @@ export default {
 .loader {
   width: 100vw;
   height: calc(100vh);
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255 255 255 / 70%);
   display: flex;
   justify-content: center;
   flex-direction: column;
@@ -82,6 +82,7 @@ export default {
 
   & svg {
     @mixin svg-icon-size 50;
+
     animation: spin 2s linear infinite;
   }
 
