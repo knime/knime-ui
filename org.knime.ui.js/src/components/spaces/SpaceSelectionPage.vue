@@ -45,8 +45,11 @@ export default {
         },
 
         onSpaceCardClick({ space, spaceProvider }) {
+            const localSpace = this.isLocalSpace(spaceProvider);
             this.$store.commit('spaces/setActiveSpaceProvider', spaceProvider);
             this.$store.commit('spaces/setActiveSpaceId', space.id);
+            this.$store.commit('spaces/setActiveSpaceInfo',
+                { local: localSpace, private: space.private, name: space.name });
             this.$router.push({ name: APP_ROUTES.SpaceBrowsingPage });
         },
 

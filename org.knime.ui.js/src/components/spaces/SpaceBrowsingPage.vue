@@ -1,5 +1,8 @@
 <script>
+import { mapState } from 'vuex';
 import ArrowLeftIcon from 'webapps-common/ui/assets/img/icons/arrow-left.svg';
+import CubeIcon from 'webapps-common/ui/assets/img/icons/cube.svg';
+import PrivateSpaceIcon from 'webapps-common/ui/assets/img/icons/private-space.svg';
 import { APP_ROUTES } from '@/router';
 import PageHeader from '@/components/common/PageHeader.vue';
 import ComputerDesktopIcon from '@/assets/computer-desktop.svg';
@@ -12,6 +15,45 @@ export default {
         ComputerDesktopIcon,
         PageHeader
     },
+    data() {
+        return {
+            spaceInfo: {
+                title: '',
+                subtitle: '',
+                icon: null
+            }
+        };
+    },
+    computed: {
+        ...mapState('spaces', ['activeSpaceInfo', 'activeSpace'])
+    },
+    watch: {
+        activeSpace: {
+            immediate: true,
+            handler() {
+                if (this.activeSpaceInfo.local) {
+                    this.spaceInfo = {
+                        title: 'Your Local Space',
+                        subtitle: 'Local space',
+                        icon: ComputerDesktopIcon
+                    };
+                    return;
+                }
+
+                this.spaceInfo = this.activeSpaceInfo.private
+                    ? {
+                        title: this.activeSpaceInfo.name,
+                        subtitle: 'Private space',
+                        icon: PrivateSpaceIcon
+                    }
+                    : {
+                        title: this.activeSpaceInfo.name,
+                        subtitle: 'Public space',
+                        icon: CubeIcon
+                    };
+            }
+        }
+    },
     methods: {
         onBackButtonClick() {
             this.$router.push({ name: APP_ROUTES.EntryPage.SpaceSelectionPage });
@@ -23,15 +65,15 @@ export default {
 <template>
   <main ref="main">
     <PageHeader
-      title="Your Local Space"
-      subtitle="Local space"
+      :title="spaceInfo.title"
+      :subtitle="spaceInfo.subtitle"
     >
       <ArrowLeftIcon
         class="back-button"
         @click="onBackButtonClick"
       />
       <template #icon>
-        <ComputerDesktopIcon />
+        <Component :is="spaceInfo.icon" />
       </template>
     </PageHeader>
 
